@@ -251,8 +251,6 @@ void IO::readTimeData()
         IFstream timeDataFile(fvMsh_.time().path()/timeDataFileName);
 
         timeDataFile >> timeData_;
-
-        Info << timeData_ << endl;
     }
 }
 
