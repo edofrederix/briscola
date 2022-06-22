@@ -90,9 +90,6 @@ public:
     // Construct from Istream
     inline stencil(Istream&);
 
-    // Construct as copy of a stencil
-    inline stencil(const stencil&);
-
     // Construct as a copy of a symmStencil
     inline stencil(const symmStencil&);
 
@@ -146,12 +143,11 @@ public:
     inline void operator-=(const diagStencil&);
 
     inline void operator=(const scalar);
-    inline void operator=(const stencil&);
     inline void operator=(const symmStencil&);
     inline void operator=(const diagStencil&);
     inline void operator=(const hexScalar&);
-
     inline void operator=(const Foam::zero);
+
     inline void operator*=(const scalar);
     inline void operator/=(const scalar);
 

@@ -72,9 +72,6 @@ public:
     // Construct from Istream
     inline diagStencil(Istream&);
 
-    // Construct as copy of a diagStencil
-    inline diagStencil(const diagStencil&);
-
     // Return the number of elements in the diagStencil
     inline static direction size();
 
@@ -102,6 +99,7 @@ public:
 
     inline void operator=(const scalar);
     inline void operator=(const Foam::zero);
+
     inline void operator*=(const scalar);
     inline void operator/=(const scalar);
 

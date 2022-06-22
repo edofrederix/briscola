@@ -34,14 +34,6 @@ inline symmStencil::symmStencil(const scalar& v)
     this->v_[A] = v;
 }
 
-inline symmStencil::symmStencil(const symmStencil& ss)
-{
-    this->v_[C] = ss[C];
-    this->v_[L] = ss[L];
-    this->v_[B] = ss[B];
-    this->v_[A] = ss[A];
-}
-
 inline symmStencil::symmStencil
 (
     Istream& is
@@ -270,17 +262,6 @@ inline void symmStencil::operator=
     this->v_[L] = s;
     this->v_[B] = s;
     this->v_[A] = s;
-}
-
-inline void symmStencil::operator=
-(
-    const symmStencil& st
-)
-{
-    this->v_[C] = st[C];
-    this->v_[L] = st[L];
-    this->v_[B] = st[B];
-    this->v_[A] = st[A];
 }
 
 inline void symmStencil::operator=(const Foam::zero)

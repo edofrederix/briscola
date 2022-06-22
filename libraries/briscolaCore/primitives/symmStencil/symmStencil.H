@@ -84,9 +84,6 @@ public:
     // Construct from Istream
     inline symmStencil(Istream&);
 
-    // Construct as copy of a symmStencil
-    inline symmStencil(const symmStencil&);
-
     // Construct as a copy of a diagStencil
     inline symmStencil(const diagStencil&);
 
@@ -126,10 +123,9 @@ public:
     inline void operator-=(const diagStencil&);
 
     inline void operator=(const scalar);
-    inline void operator=(const symmStencil&);
     inline void operator=(const diagStencil&);
-
     inline void operator=(const Foam::zero);
+
     inline void operator*=(const scalar);
     inline void operator/=(const scalar);
 

@@ -74,13 +74,11 @@ inline void block<Type>::operator=(const block<Type>& M)
             << abort(FatalError);
     }
 
-    const bool sameShape = (M.shape() == this->shape());
-
     reAllocate(M.shape());
 
     if (v_)
     {
-        if (contiguous<Type>() && sameShape)
+        if (contiguous<Type>() && M.shape() == this->shape())
         {
             memcpy(v_, M.v_, this->byteSize());
         }

@@ -46,17 +46,6 @@ inline stencil::stencil(const scalar& v)
     this->v_[F] = v;
 }
 
-inline stencil::stencil(const stencil& st)
-{
-    this->v_[C] = st[C];
-    this->v_[L] = st[L];
-    this->v_[R] = st[R];
-    this->v_[B] = st[B];
-    this->v_[T] = st[T];
-    this->v_[A] = st[A];
-    this->v_[F] = st[F];
-}
-
 inline stencil::stencil(const symmStencil& st)
 {
     this->v_[C] = st[symmStencil::C];
@@ -374,20 +363,6 @@ inline void stencil::operator=
     this->v_[T] = s;
     this->v_[A] = s;
     this->v_[F] = s;
-}
-
-inline void stencil::operator=
-(
-    const stencil& st
-)
-{
-    this->v_[C] = st[C];
-    this->v_[L] = st[L];
-    this->v_[R] = st[R];
-    this->v_[B] = st[B];
-    this->v_[T] = st[T];
-    this->v_[A] = st[A];
-    this->v_[F] = st[F];
 }
 
 inline void stencil::operator=

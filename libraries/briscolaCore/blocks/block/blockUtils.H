@@ -61,11 +61,26 @@ const labelTensor rotationsZ[] =
 
 // Collection of rotations
 
-const labelTensor rotations[3][4] =
+const labelTensor rotations[][4] =
 {
-    rotationsX,
-    rotationsY,
-    rotationsZ
+    {
+        eye,
+        rotateX1,
+        rotateX2,
+        rotateX3
+    },
+    {
+        eye,
+        rotateY1,
+        rotateY2,
+        rotateY3
+    },
+    {
+        eye,
+        rotateZ1,
+        rotateZ2,
+        rotateZ3
+    }
 };
 
 // One step rotations

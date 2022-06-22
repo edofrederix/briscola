@@ -79,9 +79,6 @@ public:
     // Construct from Istream
     inline Hex(Istream&);
 
-    // Construct as copy of a Hex
-    inline Hex(const Hex<Type>&);
-
     // Return the number of elements in the Hex
     inline static direction size()
     {

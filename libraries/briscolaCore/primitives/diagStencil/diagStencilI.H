@@ -9,11 +9,6 @@ inline diagStencil::diagStencil(const Foam::zero)
     this->v_ = Zero;
 }
 
-inline diagStencil::diagStencil(const diagStencil& ss)
-{
-    this->v_ = ss.v_;
-}
-
 inline diagStencil::diagStencil
 (
     const scalar& s1

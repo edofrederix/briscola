@@ -20,17 +20,6 @@ inline Hex<Type>::Hex(const Foam::zero)
 }
 
 template<class Type>
-inline Hex<Type>::Hex(const Hex<Type>& h)
-{
-    this->v_[L] = h[L];
-    this->v_[R] = h[R];
-    this->v_[B] = h[B];
-    this->v_[T] = h[T];
-    this->v_[A] = h[A];
-    this->v_[F] = h[F];
-}
-
-template<class Type>
 inline Hex<Type>::Hex
 (
     const Type& v1,

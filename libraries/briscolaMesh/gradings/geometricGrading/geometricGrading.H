@@ -2,6 +2,8 @@
 #define geometricGrading_H
 
 #include "grading.H"
+#include "vector.H"
+#include "tensor.H"
 
 namespace Foam
 {
