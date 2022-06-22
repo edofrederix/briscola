@@ -1,0 +1,657 @@
+#include "meshField.H"
+#include "fvMesh.H"
+
+namespace Foam
+{
+
+namespace briscola
+{
+
+namespace fv
+{
+
+// Private
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::allocate()
+{
+    listType::setSize(fvMsh_.size());
+
+    forAll(*this, l)
+    {
+        listType::set
+        (
+            l,
+            new meshLevel<Type,MeshType>
+            (
+                *this,
+                fvMsh_,
+                l
+            )
+        );
+    }
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::transferData
+(
+    meshField<Type,MeshType>& field
+)
+{
+    listType::transfer(field);
+
+    oldTimePtr_ = field.oldTimePtr_;
+    field.oldTimePtr_ = nullptr;
+
+    forAll(*this, l)
+    {
+        listType::operator[](l).mshFieldPtr_ = this;
+    }
+}
+
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::addBoundaryConditions()
+{
+    if (boundaryConditions_.size() == 0)
+    {
+        // First add boundary patches. This assures that these are corrected
+        // first so that this information can be copied via parallel/periodic
+        // boundary conditions.
+
+        forAll(fvMsh_.partPatches(), patchi)
+        {
+            const partPatch& patch = fvMsh_.partPatches()[patchi];
+
+            if (patch.type() == "boundary")
+            {
+                boundaryConditions_.append
+                (
+                    boundaryCondition<Type,MeshType>::NewBoundary
+                    (
+                        *this,
+                        patch
+                    )
+                );
+            }
+        }
+
+        // Next, add parallel and periodic patches. First faces, then edges and
+        // finally vertices.
+
+        for(label order = 1; order <= 3; order++)
+        forAll(fvMsh_.partPatches(), patchi)
+        {
+            const partPatch& patch = fvMsh_.partPatches()[patchi];
+            const labelVector bo(patch.boundaryOffset());
+
+            if (cmptSum(cmptMag(bo)) == order)
+            {
+                if (patch.type() == "parallel")
+                {
+                    boundaryConditions_.append
+                    (
+                        boundaryCondition<Type,MeshType>::NewParallel
+                        (
+                            *this,
+                            patch
+                        )
+                    );
+                }
+                else if (patch.type() == "periodic")
+                {
+                    boundaryConditions_.append
+                    (
+                        boundaryCondition<Type,MeshType>::NewPeriodic
+                        (
+                            *this,
+                            patch
+                        )
+                    );
+                }
+            }
+        }
+    }
+}
+
+// Main constructor
+
+template<class Type, class MeshType>
+meshField<Type,MeshType>::meshField
+(
+    const word& name,
+    const fvMesh& fvMsh,
+    const IOobject::readOption r,
+    const IOobject::writeOption w,
+    const bool registerObject,
+    const bool initBCs
+)
+:
+    PtrList<meshLevel<Type,MeshType>>(),
+    IOdictionary
+    (
+        IOobject
+        (
+            name,
+            fvMsh.time().path()/"0",
+            fvMsh.time(),
+            r,
+            w,
+            registerObject
+        )
+    ),
+    refCount(),
+    fvMsh_(fvMsh),
+    oldTimePtr_(nullptr),
+    boundaryConditions_()
+{
+    if
+    (
+        (
+            r == IOobject::MUST_READ
+         || r == IOobject::MUST_READ_IF_MODIFIED
+        )
+     && !headerOk()
+    )
+    {
+        FatalErrorInFunction
+            << "Cannot read field from " << objectPath() << endl
+            << exit(FatalError);
+    }
+
+    this->allocate();
+
+    if (initBCs)
+        addBoundaryConditions();
+}
+
+// Copy constructors
+
+template<class Type, class MeshType>
+meshField<Type,MeshType>::meshField
+(
+    const meshField<Type,MeshType>& field,
+    const bool registerObject,
+    const bool copyBCs
+)
+:
+    PtrList<meshLevel<Type,MeshType>>(),
+    IOdictionary
+    (
+        IOobject
+        (
+            field.name(),
+            field.fvMsh().time().path()/"0",
+            field.fvMsh().time(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            registerObject
+        )
+    ),
+    refCount(),
+    fvMsh_(field.fvMsh()),
+    oldTimePtr_(nullptr),
+    boundaryConditions_()
+{
+    this->allocate();
+
+    if (copyBCs)
+    {
+        PtrList<boundaryCondition<Type,MeshType>> list
+        (
+            field.boundaryConditions(),
+            *this
+        );
+
+        boundaryConditions_.transfer(list);
+    }
+
+    *this = field;
+}
+
+template<class Type, class MeshType>
+meshField<Type,MeshType>::meshField
+(
+    const word& name,
+    const meshField<Type,MeshType>& field,
+    const bool registerObject,
+    const bool copyBCs
+)
+:
+    PtrList<meshLevel<Type,MeshType>>(),
+    IOdictionary
+    (
+        IOobject
+        (
+            name,
+            field.fvMsh().time().path()/"0",
+            field.fvMsh().time(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            registerObject
+        )
+    ),
+    refCount(),
+    fvMsh_(field.fvMsh()),
+    oldTimePtr_(nullptr),
+    boundaryConditions_()
+{
+    this->allocate();
+
+    if (copyBCs)
+    {
+        PtrList<boundaryCondition<Type,MeshType>> list
+        (
+            field.boundaryConditions(),
+            *this
+        );
+
+        boundaryConditions_.transfer(list);
+    }
+
+    *this = field;
+}
+
+template<class Type, class MeshType>
+meshField<Type,MeshType>::meshField
+(
+    const tmp<meshField<Type,MeshType>>& tfield,
+    const bool registerObject,
+    const bool copyBCs
+)
+:
+    PtrList<meshLevel<Type,MeshType>>(),
+    IOdictionary
+    (
+        IOobject
+        (
+            tfield->name(),
+            tfield->fvMsh_.time().path()/"0",
+            tfield->fvMsh_.time(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            registerObject
+        )
+    ),
+    refCount(),
+    fvMsh_(tfield->fvMsh_),
+    oldTimePtr_(),
+    boundaryConditions_()
+{
+    if (tfield.isTmp())
+    {
+        meshField<Type,MeshType>& field =
+            const_cast<meshField<Type,MeshType>&>(tfield());
+
+        this->transferData(field);
+    }
+    else
+    {
+        this->allocate();
+        *this = tfield();
+    }
+
+    if (copyBCs)
+    {
+        PtrList<boundaryCondition<Type,MeshType>> list
+        (
+            tfield->boundaryConditions(),
+            *this
+        );
+
+        boundaryConditions_.transfer(list);
+    }
+
+    tfield.clear();
+}
+
+template<class Type, class MeshType>
+meshField<Type,MeshType>::meshField
+(
+    const word& name,
+    const tmp<meshField<Type,MeshType>>& tfield,
+    const bool registerObject,
+    const bool copyBCs
+)
+:
+    PtrList<meshLevel<Type,MeshType>>(),
+    IOdictionary
+    (
+        IOobject
+        (
+            name,
+            tfield->fvMsh_.time().path()/"0",
+            tfield->fvMsh_.time(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            registerObject
+        )
+    ),
+    refCount(),
+    fvMsh_(tfield->fvMsh_),
+    oldTimePtr_(),
+    boundaryConditions_()
+{
+    if (tfield.isTmp())
+    {
+        meshField<Type,MeshType>& field =
+            const_cast<meshField<Type,MeshType>&>(tfield());
+
+        this->transferData(field);
+    }
+    else
+    {
+        this->allocate();
+        *this = tfield();
+    }
+
+    if (copyBCs)
+    {
+        PtrList<boundaryCondition<Type,MeshType>> list
+        (
+            tfield->boundaryConditions(),
+            *this
+        );
+
+        boundaryConditions_.transfer(list);
+    }
+
+    tfield.clear();
+}
+
+// Destructor
+
+template<class Type, class MeshType>
+meshField<Type,MeshType>::~meshField()
+{
+    if (oldTimePtr_ != nullptr)
+    {
+         delete oldTimePtr_;
+    }
+}
+
+// Public
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::initGhosts()
+{
+    initGhosts(pTraits<Type>::zero);
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::initGhosts(const Type& v)
+{
+    forAll(*this, l)
+        listType::operator[](l).initGhosts(v);
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctBoundaryConditions
+(
+    const bool homogeneousBCs
+)
+{
+    // A call to correctBoundaryConditions() implies that boundary conditions
+    // are needed for this field. Add them if not already done.
+
+    if (boundaryConditions_.size() == 0)
+    {
+        addBoundaryConditions();
+    }
+
+    forAll(*this, l)
+        listType::operator[](l).correctBoundaryConditions(homogeneousBCs);
+}
+
+template<class Type, class MeshType>
+bool meshField<Type,MeshType>::singularBoundaryConditions()
+{
+    forAll(boundaryConditions_, i)
+    {
+        const boundaryConditionBaseType baseType =
+            boundaryConditions_[i].baseType();
+
+        // If there's a BC that's not Neumann, periodic, parallel or empty, then
+        // the boundary conditions are not singular
+
+        if
+        (
+            baseType != NEUMANNBC
+         && baseType != PERIODICBC
+         && baseType != PARALLELBC
+         && baseType != EMPTYBC
+        )
+        {
+            return false;
+        }
+    }
+
+    // If we reach this point, all BCs are either Neumann, periodic, parallel or
+    // empty, giving a singular system
+
+    return true;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::setOldTime()
+{
+    if (oldTimePtr_ != nullptr)
+    {
+        delete oldTimePtr_;
+    }
+
+    oldTimePtr_ = new meshField<Type,MeshType>
+    (
+        IOobject::groupName(name(), "oldTime"),
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false
+    );
+
+    *oldTimePtr_ = *this;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator=(const meshField<Type,MeshType>& F)
+{
+    forAll(*this, l)
+        listType::operator[](l) = F[l];
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator=(const tmp<meshField<Type,MeshType>>& tF)
+{
+    if (tF.isTmp())
+    {
+        meshField<Type,MeshType>& F =
+            const_cast<meshField<Type,MeshType>&>(tF());
+
+        transferData(F);
+    }
+    else
+    {
+        *this = tF();
+    }
+
+    tF.clear();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator=(const Type& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) = v;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator=(const zero)
+{
+    forAll(*this, l)
+        listType::operator[](l) = Zero;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator+=(const meshField<Type,MeshType>& F)
+{
+    forAll(*this, l)
+        listType::operator[](l) += F[l];
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator+=(const tmp<meshField<Type,MeshType>>& tF)
+{
+    *this += tF();
+    tF.clear();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator-=(const meshField<Type,MeshType>& F)
+{
+    forAll(*this, l)
+        listType::operator[](l) -= F[l];
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator-=(const tmp<meshField<Type,MeshType>>& tF)
+{
+    *this -= tF();
+    tF.clear();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator*=(const meshField<scalar,MeshType>& F)
+{
+    forAll(*this, l)
+        listType::operator[](l) *= F[l];
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator*=(const tmp<meshField<scalar,MeshType>>& tF)
+{
+    *this *= tF();
+    tF.clear();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator/=(const meshField<scalar,MeshType>& F)
+{
+    forAll(*this, l)
+        listType::operator[](l) /= F[l];
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator/=(const tmp<meshField<scalar,MeshType>>& tF)
+{
+    *this /= tF();
+    tF.clear();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator+=(const Type& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) += v;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator-=(const Type& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) -= v;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator*=(const scalar& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) *= v;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator/=(const scalar& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) /= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator=(const meshField<Type2,MeshType>& F)
+{
+    forAll(*this, l)
+        listType::operator[](l) = F[l];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator=(const tmp<meshField<Type2,MeshType>>& tF)
+{
+    *this = tF();
+    tF.clear();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator+=(const meshField<Type2,MeshType>& F)
+{
+    forAll(*this, l)
+        listType::operator[](l) += F[l];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator+=(const tmp<meshField<Type2,MeshType>>& tF)
+{
+    *this += tF();
+    tF.clear();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator-=(const meshField<Type2,MeshType>& F)
+{
+    forAll(*this, l)
+        listType::operator[](l) -= F[l];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator-=(const tmp<meshField<Type2,MeshType>>& tF)
+{
+    *this -= tF();
+    tF.clear();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator=(const Type2& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) = v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator+=(const Type2& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) += v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator-=(const Type2& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) -= v;
+}
+
+}
+
+}
+
+}
+
+#include "meshFieldFunctions.C"
+#include "meshFieldStencilFunctions.C"

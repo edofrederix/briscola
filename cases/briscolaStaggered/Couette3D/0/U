@@ -1,0 +1,47 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      U;
+}
+
+initialCondition
+{
+
+}
+
+boundaryConditions
+{
+    top
+    {
+        type        Dirichlet;
+        values      (1 0 0);
+    }
+
+    bottom
+    {
+        type        Dirichlet;
+        values      (0 0 0);
+    }
+
+    inlet
+    {
+        type        periodic;
+    }
+
+    outlet
+    {
+        type        periodic;
+    }
+
+    aft
+    {
+        type        periodic;
+    }
+
+    fore
+    {
+        type        periodic;
+    }
+}

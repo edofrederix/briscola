@@ -1,0 +1,16 @@
+#!/bin/bash
+
+for DIR in ./*/; do
+
+    TEST=$(echo $DIR | cut -c3- | rev | cut -c2- | rev)
+
+    echo Test $TEST
+
+    cd $DIR
+
+    ./build.sh
+    ./run.sh
+
+    cd ..
+
+done

@@ -1,0 +1,3 @@
+Test-stencils.C
+
+EXE = build/Test-stencils

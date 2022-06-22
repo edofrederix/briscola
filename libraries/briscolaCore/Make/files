@@ -1,0 +1,25 @@
+arguments/arguments.C
+
+primitives/hexScalar/hexScalar.C
+primitives/hexVector/hexVector.C
+primitives/symmStencil/symmStencil.C
+primitives/diagStencil/diagStencil.C
+primitives/stencil/stencil.C
+
+blocks/labelBlock/labelBlock.C
+blocks/scalarBlock/scalarBlock.C
+blocks/hexScalarBlock/hexScalarBlock.C
+blocks/vectorBlock/vectorBlock.C
+blocks/hexVectorBlock/hexVectorBlock.C
+blocks/labelVectorBlock/labelVectorBlock.C
+blocks/tensorBlock/tensorBlock.C
+blocks/sphericalTensorBlock/sphericalTensorBlock.C
+blocks/symmTensorBlock/symmTensorBlock.C
+blocks/diagTensorBlock/diagTensorBlock.C
+blocks/symmStencilBlock/symmStencilBlock.C
+blocks/diagStencilBlock/diagStencilBlock.C
+blocks/stencilBlock/stencilBlock.C
+
+functionObjects/briscolaFunctionObject/briscolaFunctionObject.C
+
+LIB = $(FOAM_USER_LIBBIN)/libbriscolaCore

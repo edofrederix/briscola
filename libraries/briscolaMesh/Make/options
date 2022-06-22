@@ -1,0 +1,9 @@
+EXE_INC = \
+    -I./lnInclude \
+    -I../briscolaCore/lnInclude \
+    -I$(LIB_SRC)/OpenFOAM/lnInclude
+
+LIB_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lOpenFOAM \
+    -lbriscolaCore

@@ -1,0 +1,17 @@
+EXE_INC = \
+    -I./lnInclude \
+    -I../briscolaCore/lnInclude \
+    -I../briscolaMesh/lnInclude \
+    -I$(LIB_SRC)/OpenFOAM/lnInclude \
+    -I$(VTK_INCLUDE) \
+    -I$(VTK_INCLUDE)/vtkkwiml \
+    -Wno-old-style-cast
+
+LIB_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -L$(VTK_LIBS) \
+    -lbriscolaCore \
+    -lbriscolaMesh \
+    -lOpenFOAM \
+    -lvtkCommonCore-$(VTK_VERSION) \
+    -lvtkIOXML-$(VTK_VERSION)

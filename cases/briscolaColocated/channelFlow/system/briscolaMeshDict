@@ -1,0 +1,125 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      briscolaMeshDict;
+}
+
+vertices
+(
+    (0         -1 0)
+    (12.566371 -1 0)
+    (0          0 0)
+    (12.566371  0 0)
+    (0          1 0)
+    (12.566371  1 0)
+
+    (0         -1 6.2831853)
+    (12.566371 -1 6.2831853)
+    (0          0 6.2831853)
+    (12.566371  0 6.2831853)
+    (0          1 6.2831853)
+    (12.566371  1 6.2831853)
+);
+
+bricks
+(
+    0
+    {
+        vertices    (((0 6)(2 8))((1 7)(3 9)));
+        N           (128 32 64);
+        grading     geometric (1 1 1);
+    }
+    1
+    {
+        vertices    (((2 8)(4 10))((3 9)(5 11)));
+        N           (128 32 64);
+        grading     geometric (1 1 1);
+    }
+);
+
+edges
+();
+
+patches
+(
+    inlet
+    {
+        type        periodic;
+        neighbor    outlet;
+
+        faces
+        (
+            (0 2 6 8)
+            (2 4 8 10)
+        );
+    }
+
+    outlet
+    {
+        type        periodic;
+        neighbor    inlet;
+
+        faces
+        (
+            (1 3 7 9)
+            (3 5 9 11)
+        );
+    }
+
+    aft
+    {
+        type        periodic;
+        neighbor    fore;
+
+        faces
+        (
+            (0 1 2 3)
+            (2 3 4 5)
+        );
+    }
+
+    fore
+    {
+        type        periodic;
+        neighbor    aft;
+
+        faces
+        (
+            (6 7 8 9)
+            (8 9 10 11)
+        );
+    }
+
+    top
+    {
+        type    patch;
+
+        faces
+        (
+            (4 5 10 11)
+        );
+    }
+
+    bottom
+    {
+        type    patch;
+
+        faces
+        (
+            (0 1 6 7)
+        );
+    }
+);
+
+decomposition
+{
+    type    manual;
+
+    brickDecompositions
+    (
+        (4 1 2)
+        (4 1 2)
+    );
+}

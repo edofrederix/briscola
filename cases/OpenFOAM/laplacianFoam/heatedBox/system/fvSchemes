@@ -1,0 +1,42 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSchemes;
+}
+
+ddtSchemes
+{
+//    default         steadyState;
+    default         Euler;
+}
+
+gradSchemes
+{
+    default         none;
+    grad(T)         Gauss linear;
+}
+
+divSchemes
+{
+    default         none;
+}
+
+laplacianSchemes
+{
+    default         none;
+    laplacian(lambda,T)
+                    Gauss midPoint orthogonal;
+}
+
+interpolationSchemes
+{
+    default         midPoint;
+}
+
+snGradSchemes
+{
+    default         uncorrected;
+}

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+for TEST in ./*/; do
+
+    echo $TEST
+
+    cd $TEST
+
+    ./clean.sh
+
+    cd ..
+
+done

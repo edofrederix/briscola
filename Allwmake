@@ -1,0 +1,11 @@
+#!/bin/bash
+
+wmake libso libraries/briscolaCore
+wmake libso libraries/briscolaMesh
+wmake libso libraries/briscolaFiniteVolume
+
+wmake applications/utilities/briscolaCheckMesh
+
+wmake applications/solvers/briscolaLaplacian
+wmake applications/solvers/briscolaColocated
+wmake applications/solvers/briscolaStaggered

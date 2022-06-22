@@ -1,0 +1,11 @@
+#!/bin/bash
+
+wclean libraries/briscolaCore
+wclean libraries/briscolaMesh
+wclean libraries/briscolaFiniteVolume
+
+wclean applications/utilities/briscolaCheckMesh
+
+wclean applications/solvers/briscolaLaplacian
+wclean applications/solvers/briscolaColocated
+wclean applications/solvers/briscolaStaggered
