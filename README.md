@@ -2,11 +2,11 @@
 
 ## About
 
-Briscola is a BRIck-structured Staggered and COLlocAted code aimed at massively
+Briscola is a BRIck-structured Staggered and COLlocAted CFD code, aimed at
 parallel high performance and high fidelity PDE simulation in relatively simple
 but real-world geometries. The goal of Briscola is to be lean, efficient but
-generic, in order to allow for high fidelity (e.g., LES or DNS) simulation of
-realistic problems, within reasonable parallel computational effort.
+generic, to allow for high fidelity (e.g., LES or DNS) simulation of realistic
+problems, within reasonable parallel computational effort.
 
 Key to Briscola is a 'brick-structured' approach, which allows for the use of
 fast and efficient geometric multigrid solvers. Parallel domain decomposition is
@@ -14,7 +14,7 @@ designed in such a way that the geometric multigrid solvers remain efficient
 while keeping parallel communication at a minimum. Briscola uses OpenFOAM for
 primitive data types, simple IO, parallel communication and compilation. Note
 that from OpenFOAM, Briscola requires only the libOpenFOAM, libPstream and
-libOSspecific header files and libraries to be available.
+libOSspecific header files and libraries.
 
 ## Developers
 
@@ -49,7 +49,7 @@ Frederix](mailto:edofrederix@gmail.com).
 
 ## Disclaimer
 
-LogMoM is provided by the copyright holders and contributors "as-is" and any
+Briscola is provided by the copyright holders and contributors "as-is" and any
 express or implied warranties, including, but not limited to, the implied
 warranties of merchantability and fitness for a particular purpose are
 disclaimed. In no event shall the copyright owner or contributors be liable for
