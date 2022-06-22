@@ -1,0 +1,10 @@
+{
+    "files.trimTrailingWhitespace": true,
+    "rewrap.wrappingColumn": 80,
+    "files.associations": {
+        "*.C": "cpp",
+        "*.H": "cpp"
+    },
+    "editor.detectIndentation": false,
+    "editor.tabSize": 4
+}
