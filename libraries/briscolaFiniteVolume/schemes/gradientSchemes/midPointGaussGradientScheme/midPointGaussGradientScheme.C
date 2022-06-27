@@ -51,7 +51,7 @@ midPointGaussGradientScheme<Type,MeshType>::grad
     forAll(field, l)
     forAll(field[l], d)
     {
-        const meshDirection<hexVector,MeshType>& fan =
+        const meshDirection<faceVector,MeshType>& fan =
             field.fvMsh().template
             metrics<MeshType>().faceAreaNormals()[l][d];
 
@@ -105,7 +105,7 @@ midPointGaussGradientScheme<Type,MeshType>::stagGrad
     {
         const meshDirection<Type,colocated>& f = field[l][0];
 
-        const meshDirection<hexScalar,colocated>& fd =
+        const meshDirection<faceScalar,colocated>& fd =
             field.fvMsh().template
             metrics<colocated>().faceDeltas()[l][0];
 

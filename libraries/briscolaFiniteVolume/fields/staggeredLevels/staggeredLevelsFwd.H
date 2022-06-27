@@ -5,14 +5,13 @@
 
 #include "label.H"
 #include "scalar.H"
-#include "hexScalar.H"
+#include "faceScalar.H"
 #include "vector.H"
-#include "hexVector.H"
+#include "faceVector.H"
 #include "tensor.H"
 #include "sphericalTensor.H"
 #include "symmTensor.H"
 #include "diagTensor.H"
-#include "symmStencil.H"
 #include "diagStencil.H"
 #include "stencil.H"
 
@@ -32,14 +31,13 @@ class meshLevel;
 
 typedef meshLevel<label,staggered> staggeredLabelLevel;
 typedef meshLevel<scalar,staggered> staggeredScalarLevel;
-typedef meshLevel<hexScalar,staggered> staggeredHexScalarLevel;
+typedef meshLevel<faceScalar,staggered> staggeredFaceScalarLevel;
 typedef meshLevel<vector,staggered> staggeredVectorLevel;
-typedef meshLevel<hexVector,staggered> staggeredHexVectorLevel;
+typedef meshLevel<faceVector,staggered> staggeredFaceVectorLevel;
 typedef meshLevel<tensor,staggered> staggeredTensorLevel;
 typedef meshLevel<sphericalTensor,staggered> staggeredSphericalTensorLevel;
 typedef meshLevel<symmTensor,staggered> staggeredSymmTensorLevel;
 typedef meshLevel<diagTensor,staggered> staggeredDiagTensorLevel;
-typedef meshLevel<symmStencil,staggered> staggeredSymmStencilLevel;
 typedef meshLevel<diagStencil,staggered> staggeredDiagStencilLevel;
 typedef meshLevel<stencil,staggered> staggeredStencilLevel;
 

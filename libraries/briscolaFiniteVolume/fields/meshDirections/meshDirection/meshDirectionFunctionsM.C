@@ -513,7 +513,16 @@ operator Op                                                                     
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
-template<class Type, class Form, class Cmpt, direction nCmpt, class MeshType>   \
+/* VectorSpace */                                                               \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
 void OpFunc                                                                     \
 (                                                                               \
     meshDirection<typename product<Type, Form>::type,MeshType>& res,            \
@@ -524,7 +533,14 @@ void OpFunc                                                                     
     OpFunc(res.B(), D1.B(), vs);                                                \
 }                                                                               \
                                                                                 \
-template<class Type, class Form, class Cmpt, direction nCmpt, class MeshType>   \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
 tmp<meshDirection<typename product<Type, Form>::type,MeshType>>                 \
 operator Op                                                                     \
 (                                                                               \
@@ -546,7 +562,14 @@ operator Op                                                                     
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
-template<class Type, class Form, class Cmpt, direction nCmpt, class MeshType>   \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
 tmp<meshDirection<typename product<Type, Form>::type,MeshType>>                 \
 operator Op                                                                     \
 (                                                                               \
@@ -562,7 +585,14 @@ operator Op                                                                     
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
-template<class Form, class Cmpt, direction nCmpt, class Type, class MeshType>   \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
 void OpFunc                                                                     \
 (                                                                               \
     meshDirection<typename product<Form, Type>::type,MeshType>& res,            \
@@ -573,7 +603,14 @@ void OpFunc                                                                     
     OpFunc(res.B(), vs, D1.B());                                                \
 }                                                                               \
                                                                                 \
-template<class Form, class Cmpt, direction nCmpt, class Type, class MeshType>   \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
 tmp<meshDirection<typename product<Form, Type>::type,MeshType>>                 \
 operator Op                                                                     \
 (                                                                               \
@@ -595,11 +632,160 @@ operator Op                                                                     
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
-template<class Form, class Cmpt, direction nCmpt, class Type, class MeshType>   \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
 tmp<meshDirection<typename product<Form, Type>::type,MeshType>>                 \
 operator Op                                                                     \
 (                                                                               \
     const VectorSpace<Form,Cmpt,nCmpt>& vs,                                     \
+    const tmp<meshDirection<Type,MeshType>>& tD1                                \
+)                                                                               \
+{                                                                               \
+    typedef typename product<Form, Type>::type productType;                     \
+    tmp<meshDirection<productType,MeshType>> tRes =                             \
+        reuseDirTmp<productType,Type,MeshType>::New(tD1);                       \
+    OpFunc(tRes.ref(), static_cast<const Form&>(vs), tD1());                    \
+    tD1.clear();                                                                \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+/* CellSpace */                                                                 \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+void OpFunc                                                                     \
+(                                                                               \
+    meshDirection<typename product<Type, Form>::type,MeshType>& res,            \
+    const meshDirection<Type,MeshType>& D1,                                     \
+    const CellSpace<Form,Cmpt,nCmpt>& vs                                        \
+)                                                                               \
+{                                                                               \
+    OpFunc(res.B(), D1.B(), vs);                                                \
+}                                                                               \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+tmp<meshDirection<typename product<Type, Form>::type,MeshType>>                 \
+operator Op                                                                     \
+(                                                                               \
+    const meshDirection<Type,MeshType>& D1,                                     \
+    const CellSpace<Form,Cmpt,nCmpt>& vs                                        \
+)                                                                               \
+{                                                                               \
+    typedef typename product<Type, Form>::type productType;                     \
+    tmp<meshDirection<productType,MeshType>> tRes                               \
+    (                                                                           \
+        new meshDirection<productType,MeshType>                                 \
+        (                                                                       \
+            D1.fvMsh(),                                                         \
+            D1.levelNum(),                                                      \
+            D1.directionNum()                                                   \
+        )                                                                       \
+    );                                                                          \
+    OpFunc(tRes.ref(), D1, static_cast<const Form&>(vs));                       \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+tmp<meshDirection<typename product<Type, Form>::type,MeshType>>                 \
+operator Op                                                                     \
+(                                                                               \
+    const tmp<meshDirection<Type,MeshType>>& tD1,                               \
+    const CellSpace<Form,Cmpt,nCmpt>& vs                                        \
+)                                                                               \
+{                                                                               \
+    typedef typename product<Type, Form>::type productType;                     \
+    tmp<meshDirection<productType,MeshType>> tRes =                             \
+        reuseDirTmp<productType,Type,MeshType>::New(tD1);                       \
+    OpFunc(tRes.ref(), tD1(), static_cast<const Form&>(vs));                    \
+    tD1.clear();                                                                \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+void OpFunc                                                                     \
+(                                                                               \
+    meshDirection<typename product<Form, Type>::type,MeshType>& res,            \
+    const CellSpace<Form,Cmpt,nCmpt>& vs,                                       \
+    const meshDirection<Type,MeshType>& D1                                      \
+)                                                                               \
+{                                                                               \
+    OpFunc(res.B(), vs, D1.B());                                                \
+}                                                                               \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+tmp<meshDirection<typename product<Form, Type>::type,MeshType>>                 \
+operator Op                                                                     \
+(                                                                               \
+    const CellSpace<Form,Cmpt,nCmpt>& vs,                                       \
+    const meshDirection<Type,MeshType>& D1                                      \
+)                                                                               \
+{                                                                               \
+    typedef typename product<Form, Type>::type productType;                     \
+    tmp<meshDirection<productType,MeshType>> tRes                               \
+    (                                                                           \
+        new meshDirection<productType,MeshType>                                 \
+        (                                                                       \
+            D1.fvMsh(),                                                         \
+            D1.levelNum(),                                                      \
+            D1.directionNum()                                                   \
+        )                                                                       \
+    );                                                                          \
+    OpFunc(tRes.ref(), static_cast<const Form&>(vs), D1);                       \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+tmp<meshDirection<typename product<Form, Type>::type,MeshType>>                 \
+operator Op                                                                     \
+(                                                                               \
+    const CellSpace<Form,Cmpt,nCmpt>& vs,                                       \
     const tmp<meshDirection<Type,MeshType>>& tD1                                \
 )                                                                               \
 {                                                                               \

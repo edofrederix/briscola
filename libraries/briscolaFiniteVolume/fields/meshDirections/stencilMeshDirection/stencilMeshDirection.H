@@ -6,7 +6,6 @@
 #include "meshDirection.H"
 #include "scalarMeshDirection.H"
 #include "vectorMeshDirection.H"
-#include "symmStencilMeshDirection.H"
 #include "diagStencilMeshDirection.H"
 
 #define TEMPLATE template<class MeshType>
@@ -20,9 +19,6 @@ namespace briscola
 
 namespace fv
 {
-
-BINARY_TYPE_OPERATOR(stencil, stencil, symmStencil, +, add)
-BINARY_TYPE_OPERATOR(stencil, symmStencil, stencil, -, subtract)
 
 BINARY_TYPE_OPERATOR(stencil, stencil, diagStencil, +, add)
 BINARY_TYPE_OPERATOR(stencil, diagStencil, stencil, -, subtract)

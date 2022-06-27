@@ -4,6 +4,9 @@
 #define TEMPLATE template<class Type>
 #include "blockFunctionsM.C"
 
+// Scalar return type must be deduced because of cell space
+#define SCALARPRODTYPE typename scalarProduct<Type,Type>::type
+
 namespace Foam
 {
 
@@ -11,7 +14,7 @@ namespace briscola
 {
 
 template<class Type>
-void mag(block<scalar>& res, const block<Type>& f)
+void mag(block<SCALARPRODTYPE>& res, const block<Type>& f)
 {
     forAllBlockLinear(f, i)
     {
@@ -20,17 +23,17 @@ void mag(block<scalar>& res, const block<Type>& f)
 }
 
 template<class Type>
-tmp<block<scalar>> mag(const block<Type>& f)
+tmp<block<SCALARPRODTYPE>> mag(const block<Type>& f)
 {
-    tmp<block<scalar>> tRes(new block<scalar>(f.shape()));
+    tmp<block<SCALARPRODTYPE>> tRes(new block<SCALARPRODTYPE>(f.shape()));
     mag(tRes.ref(), f);
     return tRes;
 }
 
 template<class Type>
-tmp<block<scalar>> mag(const tmp<block<Type>>& tf)
+tmp<block<SCALARPRODTYPE>> mag(const tmp<block<Type>>& tf)
 {
-    tmp<block<scalar>> tRes = reuseTmp<scalar, Type>::New(tf);
+    tmp<block<SCALARPRODTYPE>> tRes = reuseTmp<SCALARPRODTYPE, Type>::New(tf);
     mag(tRes.ref(), tf());
     tf.clear();
     return tRes;
@@ -247,11 +250,11 @@ Type average(const block<Type>& f)
 TMP_UNARY_FUNCTION(Type, average)
 
 template<class Type>
-scalar maxMagSqr(const block<Type>& f)
+SCALARPRODTYPE maxMagSqr(const block<Type>& f)
 {
     if (f.size())
     {
-        scalar Max(Foam::magSqr(f(0)));
+        SCALARPRODTYPE Max(Foam::magSqr(f(0)));
 
         forAllBlockLinear(f, i)
         {
@@ -269,14 +272,20 @@ scalar maxMagSqr(const block<Type>& f)
     }
 }
 
-TMP_UNARY_FUNCTION(scalar, maxMagSqr)
+template<class Type>
+SCALARPRODTYPE maxMagSqr(const tmp<block<Type>>& tf1)
+{
+    SCALARPRODTYPE res = maxMagSqr(tf1());
+    tf1.clear();
+    return res;
+}
 
 template<class Type>
-scalar minMagSqr(const block<Type>& f)
+SCALARPRODTYPE minMagSqr(const block<Type>& f)
 {
     if (f.size())
     {
-        scalar Min(Foam::magSqr(f(0)));
+        SCALARPRODTYPE Min(Foam::magSqr(f(0)));
 
         forAllBlockLinear(f, i)
         {
@@ -290,18 +299,24 @@ scalar minMagSqr(const block<Type>& f)
     }
     else
     {
-        return pTraits<scalar>::rootMax;
+        return pTraits<SCALARPRODTYPE>::rootMax;
     }
 }
 
-TMP_UNARY_FUNCTION(scalar, minMagSqr)
+template<class Type>
+SCALARPRODTYPE minMagSqr(const tmp<block<Type>>& tf1)
+{
+    SCALARPRODTYPE res = minMagSqr(tf1());
+    tf1.clear();
+    return res;
+}
 
 template<class Type>
-scalar sumProd(const block<Type>& f1, const block<Type>& f2)
+SCALARPRODTYPE sumProd(const block<Type>& f1, const block<Type>& f2)
 {
     if (f1.size() && (f1.size() == f2.size()))
     {
-        scalar SumProd = 0;
+        SCALARPRODTYPE SumProd = Zero;
 
         forAllBlockLinear(f1, i)
         {
@@ -312,24 +327,27 @@ scalar sumProd(const block<Type>& f1, const block<Type>& f2)
     }
     else
     {
-        return 0;
+        return Zero;
     }
 }
 
 template<class Type>
-scalar sumProd(const tmp<block<Type>>& tf1, const block<Type>& f2)
+SCALARPRODTYPE
+sumProd(const tmp<block<Type>>& tf1, const block<Type>& f2)
 {
     return sumProd(tf1(),f2);
 }
 
 template<class Type>
-scalar sumProd(const block<Type>& f1, const tmp<block<Type>>& tf2)
+SCALARPRODTYPE
+sumProd(const block<Type>& f1, const tmp<block<Type>>& tf2)
 {
     return sumProd(f1,tf2());
 }
 
 template<class Type>
-scalar sumProd(const tmp<block<Type>>& tf1, const tmp<block<Type>>& tf2)
+SCALARPRODTYPE
+sumProd(const tmp<block<Type>>& tf1, const tmp<block<Type>>& tf2)
 {
     return sumProd(tf1(),tf2());
 }
@@ -399,11 +417,11 @@ typename powProduct<Type,2>::type sumSqr(const tmp<block<Type>>& tf)
 }
 
 template<class Type>
-scalar sumMag(const block<Type>& f)
+SCALARPRODTYPE sumMag(const block<Type>& f)
 {
     if (f.size())
     {
-        scalar SumMag = 0;
+        SCALARPRODTYPE SumMag = Zero;
 
         forAllBlockLinear(f, i)
         {
@@ -414,12 +432,17 @@ scalar sumMag(const block<Type>& f)
     }
     else
     {
-        return 0;
+        return Zero;
     }
 }
 
-TMP_UNARY_FUNCTION(scalar, sumMag)
-
+template<class Type>
+SCALARPRODTYPE sumMag(const tmp<block<Type>>& tf1)
+{
+    SCALARPRODTYPE res = sumMag(tf1());
+    tf1.clear();
+    return res;
+}
 
 template<class Type>
 Type sumCmptMag(const block<Type>& f)
@@ -471,9 +494,9 @@ ReturnType gFunc                                                                
 G_UNARY_FUNCTION(Type, gMax, max, max)
 G_UNARY_FUNCTION(Type, gMin, min, min)
 G_UNARY_FUNCTION(Type, gSum, sum, sum)
-G_UNARY_FUNCTION(scalar, gMaxMagSqr, maxMagSqr, maxMagSqr)
-G_UNARY_FUNCTION(scalar, gMinMagSqr, minMagSqr, minMagSqr)
-G_UNARY_FUNCTION(scalar, gSumMag, sumMag, sum)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMaxMagSqr, maxMagSqr, maxMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMinMagSqr, minMagSqr, minMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gSumMag, sumMag, sum)
 G_UNARY_FUNCTION(Type, gSumCmptMag, sumCmptMag, sum)
 
 #undef G_UNARY_FUNCTION
@@ -539,30 +562,69 @@ typename powProduct<Type,2>::type gSumSqr
 
 #undef TMP_UNARY_FUNCTION
 
+// template<Type>
+//
+//     block<arg1> = arg4(block<arg2>, block<arg3>)
+
 BINARY_FUNCTION(Type, Type, Type, max)
 BINARY_FUNCTION(Type, Type, Type, min)
 BINARY_FUNCTION(Type, Type, Type, cmptMultiply)
 BINARY_FUNCTION(Type, Type, Type, cmptDivide)
+
+// template<Type>
+//
+//     block<arg1> = arg4(arg2, block<arg3>)
+//     block<arg1> = arg4(block<arg2>, arg3)
 
 BINARY_TYPE_FUNCTION(Type, Type, Type, max)
 BINARY_TYPE_FUNCTION(Type, Type, Type, min)
 BINARY_TYPE_FUNCTION(Type, Type, Type, cmptMultiply)
 BINARY_TYPE_FUNCTION(Type, Type, Type, cmptDivide)
 
+// template<Type>
+//
+//     block<arg1> = arg3 block<arg2>
+
 UNARY_OPERATOR(Type, Type, -, negate)
+
+// template<Type>
+//
+//     block<arg1> = block<arg2> arg4 block<arg3>
 
 BINARY_OPERATOR(Type, Type, scalar, *, multiply)
 BINARY_OPERATOR(Type, scalar, Type, *, multiply)
 BINARY_OPERATOR(Type, Type, scalar, /, divide)
 
-BINARY_TYPE_OPERATOR_SF(Type, scalar, Type, *, multiply)
-BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)
+// template<Type>
+//
+//     block<arg1> = arg2 arg4 block<arg3>
 
+BINARY_TYPE_OPERATOR_SF(Type, scalar, Type, *, multiply)
+
+// template<Type>
+//
+//     block<arg1> = block<arg2> arg4 arg3
+
+BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)
 BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, /, divide)
+
+// template<Type1, Type2>, VS = VectorSpace, CS = CellSpace
+//
+//     block<arg1<Type1,Type2>> = block<Type1> arg2 block<Type2>
+//     block<arg1<Type1,Type2>> = VS<Type1> arg2 block<Type2>
+//     block<arg1<Type1,Type2>> = block<Type1> arg2 VS<Type2>
+//     block<arg1<Type1,Type2>> = CS<Type1> arg2 block<Type2>
+//     block<arg1<Type1,Type2>> = block<Type1> arg2 CS<Type2>
+//
+// Note: this does not define
+//
+//     block<arg1<Type1,Type2>> = Type1 arg2 block<Type2>
+//     block<arg1<Type1,Type2>> = block<Type1> arg2 Type2
+//
+// because this generates unresolvable overloads.
 
 PRODUCT_OPERATOR(typeOfSum, +, add)
 PRODUCT_OPERATOR(typeOfSum, -, subtract)
-
 PRODUCT_OPERATOR(outerProduct, *, outer)
 PRODUCT_OPERATOR(crossProduct, ^, cross)
 PRODUCT_OPERATOR(innerProduct, &, dot)
@@ -573,5 +635,7 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 }
 
 }
+
+#undef SCALARPRODTYPE
 
 #include "undefBlockFunctionsM.H"

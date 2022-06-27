@@ -16,13 +16,6 @@ namespace fv
 template<class SType, class Type, class MeshType>
 class solver;
 
-typedef solver<symmStencil,scalar,colocated> colocatedScalarSymmSolver;
-typedef solver<symmStencil,scalar,staggered> staggeredScalarSymmSolver;
-
-typedef solver<symmStencil,vector,colocated> colocatedVectorSymmSolver;
-typedef solver<symmStencil,vector,staggered> staggeredVectorSymmSolver;
-
-
 typedef solver<diagStencil,scalar,colocated> colocatedScalarDiagSolver;
 typedef solver<diagStencil,scalar,staggered> staggeredScalarDiagSolver;
 

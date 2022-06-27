@@ -579,6 +579,8 @@ operator Op                                                                     
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
+/* VectorSpace */                                                               \
+                                                                                \
 template                                                                        \
 <                                                                               \
     class Type,                                                                 \
@@ -712,6 +714,156 @@ tmp<meshField<typename product<Form,Type>::type,MeshType>>                      
 operator Op                                                                     \
 (                                                                               \
     const VectorSpace<Form,Cmpt,nCmpt>& v1,                                     \
+    const tmp<meshField<Type,MeshType>>& tf2                                    \
+)                                                                               \
+{                                                                               \
+    typedef typename product<Form, Type>::type productType;                     \
+    tmp<meshField<productType,MeshType>> tRes =                                 \
+        reuseFieTmp<productType,Type,MeshType>::New                             \
+        (                                                                       \
+            tf2,                                                                \
+            "("+Foam::name(v1)+#Op+tf2->name()+")"                              \
+        );                                                                      \
+    OpFunc(tRes.ref(), v1, tf2);                                                \
+    tf2.clear();                                                                \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+/* CellSpace */                                                                 \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+void OpFunc                                                                     \
+(                                                                               \
+    meshField<typename product<Type, Form>::type,MeshType>& res,                \
+    const meshField<Type,MeshType>& f1,                                         \
+    const CellSpace<Form,Cmpt,nCmpt>& v2                                        \
+)                                                                               \
+{                                                                               \
+    forAll(res, i)                                                              \
+        OpFunc(res[i], f1[i], v2);                                              \
+}                                                                               \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+tmp<meshField<typename product<Type, Form>::type,MeshType>>                     \
+operator Op                                                                     \
+(                                                                               \
+    const meshField<Type,MeshType>& f1,                                         \
+    const CellSpace<Form,Cmpt,nCmpt>& v2                                        \
+)                                                                               \
+{                                                                               \
+    typedef typename product<Type, Form>::type productType;                     \
+    tmp<meshField<productType,MeshType>> tRes                                   \
+    (                                                                           \
+        new meshField<productType,MeshType>                                     \
+        (                                                                       \
+            "("+f1.name()+#Op+Foam::name(v2)+")",                               \
+            f1.fvMsh()                                                          \
+        )                                                                       \
+    );                                                                          \
+    OpFunc(tRes.ref(), f1, v2);                                                 \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+tmp<meshField<typename product<Type, Form>::type,MeshType>>                     \
+operator Op                                                                     \
+(                                                                               \
+    const tmp<meshField<Type,MeshType>>& tf1,                                   \
+    const CellSpace<Form,Cmpt,nCmpt>& v2                                        \
+)                                                                               \
+{                                                                               \
+    typedef typename product<Type, Form>::type productType;                     \
+    tmp<meshField<productType,MeshType>> tRes =                                 \
+        reuseFieTmp<productType,Type,MeshType>::New                             \
+        (                                                                       \
+            tf1,                                                                \
+            "("+tf1->name()+#Op+Foam::name(v2)+")"                              \
+        );                                                                      \
+    OpFunc(tRes.ref(), tf1(), v2);                                              \
+    tf1.clear();                                                                \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+void OpFunc                                                                     \
+(                                                                               \
+    meshField<typename product<Form,Type>::type,MeshType>& res,                 \
+    const CellSpace<Form,Cmpt,nCmpt>& v1,                                       \
+    const meshField<Type,MeshType>& f2                                          \
+)                                                                               \
+{                                                                               \
+    forAll(res, i)                                                              \
+        OpFunc(res[i], v1, f2[i]);                                              \
+}                                                                               \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+tmp<meshField<typename product<Form,Type>::type,MeshType>>                      \
+operator Op                                                                     \
+(                                                                               \
+    const CellSpace<Form,Cmpt,nCmpt>& v1,                                       \
+    const meshField<Type,MeshType>& f2                                          \
+)                                                                               \
+{                                                                               \
+    typedef typename product<Form, Type>::type productType;                     \
+    tmp<meshField<productType,MeshType>> tRes                                   \
+    (                                                                           \
+        new meshField<productType,MeshType>                                     \
+        (                                                                       \
+            "("+Foam::name(v1)+#Op+f2.name()+")",                               \
+            f2.fvMsh()                                                          \
+        )                                                                       \
+    );                                                                          \
+    OpFunc(tRes.ref(), v1, f2);                                                 \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+tmp<meshField<typename product<Form,Type>::type,MeshType>>                      \
+operator Op                                                                     \
+(                                                                               \
+    const CellSpace<Form,Cmpt,nCmpt>& v1,                                       \
     const tmp<meshField<Type,MeshType>>& tf2                                    \
 )                                                                               \
 {                                                                               \

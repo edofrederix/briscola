@@ -3,7 +3,6 @@
 
 #include "scalarMeshField.H"
 #include "vectorMeshField.H"
-#include "symmStencilMeshField.H"
 #include "diagStencilMeshField.H"
 
 #define TEMPLATE template<class MeshType>

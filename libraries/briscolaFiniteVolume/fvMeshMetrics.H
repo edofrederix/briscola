@@ -22,16 +22,16 @@ class fvMeshMetrics
     const fvMesh& fvMsh_;
 
     // Face center field pointer
-    meshField<hexVector,MeshType> faceCenters_;
+    meshField<faceVector,MeshType> faceCenters_;
 
     // Face normal field pointer
-    meshField<hexVector,MeshType> faceNormals_;
+    meshField<faceVector,MeshType> faceNormals_;
 
     // Face area field pointer
-    meshField<hexScalar,MeshType> faceAreas_;
+    meshField<faceScalar,MeshType> faceAreas_;
 
     // Face normals with magnitude face area field pointer
-    meshField<hexVector,MeshType> faceAreaNormals_;
+    meshField<faceVector,MeshType> faceAreaNormals_;
 
     // Cell center field pointer
     meshField<vector,MeshType> cellCenters_;
@@ -41,7 +41,7 @@ class fvMeshMetrics
 
     // Face delta coefficients (inverse of the cell-to-cell distance across a
     // face)
-    meshField<hexScalar,MeshType> faceDeltas_;
+    meshField<faceScalar,MeshType> faceDeltas_;
 
     // Calculate face centers
     void calculateFaceCenters();
@@ -73,25 +73,25 @@ public:
     void operator=(const fvMeshMetrics&);
 
     // Const access to face centers
-    inline const meshField<hexVector,MeshType>& faceCenters() const
+    inline const meshField<faceVector,MeshType>& faceCenters() const
     {
         return faceCenters_;
     }
 
     // Const access to face normals
-    inline const meshField<hexVector,MeshType>& faceNormals() const
+    inline const meshField<faceVector,MeshType>& faceNormals() const
     {
         return faceNormals_;
     }
 
     // Const access to face areas
-    inline const meshField<hexScalar,MeshType>& faceAreas() const
+    inline const meshField<faceScalar,MeshType>& faceAreas() const
     {
         return faceAreas_;
     }
 
     // Const access to face areas
-    inline const meshField<hexVector,MeshType>& faceAreaNormals() const
+    inline const meshField<faceVector,MeshType>& faceAreaNormals() const
     {
         return faceAreaNormals_;
     }
@@ -109,7 +109,7 @@ public:
     }
 
     // Const access to face deltas
-    inline const meshField<hexScalar,MeshType>& faceDeltas() const
+    inline const meshField<faceScalar,MeshType>& faceDeltas() const
     {
         return faceDeltas_;
     }

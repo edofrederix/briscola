@@ -363,8 +363,13 @@ void testPrimitiveFunctions()
     (b1*2.0)/s1;
 
     b1+b2;
-
     b1-b2;
+
+    b1 + pTraits<Type>::one;
+    b1 - pTraits<Type>::one;
+
+    pTraits<Type>::one + b1;
+    pTraits<Type>::one - b1;
 }
 
 template<class Type>
@@ -619,62 +624,79 @@ int main(int argc, char *argv[])
 
     testConstructors<label>();
     testConstructors<scalar>();
-    testConstructors<hexScalar>();
+
     testConstructors<vector>();
-    testConstructors<hexVector>();
     testConstructors<tensor>();
     testConstructors<symmTensor>();
     testConstructors<sphericalTensor>();
     testConstructors<diagTensor>();
+
+    testConstructors<faceScalar>();
+    testConstructors<faceVector>();
+
     testConstructors<stencil>();
-    testConstructors<symmStencil>();
     testConstructors<diagStencil>();
+
 
     testIndexing<label>();
     testIndexing<scalar>();
-    testIndexing<hexScalar>();
+
     testIndexing<vector>();
-    testIndexing<hexVector>();
     testIndexing<tensor>();
     testIndexing<symmTensor>();
     testIndexing<sphericalTensor>();
     testIndexing<diagTensor>();
+
+    testIndexing<faceScalar>();
+    testIndexing<faceVector>();
+
     testIndexing<stencil>();
-    testIndexing<symmStencil>();
     testIndexing<diagStencil>();
+
 
     testTransformations<label>();
     testTransformations<scalar>();
-    testTransformations<hexScalar>();
+
     testTransformations<vector>();
-    testTransformations<hexVector>();
     testTransformations<tensor>();
     testTransformations<symmTensor>();
     testTransformations<sphericalTensor>();
     testTransformations<diagTensor>();
+
+    testTransformations<faceScalar>();
+    testTransformations<faceVector>();
+
     testTransformations<stencil>();
-    testTransformations<symmStencil>();
     testTransformations<diagStencil>();
+
 
     testMemberOperators<label>();
     testMemberOperators<scalar>();
-    testMemberOperators<hexScalar>();
+
     testMemberOperators<vector>();
-    testMemberOperators<hexVector>();
     testMemberOperators<tensor>();
     testMemberOperators<symmTensor>();
     testMemberOperators<sphericalTensor>();
     testMemberOperators<diagTensor>();
+
+    testMemberOperators<faceScalar>();
+    testMemberOperators<faceVector>();
+
     testMemberOperators<stencil>();
-    testMemberOperators<symmStencil>();
     testMemberOperators<diagStencil>();
 
+
     testPrimitiveFunctions<scalar>();
+
     testPrimitiveFunctions<vector>();
     testPrimitiveFunctions<tensor>();
     testPrimitiveFunctions<symmTensor>();
     testPrimitiveFunctions<sphericalTensor>();
     testPrimitiveFunctions<diagTensor>();
+
+    testPrimitiveFunctions<faceScalar>();
+    testPrimitiveFunctions<faceVector>();
+
 
     testVectorSpaceFunctions<vector>();
     testVectorSpaceFunctions<tensor>();
@@ -682,11 +704,10 @@ int main(int argc, char *argv[])
     testVectorSpaceFunctions<sphericalTensor>();
     testVectorSpaceFunctions<diagTensor>();
 
+
     testStencilFunctions<stencil>();
-    testStencilFunctions<symmStencil>();
     testStencilFunctions<diagStencil>();
 
-    // Type-specific functions
 
     testScalarFunctions();
     testVectorFunctions();

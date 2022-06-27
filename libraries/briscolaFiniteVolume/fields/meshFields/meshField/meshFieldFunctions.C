@@ -4,6 +4,8 @@
 #define TEMPLATE template<class Type, class MeshType>
 #include "meshFieldFunctionsM.C"
 
+#define SCALARPRODTYPE typename scalarProduct<Type,Type>::type
+
 namespace Foam
 {
 
@@ -16,7 +18,7 @@ namespace fv
 template<class Type, class MeshType>
 void mag
 (
-    meshField<scalar,MeshType>& res,
+    meshField<SCALARPRODTYPE,MeshType>& res,
     const meshField<Type,MeshType>& f
 )
 {
@@ -25,12 +27,12 @@ void mag
 }
 
 template<class Type, class MeshType>
-tmp<meshField<scalar,MeshType>>
+tmp<meshField<SCALARPRODTYPE,MeshType>>
 mag(const meshField<Type,MeshType>& f)
 {
-    tmp<meshField<scalar,MeshType>> tRes
+    tmp<meshField<SCALARPRODTYPE,MeshType>> tRes
     (
-        new meshField<scalar,MeshType>("mag("+f.name()+")", f.fvMsh())
+        new meshField<SCALARPRODTYPE,MeshType>("mag("+f.name()+")", f.fvMsh())
     );
 
     mag(tRes.ref(), f);
@@ -39,11 +41,11 @@ mag(const meshField<Type,MeshType>& f)
 }
 
 template<class Type, class MeshType>
-tmp<meshField<scalar,MeshType>>
+tmp<meshField<SCALARPRODTYPE,MeshType>>
 mag(const tmp<meshField<Type,MeshType>>& tf)
 {
-    tmp<meshField<scalar,MeshType>> tRes =
-        reuseFieTmp<scalar,Type,MeshType>::New(tf,"mag("+tf->name()+")");
+    tmp<meshField<SCALARPRODTYPE,MeshType>> tRes =
+        reuseFieTmp<SCALARPRODTYPE,Type,MeshType>::New(tf,"mag("+tf->name()+")");
 
     mag(tRes.ref(), tf());
 
@@ -287,39 +289,39 @@ average(const tmp<meshField<Type,MeshType>>& tf)
 }
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 maxMagSqr(const meshField<Type,MeshType>& f)
 {
     return maxMagSqr(f[0]);
 }
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 maxMagSqr(const tmp<meshField<Type,MeshType>>& tf)
 {
-    List<scalar> ret(maxMagSqr(tf()[0]));
+    List<SCALARPRODTYPE> ret(maxMagSqr(tf()[0]));
     tf.clear();
     return ret;
 }
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 minMagSqr(const meshField<Type,MeshType>& f)
 {
     return minMagSqr(f[0]);
 }
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 minMagSqr(const tmp<meshField<Type,MeshType>>& tf)
 {
-    List<scalar> ret(minMagSqr(tf()[0]));
+    List<SCALARPRODTYPE> ret(minMagSqr(tf()[0]));
     tf.clear();
     return ret;
 }
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 sumProd
 (
     const meshField<Type,MeshType>& f1,
@@ -330,40 +332,40 @@ sumProd
 }
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 sumProd
 (
     const tmp<meshField<Type,MeshType>>& tf1,
     const meshField<Type,MeshType>& f2
 )
 {
-    List<scalar> ret(sumProd(tf1()[0], f2[0]));
+    List<SCALARPRODTYPE> ret(sumProd(tf1()[0], f2[0]));
     tf1.clear();
     return ret;
 }
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 sumProd
 (
     const meshField<Type,MeshType>& f1,
     const tmp<meshField<Type,MeshType>>& tf2
 )
 {
-    List<scalar> ret(sumProd(f1[0], tf2()[0]));
+    List<SCALARPRODTYPE> ret(sumProd(f1[0], tf2()[0]));
     tf2.clear();
     return ret;
 }
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 sumProd
 (
     const tmp<meshField<Type,MeshType>>& tf1,
     const tmp<meshField<Type,MeshType>>& tf2
 )
 {
-    List<scalar> ret(sumProd(tf1()[0], tf2()[0]));
+    List<SCALARPRODTYPE> ret(sumProd(tf1()[0], tf2()[0]));
     tf1.clear();
     tf2.clear();
     return ret;
@@ -417,17 +419,17 @@ List<Type> sumCmptProd
 }
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 sumMag(const meshField<Type,MeshType>& f)
 {
     return sumMag(f[0]);
 }
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 sumMag(const tmp<meshField<Type,MeshType>>& tf)
 {
-    List<scalar> ret(sumMag(tf()[0]));
+    List<SCALARPRODTYPE> ret(sumMag(tf()[0]));
     tf.clear();
     return ret;
 }
@@ -470,9 +472,9 @@ G_UNARY_FUNCTION(Type, gMax)
 G_UNARY_FUNCTION(Type, gMin)
 G_UNARY_FUNCTION(Type, gSum)
 G_UNARY_FUNCTION(Type, gAverage)
-G_UNARY_FUNCTION(scalar, gMaxMagSqr)
-G_UNARY_FUNCTION(scalar, gMinMagSqr)
-G_UNARY_FUNCTION(scalar, gSumMag)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMaxMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMinMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gSumMag)
 G_UNARY_FUNCTION(Type, gSumCmptMag)
 
 #undef G_UNARY_FUNCTION
@@ -513,5 +515,7 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 }
 
 }
+
+#undef SCALARPRODTYPE
 
 #include "undefBlockFunctionsM.H"

@@ -2,6 +2,9 @@
 #include "meshLevelFunctionsM.H"
 #include "UPstream.H"
 
+// Scalar return type must be deduced because of cell space
+#define SCALARPRODTYPE typename scalarProduct<Type,Type>::type
+
 namespace Foam
 {
 
@@ -12,13 +15,13 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-void mag(meshLevel<scalar,MeshType>&, const meshLevel<Type,MeshType>&);
+void mag(meshLevel<SCALARPRODTYPE,MeshType>&, const meshLevel<Type,MeshType>&);
 
 template<class Type, class MeshType>
-tmp<meshLevel<scalar,MeshType>> mag(const meshLevel<Type,MeshType>&);
+tmp<meshLevel<SCALARPRODTYPE,MeshType>> mag(const meshLevel<Type,MeshType>&);
 
 template<class Type, class MeshType>
-tmp<meshLevel<scalar,MeshType>> mag(const tmp<meshLevel<Type,MeshType>>&);
+tmp<meshLevel<SCALARPRODTYPE,MeshType>> mag(const tmp<meshLevel<Type,MeshType>>&);
 
 template<class Type, class MeshType>
 void cmptMax
@@ -99,40 +102,40 @@ template<class Type, class MeshType>
 List<Type> average(const tmp<meshLevel<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-List<scalar> maxMagSqr(const meshLevel<Type,MeshType>&);
+List<SCALARPRODTYPE> maxMagSqr(const meshLevel<Type,MeshType>&);
 
 template<class Type, class MeshType>
-List<scalar> maxMagSqr(const tmp<meshLevel<Type,MeshType>>&);
+List<SCALARPRODTYPE> maxMagSqr(const tmp<meshLevel<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-List<scalar> minMagSqr(const meshLevel<Type,MeshType>&);
+List<SCALARPRODTYPE> minMagSqr(const meshLevel<Type,MeshType>&);
 
 template<class Type, class MeshType>
-List<scalar> minMagSqr(const tmp<meshLevel<Type,MeshType>>&);
+List<SCALARPRODTYPE> minMagSqr(const tmp<meshLevel<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-List<scalar> sumProd
+List<SCALARPRODTYPE> sumProd
 (
     const meshLevel<Type,MeshType>&,
     const meshLevel<Type,MeshType>&
 );
 
 template<class Type, class MeshType>
-List<scalar> sumProd
+List<SCALARPRODTYPE> sumProd
 (
     const tmp<meshLevel<Type,MeshType>>&,
     const meshLevel<Type,MeshType>&
 );
 
 template<class Type, class MeshType>
-List<scalar> sumProd
+List<SCALARPRODTYPE> sumProd
 (
     const meshLevel<Type,MeshType>&,
     const tmp<meshLevel<Type,MeshType>>&
 );
 
 template<class Type, class MeshType>
-List<scalar> sumProd
+List<SCALARPRODTYPE> sumProd
 (
     const tmp<meshLevel<Type,MeshType>>&,
     const tmp<meshLevel<Type,MeshType>>&
@@ -167,10 +170,10 @@ List<Type> sumCmptProd
 );
 
 template<class Type, class MeshType>
-List<scalar> sumMag(const meshLevel<Type,MeshType>&);
+List<SCALARPRODTYPE> sumMag(const meshLevel<Type,MeshType>&);
 
 template<class Type, class MeshType>
-List<scalar> sumMag(const tmp<meshLevel<Type,MeshType>>&);
+List<SCALARPRODTYPE> sumMag(const tmp<meshLevel<Type,MeshType>>&);
 
 template<class Type, class MeshType>
 List<Type> sumCmptMag(const meshLevel<Type,MeshType>&);
@@ -198,9 +201,9 @@ G_UNARY_FUNCTION(Type, gMax)
 G_UNARY_FUNCTION(Type, gMin)
 G_UNARY_FUNCTION(Type, gSum)
 G_UNARY_FUNCTION(Type, gAverage)
-G_UNARY_FUNCTION(scalar, gMaxMagSqr)
-G_UNARY_FUNCTION(scalar, gMinMagSqr)
-G_UNARY_FUNCTION(scalar, gSumMag)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMaxMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMinMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gSumMag)
 G_UNARY_FUNCTION(Type, gSumCmptMag)
 
 #undef G_UNARY_FUNCTION
@@ -222,8 +225,8 @@ BINARY_OPERATOR(Type, scalar, Type, *, multiply)
 BINARY_OPERATOR(Type, Type, scalar, /, divide)
 
 BINARY_TYPE_OPERATOR_SF(Type, scalar, Type, *, multiply)
-BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)
 
+BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)
 BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, /, divide)
 
 #define PRODUCT_OPERATOR(product, Op, OpFunc)                                          \
@@ -238,15 +241,27 @@ void OpFunc                                                                     
                                                                                        \
 template<class Type1, class Type2, class MeshType>                                     \
 tmp<meshLevel<typename product<Type1, Type2>::type,MeshType>>                          \
-operator Op(const meshLevel<Type1,MeshType>&, const meshLevel<Type2,MeshType>&);       \
+operator Op                                                                            \
+(                                                                                      \
+    const meshLevel<Type1,MeshType>&,                                                  \
+    const meshLevel<Type2,MeshType>&                                                   \
+);                                                                                     \
                                                                                        \
 template<class Type1, class Type2, class MeshType>                                     \
 tmp<meshLevel<typename product<Type1, Type2>::type,MeshType>>                          \
-operator Op(const meshLevel<Type1,MeshType>&, const tmp<meshLevel<Type2,MeshType>>&);  \
+operator Op                                                                            \
+(                                                                                      \
+    const meshLevel<Type1,MeshType>&,                                                  \
+    const tmp<meshLevel<Type2,MeshType>>&                                              \
+);                                                                                     \
                                                                                        \
 template<class Type1, class Type2, class MeshType>                                     \
 tmp<meshLevel<typename product<Type1, Type2>::type,MeshType>>                          \
-operator Op(const tmp<meshLevel<Type1,MeshType>>&, const meshLevel<Type2,MeshType>&);  \
+operator Op                                                                            \
+(                                                                                      \
+    const tmp<meshLevel<Type1,MeshType>>&,                                             \
+    const meshLevel<Type2,MeshType>&                                                   \
+);                                                                                     \
                                                                                        \
 template<class Type1, class Type2, class MeshType>                                     \
 tmp<meshLevel<typename product<Type1, Type2>::type,MeshType>>                          \
@@ -256,7 +271,16 @@ operator Op                                                                     
     const tmp<meshLevel<Type2,MeshType>>&                                              \
 );                                                                                     \
                                                                                        \
-template<class Type, class Form, class Cmpt, direction nCmpt, class MeshType>          \
+/* VectorSpace */                                                                      \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
 void OpFunc                                                                            \
 (                                                                                      \
     meshLevel<typename product<Type, Form>::type,MeshType>&,                           \
@@ -264,7 +288,14 @@ void OpFunc                                                                     
     const VectorSpace<Form,Cmpt,nCmpt>&                                                \
 );                                                                                     \
                                                                                        \
-template<class Type, class Form, class Cmpt, direction nCmpt, class MeshType>          \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
 tmp<meshLevel<typename product<Type, Form>::type,MeshType>>                            \
 operator Op                                                                            \
 (                                                                                      \
@@ -272,7 +303,14 @@ operator Op                                                                     
     const VectorSpace<Form,Cmpt,nCmpt>&                                                \
 );                                                                                     \
                                                                                        \
-template<class Type, class Form, class Cmpt, direction nCmpt, class MeshType>          \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
 tmp<meshLevel<typename product<Type, Form>::type,MeshType>>                            \
 operator Op                                                                            \
 (                                                                                      \
@@ -280,7 +318,14 @@ operator Op                                                                     
     const VectorSpace<Form,Cmpt,nCmpt>&                                                \
 );                                                                                     \
                                                                                        \
-template<class Form, class Cmpt, direction nCmpt, class Type, class MeshType>          \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
 void OpFunc                                                                            \
 (                                                                                      \
     meshLevel<typename product<Form, Type>::type,MeshType>&,                           \
@@ -288,7 +333,14 @@ void OpFunc                                                                     
     const meshLevel<Type,MeshType>&                                                    \
 );                                                                                     \
                                                                                        \
-template<class Form, class Cmpt, direction nCmpt, class Type, class MeshType>          \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
 tmp<meshLevel<typename product<Form, Type>::type,MeshType>>                            \
 operator Op                                                                            \
 (                                                                                      \
@@ -296,13 +348,114 @@ operator Op                                                                     
     const meshLevel<Type,MeshType>&                                                    \
 );                                                                                     \
                                                                                        \
-template<class Form, class Cmpt, direction nCmpt, class Type, class MeshType>          \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
 tmp<meshLevel<typename product<Form, Type>::type,MeshType>>                            \
 operator Op                                                                            \
 (                                                                                      \
     const VectorSpace<Form,Cmpt,nCmpt>&,                                               \
     const tmp<meshLevel<Type,MeshType>>&                                               \
 );                                                                                     \
+                                                                                       \
+/* CellSpace */                                                                        \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
+void OpFunc                                                                            \
+(                                                                                      \
+    meshLevel<typename product<Type, Form>::type,MeshType>&,                           \
+    const meshLevel<Type,MeshType>&,                                                   \
+    const CellSpace<Form,Cmpt,nCmpt>&                                                  \
+);                                                                                     \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
+tmp<meshLevel<typename product<Type, Form>::type,MeshType>>                            \
+operator Op                                                                            \
+(                                                                                      \
+    const meshLevel<Type,MeshType>&,                                                   \
+    const CellSpace<Form,Cmpt,nCmpt>&                                                  \
+);                                                                                     \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
+tmp<meshLevel<typename product<Type, Form>::type,MeshType>>                            \
+operator Op                                                                            \
+(                                                                                      \
+    const tmp<meshLevel<Type,MeshType>>&,                                              \
+    const CellSpace<Form,Cmpt,nCmpt>&                                                  \
+);                                                                                     \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
+void OpFunc                                                                            \
+(                                                                                      \
+    meshLevel<typename product<Form, Type>::type,MeshType>&,                           \
+    const CellSpace<Form,Cmpt,nCmpt>&,                                                 \
+    const meshLevel<Type,MeshType>&                                                    \
+);                                                                                     \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
+tmp<meshLevel<typename product<Form, Type>::type,MeshType>>                            \
+operator Op                                                                            \
+(                                                                                      \
+    const CellSpace<Form,Cmpt,nCmpt>&,                                                 \
+    const meshLevel<Type,MeshType>&                                                    \
+);                                                                                     \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
+tmp<meshLevel<typename product<Form, Type>::type,MeshType>>                            \
+operator Op                                                                            \
+(                                                                                      \
+    const CellSpace<Form,Cmpt,nCmpt>&,                                                 \
+    const tmp<meshLevel<Type,MeshType>>&                                               \
+);                                                                                     \
+                                                                                       \
+/* Lists */                                                                            \
                                                                                        \
 template<class Type, class Form, class MeshType>                                       \
 void OpFunc                                                                            \
@@ -368,11 +521,12 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 
 }
 
+#undef SCALARPRODTYPE
+
 #include "undefBlockFunctionsM.H"
 
 #include "scalarMeshLevel.H"
-#include "hexScalarMeshLevel.H"
-#include "hexVectorMeshLevel.H"
-#include "symmStencilMeshLevel.H"
+#include "faceScalarMeshLevel.H"
+#include "faceVectorMeshLevel.H"
 #include "diagStencilMeshLevel.H"
 #include "stencilMeshLevel.H"

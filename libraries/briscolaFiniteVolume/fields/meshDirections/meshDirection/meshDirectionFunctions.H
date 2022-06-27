@@ -2,6 +2,8 @@
 #include "meshDirectionFunctionsM.H"
 #include "UPstream.H"
 
+#define SCALARPRODTYPE typename scalarProduct<Type,Type>::type
+
 namespace Foam
 {
 
@@ -12,14 +14,14 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-void mag(meshDirection<scalar,MeshType>&, const meshDirection<Type,MeshType>&);
+void mag(meshDirection<SCALARPRODTYPE,MeshType>&, const meshDirection<Type,MeshType>&);
 
 template<class Type, class MeshType>
-tmp<meshDirection<scalar,MeshType>>
+tmp<meshDirection<SCALARPRODTYPE,MeshType>>
 mag(const meshDirection<Type,MeshType>&);
 
 template<class Type, class MeshType>
-tmp<meshDirection<scalar,MeshType>>
+tmp<meshDirection<SCALARPRODTYPE,MeshType>>
 mag(const tmp<meshDirection<Type,MeshType>>&);
 
 template<class Type, class MeshType>
@@ -104,40 +106,40 @@ template<class Type, class MeshType>
 Type average(const tmp<meshDirection<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-scalar maxMagSqr(const meshDirection<Type,MeshType>&);
+SCALARPRODTYPE maxMagSqr(const meshDirection<Type,MeshType>&);
 
 template<class Type, class MeshType>
-scalar maxMagSqr(const tmp<meshDirection<Type,MeshType>>&);
+SCALARPRODTYPE maxMagSqr(const tmp<meshDirection<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-scalar minMagSqr(const meshDirection<Type,MeshType>&);
+SCALARPRODTYPE minMagSqr(const meshDirection<Type,MeshType>&);
 
 template<class Type, class MeshType>
-scalar minMagSqr(const tmp<meshDirection<Type,MeshType>>&);
+SCALARPRODTYPE minMagSqr(const tmp<meshDirection<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-scalar sumProd
+SCALARPRODTYPE sumProd
 (
     const meshDirection<Type,MeshType>&,
     const meshDirection<Type,MeshType>&
 );
 
 template<class Type, class MeshType>
-scalar sumProd
+SCALARPRODTYPE sumProd
 (
     const tmp<meshDirection<Type,MeshType>>&,
     const meshDirection<Type,MeshType>&
 );
 
 template<class Type, class MeshType>
-scalar sumProd
+SCALARPRODTYPE sumProd
 (
     const meshDirection<Type,MeshType>&,
     const tmp<meshDirection<Type,MeshType>>&
 );
 
 template<class Type, class MeshType>
-scalar sumProd
+SCALARPRODTYPE sumProd
 (
     const tmp<meshDirection<Type,MeshType>>&,
     const tmp<meshDirection<Type,MeshType>>&
@@ -172,10 +174,10 @@ Type sumCmptProd
 );
 
 template<class Type, class MeshType>
-scalar sumMag(const meshDirection<Type,MeshType>&);
+SCALARPRODTYPE sumMag(const meshDirection<Type,MeshType>&);
 
 template<class Type, class MeshType>
-scalar sumMag(const tmp<meshDirection<Type,MeshType>>&);
+SCALARPRODTYPE sumMag(const tmp<meshDirection<Type,MeshType>>&);
 
 template<class Type, class MeshType>
 Type sumCmptMag(const meshDirection<Type,MeshType>&);
@@ -186,14 +188,14 @@ Type sumCmptMag(const tmp<meshDirection<Type,MeshType>>&);
 #define G_UNARY_FUNCTION(ReturnType, gFunc)                                     \
                                                                                 \
 template<class Type, class MeshType>                                            \
-ReturnType gFunc                                                          \
+ReturnType gFunc                                                                \
 (                                                                               \
     const meshDirection<Type,MeshType>&,                                        \
     const label comm = UPstream::worldComm                                      \
 );                                                                              \
                                                                                 \
 template<class Type, class MeshType>                                            \
-ReturnType gFunc                                                          \
+ReturnType gFunc                                                                \
 (                                                                               \
     const tmp<meshDirection<Type,MeshType>>&,                                   \
     const label comm = UPstream::worldComm                                      \
@@ -203,9 +205,9 @@ G_UNARY_FUNCTION(Type, gMax)
 G_UNARY_FUNCTION(Type, gMin)
 G_UNARY_FUNCTION(Type, gSum)
 G_UNARY_FUNCTION(Type, gAverage)
-G_UNARY_FUNCTION(scalar, gMaxMagSqr)
-G_UNARY_FUNCTION(scalar, gMinMagSqr)
-G_UNARY_FUNCTION(scalar, gSumMag)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMaxMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMinMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gSumMag)
 G_UNARY_FUNCTION(Type, gSumCmptMag)
 
 #undef G_UNARY_FUNCTION
@@ -227,8 +229,8 @@ BINARY_OPERATOR(Type, scalar, Type, *, multiply)
 BINARY_OPERATOR(Type, Type, scalar, /, divide)
 
 BINARY_TYPE_OPERATOR_SF(Type, scalar, Type, *, multiply)
-BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)
 
+BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)
 BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, /, divide)
 
 #define PRODUCT_OPERATOR(product, Op, OpFunc)                                          \
@@ -273,7 +275,16 @@ operator Op                                                                     
     const tmp<meshDirection<Type2,MeshType>>&                                          \
 );                                                                                     \
                                                                                        \
-template<class Type, class Form, class Cmpt, direction nCmpt, class MeshType>          \
+/* VectorSpace */                                                                      \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
 void OpFunc                                                                            \
 (                                                                                      \
     meshDirection<typename product<Type, Form>::type,MeshType>&,                       \
@@ -281,7 +292,14 @@ void OpFunc                                                                     
     const VectorSpace<Form,Cmpt,nCmpt>&                                                \
 );                                                                                     \
                                                                                        \
-template<class Type, class Form, class Cmpt, direction nCmpt, class MeshType>          \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
 tmp<meshDirection<typename product<Type, Form>::type,MeshType>>                        \
 operator Op                                                                            \
 (                                                                                      \
@@ -289,7 +307,14 @@ operator Op                                                                     
     const VectorSpace<Form,Cmpt,nCmpt>&                                                \
 );                                                                                     \
                                                                                        \
-template<class Type, class Form, class Cmpt, direction nCmpt, class MeshType>          \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
 tmp<meshDirection<typename product<Type, Form>::type,MeshType>>                        \
 operator Op                                                                            \
 (                                                                                      \
@@ -297,7 +322,14 @@ operator Op                                                                     
     const VectorSpace<Form,Cmpt,nCmpt>&                                                \
 );                                                                                     \
                                                                                        \
-template<class Form, class Cmpt, direction nCmpt, class Type, class MeshType>          \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
 void OpFunc                                                                            \
 (                                                                                      \
     meshDirection<typename product<Form, Type>::type,MeshType>&,                       \
@@ -305,7 +337,14 @@ void OpFunc                                                                     
     const meshDirection<Type,MeshType>&                                                \
 );                                                                                     \
                                                                                        \
-template<class Form, class Cmpt, direction nCmpt, class Type, class MeshType>          \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
 tmp<meshDirection<typename product<Form, Type>::type,MeshType>>                        \
 operator Op                                                                            \
 (                                                                                      \
@@ -313,18 +352,115 @@ operator Op                                                                     
     const meshDirection<Type,MeshType>&                                                \
 );                                                                                     \
                                                                                        \
-template<class Form, class Cmpt, direction nCmpt, class Type, class MeshType>          \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
 tmp<meshDirection<typename product<Form, Type>::type,MeshType>>                        \
 operator Op                                                                            \
 (                                                                                      \
     const VectorSpace<Form,Cmpt,nCmpt>&,                                               \
     const tmp<meshDirection<Type,MeshType>>&                                           \
+);                                                                                     \
+                                                                                       \
+/* CellSpace */                                                                        \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
+void OpFunc                                                                            \
+(                                                                                      \
+    meshDirection<typename product<Type, Form>::type,MeshType>&,                       \
+    const meshDirection<Type,MeshType>&,                                               \
+    const CellSpace<Form,Cmpt,nCmpt>&                                                  \
+);                                                                                     \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
+tmp<meshDirection<typename product<Type, Form>::type,MeshType>>                        \
+operator Op                                                                            \
+(                                                                                      \
+    const meshDirection<Type,MeshType>&,                                               \
+    const CellSpace<Form,Cmpt,nCmpt>&                                                  \
+);                                                                                     \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
+tmp<meshDirection<typename product<Type, Form>::type,MeshType>>                        \
+operator Op                                                                            \
+(                                                                                      \
+    const tmp<meshDirection<Type,MeshType>>&,                                          \
+    const CellSpace<Form,Cmpt,nCmpt>&                                                  \
+);                                                                                     \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
+void OpFunc                                                                            \
+(                                                                                      \
+    meshDirection<typename product<Form, Type>::type,MeshType>&,                       \
+    const CellSpace<Form,Cmpt,nCmpt>&,                                                 \
+    const meshDirection<Type,MeshType>&                                                \
+);                                                                                     \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
+tmp<meshDirection<typename product<Form, Type>::type,MeshType>>                        \
+operator Op                                                                            \
+(                                                                                      \
+    const CellSpace<Form,Cmpt,nCmpt>&,                                                 \
+    const meshDirection<Type,MeshType>&                                                \
+);                                                                                     \
+                                                                                       \
+template                                                                               \
+<                                                                                      \
+    class Type,                                                                        \
+    class Form,                                                                        \
+    class Cmpt,                                                                        \
+    direction nCmpt,                                                                   \
+    class MeshType                                                                     \
+>                                                                                      \
+tmp<meshDirection<typename product<Form, Type>::type,MeshType>>                        \
+operator Op                                                                            \
+(                                                                                      \
+    const CellSpace<Form,Cmpt,nCmpt>&,                                                 \
+    const tmp<meshDirection<Type,MeshType>>&                                           \
 );
-
 
 PRODUCT_OPERATOR(typeOfSum, +, add)
 PRODUCT_OPERATOR(typeOfSum, -, subtract)
-
 PRODUCT_OPERATOR(outerProduct, *, outer)
 PRODUCT_OPERATOR(crossProduct, ^, cross)
 PRODUCT_OPERATOR(innerProduct, &, dot)
@@ -338,11 +474,12 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 
 }
 
+#undef SCALARPRODTYPE
+
 #include "undefBlockFunctionsM.H"
 
 #include "scalarMeshDirection.H"
-#include "hexScalarMeshDirection.H"
-#include "hexVectorMeshDirection.H"
-#include "symmStencilMeshDirection.H"
+#include "faceScalarMeshDirection.H"
+#include "faceVectorMeshDirection.H"
 #include "diagStencilMeshDirection.H"
 #include "stencilMeshDirection.H"

@@ -4,7 +4,6 @@
 #include "staggered.H"
 
 #include "stencil.H"
-#include "symmStencil.H"
 #include "diagStencil.H"
 
 #include "meshField.H"
@@ -181,21 +180,21 @@ boundaryCondition<Type,MeshType>::NewParallel
 }
 
 template<class Type, class MeshType>
-const meshField<hexVector,MeshType>&
+const meshField<faceVector,MeshType>&
 boundaryCondition<Type,MeshType>::faceCenters() const
 {
     return fvMsh_.template metrics<MeshType>().faceCenters();
 }
 
 template<class Type, class MeshType>
-const meshField<hexVector,MeshType>&
+const meshField<faceVector,MeshType>&
 boundaryCondition<Type,MeshType>::faceNormals() const
 {
     return fvMsh_.template metrics<MeshType>().faceNormals();
 }
 
 template<class Type, class MeshType>
-const meshField<hexScalar,MeshType>&
+const meshField<faceScalar,MeshType>&
 boundaryCondition<Type,MeshType>::faceAreas() const
 {
     return fvMsh_.template metrics<MeshType>().faceAreas();
@@ -216,7 +215,7 @@ boundaryCondition<Type,MeshType>::cellCenters() const
 }
 
 template<class Type, class MeshType>
-const meshField<hexScalar,MeshType>&
+const meshField<faceScalar,MeshType>&
 boundaryCondition<Type,MeshType>::faceDeltas() const
 {
     return fvMsh_.template metrics<MeshType>().faceDeltas();
@@ -231,14 +230,14 @@ makeBoundaryCondition(label,staggered)
 makeBoundaryCondition(scalar,colocated)
 makeBoundaryCondition(scalar,staggered)
 
-makeBoundaryCondition(hexScalar,colocated)
-makeBoundaryCondition(hexScalar,staggered)
+makeBoundaryCondition(faceScalar,colocated)
+makeBoundaryCondition(faceScalar,staggered)
 
 makeBoundaryCondition(vector,colocated)
 makeBoundaryCondition(vector,staggered)
 
-makeBoundaryCondition(hexVector,colocated)
-makeBoundaryCondition(hexVector,staggered)
+makeBoundaryCondition(faceVector,colocated)
+makeBoundaryCondition(faceVector,staggered)
 
 makeBoundaryCondition(tensor,colocated)
 makeBoundaryCondition(tensor,staggered)
@@ -251,9 +250,6 @@ makeBoundaryCondition(symmTensor,staggered)
 
 makeBoundaryCondition(diagTensor,colocated)
 makeBoundaryCondition(diagTensor,staggered)
-
-makeBoundaryCondition(symmStencil,colocated)
-makeBoundaryCondition(symmStencil,staggered)
 
 makeBoundaryCondition(diagStencil,colocated)
 makeBoundaryCondition(diagStencil,staggered)

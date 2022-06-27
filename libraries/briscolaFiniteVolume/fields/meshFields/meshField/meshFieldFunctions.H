@@ -3,6 +3,8 @@
 #include "meshFieldFunctionsM.H"
 #include "UPstream.H"
 
+#define SCALARPRODTYPE typename scalarProduct<Type,Type>::type
+
 namespace Foam
 {
 
@@ -15,16 +17,16 @@ namespace fv
 template<class Type, class MeshType>
 void mag
 (
-    meshField<scalar,MeshType>&,
+    meshField<SCALARPRODTYPE,MeshType>&,
     const meshField<Type,MeshType>&
 );
 
 template<class Type, class MeshType>
-tmp<meshField<scalar,MeshType>>
+tmp<meshField<SCALARPRODTYPE,MeshType>>
 mag(const meshField<Type,MeshType>&);
 
 template<class Type, class MeshType>
-tmp<meshField<scalar,MeshType>>
+tmp<meshField<SCALARPRODTYPE,MeshType>>
 mag(const tmp<meshField<Type,MeshType>>&);
 
 
@@ -145,44 +147,44 @@ List<Type>
 average(const tmp<meshField<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 maxMagSqr(const meshField<Type,MeshType>&);
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 maxMagSqr(const tmp<meshField<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 minMagSqr(const meshField<Type,MeshType>&);
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 minMagSqr(const tmp<meshField<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-List<scalar> sumProd
+List<SCALARPRODTYPE> sumProd
 (
     const meshField<Type,MeshType>&,
     const meshField<Type,MeshType>&
 );
 
 template<class Type, class MeshType>
-List<scalar> sumProd
+List<SCALARPRODTYPE> sumProd
 (
     const tmp<meshField<Type,MeshType>>&,
     const meshField<Type,MeshType>&
 );
 
 template<class Type, class MeshType>
-List<scalar> sumProd
+List<SCALARPRODTYPE> sumProd
 (
     const meshField<Type,MeshType>&,
     const tmp<meshField<Type,MeshType>>&
 );
 
 template<class Type, class MeshType>
-List<scalar> sumProd
+List<SCALARPRODTYPE> sumProd
 (
     const tmp<meshField<Type,MeshType>>&,
     const tmp<meshField<Type,MeshType>>&
@@ -217,11 +219,11 @@ List<Type> sumCmptProd
 );
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 sumMag(const meshField<Type,MeshType>&);
 
 template<class Type, class MeshType>
-List<scalar>
+List<SCALARPRODTYPE>
 sumMag(const tmp<meshField<Type,MeshType>>&);
 
 
@@ -253,9 +255,9 @@ G_UNARY_FUNCTION(Type, gMax)
 G_UNARY_FUNCTION(Type, gMin)
 G_UNARY_FUNCTION(Type, gSum)
 G_UNARY_FUNCTION(Type, gAverage)
-G_UNARY_FUNCTION(scalar, gMaxMagSqr)
-G_UNARY_FUNCTION(scalar, gMinMagSqr)
-G_UNARY_FUNCTION(scalar, gSumMag)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMaxMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMinMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gSumMag)
 G_UNARY_FUNCTION(Type, gSumCmptMag)
 
 #undef G_UNARY_FUNCTION
@@ -277,8 +279,8 @@ BINARY_OPERATOR(Type, scalar, Type, *, multiply)
 BINARY_OPERATOR(Type, Type, scalar, /, divide)
 
 BINARY_TYPE_OPERATOR_SF(Type, scalar, Type, *, multiply)
-BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)
 
+BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)
 BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, /, divide)
 
 #define PRODUCT_OPERATOR(product, Op, OpFunc)                                   \
@@ -322,6 +324,8 @@ operator Op                                                                     
     const tmp<meshField<Type1,MeshType>>&,                                      \
     const tmp<meshField<Type2,MeshType>>&                                       \
 );                                                                              \
+                                                                                \
+/* VectorSpace */                                                               \
                                                                                 \
 template                                                                        \
 <                                                                               \
@@ -411,6 +415,98 @@ operator Op                                                                     
 (                                                                               \
     const VectorSpace<Form,Cmpt,nCmpt>&,                                        \
     const tmp<meshField<Type,MeshType>>&                                        \
+);                                                                              \
+                                                                                \
+/* CellSpace */                                                                 \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+void OpFunc                                                                     \
+(                                                                               \
+    meshField<typename product<Type, Form>::type,MeshType>&,                    \
+    const meshField<Type,MeshType>&,                                            \
+    const CellSpace<Form,Cmpt,nCmpt>&                                           \
+);                                                                              \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+tmp<meshField<typename product<Type, Form>::type,MeshType>>                     \
+operator Op                                                                     \
+(                                                                               \
+    const meshField<Type,MeshType>&,                                            \
+    const CellSpace<Form,Cmpt,nCmpt>&                                           \
+);                                                                              \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+tmp<meshField<typename product<Type, Form>::type,MeshType>>                     \
+operator Op                                                                     \
+(                                                                               \
+    const tmp<meshField<Type,MeshType>>&,                                       \
+    const CellSpace<Form,Cmpt,nCmpt>&                                           \
+);                                                                              \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+void OpFunc                                                                     \
+(                                                                               \
+    meshField<typename product<Form,Type>::type,MeshType>&,                     \
+    const CellSpace<Form,Cmpt,nCmpt>&,                                          \
+    const meshField<Type,MeshType>&                                             \
+);                                                                              \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+tmp<meshField<typename product<Form,Type>::type,MeshType>>                      \
+operator Op                                                                     \
+(                                                                               \
+    const CellSpace<Form,Cmpt,nCmpt>&,                                          \
+    const meshField<Type,MeshType>&                                             \
+);                                                                              \
+                                                                                \
+template                                                                        \
+<                                                                               \
+    class Type,                                                                 \
+    class Form,                                                                 \
+    class Cmpt,                                                                 \
+    direction nCmpt,                                                            \
+    class MeshType                                                              \
+>                                                                               \
+tmp<meshField<typename product<Form,Type>::type,MeshType>>                      \
+operator Op                                                                     \
+(                                                                               \
+    const CellSpace<Form,Cmpt,nCmpt>&,                                          \
+    const tmp<meshField<Type,MeshType>>&                                        \
 );
 
 PRODUCT_OPERATOR(typeOfSum, +, add)
@@ -428,5 +524,7 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 }
 
 }
+
+#undef SCALARPRODTYPE
 
 #include "undefBlockFunctionsM.H"

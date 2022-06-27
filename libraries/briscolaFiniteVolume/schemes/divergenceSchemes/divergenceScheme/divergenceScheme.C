@@ -65,7 +65,7 @@ autoPtr<divergenceScheme<Type,MeshType>> divergenceScheme<Type,MeshType>::New
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> explicitDiv
 (
-    const meshField<Hex<Type>,MeshType>& phi
+    const meshField<FaceSpace<Type>,MeshType>& phi
 )
 {
     tmp<meshField<Type,MeshType>> tDiv
@@ -83,7 +83,7 @@ tmp<meshField<Type,MeshType>> explicitDiv
     forAll(phi[l], d)
     {
         meshDirection<Type,MeshType>& D = Div[l][d];
-        const meshDirection<Hex<Type>,MeshType>& p = phi[l][d];
+        const meshDirection<FaceSpace<Type>,MeshType>& p = phi[l][d];
 
         const meshDirection<scalar,MeshType>& cv =
             phi.fvMsh().template
@@ -129,7 +129,7 @@ tmp<meshField<Type,colocated>> explicitColoDiv
             field.fvMsh().template
             metrics<colocated>().cellVolumes()[l][0];
 
-        const meshDirection<hexScalar,colocated>& fa =
+        const meshDirection<faceScalar,colocated>& fa =
             field.fvMsh().template
             metrics<colocated>().faceAreas()[l][0];
 

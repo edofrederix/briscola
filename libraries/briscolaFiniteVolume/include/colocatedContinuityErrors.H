@@ -4,7 +4,7 @@
     const meshDirection<scalar,colocated>& cv =
         fvMsh.metrics<colocated>().cellVolumes()[0][0];
 
-    const meshDirection<hexScalar,colocated>& phid = phi[0][0];
+    const meshDirection<faceScalar,colocated>& phid = phi[0][0];
 
     forAllBlock(contError, i, j, k)
     {

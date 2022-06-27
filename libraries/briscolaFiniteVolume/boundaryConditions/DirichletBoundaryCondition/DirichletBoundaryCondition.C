@@ -124,14 +124,14 @@ makeBoundaryConditionType(Dirichlet,label,staggered)
 makeBoundaryConditionType(Dirichlet,scalar,colocated)
 makeBoundaryConditionType(Dirichlet,scalar,staggered)
 
-makeBoundaryConditionType(Dirichlet,hexScalar,colocated)
-makeBoundaryConditionType(Dirichlet,hexScalar,staggered)
+makeBoundaryConditionType(Dirichlet,faceScalar,colocated)
+makeBoundaryConditionType(Dirichlet,faceScalar,staggered)
 
 makeBoundaryConditionType(Dirichlet,vector,colocated)
 makeBoundaryConditionType(Dirichlet,vector,staggered)
 
-makeBoundaryConditionType(Dirichlet,hexVector,colocated)
-makeBoundaryConditionType(Dirichlet,hexVector,staggered)
+makeBoundaryConditionType(Dirichlet,faceVector,colocated)
+makeBoundaryConditionType(Dirichlet,faceVector,staggered)
 
 makeBoundaryConditionType(Dirichlet,tensor,colocated)
 makeBoundaryConditionType(Dirichlet,tensor,staggered)
@@ -147,9 +147,6 @@ makeBoundaryConditionType(Dirichlet,diagTensor,staggered)
 
 makeBoundaryConditionType(Dirichlet,stencil,colocated)
 makeBoundaryConditionType(Dirichlet,stencil,staggered)
-
-makeBoundaryConditionType(Dirichlet,symmStencil,colocated)
-makeBoundaryConditionType(Dirichlet,symmStencil,staggered)
 
 makeBoundaryConditionType(Dirichlet,diagStencil,colocated)
 makeBoundaryConditionType(Dirichlet,diagStencil,staggered)

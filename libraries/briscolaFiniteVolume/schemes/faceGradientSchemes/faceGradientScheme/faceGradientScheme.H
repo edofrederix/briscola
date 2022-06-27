@@ -2,7 +2,7 @@
 #define faceGradientScheme_H
 
 #include "scheme.H"
-#include "Hex.H"
+#include "FaceSpace.H"
 #include "meshFields.H"
 
 namespace Foam
@@ -50,7 +50,7 @@ public:
     virtual ~faceGradientScheme();
 
     // Face-normal gradient of u
-    virtual tmp<meshField<Hex<Type>,MeshType>> faceGrad
+    virtual tmp<meshField<FaceSpace<Type>,MeshType>> faceGrad
     (
         const meshField<Type,MeshType>&
     ) = 0;

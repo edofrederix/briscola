@@ -50,7 +50,7 @@ midPointReconstructionScheme<Type>::reconstruct
 
     forAll(field, l)
     {
-        const meshDirection<hexVector,colocated>& fn =
+        const meshDirection<faceVector,colocated>& fn =
             field.fvMsh().template
             metrics<colocated>().faceNormals()[l][0];
 

@@ -43,7 +43,7 @@ p.correctBoundaryConditions();
 
 // Viscosity
 
-staggeredHexScalarField nu
+staggeredFaceScalarField nu
 (
     "nu",
     fvMsh,
@@ -88,6 +88,6 @@ autoPtr<solver<stencil,scalar,colocated>> pSolve
     )
 );
 
-staggeredHexScalarField phi("phi", fvMsh);
+staggeredFaceScalarField phi("phi", fvMsh);
 
 phi = Zero;

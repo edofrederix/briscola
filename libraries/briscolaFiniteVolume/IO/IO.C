@@ -106,13 +106,15 @@ void IO::writeData(const word timeName, const label l)
 
         writeFields<label,MeshType>(grid.GetPointer(), l, d);
         writeFields<scalar,MeshType>(grid.GetPointer(), l, d);
-        writeFields<hexScalar,MeshType>(grid.GetPointer(), l, d);
+
         writeFields<vector,MeshType>(grid.GetPointer(), l, d);
-        writeFields<hexVector,MeshType>(grid.GetPointer(), l, d);
         writeFields<tensor,MeshType>(grid.GetPointer(), l, d);
         writeFields<diagTensor,MeshType>(grid.GetPointer(), l, d);
         writeFields<sphericalTensor,MeshType>(grid.GetPointer(), l, d);
         writeFields<symmTensor,MeshType>(grid.GetPointer(), l, d);
+
+        writeFields<faceScalar,MeshType>(grid.GetPointer(), l, d);
+        writeFields<faceVector,MeshType>(grid.GetPointer(), l, d);
 
         // Write VTK data
 
@@ -142,13 +144,15 @@ void IO::readData(const word timeName, const label l)
 
         readFields<label,MeshType>(grid.GetPointer(),l,d);
         readFields<scalar,MeshType>(grid.GetPointer(),l,d);
-        readFields<hexScalar,MeshType>(grid.GetPointer(),l,d);
+
         readFields<vector,MeshType>(grid.GetPointer(),l,d);
-        readFields<hexVector,MeshType>(grid.GetPointer(),l,d);
         readFields<tensor,MeshType>(grid.GetPointer(),l,d);
         readFields<diagTensor,MeshType>(grid.GetPointer(),l,d);
         readFields<sphericalTensor,MeshType>(grid.GetPointer(),l,d);
         readFields<symmTensor,MeshType>(grid.GetPointer(),l,d);
+
+        readFields<faceScalar,MeshType>(grid.GetPointer(),l,d);
+        readFields<faceVector,MeshType>(grid.GetPointer(),l,d);
     }
 }
 
@@ -171,7 +175,7 @@ void IO::writeFields
 
         if (field.writeOpt() == IOobject::AUTO_WRITE)
         {
-            writeField(grid, field, l, d);
+            writeField(grid, field[l][d]);
         }
     }
 }
@@ -204,7 +208,7 @@ void IO::readFields
             )
         )
         {
-            readField(grid, field, l, d);
+            readField(grid, field[l][d]);
         }
     }
 }

@@ -1,5 +1,4 @@
 #include "stencil.H"
-#include "symmStencil.H"
 #include "diagStencil.H"
 
 #include "arguments.H"
@@ -141,6 +140,14 @@ int main(int argc, char *argv[])
     testStencilProducts<stencil,sphericalTensor,colocated>(fvMsh);
     testStencilProducts<stencil,diagTensor,colocated>(fvMsh);
 
+    testStencilProducts<diagStencil,label,colocated>(fvMsh);
+    testStencilProducts<diagStencil,scalar,colocated>(fvMsh);
+    testStencilProducts<diagStencil,vector,colocated>(fvMsh);
+    testStencilProducts<diagStencil,tensor,colocated>(fvMsh);
+    testStencilProducts<diagStencil,symmTensor,colocated>(fvMsh);
+    testStencilProducts<diagStencil,sphericalTensor,colocated>(fvMsh);
+    testStencilProducts<diagStencil,diagTensor,colocated>(fvMsh);
+
     // Staggered
 
     testStencilProducts<stencil,label,staggered>(fvMsh);
@@ -150,4 +157,12 @@ int main(int argc, char *argv[])
     testStencilProducts<stencil,symmTensor,staggered>(fvMsh);
     testStencilProducts<stencil,sphericalTensor,staggered>(fvMsh);
     testStencilProducts<stencil,diagTensor,staggered>(fvMsh);
+
+    testStencilProducts<diagStencil,label,staggered>(fvMsh);
+    testStencilProducts<diagStencil,scalar,staggered>(fvMsh);
+    testStencilProducts<diagStencil,vector,staggered>(fvMsh);
+    testStencilProducts<diagStencil,tensor,staggered>(fvMsh);
+    testStencilProducts<diagStencil,symmTensor,staggered>(fvMsh);
+    testStencilProducts<diagStencil,sphericalTensor,staggered>(fvMsh);
+    testStencilProducts<diagStencil,diagTensor,staggered>(fvMsh);
 }

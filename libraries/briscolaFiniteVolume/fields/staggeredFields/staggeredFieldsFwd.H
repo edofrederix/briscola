@@ -5,14 +5,13 @@
 
 #include "label.H"
 #include "scalar.H"
-#include "hexScalar.H"
+#include "faceScalar.H"
 #include "vector.H"
-#include "hexVector.H"
+#include "faceVector.H"
 #include "tensor.H"
 #include "sphericalTensor.H"
 #include "symmTensor.H"
 #include "diagTensor.H"
-#include "symmStencil.H"
 #include "diagStencil.H"
 #include "stencil.H"
 
@@ -32,14 +31,13 @@ class meshField;
 
 typedef meshField<label,staggered> staggeredLabelField;
 typedef meshField<scalar,staggered> staggeredScalarField;
-typedef meshField<hexScalar,staggered> staggeredHexScalarField;
+typedef meshField<faceScalar,staggered> staggeredFaceScalarField;
 typedef meshField<vector,staggered> staggeredVectorField;
-typedef meshField<hexVector,staggered> staggeredHexVectorField;
+typedef meshField<faceVector,staggered> staggeredFaceVectorField;
 typedef meshField<tensor,staggered> staggeredTensorField;
 typedef meshField<sphericalTensor,staggered> staggeredSphericalTensorField;
 typedef meshField<symmTensor,staggered> staggeredSymmTensorField;
 typedef meshField<diagTensor,staggered> staggeredDiagTensorField;
-typedef meshField<symmStencil,staggered> staggeredSymmStencilField;
 typedef meshField<diagStencil,staggered> staggeredDiagStencilField;
 typedef meshField<stencil,staggered> staggeredStencilField;
 

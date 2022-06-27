@@ -16,12 +16,6 @@ namespace fv
 template<class SType, class Type, class MeshType>
 class linearSystem;
 
-typedef linearSystem<symmStencil,scalar,colocated> colocatedScalarSymmSystem;
-typedef linearSystem<symmStencil,scalar,staggered> staggeredScalarSymmSystem;
-
-typedef linearSystem<symmStencil,vector,colocated> colocatedVectorSymmSystem;
-typedef linearSystem<symmStencil,vector,staggered> staggeredVectorSymmSystem;
-
 
 typedef linearSystem<diagStencil,scalar,colocated> colocatedScalarDiagSystem;
 typedef linearSystem<diagStencil,scalar,staggered> staggeredScalarDiagSystem;

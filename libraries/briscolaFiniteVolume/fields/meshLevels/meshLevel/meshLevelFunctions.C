@@ -4,6 +4,9 @@
 #define TEMPLATE template<class Type, class MeshType>
 #include "meshLevelFunctionsM.C"
 
+// Scalar return type must be deduced because of cell space
+#define SCALARPRODTYPE typename scalarProduct<Type,Type>::type
+
 namespace Foam
 {
 
@@ -14,26 +17,26 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-void mag(meshLevel<scalar,MeshType>& res, const meshLevel<Type,MeshType>& f)
+void mag(meshLevel<SCALARPRODTYPE,MeshType>& res, const meshLevel<Type,MeshType>& f)
 {
     forAll(res, d)
         mag(res[d], f[d]);
 }
 
 template<class Type, class MeshType>
-tmp<meshLevel<scalar,MeshType>> mag(const meshLevel<Type,MeshType>& f)
+tmp<meshLevel<SCALARPRODTYPE,MeshType>> mag(const meshLevel<Type,MeshType>& f)
 {
-    tmp<meshLevel<scalar,MeshType>>
-        tRes(new meshLevel<scalar,MeshType>(f.fvMsh(),f.levelNum()));
+    tmp<meshLevel<SCALARPRODTYPE,MeshType>>
+        tRes(new meshLevel<SCALARPRODTYPE,MeshType>(f.fvMsh(),f.levelNum()));
     mag(tRes.ref(), f);
     return tRes;
 }
 
 template<class Type, class MeshType>
-tmp<meshLevel<scalar,MeshType>> mag(const tmp<meshLevel<Type,MeshType>>& tf)
+tmp<meshLevel<SCALARPRODTYPE,MeshType>> mag(const tmp<meshLevel<Type,MeshType>>& tf)
 {
-    tmp<meshLevel<scalar,MeshType>> tRes =
-        reuseLevTmp<scalar,Type,MeshType>::New(tf);
+    tmp<meshLevel<SCALARPRODTYPE,MeshType>> tRes =
+        reuseLevTmp<SCALARPRODTYPE,Type,MeshType>::New(tf);
 
     mag(tRes.ref(), tf());
     tf.clear();
@@ -256,9 +259,9 @@ List<Type> average(const tmp<meshLevel<Type,MeshType>>& tf)
 }
 
 template<class Type, class MeshType>
-List<scalar> maxMagSqr(const meshLevel<Type,MeshType>& f)
+List<SCALARPRODTYPE> maxMagSqr(const meshLevel<Type,MeshType>& f)
 {
-    List<scalar> Max(f.size());
+    List<SCALARPRODTYPE> Max(f.size());
 
     forAll(Max, d)
     {
@@ -269,17 +272,17 @@ List<scalar> maxMagSqr(const meshLevel<Type,MeshType>& f)
 }
 
 template<class Type, class MeshType>
-List<scalar> maxMagSqr(const tmp<meshLevel<Type,MeshType>>& tf)
+List<SCALARPRODTYPE> maxMagSqr(const tmp<meshLevel<Type,MeshType>>& tf)
 {
-    List<scalar> ret(maxMagSqr(tf()));
+    List<SCALARPRODTYPE> ret(maxMagSqr(tf()));
     tf.clear();
     return ret;
 }
 
 template<class Type, class MeshType>
-List<scalar> minMagSqr(const meshLevel<Type,MeshType>& f)
+List<SCALARPRODTYPE> minMagSqr(const meshLevel<Type,MeshType>& f)
 {
-    List<scalar> Min(f.size());
+    List<SCALARPRODTYPE> Min(f.size());
 
     forAll(Min, d)
     {
@@ -290,21 +293,21 @@ List<scalar> minMagSqr(const meshLevel<Type,MeshType>& f)
 }
 
 template<class Type, class MeshType>
-List<scalar> minMagSqr(const tmp<meshLevel<Type,MeshType>>& tf)
+List<SCALARPRODTYPE> minMagSqr(const tmp<meshLevel<Type,MeshType>>& tf)
 {
-    List<scalar> ret(minMagSqr(tf()));
+    List<SCALARPRODTYPE> ret(minMagSqr(tf()));
     tf.clear();
     return ret;
 }
 
 template<class Type, class MeshType>
-List<scalar> sumProd
+List<SCALARPRODTYPE> sumProd
 (
     const meshLevel<Type,MeshType>& f1,
     const meshLevel<Type,MeshType>& f2
 )
 {
-    List<scalar> SumProd(f1.size());
+    List<SCALARPRODTYPE> SumProd(f1.size());
 
     forAll(SumProd, d)
     {
@@ -315,37 +318,37 @@ List<scalar> sumProd
 }
 
 template<class Type, class MeshType>
-List<scalar> sumProd
+List<SCALARPRODTYPE> sumProd
 (
     const tmp<meshLevel<Type,MeshType>>& tf1,
     const meshLevel<Type,MeshType>& f2
 )
 {
-    List<scalar> ret(sumProd(tf1(),f2));
+    List<SCALARPRODTYPE> ret(sumProd(tf1(),f2));
     tf1.clear();
     return ret;
 }
 
 template<class Type, class MeshType>
-List<scalar> sumProd
+List<SCALARPRODTYPE> sumProd
 (
     const meshLevel<Type,MeshType>& f1,
     const tmp<meshLevel<Type,MeshType>>& tf2
 )
 {
-    List<scalar> ret(sumProd(f1,tf2()));
+    List<SCALARPRODTYPE> ret(sumProd(f1,tf2()));
     tf2.clear();
     return ret;
 }
 
 template<class Type, class MeshType>
-List<scalar> sumProd
+List<SCALARPRODTYPE> sumProd
 (
     const tmp<meshLevel<Type,MeshType>>& tf1,
     const tmp<meshLevel<Type,MeshType>>& tf2
 )
 {
-    List<scalar> ret(sumProd(tf1(),tf2()));
+    List<SCALARPRODTYPE> ret(sumProd(tf1(),tf2()));
     tf1.clear();
     tf2.clear();
     return ret;
@@ -406,9 +409,9 @@ List<Type> sumCmptProd
 }
 
 template<class Type, class MeshType>
-List<scalar> sumMag(const meshLevel<Type,MeshType>& f)
+List<SCALARPRODTYPE> sumMag(const meshLevel<Type,MeshType>& f)
 {
-    List<scalar> SumMag(f.size());
+    List<SCALARPRODTYPE> SumMag(f.size());
 
     forAll(SumMag, d)
     {
@@ -419,9 +422,9 @@ List<scalar> sumMag(const meshLevel<Type,MeshType>& f)
 }
 
 template<class Type, class MeshType>
-List<scalar> sumMag(const tmp<meshLevel<Type,MeshType>>& tf)
+List<SCALARPRODTYPE> sumMag(const tmp<meshLevel<Type,MeshType>>& tf)
 {
-    List<scalar> ret(sumMag(tf()));
+    List<SCALARPRODTYPE> ret(sumMag(tf()));
     tf.clear();
     return ret;
 }
@@ -478,9 +481,9 @@ List<ReturnType> gFunc                                                          
 G_UNARY_FUNCTION(Type, gMax, max, max)
 G_UNARY_FUNCTION(Type, gMin, min, min)
 G_UNARY_FUNCTION(Type, gSum, sum, sum)
-G_UNARY_FUNCTION(scalar, gMaxMagSqr, maxMagSqr, maxMagSqr)
-G_UNARY_FUNCTION(scalar, gMinMagSqr, minMagSqr, minMagSqr)
-G_UNARY_FUNCTION(scalar, gSumMag, sumMag, sum)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMaxMagSqr, maxMagSqr, maxMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMinMagSqr, minMagSqr, minMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gSumMag, sumMag, sum)
 G_UNARY_FUNCTION(Type, gSumCmptMag, sumCmptMag, sum)
 
 #undef G_UNARY_FUNCTION
@@ -544,8 +547,8 @@ BINARY_OPERATOR(Type, scalar, Type, *, multiply)
 BINARY_OPERATOR(Type, Type, scalar, /, divide)
 
 BINARY_TYPE_OPERATOR_SF(Type, scalar, Type, *, multiply)
-BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)
 
+BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)
 BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, /, divide)
 
 PRODUCT_OPERATOR(typeOfSum, +, add)
@@ -563,5 +566,7 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 }
 
 }
+
+#undef SCALARPRODTYPE
 
 #include "undefBlockFunctionsM.H"

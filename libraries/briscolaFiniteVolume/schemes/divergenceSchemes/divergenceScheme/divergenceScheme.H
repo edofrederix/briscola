@@ -52,7 +52,7 @@ public:
     // Divergence with a flux defined at faces
     virtual tmp<linearSystem<stencil,Type,MeshType>> div
     (
-        const meshField<hexScalar,MeshType>&,
+        const meshField<faceScalar,MeshType>&,
         meshField<Type,MeshType>&
     ) = 0;
 };
@@ -60,7 +60,7 @@ public:
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> explicitDiv
 (
-    const meshField<Hex<Type>,MeshType>&
+    const meshField<FaceSpace<Type>,MeshType>&
 );
 
 template<class Type>

@@ -26,36 +26,36 @@ midPointFaceFluxScheme::midPointFaceFluxScheme
     faceFluxScheme(dictionary(),fvMsh)
 {}
 
-tmp<colocatedHexScalarField> midPointFaceFluxScheme::faceFlux
+tmp<colocatedFaceScalarField> midPointFaceFluxScheme::faceFlux
 (
     const colocatedVectorField& field
 )
 {
-    tmp<colocatedHexScalarField> tFlux
+    tmp<colocatedFaceScalarField> tFlux
     (
-        new colocatedHexScalarField
+        new colocatedFaceScalarField
         (
             "faceFlux("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    colocatedHexScalarField& Flux = tFlux.ref();
+    colocatedFaceScalarField& Flux = tFlux.ref();
 
     forAll(field, l)
     {
-        colocatedHexScalarDirection& F = Flux[l][0];
+        colocatedFaceScalarDirection& F = Flux[l][0];
 
         const colocatedVectorDirection& f = field[l][0];
 
-        const colocatedHexVectorDirection& fan =
+        const colocatedFaceVectorDirection& fan =
             this->fvMsh().metrics<colocated>().faceAreaNormals()[l][0];
 
         forAllCells(F, i, j, k)
         {
             F(i,j,k) =
                 0.5
-                * hexScalar
+                * faceScalar
                 (
                     (f(i,j,k) + f(i-1,j,k)) & fan(i,j,k).left(),
                     (f(i,j,k) + f(i+1,j,k)) & fan(i,j,k).right(),
@@ -70,21 +70,21 @@ tmp<colocatedHexScalarField> midPointFaceFluxScheme::faceFlux
     return tFlux;
 }
 
-tmp<staggeredHexScalarField> midPointFaceFluxScheme::faceFlux
+tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
 (
     const staggeredScalarField& field
 )
 {
-    tmp<staggeredHexScalarField> tFlux
+    tmp<staggeredFaceScalarField> tFlux
     (
-        new staggeredHexScalarField
+        new staggeredFaceScalarField
         (
             "faceFlux("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    staggeredHexScalarField& Flux = tFlux.ref();
+    staggeredFaceScalarField& Flux = tFlux.ref();
 
     forAll(field, l)
     {
@@ -94,7 +94,7 @@ tmp<staggeredHexScalarField> midPointFaceFluxScheme::faceFlux
 
         forAll(field[l], d)
         {
-            staggeredHexScalarDirection& F = Flux[l][d];
+            staggeredFaceScalarDirection& F = Flux[l][d];
 
             const labelVector padding(staggered::padding[d]);
 
@@ -102,7 +102,7 @@ tmp<staggeredHexScalarField> midPointFaceFluxScheme::faceFlux
             const labelVector oy(d == 1 ? unitY : padding);
             const labelVector oz(d == 2 ? unitZ : padding);
 
-            const staggeredHexScalarDirection& fa =
+            const staggeredFaceScalarDirection& fa =
                 this->fvMsh().metrics<staggered>().faceAreas()[l][d];
 
             // Left/right flux always come from the x mesh direction, bottom/top
@@ -120,7 +120,7 @@ tmp<staggeredHexScalarField> midPointFaceFluxScheme::faceFlux
 
                 F(ijk) =
                     0.5*fa(ijk)
-                  * hexScalar
+                  * faceScalar
                     (
                         f0(ijk)  + f0(ijk  - ox),
                         f0(ijkr) + f0(ijkr - ox),

@@ -29,31 +29,31 @@ midPointFaceGradientScheme<Type,MeshType>::midPointFaceGradientScheme
 {}
 
 template<class Type, class MeshType>
-tmp<meshField<Hex<Type>,MeshType>>
+tmp<meshField<FaceSpace<Type>,MeshType>>
 midPointFaceGradientScheme<Type,MeshType>::faceGrad
 (
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<Hex<Type>,MeshType>> tGrad
+    tmp<meshField<FaceSpace<Type>,MeshType>> tGrad
     (
-        new meshField<Hex<Type>,MeshType>
+        new meshField<FaceSpace<Type>,MeshType>
         (
             "faceGrad("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    meshField<Hex<Type>,MeshType>& Grad = tGrad.ref();
+    meshField<FaceSpace<Type>,MeshType>& Grad = tGrad.ref();
 
     forAll(field, l)
     forAll(field[l], d)
     {
-        const meshDirection<hexScalar,MeshType>& fd =
+        const meshDirection<faceScalar,MeshType>& fd =
             field.fvMsh().template
             metrics<MeshType>().faceDeltas()[l][d];
 
-        meshDirection<Hex<Type>,MeshType>& G = Grad[l][d];
+        meshDirection<FaceSpace<Type>,MeshType>& G = Grad[l][d];
         const meshDirection<Type,MeshType>& f = field[l][d];
 
         G.initGhosts();
@@ -61,7 +61,7 @@ midPointFaceGradientScheme<Type,MeshType>::faceGrad
         forAllCells(f, i, j, k)
         {
             G(i,j,k) =
-                Hex<Type>
+                FaceSpace<Type>
                 (
                     f(i,j,k)-f(i-1,j,  k  ),
                   - f(i,j,k)+f(i+1,j,  k  ),

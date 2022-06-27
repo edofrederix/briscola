@@ -3,14 +3,13 @@
 
 #include "labelMeshLevel.H"
 #include "scalarMeshLevel.H"
-#include "hexScalarMeshLevel.H"
+#include "faceScalarMeshLevel.H"
 #include "vectorMeshLevel.H"
-#include "hexVectorMeshLevel.H"
+#include "faceVectorMeshLevel.H"
 #include "tensorMeshLevel.H"
 #include "sphericalTensorMeshLevel.H"
 #include "symmTensorMeshLevel.H"
 #include "diagTensorMeshLevel.H"
-#include "symmStencilMeshLevel.H"
 #include "diagStencilMeshLevel.H"
 #include "stencilMeshLevel.H"
 

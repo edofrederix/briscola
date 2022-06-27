@@ -76,7 +76,7 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate
 )
 {
     meshLevel<Type,MeshType>& field = this->mshField()[l];
-    const meshLevel<hexScalar,MeshType>& fdl = this->faceDeltas()[l];
+    const meshLevel<faceScalar,MeshType>& fdl = this->faceDeltas()[l];
 
     const scalar H = homogeneousBC ? 0.0 : 1.0;
 
@@ -87,7 +87,7 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate
     forAll(field, d)
     {
         meshDirection<Type,MeshType>& fd = field[d];
-        const meshDirection<hexScalar,MeshType>& fdld = fdl[d];
+        const meshDirection<faceScalar,MeshType>& fdld = fdl[d];
 
         const block<Type>& grad =
             boundaryGradients_[l*field.size()+d];
@@ -130,14 +130,14 @@ makeBoundaryConditionType(Neumann,label,staggered)
 makeBoundaryConditionType(Neumann,scalar,colocated)
 makeBoundaryConditionType(Neumann,scalar,staggered)
 
-makeBoundaryConditionType(Neumann,hexScalar,colocated)
-makeBoundaryConditionType(Neumann,hexScalar,staggered)
+makeBoundaryConditionType(Neumann,faceScalar,colocated)
+makeBoundaryConditionType(Neumann,faceScalar,staggered)
 
 makeBoundaryConditionType(Neumann,vector,colocated)
 makeBoundaryConditionType(Neumann,vector,staggered)
 
-makeBoundaryConditionType(Neumann,hexVector,colocated)
-makeBoundaryConditionType(Neumann,hexVector,staggered)
+makeBoundaryConditionType(Neumann,faceVector,colocated)
+makeBoundaryConditionType(Neumann,faceVector,staggered)
 
 makeBoundaryConditionType(Neumann,tensor,colocated)
 makeBoundaryConditionType(Neumann,tensor,staggered)
@@ -153,9 +153,6 @@ makeBoundaryConditionType(Neumann,diagTensor,staggered)
 
 makeBoundaryConditionType(Neumann,stencil,colocated)
 makeBoundaryConditionType(Neumann,stencil,staggered)
-
-makeBoundaryConditionType(Neumann,symmStencil,colocated)
-makeBoundaryConditionType(Neumann,symmStencil,staggered)
 
 makeBoundaryConditionType(Neumann,diagStencil,colocated)
 makeBoundaryConditionType(Neumann,diagStencil,staggered)

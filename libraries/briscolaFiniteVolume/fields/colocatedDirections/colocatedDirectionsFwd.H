@@ -3,14 +3,13 @@
 
 #include "label.H"
 #include "scalar.H"
-#include "hexScalar.H"
+#include "faceScalar.H"
 #include "vector.H"
-#include "hexVector.H"
+#include "faceVector.H"
 #include "tensor.H"
 #include "sphericalTensor.H"
 #include "symmTensor.H"
 #include "diagTensor.H"
-#include "symmStencil.H"
 #include "diagStencil.H"
 #include "stencil.H"
 
@@ -30,14 +29,13 @@ class meshDirection;
 
 typedef meshDirection<label,colocated> colocatedLabelDirection;
 typedef meshDirection<scalar,colocated> colocatedScalarDirection;
-typedef meshDirection<hexScalar,colocated> colocatedHexScalarDirection;
+typedef meshDirection<faceScalar,colocated> colocatedFaceScalarDirection;
 typedef meshDirection<vector,colocated> colocatedVectorDirection;
-typedef meshDirection<hexVector,colocated> colocatedHexVectorDirection;
+typedef meshDirection<faceVector,colocated> colocatedFaceVectorDirection;
 typedef meshDirection<tensor,colocated> colocatedTensorDirection;
 typedef meshDirection<sphericalTensor,colocated> colocatedSphericalTensorDirection;
 typedef meshDirection<symmTensor,colocated> colocatedSymmTensorDirection;
 typedef meshDirection<diagTensor,colocated> colocatedDiagTensorDirection;
-typedef meshDirection<symmStencil,colocated> colocatedSymmStencilDirection;
 typedef meshDirection<diagStencil,colocated> colocatedDiagStencilDirection;
 typedef meshDirection<stencil,colocated> colocatedStencilDirection;
 

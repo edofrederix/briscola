@@ -10,7 +10,7 @@ namespace fv
 template<class MeshType>
 void checkParallelFaceCenters(const fvMesh& fvMsh)
 {
-    const meshField<hexVector,MeshType>& fc =
+    const meshField<faceVector,MeshType>& fc =
         fvMsh.metrics<MeshType>().faceCenters();
 
     for (label i = 0; i < 6; i++)
@@ -21,7 +21,7 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
 
         forAll(fc.boundaryConditions(), bci)
         {
-            const boundaryCondition<hexVector,MeshType>& bc =
+            const boundaryCondition<faceVector,MeshType>& bc =
                 fc.boundaryConditions()[bci];
 
             if
@@ -47,7 +47,7 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
         forAll(fc, l)
         forAll(fc[l], d)
         {
-            const meshDirection<hexVector,MeshType>& fcld = fc[l][d];
+            const meshDirection<faceVector,MeshType>& fcld = fc[l][d];
 
             const labelVector S(fcld.boundaryStart(bo));
             const labelVector E(fcld.boundaryEnd(bo));
@@ -88,7 +88,7 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
 template<class MeshType>
 void checkParallelFaceDeltas(const fvMesh& fvMsh)
 {
-    const meshField<hexScalar,MeshType>& fd =
+    const meshField<faceScalar,MeshType>& fd =
         fvMsh.metrics<MeshType>().faceDeltas();
 
     for (label i = 0; i < 6; i++)
@@ -99,7 +99,7 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
 
         forAll(fd.boundaryConditions(), bci)
         {
-            const boundaryCondition<hexScalar,MeshType>& bc =
+            const boundaryCondition<faceScalar,MeshType>& bc =
                 fd.boundaryConditions()[bci];
 
             if
@@ -125,7 +125,7 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
         forAll(fd, l)
         forAll(fd[l], d)
         {
-            const meshDirection<hexScalar,MeshType>& fdld = fd[l][d];
+            const meshDirection<faceScalar,MeshType>& fdld = fd[l][d];
 
             const labelVector S(fdld.boundaryStart(bo));
             const labelVector E(fdld.boundaryEnd(bo));

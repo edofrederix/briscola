@@ -1,7 +1,7 @@
 #ifndef meshFieldStencilFunctions_H
 #define meshFieldStencilFunctions_H
 
-// Stencil products are defined by the '%' operator. They behave like matrix
+// Stencil products are defined by the Amul function. They behave like matrix
 // multiplications, but require non-local operations. Those operations are
 // defined in the Amul functions operating on a mesh level
 

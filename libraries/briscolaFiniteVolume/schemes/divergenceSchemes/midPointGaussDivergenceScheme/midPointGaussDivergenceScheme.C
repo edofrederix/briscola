@@ -32,7 +32,7 @@ template<class Type, class MeshType>
 tmp<linearSystem<stencil,Type,MeshType>>
 midPointGaussDivergenceScheme<Type,MeshType>::div
 (
-    const meshField<hexScalar,MeshType>& phi,
+    const meshField<faceScalar,MeshType>& phi,
     meshField<Type,MeshType>& field
 )
 {
@@ -50,7 +50,7 @@ midPointGaussDivergenceScheme<Type,MeshType>::div
 
         A.initGhosts();
 
-        const meshDirection<hexScalar,MeshType>& p = phi[l][d];
+        const meshDirection<faceScalar,MeshType>& p = phi[l][d];
         const meshDirection<Type,MeshType>& f = field[l][d];
 
         forAllCells(f, i, j, k)

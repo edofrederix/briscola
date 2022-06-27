@@ -32,7 +32,7 @@ template<class Type, class MeshType>
 tmp<linearSystem<stencil,Type,MeshType>>
 linearGaussLaplacianScheme<Type,MeshType>::laplacian
 (
-    const meshField<hexScalar,MeshType>& lambda,
+    const meshField<faceScalar,MeshType>& lambda,
     meshField<Type,MeshType>& field
 )
 {
@@ -48,11 +48,11 @@ linearGaussLaplacianScheme<Type,MeshType>::laplacian
     forAll(field, l)
     forAll(field[l], d)
     {
-        const meshDirection<hexScalar,MeshType>& fa =
+        const meshDirection<faceScalar,MeshType>& fa =
             field.fvMsh().template
             metrics<MeshType>().faceAreas()[l][d];
 
-        const meshDirection<hexScalar,MeshType>& fd =
+        const meshDirection<faceScalar,MeshType>& fd =
             field.fvMsh().template
             metrics<MeshType>().faceDeltas()[l][d];
 
@@ -60,7 +60,7 @@ linearGaussLaplacianScheme<Type,MeshType>::laplacian
 
         A.initGhosts();
 
-        const meshDirection<hexScalar,MeshType>& lam = lambda[l][d];
+        const meshDirection<faceScalar,MeshType>& lam = lambda[l][d];
         const meshDirection<Type,MeshType>& f = field[l][d];
 
         forAllCells(f, i, j, k)

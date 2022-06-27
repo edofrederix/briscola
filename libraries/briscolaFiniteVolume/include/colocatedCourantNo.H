@@ -2,7 +2,7 @@ scalar CoNum = 0.0;
 scalar meanCoNum = 0.0;
 
 {
-    const colocatedHexScalarDirection& phid = phi[0][0];
+    const colocatedFaceScalarDirection& phid = phi[0][0];
 
     const colocatedScalarDirection& cvd =
         fvMsh.metrics<colocated>().cellVolumes()[0][0];

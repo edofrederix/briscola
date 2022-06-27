@@ -128,22 +128,16 @@ int main(int argc, char *argv[])
 
     testConstructors<stencil,scalar,colocated>(fvMsh);
     testConstructors<stencil,vector,colocated>(fvMsh);
-    testConstructors<symmStencil,scalar,colocated>(fvMsh);
-    testConstructors<symmStencil,vector,colocated>(fvMsh);
     testConstructors<diagStencil,scalar,colocated>(fvMsh);
     testConstructors<diagStencil,vector,colocated>(fvMsh);
 
     testResiduals<stencil,scalar,colocated>(fvMsh);
     testResiduals<stencil,vector,colocated>(fvMsh);
-    testResiduals<symmStencil,scalar,colocated>(fvMsh);
-    testResiduals<symmStencil,vector,colocated>(fvMsh);
     testResiduals<diagStencil,scalar,colocated>(fvMsh);
     testResiduals<diagStencil,vector,colocated>(fvMsh);
 
     testMemberOperators<stencil,scalar,colocated>(fvMsh);
     testMemberOperators<stencil,vector,colocated>(fvMsh);
-    testMemberOperators<symmStencil,scalar,colocated>(fvMsh);
-    testMemberOperators<symmStencil,vector,colocated>(fvMsh);
     testMemberOperators<diagStencil,scalar,colocated>(fvMsh);
     testMemberOperators<diagStencil,vector,colocated>(fvMsh);
 
@@ -151,22 +145,16 @@ int main(int argc, char *argv[])
 
     testConstructors<stencil,scalar,colocated>(fvMsh);
     testConstructors<stencil,vector,colocated>(fvMsh);
-    testConstructors<symmStencil,scalar,colocated>(fvMsh);
-    testConstructors<symmStencil,vector,colocated>(fvMsh);
     testConstructors<diagStencil,scalar,colocated>(fvMsh);
     testConstructors<diagStencil,vector,colocated>(fvMsh);
 
     testResiduals<stencil,scalar,colocated>(fvMsh);
     testResiduals<stencil,vector,colocated>(fvMsh);
-    testResiduals<symmStencil,scalar,colocated>(fvMsh);
-    testResiduals<symmStencil,vector,colocated>(fvMsh);
     testResiduals<diagStencil,scalar,colocated>(fvMsh);
     testResiduals<diagStencil,vector,colocated>(fvMsh);
 
     testMemberOperators<stencil,scalar,colocated>(fvMsh);
     testMemberOperators<stencil,vector,colocated>(fvMsh);
-    testMemberOperators<symmStencil,scalar,colocated>(fvMsh);
-    testMemberOperators<symmStencil,vector,colocated>(fvMsh);
     testMemberOperators<diagStencil,scalar,colocated>(fvMsh);
     testMemberOperators<diagStencil,vector,colocated>(fvMsh);
 }

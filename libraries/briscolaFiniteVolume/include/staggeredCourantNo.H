@@ -10,7 +10,7 @@ scalar meanCoNum = 0.0;
     forAll(sumPhi, d)
     {
         staggeredScalarDirection& sumPhid = sumPhi[d];
-        const staggeredHexScalarDirection& phild = phi[0][d];
+        const staggeredFaceScalarDirection& phild = phi[0][d];
 
         forAllCells(sumPhid, i, j, k)
         {

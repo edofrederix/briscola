@@ -29,7 +29,7 @@ public:
     midPointInterpolationScheme(const fvMesh&);
 
     // Interpolation of u to the face
-    virtual tmp<meshField<Hex<Type>,MeshType>> interp
+    virtual tmp<meshField<FaceSpace<Type>,MeshType>> interp
     (
         const meshField<Type,MeshType>&
     );

@@ -31,7 +31,7 @@ public:
     // Laplacian with a scalar diffusivity defined at faces
     virtual tmp<linearSystem<stencil,Type,MeshType>> laplacian
     (
-        const meshField<hexScalar,MeshType>&,
+        const meshField<faceScalar,MeshType>&,
         meshField<Type,MeshType>&
     );
 };

@@ -446,7 +446,15 @@ operator Op(const tmp<block<Type1>>& tf1, const tmp<block<Type2>>& tf2)        \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
-template<class Type, class Form, class Cmpt, direction nCmpt>                  \
+/* VectorSpace */                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt                                                            \
+>                                                                              \
 void OpFunc                                                                    \
 (                                                                              \
     block<typename product<Type, Form>::type>& res,                            \
@@ -462,7 +470,13 @@ void OpFunc                                                                    \
     }                                                                          \
 }                                                                              \
                                                                                \
-template<class Type, class Form, class Cmpt, direction nCmpt>                  \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt                                                            \
+>                                                                              \
 tmp<block<typename product<Type, Form>::type>>                                 \
 operator Op(const block<Type>& f1, const VectorSpace<Form,Cmpt,nCmpt>& vs)     \
 {                                                                              \
@@ -472,7 +486,13 @@ operator Op(const block<Type>& f1, const VectorSpace<Form,Cmpt,nCmpt>& vs)     \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
-template<class Type, class Form, class Cmpt, direction nCmpt>                  \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt                                                            \
+>                                                                              \
 tmp<block<typename product<Type, Form>::type>>                                 \
 operator Op                                                                    \
 (                                                                              \
@@ -487,7 +507,13 @@ operator Op                                                                    \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
-template<class Form, class Cmpt, direction nCmpt, class Type>                  \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt                                                            \
+>                                                                              \
 void OpFunc                                                                    \
 (                                                                              \
     block<typename product<Form, Type>::type>& res,                            \
@@ -503,7 +529,13 @@ void OpFunc                                                                    \
     }                                                                          \
 }                                                                              \
                                                                                \
-template<class Form, class Cmpt, direction nCmpt, class Type>                  \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt                                                            \
+>                                                                              \
 tmp<block<typename product<Form, Type>::type>>                                 \
 operator Op(const VectorSpace<Form,Cmpt,nCmpt>& vs, const block<Type>& f1)     \
 {                                                                              \
@@ -513,11 +545,137 @@ operator Op(const VectorSpace<Form,Cmpt,nCmpt>& vs, const block<Type>& f1)     \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
-template<class Form, class Cmpt, direction nCmpt, class Type>                  \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt                                                            \
+>                                                                              \
 tmp<block<typename product<Form, Type>::type>>                                 \
 operator Op                                                                    \
 (                                                                              \
     const VectorSpace<Form,Cmpt,nCmpt>& vs,                                    \
+    const tmp<block<Type>>& tf1                                                \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Form, Type>::type productType;                    \
+    tmp<block<productType>> tRes = reuseTmp<productType, Type>::New(tf1);      \
+    OpFunc(tRes.ref(), static_cast<const Form&>(vs), tf1());                   \
+    tf1.clear();                                                               \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+/* CellSpace */                                                                \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt                                                            \
+>                                                                              \
+void OpFunc                                                                    \
+(                                                                              \
+    block<typename product<Type, Form>::type>& res,                            \
+    const block<Type>& f1,                                                     \
+    const CellSpace<Form,Cmpt,nCmpt>& vs                                       \
+)                                                                              \
+{                                                                              \
+    checkMatrices(res,f1,#OpFunc);                                             \
+                                                                               \
+    forAllBlockLinear(res, i)                                                  \
+    {                                                                          \
+        res(i) = f1(i) Op static_cast<const Form&>(vs);                        \
+    }                                                                          \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt                                                            \
+>                                                                              \
+tmp<block<typename product<Type, Form>::type>>                                 \
+operator Op(const block<Type>& f1, const CellSpace<Form,Cmpt,nCmpt>& vs)       \
+{                                                                              \
+    typedef typename product<Type, Form>::type productType;                    \
+    tmp<block<productType>> tRes(new block<productType>(f1.shape()));          \
+    OpFunc(tRes.ref(), f1, static_cast<const Form&>(vs));                      \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt                                                            \
+>                                                                              \
+tmp<block<typename product<Type, Form>::type>>                                 \
+operator Op                                                                    \
+(                                                                              \
+    const tmp<block<Type>>& tf1,                                               \
+    const CellSpace<Form,Cmpt,nCmpt>& vs                                       \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Type, Form>::type productType;                    \
+    tmp<block<productType>> tRes = reuseTmp<productType, Type>::New(tf1);      \
+    OpFunc(tRes.ref(), tf1(), static_cast<const Form&>(vs));                   \
+    tf1.clear();                                                               \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt                                                            \
+>                                                                              \
+void OpFunc                                                                    \
+(                                                                              \
+    block<typename product<Form, Type>::type>& res,                            \
+    const CellSpace<Form,Cmpt,nCmpt>& vs,                                      \
+    const block<Type>& f1                                                      \
+)                                                                              \
+{                                                                              \
+    checkMatrices(res,f1,#OpFunc);                                             \
+                                                                               \
+    forAllBlockLinear(res, i)                                                  \
+    {                                                                          \
+        res(i) = static_cast<const Form&>(vs) Op f1(i);                        \
+    }                                                                          \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt                                                            \
+>                                                                              \
+tmp<block<typename product<Form, Type>::type>>                                 \
+operator Op(const CellSpace<Form,Cmpt,nCmpt>& vs, const block<Type>& f1)       \
+{                                                                              \
+    typedef typename product<Form, Type>::type productType;                    \
+    tmp<block<productType>> tRes(new block<productType>(f1.shape()));          \
+    OpFunc(tRes.ref(), static_cast<const Form&>(vs), f1);                      \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt                                                            \
+>                                                                              \
+tmp<block<typename product<Form, Type>::type>>                                 \
+operator Op                                                                    \
+(                                                                              \
+    const CellSpace<Form,Cmpt,nCmpt>& vs,                                      \
     const tmp<block<Type>>& tf1                                                \
 )                                                                              \
 {                                                                              \

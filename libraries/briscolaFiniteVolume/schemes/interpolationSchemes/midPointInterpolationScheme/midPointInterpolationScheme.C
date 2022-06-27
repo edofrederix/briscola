@@ -29,27 +29,27 @@ midPointInterpolationScheme<Type,MeshType>::midPointInterpolationScheme
 {}
 
 template<class Type, class MeshType>
-tmp<meshField<Hex<Type>,MeshType>>
+tmp<meshField<FaceSpace<Type>,MeshType>>
 midPointInterpolationScheme<Type,MeshType>::interp
 (
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<Hex<Type>,MeshType>> tInterp
+    tmp<meshField<FaceSpace<Type>,MeshType>> tInterp
     (
-        new meshField<Hex<Type>,MeshType>
+        new meshField<FaceSpace<Type>,MeshType>
         (
             "interpolate("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    meshField<Hex<Type>,MeshType>& Interp = tInterp.ref();
+    meshField<FaceSpace<Type>,MeshType>& Interp = tInterp.ref();
 
     forAll(field, l)
     forAll(field[l], d)
     {
-        meshDirection<Hex<Type>,MeshType>& I = Interp[l][d];
+        meshDirection<FaceSpace<Type>,MeshType>& I = Interp[l][d];
         const meshDirection<Type,MeshType>& f = field[l][d];
 
         I.initGhosts();
@@ -58,7 +58,7 @@ midPointInterpolationScheme<Type,MeshType>::interp
         {
             I(i,j,k) =
                 0.5
-              * Hex<Type>
+              * FaceSpace<Type>
                 (
                     f(i-1,j,k) + f(i,j,k),
                     f(i+1,j,k) + f(i,j,k),

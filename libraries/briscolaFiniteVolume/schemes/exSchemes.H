@@ -25,7 +25,7 @@ namespace ex
 template<class Type, class MeshType>
 inline tmp<meshField<Type,MeshType>> div
 (
-    const meshField<Hex<Type>,MeshType>& phi
+    const meshField<FaceSpace<Type>,MeshType>& phi
 )
 {
     return explicitDiv(phi);
@@ -40,7 +40,7 @@ inline tmp<meshField<Type,colocated>> coloDiv
     return explicitColoDiv(field);
 }
 
-inline tmp<meshField<hexScalar,colocated>> faceFlux
+inline tmp<meshField<faceScalar,colocated>> faceFlux
 (
     const meshField<vector,colocated>& field
 )
@@ -52,7 +52,7 @@ inline tmp<meshField<hexScalar,colocated>> faceFlux
     )->faceFlux(field);
 }
 
-inline tmp<meshField<hexScalar,staggered>> faceFlux
+inline tmp<meshField<faceScalar,staggered>> faceFlux
 (
     const meshField<scalar,staggered>& field
 )
@@ -65,7 +65,7 @@ inline tmp<meshField<hexScalar,staggered>> faceFlux
 }
 
 template<class Type, class MeshType>
-inline tmp<meshField<Hex<Type>,MeshType>> faceGrad
+inline tmp<meshField<FaceSpace<Type>,MeshType>> faceGrad
 (
     const meshField<Type,MeshType>& field
 )
@@ -106,7 +106,7 @@ stagGrad
 }
 
 template<class Type, class MeshType>
-inline tmp<meshField<Hex<Type>,MeshType>> interp
+inline tmp<meshField<FaceSpace<Type>,MeshType>> interp
 (
     const meshField<Type,MeshType>& field
 )

@@ -47,7 +47,7 @@ inline tmp<linearSystem<diagStencil,Type,MeshType>> ddt
 template<class Type, class MeshType>
 inline tmp<linearSystem<stencil,Type,MeshType>> div
 (
-    const meshField<hexScalar,MeshType>& phi,
+    const meshField<faceScalar,MeshType>& phi,
     meshField<Type,MeshType>& field
 )
 {
@@ -61,7 +61,7 @@ inline tmp<linearSystem<stencil,Type,MeshType>> div
 template<class Type, class MeshType>
 inline tmp<linearSystem<stencil,Type,MeshType>> laplacian
 (
-    const meshField<hexScalar,MeshType>& lambda,
+    const meshField<faceScalar,MeshType>& lambda,
     meshField<Type,MeshType>& field
 )
 {

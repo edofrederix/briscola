@@ -17,7 +17,7 @@ namespace fv
 template<class MeshType>
 void fvMeshMetrics<MeshType>::calculateFaceCenters()
 {
-    meshField<hexVector,MeshType>& fc = faceCenters_;
+    meshField<faceVector,MeshType>& fc = faceCenters_;
 
     forAll(fvMsh_, leveli)
     {
@@ -28,7 +28,7 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 
         forAll(fc[leveli], d)
         {
-            meshDirection<hexVector,MeshType>& fcld = fc[leveli][d];
+            meshDirection<faceVector,MeshType>& fcld = fc[leveli][d];
 
             const vector shift = MeshType::shift[d];
 
@@ -97,9 +97,9 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 template<class MeshType>
 void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
 {
-    meshField<hexVector,MeshType>& fn = faceNormals_;
-    meshField<hexScalar,MeshType>& fa = faceAreas_;
-    meshField<hexVector,MeshType>& fan = faceAreaNormals_;
+    meshField<faceVector,MeshType>& fn = faceNormals_;
+    meshField<faceScalar,MeshType>& fa = faceAreas_;
+    meshField<faceVector,MeshType>& fan = faceAreaNormals_;
 
     forAll(fn, leveli)
     {
@@ -112,8 +112,8 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
 
         forAll(fn[leveli], d)
         {
-            meshDirection<hexVector,MeshType>& fnld = fn[leveli][d];
-            meshDirection<hexScalar,MeshType>& fald = fa[leveli][d];
+            meshDirection<faceVector,MeshType>& fnld = fn[leveli][d];
+            meshDirection<faceScalar,MeshType>& fald = fa[leveli][d];
 
             const vector shift = MeshType::shift[d];
 
@@ -198,7 +198,7 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
                     );
 
                 fnld(i,j,k) =
-                    hexVector
+                    faceVector
                     (
                         normalised(left),
                         normalised(right),
@@ -209,7 +209,7 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
                     );
 
                 fald(i,j,k) =
-                    hexScalar
+                    faceScalar
                     (
                         mag(left),
                         mag(right),
@@ -358,9 +358,9 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 {
     meshField<scalar,MeshType>& cv = cellVolumes_;
 
-    const meshField<hexVector,MeshType>& fn = faceNormals_;
-    const meshField<hexScalar,MeshType>& fa = faceAreas_;
-    const meshField<hexVector,MeshType>& fc = faceCenters_;
+    const meshField<faceVector,MeshType>& fn = faceNormals_;
+    const meshField<faceScalar,MeshType>& fa = faceAreas_;
+    const meshField<faceVector,MeshType>& fc = faceCenters_;
 
     forAll(cv, leveli)
     {
@@ -371,9 +371,9 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
         {
             meshDirection<scalar,MeshType>& cvld = cv[leveli][d];
 
-            const meshDirection<hexVector,MeshType>& fnld = fn[leveli][d];
-            const meshDirection<hexScalar,MeshType>& fald = fa[leveli][d];
-            const meshDirection<hexVector,MeshType>& fcld = fc[leveli][d];
+            const meshDirection<faceVector,MeshType>& fnld = fn[leveli][d];
+            const meshDirection<faceScalar,MeshType>& fald = fa[leveli][d];
+            const meshDirection<faceVector,MeshType>& fcld = fc[leveli][d];
 
             forAllCells(cvld, i, j, k)
             {
@@ -404,20 +404,20 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 template<class MeshType>
 void fvMeshMetrics<MeshType>::calculateFaceDeltas()
 {
-    meshField<hexScalar,MeshType>& fd = faceDeltas_;
+    meshField<faceScalar,MeshType>& fd = faceDeltas_;
     const meshField<vector,MeshType>& cc = cellCenters_;
 
     forAll(cc, leveli)
     {
         forAll(cc[leveli], d)
         {
-            meshDirection<hexScalar,MeshType>& fdld = fd[leveli][d];
+            meshDirection<faceScalar,MeshType>& fdld = fd[leveli][d];
             const meshDirection<vector,MeshType>& ccld = cc[leveli][d];
 
             forAllCells(fdld, i, j, k)
             {
                 fdld(i,j,k) =
-                    hexScalar
+                    faceScalar
                     (
                         1.0/Foam::mag(ccld(i,j,k)-ccld(i-1,j,k)),
                         1.0/Foam::mag(ccld(i,j,k)-ccld(i+1,j,k)),

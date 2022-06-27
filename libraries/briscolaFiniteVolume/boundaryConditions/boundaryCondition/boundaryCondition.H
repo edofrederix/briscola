@@ -1,8 +1,8 @@
 #ifndef boundaryCondition_H
 #define boundaryCondition_H
 
-#include "hexVector.H"
-#include "hexScalar.H"
+#include "faceVector.H"
+#include "faceScalar.H"
 
 #include "partPatch.H"
 
@@ -181,13 +181,13 @@ public:
     }
 
     // Access to the face centers of the field this BC belongs to
-    const meshField<hexVector,MeshType>& faceCenters() const;
+    const meshField<faceVector,MeshType>& faceCenters() const;
 
     // Access to the face normals of the field this BC belongs to
-    const meshField<hexVector,MeshType>& faceNormals() const;
+    const meshField<faceVector,MeshType>& faceNormals() const;
 
     // Access to the face areas of the field this BC belongs to
-    const meshField<hexScalar,MeshType>& faceAreas() const;
+    const meshField<faceScalar,MeshType>& faceAreas() const;
 
     // Access to the cell volumes of the field this BC belongs to
     const meshField<scalar,MeshType>& cellVolumes() const;
@@ -196,7 +196,7 @@ public:
     const meshField<vector,MeshType>& cellCenters() const;
 
     // Access to the face deltas of the field this BC belongs to
-    const meshField<hexScalar,MeshType>& faceDeltas() const;
+    const meshField<faceScalar,MeshType>& faceDeltas() const;
 
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const

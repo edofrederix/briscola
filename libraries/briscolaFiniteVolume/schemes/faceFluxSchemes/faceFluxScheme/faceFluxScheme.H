@@ -2,7 +2,7 @@
 #define faceFluxScheme_H
 
 #include "scheme.H"
-#include "Hex.H"
+#include "FaceSpace.H"
 #include "meshFields.H"
 #include "meshLevels.H"
 #include "meshDirections.H"
@@ -51,13 +51,13 @@ public:
     virtual ~faceFluxScheme();
 
     // FaceFluxScheme of a colocated vector field
-    virtual tmp<meshField<hexScalar,colocated>> faceFlux
+    virtual tmp<meshField<faceScalar,colocated>> faceFlux
     (
         const meshField<vector,colocated>&
     ) = 0;
 
     // FaceFluxScheme of a staggered scalar field
-    virtual tmp<meshField<hexScalar,staggered>> faceFlux
+    virtual tmp<meshField<faceScalar,staggered>> faceFlux
     (
         const meshField<scalar,staggered>&
     ) = 0;

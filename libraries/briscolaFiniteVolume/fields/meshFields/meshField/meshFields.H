@@ -6,14 +6,13 @@
 
 #include "labelMeshField.H"
 #include "scalarMeshField.H"
-#include "hexScalarMeshField.H"
+#include "faceScalarMeshField.H"
 #include "vectorMeshField.H"
-#include "hexVectorMeshField.H"
+#include "faceVectorMeshField.H"
 #include "tensorMeshField.H"
 #include "sphericalTensorMeshField.H"
 #include "symmTensorMeshField.H"
 #include "diagTensorMeshField.H"
-#include "symmStencilMeshField.H"
 #include "diagStencilMeshField.H"
 #include "stencilMeshField.H"
 

@@ -16,9 +16,6 @@ namespace briscola
 
 typedef block<stencil> stencilBlock;
 
-BINARY_TYPE_OPERATOR(stencil, stencil, symmStencil, +, add)
-BINARY_TYPE_OPERATOR(stencil, symmStencil, stencil, -, subtract)
-
 BINARY_TYPE_OPERATOR(stencil, stencil, diagStencil, +, add)
 BINARY_TYPE_OPERATOR(stencil, diagStencil, stencil, -, subtract)
 

@@ -1,24 +1,26 @@
 arguments/arguments.C
 
-primitives/hexScalar/hexScalar.C
-primitives/hexVector/hexVector.C
-primitives/symmStencil/symmStencil.C
-primitives/diagStencil/diagStencil.C
-primitives/stencil/stencil.C
+primitives/FaceSpace/faceScalar/faceScalar.C
+primitives/FaceSpace/faceVector/faceVector.C
+
+primitives/StencilSpace/stencil/stencil.C
+primitives/StencilSpace/diagStencil/diagStencil.C
 
 blocks/labelBlock/labelBlock.C
 blocks/scalarBlock/scalarBlock.C
-blocks/hexScalarBlock/hexScalarBlock.C
+
 blocks/vectorBlock/vectorBlock.C
-blocks/hexVectorBlock/hexVectorBlock.C
 blocks/labelVectorBlock/labelVectorBlock.C
 blocks/tensorBlock/tensorBlock.C
 blocks/sphericalTensorBlock/sphericalTensorBlock.C
 blocks/symmTensorBlock/symmTensorBlock.C
 blocks/diagTensorBlock/diagTensorBlock.C
-blocks/symmStencilBlock/symmStencilBlock.C
-blocks/diagStencilBlock/diagStencilBlock.C
+
+blocks/faceScalarBlock/faceScalarBlock.C
+blocks/faceVectorBlock/faceVectorBlock.C
+
 blocks/stencilBlock/stencilBlock.C
+blocks/diagStencilBlock/diagStencilBlock.C
 
 functionObjects/briscolaFunctionObject/briscolaFunctionObject.C
 

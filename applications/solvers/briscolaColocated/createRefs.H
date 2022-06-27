@@ -1,2 +1,2 @@
-const colocatedHexScalarField& fa =
+const colocatedFaceScalarField& fa =
     fvMsh.metrics<colocated>().faceAreas();

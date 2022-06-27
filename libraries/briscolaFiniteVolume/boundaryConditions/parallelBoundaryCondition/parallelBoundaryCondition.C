@@ -245,14 +245,14 @@ makeBoundaryConditionType(parallel,label,staggered)
 makeBoundaryConditionType(parallel,scalar,colocated)
 makeBoundaryConditionType(parallel,scalar,staggered)
 
-makeBoundaryConditionType(parallel,hexScalar,colocated)
-makeBoundaryConditionType(parallel,hexScalar,staggered)
+makeBoundaryConditionType(parallel,faceScalar,colocated)
+makeBoundaryConditionType(parallel,faceScalar,staggered)
 
 makeBoundaryConditionType(parallel,vector,colocated)
 makeBoundaryConditionType(parallel,vector,staggered)
 
-makeBoundaryConditionType(parallel,hexVector,colocated)
-makeBoundaryConditionType(parallel,hexVector,staggered)
+makeBoundaryConditionType(parallel,faceVector,colocated)
+makeBoundaryConditionType(parallel,faceVector,staggered)
 
 makeBoundaryConditionType(parallel,tensor,colocated)
 makeBoundaryConditionType(parallel,tensor,staggered)
@@ -268,9 +268,6 @@ makeBoundaryConditionType(parallel,diagTensor,staggered)
 
 makeBoundaryConditionType(parallel,stencil,colocated)
 makeBoundaryConditionType(parallel,stencil,staggered)
-
-makeBoundaryConditionType(parallel,symmStencil,colocated)
-makeBoundaryConditionType(parallel,symmStencil,staggered)
 
 makeBoundaryConditionType(parallel,diagStencil,colocated)
 makeBoundaryConditionType(parallel,diagStencil,staggered)

@@ -56,7 +56,7 @@ public:
     // Laplacian with a scalar diffusivity defined at faces
     virtual tmp<linearSystem<stencil,Type,MeshType>> laplacian
     (
-        const meshField<hexScalar,MeshType>&,
+        const meshField<faceScalar,MeshType>&,
         meshField<Type,MeshType>&
     ) = 0;
 
@@ -66,8 +66,8 @@ public:
         meshField<Type,MeshType>& field
     )
     {
-        meshField<hexScalar,MeshType> lambda("lambda", field.fvMsh());
-        lambda = hexScalar::one;
+        meshField<faceScalar,MeshType> lambda("lambda", field.fvMsh());
+        lambda = faceScalar::one;
         return this->laplacian(lambda, field);
     }
 };

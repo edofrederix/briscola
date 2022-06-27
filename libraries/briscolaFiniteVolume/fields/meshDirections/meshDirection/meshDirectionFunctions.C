@@ -4,6 +4,9 @@
 #define TEMPLATE template<class Type, class MeshType>
 #include "meshDirectionFunctionsM.C"
 
+// Scalar return type must be deduced because of cell space
+#define SCALARPRODTYPE typename scalarProduct<Type,Type>::type
+
 namespace Foam
 {
 
@@ -16,7 +19,7 @@ namespace fv
 template<class Type, class MeshType>
 void mag
 (
-    meshDirection<scalar,MeshType>& res,
+    meshDirection<SCALARPRODTYPE,MeshType>& res,
     const meshDirection<Type,MeshType>& D
 )
 {
@@ -24,12 +27,12 @@ void mag
 }
 
 template<class Type, class MeshType>
-tmp<meshDirection<scalar,MeshType>>
+tmp<meshDirection<SCALARPRODTYPE,MeshType>>
 mag(const meshDirection<Type,MeshType>& D)
 {
-    tmp<meshDirection<scalar,MeshType>> tRes
+    tmp<meshDirection<SCALARPRODTYPE,MeshType>> tRes
     (
-        new meshDirection<scalar,MeshType>
+        new meshDirection<SCALARPRODTYPE,MeshType>
         (
             D.fvMsh(),
             D.levelNum(),
@@ -42,11 +45,11 @@ mag(const meshDirection<Type,MeshType>& D)
 }
 
 template<class Type, class MeshType>
-tmp<meshDirection<scalar,MeshType>>
+tmp<meshDirection<SCALARPRODTYPE,MeshType>>
 mag(const tmp<meshDirection<Type,MeshType>>& tD)
 {
-    tmp<meshDirection<scalar,MeshType>> tRes =
-        reuseDirTmp<scalar,Type,MeshType>::New(tD);
+    tmp<meshDirection<SCALARPRODTYPE,MeshType>> tRes =
+        reuseDirTmp<SCALARPRODTYPE,Type,MeshType>::New(tD);
 
     mag(tRes.ref(), tD());
     tD.clear();
@@ -319,9 +322,9 @@ Type average(const tmp<meshDirection<Type,MeshType>>& tD)
 }
 
 template<class Type, class MeshType>
-scalar maxMagSqr(const meshDirection<Type,MeshType>& D)
+SCALARPRODTYPE maxMagSqr(const meshDirection<Type,MeshType>& D)
 {
-    scalar Max(pTraits<scalar>::min);
+    SCALARPRODTYPE Max(pTraits<SCALARPRODTYPE>::min);
 
     // Only for interior cells
 
@@ -337,17 +340,17 @@ scalar maxMagSqr(const meshDirection<Type,MeshType>& D)
 }
 
 template<class Type, class MeshType>
-scalar maxMagSqr(const tmp<meshDirection<Type,MeshType>>& tD)
+SCALARPRODTYPE maxMagSqr(const tmp<meshDirection<Type,MeshType>>& tD)
 {
-    scalar ret(maxMagSqr(tD()));
+    SCALARPRODTYPE ret(maxMagSqr(tD()));
     tD.clear();
     return ret;
 }
 
 template<class Type, class MeshType>
-scalar minMagSqr(const meshDirection<Type,MeshType>& D)
+SCALARPRODTYPE minMagSqr(const meshDirection<Type,MeshType>& D)
 {
-    scalar Min(pTraits<scalar>::max);
+    SCALARPRODTYPE Min(pTraits<SCALARPRODTYPE>::max);
 
     // Only for interior cells
 
@@ -363,21 +366,21 @@ scalar minMagSqr(const meshDirection<Type,MeshType>& D)
 }
 
 template<class Type, class MeshType>
-scalar minMagSqr(const tmp<meshDirection<Type,MeshType>>& tD)
+SCALARPRODTYPE minMagSqr(const tmp<meshDirection<Type,MeshType>>& tD)
 {
-    scalar ret(minMagSqr(tD()));
+    SCALARPRODTYPE ret(minMagSqr(tD()));
     tD.clear();
     return ret;
 }
 
 template<class Type, class MeshType>
-scalar sumProd
+SCALARPRODTYPE sumProd
 (
     const meshDirection<Type,MeshType>& D1,
     const meshDirection<Type,MeshType>& D2
 )
 {
-    scalar SumProd(Zero);
+    SCALARPRODTYPE SumProd(Zero);
 
     // Only for interior cells
 
@@ -390,37 +393,37 @@ scalar sumProd
 }
 
 template<class Type, class MeshType>
-scalar sumProd
+SCALARPRODTYPE sumProd
 (
     const tmp<meshDirection<Type,MeshType>>& tD1,
     const meshDirection<Type,MeshType>& D2
 )
 {
-    scalar ret(sumProd(tD1(),D2));
+    SCALARPRODTYPE ret(sumProd(tD1(),D2));
     tD1.clear();
     return ret;
 }
 
 template<class Type, class MeshType>
-scalar sumProd
+SCALARPRODTYPE sumProd
 (
     const meshDirection<Type,MeshType>& D1,
     const tmp<meshDirection<Type,MeshType>>& tD2
 )
 {
-    scalar ret(sumProd(D1,tD2()));
+    SCALARPRODTYPE ret(sumProd(D1,tD2()));
     tD2.clear();
     return ret;
 }
 
 template<class Type, class MeshType>
-scalar sumProd
+SCALARPRODTYPE sumProd
 (
     const tmp<meshDirection<Type,MeshType>>& tD1,
     const tmp<meshDirection<Type,MeshType>>& tD2
 )
 {
-    scalar ret(sumProd(tD1(),tD2()));
+    SCALARPRODTYPE ret(sumProd(tD1(),tD2()));
     tD1.clear();
     tD2.clear();
     return ret;
@@ -483,9 +486,9 @@ Type sumCmptProd
 }
 
 template<class Type, class MeshType>
-scalar sumMag(const meshDirection<Type,MeshType>& D)
+SCALARPRODTYPE sumMag(const meshDirection<Type,MeshType>& D)
 {
-    scalar SumMag(Zero);
+    SCALARPRODTYPE SumMag(Zero);
 
     // Only for interior cells
 
@@ -498,9 +501,9 @@ scalar sumMag(const meshDirection<Type,MeshType>& D)
 }
 
 template<class Type, class MeshType>
-scalar sumMag(const tmp<meshDirection<Type,MeshType>>& tD)
+SCALARPRODTYPE sumMag(const tmp<meshDirection<Type,MeshType>>& tD)
 {
-    scalar ret(sumMag(tD()));
+    SCALARPRODTYPE ret(sumMag(tD()));
     tD.clear();
     return ret;
 }
@@ -558,9 +561,9 @@ ReturnType gFunc                                                                
 G_UNARY_FUNCTION(Type, gMax, max, max)
 G_UNARY_FUNCTION(Type, gMin, min, min)
 G_UNARY_FUNCTION(Type, gSum, sum, sum)
-G_UNARY_FUNCTION(scalar, gMaxMagSqr, maxMagSqr, maxMagSqr)
-G_UNARY_FUNCTION(scalar, gMinMagSqr, minMagSqr, minMagSqr)
-G_UNARY_FUNCTION(scalar, gSumMag, sumMag, sum)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMaxMagSqr, maxMagSqr, maxMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gMinMagSqr, minMagSqr, minMagSqr)
+G_UNARY_FUNCTION(SCALARPRODTYPE, gSumMag, sumMag, sum)
 G_UNARY_FUNCTION(Type, gSumCmptMag, sumCmptMag, sum)
 
 #undef G_UNARY_FUNCTION
@@ -634,5 +637,7 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 }
 
 }
+
+#undef SCALARPRODTYPE
 
 #include "undefBlockFunctionsM.H"

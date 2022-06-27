@@ -30,7 +30,7 @@ p.correctBoundaryConditions();
 
 // Flux
 
-colocatedHexScalarField phi
+colocatedFaceScalarField phi
 (
     "phi",
     fvMsh,
@@ -43,7 +43,7 @@ phi = ex::faceFlux(U);
 
 // Viscosity
 
-colocatedHexScalarField nu
+colocatedFaceScalarField nu
 (
     "nu",
     fvMsh,

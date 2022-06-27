@@ -3,14 +3,13 @@
 
 #include "labelMeshDirection.H"
 #include "scalarMeshDirection.H"
-#include "hexScalarMeshDirection.H"
+#include "faceScalarMeshDirection.H"
 #include "vectorMeshDirection.H"
-#include "hexVectorMeshDirection.H"
+#include "faceVectorMeshDirection.H"
 #include "tensorMeshDirection.H"
 #include "sphericalTensorMeshDirection.H"
 #include "symmTensorMeshDirection.H"
 #include "diagTensorMeshDirection.H"
-#include "symmStencilMeshDirection.H"
 #include "diagStencilMeshDirection.H"
 #include "stencilMeshDirection.H"
 

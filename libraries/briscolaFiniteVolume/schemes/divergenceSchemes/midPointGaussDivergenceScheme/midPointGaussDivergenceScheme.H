@@ -31,7 +31,7 @@ public:
     // Divergence with a flux defined at faces
     virtual tmp<linearSystem<stencil,Type,MeshType>> div
     (
-        const meshField<hexScalar,MeshType>&,
+        const meshField<faceScalar,MeshType>&,
         meshField<Type,MeshType>&
     );
 };

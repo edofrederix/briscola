@@ -29,7 +29,7 @@ public:
     midPointFaceGradientScheme(const fvMesh&);
 
     // Face-normal gradient of u
-    virtual tmp<meshField<Hex<Type>,MeshType>> faceGrad
+    virtual tmp<meshField<FaceSpace<Type>,MeshType>> faceGrad
     (
         const meshField<Type,MeshType>&
     );

@@ -2,10 +2,9 @@
 #define meshDirectionStencilFunctions_H
 
 #include "meshDirectionStencilProduct.H"
-#include "meshDirectionSymmStencilProduct.H"
 #include "meshDirectionDiagStencilProduct.H"
 
-// Stencil products are defined by the '%' operator. They behave like matrix
+// Stencil products are defined by the Amul function. They behave like matrix
 // multiplications, but require non-local operations. Those operations are
 // defined in the Amul functions operating on a mesh level
 

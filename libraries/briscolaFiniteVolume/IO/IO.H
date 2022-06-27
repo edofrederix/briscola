@@ -3,6 +3,9 @@
 
 #include "fvMesh.H"
 
+#include "VectorSpace.H"
+#include "CellSpace.H"
+
 class vtkStructuredGrid;
 
 namespace Foam
@@ -49,24 +52,72 @@ class IO
     template<class Type, class MeshType>
     void readFields(vtkStructuredGrid*, const label, const label) const;
 
-    // Add field to grid for given mesh level and direction
+    // Write
+
+    // Write types
     template<class Type, class MeshType>
     void writeField
     (
         vtkStructuredGrid*,
-        const meshField<Type, MeshType>&,
-        const label,
-        const label
+        const meshDirection<Type, MeshType>&
     ) const;
 
-    // Read field from grid for given mesh level and direction
+    // Write scalar-like types
+    template<class Type, class MeshType>
+    void writeScalarField
+    (
+        vtkStructuredGrid*,
+        const meshDirection<Type, MeshType>&
+    ) const;
+
+    // Write array-like types
+    template<class Type, class MeshType>
+    void writeArrayField
+    (
+        vtkStructuredGrid*,
+        const meshDirection<Type, MeshType>&
+    ) const;
+
+    // Write two-dimensional array-like types
+    template<class Type, class MeshType>
+    void writeArrayArrayField
+    (
+        vtkStructuredGrid*,
+        const meshDirection<Type, MeshType>&
+    ) const;
+
+    // Read
+
+    // Read types
     template<class Type, class MeshType>
     void readField
     (
         vtkStructuredGrid*,
-        meshField<Type, MeshType>&,
-        const label,
-        const label
+        meshDirection<Type, MeshType>&
+    ) const;
+
+    // Read scalar-like type
+    template<class Type, class MeshType>
+    void readScalarField
+    (
+        vtkStructuredGrid*,
+        meshDirection<Type, MeshType>&
+    ) const;
+
+    // Write array-like types
+    template<class Type, class MeshType>
+    void readArrayField
+    (
+        vtkStructuredGrid*,
+        meshDirection<Type, MeshType>&
+    ) const;
+
+    // Write two-dimensional array-like types
+    template<class Type, class MeshType>
+    void readArrayArrayField
+    (
+        vtkStructuredGrid*,
+        meshDirection<Type, MeshType>&
     ) const;
 
     // Write VTK data to given time directory, grid and mesh level and direction

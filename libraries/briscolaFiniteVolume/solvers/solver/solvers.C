@@ -12,11 +12,6 @@ namespace briscola
 namespace fv
 {
 
-makeSolver(symmStencil,scalar,colocated);
-makeSolver(symmStencil,scalar,staggered);
-makeSolver(symmStencil,vector,colocated);
-makeSolver(symmStencil,vector,staggered);
-
 makeSolver(diagStencil,scalar,colocated);
 makeSolver(diagStencil,scalar,staggered);
 makeSolver(diagStencil,vector,colocated);
@@ -27,11 +22,6 @@ makeSolver(stencil,scalar,staggered);
 makeSolver(stencil,vector,colocated);
 makeSolver(stencil,vector,staggered);
 
-
-makeSolverType(MG,symmStencil,scalar,colocated);
-makeSolverType(MG,symmStencil,scalar,staggered);
-makeSolverType(MG,symmStencil,vector,colocated);
-makeSolverType(MG,symmStencil,vector,staggered);
 
 makeSolverType(MG,diagStencil,scalar,colocated);
 makeSolverType(MG,diagStencil,scalar,staggered);
