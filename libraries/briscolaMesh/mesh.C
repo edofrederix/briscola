@@ -8,7 +8,6 @@ namespace briscola
 
 defineTypeNameAndDebug(mesh, 0);
 
-
 void mesh::generateBrickInternalPartPatches()
 {
     // Add parallel brick-internal patches
@@ -215,7 +214,6 @@ void mesh::setCommTags()
     Pstream::gatherList(patchDicts);
 
     labelList myTags;
-    labelList myRecvTags;
 
     if (Pstream::master())
     {
@@ -226,6 +224,11 @@ void mesh::setCommTags()
             tags[i].setSize(patchDicts[i].size());
             tags[i] = 1;
         }
+
+        // The pairCount array can get pretty big for a large number of
+        // processors, but allocating an n by n array is by far the easiest way
+        // to track pairs. On 10.000 processors, the array will consume 381 MB,
+        // which should be doable.
 
         int pairCount[n][n];
 

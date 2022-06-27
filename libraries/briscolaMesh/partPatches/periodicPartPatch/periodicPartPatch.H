@@ -1,7 +1,7 @@
 #ifndef periodicPartPatch_H
 #define periodicPartPatch_H
 
-#include "partPatch.H"
+#include "parallelPartPatch.H"
 
 namespace Foam
 {
@@ -14,7 +14,7 @@ namespace partPatches
 
 class periodicPartPatch
 :
-    public partPatch
+    public parallelPartPatch
 {
     // Copy constructor
     periodicPartPatch(const periodicPartPatch&);

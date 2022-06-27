@@ -16,7 +16,7 @@ addToRunTimeSelectionTable(partPatch, periodicPartPatch, dictionary);
 
 periodicPartPatch::periodicPartPatch(const mesh& msh, const dictionary& dict)
 :
-    partPatch(msh, dict)
+    parallelPartPatch(msh, dict)
 {}
 
 }

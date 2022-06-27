@@ -83,15 +83,18 @@ void parallelInfo(const fvMesh& fvMsh)
     Info<< "Number of processors = " << Pstream::nProcs() << ":" << endl;
 
     List<List<dictionary>> dicts(Pstream::nProcs(), List<dictionary>(0));
+    List<labelList> masterPatch(Pstream::nProcs(), labelList(0));
 
     forAll(fvMsh.partPatches(), patchi)
     {
         const partPatch& patch = fvMsh.partPatches()[patchi];
 
         dicts[Pstream::myProcNo()].append(patch.dict());
+        masterPatch[Pstream::myProcNo()].append(patch.master());
     }
 
     Pstream::gatherList(dicts);
+    Pstream::gatherList(masterPatch);
 
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
     {
@@ -125,7 +128,8 @@ void parallelInfo(const fvMesh& fvMsh)
                     << "                type   = " << type << nl
                     << "                bo     = " << bo << nl
                     << "                offset = " << bo << nl
-                    << "                T      = " << T << endl;
+                    << "                T      = " << T << nl
+                    << "                master = " << masterPatch[proc][patchi] << endl;
             }
         }
         else
@@ -172,9 +176,13 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
         ||  patch.type() == "periodic"
         )
         {
+            dictionary dict(patch.dict());
+
+            dict.add("master", patch.master());
+
             patchDicts[Pstream::myProcNo()].append
             (
-                dictionary(patch.dict())
+                dictionary(dict)
             );
         }
     }
@@ -215,6 +223,7 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
             const word name0(dict0.lookup("name"));
             const labelTensor T0(dict0.lookup("T"));
             const label tag0(readLabel(dict0.lookup("tag")));
+            const label master0(readLabel(dict0.lookup("master")));
 
             // Find the opposite of this parallel patch
 
@@ -237,6 +246,7 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
                 const word name1(dict1.lookup("name"));
                 const labelTensor T1(dict1.lookup("T"));
                 const label tag1(readLabel(dict1.lookup("tag")));
+                const label master1(readLabel(dict1.lookup("master")));
 
                 if
                 (
@@ -253,12 +263,22 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
                     Info<< "        at processor " << proci << nl
                         << "            offset = " << boundaryOffset0 << nl
                         << "            T      = " << T0 << nl
-                        << "            tag    = " << tag0 << endl;
+                        << "            tag    = " << tag0 << nl
+                        << "            master = " << master0 << endl;
 
                     Info<< "        at processor " << procj << nl
                         << "            offset = " << boundaryOffset1 << nl
                         << "            T      = " << T1 << nl
-                        << "            tag    = " << tag1 << endl;
+                        << "            tag    = " << tag1 << nl
+                        << "            master = " << master1 << endl;
+
+                    if (master0 == master1)
+                    {
+                        FatalErrorInFunction
+                            << "Mismatch in master/slave. Both patches are "
+                            << ((master0 == 0) ? "slave" : "master")
+                            << endl << exit(FatalError);
+                    }
 
                     break;
                 }

@@ -84,6 +84,11 @@ public:
 
     // Rotation of the neighbor
     inline const labelTensor& T() const { return T_; }
+
+    // Part patches that require communication can be master or slave. By
+    // default, a part patch is always master.
+    virtual bool master() const { return true; }
+    virtual bool slave() const { return !master(); }
 };
 
 }
