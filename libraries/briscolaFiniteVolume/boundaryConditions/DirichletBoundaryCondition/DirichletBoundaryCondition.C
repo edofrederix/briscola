@@ -91,13 +91,13 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
         const labelVector S(fd.boundaryStart(bo));
         const labelVector E(fd.boundaryEnd(bo));
 
-        // For Dirichlet on-boundary BCs, the linear system is not solved
-        // and the solution set to the given value. For off-boundary BCs,
-        // set the ghost cell appropriately
+        // For shifted boundaries, the boundary values are non-eliminated and
+        // directly set. For non-shifted boundaries, set the ghost cell
+        // appropriately
 
         labelVector ijk;
 
-        if (fd.onBoundary(bo))
+        if (fd.shifted(bo))
         {
             for (ijk.x() =  S.x(); ijk.x() < E.x(); ijk.x()++)
             for (ijk.y() =  S.y(); ijk.y() < E.y(); ijk.y()++)

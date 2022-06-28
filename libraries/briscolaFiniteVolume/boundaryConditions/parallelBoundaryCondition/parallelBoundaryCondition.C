@@ -135,9 +135,24 @@ void parallelBoundaryCondition<Type,MeshType>::initEvaluate
     {
         const meshDirection<Type,MeshType>& fd = field[d];
 
-        const labelVector S(fd.extendedBoundaryStart(bo));
-        const labelVector E(fd.extendedBoundaryEnd(bo));
-        const labelVector C(fd.copyOffset(bo));
+        labelVector S(fd.extendedBoundaryStart(bo));
+        labelVector E(fd.extendedBoundaryEnd(bo));
+
+        // For shifted boundaries, we must copy with an offset if we are slave,
+        // or if this is an edge or vertex boundary condition
+
+        if
+        (
+            fd.shifted(bo)
+         && (
+                this->slave()
+             || this->boundaryOffsetDegree() > 1
+            )
+        )
+        {
+            S += fd.shiftedCopyOffset(bo);
+            E += fd.shiftedCopyOffset(bo);
+        }
 
         block<Type>& sendBuffer =
             sendBuffers_[l*field.size()+d];
@@ -151,7 +166,7 @@ void parallelBoundaryCondition<Type,MeshType>::initEvaluate
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            sendBuffer(ijk-S) = fd(ijk+C);
+            sendBuffer(ijk-S) = fd(ijk);
         }
 
         outstandingRecvRequest_ = UPstream::nRequests();
@@ -213,8 +228,22 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate
 
         meshDirection<Type,MeshType>& fd = field[d1];
 
-        const labelVector S(fd.extendedBoundaryStart(bo));
-        const labelVector E(fd.extendedBoundaryEnd(bo));
+        labelVector S(fd.extendedBoundaryStart(bo));
+        labelVector E(fd.extendedBoundaryEnd(bo));
+
+        // For shifted face boundaries, we must copy into internal cells, not
+        // ghost cells. So we need to apply the copy offset.
+
+        if
+        (
+            fd.shifted(bo)
+         && this->slave()
+         && this->boundaryOffsetDegree() == 1
+        )
+        {
+            S += fd.shiftedCopyOffset(bo);
+            E += fd.shiftedCopyOffset(bo);
+        }
 
         block<Type>& recvBuffer =
             recvBuffers_[l*field.size()+d2];
@@ -223,10 +252,6 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate
 
         block<Type> data(recvBuffer);
         data.transform(T);
-
-        // For parallel on-boundary BCs, the linear system is not solved
-        // and the solution set to the given value. For off-boundary BCs,
-        // set the ghost cell appropriately
 
         labelVector ijk;
 

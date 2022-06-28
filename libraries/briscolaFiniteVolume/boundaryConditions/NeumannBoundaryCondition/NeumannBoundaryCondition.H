@@ -83,9 +83,6 @@ public:
 
     // Evaluate the boundary condition for given level
     virtual void evaluate(const label, const bool = false);
-
-    // Neumann boundary condition does not constrain on-boundary values
-    virtual bool constrained() const { return false; }
 };
 
 }

@@ -210,8 +210,8 @@ public:
         return extendedBoundaryStart(bo) + extendedBoundaryN(bo);
     }
 
-    // Return true of the given boundary offset is on the boundary
-    inline bool onBoundary(const labelVector& bo) const
+    // Return true if the boundary at given offset is shifted
+    inline bool shifted(const labelVector& bo) const
     {
         for (int dim = 0; dim < 3; dim++)
             if (bo[dim] != 0 && MeshType::shift[d_][dim] != 0.0)
@@ -220,13 +220,10 @@ public:
         return false;
     }
 
-    // Return the copy offset for parallel/periodic boundaries
-    inline labelVector copyOffset(const labelVector& bo) const
+    // Return the copy offset for shifted boundaries
+    inline labelVector shiftedCopyOffset(const labelVector& bo) const
     {
-        return
-            onBoundary(bo)
-          ? cmptMultiply(-bo, MeshType::padding[d_])
-          : zeroXYZ;
+        return cmptMultiply(-bo, MeshType::padding[d_]);
     }
 
     // Return the shape without ghost cells as a diagonal tensor

@@ -97,7 +97,7 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate
 
         labelVector ijk;
 
-        if (fd.onBoundary(bo))
+        if (fd.shifted(bo))
         {
             for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)

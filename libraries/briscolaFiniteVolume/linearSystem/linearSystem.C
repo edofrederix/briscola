@@ -315,12 +315,12 @@ void linearSystem<SType,Type,MeshType>::correctBoundarySources
         const boundaryCondition<Type,MeshType>& bc =
             x_.boundaryConditions()[boundaryi];
 
-        if (bc.constrained())
+        if (!bc.eliminated())
         {
             const labelVector bo(bc.boundaryOffset());
 
             forAll(x, d)
-            if (x[d].onBoundary(bo))
+            if (x[d].shifted(bo))
             {
                 const meshDirection<Type,MeshType>& xd = x[d];
                 const meshDirection<scalar,MeshType>& cvd = cv[d];
@@ -367,12 +367,12 @@ void linearSystem<SType,Type,MeshType>::correctBoundaryCoefficients
         const boundaryCondition<Type,MeshType>& bc =
             x_.boundaryConditions()[boundaryi];
 
-        if (bc.constrained())
+        if (!bc.eliminated())
         {
             const labelVector bo(bc.boundaryOffset());
 
             forAll(x, d)
-            if (x[d].onBoundary(bo))
+            if (x[d].shifted(bo))
             {
                 const meshDirection<scalar,MeshType>& cvd = cv[d];
 

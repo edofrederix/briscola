@@ -27,8 +27,12 @@ protected:
     // Name of the patch
     const word name_;
 
-    // Offset of this patch to the boundary
+    // Boundary offset of this patch
     labelVector boundaryOffset_;
+
+    // Boundary offset degree, giving the number on non-zero components in the
+    // boundary offset vector
+    label boundaryOffsetDegree_;
 
     // Rotation of the neighbor in case of a parallel patch (defaults to the
     // identity tensor)
@@ -87,6 +91,12 @@ public:
     inline const labelVector& boundaryOffset() const
     {
         return boundaryOffset_;
+    }
+
+    // Boundary offset degree
+    inline label boundaryOffsetDegree() const
+    {
+        return boundaryOffsetDegree_;
     }
 
     // Rotation of the neighbor

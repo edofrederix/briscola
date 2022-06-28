@@ -76,9 +76,6 @@ public:
 
     // Evaluate the boundary condition for given level
     virtual void evaluate(const label, const bool = false);
-
-    // Dummy does not constrain
-    virtual bool constrained() const { return false; }
 };
 
 }

@@ -84,8 +84,8 @@ public:
     // Evaluate the boundary condition for given level
     virtual void evaluate(const label, const bool = false);
 
-    // Dirichlet boundary condition constrains on-boundary values
-    virtual bool constrained() const { return true; }
+    // Dirichlet boundary conditions are non-eliminated on shifted boundaries
+    virtual bool eliminated() const { return false; }
 };
 
 }

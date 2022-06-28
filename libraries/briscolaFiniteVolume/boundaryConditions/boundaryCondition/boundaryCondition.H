@@ -174,10 +174,28 @@ public:
         return patch_.boundaryOffset();
     }
 
+    // Boundary offset degree
+    inline label boundaryOffsetDegree() const
+    {
+        return patch_.boundaryOffsetDegree();
+    }
+
     // Return the transformation tensor
     inline labelTensor T() const
     {
         return patch_.T();
+    }
+
+    // Return master bool
+    inline bool master() const
+    {
+        return patch_.master();
+    }
+
+    // Return slave bool
+    inline bool slave() const
+    {
+        return patch_.slave();
     }
 
     // Access to the face centers of the field this BC belongs to
@@ -218,11 +236,13 @@ public:
         NotImplemented;
     }
 
-    // Dirichlet-like boundary conditions constrain values for on-boundary
-    // values
-    virtual bool constrained() const
+    // Boundary conditions on shifted boundaries may be non-eliminated. For
+    // example, for Dirichlet-like boundary conditions the value on the boundary
+    // is known. Also for slave parallel/periodic boundary conditions the value
+    // is known. By default, boundary conditions are eliminated.
+    virtual bool eliminated() const
     {
-        return false;
+        return true;
     }
 };
 

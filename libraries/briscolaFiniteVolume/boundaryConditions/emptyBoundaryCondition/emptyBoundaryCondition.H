@@ -79,8 +79,8 @@ public:
     // Evaluate the boundary condition for given level
     virtual void evaluate(const label, const bool = false);
 
-    // empty boundary condition constrains on-boundary values
-    virtual bool constrained() const { return true; }
+    // Empty boundary condition are non-eliminated on shifted boundaries
+    virtual bool eliminated() const { return false; }
 };
 
 }

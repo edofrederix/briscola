@@ -78,13 +78,12 @@ void emptyBoundaryCondition<Type,MeshType>::evaluate
         const labelVector S(fd.boundaryStart(bo));
         const labelVector E(fd.boundaryEnd(bo));
 
-        // For empty on-boundary BCs, the linear system is not solved and the
-        // solution set to zero. For empty off-boundary BCs, apply homogeneous
-        // Neumann
+        // For shifted boundaries, the boundary values are non-eliminated and
+        // set to zero. For non-shifted boundaries, apply homogeneous Neumann
 
         labelVector ijk;
 
-        if (fd.onBoundary(bo))
+        if (fd.shifted(bo))
         {
             for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)

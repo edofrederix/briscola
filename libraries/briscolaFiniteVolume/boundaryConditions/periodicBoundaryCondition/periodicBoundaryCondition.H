@@ -71,9 +71,6 @@ public:
 
     // Initialize the evaluation of the boundary condition for given level
     virtual void initEvaluate(const label);
-
-    // Periodic boundary condition does not constrain on-boundary values
-    virtual bool constrained() const { return false; }
 };
 
 }
