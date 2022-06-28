@@ -16,6 +16,8 @@ class mesh;
 
 class partPatch
 {
+protected:
+
     // Reference to the mesh
     const mesh& msh_;
 
@@ -31,6 +33,11 @@ class partPatch
     // Rotation of the neighbor in case of a parallel patch (defaults to the
     // identity tensor)
     labelTensor T_;
+
+    // Master bool. Part patches that require communication can be master or
+    // slave. By default a part patch is master. Can be modified by derived
+    // classes.
+    bool master_;
 
 public:
 
@@ -85,10 +92,9 @@ public:
     // Rotation of the neighbor
     inline const labelTensor& T() const { return T_; }
 
-    // Part patches that require communication can be master or slave. By
-    // default, a part patch is always master.
-    virtual bool master() const { return true; }
-    virtual bool slave() const { return !master(); }
+    // Master bool
+    inline bool master() const { return master_; }
+    inline bool slave() const { return !master_; }
 };
 
 }

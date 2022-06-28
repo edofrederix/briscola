@@ -19,6 +19,10 @@ parallelPartPatch::parallelPartPatch(const mesh& msh, const dictionary& dict)
     partPatch(msh, dict),
     neighborProcNum_(readLabel(dict.lookup("neighborProcNum")))
 {
+    // Set master bool. This part patch is master if its face, edge or vertex
+    // number is even and the neighboring one is odd. If they are both odd or
+    // both even, the lower processor number is master.
+
     const labelVector bo(dict.lookup("boundaryOffset"));
     const labelVector no(dict.lookup("neighborOffset"));
 

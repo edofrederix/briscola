@@ -16,7 +16,8 @@ partPatch::partPatch(const mesh& msh, const dictionary& dict)
     dict_(dict),
     name_(dict.lookup("name")),
     boundaryOffset_(dict.lookup("boundaryOffset")),
-    T_(dict.lookupOrDefault<labelTensor>("T", eye))
+    T_(dict.lookupOrDefault<labelTensor>("T", eye)),
+    master_(true)
 {}
 
 partPatch::partPatch
@@ -28,7 +29,8 @@ partPatch::partPatch
     dict_(pp.dict_),
     name_(pp.name_),
     boundaryOffset_(pp.boundaryOffset_),
-    T_(pp.T_)
+    T_(pp.T_),
+    master_(pp.master_)
 {}
 
 partPatch::~partPatch()
