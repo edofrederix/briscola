@@ -45,8 +45,8 @@ void IO::writeData(const word timeName, const label l)
 
         const labelVector pointMeshSize =
             fvMsh_[l].N()
-        + MeshType::padding[d]
-        + unitXYZ;
+          + MeshType::padding[d]
+          + unitXYZ;
 
         points->SetNumberOfPoints(cmptProduct(pointMeshSize));
 
@@ -362,8 +362,7 @@ word IO::vtkFileName
     return
         dataFileNamePrefix
       + "_"
-      + Foam::name(l)
-      + "_"
+      + (l > 0 ? word(Foam::name(l) + "_") : "")
       + MeshType::typeName
       + (
             MeshType::numberOfDirections > 1
@@ -380,8 +379,7 @@ word IO::pvdFileName(const label l, const label d) const
     return
         dataFileNamePrefix
       + "_"
-      + Foam::name(l)
-      + "_"
+      + (l > 0 ? word(Foam::name(l) + "_") : "")
       + MeshType::typeName
       + (
             MeshType::numberOfDirections > 1

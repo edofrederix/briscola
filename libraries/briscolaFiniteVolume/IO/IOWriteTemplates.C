@@ -50,10 +50,9 @@ void IO::writeArrayField
     vtkSmartPointer<vtkDoubleArray> field =
         vtkSmartPointer<vtkDoubleArray>::New();
 
-    const word name(D.mshLevel().mshField().name());
-
     const label n(Type::nComponents);
 
+    field->SetName(D.mshLevel().mshField().name().c_str());
     field->SetNumberOfComponents(n);
     field->SetNumberOfTuples(D.size());
 
@@ -86,11 +85,10 @@ void IO::writeArrayArrayField
     vtkSmartPointer<vtkDoubleArray> field =
         vtkSmartPointer<vtkDoubleArray>::New();
 
-    const word name(D.mshLevel().mshField().name());
-
     const label m(Type::nComponents);
     const label n(pTraits<typename Type::cmpt>::nComponents);
 
+    field->SetName(D.mshLevel().mshField().name().c_str());
     field->SetNumberOfComponents(m*n);
     field->SetNumberOfTuples(D.size());
 
