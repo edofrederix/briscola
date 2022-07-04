@@ -34,11 +34,11 @@ parallelPartPatch::parallelPartPatch(const mesh& msh, const dictionary& dict)
       : vertexNumber(bo);
 
     const label n2 =
-        cmptSum(cmptMag(bo)) == 1
-      ? faceNumber(bo)
-      : cmptSum(cmptMag(bo)) == 2
-      ? edgeNumber(bo)
-      : vertexNumber(bo);
+        cmptSum(cmptMag(no)) == 1
+      ? faceNumber(no)
+      : cmptSum(cmptMag(no)) == 2
+      ? edgeNumber(no)
+      : vertexNumber(no);
 
     if (n1 % 2 == 0 && n2 % 2 == 1)
     {

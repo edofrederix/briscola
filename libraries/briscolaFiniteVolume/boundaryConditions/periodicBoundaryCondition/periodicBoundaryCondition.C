@@ -84,9 +84,9 @@ void periodicBoundaryCondition<Type,MeshType>::initEvaluate
                     if
                     (
                         fld.shifted(bo)
-                    && (
-                            this->slave()
-                         || this->boundaryOffsetDegree() > 1
+                     && (
+                            bc.slave()
+                         || bc.boundaryOffsetDegree() > 1
                         )
                     )
                     {

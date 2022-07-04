@@ -24,14 +24,7 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
             const boundaryCondition<faceVector,MeshType>& bc =
                 fc.boundaryConditions()[bci];
 
-            if
-            (
-                bc.boundaryOffset() == bo
-             && (
-                    bc.baseType() == PERIODICBC
-                 || bc.baseType() == PARALLELBC
-                )
-            )
+            if (bc.boundaryOffset() == bo && bc.baseType() == PARALLELBC)
             {
                 found = true;
                 break;
@@ -71,6 +64,7 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
                     FatalErrorInFunction
                         << "Found mismatch in face centers at "
                         << "boundary offset = " << bo << nl
+                        << "mesh type = " << MeshType::typeName << nl
                         << "mesh direction = " << d << nl
                         << "fc1[face] = " << fcld(ijk)[dir1] << nl
                         << "fc1 = " << fcld(ijk) << nl
