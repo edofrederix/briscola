@@ -126,122 +126,202 @@ void testIndexing()
 template<class Type>
 void testTransformations()
 {
-    labelVector shape(2,3,4);
+    const label l = 2;
+    const label m = 3;
+    const label n = 4;
+
+    const labelVector shape(l,m,n);
 
     block<Type> b1(shape);
 
-    label l = 0;
+    label c = 0;
 
     forAllBlock(b1, i, j, k)
     {
-        b1(i,j,k) = pTraits<Type>::one*l++;
+        b1(i,j,k) = pTraits<Type>::one*c++;
     }
+
+    const block<Type> b0(b1);
 
     // Reflections shouldn't change shape
 
+    b1 = b0;
     b1.transform(reflectX);
 
     if (b1.shape() != shape)
         FatalErrorInFunction << "test 1a failed" << abort(FatalError);
 
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(l-1-i,j,k))
+            FatalErrorInFunction << "test 1b failed" << abort(FatalError);
+
+    b1 = b0;
     b1.transform(reflectY);
-
-    if (b1.shape() != shape)
-        FatalErrorInFunction << "test 1b failed" << abort(FatalError);
-
-    b1.transform(reflectZ);
 
     if (b1.shape() != shape)
         FatalErrorInFunction << "test 1c failed" << abort(FatalError);
 
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,m-1-j,k))
+            FatalErrorInFunction << "test 1d failed" << abort(FatalError);
+
+    b1 = b0;
+    b1.transform(reflectZ);
+
+    if (b1.shape() != shape)
+        FatalErrorInFunction << "test 1e failed" << abort(FatalError);
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,j,n-1-k))
+            FatalErrorInFunction << "test 1f failed" << abort(FatalError);
+
     // 180 degree rotations shouldn't change shape
 
+    b1 = b0;
     b1.transform(rotateX2);
 
     if (b1.shape() != shape)
         FatalErrorInFunction << "test 2a failed" << abort(FatalError);
 
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,m-1-j,n-1-k))
+            FatalErrorInFunction << "test 2b failed" << abort(FatalError);
+
+    b1 = b0;
     b1.transform(rotateY2);
-
-    if (b1.shape() != shape)
-        FatalErrorInFunction << "test 2b failed" << abort(FatalError);
-
-    b1.transform(rotateZ2);
 
     if (b1.shape() != shape)
         FatalErrorInFunction << "test 2c failed" << abort(FatalError);
 
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(l-1-i,j,n-1-k))
+            FatalErrorInFunction << "test 2d failed" << abort(FatalError);
+
+    b1 = b0;
+    b1.transform(rotateZ2);
+
+    if (b1.shape() != shape)
+        FatalErrorInFunction << "test 2e failed" << abort(FatalError);
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(l-1-i,m-1-j,k))
+            FatalErrorInFunction << "test 2f failed" << abort(FatalError);
+
     // Permutations
 
+    b1 = b0;
     b1.transform(permuteXY);
-    shape = permuteXY & shape;
 
-    if (b1.shape() != shape)
+    if (b1.shape() != (permuteXY & shape))
         FatalErrorInFunction << "test 3a failed" << abort(FatalError);
 
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(j,i,k))
+            FatalErrorInFunction << "test 3b failed" << abort(FatalError);
+
+    b1 = b0;
     b1.transform(permuteXZ);
-    shape = permuteXZ & shape;
 
-    if (b1.shape() != shape)
-        FatalErrorInFunction << "test 3a failed" << abort(FatalError);
+    if (b1.shape() != (permuteXZ & shape))
+        FatalErrorInFunction << "test 3c failed" << abort(FatalError);
 
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(k,j,i))
+            FatalErrorInFunction << "test 3d failed" << abort(FatalError);
+
+    b1 = b0;
     b1.transform(permuteYZ);
-    shape = permuteYZ & shape;
 
-    if (b1.shape() != shape)
-        FatalErrorInFunction << "test 3a failed" << abort(FatalError);
+    if (b1.shape() != (permuteYZ & shape))
+        FatalErrorInFunction << "test 3e failed" << abort(FatalError);
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,k,j))
+            FatalErrorInFunction << "test 3f failed" << abort(FatalError);
 
     // Rotations
 
+    b1 = b0;
     b1.transform(rotateX1);
-    shape = cmptMag(rotateX1 & shape);
 
-    if (b1.shape() != shape)
+    if (b1.shape() != cmptMag(rotateX1 & shape))
         FatalErrorInFunction << "test 4a failed" << abort(FatalError);
 
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,k,n-1-j))
+            FatalErrorInFunction << "test 4b failed" << abort(FatalError);
+
+    b1 = b0;
     b1.transform(rotateX3);
-    shape = cmptMag(rotateX3 & shape);
 
-    if (b1.shape() != shape)
-        FatalErrorInFunction << "test 4b failed" << abort(FatalError);
-
-    b1.transform(rotateY1);
-    shape = cmptMag(rotateY1 & shape);
-
-    if (b1.shape() != shape)
+    if (b1.shape() != cmptMag(rotateX3 & shape))
         FatalErrorInFunction << "test 4c failed" << abort(FatalError);
 
-    b1.transform(rotateY3);
-    shape = cmptMag(rotateY3 & shape);
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,m-1-k,j))
+            FatalErrorInFunction << "test 4d failed" << abort(FatalError);
 
-    if (b1.shape() != shape)
-        FatalErrorInFunction << "test 4d failed" << abort(FatalError);
+    b1 = b0;
+    b1.transform(rotateY1);
 
-    b1.transform(rotateZ1);
-    shape = cmptMag(rotateZ1 & shape);
-
-    if (b1.shape() != shape)
+    if (b1.shape() != cmptMag(rotateY1 & shape))
         FatalErrorInFunction << "test 4e failed" << abort(FatalError);
 
-    b1.transform(rotateZ3);
-    shape = cmptMag(rotateZ3 & shape);
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(l-1-k,j,i))
+            FatalErrorInFunction << "test 4f failed" << abort(FatalError);
 
-    if (b1.shape() != shape)
-        FatalErrorInFunction << "test 4f failed" << abort(FatalError);
+    b1 = b0;
+    b1.transform(rotateY3);
+
+    if (b1.shape() != cmptMag(rotateY3 & shape))
+        FatalErrorInFunction << "test 4g failed" << abort(FatalError);
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(k,j,n-1-i))
+            FatalErrorInFunction << "test 4h failed" << abort(FatalError);
+
+    b1 = b0;
+    b1.transform(rotateZ1);
+
+    if (b1.shape() != cmptMag(rotateZ1 & shape))
+        FatalErrorInFunction << "test 4i failed" << abort(FatalError);
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(j,m-1-i,k))
+            FatalErrorInFunction << "test 4j failed" << abort(FatalError);
+
+    b1 = b0;
+    b1.transform(rotateZ3);
+
+    if (b1.shape() != cmptMag(rotateZ3 & shape))
+        FatalErrorInFunction << "test 4k failed" << abort(FatalError);
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(l-1-j,i,k))
+            FatalErrorInFunction << "test 4l failed" << abort(FatalError);
 
     // Slicing
 
-    block<Type> b2(b1.slice(1,1));
-    shape.y() = 1;
+    b1 = b0;
 
-    if (b2.shape() != shape)
-        FatalErrorInFunction << "test 5 failed" << abort(FatalError);
+    for (label dir = 0; dir < 3; dir++)
+    {
+        block<Type> s(b1.slice(dir+1,dir));
+        labelVector shape2(shape);
+        shape2[dir] = 1;
 
-    b2.squeeze();
-    shape = labelVector(shape.x(), shape.z(), 1);
+        if (s.shape() != shape2)
+            FatalErrorInFunction << "test 5 failed" << abort(FatalError);
 
-    if (b2.shape() != shape)
-        FatalErrorInFunction << "test 6 failed" << abort(FatalError);
+        forAllBlock(s, i, j, k)
+        {
+            const labelVector ijk = units[dir]*(1+dir) + labelVector(i,j,k);
+
+            if (s(i,j,k) != b0(ijk))
+                FatalErrorInFunction << "test 6 failed" << abort(FatalError);
+        }
+    }
 }
 
 template<class Type>
@@ -250,7 +330,6 @@ void testMemberOperators()
     const labelVector shape(2,3,4);
 
     block<Type> b1(shape);
-    block<Type> b2(shape);
     block<scalar> s1(shape);
 
     label l = 0;
@@ -258,32 +337,110 @@ void testMemberOperators()
     forAllBlock(b1, i, j, k)
     {
         s1(i,j,k) = scalar(2.0*l+1.0);
-        b1(i,j,k) = Zero;
-        b2(i,j,k) = pTraits<Type>::one*l++;
+        b1(i,j,k) = pTraits<Type>::one*l++;
     }
 
+    const block<Type> b0(b1);
+
     b1 = Zero;
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != pTraits<Type>::zero)
+            FatalErrorInFunction << "test 1a failed" << abort(FatalError);
+
     b1 = pTraits<Type>::one*2.0;
-    b1 = b2;
-    b1 = (2*b2);
 
-    b1 += b2;
-    b1 += (2*b2);
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != pTraits<Type>::one*2.0)
+            FatalErrorInFunction << "test 1b failed" << abort(FatalError);
 
-    b1 -= b2;
-    b1 -= (2*b2);
+    b1 = b0;
 
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,j,k))
+            FatalErrorInFunction << "test 1c failed" << abort(FatalError);
+
+    b1 = (2*b0);
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != 2*b0(i,j,k))
+            FatalErrorInFunction << "test 1d failed" << abort(FatalError);
+
+    b1 = b0;
+    b1 += b0;
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != 2*b0(i,j,k))
+            FatalErrorInFunction << "test 2a failed" << abort(FatalError);
+
+    b1 += (2*b0);
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != 4*b0(i,j,k))
+            FatalErrorInFunction << "test 2b failed" << abort(FatalError);
+
+    b1 -= b0;
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != 3*b0(i,j,k))
+            FatalErrorInFunction << "test 2c failed" << abort(FatalError);
+
+    b1 -= (2*b0);
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,j,k))
+            FatalErrorInFunction << "test 2d failed" << abort(FatalError);
+
+    b1 = b0;
     b1 *= s1;
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,j,k)*s1(i,j,k))
+            FatalErrorInFunction << "test 3a failed" << abort(FatalError);
+
     b1 *= (2*s1);
 
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,j,k)*s1(i,j,k)*s1(i,j,k)*2)
+            FatalErrorInFunction << "test 3b failed" << abort(FatalError);
+
     b1 /= s1;
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,j,k)*s1(i,j,k)*2)
+            FatalErrorInFunction << "test 3c failed" << abort(FatalError);
+
     b1 /= (2*s1);
 
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,j,k))
+            FatalErrorInFunction << "test 3d failed" << abort(FatalError);
+
+    b1 = b0;
+
     b1 += pTraits<Type>::one;
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,j,k) + pTraits<Type>::one)
+            FatalErrorInFunction << "test 4a failed" << abort(FatalError);
+
     b1 -= pTraits<Type>::one;
 
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,j,k))
+            FatalErrorInFunction << "test 4b failed" << abort(FatalError);
+
     b1 *= scalar(2.0);
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != 2*b0(i,j,k))
+            FatalErrorInFunction << "test 5a failed" << abort(FatalError);
+
     b1 /= scalar(2.0);
+
+    forAllBlock(b1, i, j, k)
+        if (b1(i,j,k) != b0(i,j,k))
+            FatalErrorInFunction << "test 5b failed" << abort(FatalError);
 }
 
 template<class Type>
@@ -295,81 +452,324 @@ void testPrimitiveFunctions()
     block<Type> b2(shape);
     block<scalar> s1(shape);
 
-    label l = 0;
+    label l = 3;
+
+    Type sumb1(Zero);
 
     forAllBlock(b1, i, j, k)
     {
         b1(i,j,k) = pTraits<Type>::one*l++;
         b2(i,j,k) = pTraits<Type>::one*l++;
         s1(i,j,k) = (l+++1);
+
+        sumb1 += b1(i,j,k);
     }
+
+    const Type avb1 = sumb1/cmptProduct(shape);
 
     mag(b1);
     mag(b1*2.0);
 
-    max(b1);
-    max(b1*2.0);
-    gMax(b1);
-    gMax(b1*2.0);
+    if (max(b1) != pTraits<Type>::one*cmptProduct(shape)*3)
+        FatalErrorInFunction << "test 1a failed" << abort(FatalError);
 
-    min(b1);
-    min(b1*2.0);
-    gMin(b1);
-    gMin(b1*2.0);
+    if (max(b1*2.0) != pTraits<Type>::one*cmptProduct(shape)*3*2)
+        FatalErrorInFunction << "test 1b failed" << abort(FatalError);
 
-    sum(b1);
-    sum(b1*2.0);
-    gSum(b1);
-    gSum(b1*2.0);
+    if (gMax(b1) != pTraits<Type>::one*cmptProduct(shape)*3)
+        FatalErrorInFunction << "test 1c failed" << abort(FatalError);
 
-    average(b1);
-    average(b1*2.0);
-    gAverage(b1);
-    gAverage(b1*2.0);
+    if (gMax(b1*2.0) != pTraits<Type>::one*cmptProduct(shape)*3*2)
+        FatalErrorInFunction << "test 1d failed" << abort(FatalError);
+
+
+    if (min(b1) != pTraits<Type>::one*3)
+        FatalErrorInFunction << "test 2a failed" << abort(FatalError);
+
+    if (min(b1*2.0) != pTraits<Type>::one*3*2)
+        FatalErrorInFunction << "test 2b failed" << abort(FatalError);
+
+    if (gMin(b1) != pTraits<Type>::one*3)
+        FatalErrorInFunction << "test 2c failed" << abort(FatalError);
+
+    if (gMin(b1*2.0) != pTraits<Type>::one*3*2)
+        FatalErrorInFunction << "test 2d failed" << abort(FatalError);
+
+
+    if (sum(b1) != sumb1)
+        FatalErrorInFunction << "test 3a failed" << abort(FatalError);
+
+    if (sum(b1*2.0) != sumb1*2)
+        FatalErrorInFunction << "test 3b failed" << abort(FatalError);
+
+    if (gSum(b1) != sumb1)
+        FatalErrorInFunction << "test 3c failed" << abort(FatalError);
+
+    if (gSum(b1*2) != sumb1*2)
+        FatalErrorInFunction << "test 3d failed" << abort(FatalError);
+
+
+    if (average(b1) != avb1)
+        FatalErrorInFunction << "test 4a failed" << abort(FatalError);
+
+    if (average(b1*2) != avb1*2)
+        FatalErrorInFunction << "test 4b failed" << abort(FatalError);
+
+    if (gAverage(b1) != avb1)
+        FatalErrorInFunction << "test 4c failed" << abort(FatalError);
+
+    if (gAverage(b1*2) != avb1*2)
+        FatalErrorInFunction << "test 4d failed" << abort(FatalError);
+
 
     sumProd(b1, b1);
     sumProd(b1*2.0, b1);
     sumProd(b1, b1*2.0);
     sumProd(b1*2.0, b1*2.0);
 
-    max(b1,b2);
-    max(b1*2.0,b2);
-    max(b1,b2*2.0);
-    max(b1*2.0,b2*2.0);
 
-    min(b1,b2);
-    min(b1*2.0,b2);
-    min(b1,b2*2.0);
-    min(b1*2.0,b2*2.0);
+    block<Type> b3 = max(b1,b2);
 
-    max(b1,pTraits<Type>::one);
-    max(b1*2.0,pTraits<Type>::one);
-    max(pTraits<Type>::one,b2);
-    max(pTraits<Type>::one,b2*2.0);
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != b2(i,j,k))
+            FatalErrorInFunction << "test 5a failed" << abort(FatalError);
 
-    min(b1,pTraits<Type>::one);
-    min(b1*2.0,pTraits<Type>::one);
-    min(pTraits<Type>::one,b2);
-    min(pTraits<Type>::one,b2*2.0);
+    b3 = max(b1*2.0,b2);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != 2*b1(i,j,k))
+            FatalErrorInFunction << "test 5b failed" << abort(FatalError);
+
+    b3 = max(b1,b2*2.0);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != 2*b2(i,j,k))
+            FatalErrorInFunction << "test 5c failed" << abort(FatalError);
+
+    b3 = max(b1*2.0,b2*2.0);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != 2*b2(i,j,k))
+            FatalErrorInFunction << "test 5d failed" << abort(FatalError);
+
+
+    b3 = min(b1,b2);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != b1(i,j,k))
+            FatalErrorInFunction << "test 6a failed" << abort(FatalError);
+
+    b3 = min(b1*2.0,b2);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != b2(i,j,k))
+            FatalErrorInFunction << "test 6b failed" << abort(FatalError);
+
+    b3 = min(b1,b2*2.0);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != b1(i,j,k))
+            FatalErrorInFunction << "test 6c failed" << abort(FatalError);
+
+    b3 = min(b1*2.0,b2*2.0);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != 2*b1(i,j,k))
+            FatalErrorInFunction << "test 6d failed" << abort(FatalError);
+
+
+    b3 = max(b1,pTraits<Type>::one);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != b1(i,j,k))
+            FatalErrorInFunction << "test 7a failed" << abort(FatalError);
+
+    b3 = max(b1*2.0,pTraits<Type>::one);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != 2*b1(i,j,k))
+            FatalErrorInFunction << "test 7b failed" << abort(FatalError);
+
+    b3 = max(pTraits<Type>::one,b2);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != b2(i,j,k))
+            FatalErrorInFunction << "test 7c failed" << abort(FatalError);
+
+    b3 = max(pTraits<Type>::one,b2*2.0);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != 2*b2(i,j,k))
+            FatalErrorInFunction << "test 7d failed" << abort(FatalError);
+
+
+    b3 = min(b1,pTraits<Type>::one);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != pTraits<Type>::one)
+            FatalErrorInFunction << "test 8a failed" << abort(FatalError);
+
+    b3 = min(b1*2.0,pTraits<Type>::one);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != pTraits<Type>::one)
+            FatalErrorInFunction << "test 8b failed" << abort(FatalError);
+
+    b3 = min(pTraits<Type>::one,b2);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != pTraits<Type>::one)
+            FatalErrorInFunction << "test 8c failed" << abort(FatalError);
+
+    b3 = min(pTraits<Type>::one,b2*2.0);
+
+    forAllBlock(b1, i, j, k)
+        if (b3(i,j,k) != pTraits<Type>::one)
+            FatalErrorInFunction << "test 8d failed" << abort(FatalError);
+
 
     -b2;
 
-    b1*s1;
-    (b1*2.0)*s1;
-    s1*b1;
-    s1*(b1*2.0);
+    b2 = b1*s1;
 
-    b1/s1;
-    (b1*2.0)/s1;
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != b1(i,j,k)*s1(i,j,k))
+            FatalErrorInFunction << "test 9a failed" << abort(FatalError);
 
-    b1+b2;
-    b1-b2;
+    b2 = (b1*2.0)*s1;
 
-    b1 + pTraits<Type>::one;
-    b1 - pTraits<Type>::one;
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 2*b1(i,j,k)*s1(i,j,k))
+            FatalErrorInFunction << "test 9b failed" << abort(FatalError);
 
-    pTraits<Type>::one + b1;
-    pTraits<Type>::one - b1;
+    b2 = b1*(2.0*s1);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 2*b1(i,j,k)*s1(i,j,k))
+            FatalErrorInFunction << "test 9c failed" << abort(FatalError);
+
+    b2 = s1*b1;
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != b1(i,j,k)*s1(i,j,k))
+            FatalErrorInFunction << "test 9d failed" << abort(FatalError);
+
+    b2 = s1*(b1*2.0);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 2*b1(i,j,k)*s1(i,j,k))
+            FatalErrorInFunction << "test 9e failed" << abort(FatalError);
+
+    b2 = (2.0*s1)*b1;
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 2*b1(i,j,k)*s1(i,j,k))
+            FatalErrorInFunction << "test 9f failed" << abort(FatalError);
+
+
+    b2 = b1/s1;
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != b1(i,j,k)/s1(i,j,k))
+            FatalErrorInFunction << "test 10a failed" << abort(FatalError);
+
+    b2 = (b1*2.0)/s1;
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 2*b1(i,j,k)/s1(i,j,k))
+            FatalErrorInFunction << "test 10b failed" << abort(FatalError);
+
+    b2 = b1/(2.0*s1);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 0.5*b1(i,j,k)/s1(i,j,k))
+            FatalErrorInFunction << "test 10c failed" << abort(FatalError);
+
+
+    b3 = b1+b2;
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != b1(i,j,k)+b2(i,j,k))
+            FatalErrorInFunction << "test 11a failed" << abort(FatalError);
+
+    b3 = (2.0*b1)+b2;
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != 2*b1(i,j,k)+b2(i,j,k))
+            FatalErrorInFunction << "test 11b failed" << abort(FatalError);
+
+    b3 = b1+(2.0*b2);
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != b1(i,j,k)+2*b2(i,j,k))
+            FatalErrorInFunction << "test 11c failed" << abort(FatalError);
+
+    b3 = b1-b2;
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != b1(i,j,k)-b2(i,j,k))
+            FatalErrorInFunction << "test 12a failed" << abort(FatalError);
+
+    b3 = (2.0*b1)-b2;
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != 2*b1(i,j,k)-b2(i,j,k))
+            FatalErrorInFunction << "test 12b failed" << abort(FatalError);
+
+    b3 = b1-(2.0*b2);
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != b1(i,j,k)-2*b2(i,j,k))
+            FatalErrorInFunction << "test 12c failed" << abort(FatalError);
+
+
+    b3 = b1 + pTraits<Type>::one;
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != b1(i,j,k)+pTraits<Type>::one)
+            FatalErrorInFunction << "test 13a failed" << abort(FatalError);
+
+    b3 = 2*b1 + pTraits<Type>::one;
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != 2*b1(i,j,k)+pTraits<Type>::one)
+            FatalErrorInFunction << "test 13b failed" << abort(FatalError);
+
+    b3 = b1 - pTraits<Type>::one;
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != b1(i,j,k)-pTraits<Type>::one)
+            FatalErrorInFunction << "test 13c failed" << abort(FatalError);
+
+    b3 = 2*b1 - pTraits<Type>::one;
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != 2*b1(i,j,k)-pTraits<Type>::one)
+            FatalErrorInFunction << "test 13d failed" << abort(FatalError);
+
+    b3 = pTraits<Type>::one + b1;
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != b1(i,j,k)+pTraits<Type>::one)
+            FatalErrorInFunction << "test 13e failed" << abort(FatalError);
+
+    b3 = pTraits<Type>::one + 2*b1;
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != 2*b1(i,j,k)+pTraits<Type>::one)
+            FatalErrorInFunction << "test 13f failed" << abort(FatalError);
+
+    b3 = pTraits<Type>::one - b1;
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != pTraits<Type>::one - b1(i,j,k))
+            FatalErrorInFunction << "test 13g failed" << abort(FatalError);
+
+    b3 = pTraits<Type>::one - 2*b1;
+
+    forAllBlock(b2, i, j, k)
+        if (b3(i,j,k) != pTraits<Type>::one - 2*b1(i,j,k))
+            FatalErrorInFunction << "test 13h failed" << abort(FatalError);
 }
 
 template<class Type>
@@ -380,70 +780,262 @@ void testVectorSpaceFunctions()
     block<Type> b1(shape);
     block<Type> b2(shape);
 
-    label l = 0;
+    const label nComp = pTraits<Type>::nComponents;
+
+    scalar b1sm = 0.0;
+    Type b1b1scp(Zero);
+    Type b1scm(Zero);
 
     forAllBlock(b1, i, j, k)
     {
-        b1(i,j,k) = pTraits<Type>::one*l++;
-        b2(i,j,k) = pTraits<Type>::one*(l+++1);
+        Type a;
+
+        for (label dir = 0; dir < nComp; dir++)
+        {
+            a[dir] = i*j*k+dir;
+        }
+
+        b1(i,j,k) = a;
+        b2(i,j,k) = a*2;
+
+        b1sm += Foam::mag(a);
+        b1b1scp += Foam::cmptMultiply(a,a);
+        b1scm += Foam::cmptMag(a);
     }
 
-    cmptMax(b1);
-    cmptMax(b1*2.0);
 
-    cmptMin(b1);
-    cmptMin(b1*2.0);
+    scalarBlock r1 = cmptMax(b1);
 
-    cmptAv(b1);
-    cmptAv(b1*2.0);
+    forAllBlock(r1, i, j, k)
+        if (r1(i,j,k) != i*j*k+(nComp-1))
+            FatalErrorInFunction << "test 1a failed" << abort(FatalError);
 
-    cmptMag(b1);
-    cmptMag(b1*2.0);
+    r1 = cmptMax(b1*2.0);
 
-    maxMagSqr(b1);
-    maxMagSqr(b1*2.0);
-    gMaxMagSqr(b1);
-    gMaxMagSqr(b1*2.0);
+    forAllBlock(r1, i, j, k)
+        if (r1(i,j,k) != 2*(i*j*k+(nComp-1)))
+            FatalErrorInFunction << "test 1b failed" << abort(FatalError);
 
-    minMagSqr(b1);
-    minMagSqr(b1*2.0);
-    gMinMagSqr(b1);
-    gMinMagSqr(b1*2.0);
 
-    sumMag(b1);
-    sumMag(b1*2.0);
-    gSumMag(b1);
-    gSumMag(b1*2.0);
+    r1 = cmptMin(b1);
 
-    sumCmptProd(b1, b1);
-    sumCmptProd(b1*2.0, b1);
-    sumCmptProd(b1, b1*2.0);
-    sumCmptProd(b1*2.0, b1*2.0);
+    forAllBlock(r1, i, j, k)
+        if (r1(i,j,k) != i*j*k)
+            FatalErrorInFunction << "test 2a failed" << abort(FatalError);
 
-    sumCmptMag(b1);
-    sumCmptMag(b1*2.0);
-    gSumCmptMag(b1);
-    gSumCmptMag(b1*2.0);
+    r1 = cmptMin(b1*2.0);
 
-    cmptMultiply(b1,b2);
-    cmptMultiply(b1*2.0,b2);
-    cmptMultiply(b1,b2*2.0);
-    cmptMultiply(b1*2.0,b2*2.0);
+    forAllBlock(r1, i, j, k)
+        if (r1(i,j,k) != 2*i*j*k)
+            FatalErrorInFunction << "test 2b failed" << abort(FatalError);
 
-    cmptDivide(b1,b2);
-    cmptDivide(b1*2.0,b2);
-    cmptDivide(b1,b2*2.0);
-    cmptDivide(b1*2.0,b2*2.0);
 
-    cmptMultiply(b1,pTraits<Type>::one);
-    cmptMultiply(b1*2.0,pTraits<Type>::one);
-    cmptMultiply(pTraits<Type>::one,b2);
-    cmptMultiply(pTraits<Type>::one,b2*2.0);
+    r1 = cmptAv(b1);
 
-    cmptDivide(b1,pTraits<Type>::one);
-    cmptDivide(b1*2.0,pTraits<Type>::one);
-    cmptDivide(pTraits<Type>::one,b2);
-    cmptDivide(pTraits<Type>::one,b2*2.0);
+    forAllBlock(r1, i, j, k)
+        if (r1(i,j,k) != i*j*k + (nComp-1.0)/2.0)
+            FatalErrorInFunction << "test 3a failed" << abort(FatalError);
+
+    r1 = cmptAv(b1*2.0);
+
+    forAllBlock(r1, i, j, k)
+        if (r1(i,j,k) != 2.0*(i*j*k + (nComp-1.0)/2.0))
+            FatalErrorInFunction << "test 3b failed" << abort(FatalError);
+
+
+    r1 = mag(b1);
+
+    forAllBlock(r1, i, j, k)
+    {
+        if (r1(i,j,k) != Foam::mag(b1(i,j,k)))
+            FatalErrorInFunction << "test 4a failed" << abort(FatalError);
+    }
+
+    r1 = mag(2*b1);
+
+    forAllBlock(r1, i, j, k)
+    {
+        if (r1(i,j,k) != Foam::mag(2.0*b1(i,j,k)))
+            FatalErrorInFunction << "test 4a failed" << abort(FatalError);
+    }
+
+
+    b2 = cmptMag(-b1);
+
+    forAllBlock(r1, i, j, k)
+        if (b2(i,j,k) != b1(i,j,k))
+            FatalErrorInFunction << "test 5a failed" << abort(FatalError);
+
+    b2 = cmptMag(-b1*2.0);
+
+    forAllBlock(r1, i, j, k)
+        if (b2(i,j,k) != 2*b1(i,j,k))
+            FatalErrorInFunction << "test 5b failed" << abort(FatalError);
+
+
+    if (maxMagSqr(b1) != Foam::magSqr(b1(b1.size()-1)))
+        FatalErrorInFunction << "test 6a failed" << abort(FatalError);
+
+    if (maxMagSqr(2.0*b1) != Foam::magSqr(2.0*b1(b1.size()-1)))
+        FatalErrorInFunction << "test 6b failed" << abort(FatalError);
+
+    if (gMaxMagSqr(b1) != Foam::magSqr(b1(b1.size()-1)))
+        FatalErrorInFunction << "test 6c failed" << abort(FatalError);
+
+    if (gMaxMagSqr(2.0*b1) != Foam::magSqr(2.0*b1(b1.size()-1)))
+        FatalErrorInFunction << "test 6d failed" << abort(FatalError);
+
+
+    if (minMagSqr(b1) != Foam::magSqr(b1(0)))
+        FatalErrorInFunction << "test 7a failed" << abort(FatalError);
+
+    if (minMagSqr(2.0*b1) != Foam::magSqr(2.0*b1(0)))
+        FatalErrorInFunction << "test 7b failed" << abort(FatalError);
+
+    if (gMinMagSqr(b1) != Foam::magSqr(b1(0)))
+        FatalErrorInFunction << "test 7c failed" << abort(FatalError);
+
+    if (gMinMagSqr(2.0*b1) != Foam::magSqr(2.0*b1(0)))
+        FatalErrorInFunction << "test 7d failed" << abort(FatalError);
+
+
+    if (sumMag(b1) != b1sm)
+        FatalErrorInFunction << "test 8a failed" << abort(FatalError);
+
+    if (sumMag(1.0*b1) != b1sm)
+        FatalErrorInFunction << "test 8b failed" << abort(FatalError);
+
+    if (gSumMag(b1) != b1sm)
+        FatalErrorInFunction << "test 8c failed" << abort(FatalError);
+
+    if (gSumMag(1.0*b1) != b1sm)
+        FatalErrorInFunction << "test 8d failed" << abort(FatalError);
+
+
+    if (sumCmptProd(b1, b1) != b1b1scp)
+        FatalErrorInFunction << "test 9a failed" << abort(FatalError);
+
+    if (sumCmptProd(2.0*b1, b1) != 2.0*b1b1scp)
+        FatalErrorInFunction << "test 9b failed" << abort(FatalError);
+
+    if (sumCmptProd(b1, b1*2.0) != 2.0*b1b1scp)
+        FatalErrorInFunction << "test 9c failed" << abort(FatalError);
+
+    if (sumCmptProd(2.0*b1, 2.0*b1) != 4.0*b1b1scp)
+        FatalErrorInFunction << "test 9d failed" << abort(FatalError);
+
+
+    if (sumCmptMag(b1) != b1scm)
+        FatalErrorInFunction << "test 10a failed" << abort(FatalError);
+
+    if (sumCmptMag(2.0*b1) != 2.0*b1scm)
+        FatalErrorInFunction << "test 10b failed" << abort(FatalError);
+
+    if (gSumCmptMag(b1) != b1scm)
+        FatalErrorInFunction << "test 10c failed" << abort(FatalError);
+
+    if (gSumCmptMag(2.0*b1) != 2.0*b1scm)
+        FatalErrorInFunction << "test 10d failed" << abort(FatalError);
+
+
+    b2 = cmptMultiply(b1,b1);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != cmptMultiply(b1(i,j,k),b1(i,j,k)))
+            FatalErrorInFunction << "test 11a failed" << abort(FatalError);
+
+    b2 = cmptMultiply(b1*2.0,b1);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 2.0*cmptMultiply(b1(i,j,k),b1(i,j,k)))
+            FatalErrorInFunction << "test 11b failed" << abort(FatalError);
+
+    b2 = cmptMultiply(b1,b1*2.0);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 2.0*cmptMultiply(b1(i,j,k),b1(i,j,k)))
+            FatalErrorInFunction << "test 11c failed" << abort(FatalError);
+
+    b2 = cmptMultiply(b1*2.0,b1*2.0);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 4.0*cmptMultiply(b1(i,j,k),b1(i,j,k)))
+            FatalErrorInFunction << "test 11d failed" << abort(FatalError);
+
+
+    b2 = cmptDivide(b1,(b1+pTraits<Type>::one)());
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != cmptDivide(b1(i,j,k), b1(i,j,k)+pTraits<Type>::one))
+            FatalErrorInFunction << "test 12a failed" << abort(FatalError);
+
+    b2 = cmptDivide(b1*2.0,(b1+pTraits<Type>::one)());
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != cmptDivide(2.0*b1(i,j,k), b1(i,j,k)+pTraits<Type>::one))
+            FatalErrorInFunction << "test 12b failed" << abort(FatalError);
+
+    b2 = cmptDivide(b1,b1+pTraits<Type>::one);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != cmptDivide(b1(i,j,k), b1(i,j,k)+pTraits<Type>::one))
+            FatalErrorInFunction << "test 12c failed" << abort(FatalError);
+
+    b2 = cmptDivide(b1*2.0,b1+pTraits<Type>::one);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != cmptDivide(2.0*b1(i,j,k), b1(i,j,k)+pTraits<Type>::one))
+            FatalErrorInFunction << "test 12d failed" << abort(FatalError);
+
+
+    b2 = cmptMultiply(b1,pTraits<Type>::one);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != b1(i,j,k))
+            FatalErrorInFunction << "test 13a failed" << abort(FatalError);
+
+    b2 = cmptMultiply(b1*2.0,pTraits<Type>::one);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 2.0*b1(i,j,k))
+            FatalErrorInFunction << "test 13b failed" << abort(FatalError);
+
+    b2 = cmptMultiply(pTraits<Type>::one,b1);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != b1(i,j,k))
+            FatalErrorInFunction << "test 13c failed" << abort(FatalError);
+
+    b2 = cmptMultiply(pTraits<Type>::one,b1*2.0);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 2.0*b1(i,j,k))
+            FatalErrorInFunction << "test 13d failed" << abort(FatalError);
+
+
+    b2 = cmptDivide(b1,pTraits<Type>::one);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != b1(i,j,k))
+            FatalErrorInFunction << "test 14a failed" << abort(FatalError);
+
+    b2 = cmptDivide(b1*2.0,pTraits<Type>::one);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 2.0*b1(i,j,k))
+            FatalErrorInFunction << "test 14b failed" << abort(FatalError);
+
+    b2 = cmptDivide(pTraits<Type>::one,(b1+pTraits<Type>::one)());
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != cmptDivide(pTraits<Type>::one, b1(i,j,k)+pTraits<Type>::one))
+            FatalErrorInFunction << "test 14c failed" << abort(FatalError);
+
+    b2 = cmptDivide(pTraits<Type>::one,b1+pTraits<Type>::one);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != cmptDivide(pTraits<Type>::one, b1(i,j,k)+pTraits<Type>::one))
+            FatalErrorInFunction << "test 14d failed" << abort(FatalError);
 }
 
 template<class Type>
@@ -463,6 +1055,8 @@ void testStencilFunctions()
         b2(i,j,k) = pTraits<Type>::one*(l+++1);
         s1(i,j,k) = (l+++1);
     }
+
+    // Let's see if it compiles. Operators are already tested.
 
     -b1;
 
@@ -506,17 +1100,38 @@ void testScalarFunctions()
 
     label l = 0;
 
+    scalar sumsqr = 0;
+
     forAllBlock(b1, i, j, k)
     {
         b1(i,j,k) = scalar(l+++1);
+
+        sumsqr += Foam::sqr(b1(i,j,k));
     }
 
-    sumSqr(b1);
-    gSumSqr(b1);
+    if (sumSqr(b1) != sumsqr)
+        FatalErrorInFunction << "test 1a failed" << abort(FatalError);
 
-    b1/b1;
-    (b1*2.0)/b1;
-    b1/(b1*2.0);
+    if (gSumSqr(b1) != sumsqr)
+        FatalErrorInFunction << "test 1b failed" << abort(FatalError);
+
+    scalarBlock b2 = b1/b1;
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 1)
+            FatalErrorInFunction << "test 2a failed" << abort(FatalError);
+
+    b2 = (b1*2.0)/b1;
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 2)
+            FatalErrorInFunction << "test 2b failed" << abort(FatalError);
+
+    b2 = b1/(b1*2.0);
+
+    forAllBlock(b2, i, j, k)
+        if (b2(i,j,k) != 0.5)
+            FatalErrorInFunction << "test 2c failed" << abort(FatalError);
 }
 
 void testVectorFunctions()
@@ -528,31 +1143,101 @@ void testVectorFunctions()
 
     label l = 0;
 
+    symmTensor b1ss(Zero);
+
     forAllBlock(b1, i, j, k)
     {
         b1(i,j,k) = vector(l,l+1,l+2); l++;
         b2(i,j,k) = vector(l,l+1,l+2); l++;
+
+        b1ss += Foam::sqr(b1(i,j,k));
     }
 
-    sumSqr(b1);
-    sumSqr(b1*2.0);
-    gSumSqr(b1);
-    gSumSqr(b1*2.0);
+    if (sumSqr(b1) != b1ss)
+        FatalErrorInFunction << "test 1a failed" << abort(FatalError);
 
-    b1*b2;
-    (b1*2.0)*b2;
-    b1*(b2*2.0);
-    (b1*2.0)*(b2*2.0);
+    if (sumSqr(b1*2.0) != 4.0*b1ss)
+        FatalErrorInFunction << "test 1b failed" << abort(FatalError);
 
-    b1 & b2;
-    (b1*2.0) & b2;
-    b1 & (b2*2.0);
-    (b1*2.0) & (b2*2.0);
+    if (gSumSqr(b1) != b1ss)
+        FatalErrorInFunction << "test 1c failed" << abort(FatalError);
 
-    b1 ^ b2;
-    (b1*2.0) ^ b2;
-    b1 ^ (b2*2.0);
-    (b1*2.0) ^ (b2*2.0);
+    if (gSumSqr(b1*2.0) != 4.0*b1ss)
+        FatalErrorInFunction << "test 1d failed" << abort(FatalError);
+
+    block<tensor> t1 = b1*b2;
+
+    forAllBlock(t1, i, j, k)
+        if (t1(i,j,k) != b1(i,j,k)*b2(i,j,k))
+            FatalErrorInFunction << "test 2a failed" << abort(FatalError);
+
+    t1 = (b1*2.0)*b2;
+
+    forAllBlock(t1, i, j, k)
+        if (t1(i,j,k) != 2.0*b1(i,j,k)*b2(i,j,k))
+            FatalErrorInFunction << "test 2b failed" << abort(FatalError);
+
+    t1 = b1*(b2*2.0);
+
+    forAllBlock(t1, i, j, k)
+        if (t1(i,j,k) != 2.0*b1(i,j,k)*b2(i,j,k))
+            FatalErrorInFunction << "test 2c failed" << abort(FatalError);
+
+    t1 = (b1*2.0)*(b2*2.0);
+
+    forAllBlock(t1, i, j, k)
+        if (t1(i,j,k) != 4.0*b1(i,j,k)*b2(i,j,k))
+            FatalErrorInFunction << "test 2d failed" << abort(FatalError);
+
+
+    scalarBlock s1 = b1 & b2;
+
+    forAllBlock(s1, i, j, k)
+        if (s1(i,j,k) != (b1(i,j,k) & b2(i,j,k)))
+            FatalErrorInFunction << "test 3a failed" << abort(FatalError);
+
+    s1 = (b1*2.0) & b2;
+
+    forAllBlock(s1, i, j, k)
+        if (s1(i,j,k) != 2.0*(b1(i,j,k) & b2(i,j,k)))
+            FatalErrorInFunction << "test 3b failed" << abort(FatalError);
+
+    s1 = b1 & (b2*2.0);
+
+    forAllBlock(s1, i, j, k)
+        if (s1(i,j,k) != 2.0*(b1(i,j,k) & b2(i,j,k)))
+            FatalErrorInFunction << "test 3c failed" << abort(FatalError);
+
+    s1 = (b1*2.0) & (b2*2.0);
+
+    forAllBlock(s1, i, j, k)
+        if (s1(i,j,k) != 4.0*(b1(i,j,k) & b2(i,j,k)))
+            FatalErrorInFunction << "test 3d failed" << abort(FatalError);
+
+
+    vectorBlock v1 = b1 ^ b2;
+
+    forAllBlock(s1, i, j, k)
+        if (v1(i,j,k) != (b1(i,j,k) ^ b2(i,j,k)))
+            FatalErrorInFunction << "test 4a failed" << abort(FatalError);
+
+    v1 = (b1*2.0) ^ b2;
+
+    forAllBlock(s1, i, j, k)
+        if (v1(i,j,k) != 2.0*(b1(i,j,k) ^ b2(i,j,k)))
+            FatalErrorInFunction << "test 4b failed" << abort(FatalError);
+
+    v1 = b1 ^ (b2*2.0);
+
+    forAllBlock(s1, i, j, k)
+        if (v1(i,j,k) != 2.0*(b1(i,j,k) ^ b2(i,j,k)))
+            FatalErrorInFunction << "test 4c failed" << abort(FatalError);
+
+    v1 = (b1*2.0) ^ (b2*2.0);
+
+    forAllBlock(s1, i, j, k)
+        if (v1(i,j,k) != 4.0*(b1(i,j,k) ^ b2(i,j,k)))
+            FatalErrorInFunction << "test 4d failed" << abort(FatalError);
 }
 
 void testTensorFunctions()
@@ -576,45 +1261,91 @@ void testTensorFunctions()
         v1(i,j,k) = vector(l,l+1,l+2); l++;
     }
 
-    b1 & b1;
-    (b1*2.0) & b1;
-    b1 & (b1*2.0);
-    (b1*2.0) & (b1*2.0);
+    // Macro function to check if collective operator results in the same as the
+    // operator applied to individual entries
 
-    b1 & b2;
-    (b1*2.0) & b2;
-    b1 & (b2*2.0);
-    (b1*2.0) & (b2*2.0);
+    #define TEST(RET, B1, B2, OP, NAME)                                         \
+    {                                                                           \
+        block<RET> r = B1 OP B2;                                                \
+                                                                                \
+        forAllBlock(r, i, j, k)                                                 \
+            if (r(i,j,k) != (B1(i,j,k) OP B2(i,j,k)))                           \
+                FatalErrorInFunction                                            \
+                    << "test " NAME "a failed"                                  \
+                    << abort(FatalError);                                       \
+                                                                                \
+        r = (B1*2.0) OP B2;                                                     \
+                                                                                \
+        forAllBlock(r, i, j, k)                                                 \
+            if (r(i,j,k) != (2.0*B1(i,j,k) OP B2(i,j,k)))                       \
+                FatalErrorInFunction                                            \
+                    << "test " NAME "b failed"                                  \
+                    << abort(FatalError);                                       \
+                                                                                \
+        r = B1 OP (B2*2.0);                                                     \
+                                                                                \
+        forAllBlock(r, i, j, k)                                                 \
+            if (r(i,j,k) != 2.0*(B1(i,j,k) OP B2(i,j,k)))                       \
+                FatalErrorInFunction                                            \
+                    << "test " NAME "c failed"                                  \
+                    << abort(FatalError);                                       \
+                                                                                \
+        r = (B1*2.0) OP (B2*2.0);                                               \
+                                                                                \
+        forAllBlock(r, i, j, k)                                                 \
+            if (r(i,j,k) != 4.0*(B1(i,j,k) OP B2(i,j,k)))                       \
+                FatalErrorInFunction                                            \
+                    << "test " NAME "d failed"                                  \
+                    << abort(FatalError);                                       \
+    }
 
-    b1 && b1;
-    (b1*2.0) && b1;
-    b1 && (b1*2.0);
-    (b1*2.0) && (b1*2.0);
+    // Commented lines don't work because of OpenFOAM bugs or lack of
+    // implementation
 
-    b1 && b2;
-    (b1*2.0) && b2;
-    b1 && (b2*2.0);
-    (b1*2.0) && (b2*2.0);
+    TEST(tensor, b1, b1, &, "1")
+    TEST(tensor, b1, b2, &, "2")
+    TEST(tensor, b1, b3, &, "3")
+    TEST(tensor, b1, b4, &, "4")
+    TEST(tensor, b2, b1, &, "5")
+    TEST(tensor, b3, b1, &, "6")
+    TEST(tensor, b4, b1, &, "7")
+    TEST(tensor, b2, b2, &, "8")
+    TEST(symmTensor, b2, b3, &, "9")
+    //TEST(tensor, b2, b4, &, "10")
+    TEST(symmTensor, b3, b2, &, "11")
+    // TEST(tensor, b4, b2, &, "12")
+    TEST(sphericalTensor, b3, b3, &, "13")
+    // TEST(tensor, b3, b4, &, "14")
+    // TEST(tensor, b4, b3, &, "15")
+    // TEST(tensor, b4, b4, &, "16")
 
-    b1 & v1;
-    (b1*2.0) & v1;
-    v1 & (b1*2.0);
-    (v1*2.0) & (b1*2.0);
+    TEST(scalar, b1, b1, &&, "17")
+    TEST(scalar, b1, b2, &&, "18")
+    TEST(scalar, b1, b3, &&, "19")
+    // TEST(scalar, b1, b4, &&, "20")
+    TEST(scalar, b2, b1, &&, "21")
+    TEST(scalar, b3, b1, &&, "22")
+    // TEST(scalar, b4, b1, &&, "23")
+    TEST(scalar, b2, b2, &&, "24")
+    TEST(scalar, b2, b3, &&, "25")
+    // TEST(scalar, b2, b4, &&, "26")
+    TEST(scalar, b3, b2, &&, "27")
+    // TEST(scalar, b4, b2, &&, "28")
+    TEST(scalar, b3, b3, &&, "29")
+    // TEST(scalar, b3, b4, &&, "30")
+    // TEST(scalar, b4, b3, &&, "31")
+    TEST(scalar, b4, b4, &&, "32")
 
-    b2 & v1;
-    (b2*2.0) & v1;
-    v1 & (b2*2.0);
-    (v1*2.0) & (b2*2.0);
+    TEST(vector, b1, v1, &, "33")
+    TEST(vector, b2, v1, &, "34")
+    TEST(vector, b3, v1, &, "35")
+    TEST(vector, b4, v1, &, "36")
+    TEST(vector, v1, b1, &, "37")
+    TEST(vector, v1, b2, &, "38")
+    TEST(vector, v1, b3, &, "39")
+    TEST(vector, v1, b4, &, "40")
 
-    b3 & v1;
-    (b3*2.0) & v1;
-    v1 & (b3*2.0);
-    (v1*2.0) & (b3*2.0);
-
-    b4 & v1;
-    (b4*2.0) & v1;
-    v1 & (b4*2.0);
-    (v1*2.0) & (b4*2.0);
+    #undef TEST
 }
 
 int main(int argc, char *argv[])
