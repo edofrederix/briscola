@@ -114,8 +114,18 @@ int main(int argc, char *argv[])
     st1 - hs;
     st1 * hs;
 
-    // DiagStencil tests
+    st3 = diagStencil(2);
 
-    if (st3.center() != 1) FatalErrorInFunction << "test 6 failed" << abort(FatalError);
+    if (st3.center() != 2) FatalErrorInFunction << "test 6 failed" << abort(FatalError);
     if (st3.center() != st3[0]) FatalErrorInFunction << "test 7 failed" << abort(FatalError);
+
+    if (neighborSum(st3) != 0) FatalErrorInFunction << "test 8 failed" << abort(FatalError);
+    if (stencilSum(st3) != 2) FatalErrorInFunction << "test 9 failed" << abort(FatalError);
+    if (neighborSkewSum(st3) != 0) FatalErrorInFunction << "test 10 failed" << abort(FatalError);
+
+    st1 = stencil(1,2,3,4,5,6,7);
+
+    if (neighborSum(st1) != 2+3+4+5+6+7) FatalErrorInFunction << "test 11 failed" << abort(FatalError);
+    if (stencilSum(st1) != 1+2+3+4+5+6+7) FatalErrorInFunction << "test 12 failed" << abort(FatalError);
+    if (neighborSkewSum(st1) != -2+3-4+5-6+7) FatalErrorInFunction << "test 13 failed" << abort(FatalError);
 }
