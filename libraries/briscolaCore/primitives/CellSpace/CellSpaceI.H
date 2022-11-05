@@ -264,7 +264,7 @@ inline void CellSpace<Form, Cmpt, Ncmpts>::operator-=
 )
 {
     for (label i = 0; i < Ncmpts; i++)
-        v_[i] += v;
+        v_[i] -= v;
 }
 
 template<class Form, class Cmpt, direction Ncmpts>
