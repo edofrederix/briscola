@@ -50,6 +50,9 @@ public:
     // Code executed at the end of the simulation
     virtual bool end();
 
+    //- Return the list of fields required
+    virtual wordList fields() const;
+
     // Disallow default bitwise assignment
     void operator=(const example&) = delete;
 };

@@ -70,6 +70,11 @@ bool example::end()
     return true;
 }
 
+wordList example::fields() const
+{
+    return wordList{"U", "p"};
+}
+
 }
 
 }
