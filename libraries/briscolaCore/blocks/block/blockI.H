@@ -59,6 +59,11 @@ inline void block<Type>::transferData(block<Type>& M)
     M.m_ = 0;
     M.n_ = 0;
 
+    if (v_)
+    {
+        delete[] v_;
+    }
+
     v_ = M.v_;
 
     M.v_ = nullptr;

@@ -87,16 +87,21 @@ public:
     // Destructor
     virtual ~meshLevel();
 
-    // Access to the directions
+    // Access to the directions. Use the operator() for this because it doesn't
+    // perform any bounds checking which is expensive.
     inline meshDirection<Type,MeshType>& operator[](label d)
     {
-        return listType::operator[](d);
+        return *const_cast<meshDirection<Type,MeshType>*>
+        (
+            listType::operator()(d)
+        );
     }
 
-    // Const access to the directions
+    // Const access to the directions. Use the operator() for this because it
+    // doesn't perform any bounds checking which is expensive.
     inline const meshDirection<Type,MeshType>& operator[](label d) const
     {
-        return listType::operator[](d);
+        return *listType::operator()(d);
     }
 
     // Number of directions

@@ -115,16 +115,21 @@ public:
     // Destructor
     ~meshField();
 
-    // Access to the levels
+    // Access to the levels. Use the operator() for this because it doesn't
+    // perform any bounds checking which is expensive.
     inline meshLevel<Type,MeshType>& operator[](label l)
     {
-        return listType::operator[](l);
+        return *const_cast<meshLevel<Type,MeshType>*>
+        (
+            listType::operator()(l)
+        );
     }
 
-    // Const access to the levels
+    // Const access to the levels. Use the operator() for this because it
+    // doesn't perform any bounds checking which is expensive.
     inline const meshLevel<Type,MeshType>& operator[](label l) const
     {
-        return listType::operator[](l);
+        return *listType::operator()(l);
     }
 
     // Number of levels
