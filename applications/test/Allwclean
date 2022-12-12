@@ -1,13 +1,16 @@
 #!/bin/bash
 
 for TEST in ./*/; do
+(
+    if [ -f "$TEST/clean.sh" ]; then
 
-    echo $TEST
+        echo $TEST
 
-    cd $TEST
+        cd $TEST
+        ./clean.sh
 
-    ./clean.sh
-
-    cd ..
-
+    fi
+) &
 done
+
+wait

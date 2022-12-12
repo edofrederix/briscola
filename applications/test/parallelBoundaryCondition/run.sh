@@ -4,7 +4,7 @@ TEST=parallelBoundaryCondition
 
 if [ -f build/Test-$TEST ]; then
 
-    OUTPUT=$(mpirun -np 27 ./build/Test-$TEST -parallel > /dev/null 2>&1)
+    OUTPUT=$(mpirun -np 27 --oversubscribe ./build/Test-$TEST -parallel > /dev/null 2>&1)
 
     RET=$?
 

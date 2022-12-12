@@ -4,13 +4,17 @@ for DIR in ./*/; do
 
     TEST=$(echo $DIR | cut -c3- | rev | cut -c2- | rev)
 
-    echo Test $TEST
+    if [ -f "$TEST/build.sh" ]; then
 
-    cd $DIR
+        echo Test $TEST
 
-    ./build.sh
-    ./run.sh
+        cd $DIR
 
-    cd ..
+        ./build.sh
+        ./run.sh
+
+        cd ..
+
+    fi
 
 done
