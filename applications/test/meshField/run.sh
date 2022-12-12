@@ -4,7 +4,7 @@ TEST=meshField
 
 if [ -f build/Test-$TEST ]; then
 
-    OUTPUT=$(mpirun -np 8 ./build/Test-$TEST -parallel > /dev/null 2>&1)
+    OUTPUT=$(mpirun -np 4 ./build/Test-$TEST -parallel > /dev/null 2>&1)
 
     RET=$?
 

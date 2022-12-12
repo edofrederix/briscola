@@ -43,15 +43,15 @@ void testConstructors(const fvMesh& fvMsh)
 
     // Copy from tmp of m2 with same name
 
-    meshField<Type,MeshType> m5a(2.0*m2);
-    meshField<Type,MeshType> m5b(2.0*m2, true);
-    meshField<Type,MeshType> m5c(2.0*m2, true, true);
+    meshField<Type,MeshType> m5a(2*m2);
+    meshField<Type,MeshType> m5b(2*m2, true);
+    meshField<Type,MeshType> m5c(2*m2, true, true);
 
     // Copy from tmp m2 with new name
 
-    meshField<Type,MeshType> m6a("m6a", 2.0*m2);
-    meshField<Type,MeshType> m6b("m6b", 2.0*m2, true);
-    meshField<Type,MeshType> m6c("m6c", 2.0*m2, true, true);
+    meshField<Type,MeshType> m6a("m6a", 2*m2);
+    meshField<Type,MeshType> m6b("m6b", 2*m2, true);
+    meshField<Type,MeshType> m6c("m6c", 2*m2, true, true);
 }
 
 template<class Type, class MeshType>
@@ -128,12 +128,12 @@ void testMemberOperators(const fvMesh& fvMsh)
                     FatalErrorInFunction
                         << "test 2a failed" << abort(FatalError);
 
-    m1 = pTraits<Type>::one*2.0;
+    m1 = pTraits<Type>::one*2;
 
     forAll(m1, l)
         forAll(m1[l], d)
             forAllCells(m1[l][d], i, j, k)
-                if (m1[l][d](i,j,k) != pTraits<Type>::one*2.0)
+                if (m1[l][d](i,j,k) != pTraits<Type>::one*2)
                     FatalErrorInFunction
                         << "test 2b failed" << abort(FatalError);
 
@@ -143,11 +143,11 @@ void testMemberOperators(const fvMesh& fvMsh)
     forAll(m1, l)
         forAll(m1[l], d)
             forAllCells(m1[l][d], i, j, k)
-                if (m1[l][d](i,j,k) != 2.0*m2[l][d](i,j,k))
+                if (m1[l][d](i,j,k) != 2*m2[l][d](i,j,k))
                     FatalErrorInFunction
                         << "test 3a failed" << abort(FatalError);
 
-    m1 += (2.0*m2);
+    m1 += (2*m2);
 
     forAll(m1, l)
         forAll(m1[l], d)
@@ -165,7 +165,7 @@ void testMemberOperators(const fvMesh& fvMsh)
                     FatalErrorInFunction
                         << "test 4a failed" << abort(FatalError);
 
-    m1 -= (2.0*m2);
+    m1 -= (2*m2);
 
     forAll(m1, l)
         forAll(m1[l], d)
@@ -184,12 +184,12 @@ void testMemberOperators(const fvMesh& fvMsh)
                     FatalErrorInFunction
                         << "test 5a failed" << abort(FatalError);
 
-    m1 *= (2.0*s1);
+    m1 *= (2*s1);
 
     forAll(m1, l)
         forAll(m1[l], d)
             forAllCells(m1[l][d], i, j, k)
-                if (m1[l][d](i,j,k) != 2.0*m2[l][d](i,j,k)*Foam::sqr(s1[l][d](i,j,k)))
+                if (m1[l][d](i,j,k) != 2*m2[l][d](i,j,k)*Foam::sqr(s1[l][d](i,j,k)))
                     FatalErrorInFunction
                         << "test 5b failed" << abort(FatalError);
 
@@ -198,11 +198,11 @@ void testMemberOperators(const fvMesh& fvMsh)
     forAll(m1, l)
         forAll(m1[l], d)
             forAllCells(m1[l][d], i, j, k)
-                if (m1[l][d](i,j,k) != 2.0*m2[l][d](i,j,k)*s1[l][d](i,j,k))
+                if (m1[l][d](i,j,k) != 2*m2[l][d](i,j,k)*s1[l][d](i,j,k))
                     FatalErrorInFunction
                         << "test 6a failed" << abort(FatalError);
 
-    m1 /= (2.0*s1);
+    m1 /= (2*s1);
 
     forAll(m1, l)
         forAll(m1[l], d)
@@ -229,16 +229,16 @@ void testMemberOperators(const fvMesh& fvMsh)
                     FatalErrorInFunction
                         << "test 7b failed" << abort(FatalError);
 
-    m1 *= scalar(2.0);
+    m1 *= scalar(2);
 
     forAll(m1, l)
         forAll(m1[l], d)
             forAllCells(m1[l][d], i, j, k)
-                if (m1[l][d](i,j,k) != 2.0*m2[l][d](i,j,k))
+                if (m1[l][d](i,j,k) != 2*m2[l][d](i,j,k))
                     FatalErrorInFunction
                         << "test 8a failed" << abort(FatalError);
 
-    m1 /= scalar(2.0);
+    m1 /= scalar(2);
 
     forAll(m1, l)
         forAll(m1[l], d)
@@ -255,77 +255,379 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
     meshField<Type,MeshType> m2("m2", fvMsh);
     meshField<scalar,MeshType> s1("s1", fvMsh);
 
+    List<Type> sm(m1[0].size(), pTraits<Type>::zero);
+
     forAll(m1, l)
     forAll(m1[l], d)
     forAllCells(m1[l][d], i, j, k)
     {
         m1[l][d](i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
-        s1[l][d](i,j,k) = scalar(l+d+i+j+k+1);
+
+        if (l == 0)
+        {
+            sm[d] += m1[l][d](i,j,k);
+        }
     }
+
+    List<Type> av(sm);
+
+    forAll(m1[0], d)
+        av[d] /= cmptProduct(m1[0][d].N());
 
     m2 = m1;
 
-    mag(m1);
-    mag(m1*2.0);
+    s1 = mag(m1)+scalar(1);
 
-    max(m1);
-    max(m1*2.0);
-    gMax(m1);
-    gMax(m1*2.0);
+    forAll(s1, l)
+        forAll(s1[l], d)
+            forAllCells(s1[l][d], i, j, k)
+                if
+                (
+                    s1[l][d](i,j,k)
+                 != (
+                        Foam::mag(pTraits<Type>::one*(l+d+i+j+k))
+                      + scalar(1)
+                    )
+                )
+                    FatalErrorInFunction
+                        << "test 9a failed" << abort(FatalError);
 
-    min(m1);
-    min(m1*2.0);
-    gMin(m1);
-    gMin(m1*2.0);
+    s1 = mag(m1*2)+scalar(1);
 
-    sum(m1);
-    sum(m1*2.0);
-    gSum(m1);
-    gSum(m1*2.0);
+    forAll(s1, l)
+        forAll(s1[l], d)
+            forAllCells(s1[l][d], i, j, k)
+                if
+                (
+                    s1[l][d](i,j,k)
+                 != (
+                        Foam::mag(2*pTraits<Type>::one*(l+d+i+j+k))
+                      + scalar(1)
+                    )
+                )
+                    FatalErrorInFunction
+                        << "test 9b failed" << abort(FatalError);
 
-    average(m1);
-    average(m1*2.0);
-    gAverage(m1);
-    gAverage(m1*2.0);
+
+    List<Type> mx(s1[0].size());
+
+    forAll(m1[0], d)
+        mx[d] =
+            pTraits<Type>::one*(d + cmptSum(m1[0][d].N()) - 3);
+
+    if (max(m1) != mx)
+        FatalErrorInFunction
+            << "Test 10a failed" << abort(FatalError);
+
+    if (max(2*m1) != 2*mx)
+        FatalErrorInFunction
+            << "Test 10b failed" << abort(FatalError);
+
+    if (gMax(m1) != mx)
+        FatalErrorInFunction
+            << "Test 10c failed" << abort(FatalError);
+
+    if (gMax(2*m1) != 2*mx)
+        FatalErrorInFunction
+            << "Test 10d failed" << abort(FatalError);
+
+
+    List<Type> mn(s1[0].size());
+
+    forAll(m1[0], d)
+        mn[d] =
+            pTraits<Type>::one*d;
+
+    if (min(m1) != mn)
+        FatalErrorInFunction
+            << "Test 11a failed" << abort(FatalError);
+
+    if (min(-2*m1) != -2*mx)
+        FatalErrorInFunction
+            << "Test 11b failed" << abort(FatalError);
+
+    if (gMin(m1) != mn)
+        FatalErrorInFunction
+            << "Test 11c failed" << abort(FatalError);
+
+    if (gMin(-2*m1) != -2*mx)
+        FatalErrorInFunction
+            << "Test 11d failed" << abort(FatalError);
+
+
+    if (sum(m1) != sm)
+        FatalErrorInFunction
+            << "Test 12a failed" << abort(FatalError);
+
+    if (sum(2*m1) != 2*sm)
+        FatalErrorInFunction
+            << "Test 12b failed" << abort(FatalError);
+
+    if (gSum(m1) != sm*Pstream::nProcs())
+        FatalErrorInFunction
+            << "Test 12c failed" << abort(FatalError);
+
+    if (gSum(2*m1) != 2*sm*Pstream::nProcs())
+        FatalErrorInFunction
+            << "Test 12d failed" << abort(FatalError);
+
+    if (average(m1) != av)
+        FatalErrorInFunction
+            << "Test 13a failed" << abort(FatalError);
+
+    // Multiplying by 2 can give rounding errors for integers
+
+    if (average(1*m1) != av)
+        FatalErrorInFunction
+            << "Test 13b failed" << abort(FatalError);
+
+    if (gAverage(m1) != av)
+        FatalErrorInFunction
+            << "Test 13c failed" << abort(FatalError);
+
+    if (gAverage(1*m1) != av)
+        FatalErrorInFunction
+            << "Test 13d failed" << abort(FatalError);
+
 
     sumProd(m1, m1);
-    sumProd(m1*2.0, m1);
-    sumProd(m1, m1*2.0);
-    sumProd(m1*2.0, m1*2.0);
+    sumProd(m1*2, m1);
+    sumProd(m1, m1*2);
+    sumProd(m1*2, m1*2);
 
-    max(m1,m2);
-    max(m1*2.0,m2);
-    max(m1,m2*2.0);
-    max(m1*2.0,m2*2.0);
+    meshField<Type,MeshType> m3(max(m1,m2));
 
-    min(m1,m2);
-    min(m1*2.0,m2);
-    min(m1,m2*2.0);
-    min(m1*2.0,m2*2.0);
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 14a failed" << abort(FatalError);
 
-    max(m1,pTraits<Type>::one);
-    max(m1*2.0,pTraits<Type>::one);
-    max(pTraits<Type>::one,m2);
-    max(pTraits<Type>::one,m2*2.0);
+    m3 = max(m1*2,m2);
 
-    min(m1,pTraits<Type>::one);
-    min(m1*2.0,pTraits<Type>::one);
-    min(pTraits<Type>::one,m2);
-    min(pTraits<Type>::one,m2*2.0);
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != 2*m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 14b failed" << abort(FatalError);
 
-    -m2;
+    m3 = max(m1,m2*2);
 
-    m1*s1;
-    (m1*2.0)*s1;
-    s1*m1;
-    s1*(m1*2.0);
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != 2*m2[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 14c failed" << abort(FatalError);
 
-    m1/s1;
-    (m1*2.0)/s1;
+    m3 = max(m1*2,m2*2);
 
-    m1+m2;
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != 2*m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 14d failed" << abort(FatalError);
 
-    m1-m2;
+
+    m3 = min(m1,m2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 15a failed" << abort(FatalError);
+
+    m3 = min(m1*2,m2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != m2[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 15b failed" << abort(FatalError);
+
+    m3 = min(m1,m2*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 15c failed" << abort(FatalError);
+
+    m3 = min(m1*2,m2*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != 2*m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 15d failed" << abort(FatalError);
+
+
+    m3 = max(m1,pTraits<Type>::one);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != max(m1[l][d](i,j,k),pTraits<Type>::one))
+                    FatalErrorInFunction
+                        << "test 16a failed" << abort(FatalError);
+
+    m3 = max(m1*2,pTraits<Type>::one);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != max(m1[l][d](i,j,k)*2,pTraits<Type>::one))
+                    FatalErrorInFunction
+                        << "test 16b failed" << abort(FatalError);
+
+    m3 = max(pTraits<Type>::one,m2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != max(m2[l][d](i,j,k),pTraits<Type>::one))
+                    FatalErrorInFunction
+                        << "test 16c failed" << abort(FatalError);
+
+    m3 = max(pTraits<Type>::one,m2*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != max(m2[l][d](i,j,k)*2,pTraits<Type>::one))
+                    FatalErrorInFunction
+                        << "test 16d failed" << abort(FatalError);
+
+
+    m3 = min(m1,pTraits<Type>::one);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != min(m1[l][d](i,j,k),pTraits<Type>::one))
+                    FatalErrorInFunction
+                        << "test 17a failed" << abort(FatalError);
+
+    m3 = min(m1*2,pTraits<Type>::one);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != min(2*m1[l][d](i,j,k),pTraits<Type>::one))
+                    FatalErrorInFunction
+                        << "test 17a failed" << abort(FatalError);
+
+    m3 = min(pTraits<Type>::one,m2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != min(m1[l][d](i,j,k),pTraits<Type>::one))
+                    FatalErrorInFunction
+                        << "test 17a failed" << abort(FatalError);
+
+    m3 = min(pTraits<Type>::one,m2*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != min(2*m1[l][d](i,j,k),pTraits<Type>::one))
+                    FatalErrorInFunction
+                        << "test 17a failed" << abort(FatalError);
+
+
+    m3 = -m2;
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != -m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 18a failed" << abort(FatalError);
+
+
+    m3 = m1*s1;
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != m1[l][d](i,j,k)*s1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 19a failed" << abort(FatalError);
+
+    m3 = (m1*2)*s1;
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != m1[l][d](i,j,k)*s1[l][d](i,j,k)*2)
+                    FatalErrorInFunction
+                        << "test 19b failed" << abort(FatalError);
+
+    m3 = s1*m1;
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != m1[l][d](i,j,k)*s1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 19c failed" << abort(FatalError);
+
+    m3 = s1*(m1*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != m1[l][d](i,j,k)*s1[l][d](i,j,k)*2)
+                    FatalErrorInFunction
+                        << "test 19d failed" << abort(FatalError);
+
+
+    m3 = m1/s1;
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != Type(m1[l][d](i,j,k)/s1[l][d](i,j,k)))
+                {
+                    Pout<< s1[l][d](i,j,k) << endl;
+                    FatalErrorInFunction
+                        << "test 20a failed" << abort(FatalError);
+                }
+
+    m3 = (m1*2)/s1;
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != Type((2*m1[l][d](i,j,k))/s1[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 20b failed" << abort(FatalError);
+
+
+    m3 = m1+m2;
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != m1[l][d](i,j,k)+m2[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 21a failed" << abort(FatalError);
+    m3 = m1-m2;
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != m1[l][d](i,j,k)-m2[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 21b failed" << abort(FatalError);
 }
 
 template<class Type, class MeshType>
@@ -333,8 +635,14 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh)
 {
     meshField<Type,MeshType> m1("m1", fvMsh);
     meshField<Type,MeshType> m2("m2", fvMsh);
+    meshField<Type,MeshType> m3("m3", fvMsh);
+    meshField<scalar,MeshType> s1("s1", fvMsh);
 
     label c = 0;
+
+    scalarList m1sm(m1[0].size(), Zero);
+    List<Type> m1m1scp(m1[0].size(), Zero);
+    List<Type> m1scm(m1[0].size(), Zero);
 
     forAll(m1, l)
     forAll(m1[l], d)
@@ -342,64 +650,327 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh)
     {
         m1[l][d](i,j,k) = pTraits<Type>::one*c++;
         m2[l][d](i,j,k) = pTraits<Type>::one*c++;
+
+        if (l == 0)
+        {
+            m1sm[d] += Foam::mag(m1[l][d](i,j,k));
+            m1m1scp[d] += Foam::cmptMultiply(m1[l][d](i,j,k),m1[l][d](i,j,k));
+            m1scm[d] += Foam::cmptMag(m1[l][d](i,j,k));
+        }
     }
 
-    cmptMax(m1);
-    cmptMax(m1*2.0);
+    s1 = cmptMax(m1);
 
-    cmptMin(m1);
-    cmptMin(m1*2.0);
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (s1[l][d](i,j,k) != cmptMax(m1[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 22a failed" << abort(FatalError);
 
-    cmptAv(m1);
-    cmptAv(m1*2.0);
+    s1 = cmptMax(m1*2);
 
-    cmptMag(m1);
-    cmptMag(m1*2.0);
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (s1[l][d](i,j,k) != cmptMax(2*m1[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 22a failed" << abort(FatalError);
 
-    maxMagSqr(m1);
-    maxMagSqr(m1*2.0);
-    gMaxMagSqr(m1);
-    gMaxMagSqr(m1*2.0);
 
-    minMagSqr(m1);
-    minMagSqr(m1*2.0);
-    gMinMagSqr(m1);
-    gMinMagSqr(m1*2.0);
+    s1 = cmptMin(m1);
 
-    sumMag(m1);
-    sumMag(m1*2.0);
-    gSumMag(m1);
-    gSumMag(m1*2.0);
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (s1[l][d](i,j,k) != cmptMin(m1[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 23a failed" << abort(FatalError);
 
-    sumCmptProd(m1, m1);
-    sumCmptProd(m1*2.0, m1);
-    sumCmptProd(m1, m1*2.0);
-    sumCmptProd(m1*2.0, m1*2.0);
+    s1 = cmptMin(m1*2);
 
-    sumCmptMag(m1);
-    sumCmptMag(m1*2.0);
-    gSumCmptMag(m1);
-    gSumCmptMag(m1*2.0);
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (s1[l][d](i,j,k) != cmptMin(2*m1[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 23b failed" << abort(FatalError);
 
-    cmptMultiply(m1,m2);
-    cmptMultiply(m1*2.0,m2);
-    cmptMultiply(m1,m2*2.0);
-    cmptMultiply(m1*2.0,m2*2.0);
 
-    cmptDivide(m1,m2);
-    cmptDivide(m1*2.0,m2);
-    cmptDivide(m1,m2*2.0);
-    cmptDivide(m1*2.0,m2*2.0);
+    s1 = cmptAv(m1);
 
-    cmptMultiply(m1,pTraits<Type>::one);
-    cmptMultiply(m1*2.0,pTraits<Type>::one);
-    cmptMultiply(pTraits<Type>::one,m2);
-    cmptMultiply(pTraits<Type>::one,m2*2.0);
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (s1[l][d](i,j,k) != cmptAv(m1[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 24a failed" << abort(FatalError);
 
-    cmptDivide(m1,pTraits<Type>::one);
-    cmptDivide(m1*2.0,pTraits<Type>::one);
-    cmptDivide(pTraits<Type>::one,m2);
-    cmptDivide(pTraits<Type>::one,m2*2.0);
+    s1 = cmptAv(m1*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (s1[l][d](i,j,k) != cmptAv(2*m1[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 24b failed" << abort(FatalError);
+
+
+    m3 = cmptMag(m1);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptMag(m1[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 25a failed" << abort(FatalError);
+
+    m3 = cmptMag(m1*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptMag(2*m1[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 25b failed" << abort(FatalError);
+
+
+    forAll(m1[0], d)
+        if (maxMagSqr(m1)[d] != Foam::magSqr(m1[0][d](m1[0][d].N()-unitXYZ)))
+            FatalErrorInFunction << "test 26a failed" << abort(FatalError);
+
+    forAll(m1[0], d)
+        if (maxMagSqr(2*m1)[d] != Foam::magSqr(2*m1[0][d](m1[0][d].N()-unitXYZ)))
+            FatalErrorInFunction << "test 26b failed" << abort(FatalError);
+
+
+    forAll(m1[0], d)
+        if (gMaxMagSqr(m1)[d] != Foam::magSqr(m1[0][d](m1[0][d].N()-unitXYZ)))
+            FatalErrorInFunction << "test 27a failed" << abort(FatalError);
+
+    forAll(m1[0], d)
+        if (gMaxMagSqr(2*m1)[d] != Foam::magSqr(2*m1[0][d](m1[0][d].N()-unitXYZ)))
+            FatalErrorInFunction << "test 27b failed" << abort(FatalError);
+
+
+    forAll(m1[0], d)
+        if (minMagSqr(m1)[d] != Foam::magSqr(m1[0][d](0,0,0)))
+            FatalErrorInFunction << "test 28a failed" << abort(FatalError);
+
+    forAll(m1[0], d)
+        if (minMagSqr(2*m1)[d] != Foam::magSqr(2*m1[0][d](0,0,0)))
+            FatalErrorInFunction << "test 28b failed" << abort(FatalError);
+
+
+    forAll(m1[0], d)
+        if (gMinMagSqr(m1)[d] != Foam::magSqr(m1[0][d](0,0,0)))
+            FatalErrorInFunction << "test 29a failed" << abort(FatalError);
+
+    forAll(m1[0], d)
+        if (gMinMagSqr(2*m1)[d] != Foam::magSqr(2*m1[0][d](0,0,0)))
+            FatalErrorInFunction << "test 29b failed" << abort(FatalError);
+
+
+    forAll(m1[0], d)
+        if (sumMag(m1)[d] != m1sm[d])
+            FatalErrorInFunction << "test 30a failed" << abort(FatalError);
+
+    forAll(m1[0], d)
+        if (sumMag(2*m1)[d] != 2*m1sm[d])
+            FatalErrorInFunction << "test 30b failed" << abort(FatalError);
+
+
+    forAll(m1[0], d)
+        if (gSumMag(m1)[d] != Pstream::nProcs()*m1sm[d])
+            FatalErrorInFunction << "test 31a failed" << abort(FatalError);
+
+    forAll(m1[0], d)
+        if (gSumMag(2*m1)[d] != Pstream::nProcs()*2*m1sm[d])
+            FatalErrorInFunction << "test 31b failed" << abort(FatalError);
+
+
+    forAll(m1[0], d)
+        if (sumCmptProd(m1, m1)[d] != m1m1scp[d])
+        {
+            Pout<< sumCmptProd(m1, m1)[d] << " " << m1m1scp[d] << endl;
+            FatalErrorInFunction << "test 32a failed" << abort(FatalError);
+        }
+
+    forAll(m1[0], d)
+        if (sumCmptProd(2*m1, m1)[d] != 2*m1m1scp[d])
+            FatalErrorInFunction << "test 32b failed" << abort(FatalError);
+
+    forAll(m1[0], d)
+        if (sumCmptProd(m1, 2*m1)[d] != 2*m1m1scp[d])
+            FatalErrorInFunction << "test 32c failed" << abort(FatalError);
+
+    forAll(m1[0], d)
+        if (sumCmptProd(2*m1, 2*m1)[d] != 4*m1m1scp[d])
+            FatalErrorInFunction << "test 32d failed" << abort(FatalError);
+
+
+    forAll(m1[0], d)
+        if (sumCmptMag(m1)[d] != m1scm[d])
+            FatalErrorInFunction << "test 33a failed" << abort(FatalError);
+
+    forAll(m1[0], d)
+        if (sumCmptMag(2*m1)[d] != 2*m1scm[d])
+            FatalErrorInFunction << "test 33b failed" << abort(FatalError);
+
+    forAll(m1[0], d)
+        if (gSumCmptMag(m1)[d] != Pstream::nProcs()*m1scm[d])
+            FatalErrorInFunction << "test 33c failed" << abort(FatalError);
+
+    forAll(m1[0], d)
+        if (gSumCmptMag(2*m1)[d] != Pstream::nProcs()*2*m1scm[d])
+            FatalErrorInFunction << "test 33d failed" << abort(FatalError);
+
+
+    m3 = cmptMultiply(m1,m2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptMultiply(m1[l][d](i,j,k),m2[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 34a failed" << abort(FatalError);
+
+    m3 = cmptMultiply(m1*2,m2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptMultiply(2*m1[l][d](i,j,k),m2[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 34b failed" << abort(FatalError);
+
+    m3 = cmptMultiply(m1,m2*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptMultiply(m1[l][d](i,j,k),2*m2[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 34c failed" << abort(FatalError);
+
+    m3 = cmptMultiply(m1*2,m2*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptMultiply(2*m1[l][d](i,j,k),2*m2[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 34d failed" << abort(FatalError);
+
+
+    m3 = cmptDivide(m1,m2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptDivide(m1[l][d](i,j,k),m2[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 35a failed" << abort(FatalError);
+
+    m3 = cmptDivide(m1*2,m2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptDivide(2*m1[l][d](i,j,k),m2[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 35b failed" << abort(FatalError);
+
+    m3 = cmptDivide(m1,m2*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptDivide(m1[l][d](i,j,k),2*m2[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 35c failed" << abort(FatalError);
+
+    m3 = cmptDivide(m1*2,m2*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptDivide(2*m1[l][d](i,j,k),2*m2[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 35d failed" << abort(FatalError);
+
+
+    m3 = cmptMultiply(m1,pTraits<Type>::one);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptMultiply(m1[l][d](i,j,k),pTraits<Type>::one))
+                    FatalErrorInFunction
+                        << "test 36a failed" << abort(FatalError);
+
+    m3 = cmptMultiply(m1*2,pTraits<Type>::one);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptMultiply(2*m1[l][d](i,j,k),pTraits<Type>::one))
+                    FatalErrorInFunction
+                        << "test 36b failed" << abort(FatalError);
+
+    m3 = cmptMultiply(pTraits<Type>::one,m2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptMultiply(pTraits<Type>::one,m2[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 36c failed" << abort(FatalError);
+
+    m3 = cmptMultiply(pTraits<Type>::one,m2*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptMultiply(pTraits<Type>::one,2*m2[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 36d failed" << abort(FatalError);
+
+    m3 = cmptDivide(m1,pTraits<Type>::one);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptDivide(m1[l][d](i,j,k),pTraits<Type>::one))
+                    FatalErrorInFunction
+                        << "test 37a failed" << abort(FatalError);
+
+    m3 = cmptDivide(m1*2,pTraits<Type>::one);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptDivide(2*m1[l][d](i,j,k),pTraits<Type>::one))
+                    FatalErrorInFunction
+                        << "test 37b failed" << abort(FatalError);
+
+    m3 = cmptDivide(pTraits<Type>::one,m2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptDivide(pTraits<Type>::one,m2[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 37c failed" << abort(FatalError);
+
+    m3 = cmptDivide(pTraits<Type>::one,m2*2);
+
+    forAll(m3, l)
+        forAll(m3[l], d)
+            forAllCells(m3[l][d], i, j, k)
+                if (m3[l][d](i,j,k) != cmptDivide(pTraits<Type>::one,2*m2[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 37d failed" << abort(FatalError);
 }
 
 template<class Type, class MeshType>
@@ -423,35 +994,35 @@ void testStencilFunctions(const fvMesh& fvMsh)
     -m1;
 
     m1+m2;
-    (2.0*m1)+m2;
-    m1+(2.0*m2);
-    (2.0*m1)+(2.0*m2);
+    (2*m1)+m2;
+    m1+(2*m2);
+    (2*m1)+(2*m2);
 
     m1-m2;
-    (2.0*m1)-m2;
-    m1-(2.0*m2);
-    (2.0*m1)-(2.0*m2);
+    (2*m1)-m2;
+    m1-(2*m2);
+    (2*m1)-(2*m2);
 
     m1-m2;
-    (2.0*m1)-m2;
-    m1-(2.0*m2);
-    (2.0*m1)-(2.0*m2);
+    (2*m1)-m2;
+    m1-(2*m2);
+    (2*m1)-(2*m2);
 
     m1*s1;
     s1*m1;
-    (2.0*m1)*s1;
-    s1*(2.0*m1);
+    (2*m1)*s1;
+    s1*(2*m1);
 
-    m1*(2.0*s1);
-    (2.0*s1)*m1;
-    (2.0*m1)*(2.0*s1);
-    (2.0*s1)*(2.0*m1);
+    m1*(2*s1);
+    (2*s1)*m1;
+    (2*m1)*(2*s1);
+    (2*s1)*(2*m1);
 
     m1/s1;
-    (2.0*m1)/s1;
+    (2*m1)/s1;
 
-    m1/(2.0*s1);
-    (2.0*m1)/(2.0*s1);
+    m1/(2*s1);
+    (2*m1)/(2*s1);
 }
 
 template<class MeshType>
@@ -469,8 +1040,8 @@ void testScalarFunctions(const fvMesh& fvMsh)
     }
 
     m1/m1;
-    (m1*2.0)/m1;
-    m1/(m1*2.0);
+    (m1*2)/m1;
+    m1/(m1*2);
 }
 
 template<class MeshType>
@@ -490,19 +1061,19 @@ void testVectorFunctions(const fvMesh& fvMsh)
     }
 
     m1*m2;
-    (m1*2.0)*m2;
-    m1*(m2*2.0);
-    (m1*2.0)*(m2*2.0);
+    (m1*2)*m2;
+    m1*(m2*2);
+    (m1*2)*(m2*2);
 
     m1 & m2;
-    (m1*2.0) & m2;
-    m1 & (m2*2.0);
-    (m1*2.0) & (m2*2.0);
+    (m1*2) & m2;
+    m1 & (m2*2);
+    (m1*2) & (m2*2);
 
     m1 ^ m2;
-    (m1*2.0) ^ m2;
-    m1 ^ (m2*2.0);
-    (m1*2.0) ^ (m2*2.0);
+    (m1*2) ^ m2;
+    m1 ^ (m2*2);
+    (m1*2) ^ (m2*2);
 }
 
 template<class MeshType>
@@ -528,44 +1099,44 @@ void testTensorFunctions(const fvMesh& fvMsh)
     }
 
     m1 & m1;
-    (m1*2.0) & m1;
-    m1 & (m1*2.0);
-    (m1*2.0) & (m1*2.0);
+    (m1*2) & m1;
+    m1 & (m1*2);
+    (m1*2) & (m1*2);
 
     m1 & m2;
-    (m1*2.0) & m2;
-    m1 & (m2*2.0);
-    (m1*2.0) & (m2*2.0);
+    (m1*2) & m2;
+    m1 & (m2*2);
+    (m1*2) & (m2*2);
 
     m1 && m1;
-    (m1*2.0) && m1;
-    m1 && (m1*2.0);
-    (m1*2.0) && (m1*2.0);
+    (m1*2) && m1;
+    m1 && (m1*2);
+    (m1*2) && (m1*2);
 
     m1 && m2;
-    (m1*2.0) && m2;
-    m1 && (m2*2.0);
-    (m1*2.0) && (m2*2.0);
+    (m1*2) && m2;
+    m1 && (m2*2);
+    (m1*2) && (m2*2);
 
     m1 & v1;
-    (m1*2.0) & v1;
-    v1 & (m1*2.0);
-    (v1*2.0) & (m1*2.0);
+    (m1*2) & v1;
+    v1 & (m1*2);
+    (v1*2) & (m1*2);
 
     m2 & v1;
-    (m2*2.0) & v1;
-    v1 & (m2*2.0);
-    (v1*2.0) & (m2*2.0);
+    (m2*2) & v1;
+    v1 & (m2*2);
+    (v1*2) & (m2*2);
 
     b3 & v1;
-    (b3*2.0) & v1;
-    v1 & (b3*2.0);
-    (v1*2.0) & (b3*2.0);
+    (b3*2) & v1;
+    v1 & (b3*2);
+    (v1*2) & (b3*2);
 
     b4 & v1;
-    (b4*2.0) & v1;
-    v1 & (b4*2.0);
-    (v1*2.0) & (b4*2.0);
+    (b4*2) & v1;
+    v1 & (b4*2);
+    (v1*2) & (b4*2);
 }
 
 int main(int argc, char *argv[])
