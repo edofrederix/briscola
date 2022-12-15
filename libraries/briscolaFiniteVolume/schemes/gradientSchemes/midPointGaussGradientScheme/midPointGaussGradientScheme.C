@@ -64,7 +64,7 @@ midPointGaussGradientScheme<Type,MeshType>::grad
 
         G.initGhosts();
 
-        forAllCells(f, i, j, k)
+        forAllBlock(f, i, j, k)
         {
             G(i,j,k) =
                 0.5
@@ -118,7 +118,7 @@ midPointGaussGradientScheme<Type,MeshType>::stagGrad
 
             G.initGhosts();
 
-            forAllCells(G, i, j, k)
+            forAllBlock(G, i, j, k)
             {
                 const labelVector ijk(i,j,k);
 

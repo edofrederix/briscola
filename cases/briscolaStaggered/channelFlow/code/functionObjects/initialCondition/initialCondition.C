@@ -60,7 +60,7 @@ bool initialCondition::read(const dictionary& dict)
             staggeredScalarDirection& U0 = U[l][0];
             staggeredScalarDirection& U2 = U[l][2];
 
-            forAllCells(U0, i, j, k)
+            forAllBlock(U0, i, j, k)
             {
                 U0(i,j,k) =
                     5300.0/360.0*2.0
@@ -71,7 +71,7 @@ bool initialCondition::read(const dictionary& dict)
                     );
             }
 
-            forAllCells(U2, i, j, k)
+            forAllBlock(U2, i, j, k)
             {
                 U2(i,j,k) =
                     5300.0/360.0/2.0

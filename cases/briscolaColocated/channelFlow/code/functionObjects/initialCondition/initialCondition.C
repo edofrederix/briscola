@@ -57,7 +57,7 @@ bool initialCondition::read(const dictionary& dict)
             const colocatedVectorDirection& ccd = cc[l][d];
             colocatedVectorDirection& Ud = U[l][d];
 
-            forAllCells(U[l][d], i, j, k)
+            forAllBlock(U[l][d], i, j, k)
             {
                 Ud(i,j,k).x() =
                     5300.0/360.0*2.0

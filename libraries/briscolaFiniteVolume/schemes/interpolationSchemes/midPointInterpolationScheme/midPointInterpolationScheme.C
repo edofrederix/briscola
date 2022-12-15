@@ -54,7 +54,7 @@ midPointInterpolationScheme<Type,MeshType>::interp
 
         I.initGhosts();
 
-        forAllCells(f, i, j, k)
+        forAllBlock(f, i, j, k)
         {
             I(i,j,k) =
                 0.5

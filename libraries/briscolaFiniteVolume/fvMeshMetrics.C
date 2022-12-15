@@ -32,7 +32,7 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 
             const vector shift = MeshType::shift[d];
 
-            forAllCells(fcld, i, j, k)
+            forAllBlock(fcld, i, j, k)
             {
                 fcld(i,j,k).left() =
                     0.25
@@ -117,7 +117,7 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
 
             const vector shift = MeshType::shift[d];
 
-            forAllCells(fnld, i, j, k)
+            forAllBlock(fnld, i, j, k)
             {
                 const vector left =
                     0.5
@@ -247,7 +247,7 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
 
             const vector shift = MeshType::shift[d];
 
-            forAllCells(ccld, i, j, k)
+            forAllBlock(ccld, i, j, k)
             {
                 ccld(i,j,k) =
                     0.125
@@ -375,7 +375,7 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
             const meshDirection<faceScalar,MeshType>& fald = fa[leveli][d];
             const meshDirection<faceVector,MeshType>& fcld = fc[leveli][d];
 
-            forAllCells(cvld, i, j, k)
+            forAllBlock(cvld, i, j, k)
             {
                 const vector Sx =
                     fnld(i,j,k).left() *fald(i,j,k).left()
@@ -414,7 +414,7 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
             meshDirection<faceScalar,MeshType>& fdld = fd[leveli][d];
             const meshDirection<vector,MeshType>& ccld = cc[leveli][d];
 
-            forAllCells(fdld, i, j, k)
+            forAllBlock(fdld, i, j, k)
             {
                 fdld(i,j,k) =
                     faceScalar

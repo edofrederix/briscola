@@ -12,7 +12,7 @@ scalar meanCoNum = 0.0;
         staggeredScalarDirection& sumPhid = sumPhi[d];
         const staggeredFaceScalarDirection& phild = phi[0][d];
 
-        forAllCells(sumPhid, i, j, k)
+        forAllBlock(sumPhid, i, j, k)
         {
             sumPhid(i,j,k) =
                 mag(phild(i,j,k).left())

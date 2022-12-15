@@ -41,7 +41,7 @@ void IO::readScalarField
 
     label c = 0;
 
-    forAllCellsReversed(D, i, j, k)
+    forAllBlockReversed(D, i, j, k)
     {
         D(i,j,k) = field->GetValue(c++);
     }
@@ -71,7 +71,7 @@ void IO::readArrayField
 
     label c = 0;
 
-    forAllCellsReversed(D, i, j, k)
+    forAllBlockReversed(D, i, j, k)
     {
         field->GetTuple(c++, D(i,j,k).v_);
     }
@@ -104,7 +104,7 @@ void IO::readArrayArrayField
 
     label c = 0;
 
-    forAllCellsReversed(D, i, j, k)
+    forAllBlockReversed(D, i, j, k)
     {
         typename Type::cmptCmpt ar[m*n];
         field->GetTuple(c++, ar);

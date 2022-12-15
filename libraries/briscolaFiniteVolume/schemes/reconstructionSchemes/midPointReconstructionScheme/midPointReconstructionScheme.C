@@ -62,7 +62,7 @@ midPointReconstructionScheme<Type>::reconstruct
 
         R.initGhosts();
 
-        forAllCells(R, i, j, k)
+        forAllBlock(R, i, j, k)
         {
             R(i,j,k) =
                 0.5

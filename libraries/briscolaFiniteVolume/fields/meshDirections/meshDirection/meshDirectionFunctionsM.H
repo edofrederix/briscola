@@ -1,9 +1,3 @@
-#define forAllCells(DIRECTION,I,J,K)                                            \
-    forAllBlock(DIRECTION,I,J,K)
-
-#define forAllCellsReversed(DIRECTION,I,J,K)                                    \
-    forAllBlockReversed(DIRECTION,I,J,K)
-
 #define UNARY_FUNCTION(ReturnType, Type1, Func)                                 \
                                                                                 \
 TEMPLATE                                                                        \

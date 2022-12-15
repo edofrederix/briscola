@@ -32,7 +32,7 @@ void IO::writeScalarField
 
     label c = 0;
 
-    forAllCellsReversed(D, i, j, k)
+    forAllBlockReversed(D, i, j, k)
     {
         field->SetValue(c++, D(i,j,k));
     }
@@ -67,7 +67,7 @@ void IO::writeArrayField
 
     label c = 0;
 
-    forAllCellsReversed(D, i, j, k)
+    forAllBlockReversed(D, i, j, k)
     {
         field->SetTuple(c++, D(i,j,k).v_);
     }
@@ -109,7 +109,7 @@ void IO::writeArrayArrayField
 
     label c = 0;
 
-    forAllCellsReversed(D, i, j, k)
+    forAllBlockReversed(D, i, j, k)
     {
         typename Type::cmptCmpt ar[m*n];
 

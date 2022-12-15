@@ -91,7 +91,7 @@ tmp<meshField<Type,MeshType>> explicitDiv
 
         D.initGhosts();
 
-        forAllCells(p, i, j, k)
+        forAllBlock(p, i, j, k)
         {
             D(i,j,k) = neighborSkewSum(p(i,j,k))/cv(i,j,k);
         }
@@ -135,7 +135,7 @@ tmp<meshField<Type,colocated>> explicitColoDiv
 
         D.initGhosts();
 
-        forAllCells(D, i, j, k)
+        forAllBlock(D, i, j, k)
         {
             D(i,j,k) =
                 (

@@ -60,7 +60,7 @@ bool initialCondition::read(const dictionary& dict)
             staggeredScalarDirection& U0 = U[l][0];
             staggeredScalarDirection& U2 = U[l][2];
 
-            forAllCells(U0, i, j, k)
+            forAllBlock(U0, i, j, k)
             {
                 U0(i,j,k) =
                     cc0(i,j,k).y()
@@ -68,7 +68,7 @@ bool initialCondition::read(const dictionary& dict)
                   + 0.1*Foam::sin(cc0(i,j,k).y()*3.1415927*2);
             }
 
-            forAllCells(U2, i, j, k)
+            forAllBlock(U2, i, j, k)
             {
                 U2(i,j,k) =
                     Foam::sin(cc2(i,j,k).x()*3)

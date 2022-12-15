@@ -9,7 +9,7 @@ scalar meanCoNum = 0.0;
 
     colocatedScalarDirection sumPhi(fvMsh,0,0);
 
-    forAllCells(sumPhi, i, j, k)
+    forAllBlock(sumPhi, i, j, k)
     {
         sumPhi(i,j,k) =
             mag(phid(i,j,k).left())

@@ -21,7 +21,7 @@ void midPointProlongationScheme<Type,MeshType>::prolong
     const labelVector R(coarse.level().R());
     const vector s(MeshType::shift[coarse.directionNum()]);
 
-    forAllCells(fine, i, j, k)
+    forAllBlock(fine, i, j, k)
     {
         const label il = i/R.x();
         const label jl = j/R.y();

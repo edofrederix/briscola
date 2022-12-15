@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
             const colocatedVectorDirection& cc =
                 fvMsh.metrics<colocated>().cellCenters()[l][d];
 
-            forAllCells(f[l][d], i, j, k)
+            forAllBlock(f[l][d], i, j, k)
             {
                 f[l][d](i,j,k) = cc(i,j,k);
             }
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
         f[l].correctBoundaryConditions();
 
         forAll(f[l], d)
-        forAllCells(f[l][d], i, j, k)
+        forAllBlock(f[l][d], i, j, k)
         {
             const colocatedVectorDirection& cc =
                 fvMsh.metrics<colocated>().cellCenters()[l][d];
