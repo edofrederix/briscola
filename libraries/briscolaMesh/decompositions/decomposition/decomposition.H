@@ -103,7 +103,7 @@ public:
         return myBrickNum_;
     }
 
-    // This processor's bick's shape
+    // This processor's brick's shape
     labelVector myBrickN() const;
 
     // This processor's part's shape

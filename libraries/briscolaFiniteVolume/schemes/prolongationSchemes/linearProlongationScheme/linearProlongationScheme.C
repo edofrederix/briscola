@@ -33,7 +33,6 @@ void linearProlongationScheme<Type,MeshType>::setWeights()
             forAllBlock(ccf, i, j, k)
             {
                 scalar sum = 0.0;
-                label ii = 0;
 
                 const label ox = (i % 2)*2 - 1;
                 const label oy = (j % 2)*2 - 1;
@@ -72,9 +71,7 @@ void linearProlongationScheme<Type,MeshType>::setWeights()
 
                     sum += w;
 
-                    weights(i,j,k)[ii] = w;
-
-                    ii++;
+                    weights(i,j,k)[a*4+b*2+c] = w;
                 }
 
                 weights(i,j,k) /= sum;

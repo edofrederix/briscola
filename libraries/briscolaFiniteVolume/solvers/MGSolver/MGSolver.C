@@ -259,7 +259,7 @@ MGSolver<SType,Type,MeshType>::MGSolver
     (
         prolongationScheme<Type,MeshType>::New
         (
-            dict.lookupOrDefault<word>("prolong", "midPoint"),
+            dict.lookupOrDefault<word>("prolong", "linear"),
             fvMsh
         )
     ),
@@ -267,7 +267,7 @@ MGSolver<SType,Type,MeshType>::MGSolver
     (
         restrictionScheme<Type,MeshType>::New
         (
-            dict.lookupOrDefault<word>("restrict", "average"),
+            dict.lookupOrDefault<word>("restrict", "linear"),
             fvMsh
         )
     )

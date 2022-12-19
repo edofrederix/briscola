@@ -46,7 +46,6 @@ void linearRestrictionScheme<Type,MeshType>::setWeights()
             forAllBlock(ccc, i, j, k)
             {
                 scalar sum = 0.0;
-                label ii = 0;
 
                 for (label a = 0; a < R2.x(); a++)
                 for (label b = 0; b < R2.y(); b++)
@@ -81,9 +80,7 @@ void linearRestrictionScheme<Type,MeshType>::setWeights()
 
                     sum += w;
 
-                    weights(i,j,k)[ii] = w;
-
-                    ii++;
+                    weights(i,j,k)[a*4+b*2+c] = w;
                 }
 
                 weights(i,j,k) /= sum;
