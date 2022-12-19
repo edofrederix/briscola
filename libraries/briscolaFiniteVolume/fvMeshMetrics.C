@@ -19,6 +19,8 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 {
     meshField<faceVector,MeshType>& fc = faceCenters_;
 
+    fc = Zero;
+
     forAll(fvMsh_, leveli)
     {
         const partLevelPoints& points = fvMsh_[leveli].points();
@@ -90,8 +92,6 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
             }
         }
     }
-
-    fc.correctBoundaryConditions();
 }
 
 template<class MeshType>
@@ -100,6 +100,9 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
     meshField<faceVector,MeshType>& fn = faceNormals_;
     meshField<faceScalar,MeshType>& fa = faceAreas_;
     meshField<faceVector,MeshType>& fan = faceAreaNormals_;
+
+    fn = Zero;
+    fa = Zero;
 
     forAll(fn, leveli)
     {
@@ -222,12 +225,7 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
         }
     }
 
-    fn.correctBoundaryConditions();
-    fa.correctBoundaryConditions();
-
     fan = fa*fn;
-
-    fan.correctBoundaryConditions();
 }
 
 template<class MeshType>
@@ -362,6 +360,8 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
     const meshField<faceScalar,MeshType>& fa = faceAreas_;
     const meshField<faceVector,MeshType>& fc = faceCenters_;
 
+    cv = Zero;
+
     forAll(cv, leveli)
     {
         // Cell volume is given by Wesseling's efficient formula (Wesseling, p.
@@ -397,8 +397,6 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
             }
         }
     }
-
-    cv.correctBoundaryConditions();
 }
 
 template<class MeshType>
@@ -406,6 +404,8 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
 {
     meshField<faceScalar,MeshType>& fd = faceDeltas_;
     const meshField<vector,MeshType>& cc = cellCenters_;
+
+    fd = Zero;
 
     forAll(cc, leveli)
     {
@@ -429,8 +429,6 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
             }
         }
     }
-
-    faceDeltas_.correctBoundaryConditions();
 }
 
 template<class MeshType>
