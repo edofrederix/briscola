@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
             << duration_cast<milliseconds>(t2 - t1).count()
             << " ms" << endl;
 
-        // Matrix multiplcation for a direction
+        // Matrix multiplication for a direction
 
         t1 = high_resolution_clock::now();
 
@@ -115,8 +115,8 @@ int main(int argc, char *argv[])
             bA(i,j,k) = stencil(-6, 1, 1, 1, 1, 1, 1);
         }
 
-        // Custom matrix multiplcation for a block with the same size as a
-        // direction. Should be slightly faster than matrix multiplcation for a
+        // Custom matrix multiplication for a block with the same size as a
+        // direction. Should be slightly faster than matrix multiplication for a
         // direction, because the ghost cells offset is not computed for every
         // call to operator()
 
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
         scalarBlock ba(bF.shape(), 1);
         scalarBlock bf(bF.shape(), 1);
 
-        // Matrix multiplication by split matrix coefficient fields
+        // Matrix multiplication by distributed matrix coefficient fields
 
         t1 = high_resolution_clock::now();
 
@@ -172,7 +172,71 @@ int main(int argc, char *argv[])
 
         t2 = high_resolution_clock::now();
 
-        Info<< "Block multiplication with split matrix = "
+        Info<< "Block multiplication by distributed matrix = "
+            << duration_cast<milliseconds>(t2 - t1).count()
+            << " ms" << endl;
+
+        // Coefficient-wise matrix multiplication by distributed matrix
+        // coefficient fields
+
+        t1 = high_resolution_clock::now();
+
+        for (label iter = 0; iter < Niter; iter++)
+        {
+            for (label i = 1; i < bF.l()-1; i++)
+            for (label j = 1; j < bF.m()-1; j++)
+            for (label k = 1; k < bF.n()-1; k++)
+            {
+                bG(i,j,k) = bc(i,j,k) * bF(i,j,k);
+            }
+
+            for (label i = 1; i < bF.l()-1; i++)
+            for (label j = 1; j < bF.m()-1; j++)
+            for (label k = 1; k < bF.n()-1; k++)
+            {
+                bG(i,j,k) += bl(i,j,k) * bF(i-1,j,k);
+            }
+
+            for (label i = 1; i < bF.l()-1; i++)
+            for (label j = 1; j < bF.m()-1; j++)
+            for (label k = 1; k < bF.n()-1; k++)
+            {
+                bG(i,j,k) += br(i,j,k) * bF(i+1,j,k);
+            }
+
+            for (label i = 1; i < bF.l()-1; i++)
+            for (label j = 1; j < bF.m()-1; j++)
+            for (label k = 1; k < bF.n()-1; k++)
+            {
+                bG(i,j,k) += bb(i,j,k) * bF(i,j-1,k);
+            }
+
+            for (label i = 1; i < bF.l()-1; i++)
+            for (label j = 1; j < bF.m()-1; j++)
+            for (label k = 1; k < bF.n()-1; k++)
+            {
+                bG(i,j,k) += bt(i,j,k) * bF(i,j+1,k);
+            }
+
+            for (label i = 1; i < bF.l()-1; i++)
+            for (label j = 1; j < bF.m()-1; j++)
+            for (label k = 1; k < bF.n()-1; k++)
+            {
+                bG(i,j,k) += ba(i,j,k) * bF(i,j,k-1);
+            }
+
+            for (label i = 1; i < bF.l()-1; i++)
+            for (label j = 1; j < bF.m()-1; j++)
+            for (label k = 1; k < bF.n()-1; k++)
+            {
+                bG(i,j,k) += bf(i,j,k) * bF(i,j,k+1);
+            }
+        }
+
+        t2 = high_resolution_clock::now();
+
+        Info<< "Coefficient-wise block multiplication by "
+            << "distributed matrix = "
             << duration_cast<milliseconds>(t2 - t1).count()
             << " ms" << endl;
     }
@@ -273,7 +337,7 @@ int main(int argc, char *argv[])
 
         t2 = high_resolution_clock::now();
 
-        Info<< "C++ array multiplication with split matrix = "
+        Info<< "C++ array multiplication by distributed matrix = "
             << duration_cast<milliseconds>(t2 - t1).count()
             << " ms" << endl;
     }
