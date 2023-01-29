@@ -368,6 +368,33 @@ labelList brickTopology::shortestFacePath
     return reverseList(P);
 }
 
+bool brickTopology::aligned() const
+{
+    if (geo_.bricks().size() > 1)
+    {
+        forAll(geo_.bricks(), bricki)
+        {
+            forAll(links_[bricki].faceLinks(), facei)
+            {
+                if
+                (
+                    links_[bricki].faceLinks().set(facei)
+                 && links_[bricki].faceLinks()[facei].T() != eye
+                )
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+    else
+    {
+        return true;
+    }
+}
+
 }
 
 }

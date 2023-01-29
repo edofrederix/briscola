@@ -38,6 +38,7 @@ void geometry::checkPatchConsistency() const
 
 void geometry::createBricks()
 {
+    bricks_.clear();
     bricks_.setSize(brickData().size());
 
     forAll(brickData(), i)
@@ -204,6 +205,83 @@ void geometry::createPatchPairs()
     }
 }
 
+void geometry::alignBricks()
+{
+    if (!topology_.valid())
+    {
+        FatalErrorInFunction
+            << "Brick topology not set."
+            << exit(FatalError);
+    }
+
+    if (!topology_->structured() || topology_->aligned() || bricks_.size() == 1)
+    {
+        return;
+    }
+
+    // Collect brick transformations first, because transforming them on the fly
+    // invalidates the brick topology
+
+    labelList brickNums(bricks_.size());
+    List<labelTensor> transforms(bricks_.size()-1);
+
+    label first = -1;
+    label cursor = 0;
+
+    // First walk in x, then in y and finally in z
+
+    forAllBlockReversed(topology_->map(), i, j, k)
+    if (topology_->map()(i,j,k) != -1)
+    {
+        if (first == -1)
+        {
+            first = topology_->map()(i,j,k);
+        }
+        else
+        {
+            brick& b0 = bricks_[first];
+            brick& b1 = bricks_[topology_->map()(i,j,k)];
+
+            // Find path between the base brick and this brick
+
+            const labelList P = topology_->shortestFacePath(b0.num(), b1.num());
+
+            labelTensor T = eye;
+
+            for (label i = P.size()-2; i >= 0; i--)
+            {
+                const brickLinks& links = topology_->links()[P[i]];
+                const brickFaceLink& link = links.getFaceLink(P[i+1]);
+
+                T = link.T() & T;
+            }
+
+            brickNums[cursor] = topology_->map()(i,j,k);
+            transforms[cursor] = T;
+
+            cursor++;
+        }
+    }
+
+    // Perform brick transform now that all transforms are known
+
+    forAll(transforms, i)
+    {
+        bricks_[brickNums[i]].transform(transforms[i]);
+    }
+
+    createPatches();
+    createPatchPairs();
+    checkPatchConsistency();
+    createBrickTopology();
+
+    // Check new topology
+
+    if (!topology_->aligned())
+        FatalErrorInFunction
+            << "Brick alignment failed." << endl << abort(FatalError);
+}
+
 geometry::geometry(const IOdictionary& dict)
 :
     meshData(dict),
@@ -217,6 +295,7 @@ geometry::geometry(const IOdictionary& dict)
     createPatchPairs();
     checkPatchConsistency();
     createBrickTopology();
+    alignBricks();
     createDefaultPatch();
     checkPatchConsistency();
 }

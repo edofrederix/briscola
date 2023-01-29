@@ -10,13 +10,13 @@ namespace briscola
 
 brickTopologyMap::brickTopologyMap()
 :
-    map_(),
+    labelBlock(),
     legend_()
 {}
 
 brickTopologyMap::brickTopologyMap(const labelBlock& map)
 :
-    map_(map)
+    labelBlock(map)
 {
     calcLegend();
 }
@@ -28,10 +28,12 @@ void brickTopologyMap::calcLegend()
 {
     legend_.clear();
 
-    forAllBlock(map_, i, j, k)
-    if (map_(i,j,k) != -1)
+    labelBlock& map = *this;
+
+    forAllBlock(map, i, j, k)
+    if (map(i,j,k) != -1)
     {
-        label v = map_(i,j,k);
+        label v = map(i,j,k);
 
         if (v >= legend_.size())
         {
@@ -44,7 +46,7 @@ void brickTopologyMap::calcLegend()
 
 void brickTopologyMap::setData(const labelBlock& map)
 {
-    map_ = map;
+    *this = map;
     calcLegend();
 }
 

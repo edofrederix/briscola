@@ -50,6 +50,10 @@ class geometry
     // Check consistency of the geometry
     void checkPatchConsistency() const;
 
+    // Align bricks w.r.t. the first in the topology map. Only possible for
+    // structured topologies.
+    void alignBricks();
+
 public:
 
     // Construct from IOdictionary

@@ -27,7 +27,8 @@ protected:
     // Decomposition per brick
     List<labelVector> decompPerBrick_;
 
-    // The number of the brick of which this processor contains (part of) the mesh
+    // The number of the brick of which this processor contains (part of) the
+    // mesh
     label myBrickNum_;
 
     // The index which points to the part of this processor's brick which is

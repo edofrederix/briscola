@@ -78,6 +78,9 @@ public:
     // Structured mesh bool
     inline bool structured() const { return structured_; }
 
+    // Check if bricks are aligned
+    bool aligned() const;
+
     // Reference to the brick topology map, which is only filled for structured
     // bricks
     inline const brickTopologyMap& map() const { return map_; }

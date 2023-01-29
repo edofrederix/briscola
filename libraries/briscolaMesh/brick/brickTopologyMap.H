@@ -12,10 +12,9 @@ namespace briscola
 {
 
 class brickTopologyMap
+:
+    public labelBlock
 {
-    // Brick map
-    labelBlock map_;
-
     // Brick legend
     List<labelVector> legend_;
 
@@ -32,9 +31,6 @@ public:
 
     // Destructor
     virtual ~brickTopologyMap();
-
-    // Access to the brick map
-    const labelBlock& map() const { return map_; }
 
     // Access to the brick legend
     const List<labelVector>& legend() const { return legend_; }
