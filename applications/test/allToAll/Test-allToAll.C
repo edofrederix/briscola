@@ -3,6 +3,8 @@
 #include "vector.H"
 #include "block.H"
 
+#include <chrono>
+
 using namespace Foam;
 using namespace briscola;
 
@@ -32,19 +34,79 @@ labelVector indexFromProcNum
     return labelVector(i,j,k);
 }
 
+// Function to unpack recv buffer
+
+void unpack
+(
+    const vectorBlock& buffer,
+    const List<labelVector>& recvStart,
+    const List<labelVector>& recvSize,
+    vectorBlock& output
+)
+{
+    label cursor = 0;
+
+    labelVector N(output.shape());
+
+    for (label proc = 0; proc < Pstream::nProcs(); proc++)
+    {
+        labelVector start
+        (
+            recvStart[proc].x() % N.x(),
+            recvStart[proc].y() % N.y(),
+            recvStart[proc].z() % N.z()
+        );
+
+        labelVector size = recvSize[proc];
+
+        for (int i = start.x(); i < start.x() + size.x(); i++)
+        for (int j = start.y(); j < start.y() + size.y(); j++)
+        for (int k = start.z(); k < start.z() + size.z(); k++)
+        {
+            output(i,j,k) = buffer(cursor++);
+        }
+    }
+}
+
+// Function to test if the data is correct
+
+bool check(const vectorBlock& data, const labelVector offset)
+{
+    forAllBlock(data, i, j, k)
+    {
+        labelVector test = offset + labelVector(i,j,k);
+
+        if (labelVector(data(i,j,k)) != test)
+            FatalError
+                << "Test failed. Expected " << test
+                << " but received " << data(i,j,k) << endl
+                << "At index " << labelVector(i,j,k) << endl
+                << abort(FatalError);
+    }
+
+    return true;
+}
+
 int main(int argc, char *argv[])
 {
+    using std::chrono::high_resolution_clock;
+    using std::chrono::duration_cast;
+    using std::chrono::duration;
+    using std::chrono::milliseconds;
+
     arguments::addBoolOption("parallel", "run in parallel");
 
     arguments::validArgs.append("mesh size");
     arguments::validArgs.append("initial decomposition");
     arguments::validArgs.append("target decomposition");
+    arguments::validArgs.append("number of send repetitions");
 
     arguments args(argc, argv);
 
-    labelVector N(args.argRead<labelVector>(1));
-    labelVector I(args.argRead<labelVector>(2));
-    labelVector T(args.argRead<labelVector>(3));
+    const labelVector N(args.argRead<labelVector>(1));
+    const labelVector I(args.argRead<labelVector>(2));
+    const labelVector T(args.argRead<labelVector>(3));
+    const label repetitions(args.argRead<label>(4));
 
     // Some checks
 
@@ -243,60 +305,120 @@ int main(int argc, char *argv[])
 
     // All-to-all using OpenFOAM's UPstream wrapper
 
-    Info<< "Sending data" << endl << endl;
+    Info<< "Sending data wih all-to-all ..." << endl;
 
-    UPstream::allToAll
-    (
-        reinterpret_cast<char*>(sendBuffer.begin()),
-        sendCount,
-        sendDisplacement,
-        reinterpret_cast<char*>(recvBuffer.begin()),
-        recvCount,
-        recvDisplacement,
-        UPstream::worldComm
-    );
+    auto t1 = high_resolution_clock::now();
+
+    for (int i = 0; i < repetitions; i++)
+    {
+        UPstream::allToAll
+        (
+            reinterpret_cast<char*>(sendBuffer.begin()),
+            sendCount,
+            sendDisplacement,
+            reinterpret_cast<char*>(recvBuffer.begin()),
+            recvCount,
+            recvDisplacement,
+            UPstream::worldComm
+        );
+    }
+
+    auto t2 = high_resolution_clock::now();
+
+    Info<< "Completed in "
+        << duration_cast<milliseconds>(t2 - t1).count()
+        << " ms" << endl;
 
     // Unpack data
 
+    Info<< "Unpacking ..." << endl;
+
     vectorBlock data(Nt);
 
-    cursor = 0;
+    unpack(recvBuffer, recvStart, recvSize, data);
 
-    for (label proc = 0; proc < Pstream::nProcs(); proc++)
-    {
-        labelVector start
-        (
-            recvStart[proc].x() % Nt.x(),
-            recvStart[proc].y() % Nt.y(),
-            recvStart[proc].z() % Nt.z()
-        );
-
-        labelVector size = recvSize[proc];
-
-        for (int i = start.x(); i < start.x() + size.x(); i++)
-        for (int j = start.y(); j < start.y() + size.y(); j++)
-        for (int k = start.z(); k < start.z() + size.z(); k++)
-        {
-            data(i,j,k) = recvBuffer(cursor++);
-        }
-    }
-
-    // Test by checking if the received vectors match the cell indices
+    Info<< "Data check ..." << endl;
 
     labelVector ot =
         cmptMultiply(indexFromProcNum(Pstream::myProcNo(), T), Nt);
 
-    forAllBlock(data, i, j, k)
-    {
-        labelVector test = ot + labelVector(i,j,k);
+    if (check(data, ot))
+        Info<< "Data check passed" << endl;
 
-        if (labelVector(data(i,j,k)) != test)
-            FatalError
-                << "Test failed. Expected " << test
-                << " but received " << data(i,j,k) << endl
-                << "At index " << labelVector(i,j,k) << endl
-                << abort(FatalError);
+    Info<< endl;
+
+    // All-to-all using OpenFOAM's non-blocking functionality
+
+    Info<< "Sending data wih non-blocking transactions ..." << endl;
+
+    data *= 0.0;
+
+    t1 = high_resolution_clock::now();
+
+    for (int i = 0; i < repetitions; i++)
+    {
+        for (int proc = 0; proc < Pstream::nProcs(); proc++)
+        {
+            if (recvCount[proc] > 0)
+            {
+                UIPstream::read
+                (
+                    Pstream::commsTypes::nonBlocking,
+                    proc,
+                    reinterpret_cast<char*>
+                    (
+                       &recvBuffer
+                        (
+                            recvDisplacement[proc]
+                          / sizeof(vector)
+                        )
+                    ),
+                    recvCount[proc],
+                    0,
+                    UPstream::worldComm
+                );
+            }
+
+            if (sendCount[proc] > 0)
+            {
+                UOPstream::write
+                (
+                    Pstream::commsTypes::nonBlocking,
+                    proc,
+                    reinterpret_cast<char*>
+                    (
+                       &sendBuffer
+                        (
+                            sendDisplacement[proc]
+                          / sizeof(vector)
+                        )
+                    ),
+                    sendCount[proc],
+                    0,
+                    UPstream::worldComm
+                );
+            }
+        }
+
+        UPstream::waitRequests();
     }
 
-    Info<< "Data test succeeded" << endl << endl;
+    t2 = high_resolution_clock::now();
+
+    Info<< "Completed in "
+        << duration_cast<milliseconds>(t2 - t1).count()
+        << " ms" << endl;
+
+    // Unpack data
+
+    Info<< "Unpacking ..." << endl;
+
+    unpack(recvBuffer, recvStart, recvSize, data);
+
+    Info<< "Data check ..." << endl;
+
+    if (check(data, ot))
+        Info<< "Data check passed" << endl;
+
+    Info<< endl;
 }
