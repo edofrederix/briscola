@@ -1,3 +1,3 @@
 Test-allToAll.C
 
-EXE = Test-allToAll
+EXE = build/Test-allToAll
