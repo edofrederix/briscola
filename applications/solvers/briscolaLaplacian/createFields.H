@@ -43,9 +43,9 @@ source = readScalar(solverDict.lookup("source"));
 
 linearSystem<stencil,scalar,MESHTYPE> TSys(T);
 
-autoPtr<solver<stencil,scalar,colocated>> TSolve
+autoPtr<solver<stencil,scalar,MESHTYPE>> TSolve
 (
-    solver<stencil,scalar,colocated>::New
+    solver<stencil,scalar,MESHTYPE>::New
     (
         TSys.x().name(),
         fvMsh
