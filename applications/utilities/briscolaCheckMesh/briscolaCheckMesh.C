@@ -6,7 +6,7 @@
 #include "meshFields.H"
 
 #include "infoFunctions.H"
-#include "parallelChecks.H"
+#include "checkFunctions.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -47,6 +47,12 @@ int main(int argc, char *argv[])
     brickInfo(fvMsh);
     patchInfo(fvMsh);
     parallelInfo(fvMsh);
+
+    checkInternalFaceCenters<colocated>(fvMsh);
+    checkInternalFaceCenters<staggered>(fvMsh);
+
+    checkInternalFaceDeltas<colocated>(fvMsh);
+    checkInternalFaceDeltas<staggered>(fvMsh);
 
     if (Pstream::parRun())
     {

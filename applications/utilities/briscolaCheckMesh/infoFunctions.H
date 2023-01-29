@@ -21,6 +21,10 @@ void generalInfo(const fvMesh& fvMsh)
         << (fvMsh.topology().structured() ? "structured" : "unstructured")
         << endl;
 
+    Info<< "Bricks are "
+        << (fvMsh.topology().aligned() ? "aligned" : "unaligned")
+        << endl;
+
     Info<< endl;
 }
 
