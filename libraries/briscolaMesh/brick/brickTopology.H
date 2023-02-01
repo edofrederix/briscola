@@ -29,6 +29,12 @@ class brickTopology
     // Bool to check if bricks are structured or unstructured
     bool structured_;
 
+    // Bool to check if the bricks are aligned
+    bool aligned_;
+
+    // Bool to check if the bricks are on a rectilinear grid
+    bool rectilinear_;
+
     // Brick topology map, only set if the bricks are structured
     brickTopologyMap map_;
 
@@ -78,8 +84,11 @@ public:
     // Structured mesh bool
     inline bool structured() const { return structured_; }
 
-    // Check if bricks are aligned
-    bool aligned() const;
+    // Aligned mesh bool
+    inline bool aligned() const { return aligned_; }
+
+    // Rectilinear mesh bool
+    inline bool rectilinear() const { return rectilinear_; }
 
     // Reference to the brick topology map, which is only filled for structured
     // bricks

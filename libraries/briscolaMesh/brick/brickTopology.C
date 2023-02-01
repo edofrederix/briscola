@@ -261,8 +261,8 @@ brickTopology::brickTopology(const geometry& geo)
     // unstructured
 
     labelList found(geo.bricks().size(), 0);
-    labelBlock map(1,1,1,0);
-    labelVector cursor(0,0,0);
+    labelBlock map(unitXYZ,0);
+    labelVector cursor(zeroXYZ);
 
     structured_ = buildTopologyMap
     (
@@ -278,6 +278,41 @@ brickTopology::brickTopology(const geometry& geo)
     if (structured_)
     {
         map_.setData(map);
+    }
+
+    // If structured, check if rectilinear
+
+    if (structured_)
+    {
+        rectilinear_ = min(map) > -1;
+    }
+    else
+    {
+        rectilinear_ = false;
+    }
+
+    // Check if bricks are aligned
+
+    aligned_ = true;
+
+    if (geo_.bricks().size() > 1)
+    {
+        forAll(geo_.bricks(), bricki)
+        if (aligned_)
+        {
+            forAll(links_[bricki].faceLinks(), facei)
+            if (aligned_)
+            {
+                if
+                (
+                    links_[bricki].faceLinks().set(facei)
+                 && links_[bricki].faceLinks()[facei].T() != eye
+                )
+                {
+                    aligned_ = false;
+                }
+            }
+        }
     }
 
     // Set periodic face links
@@ -366,33 +401,6 @@ labelList brickTopology::shortestFacePath
     }
 
     return reverseList(P);
-}
-
-bool brickTopology::aligned() const
-{
-    if (geo_.bricks().size() > 1)
-    {
-        forAll(geo_.bricks(), bricki)
-        {
-            forAll(links_[bricki].faceLinks(), facei)
-            {
-                if
-                (
-                    links_[bricki].faceLinks().set(facei)
-                 && links_[bricki].faceLinks()[facei].T() != eye
-                )
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-    else
-    {
-        return true;
-    }
 }
 
 }
