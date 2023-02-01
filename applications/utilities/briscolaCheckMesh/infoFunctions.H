@@ -17,19 +17,22 @@ void generalInfo(const fvMesh& fvMsh)
     const colocatedScalarField& cv = fvMsh.metrics<colocated>().cellVolumes();
     Info<< "Mesh volume = " << gSum(cv)[0] << endl;
 
-    Info<< "Bricks are "
+    Info<< "Brick topology is "
         << (fvMsh.topology().structured() ? "structured" : "unstructured")
         << endl;
 
-    Info<< "Bricks are "
+    Info<< "Brick topology is "
         << (fvMsh.topology().aligned() ? "aligned" : "unaligned")
         << endl;
 
-    Info<< endl;
+    Info<< "Brick topology is "
+        << (fvMsh.topology().rectilinear() ? "rectilinear" : "not rectilinear")
+        << endl;
 }
 
 void brickInfo(const fvMesh& fvMsh)
 {
+    Info<< endl;
     Info<< "Number of bricks = " << fvMsh.bricks().size() << ":" << endl;
 
     forAll(fvMsh.bricks(), bricki)
@@ -53,12 +56,11 @@ void brickInfo(const fvMesh& fvMsh)
             Info<< "        Decomposition vector = " << fvMsh.decomp().decompPerBrick()[bricki] << endl;
         }
     }
-
-    Info<< endl;
 }
 
 void patchInfo(const fvMesh& fvMsh)
 {
+    Info<< endl;
     Info<< "Number of patches = " << fvMsh.patches().size() << ":" << endl;
 
     forAll(fvMsh.patches(), patchi)
@@ -78,12 +80,34 @@ void patchInfo(const fvMesh& fvMsh)
                 << endl;
         }
     }
+}
 
+void levelInfo(const fvMesh& fvMsh)
+{
     Info<< endl;
+    Info<< "Number of mesh levels = " << fvMsh.size() << ":" << endl;
+
+    forAll(fvMsh, l)
+    {
+        labelVector N(fvMsh[l].N());
+
+        List<labelVector> Ns(Pstream::nProcs(),N);
+
+        Pstream::gatherList(Ns);
+
+        Info<< "    Level " << l << ":" << endl;
+
+        for (label proc = 0; proc < Pstream::nProcs(); proc++)
+        {
+            Info<< "        Processor " << proc << " has " << Ns[proc]
+                << " = " << cmptProduct(Ns[proc]) << " cells" << endl;
+        }
+    }
 }
 
 void parallelInfo(const fvMesh& fvMsh)
 {
+    Info<< endl;
     Info<< "Number of processors = " << Pstream::nProcs() << ":" << endl;
 
     List<List<dictionary>> dicts(Pstream::nProcs(), List<dictionary>(0));
@@ -141,33 +165,12 @@ void parallelInfo(const fvMesh& fvMsh)
             Info<< endl;
         }
     }
-
-    Info<< endl;
-
-    Info<< "Number of mesh levels = " << fvMsh.size() << ":" << endl;
-
-    forAll(fvMsh, l)
-    {
-        labelVector N(fvMsh[l].N());
-
-        List<labelVector> Ns(Pstream::nProcs(),N);
-
-        Pstream::gatherList(Ns);
-
-        Info<< "    Level " << l << ":" << endl;
-
-        for (label proc = 0; proc < Pstream::nProcs(); proc++)
-        {
-            Info<< "        Processor " << proc << " has " << Ns[proc]
-                << " = " << cmptProduct(Ns[proc]) << " cells" << endl;
-        }
-    }
-
-    Info<< endl;
 }
 
 void parallelConnectivityInfo(const fvMesh& fvMsh)
 {
+    Info<< endl;
+
     List<List<dictionary>> patchDicts(Pstream::nProcs());
 
     forAll(fvMsh.partPatches(), patchi)
@@ -202,10 +205,12 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
 
     Info<< "Found " << count << " patches that require communication,"
         << " distributed across " << Pstream::nProcs()
-        << " processors:" << endl;
+        << " processors";
 
     if (Pstream::master())
     {
+        Info<< ":" << endl;
+
         forAll(patchDicts, proci)
         forAll(patchDicts[proci], patchi)
         {
@@ -309,7 +314,9 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
                 FatalErrorInFunction << endl << exit(FatalError);
             }
         }
-
+    }
+    else
+    {
         Info<< endl;
     }
 }

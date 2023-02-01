@@ -21,6 +21,16 @@ int main(int argc, char *argv[])
         "specify alternative dictionary for the briscolaMesh description"
     );
 
+    arguments::addBoolOption("brickInfo", "Show brick info");
+    arguments::addBoolOption("patchInfo", "Show patch info");
+    arguments::addBoolOption("levelInfo", "Show level info");
+    arguments::addBoolOption("parallelInfo", "Show parallel info");
+    arguments::addBoolOption
+    (
+        "parallelConnectivityInfo",
+        "Show parallel connectivity info"
+    );
+
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
 
@@ -44,9 +54,18 @@ int main(int argc, char *argv[])
     fvMesh fvMsh(meshDict, runTime);
 
     generalInfo(fvMsh);
-    brickInfo(fvMsh);
-    patchInfo(fvMsh);
-    parallelInfo(fvMsh);
+
+    if (args.optionFound("brickInfo"))
+        brickInfo(fvMsh);
+
+    if (args.optionFound("patchInfo"))
+        patchInfo(fvMsh);
+
+    if (args.optionFound("levelInfo"))
+        levelInfo(fvMsh);
+
+    if (Pstream::parRun() && args.optionFound("parallelInfo"))
+        parallelInfo(fvMsh);
 
     checkInternalFaceCenters<colocated>(fvMsh);
     checkInternalFaceDeltas<colocated>(fvMsh);
@@ -59,7 +78,8 @@ int main(int argc, char *argv[])
 
     if (Pstream::parRun())
     {
-        parallelConnectivityInfo(fvMsh);
+        if (args.optionFound("parallelConnectivityInfo"))
+            parallelConnectivityInfo(fvMsh);
 
         returnReduce(0, sumOp<label>());
 
@@ -74,4 +94,6 @@ int main(int argc, char *argv[])
 
         returnReduce(0, sumOp<label>());
     }
+
+    Info<< nl << "All checks completed" << endl;
 }
