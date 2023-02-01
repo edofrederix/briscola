@@ -30,7 +30,7 @@ void linearProlongationScheme<Type,MeshType>::setWeights()
 
             weights = Zero;
 
-            forAllBlock(ccf, i, j, k)
+            forAllCells(ccf, i, j, k)
             {
                 scalar sum = 0.0;
 
@@ -100,7 +100,7 @@ void linearProlongationScheme<Type,MeshType>::prolong
     meshDirection<tensor,MeshType>& weights =
         weights_[fine.levelNum()][fine.directionNum()];
 
-    forAllBlock(fine, i, j, k)
+    forAllCells(fine, i, j, k)
     {
         const label il = i/R.x();
         const label jl = j/R.y();

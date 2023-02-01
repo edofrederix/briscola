@@ -53,7 +53,7 @@ midPointGaussDivergenceScheme<Type,MeshType>::div
         const meshDirection<faceScalar,MeshType>& p = phi[l][d];
         const meshDirection<Type,MeshType>& f = field[l][d];
 
-        forAllBlock(f, i, j, k)
+        forAllCells(f, i, j, k)
         {
             A(i,j,k) = 0.5*p(i,j,k);
 

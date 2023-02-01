@@ -33,12 +33,12 @@ void testIndexing(const fvMesh& fvMsh)
 
     label l = 0;
 
-    forAllBlock(m1, i, j, k)
+    forAllCells(m1, i, j, k)
     {
         m1(i,j,k) = pTraits<Type>::one*l++;
     }
 
-    forAllBlock(m1, i, j, k)
+    forAllCells(m1, i, j, k)
     {
         if (m1(i,j,k) != m1(labelVector(i,j,k)))
             FatalErrorInFunction << "test 2 failed" << abort(FatalError);
@@ -55,7 +55,7 @@ void testMemberOperators(const fvMesh& fvMsh)
 
     label l = 0;
 
-    forAllBlock(m1, i, j, k)
+    forAllCells(m1, i, j, k)
     {
         m1(i,j,k) = pTraits<Type>::one*l++;
         m2(i,j,k) = pTraits<Type>::one*l++;
@@ -103,7 +103,7 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
 
     label l = 0;
 
-    forAllBlock(m1, i, j, k)
+    forAllCells(m1, i, j, k)
     {
         m1(i,j,k) = pTraits<Type>::one*l++;
         m2(i,j,k) = pTraits<Type>::one*l++;
@@ -182,7 +182,7 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh)
 
     label l = 0;
 
-    forAllBlock(m1, i, j, k)
+    forAllCells(m1, i, j, k)
     {
         m1(i,j,k) = pTraits<Type>::one*l++;
         m2(i,j,k) = pTraits<Type>::one*l++;
@@ -256,7 +256,7 @@ void testStencilFunctions(const fvMesh& fvMsh)
 
     label l = 0;
 
-    forAllBlock(m1, i, j, k)
+    forAllCells(m1, i, j, k)
     {
         m1(i,j,k) = pTraits<Type>::one*l++;
         m2(i,j,k) = pTraits<Type>::one*l++;
@@ -305,7 +305,7 @@ void testScalarFunctions(const fvMesh& fvMsh)
 
     label l = 0;
 
-    forAllBlock(m1, i, j, k)
+    forAllCells(m1, i, j, k)
     {
         m1(i,j,k) = scalar(l+++1);
     }
@@ -323,7 +323,7 @@ void testVectorFunctions(const fvMesh& fvMsh)
 
     label l = 0;
 
-    forAllBlock(m1, i, j, k)
+    forAllCells(m1, i, j, k)
     {
         m1(i,j,k) = vector(l,l+1,l+2); l++;
         m2(i,j,k) = vector(l,l+1,l+2); l++;
@@ -356,7 +356,7 @@ void testTensorFunctions(const fvMesh& fvMsh)
 
     label l = 0;
 
-    forAllBlock(m1, i, j, k)
+    forAllCells(m1, i, j, k)
     {
         m1(i,j,k) = pTraits<tensor>::one*l++;
         m2(i,j,k) = pTraits<symmTensor>::one*l++;

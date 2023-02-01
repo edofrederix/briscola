@@ -64,7 +64,7 @@ void averageRestrictionScheme<Type,MeshType>::restrict
             metrics<MeshType>().cellVolumes()
             [fine.levelNum()][fine.directionNum()];
 
-        forAllBlock(coarse, i, j, k)
+        forAllCells(coarse, i, j, k)
         {
             const label il = i*R.x();
             const label jl = j*R.y();
@@ -89,7 +89,7 @@ void averageRestrictionScheme<Type,MeshType>::restrict
     }
     else
     {
-        forAllBlock(coarse, i, j, k)
+        forAllCells(coarse, i, j, k)
         {
             const label il = i*R.x();
             const label jl = j*R.y();

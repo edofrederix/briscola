@@ -11,12 +11,22 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::allocate()
+void meshDirection<Type,MeshType>::setActiveCells()
 {
-    blockType::reAllocate
-    (
-        N_ + 2*unitXYZ
-    );
+    const labelVector& padding = MeshType::padding[d_];
+
+    const labelVector& lower = fvMsh_.lowerPatchSlave();
+    const labelVector& upper = fvMsh_.upperPatchSlave();
+
+    S_ = briscola::cmptMultiply(padding, lower);
+    E_ = this->B().N() - 2*unitXYZ - briscola::cmptMultiply(padding, upper);
+    N_ = E_ - S_;
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::allocate(const labelVector B)
+{
+    blockType::reAllocate(B);
 }
 
 template<class Type, class MeshType>
@@ -50,10 +60,10 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
-    N_(fvMsh[l_].N() + MeshType::padding[d_]),
     mshLevelPtr_(&mshLevel)
 {
-    allocate();
+    allocate(fvMsh[l_].N() + MeshType::padding[d_] + 2*unitXYZ);
+    setActiveCells();
 }
 
 // Copy constructors
@@ -68,10 +78,12 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
+    S_(D.S_),
+    E_(D.E_),
     N_(D.N_),
     mshLevelPtr_(nullptr)
 {
-    allocate();
+    allocate(D.B().N());
     *this = D;
 }
 
@@ -86,10 +98,12 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
+    S_(D.S_),
+    E_(D.E_),
     N_(D.N_),
     mshLevelPtr_(nullptr)
 {
-    allocate();
+    allocate(D.B().N());
     *this = Zero;
 }
 
@@ -104,10 +118,12 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
+    S_(D.S_),
+    E_(D.E_),
     N_(D.N_),
     mshLevelPtr_(nullptr)
 {
-    allocate();
+    allocate(D.B().N());
     *this = v;
 }
 
@@ -121,6 +137,8 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(tD->fvMsh_),
     l_(tD->l_),
     d_(tD->d_),
+    S_(tD->S_),
+    E_(tD->E_),
     N_(tD->N_),
     mshLevelPtr_(nullptr)
 {
@@ -133,7 +151,7 @@ meshDirection<Type,MeshType>::meshDirection
     }
     else
     {
-        allocate();
+        allocate(tD->B().N());
         *this = tD();
     }
 
@@ -151,6 +169,8 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(tD->fvMsh_),
     l_(tD->l_),
     d_(tD->d_),
+    S_(tD->S_),
+    E_(tD->E_),
     N_(tD->N_),
     mshLevelPtr_(nullptr)
 {
@@ -163,7 +183,7 @@ meshDirection<Type,MeshType>::meshDirection
     }
     else
     {
-        allocate();
+        allocate(tD->B().N());
     }
 
     *this = Zero;
@@ -182,6 +202,8 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(tD->fvMsh_),
     l_(tD->l_),
     d_(tD->d_),
+    S_(tD->S_),
+    E_(tD->E_),
     N_(tD->N_),
     mshLevelPtr_(nullptr)
 {
@@ -194,7 +216,7 @@ meshDirection<Type,MeshType>::meshDirection
     }
     else
     {
-        allocate();
+        allocate(tD->B().N());
     }
 
     *this = v;
@@ -214,10 +236,10 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
-    N_(fvMsh[l].N() + MeshType::padding[d]),
     mshLevelPtr_(nullptr)
 {
-    allocate();
+    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
+    setActiveCells();
 }
 
 template<class Type, class MeshType>
@@ -233,11 +255,11 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
-    N_(fvMsh[l].N() + MeshType::padding[d]),
     mshLevelPtr_(nullptr)
 {
-    allocate();
+    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
     *this = Zero;
+    setActiveCells();
 }
 
 template<class Type, class MeshType>
@@ -253,11 +275,11 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
-    N_(fvMsh[l].N() + MeshType::padding[d]),
     mshLevelPtr_(nullptr)
 {
-    allocate();
+    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
     *this = v;
+    setActiveCells();
 }
 
 template<class Type, class MeshType>

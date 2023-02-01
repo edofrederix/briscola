@@ -38,7 +38,7 @@ void testConstantProlongation(const fvMesh& fvMsh, const word scheme)
         {
             P->prolong(f[l-1][d], f[l][d], eqOp<Type>());
 
-            forAllBlock(f[l-1][d], i, j, k)
+            forAllCells(f[l-1][d], i, j, k)
                 if (mag(f[l-1][d](i,j,k) - pTraits<Type>::one*2.0) > 1e-14)
                     FatalErrorInFunction
                         << "test 1 failed" << abort(FatalError);
@@ -72,9 +72,9 @@ void testOneLinearProlongation(const fvMesh& fvMsh, const word scheme)
             // Also set ghost values which are needed for prolongation
 
             forAll(f[l], d)
-            for (label i = -1; i < f[l][d].l()+1; i++)
-            for (label j = -1; j < f[l][d].m()+1; j++)
-            for (label k = -1; k < f[l][d].n()+1; k++)
+            for (label i = f[l][d].S().x()-1; i < f[l][d].E().x()+1; i++)
+            for (label j = f[l][d].S().y()-1; j < f[l][d].E().y()+1; j++)
+            for (label k = f[l][d].S().z()-1; k < f[l][d].E().z()+1; k++)
             {
                 f[l][d](i,j,k) = cc[l][d](i,j,k)[dir]*pTraits<Type>::one;
             }
@@ -83,7 +83,7 @@ void testOneLinearProlongation(const fvMesh& fvMsh, const word scheme)
             {
                 P->prolong(f[l-1][d], f[l][d], eqOp<Type>());
 
-                forAllBlock(f[l-1][d], i, j, k)
+                forAllCells(f[l-1][d], i, j, k)
                 {
                     if
                     (
@@ -130,9 +130,9 @@ void testTwoLinearProlongation(const fvMesh& fvMsh, const word scheme)\
             // Also set ghost values which are needed for prolongation
 
             forAll(f[l], d)
-            for (label i = -1; i < f[l][d].l()+1; i++)
-            for (label j = -1; j < f[l][d].m()+1; j++)
-            for (label k = -1; k < f[l][d].n()+1; k++)
+            for (label i = f[l][d].S().x()-1; i < f[l][d].E().x()+1; i++)
+            for (label j = f[l][d].S().y()-1; j < f[l][d].E().y()+1; j++)
+            for (label k = f[l][d].S().z()-1; k < f[l][d].E().z()+1; k++)
             {
                 f[l][d](i,j,k) =
                     (cc[l][d](i,j,k)[dir1]+cc[l][d](i,j,k)[dir2])
@@ -143,7 +143,7 @@ void testTwoLinearProlongation(const fvMesh& fvMsh, const word scheme)\
             {
                 P->prolong(f[l-1][d], f[l][d], eqOp<Type>());
 
-                forAllBlock(f[l-1][d], i, j, k)
+                forAllCells(f[l-1][d], i, j, k)
                 {
                     if
                     (
@@ -189,9 +189,9 @@ void testThreeLinearProlongation(const fvMesh& fvMsh, const word scheme)
         // Also set ghost values which are needed for prolongation
 
         forAll(f[l], d)
-        for (label i = -1; i < f[l][d].l()+1; i++)
-        for (label j = -1; j < f[l][d].m()+1; j++)
-        for (label k = -1; k < f[l][d].n()+1; k++)
+        for (label i = f[l][d].S().x()-1; i < f[l][d].E().x()+1; i++)
+        for (label j = f[l][d].S().y()-1; j < f[l][d].E().y()+1; j++)
+        for (label k = f[l][d].S().z()-1; k < f[l][d].E().z()+1; k++)
         {
             f[l][d](i,j,k) =
                 (
@@ -206,7 +206,7 @@ void testThreeLinearProlongation(const fvMesh& fvMsh, const word scheme)
         {
             P->prolong(f[l-1][d], f[l][d], eqOp<Type>());
 
-            forAllBlock(f[l-1][d], i, j, k)
+            forAllCells(f[l-1][d], i, j, k)
             {
                 if
                 (

@@ -74,25 +74,8 @@ void periodicBoundaryCondition<Type,MeshType>::initEvaluate
                 {
                     const meshDirection<Type,MeshType>& fld = fl[d];
 
-                    labelVector S(fld.extendedBoundaryStart(bo));
-                    labelVector E(fld.extendedBoundaryEnd(bo));
-
-                    // For shifted boundaries, we must copy with an offset if we
-                    // are slave, or if this is an edge or vertex boundary
-                    // condition
-
-                    if
-                    (
-                        fld.shifted(bo)
-                     && (
-                            bc.slave()
-                         || bc.boundaryOffsetDegree() > 1
-                        )
-                    )
-                    {
-                        S += fld.shiftedCopyOffset(bo);
-                        E += fld.shiftedCopyOffset(bo);
-                    }
+                    labelVector S(fld.boundaryStart(bo));
+                    labelVector E(fld.boundaryEnd(bo));
 
                     block<Type>& recvBuffer = this->recvBuffers_[l*fl.size()+d];
 

@@ -41,7 +41,9 @@ void IO::readScalarField
 
     label c = 0;
 
-    forAllBlockReversed(D, i, j, k)
+    for (int k = 0; k < D.B().n()-2; k++)
+    for (int j = 0; j < D.B().m()-2; j++)
+    for (int i = 0; i < D.B().l()-2; i++)
     {
         D(i,j,k) = field->GetValue(c++);
     }
@@ -71,7 +73,9 @@ void IO::readArrayField
 
     label c = 0;
 
-    forAllBlockReversed(D, i, j, k)
+    for (int k = 0; k < D.B().n()-2; k++)
+    for (int j = 0; j < D.B().m()-2; j++)
+    for (int i = 0; i < D.B().l()-2; i++)
     {
         field->GetTuple(c++, D(i,j,k).v_);
     }
@@ -104,16 +108,18 @@ void IO::readArrayArrayField
 
     label c = 0;
 
-    forAllBlockReversed(D, i, j, k)
+    for (int k = 0; k < D.B().n()-2; k++)
+    for (int j = 0; j < D.B().m()-2; j++)
+    for (int i = 0; i < D.B().l()-2; i++)
     {
         typename Type::cmptCmpt ar[m*n];
         field->GetTuple(c++, ar);
 
-        for (label i = 0; i < m; i++)
+        for (label ii = 0; ii < m; ii++)
         {
-            for (label j = 0; j < n; j++)
+            for (label jj = 0; jj < n; jj++)
             {
-                D(i,j,k)[i][j] = ar[i*n+j];
+                D(i,j,k)[ii][jj] = ar[ii*n+jj];
             }
         }
     }

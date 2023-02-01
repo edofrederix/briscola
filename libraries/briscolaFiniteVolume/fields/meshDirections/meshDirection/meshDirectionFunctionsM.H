@@ -1,3 +1,13 @@
+#define forAllCells(DIR, I, J, K)                                               \
+    for (int I = (DIR).S().x(); I < (DIR).E().x(); I++)                         \
+    for (int J = (DIR).S().y(); J < (DIR).E().y(); J++)                         \
+    for (int K = (DIR).S().z(); K < (DIR).E().z(); K++)
+
+#define forAllCellsReversed(DIR, I, J, K)                                       \
+    for (int K = (DIR).S().z(); K < (DIR).E().z(); K++)                         \
+    for (int J = (DIR).S().y(); J < (DIR).E().y(); J++)                         \
+    for (int I = (DIR).S().x(); I < (DIR).E().x(); I++)                         \
+
 #define UNARY_FUNCTION(ReturnType, Type1, Func)                                 \
                                                                                 \
 TEMPLATE                                                                        \

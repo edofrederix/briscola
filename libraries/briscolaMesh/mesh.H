@@ -25,6 +25,10 @@ class mesh
     // This processor's part patches
     PtrList<partPatch> partPatches_;
 
+    // Lower and upper patch master vectors
+    labelVector lowerPatchMaster_;
+    labelVector upperPatchMaster_;
+
     // Generate brick-internal part patches
     void generateBrickInternalPartPatches();
 
@@ -77,6 +81,30 @@ public:
     inline const PtrList<partPatch>& partPatches() const
     {
         return partPatches_;
+    }
+
+    // Access to the lower patch master vector
+    inline labelVector lowerPatchMaster() const
+    {
+        return lowerPatchMaster_;
+    }
+
+    // Access to the lower patch slave vector
+    inline labelVector lowerPatchSlave() const
+    {
+        return unitXYZ - lowerPatchMaster_;
+    }
+
+    // Access to the upper patch master vector
+    inline labelVector upperPatchMaster() const
+    {
+        return upperPatchMaster_;
+    }
+
+    // Access to the upper patch slave vector
+    inline labelVector upperPatchSlave() const
+    {
+        return unitXYZ - upperPatchMaster_;
     }
 
     //- Disallow default bitwise assignment

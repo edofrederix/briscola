@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
             const colocatedVectorDirection& cc =
                 fvMsh.metrics<colocated>().cellCenters()[l][d];
 
-            forAllBlock(f[l][d], i, j, k)
+            forAllCells(f[l][d], i, j, k)
             {
                 f[l][d](i,j,k) = cc(i,j,k);
             }
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
         f[l].correctBoundaryConditions();
 
         forAll(f[l], d)
-        forAllBlock(f[l][d], i, j, k)
+        forAllCells(f[l][d], i, j, k)
         {
             const colocatedVectorDirection& cc =
                 fvMsh.metrics<colocated>().cellCenters()[l][d];
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
                         // Domain size is 1x1x1. Uniform parallel partitioning assumed.
 
                         const scalar cellSize =
-                            1.0/pow(Pstream::nProcs(),1.0/3.0)/f[l][d].l();
+                            1.0/pow(Pstream::nProcs(),1.0/3.0)/f[l][d].N().x();
 
                         const vector cell = f[l][d](ijk);
                         const vector ghost = f[l][d](ijk+bo);

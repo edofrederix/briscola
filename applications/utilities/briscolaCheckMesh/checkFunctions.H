@@ -20,7 +20,7 @@ void checkInternalFaceCenters(const fvMesh& fvMsh)
 
         const labelVector N(fcld.N());
 
-        forAllBlock(fcld, i, j, k)
+        forAllCells(fcld, i, j, k)
         {
             const labelVector ijk0(i,j,k);
 
@@ -83,7 +83,7 @@ void checkInternalFaceDeltas(const fvMesh& fvMsh)
 
         const labelVector N(fdld.N());
 
-        forAllBlock(fdld, i, j, k)
+        forAllCells(fdld, i, j, k)
         {
             const labelVector ijk0(i,j,k);
 
@@ -181,12 +181,6 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
             labelVector S(fcld.boundaryStart(bo));
             labelVector E(fcld.boundaryEnd(bo));
 
-            if (fcld.shifted(bo) && slave)
-            {
-                S += fcld.shiftedCopyOffset(bo);
-                E += fcld.shiftedCopyOffset(bo);
-            }
-
             labelVector ijk;
 
             for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
@@ -279,12 +273,6 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
 
             labelVector S(fdld.boundaryStart(bo));
             labelVector E(fdld.boundaryEnd(bo));
-
-            if (fdld.shifted(bo) && slave)
-            {
-                S += fdld.shiftedCopyOffset(bo);
-                E += fdld.shiftedCopyOffset(bo);
-            }
 
             labelVector ijk;
 

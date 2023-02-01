@@ -28,9 +28,9 @@ void testCellCenters(const fvMesh& fvMsh)
 
     forAll(c, l)
     forAll(c[l], d)
-    for (label i = -1; i <= c[l][d].l(); i++)
-    for (label j = -1; j <= c[l][d].m(); j++)
-    for (label k = -1; k <= c[l][d].n(); k++)
+    for (label i = c[l][d].S().x()-1; i < c[l][d].E().x()+1; i++)
+    for (label j = c[l][d].S().y()-1; j < c[l][d].E().y()+1; j++)
+    for (label k = c[l][d].S().z()-1; k < c[l][d].E().z()+1; k++)
     {
         const vector cc
         (
@@ -76,7 +76,7 @@ void testCellVolumes(const fvMesh& fvMsh)
         );
 
         forAll(v[l], d)
-        forAllBlock(v[l][d], i, j, k)
+        forAllCells(v[l][d], i, j, k)
         {
             if (mag(v[l][d](i,j,k) - V) > 1e-12)
             {
@@ -100,7 +100,7 @@ void testFaceCenters(const fvMesh& fvMsh)
 
     forAll(c, l)
     forAll(c[l], d)
-    forAllBlock(c[l][d], i, j, k)
+    forAllCells(c[l][d], i, j, k)
     for (label o = 0; o < 6; o++)
     {
         const vector cc
@@ -148,7 +148,7 @@ void testFaceAreas(const fvMesh& fvMsh)
         );
 
         forAll(a[l], d)
-        forAllBlock(a[l][d], i, j, k)
+        forAllCells(a[l][d], i, j, k)
         for (label o = 0; o < 6; o++)
         {
             if (mag(a[l][d](i,j,k)[o] - A[o/2]) > 1e-12)
@@ -169,7 +169,7 @@ void testFaceNormals(const fvMesh& fvMsh)
     forAll(n, l)
     {
         forAll(n[l], d)
-        forAllBlock(n[l][d], i, j, k)
+        forAllCells(n[l][d], i, j, k)
         for (label o = 0; o < 6; o++)
         {
             if (mag(n[l][d](i,j,k)[o] - vector(units[o/2])) > 1e-12)
@@ -202,7 +202,7 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
         );
 
         forAll(n[l], d)
-        forAllBlock(n[l][d], i, j, k)
+        forAllCells(n[l][d], i, j, k)
         for (label o = 0; o < 6; o++)
         {
             if (mag(n[l][d](i,j,k)[o] - A[o/2]*vector(units[o/2])) > 1e-12)
@@ -235,7 +235,7 @@ void testFaceDeltas(const fvMesh& fvMsh)
         );
 
         forAll(fd[l], d)
-        forAllBlock(fd[l][d], i, j, k)
+        forAllCells(fd[l][d], i, j, k)
         for (label o = 0; o < 6; o++)
         {
             if (mag(fd[l][d](i,j,k)[o] - D[o/2]) > 1e-12)

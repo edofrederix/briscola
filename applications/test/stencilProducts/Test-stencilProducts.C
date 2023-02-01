@@ -24,7 +24,7 @@ void testStencilProducts(const fvMesh& fvMsh)
 
     forAll(x, l)
     forAll(x[l], d)
-    forAllBlock(x[l][d], i, j, k)
+    forAllCells(x[l][d], i, j, k)
     {
         x[l][d](i,j,k) = pTraits<Type>::one*c++;
         stencil[l][d](i,j,k) = pTraits<SType>::one*c++;

@@ -43,7 +43,7 @@ void linearRestrictionScheme<Type,MeshType>::setWeights()
 
             weights = Zero;
 
-            forAllBlock(ccc, i, j, k)
+            forAllCells(ccc, i, j, k)
             {
                 scalar sum = 0.0;
 
@@ -164,7 +164,7 @@ void linearRestrictionScheme<Type,MeshType>::restrict
             metrics<MeshType>().cellVolumes()
             [fine.levelNum()][fine.directionNum()];
 
-        forAllBlock(coarse, i, j, k)
+        forAllCells(coarse, i, j, k)
         {
             const label il = i*R.x();
             const label jl = j*R.y();
@@ -189,7 +189,7 @@ void linearRestrictionScheme<Type,MeshType>::restrict
     }
     else
     {
-        forAllBlock(coarse, i, j, k)
+        forAllCells(coarse, i, j, k)
         {
             const label il = i*R.x();
             const label jl = j*R.y();

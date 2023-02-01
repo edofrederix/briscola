@@ -28,11 +28,16 @@ void IO::writeScalarField
         vtkSmartPointer<vtkDoubleArray>::New();
 
     field->SetName(D.mshLevel().mshField().name().c_str());
-    field->SetNumberOfValues(D.size());
+    field->SetNumberOfValues(cmptProduct(D.B().N()-2*unitXYZ));
+
+    // Also write inactive internal cells. Use the block shape and subtract
+    // ghost cells.
 
     label c = 0;
 
-    forAllBlockReversed(D, i, j, k)
+    for (int k = 0; k < D.B().n()-2; k++)
+    for (int j = 0; j < D.B().m()-2; j++)
+    for (int i = 0; i < D.B().l()-2; i++)
     {
         field->SetValue(c++, D(i,j,k));
     }
@@ -54,7 +59,7 @@ void IO::writeArrayField
 
     field->SetName(D.mshLevel().mshField().name().c_str());
     field->SetNumberOfComponents(n);
-    field->SetNumberOfTuples(D.size());
+    field->SetNumberOfTuples(cmptProduct(D.B().N()-2*unitXYZ));
 
     for (label i = 0; i < n; i++)
     {
@@ -65,9 +70,14 @@ void IO::writeArrayField
         );
     }
 
+    // Also write inactive internal cells. Use the block shape and subtract
+    // ghost cells.
+
     label c = 0;
 
-    forAllBlockReversed(D, i, j, k)
+    for (int k = 0; k < D.B().n()-2; k++)
+    for (int j = 0; j < D.B().m()-2; j++)
+    for (int i = 0; i < D.B().l()-2; i++)
     {
         field->SetTuple(c++, D(i,j,k).v_);
     }
@@ -90,7 +100,7 @@ void IO::writeArrayArrayField
 
     field->SetName(D.mshLevel().mshField().name().c_str());
     field->SetNumberOfComponents(m*n);
-    field->SetNumberOfTuples(D.size());
+    field->SetNumberOfTuples(cmptProduct(D.B().N()-2*unitXYZ));
 
     for (label i = 0; i < m; i++)
     {
@@ -107,17 +117,22 @@ void IO::writeArrayArrayField
         }
     }
 
+    // Also write inactive internal cells. Use the block shape and subtract
+    // ghost cells.
+
     label c = 0;
 
-    forAllBlockReversed(D, i, j, k)
+    for (int k = 0; k < D.B().n()-2; k++)
+    for (int j = 0; j < D.B().m()-2; j++)
+    for (int i = 0; i < D.B().l()-2; i++)
     {
         typename Type::cmptCmpt ar[m*n];
 
-        for (label i = 0; i < m; i++)
+        for (label ii = 0; ii < m; ii++)
         {
-            for (label j = 0; j < n; j++)
+            for (label jj = 0; jj < n; jj++)
             {
-                ar[i*n+j] = D(i,j,k)[i][j];
+                ar[ii*n+jj] = D(i,j,k)[ii][jj];
             }
         }
 

@@ -51,7 +51,7 @@ tmp<colocatedFaceScalarField> midPointFaceFluxScheme::faceFlux
         const colocatedFaceVectorDirection& fan =
             this->fvMsh().metrics<colocated>().faceAreaNormals()[l][0];
 
-        forAllBlock(F, i, j, k)
+        forAllCells(F, i, j, k)
         {
             F(i,j,k) =
                 0.5
@@ -110,7 +110,7 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
             // direction. If the flux direction does not match the mesh
             // direction, we must average in the direction of mesh padding
 
-            forAllBlock(F, i, j, k)
+            forAllCells(F, i, j, k)
             {
                 const labelVector ijk(i,j,k);
 

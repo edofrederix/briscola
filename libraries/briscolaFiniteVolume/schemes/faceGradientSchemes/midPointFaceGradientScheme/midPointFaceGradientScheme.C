@@ -58,7 +58,7 @@ midPointFaceGradientScheme<Type,MeshType>::faceGrad
 
         G.initGhosts();
 
-        forAllBlock(f, i, j, k)
+        forAllCells(f, i, j, k)
         {
             G(i,j,k) =
                 FaceSpace<Type>

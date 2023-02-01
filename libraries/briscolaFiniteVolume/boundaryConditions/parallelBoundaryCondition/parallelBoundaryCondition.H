@@ -103,13 +103,6 @@ public:
 
     // Evaluate the boundary condition for given level
     virtual void evaluate(const label, const bool = false);
-
-    // Parallel face boundary conditions are non-eliminated on shifted slave
-    // boundaries
-    virtual bool eliminated() const
-    {
-        return !(this->slave() && this->boundaryOffsetDegree() == 1);
-    }
 };
 
 }

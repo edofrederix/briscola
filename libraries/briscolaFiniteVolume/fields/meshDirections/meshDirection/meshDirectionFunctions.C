@@ -239,7 +239,7 @@ Type max(const meshDirection<Type,MeshType>& D)
 
     // Only for interior cells
 
-    forAllBlock(D, i, j, k)
+    forAllCells(D, i, j, k)
     {
         if (D(i,j,k) > Max)
         {
@@ -265,7 +265,7 @@ Type min(const meshDirection<Type,MeshType>& D)
 
     // Only for interior cells
 
-    forAllBlock(D, i, j, k)
+    forAllCells(D, i, j, k)
     {
         if (D(i,j,k) < Min)
         {
@@ -291,7 +291,7 @@ Type sum(const meshDirection<Type,MeshType>& D)
 
     // Only for interior cells
 
-    forAllBlock(D, i, j, k)
+    forAllCells(D, i, j, k)
     {
         Sum += D(i,j,k);
     }
@@ -328,7 +328,7 @@ SCALARPRODTYPE maxMagSqr(const meshDirection<Type,MeshType>& D)
 
     // Only for interior cells
 
-    forAllBlock(D, i, j, k)
+    forAllCells(D, i, j, k)
     {
         if (Foam::magSqr(D(i,j,k)) > Max)
         {
@@ -354,7 +354,7 @@ SCALARPRODTYPE minMagSqr(const meshDirection<Type,MeshType>& D)
 
     // Only for interior cells
 
-    forAllBlock(D, i, j, k)
+    forAllCells(D, i, j, k)
     {
         if (magSqr(D(i,j,k)) < Min)
         {
@@ -384,7 +384,7 @@ SCALARPRODTYPE sumProd
 
     // Only for interior cells
 
-    forAllBlock(D1, i, j, k)
+    forAllCells(D1, i, j, k)
     {
         SumProd += (D1(i,j,k) && D2(i,j,k));
     }
@@ -440,7 +440,7 @@ Type sumCmptProd
 
     // Only for interior cells
 
-    forAllBlock(D1, i, j, k)
+    forAllCells(D1, i, j, k)
     {
         Sum += Foam::cmptMultiply(D1(i,j,k),D2(i,j,k));
     }
@@ -492,7 +492,7 @@ SCALARPRODTYPE sumMag(const meshDirection<Type,MeshType>& D)
 
     // Only for interior cells
 
-    forAllBlock(D, i, j, k)
+    forAllCells(D, i, j, k)
     {
         SumMag += Foam::mag(D(i,j,k));
     }
@@ -515,7 +515,7 @@ Type sumCmptMag(const meshDirection<Type,MeshType>& D)
 
     // Only for interior cells
 
-    forAllBlock(D, i, j, k)
+    forAllCells(D, i, j, k)
     {
         Sum += Foam::cmptMag(D(i,j,k));
     }

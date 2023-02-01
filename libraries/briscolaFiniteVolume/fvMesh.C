@@ -44,7 +44,11 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
     staggeredMetrics_()
 {
     colocatedMetrics_ = new fvMeshMetrics<colocated>(*this);
-    staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
+
+    // Only generate staggered metrics when the brick topology is structured
+
+    if (topology().structured())
+        staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
 }
 
 fvMesh::~fvMesh()
@@ -59,6 +63,15 @@ const fvMeshMetrics<colocated>& fvMesh::metrics<colocated>() const
 template<>
 const fvMeshMetrics<staggered>& fvMesh::metrics<staggered>() const
 {
+    #if DEBUG
+    if (!topology().structured())
+    {
+        FatalErrorInFunction
+            << "Staggered metrics are not generated on unstructured meshes."
+            << endl << abort(FatalError);
+    }
+    #endif
+
     return staggeredMetrics_();
 }
 

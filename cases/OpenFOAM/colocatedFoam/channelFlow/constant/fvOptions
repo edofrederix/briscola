@@ -16,6 +16,6 @@ momentumSource
 
     injectionRateSuSp
     {
-        U   ((0 0 0) 0);
+        U   ((1 0 0) 0);
     }
 }

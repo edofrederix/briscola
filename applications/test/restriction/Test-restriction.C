@@ -36,7 +36,7 @@ void testConstantRestriction(const fvMesh& fvMsh, const word scheme)
 
     for (label l = 1; l < f.size(); l++)
         forAll(f[l], d)
-            forAllBlock(f[l][d], i, j, k)
+            forAllCells(f[l][d], i, j, k)
                 if (mag(f[l][d](i,j,k) - pTraits<Type>::one*2.0) > 1e-14)
                     FatalErrorInFunction
                         << "test 1 failed" << abort(FatalError);
@@ -64,7 +64,7 @@ void testOneLinearRestriction(const fvMesh& fvMsh, const word scheme)
         f = Zero;
 
         forAll(f[0], d)
-        forAllBlock(f[0][d], i, j, k)
+        forAllCells(f[0][d], i, j, k)
         {
             f[0][d](i,j,k) = cc[0][d](i,j,k)[dir]*pTraits<Type>::one;
         }
@@ -73,7 +73,7 @@ void testOneLinearRestriction(const fvMesh& fvMsh, const word scheme)
 
         for (label l = 1; l < f.size(); l++)
         forAll(f[l], d)
-        forAllBlock(f[l][d], i, j, k)
+        forAllCells(f[l][d], i, j, k)
         {
             if (mag(f[l][d](i,j,k) - cc[l][d](i,j,k)[dir]*pTraits<Type>::one) > 1e-14)
             {
@@ -107,7 +107,7 @@ void testTwoLinearRestriction(const fvMesh& fvMsh, const word scheme)
         f = Zero;
 
         forAll(f[0], d)
-        forAllBlock(f[0][d], i, j, k)
+        forAllCells(f[0][d], i, j, k)
         {
             f[0][d](i,j,k) =
                 (cc[0][d](i,j,k)[dir1]+cc[0][d](i,j,k)[dir2])
@@ -118,7 +118,7 @@ void testTwoLinearRestriction(const fvMesh& fvMsh, const word scheme)
 
         for (label l = 1; l < f.size(); l++)
         forAll(f[l], d)
-        forAllBlock(f[l][d], i, j, k)
+        forAllCells(f[l][d], i, j, k)
         {
             if
             (
@@ -158,7 +158,7 @@ void testThreeLinearRestriction(const fvMesh& fvMsh, const word scheme)
     f = Zero;
 
     forAll(f[0], d)
-    forAllBlock(f[0][d], i, j, k)
+    forAllCells(f[0][d], i, j, k)
     {
         f[0][d](i,j,k) =
             (
@@ -173,7 +173,7 @@ void testThreeLinearRestriction(const fvMesh& fvMsh, const word scheme)
 
     for (label l = 1; l < f.size(); l++)
     forAll(f[l], d)
-    forAllBlock(f[l][d], i, j, k)
+    forAllCells(f[l][d], i, j, k)
     {
         if
         (

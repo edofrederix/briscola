@@ -215,6 +215,12 @@ public:
         return labelVector(l_,m_,n_);
     }
 
+    // Return the shape of the block
+    inline labelVector N() const
+    {
+        return shape();
+    }
+
     // Return the shape of the block as a diagonal tensor
     inline labelTensor shapeTensor() const
     {

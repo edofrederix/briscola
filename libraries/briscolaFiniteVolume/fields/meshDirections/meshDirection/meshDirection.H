@@ -42,14 +42,23 @@ class meshDirection
     // Direction number
     label d_;
 
-    // Mesh size of this mesh direction
+    // Active cell block start index w.r.t. non-ghost cells
+    labelVector S_;
+
+    // Active cell block end index w.r.t. non-ghost cells
+    labelVector E_;
+
+    // Active cell block size
     labelVector N_;
 
     // Pointer to the mesh level, if any
     meshLevel<Type,MeshType>* mshLevelPtr_;
 
+    // Function to set the active cell block start and end indices, and size
+    void setActiveCells();
+
     // Allocate data
-    void allocate();
+    void allocate(const labelVector);
 
     // Transfer data from other mesh direction
     void transferData(meshDirection<Type,MeshType>&);
@@ -135,44 +144,28 @@ public:
     // Const access to the base
     inline const block<Type>& B() const { return *this; }
 
-    // Return the first dimension without ghost cells
-    inline int l() const { return N_.x(); }
+    // Return the active cell block start
+    inline labelVector S() const { return S_; }
 
-    // Return the second dimension without ghost cells
-    inline int m() const { return N_.y(); }
+    // Return the active cell block end
+    inline labelVector E() const { return E_; }
 
-    // Return the third dimension without ghost cells
-    inline int n() const { return N_.z(); }
-
-    // Return the shape without ghost cells
+    // Return the active cell block size
     inline labelVector N() const { return N_; }
 
-    // Return the start point of the internal cell boundary at given offset
+    // Return the start point of the internal active cell boundary at given
+    // offset
     inline labelVector boundaryStart(const labelVector& bo) const
     {
         return labelVector
         (
-            bo.x() == 0 ? 0 : (bo.x()+1)/2*(N_.x()-1),
-            bo.y() == 0 ? 0 : (bo.y()+1)/2*(N_.y()-1),
-            bo.z() == 0 ? 0 : (bo.z()+1)/2*(N_.z()-1)
+            bo.x() == 0 ? 0 : bo.x() == -1 ? S_.x() : E_.x()-1,
+            bo.y() == 0 ? 0 : bo.y() == -1 ? S_.y() : E_.y()-1,
+            bo.z() == 0 ? 0 : bo.z() == -1 ? S_.z() : E_.z()-1
         );
     }
 
-    // Return the start point of the internal cell boundary at given offset,
-    // extended into perpendicular ghost cells
-    inline labelVector extendedBoundaryStart(const labelVector& bo) const
-    {
-        const labelVector S(boundaryStart(bo));
-
-        return labelVector
-        (
-            S.x() - (bo.x() == 0 ? 1 : 0),
-            S.y() - (bo.y() == 0 ? 1 : 0),
-            S.z() - (bo.z() == 0 ? 1 : 0)
-        );
-    }
-
-    // Return the shape of the internal cell boundary at given offset
+    // Return the shape of the internal active cell boundary at given offset
     inline labelVector boundaryN(const labelVector& bo) const
     {
         return labelVector
@@ -183,31 +176,10 @@ public:
         );
     }
 
-    // Return the shape of the internal cell boundary at given offset, extended
-    // into perpendicular ghost cells
-    inline labelVector extendedBoundaryN(const labelVector& bo) const
-    {
-        const labelVector N(boundaryN(bo));
-
-        return labelVector
-        (
-            N.x() + (bo.x() == 0 ? 2 : 0),
-            N.y() + (bo.y() == 0 ? 2 : 0),
-            N.z() + (bo.z() == 0 ? 2 : 0)
-        );
-    }
-
-    // Return the end of the internal cell boundary at given offset
+    // Return the end of the internal active cell boundary at given offset
     inline labelVector boundaryEnd(const labelVector& bo) const
     {
         return boundaryStart(bo) + boundaryN(bo);
-    }
-
-    // Return the end of the internal cell boundary at given offset, extended
-    // into perpendicular ghost cells
-    inline labelVector extendedBoundaryEnd(const labelVector& bo) const
-    {
-        return extendedBoundaryStart(bo) + extendedBoundaryN(bo);
     }
 
     // Return true if the boundary at given offset is shifted
@@ -220,19 +192,13 @@ public:
         return false;
     }
 
-    // Return the copy offset for shifted boundaries
-    inline labelVector shiftedCopyOffset(const labelVector& bo) const
-    {
-        return cmptMultiply(-bo, MeshType::padding[d_]);
-    }
-
     // Return the shape without ghost cells as a diagonal tensor
     inline labelTensor shapeTensor() const
     {
         return labelTensor(N_.x(),0,0,0,N_.y(),0,0,0,N_.z());
     }
 
-    // Return the number of cells without ghost cells
+    // Return the number of active cells
     inline int size() const { return cmptProduct(N_); }
 
     // Linear element access operator will not work efficiently due to

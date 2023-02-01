@@ -39,13 +39,13 @@ void testIndexing(const fvMesh& fvMsh)
     label l = 0;
 
     forAll(m1, d)
-    forAllBlock(m1[d], i, j, k)
+    forAllCells(m1[d], i, j, k)
     {
         m1[d](i,j,k) = pTraits<Type>::one*l++;
     }
 
     forAll(m1, d)
-    forAllBlock(m1[d], i, j, k)
+    forAllCells(m1[d], i, j, k)
     {
         if (m1[d](i,j,k) != m1[d](labelVector(i,j,k)))
             FatalErrorInFunction << "test 2 failed" << abort(FatalError);
@@ -63,7 +63,7 @@ void testMemberOperators(const fvMesh& fvMsh)
     label l = 0;
 
     forAll(m1, d)
-    forAllBlock(m1[d], i, j, k)
+    forAllCells(m1[d], i, j, k)
     {
         m1[d](i,j,k) = pTraits<Type>::one*l++;
         m2[d](i,j,k) = pTraits<Type>::one*l++;
@@ -111,7 +111,7 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
     label l = 0;
 
     forAll(m1, d)
-    forAllBlock(m1[d], i, j, k)
+    forAllCells(m1[d], i, j, k)
     {
         m1[d](i,j,k) = pTraits<Type>::one*l++;
         m2[d](i,j,k) = pTraits<Type>::one*l++;
@@ -209,7 +209,7 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh)
     label l = 0;
 
     forAll(m1, d)
-    forAllBlock(m1[d], i, j, k)
+    forAllCells(m1[d], i, j, k)
     {
         m1[d](i,j,k) = pTraits<Type>::one*l++;
         m2[d](i,j,k) = pTraits<Type>::one*l++;
@@ -284,7 +284,7 @@ void testStencilFunctions(const fvMesh& fvMsh)
     label l = 0;
 
     forAll(m1, d)
-    forAllBlock(m1[d], i, j, k)
+    forAllCells(m1[d], i, j, k)
     {
         m1[d](i,j,k) = pTraits<Type>::one*l++;
         m2[d](i,j,k) = pTraits<Type>::one*l++;
@@ -334,7 +334,7 @@ void testScalarFunctions(const fvMesh& fvMsh)
     label l = 0;
 
     forAll(m1, d)
-    forAllBlock(m1[d], i, j, k)
+    forAllCells(m1[d], i, j, k)
     {
         m1[d](i,j,k) = scalar(l+++1);
     }
@@ -358,7 +358,7 @@ void testVectorFunctions(const fvMesh& fvMsh)
     label l = 0;
 
     forAll(m1, d)
-    forAllBlock(m1[d], i, j, k)
+    forAllCells(m1[d], i, j, k)
     {
         m1[d](i,j,k) = vector(l,l+1,l+2); l++;
         m2[d](i,j,k) = vector(l,l+1,l+2); l++;
@@ -409,7 +409,7 @@ void testTensorFunctions(const fvMesh& fvMsh)
     label l = 0;
 
     forAll(m1, d)
-    forAllBlock(m1[d], i, j, k)
+    forAllCells(m1[d], i, j, k)
     {
         m1[d](i,j,k) = pTraits<tensor>::one*l++;
         m2[d](i,j,k) = pTraits<symmTensor>::one*l++;

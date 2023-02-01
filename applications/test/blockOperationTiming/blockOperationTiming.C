@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     colocatedVectorField f1("f1", fvMsh);
     colocatedVectorField f2("f2", fvMsh);
 
-    forAllBlock(f1[0][0], i, j, k)
+    forAllCells(f1[0][0], i, j, k)
     {
         f1[0][0](i,j,k) = vector(i,j,k);
         f2[0][0](i,j,k) = vector(i*2,j*3,-k*4);
@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
     t1 = high_resolution_clock::now();
 
     for (label iter = 0; iter < Niter; iter++)
-        forAllBlock(f3[0][0], i, j, k)
+        forAllCells(f3[0][0], i, j, k)
             f3[0][0](i,j,k) = f1[0][0](i,j,k) * f2[0][0](i,j,k);
 
     t2 = high_resolution_clock::now();
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
     t1 = high_resolution_clock::now();
 
     for (label iter = 0; iter < Niter; iter++)
-        forAllBlock(lf3[0], i, j, k)
+        forAllCells(lf3[0], i, j, k)
             lf3[0](i,j,k) = lf1[0](i,j,k) * lf2[0](i,j,k);
 
     t2 = high_resolution_clock::now();
@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
     t1 = high_resolution_clock::now();
 
     for (label iter = 0; iter < Niter; iter++)
-        forAllBlock(df3, i, j, k)
+        forAllCells(df3, i, j, k)
             df3(i,j,k) = df1(i,j,k) * df2(i,j,k);
 
     t2 = high_resolution_clock::now();

@@ -77,10 +77,10 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
             const label d1 = order_[d];
 
             const labelVector NSend =
-                mshField[l][d].extendedBoundaryN(bo);
+                mshField[l][d].boundaryN(bo);
 
             const labelVector NRecv =
-                cmptMag(T.T() & mshField[l][d1].extendedBoundaryN(bo));
+                cmptMag(T.T() & mshField[l][d1].boundaryN(bo));
 
             sendBuffers_.append(new block<Type>(NSend));
             recvBuffers_.append(new block<Type>(NRecv));
@@ -135,24 +135,8 @@ void parallelBoundaryCondition<Type,MeshType>::initEvaluate
     {
         const meshDirection<Type,MeshType>& fd = field[d];
 
-        labelVector S(fd.extendedBoundaryStart(bo));
-        labelVector E(fd.extendedBoundaryEnd(bo));
-
-        // For shifted boundaries, we must copy with an offset if we are slave,
-        // or if this is an edge or vertex boundary condition
-
-        if
-        (
-            fd.shifted(bo)
-         && (
-                this->slave()
-             || this->boundaryOffsetDegree() > 1
-            )
-        )
-        {
-            S += fd.shiftedCopyOffset(bo);
-            E += fd.shiftedCopyOffset(bo);
-        }
+        labelVector S(fd.boundaryStart(bo));
+        labelVector E(fd.boundaryEnd(bo));
 
         block<Type>& sendBuffer =
             sendBuffers_[l*field.size()+d];
@@ -228,22 +212,8 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate
 
         meshDirection<Type,MeshType>& fd = field[d1];
 
-        labelVector S(fd.extendedBoundaryStart(bo));
-        labelVector E(fd.extendedBoundaryEnd(bo));
-
-        // For shifted face boundaries, we must copy into internal cells, not
-        // ghost cells. So we need to apply the copy offset.
-
-        if
-        (
-            fd.shifted(bo)
-         && this->slave()
-         && this->boundaryOffsetDegree() == 1
-        )
-        {
-            S += fd.shiftedCopyOffset(bo);
-            E += fd.shiftedCopyOffset(bo);
-        }
+        labelVector S(fd.boundaryStart(bo));
+        labelVector E(fd.boundaryEnd(bo));
 
         block<Type>& recvBuffer =
             recvBuffers_[l*field.size()+d2];
