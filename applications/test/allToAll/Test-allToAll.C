@@ -172,86 +172,72 @@ int main(int argc, char *argv[])
     // start cell index and block size
 
     // Number of cells in initial and target decompositions
+
     List<labelVector> Ni(Pstream::nProcs(),Zero);
     List<labelVector> Nt(Pstream::nProcs(),Zero);
 
     // Start cell indices of each processor in initial and target decompositions
+
     List<labelVector> si(Pstream::nProcs(),Zero);
     List<labelVector> st(Pstream::nProcs(),Zero);
+
     for ( int proc = 0; proc < Pstream::nProcs(); proc++ )
     {
-        Ni[proc] = vector
-        (
-            floor(N.x()/I.x()),
-            floor(N.y()/I.y()),
-            floor(N.z()/I.z())
-        );
+        Ni[proc] = cmptDivide(N,I);
 
         // If the data distribution is uneven, remainder > 0
-        labelVector remainder = N - cmptMultiply(Ni[proc], I);
-        if (indexFromProcNum(proc, I).x() < remainder.x())
-        {
-            Ni[proc].x() += 1;
-        }
-        if (indexFromProcNum(proc, I).y() < remainder.y())
-        {
-            Ni[proc].y() += 1;
-        }
-        if (indexFromProcNum(proc, I).z() < remainder.z())
-        {
-            Ni[proc].z() += 1;
-        }
 
-        Nt[proc] = vector
-        (
-            floor(N.x()/T.x()),
-            floor(N.y()/T.y()),
-            floor(N.z()/T.z())
-        );
+        labelVector remainder = N - cmptMultiply(Ni[proc], I);
+
+        Ni[proc] += labelVector
+            (
+                indexFromProcNum(proc,I).x() < remainder.x(),
+                indexFromProcNum(proc,I).y() < remainder.y(),
+                indexFromProcNum(proc,I).z() < remainder.z()
+            );
+
+        Nt[proc] = cmptDivide(N,T);
 
         remainder = N - cmptMultiply(Nt[proc], T);
-        if (indexFromProcNum(proc, T).x() < remainder.x())
-        {
-            Nt[proc].x() += 1;
-        }
-        if (indexFromProcNum(proc, T).y() < remainder.y())
-        {
-            Nt[proc].y() += 1;
-        }
-        if (indexFromProcNum(proc, T).z() < remainder.z())
-        {
-            Nt[proc].z() += 1;
-        }
+
+        Nt[proc] += labelVector
+            (
+                indexFromProcNum(proc,T).x() < remainder.x(),
+                indexFromProcNum(proc,T).y() < remainder.y(),
+                indexFromProcNum(proc,T).z() < remainder.z()
+            );
 
         // Set starting indices of each processor, initial decomp
-        si[proc] = labelVector(0,0,0);
+
+        si[proc] = zeroXYZ;
+
         for ( int x = 0; x < indexFromProcNum(proc, I).x(); x++ )
-        {
-            si[proc].x() += Ni[procNumFromIndex(vector(x,0,0), I)].x();
-        }
+            si[proc].x() +=
+                Ni[procNumFromIndex(labelVector(x,0,0), I)].x();
+
         for ( int y = 0; y < indexFromProcNum(proc, I).y(); y++ )
-        {
-            si[proc].y() += Ni[procNumFromIndex(vector(0,y,0), I)].y();
-        }
+            si[proc].y() +=
+                Ni[procNumFromIndex(labelVector(0,y,0), I)].y();
+
         for ( int z = 0; z < indexFromProcNum(proc, I).z(); z++ )
-        {
-            si[proc].z() += Ni[procNumFromIndex(vector(0,0,z), I)].z();
-        }
+            si[proc].z() +=
+                Ni[procNumFromIndex(labelVector(0,0,z), I)].z();
 
         // Set starting indices of each processor, target decomp
-        st[proc] = labelVector(0,0,0);
+
+        st[proc] = zeroXYZ;
+
         for ( int x = 0; x < indexFromProcNum(proc, T).x(); x++ )
-        {
-            st[proc].x() += Nt[procNumFromIndex(vector(x,0,0), T)].x();
-        }
+            st[proc].x() +=
+                Nt[procNumFromIndex(labelVector(x,0,0), T)].x();
+
         for ( int y = 0; y < indexFromProcNum(proc, T).y(); y++ )
-        {
-            st[proc].y() += Nt[procNumFromIndex(vector(0,y,0), T)].y();
-        }
+            st[proc].y() +=
+                Nt[procNumFromIndex(labelVector(0,y,0), T)].y();
+
         for ( int z = 0; z < indexFromProcNum(proc, T).z(); z++ )
-        {
-            st[proc].z() += Nt[procNumFromIndex(vector(0,0,z), T)].z();
-        }
+            st[proc].z() +=
+                Nt[procNumFromIndex(labelVector(0,0,z), T)].z();
     }
 
     List<labelVector> sendSize(Pstream::nProcs(),Zero);
@@ -261,6 +247,7 @@ int main(int argc, char *argv[])
     List<labelVector> recvStart(Pstream::nProcs(),Zero);
 
     // Loop over sending processors
+
     for (int i = 0; i < I.x(); i++)
     for (int j = 0; j < I.y(); j++)
     for (int k = 0; k < I.z(); k++)
@@ -270,29 +257,33 @@ int main(int argc, char *argv[])
 
         labelVector ei = si[sendProcNum] + Ni[sendProcNum];
 
-        Info << nl;
-        Info<< "Proc " << sendProcNum << " starting at " << si[sendProcNum]  << " and with size " << Ni[sendProcNum] << " sends to " << nl;
+        Info<< "Proc " << sendProcNum << " starting at "
+            << si[sendProcNum]  << " and with size " << Ni[sendProcNum]
+            << " sends to " << nl;
 
         // Loop over receiving processors
+
         for (int l = 0; l < T.x(); l++)
         for (int m = 0; m < T.y(); m++)
         for (int n = 0; n < T.z(); n++)
         {
             labelVector lmn(l,m,n);
             label recvProcNum = procNumFromIndex(lmn,T);
+
             // Start and end cell indices of receiving pocessor
 
             labelVector et = st[recvProcNum] + Nt[recvProcNum];
 
             // Check if send and recv processors overlap
+
             if
             (
-                st[recvProcNum].x() < ei.x() &&
-                st[recvProcNum].y() < ei.y() &&
-                st[recvProcNum].z() < ei.z() &&
-                et.x() > si[sendProcNum].x() &&
-                et.y() > si[sendProcNum].y() &&
-                et.z() > si[sendProcNum].z()
+                st[recvProcNum].x() < ei.x()
+             && st[recvProcNum].y() < ei.y()
+             && st[recvProcNum].z() < ei.z()
+             && et.x() > si[sendProcNum].x()
+             && et.y() > si[sendProcNum].y()
+             && et.z() > si[sendProcNum].z()
             )
             {
                 // Overlap start and end cell indices
@@ -312,6 +303,7 @@ int main(int argc, char *argv[])
                 );
 
                 // Add send size and start to sendSize lists
+
                 if (Pstream::myProcNo() == sendProcNum)
                 {
                     sendSize[recvProcNum] = e - s;
@@ -319,6 +311,7 @@ int main(int argc, char *argv[])
                 }
 
                 // Add receive size and start to lists
+
                 if (Pstream::myProcNo() == recvProcNum)
                 {
                     recvSize[sendProcNum] = e - s;
@@ -330,9 +323,9 @@ int main(int argc, char *argv[])
                     << " with size " << e - s << nl;
             }
         }
-    }
 
-    Info<< endl;
+        Info<< endl;
+    }
 
     // Prepare send buffer. Abuse the block class for this. Send a vector that
     // contains the global cell index. Sizes and displacements are in bytes
@@ -344,7 +337,9 @@ int main(int argc, char *argv[])
     labelList sendDisplacement(Pstream::nProcs());
 
     // Input data, each block element contains its own global cell index
+
     vectorBlock inputData(Ni[Pstream::myProcNo()]);
+
     for ( int i = 0; i < Ni[Pstream::myProcNo()].x(); i++ )
     {
         for ( int j = 0; j < Ni[Pstream::myProcNo()].y(); j++ )
@@ -362,12 +357,15 @@ int main(int argc, char *argv[])
     }
 
     label cursor = 0;
+
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
     {
         // Send displacement
+
         sendDisplacement[proc] = cursor*sizeof(vector);
 
         // Local coordinates of start point of the send buffer
+
         labelVector start
         (
             sendStart[proc].x() - si[Pstream::myProcNo()].x(),
@@ -472,7 +470,7 @@ int main(int argc, char *argv[])
                         &recvBuffer
                         (
                             recvDisplacement[proc]
-                            / sizeof(vector)
+                          / sizeof(vector)
                         )
                     ),
                     recvCount[proc],
@@ -492,7 +490,7 @@ int main(int argc, char *argv[])
                         &sendBuffer
                         (
                             sendDisplacement[proc]
-                            / sizeof(vector)
+                          / sizeof(vector)
                         )
                     ),
                     sendCount[proc],
@@ -525,38 +523,36 @@ int main(int argc, char *argv[])
 
     Info<< endl;
 
-
     // Send everything to processor 0
+
     Info << "Collecting data on processor 0..." << endl;
 
-    vectorBlock totalRecvBuffer(N);
+    autoPtr<vectorBlock> totalRecvBufferPtr;
 
-    labelList sc(Pstream::nProcs());
-    labelList sd(Pstream::nProcs());
+    if (Pstream::myProcNo() == 0)
+        totalRecvBufferPtr.reset(new vectorBlock(N));
+
     labelList rc(Pstream::nProcs());
-    labelList rd(Pstream::nProcs());
+    labelList rd(Pstream::nProcs(), 0);
 
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
     {
-        sc[proc] = cmptProduct(Nt[Pstream::myProcNo()])*sizeof(vector);
-
-        sd[proc] = 0;
-
         rc[proc] = cmptProduct(Nt[proc])*sizeof(vector);
 
-        rd[proc] = 0;
         for (int p = 0; p < proc; p++)
-        {
             rd[proc] += cmptProduct(Nt[p])*sizeof(vector);
-        }
     }
 
-    UPstream::allToAll
+    UPstream::gather
     (
         reinterpret_cast<char*>(data.begin()),
-        sc,
-        sd,
-        reinterpret_cast<char*>(totalRecvBuffer.begin()),
+        cmptProduct(Nt[Pstream::myProcNo()])*sizeof(vector),
+        reinterpret_cast<char*>
+        (
+            Pstream::myProcNo() == 0
+          ? totalRecvBufferPtr->begin()
+          : nullptr
+        ),
         rc,
         rd,
         UPstream::worldComm
@@ -565,9 +561,10 @@ int main(int argc, char *argv[])
     if ( ! Pstream::myProcNo() )
     {
         vectorBlock totalData(N);
-        unpack(totalRecvBuffer, st, Nt, totalData, st);
 
-        if(check(totalData, labelVector(0,0,0)))
-            Info << "Total data check successful." << endl;
+        unpack(totalRecvBufferPtr(), st, Nt, totalData, st);
+
+        if(check(totalData, zeroXYZ))
+            Info << "Total data check successful" << endl;
     }
 }
