@@ -56,6 +56,80 @@ void decomposition::updateGlobalData()
         }
     }
 
+    // Set the part size per processor list
+
+    partSizePerProc_.setSize(Pstream::nProcs());
+    partSizePerProc_[Pstream::myProcNo()] = myPartN();
+
+    Pstream::gatherList(partSizePerProc_);
+    Pstream::scatterList(partSizePerProc_);
+
+    // Set the global processor map if the brick topology is structured
+
+    if (msh_.topology().structured())
+    {
+        const labelBlock& map = msh_.topology().map();
+
+        // Get the number of processors per brick in each direction
+
+        labelList Nx(map.l(), 0);
+        labelList Ny(map.m(), 0);
+        labelList Nz(map.n(), 0);
+
+        forAllBlock(map, i, j, k)
+        {
+            if (Nx[i] == 0 && map(i,j,k) > -1)
+            {
+                Nx[i] = procMapPerBrick_[map(i,j,k)].l();
+            }
+
+            if (Ny[j] == 0 && map(i,j,k) > -1)
+            {
+                Ny[j] = procMapPerBrick_[map(i,j,k)].m();
+            }
+
+            if (Nz[k] == 0 && map(i,j,k) > -1)
+            {
+                Nz[k] = procMapPerBrick_[map(i,j,k)].n();
+            }
+        }
+
+        // Set global processor map
+
+        procMap_.setSize(sum(Nx), sum(Ny), sum(Nz));
+        procMap_ = -1;
+
+        labelVector cursor(zeroXYZ);
+
+        for (int i = 0; i < map.l(); i++)
+        {
+            cursor.y() = 0;
+
+            for (int j = 0; j < map.m(); j++)
+            {
+                cursor.z() = 0;
+
+                for (int k = 0; k < map.n(); k++)
+                {
+                    for (int ii = 0; ii < Nx[i]; ii++)
+                    for (int jj = 0; jj < Ny[j]; jj++)
+                    for (int kk = 0; kk < Nz[k]; kk++)
+                    {
+                        labelVector ijk(ii,jj,kk);
+
+                        procMap_(cursor+ijk) =
+                            procMapPerBrick_[map(i,j,k)](ijk);
+                    }
+
+                    cursor.z() += Nz[k];
+                }
+
+                cursor.y() += Ny[j];
+            }
+
+            cursor.x() += Nx[i];
+        }
+    }
 }
 
 decomposition::decomposition(mesh& msh)
@@ -67,7 +141,9 @@ decomposition::decomposition(mesh& msh)
     myBrickPart_(),
     brickNumPerProc_(),
     brickPartPerProc_(),
-    procMapPerBrick_()
+    partSizePerProc_(),
+    procMapPerBrick_(),
+    procMap_()
 {}
 
 decomposition::decomposition
@@ -82,7 +158,10 @@ decomposition::decomposition
     myBrickPart_(d.myBrickPart_),
     brickNumPerProc_(d.brickNumPerProc_),
     brickPartPerProc_(d.brickPartPerProc_),
-    procMapPerBrick_(d.procMapPerBrick_)
+    partSizePerProc_(d.partSizePerProc_),
+    procMapPerBrick_(d.procMapPerBrick_),
+    partSizePerBrick_(d.partSizePerBrick_),
+    procMap_(d.procMap_)
 {}
 
 decomposition::~decomposition()

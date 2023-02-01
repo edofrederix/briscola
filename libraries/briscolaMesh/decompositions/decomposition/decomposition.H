@@ -43,11 +43,17 @@ private:
     // List of part indices per processor
     List<labelVector> brickPartPerProc_;
 
+    // List of part sizes per processor
+    List<labelVector> partSizePerProc_;
+
     // List of processor topologies per brick
     PtrList<labelBlock> procMapPerBrick_;
 
     // List of part sizes per brick
     List<labelVector> partSizePerBrick_;
+
+    // Global processor topology, only set on structured brick topologies
+    labelBlock procMap_;
 
     // Copy constructor
     decomposition(const decomposition&);
@@ -146,10 +152,22 @@ public:
         return brickPartPerProc_;
     }
 
+    // Part sizes per processor
+    inline const List<labelVector>& partSizePerProc() const
+    {
+        return partSizePerProc_;
+    }
+
     // Global processor topology per brick
     inline const PtrList<labelBlock>& procMapPerBrick() const
     {
         return procMapPerBrick_;
+    }
+
+    // Global processor topology, only set on structured brick topologies
+    inline const labelBlock& procMap() const
+    {
+        return procMap_;
     }
 
     // Global list of part sizes per brick
