@@ -49,8 +49,8 @@ public:
     // Destructor
     virtual ~prolongationScheme();
 
-    // In-place prolongation from a coarse cell level to the adjacent fine cell level,
-    // using the = operation
+    // In-place prolongation from a coarse cell level to the adjacent fine cell
+    // level, using the = operation
     virtual void prolong
     (
         meshDirection<Type,MeshType>&,
@@ -58,8 +58,8 @@ public:
         const eqOp<Type>&
     ) = 0;
 
-    // In-place prolongation from a coarse cell level to the adjacent fine cell level,
-    // using the += operation
+    // In-place prolongation from a coarse cell level to the adjacent fine cell
+    // level, using the += operation
     virtual void prolong
     (
         meshDirection<Type,MeshType>&,
@@ -67,8 +67,8 @@ public:
         const plusEqOp<Type>&
     ) = 0;
 
-    // In-place prolongation from a coarse cell level to the adjacent fine cell level,
-    // using the -= operation
+    // In-place prolongation from a coarse cell level to the adjacent fine cell
+    // level, using the -= operation
     virtual void prolong
     (
         meshDirection<Type,MeshType>&,

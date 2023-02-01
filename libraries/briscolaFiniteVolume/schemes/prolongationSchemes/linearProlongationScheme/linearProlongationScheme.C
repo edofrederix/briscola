@@ -59,13 +59,19 @@ void linearProlongationScheme<Type,MeshType>::setWeights()
                     const scalar dzf = Foam::mag(dz);
 
                     const scalar wx =
-                        R.x() > 1 ? Foam::mag((ccf(i,j,k)-ccc(i0,j0,k0)) & dx/dxf)/dxf : 0;
+                        R.x() > 1
+                      ? Foam::mag((ccf(i,j,k)-ccc(i0,j0,k0)) & dx/dxf)/dxf
+                      : 0;
 
                     const scalar wy =
-                        R.y() > 1 ? Foam::mag((ccf(i,j,k)-ccc(i0,j0,k0)) & dy/dyf)/dyf : 0;
+                        R.y() > 1
+                      ? Foam::mag((ccf(i,j,k)-ccc(i0,j0,k0)) & dy/dyf)/dyf
+                      : 0;
 
                     const scalar wz =
-                        R.z() > 1 ? Foam::mag((ccf(i,j,k)-ccc(i0,j0,k0)) & dz/dzf)/dzf : 0;
+                        R.z() > 1
+                      ? Foam::mag((ccf(i,j,k)-ccc(i0,j0,k0)) & dz/dzf)/dzf
+                      : 0;
 
                     const scalar w = (1.0-wx)*(1.0-wy)*(1.0-wz);
 

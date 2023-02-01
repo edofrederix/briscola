@@ -56,12 +56,6 @@ void testOneLinearRestriction(const fvMesh& fvMsh, const word scheme)
 
     meshField<Type,MeshType> f("f", fvMsh);
 
-    f = Zero;
-
-    f[0] = pTraits<Type>::one*2.0;
-
-    S->restrict(f);
-
     const meshField<vector,MeshType>& cc =
         fvMsh.metrics<MeshType>().cellCenters();
 
@@ -103,12 +97,6 @@ void testTwoLinearRestriction(const fvMesh& fvMsh, const word scheme)
     );
 
     meshField<Type,MeshType> f("f", fvMsh);
-
-    f = Zero;
-
-    f[0] = pTraits<Type>::one*2.0;
-
-    S->restrict(f);
 
     const meshField<vector,MeshType>& cc =
         fvMsh.metrics<MeshType>().cellCenters();
@@ -163,12 +151,6 @@ void testThreeLinearRestriction(const fvMesh& fvMsh, const word scheme)
     );
 
     meshField<Type,MeshType> f("f", fvMsh);
-
-    f = Zero;
-
-    f[0] = pTraits<Type>::one*2.0;
-
-    S->restrict(f);
 
     const meshField<vector,MeshType>& cc =
         fvMsh.metrics<MeshType>().cellCenters();

@@ -91,12 +91,28 @@ void MGSolver<SType,Type,MeshType>::cycle
 
             // Post-smooth
 
-            this->smooth(xEqn, l, defect, nSweepsPost, converged, omega_);
+            this->smooth
+            (
+                xEqn,
+                l,
+                defect,
+                nSweepsPost,
+                converged,
+                omega_
+            );
         }
     }
     else
     {
-        this->smooth(xEqn, l, defect, Foam::max(nSweepsPost,2), converged, omega_);
+        this->smooth
+        (
+            xEqn,
+            l,
+            defect,
+            Foam::max(nSweepsPost,2),
+            converged,
+            omega_
+        );
     }
 
     visits[l]++;

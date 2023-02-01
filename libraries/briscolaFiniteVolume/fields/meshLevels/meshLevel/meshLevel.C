@@ -384,8 +384,8 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions
             }
         }
 
-        // Next, correct all boundary conditions contained by this part. This may
-        // overwrite the edge and vertex Neumann BCs just set.
+        // Next, correct all boundary conditions contained by this part. This
+        // may overwrite the edge and vertex Neumann BCs just set.
 
         const label nReq = Pstream::nRequests();
 

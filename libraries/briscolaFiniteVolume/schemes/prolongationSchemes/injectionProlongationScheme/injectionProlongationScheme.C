@@ -1,4 +1,4 @@
-#include "midPointProlongationScheme.H"
+#include "injectionProlongationScheme.H"
 
 namespace Foam
 {
@@ -11,7 +11,7 @@ namespace fv
 
 template<class Type, class MeshType>
 template<template<class> class OpType>
-void midPointProlongationScheme<Type,MeshType>::prolong
+void injectionProlongationScheme<Type,MeshType>::prolong
 (
     meshDirection<Type,MeshType>& fine,
     const meshDirection<Type,MeshType>& coarse,
@@ -19,7 +19,6 @@ void midPointProlongationScheme<Type,MeshType>::prolong
 )
 {
     const labelVector R(coarse.level().R());
-    const vector s(MeshType::shift[coarse.directionNum()]);
 
     forAllBlock(fine, i, j, k)
     {
@@ -27,34 +26,16 @@ void midPointProlongationScheme<Type,MeshType>::prolong
         const label jl = j/R.y();
         const label kl = k/R.z();
 
-        const label ox = (i % 2)*2 - 1;
-        const label oy = (j % 2)*2 - 1;
-        const label oz = (k % 2)*2 - 1;
-
-        const label iu = il + (R.x() == 1 ? 0 : ox);
-        const label ju = jl + (R.y() == 1 ? 0 : oy);
-        const label ku = kl + (R.z() == 1 ? 0 : oz);
-
         bop
         (
             fine(i,j,k),
-            (
-                (1.5+ox*s.x())*(1.5+oy*s.y())*(1.5+oz*s.z())*coarse(il,jl,kl)
-              + (0.5-ox*s.x())*(1.5+oy*s.y())*(1.5+oz*s.z())*coarse(iu,jl,kl)
-              + (1.5+ox*s.x())*(0.5-oy*s.y())*(1.5+oz*s.z())*coarse(il,ju,kl)
-              + (0.5-ox*s.x())*(0.5-oy*s.y())*(1.5+oz*s.z())*coarse(iu,ju,kl)
-              + (1.5+ox*s.x())*(1.5+oy*s.y())*(0.5-oz*s.z())*coarse(il,jl,ku)
-              + (0.5-ox*s.x())*(1.5+oy*s.y())*(0.5-oz*s.z())*coarse(iu,jl,ku)
-              + (1.5+ox*s.x())*(0.5-oy*s.y())*(0.5-oz*s.z())*coarse(il,ju,ku)
-              + (0.5-ox*s.x())*(0.5-oy*s.y())*(0.5-oz*s.z())*coarse(iu,ju,ku)
-            )
-          / 8.0
+            coarse(il,jl,kl)
         );
     }
 }
 
 template<class Type, class MeshType>
-midPointProlongationScheme<Type,MeshType>::midPointProlongationScheme
+injectionProlongationScheme<Type,MeshType>::injectionProlongationScheme
 (
     const dictionary& dict,
     const fvMesh& fvMsh
@@ -64,7 +45,7 @@ midPointProlongationScheme<Type,MeshType>::midPointProlongationScheme
 {}
 
 template<class Type, class MeshType>
-midPointProlongationScheme<Type,MeshType>::midPointProlongationScheme
+injectionProlongationScheme<Type,MeshType>::injectionProlongationScheme
 (
     const fvMesh& fvMsh
 )
@@ -73,7 +54,7 @@ midPointProlongationScheme<Type,MeshType>::midPointProlongationScheme
 {}
 
 template<class Type, class MeshType>
-void midPointProlongationScheme<Type,MeshType>::prolong
+void injectionProlongationScheme<Type,MeshType>::prolong
 (
     meshDirection<Type,MeshType>& fine,
     const meshDirection<Type,MeshType>& coarse,
@@ -84,7 +65,7 @@ void midPointProlongationScheme<Type,MeshType>::prolong
 }
 
 template<class Type, class MeshType>
-void midPointProlongationScheme<Type,MeshType>::prolong
+void injectionProlongationScheme<Type,MeshType>::prolong
 (
     meshDirection<Type,MeshType>& fine,
     const meshDirection<Type,MeshType>& coarse,
@@ -95,7 +76,7 @@ void midPointProlongationScheme<Type,MeshType>::prolong
 }
 
 template<class Type, class MeshType>
-void midPointProlongationScheme<Type,MeshType>::prolong
+void injectionProlongationScheme<Type,MeshType>::prolong
 (
     meshDirection<Type,MeshType>& fine,
     const meshDirection<Type,MeshType>& coarse,

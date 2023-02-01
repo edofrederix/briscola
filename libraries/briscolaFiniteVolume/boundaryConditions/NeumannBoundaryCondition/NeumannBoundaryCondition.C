@@ -118,7 +118,7 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
                 fd(ijk+bo) =
-                    fd(ijk) + H*grad(ijk-S)*fdld(ijk)[fb];
+                    fd(ijk) + H*grad(ijk-S)/fdld(ijk)[fb];
             }
         }
     }

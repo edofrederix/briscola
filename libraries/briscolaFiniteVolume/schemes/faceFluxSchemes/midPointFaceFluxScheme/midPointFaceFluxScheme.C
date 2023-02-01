@@ -55,7 +55,7 @@ tmp<colocatedFaceScalarField> midPointFaceFluxScheme::faceFlux
         {
             F(i,j,k) =
                 0.5
-                * faceScalar
+              * faceScalar
                 (
                     (f(i,j,k) + f(i-1,j,k)) & fan(i,j,k).left(),
                     (f(i,j,k) + f(i+1,j,k)) & fan(i,j,k).right(),

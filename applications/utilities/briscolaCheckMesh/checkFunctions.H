@@ -53,13 +53,14 @@ void checkInternalFaceCenters(const fvMesh& fvMsh)
                             << "offset = " << offset << nl
                             << "mesh type = " << MeshType::typeName << nl
                             << "mesh direction = " << d << nl
-                            << "fc0[face] = " << fcld(ijk0)[face0] << nl
-                            << "fc0 = " << fcld(ijk0) << nl
-                            << "fc1[face] = " << fcld(ijk1)[face1] << nl
-                            << "fc1 = " << fcld(ijk1)<< nl
+                            << "first cell face = " << fcld(ijk0)[face0] << nl
+                            << "first cell faces = " << fcld(ijk0) << nl
+                            << "second cell face = " << fcld(ijk1)[face1] << nl
+                            << "second cell faces = " << fcld(ijk1)<< nl
                             << "level = " << l << nl
-                            << "ijk0 = " << ijk0 << endl
-                            << "ijk1 = " << ijk1 << endl
+                            << "first cell index = " << ijk0 << nl
+                            << "second cell index = " << ijk1 << nl
+                            << "direction size = " << fcld.N() << endl
                             << exit(FatalError);
                     }
                 }
@@ -111,17 +112,18 @@ void checkInternalFaceDeltas(const fvMesh& fvMsh)
                     )
                     {
                         FatalErrorInFunction
-                            << "Found mismatch in face delas at "
+                            << "Found mismatch in face deltas at "
                             << "offset = " << offset << nl
                             << "mesh type = " << MeshType::typeName << nl
                             << "mesh direction = " << d << nl
-                            << "fd0[face] = " << fdld(ijk0)[face0] << nl
-                            << "fd0 = " << fdld(ijk0) << nl
-                            << "fd1[face] = " << fdld(ijk1)[face1] << nl
-                            << "fd1 = " << fdld(ijk1)<< nl
+                            << "first cell delta = " << fdld(ijk0)[face0] << nl
+                            << "first cell deltas = " << fdld(ijk0) << nl
+                            << "second cell delta = " << fdld(ijk1)[face1] << nl
+                            << "second cell deltas = " << fdld(ijk1)<< nl
                             << "level = " << l << nl
-                            << "ijk0 = " << ijk0 << endl
-                            << "ijk1 = " << ijk1 << endl
+                            << "fist cell index = " << ijk0 << nl
+                            << "second cell index = " << ijk1 << nl
+                            << "direction size = " << fdld.N() << endl
                             << exit(FatalError);
                     }
                 }
@@ -150,6 +152,7 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
         const labelVector bo(faceOffsets[i]);
 
         bool found = false;
+        bool slave = false;
 
         forAll(fc.boundaryConditions(), bci)
         {
@@ -159,6 +162,7 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
             if (bc.boundaryOffset() == bo && bc.baseType() == PARALLELBC)
             {
                 found = true;
+                slave = bc.slave();
                 break;
             }
         }
@@ -174,8 +178,14 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
         {
             const meshDirection<faceVector,MeshType>& fcld = fc[l][d];
 
-            const labelVector S(fcld.boundaryStart(bo));
-            const labelVector E(fcld.boundaryEnd(bo));
+            labelVector S(fcld.boundaryStart(bo));
+            labelVector E(fcld.boundaryEnd(bo));
+
+            if (fcld.shifted(bo) && slave)
+            {
+                S += fcld.shiftedCopyOffset(bo);
+                E += fcld.shiftedCopyOffset(bo);
+            }
 
             labelVector ijk;
 
@@ -193,17 +203,21 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
                   > 1e-12
                 )
                 {
-                    FatalErrorInFunction
+                    Info
                         << "Found mismatch in face centers at "
                         << "boundary offset = " << bo << nl
                         << "mesh type = " << MeshType::typeName << nl
                         << "mesh direction = " << d << nl
-                        << "fc1[face] = " << fcld(ijk)[dir1] << nl
-                        << "fc1 = " << fcld(ijk) << nl
-                        << "fc2[face] = " << fcld(ijk+bo)[dir2] << nl
-                        << "fc2 = " << fcld(ijk+bo)<< nl
+                        << "internal cell face = " << fcld(ijk)[dir1] << nl
+                        << "internal cell faces = " << fcld(ijk) << nl
+                        << "ghost cell face = " << fcld(ijk+bo)[dir2] << nl
+                        << "ghost cell face vector = " << fcld(ijk+bo)<< nl
                         << "level = " << l << nl
-                        << "ijk = " << ijk << endl
+                        << "internal cell index = " << ijk << nl
+                        << "ghost cell index = " << ijk+bo << nl
+                        << "direction size = " << fcld.N() << nl
+                        << "shifted = " << Switch(fcld.shifted(bo)) << nl
+                        << "slave = " << Switch(slave) << endl
                         << exit(FatalError);
                 }
             }
@@ -230,6 +244,7 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
         const labelVector bo(faceOffsets[i]);
 
         bool found = false;
+        bool slave = false;
 
         forAll(fd.boundaryConditions(), bci)
         {
@@ -246,6 +261,7 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
             )
             {
                 found = true;
+                slave = bc.slave();
                 break;
             }
         }
@@ -261,8 +277,14 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
         {
             const meshDirection<faceScalar,MeshType>& fdld = fd[l][d];
 
-            const labelVector S(fdld.boundaryStart(bo));
-            const labelVector E(fdld.boundaryEnd(bo));
+            labelVector S(fdld.boundaryStart(bo));
+            labelVector E(fdld.boundaryEnd(bo));
+
+            if (fdld.shifted(bo) && slave)
+            {
+                S += fdld.shiftedCopyOffset(bo);
+                E += fdld.shiftedCopyOffset(bo);
+            }
 
             labelVector ijk;
 
@@ -284,12 +306,16 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
                         << "Found mismatch in face deltas at "
                         << "boundary offset = " << bo << nl
                         << "mesh direction = " << d << nl
-                        << "fd1[face] = " << fdld(ijk)[dir1] << nl
-                        << "fd1 = " << fdld(ijk) << nl
-                        << "fd2[face] = " << fdld(ijk+bo)[dir2] << nl
-                        << "fd2 = " << fdld(ijk+bo)<< nl
+                        << "internal cell delta = " << fdld(ijk)[dir1] << nl
+                        << "internal cell deltas = " << fdld(ijk) << nl
+                        << "ghost cell delta = " << fdld(ijk+bo)[dir2] << nl
+                        << "ghost cell deltas = " << fdld(ijk+bo)<< nl
                         << "level = " << l << nl
-                        << "ijk = " << ijk << endl
+                        << "internal cell index = " << ijk << nl
+                        << "ghost cell index = " << ijk+bo << nl
+                        << "direction size = " << fdld.N() << endl
+                        << "shifted = " << Switch(fdld.shifted(bo)) << nl
+                        << "slave = " << Switch(slave) << endl
                         << exit(FatalError);
                 }
             }

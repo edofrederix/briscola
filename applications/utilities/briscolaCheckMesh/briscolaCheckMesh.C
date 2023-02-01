@@ -49,10 +49,13 @@ int main(int argc, char *argv[])
     parallelInfo(fvMsh);
 
     checkInternalFaceCenters<colocated>(fvMsh);
-    checkInternalFaceCenters<staggered>(fvMsh);
-
     checkInternalFaceDeltas<colocated>(fvMsh);
-    checkInternalFaceDeltas<staggered>(fvMsh);
+
+    if (fvMsh.topology().structured())
+    {
+        checkInternalFaceCenters<staggered>(fvMsh);
+        checkInternalFaceDeltas<staggered>(fvMsh);
+    }
 
     if (Pstream::parRun())
     {
@@ -62,9 +65,6 @@ int main(int argc, char *argv[])
 
         checkParallelFaceCenters<colocated>(fvMsh);
         checkParallelFaceDeltas<colocated>(fvMsh);
-
-        // On triple or quintuple points parallel face and delta checks will
-        // fail on staggered meshes
 
         if (fvMsh.topology().structured())
         {
