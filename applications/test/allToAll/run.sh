@@ -4,7 +4,7 @@ TEST=allToAll
 
 if [ -f build/Test-$TEST ]; then
 
-    OUTPUT=$(mpirun -np 64 --oversubscribe ./build/Test-$TEST -parallel '(512 512 512)' '(4 4 4)' '(1 8 8)' 2 > /dev/null 2>&1)
+    OUTPUT=$(mpirun -np 18 --oversubscribe ./build/Test-$TEST -parallel '(32 48 32)' '(9 2 1)' '(3 3 2)' 2 > /dev/null 2>&1)
 
     RET=$?
 
