@@ -9,14 +9,6 @@ namespace briscola
 namespace fv
 {
 
-template<>
-const char* NamedEnum<smootherType,3>::names[] =
-{
-    "RBGS",
-    "LEXGS",
-    "JAC"
-};
-
 template<class SType, class Type, class MeshType>
 solver<SType,Type,MeshType>::solver(const dictionary& dict, const fvMesh& fvMsh)
 :
@@ -44,6 +36,31 @@ autoPtr<solver<SType,Type,MeshType>> solver<SType,Type,MeshType>::New
         fvMsh.solverDict().subDict(solverName)
     );
 
+    const word solverType(dict.lookup("type"));
+
+    typename dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(solverType);
+
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    {
+        FatalErrorInFunction
+            << "Unknown solver "
+            << solverType << nl << nl
+            << "Valid solvers are:" << nl
+            << dictionaryConstructorTablePtr_->sortedToc()
+            << exit(FatalError);
+    }
+
+    return autoPtr<solver<SType,Type,MeshType>>(cstrIter()(dict, fvMsh));
+}
+
+template<class SType, class Type, class MeshType>
+autoPtr<solver<SType,Type,MeshType>> solver<SType,Type,MeshType>::New
+(
+    const dictionary& dict,
+    const fvMesh& fvMsh
+)
+{
     const word solverType(dict.lookup("type"));
 
     typename dictionaryConstructorTable::iterator cstrIter =

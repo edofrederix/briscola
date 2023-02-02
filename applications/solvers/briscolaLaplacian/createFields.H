@@ -41,13 +41,11 @@ source = readScalar(solverDict.lookup("source"));
 
 // System and solver
 
-linearSystem<stencil,scalar,MESHTYPE> TSys(T);
-
-autoPtr<solver<stencil,scalar,MESHTYPE>> TSolve
+autoPtr<PoissonSolver<stencil,scalar,MESHTYPE>> Poisson
 (
-    solver<stencil,scalar,MESHTYPE>::New
+    PoissonSolver<stencil,scalar,MESHTYPE>::New
     (
-        TSys.x().name(),
+        T.name(),
         fvMsh
     )
 );

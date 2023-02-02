@@ -45,11 +45,7 @@ int main(int argc, char *argv[])
 
         T.setOldTime();
 
-        TSys = im::ddt(T);
-        TSys -= im::laplacian(lambda,T);
-        TSys -= source;
-
-        TSolve->solve(TSys);
+        Poisson->solve(T, source, lambda, true);
 
         io.write<MESHTYPE>();
 

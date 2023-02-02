@@ -3,6 +3,7 @@
 #include "meshFields.H"
 #include "linearSystem.H"
 #include "solvers.H"
+#include "PoissonSolvers.H"
 #include "schemes.H"
 #include "restrictionSchemes.H"
 #include "prolongationSchemes.H"

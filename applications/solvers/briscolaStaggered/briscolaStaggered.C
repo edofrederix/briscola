@@ -62,10 +62,7 @@ int main(int argc, char *argv[])
         U += deltaT*ex::stagGrad(p);
         U.correctBoundaryConditions();
 
-        pSys = im::laplacian(p);
-        pSys -= ex::coloDiv(U)/deltaT;
-
-        pSolve->solve(pSys);
+        Poisson->solve(p, -ex::coloDiv(U)/deltaT);
 
         // Correction
 

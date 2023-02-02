@@ -4,7 +4,6 @@
 #include "solverFwd.H"
 
 #include "linearSystem.H"
-#include "NamedEnum.H"
 #include "colocatedFields.H"
 #include "staggeredFields.H"
 #include "dictionary.H"
@@ -17,17 +16,6 @@ namespace briscola
 
 namespace fv
 {
-
-// Enumeration of smoother types
-enum smootherType
-{
-    RBGS,
-    LEXGS,
-    JAC
-};
-
-// Cycle type names
-static const NamedEnum<smootherType,3> smootherTypeNames;
 
 template<class SType, class Type, class MeshType>
 class solver
@@ -73,8 +61,19 @@ public:
     // Construct from dictionary and mesh
     solver(const dictionary&, const fvMesh&);
 
-    // Selector
-    static autoPtr<solver<SType,Type,MeshType>> New(const word, const fvMesh&);
+    // Selector from solver name
+    static autoPtr<solver<SType,Type,MeshType>> New
+    (
+        const word,
+        const fvMesh&
+    );
+
+    // Selector from dictionary
+    static autoPtr<solver<SType,Type,MeshType>> New
+    (
+        const dictionary&,
+        const fvMesh&
+    );
 
     // Destructor
     virtual ~solver();

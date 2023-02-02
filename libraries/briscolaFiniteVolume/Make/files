@@ -42,6 +42,8 @@ schemes/reconstructionSchemes/reconstructionScheme/reconstructionSchemes.C
 schemes/restrictionSchemes/restrictionScheme/restrictionSchemes.C
 
 solvers/solver/solvers.C
+solvers/solver/solverFwd.C
+solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C
 
 functionObjects/example/example.C
 

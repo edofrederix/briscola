@@ -68,7 +68,6 @@ staggeredScalarField source
 source = scalarList(solverDict.lookup("source"));
 
 linearSystem<stencil,scalar,staggered> USys(U);
-linearSystem<stencil,scalar,colocated> pSys(p);
 
 autoPtr<solver<stencil,scalar,staggered>> USolve
 (
@@ -79,11 +78,11 @@ autoPtr<solver<stencil,scalar,staggered>> USolve
     )
 );
 
-autoPtr<solver<stencil,scalar,colocated>> pSolve
+autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
 (
-    solver<stencil,scalar,colocated>::New
+    PoissonSolver<stencil,scalar,colocated>::New
     (
-        pSys.x().name(),
+        p.name(),
         fvMsh
     )
 );

@@ -64,10 +64,7 @@ int main(int argc, char *argv[])
 
         phi = ex::faceFlux(U);
 
-        pSys = im::laplacian(p);
-        pSys -= ex::div(phi)/deltaT;
-
-        pSolve->solve(pSys);
+        Poisson->solve(p, -ex::div(phi)/deltaT);
 
         // Rhie-Chow correction
 
