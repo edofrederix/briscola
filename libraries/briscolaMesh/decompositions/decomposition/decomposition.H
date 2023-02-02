@@ -5,6 +5,7 @@
 #include "labelVector.H"
 #include "block.H"
 #include "brickDecompositionInterface.H"
+#include "decompositionMap.H"
 
 namespace Foam
 {
@@ -52,8 +53,8 @@ private:
     // List of part sizes per brick
     List<labelVector> partSizePerBrick_;
 
-    // Global processor topology, only set on structured brick topologies
-    labelBlock procMap_;
+    // Global processor topology map, only set on structured brick topologies
+    decompositionMap map_;
 
     // Copy constructor
     decomposition(const decomposition&);
@@ -165,9 +166,9 @@ public:
     }
 
     // Global processor topology, only set on structured brick topologies
-    inline const labelBlock& procMap() const
+    inline const decompositionMap& map() const
     {
-        return procMap_;
+        return map_;
     }
 
     // Global list of part sizes per brick

@@ -28,6 +28,7 @@ patchPair/patchPair.C
 geometry.C
 
 decompositions/decomposition/decomposition.C
+decompositions/decomposition/decompositionMap.C
 decompositions/manualDecomp/manualDecomp.C
 
 decompositions/brickDecompositionInterface/brickDecompositionInterface.C

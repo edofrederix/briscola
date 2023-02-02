@@ -68,48 +68,47 @@ void decomposition::updateGlobalData()
 
     if (msh_.topology().structured())
     {
-        const labelBlock& map = msh_.topology().map();
+        const labelBlock& brickMap = msh_.topology().map();
 
         // Get the number of processors per brick in each direction
 
-        labelList Nx(map.l(), 0);
-        labelList Ny(map.m(), 0);
-        labelList Nz(map.n(), 0);
+        labelList Nx(brickMap.l(), 0);
+        labelList Ny(brickMap.m(), 0);
+        labelList Nz(brickMap.n(), 0);
 
-        forAllBlock(map, i, j, k)
+        forAllBlock(brickMap, i, j, k)
         {
-            if (Nx[i] == 0 && map(i,j,k) > -1)
+            if (Nx[i] == 0 && brickMap(i,j,k) > -1)
             {
-                Nx[i] = procMapPerBrick_[map(i,j,k)].l();
+                Nx[i] = procMapPerBrick_[brickMap(i,j,k)].l();
             }
 
-            if (Ny[j] == 0 && map(i,j,k) > -1)
+            if (Ny[j] == 0 && brickMap(i,j,k) > -1)
             {
-                Ny[j] = procMapPerBrick_[map(i,j,k)].m();
+                Ny[j] = procMapPerBrick_[brickMap(i,j,k)].m();
             }
 
-            if (Nz[k] == 0 && map(i,j,k) > -1)
+            if (Nz[k] == 0 && brickMap(i,j,k) > -1)
             {
-                Nz[k] = procMapPerBrick_[map(i,j,k)].n();
+                Nz[k] = procMapPerBrick_[brickMap(i,j,k)].n();
             }
         }
 
-        // Set global processor map
+        // Compute processor map
 
-        procMap_.setSize(sum(Nx), sum(Ny), sum(Nz));
-        procMap_ = -1;
+        labelBlock map(sum(Nx), sum(Ny), sum(Nz), -1);
 
         labelVector cursor(zeroXYZ);
 
-        for (int i = 0; i < map.l(); i++)
+        for (int i = 0; i < brickMap.l(); i++)
         {
             cursor.y() = 0;
 
-            for (int j = 0; j < map.m(); j++)
+            for (int j = 0; j < brickMap.m(); j++)
             {
                 cursor.z() = 0;
 
-                for (int k = 0; k < map.n(); k++)
+                for (int k = 0; k < brickMap.n(); k++)
                 {
                     for (int ii = 0; ii < Nx[i]; ii++)
                     for (int jj = 0; jj < Ny[j]; jj++)
@@ -117,8 +116,8 @@ void decomposition::updateGlobalData()
                     {
                         labelVector ijk(ii,jj,kk);
 
-                        procMap_(cursor+ijk) =
-                            procMapPerBrick_[map(i,j,k)](ijk);
+                        map(cursor+ijk) =
+                            procMapPerBrick_[brickMap(i,j,k)](ijk);
                     }
 
                     cursor.z() += Nz[k];
@@ -129,6 +128,10 @@ void decomposition::updateGlobalData()
 
             cursor.x() += Nx[i];
         }
+
+        // Store
+
+        map_.setData(map);
     }
 }
 
@@ -143,7 +146,7 @@ decomposition::decomposition(mesh& msh)
     brickPartPerProc_(),
     partSizePerProc_(),
     procMapPerBrick_(),
-    procMap_()
+    map_()
 {}
 
 decomposition::decomposition
@@ -161,7 +164,7 @@ decomposition::decomposition
     partSizePerProc_(d.partSizePerProc_),
     procMapPerBrick_(d.procMapPerBrick_),
     partSizePerBrick_(d.partSizePerBrick_),
-    procMap_(d.procMap_)
+    map_(d.map_)
 {}
 
 decomposition::~decomposition()
