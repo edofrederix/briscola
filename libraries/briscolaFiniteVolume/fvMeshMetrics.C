@@ -36,58 +36,60 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 
             forAllCells(fcld, i, j, k)
             {
+                vector ijk(i+shift.x(),j+shift.y(),k+shift.z());
+
                 fcld(i,j,k).left() =
                     0.25
                   * (
-                        points.interp(i,j,  k,  shift)
-                      + points.interp(i,j+1,k,  shift)
-                      + points.interp(i,j,  k+1,shift)
-                      + points.interp(i,j+1,k+1,shift)
+                        points.interp(ijk)
+                      + points.interp(ijk+vector(unitY))
+                      + points.interp(ijk+vector(unitZ))
+                      + points.interp(ijk+vector(unitYZ))
                     );
 
                 fcld(i,j,k).right() =
                     0.25
                   * (
-                        points.interp(i+1,j,  k,  shift)
-                      + points.interp(i+1,j+1,k,  shift)
-                      + points.interp(i+1,j,  k+1,shift)
-                      + points.interp(i+1,j+1,k+1,shift)
+                        points.interp(ijk+vector(unitX))
+                      + points.interp(ijk+vector(unitXY))
+                      + points.interp(ijk+vector(unitXZ))
+                      + points.interp(ijk+vector(unitXYZ))
                     );
 
                 fcld(i,j,k).bottom() =
                     0.25
                   * (
-                        points.interp(i,  j,k,  shift)
-                      + points.interp(i+1,j,k,  shift)
-                      + points.interp(i,  j,k+1,shift)
-                      + points.interp(i+1,j,k+1,shift)
+                        points.interp(ijk)
+                      + points.interp(ijk+vector(unitX))
+                      + points.interp(ijk+vector(unitZ))
+                      + points.interp(ijk+vector(unitXZ))
                     );
 
                 fcld(i,j,k).top() =
                     0.25
                   * (
-                        points.interp(i,  j+1,k,  shift)
-                      + points.interp(i+1,j+1,k,  shift)
-                      + points.interp(i,  j+1,k+1,shift)
-                      + points.interp(i+1,j+1,k+1,shift)
+                        points.interp(ijk+vector(unitY))
+                      + points.interp(ijk+vector(unitXY))
+                      + points.interp(ijk+vector(unitYZ))
+                      + points.interp(ijk+vector(unitXYZ))
                     );
 
                 fcld(i,j,k).aft() =
                     0.25
                   * (
-                        points.interp(i,  j,  k,shift)
-                      + points.interp(i+1,j,  k,shift)
-                      + points.interp(i,  j+1,k,shift)
-                      + points.interp(i+1,j+1,k,shift)
+                        points.interp(ijk)
+                      + points.interp(ijk+vector(unitX))
+                      + points.interp(ijk+vector(unitY))
+                      + points.interp(ijk+vector(unitXY))
                     );
 
                 fcld(i,j,k).fore() =
                     0.25
                   * (
-                        points.interp(i,  j,  k+1,shift)
-                      + points.interp(i+1,j,  k+1,shift)
-                      + points.interp(i,  j+1,k+1,shift)
-                      + points.interp(i+1,j+1,k+1,shift)
+                        points.interp(ijk+vector(unitZ))
+                      + points.interp(ijk+vector(unitXZ))
+                      + points.interp(ijk+vector(unitYZ))
+                      + points.interp(ijk+vector(unitXYZ))
                     );
             }
         }
@@ -122,16 +124,18 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
 
             forAllCells(fnld, i, j, k)
             {
+                vector ijk(i+shift.x(),j+shift.y(),k+shift.z());
+
                 const vector left =
                     0.5
                   * (
                         (
-                            points.interp(i,j+1,k+1,shift)
-                          - points.interp(i,j,  k,  shift)
+                            points.interp(ijk+vector(unitYZ))
+                          - points.interp(ijk)
                         )
                       ^ (
-                            points.interp(i,j,  k+1,shift)
-                          - points.interp(i,j+1,k,  shift)
+                            points.interp(ijk+vector(unitZ))
+                          - points.interp(ijk+vector(unitY))
                         )
                     );
 
@@ -139,12 +143,12 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
                     0.5
                   * (
                         (
-                            points.interp(i+1,j+1,k+1,shift)
-                          - points.interp(i+1,j,  k,  shift)
+                            points.interp(ijk+vector(unitXYZ))
+                          - points.interp(ijk+vector(unitX))
                         )
                       ^ (
-                            points.interp(i+1,j,  k+1,shift)
-                          - points.interp(i+1,j+1,k,  shift)
+                            points.interp(ijk+vector(unitXZ))
+                          - points.interp(ijk+vector(unitXY))
                         )
                     );
 
@@ -152,12 +156,12 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
                     0.5
                   * (
                         (
-                            points.interp(i,  j,k+1,shift)
-                          - points.interp(i+1,j,k,  shift)
+                            points.interp(ijk+vector(unitZ))
+                          - points.interp(ijk+vector(unitX))
                         )
                       ^ (
-                            points.interp(i+1,j,k+1,shift)
-                          - points.interp(i,  j,k,  shift)
+                            points.interp(ijk+vector(unitXZ))
+                          - points.interp(ijk)
                         )
                     );
 
@@ -165,12 +169,12 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
                     0.5
                   * (
                         (
-                            points.interp(i,  j+1,k+1,shift)
-                          - points.interp(i+1,j+1,k,  shift)
+                            points.interp(ijk+vector(unitYZ))
+                          - points.interp(ijk+vector(unitXY))
                         )
                       ^ (
-                            points.interp(i+1,j+1,k+1,shift)
-                          - points.interp(i,  j+1,k,  shift)
+                            points.interp(ijk+vector(unitXYZ))
+                          - points.interp(ijk+vector(unitY))
                         )
                     );
 
@@ -178,12 +182,12 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
                     0.5
                   * (
                         (
-                            points.interp(i+1,j+1,k,shift)
-                          - points.interp(i,  j,k,  shift)
+                            points.interp(ijk+vector(unitXY))
+                          - points.interp(ijk)
                         )
                       ^ (
-                            points.interp(i,  j+1,k,shift)
-                          - points.interp(i+1,j,  k,shift)
+                            points.interp(ijk+vector(unitY))
+                          - points.interp(ijk+vector(unitX))
                         )
                     );
 
@@ -191,12 +195,12 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
                     0.5
                   * (
                         (
-                            points.interp(i+1,j+1,k+1,shift)
-                          - points.interp(i,  j,  k+1,shift)
+                            points.interp(ijk+vector(unitXYZ))
+                          - points.interp(ijk+vector(unitZ))
                         )
                       ^ (
-                            points.interp(i,  j+1,k+1,shift)
-                          - points.interp(i+1,j,  k+1,shift)
+                            points.interp(ijk+vector(unitYZ))
+                          - points.interp(ijk+vector(unitXZ))
                         )
                     );
 
@@ -247,17 +251,19 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
 
             forAllCells(ccld, i, j, k)
             {
+                vector ijk(i+shift.x(),j+shift.y(),k+shift.z());
+
                 ccld(i,j,k) =
                     0.125
                   * (
-                        points.interp(i,  j,  k  ,shift)
-                      + points.interp(i+1,j,  k  ,shift)
-                      + points.interp(i,  j+1,k  ,shift)
-                      + points.interp(i+1,j+1,k  ,shift)
-                      + points.interp(i,  j,  k+1,shift)
-                      + points.interp(i+1,j,  k+1,shift)
-                      + points.interp(i,  j+1,k+1,shift)
-                      + points.interp(i+1,j+1,k+1,shift)
+                        points.interp(ijk)
+                      + points.interp(ijk+vector(unitX))
+                      + points.interp(ijk+vector(unitY))
+                      + points.interp(ijk+vector(unitXY))
+                      + points.interp(ijk+vector(unitZ))
+                      + points.interp(ijk+vector(unitXZ))
+                      + points.interp(ijk+vector(unitYZ))
+                      + points.interp(ijk+vector(unitXYZ))
                     );
             }
         }
@@ -312,7 +318,7 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
                     for (ijk2.y() = S2.y(); ijk2.y() < E2.y(); ijk2.y()++)
                     for (ijk2.z() = S2.z(); ijk2.z() < E2.z(); ijk2.z()++)
                     {
-                        p += points.interp(ijk+ijk2, shift);
+                        p += points.interp(vector(ijk+ijk2)+shift);
                         c += 1.0;
                     }
 
@@ -437,7 +443,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     fvMsh_(fvMsh),
     faceCenters_
     (
-        "faceCenters",
+        word(MeshType::typeName) + "FaceCenters",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -446,7 +452,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     ),
     faceNormals_
     (
-        "faceNormals",
+        word(MeshType::typeName) + "FaceNormals",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -455,7 +461,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     ),
     faceAreas_
     (
-        "faceCenters",
+        word(MeshType::typeName) + "FaceCenters",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -464,7 +470,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     ),
     faceAreaNormals_
     (
-        "faceAreaNormals",
+        word(MeshType::typeName) + "FaceAreaNormals",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -473,7 +479,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     ),
     cellCenters_
     (
-        "cellCenters",
+        word(MeshType::typeName) + "CellCenters",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -482,7 +488,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     ),
     cellVolumes_
     (
-        "cellVolumes",
+        word(MeshType::typeName) + "CellVolumes",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -491,7 +497,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     ),
     faceDeltas_
     (
-        "faceDeltas",
+        word(MeshType::typeName) + "FaceDeltas",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,

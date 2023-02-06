@@ -112,14 +112,33 @@ void testIndexing()
             FatalErrorInFunction << "test 8 failed" << abort(FatalError);
     }
 
-    // Shifted interpolation
+    // Interpolation to a scalar index
+
+    forAllBlock(b1, i, j, k)
+    {
+        b1(i,j,k) = (i+2*j+3*k)*pTraits<Type>::one;
+    }
 
     for (int i = 0; i < shape.x()-1; i++)
     for (int j = 1; j < shape.y(); j++)
     for (int k = 0; k < shape.z()-1; k++)
     {
-        b1.interp(i,j,k,vector(0.1,-0.2,0.3));
-        b1.interp(labelVector(i,j,k),vector(0.1,-0.2,0.3));
+        const scalar ii = i+0.1;
+        const scalar jj = j-0.2;
+        const scalar kk = k+0.3;
+
+        Type r1 = b1.interp(ii,jj,kk);
+        Type r2 = b1.interp(vector(ii,jj,kk));
+
+        if ((r1-(ii+2*jj+3*kk)*pTraits<Type>::one) > 1e-12*pTraits<Type>::one)
+        {
+            FatalErrorInFunction << "test 9a failed" << abort(FatalError);
+        }
+
+        if ((r2-(ii+2*jj+3*kk)*pTraits<Type>::one) > 1e-12*pTraits<Type>::one)
+        {
+            FatalErrorInFunction << "test 9b failed" << abort(FatalError);
+        }
     }
 }
 

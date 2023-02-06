@@ -2,12 +2,6 @@
 #include "colocatedFields.H"
 #include "staggeredFields.H"
 
-#include "vtkSmartPointer.h"
-#include "vtkStructuredGrid.h"
-#include "vtkCellData.h"
-#include "vtkIntArray.h"
-#include "vtkDoubleArray.h"
-
 namespace Foam
 {
 
@@ -17,112 +11,162 @@ namespace briscola
 namespace fv
 {
 
+// Not a templated function but used mostly by templated functions
+
+void IO::readList
+(
+    autoPtr<std::ifstream>& filePtr,
+    List<floatScalar>& data,
+    const bool ascii,
+    const label tag
+) const
+{
+    labelList sizes(Pstream::nProcs());
+    sizes[Pstream::myProcNo()] = data.size();
+    Pstream::gatherList(sizes);
+    Pstream::scatterList(sizes);
+
+    std::ifstream& file = filePtr();
+
+    if (ascii)
+    {
+        List<floatScalar> buffer;
+
+        forAll(sizes, proc)
+        {
+            const label size = sizes[proc];
+
+            buffer.clear();
+            buffer.setSize(size);
+
+            forAll(buffer, i)
+            {
+                file>> buffer[i];
+            }
+
+            if (proc == Pstream::myProcNo())
+            {
+                data = buffer;
+            }
+        }
+
+        nextLine(file);
+    }
+    else
+    {
+        label offset = 0;
+
+        for(int i = 0; i < Pstream::myProcNo(); i++)
+            offset += sizes[i];
+
+        file.ignore(offset*sizeof(floatScalar));
+
+        file.read
+        (
+            reinterpret_cast<char*>(data.begin()),
+            data.byteSize()
+        );
+
+        file.ignore((sum(sizes)-offset-data.size())*sizeof(floatScalar));
+        nextLine(file);
+
+        #ifdef LITTLEENDIAN
+        swapWords
+        (
+            data.byteSize()/sizeof(label),
+            reinterpret_cast<label*>(data.begin())
+        );
+        #endif
+    }
+}
+
 template<class Type, class MeshType>
 void IO::readScalarField
 (
-    vtkStructuredGrid * grid,
+    autoPtr<std::ifstream>& filePtr,
+    const bool ascii,
     meshDirection<Type,MeshType>& D
 ) const
 {
-    const word name(D.mshLevel().mshField().name());
+    List<floatScalar> data(D.size());
 
-    if (!grid->GetCellData()->HasArray(name.c_str()))
-    {
-        FatalErrorInFunction
-            << "Could not find VTK data for field " << name << endl
-            << exit(FatalError);
-    }
+    const label tag =
+        D.levelNum()*MeshType::numberOfDirections + D.directionNum();
 
-    vtkSmartPointer<vtkIntArray> field =
-        vtkIntArray::FastDownCast
-        (
-            grid->GetCellData()->GetAbstractArray(name.c_str())
-        );
+    IO::readList
+    (
+        filePtr,
+        data,
+        ascii,
+        tag
+    );
 
     label c = 0;
 
-    for (int k = 0; k < D.B().n()-2; k++)
-    for (int j = 0; j < D.B().m()-2; j++)
-    for (int i = 0; i < D.B().l()-2; i++)
-    {
-        D(i,j,k) = field->GetValue(c++);
-    }
+    forAllCells(D, i, j, k)
+        D(i,j,k) = data[c++];
 }
 
 template<class Type, class MeshType>
 void IO::readArrayField
 (
-    vtkStructuredGrid * grid,
+    autoPtr<std::ifstream>& filePtr,
+    const bool ascii,
     meshDirection<Type,MeshType>& D
 ) const
 {
-    const word name(D.mshLevel().mshField().name());
+    const label n(Type::nComponents);
 
-    if (!grid->GetCellData()->HasArray(name.c_str()))
-    {
-        FatalErrorInFunction
-            << "Could not find VTK data for field " << name << endl
-            << exit(FatalError);
-    }
+    List<floatScalar> data(D.size()*n);
 
-    vtkSmartPointer<vtkDoubleArray> field =
-        vtkDoubleArray::FastDownCast
-        (
-            grid->GetCellData()->GetAbstractArray(name.c_str())
-        );
+    const label tag =
+        D.levelNum()*MeshType::numberOfDirections + D.directionNum();
+
+    IO::readList
+    (
+        filePtr,
+        data,
+        ascii,
+        tag
+    );
 
     label c = 0;
 
-    for (int k = 0; k < D.B().n()-2; k++)
-    for (int j = 0; j < D.B().m()-2; j++)
-    for (int i = 0; i < D.B().l()-2; i++)
-    {
-        field->GetTuple(c++, D(i,j,k).v_);
-    }
+    forAllCells(D, i, j, k)
+        for (int ii = 0; ii < n; ii++)
+            D(i,j,k)[ii] = data[c++];
 }
 
 template<class Type, class MeshType>
 void IO::readArrayArrayField
 (
-    vtkStructuredGrid * grid,
+    autoPtr<std::ifstream>& filePtr,
+    const bool ascii,
     meshDirection<Type,MeshType>& D
 ) const
 {
-    const word name(D.mshLevel().mshField().name());
+    const label n(Type::nComponents);
+    const label m(pTraits<typename Type::cmpt>::nComponents);
 
-    const label m(Type::nComponents);
-    const label n(pTraits<typename Type::cmpt>::nComponents);
+    List<floatScalar> data(D.size()*m*n);
 
-    if (!grid->GetCellData()->HasArray(name.c_str()))
-    {
-        FatalErrorInFunction
-            << "Could not find VTK data for field " << name << endl
-            << exit(FatalError);
-    }
+    const label tag =
+        D.levelNum()*MeshType::numberOfDirections + D.directionNum();
 
-    vtkSmartPointer<vtkDoubleArray> field =
-        vtkDoubleArray::FastDownCast
-        (
-            grid->GetCellData()->GetAbstractArray(name.c_str())
-        );
+    IO::readList
+    (
+        filePtr,
+        data,
+        ascii,
+        tag
+    );
 
     label c = 0;
 
-    for (int k = 0; k < D.B().n()-2; k++)
-    for (int j = 0; j < D.B().m()-2; j++)
-    for (int i = 0; i < D.B().l()-2; i++)
-    {
-        typename Type::cmptCmpt ar[m*n];
-        field->GetTuple(c++, ar);
-
-        for (label ii = 0; ii < m; ii++)
-        {
-            for (label jj = 0; jj < n; jj++)
-            {
-                D(i,j,k)[ii][jj] = ar[ii*n+jj];
-            }
-        }
-    }
+    forAllCells(D, i, j, k)
+        for (int ii = 0; ii < n; ii++)
+            for (int jj = 0; jj < m; jj++)
+                D(i,j,k)[ii][jj] = data[c++];
 }
 
 // Instantiate
@@ -132,16 +176,18 @@ void IO::readArrayArrayField
 template<>                                                                      \
 void IO::readField                                                              \
 (                                                                               \
-    vtkStructuredGrid * grid,                                                   \
+    autoPtr<std::ifstream>& filePtr,                                            \
+    const bool ascii,                                                           \
     meshDirection<TYPE,MESHTYPE>& D                                             \
 ) const                                                                         \
 {                                                                               \
-    FUNC(grid,D);                                                               \
+    FUNC(filePtr,ascii,D);                                                      \
 }                                                                               \
                                                                                 \
 template void IO::FUNC                                                          \
 (                                                                               \
-    vtkStructuredGrid*,                                                         \
+    autoPtr<std::ifstream>&,                                                    \
+    const bool ascii,                                                           \
     meshDirection<TYPE,MESHTYPE>&                                               \
 ) const;
 

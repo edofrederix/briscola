@@ -139,6 +139,10 @@ const labelVector unitX(1,0,0);
 const labelVector unitY(0,1,0);
 const labelVector unitZ(0,0,1);
 
+const labelVector unitXY(1,1,0);
+const labelVector unitXZ(1,0,1);
+const labelVector unitYZ(0,1,1);
+
 const labelVector unitXYZ(1,1,1);
 
 const labelVector units[] =

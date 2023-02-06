@@ -2,12 +2,6 @@
 #include "colocatedFields.H"
 #include "staggeredFields.H"
 
-#include "vtkSmartPointer.h"
-#include "vtkStructuredGrid.h"
-#include "vtkCellData.h"
-#include "vtkIntArray.h"
-#include "vtkDoubleArray.h"
-
 namespace Foam
 {
 
@@ -17,129 +11,190 @@ namespace briscola
 namespace fv
 {
 
+// Not a templated function but used mostly by templated functions
+
+void IO::writeList
+(
+    autoPtr<std::ofstream>& filePtr,
+    List<floatScalar>& data,
+    const word name,
+    const label nComponents,
+    const bool ascii,
+    const label tag,
+    const bool header
+) const
+{
+    labelList sizes(Pstream::nProcs());
+    sizes[Pstream::myProcNo()] = data.size();
+    Pstream::gatherList(sizes);
+
+    if (Pstream::master())
+    {
+        std::ofstream& file = filePtr();
+
+        if (header)
+        {
+            file<< name << " " << nComponents << " "
+                << sum(sizes)/nComponents << " float" << std::endl;
+        }
+
+        List<floatScalar> buffer;
+
+        forAll(sizes, proc)
+        {
+            if (proc == Pstream::masterNo())
+            {
+                buffer.clear();
+                buffer = data;
+            }
+            else
+            {
+                buffer.clear();
+                buffer.setSize(sizes[proc]);
+
+                UIPstream::read
+                (
+                    Pstream::commsTypes::blocking,
+                    proc,
+                    reinterpret_cast<char*>(buffer.begin()),
+                    buffer.byteSize(),
+                    tag,
+                    UPstream::worldComm
+                );
+            }
+
+            if (ascii)
+            {
+                forAll(buffer, i)
+                {
+                    file<< buffer[i] << " ";
+                }
+            }
+            else
+            {
+                #ifdef LITTLEENDIAN
+                swapWords
+                (
+                    buffer.byteSize()/sizeof(label),
+                    reinterpret_cast<label*>(buffer.begin())
+                );
+                #endif
+
+                file.write
+                (
+                    reinterpret_cast<char*>(buffer.begin()),
+                    buffer.byteSize()
+                );
+            }
+        }
+
+        file<< std::endl;
+    }
+    else
+    {
+        UOPstream::write
+        (
+            Pstream::commsTypes::blocking,
+            Pstream::masterNo(),
+            reinterpret_cast<char*>(data.begin()),
+            data.byteSize(),
+            tag,
+            UPstream::worldComm
+        );
+    }
+
+    Pstream::waitRequests();
+}
+
 template<class Type, class MeshType>
 void IO::writeScalarField
 (
-    vtkStructuredGrid * grid,
+    autoPtr<std::ofstream>& filePtr,
     const meshDirection<Type,MeshType>& D
 ) const
 {
-    vtkSmartPointer<vtkDoubleArray> field =
-        vtkSmartPointer<vtkDoubleArray>::New();
-
-    field->SetName(D.mshLevel().mshField().name().c_str());
-    field->SetNumberOfValues(cmptProduct(D.B().N()-2*unitXYZ));
-
-    // Also write inactive internal cells. Use the block shape and subtract
-    // ghost cells.
+    List<floatScalar> data(D.size());
 
     label c = 0;
 
-    for (int k = 0; k < D.B().n()-2; k++)
-    for (int j = 0; j < D.B().m()-2; j++)
-    for (int i = 0; i < D.B().l()-2; i++)
-    {
-        field->SetValue(c++, D(i,j,k));
-    }
+    forAllCells(D, i, j, k)
+        data[c++] = D(i,j,k);
 
-    grid->GetCellData()->AddArray(field);
+    const label tag =
+        D.levelNum()*MeshType::numberOfDirections + D.directionNum();
+
+    IO::writeList
+    (
+        filePtr,
+        data,
+        D.mshLevel().mshField().name(),
+        1,
+        fvMsh_.time().writeFormat() == IOstream::ASCII,
+        tag
+    );
 }
 
 template<class Type, class MeshType>
 void IO::writeArrayField
 (
-    vtkStructuredGrid * grid,
+    autoPtr<std::ofstream>& filePtr,
     const meshDirection<Type,MeshType>& D
 ) const
 {
-    vtkSmartPointer<vtkDoubleArray> field =
-        vtkSmartPointer<vtkDoubleArray>::New();
-
     const label n(Type::nComponents);
 
-    field->SetName(D.mshLevel().mshField().name().c_str());
-    field->SetNumberOfComponents(n);
-    field->SetNumberOfTuples(cmptProduct(D.B().N()-2*unitXYZ));
-
-    for (label i = 0; i < n; i++)
-    {
-        field->SetComponentName
-        (
-            i,
-            Type::componentNames[i]
-        );
-    }
-
-    // Also write inactive internal cells. Use the block shape and subtract
-    // ghost cells.
+    List<floatScalar> data(D.size()*n);
 
     label c = 0;
 
-    for (int k = 0; k < D.B().n()-2; k++)
-    for (int j = 0; j < D.B().m()-2; j++)
-    for (int i = 0; i < D.B().l()-2; i++)
-    {
-        field->SetTuple(c++, D(i,j,k).v_);
-    }
+    forAllCells(D, i, j, k)
+        for (label ii = 0; ii < n; ii++)
+            data[c++] = D(i,j,k)[ii];
 
-    grid->GetCellData()->AddArray(field);
+    const label tag =
+        D.levelNum()*MeshType::numberOfDirections + D.directionNum();
+
+    IO::writeList
+    (
+        filePtr,
+        data,
+        D.mshLevel().mshField().name(),
+        n,
+        fvMsh_.time().writeFormat() == IOstream::ASCII,
+        tag
+    );
 }
 
 template<class Type, class MeshType>
 void IO::writeArrayArrayField
 (
-    vtkStructuredGrid * grid,
+    autoPtr<std::ofstream>& filePtr,
     const meshDirection<Type,MeshType>& D
 ) const
 {
-    vtkSmartPointer<vtkDoubleArray> field =
-        vtkSmartPointer<vtkDoubleArray>::New();
+    const label n(Type::nComponents);
+    const label m(pTraits<typename Type::cmpt>::nComponents);
 
-    const label m(Type::nComponents);
-    const label n(pTraits<typename Type::cmpt>::nComponents);
-
-    field->SetName(D.mshLevel().mshField().name().c_str());
-    field->SetNumberOfComponents(m*n);
-    field->SetNumberOfTuples(cmptProduct(D.B().N()-2*unitXYZ));
-
-    for (label i = 0; i < m; i++)
-    {
-        for (label j = 0; j < n; j++)
-        {
-            field->SetComponentName
-            (
-                i*n+j,
-                (
-                    word(Type::componentNames[i]) + "." +
-                    word(pTraits<typename Type::cmpt>::componentNames[j])
-                ).c_str()
-            );
-        }
-    }
-
-    // Also write inactive internal cells. Use the block shape and subtract
-    // ghost cells.
+    List<floatScalar> data(D.size()*m*n);
 
     label c = 0;
+    forAllCells(D, i, j, k)
+        for (label ii = 0; ii < n; ii++)
+            for (label jj = 0; jj < m; jj++)
+                data[c++] = D(i,j,k)[ii][jj];
 
-    for (int k = 0; k < D.B().n()-2; k++)
-    for (int j = 0; j < D.B().m()-2; j++)
-    for (int i = 0; i < D.B().l()-2; i++)
-    {
-        typename Type::cmptCmpt ar[m*n];
+    const label tag =
+        D.levelNum()*MeshType::numberOfDirections + D.directionNum();
 
-        for (label ii = 0; ii < m; ii++)
-        {
-            for (label jj = 0; jj < n; jj++)
-            {
-                ar[ii*n+jj] = D(i,j,k)[ii][jj];
-            }
-        }
-
-        field->SetTuple(c++, ar);
-    }
-
-    grid->GetCellData()->AddArray(field);
+    IO::writeList
+    (
+        filePtr,
+        data,
+        D.mshLevel().mshField().name(),
+        m*n,
+        fvMsh_.time().writeFormat() == IOstream::ASCII,
+        tag
+    );
 }
 
 // Instantiate
@@ -149,16 +204,16 @@ void IO::writeArrayArrayField
 template<>                                                                      \
 void IO::writeField                                                             \
 (                                                                               \
-    vtkStructuredGrid * grid,                                                   \
+    autoPtr<std::ofstream>& filePtr,                                            \
     const meshDirection<TYPE,MESHTYPE>& D                                       \
 ) const                                                                         \
 {                                                                               \
-    FUNC(grid,D);                                                               \
+    FUNC(filePtr,D);                                                            \
 }                                                                               \
                                                                                 \
 template void IO::FUNC                                                          \
 (                                                                               \
-    vtkStructuredGrid*,                                                         \
+    autoPtr<std::ofstream>&,                                                    \
     const meshDirection<TYPE,MESHTYPE>&                                         \
 ) const;
 

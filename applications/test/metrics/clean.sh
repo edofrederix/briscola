@@ -1,4 +1,4 @@
 #!/bin/bash
 
-rm -fr build 0 *.pvd timeData
+rm -fr build 0 *.vtk.series
 wclean -silent

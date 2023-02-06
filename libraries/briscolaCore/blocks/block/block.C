@@ -838,60 +838,35 @@ labelVector block<Type>::find(const Type& v) const
         }
     }
 
-    return labelVector(-1,-1,-1);
+    return -unitXYZ;
 }
 
 template<class Type>
-Type block<Type>::interp
-(
-    const int i,
-    const int j,
-    const int k,
-    const vector& s
-) const
+Type block<Type>::interp(const scalar i, const scalar j, const scalar k) const
 {
-    if (s == vector(0,0,0))
-    {
-        return this->operator()(i,j,k);
-    }
+    const label ii = i;
+    const label jj = j;
+    const label kk = k;
 
-    for (int d = 0; d < 3; d++)
-    {
-        if (Foam::mag(s[d]) > 1.0)
-        {
-            FatalErrorInFunction
-                << "shift vector components must be in between or equal to -1 and 1"
-                << abort(FatalError);
-        }
-    }
-
-    const label ox(Foam::sign(s.x()));
-    const label oy(Foam::sign(s.y()));
-    const label oz(Foam::sign(s.z()));
-
-    const scalar x(Foam::mag(s.x()));
-    const scalar y(Foam::mag(s.y()));
-    const scalar z(Foam::mag(s.z()));
+    const scalar di = i-ii;
+    const scalar dj = j-jj;
+    const scalar dk = k-kk;
 
     return
-        (1.0-x) * (1.0-y) * (1.0-z) * this->operator()(i,    j,    k   )
-      + (    x) * (1.0-y) * (1.0-z) * this->operator()(i+ox, j,    k   )
-      + (1.0-x) * (    y) * (1.0-z) * this->operator()(i,    j+oy, k   )
-      + (    x) * (    y) * (1.0-z) * this->operator()(i+ox, j+oy, k   )
-      + (1.0-x) * (1.0-y) * (    z) * this->operator()(i,    j,    k+oz)
-      + (    x) * (1.0-y) * (    z) * this->operator()(i+ox, j,    k+oz)
-      + (1.0-x) * (    y) * (    z) * this->operator()(i,    j+oy, k+oz)
-      + (    x) * (    y) * (    z) * this->operator()(i+ox, j+oy, k+oz);
+        (1.0-di) * (1.0-dj) * (1.0-dk) * this->operator()(ii,  jj,  kk  )
+      + (    di) * (1.0-dj) * (1.0-dk) * this->operator()(ii+1,jj,  kk  )
+      + (1.0-di) * (    dj) * (1.0-dk) * this->operator()(ii,  jj+1,kk  )
+      + (    di) * (    dj) * (1.0-dk) * this->operator()(ii+1,jj+1,kk  )
+      + (1.0-di) * (1.0-dj) * (    dk) * this->operator()(ii,  jj,  kk+1)
+      + (    di) * (1.0-dj) * (    dk) * this->operator()(ii+1,jj,  kk+1)
+      + (1.0-di) * (    dj) * (    dk) * this->operator()(ii,  jj+1,kk+1)
+      + (    di) * (    dj) * (    dk) * this->operator()(ii+1,jj+1,kk+1);
 }
 
 template<class Type>
-Type block<Type>::interp
-(
-    const labelVector& ijk,
-    const vector& s
-) const
+Type block<Type>::interp(const vector ijk) const
 {
-    return this->interp(ijk.x(), ijk.y(), ijk.z(), s);
+    return this->interp(ijk.x(), ijk.y(), ijk.z());
 }
 
 template<class Type>
