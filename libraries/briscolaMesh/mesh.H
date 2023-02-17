@@ -25,9 +25,15 @@ class mesh
     // This processor's part patches
     PtrList<partPatch> partPatches_;
 
-    // Lower and upper patch master vectors
-    labelVector lowerPatchMaster_;
-    labelVector upperPatchMaster_;
+    // Lower and upper master patch vectors. Indicate for each patch if it is a
+    // master patch.
+    labelVector lowerMasterPatch_;
+    labelVector upperMasterPatch_;
+
+    // Lower and upper boundary patch vectors. Indicate for each patch if it is
+    // a boundary patch.
+    labelVector lowerBoundaryPatch_;
+    labelVector upperBoundaryPatch_;
 
     // Generate brick-internal part patches
     void generateBrickInternalPartPatches();
@@ -83,28 +89,40 @@ public:
         return partPatches_;
     }
 
-    // Access to the lower patch master vector
-    inline labelVector lowerPatchMaster() const
+    // Access to the lower master patch vector
+    inline labelVector lowerMasterPatch() const
     {
-        return lowerPatchMaster_;
+        return lowerMasterPatch_;
     }
 
-    // Access to the lower patch slave vector
-    inline labelVector lowerPatchSlave() const
+    // Access to the lower slave patch vector
+    inline labelVector lowerSlavePatch() const
     {
-        return unitXYZ - lowerPatchMaster_;
+        return unitXYZ - lowerMasterPatch_;
     }
 
-    // Access to the upper patch master vector
-    inline labelVector upperPatchMaster() const
+    // Access to the upper master patch vector
+    inline labelVector upperMasterPatch() const
     {
-        return upperPatchMaster_;
+        return upperMasterPatch_;
     }
 
-    // Access to the upper patch slave vector
-    inline labelVector upperPatchSlave() const
+    // Access to the upper slave patch vector
+    inline labelVector upperSlavePatch() const
     {
-        return unitXYZ - upperPatchMaster_;
+        return unitXYZ - upperMasterPatch_;
+    }
+
+    // Access to the lower boundary patch vector
+    inline labelVector lowerBoundaryPatch() const
+    {
+        return lowerBoundaryPatch_;
+    }
+
+    // Access to the upper boundary patch vector
+    inline labelVector upperBoundaryPatch() const
+    {
+        return upperBoundaryPatch_;
     }
 
     //- Disallow default bitwise assignment

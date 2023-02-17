@@ -347,8 +347,8 @@ void mesh::generatePartPatches()
 
     setCommTags();
 
-    lowerPatchMaster_ = unitXYZ;
-    upperPatchMaster_ = unitXYZ;
+    lowerMasterPatch_ = unitXYZ;
+    upperMasterPatch_ = unitXYZ;
 
     forAll(partPatches(), i)
     {
@@ -360,11 +360,33 @@ void mesh::generatePartPatches()
 
             if (facei % 2 == 0)
             {
-                lowerPatchMaster_[facei/2] = 0;
+                lowerMasterPatch_[facei/2] = 0;
             }
             else
             {
-                upperPatchMaster_[facei/2] = 0;
+                upperMasterPatch_[facei/2] = 0;
+            }
+        }
+    }
+
+    lowerBoundaryPatch_ = zeroXYZ;
+    upperBoundaryPatch_ = zeroXYZ;
+
+    forAll(partPatches(), i)
+    {
+        const partPatch& patch = partPatches_[i];
+
+        if (patch.type() == "boundary" && patch.boundaryOffsetDegree() == 1)
+        {
+            const label facei = faceNumber(patch.boundaryOffset());
+
+            if (facei % 2 == 0)
+            {
+                lowerBoundaryPatch_[facei/2] = 1;
+            }
+            else
+            {
+                upperBoundaryPatch_[facei/2] = 1;
             }
         }
     }
@@ -412,8 +434,8 @@ mesh::mesh(const IOdictionary& dict)
     PtrList<partLevel>(0),
     decomp_(decomposition::New(*this)),
     N_(decomp_->myPartN()),
-    lowerPatchMaster_(unitXYZ),
-    upperPatchMaster_(unitXYZ)
+    lowerMasterPatch_(unitXYZ),
+    upperMasterPatch_(unitXYZ)
 {
     generatePartPatches();
     generatePartLevels();

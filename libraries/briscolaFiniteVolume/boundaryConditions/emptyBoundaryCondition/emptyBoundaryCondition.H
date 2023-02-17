@@ -79,8 +79,10 @@ public:
     // Evaluate the boundary condition for given level
     virtual void evaluate(const label, const bool = false);
 
-    // Empty boundary condition are non-eliminated on shifted boundaries
-    virtual bool eliminated() const { return false; }
+    // This boundary condition sets values, so it behaves like a slave patch on
+    // shifted boundaries
+    virtual inline bool master() const { return false; }
+    virtual inline bool slave() const { return true; }
 };
 
 }

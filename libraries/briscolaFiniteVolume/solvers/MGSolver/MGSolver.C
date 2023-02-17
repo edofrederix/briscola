@@ -87,7 +87,6 @@ void MGSolver<SType,Type,MeshType>::cycle
                     proScheme_->prolong(x[l][d], x[l+1][d], plusEqOp<Type>());
 
             x[l].correctBoundaryConditions(defect);
-            xEqn.correctBoundarySources(l);
 
             // Post-smooth
 
@@ -138,7 +137,6 @@ void MGSolver<SType,Type,MeshType>::solve
     for (label i = l; i < x.size(); i++)
     {
         x[i].correctBoundaryConditions(i > l);
-        xEqn.correctBoundaryConditions();
     }
 
     // Residual field

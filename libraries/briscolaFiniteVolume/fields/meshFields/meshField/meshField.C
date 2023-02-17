@@ -49,15 +49,12 @@ void meshField<Type,MeshType>::transferData
     }
 }
 
-
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::addBoundaryConditions()
 {
     if (boundaryConditions_.size() == 0)
     {
-        // First add boundary patches. This assures that these are corrected
-        // first so that this information can be copied via parallel/periodic
-        // boundary conditions.
+        // First add boundary patches
 
         forAll(fvMsh_.partPatches(), patchi)
         {
@@ -76,7 +73,7 @@ void meshField<Type,MeshType>::addBoundaryConditions()
             }
         }
 
-        // Next, add parallel and periodic patches. First faces, then edges and
+        // Add parallel and periodic patches. First faces, then edges and
         // finally vertices.
 
         for(label order = 1; order <= 3; order++)
@@ -111,6 +108,20 @@ void meshField<Type,MeshType>::addBoundaryConditions()
                 }
             }
         }
+
+        // Update active cells. For Dirichlet-like boundary conditions, we do
+        // not need to solve for cells on shifted boundaries.
+
+        this->updateActiveCells();
+    }
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::updateActiveCells()
+{
+    forAll(*this, l)
+    {
+        listType::operator[](l).updateActiveCells();
     }
 }
 

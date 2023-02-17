@@ -1,5 +1,6 @@
 #include "meshDirection.H"
 #include "meshField.H"
+#include "boundaryCondition.H"
 
 namespace Foam
 {
@@ -13,13 +14,70 @@ namespace fv
 template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::setActiveCells()
 {
+    setActiveCells
+    (
+        fvMsh_.lowerSlavePatch(),
+        fvMsh_.upperSlavePatch()
+    );
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::updateActiveCells()
+{
+    const PtrList<boundaryCondition<Type,MeshType>>& bcs =
+        this->mshLevel().mshField().boundaryConditions();
+
+    labelVector lowerSlaveBoundary = zeroXYZ;
+    labelVector upperSlaveBoundary = zeroXYZ;
+
+    forAll(bcs, i)
+    {
+        const boundaryCondition<Type,MeshType>& bc = bcs[i];
+
+        if
+        (
+            bc.boundaryOffsetDegree() == 1
+         && bc.patch().type() == "boundary"
+         && bc.slave()
+        )
+        {
+            const label facei = faceNumber(bc.boundaryOffset());
+
+            if (facei % 2 == 0)
+            {
+                lowerSlaveBoundary[facei/2] = 1;
+            }
+            else
+            {
+                upperSlaveBoundary[facei/2] = 1;
+            }
+        }
+    }
+
+    setActiveCells
+    (
+        briscola::cmptMax(fvMsh_.lowerSlavePatch(), lowerSlaveBoundary),
+        briscola::cmptMax(fvMsh_.upperSlavePatch(), upperSlaveBoundary)
+    );
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::setActiveCells
+(
+    const labelVector lowerSlave,
+    const labelVector upperSlave
+)
+{
     const labelVector& padding = MeshType::padding[d_];
 
-    const labelVector& lower = fvMsh_.lowerPatchSlave();
-    const labelVector& upper = fvMsh_.upperPatchSlave();
+    S_ =
+        briscola::cmptMultiply(padding, lowerSlave);
 
-    S_ = briscola::cmptMultiply(padding, lower);
-    E_ = this->B().N() - 2*unitXYZ - briscola::cmptMultiply(padding, upper);
+    E_ =
+        this->B().N()
+      - 2*unitXYZ
+      - briscola::cmptMultiply(padding, upperSlave);
+
     N_ = E_ - S_;
 }
 

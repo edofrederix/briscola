@@ -186,14 +186,14 @@ public:
         return patch_.T();
     }
 
-    // Return master bool
-    inline bool master() const
+    // Return master bool for shifted boundaries
+    virtual bool master() const
     {
         return patch_.master();
     }
 
-    // Return slave bool
-    inline bool slave() const
+    // Return slave bool for shifted boundaries
+    virtual bool slave() const
     {
         return patch_.slave();
     }
@@ -234,15 +234,6 @@ public:
     virtual void evaluate(const label, const bool = false)
     {
         NotImplemented;
-    }
-
-    // Boundary conditions on shifted boundaries may be non-eliminated. For
-    // example, for Dirichlet-like boundary conditions the value on the boundary
-    // is known. Also for slave parallel/periodic boundary conditions the value
-    // is known. By default, boundary conditions are eliminated.
-    virtual bool eliminated() const
-    {
-        return true;
     }
 };
 
