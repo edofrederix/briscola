@@ -144,6 +144,15 @@ public:
         const partPatch& p
     );
 
+    // Determine a field's boundary condition base type for a global boundary
+    // offset. Works only on rectilinear meshes. Gives error for inconistent
+    // boundaries.
+    static boundaryConditionBaseType globalBaseType
+    (
+        const meshField<Type,MeshType>&,
+        const labelVector
+    );
+
     // Destructor
     virtual ~boundaryCondition();
 
@@ -236,6 +245,18 @@ public:
         NotImplemented;
     }
 };
+
+// Helper function for global boundary condition type
+
+template<class Type, class MeshType>
+boundaryConditionBaseType globalBoundaryConditionBaseType
+(
+    const meshField<Type,MeshType>& field,
+    const labelVector bo
+)
+{
+    return boundaryCondition<Type,MeshType>::globalBaseType(field,bo);
+}
 
 }
 

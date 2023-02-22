@@ -22,6 +22,26 @@ void meshDirection<Type,MeshType>::setActiveCells()
 }
 
 template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::setActiveCells
+(
+    const labelVector lowerSlave,
+    const labelVector upperSlave
+)
+{
+    const labelVector& padding = MeshType::padding[d_];
+
+    S_ =
+        briscola::cmptMultiply(padding, lowerSlave);
+
+    E_ =
+        this->B().N()
+      - 2*unitXYZ
+      - briscola::cmptMultiply(padding, upperSlave);
+
+    N_ = E_ - S_;
+}
+
+template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::updateActiveCells()
 {
     const PtrList<boundaryCondition<Type,MeshType>>& bcs =
@@ -59,26 +79,6 @@ void meshDirection<Type,MeshType>::updateActiveCells()
         briscola::cmptMax(fvMsh_.lowerSlavePatch(), lowerSlaveBoundary),
         briscola::cmptMax(fvMsh_.upperSlavePatch(), upperSlaveBoundary)
     );
-}
-
-template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::setActiveCells
-(
-    const labelVector lowerSlave,
-    const labelVector upperSlave
-)
-{
-    const labelVector& padding = MeshType::padding[d_];
-
-    S_ =
-        briscola::cmptMultiply(padding, lowerSlave);
-
-    E_ =
-        this->B().N()
-      - 2*unitXYZ
-      - briscola::cmptMultiply(padding, upperSlave);
-
-    N_ = E_ - S_;
 }
 
 template<class Type, class MeshType>

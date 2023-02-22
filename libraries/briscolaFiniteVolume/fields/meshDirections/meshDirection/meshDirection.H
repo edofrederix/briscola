@@ -57,11 +57,11 @@ class meshDirection
     // Set active cells
     void setActiveCells();
 
-    // Update active cells based on boundary conditions
-    void updateActiveCells();
-
     // Set active cells given lower and upper slave vectors
     void setActiveCells(const labelVector, const labelVector);
+
+    // Update active cells based on boundary conditions
+    void updateActiveCells();
 
     // Allocate data
     void allocate(const labelVector);

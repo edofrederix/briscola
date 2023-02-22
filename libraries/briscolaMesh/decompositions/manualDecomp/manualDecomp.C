@@ -58,6 +58,15 @@ manualDecomp::manualDecomp(mesh& msh)
         FatalError.exit();
     }
 
+    // Transform decompositions according to the brick's transformation
+
+    forAll(decompPerBrick_, i)
+    {
+        const brick& b = msh_.bricks()[i];
+
+        decompPerBrick_[i] = cmptMag(b.T() & decompPerBrick_[i]);
+    }
+
     // Check if the decompositions are feasible
 
     forAll(msh_.bricks(), bricki)
