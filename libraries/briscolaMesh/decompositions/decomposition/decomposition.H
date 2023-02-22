@@ -56,6 +56,9 @@ private:
     // Global processor topology map, only set on structured brick topologies
     decompositionMap map_;
 
+    // Global mesh size, only set on structured brick topologies
+    labelVector globalN_;
+
     // Copy constructor
     decomposition(const decomposition&);
 
@@ -169,6 +172,12 @@ public:
     inline const decompositionMap& map() const
     {
         return map_;
+    }
+
+    // Global mesh size, only set on structured brick topologies
+    inline const labelVector& globalN() const
+    {
+        return globalN_;
     }
 
     // Global list of part sizes per brick

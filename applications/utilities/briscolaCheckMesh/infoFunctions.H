@@ -12,7 +12,12 @@ void generalInfo(const fvMesh& fvMsh)
     label nCells(cmptProduct(fvMsh.N()));
     reduce(nCells, sumOp<label>());
 
-    Info<< "Number of cells = " << nCells << endl;
+    Info<< "Global number of cells = " << nCells << endl;
+
+    if (fvMsh.topology().structured())
+    {
+        Info<< "Global mesh size = " << fvMsh.decomp().globalN() << endl;
+    }
 
     const colocatedScalarField& cv = fvMsh.metrics<colocated>().cellVolumes();
     Info<< "Mesh volume = " << gSum(cv)[0] << endl;
