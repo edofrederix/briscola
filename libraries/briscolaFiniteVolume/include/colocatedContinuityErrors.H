@@ -1,5 +1,5 @@
 {
-    scalarBlock contError(fvMsh.N());
+    scalarBlock contError(fvMsh[0].N());
 
     const meshDirection<scalar,colocated>& cv =
         fvMsh.metrics<colocated>().cellVolumes()[0][0];

@@ -132,39 +132,6 @@ void decomposition::updateGlobalData()
         // Store
 
         map_.setData(map);
-
-        // Compute global mesh size
-
-        List<bool> x(map.l(), false);
-        List<bool> y(map.m(), false);
-        List<bool> z(map.n(), false);
-
-        globalN_ = zeroXYZ;
-
-        forAllBlock(map, i, j, k)
-        {
-            if (!x[i] && map(i,j,k) > -1)
-            {
-                globalN_.x() += partSizePerProc_[map(i,j,k)].x();
-                x[i] = true;
-            }
-
-            if (!y[i] && map(i,j,k) > -1)
-            {
-                globalN_.y() += partSizePerProc_[map(i,j,k)].y();
-                y[i] = true;
-            }
-
-            if (!z[i] && map(i,j,k) > -1)
-            {
-                globalN_.z() += partSizePerProc_[map(i,j,k)].z();
-                z[i] = true;
-            }
-        }
-    }
-    else
-    {
-        globalN_ = -unitXYZ;
     }
 }
 
@@ -179,8 +146,7 @@ decomposition::decomposition(mesh& msh)
     brickPartPerProc_(),
     partSizePerProc_(),
     procMapPerBrick_(),
-    map_(),
-    globalN_()
+    map_()
 {}
 
 decomposition::decomposition

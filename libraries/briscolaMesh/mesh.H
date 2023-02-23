@@ -19,9 +19,6 @@ class mesh
     // Mesh decomposition
     autoPtr<decomposition> decomp_;
 
-    // Mesh sizes of this processor's brick's part
-    labelVector N_;
-
     // This processor's part patches
     PtrList<partPatch> partPatches_;
 
@@ -34,6 +31,19 @@ class mesh
     // a boundary patch.
     labelVector lowerBoundaryPatch_;
     labelVector upperBoundaryPatch_;
+
+    // Bool to check if mesh is structured or unstructured. If the brick
+    // topology is structured, so is the mesh.
+    bool structured_;
+
+    // Check if mesh directions are rectilinear
+    labelVector rectilinear_;
+
+    // Check if mesh directions are uniform
+    labelVector uniform_;
+
+    // Global mesh size, only set on structured brick topologies
+    labelVector N_;
 
     // Generate brick-internal part patches
     void generateBrickInternalPartPatches();
@@ -77,8 +87,8 @@ public:
         return decomp_;
     }
 
-    // Mesh sizes of this processor's brick's part
-    inline const labelVector& N() const
+    // Global mesh size, only set on structured brick topologies
+    inline labelVector N() const
     {
         return N_;
     }
@@ -124,6 +134,19 @@ public:
     {
         return upperBoundaryPatch_;
     }
+
+    // Structured mesh bool
+    inline bool structured() const { return structured_; }
+
+    // Return rectilinear bools
+    inline labelVector rectilinear() const { return rectilinear_; }
+
+    // Return uniform bools
+    inline labelVector uniform() const { return uniform_; }
+
+    // For rectlinear directions, return the cell sizes. For non-rectilinear
+    // directions, return a zero list.
+    scalarList rectilinearCellSizes(const label) const;
 
     //- Disallow default bitwise assignment
     void operator=(const mesh&);

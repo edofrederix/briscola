@@ -7,32 +7,85 @@ namespace briscola
 namespace fv
 {
 
+word directionText(labelVector v)
+{
+    v = cmptMag(v);
+
+    if (cmptSum(v) == 0)
+    {
+        return word("no direction");
+    }
+    else if (cmptSum(v) == 1)
+    {
+        return
+            word
+            (
+                v == unitX ? "x"
+              : v == unitY ? "y"
+              :              "z"
+            )
+          + word(" direction");
+    }
+    else if (cmptSum(v) == 2)
+    {
+        return
+            word
+            (
+                v == unitXY ? "x and y"
+              : v == unitXZ ? "x and z"
+              :               "y and z"
+            )
+          + word(" directions");
+    }
+    else
+    {
+        return word("all directions");
+    }
+}
+
 void generalInfo(const fvMesh& fvMsh)
 {
-    label nCells(cmptProduct(fvMsh.N()));
+    label nCells(cmptProduct(fvMsh[0].N()));
     reduce(nCells, sumOp<label>());
 
     Info<< "Global number of cells = " << nCells << endl;
 
     if (fvMsh.topology().structured())
     {
-        Info<< "Global mesh size = " << fvMsh.decomp().globalN() << endl;
+        Info<< "Global mesh shape = " << fvMsh.N() << endl;
     }
 
     const colocatedScalarField& cv = fvMsh.metrics<colocated>().cellVolumes();
-    Info<< "Mesh volume = " << gSum(cv)[0] << endl;
+
+    Info<< "Global volume = " << gSum(cv)[0] << endl;
+
+    Info<< "Global mesh is "
+        << (fvMsh.structured() ? "structured" : "unstructured")
+        << endl;
+
+    if (fvMsh.structured())
+    {
+        Info<< "Global mesh is rectilinear in "
+            << directionText(fvMsh.rectilinear()) << endl;
+
+        Info<< "Global mesh is uniform in "
+            << directionText(fvMsh.uniform()) << endl;
+    }
 
     Info<< "Brick topology is "
         << (fvMsh.topology().structured() ? "structured" : "unstructured")
         << endl;
 
-    Info<< "Brick topology is "
-        << (fvMsh.topology().aligned() ? "aligned" : "unaligned")
-        << endl;
+    if (fvMsh.topology().structured())
+    {
+        Info<< "Brick topology is "
+            << (fvMsh.topology().aligned() ? "aligned" : "unaligned")
+            << endl;
 
-    Info<< "Brick topology is "
-        << (fvMsh.topology().rectilinear() ? "rectilinear" : "not rectilinear")
-        << endl;
+        Info<< "Brick topology is "
+            << (fvMsh.topology().rectilinear() ? "rectilinear" : "not rectilinear")
+            << endl;
+    }
 }
 
 void brickInfo(const fvMesh& fvMsh)
@@ -115,42 +168,63 @@ void parallelInfo(const fvMesh& fvMsh)
     Info<< endl;
     Info<< "Number of processors = " << Pstream::nProcs() << ":" << endl;
 
-    List<List<dictionary>> dicts(Pstream::nProcs(), List<dictionary>(0));
+    List<dictionary> partDicts(Pstream::nProcs(), dictionary());
+    List<List<dictionary>> patchDicts(Pstream::nProcs(), List<dictionary>(0));
     List<labelList> masterPatch(Pstream::nProcs(), labelList(0));
+
+    const partLevel& part = fvMsh[0];
+
+    partDicts[Pstream::myProcNo()].add("rectilinear", part.rectilinear());
+    partDicts[Pstream::myProcNo()].add("uniform", part.uniform());
+
 
     forAll(fvMsh.partPatches(), patchi)
     {
         const partPatch& patch = fvMsh.partPatches()[patchi];
 
-        dicts[Pstream::myProcNo()].append(patch.dict());
+        patchDicts[Pstream::myProcNo()].append(patch.dict());
         masterPatch[Pstream::myProcNo()].append(patch.master());
     }
 
-    Pstream::gatherList(dicts);
+    Pstream::gatherList(partDicts);
+    Pstream::gatherList(patchDicts);
     Pstream::gatherList(masterPatch);
 
+    if (Pstream::master())
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
     {
         const label brickNum(fvMsh.decomp().brickNumPerProc()[proc]);
         const labelVector brickPart(fvMsh.decomp().brickPartPerProc()[proc]);
         const labelVector brickDecomp(fvMsh.decomp().decompPerBrick()[brickNum]);
 
+        const dictionary& partDict = partDicts[proc];
+
+        const labelVector partSize
+        (
+            briscola::cmptDivide(fvMsh.bricks()[brickNum].N(),brickDecomp)
+        );
+
         Info<< "    Processor " << proc << " is in brick " << brickNum
             << " with part index = " << brickPart << endl
-            << "        Number of cells = "
-            << briscola::cmptDivide(fvMsh.bricks()[brickNum].N(),brickDecomp) << " = "
-            << cmptProduct(briscola::cmptDivide(fvMsh.bricks()[brickNum].N(),brickDecomp)) << endl;
+            << "        Number of cells = " << partSize << " = "
+            << cmptProduct(partSize) << endl
+            << "        Part is rectilinear in "
+            << directionText(labelVector(partDict.lookup("rectilinear")))
+            << endl
+            << "        Part is uniform in "
+            << directionText(labelVector(partDict.lookup("uniform")))
+            << endl;
 
         Info<< "        Number of part patches = "
-            << dicts[proc].size();
+            << patchDicts[proc].size();
 
-        if (dicts[proc].size() > 0)
+        if (patchDicts[proc].size() > 0)
         {
             Info<< ":" << endl;
 
-            forAll(dicts[proc], patchi)
+            forAll(patchDicts[proc], patchi)
             {
-                const dictionary& dict = dicts[proc][patchi];
+                const dictionary& dict = patchDicts[proc][patchi];
 
                 const word name(dict.lookup("name"));
                 const word type(dict.lookup("type"));

@@ -81,13 +81,13 @@ public:
         return links_;
     }
 
-    // Structured mesh bool
+    // Structured brick topology bool
     inline bool structured() const { return structured_; }
 
-    // Aligned mesh bool
+    // Aligned brick topology bool
     inline bool aligned() const { return aligned_; }
 
-    // Rectilinear mesh bool
+    // Rectilinear brick topology bool
     inline bool rectilinear() const { return rectilinear_; }
 
     // Reference to the brick topology map, which is only filled for structured
