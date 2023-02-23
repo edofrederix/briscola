@@ -24,10 +24,18 @@ makePoissonSolverType(default,stencil,scalar,staggered);
 makePoissonSolverType(default,stencil,vector,colocated);
 makePoissonSolverType(default,stencil,vector,staggered);
 
-makePoissonSolverType(FFT,stencil,scalar,colocated);
-makePoissonSolverType(FFT,stencil,scalar,staggered);
-makePoissonSolverType(FFT,stencil,vector,colocated);
-makePoissonSolverType(FFT,stencil,vector,staggered);
+// FFT Poisson solver
+
+defineTypeNameAndDebugWithName
+(
+    FFTPoissonSolver,
+    "FFT",
+    0
+);
+
+PoissonSolver<stencil,scalar,colocated>::
+adddictionaryConstructorToTable<FFTPoissonSolver>
+    addFFTPoissonSolverConstructorToTable_;
 
 }
 
