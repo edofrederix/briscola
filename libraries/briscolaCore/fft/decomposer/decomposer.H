@@ -1,5 +1,5 @@
-#ifndef DECOMPOSER_H
-#define DECOMPOSER_H
+#ifndef decomposer_H
+#define decomposer_H
 
 #include "vector.H"
 #include "block.H"
@@ -10,7 +10,7 @@ namespace Foam
 namespace briscola
 {
 
-class Decomposer
+class decomposer
 {
 
 	//Global Size
@@ -45,7 +45,7 @@ class Decomposer
 
     public:
 
-	Decomposer(labelVector n, labelVector i)
+	decomposer(labelVector n, labelVector i)
     {
 	    N_ = n;
         I_ = i;

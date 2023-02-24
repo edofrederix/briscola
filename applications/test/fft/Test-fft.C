@@ -4,6 +4,7 @@
 #include <chrono>
 #include <fftw3.h>
 #include "decomposer.H"
+#include "tridiagonalSolver.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -118,7 +119,7 @@ bool check(scalarBlock& p, scalarBlock& f, labelVector BC)
                 + ((k == N.z() - 1) ?  pzN : p(i,j,k+1))
                 - 6.0 * p(i,j,k) - f(i,j,k);
 
-                if(abs(residual) > 1e-10)
+                if(mag(residual) > 1e-10)
                 {
                     FatalError
                         << "Test failed. Residual =  " << residual
@@ -130,59 +131,6 @@ bool check(scalarBlock& p, scalarBlock& f, labelVector BC)
     }
 
     return true;
-}
-
-// Tridiagonal sovler with upper and lower diagonals filled with 1's
-
-void tridiagonalSolve(label n, double D[], double f[], double p[])
-{
-    List<scalar> Dh(n);
-    List<scalar> fh(n);
-
-    // Copy D and f arrays so as not to overwrite them
-    for(int i=0; i<n; i++ )
-    {
-        Dh[i] = D[i];
-        fh[i] = f[i];
-    }
-
-    // Forward substitution
-    for (int i = 1; i < n; i++ )
-    {
-        scalar m = 1.0 / Dh[i-1];
-        Dh[i] -= m;
-        fh[i] -= m * fh[i-1];
-    }
-
-    // Backward substitution
-    p[n-1] = fh[n-1] / Dh[n-1];
-    for (int i = n-2; i >= 0; i-- )
-    {
-        p[i] = (fh[i] - p[i+1]) / Dh[i];
-    }
-}
-
-// Cyclic variant of tridiagonalSolver()
-
-void cyclicTridiagonalSolve(label n, double D[], double f[], double p[])
-{
-    List<scalar> u(n, Zero);
-    tridiagonalSolve((n-1), &D[1], &f[1], &u[1]);
-
-    List<scalar> v(n, Zero);
-    List<scalar> vf(n, Zero);
-
-    vf[1] = -1;
-    vf[n-1] = -1;
-
-    tridiagonalSolve((n-1), &D[1], &vf[1], &v[1]);
-
-    p[0] = (f[0]-u[n-1]-u[1]) / (D[0]+v[n-1]+v[1]);
-
-    for (int k=1; k<n; k++ )
-    {
-        p[k] = u[k] + p[0]*v[k];
-    }
 }
 
 int main(int argc, char *argv[])
@@ -222,8 +170,8 @@ int main(int argc, char *argv[])
 
     // Initialize decomposer
 
-    autoPtr<Decomposer> decomp;
-    decomp = new Decomposer(N, I);
+    autoPtr<decomposer> decomp;
+    decomp = new decomposer(N, I);
 
     List<labelVector> Ni = decomp->Ni_;
     List<labelVector> si = decomp->si_;
@@ -284,7 +232,7 @@ int main(int argc, char *argv[])
                 //   (si[rank].x() + i) * N.y() * N.z()
                 // + (si[rank].y() + j) * N.z()
                 // + (si[rank].z() + k);
-                inputData(i,j,k) = rand()/RAND_MAX;
+                inputData(i,j,k) = static_cast<double>(rand()) / RAND_MAX;
                 average += inputData(i,j,k) / (cmptProduct(Ni[rank]));
             }
         }
@@ -526,7 +474,14 @@ int main(int argc, char *argv[])
 
     scalarBlock pHat(Nz[rank]);
 
+    scalar one = 1.0;
+
+    List<scalar> DU(N.z(), one);
     List<scalar> D(N.z());
+    List<scalar> DL(N.z(), one);
+
+    autoPtr<tridiagonalSolver> tds;
+    tds = new tridiagonalSolver(N.z());
 
     switch ( BC.z() )
     {
@@ -541,10 +496,12 @@ int main(int argc, char *argv[])
                     {
                         D[k] = lambda_x[i] + lambda_y[j] - 2.0;
                     }
-                    tridiagonalSolve
+                    tds->tridiagonalSolve
                     (
                         N.z(),
+                        reinterpret_cast<double*>(DU.begin()),
                         reinterpret_cast<double*>(D.begin()),
+                        reinterpret_cast<double*>(DL.begin()),
                         reinterpret_cast<double*>(&zData(i,j,0)),
                         reinterpret_cast<double*>(&pHat(i,j,0))
                     );
@@ -568,10 +525,12 @@ int main(int argc, char *argv[])
                     {
                         D[0] -= 1e-10;
                     }
-                    tridiagonalSolve
+                    tds->tridiagonalSolve
                     (
                         N.z(),
+                        reinterpret_cast<double*>(DU.begin()),
                         reinterpret_cast<double*>(D.begin()),
+                        reinterpret_cast<double*>(DL.begin()),
                         reinterpret_cast<double*>(&zData(i,j,0)),
                         reinterpret_cast<double*>(&pHat(i,j,0))
                     );
@@ -590,10 +549,12 @@ int main(int argc, char *argv[])
                     {
                         D[k] = lambda_x[i] + lambda_y[j] - 2.0;
                     }
-                    tridiagonalSolve
+                    tds->tridiagonalSolve
                     (
                         N.z(),
+                        reinterpret_cast<double*>(DU.begin()),
                         reinterpret_cast<double*>(D.begin()),
+                        reinterpret_cast<double*>(DL.begin()),
                         reinterpret_cast<double*>(&zData(i,j,0)),
                         reinterpret_cast<double*>(&pHat(i,j,0))
                     );
@@ -612,10 +573,12 @@ int main(int argc, char *argv[])
                     {
                         D[k] = lambda_x[i] + lambda_y[j] - 2.0;
                     }
-                    tridiagonalSolve
+                    tds->tridiagonalSolve
                     (
                         N.z(),
+                        reinterpret_cast<double*>(DU.begin()),
                         reinterpret_cast<double*>(D.begin()),
+                        reinterpret_cast<double*>(DL.begin()),
                         reinterpret_cast<double*>(&zData(i,j,0)),
                         reinterpret_cast<double*>(&pHat(i,j,0))
                     );
@@ -637,10 +600,12 @@ int main(int argc, char *argv[])
                     {
                         D[0] -= 1e-10;
                     }
-                    cyclicTridiagonalSolve
+                    tds->cyclicTridiagonalSolve
                     (
                         N.z(),
+                        reinterpret_cast<double*>(DU.begin()),
                         reinterpret_cast<double*>(D.begin()),
+                        reinterpret_cast<double*>(DL.begin()),
                         reinterpret_cast<double*>(&zData(i,j,0)),
                         reinterpret_cast<double*>(&pHat(i,j,0))
                     );

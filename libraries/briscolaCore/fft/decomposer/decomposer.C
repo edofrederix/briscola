@@ -8,7 +8,7 @@ namespace briscola
 
 // Initialize the initial and pencil decompositions
 
-void Decomposer::decompInit()
+void decomposer::decompInit()
 {
     // Some checks
 
@@ -80,7 +80,7 @@ void Decomposer::decompInit()
 
 // Initialize X-pencil decomposition
 
-void Decomposer::decompX()
+void decomposer::decompX()
 {
     // Factorize number of processors for x-pencil deocmposition
 
@@ -126,7 +126,7 @@ void Decomposer::decompX()
 
 // Initialize Y-pencil decomposition
 
-void Decomposer::decompY()
+void decomposer::decompY()
 {
     // Rotate X-pencils to Y-pencils
 
@@ -165,7 +165,7 @@ void Decomposer::decompY()
 
 // Initialize Z-pencil decomposition
 
-void Decomposer::decompZ()
+void decomposer::decompZ()
 {
     // Rotate Y-pencils to Z-pencils
 
@@ -204,7 +204,7 @@ void Decomposer::decompZ()
 
 // Return the processor number given an index and decomposition
 
-label Decomposer::procNumFromIndex
+label decomposer::procNumFromIndex
 (
     const labelVector ijk,
     const labelVector D
@@ -215,7 +215,7 @@ label Decomposer::procNumFromIndex
 
 // Return the index given a processor number and decomposition
 
-labelVector Decomposer::indexFromProcNum
+labelVector decomposer::indexFromProcNum
 (
     const label num,
     const labelVector D
@@ -230,7 +230,7 @@ labelVector Decomposer::indexFromProcNum
 
 // Return the list of processor dimensions for a given decomposition
 
-List<labelVector> Decomposer::procDims(labelVector D)
+List<labelVector> decomposer::procDims(labelVector D)
 {
     // Some checks
 
@@ -275,7 +275,7 @@ List<labelVector> Decomposer::procDims(labelVector D)
 
 // Return the list of processor origin indices for a given decomposition
 
-List<labelVector> Decomposer::procOrig(labelVector D)
+List<labelVector> decomposer::procOrig(labelVector D)
 {
     List<labelVector> Nd(procDims(D));
     List<labelVector> sd = List<labelVector>(Pstream::nProcs(), Zero);
@@ -304,7 +304,7 @@ List<labelVector> Decomposer::procOrig(labelVector D)
 
 // Unpack a receive buffer
 
-void Decomposer::unpack
+void decomposer::unpack
 (
     const scalarBlock& buffer,
     const List<labelVector>& recvStart,
@@ -340,7 +340,7 @@ void Decomposer::unpack
 // Transpose data from a source to a destination block,
 // from an initial decomposition to a target decomposition
 
-void Decomposer::transpose
+void decomposer::transpose
 (
     scalarBlock& src,
     scalarBlock& dst,
@@ -531,7 +531,7 @@ void Decomposer::transpose
 
 // Transform from i>j>k to i>k>j
 
-void Decomposer::yTransFwd(scalarBlock& yData)
+void decomposer::yTransFwd(scalarBlock& yData)
 {
     scalarBlock yCopy = yData;
 
@@ -552,7 +552,7 @@ void Decomposer::yTransFwd(scalarBlock& yData)
 
 // Transform from i>k>j to i>j>k
 
-void Decomposer::yTransBwd(scalarBlock& yData)
+void decomposer::yTransBwd(scalarBlock& yData)
 {
     scalarBlock yCopy = yData;
 
