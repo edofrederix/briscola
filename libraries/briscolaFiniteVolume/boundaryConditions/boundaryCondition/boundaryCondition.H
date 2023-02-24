@@ -144,6 +144,15 @@ public:
         const partPatch& p
     );
 
+    // Determine a field's boundary condition base type for a global boundary
+    // offset. Works only on rectilinear meshes. Gives error for inconistent
+    // boundaries.
+    static boundaryConditionBaseType globalBaseType
+    (
+        const meshField<Type,MeshType>&,
+        const labelVector
+    );
+
     // Destructor
     virtual ~boundaryCondition();
 
@@ -186,14 +195,14 @@ public:
         return patch_.T();
     }
 
-    // Return master bool
-    inline bool master() const
+    // Return master bool for shifted boundaries
+    virtual bool master() const
     {
         return patch_.master();
     }
 
-    // Return slave bool
-    inline bool slave() const
+    // Return slave bool for shifted boundaries
+    virtual bool slave() const
     {
         return patch_.slave();
     }
@@ -235,16 +244,19 @@ public:
     {
         NotImplemented;
     }
-
-    // Boundary conditions on shifted boundaries may be non-eliminated. For
-    // example, for Dirichlet-like boundary conditions the value on the boundary
-    // is known. Also for slave parallel/periodic boundary conditions the value
-    // is known. By default, boundary conditions are eliminated.
-    virtual bool eliminated() const
-    {
-        return true;
-    }
 };
+
+// Helper function for global boundary condition type
+
+template<class Type, class MeshType>
+boundaryConditionBaseType globalBoundaryConditionBaseType
+(
+    const meshField<Type,MeshType>& field,
+    const labelVector bo
+)
+{
+    return boundaryCondition<Type,MeshType>::globalBaseType(field,bo);
+}
 
 }
 

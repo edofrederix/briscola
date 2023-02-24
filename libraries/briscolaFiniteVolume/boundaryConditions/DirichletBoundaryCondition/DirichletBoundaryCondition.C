@@ -91,26 +91,25 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
         const labelVector S(fd.boundaryStart(bo));
         const labelVector E(fd.boundaryEnd(bo));
 
-        // For shifted boundaries, the boundary values are non-eliminated and
-        // directly set. For non-shifted boundaries, set the ghost cell
-        // appropriately
+        // For shifted boundaries, the boundary values are directly set. For
+        // non-shifted boundaries, set the ghost cell values appropriately.
 
         labelVector ijk;
 
         if (fd.shifted(bo))
         {
-            for (ijk.x() =  S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() =  S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() =  S.z(); ijk.z() < E.z(); ijk.z()++)
+            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk) = H*val(ijk-S);
+                fd(ijk+bo) = H*val(ijk-S);
             }
         }
         else
         {
-            for (ijk.x() =  S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() =  S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() =  S.z(); ijk.z() < E.z(); ijk.z()++)
+            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
                 fd(ijk+bo) = 2.0*H*val(ijk-S) - fd(ijk);
             }

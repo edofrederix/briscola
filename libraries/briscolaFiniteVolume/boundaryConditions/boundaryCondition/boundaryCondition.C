@@ -180,6 +180,147 @@ boundaryCondition<Type,MeshType>::NewParallel
 }
 
 template<class Type, class MeshType>
+boundaryConditionBaseType
+boundaryCondition<Type,MeshType>::globalBaseType
+(
+    const meshField<Type,MeshType>& field,
+    const labelVector bo
+)
+{
+    // Global BCs only exist on rectilinear meshes
+
+    const fvMesh& fvMsh = field.fvMsh();
+
+    if (!fvMsh.topology().rectilinear())
+    {
+        FatalErrorInFunction
+            << "Mesh is not rectlinear" << endl
+            << abort(FatalError);
+
+        return boundaryConditionBaseType::DUMMYBC;
+    }
+    else
+    {
+        const decompositionMap& map = fvMsh.decomp().map();
+
+        const label facei = faceNumber(bo);
+        const label dir = facei/2;
+        const label i = -(facei%2);
+
+        const PtrList<boundaryCondition<Type,MeshType>>& bcs =
+            field.boundaryConditions();
+
+        // Block of processors at the requested face
+
+        const labelBlock procs(map.slice(i,dir));
+
+        labelList types(procs.size());
+
+        forAllBlockLinear(procs, i)
+        if (procs(i) == Pstream::myProcNo())
+        {
+            // Find type
+
+            label type = -1;
+
+            forAll(bcs, bci)
+            {
+                if (bcs[bci].boundaryOffset() == bo)
+                {
+                    type = static_cast<label>(bcs[bci].baseType());
+                    break;
+                }
+            }
+
+            if (type == -1)
+            {
+                FatalErrorInFunction
+                    << "Cannot find boundary condition type" << endl
+                    << abort(FatalError);
+            }
+
+            if (procs(i) == Pstream::masterNo())
+            {
+                types[i] = type;
+            }
+            else
+            {
+                // Send type to master
+
+                OPstream send
+                (
+                    Pstream::commsTypes::blocking,
+                    Pstream::masterNo()
+                );
+
+                send << type;
+            }
+        }
+
+        // Receive
+
+        if (Pstream::master())
+        {
+            forAllBlockLinear(procs, i)
+            if (procs(i) != Pstream::masterNo())
+            {
+                IPstream recv
+                (
+                    Pstream::commsTypes::blocking,
+                    procs(i)
+                );
+
+                recv >> types[i];
+            }
+        }
+
+        // Check consistency
+
+        label type;
+
+        if (Pstream::master())
+        {
+            type = types[0];
+
+            for (int i = 1; i < types.size(); i++)
+            {
+                if (types[i] != type)
+                {
+                    FatalErrorInFunction
+                        << "Inconsistent boundary condition types for field "
+                        << field.name() << " at boundary offset " << bo << endl
+                        << abort(FatalError);
+                }
+            }
+
+            for (int proc = 0; proc < Pstream::nProcs(); proc++)
+            if (proc != Pstream::masterNo())
+            {
+                OPstream send
+                (
+                    Pstream::commsTypes::blocking,
+                    proc
+                );
+
+                send << type;
+            }
+        }
+        else
+        {
+            IPstream recv
+            (
+                Pstream::commsTypes::blocking,
+                Pstream::masterNo()
+            );
+
+            recv >> type;
+        }
+
+        return static_cast<boundaryConditionBaseType>(type);
+    }
+}
+
+template<class Type, class MeshType>
 const meshField<faceVector,MeshType>&
 boundaryCondition<Type,MeshType>::faceCenters() const
 {

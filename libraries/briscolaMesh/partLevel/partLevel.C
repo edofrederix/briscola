@@ -268,7 +268,7 @@ partLevel::partLevel(const mesh& msh, const partLevel* l)
 {
     if (parentPtr_ == nullptr)
     {
-        N_ = msh_.N();
+        N_ = msh_.decomp().myPartN();
         R_ = zeroXYZ;
     }
     else
@@ -288,10 +288,139 @@ partLevel::partLevel(const mesh& msh, const partLevel* l)
 
     calcPoints();
     calcGhostPoints();
+
+    // Check if part directions are rectilinear, which is true if all left,
+    // bottom and aft face vectors are aligned
+
+    const scalar tol = 1e-12;
+
+    vector x = zeroXYZ;
+    vector y = zeroXYZ;
+    vector z = zeroXYZ;
+
+    rectilinear_ = unitXYZ;
+
+    for (int i = 0; i < this->l(); i++)
+    for (int j = 0; j < this->m(); j++)
+    for (int k = 0; k < this->n(); k++)
+    {
+        labelVector ijk(i,j,k);
+
+        const vector left =
+            0.5
+          * (
+                (
+                    points_(ijk+unitYZ)
+                  - points_(ijk)
+                )
+              ^ (
+                    points_(ijk+unitZ)
+                  - points_(ijk+unitY)
+                )
+            );
+
+        const vector bottom =
+            0.5
+          * (
+                (
+                    points_(ijk+unitZ)
+                  - points_(ijk+unitX)
+                )
+              ^ (
+                    points_(ijk+unitXZ)
+                  - points_(ijk)
+                )
+            );
+
+        const vector aft =
+            0.5
+          * (
+                (
+                    points_(ijk+unitXY)
+                  - points_(ijk)
+                )
+              ^ (
+                    points_(ijk+unitY)
+                  - points_(ijk+unitX)
+                )
+            );
+
+        if (i == 0 && j == 0 && k == 0)
+        {
+            x = left;
+            y = bottom;
+            z = aft;
+        }
+        else
+        {
+            if (Foam::mag(x ^ left)/Foam::mag(x) > tol)
+            {
+                rectilinear_.x() = 0;
+            }
+
+            if (Foam::mag(y ^ bottom)/Foam::mag(y) > tol)
+            {
+                rectilinear_.y() = 0;
+            }
+
+            if (Foam::mag(z ^ aft)/Foam::mag(z) > tol)
+            {
+                rectilinear_.z() = 0;
+            }
+        }
+    }
+
+    // Check if part directions are uniform
+
+    uniform_ = unitXYZ;
+
+    for (int d = 0; d < 3; d++)
+    {
+        if (rectilinear_[d])
+        {
+            scalarList sizes(rectilinearCellSizes(d));
+
+            scalar size = sizes[0];
+
+            for (int i = 1; i < sizes.size(); i++)
+            {
+                if (Foam::mag(sizes[i]-size) > tol)
+                {
+                    uniform_[d] = 0;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            uniform_[d] = 0;
+        }
+    }
 }
 
 partLevel::~partLevel()
 {}
+
+scalarList partLevel::rectilinearCellSizes(const label dir) const
+{
+    if (rectilinear_[dir])
+    {
+        scalarList sizes(N_[dir]);
+
+        labelVector base = units[dir];
+
+        forAll(sizes, i)
+        {
+            sizes[i] = Foam::mag(points_(base*(i+1)) - points_(base*i));
+        }
+
+        return sizes;
+    }
+    else
+    {
+        return scalarList();
+    }
+}
 
 }
 

@@ -54,8 +54,14 @@ class meshDirection
     // Pointer to the mesh level, if any
     meshLevel<Type,MeshType>* mshLevelPtr_;
 
-    // Function to set the active cell block start and end indices, and size
+    // Set active cells
     void setActiveCells();
+
+    // Set active cells given lower and upper slave vectors
+    void setActiveCells(const labelVector, const labelVector);
+
+    // Update active cells based on boundary conditions
+    void updateActiveCells();
 
     // Allocate data
     void allocate(const labelVector);

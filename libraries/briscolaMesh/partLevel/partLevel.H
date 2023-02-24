@@ -36,6 +36,12 @@ class partLevel
     // Mesh points
     partLevelPoints points_;
 
+    // Check if part directions are rectilinear
+    labelVector rectilinear_;
+
+    // Check if part directions are uniform
+    labelVector uniform_;
+
     // Calculate the mesh points
     void calcPoints();
 
@@ -82,6 +88,16 @@ public:
 
     // Points
     inline const partLevelPoints& points() const { return points_; }
+
+    // Return rectilinear bools
+    inline labelVector rectilinear() const { return rectilinear_; }
+
+    // Return uniform bools
+    inline labelVector uniform() const { return uniform_; }
+
+    // For rectlinear directions, return the cell sizes. For non-rectilinear
+    // directions, return a zero list.
+    scalarList rectilinearCellSizes(const label) const;
 
     // Return the start cell of the internal cell boundary at given offset
     inline labelVector boundaryStart(const labelVector& bo) const

@@ -12,11 +12,20 @@ namespace briscola
 namespace fv
 {
 
-template<class SType, class Type, class MeshType>
 class FFTPoissonSolver
 :
-    public PoissonSolver<SType,Type,MeshType>
+    public PoissonSolver<stencil,scalar,colocated>
 {
+    // Cell size arrays for each direction
+    PtrList<scalarList> cellSizes_;
+
+    // Funtion to check if the mesh qualifies for FFTs. Will give error if not
+    // all criteria are met.
+    void checkMesh() const;
+
+    // Function to prepare data
+    void prepare();
+
 public:
 
     // Runtime type information
@@ -30,14 +39,20 @@ public:
         const fvMesh&
     );
 
+    // Construct from mesh
+    FFTPoissonSolver(const fvMesh&);
+
     // Solve function
     virtual void solve
     (
-        meshField<Type,MeshType>&,
-        const meshField<Type,MeshType>*,
-        const meshField<faceScalar,MeshType>*,
+        colocatedScalarField&,
+        const colocatedScalarField*,
+        const colocatedFaceScalarField*,
         const bool = false
     );
+
+    // Use the base class solve support functions
+    using PoissonSolver<stencil,scalar,colocated>::solve;
 };
 
 }

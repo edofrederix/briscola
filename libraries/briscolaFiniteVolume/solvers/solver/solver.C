@@ -139,7 +139,6 @@ void solver<SType,Type,MeshType>::RBGS
         }
 
         x.correctBoundaryConditions(homogeneousBCs);
-        sys.correctBoundarySources(l);
 
         forAll(x, d)
         if (!converged[d])
@@ -162,7 +161,6 @@ void solver<SType,Type,MeshType>::RBGS
         }
 
         x.correctBoundaryConditions(homogeneousBCs);
-        sys.correctBoundarySources(l);
     }
 }
 
@@ -202,7 +200,6 @@ void solver<SType,Type,MeshType>::LEXGS
         }
 
         x.correctBoundaryConditions(homogeneousBCs);
-        sys.correctBoundarySources(l);
     }
 }
 
@@ -247,7 +244,6 @@ void solver<SType,Type,MeshType>::JAC
         x = y;
 
         x.correctBoundaryConditions(homogeneousBCs);
-        sys.correctBoundarySources(l);
     }
 }
 

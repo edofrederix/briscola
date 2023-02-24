@@ -4,7 +4,7 @@ source $FOAM_SRC/../bin/tools/CleanFunctions
 
 cleanCase
 
-rm -f briscola*.pvd timeData
+rm -f briscola*.vtk.series
 
 find . -name *.m4 | while read IN; do
     OUT=$(echo $IN | rev | cut -c 4- | rev)

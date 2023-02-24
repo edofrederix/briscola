@@ -347,8 +347,8 @@ void mesh::generatePartPatches()
 
     setCommTags();
 
-    lowerPatchMaster_ = unitXYZ;
-    upperPatchMaster_ = unitXYZ;
+    lowerMasterPatch_ = unitXYZ;
+    upperMasterPatch_ = unitXYZ;
 
     forAll(partPatches(), i)
     {
@@ -360,11 +360,33 @@ void mesh::generatePartPatches()
 
             if (facei % 2 == 0)
             {
-                lowerPatchMaster_[facei/2] = 0;
+                lowerMasterPatch_[facei/2] = 0;
             }
             else
             {
-                upperPatchMaster_[facei/2] = 0;
+                upperMasterPatch_[facei/2] = 0;
+            }
+        }
+    }
+
+    lowerBoundaryPatch_ = zeroXYZ;
+    upperBoundaryPatch_ = zeroXYZ;
+
+    forAll(partPatches(), i)
+    {
+        const partPatch& patch = partPatches_[i];
+
+        if (patch.type() == "boundary" && patch.boundaryOffsetDegree() == 1)
+        {
+            const label facei = faceNumber(patch.boundaryOffset());
+
+            if (facei % 2 == 0)
+            {
+                lowerBoundaryPatch_[facei/2] = 1;
+            }
+            else
+            {
+                upperBoundaryPatch_[facei/2] = 1;
             }
         }
     }
@@ -411,16 +433,189 @@ mesh::mesh(const IOdictionary& dict)
     geometry(dict),
     PtrList<partLevel>(0),
     decomp_(decomposition::New(*this)),
-    N_(decomp_->myPartN()),
-    lowerPatchMaster_(unitXYZ),
-    upperPatchMaster_(unitXYZ)
+    lowerMasterPatch_(unitXYZ),
+    upperMasterPatch_(unitXYZ),
+    lowerBoundaryPatch_(zeroXYZ),
+    upperBoundaryPatch_(zeroXYZ)
 {
+    // Compute global mesh size on structured brick topologies
+
+    if (topology().structured())
+    {
+        const decompositionMap& map = decomp_->map();
+        const List<labelVector>& partSizePerProc = decomp_->partSizePerProc();
+
+        List<bool> x(map.l(), false);
+        List<bool> y(map.m(), false);
+        List<bool> z(map.n(), false);
+
+        N_ = zeroXYZ;
+
+        forAllBlock(map, i, j, k)
+        {
+            if (!x[i] && map(i,j,k) > -1)
+            {
+                N_.x() += partSizePerProc[map(i,j,k)].x();
+                x[i] = true;
+            }
+
+            if (!y[i] && map(i,j,k) > -1)
+            {
+                N_.y() += partSizePerProc[map(i,j,k)].y();
+                y[i] = true;
+            }
+
+            if (!z[i] && map(i,j,k) > -1)
+            {
+                N_.z() += partSizePerProc[map(i,j,k)].z();
+                z[i] = true;
+            }
+        }
+    }
+    else
+    {
+        N_ = -unitXYZ;
+    }
+
     generatePartPatches();
     generatePartLevels();
+
+    // Mesh is structured if the brick topology is too
+
+    structured_ = topology().structured();
+
+    if (structured_)
+    {
+        const partLevel& part = this->operator[](0);
+
+        for (int d = 0; d < 3; d++)
+        {
+            // Mesh is rectilinear in a direction if all parts are rectilinear
+            // in that direction
+
+            rectilinear_[d] =
+                returnReduce(part.rectilinear()[d], minOp<label>());
+
+            // Mesh is uniform in a direction of all parts are uniform in that
+            // direction
+
+            uniform_[d] =
+                returnReduce(part.uniform()[d], minOp<label>());
+        }
+    }
+    else
+    {
+        rectilinear_ = zeroXYZ;
+        uniform_ = zeroXYZ;
+    }
 }
 
 mesh::~mesh()
 {}
+
+scalarList mesh::rectilinearCellSizes(const label dir) const
+{
+    if (rectilinear_[dir])
+    {
+        const decompositionMap& map = decomp_->map();
+
+        scalarList sizes(N_[dir], 0.0);
+
+        labelVector base = units[dir];
+        label cursor = 0;
+
+        for (int i = 0; i < map.shape()[dir]; i++)
+        {
+            const label proc = map(base*i);
+
+            if (proc == Pstream::myProcNo())
+            {
+                scalarList partSizes
+                (
+                    this->operator[](0).rectilinearCellSizes(dir)
+                );
+
+                if (proc == Pstream::masterNo())
+                {
+                    // Copy directly
+
+                    forAll(partSizes, j)
+                    {
+                        sizes[cursor+j] = partSizes[j];
+                    }
+
+                    cursor += partSizes.size();
+                }
+                else
+                {
+                    // Send to master
+
+                    OPstream send
+                    (
+                        Pstream::commsTypes::blocking,
+                        Pstream::masterNo()
+                    );
+
+                    send << partSizes;
+                }
+            }
+            else if (Pstream::master())
+            {
+                // Receive from slave
+
+                scalarList partSizes;
+
+                IPstream recv
+                (
+                    Pstream::commsTypes::blocking,
+                    proc
+                );
+
+                recv >> partSizes;
+
+                forAll(partSizes, j)
+                {
+                    sizes[cursor+j] = partSizes[j];
+                }
+
+                cursor += partSizes.size();
+            }
+        }
+
+        // Send back to slaves
+
+        if (Pstream::master())
+        {
+            for (int proc = 0; proc < Pstream::nProcs(); proc++)
+            if (proc != Pstream::masterNo())
+            {
+                OPstream send
+                (
+                    Pstream::commsTypes::blocking,
+                    proc
+                );
+
+                send << sizes;
+            }
+        }
+        else
+        {
+            IPstream recv
+            (
+                Pstream::commsTypes::blocking,
+                Pstream::masterNo()
+            );
+
+            recv >> sizes;
+        }
+
+        return sizes;
+    }
+    else
+    {
+        return scalarList();
+    }
+}
 
 }
 

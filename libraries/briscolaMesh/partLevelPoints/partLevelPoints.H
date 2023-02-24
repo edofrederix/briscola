@@ -55,22 +55,16 @@ public:
         return vectorBlock::operator()(ijk + unitXYZ);
     }
 
-    // Return a shifted point interpolation, useful for non-colocated meshes
+    // Scalar interpolation, useful for non-colocated meshes
 
-    inline vector interp
-    (
-        const int i,
-        const int j,
-        const int k,
-        const vector& shift
-    ) const
+    inline vector interp(const scalar i, const scalar j, const scalar k) const
     {
-        return vectorBlock::interp(i+1,j+1,k+1,shift);
+        return vectorBlock::interp(i+1,j+1,k+1);
     }
 
-    inline vector interp(const labelVector& ijk, const vector& shift) const
+    inline vector interp(const vector ijk) const
     {
-        return vectorBlock::interp(ijk + unitXYZ, shift);
+        return vectorBlock::interp(ijk+vector(unitXYZ));
     }
 
     // Linear element access operator will not work efficiently due to

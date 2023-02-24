@@ -3,10 +3,21 @@
 
 #include "fvMesh.H"
 
+#include "IFstream.H"
+#include "OFstream.H"
 #include "VectorSpace.H"
 #include "CellSpace.H"
 
-class vtkStructuredGrid;
+#if defined(LITTLE_ENDIAN) \
+ || defined(_LITTLE_ENDIAN) \
+ || defined(__LITTLE_ENDIAN)
+    #define LITTLEENDIAN 1
+#elif defined(BIG_ENDIAN) || defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN)
+    #undef LITTLEENDIAN
+#else
+    #error "Cannot find LITTLE_ENDIAN or BIG_ENDIAN symbol defined."
+    #error "Please add to compilation options"
+#endif
 
 namespace Foam
 {
@@ -24,17 +35,11 @@ class IO
     // Reference to mesh
     const fvMesh& fvMsh_;
 
-    // List of stored times data (time name and number of processors)
-    List<Tuple2<scalar, label>> timeData_;
-
     // Data file name prefix
     static word dataFileNamePrefix;
 
-    // Name of the stored times data file
-    static word timeDataFileName;
-
-    // Default extension of the structured grid XML file
-    static word XMLStructuredGridExtension;
+    // VTK header
+    static word vtkHeader;
 
     // Write data to given time directory for given level
     template<class MeshType>
@@ -44,21 +49,45 @@ class IO
     template<class MeshType>
     void readData(const word, const label);
 
-    // Add fields to grid for given mesh level and direction
+    // Write fields of given type, level and direction
     template<class Type, class MeshType>
-    void writeFields(vtkStructuredGrid*, const label, const label) const;
+    void writeFields
+    (
+        autoPtr<std::ofstream>&,
+        const label,
+        const label
+    ) const;
 
-    // Read fields from grid for given mesh level and direction
+    // Read fields of given type, level and direction
     template<class Type, class MeshType>
-    void readFields(vtkStructuredGrid*, const label, const label) const;
+    void readFields
+    (
+        autoPtr<std::ifstream>&,
+        const bool,
+        const label,
+        const label
+    ) const;
 
     // Write
+
+    // Basic float data list writer for a file stream, list of floats, field
+    // name, number of components, ascii bool, tag number and write header bool.
+    void writeList
+    (
+        autoPtr<std::ofstream>&,
+        List<floatScalar>&,
+        const word,
+        const label,
+        const bool,
+        const label,
+        const bool = true
+    ) const;
 
     // Write types
     template<class Type, class MeshType>
     void writeField
     (
-        vtkStructuredGrid*,
+        autoPtr<std::ofstream>&,
         const meshDirection<Type, MeshType>&
     ) const;
 
@@ -66,7 +95,7 @@ class IO
     template<class Type, class MeshType>
     void writeScalarField
     (
-        vtkStructuredGrid*,
+        autoPtr<std::ofstream>&,
         const meshDirection<Type, MeshType>&
     ) const;
 
@@ -74,7 +103,7 @@ class IO
     template<class Type, class MeshType>
     void writeArrayField
     (
-        vtkStructuredGrid*,
+        autoPtr<std::ofstream>&,
         const meshDirection<Type, MeshType>&
     ) const;
 
@@ -82,17 +111,28 @@ class IO
     template<class Type, class MeshType>
     void writeArrayArrayField
     (
-        vtkStructuredGrid*,
+        autoPtr<std::ofstream>&,
         const meshDirection<Type, MeshType>&
     ) const;
 
     // Read
 
+    // Basic float data list reader for a file stream, list of floats, ascii
+    // bool and tag number
+    void readList
+    (
+        autoPtr<std::ifstream>&,
+        List<floatScalar>&,
+        const bool,
+        const label
+    ) const;
+
     // Read types
     template<class Type, class MeshType>
     void readField
     (
-        vtkStructuredGrid*,
+        autoPtr<std::ifstream>&,
+        const bool,
         meshDirection<Type, MeshType>&
     ) const;
 
@@ -100,7 +140,8 @@ class IO
     template<class Type, class MeshType>
     void readScalarField
     (
-        vtkStructuredGrid*,
+        autoPtr<std::ifstream>&,
+        const bool,
         meshDirection<Type, MeshType>&
     ) const;
 
@@ -108,7 +149,8 @@ class IO
     template<class Type, class MeshType>
     void readArrayField
     (
-        vtkStructuredGrid*,
+        autoPtr<std::ifstream>&,
+        const bool,
         meshDirection<Type, MeshType>&
     ) const;
 
@@ -116,51 +158,34 @@ class IO
     template<class Type, class MeshType>
     void readArrayArrayField
     (
-        vtkStructuredGrid*,
+        autoPtr<std::ifstream>&,
+        const bool,
         meshDirection<Type, MeshType>&
     ) const;
 
-    // Write VTK data to given time directory, grid and mesh level and direction
+    // Return the VTK file name for given mesh level and direction
     template<class MeshType>
-    void writeVTKData
-    (
-        const word timeName,
-        vtkStructuredGrid*,
-        const label,
-        const label
-    ) const;
+    word vtkFileName(const label, const label) const;
 
-    // Read VTK data for given time directory, grid and mesh level and direction
+    // Return the VTK series file name for given mesh level and direction
     template<class MeshType>
-    void readVTKData
-    (
-        const word timeName,
-        vtkStructuredGrid*,
-        const label,
-        const label
-    ) const;
+    word seriesFileName(const label, const label) const;
 
-    // Read the stored times data for given mesh level
-    void readTimeData();
-
-    // Add given time name to time data. Replace if this time name is already
-    // present
-    void addToTimeData(const word);
-
-    // Sort the time data based on time name
-    void sortTimeData();
-
-    // Write the time data to PVD files for the given level
+    // Write the series file for given mesh level
     template<class MeshType>
-    void writeTimeData(const label);
+    void writeSeries(const label) const;
 
-    // Return the VTK file name for given mesh level, direction and proc number
-    template<class MeshType>
-    word vtkFileName(const label, const label, const label) const;
+    // Swap halves of word (copied from vtkWriteOps.H)
+    void swapWord(label& word32) const;
 
-    // Return the PVD file name for given mesh level and direction
-    template<class MeshType>
-    word pvdFileName(const label, const label) const;
+    // Swap halves of word (copied from vtkWriteOps.H)
+    void swapWords(const label nWords, label* words32) const;
+
+    // Jump to the next line in an input file stream
+    inline void nextLine(std::ifstream& file) const
+    {
+        file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    }
 
 public:
 
@@ -185,15 +210,15 @@ public:
         return fvMsh_;
     }
 
-    // Write function: checks if the current time is a write time
+    // Write function for given mesh level
     template<class MeshType>
     void write(const label = 0);
 
-    // Write now
+    // Write now for given mesh level
     template<class MeshType>
     void writeNow(const label = 0);
 
-    // Read data for current time
+    // Read data for current time and given mesh level
     template<class MeshType>
     void read(const label = 0);
 };

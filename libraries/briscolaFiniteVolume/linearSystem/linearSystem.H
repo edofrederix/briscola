@@ -103,21 +103,6 @@ public:
     // Return the residual b - A&x for given mesh level and mesh direction
     tmp<meshDirection<Type,MeshType>> residual(const label, const label) const;
 
-    // Correct boundary conditions (i.e., both sources and coefficients), with
-    // the possibility to select a specific mesh level
-    void correctBoundaryConditions();
-    void correctBoundaryConditions(const label);
-
-    // Correct boundary sources, with the possibility to select a specific mesh
-    // level
-    void correctBoundarySources();
-    void correctBoundarySources(const label);
-
-    // Correct boundary coefficients, with the possibility to select a specific
-    // mesh level
-    void correctBoundaryCoefficients();
-    void correctBoundaryCoefficients(const label);
-
     // Member Operators
 
     void operator=(const linearSystem<SType,Type,MeshType>&);

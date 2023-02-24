@@ -396,23 +396,9 @@ public:
         return v_[lin(ijk.x(),ijk.y(),ijk.z())];
     }
 
-    // Interpolate data to a point shifted from given indices. The magnitude of
-    // each component of the shift vector must be in between or equal to -1 and
-    // 1
-
-    Type interp
-    (
-        const int i,
-        const int j,
-        const int k,
-        const vector& shift
-    ) const;
-
-    Type interp
-    (
-        const labelVector& ijk,
-        const vector& shift
-    ) const;
+    // Interpolate data to a scalar index
+    Type interp(const scalar i, const scalar j, const scalar k) const;
+    Type interp(const vector ijk) const;
 
     // Member operators
 
