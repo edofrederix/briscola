@@ -2,29 +2,33 @@
 
 TEST=IO
 
-CONTROLDICTS=(system/controlDict.ascii system/controlDict.binary)
-MESHDICTS=(system/briscolaMeshDict.box system/briscolaMeshDict.pipe)
+FORMATS=(ascii binary)
+MESHES=(box pipe bigbox)
+NPROCS=(10 5 16)
 
 if [ -f build/Test-$TEST ]; then
 
-    for CONTROLDICT in ${CONTROLDICTS[@]}; do
+    for FORMAT in ${FORMATS[@]}; do
 
-        for MESHDICT in ${MESHDICTS[@]}; do
+        for I in ${!MESHES[@]}; do
 
-            cp $CONTROLDICT system/controlDict
-            cp $MESHDICT system/briscolaMeshDict
+            MESH=${MESHES[I]}
+            NPROC=${NPROCS[I]}
 
-            OUTPUT=$(mpirun -np 5 --oversubscribe ./build/Test-$TEST -parallel > /dev/null 2>&1)
+            cp system/controlDict.$FORMAT system/controlDict
+            cp system/briscolaMeshDict.$MESH system/briscolaMeshDict
+
+            OUTPUT=$(mpirun -np $NPROC --oversubscribe ./build/Test-$TEST -parallel > /dev/null 2>&1)
 
             RET=$?
 
             if [ "$RET" != "0" ]; then
 
-                echo Test $TEST with $CONTROLDICT $MESHDICT failed
+                echo "Test $TEST with format = $FORMAT, mesh = $MESH failed"
 
             else
 
-                echo Test $TEST with $CONTROLDICT $MESHDICT succeeded
+                echo "Test $TEST with format = $FORMAT, mesh = $MESH succeeded"
 
             fi
 

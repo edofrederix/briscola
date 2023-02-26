@@ -442,8 +442,7 @@ mesh::mesh(const IOdictionary& dict)
 
     if (topology().structured())
     {
-        const decompositionMap& map = decomp_->map();
-        const List<labelVector>& partSizePerProc = decomp_->partSizePerProc();
+        const brickTopologyMap& map = topology().map();
 
         List<bool> x(map.l(), false);
         List<bool> y(map.m(), false);
@@ -455,19 +454,19 @@ mesh::mesh(const IOdictionary& dict)
         {
             if (!x[i] && map(i,j,k) > -1)
             {
-                N_.x() += partSizePerProc[map(i,j,k)].x();
+                N_.x() += bricks()[map(i,j,k)].N().x();
                 x[i] = true;
             }
 
             if (!y[i] && map(i,j,k) > -1)
             {
-                N_.y() += partSizePerProc[map(i,j,k)].y();
+                N_.y() += bricks()[map(i,j,k)].N().y();
                 y[i] = true;
             }
 
             if (!z[i] && map(i,j,k) > -1)
             {
-                N_.z() += partSizePerProc[map(i,j,k)].z();
+                N_.z() += bricks()[map(i,j,k)].N().z();
                 z[i] = true;
             }
         }

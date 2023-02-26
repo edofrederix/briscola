@@ -2,22 +2,35 @@
 
 TEST=linearSystem
 
+MESHES=(box bigbox pipe)
+NPROCS=(4 16 5)
+
 if [ -f build/Test-$TEST ]; then
 
-    OUTPUT=$(mpirun -np 4 --oversubscribe ./build/Test-$TEST -parallel > /dev/null 2>&1)
+    for I in ${!MESHES[@]}; do
 
-    RET=$?
+        MESH=${MESHES[I]}
+        NPROC=${NPROCS[I]}
 
-    if [ "$RET" != "0" ]; then
+        cp system/briscolaMeshDict.$MESH system/briscolaMeshDict
 
-        echo Test $TEST failed
+        OUTPUT=$(mpirun -np $NPROC --oversubscribe ./build/Test-$TEST -parallel > /dev/null 2>&1)
 
-    else
+        RET=$?
 
-        echo Test $TEST succeeded
+        if [ "$RET" != "0" ]; then
 
-    fi
+            echo Test $TEST mesh = $MESH failed
 
+        else
+
+            echo Test $TEST mesh = $MESH succeeded
+
+        fi
+
+        rm -f system/briscolaMeshDict
+
+    done
 
 else
 

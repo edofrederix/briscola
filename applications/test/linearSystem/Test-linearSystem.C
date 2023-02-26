@@ -143,18 +143,21 @@ int main(int argc, char *argv[])
 
     // Staggered
 
-    testConstructors<stencil,scalar,colocated>(fvMsh);
-    testConstructors<stencil,vector,colocated>(fvMsh);
-    testConstructors<diagStencil,scalar,colocated>(fvMsh);
-    testConstructors<diagStencil,vector,colocated>(fvMsh);
+    if (fvMsh.structured())
+    {
+        testConstructors<stencil,scalar,staggered>(fvMsh);
+        testConstructors<stencil,vector,staggered>(fvMsh);
+        testConstructors<diagStencil,scalar,staggered>(fvMsh);
+        testConstructors<diagStencil,vector,staggered>(fvMsh);
 
-    testResiduals<stencil,scalar,colocated>(fvMsh);
-    testResiduals<stencil,vector,colocated>(fvMsh);
-    testResiduals<diagStencil,scalar,colocated>(fvMsh);
-    testResiduals<diagStencil,vector,colocated>(fvMsh);
+        testResiduals<stencil,scalar,staggered>(fvMsh);
+        testResiduals<stencil,vector,staggered>(fvMsh);
+        testResiduals<diagStencil,scalar,staggered>(fvMsh);
+        testResiduals<diagStencil,vector,staggered>(fvMsh);
 
-    testMemberOperators<stencil,scalar,colocated>(fvMsh);
-    testMemberOperators<stencil,vector,colocated>(fvMsh);
-    testMemberOperators<diagStencil,scalar,colocated>(fvMsh);
-    testMemberOperators<diagStencil,vector,colocated>(fvMsh);
+        testMemberOperators<stencil,scalar,staggered>(fvMsh);
+        testMemberOperators<stencil,vector,staggered>(fvMsh);
+        testMemberOperators<diagStencil,scalar,staggered>(fvMsh);
+        testMemberOperators<diagStencil,vector,staggered>(fvMsh);
+    }
 }

@@ -222,7 +222,7 @@ void geometry::alignBricks()
     // Collect brick transformations first, because transforming them on the fly
     // invalidates the brick topology
 
-    labelList brickNums(bricks_.size());
+    labelList brickNums(bricks_.size()-1);
     List<labelTensor> transforms(bricks_.size()-1);
 
     label first = -1;

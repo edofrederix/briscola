@@ -15,8 +15,8 @@ void decomposition::updateGlobalData()
     brickNumPerProc_.setSize(Pstream::nProcs());
     brickPartPerProc_.setSize(Pstream::nProcs());
 
-    brickNumPerProc_[Pstream::myProcNo()] = myBrickNum_;
-    brickPartPerProc_[Pstream::myProcNo()] = myBrickPart_;
+    brickNumPerProc_[Pstream::myProcNo()] = myBrickNum();
+    brickPartPerProc_[Pstream::myProcNo()] = myBrickPart();
 
     Pstream::gatherList(brickNumPerProc_);
     Pstream::gatherList(brickPartPerProc_);
@@ -29,11 +29,11 @@ void decomposition::updateGlobalData()
 
     forAll(msh_.bricks(), bricki)
     {
-        procMapPerBrick_.set(bricki, new labelBlock(decompPerBrick_[bricki]));
+        procMapPerBrick_.set(bricki, new labelBlock(decompPerBrick()[bricki]));
         procMapPerBrick_[bricki] = -1;
 
         partSizePerBrick_[bricki] =
-            cmptDivide(msh_.bricks()[bricki].N(), decompPerBrick_[bricki]);
+            cmptDivide(msh_.bricks()[bricki].N(), decompPerBrick()[bricki]);
     }
 
     forAll(brickPartPerProc_, proci)
@@ -139,9 +139,6 @@ decomposition::decomposition(mesh& msh)
 :
     msh_(msh),
     dict_(msh.dict().subDict("decomposition")),
-    decompPerBrick_(),
-    myBrickNum_(),
-    myBrickPart_(),
     brickNumPerProc_(),
     brickPartPerProc_(),
     partSizePerProc_(),
@@ -156,9 +153,6 @@ decomposition::decomposition
 :
     msh_(d.msh_),
     dict_(d.dict_),
-    decompPerBrick_(d.decompPerBrick_),
-    myBrickNum_(d.myBrickNum_),
-    myBrickPart_(d.myBrickPart_),
     brickNumPerProc_(d.brickNumPerProc_),
     brickPartPerProc_(d.brickPartPerProc_),
     partSizePerProc_(d.partSizePerProc_),
@@ -194,7 +188,7 @@ autoPtr<decomposition> decomposition::New(mesh& msh)
 
 const brick& decomposition::myBrick() const
 {
-    return msh_.bricks()[myBrickNum_];
+    return msh_.bricks()[myBrickNum()];
 }
 
 

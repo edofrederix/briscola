@@ -25,17 +25,6 @@ protected:
     // Reference to the decomposition dictionary
     const dictionary& dict_;
 
-    // Decomposition per brick
-    List<labelVector> decompPerBrick_;
-
-    // The number of the brick of which this processor contains (part of) the
-    // mesh
-    label myBrickNum_;
-
-    // The index which points to the part of this processor's brick which is
-    // contained by this processor
-    labelVector myBrickPart_;
-
 private:
 
     // List of brick numbers per processor
@@ -99,17 +88,15 @@ public:
         return dict_;
     }
 
-    // Number of parts per brick
-    inline const List<labelVector>& decompPerBrick() const
-    {
-        return decompPerBrick_;
-    }
+    // Number of parts per brick, to be determined by derived class
+    virtual const List<labelVector>& decompPerBrick() const = 0;
 
-    // This processor's brick number
-    inline label myBrickNum() const
-    {
-        return myBrickNum_;
-    }
+    // This processor's brick number, to be determined by derived class
+    virtual label myBrickNum() const = 0;
+
+    // This processor's part index of its brick, to be determined by derived
+    // class
+    virtual labelVector myBrickPart() const = 0;
 
     // This processor's brick's shape
     labelVector myBrickN() const;
@@ -117,25 +104,19 @@ public:
     // This processor's part's shape
     labelVector myPartN() const
     {
-        return partSizePerBrick_[myBrickNum_];
-    }
-
-    // This processor's part index of its brick
-    inline labelVector myBrickPart() const
-    {
-        return myBrickPart_;
+        return partSizePerBrick_[myBrickNum()];
     }
 
     // This processor's part start index within its brick
     inline labelVector myBrickPartStart() const
     {
-        return cmptMultiply(myBrickPart_, partSizePerBrick_[myBrickNum_]);
+        return cmptMultiply(myBrickPart(), partSizePerBrick_[myBrickNum()]);
     }
 
     // This processor's brick's number of parts
     inline labelVector myBrickDecomp() const
     {
-        return decompPerBrick_[myBrickNum_];
+        return decompPerBrick()[myBrickNum()];
     }
 
     // This processor's brick

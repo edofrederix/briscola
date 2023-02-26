@@ -24,7 +24,7 @@ bricks
     0
     {
         vertices    (((0 4)(2 6))((1 5)(3 7)));
-        N           (80 32 16);
+        N           (40 16 8);
     }
 );
 
@@ -40,6 +40,6 @@ decomposition
 
     brickDecompositions
     (
-        (5 1 1)
+        (5 2 1)
     );
 }
