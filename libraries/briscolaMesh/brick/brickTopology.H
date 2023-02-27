@@ -35,7 +35,8 @@ class brickTopology
     // Bool to check if the bricks are on a rectilinear grid
     bool rectilinear_;
 
-    // Brick topology map, only set if the bricks are structured
+    // Brick topology map, only set if the bricks are structured. Its local
+    // coordinate system is aligned with that of the first brick.
     brickTopologyMap map_;
 
     // Set face links

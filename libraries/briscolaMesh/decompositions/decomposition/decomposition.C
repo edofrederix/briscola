@@ -29,8 +29,11 @@ void decomposition::updateGlobalData()
 
     forAll(msh_.bricks(), bricki)
     {
-        procMapPerBrick_.set(bricki, new labelBlock(decompPerBrick()[bricki]));
-        procMapPerBrick_[bricki] = -1;
+        procMapPerBrick_.set
+        (
+            bricki,
+            new labelBlock(decompPerBrick()[bricki], -1)
+        );
 
         partSizePerBrick_[bricki] =
             cmptDivide(msh_.bricks()[bricki].N(), decompPerBrick()[bricki]);
@@ -70,7 +73,10 @@ void decomposition::updateGlobalData()
     {
         const labelBlock& brickMap = msh_.topology().map();
 
-        // Get the number of processors per brick in each direction
+        // Get the number of processors per brick in each direction. For
+        // structured brick topologies, the bricks are aligned with the local
+        // coordinate system of the first brick. Also the brick map is aligned
+        // with this coordinate system.
 
         labelList Nx(brickMap.l(), 0);
         labelList Ny(brickMap.m(), 0);
@@ -94,7 +100,8 @@ void decomposition::updateGlobalData()
             }
         }
 
-        // Compute processor map
+        // Compute processor map, in a local coordinate system aligned with the
+        // bricks and brick map.
 
         labelBlock map(sum(Nx), sum(Ny), sum(Nz), -1);
 

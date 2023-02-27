@@ -220,54 +220,36 @@ void geometry::alignBricks()
     }
 
     // Collect brick transformations first, because transforming them on the fly
-    // invalidates the brick topology
+    // invalidates the brick topology. Align bricks w.r.t. the orientation of
+    // the first brick. This means that all bricks will have a local coordinate
+    // system that is aligned with that of the first brick.
 
-    labelList brickNums(bricks_.size()-1);
     List<labelTensor> transforms(bricks_.size()-1);
 
-    label first = -1;
-    label cursor = 0;
-
-    // First walk in x, then in y and finally in z
-
-    forAllBlockReversed(topology_->map(), i, j, k)
-    if (topology_->map()(i,j,k) != -1)
+    for (int bricki = 1; bricki < bricks_.size(); bricki++)
     {
-        if (first == -1)
+        // Find path between the base brick and this brick
+
+        const labelList P = topology_->shortestFacePath(0, bricki);
+
+        labelTensor T = eye;
+
+        for (label i = P.size()-2; i >= 0; i--)
         {
-            first = topology_->map()(i,j,k);
+            const brickLinks& links = topology_->links()[P[i]];
+            const brickFaceLink& link = links.getFaceLink(P[i+1]);
+
+            T = link.T() & T;
         }
-        else
-        {
-            brick& b0 = bricks_[first];
-            brick& b1 = bricks_[topology_->map()(i,j,k)];
 
-            // Find path between the base brick and this brick
-
-            const labelList P = topology_->shortestFacePath(b0.num(), b1.num());
-
-            labelTensor T = eye;
-
-            for (label i = P.size()-2; i >= 0; i--)
-            {
-                const brickLinks& links = topology_->links()[P[i]];
-                const brickFaceLink& link = links.getFaceLink(P[i+1]);
-
-                T = link.T() & T;
-            }
-
-            brickNums[cursor] = topology_->map()(i,j,k);
-            transforms[cursor] = T;
-
-            cursor++;
-        }
+        transforms[bricki-1] = T;
     }
 
     // Perform brick transform now that all transforms are known
 
-    forAll(transforms, i)
+    forAll(transforms, bricki)
     {
-        bricks_[brickNums[i]].transform(transforms[i]);
+        bricks_[bricki+1].transform(transforms[bricki]);
     }
 
     createPatches();

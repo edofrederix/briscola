@@ -39,13 +39,6 @@ void brick::createFaces()
             l++;
         }
     }
-
-    if (volume() <= 0.0 || volume() != magVolume())
-    {
-        FatalErrorInFunction
-            << "Inconsistent volume for " << *this
-            << exit(FatalError);
-    }
 }
 
 brick::brick(const geometry& g, const label num, const dictionary& dict)
@@ -67,6 +60,25 @@ brick::brick(const geometry& g, const label num, const dictionary& dict)
                     << exit(FatalError);
             }
         }
+    }
+
+    // The coordinates of the vertices are defined in a right-handed coordinate
+    // system. Then we can define three vectors v1 = v(1,0,0) - v(0,0,0), v2 =
+    // v(0,1,0) - v(0,0,0) and v3 = v(0,0,1) - v(0,0,0) which satisfy dot(v1 x
+    // v2, v3) > 0 for a right-handed brick-local coordinate system. See
+    // https://math.stackexchange.com/questions/327841/test-of-handedness.
+
+    const vectorList& vertices = g.vertexData();
+
+    const vector v1(vertices[v_(1,0,0)] - vertices[v_(0,0,0)]);
+    const vector v2(vertices[v_(0,1,0)] - vertices[v_(0,0,0)]);
+    const vector v3(vertices[v_(0,0,1)] - vertices[v_(0,0,0)]);
+
+    if (((v1^v2) & v3) < 0.0)
+    {
+        FatalErrorInFunction
+            << *this << " is left-handed. Bricks should be right-handed."
+            << exit(FatalError);
     }
 
     createFaces();
