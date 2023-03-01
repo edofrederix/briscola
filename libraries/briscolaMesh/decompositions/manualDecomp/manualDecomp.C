@@ -62,16 +62,16 @@ manualDecomp::manualDecomp(mesh& msh)
 
     forAll(decompPerBrick_, i)
     {
-        const brick& b = msh_.bricks()[i];
+        const brick& b = msh.bricks()[i];
 
         decompPerBrick_[i] = cmptMag(b.T() & decompPerBrick_[i]);
     }
 
     // Check if the decompositions are feasible
 
-    forAll(msh_.bricks(), bricki)
+    forAll(msh.bricks(), bricki)
     {
-        const brick& b = msh_.bricks()[bricki];
+        const brick& b = msh.bricks()[bricki];
 
         const labelVector N = b.N();
         const labelVector D = decompPerBrick_[bricki];
@@ -99,6 +99,41 @@ manualDecomp::manualDecomp(mesh& msh)
                     << bricki << " in the " << dir << " direction "
                     << "is not a power of 2 nor a triple of a power of 2" << endl;
                 FatalError.exit();
+            }
+        }
+    }
+
+    // Check if decompositions agree across brick face links
+
+    const brickTopology& topo = msh.topology();
+
+    forAll(msh.bricks(), bricki)
+    {
+        const brickLinks& links = topo.links()[bricki];
+
+        forAll(links.faceLinks(), i)
+        if (links.faceLinks().set(i))
+        {
+            const brickFaceLink& link = links.faceLinks()[i];
+
+            const label brickj = link.f1().parentBrick().num();
+
+            const label facei = link.f0().num();
+            const label facej = link.f1().num();
+
+            labelVector Ni = decompPerBrick_[bricki];
+            labelVector Nj = decompPerBrick_[brickj];
+
+            Ni[facei/2] = 1;
+            Nj[facej/2] = 1;
+
+            if (Ni != Nj && Pstream::master())
+            {
+                FatalErrorInFunction
+                    << "Inconsistent decomposition between brick " << bricki
+                    << " on face " << facei << " and brick " << brickj
+                    << " on face " << facej << endl
+                    << abort(FatalError);
             }
         }
     }

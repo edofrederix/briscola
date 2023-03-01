@@ -258,7 +258,9 @@ brickTopology::brickTopology(const geometry& geo)
     setFaceLinks();
 
     // Try to build the topology map. If it returns false, the bricks are
-    // unstructured
+    // unstructured. Start with the first brick with no transformation (T =
+    // eye), which means that the local coordinate system of the map is aligned
+    // with that of the first brick.
 
     labelList found(geo.bricks().size(), 0);
     labelBlock map(unitXYZ,0);

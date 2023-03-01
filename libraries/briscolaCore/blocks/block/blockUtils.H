@@ -17,7 +17,7 @@ namespace briscola
 
 const labelTensor eye(1,0,0,0,1,0,0,0,1);
 
-// Rotationion about x
+// Rotation about x
 
 const labelTensor rotateX1(1,0,0,0,0,-1,0,1,0);
 const labelTensor rotateX2(1,0,0,0,-1,0,0,0,-1);
@@ -31,7 +31,7 @@ const labelTensor rotationsX[] =
     rotateX3
 };
 
-// Rotationion about y
+// Rotation about y
 
 const labelTensor rotateY1(0,0,1,0,1,0,-1,0,0);
 const labelTensor rotateY2(-1,0,0,0,1,0,0,0,-1);
@@ -45,7 +45,7 @@ const labelTensor rotationsY[] =
     rotateY3
 };
 
-// Rotationion about z
+// Rotation about z
 
 const labelTensor rotateZ1(0,-1,0,1,0,0,0,0,1);
 const labelTensor rotateZ2(-1,0,0,0,-1,0,0,0,1);
