@@ -44,6 +44,7 @@ schemes/restrictionSchemes/restrictionScheme/restrictionSchemes.C
 solvers/solver/solvers.C
 solvers/solver/solverFwd.C
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C
+solvers/PoissonSolvers/FFTPoissonSolver/decomposer/decomposer.C
 
 functionObjects/example/example.C
 

@@ -1,3 +1,5 @@
+decomposer/decomposer.C
+tridiagonalSolver/tridiagonalSolver.C
 Test-fft.C
 
 EXE = build/Test-fft

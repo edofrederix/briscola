@@ -32,7 +32,61 @@ edges
 ();
 
 patches
-();
+(
+    left
+    {
+        type patch;
+        faces
+        (
+            (0 2 6 4)
+        );
+    }
+
+    right
+    {
+        type patch;
+        faces
+        (
+            (3 1 5 7)
+        );
+    }
+
+    bottom
+    {
+        type patch;
+        faces
+        (
+            (3 2 0 1)
+        );
+    }
+
+    top
+    {
+        type patch;
+        faces
+        (
+            (5 4 6 7)
+        );
+    }
+
+    front
+    {
+        type patch;
+        faces
+        (
+            (1 0 4 5)
+        );
+    }
+
+    back
+    {
+        type patch;
+        faces
+        (
+            (2 3 7 6)
+        );
+    }
+);
 
 decomposition
 {
@@ -40,6 +94,6 @@ decomposition
 
     brickDecompositions
     (
-        (2 2 2)
+        (4 2 2)
     );
 }

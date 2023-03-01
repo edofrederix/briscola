@@ -1,7 +1,6 @@
 arguments/arguments.C
 
 fft/tridiagonalSolver/tridiagonalSolver.C
-fft/decomposer/decomposer.C
 
 primitives/FaceSpace/faceScalar/faceScalar.C
 primitives/FaceSpace/faceVector/faceVector.C

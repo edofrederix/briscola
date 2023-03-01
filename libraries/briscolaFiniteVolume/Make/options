@@ -2,10 +2,13 @@ EXE_INC = \
     -I./lnInclude \
     -I../briscolaCore/lnInclude \
     -I../briscolaMesh/lnInclude \
-    -I$(LIB_SRC)/OpenFOAM/lnInclude
+    -I$(LIB_SRC)/OpenFOAM/lnInclude \
+    -I$(FFTW_HOME)/include
 
 LIB_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
+    -L$(FFTW_HOME)/lib \
     -lbriscolaCore \
     -lbriscolaMesh \
-    -lOpenFOAM
+    -lOpenFOAM \
+    -lfftw3

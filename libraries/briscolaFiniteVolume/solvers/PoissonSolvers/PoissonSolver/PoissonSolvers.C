@@ -26,12 +26,7 @@ makePoissonSolverType(default,stencil,vector,staggered);
 
 // FFT Poisson solver
 
-defineTypeNameAndDebugWithName
-(
-    FFTPoissonSolver,
-    "FFT",
-    0
-);
+defineTypeNameAndDebug(FFTPoissonSolver,0);
 
 PoissonSolver<stencil,scalar,colocated>::
 adddictionaryConstructorToTable<FFTPoissonSolver>

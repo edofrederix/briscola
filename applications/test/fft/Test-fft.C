@@ -3,8 +3,8 @@
 #include "block.H"
 #include <chrono>
 #include <fftw3.h>
-#include "decomposer.H"
-#include "tridiagonalSolver.H"
+#include "decomposer/decomposer.H"
+#include "tridiagonalSolver/tridiagonalSolver.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -14,8 +14,6 @@ using namespace briscola;
 bool check(scalarBlock& p, scalarBlock& f, labelVector BC)
 {
     labelVector N(p.shape());
-
-    // scalar f;
 
     for (int i = 0; i < N.x(); i++)
     {

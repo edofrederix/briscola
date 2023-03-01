@@ -2,6 +2,9 @@
 #define FFTPoissonSolver_H
 
 #include "PoissonSolver.H"
+#include <fftw3.h>
+#include "decomposer.H"
+#include "tridiagonalSolver.H"
 
 namespace Foam
 {
@@ -18,6 +21,12 @@ class FFTPoissonSolver
 {
     // Cell size arrays for each direction
     PtrList<scalarList> cellSizes_;
+
+    // Pencil decomposer
+    autoPtr<decomposer> decomp_;
+
+    // Tridiagonal solver
+    autoPtr<tridiagonalSolver> tds_;
 
     // Funtion to check if the mesh qualifies for FFTs. Will give error if not
     // all criteria are met.
