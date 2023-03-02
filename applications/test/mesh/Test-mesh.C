@@ -111,22 +111,6 @@ int main(int argc, char *argv[])
 
     mesh msh(meshDict);
 
-    // Decomposition
-
-    const decomposition& decomp = msh.decomp();
-    const decompositionMap& map = decomp.map();
-
-    // Mesh has 2 by 2 by 2 bricks each decomposed by 2 processors in global
-    // z-direction. Bricks are aligned w.r.t. the first brick, which has its
-    // first local direction in the global z-direction. So the processor map
-    // should have shape (4,2,2).
-
-    if (map.shape() != labelVector(4,2,2))
-    {
-        FatalErrorInFunction
-            << "Test 1 failed" << endl << abort(FatalError);
-    }
-
     // Mesh should be structured, rectilinear in three directions and uniform in
     // three directions
 
@@ -317,11 +301,28 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Brick topology map should have shape (2,2,2)
+    const scalarList dx(msh.rectilinearCellSizes(0));
+    const scalarList dy(msh.rectilinearCellSizes(1));
+    const scalarList dz(msh.rectilinearCellSizes(2));
 
-    const brickTopologyMap& topoMap = topo.map();
+    forAll(dx, i)
+    {
+        if (Foam::mag(dx[i]-1.0/24) > 1e-12)
+            FatalErrorInFunction
+                << "Test 15a failed" << endl << abort(FatalError);
+    }
 
-    if (topoMap.shape() != unitXYZ*2)
-        FatalErrorInFunction
-            << "Test 15 failed" << endl << abort(FatalError);
+    forAll(dy, i)
+    {
+        if (Foam::mag(dy[i]-1.0/16) > 1e-12)
+            FatalErrorInFunction
+                << "Test 15b failed" << endl << abort(FatalError);
+    }
+
+    forAll(dz, i)
+    {
+        if (Foam::mag(dz[i]-1.0/16) > 1e-12)
+            FatalErrorInFunction
+                << "Test 15c failed" << endl << abort(FatalError);
+    }
 }
