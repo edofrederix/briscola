@@ -179,7 +179,7 @@ public:
     //         # # # # (1) # # #
     //         # #             . #
     //         #   #           .   #
-    //         #     #         #     #
+    //         #     #         .     #
     //         #       # # # # (3) # # #
     //         # . . . # (0) . .       #
     //           #     #         .     #
@@ -410,6 +410,25 @@ public:
           + Foam::mag(tetVolume(v2(), v3(), v6(), v0()))
           + Foam::mag(tetVolume(v7(), v6(), v3(), v5()))
           + Foam::mag(tetVolume(v6(), v0(), v3(), v5()));
+    }
+
+    // Check if brick is right-handed. The coordinates of the vertices are
+    // defined in a right-handed coordinate system. Then we can define three
+    // vectors x = v(1,0,0) - v(0,0,0), y = v(0,1,0) - v(0,0,0) and z = v(0,0,1)
+    // - v(0,0,0) which satisfy dot(x x y, z) > 0 for a right-handed brick-local
+    // coordinate system.
+    inline bool rightHanded() const
+    {
+        const vector x(v1()-v0());
+        const vector y(v2()-v0());
+        const vector z(v4()-v0());
+
+        return ((x^y) & z) > 0;
+    }
+
+    inline bool leftHanded() const
+    {
+        return !rightHanded();
     }
 
     // Transform this brick given a transformation tensor

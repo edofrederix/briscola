@@ -9,16 +9,10 @@ namespace Foam
 namespace briscola
 {
 
-namespace edges
-{
-
 class lineEdge
 :
     public edge
 {
-    // Copy constructor
-    lineEdge(const lineEdge&);
-
     // Disallow default bitwise assignment
     void operator=(const lineEdge&);
 
@@ -29,6 +23,12 @@ public:
 
     // Construct from components
     lineEdge(const face&, const label, const labelBlock&, const labelVector&);
+
+    // Copy constructors
+    lineEdge(const lineEdge&);
+
+    // Copy constructor from edge, because lineEdge contains no data
+    lineEdge(const edge&);
 
     // Length of the edge
     virtual scalar length() const
@@ -42,8 +42,6 @@ public:
         return v0()*(1.0-f) + v1()*f;
     }
 };
-
-}
 
 }
 

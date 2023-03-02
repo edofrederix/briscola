@@ -8,9 +8,6 @@ namespace Foam
 namespace briscola
 {
 
-namespace edges
-{
-
 defineTypeNameAndDebug(arcEdge, 0);
 addToRunTimeSelectionTable(edge, arcEdge, dictionary);
 
@@ -96,6 +93,16 @@ arcEdge::arcEdge
     radius_ = mag(r0);
     start_ = r0/radius_;
 }
+
+arcEdge::arcEdge(const arcEdge& e)
+:
+    edge(e),
+    center_(e.center_),
+    angle_(e.angle_),
+    axis_(e.axis_),
+    radius_(e.radius_),
+    start_(e.start_)
+{}
 
 tmp<vectorField> arcEdge::operator()(const scalarField& f) const
 {
@@ -188,8 +195,6 @@ tmp<vectorField> arcEdge::operator()(const scalarField& f) const
     p = (R2 & (R1 & p)) + center_;
 
     return tp;
-}
-
 }
 
 }

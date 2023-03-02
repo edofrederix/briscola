@@ -8,9 +8,6 @@ namespace Foam
 namespace briscola
 {
 
-namespace edges
-{
-
 defineTypeNameAndDebug(lineEdge, 0);
 addToRunTimeSelectionTable(edge, lineEdge, dictionary);
 
@@ -25,7 +22,15 @@ lineEdge::lineEdge
     edge(f, num, vertexNums, N)
 {}
 
-}
+lineEdge::lineEdge(const lineEdge& e)
+:
+    edge(e)
+{}
+
+lineEdge::lineEdge(const edge& e)
+:
+    edge(e)
+{}
 
 }
 
