@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     checkInternalFaceCenters<colocated>(fvMsh);
     checkInternalFaceDeltas<colocated>(fvMsh);
 
-    if (fvMsh.topology().structured())
+    if (fvMsh.structured())
     {
         checkInternalFaceCenters<staggered>(fvMsh);
         checkInternalFaceDeltas<staggered>(fvMsh);
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
         checkParallelFaceCenters<colocated>(fvMsh);
         checkParallelFaceDeltas<colocated>(fvMsh);
 
-        if (fvMsh.topology().structured())
+        if (fvMsh.structured())
         {
             checkParallelFaceCenters<staggered>(fvMsh);
             checkParallelFaceDeltas<staggered>(fvMsh);

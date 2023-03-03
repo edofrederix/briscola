@@ -187,11 +187,11 @@ boundaryCondition<Type,MeshType>::globalBaseType
     const labelVector bo
 )
 {
-    // Global BCs only exist on rectilinear meshes
+    // Global BCs only exist on rectilinear brick topologies
 
     const fvMesh& fvMsh = field.fvMsh();
 
-    if (!fvMsh.topology().rectilinear())
+    if (!fvMsh.msh().topology().rectilinear())
     {
         FatalErrorInFunction
             << "Mesh is not rectlinear" << endl
@@ -201,7 +201,7 @@ boundaryCondition<Type,MeshType>::globalBaseType
     }
     else
     {
-        const decompositionMap& map = fvMsh.decomp().map();
+        const decompositionMap& map = fvMsh.msh().decomp().map();
 
         const label facei = faceNumber(bo);
         const label dir = facei/2;

@@ -56,6 +56,12 @@ public:
     // Copy constructor
     edge(const edge&);
 
+    // Copy constructor with reference to new face
+    edge(const edge&, const face& f);
+
+    // Clone edge with reference to new face
+    virtual autoPtr<edge> clone(const face&) const = 0;
+
     // Selector
     static autoPtr<edge> New
     (

@@ -47,7 +47,8 @@ brick::brick(const geometry& g, const label num, const dictionary& dict)
     dict_(dict),
     v_(dict.lookup("vertices")),
     N_(dict.lookup("N")),
-    grading_(grading::New(*this))
+    grading_(grading::New(*this)),
+    faces_()
 {
     for (label i = 0; i < v_.size()-1; i++)
     {
@@ -70,17 +71,24 @@ brick::brick(const geometry& g, const label num, const dictionary& dict)
             << exit(FatalError);
 }
 
-brick::brick
-(
-    const brick& b
-)
+brick::brick(const brick& b)
 :
     meshObject<geometry>(b.parentGeometry(), b.num()),
     dict_(b.dict_),
     v_(b.v_),
     N_(b.N_),
     grading_(grading::New(*this)),
-    faces_(b.faces_)
+    faces_(b.faces_, *this)
+{}
+
+brick::brick(const brick& b, const geometry& geo)
+:
+    meshObject<geometry>(geo, b.num()),
+    dict_(b.dict_),
+    v_(b.v_),
+    N_(b.N_),
+    grading_(grading::New(*this)),
+    faces_(b.faces_, *this)
 {}
 
 brick::~brick()

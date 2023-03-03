@@ -19,6 +19,11 @@ periodicPartPatch::periodicPartPatch(const mesh& msh, const dictionary& dict)
     parallelPartPatch(msh, dict)
 {}
 
+periodicPartPatch::periodicPartPatch(const periodicPartPatch& pp)
+:
+    parallelPartPatch(pp)
+{}
+
 }
 
 }

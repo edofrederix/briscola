@@ -18,9 +18,6 @@ class partPatch
 {
 protected:
 
-    // Reference to the mesh
-    const mesh& msh_;
-
     // Copy of the dictionary
     dictionary dict_;
 
@@ -67,6 +64,9 @@ public:
     // Copy constructor
     partPatch(const partPatch& pp);
 
+    // Clone part patch
+    virtual autoPtr<partPatch> clone() const = 0;
+
     // Selector
     static autoPtr<partPatch> New
     (
@@ -76,9 +76,6 @@ public:
 
     // Destructor
     virtual ~partPatch();
-
-    // Access to the mesh
-    inline const mesh& msh() const { return msh_; }
 
     // Access to the dictionary
     inline dictionary& dict() { return dict_; }

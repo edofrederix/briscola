@@ -23,7 +23,7 @@ void testCellCenters(const fvMesh& fvMsh)
 
     const vector Lp
     (
-        cmptDivide(L, vector(fvMsh.decomp().myBrickDecomp()))
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
     forAll(c, l)
@@ -42,7 +42,7 @@ void testCellCenters(const fvMesh& fvMsh)
                   + MeshType::shift[d],
                     vector(fvMsh[l].N())
                 )
-              + vector(fvMsh.decomp().myBrickPart()),
+              + vector(fvMsh.msh().decomp().myBrickPart()),
                 Lp
             )
         );
@@ -63,7 +63,7 @@ void testCellVolumes(const fvMesh& fvMsh)
 
     const vector Lp
     (
-        cmptDivide(L, vector(fvMsh.decomp().myBrickDecomp()))
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
     forAll(v, l)
@@ -95,7 +95,7 @@ void testFaceCenters(const fvMesh& fvMsh)
 
     const vector Lp
     (
-        cmptDivide(L, vector(fvMsh.decomp().myBrickDecomp()))
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
     forAll(c, l)
@@ -114,7 +114,7 @@ void testFaceCenters(const fvMesh& fvMsh)
                   + vector(faceOffsets[o])*0.5,
                     vector(fvMsh[l].N())
                 )
-                + vector(fvMsh.decomp().myBrickPart()),
+              + vector(fvMsh.msh().decomp().myBrickPart()),
                 Lp
             )
         );
@@ -135,7 +135,7 @@ void testFaceAreas(const fvMesh& fvMsh)
 
     const vector Lp
     (
-        cmptDivide(L, vector(fvMsh.decomp().myBrickDecomp()))
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
     forAll(a, l)
@@ -189,7 +189,7 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
 
     const vector Lp
     (
-        cmptDivide(L, vector(fvMsh.decomp().myBrickDecomp()))
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
     forAll(n, l)
@@ -222,7 +222,7 @@ void testFaceDeltas(const fvMesh& fvMsh)
 
     const vector Lp
     (
-        cmptDivide(L, vector(fvMsh.decomp().myBrickDecomp()))
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
     forAll(fd, l)

@@ -105,9 +105,9 @@ int main(int argc, char *argv[])
     // Blocks
 
     {
-        vectorBlock bF(fvMsh.N()+unitXYZ*2);
-        vectorBlock bG(fvMsh.N()+unitXYZ*2);
-        stencilBlock bA(fvMsh.N()+unitXYZ*2);
+        vectorBlock bF(fvMsh[0].N()+unitXYZ*2);
+        vectorBlock bG(fvMsh[0].N()+unitXYZ*2);
+        stencilBlock bA(fvMsh[0].N()+unitXYZ*2);
 
         forAllBlock(bF, i, j, k)
         {
@@ -245,9 +245,9 @@ int main(int argc, char *argv[])
     // Low level c++ implementation
 
     {
-        const int Nx = fvMsh.N().x() + 2;
-        const int Ny = fvMsh.N().y() + 2;
-        const int Nz = fvMsh.N().z() + 2;
+        const int Nx = fvMsh[0].N().x() + 2;
+        const int Ny = fvMsh[0].N().y() + 2;
+        const int Nz = fvMsh[0].N().z() + 2;
         const int Nt = Nx*Ny*Nz;
 
         auto F = new double[Nt][3];

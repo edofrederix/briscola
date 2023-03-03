@@ -59,6 +59,12 @@ public:
     // Construct from IOdictionary
     geometry(const IOdictionary&);
 
+    // Copy constructor
+    geometry(const geometry& geo);
+
+    // Transfer or copy constructor
+    geometry(geometry& geo, bool reuse);
+
     // Destructor
     ~geometry();
 

@@ -10,7 +10,7 @@ namespace briscola
 defineTypeNameAndDebug(decomposition, 0);
 defineRunTimeSelectionTable(decomposition, dictionary);
 
-void decomposition::updateGlobalData()
+void decomposition::updateGlobalData(const mesh& msh)
 {
     brickNumPerProc_.setSize(Pstream::nProcs());
     brickPartPerProc_.setSize(Pstream::nProcs());
@@ -24,10 +24,10 @@ void decomposition::updateGlobalData()
     Pstream::scatterList(brickNumPerProc_);
     Pstream::scatterList(brickPartPerProc_);
 
-    procMapPerBrick_.setSize(msh_.bricks().size());
-    partSizePerBrick_.setSize(msh_.bricks().size());
+    procMapPerBrick_.setSize(msh.bricks().size());
+    partSizePerBrick_.setSize(msh.bricks().size());
 
-    forAll(msh_.bricks(), bricki)
+    forAll(msh.bricks(), bricki)
     {
         procMapPerBrick_.set
         (
@@ -36,7 +36,7 @@ void decomposition::updateGlobalData()
         );
 
         partSizePerBrick_[bricki] =
-            cmptDivide(msh_.bricks()[bricki].N(), decompPerBrick()[bricki]);
+            cmptDivide(msh.bricks()[bricki].N(), decompPerBrick()[bricki]);
     }
 
     forAll(brickPartPerProc_, proci)
@@ -69,9 +69,9 @@ void decomposition::updateGlobalData()
 
     // Set the global processor map if the brick topology is structured
 
-    if (msh_.topology().structured())
+    if (msh.topology().structured())
     {
-        const labelBlock& brickMap = msh_.topology().map();
+        const labelBlock& brickMap = msh.topology().map();
 
         // Get the number of processors per brick in each direction. For
         // structured brick topologies, the bricks are aligned with the local
@@ -144,7 +144,6 @@ void decomposition::updateGlobalData()
 
 decomposition::decomposition(mesh& msh)
 :
-    msh_(msh),
     dict_(msh.dict().subDict("decomposition")),
     brickNumPerProc_(),
     brickPartPerProc_(),
@@ -158,7 +157,6 @@ decomposition::decomposition
     const decomposition& d
 )
 :
-    msh_(d.msh_),
     dict_(d.dict_),
     brickNumPerProc_(d.brickNumPerProc_),
     brickPartPerProc_(d.brickPartPerProc_),
@@ -191,17 +189,6 @@ autoPtr<decomposition> decomposition::New(mesh& msh)
     }
 
     return autoPtr<decomposition>(cstrIter()(msh));
-}
-
-const brick& decomposition::myBrick() const
-{
-    return msh_.bricks()[myBrickNum()];
-}
-
-
-labelVector decomposition::myBrickN() const
-{
-    return myBrick().N();
 }
 
 }

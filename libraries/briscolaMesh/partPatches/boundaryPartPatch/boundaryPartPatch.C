@@ -19,6 +19,11 @@ boundaryPartPatch::boundaryPartPatch(const mesh& msh, const dictionary& dict)
     partPatch(msh, dict)
 {}
 
+boundaryPartPatch::boundaryPartPatch(const boundaryPartPatch& pp)
+:
+    partPatch(pp)
+{}
+
 }
 
 }

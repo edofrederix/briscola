@@ -1,0 +1,59 @@
+#ifndef uniformMesh_H
+#define uniformMesh_H
+
+#include "rectilinearMesh.H"
+
+namespace Foam
+{
+
+namespace briscola
+{
+
+class uniformMesh
+:
+    public rectilinearMesh
+{
+    // Uniform cell size
+    vector cellSize_;
+
+    // Set uniform cell size
+    void setCellSize();
+
+public:
+
+    // Runtime type information
+    TypeName("uniform");
+
+    // Construct from IOdictionary
+    uniformMesh(const IOdictionary&);
+
+    // Transfer constructor, destroying argument
+    uniformMesh(autoPtr<mesh>&);
+
+    // Transfer or copy constructor
+    uniformMesh(uniformMesh& msh, bool reuse);
+
+    // Clone mesh
+    virtual autoPtr<mesh> clone() const
+    {
+        return autoPtr<mesh>(new uniformMesh(*this));
+    }
+
+    // Destructor
+    ~uniformMesh();
+
+    // Return the cell size vector
+    inline vector cellSize() const
+    {
+        return cellSize_;
+    }
+
+    //- Disallow default bitwise assignment
+    void operator=(const uniformMesh&);
+};
+
+}
+
+}
+
+#endif

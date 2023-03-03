@@ -16,8 +16,8 @@ void meshDirection<Type,MeshType>::setActiveCells()
 {
     setActiveCells
     (
-        fvMsh_.lowerSlavePatch(),
-        fvMsh_.upperSlavePatch()
+        fvMsh_.msh().lowerSlavePatch(),
+        fvMsh_.msh().upperSlavePatch()
     );
 }
 
@@ -76,8 +76,8 @@ void meshDirection<Type,MeshType>::updateActiveCells()
 
     setActiveCells
     (
-        briscola::cmptMax(fvMsh_.lowerSlavePatch(), lowerSlaveBoundary),
-        briscola::cmptMax(fvMsh_.upperSlavePatch(), upperSlaveBoundary)
+        briscola::cmptMax(fvMsh_.msh().lowerSlavePatch(), lowerSlaveBoundary),
+        briscola::cmptMax(fvMsh_.msh().upperSlavePatch(), upperSlaveBoundary)
     );
 }
 

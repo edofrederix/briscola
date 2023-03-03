@@ -27,6 +27,11 @@ lineEdge::lineEdge(const lineEdge& e)
     edge(e)
 {}
 
+lineEdge::lineEdge(const lineEdge& e, const face& f)
+:
+    edge(e,f)
+{}
+
 lineEdge::lineEdge(const edge& e)
 :
     edge(e)

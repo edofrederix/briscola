@@ -31,6 +31,15 @@ public:
     // Construct from bricks
     brickLinks(const brick&);
 
+    // Copy constructor
+    brickLinks(const brickLinks&);
+
+    // Clone brick links
+    inline autoPtr<brickLinks> clone() const
+    {
+        return autoPtr<brickLinks>(new brickLinks(*this));
+    }
+
     // Destructor
     virtual ~brickLinks();
 

@@ -40,6 +40,21 @@ public:
         const bool = false
     );
 
+    // Copy constructor
+    inline brickEdgeLink(const brickEdgeLink& link)
+    :
+        e0_(link.e0_),
+        e1_(link.e1_),
+        T_(link.T_),
+        periodic_(link.periodic_)
+    {}
+
+    // Clone link
+    inline autoPtr<brickEdgeLink> clone() const
+    {
+        return autoPtr<brickEdgeLink>(new brickEdgeLink(*this));
+    }
+
     // Destructor
     virtual ~brickEdgeLink();
 

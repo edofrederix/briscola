@@ -42,9 +42,6 @@ class mesh
     // Check if mesh directions are uniform
     labelVector uniform_;
 
-    // Global mesh size, only set on structured brick topologies
-    labelVector N_;
-
     // Generate brick-internal part patches
     void generateBrickInternalPartPatches();
 
@@ -69,28 +66,64 @@ class mesh
 
 public:
 
-    // Declare name of the class and its debug switch
-    ClassName("mesh");
+    // Runtime type information
+    TypeName("mesh");
+
+    // Declare run-time constructor selection tables
+    declareRunTimeSelectionTable
+    (
+        autoPtr,
+        mesh,
+        dictionary,
+        (autoPtr<mesh>& mshPtr),
+        (mshPtr)
+    );
 
     // Construct from IOdictionary
     explicit mesh(const IOdictionary&);
 
-    //- Disallow default bitwise copy construction
-    mesh(const mesh&);
+    // Copy constructor
+    mesh(const mesh& msh);
+
+    // Transfer constructor and reset arg
+    mesh(autoPtr<mesh>&);
+
+    // Transfer or copy constructor
+    mesh(mesh& msh, bool reuse);
+
+    // Clone mesh
+    virtual autoPtr<mesh> clone() const
+    {
+        return autoPtr<mesh>(new mesh(*this));
+    }
+
+    // Selector
+    static autoPtr<mesh> New(const IOdictionary&);
 
     // Destructor
-    ~mesh();
+    virtual ~mesh();
+
+    // Cast to derived type, if possible. Returns error otherwise.
+    template<class MeshType>
+    inline const MeshType& cast() const
+    {
+        const MeshType* mshPtr = dynamic_cast<const MeshType*>(this);
+
+        if (!mshPtr)
+        {
+            FatalErrorInFunction
+                << "Mesh cannot be cast to " << MeshType::typeName
+                << " because it is " << this->type()
+                << abort(FatalError);
+        }
+
+        return *mshPtr;
+    }
 
     // Mesh decomposition
     inline const decomposition& decomp() const
     {
         return decomp_;
-    }
-
-    // Global mesh size, only set on structured brick topologies
-    inline labelVector N() const
-    {
-        return N_;
     }
 
     // Access to the part patches
@@ -143,10 +176,6 @@ public:
 
     // Return uniform bools
     inline labelVector uniform() const { return uniform_; }
-
-    // For rectlinear directions, return the cell sizes. For non-rectilinear
-    // directions, return a zero list.
-    scalarList rectilinearCellSizes(const label) const;
 
     //- Disallow default bitwise assignment
     void operator=(const mesh&);

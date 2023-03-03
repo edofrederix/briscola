@@ -1,3 +1,5 @@
+#include "structuredMesh.H"
+
 namespace Foam
 {
 
@@ -50,9 +52,10 @@ void generalInfo(const fvMesh& fvMsh)
 
     Info<< "Global number of cells = " << nCells << endl;
 
-    if (fvMsh.topology().structured())
+    if (fvMsh.structured())
     {
-        Info<< "Global mesh shape = " << fvMsh.N() << endl;
+        Info<< "Global mesh shape = "
+            << fvMsh.msh().cast<structuredMesh>().N() << endl;
     }
 
     const colocatedScalarField& cv = fvMsh.metrics<colocated>().cellVolumes();
@@ -73,17 +76,17 @@ void generalInfo(const fvMesh& fvMsh)
     }
 
     Info<< "Brick topology is "
-        << (fvMsh.topology().structured() ? "structured" : "unstructured")
+        << (fvMsh.msh().topology().structured() ? "structured" : "unstructured")
         << endl;
 
-    if (fvMsh.topology().structured())
+    if (fvMsh.structured())
     {
         Info<< "Brick topology is "
-            << (fvMsh.topology().aligned() ? "aligned" : "unaligned")
+            << (fvMsh.msh().topology().aligned() ? "aligned" : "unaligned")
             << endl;
 
         Info<< "Brick topology is "
-            << (fvMsh.topology().rectilinear() ? "rectilinear" : "not rectilinear")
+            << (fvMsh.msh().topology().rectilinear() ? "rectilinear" : "not rectilinear")
             << endl;
     }
 }
@@ -91,11 +94,11 @@ void generalInfo(const fvMesh& fvMsh)
 void brickInfo(const fvMesh& fvMsh)
 {
     Info<< endl;
-    Info<< "Number of bricks = " << fvMsh.bricks().size() << ":" << endl;
+    Info<< "Number of bricks = " << fvMsh.msh().bricks().size() << ":" << endl;
 
-    forAll(fvMsh.bricks(), bricki)
+    forAll(fvMsh.msh().bricks(), bricki)
     {
-        const brick& br = fvMsh.bricks()[bricki];
+        const brick& br = fvMsh.msh().bricks()[bricki];
 
         Info<< "    Brick " << br.num() << " has " << br.N() << " = "
             << cmptProduct(br.N())  << " cells" << endl
@@ -111,7 +114,8 @@ void brickInfo(const fvMesh& fvMsh)
 
         if (Pstream::parRun())
         {
-            Info<< "        Decomposition vector = " << fvMsh.decomp().decompPerBrick()[bricki] << endl;
+            Info<< "        Decomposition vector = "
+                << fvMsh.msh().decomp().decompPerBrick()[bricki] << endl;
         }
     }
 }
@@ -119,11 +123,12 @@ void brickInfo(const fvMesh& fvMsh)
 void patchInfo(const fvMesh& fvMsh)
 {
     Info<< endl;
-    Info<< "Number of patches = " << fvMsh.patches().size() << ":" << endl;
+    Info<< "Number of patches = "
+        << fvMsh.msh().patches().size() << ":" << endl;
 
-    forAll(fvMsh.patches(), patchi)
+    forAll(fvMsh.msh().patches(), patchi)
     {
-        const patch& p = fvMsh.patches()[patchi];
+        const patch& p = fvMsh.msh().patches()[patchi];
 
         Info<< "    Patch " << p.name() << " is of type "
             << p.typeName() << " and has "
@@ -193,15 +198,23 @@ void parallelInfo(const fvMesh& fvMsh)
     if (Pstream::master())
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
     {
-        const label brickNum(fvMsh.decomp().brickNumPerProc()[proc]);
-        const labelVector brickPart(fvMsh.decomp().brickPartPerProc()[proc]);
-        const labelVector brickDecomp(fvMsh.decomp().decompPerBrick()[brickNum]);
+        const label brickNum(fvMsh.msh().decomp().brickNumPerProc()[proc]);
+
+        const labelVector brickPart
+        (
+            fvMsh.msh().decomp().brickPartPerProc()[proc]
+        );
+
+        const labelVector brickDecomp
+        (
+            fvMsh.msh().decomp().decompPerBrick()[brickNum]
+        );
 
         const dictionary& partDict = partDicts[proc];
 
         const labelVector partSize
         (
-            briscola::cmptDivide(fvMsh.bricks()[brickNum].N(),brickDecomp)
+            briscola::cmptDivide(fvMsh.msh().bricks()[brickNum].N(),brickDecomp)
         );
 
         Info<< "    Processor " << proc << " is in brick " << brickNum

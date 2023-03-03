@@ -1,8 +1,6 @@
 #include "arguments.H"
 #include "Time.H"
-
-#include "mesh.H"
-
+#include "uniformMesh.H"
 #include "lineEdge.H"
 
 using namespace Foam;
@@ -109,7 +107,16 @@ int main(int argc, char *argv[])
         )
     );
 
-    mesh msh(meshDict);
+    autoPtr<mesh> mshPtr(mesh::New(meshDict));
+
+    // Check upcasts. Should all work because mesh is uniform.
+
+    mshPtr->cast<uniformMesh>();
+    mshPtr->cast<rectilinearMesh>();
+    mshPtr->cast<structuredMesh>();
+    mshPtr->cast<unstructuredMesh>();
+
+    const uniformMesh& msh = mshPtr->cast<uniformMesh>();
 
     // Mesh should be structured, rectilinear in three directions and uniform in
     // three directions
@@ -301,9 +308,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    const scalarList dx(msh.rectilinearCellSizes(0));
-    const scalarList dy(msh.rectilinearCellSizes(1));
-    const scalarList dz(msh.rectilinearCellSizes(2));
+    const scalarList& dx = msh.cellSizes()[0];
+    const scalarList& dy = msh.cellSizes()[1];
+    const scalarList& dz = msh.cellSizes()[2];
 
     forAll(dx, i)
     {

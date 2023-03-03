@@ -156,7 +156,7 @@ meshField<Type,MeshType>::meshField
     oldTimePtr_(nullptr),
     boundaryConditions_()
 {
-    if (!fvMsh.topology().structured() && MeshType::numberOfDirections > 1)
+    if (!fvMsh.structured() && MeshType::numberOfDirections > 1)
     {
         FatalErrorInFunction
             << "Cannot create a " << MeshType::typeName << " field on an "

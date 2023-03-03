@@ -19,9 +19,6 @@ class decomposition
 {
 protected:
 
-    // Reference to the mesh
-    mesh& msh_;
-
     // Reference to the decomposition dictionary
     const dictionary& dict_;
 
@@ -45,16 +42,13 @@ private:
     // Global processor topology map, only set on structured brick topologies
     decompositionMap map_;
 
-    // Copy constructor
-    decomposition(const decomposition&);
-
     // Disallow default bitwise assignment
     void operator=(const decomposition&);
 
 protected:
 
     // Update global data
-    void updateGlobalData();
+    void updateGlobalData(const mesh&);
 
 public:
 
@@ -75,6 +69,12 @@ public:
 
     // Construct from mesh
     decomposition(mesh&);
+
+    // Copy constructor
+    decomposition(const decomposition&);
+
+    // Clone decomposition
+    virtual autoPtr<decomposition> clone() const = 0;
 
     // Selector
     static autoPtr<decomposition> New(mesh&);
@@ -98,9 +98,6 @@ public:
     // class
     virtual labelVector myBrickPart() const = 0;
 
-    // This processor's brick's shape
-    labelVector myBrickN() const;
-
     // This processor's part's shape
     labelVector myPartN() const
     {
@@ -118,9 +115,6 @@ public:
     {
         return decompPerBrick()[myBrickNum()];
     }
-
-    // This processor's brick
-    const brick& myBrick() const;
 
     // Brick numbers per processor
     inline const List<label>& brickNumPerProc() const

@@ -104,6 +104,16 @@ arcEdge::arcEdge(const arcEdge& e)
     start_(e.start_)
 {}
 
+arcEdge::arcEdge(const arcEdge& e, const face& f)
+:
+    edge(e,f),
+    center_(e.center_),
+    angle_(e.angle_),
+    axis_(e.axis_),
+    radius_(e.radius_),
+    start_(e.start_)
+{}
+
 tmp<vectorField> arcEdge::operator()(const scalarField& f) const
 {
     const scalar pi = constant::mathematical::pi;

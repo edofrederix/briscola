@@ -43,6 +43,21 @@ public:
     // Copy constructor
     arcEdge(const arcEdge&);
 
+    // Copy constructor
+    arcEdge(const arcEdge&, const face&);
+
+    // Clone edge
+    virtual autoPtr<edge> clone() const
+    {
+        return autoPtr<edge>(new arcEdge(*this));
+    }
+
+    // Clone edge with new face
+    virtual autoPtr<edge> clone(const face& f) const
+    {
+        return autoPtr<edge>(new arcEdge(*this, f));
+    }
+
     // Length of the edge
     virtual scalar length() const
     {

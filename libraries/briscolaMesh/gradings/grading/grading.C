@@ -15,10 +15,7 @@ grading::grading(const brick& b)
     b_(b)
 {}
 
-grading::grading
-(
-    const grading& g
-)
+grading::grading(const grading& g)
 :
     b_(g.b_)
 {}
@@ -26,10 +23,7 @@ grading::grading
 grading::~grading()
 {}
 
-autoPtr<grading> grading::New
-(
-    const brick& b
-)
+autoPtr<grading> grading::New(const brick& b)
 {
     word gradingType("none");
 

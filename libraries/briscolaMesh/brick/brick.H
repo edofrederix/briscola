@@ -22,8 +22,8 @@ class brick
 :
     public meshObject<geometry>
 {
-    // Reference to the brick dictionary
-    const dictionary& dict_;
+    // Copy of the brick dictionary
+    dictionary dict_;
 
     // Block of vertices
     labelBlock v_;
@@ -48,10 +48,13 @@ public:
     // Copy constructor
     brick(const brick&);
 
-    // Clone this brick (needed by PtrList)
-    inline autoPtr<brick> clone() const
+    // Copy constructor with reference to new geometry
+    brick(const brick&, const geometry&);
+
+    // Clone this brick with reference to new geometry
+    inline autoPtr<brick> clone(const geometry& geo) const
     {
-        return autoPtr<brick>(new brick(*this));
+        return autoPtr<brick>(new brick(*this, geo));
     }
 
     // Destructor

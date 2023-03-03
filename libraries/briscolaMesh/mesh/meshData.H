@@ -42,6 +42,9 @@ public:
     // Construct from IOdictionary
     meshData(const IOdictionary&);
 
+    // Copy constructor
+    meshData(const meshData& data);
+
     // Destructor
     ~meshData();
 

@@ -88,6 +88,15 @@ meshData::meshData(const IOdictionary& dict)
     checkData();
 }
 
+meshData::meshData(const meshData& data)
+:
+    dict_(data.dict_),
+    vertexData_(data.vertexData_),
+    brickData_(data.brickData_),
+    patchData_(data.patchData_),
+    edgeData_(data.edgeData_)
+{}
+
 meshData::~meshData()
 {}
 

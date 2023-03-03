@@ -16,9 +16,6 @@ class periodicPartPatch
 :
     public parallelPartPatch
 {
-    // Copy constructor
-    periodicPartPatch(const periodicPartPatch&);
-
     // Disallow default bitwise assignment
     void operator=(const periodicPartPatch&);
 
@@ -29,6 +26,15 @@ public:
 
     // Construct from components
     periodicPartPatch(const mesh& msh, const dictionary& dict);
+
+    // Copy constructor
+    periodicPartPatch(const periodicPartPatch&);
+
+    // Clone part patch
+    virtual autoPtr<partPatch> clone() const
+    {
+        return autoPtr<partPatch>(new periodicPartPatch(*this));
+    }
 };
 
 }

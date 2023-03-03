@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
 
     // Staggered fields only on structured meshes
 
-    if (fvMsh.topology().structured())
+    if (fvMsh.structured())
     {
         CREATEFIELD(label,Label,staggered)
         CREATEFIELD(scalar,Scalar,staggered)

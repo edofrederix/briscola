@@ -27,8 +27,23 @@ public:
     // Copy constructors
     lineEdge(const lineEdge&);
 
+    // Copy constructors with new face
+    lineEdge(const lineEdge&, const face&);
+
     // Copy constructor from edge, because lineEdge contains no data
     lineEdge(const edge&);
+
+    // Clone edge
+    virtual autoPtr<edge> clone() const
+    {
+        return autoPtr<edge>(new lineEdge(*this));
+    }
+
+    // Clone edge with new face
+    virtual autoPtr<edge> clone(const face& f) const
+    {
+        return autoPtr<edge>(new lineEdge(*this, f));
+    }
 
     // Length of the edge
     virtual scalar length() const

@@ -39,10 +39,13 @@ public:
     // Copy constructor
     face(const face&);
 
-    // Clone this face (needed by PtrList)
-    inline autoPtr<face> clone() const
+    // Copy constructor with reference to new brick
+    face(const face&, const brick&);
+
+    // Clone face with reference to new brick
+    inline autoPtr<face> clone(const brick& b) const
     {
-        return autoPtr<face>(new face(*this));
+        return autoPtr<face>(new face(*this, b));
     }
 
     // Destructor

@@ -71,10 +71,20 @@ face::face
     meshObject<brick>(f.parentBrick(), f.num()),
     v_(f.v_),
     N_(f.N_),
-    edges_()
-{
-    createEdges();
-}
+    edges_(f.edges_, *this)
+{}
+
+face::face
+(
+    const face& f,
+    const brick& b
+)
+:
+    meshObject<brick>(b, f.num()),
+    v_(f.v_),
+    N_(f.N_),
+    edges_(f.edges_, *this)
+{}
 
 face::~face()
 {}

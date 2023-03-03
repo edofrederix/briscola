@@ -18,12 +18,6 @@ class mesh;
 
 class partLevel
 {
-    // Reference to mesh object
-    const mesh& msh_;
-
-    // Pointer to the parent mesh part level
-    const partLevel* parentPtr_;
-
     // Part level number
     label l_;
 
@@ -43,27 +37,27 @@ class partLevel
     labelVector uniform_;
 
     // Calculate the mesh points
-    void calcPoints();
+    void calcPoints(const mesh&, const partLevel*);
 
     // Calculate ghost points of the mesh
-    void calcGhostPoints();
+    void calcGhostPoints(const mesh&);
 
 public:
 
-    // Construct from mesh and parent part level (if any)
+    // Construct from mesh and parent part level pointer (if any)
     partLevel(const mesh&, const partLevel*);
+
+    // Copy constructor
+    partLevel(const partLevel&);
+
+    // Clone this part level
+    inline autoPtr<partLevel> clone() const
+    {
+        return autoPtr<partLevel>(new partLevel(*this));
+    }
 
     // Destructor
     ~partLevel();
-
-    // Reference to the mesh
-    inline const mesh& msh() const { return msh_; }
-
-    // Reference to the parent mesh part level (unchecked!)
-    inline const partLevel& parent() const { return *parentPtr_; }
-
-    // Pointer to the parent mesh part level
-    inline const partLevel* parentPtr() { return parentPtr_; }
 
     // Part level number
     inline label partLevelNum() const { return l_; }

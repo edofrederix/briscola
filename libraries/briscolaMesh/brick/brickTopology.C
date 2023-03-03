@@ -330,6 +330,16 @@ brickTopology::brickTopology(const geometry& geo)
     }
 }
 
+brickTopology::brickTopology(const brickTopology& topo)
+:
+    geo_(topo.geo_),
+    links_(topo.links_),
+    structured_(topo.structured_),
+    aligned_(topo.aligned_),
+    rectilinear_(topo.rectilinear_),
+    map_(topo.map_)
+{}
+
 brickTopology::~brickTopology()
 {}
 

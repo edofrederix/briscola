@@ -1,5 +1,10 @@
 #include "mesh.H"
 
+#include "unstructuredMesh.H"
+#include "structuredMesh.H"
+#include "rectilinearMesh.H"
+#include "uniformMesh.H"
+
 namespace Foam
 {
 
@@ -7,6 +12,7 @@ namespace briscola
 {
 
 defineTypeNameAndDebug(mesh, 0);
+defineRunTimeSelectionTable(mesh, dictionary);
 
 void mesh::generateBrickInternalPartPatches()
 {
@@ -438,44 +444,6 @@ mesh::mesh(const IOdictionary& dict)
     lowerBoundaryPatch_(zeroXYZ),
     upperBoundaryPatch_(zeroXYZ)
 {
-    // Compute global mesh size on structured brick topologies
-
-    if (topology().structured())
-    {
-        const brickTopologyMap& map = topology().map();
-
-        List<bool> x(map.l(), false);
-        List<bool> y(map.m(), false);
-        List<bool> z(map.n(), false);
-
-        N_ = zeroXYZ;
-
-        forAllBlock(map, i, j, k)
-        {
-            if (!x[i] && map(i,j,k) > -1)
-            {
-                N_.x() += bricks()[map(i,j,k)].N().x();
-                x[i] = true;
-            }
-
-            if (!y[j] && map(i,j,k) > -1)
-            {
-                N_.y() += bricks()[map(i,j,k)].N().y();
-                y[j] = true;
-            }
-
-            if (!z[k] && map(i,j,k) > -1)
-            {
-                N_.z() += bricks()[map(i,j,k)].N().z();
-                z[k] = true;
-            }
-        }
-    }
-    else
-    {
-        N_ = -unitXYZ;
-    }
-
     generatePartPatches();
     generatePartLevels();
 
@@ -509,112 +477,97 @@ mesh::mesh(const IOdictionary& dict)
     }
 }
 
-mesh::~mesh()
+mesh::mesh(const mesh& msh)
+:
+    geometry(msh),
+    PtrList<partLevel>(msh),
+    decomp_(msh.decomp_),
+    partPatches_(msh.partPatches_),
+    lowerMasterPatch_(msh.lowerMasterPatch_),
+    upperMasterPatch_(msh.upperMasterPatch_),
+    lowerBoundaryPatch_(msh.lowerBoundaryPatch_),
+    upperBoundaryPatch_(msh.upperBoundaryPatch_),
+    structured_(msh.structured_),
+    rectilinear_(msh.rectilinear_),
+    uniform_(msh.uniform_)
 {}
 
-scalarList mesh::rectilinearCellSizes(const label dir) const
+mesh::mesh(autoPtr<mesh>& mshPtr)
+:
+    geometry(mshPtr(), true),
+    PtrList<partLevel>(mshPtr(), true),
+    decomp_(mshPtr->decomp_, true),
+    partPatches_(mshPtr->partPatches_, true),
+    lowerMasterPatch_(mshPtr->lowerMasterPatch_),
+    upperMasterPatch_(mshPtr->upperMasterPatch_),
+    lowerBoundaryPatch_(mshPtr->lowerBoundaryPatch_),
+    upperBoundaryPatch_(mshPtr->upperBoundaryPatch_),
+    structured_(mshPtr->structured_),
+    rectilinear_(mshPtr->rectilinear_),
+    uniform_(mshPtr->uniform_)
 {
-    if (rectilinear_[dir])
+    mshPtr.clear();
+}
+
+mesh::mesh(mesh& msh, bool reuse)
+:
+    geometry(msh, reuse),
+    PtrList<partLevel>(msh, reuse),
+    decomp_(msh.decomp_, reuse),
+    partPatches_(msh.partPatches_, reuse),
+    lowerMasterPatch_(msh.lowerMasterPatch_),
+    upperMasterPatch_(msh.upperMasterPatch_),
+    lowerBoundaryPatch_(msh.lowerBoundaryPatch_),
+    upperBoundaryPatch_(msh.upperBoundaryPatch_),
+    structured_(msh.structured_),
+    rectilinear_(msh.rectilinear_),
+    uniform_(msh.uniform_)
+{}
+
+autoPtr<mesh> mesh::New(const IOdictionary& dict)
+{
+    // Construct the mesh as primitive type
+
+    autoPtr<mesh> mshPtr(new mesh(dict));
+
+    // Based on its properties, select the appropriate derived type
+
+    word meshType;
+
+    if (mshPtr->uniform() == unitXYZ)
     {
-        const decompositionMap& map = decomp_->map();
-
-        scalarList sizes(N_[dir], 0.0);
-
-        labelVector base = units[dir];
-        label cursor = 0;
-
-        for (int i = 0; i < map.shape()[dir]; i++)
-        {
-            const label proc = map(base*i);
-
-            if (proc == Pstream::myProcNo())
-            {
-                scalarList partSizes
-                (
-                    this->operator[](0).rectilinearCellSizes(dir)
-                );
-
-                if (proc == Pstream::masterNo())
-                {
-                    // Copy directly
-
-                    forAll(partSizes, j)
-                    {
-                        sizes[cursor+j] = partSizes[j];
-                    }
-
-                    cursor += partSizes.size();
-                }
-                else
-                {
-                    // Send to master
-
-                    OPstream send
-                    (
-                        Pstream::commsTypes::blocking,
-                        Pstream::masterNo()
-                    );
-
-                    send << partSizes;
-                }
-            }
-            else if (Pstream::master())
-            {
-                // Receive from slave
-
-                scalarList partSizes;
-
-                IPstream recv
-                (
-                    Pstream::commsTypes::blocking,
-                    proc
-                );
-
-                recv >> partSizes;
-
-                forAll(partSizes, j)
-                {
-                    sizes[cursor+j] = partSizes[j];
-                }
-
-                cursor += partSizes.size();
-            }
-        }
-
-        // Send back to slaves
-
-        if (Pstream::master())
-        {
-            for (int proc = 0; proc < Pstream::nProcs(); proc++)
-            if (proc != Pstream::masterNo())
-            {
-                OPstream send
-                (
-                    Pstream::commsTypes::blocking,
-                    proc
-                );
-
-                send << sizes;
-            }
-        }
-        else
-        {
-            IPstream recv
-            (
-                Pstream::commsTypes::blocking,
-                Pstream::masterNo()
-            );
-
-            recv >> sizes;
-        }
-
-        return sizes;
+        meshType = uniformMesh::typeName;
+    }
+    else if (mshPtr->rectilinear() == unitXYZ)
+    {
+        meshType = rectilinearMesh::typeName;
+    }
+    else if (mshPtr->structured())
+    {
+        meshType = structuredMesh::typeName;
     }
     else
     {
-        return scalarList();
+        meshType = unstructuredMesh::typeName;
     }
+
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(meshType);
+
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    {
+        FatalErrorInFunction
+            << "Unknown mesh type " << meshType << endl
+            << ". Valid mesh types are" << endl
+            << dictionaryConstructorTablePtr_->sortedToc()
+            << exit(FatalError);
+    }
+
+    return autoPtr<mesh>(cstrIter()(mshPtr));
 }
+
+mesh::~mesh()
+{}
 
 }
 
