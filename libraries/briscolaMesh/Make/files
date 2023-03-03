@@ -1,5 +1,5 @@
-meshData.C
-meshObject.C
+mesh/meshData.C
+mesh/meshObject.C
 
 edges/edge/edge.C
 edges/edgeKey/edgeKey.C
@@ -25,7 +25,7 @@ brick/brickTopologyMap.C
 patch/patch.C
 patchPair/patchPair.C
 
-geometry.C
+geometry/geometry.C
 
 decompositions/decomposition/decomposition.C
 decompositions/decomposition/decompositionMap.C
@@ -42,6 +42,6 @@ partPatches/boundaryPartPatch/boundaryPartPatch.C
 partLevelPoints/partLevelPoints.C
 partLevel/partLevel.C
 
-mesh.C
+mesh/mesh.C
 
 LIB = $(FOAM_USER_LIBBIN)/libbriscolaMesh
