@@ -3,8 +3,8 @@
 TEST=IO
 
 FORMATS=(ascii binary)
-MESHES=(box pipe bigbox)
-NPROCS=(10 5 16)
+MESHES=(box pipe bigbox 2x 2y 2z)
+NPROCS=(4 5 16 4 4 4)
 
 if [ -f build/Test-$TEST ]; then
 
@@ -16,7 +16,7 @@ if [ -f build/Test-$TEST ]; then
             NPROC=${NPROCS[I]}
 
             cp system/controlDict.$FORMAT system/controlDict
-            cp system/briscolaMeshDict.$MESH system/briscolaMeshDict
+            cp ../meshDicts/briscolaMeshDict.$MESH system/briscolaMeshDict
 
             OUTPUT=$(mpirun -np $NPROC --oversubscribe ./build/Test-$TEST -parallel > /dev/null 2>&1)
 

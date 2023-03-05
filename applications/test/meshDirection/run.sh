@@ -2,8 +2,8 @@
 
 TEST=meshDirection
 
-MESHES=(box bigbox pipe)
-NPROCS=(4 16 5)
+MESHES=(box bigbox pipe 2x 2y 2z)
+NPROCS=(4 16 5 4 4 4)
 
 if [ -f build/Test-$TEST ]; then
 
@@ -12,7 +12,7 @@ if [ -f build/Test-$TEST ]; then
         MESH=${MESHES[I]}
         NPROC=${NPROCS[I]}
 
-        cp system/briscolaMeshDict.$MESH system/briscolaMeshDict
+        cp ../meshDicts/briscolaMeshDict.$MESH system/briscolaMeshDict
 
         OUTPUT=$(mpirun -np $NPROC --oversubscribe ./build/Test-$TEST -parallel > /dev/null 2>&1)
 

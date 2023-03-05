@@ -1,8 +1,8 @@
 #!/bin/bash
 
 TEST=boundaryConditions
-MESHES=(2d 3d)
-NPROCS=(8 16)
+MESHES=(box bigbox 2x 2y 2z)
+NPROCS=(4 16 4 4 4)
 
 rm -f system/briscolaMeshDict
 
@@ -13,7 +13,7 @@ if [ -f build/Test-$TEST ]; then
         MESH=${MESHES[I]}
         NPROC=${NPROCS[I]}
 
-        cp system/briscolaMeshDict.$MESH system/briscolaMeshDict
+        cp ../meshDicts/briscolaMeshDict.$MESH system/briscolaMeshDict
 
         OUTPUT=$(mpirun -np $NPROC --oversubscribe ./build/Test-$TEST -parallel > /dev/null 2>&1)
 
@@ -21,11 +21,11 @@ if [ -f build/Test-$TEST ]; then
 
         if [ "$RET" != "0" ]; then
 
-            echo Test $TEST failed
+            echo Test $TEST mesh = $MESH failed
 
         else
 
-            echo Test $TEST succeeded
+            echo Test $TEST mesh = $MESH succeeded
 
         fi
 
