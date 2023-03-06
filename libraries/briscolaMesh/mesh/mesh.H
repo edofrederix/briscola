@@ -103,6 +103,13 @@ public:
     // Destructor
     virtual ~mesh();
 
+    // Check if cast to derived type is possible
+    template<class MeshType>
+    inline bool castable() const
+    {
+        return dynamic_cast<const MeshType*>(this);
+    }
+
     // Cast to derived type, if possible. Returns error otherwise.
     template<class MeshType>
     inline const MeshType& cast() const

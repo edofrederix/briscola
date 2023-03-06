@@ -194,7 +194,7 @@ boundaryCondition<Type,MeshType>::globalBaseType
     if (!fvMsh.msh().topology().rectilinear())
     {
         FatalErrorInFunction
-            << "Mesh is not rectlinear" << endl
+            << "Brick topology is not rectlinear" << endl
             << abort(FatalError);
 
         return boundaryConditionBaseType::DUMMYBC;

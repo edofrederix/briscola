@@ -111,10 +111,45 @@ int main(int argc, char *argv[])
 
     // Check upcasts. Should all work because mesh is uniform.
 
-    mshPtr->cast<uniformMesh>();
-    mshPtr->cast<rectilinearMesh>();
-    mshPtr->cast<structuredMesh>();
-    mshPtr->cast<unstructuredMesh>();
+    if (mshPtr->castable<uniformMesh>())
+    {
+        mshPtr->cast<uniformMesh>();
+    }
+    else
+    {
+        FatalErrorInFunction
+            << "Test 1a failed" << endl << abort(FatalError);
+    }
+
+    if (mshPtr->castable<rectilinearMesh>())
+    {
+        mshPtr->cast<rectilinearMesh>();
+    }
+    else
+    {
+        FatalErrorInFunction
+            << "Test 1b failed" << endl << abort(FatalError);
+    }
+
+    if (mshPtr->castable<structuredMesh>())
+    {
+        mshPtr->cast<structuredMesh>();
+    }
+    else
+    {
+        FatalErrorInFunction
+            << "Test 1c failed" << endl << abort(FatalError);
+    }
+
+    if (mshPtr->castable<unstructuredMesh>())
+    {
+        mshPtr->cast<unstructuredMesh>();
+    }
+    else
+    {
+        FatalErrorInFunction
+            << "Test 1d failed" << endl << abort(FatalError);
+    }
 
     const uniformMesh& msh = mshPtr->cast<uniformMesh>();
 
