@@ -2,8 +2,8 @@
 
 TEST=meshDirection
 
-MESHES=(box bigbox pipe 2x 2y 2z)
-NPROCS=(4 16 5 4 4 4)
+MESHES=(box bigbox pipe pipeGrad 2x 2y 2z)
+NPROCS=(4 16 5 5 4 4 4)
 
 if [ -f build/Test-$TEST ]; then
 

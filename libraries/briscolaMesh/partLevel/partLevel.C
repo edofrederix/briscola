@@ -118,6 +118,7 @@ void partLevel::calcGhostPoints(const mesh& msh)
 
         const labelVector S(pointBoundaryStart(bo));
         const labelVector E(pointBoundaryEnd(bo));
+        const labelVector N(pointBoundaryN(bo));
 
         neighborProcNums[patchi] =
             readLabel(p.dict().lookup("neighborProcNum"));
