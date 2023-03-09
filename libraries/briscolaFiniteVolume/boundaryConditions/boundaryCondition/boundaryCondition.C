@@ -374,11 +374,23 @@ makeBoundaryCondition(scalar,staggered)
 makeBoundaryCondition(faceScalar,colocated)
 makeBoundaryCondition(faceScalar,staggered)
 
+makeBoundaryCondition(edgeScalar,colocated)
+makeBoundaryCondition(edgeScalar,staggered)
+
+makeBoundaryCondition(vertexScalar,colocated)
+makeBoundaryCondition(vertexScalar,staggered)
+
 makeBoundaryCondition(vector,colocated)
 makeBoundaryCondition(vector,staggered)
 
 makeBoundaryCondition(faceVector,colocated)
 makeBoundaryCondition(faceVector,staggered)
+
+makeBoundaryCondition(edgeVector,colocated)
+makeBoundaryCondition(edgeVector,staggered)
+
+makeBoundaryCondition(vertexVector,colocated)
+makeBoundaryCondition(vertexVector,staggered)
 
 makeBoundaryCondition(tensor,colocated)
 makeBoundaryCondition(tensor,staggered)

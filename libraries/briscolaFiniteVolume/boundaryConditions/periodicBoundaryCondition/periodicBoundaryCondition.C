@@ -93,38 +93,8 @@ void periodicBoundaryCondition<Type,MeshType>::initEvaluate
     }
 }
 
-makeBoundaryConditionType(periodic,label,colocated)
-makeBoundaryConditionType(periodic,label,staggered)
+makeBoundaryConditionTypes(periodic)
 
-makeBoundaryConditionType(periodic,scalar,colocated)
-makeBoundaryConditionType(periodic,scalar,staggered)
-
-makeBoundaryConditionType(periodic,faceScalar,colocated)
-makeBoundaryConditionType(periodic,faceScalar,staggered)
-
-makeBoundaryConditionType(periodic,vector,colocated)
-makeBoundaryConditionType(periodic,vector,staggered)
-
-makeBoundaryConditionType(periodic,faceVector,colocated)
-makeBoundaryConditionType(periodic,faceVector,staggered)
-
-makeBoundaryConditionType(periodic,tensor,colocated)
-makeBoundaryConditionType(periodic,tensor,staggered)
-
-makeBoundaryConditionType(periodic,sphericalTensor,colocated)
-makeBoundaryConditionType(periodic,sphericalTensor,staggered)
-
-makeBoundaryConditionType(periodic,symmTensor,colocated)
-makeBoundaryConditionType(periodic,symmTensor,staggered)
-
-makeBoundaryConditionType(periodic,diagTensor,colocated)
-makeBoundaryConditionType(periodic,diagTensor,staggered)
-
-makeBoundaryConditionType(periodic,stencil,colocated)
-makeBoundaryConditionType(periodic,stencil,staggered)
-
-makeBoundaryConditionType(periodic,diagStencil,colocated)
-makeBoundaryConditionType(periodic,diagStencil,staggered)
 
 }
 

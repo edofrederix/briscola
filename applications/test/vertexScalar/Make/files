@@ -1,0 +1,3 @@
+Test-vertexScalar.C
+
+EXE = build/Test-vertexScalar

@@ -234,38 +234,8 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate
     }
 }
 
-makeBoundaryConditionType(parallel,label,colocated)
-makeBoundaryConditionType(parallel,label,staggered)
+makeBoundaryConditionTypes(parallel)
 
-makeBoundaryConditionType(parallel,scalar,colocated)
-makeBoundaryConditionType(parallel,scalar,staggered)
-
-makeBoundaryConditionType(parallel,faceScalar,colocated)
-makeBoundaryConditionType(parallel,faceScalar,staggered)
-
-makeBoundaryConditionType(parallel,vector,colocated)
-makeBoundaryConditionType(parallel,vector,staggered)
-
-makeBoundaryConditionType(parallel,faceVector,colocated)
-makeBoundaryConditionType(parallel,faceVector,staggered)
-
-makeBoundaryConditionType(parallel,tensor,colocated)
-makeBoundaryConditionType(parallel,tensor,staggered)
-
-makeBoundaryConditionType(parallel,sphericalTensor,colocated)
-makeBoundaryConditionType(parallel,sphericalTensor,staggered)
-
-makeBoundaryConditionType(parallel,symmTensor,colocated)
-makeBoundaryConditionType(parallel,symmTensor,staggered)
-
-makeBoundaryConditionType(parallel,diagTensor,colocated)
-makeBoundaryConditionType(parallel,diagTensor,staggered)
-
-makeBoundaryConditionType(parallel,stencil,colocated)
-makeBoundaryConditionType(parallel,stencil,staggered)
-
-makeBoundaryConditionType(parallel,diagStencil,colocated)
-makeBoundaryConditionType(parallel,diagStencil,staggered)
 
 }
 

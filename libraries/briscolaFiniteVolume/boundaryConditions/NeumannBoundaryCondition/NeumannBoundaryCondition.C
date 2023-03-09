@@ -124,38 +124,8 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate
     }
 }
 
-makeBoundaryConditionType(Neumann,label,colocated)
-makeBoundaryConditionType(Neumann,label,staggered)
+makeBoundaryConditionTypes(Neumann)
 
-makeBoundaryConditionType(Neumann,scalar,colocated)
-makeBoundaryConditionType(Neumann,scalar,staggered)
-
-makeBoundaryConditionType(Neumann,faceScalar,colocated)
-makeBoundaryConditionType(Neumann,faceScalar,staggered)
-
-makeBoundaryConditionType(Neumann,vector,colocated)
-makeBoundaryConditionType(Neumann,vector,staggered)
-
-makeBoundaryConditionType(Neumann,faceVector,colocated)
-makeBoundaryConditionType(Neumann,faceVector,staggered)
-
-makeBoundaryConditionType(Neumann,tensor,colocated)
-makeBoundaryConditionType(Neumann,tensor,staggered)
-
-makeBoundaryConditionType(Neumann,sphericalTensor,colocated)
-makeBoundaryConditionType(Neumann,sphericalTensor,staggered)
-
-makeBoundaryConditionType(Neumann,symmTensor,colocated)
-makeBoundaryConditionType(Neumann,symmTensor,staggered)
-
-makeBoundaryConditionType(Neumann,diagTensor,colocated)
-makeBoundaryConditionType(Neumann,diagTensor,staggered)
-
-makeBoundaryConditionType(Neumann,stencil,colocated)
-makeBoundaryConditionType(Neumann,stencil,staggered)
-
-makeBoundaryConditionType(Neumann,diagStencil,colocated)
-makeBoundaryConditionType(Neumann,diagStencil,staggered)
 
 }
 

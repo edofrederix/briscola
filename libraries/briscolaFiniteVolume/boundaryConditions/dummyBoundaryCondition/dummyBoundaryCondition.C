@@ -55,38 +55,8 @@ void dummyBoundaryCondition<Type,MeshType>::evaluate
 )
 {}
 
-makeBoundaryConditionType(dummy,label,colocated)
-makeBoundaryConditionType(dummy,label,staggered)
+makeBoundaryConditionTypes(dummy)
 
-makeBoundaryConditionType(dummy,scalar,colocated)
-makeBoundaryConditionType(dummy,scalar,staggered)
-
-makeBoundaryConditionType(dummy,faceScalar,colocated)
-makeBoundaryConditionType(dummy,faceScalar,staggered)
-
-makeBoundaryConditionType(dummy,vector,colocated)
-makeBoundaryConditionType(dummy,vector,staggered)
-
-makeBoundaryConditionType(dummy,faceVector,colocated)
-makeBoundaryConditionType(dummy,faceVector,staggered)
-
-makeBoundaryConditionType(dummy,tensor,colocated)
-makeBoundaryConditionType(dummy,tensor,staggered)
-
-makeBoundaryConditionType(dummy,sphericalTensor,colocated)
-makeBoundaryConditionType(dummy,sphericalTensor,staggered)
-
-makeBoundaryConditionType(dummy,symmTensor,colocated)
-makeBoundaryConditionType(dummy,symmTensor,staggered)
-
-makeBoundaryConditionType(dummy,diagTensor,colocated)
-makeBoundaryConditionType(dummy,diagTensor,staggered)
-
-makeBoundaryConditionType(dummy,stencil,colocated)
-makeBoundaryConditionType(dummy,stencil,staggered)
-
-makeBoundaryConditionType(dummy,diagStencil,colocated)
-makeBoundaryConditionType(dummy,diagStencil,staggered)
 
 }
 
