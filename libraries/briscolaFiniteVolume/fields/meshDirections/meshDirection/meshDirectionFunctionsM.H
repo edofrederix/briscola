@@ -1,3 +1,5 @@
+// Macros to iterative over all active cells
+
 #define forAllCells(DIR, I, J, K)                                               \
     for (int I = (DIR).S().x(); I < (DIR).E().x(); I++)                         \
     for (int J = (DIR).S().y(); J < (DIR).E().y(); J++)                         \
@@ -7,6 +9,18 @@
     for (int K = (DIR).S().z(); K < (DIR).E().z(); K++)                         \
     for (int J = (DIR).S().y(); J < (DIR).E().y(); J++)                         \
     for (int I = (DIR).S().x(); I < (DIR).E().x(); I++)                         \
+
+// Macros to iterate over all internal cells, including inactive ones
+
+#define forAllInternalCells(DIR, I, J, K)                                       \
+    for (int I = 0; I < (DIR).Ni().x(); I++)                                    \
+    for (int J = 0; J < (DIR).Ni().y(); J++)                                    \
+    for (int K = 0; K < (DIR).Ni().z(); K++)
+
+#define forAllInternalCellsReversed(DIR, I, J, K)                               \
+    for (int K = 0; K < (DIR).Ni().z(); K++)                                    \
+    for (int J = 0; J < (DIR).Ni().y(); J++)                                    \
+    for (int I = 0; I < (DIR).Ni().x(); I++)
 
 #define UNARY_FUNCTION(ReturnType, Type1, Func)                                 \
                                                                                 \

@@ -63,12 +63,12 @@ midPointFaceGradientScheme<Type,MeshType>::faceGrad
             G(i,j,k) =
                 FaceSpace<Type>
                 (
-                    f(i,j,k)-f(i-1,j,  k  ),
-                  - f(i,j,k)+f(i+1,j,  k  ),
-                    f(i,j,k)-f(i,  j-1,k  ),
-                  - f(i,j,k)+f(i,  j+1,k  ),
-                    f(i,j,k)-f(i,  j,  k-1),
-                  - f(i,j,k)+f(i,  j,  k+1)
+                    f(i-1,j,  k  ) - f(i,j,k),
+                    f(i+1,j,  k  ) - f(i,j,k),
+                    f(i,  j-1,k  ) - f(i,j,k),
+                    f(i,  j+1,k  ) - f(i,j,k),
+                    f(i,  j,  k-1) - f(i,j,k),
+                    f(i,  j,  k+1) - f(i,j,k)
                 )
               * fd(i,j,k);
         }

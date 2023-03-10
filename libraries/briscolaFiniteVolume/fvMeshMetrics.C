@@ -21,22 +21,22 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 
     fc = Zero;
 
-    forAll(fvMsh_, leveli)
+    forAll(fvMsh_, l)
     {
-        const partLevelPoints& points = fvMsh_[leveli].points();
+        const partLevelPoints& points = fvMsh_[l].points();
 
         // For each cell the face centers are calculated from the average of the
         // four face vertices (Wesseling, p. 483).
 
-        forAll(fc[leveli], d)
+        forAll(fc[l], d)
         {
-            meshDirection<faceVector,MeshType>& fcld = fc[leveli][d];
+            meshDirection<faceVector,MeshType>& fcld = fc[l][d];
 
             const vector shift = MeshType::shift[d];
 
-            forAllCells(fcld, i, j, k)
+            forAllInternalCells(fcld, i, j, k)
             {
-                vector ijk(i+shift.x(),j+shift.y(),k+shift.z());
+                vector ijk(vector(i,j,k)+shift);
 
                 fcld(i,j,k).left() =
                     0.25
@@ -94,6 +94,161 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
             }
         }
     }
+
+    fc.correctParallelBoundaryConditions();
+}
+
+template<class MeshType>
+void fvMeshMetrics<MeshType>::calculateEdgeCenters()
+{
+    meshField<edgeVector,MeshType>& ec = edgeCenters_;
+
+    ec = Zero;
+
+    forAll(fvMsh_, l)
+    {
+        const partLevelPoints& points = fvMsh_[l].points();
+
+        forAll(ec[l], d)
+        {
+            meshDirection<edgeVector,MeshType>& ecld = ec[l][d];
+
+            const vector shift = MeshType::shift[d];
+
+            forAllInternalCells(ecld, i, j, k)
+            {
+                vector ijk(vector(i,j,k)+shift);
+
+                // Edges in x
+
+                ecld(i,j,k).x0() =
+                    0.5
+                  * (
+                        points.interp(ijk)
+                      + points.interp(ijk+vector(unitX))
+                    );
+
+                ecld(i,j,k).x1() =
+                    0.5
+                  * (
+                        points.interp(ijk+vector(unitY))
+                      + points.interp(ijk+vector(unitXY))
+                    );
+
+                ecld(i,j,k).x2() =
+                    0.5
+                  * (
+                        points.interp(ijk+vector(unitZ))
+                      + points.interp(ijk+vector(unitXZ))
+                    );
+
+                ecld(i,j,k).x3() =
+                    0.5
+                  * (
+                        points.interp(ijk+vector(unitYZ))
+                      + points.interp(ijk+vector(unitXYZ))
+                    );
+
+                // Edges in y
+
+                ecld(i,j,k).y0() =
+                    0.5
+                  * (
+                        points.interp(ijk)
+                      + points.interp(ijk+vector(unitY))
+                    );
+
+                ecld(i,j,k).y1() =
+                    0.5
+                  * (
+                        points.interp(ijk+vector(unitX))
+                      + points.interp(ijk+vector(unitXY))
+                    );
+
+                ecld(i,j,k).y2() =
+                    0.5
+                  * (
+                        points.interp(ijk+vector(unitZ))
+                      + points.interp(ijk+vector(unitYZ))
+                    );
+
+                ecld(i,j,k).y3() =
+                    0.5
+                  * (
+                        points.interp(ijk+vector(unitXZ))
+                      + points.interp(ijk+vector(unitXYZ))
+                    );
+
+                // Edges in z
+
+                ecld(i,j,k).z0() =
+                    0.5
+                  * (
+                        points.interp(ijk)
+                      + points.interp(ijk+vector(unitZ))
+                    );
+
+                ecld(i,j,k).z1() =
+                    0.5
+                  * (
+                        points.interp(ijk+vector(unitX))
+                      + points.interp(ijk+vector(unitXZ))
+                    );
+
+                ecld(i,j,k).z2() =
+                    0.5
+                  * (
+                        points.interp(ijk+vector(unitY))
+                      + points.interp(ijk+vector(unitYZ))
+                    );
+
+                ecld(i,j,k).z3() =
+                    0.5
+                  * (
+                        points.interp(ijk+vector(unitXY))
+                      + points.interp(ijk+vector(unitXYZ))
+                    );
+            }
+        }
+    }
+
+    ec.correctParallelBoundaryConditions();
+}
+
+template<class MeshType>
+void fvMeshMetrics<MeshType>::calculateVertexCenters()
+{
+    meshField<vertexVector,MeshType>& vc = vertexCenters_;
+
+    vc = Zero;
+
+    forAll(fvMsh_, l)
+    {
+        const partLevelPoints& points = fvMsh_[l].points();
+
+        forAll(vc[l], d)
+        {
+            meshDirection<vertexVector,MeshType>& vcld = vc[l][d];
+
+            const vector shift = MeshType::shift[d];
+
+            forAllInternalCells(vcld, i, j, k)
+            {
+                vector ijk(vector(i,j,k)+shift);
+
+                vcld(i,j,k).v0() = points.interp(ijk);
+                vcld(i,j,k).v1() = points.interp(ijk+vector(unitX));
+                vcld(i,j,k).v2() = points.interp(ijk+vector(unitY));
+                vcld(i,j,k).v3() = points.interp(ijk+vector(unitXY));
+                vcld(i,j,k).v4() = points.interp(ijk+vector(unitZ));
+                vcld(i,j,k).v5() = points.interp(ijk+vector(unitXZ));
+                vcld(i,j,k).v6() = points.interp(ijk+vector(unitYZ));
+                vcld(i,j,k).v7() = points.interp(ijk+vector(unitXYZ));
+            }
+        }
+    }
+
+    vc.correctParallelBoundaryConditions();
 }
 
 template<class MeshType>
@@ -105,29 +260,30 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
 
     fn = Zero;
     fa = Zero;
+    fan = Zero;
 
-    forAll(fn, leveli)
+    forAll(fn, l)
     {
-        const partLevelPoints& points = fvMsh_[leveli].points();
+        const partLevelPoints& points = fvMsh_[l].points();
 
         // For each cell the lower face normal in three directions is calculated
         // by taking half the cross product of the two vectors connecting the
         // diagonal vertex pairs (Wessling, p. 483). The normal's magnitude
         // equals the face area.
 
-        forAll(fn[leveli], d)
+        forAll(fn[l], d)
         {
-            meshDirection<faceVector,MeshType>& fnld = fn[leveli][d];
-            meshDirection<faceScalar,MeshType>& fald = fa[leveli][d];
+            meshDirection<faceVector,MeshType>& fnld = fn[l][d];
+            meshDirection<faceScalar,MeshType>& fald = fa[l][d];
 
             const vector shift = MeshType::shift[d];
 
-            forAllCells(fnld, i, j, k)
+            forAllInternalCells(fnld, i, j, k)
             {
-                vector ijk(i+shift.x(),j+shift.y(),k+shift.z());
+                vector ijk(vector(i,j,k)+shift);
 
                 const vector left =
-                    0.5
+                  - 0.5
                   * (
                         (
                             points.interp(ijk+vector(unitYZ))
@@ -153,7 +309,7 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
                     );
 
                 const vector bottom =
-                    0.5
+                  - 0.5
                   * (
                         (
                             points.interp(ijk+vector(unitZ))
@@ -179,7 +335,7 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
                     );
 
                 const vector aft =
-                    0.5
+                  - 0.5
                   * (
                         (
                             points.interp(ijk+vector(unitXY))
@@ -229,7 +385,12 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
         }
     }
 
+    fa.correctCommBoundaryConditions();
+    fn.correctCommBoundaryConditions();
+
     fan = fa*fn;
+
+    fan.correctCommBoundaryConditions();
 }
 
 template<class MeshType>
@@ -237,21 +398,27 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
 {
     meshField<vector,MeshType>& cc = cellCenters_;
 
+    cc = Zero;
+
+    const meshField<faceVector,MeshType>& fc = faceCenters_;
+    const meshField<edgeVector,MeshType>& ec = edgeCenters_;
+    const meshField<vertexVector,MeshType>& vc = vertexCenters_;
+
     // First, set internal cell centers from the point coordinates
 
-    forAll(cc, leveli)
+    forAll(cc, l)
     {
-        const partLevelPoints& points = fvMsh_[leveli].points();
+        const partLevelPoints& points = fvMsh_[l].points();
 
-        forAll(cc[leveli], d)
+        forAll(cc[l], d)
         {
-            meshDirection<vector,MeshType>& ccld = cc[leveli][d];
+            meshDirection<vector,MeshType>& ccld = cc[l][d];
 
             const vector shift = MeshType::shift[d];
 
-            forAllCells(ccld, i, j, k)
+            forAllInternalCells(ccld, i, j, k)
             {
-                vector ijk(i+shift.x(),j+shift.y(),k+shift.z());
+                vector ijk(vector(i,j,k)+shift);
 
                 ccld(i,j,k) =
                     0.125
@@ -269,17 +436,32 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
         }
     }
 
-    // Next, project all inner cell centers along the point-to-point vector
+    // Correct ghost cells. We have the following situations that need to be
+    // handled:
+    //
+    //  1) All normal (non-communicating) boundaries have their cell centers
+    //     computed by a cell-center-to-point vector projection, which is
+    //     performed first for all ghost cells. In principle some ghost cell
+    //     centers (especially for colocated grids) could be computed from the
+    //     points directly, however, these points are also projections so this
+    //     will give the same result.
+    //
+    //  2) Parallel boundaries are set by correctParallelBoundaryConditions().
+    //
+    //  3) Periodic boundaries are set using the same projection as for normal
+    //     boundaries. This is only accurate for symmetry across the periodic
+    //     boundary, and could be improved by communicating cell-center-to-point
+    //     vectors.
 
-    forAll(cc, leveli)
+    // First set all ghost cells using a cell-center-to-point projection
+
+    forAll(cc, l)
     {
-        const partLevelPoints& points = fvMsh_[leveli].points();
+        const labelVector N(fvMsh_[l].N());
 
-        forAll(cc[leveli], d)
+        forAll(cc[l], d)
         {
-            meshDirection<vector,MeshType>& ccld = cc[leveli][d];
-
-            const vector shift = MeshType::shift[d];
+            meshDirection<vector,MeshType>& ccld = cc[l][d];
 
             labelVector bo;
 
@@ -288,73 +470,33 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
             for (bo.z() = -1; bo.z() <= 1; bo.z()++)
             if (cmptSum(cmptMag(bo)) > 0)
             {
-                const labelVector S(ccld.boundaryStart(bo));
-                const labelVector E(ccld.boundaryEnd(bo));
+                const labelVector S(ccld.internalBoundaryStart(bo));
+                const labelVector E(ccld.internalBoundaryEnd(bo));
 
-                const labelVector S2
-                (
-                    bo.x() == 0 ? 0 : (bo.x()+1)/2,
-                    bo.y() == 0 ? 0 : (bo.y()+1)/2,
-                    bo.z() == 0 ? 0 : (bo.z()+1)/2
-                );
+                const label fi = faceNumber(bo);
+                const label ei = edgeNumber(bo);
+                const label vi = vertexNumber(bo);
 
-                const labelVector E2
-                (
-                    S2.x() + (bo.x() == 0 ? 2 : 1),
-                    S2.y() + (bo.y() == 0 ? 2 : 1),
-                    S2.z() + (bo.z() == 0 ? 2 : 1)
-                );
+                const label bod = cmptSum(cmptMag(bo));
 
-                labelVector ijk, ijk2;
+                labelVector ijk;
 
                 for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
                 for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
                 for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                 {
-                    vector p(0,0,0);
-                    scalar c(0.0);
-
-                    for (ijk2.x() = S2.x(); ijk2.x() < E2.x(); ijk2.x()++)
-                    for (ijk2.y() = S2.y(); ijk2.y() < E2.y(); ijk2.y()++)
-                    for (ijk2.z() = S2.z(); ijk2.z() < E2.z(); ijk2.z()++)
-                    {
-                        p += points.interp(vector(ijk+ijk2)+shift);
-                        c += 1.0;
-                    }
-
-                    p /= c;
-
-                    ccld(ijk+bo) = 2*p - ccld(ijk);
+                    ccld(ijk+bo) =
+                        bod == 1 ? (2.0*fc[l][d](ijk)[fi] - ccld(ijk))
+                      : bod == 2 ? (2.0*ec[l][d](ijk)[ei] - ccld(ijk))
+                      :            (2.0*vc[l][d](ijk)[vi] - ccld(ijk));
                 }
             }
         }
     }
 
-    // Don't call correctBoundaryConditions(), because this will update and
-    // overwrite all boundaries. There's only a need to update parallel
-    // boundaries.
+    // Overwrite with a parallel update
 
-    forAll(cc, l)
-    {
-        const label nReq = Pstream::nRequests();
-
-        forAll(cc.boundaryConditions(), i)
-        if (cc.boundaryConditions()[i].baseType() == PARALLELBC)
-        {
-            cc.boundaryConditions()[i].initEvaluate(l);
-        }
-
-        if (Pstream::parRun())
-        {
-            Pstream::waitRequests(nReq);
-        }
-
-        forAll(cc.boundaryConditions(), i)
-        if (cc.boundaryConditions()[i].baseType() == PARALLELBC)
-        {
-            cc.boundaryConditions()[i].evaluate(l);
-        }
-    }
+    cc.correctParallelBoundaryConditions();
 }
 
 template<class MeshType>
@@ -362,38 +504,28 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 {
     meshField<scalar,MeshType>& cv = cellVolumes_;
 
-    const meshField<faceVector,MeshType>& fn = faceNormals_;
-    const meshField<faceScalar,MeshType>& fa = faceAreas_;
+    const meshField<faceVector,MeshType>& fan = faceAreaNormals_;
     const meshField<faceVector,MeshType>& fc = faceCenters_;
 
     cv = Zero;
 
-    forAll(cv, leveli)
+    forAll(cv, l)
     {
         // Cell volume is given by Wesseling's efficient formula (Wesseling, p.
         // 484)
 
-        forAll(cv[leveli], d)
+        forAll(cv[l], d)
         {
-            meshDirection<scalar,MeshType>& cvld = cv[leveli][d];
+            meshDirection<scalar,MeshType>& cvld = cv[l][d];
 
-            const meshDirection<faceVector,MeshType>& fnld = fn[leveli][d];
-            const meshDirection<faceScalar,MeshType>& fald = fa[leveli][d];
-            const meshDirection<faceVector,MeshType>& fcld = fc[leveli][d];
+            const meshDirection<faceVector,MeshType>& fanld = fan[l][d];
+            const meshDirection<faceVector,MeshType>& fcld = fc[l][d];
 
-            forAllCells(cvld, i, j, k)
+            forAllInternalCells(cvld, i, j, k)
             {
-                const vector Sx =
-                    fnld(i,j,k).left() *fald(i,j,k).left()
-                  + fnld(i,j,k).right()*fald(i,j,k).right();
-
-                const vector Sy =
-                    fnld(i,j,k).bottom()*fald(i,j,k).bottom()
-                  + fnld(i,j,k).top()   *fald(i,j,k).top();
-
-                const vector Sz =
-                    fnld(i,j,k).aft() *fald(i,j,k).aft()
-                  + fnld(i,j,k).fore()*fald(i,j,k).fore();
+                const vector Sx = fanld(i,j,k).right() - fanld(i,j,k).left();
+                const vector Sy = fanld(i,j,k).top()   - fanld(i,j,k).bottom();
+                const vector Sz = fanld(i,j,k).fore()  - fanld(i,j,k).aft();
 
                 const vector Dx = fcld(i,j,k).right() - fcld(i,j,k).left();
                 const vector Dy = fcld(i,j,k).top()   - fcld(i,j,k).bottom();
@@ -403,24 +535,59 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
             }
         }
     }
+
+    // Extrapolate cell volumes to ghost cells
+
+    forAll(cv, l)
+    {
+        const labelVector N(fvMsh_[l].N());
+
+        forAll(cv[l], d)
+        {
+            meshDirection<scalar,MeshType>& cvld = cv[l][d];
+
+            labelVector bo;
+
+            for (bo.x() = -1; bo.x() <= 1; bo.x()++)
+            for (bo.y() = -1; bo.y() <= 1; bo.y()++)
+            for (bo.z() = -1; bo.z() <= 1; bo.z()++)
+            if (cmptSum(cmptMag(bo)) > 0)
+            {
+                const labelVector S(cvld.internalBoundaryStart(bo));
+                const labelVector E(cvld.internalBoundaryEnd(bo));
+
+                labelVector ijk;
+
+                for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                {
+                    cvld(ijk+bo) = cvld(ijk);
+                }
+            }
+        }
+    }
+
+    cv.correctCommBoundaryConditions();
 }
 
 template<class MeshType>
 void fvMeshMetrics<MeshType>::calculateFaceDeltas()
 {
     meshField<faceScalar,MeshType>& fd = faceDeltas_;
+
     const meshField<vector,MeshType>& cc = cellCenters_;
 
     fd = Zero;
 
-    forAll(cc, leveli)
+    forAll(cc, l)
     {
-        forAll(cc[leveli], d)
+        forAll(cc[l], d)
         {
-            meshDirection<faceScalar,MeshType>& fdld = fd[leveli][d];
-            const meshDirection<vector,MeshType>& ccld = cc[leveli][d];
+            meshDirection<faceScalar,MeshType>& fdld = fd[l][d];
+            const meshDirection<vector,MeshType>& ccld = cc[l][d];
 
-            forAllCells(fdld, i, j, k)
+            forAllInternalCells(fdld, i, j, k)
             {
                 fdld(i,j,k) =
                     faceScalar
@@ -435,6 +602,8 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
             }
         }
     }
+
+    fd.correctCommBoundaryConditions();
 }
 
 template<class MeshType>
@@ -444,6 +613,24 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     faceCenters_
     (
         word(MeshType::typeName) + "FaceCenters",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    edgeCenters_
+    (
+        word(MeshType::typeName) + "EdgeCenters",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    vertexCenters_
+    (
+        word(MeshType::typeName) + "VertexCenters",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -506,6 +693,8 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     )
 {
     calculateFaceCenters();
+    calculateEdgeCenters();
+    calculateVertexCenters();
     calculateFaceAreasAndNormals();
     calculateCellCenters();
     calculateCellVolumes();

@@ -67,11 +67,11 @@ midPointReconstructionScheme<Type>::reconstruct
             R(i,j,k) =
                 0.5
               * (
-                    f0(i,  j,  k  )*fn(i,j,k).left()
+                  - f0(i,  j,  k  )*fn(i,j,k).left()
                   + f0(i+1,j,  k  )*fn(i,j,k).right()
-                  + f1(i,  j,  k  )*fn(i,j,k).bottom()
+                  - f1(i,  j,  k  )*fn(i,j,k).bottom()
                   + f1(i,  j+1,k  )*fn(i,j,k).top()
-                  + f2(i,  j,  k  )*fn(i,j,k).aft()
+                  - f2(i,  j,  k  )*fn(i,j,k).aft()
                   + f2(i,  j,  k+1)*fn(i,j,k).fore()
                 );
         }

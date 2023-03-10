@@ -51,6 +51,9 @@ class meshDirection
     // Active cell block size
     labelVector N_;
 
+    // Internal cell block size, including inactive cells
+    labelVector Ni_;
+
     // Pointer to the mesh level, if any
     meshLevel<Type,MeshType>* mshLevelPtr_;
 
@@ -159,7 +162,10 @@ public:
     // Return the active cell block size
     inline labelVector N() const { return N_; }
 
-    // Return the start point of the internal active cell boundary at given
+    // Return the internal cell block size
+    inline labelVector Ni() const { return Ni_; }
+
+    // Return the start point of the active internal cell boundary at given
     // offset
     inline labelVector boundaryStart(const labelVector& bo) const
     {
@@ -171,7 +177,7 @@ public:
         );
     }
 
-    // Return the shape of the internal active cell boundary at given offset
+    // Return the shape of the active internal cell boundary at given offset
     inline labelVector boundaryN(const labelVector& bo) const
     {
         return labelVector
@@ -182,10 +188,42 @@ public:
         );
     }
 
-    // Return the end of the internal active cell boundary at given offset
+    // Return the end of the active internal cell boundary at given offset
     inline labelVector boundaryEnd(const labelVector& bo) const
     {
         return boundaryStart(bo) + boundaryN(bo);
+    }
+
+    // Return the start point of the internal cell boundary at given offset
+    inline labelVector internalBoundaryStart(const labelVector& bo) const
+    {
+        labelVector N(fvMsh_[l_].N() + MeshType::padding[d_]);
+
+        return labelVector
+        (
+            bo.x() == 0 || bo.x() == -1 ? 0 : N.x()-1,
+            bo.y() == 0 || bo.y() == -1 ? 0 : N.y()-1,
+            bo.z() == 0 || bo.z() == -1 ? 0 : N.z()-1
+        );
+    }
+
+    // Return the shape of the internal cell boundary at given offset
+    inline labelVector internalBoundaryN(const labelVector& bo) const
+    {
+        labelVector N(fvMsh_[l_].N() + MeshType::padding[d_]);
+
+        return labelVector
+        (
+            bo.x() == 0 ? N.x() : 1,
+            bo.y() == 0 ? N.y() : 1,
+            bo.z() == 0 ? N.z() : 1
+        );
+    }
+
+    // Return the end of the internal cell boundary at given offset
+    inline labelVector internalBoundaryEnd(const labelVector& bo) const
+    {
+        return internalBoundaryStart(bo) + internalBoundaryN(bo);
     }
 
     // Return true if the boundary at given offset is shifted

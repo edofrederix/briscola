@@ -71,6 +71,9 @@ public:
 
     // Initialize the evaluation of the boundary condition for given level
     virtual void initEvaluate(const label);
+
+    // Evaluate the boundary condition for given level
+    virtual void evaluate(const label, const bool = false);
 };
 
 }

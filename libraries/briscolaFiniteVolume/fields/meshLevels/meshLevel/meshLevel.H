@@ -140,6 +140,16 @@ public:
     // Correct boundary conditions for this level
     void correctBoundaryConditions(const bool = false);
 
+    // Correct parallel boundary conditions for this level
+    void correctParallelBoundaryConditions();
+
+    // Correct periodic boundary conditions for this level
+    void correctPeriodicBoundaryConditions();
+
+    // Correct communicating (parallel and periodic) boundary conditions for
+    // this level
+    void correctCommBoundaryConditions();
+
     // Member operators
 
     void operator=(const meshLevel<Type,MeshType>&);

@@ -2,6 +2,8 @@
 #include "meshField.H"
 #include "fvMesh.H"
 
+#include "boundaryCondition.H"
+
 namespace Foam
 {
 
@@ -413,6 +415,105 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions
             mshFieldPtr_->boundaryConditions()[i].evaluate(l_, homogeneousBCs);
         }
     }
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
+{
+    if (mshFieldPtr_)
+    {
+        // A call to correctParallelBoundaryConditions() implies that boundary
+        // conditions are needed for this level. Add them if not already done.
+
+        if (mshFieldPtr_->boundaryConditions().size() == 0)
+        {
+            mshFieldPtr_->addBoundaryConditions();
+        }
+
+        // Correct all parallel boundary conditions contained by this part
+
+        const label nReq = Pstream::nRequests();
+
+        forAll(mshFieldPtr_->boundaryConditions(), i)
+        {
+            boundaryCondition<Type,MeshType>& bc =
+                mshFieldPtr_->boundaryConditions()[i];
+
+            if (bc.baseType() == PARALLELBC)
+            {
+                bc.initEvaluate(l_);
+            }
+        }
+
+        if (Pstream::parRun())
+        {
+            Pstream::waitRequests(nReq);
+        }
+
+        forAll(mshFieldPtr_->boundaryConditions(), i)
+        {
+            boundaryCondition<Type,MeshType>& bc =
+                mshFieldPtr_->boundaryConditions()[i];
+
+            if (bc.baseType() == PARALLELBC)
+            {
+                bc.evaluate(l_);
+            }
+        }
+    }
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
+{
+    if (mshFieldPtr_)
+    {
+        // A call to correctPeriodicBoundaryConditions() implies that boundary
+        // conditions are needed for this level. Add them if not already done.
+
+        if (mshFieldPtr_->boundaryConditions().size() == 0)
+        {
+            mshFieldPtr_->addBoundaryConditions();
+        }
+
+        // Correct all periodic boundary conditions contained by this part
+
+        const label nReq = Pstream::nRequests();
+
+        forAll(mshFieldPtr_->boundaryConditions(), i)
+        {
+            boundaryCondition<Type,MeshType>& bc =
+                mshFieldPtr_->boundaryConditions()[i];
+
+            if (bc.baseType() == PERIODICBC)
+            {
+                bc.initEvaluate(l_);
+            }
+        }
+
+        if (Pstream::parRun())
+        {
+            Pstream::waitRequests(nReq);
+        }
+
+        forAll(mshFieldPtr_->boundaryConditions(), i)
+        {
+            boundaryCondition<Type,MeshType>& bc =
+                mshFieldPtr_->boundaryConditions()[i];
+
+            if (bc.baseType() == PERIODICBC)
+            {
+                bc.evaluate(l_);
+            }
+        }
+    }
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctCommBoundaryConditions()
+{
+    this->correctParallelBoundaryConditions();
+    this->correctPeriodicBoundaryConditions();
 }
 
 template<class Type, class MeshType>

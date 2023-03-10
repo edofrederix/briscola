@@ -69,11 +69,11 @@ midPointGaussGradientScheme<Type,MeshType>::grad
             G(i,j,k) =
                 0.5
               * (
-                  - (f(i,j,k) + f(i-1,j,k)) * fan(i,j,k).left()
+                    (f(i,j,k) + f(i-1,j,k)) * fan(i,j,k).left()
                   + (f(i,j,k) + f(i+1,j,k)) * fan(i,j,k).right()
-                  - (f(i,j,k) + f(i,j-1,k)) * fan(i,j,k).bottom()
+                  + (f(i,j,k) + f(i,j-1,k)) * fan(i,j,k).bottom()
                   + (f(i,j,k) + f(i,j+1,k)) * fan(i,j,k).top()
-                  - (f(i,j,k) + f(i,j,k-1)) * fan(i,j,k).aft()
+                  + (f(i,j,k) + f(i,j,k-1)) * fan(i,j,k).aft()
                   + (f(i,j,k) + f(i,j,k+1)) * fan(i,j,k).fore()
                 )
               / cv(i,j,k);

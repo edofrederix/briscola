@@ -56,11 +56,6 @@ midPointGaussDivergenceScheme<Type,MeshType>::div
         forAllCells(f, i, j, k)
         {
             A(i,j,k) = 0.5*p(i,j,k);
-
-            A(i,j,k).left()   = -A(i,j,k).left();
-            A(i,j,k).bottom() = -A(i,j,k).bottom();
-            A(i,j,k).aft()    = -A(i,j,k).aft();
-
             A(i,j,k).center() = neighborSum(A(i,j,k));
         }
     }

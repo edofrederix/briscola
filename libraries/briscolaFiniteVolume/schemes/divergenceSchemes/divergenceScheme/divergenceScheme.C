@@ -93,7 +93,7 @@ tmp<meshField<Type,MeshType>> explicitDiv
 
         forAllCells(p, i, j, k)
         {
-            D(i,j,k) = neighborSkewSum(p(i,j,k))/cv(i,j,k);
+            D(i,j,k) = neighborSum(p(i,j,k))/cv(i,j,k);
         }
     }
 

@@ -185,6 +185,15 @@ public:
     // Correct boundary conditions
     void correctBoundaryConditions(const bool = false);
 
+    // Correct parallel boundary conditions
+    void correctParallelBoundaryConditions();
+
+    // Correct periodic boundary conditions
+    void correctPeriodicBoundaryConditions();
+
+    // Correct communicating (parallel and periodic) boundary conditions
+    void correctCommBoundaryConditions();
+
     // Check if boundary conditions are singular, which is true if all boundary
     // conditions are empty, parallel, periodic or Neumann
     bool singularBoundaryConditions();

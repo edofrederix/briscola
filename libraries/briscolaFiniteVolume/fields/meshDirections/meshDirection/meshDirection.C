@@ -118,9 +118,10 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    Ni_(fvMsh[l].N() + MeshType::padding[d]),
     mshLevelPtr_(&mshLevel)
 {
-    allocate(fvMsh[l_].N() + MeshType::padding[d_] + 2*unitXYZ);
+    allocate(Ni_ + 2*unitXYZ);
     setActiveCells();
 }
 
@@ -139,6 +140,7 @@ meshDirection<Type,MeshType>::meshDirection
     S_(D.S_),
     E_(D.E_),
     N_(D.N_),
+    Ni_(D.Ni_),
     mshLevelPtr_(nullptr)
 {
     allocate(D.B().N());
@@ -159,6 +161,7 @@ meshDirection<Type,MeshType>::meshDirection
     S_(D.S_),
     E_(D.E_),
     N_(D.N_),
+    Ni_(D.Ni_),
     mshLevelPtr_(nullptr)
 {
     allocate(D.B().N());
@@ -179,6 +182,7 @@ meshDirection<Type,MeshType>::meshDirection
     S_(D.S_),
     E_(D.E_),
     N_(D.N_),
+    Ni_(D.Ni_),
     mshLevelPtr_(nullptr)
 {
     allocate(D.B().N());
@@ -198,6 +202,7 @@ meshDirection<Type,MeshType>::meshDirection
     S_(tD->S_),
     E_(tD->E_),
     N_(tD->N_),
+    Ni_(tD->Ni_),
     mshLevelPtr_(nullptr)
 {
     if (tD.isTmp())
@@ -230,6 +235,7 @@ meshDirection<Type,MeshType>::meshDirection
     S_(tD->S_),
     E_(tD->E_),
     N_(tD->N_),
+    Ni_(tD->Ni_),
     mshLevelPtr_(nullptr)
 {
     if (tD.isTmp())
@@ -263,6 +269,7 @@ meshDirection<Type,MeshType>::meshDirection
     S_(tD->S_),
     E_(tD->E_),
     N_(tD->N_),
+    Ni_(tD->Ni_),
     mshLevelPtr_(nullptr)
 {
     if (tD.isTmp())
@@ -294,9 +301,10 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    Ni_(fvMsh[l].N() + MeshType::padding[d]),
     mshLevelPtr_(nullptr)
 {
-    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
+    allocate(Ni_ + 2*unitXYZ);
     setActiveCells();
 }
 
@@ -313,9 +321,10 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    Ni_(fvMsh[l].N() + MeshType::padding[d]),
     mshLevelPtr_(nullptr)
 {
-    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
+    allocate(Ni_ + 2*unitXYZ);
     *this = Zero;
     setActiveCells();
 }
@@ -333,9 +342,10 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    Ni_(fvMsh[l].N() + MeshType::padding[d]),
     mshLevelPtr_(nullptr)
 {
-    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
+    allocate(Ni_ + 2*unitXYZ);
     *this = v;
     setActiveCells();
 }
