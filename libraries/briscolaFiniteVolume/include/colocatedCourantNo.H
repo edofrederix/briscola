@@ -9,6 +9,8 @@ scalar meanCoNum = 0.0;
 
     colocatedScalarDirection sumPhi(fvMsh,0,0);
 
+    sumPhi = Zero;
+
     forAllCells(sumPhi, i, j, k)
     {
         sumPhi(i,j,k) =

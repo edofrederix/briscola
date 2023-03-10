@@ -56,7 +56,7 @@ midPointFaceGradientScheme<Type,MeshType>::faceGrad
         meshDirection<FaceSpace<Type>,MeshType>& G = Grad[l][d];
         const meshDirection<Type,MeshType>& f = field[l][d];
 
-        G.initGhosts();
+        G = Zero;
 
         forAllCells(f, i, j, k)
         {

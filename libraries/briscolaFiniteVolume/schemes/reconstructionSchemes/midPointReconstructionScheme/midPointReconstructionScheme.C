@@ -60,7 +60,7 @@ midPointReconstructionScheme<Type>::reconstruct
         const meshDirection<Type,staggered>& f1 = field[l][1];
         const meshDirection<Type,staggered>& f2 = field[l][2];
 
-        R.initGhosts();
+        R = Zero;
 
         forAllCells(R, i, j, k)
         {

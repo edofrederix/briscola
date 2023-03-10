@@ -48,7 +48,7 @@ midPointGaussDivergenceScheme<Type,MeshType>::div
     {
         meshDirection<stencil,MeshType>& A = Sys.A()[l][d];
 
-        A.initGhosts();
+        A = Zero;
 
         const meshDirection<faceScalar,MeshType>& p = phi[l][d];
         const meshDirection<Type,MeshType>& f = field[l][d];

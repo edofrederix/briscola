@@ -325,19 +325,6 @@ meshField<Type,MeshType>::~meshField()
 // Public
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::initGhosts()
-{
-    initGhosts(pTraits<Type>::zero);
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::initGhosts(const Type& v)
-{
-    forAll(*this, l)
-        listType::operator[](l).initGhosts(v);
-}
-
-template<class Type, class MeshType>
 void meshField<Type,MeshType>::addBoundaryConditions()
 {
     if (boundaryConditions_.size() == 0)

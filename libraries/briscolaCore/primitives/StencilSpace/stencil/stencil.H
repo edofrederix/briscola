@@ -120,6 +120,14 @@ public:
     }
 };
 
+// stencil is (quite obviously) a stencil
+
+template<>
+inline bool isStencil<stencil>()
+{
+    return true;
+}
+
 }
 
 #include "stencilProducts.H"

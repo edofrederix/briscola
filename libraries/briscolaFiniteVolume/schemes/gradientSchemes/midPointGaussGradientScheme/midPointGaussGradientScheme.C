@@ -62,7 +62,7 @@ midPointGaussGradientScheme<Type,MeshType>::grad
         meshDirection<GradType,MeshType>& G = Grad[l][d];
         const meshDirection<Type,MeshType>& f = field[l][d];
 
-        G.initGhosts();
+        G = Zero;
 
         forAllCells(f, i, j, k)
         {
@@ -116,9 +116,9 @@ midPointGaussGradientScheme<Type,MeshType>::stagGrad
 
             meshDirection<Type,staggered>& G = Grad[l][d];
 
-            G.initGhosts();
+            G = Zero;
 
-            forAllCells(G, i, j, k)
+            forAllCells(f, i, j, k)
             {
                 const labelVector ijk(i,j,k);
 

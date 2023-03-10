@@ -355,36 +355,6 @@ meshDirection<Type,MeshType>::~meshDirection()
 {}
 
 template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::initGhosts()
-{
-    initGhosts(pTraits<Type>::zero);
-}
-
-template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::initGhosts(const Type& v)
-{
-    labelVector bo;
-
-    for (bo.x() = -1; bo.x() <= 1; bo.x()++)
-    for (bo.y() = -1; bo.y() <= 1; bo.y()++)
-    for (bo.z() = -1; bo.z() <= 1; bo.z()++)
-    if (cmptSum(cmptMag(bo)) > 0)
-    {
-        const labelVector S(this->boundaryStart(bo));
-        const labelVector E(this->boundaryEnd(bo));
-
-        labelVector ijk;
-
-        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-        {
-            this->operator()(ijk+bo) = v;
-        }
-    }
-}
-
-template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::operator=
 (
     const meshDirection<Type,MeshType>& D

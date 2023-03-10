@@ -339,19 +339,6 @@ meshLevel<Type,MeshType>::~meshLevel()
 {}
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::initGhosts()
-{
-    initGhosts(pTraits<Type>::zero);
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::initGhosts(const Type& v)
-{
-    forAll(*this, d)
-        listType::operator[](d).initGhosts(v);
-}
-
-template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctBoundaryConditions
 (
     const bool homogeneousBCs

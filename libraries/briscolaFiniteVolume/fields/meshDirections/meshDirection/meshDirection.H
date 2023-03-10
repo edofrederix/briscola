@@ -117,12 +117,6 @@ public:
     // Destructor
     virtual ~meshDirection();
 
-    // Initialize ghost cells to zero
-    void initGhosts();
-
-    // Initialize ghost cells to the given value
-    void initGhosts(const Type&);
-
     // Return the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 

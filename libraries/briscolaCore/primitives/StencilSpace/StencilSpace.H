@@ -59,6 +59,14 @@ template<class Type1, class Type2>
 class StencilSpaceCast
 {};
 
+// By default type T is not a stencil. Stencils should specialize.
+
+template<class T>
+inline bool isStencil()
+{
+    return false;
+}
+
 }
 
 #include "StencilSpaceI.H"

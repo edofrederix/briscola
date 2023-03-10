@@ -20,10 +20,21 @@ void Amul
     const meshDirection<Type2,MeshType>& f2
 )
 {
-    forAllCells(res, i, j, k)
-        res(i,j,k) = Amul(f1,f2,i,j,k);
+    res = Zero;
 
-    res.initGhosts();
+    // Make sure we iterate over the field and not the stencil, because the
+    // field may have inactive cells due to boundary conditions.
+
+    if (isStencil<Type1>())
+    {
+        forAllCells(f2, i, j, k)
+            res(i,j,k) = Amul(f1,f2,i,j,k);
+    }
+    else
+    {
+        forAllCells(f1, i, j, k)
+            res(i,j,k) = Amul(f1,f2,i,j,k);
+    }
 }
 
 template<class Type1, class Type2, class MeshType>
@@ -120,12 +131,12 @@ void Amul
     const Form& s
 )
 {
-    forAllCells(res, i, j, k)
+    res = Zero;
+
+    forAllCells(f1, i, j, k)
     {
         res(i,j,k) = Amul(f1,s,i,j,k);
     }
-
-    res.initGhosts();
 }
 
 template<class Type, class Form, class MeshType>
@@ -199,10 +210,10 @@ void rowSum
     const meshDirection<Type,MeshType>& f
 )
 {
-    forAllCells(res, i, j, k)
-        res(i,j,k) = stencilSum(f(i,j,k));
+    res = Zero;
 
-    res.initGhosts();
+    forAllCells(f, i, j, k)
+        res(i,j,k) = stencilSum(f(i,j,k));
 }
 
 template<class Type, class MeshType>
@@ -266,10 +277,10 @@ void neighborSum
     const meshDirection<Type,MeshType>& f
 )
 {
-    forAllCells(res, i, j, k)
-        res(i,j,k) = neighborSum(f(i,j,k));
+    res = Zero;
 
-    res.initGhosts();
+    forAllCells(f, i, j, k)
+        res(i,j,k) = neighborSum(f(i,j,k));
 }
 
 template<class Type, class MeshType>
