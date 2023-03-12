@@ -89,7 +89,7 @@ void emptyBoundaryCondition<Type,MeshType>::evaluate
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk+bo) = Zero;
+                fd(ijk) = Zero;
             }
         }
         else

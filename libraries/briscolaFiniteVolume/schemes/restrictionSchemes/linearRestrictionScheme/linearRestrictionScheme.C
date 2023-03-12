@@ -164,7 +164,7 @@ void linearRestrictionScheme<Type,MeshType>::restrict
             metrics<MeshType>().cellVolumes()
             [fine.levelNum()][fine.directionNum()];
 
-        forAllCells(coarse, i, j, k)
+        forAllActiveCells(coarse, i, j, k)
         {
             const label il = i*R.x();
             const label jl = j*R.y();
@@ -189,7 +189,7 @@ void linearRestrictionScheme<Type,MeshType>::restrict
     }
     else
     {
-        forAllCells(coarse, i, j, k)
+        forAllActiveCells(coarse, i, j, k)
         {
             const label il = i*R.x();
             const label jl = j*R.y();

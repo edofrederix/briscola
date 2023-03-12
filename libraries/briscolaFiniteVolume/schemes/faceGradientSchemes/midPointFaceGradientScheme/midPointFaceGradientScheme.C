@@ -58,7 +58,7 @@ midPointFaceGradientScheme<Type,MeshType>::faceGrad
 
         G = Zero;
 
-        forAllCells(f, i, j, k)
+        forAllCells(G, i, j, k)
         {
             G(i,j,k) =
                 FaceSpace<Type>

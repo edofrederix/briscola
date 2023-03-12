@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         );
 
     #define RESETFIELD(TYPENAME, MESHTYPE)                              \
-        MESHTYPE##TYPENAME##TestField.ref() *= 0;                       \
+        MESHTYPE##TYPENAME##TestField.ref() = Zero;                     \
         MESHTYPE##TYPENAME##TestField.ref().readOpt() =                 \
             IOobject::MUST_READ;
 

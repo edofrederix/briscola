@@ -70,7 +70,7 @@ void testDirichlet(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (dd(ijk+bo) != value)
+                    if (dd(ijk) != value)
                     {
                         FatalErrorInFunction
                             << "Test 1a failed" << endl << abort(FatalError);

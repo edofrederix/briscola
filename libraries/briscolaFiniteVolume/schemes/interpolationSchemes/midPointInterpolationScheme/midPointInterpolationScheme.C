@@ -54,7 +54,7 @@ midPointInterpolationScheme<Type,MeshType>::interp
 
         I = Zero;
 
-        forAllCells(f, i, j, k)
+        forAllCells(I, i, j, k)
         {
             I(i,j,k) =
                 0.5

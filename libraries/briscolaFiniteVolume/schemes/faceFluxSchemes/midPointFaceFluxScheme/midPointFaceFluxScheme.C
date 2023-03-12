@@ -53,7 +53,7 @@ tmp<colocatedFaceScalarField> midPointFaceFluxScheme::faceFlux
 
         F = Zero;
 
-        forAllCells(f, i, j, k)
+        forAllCells(F, i, j, k)
         {
             F(i,j,k) =
                 0.5

@@ -20,7 +20,7 @@ void injectionProlongationScheme<Type,MeshType>::prolong
 {
     const labelVector R(coarse.level().R());
 
-    forAllCells(fine, i, j, k)
+    forAllActiveCells(fine, i, j, k)
     {
         const label il = i/R.x();
         const label jl = j/R.y();

@@ -34,7 +34,7 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 
             const vector shift = MeshType::shift[d];
 
-            forAllInternalCells(fcld, i, j, k)
+            forAllCells(fcld, i, j, k)
             {
                 vector ijk(vector(i,j,k)+shift);
 
@@ -115,7 +115,7 @@ void fvMeshMetrics<MeshType>::calculateEdgeCenters()
 
             const vector shift = MeshType::shift[d];
 
-            forAllInternalCells(ecld, i, j, k)
+            forAllCells(ecld, i, j, k)
             {
                 vector ijk(vector(i,j,k)+shift);
 
@@ -232,7 +232,7 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
 
             const vector shift = MeshType::shift[d];
 
-            forAllInternalCells(vcld, i, j, k)
+            forAllCells(vcld, i, j, k)
             {
                 vector ijk(vector(i,j,k)+shift);
 
@@ -278,7 +278,7 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
 
             const vector shift = MeshType::shift[d];
 
-            forAllInternalCells(fnld, i, j, k)
+            forAllCells(fnld, i, j, k)
             {
                 vector ijk(vector(i,j,k)+shift);
 
@@ -416,7 +416,7 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
 
             const vector shift = MeshType::shift[d];
 
-            forAllInternalCells(ccld, i, j, k)
+            forAllCells(ccld, i, j, k)
             {
                 vector ijk(vector(i,j,k)+shift);
 
@@ -470,8 +470,8 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
             for (bo.z() = -1; bo.z() <= 1; bo.z()++)
             if (cmptSum(cmptMag(bo)) > 0)
             {
-                const labelVector S(ccld.internalBoundaryStart(bo));
-                const labelVector E(ccld.internalBoundaryEnd(bo));
+                const labelVector S(ccld.boundaryStart(bo));
+                const labelVector E(ccld.boundaryEnd(bo));
 
                 const label fi = faceNumber(bo);
                 const label ei = edgeNumber(bo);
@@ -521,7 +521,7 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
             const meshDirection<faceVector,MeshType>& fanld = fan[l][d];
             const meshDirection<faceVector,MeshType>& fcld = fc[l][d];
 
-            forAllInternalCells(cvld, i, j, k)
+            forAllCells(cvld, i, j, k)
             {
                 const vector Sx = fanld(i,j,k).right() - fanld(i,j,k).left();
                 const vector Sy = fanld(i,j,k).top()   - fanld(i,j,k).bottom();
@@ -553,8 +553,8 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
             for (bo.z() = -1; bo.z() <= 1; bo.z()++)
             if (cmptSum(cmptMag(bo)) > 0)
             {
-                const labelVector S(cvld.internalBoundaryStart(bo));
-                const labelVector E(cvld.internalBoundaryEnd(bo));
+                const labelVector S(cvld.boundaryStart(bo));
+                const labelVector E(cvld.boundaryEnd(bo));
 
                 labelVector ijk;
 
@@ -587,7 +587,7 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
             meshDirection<faceScalar,MeshType>& fdld = fd[l][d];
             const meshDirection<vector,MeshType>& ccld = cc[l][d];
 
-            forAllInternalCells(fdld, i, j, k)
+            forAllCells(fdld, i, j, k)
             {
                 fdld(i,j,k) =
                     faceScalar

@@ -102,7 +102,7 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk+bo) = H*val(ijk-S);
+                fd(ijk) = H*val(ijk-S);
             }
         }
         else
