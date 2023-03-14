@@ -42,6 +42,17 @@ class mesh
     // Check if mesh directions are uniform
     labelVector uniform_;
 
+    // Add a part patch to the list of part patches
+    void addPartPatch
+    (
+        const word name,
+        const word type,
+        const labelTensor T,
+        const labelVector boundaryOffset,
+        const labelVector neighborOffset = zeroXYZ,
+        const label neighborProcNum = -1
+    );
+
     // Generate brick-internal part patches
     void generateBrickInternalPartPatches();
 
