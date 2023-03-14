@@ -45,6 +45,8 @@ solvers/solver/solvers.C
 solvers/solver/solverFwd.C
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C
 solvers/PoissonSolvers/FFTPoissonSolver/decomposer/decomposer.C
+solvers/PoissonSolvers/FFTPoissonSolver/FourierTransforms/FourierTransforms.C
+solvers/PoissonSolvers/FFTPoissonSolver/tridiagonalSolver/tridiagonalSolver.C
 
 functionObjects/example/example.C
 

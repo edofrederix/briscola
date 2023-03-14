@@ -5,3 +5,17 @@ FoamFile
     class       dictionary;
     object      briscolaSchemesDict;
 }
+
+
+laplacianSchemes
+{
+    laplacian(p)
+    {
+        type    linearGauss;
+    }
+
+    laplacian(f)
+    {
+        type    linearGauss;
+    }
+}

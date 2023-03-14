@@ -458,16 +458,16 @@ mesh::mesh(const IOdictionary& dict)
                 x[i] = true;
             }
 
-            if (!y[i] && map(i,j,k) > -1)
+            if (!y[j] && map(i,j,k) > -1)
             {
                 N_.y() += bricks()[map(i,j,k)].N().y();
-                y[i] = true;
+                y[j] = true;
             }
 
-            if (!z[i] && map(i,j,k) > -1)
+            if (!z[k] && map(i,j,k) > -1)
             {
                 N_.z() += bricks()[map(i,j,k)].N().z();
-                z[i] = true;
+                z[k] = true;
             }
         }
     }

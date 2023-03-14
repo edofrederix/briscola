@@ -1,5 +1,4 @@
 #include "FFTPoissonSolver.H"
-#include "imSchemes.H"
 
 namespace Foam
 {
@@ -57,7 +56,19 @@ FFTPoissonSolver::FFTPoissonSolver
     prepare();
 
     decomp_ = new decomposer(fvMsh);
-    tds_ = new tridiagonalSolver(fvMsh.N().z());
+
+    xPencil_ = scalarBlock(decomp_->Nx()[Pstream::myProcNo()]);
+    yPencil_ = scalarBlock(decomp_->Ny()[Pstream::myProcNo()]);
+
+    fft_ = new FourierTransforms(fvMsh, *decomp_, xPencil_, yPencil_);
+
+    tds_ = new tridiagonalSolver
+    (
+        fvMsh,
+        decomp_->Nz()[Pstream::myProcNo()],
+        decomp_->sz()[Pstream::myProcNo()],
+        fft_->BC()
+    );
 }
 
 FFTPoissonSolver::FFTPoissonSolver
@@ -70,8 +81,21 @@ FFTPoissonSolver::FFTPoissonSolver
     checkMesh();
     prepare();
 
+
     decomp_ = new decomposer(fvMsh);
-    tds_ = new tridiagonalSolver(fvMsh.N().z());
+
+    xPencil_ = scalarBlock(decomp_->Nx()[Pstream::myProcNo()]);
+    yPencil_ = scalarBlock(decomp_->Ny()[Pstream::myProcNo()]);
+
+    fft_ = new FourierTransforms(fvMsh, *decomp_, xPencil_, yPencil_);
+
+    tds_ = new tridiagonalSolver
+    (
+        fvMsh,
+        decomp_->Nz()[Pstream::myProcNo()],
+        decomp_->sz()[Pstream::myProcNo()],
+        fft_->BC()
+    );
 }
 
 void FFTPoissonSolver::solve
@@ -82,176 +106,35 @@ void FFTPoissonSolver::solve
     const bool ddt
 )
 {
-    using Foam::pow;
-    using Foam::sin;
+    int rank = Pstream::myProcNo();
 
     // Mesh dimensions
-
     labelVector N(this->fvMsh_.N());
 
     // Global boundary conditions
-    // TO-DO: Change the whole confusing BC vector concept
-
-    labelVector BC = vector(-1,-1,-1);
-
-    switch (globalBoundaryConditionBaseType(x, faceOffsets[0]))
-    {
-        case 3:
-            BC.x() = 5; // C-C
-            break;
-        case 4:
-            if (globalBoundaryConditionBaseType(x, faceOffsets[1]) == 4)
-            {
-                BC.x() = 1; // D-D
-            }
-            else if (globalBoundaryConditionBaseType(x, faceOffsets[1]) == 5)
-            {
-                BC.x() = 3; // D-N
-            }
-            break;
-        case 5:
-            if (globalBoundaryConditionBaseType(x, faceOffsets[1]) == 4)
-            {
-                BC.x() = 4; // N-D
-            }
-            else if (globalBoundaryConditionBaseType(x, faceOffsets[1]) == 5)
-            {
-                BC.x() = 2; // N-N
-            }
-            break;
-        default:
-            FatalError
-                << "Incorrect pressure boundary condition." << endl
-                << abort(FatalError);
-            break;
-    }
-
-    switch (globalBoundaryConditionBaseType(x, faceOffsets[2]))
-    {
-        case 3:
-            BC.y() = 5; // C-C
-            break;
-
-        case 4:
-            if (globalBoundaryConditionBaseType(x, faceOffsets[3]) == 4)
-            {
-                BC.y() = 1; // D-D
-            }
-            else if (globalBoundaryConditionBaseType(x, faceOffsets[3]) == 5)
-            {
-                BC.y() = 3; // D-N
-            }
-            break;
-
-        case 5:
-            if (globalBoundaryConditionBaseType(x, faceOffsets[3]) == 4)
-            {
-                BC.y() = 4; // N-D
-            }
-            else if (globalBoundaryConditionBaseType(x, faceOffsets[3]) == 5)
-            {
-                BC.y() = 2; // N-N
-            }
-            break;
-
-        default:
-            FatalError
-                << "Incorrect pressure boundary condition." << endl
-                << abort(FatalError);
-            break;
-    }
-
-    switch (globalBoundaryConditionBaseType(x, faceOffsets[4]))
-    {
-        case 3:
-            BC.z() = 5; // C-C
-            break;
-
-        case 4:
-            if (globalBoundaryConditionBaseType(x, faceOffsets[5]) == 4)
-            {
-                BC.z() = 1; // D-D
-            }
-            else if (globalBoundaryConditionBaseType(x, faceOffsets[5]) == 5)
-            {
-                BC.z() = 3; // D-N
-            }
-            break;
-
-        case 5:
-            if (globalBoundaryConditionBaseType(x, faceOffsets[5]) == 4)
-            {
-                BC.z() = 4; // N-D
-            }
-            else if (globalBoundaryConditionBaseType(x, faceOffsets[5]) == 5)
-            {
-                BC.z() = 2; // N-N
-            }
-            break;
-
-        default:
-            FatalError
-                << "Incorrect pressure boundary condition." << endl
-                << abort(FatalError);
-            break;
-    }
-
-    // FFT variables
-
-    int fft_rank, howmany, stride, sep;
-
-    fftw_plan plan_fwd_x;
-    fftw_plan plan_fwd_y;
-
-    fftw_plan plan_bwd_x;
-    fftw_plan plan_bwd_y;
-
-    scalar normalization;
-    if( BC.x() != 5 && BC.y() != 5)
-    {
-        normalization = 2.0 * N.x() * 2.0 * N.y();
-    }
-    else if ( BC.x() == 5 && BC.y() == 5 )
-    {
-        normalization = N.x() * N.y();
-    }
-    else
-    {
-        normalization = 2.0 * N.x() * N.y();
-    }
-
-    fftw_r2r_kind transforms[] =
-    {
-        // forward transform types
-        FFTW_RODFT10, FFTW_REDFT10, FFTW_RODFT11, FFTW_REDFT11, FFTW_R2HC,
-        // inverse transform types
-        FFTW_RODFT01, FFTW_REDFT01, FFTW_RODFT11, FFTW_REDFT11, FFTW_HC2R
-    };
-
-    fftw_r2r_kind kind_fwd_x[] = {transforms[BC.x()-1]};
-    fftw_r2r_kind kind_fwd_y[] = {transforms[BC.y()-1]};
-    fftw_r2r_kind kind_bwd_x[] = {transforms[BC.x()+4]};
-    fftw_r2r_kind kind_bwd_y[] = {transforms[BC.y()+4]};
+    labelVector BC(fft_->BC());
 
     // Initial decomposition
-
-    labelVector I(decomp_->I()); // TO-DO: This is only for one brick
-
+    labelVector I(decomp_->I());
     List<labelVector> Ni = decomp_->Ni();
     List<labelVector> si = decomp_->si();
 
-    // Decompose into x-pencils
-
-    labelVector X = decomp_->X();
-
+    // Pencil decompositions
+    labelVector X(decomp_->X());
     List<labelVector> Nx = decomp_->Nx();
     List<labelVector> sx = decomp_->sx();
 
-    int rank = Pstream::myProcNo();
-    scalarBlock xData(Nx[rank]);
+    labelVector Y(decomp_->Y());
+    List<labelVector> Ny = decomp_->Ny();
+    List<labelVector> sy = decomp_->sy();
 
-    // Copy the data from bPtr (the RHS) to a scalarBlock
+    labelVector Z(decomp_->Z());
+    List<labelVector> Nz = decomp_->Nz();
+    List<labelVector> sz = decomp_->sz();
+    scalarBlock zPencil(Nz[rank]);
 
+    // Copy the data from bPtr to a scalarBlock
+    // minus sign since bPtr = - RHS of the Poisson equation
     scalarBlock initData(Ni[rank]);
 
     for (int i = 0; i < Ni[rank].x(); i++)
@@ -260,460 +143,72 @@ void FFTPoissonSolver::solve
         {
             for (int k = 0; k < Ni[rank].z(); k++)
             {
-                initData(i,j,k) = bPtr[0][0][0](i,j,k);
+                initData(i,j,k) = - bPtr[0][0][0](i,j,k);
             }
         }
     }
 
     // Transpose the RHS to x-pencils
+    decomp_->transpose(initData, xPencil_, I, X);
 
+    // FFT of x-pencil data in x-direction
+    fft_->fwdFFTx();
 
-    decomp_->transpose(initData, xData, I, X);
+    // Transpose x-pencils to y-pencils
+    decomp_->transpose(xPencil_, yPencil_, X, Y);
 
-    // RHS = - bPtr
+    // FFT of y-pencil data in y-direction
+    decomp_->yTransFwd(yPencil_);
 
-    xData *= -1.0;
+    fft_->fwdFFTy();
 
-    // FFT of xData in x-direction
+    decomp_->yTransBwd(yPencil_);
 
-    fft_rank = 1;
-    howmany = Nx[rank].y() * Nx[rank].z();
-    stride = Nx[rank].y() * Nx[rank].z();
-    sep = 1;
-    const int Na_x[] = {N.x()};
+    // Transpose y-pencil data to z-pencils
+    decomp_->transpose(yPencil_, zPencil, Y, Z);
 
-    plan_fwd_x = fftw_plan_many_r2r
-    (
-        fft_rank,
-        Na_x,
-        howmany,
-        reinterpret_cast<double*>(xData.begin()),
-        Na_x,
-        stride,
-        sep,
-        reinterpret_cast<double*>(xData.begin()),
-        Na_x,
-        stride,
-        sep,
-        kind_fwd_x,
-        FFTW_ESTIMATE
-    );
+    // Solve tridiagonal systems in z-direction
+    tds_->solve(zPencil);
 
-    fftw_execute(plan_fwd_x);
+    // Transpose z-pencils to y-pencils
+    decomp_->transpose(zPencil, yPencil_, Z, Y);
 
-    // Decompose into y-pencils
+    // Backward FFT of y-pencil data in y-direction
+    decomp_->yTransFwd(yPencil_);
 
-    labelVector Y = decomp_->Y();
+    fft_->bwdFFTy();
 
-    List<labelVector> Ny = decomp_->Ny();
-    List<labelVector> sy = decomp_->sy();
+    decomp_->yTransBwd(yPencil_);
 
-    scalarBlock yData(Ny[rank]);
+    // Transpose y-pencils to x-pencils
+    decomp_->transpose(yPencil_, xPencil_, Y, X);
 
-    // Transpose the data
+    // Backward FFT of x-pencil data in x-direction
+    fft_->bwdFFTx();
 
-    decomp_->transpose(xData, yData, X, Y);
+    // Transpose x-pencils to initial decomposition
+    decomp_->transpose(xPencil_, initData, X, I);
 
-    decomp_->yTransFwd(yData);
-
-    // FFT in y-direction
-
-    fft_rank = 1;
-    howmany = Ny[rank].x() * Ny[rank].z();
-    stride = 1;
-    sep = N.y();
-    const int Na_y[] = {N.y()};
-
-    plan_fwd_y = fftw_plan_many_r2r
-    (
-        fft_rank,
-        Na_y,
-        howmany,
-        reinterpret_cast<double*>(yData.begin()),
-        Na_y,
-        stride,
-        sep,
-        reinterpret_cast<double*>(yData.begin()),
-        Na_y,
-        stride,
-        sep,
-        kind_fwd_y,
-        FFTW_ESTIMATE
-    );
-
-    fftw_execute(plan_fwd_y);
-
-    decomp_->yTransBwd(yData);
-
-    // Decompose into z-pencils
-
-    labelVector Z = decomp_->Z();
-
-    List<labelVector> Nz = decomp_->Nz();
-    List<labelVector> sz = decomp_->sz();
-
-    scalarBlock zData(Nz[rank]);
-
-    // Transpose the data
-
-    decomp_->transpose(yData, zData, Y, Z);
-
-    // Eigenvalues lambda x
-
-    scalar pi = 3.14159265359;
-
-    List<scalar> lambda_x(Nz[rank].x());
-
-    switch ( BC.x() )
-    {
-        case 1:
-            for ( int i = 0; i < Nz[rank].x(); i++ )
-            {
-                lambda_x[i] = - 4.0
-                * pow
-                (
-                    sin( (sz[rank].x()+i+1) * pi / (2.0 * N.x()) ),
-                    2.0
-                );
-            }
-            break;
-
-        case 2:
-            for ( int i = 0; i < Nz[rank].x(); i++ )
-            {
-                lambda_x[i] = - 4.0
-                * pow
-                (
-                    sin( (sz[rank].x()+i) * pi / (2.0 * N.x()) ),
-                    2.0
-                );
-            }
-            break;
-
-        case 3:
-        case 4:
-            for ( int i = 0; i < Nz[rank].x(); i++ )
-            {
-                lambda_x[i] = - 4.0
-                * pow
-                (
-                    sin( (2.0*(sz[rank].x()+i+1)-1.0) * pi / (4.0 * N.x()) ),
-                    2.0
-                );
-            }
-            break;
-
-        case 5:
-            for ( int i = 0; i < Nz[rank].x(); i++ )
-            {
-                lambda_x[i] = -4.0
-                * pow
-                (
-                    sin( (sz[rank].x()+i) * pi / N.x() ),
-                    2.0
-                );
-            }
-            break;
-
-        default:
-            FatalError << " Unknown boundary condition "
-            << endl << abort(FatalError);
-    }
-
-    // Eigenvalues lambda y
-
-    List<scalar> lambda_y(Nz[rank].y());
-
-    switch ( BC.y() )
-    {
-        case 1:
-            for ( int j = 0; j < Nz[rank].y(); j++ )
-            {
-                lambda_y[j] = - 4.0
-                * pow
-                (
-                    sin( (sz[rank].y()+j+1) * pi / (2.0 * N.y()) ),
-                    2.0
-                );
-            }
-            break;
-
-        case 2:
-            for ( int j = 0; j < Nz[rank].y(); j++ )
-            {
-                lambda_y[j] = - 4.0
-                * pow
-                (
-                    sin( (sz[rank].y()+j) * pi / (2.0 * N.y()) ),
-                    2.0
-                );
-            }
-            break;
-
-        case 3:
-        case 4:
-            for ( int j = 0; j < Nz[rank].y(); j++ )
-            {
-                lambda_y[j] = - 4.0
-                * pow
-                (
-                    sin( (2.0*(sz[rank].y()+j+1)-1.0) * pi / (4.0 * N.y()) ),
-                    2.0
-                );
-            }
-            break;
-
-        case 5:
-            for ( int j = 0; j < Nz[rank].y(); j++ )
-            {
-                lambda_y[j] = -4.0
-                * pow
-                (
-                    sin( (sz[rank].y()+j) * pi / N.y() ),
-                    2.0
-                );
-            }
-            break;
-
-        default:
-            FatalError << " Unknown boundary condition "
-            << endl << abort(FatalError);
-    }
-
-    // Solve for p_hat_hat
-
-    scalarBlock pHat(Nz[rank]);
-
-    scalarList dx2 = sqr(cellSizes_[0]);
-    scalarList dy2 = sqr(cellSizes_[1]);
-    scalarList dz2 = sqr(cellSizes_[2]);
-
-    List<scalar> DU = 1.0/dz2;
-    List<scalar> D(N.z());
-    List<scalar> DL = 1.0/dz2;
-
-    switch ( BC.z() )
-    {
-        case 1:
-            for (int i = 0; i < Nz[rank].x(); i++) // loop and solve row by row
-            {
-                for (int j = 0; j < Nz[rank].y(); j++) // solve column by column
-                {
-                    D[0]       = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 3.0/dz2[0]; // TO-DO nonuniform mesh?
-                    D[N.z()-1] = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 3.0/dz2[0];
-                    for (int k = 1; k < N.z()-1; k++ )
-                    {
-                        D[k] = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 2.0/dz2[0];
-                    }
-                    tds_->tridiagonalSolve
-                    (
-                        N.z(),
-                        reinterpret_cast<double*>(DU.begin()),
-                        reinterpret_cast<double*>(D.begin()),
-                        reinterpret_cast<double*>(DL.begin()),
-                        reinterpret_cast<double*>(&zData(i,j,0)),
-                        reinterpret_cast<double*>(&pHat(i,j,0))
-                    );
-                }
-            }
-            break;
-
-        case 2:
-            for (int i = 0; i < Nz[rank].x(); i++) // loop and solve row by row
-            {
-                for (int j = 0; j < Nz[rank].y(); j++) // solve column by column
-                {
-                    D[0]       = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 1.0/dz2[0];
-                    D[N.z()-1] = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 1.0/dz2[0];
-                    for (int k = 1; k < N.z()-1; k++ )
-                    {
-                        D[k] = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 2.0/dz2[0];
-                    }
-                    // If coefficient matrix is singular
-                    if ( lambda_x[i] == 0 && lambda_y[j] == 0 )
-                    {
-                        D[0] -= 1e-10;
-                    }
-                    tds_->tridiagonalSolve
-                    (
-                        N.z(),
-                        reinterpret_cast<double*>(DU.begin()),
-                        reinterpret_cast<double*>(D.begin()),
-                        reinterpret_cast<double*>(DL.begin()),
-                        reinterpret_cast<double*>(&zData(i,j,0)),
-                        reinterpret_cast<double*>(&pHat(i,j,0))
-                    );
-                }
-            }
-            break;
-
-        case 3:
-            for (int i = 0; i < Nz[rank].x(); i++) // loop and solve row by row
-            {
-                for (int j = 0; j < Nz[rank].y(); j++) // solve column by column
-                {
-                    D[0]       = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 3.0/dz2[0];
-                    D[N.z()-1] = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 1.0/dz2[0];
-                    for (int k = 1; k < N.z()-1; k++ )
-                    {
-                        D[k] = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 2.0/dz2[0];
-                    }
-                    tds_->tridiagonalSolve
-                    (
-                        N.z(),
-                        reinterpret_cast<double*>(DU.begin()),
-                        reinterpret_cast<double*>(D.begin()),
-                        reinterpret_cast<double*>(DL.begin()),
-                        reinterpret_cast<double*>(&zData(i,j,0)),
-                        reinterpret_cast<double*>(&pHat(i,j,0))
-                    );
-                }
-            }
-            break;
-
-        case 4:
-            for (int i = 0; i < Nz[rank].x(); i++) // loop and solve row by row
-            {
-                for (int j = 0; j < Nz[rank].y(); j++) // solve column by column
-                {
-                    D[0]       = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 1.0/dz2[0];
-                    D[N.z()-1] = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 3.0/dz2[0];
-                    for (int k = 1; k < N.z()-1; k++ )
-                    {
-                        D[k] = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 2.0/dz2[0];
-                    }
-                    tds_->tridiagonalSolve
-                    (
-                        N.z(),
-                        reinterpret_cast<double*>(DU.begin()),
-                        reinterpret_cast<double*>(D.begin()),
-                        reinterpret_cast<double*>(DL.begin()),
-                        reinterpret_cast<double*>(&zData(i,j,0)),
-                        reinterpret_cast<double*>(&pHat(i,j,0))
-                    );
-                }
-            }
-            break;
-
-        case 5:
-            for (int i = 0; i < Nz[rank].x(); i++) // loop and solve row by row
-            {
-                for (int j = 0; j < Nz[rank].y(); j++) // solve column by column
-                {
-                    for (int k = 0; k < N.z(); k++ )
-                    {
-                        D[k] = lambda_x[i]/dx2[0] + lambda_y[j]/dy2[0] - 2.0/dz2[0];
-                    }
-                    // If coefficient matrix is singular
-                    if ( lambda_x[i] == 0 && lambda_y[j] == 0 )
-                    {
-                        D[0] -= 1e-10;
-                    }
-                    tds_->cyclicTridiagonalSolve
-                    (
-                        N.z(),
-                        reinterpret_cast<double*>(DU.begin()),
-                        reinterpret_cast<double*>(D.begin()),
-                        reinterpret_cast<double*>(DL.begin()),
-                        reinterpret_cast<double*>(&zData(i,j,0)),
-                        reinterpret_cast<double*>(&pHat(i,j,0))
-                    );
-                }
-            }
-            break;
-
-        default:
-            FatalError << " Unknown boundary condition "
-            << endl << abort(FatalError);
-    }
-
-    // Transpose to Y-pencils
-
-    decomp_->transpose(pHat, yData, Z, Y);
-
-    // Inverse transform in y direction
-
-    decomp_->yTransFwd(yData);
-
-    plan_bwd_y = fftw_plan_many_r2r
-    (
-        fft_rank,
-        Na_y,
-        howmany,
-        reinterpret_cast<double*>(yData.begin()),
-        Na_y,
-        stride,
-        sep,
-        reinterpret_cast<double*>(yData.begin()),
-        Na_y,
-        stride,
-        sep,
-        kind_bwd_y,
-        FFTW_ESTIMATE
-    );
-
-    fftw_execute(plan_bwd_y);
-
-    decomp_->yTransBwd(yData);
-
-    // Transpose to x-pencils
-
-    decomp_->transpose(yData, xData, Y, X);
-
-    // Inverse transform in x-direction
-
-    fft_rank = 1;
-    howmany = Nx[rank].y() * Nx[rank].z();
-    stride = Nx[rank].y() * Nx[rank].z();
-    sep = 1;
-
-    plan_bwd_x = fftw_plan_many_r2r
-    (
-        fft_rank,
-        Na_x,
-        howmany,
-        reinterpret_cast<double*>(xData.begin()),
-        Na_x,
-        stride,
-        sep,
-        reinterpret_cast<double*>(xData.begin()),
-        Na_x,
-        stride,
-        sep,
-        kind_bwd_x,
-        FFTW_ESTIMATE
-    );
-
-    fftw_execute(plan_bwd_x);
-
-    xData /= normalization;
-
-    // Transpose back to the p-field
-
-    scalarBlock pData(Ni[rank]);
-
-    decomp_->transpose(xData, pData, X, I);
-
-    // Copy the p scalarBlock to the x meshField
-
+    // Copy scalarBlock values to pressure meshField
     for (int i = 0; i < Ni[rank].x(); i++)
     {
         for (int j = 0; j < Ni[rank].y(); j++)
         {
             for (int k = 0; k < Ni[rank].z(); k++)
             {
-                x[0][0](i,j,k) = pData(i,j,k);
+                x[0][0](i,j,k) = initData(i,j,k);
             }
         }
     }
 
+    // Set ghost cells values
     x.correctBoundaryConditions();
 
     Info << "FFT: Solving for colocated p, residual = 0, nIter = 1" << endl;
 }
 
-}
+} // end namespace fv
 
-}
+} // end namespace briscola
 
-}
+} // end namespace Foam

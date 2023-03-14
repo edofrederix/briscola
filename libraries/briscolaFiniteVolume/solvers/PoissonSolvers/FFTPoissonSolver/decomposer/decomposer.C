@@ -15,7 +15,7 @@ decomposer::decomposer(const fvMesh& fvMsh)
 :
     fvMsh_(fvMsh),
     N_(fvMsh.N()),
-    I_(fvMsh.decomp().decompPerBrick()[0]) // TO-DO: I_ should contain all bricks
+    I_(fvMsh_.decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ)
 {
     Ni_ = List<labelVector>(Pstream::nProcs(), Zero);
     Nx_ = List<labelVector>(Pstream::nProcs(), Zero);
@@ -31,6 +31,7 @@ decomposer::decomposer(const fvMesh& fvMsh)
 }
 
 // Destructor
+
 decomposer::~decomposer()
 {}
 
@@ -59,15 +60,7 @@ void decomposer::decompInit()
 
     // Print initial processor topology
 
-    Info<< "Initial topology = " << nl;
-
-    for (label proc = 0; proc < Pstream::nProcs(); proc++)
-        Info<< "    Proc " << proc << " at "
-            << indexFromProcNum(proc, I_) << endl;
-
-    Info<< endl;
-
-    Info<< "Initial topology using decomposition map = " << nl;
+    Info<< "Initial topology: " << nl;
 
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
         Info<< "    Proc " << proc << " at "
@@ -76,10 +69,12 @@ void decomposer::decompInit()
     Info<< endl;
 
     // Initial decomposition
+
     Ni_ = procDims(I_);
     si_ = procOrig(I_);
 
     // Pencil decompositions: check if existing decompositions may be reused
+
     if (I_.x() > 1)
     {
         decompX();
@@ -150,7 +145,7 @@ void decomposer::decompX()
     Nx_ = procDims(X_);
     sx_ = procOrig(X_);
 
-    Info<< "X-pencil topology = " << nl;
+    Info<< "X-pencil topology: " << nl;
 
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
         Info<< "    Proc " << proc << " at "
@@ -189,7 +184,7 @@ void decomposer::decompY()
     Ny_ = procDims(Y_);
     sy_ = procOrig(Y_);
 
-    Info<< "Y-pencil topology = " << nl;
+    Info<< "Y-pencil topology: " << nl;
 
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
         Info<< "    Proc " << proc << " at "
@@ -228,7 +223,7 @@ void decomposer::decompZ()
     Nz_ = procDims(Z_);
     sz_ = procOrig(Z_);
 
-    Info<< "Z-pencil topology = " << nl;
+    Info<< "Z-pencil topology: " << nl;
 
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
         Info<< "    Proc " << proc << " at "
@@ -287,7 +282,6 @@ List<labelVector> decomposer::procDims(labelVector D)
         FatalError.exit();
     }
 
-
     List<labelVector> Nd(Pstream::nProcs(), Zero);
 
     for ( int proc = 0; proc < Pstream::nProcs(); proc++ )
@@ -309,7 +303,7 @@ List<labelVector> decomposer::procDims(labelVector D)
     return Nd;
 }
 
-// Return the list of processor origin indices for a given decomposition
+// Return list of processor origin indices for a given decomposition
 
 List<labelVector> decomposer::procOrig(labelVector D)
 {
@@ -418,10 +412,6 @@ void decomposer::transpose
 
             labelVector ei = si[sendProcNum] + Ni[sendProcNum];
 
-            // Info<< "Proc " << sendProcNum << " starting at "
-            //     << si[sendProcNum]  << " and with size " << Ni[sendProcNum]
-            //     << " sends to " << nl;
-
             // Loop over receiving processors
 
             for (int l = 0; l < T.x(); l++)
@@ -478,19 +468,15 @@ void decomposer::transpose
                         recvSize[sendProcNum] = e - s;
                         recvStart[sendProcNum] = s;
                     }
-
-                    // Info<< "    Proc " << recvProcNum
-                    //     << " -> Overlap starting at cell " << s
-                    //     << " with size " << e - s << nl;
                 }
             }
 
             // Info << endl;
         }
 
-        // Prepare send buffer. Abuse the block class for this. Send a vector that
-        // contains the global cell index. Sizes and displacements are in bytes
-        // because we're sending as char.
+        // Prepare send buffer. Abuse the block class for this. Send a vector
+        // that contains the global cell index. Sizes and displacements are
+        // in bytes because we're sending as char.
 
         scalarBlock sendBuffer(Ni[Pstream::myProcNo()]);
 

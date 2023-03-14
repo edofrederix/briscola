@@ -5,6 +5,7 @@
 #include <fftw3.h>
 #include "decomposer.H"
 #include "tridiagonalSolver.H"
+#include "FourierTransforms.H"
 
 namespace Foam
 {
@@ -27,6 +28,15 @@ class FFTPoissonSolver
 
     // Tridiagonal solver
     autoPtr<tridiagonalSolver> tds_;
+
+    // FFT's
+    autoPtr<FourierTransforms> fft_;
+
+    // x-pencil block
+    scalarBlock xPencil_;
+
+    // y-pencil block
+    scalarBlock yPencil_;
 
     // Funtion to check if the mesh qualifies for FFTs. Will give error if not
     // all criteria are met.
@@ -64,11 +74,11 @@ public:
     using PoissonSolver<stencil,scalar,colocated>::solve;
 };
 
-}
+} // end namespace fv
 
-}
+} // end namespace briscola
 
-}
+} // end namespace Foam
 
 #ifdef NoRepository
     #include "FFTPoissonSolver.C"
