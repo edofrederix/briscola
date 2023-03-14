@@ -14,6 +14,34 @@ namespace briscola
 defineTypeNameAndDebug(mesh, 0);
 defineRunTimeSelectionTable(mesh, dictionary);
 
+void mesh::addPartPatch
+(
+    const word name,
+    const word type,
+    const labelTensor T,
+    const labelVector boundaryOffset,
+    const labelVector neighborOffset,
+    const label neighborProcNum
+)
+{
+    dictionary dict;
+
+    dict.add("name", name);
+    dict.add("type", type);
+    dict.add("T", T);
+    dict.add("boundaryOffset", boundaryOffset);
+
+    if (neighborOffset != zeroXYZ)
+        dict.add("neighborOffset", neighborOffset);
+
+    if (neighborProcNum >= 0)
+        dict.add("neighborProcNum", neighborProcNum);
+
+    partPatches_.append
+    (
+        partPatch::New(*this, dict)
+    );
+}
 void mesh::generateBrickInternalPartPatches()
 {
     // Add parallel brick-internal patches
@@ -49,26 +77,18 @@ void mesh::generateBrickInternalPartPatches()
 
             // Add to part patches
 
-            dictionary dict;
-
-            dict.add
+            addPartPatch
             (
-                "name",
-                "parallel-"
-              + Foam::name(Pstream::myProcNo())
-              + "to"
-              + Foam::name(neighborProcNum)
-            );
-
-            dict.add("type", "parallel");
-            dict.add("T", eye);
-            dict.add("boundaryOffset", bo);
-            dict.add("neighborOffset", -bo);
-            dict.add("neighborProcNum", neighborProcNum);
-
-            partPatches_.append
-            (
-                partPatch::New(*this, dict)
+                word
+                (
+                    "parallel-" + Foam::name(Pstream::myProcNo())
+                  + "to" + Foam::name(neighborProcNum)
+                ),
+                "parallel",
+                eye,
+                bo,
+              - bo,
+                neighborProcNum
             );
         }
     }
@@ -110,6 +130,7 @@ void mesh::generateLinkPartPatches(const brickLink& link)
 {
     const brickDecompositionInterface interface(link, *this);
 
+    const labelBlock& map = interface.map();
     const PtrList<brickDecompositionSlice>& slices = interface.slices();
 
     const labelVector bo = link.offset();
@@ -117,30 +138,115 @@ void mesh::generateLinkPartPatches(const brickLink& link)
 
     // Only add slices if they belong to this processor
 
-    forAll(slices, slicei)
-    if (slices[slicei].procNum0() == Pstream::myProcNo())
+    forAllBlock(map, i, j, k)
+    if (slices[map(i,j,k)].procNum0() == Pstream::myProcNo())
     {
-        const brickDecompositionSlice& slice = slices[slicei];
+        const labelVector ijk(i,j,k);
+        const brickDecompositionSlice& slice = slices[map(ijk)];
 
-        dictionary dict;
-
-        dict.add
+        addPartPatch
         (
-            "name",
-            word(link.periodic() ? "periodic" : "parallel")
-          + "-"
-          + Foam::name(slice.procNum0())
-          + "to"
-          + Foam::name(slice.procNum1())
+            word
+            (
+                word(link.periodic() ? "periodic" : "parallel")
+              + "-" + Foam::name(slice.procNum0())
+              + "to" + Foam::name(slice.procNum1())
+            ),
+            link.periodic() ? "periodic" : "parallel",
+            T,
+            bo,
+          - (T.T() & bo),
+            slice.procNum1()
         );
 
-        dict.add("type", link.periodic() ? "periodic" : "parallel");
-        dict.add("T", T);
-        dict.add("boundaryOffset", bo);
-        dict.add("neighborOffset", -(T.T() & bo));
-        dict.add("neighborProcNum", slice.procNum1());
+        // Add internal edges and vertices of face part patches
 
-        partPatches_.append(partPatch::New(*this, dict));
+        if (cmptSum(cmptMag(bo)) == 1)
+        {
+            const label faceNormalDir = faceNumber(bo)/2;
+
+            // Test in the two directions perpendicular to the face normal
+
+            const labelVector dir1 = (faceNormalDir == 0 ? unitY : unitX);
+            const labelVector dir2 = (faceNormalDir == 2 ? unitY : unitZ);
+
+            for (label ii = -1; ii <= 1; ii++)
+            for (label jj = -1; jj <= 1; jj++)
+            if (ii != 0 || jj != 0)
+            {
+                const labelVector ijk2(ijk + dir1*ii + dir2*jj);
+                const labelVector bo2(bo + dir1*ii + dir2*jj);
+
+                if
+                (
+                    cmptMin(ijk2) >= 0
+                 && ijk2.x() < map.l()
+                 && ijk2.y() < map.m()
+                 && ijk2.z() < map.n()
+                )
+                {
+                    const brickDecompositionSlice& slice2 = slices[map(ijk2)];
+
+                    addPartPatch
+                    (
+                        word
+                        (
+                            word(link.periodic() ? "periodic" : "parallel")
+                          + "-" + Foam::name(slice.procNum0())
+                          + "to" + Foam::name(slice2.procNum1())
+                        ),
+                        link.periodic() ? "periodic" : "parallel",
+                        T,
+                        bo2,
+                      - (T.T() & bo2),
+                        slice2.procNum1()
+                    );
+                }
+            }
+        }
+
+        // Add internal vertices of edge part patches
+
+        if (cmptSum(cmptMag(bo)) == 2)
+        {
+            const label edgeDir = edgeNumber(bo)/4;
+
+            // Test in the direction of the edge
+
+            const labelVector dir = units[edgeDir];
+
+            for (label ii = -1; ii <= 1; ii+=2)
+            {
+                const labelVector ijk2(ijk + dir*ii);
+                const labelVector bo2(bo + dir*ii);
+
+                if
+                (
+                    cmptMin(ijk2) >= 0
+                 && ijk2.x() < map.l()
+                 && ijk2.y() < map.m()
+                 && ijk2.z() < map.n()
+                )
+                {
+                    const brickDecompositionSlice& slice2 = slices[map(ijk2)];
+
+                    addPartPatch
+                    (
+                        word
+                        (
+                            word(link.periodic() ? "periodic" : "parallel")
+                          + "-" + Foam::name(slice.procNum0())
+                          + "to" + Foam::name(slice2.procNum1())
+                        ),
+                        link.periodic() ? "periodic" : "parallel",
+                        T,
+                        bo2,
+                      - (T.T() & bo2),
+                        slice2.procNum1()
+                    );
+                }
+            }
+        }
     }
 }
 
@@ -170,14 +276,13 @@ void mesh::generateBoundaryPartPatches()
             forAll(p.facePtrs(), facej)
             if (&f == p.facePtrs()[facej])
             {
-                dictionary dict;
-
-                dict.add("name", p.name());
-                dict.add("type", "boundary");
-                dict.add("T", eye);
-                dict.add("boundaryOffset", offset);
-
-                partPatches_.append(partPatch::New(*this, dict));
+                addPartPatch
+                (
+                    p.name(),
+                    "boundary",
+                    eye,
+                    offset
+                );
 
                 goto found;
             }
