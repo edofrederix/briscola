@@ -6,8 +6,12 @@
 #include "label.H"
 #include "scalar.H"
 #include "faceScalar.H"
+#include "edgeScalar.H"
+#include "vertexScalar.H"
 #include "vector.H"
 #include "faceVector.H"
+#include "edgeVector.H"
+#include "vertexVector.H"
 #include "tensor.H"
 #include "sphericalTensor.H"
 #include "symmTensor.H"
@@ -32,8 +36,12 @@ class meshField;
 typedef meshField<label,staggered> staggeredLabelField;
 typedef meshField<scalar,staggered> staggeredScalarField;
 typedef meshField<faceScalar,staggered> staggeredFaceScalarField;
+typedef meshField<edgeScalar,staggered> staggeredEdgeScalarField;
+typedef meshField<vertexScalar,staggered> staggeredVertexScalarField;
 typedef meshField<vector,staggered> staggeredVectorField;
 typedef meshField<faceVector,staggered> staggeredFaceVectorField;
+typedef meshField<edgeVector,staggered> staggeredEdgeVectorField;
+typedef meshField<vertexVector,staggered> staggeredVertexVectorField;
 typedef meshField<tensor,staggered> staggeredTensorField;
 typedef meshField<sphericalTensor,staggered> staggeredSphericalTensorField;
 typedef meshField<symmTensor,staggered> staggeredSymmTensorField;

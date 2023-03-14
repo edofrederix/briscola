@@ -12,23 +12,12 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::setActiveCells()
-{
-    setActiveCells
-    (
-        fvMsh_.lowerSlavePatch(),
-        fvMsh_.upperSlavePatch()
-    );
-}
-
-template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::setActiveCells
-(
-    const labelVector lowerSlave,
-    const labelVector upperSlave
-)
+void meshDirection<Type,MeshType>::setInternalCells()
 {
     const labelVector& padding = MeshType::padding[d_];
+
+    const labelVector lowerSlave = fvMsh_.msh().lowerSlavePatch();
+    const labelVector upperSlave = fvMsh_.msh().upperSlavePatch();
 
     S_ =
         briscola::cmptMultiply(padding, lowerSlave);
@@ -39,6 +28,12 @@ void meshDirection<Type,MeshType>::setActiveCells
       - briscola::cmptMultiply(padding, upperSlave);
 
     N_ = E_ - S_;
+
+    // By default, all internal cells are active cells
+
+    Sa_ = S_;
+    Ea_ = E_;
+    Na_ = N_;
 }
 
 template<class Type, class MeshType>
@@ -74,11 +69,26 @@ void meshDirection<Type,MeshType>::updateActiveCells()
         }
     }
 
-    setActiveCells
-    (
-        briscola::cmptMax(fvMsh_.lowerSlavePatch(), lowerSlaveBoundary),
-        briscola::cmptMax(fvMsh_.upperSlavePatch(), upperSlaveBoundary)
-    );
+    // If no boundary conditions are set, lower and upper slave vectors will
+    // revert to those of the mesh, therewith setting Sa = S, Ea = E and Na = N
+
+    const labelVector lowerSlave =
+        briscola::cmptMax(fvMsh_.msh().lowerSlavePatch(), lowerSlaveBoundary);
+
+    const labelVector upperSlave =
+        briscola::cmptMax(fvMsh_.msh().upperSlavePatch(), upperSlaveBoundary);
+
+    const labelVector& padding = MeshType::padding[d_];
+
+    Sa_ =
+        briscola::cmptMultiply(padding, lowerSlave);
+
+    Ea_ =
+        this->B().N()
+      - 2*unitXYZ
+      - briscola::cmptMultiply(padding, upperSlave);
+
+    Na_ = Ea_ - Sa_;
 }
 
 template<class Type, class MeshType>
@@ -120,8 +130,9 @@ meshDirection<Type,MeshType>::meshDirection
     d_(d),
     mshLevelPtr_(&mshLevel)
 {
-    allocate(fvMsh[l_].N() + MeshType::padding[d_] + 2*unitXYZ);
-    setActiveCells();
+    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
+
+    setInternalCells();
 }
 
 // Copy constructors
@@ -139,6 +150,9 @@ meshDirection<Type,MeshType>::meshDirection
     S_(D.S_),
     E_(D.E_),
     N_(D.N_),
+    Sa_(D.Sa_),
+    Ea_(D.Ea_),
+    Na_(D.Na_),
     mshLevelPtr_(nullptr)
 {
     allocate(D.B().N());
@@ -159,6 +173,9 @@ meshDirection<Type,MeshType>::meshDirection
     S_(D.S_),
     E_(D.E_),
     N_(D.N_),
+    Sa_(D.Sa_),
+    Ea_(D.Ea_),
+    Na_(D.Na_),
     mshLevelPtr_(nullptr)
 {
     allocate(D.B().N());
@@ -179,6 +196,9 @@ meshDirection<Type,MeshType>::meshDirection
     S_(D.S_),
     E_(D.E_),
     N_(D.N_),
+    Sa_(D.Sa_),
+    Ea_(D.Ea_),
+    Na_(D.Na_),
     mshLevelPtr_(nullptr)
 {
     allocate(D.B().N());
@@ -198,6 +218,9 @@ meshDirection<Type,MeshType>::meshDirection
     S_(tD->S_),
     E_(tD->E_),
     N_(tD->N_),
+    Sa_(tD->Sa_),
+    Ea_(tD->Ea_),
+    Na_(tD->Na_),
     mshLevelPtr_(nullptr)
 {
     if (tD.isTmp())
@@ -230,6 +253,9 @@ meshDirection<Type,MeshType>::meshDirection
     S_(tD->S_),
     E_(tD->E_),
     N_(tD->N_),
+    Sa_(tD->Sa_),
+    Ea_(tD->Ea_),
+    Na_(tD->Na_),
     mshLevelPtr_(nullptr)
 {
     if (tD.isTmp())
@@ -263,6 +289,9 @@ meshDirection<Type,MeshType>::meshDirection
     S_(tD->S_),
     E_(tD->E_),
     N_(tD->N_),
+    Sa_(tD->Sa_),
+    Ea_(tD->Ea_),
+    Na_(tD->Na_),
     mshLevelPtr_(nullptr)
 {
     if (tD.isTmp())
@@ -297,7 +326,8 @@ meshDirection<Type,MeshType>::meshDirection
     mshLevelPtr_(nullptr)
 {
     allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
-    setActiveCells();
+
+    setInternalCells();
 }
 
 template<class Type, class MeshType>
@@ -317,7 +347,8 @@ meshDirection<Type,MeshType>::meshDirection
 {
     allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
     *this = Zero;
-    setActiveCells();
+
+    setInternalCells();
 }
 
 template<class Type, class MeshType>
@@ -337,42 +368,13 @@ meshDirection<Type,MeshType>::meshDirection
 {
     allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
     *this = v;
-    setActiveCells();
+
+    setInternalCells();
 }
 
 template<class Type, class MeshType>
 meshDirection<Type,MeshType>::~meshDirection()
 {}
-
-template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::initGhosts()
-{
-    initGhosts(pTraits<Type>::zero);
-}
-
-template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::initGhosts(const Type& v)
-{
-    labelVector bo;
-
-    for (bo.x() = -1; bo.x() <= 1; bo.x()++)
-    for (bo.y() = -1; bo.y() <= 1; bo.y()++)
-    for (bo.z() = -1; bo.z() <= 1; bo.z()++)
-    if (cmptSum(cmptMag(bo)) > 0)
-    {
-        const labelVector S(this->boundaryStart(bo));
-        const labelVector E(this->boundaryEnd(bo));
-
-        labelVector ijk;
-
-        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-        {
-            this->operator()(ijk+bo) = v;
-        }
-    }
-}
 
 template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::operator=

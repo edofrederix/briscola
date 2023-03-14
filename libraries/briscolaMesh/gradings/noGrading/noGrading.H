@@ -16,9 +16,6 @@ class noGrading
 :
     public grading
 {
-    // Copy constructor
-    noGrading(const noGrading&);
-
     // Disallow default bitwise assignment
     void operator=(const noGrading&);
 
@@ -29,6 +26,15 @@ public:
 
     // Construct from components
     noGrading(const brick& b);
+
+    // Copy constructor
+    noGrading(const noGrading&);
+
+    // Clone grading
+    virtual autoPtr<grading> clone() const
+    {
+        return autoPtr<grading>(new noGrading(*this));
+    }
 
     // Linear normalized mapping function
     virtual tmp<scalarField> operator()

@@ -29,10 +29,13 @@ public:
     // Copy constructor
     vertex(const vertex&);
 
-    // Clone this vertex (needed by PtrList)
-    inline autoPtr<vertex> clone() const
+    // Copy constructor with new edge
+    vertex(const vertex&, const edge&);
+
+    // Clone vertex with reference to new edge
+    inline autoPtr<vertex> clone(const edge& e) const
     {
-        return autoPtr<vertex>(new vertex(*this));
+        return autoPtr<vertex>(new vertex(*this, e));
     }
 
     // Destructor

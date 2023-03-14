@@ -327,6 +327,8 @@ arguments::arguments
     args_.setSize(nArgs);
 
     parse(checkArgs, checkOpts);
+
+    sigFpe_.set(false);
 }
 
 void arguments::parse

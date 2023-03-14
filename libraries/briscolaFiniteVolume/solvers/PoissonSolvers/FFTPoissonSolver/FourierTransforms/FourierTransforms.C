@@ -19,7 +19,7 @@ FourierTransforms::FourierTransforms
 )
 :
     fvMsh_(fvMsh),
-    N_(fvMsh.N()),
+    N_(fvMsh.msh().cast<rectilinearMesh>().N()),
     decomp_(d),
     xPencil_(xPencil),
     yPencil_(yPencil)

@@ -131,6 +131,15 @@ const labelTensor permuteXY(0,1,0,1,0,0,0,0,1);
 const labelTensor permuteXZ(0,0,1,0,1,0,1,0,0);
 const labelTensor permuteYZ(1,0,0,0,0,1,0,1,0);
 
+// Collection of permutations
+
+const labelTensor permutations[] =
+{
+    permuteXY,
+    permuteXZ,
+    permuteYZ
+};
+
 // Unit label vectors
 
 const labelVector zeroXYZ(0,0,0);

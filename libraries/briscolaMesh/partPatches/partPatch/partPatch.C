@@ -12,7 +12,6 @@ defineRunTimeSelectionTable(partPatch, dictionary);
 
 partPatch::partPatch(const mesh& msh, const dictionary& dict)
 :
-    msh_(msh),
     dict_(dict),
     name_(dict.lookup("name")),
     boundaryOffset_(dict.lookup("boundaryOffset")),
@@ -29,7 +28,6 @@ partPatch::partPatch
     const partPatch& pp
 )
 :
-    msh_(pp.msh_),
     dict_(pp.dict_),
     name_(pp.name_),
     boundaryOffset_(pp.boundaryOffset_),

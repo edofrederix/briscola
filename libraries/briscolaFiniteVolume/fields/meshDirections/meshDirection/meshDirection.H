@@ -42,23 +42,29 @@ class meshDirection
     // Direction number
     label d_;
 
-    // Active cell block start index w.r.t. non-ghost cells
+    // Internal cell block start
     labelVector S_;
 
-    // Active cell block end index w.r.t. non-ghost cells
+    // Internal cell block end
     labelVector E_;
 
-    // Active cell block size
+    // Internal cell block size
     labelVector N_;
+
+    // Active cell block start
+    labelVector Sa_;
+
+    // Active cell block end
+    labelVector Ea_;
+
+    // Active cell block size
+    labelVector Na_;
 
     // Pointer to the mesh level, if any
     meshLevel<Type,MeshType>* mshLevelPtr_;
 
-    // Set active cells
-    void setActiveCells();
-
-    // Set active cells given lower and upper slave vectors
-    void setActiveCells(const labelVector, const labelVector);
+    // Set internal cells
+    void setInternalCells();
 
     // Update active cells based on boundary conditions
     void updateActiveCells();
@@ -114,12 +120,6 @@ public:
     // Destructor
     virtual ~meshDirection();
 
-    // Initialize ghost cells to zero
-    void initGhosts();
-
-    // Initialize ghost cells to the given value
-    void initGhosts(const Type&);
-
     // Return the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
@@ -150,17 +150,27 @@ public:
     // Const access to the base
     inline const block<Type>& B() const { return *this; }
 
-    // Return the active cell block start
+    // Return the internal cell block start
     inline labelVector S() const { return S_; }
 
-    // Return the active cell block end
+    // Return the internal cell block end
     inline labelVector E() const { return E_; }
 
-    // Return the active cell block size
+    // Return the internal cell block size
     inline labelVector N() const { return N_; }
 
-    // Return the start point of the internal active cell boundary at given
-    // offset
+    // Return the active cell block start
+    inline labelVector Sa() const { return Sa_; }
+
+    // Return the active cell block end
+    inline labelVector Ea() const { return Ea_; }
+
+    // Return the active cell block size
+    inline labelVector Na() const { return Na_; }
+
+    // Internal cell boundaries
+
+    // Return the start point of the internal cell boundary at given offset
     inline labelVector boundaryStart(const labelVector& bo) const
     {
         return labelVector
@@ -171,7 +181,7 @@ public:
         );
     }
 
-    // Return the shape of the internal active cell boundary at given offset
+    // Return the shape of the internal cell boundary at given offset
     inline labelVector boundaryN(const labelVector& bo) const
     {
         return labelVector
@@ -182,7 +192,7 @@ public:
         );
     }
 
-    // Return the end of the internal active cell boundary at given offset
+    // Return the end of the internal cell boundary at given offset
     inline labelVector boundaryEnd(const labelVector& bo) const
     {
         return boundaryStart(bo) + boundaryN(bo);
@@ -204,8 +214,11 @@ public:
         return labelTensor(N_.x(),0,0,0,N_.y(),0,0,0,N_.z());
     }
 
-    // Return the number of active cells
+    // Return the number of internal cells
     inline int size() const { return cmptProduct(N_); }
+
+    // Return the number of active cells
+    inline int activeSize() const { return cmptProduct(Na_); }
 
     // Linear element access operator will not work efficiently due to
     // ghost cells, so let's prevent its use

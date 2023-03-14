@@ -102,7 +102,7 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk+bo) = H*val(ijk-S);
+                fd(ijk) = H*val(ijk-S);
             }
         }
         else
@@ -117,38 +117,7 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
     }
 }
 
-makeBoundaryConditionType(Dirichlet,label,colocated)
-makeBoundaryConditionType(Dirichlet,label,staggered)
-
-makeBoundaryConditionType(Dirichlet,scalar,colocated)
-makeBoundaryConditionType(Dirichlet,scalar,staggered)
-
-makeBoundaryConditionType(Dirichlet,faceScalar,colocated)
-makeBoundaryConditionType(Dirichlet,faceScalar,staggered)
-
-makeBoundaryConditionType(Dirichlet,vector,colocated)
-makeBoundaryConditionType(Dirichlet,vector,staggered)
-
-makeBoundaryConditionType(Dirichlet,faceVector,colocated)
-makeBoundaryConditionType(Dirichlet,faceVector,staggered)
-
-makeBoundaryConditionType(Dirichlet,tensor,colocated)
-makeBoundaryConditionType(Dirichlet,tensor,staggered)
-
-makeBoundaryConditionType(Dirichlet,sphericalTensor,colocated)
-makeBoundaryConditionType(Dirichlet,sphericalTensor,staggered)
-
-makeBoundaryConditionType(Dirichlet,symmTensor,colocated)
-makeBoundaryConditionType(Dirichlet,symmTensor,staggered)
-
-makeBoundaryConditionType(Dirichlet,diagTensor,colocated)
-makeBoundaryConditionType(Dirichlet,diagTensor,staggered)
-
-makeBoundaryConditionType(Dirichlet,stencil,colocated)
-makeBoundaryConditionType(Dirichlet,stencil,staggered)
-
-makeBoundaryConditionType(Dirichlet,diagStencil,colocated)
-makeBoundaryConditionType(Dirichlet,diagStencil,staggered)
+makeBoundaryConditionTypes(Dirichlet)
 
 }
 

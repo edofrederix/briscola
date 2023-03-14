@@ -56,19 +56,19 @@ midPointFaceGradientScheme<Type,MeshType>::faceGrad
         meshDirection<FaceSpace<Type>,MeshType>& G = Grad[l][d];
         const meshDirection<Type,MeshType>& f = field[l][d];
 
-        G.initGhosts();
+        G = Zero;
 
-        forAllCells(f, i, j, k)
+        forAllCells(G, i, j, k)
         {
             G(i,j,k) =
                 FaceSpace<Type>
                 (
-                    f(i,j,k)-f(i-1,j,  k  ),
-                  - f(i,j,k)+f(i+1,j,  k  ),
-                    f(i,j,k)-f(i,  j-1,k  ),
-                  - f(i,j,k)+f(i,  j+1,k  ),
-                    f(i,j,k)-f(i,  j,  k-1),
-                  - f(i,j,k)+f(i,  j,  k+1)
+                    f(i-1,j,  k  ) - f(i,j,k),
+                    f(i+1,j,  k  ) - f(i,j,k),
+                    f(i,  j-1,k  ) - f(i,j,k),
+                    f(i,  j+1,k  ) - f(i,j,k),
+                    f(i,  j,  k-1) - f(i,j,k),
+                    f(i,  j,  k+1) - f(i,j,k)
                 )
               * fd(i,j,k);
         }

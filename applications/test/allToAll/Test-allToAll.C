@@ -451,7 +451,7 @@ int main(int argc, char *argv[])
 
     Info<< "Sending data with non-blocking transactions ..." << endl;
 
-    data *= 0.0;
+    data = Zero;
 
     t1 = high_resolution_clock::now();
 

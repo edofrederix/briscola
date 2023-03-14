@@ -21,9 +21,6 @@ class geometricGrading
     // Grading factors
     vector f_;
 
-    // Copy constructor
-    geometricGrading(const geometricGrading&);
-
     // Disallow default bitwise assignment
     void operator=(const geometricGrading&);
 
@@ -34,6 +31,15 @@ public:
 
     // Construct from components
     geometricGrading(const brick& b);
+
+    // Copy constructor
+    geometricGrading(const geometricGrading&);
+
+    // Clone grading
+    virtual autoPtr<grading> clone() const
+    {
+        return autoPtr<grading>(new geometricGrading(*this));
+    }
 
     // Linear normalized mapping function
     virtual tmp<scalarField> operator()

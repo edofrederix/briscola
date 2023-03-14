@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         );
 
     #define RESETFIELD(TYPENAME, MESHTYPE)                              \
-        MESHTYPE##TYPENAME##TestField.ref() *= 0;                       \
+        MESHTYPE##TYPENAME##TestField.ref() = Zero;                     \
         MESHTYPE##TYPENAME##TestField.ref().readOpt() =                 \
             IOobject::MUST_READ;
 
@@ -111,7 +111,11 @@ int main(int argc, char *argv[])
     CREATEFIELD(symmTensor,SymmTensor,colocated)
     CREATEFIELD(sphericalTensor,SphericalTensor,colocated)
     CREATEFIELD(faceScalar,FaceScalar,colocated)
+    CREATEFIELD(edgeScalar,EdgeScalar,colocated)
+    CREATEFIELD(vertexScalar,VertexScalar,colocated)
     CREATEFIELD(faceVector,FaceVector,colocated)
+    CREATEFIELD(edgeVector,EdgeVector,colocated)
+    CREATEFIELD(vertexVector,VertexVector,colocated)
 
     forAll(fvMsh, l)
     {
@@ -126,7 +130,11 @@ int main(int argc, char *argv[])
     RESETFIELD(SymmTensor,colocated)
     RESETFIELD(SphericalTensor,colocated)
     RESETFIELD(FaceScalar,colocated)
+    RESETFIELD(EdgeScalar,colocated)
+    RESETFIELD(VertexScalar,colocated)
     RESETFIELD(FaceVector,colocated)
+    RESETFIELD(EdgeVector,colocated)
+    RESETFIELD(VertexVector,colocated)
 
     forAll(fvMsh, l)
     {
@@ -141,11 +149,15 @@ int main(int argc, char *argv[])
     TESTFIELD(symmTensor,SymmTensor,colocated)
     TESTFIELD(sphericalTensor,SphericalTensor,colocated)
     TESTFIELD(faceScalar,FaceScalar,colocated)
+    TESTFIELD(edgeScalar,EdgeScalar,colocated)
+    TESTFIELD(vertexScalar,VertexScalar,colocated)
     TESTFIELD(faceVector,FaceVector,colocated)
+    TESTFIELD(edgeVector,EdgeVector,colocated)
+    TESTFIELD(vertexVector,VertexVector,colocated)
 
     // Staggered fields only on structured meshes
 
-    if (fvMsh.topology().structured())
+    if (fvMsh.structured())
     {
         CREATEFIELD(label,Label,staggered)
         CREATEFIELD(scalar,Scalar,staggered)
@@ -155,7 +167,11 @@ int main(int argc, char *argv[])
         CREATEFIELD(symmTensor,SymmTensor,staggered)
         CREATEFIELD(sphericalTensor,SphericalTensor,staggered)
         CREATEFIELD(faceScalar,FaceScalar,staggered)
+        CREATEFIELD(edgeScalar,EdgeScalar,staggered)
+        CREATEFIELD(vertexScalar,VertexScalar,staggered)
         CREATEFIELD(faceVector,FaceVector,staggered)
+        CREATEFIELD(edgeVector,EdgeVector,staggered)
+        CREATEFIELD(vertexVector,VertexVector,staggered)
 
         forAll(fvMsh, l)
         {
@@ -170,7 +186,11 @@ int main(int argc, char *argv[])
         RESETFIELD(SymmTensor,staggered)
         RESETFIELD(SphericalTensor,staggered)
         RESETFIELD(FaceScalar,staggered)
+        RESETFIELD(EdgeScalar,staggered)
+        RESETFIELD(VertexScalar,staggered)
         RESETFIELD(FaceVector,staggered)
+        RESETFIELD(EdgeVector,staggered)
+        RESETFIELD(VertexVector,staggered)
 
         forAll(fvMsh, l)
         {
@@ -185,6 +205,10 @@ int main(int argc, char *argv[])
         TESTFIELD(symmTensor,SymmTensor,staggered)
         TESTFIELD(sphericalTensor,SphericalTensor,staggered)
         TESTFIELD(faceScalar,FaceScalar,staggered)
+        TESTFIELD(edgeScalar,EdgeScalar,staggered)
+        TESTFIELD(vertexScalar,VertexScalar,staggered)
         TESTFIELD(faceVector,FaceVector,staggered)
+        TESTFIELD(edgeVector,EdgeVector,staggered)
+        TESTFIELD(vertexVector,VertexVector,staggered)
     }
 }

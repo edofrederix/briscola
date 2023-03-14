@@ -64,6 +64,15 @@ public:
     // Construct from geometry
     brickTopology(const geometry&);
 
+    // Copy constructor
+    brickTopology(const brickTopology&);
+
+    // Clone this brick topology
+    inline autoPtr<brickTopology> clone() const
+    {
+        return autoPtr<brickTopology>(new brickTopology(*this));
+    }
+
     // Destructor
     virtual ~brickTopology();
 

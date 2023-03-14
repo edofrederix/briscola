@@ -89,7 +89,7 @@ void emptyBoundaryCondition<Type,MeshType>::evaluate
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk+bo) = Zero;
+                fd(ijk) = Zero;
             }
         }
         else
@@ -104,38 +104,8 @@ void emptyBoundaryCondition<Type,MeshType>::evaluate
     }
 }
 
-makeBoundaryConditionType(empty,label,colocated)
-makeBoundaryConditionType(empty,label,staggered)
+makeBoundaryConditionTypes(empty)
 
-makeBoundaryConditionType(empty,scalar,colocated)
-makeBoundaryConditionType(empty,scalar,staggered)
-
-makeBoundaryConditionType(empty,faceScalar,colocated)
-makeBoundaryConditionType(empty,faceScalar,staggered)
-
-makeBoundaryConditionType(empty,vector,colocated)
-makeBoundaryConditionType(empty,vector,staggered)
-
-makeBoundaryConditionType(empty,faceVector,colocated)
-makeBoundaryConditionType(empty,faceVector,staggered)
-
-makeBoundaryConditionType(empty,tensor,colocated)
-makeBoundaryConditionType(empty,tensor,staggered)
-
-makeBoundaryConditionType(empty,sphericalTensor,colocated)
-makeBoundaryConditionType(empty,sphericalTensor,staggered)
-
-makeBoundaryConditionType(empty,symmTensor,colocated)
-makeBoundaryConditionType(empty,symmTensor,staggered)
-
-makeBoundaryConditionType(empty,diagTensor,colocated)
-makeBoundaryConditionType(empty,diagTensor,staggered)
-
-makeBoundaryConditionType(empty,stencil,colocated)
-makeBoundaryConditionType(empty,stencil,staggered)
-
-makeBoundaryConditionType(empty,diagStencil,colocated)
-makeBoundaryConditionType(empty,diagStencil,staggered)
 
 }
 

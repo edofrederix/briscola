@@ -10,9 +10,6 @@ namespace Foam
 namespace briscola
 {
 
-namespace edges
-{
-
 class arcEdge
 :
     public edge
@@ -32,9 +29,6 @@ class arcEdge
     // Unit start vector relative to center
     vector start_;
 
-    // Copy constructor
-    arcEdge(const arcEdge&);
-
     // Disallow default bitwise assignment
     void operator=(const arcEdge&);
 
@@ -46,6 +40,24 @@ public:
     // Construct from components
     arcEdge(const face&, const label, const labelBlock&, const labelVector&);
 
+    // Copy constructor
+    arcEdge(const arcEdge&);
+
+    // Copy constructor
+    arcEdge(const arcEdge&, const face&);
+
+    // Clone edge
+    virtual autoPtr<edge> clone() const
+    {
+        return autoPtr<edge>(new arcEdge(*this));
+    }
+
+    // Clone edge with new face
+    virtual autoPtr<edge> clone(const face& f) const
+    {
+        return autoPtr<edge>(new arcEdge(*this, f));
+    }
+
     // Length of the edge
     virtual scalar length() const
     {
@@ -55,8 +67,6 @@ public:
     // Parametrized coordinate
     virtual tmp<vectorField> operator()(const scalarField&) const;
 };
-
-}
 
 }
 

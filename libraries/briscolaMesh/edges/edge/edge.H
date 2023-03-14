@@ -27,9 +27,6 @@ class edge
     // List of vertices
     PtrList<vertex> vertices_;
 
-    // Copy constructor
-    edge(const edge&);
-
     // Disallow default bitwise assignment
     void operator=(const edge&);
 
@@ -55,6 +52,15 @@ public:
 
     // Construct from components
     edge(const face&, const label, const labelBlock&, const labelVector&);
+
+    // Copy constructor
+    edge(const edge&);
+
+    // Copy constructor with reference to new face
+    edge(const edge&, const face& f);
+
+    // Clone edge with reference to new face
+    virtual autoPtr<edge> clone(const face&) const = 0;
 
     // Selector
     static autoPtr<edge> New

@@ -6,6 +6,7 @@
 #include "vector.H"
 #include "block.H"
 #include "fvMesh.H"
+#include "rectilinearMesh.H"
 
 namespace Foam
 {
@@ -38,7 +39,7 @@ class tridiagonalSolver
     scalarList lambdaY_;
 
     // Cell size arrays for each direction
-    PtrList<scalarList> cellSizes_;
+    const PtrList<scalarList> cellSizes_;
 
 public:
 

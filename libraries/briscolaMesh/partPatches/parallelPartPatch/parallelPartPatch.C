@@ -54,6 +54,12 @@ parallelPartPatch::parallelPartPatch(const mesh& msh, const dictionary& dict)
     }
 }
 
+parallelPartPatch::parallelPartPatch(const parallelPartPatch& pp)
+:
+    partPatch(pp),
+    neighborProcNum_(pp.neighborProcNum_)
+{}
+
 }
 
 }

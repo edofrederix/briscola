@@ -21,12 +21,16 @@ vertex::vertex(const edge& e, const label num, const label j)
     j_(j)
 {}
 
-vertex::vertex
-(
-    const vertex& v
-)
+vertex::vertex(const vertex& v)
 :
     meshObject<edge>(v.parentEdge(), v.num()),
+    vector(v),
+    j_(v.j_)
+{}
+
+vertex::vertex(const vertex& v, const edge& e)
+:
+    meshObject<edge>(e, v.num()),
     vector(v),
     j_(v.j_)
 {}

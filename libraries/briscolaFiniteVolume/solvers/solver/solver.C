@@ -128,7 +128,7 @@ void solver<SType,Type,MeshType>::RBGS
             const meshDirection<SType,MeshType>& Ad = A[d];
             const meshDirection<Type,MeshType>& bd = b[d];
 
-            forAllCells(xd, i, j, k)
+            forAllActiveCells(xd, i, j, k)
             {
                 if ((i+j+k) % 2 == 0)
                     xd(i,j,k) +=
@@ -150,7 +150,7 @@ void solver<SType,Type,MeshType>::RBGS
             const meshDirection<SType,MeshType>& Ad = A[d];
             const meshDirection<Type,MeshType>& bd = b[d];
 
-            forAllCells(xd, i, j, k)
+            forAllActiveCells(xd, i, j, k)
             {
                 if ((i+j+k) % 2 == 1)
                     xd(i,j,k) +=
@@ -190,7 +190,7 @@ void solver<SType,Type,MeshType>::LEXGS
             const meshDirection<SType,MeshType>& Ad = A[d];
             const meshDirection<Type,MeshType>& bd = b[d];
 
-            forAllCells(xd, i, j, k)
+            forAllActiveCells(xd, i, j, k)
             {
                 xd(i,j,k) +=
                     omega
@@ -232,7 +232,7 @@ void solver<SType,Type,MeshType>::JAC
             const meshDirection<SType,MeshType>& Ad = A[d];
             const meshDirection<Type,MeshType>& bd = b[d];
 
-            forAllCells(xd, i, j, k)
+            forAllActiveCells(xd, i, j, k)
             {
                 yd(i,j,k) +=
                     omega

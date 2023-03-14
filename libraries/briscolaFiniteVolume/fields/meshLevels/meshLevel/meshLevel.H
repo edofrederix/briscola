@@ -131,14 +131,18 @@ public:
     // Part level
     inline const partLevel& level() const { return fvMsh_[l_]; }
 
-    // Initialize ghost cells to zero
-    void initGhosts();
-
-    // Initialize ghost cells to the given value
-    void initGhosts(const Type&);
-
     // Correct boundary conditions for this level
     void correctBoundaryConditions(const bool = false);
+
+    // Correct parallel boundary conditions for this level
+    void correctParallelBoundaryConditions();
+
+    // Correct periodic boundary conditions for this level
+    void correctPeriodicBoundaryConditions();
+
+    // Correct communicating (parallel and periodic) boundary conditions for
+    // this level
+    void correctCommBoundaryConditions();
 
     // Member operators
 

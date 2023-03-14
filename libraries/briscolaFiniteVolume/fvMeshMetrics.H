@@ -21,22 +21,28 @@ class fvMeshMetrics
     // Reference to the fvMesh object
     const fvMesh& fvMsh_;
 
-    // Face center field pointer
+    // Face center field
     meshField<faceVector,MeshType> faceCenters_;
 
-    // Face normal field pointer
+    // Edge center field
+    meshField<edgeVector,MeshType> edgeCenters_;
+
+    // Vertex center field
+    meshField<vertexVector,MeshType> vertexCenters_;
+
+    // Face outward normal field
     meshField<faceVector,MeshType> faceNormals_;
 
-    // Face area field pointer
+    // Face area field
     meshField<faceScalar,MeshType> faceAreas_;
 
-    // Face normals with magnitude face area field pointer
+    // Face outward normal with magnitude face area field
     meshField<faceVector,MeshType> faceAreaNormals_;
 
-    // Cell center field pointer
+    // Cell center field
     meshField<vector,MeshType> cellCenters_;
 
-    // Cell volume field pointer
+    // Cell volume field
     meshField<scalar,MeshType> cellVolumes_;
 
     // Face delta coefficients (inverse of the cell-to-cell distance across a
@@ -45,6 +51,12 @@ class fvMeshMetrics
 
     // Calculate face centers
     void calculateFaceCenters();
+
+    // Calculate edge centers
+    void calculateEdgeCenters();
+
+    // Calculate vertex centers
+    void calculateVertexCenters();
 
     // Calculate face areas and normals
     void calculateFaceAreasAndNormals();
@@ -78,7 +90,19 @@ public:
         return faceCenters_;
     }
 
-    // Const access to face normals
+    // Const access to edge centers
+    inline const meshField<edgeVector,MeshType>& edgeCenters() const
+    {
+        return edgeCenters_;
+    }
+
+    // Const access to vertex centers
+    inline const meshField<vertexVector,MeshType>& vertexCenters() const
+    {
+        return vertexCenters_;
+    }
+
+    // Const access to face outward normals
     inline const meshField<faceVector,MeshType>& faceNormals() const
     {
         return faceNormals_;
@@ -90,7 +114,7 @@ public:
         return faceAreas_;
     }
 
-    // Const access to face areas
+    // Const access to face outward normal with area magnitude
     inline const meshField<faceVector,MeshType>& faceAreaNormals() const
     {
         return faceAreaNormals_;

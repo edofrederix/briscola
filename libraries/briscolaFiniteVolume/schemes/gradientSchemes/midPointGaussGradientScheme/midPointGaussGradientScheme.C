@@ -62,18 +62,18 @@ midPointGaussGradientScheme<Type,MeshType>::grad
         meshDirection<GradType,MeshType>& G = Grad[l][d];
         const meshDirection<Type,MeshType>& f = field[l][d];
 
-        G.initGhosts();
+        G = Zero;
 
-        forAllCells(f, i, j, k)
+        forAllCells(G, i, j, k)
         {
             G(i,j,k) =
                 0.5
               * (
-                  - (f(i,j,k) + f(i-1,j,k)) * fan(i,j,k).left()
+                    (f(i,j,k) + f(i-1,j,k)) * fan(i,j,k).left()
                   + (f(i,j,k) + f(i+1,j,k)) * fan(i,j,k).right()
-                  - (f(i,j,k) + f(i,j-1,k)) * fan(i,j,k).bottom()
+                  + (f(i,j,k) + f(i,j-1,k)) * fan(i,j,k).bottom()
                   + (f(i,j,k) + f(i,j+1,k)) * fan(i,j,k).top()
-                  - (f(i,j,k) + f(i,j,k-1)) * fan(i,j,k).aft()
+                  + (f(i,j,k) + f(i,j,k-1)) * fan(i,j,k).aft()
                   + (f(i,j,k) + f(i,j,k+1)) * fan(i,j,k).fore()
                 )
               / cv(i,j,k);
@@ -116,7 +116,7 @@ midPointGaussGradientScheme<Type,MeshType>::stagGrad
 
             meshDirection<Type,staggered>& G = Grad[l][d];
 
-            G.initGhosts();
+            G = Zero;
 
             forAllCells(G, i, j, k)
             {

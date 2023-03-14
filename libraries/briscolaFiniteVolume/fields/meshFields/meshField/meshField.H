@@ -138,12 +138,6 @@ public:
     // Number of levels
     inline label size() const { return listType::size(); }
 
-    // Initialize ghost cells to zero
-    void initGhosts();
-
-    // Initialize ghost cells to the given value
-    void initGhosts(const Type&);
-
     // Return the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
@@ -184,6 +178,15 @@ public:
 
     // Correct boundary conditions
     void correctBoundaryConditions(const bool = false);
+
+    // Correct parallel boundary conditions
+    void correctParallelBoundaryConditions();
+
+    // Correct periodic boundary conditions
+    void correctPeriodicBoundaryConditions();
+
+    // Correct communicating (parallel and periodic) boundary conditions
+    void correctCommBoundaryConditions();
 
     // Check if boundary conditions are singular, which is true if all boundary
     // conditions are empty, parallel, periodic or Neumann

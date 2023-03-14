@@ -89,11 +89,11 @@ tmp<meshField<Type,MeshType>> explicitDiv
             phi.fvMsh().template
             metrics<MeshType>().cellVolumes()[l][d];
 
-        D.initGhosts();
+        D = Zero;
 
         forAllCells(p, i, j, k)
         {
-            D(i,j,k) = neighborSkewSum(p(i,j,k))/cv(i,j,k);
+            D(i,j,k) = neighborSum(p(i,j,k))/cv(i,j,k);
         }
     }
 
@@ -133,7 +133,7 @@ tmp<meshField<Type,colocated>> explicitColoDiv
             field.fvMsh().template
             metrics<colocated>().faceAreas()[l][0];
 
-        D.initGhosts();
+        D = Zero;
 
         forAllCells(D, i, j, k)
         {

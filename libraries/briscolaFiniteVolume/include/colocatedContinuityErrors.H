@@ -8,7 +8,7 @@
 
     forAllBlock(contError, i, j, k)
     {
-        contError(i,j,k) = neighborSkewSum(phid(i,j,k));
+        contError(i,j,k) = neighborSum(phid(i,j,k));
     }
 
     scalar sumLocalContError = 0.0;

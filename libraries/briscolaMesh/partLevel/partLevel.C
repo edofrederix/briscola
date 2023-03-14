@@ -8,17 +8,17 @@ namespace Foam
 namespace briscola
 {
 
-void partLevel::calcPoints()
+void partLevel::calcPoints(const mesh& msh, const partLevel* l)
 {
     points_.clear();
     points_.setSizeFromCells(N_);
 
     if (l_ == 0)
     {
-        const labelVector start = msh_.decomp().myBrickPartStart();
+        const labelVector start = msh.decomp().myBrickPartStart();
 
-        const brick& b = msh_.decomp().myBrick();
-        const labelVector Nb = msh_.decomp().myBrickN();
+        const brick& b = msh.bricks()[msh.decomp().myBrickNum()];
+        const labelVector Nb = b.N();
 
         // Normalized coordinates of the points in this processor's part of the
         // brick
@@ -47,12 +47,12 @@ void partLevel::calcPoints()
     {
         forAllBlock(points_, i, j, k)
         {
-            points_(i,j,k) = parentPtr_->points()(i*R_.x(), j*R_.y(), k*R_.z());
+            points_(i,j,k) = l->points()(i*R_.x(), j*R_.y(), k*R_.z());
         }
     }
 }
 
-void partLevel::calcGhostPoints()
+void partLevel::calcGhostPoints(const mesh& msh)
 {
     // First, project all inner points along the point-to-point vector
 
@@ -94,12 +94,12 @@ void partLevel::calcGhostPoints()
 
     List<const partPatch*> partPatchPtrs(0);
 
-    forAll(msh_.partPatches(), patchi)
+    forAll(msh.partPatches(), patchi)
     {
-        const word type = msh_.partPatches()[patchi].type();
+        const word type = msh.partPatches()[patchi].type();
 
         if (type == "parallel" || type == "periodic")
-            partPatchPtrs.append(&msh_.partPatches()[patchi]);
+            partPatchPtrs.append(&msh.partPatches()[patchi]);
     }
 
     const label Np = partPatchPtrs.size();
@@ -118,6 +118,7 @@ void partLevel::calcGhostPoints()
 
         const labelVector S(pointBoundaryStart(bo));
         const labelVector E(pointBoundaryEnd(bo));
+        const labelVector N(pointBoundaryN(bo));
 
         neighborProcNums[patchi] =
             readLabel(p.dict().lookup("neighborProcNum"));
@@ -262,18 +263,16 @@ void partLevel::calcGhostPoints()
 
 partLevel::partLevel(const mesh& msh, const partLevel* l)
 :
-    msh_(msh),
-    parentPtr_(l),
     l_(l == nullptr ? 0 : l->partLevelNum()+1)
 {
-    if (parentPtr_ == nullptr)
+    if (l == nullptr)
     {
-        N_ = msh_.decomp().myPartN();
+        N_ = msh.decomp().myPartN();
         R_ = zeroXYZ;
     }
     else
     {
-        const labelVector P(parentPtr_->N());
+        const labelVector P(l->N());
 
         N_ =
             labelVector
@@ -286,8 +285,8 @@ partLevel::partLevel(const mesh& msh, const partLevel* l)
         R_ = cmptDivide(P,N_);
     }
 
-    calcPoints();
-    calcGhostPoints();
+    calcPoints(msh, l);
+    calcGhostPoints(msh);
 
     // Check if part directions are rectilinear, which is true if all left,
     // bottom and aft face vectors are aligned
@@ -397,6 +396,16 @@ partLevel::partLevel(const mesh& msh, const partLevel* l)
         }
     }
 }
+
+partLevel::partLevel(const partLevel& l)
+:
+    l_(l.l_),
+    N_(l.N_),
+    R_(l.R_),
+    points_(l.points_),
+    rectilinear_(l.rectilinear_),
+    uniform_(l.uniform_)
+{}
 
 partLevel::~partLevel()
 {}

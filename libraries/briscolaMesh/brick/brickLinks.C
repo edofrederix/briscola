@@ -14,6 +14,14 @@ brickLinks::brickLinks(const brick& b)
     vertexLinks_(8)
 {}
 
+brickLinks::brickLinks(const brickLinks& links)
+:
+    b_(links.b_),
+    faceLinks_(links.faceLinks_),
+    edgeLinks_(links.edgeLinks_),
+    vertexLinks_(links.vertexLinks_)
+{}
+
 brickLinks::~brickLinks()
 {}
 

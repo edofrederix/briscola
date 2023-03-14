@@ -3,6 +3,12 @@ arguments/arguments.C
 primitives/FaceSpace/faceScalar/faceScalar.C
 primitives/FaceSpace/faceVector/faceVector.C
 
+primitives/EdgeSpace/edgeScalar/edgeScalar.C
+primitives/EdgeSpace/edgeVector/edgeVector.C
+
+primitives/VertexSpace/vertexScalar/vertexScalar.C
+primitives/VertexSpace/vertexVector/vertexVector.C
+
 primitives/StencilSpace/stencil/stencil.C
 primitives/StencilSpace/diagStencil/diagStencil.C
 
@@ -18,6 +24,12 @@ blocks/diagTensorBlock/diagTensorBlock.C
 
 blocks/faceScalarBlock/faceScalarBlock.C
 blocks/faceVectorBlock/faceVectorBlock.C
+
+blocks/edgeScalarBlock/edgeScalarBlock.C
+blocks/edgeVectorBlock/edgeVectorBlock.C
+
+blocks/vertexScalarBlock/vertexScalarBlock.C
+blocks/vertexVectorBlock/vertexVectorBlock.C
 
 blocks/stencilBlock/stencilBlock.C
 blocks/diagStencilBlock/diagStencilBlock.C

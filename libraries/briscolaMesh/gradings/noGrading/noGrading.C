@@ -19,6 +19,11 @@ noGrading::noGrading(const brick& b)
     grading(b)
 {}
 
+noGrading::noGrading(const noGrading& g)
+:
+    grading(g)
+{}
+
 }
 
 }

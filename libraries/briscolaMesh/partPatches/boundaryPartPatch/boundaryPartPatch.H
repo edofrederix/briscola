@@ -16,9 +16,6 @@ class boundaryPartPatch
 :
     public partPatch
 {
-    // Copy constructor
-    boundaryPartPatch(const boundaryPartPatch&);
-
     // Disallow default bitwise assignment
     void operator=(const boundaryPartPatch&);
 
@@ -29,6 +26,15 @@ public:
 
     // Construct from components
     boundaryPartPatch(const mesh& msh, const dictionary& dict);
+
+    // Copy constructor
+    boundaryPartPatch(const boundaryPartPatch&);
+
+    // Clone part patch
+    virtual autoPtr<partPatch> clone() const
+    {
+        return autoPtr<partPatch>(new boundaryPartPatch(*this));
+    }
 };
 
 }

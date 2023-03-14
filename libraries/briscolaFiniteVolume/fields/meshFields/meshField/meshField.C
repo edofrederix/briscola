@@ -50,73 +50,6 @@ void meshField<Type,MeshType>::transferData
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::addBoundaryConditions()
-{
-    if (boundaryConditions_.size() == 0)
-    {
-        // First add boundary patches
-
-        forAll(fvMsh_.partPatches(), patchi)
-        {
-            const partPatch& patch = fvMsh_.partPatches()[patchi];
-
-            if (patch.type() == "boundary")
-            {
-                boundaryConditions_.append
-                (
-                    boundaryCondition<Type,MeshType>::NewBoundary
-                    (
-                        *this,
-                        patch
-                    )
-                );
-            }
-        }
-
-        // Add parallel and periodic patches. First faces, then edges and
-        // finally vertices.
-
-        for(label order = 1; order <= 3; order++)
-        forAll(fvMsh_.partPatches(), patchi)
-        {
-            const partPatch& patch = fvMsh_.partPatches()[patchi];
-            const labelVector bo(patch.boundaryOffset());
-
-            if (cmptSum(cmptMag(bo)) == order)
-            {
-                if (patch.type() == "parallel")
-                {
-                    boundaryConditions_.append
-                    (
-                        boundaryCondition<Type,MeshType>::NewParallel
-                        (
-                            *this,
-                            patch
-                        )
-                    );
-                }
-                else if (patch.type() == "periodic")
-                {
-                    boundaryConditions_.append
-                    (
-                        boundaryCondition<Type,MeshType>::NewPeriodic
-                        (
-                            *this,
-                            patch
-                        )
-                    );
-                }
-            }
-        }
-
-        // Update active cells. For Dirichlet-like boundary conditions, we do
-        // not need to solve for cells on shifted boundaries.
-
-        this->updateActiveCells();
-    }
-}
-
-template<class Type, class MeshType>
 void meshField<Type,MeshType>::updateActiveCells()
 {
     forAll(*this, l)
@@ -156,7 +89,7 @@ meshField<Type,MeshType>::meshField
     oldTimePtr_(nullptr),
     boundaryConditions_()
 {
-    if (!fvMsh.topology().structured() && MeshType::numberOfDirections > 1)
+    if (!fvMsh.structured() && MeshType::numberOfDirections > 1)
     {
         FatalErrorInFunction
             << "Cannot create a " << MeshType::typeName << " field on an "
@@ -392,16 +325,70 @@ meshField<Type,MeshType>::~meshField()
 // Public
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::initGhosts()
+void meshField<Type,MeshType>::addBoundaryConditions()
 {
-    initGhosts(pTraits<Type>::zero);
-}
+    if (boundaryConditions_.size() == 0)
+    {
+        // First add boundary patches
 
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::initGhosts(const Type& v)
-{
-    forAll(*this, l)
-        listType::operator[](l).initGhosts(v);
+        forAll(fvMsh_.partPatches(), patchi)
+        {
+            const partPatch& patch = fvMsh_.partPatches()[patchi];
+
+            if (patch.type() == "boundary")
+            {
+                boundaryConditions_.append
+                (
+                    boundaryCondition<Type,MeshType>::NewBoundary
+                    (
+                        *this,
+                        patch
+                    )
+                );
+            }
+        }
+
+        // Add parallel and periodic patches. First faces, then edges and
+        // finally vertices.
+
+        for(label order = 1; order <= 3; order++)
+        forAll(fvMsh_.partPatches(), patchi)
+        {
+            const partPatch& patch = fvMsh_.partPatches()[patchi];
+            const labelVector bo(patch.boundaryOffset());
+
+            if (cmptSum(cmptMag(bo)) == order)
+            {
+                if (patch.type() == "parallel")
+                {
+                    boundaryConditions_.append
+                    (
+                        boundaryCondition<Type,MeshType>::NewParallel
+                        (
+                            *this,
+                            patch
+                        )
+                    );
+                }
+                else if (patch.type() == "periodic")
+                {
+                    boundaryConditions_.append
+                    (
+                        boundaryCondition<Type,MeshType>::NewPeriodic
+                        (
+                            *this,
+                            patch
+                        )
+                    );
+                }
+            }
+        }
+
+        // Update active cells. For Dirichlet-like boundary conditions, we do
+        // not need to solve for cells on shifted boundaries.
+
+        this->updateActiveCells();
+    }
 }
 
 template<class Type, class MeshType>
@@ -420,6 +407,43 @@ void meshField<Type,MeshType>::correctBoundaryConditions
 
     forAll(*this, l)
         listType::operator[](l).correctBoundaryConditions(homogeneousBCs);
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctParallelBoundaryConditions()
+{
+    // A call to correctParallelBoundaryConditions() implies that boundary
+    // conditions are needed for this field. Add them if not already done.
+
+    if (boundaryConditions_.size() == 0)
+    {
+        addBoundaryConditions();
+    }
+
+    forAll(*this, l)
+        listType::operator[](l).correctParallelBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctPeriodicBoundaryConditions()
+{
+    // A call to correctPeriodicBoundaryConditions() implies that boundary
+    // conditions are needed for this field. Add them if not already done.
+
+    if (boundaryConditions_.size() == 0)
+    {
+        addBoundaryConditions();
+    }
+
+    forAll(*this, l)
+        listType::operator[](l).correctPeriodicBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctCommBoundaryConditions()
+{
+    this->correctParallelBoundaryConditions();
+    this->correctPeriodicBoundaryConditions();
 }
 
 template<class Type, class MeshType>

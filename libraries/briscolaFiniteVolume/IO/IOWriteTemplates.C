@@ -225,7 +225,11 @@ WRITETYPEFIELD(writeArrayField,diagTensor,colocated)
 WRITETYPEFIELD(writeArrayField,symmTensor,colocated)
 WRITETYPEFIELD(writeArrayField,sphericalTensor,colocated)
 WRITETYPEFIELD(writeArrayField,faceScalar,colocated)
+WRITETYPEFIELD(writeArrayField,edgeScalar,colocated)
+WRITETYPEFIELD(writeArrayField,vertexScalar,colocated)
 WRITETYPEFIELD(writeArrayArrayField,faceVector,colocated)
+WRITETYPEFIELD(writeArrayArrayField,edgeVector,colocated)
+WRITETYPEFIELD(writeArrayArrayField,vertexVector,colocated)
 
 WRITETYPEFIELD(writeScalarField,scalar,staggered)
 WRITETYPEFIELD(writeScalarField,label,staggered)
@@ -235,7 +239,11 @@ WRITETYPEFIELD(writeArrayField,diagTensor,staggered)
 WRITETYPEFIELD(writeArrayField,symmTensor,staggered)
 WRITETYPEFIELD(writeArrayField,sphericalTensor,staggered)
 WRITETYPEFIELD(writeArrayField,faceScalar,staggered)
+WRITETYPEFIELD(writeArrayField,edgeScalar,staggered)
+WRITETYPEFIELD(writeArrayField,vertexScalar,staggered)
 WRITETYPEFIELD(writeArrayArrayField,faceVector,staggered)
+WRITETYPEFIELD(writeArrayArrayField,edgeVector,staggered)
+WRITETYPEFIELD(writeArrayArrayField,vertexVector,staggered)
 
 }
 

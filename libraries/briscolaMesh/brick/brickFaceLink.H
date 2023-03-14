@@ -32,6 +32,21 @@ public:
     // Construct from parent and daughter Face. Optionally set as periodic link
     brickFaceLink(const face&, const face&, const bool = false);
 
+    // Copy constructor
+    inline brickFaceLink(const brickFaceLink& link)
+    :
+        f0_(link.f0_),
+        f1_(link.f1_),
+        T_(link.T_),
+        periodic_(link.periodic_)
+    {}
+
+    // Clone link
+    inline autoPtr<brickFaceLink> clone() const
+    {
+        return autoPtr<brickFaceLink>(new brickFaceLink(*this));
+    }
+
     // Construct from parent, daughter, path and topology. Optionally set as
     // periodic link
     brickFaceLink

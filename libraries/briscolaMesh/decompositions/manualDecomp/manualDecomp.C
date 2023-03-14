@@ -164,8 +164,16 @@ manualDecomp::manualDecomp(mesh& msh)
         }
     }
 
-    updateGlobalData();
+    updateGlobalData(msh);
 }
+
+manualDecomp::manualDecomp(const manualDecomp& decomp)
+:
+    decomposition(decomp),
+    decompPerBrick_(decomp.decompPerBrick_),
+    myBrickNum_(decomp.myBrickNum_),
+    myBrickPart_(decomp.myBrickPart_)
+{}
 
 }
 

@@ -302,4 +302,51 @@ boundaryConditionBaseType globalBoundaryConditionBaseType
                                                                                 \
     template class BC##BoundaryCondition<Type,MeshType>;
 
+#define makeBoundaryConditionTypes(BC)                                          \
+                                                                                \
+makeBoundaryConditionType(BC,label,colocated)                                   \
+makeBoundaryConditionType(BC,label,staggered)                                   \
+                                                                                \
+makeBoundaryConditionType(BC,scalar,colocated)                                  \
+makeBoundaryConditionType(BC,scalar,staggered)                                  \
+                                                                                \
+makeBoundaryConditionType(BC,faceScalar,colocated)                              \
+makeBoundaryConditionType(BC,faceScalar,staggered)                              \
+                                                                                \
+makeBoundaryConditionType(BC,edgeScalar,colocated)                              \
+makeBoundaryConditionType(BC,edgeScalar,staggered)                              \
+                                                                                \
+makeBoundaryConditionType(BC,vertexScalar,colocated)                            \
+makeBoundaryConditionType(BC,vertexScalar,staggered)                            \
+                                                                                \
+makeBoundaryConditionType(BC,vector,colocated)                                  \
+makeBoundaryConditionType(BC,vector,staggered)                                  \
+                                                                                \
+makeBoundaryConditionType(BC,faceVector,colocated)                              \
+makeBoundaryConditionType(BC,faceVector,staggered)                              \
+                                                                                \
+makeBoundaryConditionType(BC,edgeVector,colocated)                              \
+makeBoundaryConditionType(BC,edgeVector,staggered)                              \
+                                                                                \
+makeBoundaryConditionType(BC,vertexVector,colocated)                            \
+makeBoundaryConditionType(BC,vertexVector,staggered)                            \
+                                                                                \
+makeBoundaryConditionType(BC,tensor,colocated)                                  \
+makeBoundaryConditionType(BC,tensor,staggered)                                  \
+                                                                                \
+makeBoundaryConditionType(BC,sphericalTensor,colocated)                         \
+makeBoundaryConditionType(BC,sphericalTensor,staggered)                         \
+                                                                                \
+makeBoundaryConditionType(BC,symmTensor,colocated)                              \
+makeBoundaryConditionType(BC,symmTensor,staggered)                              \
+                                                                                \
+makeBoundaryConditionType(BC,diagTensor,colocated)                              \
+makeBoundaryConditionType(BC,diagTensor,staggered)                              \
+                                                                                \
+makeBoundaryConditionType(BC,stencil,colocated)                                 \
+makeBoundaryConditionType(BC,stencil,staggered)                                 \
+                                                                                \
+makeBoundaryConditionType(BC,diagStencil,colocated)                             \
+makeBoundaryConditionType(BC,diagStencil,staggered)
+
 #endif

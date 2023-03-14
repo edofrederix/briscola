@@ -187,21 +187,21 @@ boundaryCondition<Type,MeshType>::globalBaseType
     const labelVector bo
 )
 {
-    // Global BCs only exist on rectilinear meshes
+    // Global BCs only exist on rectilinear brick topologies
 
     const fvMesh& fvMsh = field.fvMsh();
 
-    if (!fvMsh.topology().rectilinear())
+    if (!fvMsh.msh().topology().rectilinear())
     {
         FatalErrorInFunction
-            << "Mesh is not rectlinear" << endl
+            << "Brick topology is not rectlinear" << endl
             << abort(FatalError);
 
         return boundaryConditionBaseType::DUMMYBC;
     }
     else
     {
-        const decompositionMap& map = fvMsh.decomp().map();
+        const decompositionMap& map = fvMsh.msh().decomp().map();
 
         const label facei = faceNumber(bo);
         const label dir = facei/2;
@@ -374,11 +374,23 @@ makeBoundaryCondition(scalar,staggered)
 makeBoundaryCondition(faceScalar,colocated)
 makeBoundaryCondition(faceScalar,staggered)
 
+makeBoundaryCondition(edgeScalar,colocated)
+makeBoundaryCondition(edgeScalar,staggered)
+
+makeBoundaryCondition(vertexScalar,colocated)
+makeBoundaryCondition(vertexScalar,staggered)
+
 makeBoundaryCondition(vector,colocated)
 makeBoundaryCondition(vector,staggered)
 
 makeBoundaryCondition(faceVector,colocated)
 makeBoundaryCondition(faceVector,staggered)
+
+makeBoundaryCondition(edgeVector,colocated)
+makeBoundaryCondition(edgeVector,staggered)
+
+makeBoundaryCondition(vertexVector,colocated)
+makeBoundaryCondition(vertexVector,staggered)
 
 makeBoundaryCondition(tensor,colocated)
 makeBoundaryCondition(tensor,staggered)

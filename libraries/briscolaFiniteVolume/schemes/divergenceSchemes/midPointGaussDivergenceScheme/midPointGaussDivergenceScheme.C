@@ -48,19 +48,13 @@ midPointGaussDivergenceScheme<Type,MeshType>::div
     {
         meshDirection<stencil,MeshType>& A = Sys.A()[l][d];
 
-        A.initGhosts();
+        A = Zero;
 
         const meshDirection<faceScalar,MeshType>& p = phi[l][d];
-        const meshDirection<Type,MeshType>& f = field[l][d];
 
-        forAllCells(f, i, j, k)
+        forAllCells(A, i, j, k)
         {
             A(i,j,k) = 0.5*p(i,j,k);
-
-            A(i,j,k).left()   = -A(i,j,k).left();
-            A(i,j,k).bottom() = -A(i,j,k).bottom();
-            A(i,j,k).aft()    = -A(i,j,k).aft();
-
             A(i,j,k).center() = neighborSum(A(i,j,k));
         }
     }

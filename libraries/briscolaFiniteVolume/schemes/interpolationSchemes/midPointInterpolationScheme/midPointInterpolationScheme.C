@@ -52,9 +52,9 @@ midPointInterpolationScheme<Type,MeshType>::interp
         meshDirection<FaceSpace<Type>,MeshType>& I = Interp[l][d];
         const meshDirection<Type,MeshType>& f = field[l][d];
 
-        I.initGhosts();
+        I = Zero;
 
-        forAllCells(f, i, j, k)
+        forAllCells(I, i, j, k)
         {
             I(i,j,k) =
                 0.5

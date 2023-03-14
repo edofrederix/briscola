@@ -23,7 +23,7 @@ void testCellCenters(const fvMesh& fvMsh)
 
     const vector Lp
     (
-        cmptDivide(L, vector(fvMsh.decomp().myBrickDecomp()))
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
     forAll(c, l)
@@ -42,7 +42,7 @@ void testCellCenters(const fvMesh& fvMsh)
                   + MeshType::shift[d],
                     vector(fvMsh[l].N())
                 )
-              + vector(fvMsh.decomp().myBrickPart()),
+              + vector(fvMsh.msh().decomp().myBrickPart()),
                 Lp
             )
         );
@@ -63,7 +63,7 @@ void testCellVolumes(const fvMesh& fvMsh)
 
     const vector Lp
     (
-        cmptDivide(L, vector(fvMsh.decomp().myBrickDecomp()))
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
     forAll(v, l)
@@ -95,7 +95,7 @@ void testFaceCenters(const fvMesh& fvMsh)
 
     const vector Lp
     (
-        cmptDivide(L, vector(fvMsh.decomp().myBrickDecomp()))
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
     forAll(c, l)
@@ -114,7 +114,7 @@ void testFaceCenters(const fvMesh& fvMsh)
                   + vector(faceOffsets[o])*0.5,
                     vector(fvMsh[l].N())
                 )
-                + vector(fvMsh.decomp().myBrickPart()),
+              + vector(fvMsh.msh().decomp().myBrickPart()),
                 Lp
             )
         );
@@ -122,7 +122,87 @@ void testFaceCenters(const fvMesh& fvMsh)
         if (mag(c[l][d](i,j,k)[o] - cc) > 1e-12)
         {
             FatalErrorInFunction
-                << "test 3 failed" << abort(FatalError);
+                << "test 3a failed" << abort(FatalError);
+        }
+    }
+}
+
+template<class MeshType>
+void testEdgeCenters(const fvMesh& fvMsh)
+{
+    const meshField<edgeVector,MeshType>& c =
+        fvMsh.metrics<MeshType>().edgeCenters();
+
+    const vector Lp
+    (
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
+    );
+
+    forAll(c, l)
+    forAll(c[l], d)
+    forAllCells(c[l][d], i, j, k)
+    for (label o = 0; o < 12; o++)
+    {
+        const vector cc
+        (
+            cmptMultiply
+            (
+                cmptDivide
+                (
+                    vector(i+0.5, j+0.5, k+0.5)
+                  + MeshType::shift[d]
+                  + vector(edgeOffsets[o])*0.5,
+                    vector(fvMsh[l].N())
+                )
+              + vector(fvMsh.msh().decomp().myBrickPart()),
+                Lp
+            )
+        );
+
+        if (mag(c[l][d](i,j,k)[o] - cc) > 1e-12)
+        {
+            FatalErrorInFunction
+                << "test 3b failed" << abort(FatalError);
+        }
+    }
+}
+
+template<class MeshType>
+void testVertexCenters(const fvMesh& fvMsh)
+{
+    const meshField<vertexVector,MeshType>& c =
+        fvMsh.metrics<MeshType>().vertexCenters();
+
+    const vector Lp
+    (
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
+    );
+
+    forAll(c, l)
+    forAll(c[l], d)
+    forAllCells(c[l][d], i, j, k)
+    for (label o = 0; o < 8; o++)
+    {
+        const vector cc
+        (
+            cmptMultiply
+            (
+                cmptDivide
+                (
+                    vector(i+0.5, j+0.5, k+0.5)
+                  + MeshType::shift[d]
+                  + vector(vertexOffsets[o])*0.5,
+                    vector(fvMsh[l].N())
+                )
+              + vector(fvMsh.msh().decomp().myBrickPart()),
+                Lp
+            )
+        );
+
+        if (mag(c[l][d](i,j,k)[o] - cc) > 1e-12)
+        {
+            FatalErrorInFunction
+                << "test 3c failed" << abort(FatalError);
         }
     }
 }
@@ -135,7 +215,7 @@ void testFaceAreas(const fvMesh& fvMsh)
 
     const vector Lp
     (
-        cmptDivide(L, vector(fvMsh.decomp().myBrickDecomp()))
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
     forAll(a, l)
@@ -163,19 +243,46 @@ void testFaceAreas(const fvMesh& fvMsh)
 template<class MeshType>
 void testFaceNormals(const fvMesh& fvMsh)
 {
-    const meshField<faceVector,MeshType>& n =
+    const meshField<faceVector,MeshType>& fn =
         fvMsh.metrics<MeshType>().faceNormals();
 
-    forAll(n, l)
+    forAll(fn, l)
     {
-        forAll(n[l], d)
-        forAllCells(n[l][d], i, j, k)
+        forAll(fn[l], d)
+        forAllCells(fn[l][d], i, j, k)
         for (label o = 0; o < 6; o++)
         {
-            if (mag(n[l][d](i,j,k)[o] - vector(units[o/2])) > 1e-12)
+            label lr = 2*(o%2)-1;
+
+            if (mag(fn[l][d](i,j,k)[o] - lr*vector(units[o/2])) > 1e-12)
             {
                 FatalErrorInFunction
                     << "test 5 failed" << abort(FatalError);
+            }
+        }
+    }
+
+    // Check if face normals are pointing outwards
+
+    const meshField<vector,MeshType>& cc =
+        fvMsh.metrics<MeshType>().cellCenters();
+
+    const meshField<faceVector,MeshType>& fc =
+        fvMsh.metrics<MeshType>().faceCenters();
+
+    forAll(fn, l)
+    {
+        forAll(fn[l], d)
+        forAllCells(fn[l][d], i, j, k)
+        for (label o = 0; o < 6; o++)
+        {
+            vector f = fc[l][d](i,j,k)[o] - cc[l][d](i,j,k);
+            vector n = fn[l][d](i,j,k)[o];
+
+            if ((f & n) < 0)
+            {
+                FatalErrorInFunction
+                    << "test 6 failed" << abort(FatalError);
             }
         }
     }
@@ -184,15 +291,15 @@ void testFaceNormals(const fvMesh& fvMsh)
 template<class MeshType>
 void testFaceAreaNormals(const fvMesh& fvMsh)
 {
-    const meshField<faceVector,MeshType>& n =
+    const meshField<faceVector,MeshType>& fan =
         fvMsh.metrics<MeshType>().faceAreaNormals();
 
     const vector Lp
     (
-        cmptDivide(L, vector(fvMsh.decomp().myBrickDecomp()))
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAll(n, l)
+    forAll(fan, l)
     {
         const vector A
         (
@@ -201,14 +308,41 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
             Lp.x()/fvMsh[l].N().x() * Lp.y()/fvMsh[l].N().y()
         );
 
-        forAll(n[l], d)
-        forAllCells(n[l][d], i, j, k)
+        forAll(fan[l], d)
+        forAllCells(fan[l][d], i, j, k)
         for (label o = 0; o < 6; o++)
         {
-            if (mag(n[l][d](i,j,k)[o] - A[o/2]*vector(units[o/2])) > 1e-12)
+            label lr = 2*(o%2)-1;
+
+            if (mag(fan[l][d](i,j,k)[o] - lr*A[o/2]*vector(units[o/2])) > 1e-12)
             {
                 FatalErrorInFunction
-                    << "test 6 failed" << abort(FatalError);
+                    << "test 7 failed" << abort(FatalError);
+            }
+        }
+    }
+
+    // Check if face area normals are pointing outwards
+
+    const meshField<vector,MeshType>& cc =
+        fvMsh.metrics<MeshType>().cellCenters();
+
+    const meshField<faceVector,MeshType>& fc =
+        fvMsh.metrics<MeshType>().faceCenters();
+
+    forAll(fan, l)
+    {
+        forAll(fan[l], d)
+        forAllCells(fan[l][d], i, j, k)
+        for (label o = 0; o < 6; o++)
+        {
+            vector f = fc[l][d](i,j,k)[o] - cc[l][d](i,j,k);
+            vector n = fan[l][d](i,j,k)[o];
+
+            if ((f & n) < 0)
+            {
+                FatalErrorInFunction
+                    << "test 8 failed" << abort(FatalError);
             }
         }
     }
@@ -222,7 +356,7 @@ void testFaceDeltas(const fvMesh& fvMsh)
 
     const vector Lp
     (
-        cmptDivide(L, vector(fvMsh.decomp().myBrickDecomp()))
+        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
     forAll(fd, l)
@@ -241,7 +375,7 @@ void testFaceDeltas(const fvMesh& fvMsh)
             if (mag(fd[l][d](i,j,k)[o] - D[o/2]) > 1e-12)
             {
                 FatalErrorInFunction
-                    << "test 7 failed" << abort(FatalError);
+                    << "test 9 failed" << abort(FatalError);
             }
         }
     }
@@ -282,6 +416,16 @@ int main(int argc, char *argv[])
 
     testFaceCenters<colocated>(fvMsh);
     testFaceCenters<staggered>(fvMsh);
+
+    // Test edge centers
+
+    testEdgeCenters<colocated>(fvMsh);
+    testEdgeCenters<staggered>(fvMsh);
+
+    // Test vertex centers
+
+    testVertexCenters<colocated>(fvMsh);
+    testVertexCenters<staggered>(fvMsh);
 
     // Test face areas
 

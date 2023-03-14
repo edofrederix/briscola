@@ -23,9 +23,6 @@ protected:
 
 private:
 
-    // Copy constructor
-    grading(const grading&);
-
     // Disallow default bitwise assignment
     void operator=(const grading&);
 
@@ -48,6 +45,12 @@ public:
 
     // Construct from components
     grading(const brick&);
+
+    // Copy constructor
+    grading(const grading&);
+
+    // Clone grading
+    virtual autoPtr<grading> clone() const = 0;
 
     // Selector
     static autoPtr<grading> New(const brick&);

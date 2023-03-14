@@ -199,7 +199,11 @@ READTYPEFIELD(readArrayField,diagTensor,colocated)
 READTYPEFIELD(readArrayField,symmTensor,colocated)
 READTYPEFIELD(readArrayField,sphericalTensor,colocated)
 READTYPEFIELD(readArrayField,faceScalar,colocated)
+READTYPEFIELD(readArrayField,edgeScalar,colocated)
+READTYPEFIELD(readArrayField,vertexScalar,colocated)
 READTYPEFIELD(readArrayArrayField,faceVector,colocated)
+READTYPEFIELD(readArrayArrayField,edgeVector,colocated)
+READTYPEFIELD(readArrayArrayField,vertexVector,colocated)
 
 READTYPEFIELD(readScalarField,scalar,staggered)
 READTYPEFIELD(readScalarField,label,staggered)
@@ -209,7 +213,11 @@ READTYPEFIELD(readArrayField,diagTensor,staggered)
 READTYPEFIELD(readArrayField,symmTensor,staggered)
 READTYPEFIELD(readArrayField,sphericalTensor,staggered)
 READTYPEFIELD(readArrayField,faceScalar,staggered)
+READTYPEFIELD(readArrayField,edgeScalar,staggered)
+READTYPEFIELD(readArrayField,vertexScalar,staggered)
 READTYPEFIELD(readArrayArrayField,faceVector,staggered)
+READTYPEFIELD(readArrayArrayField,edgeVector,staggered)
+READTYPEFIELD(readArrayArrayField,vertexVector,staggered)
 
 #undef READTYPEFIELD
 

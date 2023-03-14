@@ -56,75 +56,50 @@ void periodicBoundaryCondition<Type,MeshType>::initEvaluate
     else
     {
         // On the same processor the patch neighbor is assumed to be on the
-        // opposing face/edge/vertex. Copy buffers directly.
+        // opposing face/edge/vertex. Copy data directly to neighbor. Neighbor
+        // will do the same to us.
 
-        const meshField<Type,MeshType>& field = this->mshField();
+        meshLevel<Type,MeshType>& field = this->mshField()[l];
 
-        forAll(field.boundaryConditions(), bci)
+        const labelVector bo(this->boundaryOffset());
+
+        forAll(field, d)
         {
-            const boundaryCondition<Type,MeshType>& bc =
-                field.boundaryConditions()[bci];
+            meshDirection<Type,MeshType>& fd = field[d];
 
-            if (bc.boundaryOffset() == -this->boundaryOffset())
+            // Source and target start point
+
+            const labelVector Ss(fd.boundaryStart(bo));
+            const labelVector St(fd.boundaryStart(-bo));
+
+            const labelVector Es(fd.boundaryEnd(bo));
+
+            labelVector ijk;
+
+            for (ijk.x() = Ss.x(); ijk.x() < Es.x(); ijk.x()++)
+            for (ijk.y() = Ss.y(); ijk.y() < Es.y(); ijk.y()++)
+            for (ijk.z() = Ss.z(); ijk.z() < Es.z(); ijk.z()++)
             {
-                const labelVector bo(bc.boundaryOffset());
-                const meshLevel<Type,MeshType>& fl = field[l];
-
-                forAll(fl, d)
-                {
-                    const meshDirection<Type,MeshType>& fld = fl[d];
-
-                    labelVector S(fld.boundaryStart(bo));
-                    labelVector E(fld.boundaryEnd(bo));
-
-                    block<Type>& recvBuffer = this->recvBuffers_[l*fl.size()+d];
-
-                    labelVector ijk;
-
-                    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-                    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-                    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-                    {
-                        recvBuffer(ijk-S) = fld(ijk);
-                    }
-                }
+                fd(ijk-Ss+St-bo) = fd(ijk);
             }
         }
     }
 }
 
-makeBoundaryConditionType(periodic,label,colocated)
-makeBoundaryConditionType(periodic,label,staggered)
+template<class Type, class MeshType>
+void periodicBoundaryCondition<Type,MeshType>::evaluate
+(
+    const label l,
+    const bool
+)
+{
+    if (this->neighborProcNum_ != Pstream::myProcNo())
+    {
+        parallelBoundaryCondition<Type,MeshType>::evaluate(l);
+    }
+}
 
-makeBoundaryConditionType(periodic,scalar,colocated)
-makeBoundaryConditionType(periodic,scalar,staggered)
-
-makeBoundaryConditionType(periodic,faceScalar,colocated)
-makeBoundaryConditionType(periodic,faceScalar,staggered)
-
-makeBoundaryConditionType(periodic,vector,colocated)
-makeBoundaryConditionType(periodic,vector,staggered)
-
-makeBoundaryConditionType(periodic,faceVector,colocated)
-makeBoundaryConditionType(periodic,faceVector,staggered)
-
-makeBoundaryConditionType(periodic,tensor,colocated)
-makeBoundaryConditionType(periodic,tensor,staggered)
-
-makeBoundaryConditionType(periodic,sphericalTensor,colocated)
-makeBoundaryConditionType(periodic,sphericalTensor,staggered)
-
-makeBoundaryConditionType(periodic,symmTensor,colocated)
-makeBoundaryConditionType(periodic,symmTensor,staggered)
-
-makeBoundaryConditionType(periodic,diagTensor,colocated)
-makeBoundaryConditionType(periodic,diagTensor,staggered)
-
-makeBoundaryConditionType(periodic,stencil,colocated)
-makeBoundaryConditionType(periodic,stencil,staggered)
-
-makeBoundaryConditionType(periodic,diagStencil,colocated)
-makeBoundaryConditionType(periodic,diagStencil,staggered)
+makeBoundaryConditionTypes(periodic)
 
 }
 

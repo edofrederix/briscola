@@ -8,6 +8,8 @@
 #include "IStringStream.H"
 #include "OSspecific.H"
 
+#include "sigFpe.H"
+
 namespace Foam
 {
 
@@ -36,6 +38,9 @@ class arguments
 
     // String of arguments
     string argumentsStr_;
+
+    // Floating point exception trapping
+    sigFpe sigFpe_;
 
     // Helper function for printUsage
     static void printOptionUsage

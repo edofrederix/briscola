@@ -4,6 +4,7 @@
 #include "vector.H"
 #include "block.H"
 #include "fvMesh.H"
+#include "rectilinearMesh.H"
 
 namespace Foam
 {

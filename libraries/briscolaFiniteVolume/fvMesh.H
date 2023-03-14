@@ -20,9 +20,12 @@ namespace fv
 
 class fvMesh
 :
-    public mesh,
     public regIOobject
 {
+    // Pointer to the mesh. The mesh cannot be a base class, because it is
+    // runtime selectable.
+    autoPtr<mesh> mshPtr_;
+
     // Scheme dictionary
     IOdictionary schemeDict_;
 
@@ -35,22 +38,34 @@ class fvMesh
     // Staggered mesh metrics
     autoPtr<fvMeshMetrics<staggered>> staggeredMetrics_;
 
+    // Disallow default bitwise assignment
+    void operator=(const fvMesh&);
+
 public:
 
     // Declare name of the class and its debug switch
     ClassName("fvMesh");
 
     // Construct from IOdictionary
-    explicit fvMesh(const IOdictionary&, const Time&);
+    fvMesh(const IOdictionary&, const Time&);
 
-    // Disallow default bitwise copy construction
+    // Copy constructor
     fvMesh(const fvMesh&);
 
     // Destructor
     ~fvMesh();
 
-    // Disallow default bitwise assignment
-    void operator=(const fvMesh&);
+    // Return access to the mesh
+    inline mesh& msh()
+    {
+        return mshPtr_();
+    }
+
+    // Return const access to the mesh
+    inline const mesh& msh() const
+    {
+        return mshPtr_();
+    }
 
     // Const access to face centers
     template<class MeshType>
@@ -64,6 +79,50 @@ public:
 
     // Needed by regIOobject
     virtual bool writeData(Ostream&) const { return true; }
+
+    // Member functions that pass directly to the mesh object
+
+        // Access to the part level
+        inline partLevel& operator[](const label i)
+        {
+            return mshPtr_->operator[](i);
+        }
+
+        // Const access to the part level
+        inline const partLevel& operator[](const label i) const
+        {
+            return mshPtr_->operator[](i);
+        }
+
+        // Number of levels
+        inline label size() const
+        {
+            return mshPtr_->size();
+        }
+
+        // Const access to part patched
+        inline const PtrList<partPatch>& partPatches() const
+        {
+            return mshPtr_->partPatches();
+        }
+
+        // Structured mesh bool
+        inline bool structured() const
+        {
+            return mshPtr_->structured();
+        }
+
+        // Return rectilinear bools
+        inline labelVector rectilinear() const
+        {
+            return mshPtr_->rectilinear();
+        }
+
+        // Return uniform bools
+        inline labelVector uniform() const
+        {
+            return mshPtr_->uniform();
+        }
 };
 
 }

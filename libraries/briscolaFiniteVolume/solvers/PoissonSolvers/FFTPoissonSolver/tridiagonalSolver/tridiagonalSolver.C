@@ -21,23 +21,12 @@ tridiagonalSolver::tridiagonalSolver
 )
 :
     fvMsh_(fvMsh),
-    N_(fvMsh.N()),
+    N_(fvMsh.msh().cast<rectilinearMesh>().N()),
     Nz_(Nz),
     sz_(sz),
-    BC_(BC)
+    BC_(BC),
+    cellSizes_ (fvMsh.msh().cast<rectilinearMesh>().cellSizes())
 {
-    cellSizes_.clear();
-    cellSizes_.setSize(3);
-
-    for (int dir = 0; dir < 3; dir++)
-    {
-        cellSizes_.set
-        (
-            dir,
-            new scalarList(this->fvMsh_.rectilinearCellSizes(dir))
-        );
-    }
-
     computeEigenvalues();
 }
 

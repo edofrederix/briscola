@@ -33,6 +33,12 @@ geometricGrading::geometricGrading(const brick& b)
                 << abort(FatalError);
 }
 
+geometricGrading::geometricGrading(const geometricGrading& g)
+:
+    grading(g),
+    f_(g.f_)
+{}
+
 tmp<scalarField> geometricGrading::operator()
 (
     const scalarField& f,

@@ -47,7 +47,8 @@ brick::brick(const geometry& g, const label num, const dictionary& dict)
     dict_(dict),
     v_(dict.lookup("vertices")),
     N_(dict.lookup("N")),
-    grading_(grading::New(*this))
+    grading_(grading::New(*this)),
+    faces_()
 {
     for (label i = 0; i < v_.size()-1; i++)
     {
@@ -62,39 +63,32 @@ brick::brick(const geometry& g, const label num, const dictionary& dict)
         }
     }
 
-    // The coordinates of the vertices are defined in a right-handed coordinate
-    // system. Then we can define three vectors v1 = v(1,0,0) - v(0,0,0), v2 =
-    // v(0,1,0) - v(0,0,0) and v3 = v(0,0,1) - v(0,0,0) which satisfy dot(v1 x
-    // v2, v3) > 0 for a right-handed brick-local coordinate system. See
-    // https://math.stackexchange.com/questions/327841/test-of-handedness.
+    createFaces();
 
-    const vectorList& vertices = g.vertexData();
-
-    const vector v1(vertices[v_(1,0,0)] - vertices[v_(0,0,0)]);
-    const vector v2(vertices[v_(0,1,0)] - vertices[v_(0,0,0)]);
-    const vector v3(vertices[v_(0,0,1)] - vertices[v_(0,0,0)]);
-
-    if (((v1^v2) & v3) < 0.0)
-    {
+    if (leftHanded())
         FatalErrorInFunction
             << *this << " is left-handed. Bricks should be right-handed."
             << exit(FatalError);
-    }
-
-    createFaces();
 }
 
-brick::brick
-(
-    const brick& b
-)
+brick::brick(const brick& b)
 :
     meshObject<geometry>(b.parentGeometry(), b.num()),
     dict_(b.dict_),
     v_(b.v_),
     N_(b.N_),
     grading_(grading::New(*this)),
-    faces_(b.faces_)
+    faces_(b.faces_, *this)
+{}
+
+brick::brick(const brick& b, const geometry& geo)
+:
+    meshObject<geometry>(geo, b.num()),
+    dict_(b.dict_),
+    v_(b.v_),
+    N_(b.N_),
+    grading_(grading::New(*this)),
+    faces_(b.faces_, *this)
 {}
 
 brick::~brick()

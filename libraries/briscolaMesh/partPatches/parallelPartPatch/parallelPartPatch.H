@@ -19,9 +19,6 @@ class parallelPartPatch
     // Processor number of the other side
     label neighborProcNum_;
 
-    // Copy constructor
-    parallelPartPatch(const parallelPartPatch&);
-
     // Disallow default bitwise assignment
     void operator=(const parallelPartPatch&);
 
@@ -32,6 +29,15 @@ public:
 
     // Construct from components
     parallelPartPatch(const mesh& msh, const dictionary& dict);
+
+    // Copy constructor
+    parallelPartPatch(const parallelPartPatch&);
+
+    // Clone part patch
+    virtual autoPtr<partPatch> clone() const
+    {
+        return autoPtr<partPatch>(new parallelPartPatch(*this));
+    }
 };
 
 }

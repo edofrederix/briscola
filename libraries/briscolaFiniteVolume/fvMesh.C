@@ -16,8 +16,8 @@ defineTypeNameAndDebug(fvMesh, 0);
 
 fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
 :
-    briscola::mesh(dict),
     regIOobject(dict),
+    mshPtr_(mesh::New(dict)),
     schemeDict_
     (
         IOobject
@@ -47,7 +47,24 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
 
     // Only generate staggered metrics when the brick topology is structured
 
-    if (topology().structured())
+    if (mshPtr_->topology().structured())
+        staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
+}
+
+fvMesh::fvMesh(const fvMesh& fvMsh)
+:
+    regIOobject(fvMsh),
+    mshPtr_(fvMsh.mshPtr_, false),
+    schemeDict_(fvMsh.schemeDict_),
+    solverDict_(fvMsh.solverDict_),
+    colocatedMetrics_(),
+    staggeredMetrics_()
+{
+    colocatedMetrics_ = new fvMeshMetrics<colocated>(*this);
+
+    // Only generate staggered metrics when the brick topology is structured
+
+    if (mshPtr_->topology().structured())
         staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
 }
 

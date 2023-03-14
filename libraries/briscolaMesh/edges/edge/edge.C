@@ -59,15 +59,20 @@ edge::edge
     }
 }
 
-edge::edge
-(
-    const edge& e
-)
+edge::edge(const edge& e)
 :
     meshObject<face>(e.parentFace(), e.num()),
     v_(e.v_),
     N_(e.N_),
-    vertices_(e.vertices_)
+    vertices_(e.vertices_, *this)
+{}
+
+edge::edge(const edge& e, const face& f)
+:
+    meshObject<face>(f, e.num()),
+    v_(e.v_),
+    N_(e.N_),
+    vertices_(e.vertices_, *this)
 {}
 
 edge::~edge()

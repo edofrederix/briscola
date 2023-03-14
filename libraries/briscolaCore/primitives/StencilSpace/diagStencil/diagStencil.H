@@ -96,6 +96,14 @@ public:
     }
 };
 
+// diagStencil is a stencil
+
+template<>
+inline bool isStencil<diagStencil>()
+{
+    return true;
+}
+
 }
 
 #include "diagStencilProducts.H"

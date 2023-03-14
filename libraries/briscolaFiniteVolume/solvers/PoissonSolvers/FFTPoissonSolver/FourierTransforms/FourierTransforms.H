@@ -7,6 +7,7 @@
 #include "fvMesh.H"
 #include "colocatedFields.H"
 #include "decomposer.H"
+#include "rectilinearMesh.H"
 
 namespace Foam
 {

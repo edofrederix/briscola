@@ -27,13 +27,25 @@ class manualDecomp
     // contained by this processor
     labelVector myBrickPart_;
 
-    // Copy constructor
-    manualDecomp(const manualDecomp&);
-
     // Disallow default bitwise assignment
     void operator=(const manualDecomp&);
 
 public:
+
+    // Runtime type information
+    TypeName("manual");
+
+    // Construct from mesh
+    manualDecomp(mesh&);
+
+    // Copy constructor
+    manualDecomp(const manualDecomp&);
+
+    // Clone decomposition
+    virtual autoPtr<decomposition> clone() const
+    {
+        return autoPtr<decomposition>(new manualDecomp(*this));
+    }
 
     // Number of parts per brick
     virtual const List<labelVector>& decompPerBrick() const
@@ -52,13 +64,6 @@ public:
     {
         return myBrickPart_;
     }
-
-    // Runtime type information
-    TypeName("manual");
-
-    // Construct from mesh
-    manualDecomp(mesh&);
-
 };
 
 }

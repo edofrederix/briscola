@@ -2,6 +2,7 @@
 #include "Time.H"
 #include "FFTPoissonSolver.H"
 #include "fv.H"
+#include "rectilinearMesh.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -149,7 +150,7 @@ bool check(scalarBlock& p, scalarBlock& f, labelVector BC)
 bool check(colocatedScalarField& p, colocatedScalarField& f)
 {
     labelVector Nf(p[0][0].B().shape());
-    labelVector N(p.fvMsh().N());
+    labelVector N(p.fvMsh().msh().cast<rectilinearMesh>().N());
 
     // uniform 1m x 1m x 1m meshes only
     scalar dx2 = sqr(1.0/N.x());
@@ -351,7 +352,7 @@ int main(int argc, char *argv[])
     autoPtr<decomposer> decomp;
     decomp = new decomposer(fvMsh);
 
-    labelVector N(fvMsh.N());
+    labelVector N(fvMsh.msh().cast<rectilinearMesh>().N());
 
     Info << "Mesh size: " << N << endl;
 

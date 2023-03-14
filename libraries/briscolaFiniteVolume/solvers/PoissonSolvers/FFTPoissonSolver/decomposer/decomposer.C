@@ -14,8 +14,8 @@ namespace fv
 decomposer::decomposer(const fvMesh& fvMsh)
 :
     fvMsh_(fvMsh),
-    N_(fvMsh.N()),
-    I_(fvMsh_.decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ)
+    N_(fvMsh_.msh().cast<rectilinearMesh>().N()),
+    I_(fvMsh_.msh().decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ)
 {
     Ni_ = List<labelVector>(Pstream::nProcs(), Zero);
     Nx_ = List<labelVector>(Pstream::nProcs(), Zero);
@@ -64,7 +64,7 @@ void decomposer::decompInit()
 
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
         Info<< "    Proc " << proc << " at "
-            << fvMsh_.decomp().map().legend()[proc] << endl;
+            << fvMsh_.msh().decomp().map().legend()[proc] << endl;
 
     Info<< endl;
 

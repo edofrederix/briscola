@@ -58,12 +58,11 @@ linearGaussLaplacianScheme<Type,MeshType>::laplacian
 
         meshDirection<stencil,MeshType>& A = Sys.A()[l][d];
 
-        A.initGhosts();
+        A = Zero;
 
         const meshDirection<faceScalar,MeshType>& lam = lambda[l][d];
-        const meshDirection<Type,MeshType>& f = field[l][d];
 
-        forAllCells(f, i, j, k)
+        forAllCells(A, i, j, k)
         {
             A(i,j,k) = lam(i,j,k)*fa(i,j,k)*fd(i,j,k);
 

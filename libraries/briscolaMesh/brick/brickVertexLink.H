@@ -41,6 +41,21 @@ public:
         const bool = false
     );
 
+    // Copy constructor
+    inline brickVertexLink(const brickVertexLink& link)
+    :
+        v0_(link.v0_),
+        v1_(link.v1_),
+        T_(link.T_),
+        periodic_(link.periodic_)
+    {}
+
+    // Clone link
+    inline autoPtr<brickVertexLink> clone() const
+    {
+        return autoPtr<brickVertexLink>(new brickVertexLink(*this));
+    }
+
     // Destructor
     virtual ~brickVertexLink();
 
