@@ -70,8 +70,8 @@ void decomposer::decompInit()
 
     // Initial decomposition
 
-    Ni_ = procDims(I_);
-    si_ = procOrig(I_);
+    Ni_ = fvMsh_.msh().decomp().partSizePerProc();
+    si_ = fvMsh_.msh().decomp().globalStartPerProc();
 
     // Pencil decompositions: check if existing decompositions may be reused
 
@@ -241,7 +241,14 @@ label decomposer::procNumFromIndex
     const labelVector D
 )
 {
-    return ijk.x()*D.y()*D.z() + ijk.y()*D.z() + ijk.z();
+    if (D == I_)
+    {
+        return fvMsh_.msh().decomp().map()(ijk);
+    }
+    else
+    {
+        return ijk.x()*D.y()*D.z() + ijk.y()*D.z() + ijk.z();
+    }
 }
 
 // Return the index given a processor number and decomposition
@@ -252,11 +259,18 @@ labelVector decomposer::indexFromProcNum
     const labelVector D
 )
 {
-    label i = num/(D.y()*D.z());
-    label j = (num-i*D.y()*D.z())/D.z();
-    label k = (num-i*D.y()*D.z()-j*D.z());
+    if (D == I_)
+    {
+        return fvMsh_.msh().decomp().map().legend()[num];
+    }
+    else
+    {
+        label i = num/(D.y()*D.z());
+        label j = (num-i*D.y()*D.z())/D.z();
+        label k = (num-i*D.y()*D.z()-j*D.z());
 
-    return labelVector(i,j,k);
+        return labelVector(i,j,k);
+    }
 }
 
 // Return the list of processor dimensions for a given decomposition
@@ -282,54 +296,68 @@ List<labelVector> decomposer::procDims(labelVector D)
         FatalError.exit();
     }
 
-    List<labelVector> Nd(Pstream::nProcs(), Zero);
-
-    for ( int proc = 0; proc < Pstream::nProcs(); proc++ )
+    if (D == I_)
     {
-        Nd[proc] = cmptDivide(N_,D);
-
-        // If the data distribution is uneven, remainder > 0
-
-        labelVector remainder = N_ - cmptMultiply(Nd[proc], D);
-
-        Nd[proc] += labelVector
-            (
-                indexFromProcNum(proc,D).x() < remainder.x(),
-                indexFromProcNum(proc,D).y() < remainder.y(),
-                indexFromProcNum(proc,D).z() < remainder.z()
-            );
+        return Ni_;
     }
+    else
+    {
+        List<labelVector> Nd(Pstream::nProcs(), Zero);
 
-    return Nd;
+        for ( int proc = 0; proc < Pstream::nProcs(); proc++ )
+        {
+            Nd[proc] = cmptDivide(N_,D);
+
+            // If the data distribution is uneven, remainder > 0
+
+            labelVector remainder = N_ - cmptMultiply(Nd[proc], D);
+
+            Nd[proc] += labelVector
+                (
+                    indexFromProcNum(proc,D).x() < remainder.x(),
+                    indexFromProcNum(proc,D).y() < remainder.y(),
+                    indexFromProcNum(proc,D).z() < remainder.z()
+                );
+        }
+
+        return Nd;
+    }
 }
 
 // Return list of processor origin indices for a given decomposition
 
 List<labelVector> decomposer::procOrig(labelVector D)
 {
-    List<labelVector> Nd(procDims(D));
-    List<labelVector> sd = List<labelVector>(Pstream::nProcs(), Zero);
-
-    for ( int proc = 0; proc < Pstream::nProcs(); proc++ )
+    if (D == I_)
     {
-
-        // Set starting indices of each processor
-
-        for ( int x = 0; x < indexFromProcNum(proc, D).x(); x++ )
-            sd[proc].x() +=
-                Nd[procNumFromIndex(labelVector(x,0,0), D)].x();
-
-        for ( int y = 0; y < indexFromProcNum(proc, D).y(); y++ )
-            sd[proc].y() +=
-                Nd[procNumFromIndex(labelVector(0,y,0), D)].y();
-
-        for ( int z = 0; z < indexFromProcNum(proc, D).z(); z++ )
-            sd[proc].z() +=
-                Nd[procNumFromIndex(labelVector(0,0,z), D)].z();
-
+        return si_;
     }
+    else
+    {
+        List<labelVector> Nd(procDims(D));
+        List<labelVector> sd = List<labelVector>(Pstream::nProcs(), Zero);
 
-    return sd;
+        for ( int proc = 0; proc < Pstream::nProcs(); proc++ )
+        {
+
+            // Set starting indices of each processor
+
+            for ( int x = 0; x < indexFromProcNum(proc, D).x(); x++ )
+                sd[proc].x() +=
+                    Nd[procNumFromIndex(labelVector(x,0,0), D)].x();
+
+            for ( int y = 0; y < indexFromProcNum(proc, D).y(); y++ )
+                sd[proc].y() +=
+                    Nd[procNumFromIndex(labelVector(0,y,0), D)].y();
+
+            for ( int z = 0; z < indexFromProcNum(proc, D).z(); z++ )
+                sd[proc].z() +=
+                    Nd[procNumFromIndex(labelVector(0,0,z), D)].z();
+
+        }
+
+        return sd;
+    }
 }
 
 // Unpack a receive buffer
