@@ -275,6 +275,94 @@ linearSystem<SType,Type,MeshType>::residual
 }
 
 template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::evaluate
+(
+    meshField<Type, MeshType>& res
+) const
+{
+    forAll(res, l)
+        this->evaluate(res[l]);
+}
+
+template<class SType, class Type, class MeshType>
+tmp<meshField<Type, MeshType>>
+linearSystem<SType,Type,MeshType>::evaluate() const
+{
+    tmp<meshField<Type,MeshType>> tRes
+    (
+        new meshField<Type,MeshType>
+        (
+            "evaluate",
+            fvMsh_
+        )
+    );
+
+    this->evaluate(tRes.ref());
+
+    return tRes;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::evaluate
+(
+    meshLevel<Type,MeshType>& res
+) const
+{
+    forAll(res, d)
+        this->evaluate(res[d]);
+}
+
+template<class SType, class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>>
+linearSystem<SType,Type,MeshType>::evaluate(const label l) const
+{
+    tmp<meshLevel<Type,MeshType>> tRes
+    (
+        new meshLevel<Type,MeshType>(fvMsh_,l)
+    );
+
+    this->evaluate(tRes.ref());
+
+    return tRes;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::evaluate
+(
+    meshDirection<Type,MeshType>& res
+) const
+{
+    const label l = res.levelNum();
+    const label d = res.directionNum();
+
+    const meshDirection<scalar,MeshType>& cv =
+        fvMsh_.template metrics<MeshType>().cellVolumes()[l][d];
+
+    Amul(res, this->A()[l][d], x_[l][d]);
+
+    res -= this->b()[l][d];
+    res /= cv;
+}
+
+template<class SType, class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+linearSystem<SType,Type,MeshType>::evaluate
+(
+    const label l,
+    const label d
+) const
+{
+    tmp<meshDirection<Type,MeshType>> tRes
+    (
+        new meshDirection<Type,MeshType>(fvMsh_,l,d)
+    );
+
+    this->evaluate(tRes.ref());
+
+    return tRes;
+}
+
+template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator=
 (
     const linearSystem<SType,Type,MeshType>& sys

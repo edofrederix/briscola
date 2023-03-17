@@ -31,6 +31,47 @@ inline tmp<meshField<Type,MeshType>> div
     return explicitDiv(phi);
 }
 
+template<class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> div
+(
+    const meshField<faceScalar,MeshType>& phi,
+    meshField<Type,MeshType>& field
+)
+{
+    return divergenceScheme<Type,MeshType>::New
+    (
+        "div("+phi.name()+","+field.name()+")",
+        field.fvMsh()
+    )->div(phi,field)->evaluate();
+}
+
+template<class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> laplacian
+(
+    const meshField<faceScalar,MeshType>& lambda,
+    meshField<Type,MeshType>& field
+)
+{
+    return laplacianScheme<Type,MeshType>::New
+    (
+        "laplacian("+lambda.name()+","+field.name()+")",
+        field.fvMsh()
+    )->laplacian(lambda,field)->evaluate();
+}
+
+template<class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> laplacian
+(
+    meshField<Type,MeshType>& field
+)
+{
+    return laplacianScheme<Type,MeshType>::New
+    (
+        "laplacian("+field.name()+")",
+        field.fvMsh()
+    )->laplacian(field)->evaluate();
+}
+
 template<class Type>
 inline tmp<meshField<Type,colocated>> coloDiv
 (
