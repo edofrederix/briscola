@@ -6,5 +6,7 @@
         "*.H": "cpp"
     },
     "editor.detectIndentation": false,
-    "editor.tabSize": 4
+    "editor.tabSize": 4,
+    "search.followSymlinks": false,
+    "explorer.excludeGitIgnore": true
 }
