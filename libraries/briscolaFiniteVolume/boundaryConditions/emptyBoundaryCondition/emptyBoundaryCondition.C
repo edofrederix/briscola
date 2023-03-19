@@ -75,8 +75,8 @@ void emptyBoundaryCondition<Type,MeshType>::evaluate
     {
         meshDirection<Type,MeshType>& fd = field[d];
 
-        const labelVector S(fd.boundaryStart(bo));
-        const labelVector E(fd.boundaryEnd(bo));
+        const labelVector S(fd.activeBoundaryStart(bo));
+        const labelVector E(fd.activeBoundaryEnd(bo));
 
         // For shifted boundaries, the boundary values are set to zero. For
         // non-shifted boundaries, apply homogeneous Neumann
@@ -89,7 +89,7 @@ void emptyBoundaryCondition<Type,MeshType>::evaluate
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk) = Zero;
+                fd(ijk+bo) = Zero;
             }
         }
         else

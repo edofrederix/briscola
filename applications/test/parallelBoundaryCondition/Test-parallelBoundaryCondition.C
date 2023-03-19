@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
 
                 forAll(f[l], d)
                 {
-                    const labelVector S(f[l][d].boundaryStart(bo));
-                    const labelVector E(f[l][d].boundaryEnd(bo));
+                    const labelVector S(f[l][d].activeBoundaryStart(bo));
+                    const labelVector E(f[l][d].activeBoundaryEnd(bo));
 
                     labelVector ijk;
 

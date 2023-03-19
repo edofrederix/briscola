@@ -69,10 +69,23 @@ void periodicBoundaryCondition<Type,MeshType>::initEvaluate
 
             // Source and target start point
 
-            const labelVector Ss(fd.boundaryStart(bo));
-            const labelVector St(fd.boundaryStart(-bo));
+            const labelVector Ss
+            (
+                fd.activeBoundaryStart(bo)
+              - this->extension_.lower()
+            );
 
-            const labelVector Es(fd.boundaryEnd(bo));
+            const labelVector St
+            (
+                fd.activeBoundaryStart(-bo)
+              - this->extension_.lower()
+            );
+
+            const labelVector Es
+            (
+                fd.activeBoundaryEnd(bo)
+              + this->extension_.upper()
+            );
 
             labelVector ijk;
 

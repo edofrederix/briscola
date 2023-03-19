@@ -92,8 +92,8 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate
         const block<Type>& grad =
             boundaryGradients_[l*field.size()+d];
 
-        const labelVector S(fd.boundaryStart(bo));
-        const labelVector E(fd.boundaryEnd(bo));
+        const labelVector S(fd.activeBoundaryStart(bo));
+        const labelVector E(fd.activeBoundaryEnd(bo));
 
         labelVector ijk;
 
@@ -108,7 +108,6 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate
 
                 fd(ijk+bo) =
                     fd(ijk-bo) + H*grad(ijk-S)*delta;
-
             }
         }
         else

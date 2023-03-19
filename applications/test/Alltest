@@ -1,7 +1,7 @@
 #!/bin/bash
 
 for DIR in ./*/; do
-
+(
     TEST=$(echo $DIR | cut -c3- | rev | cut -c2- | rev)
 
     if [ -f "$TEST/build.sh" ]; then
@@ -16,5 +16,7 @@ for DIR in ./*/; do
         cd ..
 
     fi
-
+) &
 done
+
+wait

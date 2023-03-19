@@ -4,6 +4,7 @@
 #include "decomposition.H"
 #include "geometry.H"
 #include "partLevel.H"
+#include "faceLabel.H"
 
 namespace Foam
 {
@@ -22,15 +23,13 @@ class mesh
     // This processor's part patches
     PtrList<partPatch> partPatches_;
 
-    // Lower and upper master patch vectors. Indicate for each patch if it is a
-    // master patch.
-    labelVector lowerMasterPatch_;
-    labelVector upperMasterPatch_;
+    // Patch master face labels, indicating for each processor which face part
+    // patches are master. Orientation is processor-specific.
+    List<faceLabel> patchMasterPerProc_;
 
-    // Lower and upper boundary patch vectors. Indicate for each patch if it is
-    // a boundary patch.
-    labelVector lowerBoundaryPatch_;
-    labelVector upperBoundaryPatch_;
+    // Patch type face labels, indicating for each processor the type of the
+    // face part patches. Orientation is processor-specific.
+    List<faceLabel> patchTypePerProc_;
 
     // Bool to check if mesh is structured or unstructured. If the brick
     // topology is structured, so is the mesh.
@@ -150,40 +149,36 @@ public:
         return partPatches_;
     }
 
-    // Access to the lower master patch vector
-    inline labelVector lowerMasterPatch() const
+    // Const access to the patch master face label list
+    inline const List<faceLabel> patchMasterPerProc() const
     {
-        return lowerMasterPatch_;
+        return patchMasterPerProc_;
     }
 
-    // Access to the lower slave patch vector
-    inline labelVector lowerSlavePatch() const
+    // Const access to the patch type face label list
+    inline const List<faceLabel> patchTypePerProc() const
     {
-        return unitXYZ - lowerMasterPatch_;
+        return patchTypePerProc_;
     }
 
-    // Access to the upper master patch vector
-    inline labelVector upperMasterPatch() const
+    // Return this processor's patch master face label
+    inline faceLabel patchMaster() const
     {
-        return upperMasterPatch_;
+        return patchMasterPerProc_[Pstream::myProcNo()];
     }
 
-    // Access to the upper slave patch vector
-    inline labelVector upperSlavePatch() const
+    // Return this processor's patch slave face label
+    inline faceLabel patchSlave() const
     {
-        return unitXYZ - upperMasterPatch_;
+        return
+            pTraits<faceLabel>::one
+          - patchMasterPerProc_[Pstream::myProcNo()];
     }
 
-    // Access to the lower boundary patch vector
-    inline labelVector lowerBoundaryPatch() const
+    // Return this processor's patch type face label
+    inline faceLabel patchType() const
     {
-        return lowerBoundaryPatch_;
-    }
-
-    // Access to the upper boundary patch vector
-    inline labelVector upperBoundaryPatch() const
-    {
-        return upperBoundaryPatch_;
+        return patchTypePerProc_[Pstream::myProcNo()];
     }
 
     // Structured mesh bool

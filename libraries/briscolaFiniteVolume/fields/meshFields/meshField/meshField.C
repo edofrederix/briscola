@@ -1,6 +1,10 @@
 #include "meshField.H"
 #include "fvMesh.H"
 
+#include "boundaryPartPatch.H"
+#include "parallelPartPatch.H"
+#include "periodicPartPatch.H"
+
 namespace Foam
 {
 
@@ -335,7 +339,7 @@ void meshField<Type,MeshType>::addBoundaryConditions()
         {
             const partPatch& patch = fvMsh_.partPatches()[patchi];
 
-            if (patch.type() == "boundary")
+            if (patch.type() == boundaryPartPatch::typeName)
             {
                 boundaryConditions_.append
                 (
@@ -359,7 +363,7 @@ void meshField<Type,MeshType>::addBoundaryConditions()
 
             if (cmptSum(cmptMag(bo)) == order)
             {
-                if (patch.type() == "parallel")
+                if (patch.type() == parallelPartPatch::typeName)
                 {
                     boundaryConditions_.append
                     (
@@ -370,7 +374,7 @@ void meshField<Type,MeshType>::addBoundaryConditions()
                         )
                     );
                 }
-                else if (patch.type() == "periodic")
+                else if (patch.type() == periodicPartPatch::typeName)
                 {
                     boundaryConditions_.append
                     (

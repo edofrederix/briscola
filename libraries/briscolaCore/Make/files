@@ -1,6 +1,7 @@
 arguments/arguments.C
 
 primitives/FaceSpace/faceScalar/faceScalar.C
+primitives/FaceSpace/faceLabel/faceLabel.C
 primitives/FaceSpace/faceVector/faceVector.C
 
 primitives/EdgeSpace/edgeScalar/edgeScalar.C

@@ -88,8 +88,8 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
         const block<Type>& val =
             boundaryValues_[l*field.size()+d];
 
-        const labelVector S(fd.boundaryStart(bo));
-        const labelVector E(fd.boundaryEnd(bo));
+        const labelVector S(fd.activeBoundaryStart(bo));
+        const labelVector E(fd.activeBoundaryEnd(bo));
 
         // For shifted boundaries, the boundary values are directly set. For
         // non-shifted boundaries, set the ghost cell values appropriately.
@@ -102,7 +102,7 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk) = H*val(ijk-S);
+                fd(ijk+bo) = H*val(ijk-S);
             }
         }
         else

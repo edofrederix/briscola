@@ -518,4 +518,12 @@ int main(int argc, char *argv[])
     if (h7.fore()    != v6) FatalErrorInFunction << "test 45f failed" << abort(FatalError);
 
     minMod(h3,h4);
+
+    if (h7.lower().x() != v1) FatalErrorInFunction << "test 46a failed" << abort(FatalError);
+    if (h7.lower().y() != v3) FatalErrorInFunction << "test 46b failed" << abort(FatalError);
+    if (h7.lower().z() != v5) FatalErrorInFunction << "test 46c failed" << abort(FatalError);
+
+    if (h7.upper().x() != v2) FatalErrorInFunction << "test 46a failed" << abort(FatalError);
+    if (h7.upper().y() != v4) FatalErrorInFunction << "test 46b failed" << abort(FatalError);
+    if (h7.upper().z() != v6) FatalErrorInFunction << "test 46c failed" << abort(FatalError);
 }

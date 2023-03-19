@@ -102,6 +102,9 @@ public:
     // Master bool
     inline bool master() const { return master_; }
     inline bool slave() const { return !master_; }
+
+    // Part patch type number
+    virtual label typeNum() const = 0;
 };
 
 }

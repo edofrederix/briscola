@@ -458,49 +458,27 @@ void mesh::generatePartPatches()
 
     setCommTags();
 
-    lowerMasterPatch_ = unitXYZ;
-    upperMasterPatch_ = unitXYZ;
+    patchMasterPerProc_.resize(Pstream::nProcs(), pTraits<faceLabel>::one);
+    patchTypePerProc_.resize(Pstream::nProcs(), pTraits<faceLabel>::zero);
 
     forAll(partPatches(), i)
     {
         const partPatch& patch = partPatches_[i];
 
-        if (patch.slave() && patch.boundaryOffsetDegree() == 1)
+        if (patch.boundaryOffsetDegree() == 1)
         {
             const label facei = faceNumber(patch.boundaryOffset());
 
-            if (facei % 2 == 0)
-            {
-                lowerMasterPatch_[facei/2] = 0;
-            }
-            else
-            {
-                upperMasterPatch_[facei/2] = 0;
-            }
+            patchMasterPerProc_[Pstream::myProcNo()][facei] = patch.master();
+            patchTypePerProc_[Pstream::myProcNo()][facei] = patch.typeNum();
         }
     }
 
-    lowerBoundaryPatch_ = zeroXYZ;
-    upperBoundaryPatch_ = zeroXYZ;
+    Pstream::gatherList(patchMasterPerProc_);
+    Pstream::gatherList(patchTypePerProc_);
 
-    forAll(partPatches(), i)
-    {
-        const partPatch& patch = partPatches_[i];
-
-        if (patch.type() == "boundary" && patch.boundaryOffsetDegree() == 1)
-        {
-            const label facei = faceNumber(patch.boundaryOffset());
-
-            if (facei % 2 == 0)
-            {
-                lowerBoundaryPatch_[facei/2] = 1;
-            }
-            else
-            {
-                upperBoundaryPatch_[facei/2] = 1;
-            }
-        }
-    }
+    Pstream::scatterList(patchMasterPerProc_);
+    Pstream::scatterList(patchTypePerProc_);
 }
 
 void mesh::generatePartLevels()
@@ -543,11 +521,7 @@ mesh::mesh(const IOdictionary& dict)
 :
     geometry(dict),
     PtrList<partLevel>(0),
-    decomp_(decomposition::New(*this)),
-    lowerMasterPatch_(unitXYZ),
-    upperMasterPatch_(unitXYZ),
-    lowerBoundaryPatch_(zeroXYZ),
-    upperBoundaryPatch_(zeroXYZ)
+    decomp_(decomposition::New(*this))
 {
     generatePartPatches();
     generatePartLevels();
@@ -588,10 +562,8 @@ mesh::mesh(const mesh& msh)
     PtrList<partLevel>(msh),
     decomp_(msh.decomp_),
     partPatches_(msh.partPatches_),
-    lowerMasterPatch_(msh.lowerMasterPatch_),
-    upperMasterPatch_(msh.upperMasterPatch_),
-    lowerBoundaryPatch_(msh.lowerBoundaryPatch_),
-    upperBoundaryPatch_(msh.upperBoundaryPatch_),
+    patchMasterPerProc_(msh.patchMasterPerProc_),
+    patchTypePerProc_(msh.patchTypePerProc_),
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
     uniform_(msh.uniform_)
@@ -603,10 +575,8 @@ mesh::mesh(autoPtr<mesh>& mshPtr)
     PtrList<partLevel>(mshPtr(), true),
     decomp_(mshPtr->decomp_, true),
     partPatches_(mshPtr->partPatches_, true),
-    lowerMasterPatch_(mshPtr->lowerMasterPatch_),
-    upperMasterPatch_(mshPtr->upperMasterPatch_),
-    lowerBoundaryPatch_(mshPtr->lowerBoundaryPatch_),
-    upperBoundaryPatch_(mshPtr->upperBoundaryPatch_),
+    patchMasterPerProc_(mshPtr->patchMasterPerProc_),
+    patchTypePerProc_(mshPtr->patchTypePerProc_),
     structured_(mshPtr->structured_),
     rectilinear_(mshPtr->rectilinear_),
     uniform_(mshPtr->uniform_)
@@ -620,10 +590,8 @@ mesh::mesh(mesh& msh, bool reuse)
     PtrList<partLevel>(msh, reuse),
     decomp_(msh.decomp_, reuse),
     partPatches_(msh.partPatches_, reuse),
-    lowerMasterPatch_(msh.lowerMasterPatch_),
-    upperMasterPatch_(msh.upperMasterPatch_),
-    lowerBoundaryPatch_(msh.lowerBoundaryPatch_),
-    upperBoundaryPatch_(msh.upperBoundaryPatch_),
+    patchMasterPerProc_(msh.patchMasterPerProc_),
+    patchTypePerProc_(msh.patchTypePerProc_),
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
     uniform_(msh.uniform_)

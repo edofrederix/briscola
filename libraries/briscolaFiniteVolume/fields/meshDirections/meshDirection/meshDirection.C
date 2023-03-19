@@ -1,6 +1,7 @@
 #include "meshDirection.H"
 #include "meshField.H"
 #include "boundaryCondition.H"
+#include "boundaryPartPatch.H"
 
 namespace Foam
 {
@@ -16,16 +17,14 @@ void meshDirection<Type,MeshType>::setInternalCells()
 {
     const labelVector& padding = MeshType::padding[d_];
 
-    const labelVector lowerSlave = fvMsh_.msh().lowerSlavePatch();
-    const labelVector upperSlave = fvMsh_.msh().upperSlavePatch();
+    const faceLabel slave = fvMsh_.msh().patchSlave();
 
-    S_ =
-        briscola::cmptMultiply(padding, lowerSlave);
+    S_ = briscola::cmptMultiply(padding, slave.lower());
 
     E_ =
         this->B().N()
       - 2*unitXYZ
-      - briscola::cmptMultiply(padding, upperSlave);
+      - briscola::cmptMultiply(padding, slave.upper());
 
     N_ = E_ - S_;
 
@@ -42,8 +41,7 @@ void meshDirection<Type,MeshType>::updateActiveCells()
     const PtrList<boundaryCondition<Type,MeshType>>& bcs =
         this->mshLevel().mshField().boundaryConditions();
 
-    labelVector lowerSlaveBoundary = zeroXYZ;
-    labelVector upperSlaveBoundary = zeroXYZ;
+    faceLabel slaveBoundary(Zero);
 
     forAll(bcs, i)
     {
@@ -52,41 +50,28 @@ void meshDirection<Type,MeshType>::updateActiveCells()
         if
         (
             bc.boundaryOffsetDegree() == 1
-         && bc.patch().type() == "boundary"
+         && bc.patch().type() == boundaryPartPatch::typeName
          && bc.slave()
         )
         {
-            const label facei = faceNumber(bc.boundaryOffset());
-
-            if (facei % 2 == 0)
-            {
-                lowerSlaveBoundary[facei/2] = 1;
-            }
-            else
-            {
-                upperSlaveBoundary[facei/2] = 1;
-            }
+            slaveBoundary[faceNumber(bc.boundaryOffset())] = 1;
         }
     }
 
-    // If no boundary conditions are set, lower and upper slave vectors will
-    // revert to those of the mesh, therewith setting Sa = S, Ea = E and Na = N
+    // If no boundary conditions are set the slave face label will revert to
+    // that of the mesh, therewith setting Sa = S, Ea = E and Na = N
 
-    const labelVector lowerSlave =
-        briscola::cmptMax(fvMsh_.msh().lowerSlavePatch(), lowerSlaveBoundary);
-
-    const labelVector upperSlave =
-        briscola::cmptMax(fvMsh_.msh().upperSlavePatch(), upperSlaveBoundary);
+    const faceLabel slave =
+        max(fvMsh_.msh().patchSlave(), slaveBoundary);
 
     const labelVector& padding = MeshType::padding[d_];
 
-    Sa_ =
-        briscola::cmptMultiply(padding, lowerSlave);
+    Sa_ = briscola::cmptMultiply(padding, slave.lower());
 
     Ea_ =
         this->B().N()
       - 2*unitXYZ
-      - briscola::cmptMultiply(padding, upperSlave);
+      - briscola::cmptMultiply(padding, slave.upper());
 
     Na_ = Ea_ - Sa_;
 }

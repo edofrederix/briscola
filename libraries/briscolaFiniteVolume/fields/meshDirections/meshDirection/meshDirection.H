@@ -198,6 +198,34 @@ public:
         return boundaryStart(bo) + boundaryN(bo);
     }
 
+    // Return the start point of the active cell boundary at given offset
+    inline labelVector activeBoundaryStart(const labelVector& bo) const
+    {
+        return labelVector
+        (
+            bo.x() == 0 ? 0 : bo.x() == -1 ? Sa_.x() : Ea_.x()-1,
+            bo.y() == 0 ? 0 : bo.y() == -1 ? Sa_.y() : Ea_.y()-1,
+            bo.z() == 0 ? 0 : bo.z() == -1 ? Sa_.z() : Ea_.z()-1
+        );
+    }
+
+    // Return the shape of the active cell boundary at given offset
+    inline labelVector activeBoundaryN(const labelVector& bo) const
+    {
+        return labelVector
+        (
+            bo.x() == 0 ? Na_.x() : 1,
+            bo.y() == 0 ? Na_.y() : 1,
+            bo.z() == 0 ? Na_.z() : 1
+        );
+    }
+
+    // Return the end of the active cell boundary at given offset
+    inline labelVector activeBoundaryEnd(const labelVector& bo) const
+    {
+        return activeBoundaryStart(bo) + activeBoundaryN(bo);
+    }
+
     // Return true if the boundary at given offset is shifted
     inline bool shifted(const labelVector& bo) const
     {

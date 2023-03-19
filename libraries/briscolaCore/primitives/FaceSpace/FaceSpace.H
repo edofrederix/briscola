@@ -75,6 +75,18 @@ public:
     inline Cmpt& aft()  { return this->v_[A]; }
     inline Cmpt& fore()  { return this->v_[F]; }
 
+    // Return lower elements as vector
+    inline Vector<Cmpt> lower() const
+    {
+        return Vector<Cmpt>(left(), bottom(), aft());
+    }
+
+    // Return upper elements as vector
+    inline Vector<Cmpt> upper() const
+    {
+        return Vector<Cmpt>(right(), top(), fore());
+    }
+
     // Conversion to stencil (only implemented for Cmpt = scalar)
     inline operator stencil() const;
     inline operator stencil::ssType() const;

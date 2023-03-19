@@ -59,8 +59,8 @@ void testDirichlet(const fvMesh& fvMsh)
         {
             const meshDirection<Type,MeshType>& dd = field[l][d];
 
-            const labelVector S(dd.boundaryStart(bo));
-            const labelVector E(dd.boundaryEnd(bo));
+            const labelVector S(dd.activeBoundaryStart(bo));
+            const labelVector E(dd.activeBoundaryEnd(bo));
 
             if (dd.shifted(bo))
             {
@@ -70,7 +70,7 @@ void testDirichlet(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (dd(ijk) != value)
+                    if (dd(ijk+bo) != value)
                     {
                         FatalErrorInFunction
                             << "Test 1a failed" << endl << abort(FatalError);
@@ -85,7 +85,6 @@ void testDirichlet(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (Pstream::master())
                     if (dd(ijk+bo) != 2.0*value - dd(ijk))
                     {
                         FatalErrorInFunction
@@ -105,7 +104,7 @@ void testDirichlet(const fvMesh& fvMsh)
         if(globalBoundaryConditionBaseType(field, bo) != DIRICHLETBC)
         {
             FatalErrorInFunction
-                << "Test 1c failed" << endl
+                << "Test 1b failed" << endl
                 << bo << endl
                 << abort(FatalError);
         }
@@ -159,8 +158,8 @@ void testNeumann(const fvMesh& fvMsh)
         {
             const meshDirection<Type,MeshType>& dd = field[l][d];
 
-            const labelVector S(dd.boundaryStart(bo));
-            const labelVector E(dd.boundaryEnd(bo));
+            const labelVector S(dd.activeBoundaryStart(bo));
+            const labelVector E(dd.activeBoundaryEnd(bo));
 
             if (dd.shifted(bo))
             {
@@ -185,7 +184,6 @@ void testNeumann(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (Pstream::master())
                     if (dd(ijk+bo) != dd(ijk))
                     {
                         FatalErrorInFunction
@@ -228,7 +226,6 @@ int main(int argc, char *argv[])
     );
 
     fvMesh fvMsh(meshDict, runTime);
-
 
     testDirichlet<scalar,colocated>(fvMsh);
     testDirichlet<vector,colocated>(fvMsh);

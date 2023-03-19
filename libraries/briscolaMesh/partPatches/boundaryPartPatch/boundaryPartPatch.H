@@ -9,9 +9,6 @@ namespace Foam
 namespace briscola
 {
 
-namespace partPatches
-{
-
 class boundaryPartPatch
 :
     public partPatch
@@ -20,6 +17,9 @@ class boundaryPartPatch
     void operator=(const boundaryPartPatch&);
 
 public:
+
+    // Type number
+    const static label typeNumber;
 
     // Runtime type information
     TypeName("boundary");
@@ -35,9 +35,13 @@ public:
     {
         return autoPtr<partPatch>(new boundaryPartPatch(*this));
     }
-};
 
-}
+    // Part patch type number
+    virtual label typeNum() const
+    {
+        return typeNumber;
+    }
+};
 
 }
 

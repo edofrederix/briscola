@@ -368,8 +368,8 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions
             for (bo.z() = -1; bo.z() <= 1; bo.z()++)
             if (cmptSum(cmptMag(bo)) > 1)
             {
-                const labelVector S(field.boundaryStart(bo));
-                const labelVector E(field.boundaryEnd(bo));
+                const labelVector S(field.activeBoundaryStart(bo));
+                const labelVector E(field.activeBoundaryEnd(bo));
 
                 labelVector ijk;
 
