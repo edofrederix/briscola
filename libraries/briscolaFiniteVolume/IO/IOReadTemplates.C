@@ -32,9 +32,10 @@ void IO::readList
     {
         List<floatScalar> buffer;
 
-        forAll(sizes, proc)
+        forAll(sizes, p)
+        if (!partitioned_ || p == Pstream::myProcNo())
         {
-            const label size = sizes[proc];
+            const label size = sizes[p];
 
             buffer.clear();
             buffer.setSize(size);
@@ -44,7 +45,7 @@ void IO::readList
                 file>> buffer[i];
             }
 
-            if (proc == Pstream::myProcNo())
+            if (p == Pstream::myProcNo())
             {
                 data = buffer;
             }
@@ -56,7 +57,7 @@ void IO::readList
     {
         label offset = 0;
 
-        for(int i = 0; i < Pstream::myProcNo(); i++)
+        for(int i = 0; i < (partitioned_ ? 0 : Pstream::myProcNo()); i++)
             offset += sizes[i];
 
         file.ignore(offset*sizeof(floatScalar));
@@ -67,7 +68,9 @@ void IO::readList
             data.byteSize()
         );
 
-        file.ignore((sum(sizes)-offset-data.size())*sizeof(floatScalar));
+        if (!partitioned_)
+            file.ignore((sum(sizes)-offset-data.size())*sizeof(floatScalar));
+
         nextLine(file);
 
         #ifdef LITTLEENDIAN
@@ -78,6 +81,9 @@ void IO::readList
         );
         #endif
     }
+
+    if (Pstream::parRun())
+        returnReduce(1.0,sumOp<scalar>());
 }
 
 template<class Type, class MeshType>
@@ -88,7 +94,10 @@ void IO::readScalarField
     meshDirection<Type,MeshType>& D
 ) const
 {
-    List<floatScalar> data(D.size());
+    const labelVector S = D.S()-unitXYZ*label(ghosts_);
+    const labelVector E = D.E()+unitXYZ*label(ghosts_);
+
+    List<floatScalar> data(cmptProduct(E-S));
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
@@ -103,8 +112,12 @@ void IO::readScalarField
 
     label c = 0;
 
-    forAllCells(D, i, j, k)
+    for (int i = S.x(); i < E.x(); i++)
+    for (int j = S.y(); j < E.y(); j++)
+    for (int k = S.z(); k < E.z(); k++)
+    {
         D(i,j,k) = data[c++];
+    }
 }
 
 template<class Type, class MeshType>
@@ -117,7 +130,10 @@ void IO::readArrayField
 {
     const label n(Type::nComponents);
 
-    List<floatScalar> data(D.size()*n);
+    const labelVector S = D.S()-unitXYZ*label(ghosts_);
+    const labelVector E = D.E()+unitXYZ*label(ghosts_);
+
+    List<floatScalar> data(cmptProduct(E-S)*n);
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
@@ -132,7 +148,9 @@ void IO::readArrayField
 
     label c = 0;
 
-    forAllCells(D, i, j, k)
+    for (int i = S.x(); i < E.x(); i++)
+    for (int j = S.y(); j < E.y(); j++)
+    for (int k = S.z(); k < E.z(); k++)
         for (int ii = 0; ii < n; ii++)
             D(i,j,k)[ii] = data[c++];
 }
@@ -148,7 +166,10 @@ void IO::readArrayArrayField
     const label n(Type::nComponents);
     const label m(pTraits<typename Type::cmpt>::nComponents);
 
-    List<floatScalar> data(D.size()*m*n);
+    const labelVector S = D.S()-unitXYZ*label(ghosts_);
+    const labelVector E = D.E()+unitXYZ*label(ghosts_);
+
+    List<floatScalar> data(cmptProduct(E-S)*m*n);
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
@@ -163,7 +184,9 @@ void IO::readArrayArrayField
 
     label c = 0;
 
-    forAllCells(D, i, j, k)
+    for (int i = S.x(); i < E.x(); i++)
+    for (int j = S.y(); j < E.y(); j++)
+    for (int k = S.z(); k < E.z(); k++)
         for (int ii = 0; ii < n; ii++)
             for (int jj = 0; jj < m; jj++)
                 D(i,j,k)[ii][jj] = data[c++];

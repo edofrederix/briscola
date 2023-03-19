@@ -844,23 +844,32 @@ labelVector block<Type>::find(const Type& v) const
 template<class Type>
 Type block<Type>::interp(const scalar i, const scalar j, const scalar k) const
 {
+    // Floor
+
     const label ii = i;
     const label jj = j;
     const label kk = k;
+
+    // Set neighbor index as next higher value. For points exactly at a
+    // face/edge/vertex, clip to the last point.
+
+    const label iip = Foam::min(ii+1, l_-1);
+    const label jjp = Foam::min(jj+1, m_-1);
+    const label kkp = Foam::min(kk+1, n_-1);
 
     const scalar di = i-ii;
     const scalar dj = j-jj;
     const scalar dk = k-kk;
 
     return
-        (1.0-di) * (1.0-dj) * (1.0-dk) * this->operator()(ii,  jj,  kk  )
-      + (    di) * (1.0-dj) * (1.0-dk) * this->operator()(ii+1,jj,  kk  )
-      + (1.0-di) * (    dj) * (1.0-dk) * this->operator()(ii,  jj+1,kk  )
-      + (    di) * (    dj) * (1.0-dk) * this->operator()(ii+1,jj+1,kk  )
-      + (1.0-di) * (1.0-dj) * (    dk) * this->operator()(ii,  jj,  kk+1)
-      + (    di) * (1.0-dj) * (    dk) * this->operator()(ii+1,jj,  kk+1)
-      + (1.0-di) * (    dj) * (    dk) * this->operator()(ii,  jj+1,kk+1)
-      + (    di) * (    dj) * (    dk) * this->operator()(ii+1,jj+1,kk+1);
+        (1.0-di) * (1.0-dj) * (1.0-dk) * this->operator()(ii,  jj,  kk )
+      + (    di) * (1.0-dj) * (1.0-dk) * this->operator()(iip, jj,  kk )
+      + (1.0-di) * (    dj) * (1.0-dk) * this->operator()(ii,  jjp, kk )
+      + (    di) * (    dj) * (1.0-dk) * this->operator()(iip, jjp, kk )
+      + (1.0-di) * (1.0-dj) * (    dk) * this->operator()(ii,  jj,  kkp)
+      + (    di) * (1.0-dj) * (    dk) * this->operator()(iip, jj,  kkp)
+      + (1.0-di) * (    dj) * (    dk) * this->operator()(ii,  jjp, kkp)
+      + (    di) * (    dj) * (    dk) * this->operator()(iip, jjp, kkp);
 }
 
 template<class Type>

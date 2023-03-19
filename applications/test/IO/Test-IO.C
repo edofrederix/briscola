@@ -34,40 +34,57 @@ tmp<meshField<Type,MeshType>> createField
 
     meshField<Type,MeshType>& f = tf.ref();
 
+    f = Zero;
+
     forAll(f, l)
     forAll(f[l], d)
-    forAllCells(f[l][d], i, j, k)
     {
-        f[l][d](i,j,k) = (Pstream::myProcNo()+i+j+k+l+d)*pTraits<Type>::one;
+        const labelVector S = f[l][d].S()-unitXYZ;
+        const labelVector E = f[l][d].E()+unitXYZ;
+
+        for (int i = S.x(); i < E.x(); i++)
+        for (int j = S.y(); j < E.y(); j++)
+        for (int k = S.z(); k < E.z(); k++)
+        {
+            f[l][d](i,j,k) = (Pstream::myProcNo()+i+j+k+l+d)*pTraits<Type>::one;
+        }
     }
 
     return tf;
 }
 
 template<class Type, class MeshType>
-void testField(const meshField<Type,MeshType>& f)
+void testField(const meshField<Type,MeshType>& f, bool ghosts)
 {
     forAll(f, l)
     forAll(f[l], d)
-    forAllCells(f[l][d], i, j, k)
     {
-        if
-        (
-            f[l][d](i,j,k)
-         != (Pstream::myProcNo()+i+j+k+l+d)*pTraits<Type>::one
-        )
+        const labelVector S = f[l][d].S()-unitXYZ*label(ghosts);
+        const labelVector E = f[l][d].E()+unitXYZ*label(ghosts);
+
+        for (int i = S.x(); i < E.x(); i++)
+        for (int j = S.y(); j < E.y(); j++)
+        for (int k = S.z(); k < E.z(); k++)
         {
-            FatalErrorInFunction
-                << "Test failed for " << nl
-                << "ijk = " << labelVector(i,j,k) << nl
-                << "l = " << l << nl
-                << "d = " << d << nl
-                << "type = " << pTraits<Type>::typeName << nl
-                << "meshType = " << MeshType::typeName << nl
-                << "expected value = "
-                << (Pstream::myProcNo()+i+j+k)*pTraits<Type>::one << nl
-                << "actual value = " << f[l][d](i,j,k)
-                << abort(FatalError);
+            if
+            (
+                f[l][d](i,j,k)
+            != (Pstream::myProcNo()+i+j+k+l+d)*pTraits<Type>::one
+            )
+            {
+                FatalErrorInFunction
+                    << "Test failed for " << nl
+                    << "ijk = " << labelVector(i,j,k) << nl
+                    << "l = " << l << nl
+                    << "d = " << d << nl
+                    << "type = " << pTraits<Type>::typeName << nl
+                    << "meshType = " << MeshType::typeName << nl
+                    << "test ghosts = " << Switch(ghosts) << nl
+                    << "expected value = "
+                    << (Pstream::myProcNo()+i+j+k)*pTraits<Type>::one << nl
+                    << "actual value = " << f[l][d](i,j,k)
+                    << abort(FatalError);
+            }
         }
     }
 }
@@ -78,8 +95,6 @@ int main(int argc, char *argv[])
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
     #include "createBriscolaIO.H"
-
-    runTime.setTime(1.0, 1);
 
     // Macros
 
@@ -98,117 +113,88 @@ int main(int argc, char *argv[])
         MESHTYPE##TYPENAME##TestField.ref().readOpt() =                 \
             IOobject::MUST_READ;
 
-    #define TESTFIELD(TYPE, TYPENAME, MESHTYPE)                         \
-        testField<TYPE,MESHTYPE>(MESHTYPE##TYPENAME##TestField.ref());
+    #define TESTFIELD(TYPE, TYPENAME, MESHTYPE, GHOSTS)                 \
+        testField<TYPE,MESHTYPE>                                        \
+        (                                                               \
+            MESHTYPE##TYPENAME##TestField.ref(),                        \
+            GHOSTS                                                      \
+        );
 
-    // Colocated fields
 
-    CREATEFIELD(label,Label,colocated)
-    CREATEFIELD(scalar,Scalar,colocated)
-    CREATEFIELD(vector,Vector,colocated)
-    CREATEFIELD(tensor,Tensor,colocated)
-    CREATEFIELD(diagTensor,DiagTensor,colocated)
-    CREATEFIELD(symmTensor,SymmTensor,colocated)
-    CREATEFIELD(sphericalTensor,SphericalTensor,colocated)
-    CREATEFIELD(faceScalar,FaceScalar,colocated)
-    CREATEFIELD(edgeScalar,EdgeScalar,colocated)
-    CREATEFIELD(vertexScalar,VertexScalar,colocated)
-    CREATEFIELD(faceVector,FaceVector,colocated)
-    CREATEFIELD(edgeVector,EdgeVector,colocated)
-    CREATEFIELD(vertexVector,VertexVector,colocated)
-
-    forAll(fvMsh, l)
-    {
-        io.writeNow<colocated>(l);
+    #define TEST(MESHTYPE,TIME,GHOSTS,PARTITIONED)                      \
+    {                                                                   \
+        runTime.setTime(TIME, TIME);                                    \
+                                                                        \
+        io.ghosts() = GHOSTS;                                           \
+        io.partitioned() = PARTITIONED;                                 \
+                                                                        \
+        CREATEFIELD(label,Label,MESHTYPE)                               \
+        CREATEFIELD(scalar,Scalar,MESHTYPE)                             \
+        CREATEFIELD(vector,Vector,MESHTYPE)                             \
+        CREATEFIELD(tensor,Tensor,MESHTYPE)                             \
+        CREATEFIELD(diagTensor,DiagTensor,MESHTYPE)                     \
+        CREATEFIELD(symmTensor,SymmTensor,MESHTYPE)                     \
+        CREATEFIELD(sphericalTensor,SphericalTensor,MESHTYPE)           \
+        CREATEFIELD(faceScalar,FaceScalar,MESHTYPE)                     \
+        CREATEFIELD(edgeScalar,EdgeScalar,MESHTYPE)                     \
+        CREATEFIELD(vertexScalar,VertexScalar,MESHTYPE)                 \
+        CREATEFIELD(faceVector,FaceVector,MESHTYPE)                     \
+        CREATEFIELD(edgeVector,EdgeVector,MESHTYPE)                     \
+        CREATEFIELD(vertexVector,VertexVector,MESHTYPE)                 \
+                                                                        \
+        forAll(fvMsh, l)                                                \
+        {                                                               \
+            io.writeNow<MESHTYPE>(l);                                   \
+        }                                                               \
+                                                                        \
+        RESETFIELD(Label,MESHTYPE)                                      \
+        RESETFIELD(Scalar,MESHTYPE)                                     \
+        RESETFIELD(Vector,MESHTYPE)                                     \
+        RESETFIELD(Tensor,MESHTYPE)                                     \
+        RESETFIELD(DiagTensor,MESHTYPE)                                 \
+        RESETFIELD(SymmTensor,MESHTYPE)                                 \
+        RESETFIELD(SphericalTensor,MESHTYPE)                            \
+        RESETFIELD(FaceScalar,MESHTYPE)                                 \
+        RESETFIELD(EdgeScalar,MESHTYPE)                                 \
+        RESETFIELD(VertexScalar,MESHTYPE)                               \
+        RESETFIELD(FaceVector,MESHTYPE)                                 \
+        RESETFIELD(EdgeVector,MESHTYPE)                                 \
+        RESETFIELD(VertexVector,MESHTYPE)                               \
+                                                                        \
+        forAll(fvMsh, l)                                                \
+        {                                                               \
+            io.read<MESHTYPE>(l);                                       \
+        }                                                               \
+                                                                        \
+        TESTFIELD(label,Label,MESHTYPE,GHOSTS)                          \
+        TESTFIELD(scalar,Scalar,MESHTYPE,GHOSTS)                        \
+        TESTFIELD(vector,Vector,MESHTYPE,GHOSTS)                        \
+        TESTFIELD(tensor,Tensor,MESHTYPE,GHOSTS)                        \
+        TESTFIELD(diagTensor,DiagTensor,MESHTYPE,GHOSTS)                \
+        TESTFIELD(symmTensor,SymmTensor,MESHTYPE,GHOSTS)                \
+        TESTFIELD(sphericalTensor,SphericalTensor,MESHTYPE,GHOSTS)      \
+        TESTFIELD(faceScalar,FaceScalar,MESHTYPE,GHOSTS)                \
+        TESTFIELD(edgeScalar,EdgeScalar,MESHTYPE,GHOSTS)                \
+        TESTFIELD(vertexScalar,VertexScalar,MESHTYPE,GHOSTS)            \
+        TESTFIELD(faceVector,FaceVector,MESHTYPE,GHOSTS)                \
+        TESTFIELD(edgeVector,EdgeVector,MESHTYPE,GHOSTS)                \
+        TESTFIELD(vertexVector,VertexVector,MESHTYPE,GHOSTS)            \
     }
 
-    RESETFIELD(Label,colocated)
-    RESETFIELD(Scalar,colocated)
-    RESETFIELD(Vector,colocated)
-    RESETFIELD(Tensor,colocated)
-    RESETFIELD(DiagTensor,colocated)
-    RESETFIELD(SymmTensor,colocated)
-    RESETFIELD(SphericalTensor,colocated)
-    RESETFIELD(FaceScalar,colocated)
-    RESETFIELD(EdgeScalar,colocated)
-    RESETFIELD(VertexScalar,colocated)
-    RESETFIELD(FaceVector,colocated)
-    RESETFIELD(EdgeVector,colocated)
-    RESETFIELD(VertexVector,colocated)
+    // Test colocated
 
-    forAll(fvMsh, l)
-    {
-        io.read<colocated>(l);
-    }
+    TEST(colocated,1,false,false)
+    TEST(colocated,2,true,false)
+    TEST(colocated,3,false,true)
+    TEST(colocated,4,true,true)
 
-    TESTFIELD(label,Label,colocated)
-    TESTFIELD(scalar,Scalar,colocated)
-    TESTFIELD(vector,Vector,colocated)
-    TESTFIELD(tensor,Tensor,colocated)
-    TESTFIELD(diagTensor,DiagTensor,colocated)
-    TESTFIELD(symmTensor,SymmTensor,colocated)
-    TESTFIELD(sphericalTensor,SphericalTensor,colocated)
-    TESTFIELD(faceScalar,FaceScalar,colocated)
-    TESTFIELD(edgeScalar,EdgeScalar,colocated)
-    TESTFIELD(vertexScalar,VertexScalar,colocated)
-    TESTFIELD(faceVector,FaceVector,colocated)
-    TESTFIELD(edgeVector,EdgeVector,colocated)
-    TESTFIELD(vertexVector,VertexVector,colocated)
-
-    // Staggered fields only on structured meshes
+    // Test staggered only on structures mesh
 
     if (fvMsh.structured())
     {
-        CREATEFIELD(label,Label,staggered)
-        CREATEFIELD(scalar,Scalar,staggered)
-        CREATEFIELD(vector,Vector,staggered)
-        CREATEFIELD(tensor,Tensor,staggered)
-        CREATEFIELD(diagTensor,DiagTensor,staggered)
-        CREATEFIELD(symmTensor,SymmTensor,staggered)
-        CREATEFIELD(sphericalTensor,SphericalTensor,staggered)
-        CREATEFIELD(faceScalar,FaceScalar,staggered)
-        CREATEFIELD(edgeScalar,EdgeScalar,staggered)
-        CREATEFIELD(vertexScalar,VertexScalar,staggered)
-        CREATEFIELD(faceVector,FaceVector,staggered)
-        CREATEFIELD(edgeVector,EdgeVector,staggered)
-        CREATEFIELD(vertexVector,VertexVector,staggered)
-
-        forAll(fvMsh, l)
-        {
-            io.writeNow<staggered>(l);
-        }
-
-        RESETFIELD(Label,staggered)
-        RESETFIELD(Scalar,staggered)
-        RESETFIELD(Vector,staggered)
-        RESETFIELD(Tensor,staggered)
-        RESETFIELD(DiagTensor,staggered)
-        RESETFIELD(SymmTensor,staggered)
-        RESETFIELD(SphericalTensor,staggered)
-        RESETFIELD(FaceScalar,staggered)
-        RESETFIELD(EdgeScalar,staggered)
-        RESETFIELD(VertexScalar,staggered)
-        RESETFIELD(FaceVector,staggered)
-        RESETFIELD(EdgeVector,staggered)
-        RESETFIELD(VertexVector,staggered)
-
-        forAll(fvMsh, l)
-        {
-            io.read<staggered>(l);
-        }
-
-        TESTFIELD(label,Label,staggered)
-        TESTFIELD(scalar,Scalar,staggered)
-        TESTFIELD(vector,Vector,staggered)
-        TESTFIELD(tensor,Tensor,staggered)
-        TESTFIELD(diagTensor,DiagTensor,staggered)
-        TESTFIELD(symmTensor,SymmTensor,staggered)
-        TESTFIELD(sphericalTensor,SphericalTensor,staggered)
-        TESTFIELD(faceScalar,FaceScalar,staggered)
-        TESTFIELD(edgeScalar,EdgeScalar,staggered)
-        TESTFIELD(vertexScalar,VertexScalar,staggered)
-        TESTFIELD(faceVector,FaceVector,staggered)
-        TESTFIELD(edgeVector,EdgeVector,staggered)
-        TESTFIELD(vertexVector,VertexVector,staggered)
+        TEST(staggered,5,false,false)
+        TEST(staggered,6,true,false)
+        TEST(staggered,7,false,true)
+        TEST(staggered,8,true,true)
     }
 }

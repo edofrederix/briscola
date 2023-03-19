@@ -35,6 +35,14 @@ class IO
     // Reference to mesh
     const fvMesh& fvMsh_;
 
+    // Write processor data in partitioned mode. Can be set in controlDict with
+    // the 'writePartitioned' option. Defaults to false.
+    bool partitioned_;
+
+    // Write ghosts. Can be set in controlDict with the writeGhosts option.
+    // Defaults to false.
+    bool ghosts_;
+
     // Data file name prefix
     static word dataFileNamePrefix;
 
@@ -53,7 +61,7 @@ class IO
     template<class Type, class MeshType>
     void writeFields
     (
-        autoPtr<std::ofstream>&,
+        List<autoPtr<std::ofstream>>&,
         const label,
         const label
     ) const;
@@ -74,7 +82,7 @@ class IO
     // name, number of components, ascii bool, tag number and write header bool.
     void writeList
     (
-        autoPtr<std::ofstream>&,
+        List<autoPtr<std::ofstream>>&,
         List<floatScalar>&,
         const word,
         const label,
@@ -87,7 +95,7 @@ class IO
     template<class Type, class MeshType>
     void writeField
     (
-        autoPtr<std::ofstream>&,
+        List<autoPtr<std::ofstream>>&,
         const meshDirection<Type, MeshType>&
     ) const;
 
@@ -95,7 +103,7 @@ class IO
     template<class Type, class MeshType>
     void writeScalarField
     (
-        autoPtr<std::ofstream>&,
+        List<autoPtr<std::ofstream>>&,
         const meshDirection<Type, MeshType>&
     ) const;
 
@@ -103,7 +111,7 @@ class IO
     template<class Type, class MeshType>
     void writeArrayField
     (
-        autoPtr<std::ofstream>&,
+        List<autoPtr<std::ofstream>>&,
         const meshDirection<Type, MeshType>&
     ) const;
 
@@ -111,7 +119,7 @@ class IO
     template<class Type, class MeshType>
     void writeArrayArrayField
     (
-        autoPtr<std::ofstream>&,
+        List<autoPtr<std::ofstream>>&,
         const meshDirection<Type, MeshType>&
     ) const;
 
@@ -163,13 +171,13 @@ class IO
         meshDirection<Type, MeshType>&
     ) const;
 
-    // Return the VTK file name for given mesh level and direction
+    // Return the VTK file name for given mesh level, direction and proc
     template<class MeshType>
-    word vtkFileName(const label, const label) const;
+    word vtkFileName(const label, const label, const label) const;
 
-    // Return the VTK series file name for given mesh level and direction
+    // Return the VTK series file name for given mesh level, direction and proc
     template<class MeshType>
-    word seriesFileName(const label, const label) const;
+    word seriesFileName(const label, const label, const label) const;
 
     // Write the series file for given mesh level
     template<class MeshType>
@@ -208,6 +216,38 @@ public:
     inline const fvMesh& fvMsh() const
     {
         return fvMsh_;
+    }
+
+    // Return access to the partitioned io bool
+    inline bool& partitioned() { return partitioned_; }
+    inline bool partitioned() const { return partitioned_; }
+
+    // Return access to the ghosts io bool
+    inline bool& ghosts() { return ghosts_; }
+    inline bool ghosts() const { return ghosts_; }
+
+    // Enable partitioned io
+    inline void enablePartitioned()
+    {
+        partitioned_ = true;
+    }
+
+    // Disable partitioned io
+    inline void disablePartitioned()
+    {
+        partitioned_ = false;
+    }
+
+    // Enable ghost cell io
+    inline void enableGhosts()
+    {
+        ghosts_ = true;
+    }
+
+    // Disable ghost cell io
+    inline void disableGhosts()
+    {
+        ghosts_ = false;
     }
 
     // Write function for given mesh level
