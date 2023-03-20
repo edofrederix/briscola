@@ -1,14 +1,8 @@
 fvMesh.C
 fvMeshMetrics.C
 
-boundaryConditions/boundaryCondition/boundaryCondition.C
-
-boundaryConditions/dummyBoundaryCondition/dummyBoundaryCondition.C
-boundaryConditions/DirichletBoundaryCondition/DirichletBoundaryCondition.C
-boundaryConditions/NeumannBoundaryCondition/NeumannBoundaryCondition.C
-boundaryConditions/parallelBoundaryCondition/parallelBoundaryCondition.C
-boundaryConditions/periodicBoundaryCondition/periodicBoundaryCondition.C
-boundaryConditions/emptyBoundaryCondition/emptyBoundaryCondition.C
+boundaryConditions/boundaryCondition/boundaryConditions.C
+boundaryConditions/boundaryCondition/boundaryConditionBaseTypes.C
 
 fields/meshTypes/colocated.C
 fields/meshTypes/staggered.C

@@ -112,8 +112,6 @@ void periodicBoundaryCondition<Type,MeshType>::evaluate
     }
 }
 
-makeBoundaryConditionTypes(periodic)
-
 }
 
 }

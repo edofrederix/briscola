@@ -117,8 +117,6 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
     }
 }
 
-makeBoundaryConditionTypes(Dirichlet)
-
 }
 
 }

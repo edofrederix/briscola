@@ -104,9 +104,6 @@ void emptyBoundaryCondition<Type,MeshType>::evaluate
     }
 }
 
-makeBoundaryConditionTypes(empty)
-
-
 }
 
 }

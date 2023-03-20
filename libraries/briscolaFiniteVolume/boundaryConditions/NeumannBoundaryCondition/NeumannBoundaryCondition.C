@@ -123,9 +123,6 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate
     }
 }
 
-makeBoundaryConditionTypes(Neumann)
-
-
 }
 
 }

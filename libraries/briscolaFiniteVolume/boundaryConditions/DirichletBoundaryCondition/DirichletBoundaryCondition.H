@@ -96,4 +96,8 @@ public:
 
 }
 
+#ifdef NoRepository
+    #include "DirichletBoundaryCondition.C"
+#endif
+
 #endif

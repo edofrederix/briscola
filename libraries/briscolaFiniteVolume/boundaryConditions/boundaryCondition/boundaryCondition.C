@@ -11,18 +11,6 @@
 namespace Foam
 {
 
-template<>
-const char* NamedEnum<briscola::fv::boundaryConditionBaseType,7>::names[] =
-{
-    "dummy",
-    "empty",
-    "parallel",
-    "periodic",
-    "Dirichlet",
-    "Neumann",
-    "Robin"
-};
-
 namespace briscola
 {
 
@@ -361,54 +349,6 @@ boundaryCondition<Type,MeshType>::faceDeltas() const
 {
     return fvMsh_.template metrics<MeshType>().faceDeltas();
 }
-
-// All meshField types must have the boundaryCondition class compiled. Most
-// types don't actually have boundary conditions implemented.
-
-makeBoundaryCondition(label,colocated)
-makeBoundaryCondition(label,staggered)
-
-makeBoundaryCondition(scalar,colocated)
-makeBoundaryCondition(scalar,staggered)
-
-makeBoundaryCondition(faceScalar,colocated)
-makeBoundaryCondition(faceScalar,staggered)
-
-makeBoundaryCondition(edgeScalar,colocated)
-makeBoundaryCondition(edgeScalar,staggered)
-
-makeBoundaryCondition(vertexScalar,colocated)
-makeBoundaryCondition(vertexScalar,staggered)
-
-makeBoundaryCondition(vector,colocated)
-makeBoundaryCondition(vector,staggered)
-
-makeBoundaryCondition(faceVector,colocated)
-makeBoundaryCondition(faceVector,staggered)
-
-makeBoundaryCondition(edgeVector,colocated)
-makeBoundaryCondition(edgeVector,staggered)
-
-makeBoundaryCondition(vertexVector,colocated)
-makeBoundaryCondition(vertexVector,staggered)
-
-makeBoundaryCondition(tensor,colocated)
-makeBoundaryCondition(tensor,staggered)
-
-makeBoundaryCondition(sphericalTensor,colocated)
-makeBoundaryCondition(sphericalTensor,staggered)
-
-makeBoundaryCondition(symmTensor,colocated)
-makeBoundaryCondition(symmTensor,staggered)
-
-makeBoundaryCondition(diagTensor,colocated)
-makeBoundaryCondition(diagTensor,staggered)
-
-makeBoundaryCondition(diagStencil,colocated)
-makeBoundaryCondition(diagStencil,staggered)
-
-makeBoundaryCondition(stencil,colocated)
-makeBoundaryCondition(stencil,staggered)
 
 }
 

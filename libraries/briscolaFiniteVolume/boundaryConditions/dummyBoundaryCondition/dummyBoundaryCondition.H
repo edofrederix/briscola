@@ -84,4 +84,8 @@ public:
 
 }
 
+#ifdef NoRepository
+    #include "dummyBoundaryCondition.C"
+#endif
+
 #endif

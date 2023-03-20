@@ -91,4 +91,8 @@ public:
 
 }
 
+#ifdef NoRepository
+    #include "NeumannBoundaryCondition.C"
+#endif
+
 #endif

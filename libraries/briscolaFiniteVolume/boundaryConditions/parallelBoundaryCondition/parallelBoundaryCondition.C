@@ -286,9 +286,6 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate
     }
 }
 
-makeBoundaryConditionTypes(parallel)
-
-
 }
 
 }

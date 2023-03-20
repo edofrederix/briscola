@@ -115,4 +115,8 @@ public:
 
 }
 
+#ifdef NoRepository
+    #include "parallelBoundaryCondition.C"
+#endif
+
 #endif

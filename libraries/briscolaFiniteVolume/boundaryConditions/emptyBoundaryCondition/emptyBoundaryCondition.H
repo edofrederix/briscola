@@ -91,4 +91,8 @@ public:
 
 }
 
+#ifdef NoRepository
+    #include "emptyBoundaryCondition.C"
+#endif
+
 #endif
