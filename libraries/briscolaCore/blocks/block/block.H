@@ -221,12 +221,6 @@ public:
         return shape();
     }
 
-    // Return the shape of the block as a diagonal tensor
-    inline labelTensor shapeTensor() const
-    {
-        return labelTensor(l_,0,0,0,m_,0,0,0,n_);
-    }
-
     // Const access to the element vector
     inline const Type* v() const { return v_; }
 

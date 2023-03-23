@@ -100,7 +100,7 @@ void linearProlongationScheme<Type,MeshType>::prolong
     meshDirection<tensor,MeshType>& weights =
         weights_[fine.levelNum()][fine.directionNum()];
 
-    forAllActiveCells(fine, i, j, k)
+    forAllCells(fine, i, j, k)
     {
         const label il = i/R.x();
         const label jl = j/R.y();

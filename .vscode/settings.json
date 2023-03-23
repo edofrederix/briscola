@@ -8,5 +8,10 @@
     "editor.detectIndentation": false,
     "editor.tabSize": 4,
     "search.followSymlinks": false,
+    "search.exclude": {
+        "**/.git": true,
+        "**/lnInclude": true,
+        "**/*.dep": true,
+    },
     "explorer.excludeGitIgnore": true
 }

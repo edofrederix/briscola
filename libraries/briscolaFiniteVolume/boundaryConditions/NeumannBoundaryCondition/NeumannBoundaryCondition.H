@@ -83,6 +83,17 @@ public:
 
     // Evaluate the boundary condition for given level
     virtual void evaluate(const label, const bool = false);
+
+    // Eliminated boundary conditions
+
+        // Eliminated ghosts for all boundaries
+        virtual bool eliminated(const bool shifted) const { return true; }
+
+        // Return the boundary coefficient for given level and direction
+        virtual stencil boundaryCoeff(const label, const label);
+
+        // Return the boundary sources for given level and direction
+        virtual tmp<block<Type>> boundarySources(const label, const label);
 };
 
 }

@@ -56,6 +56,9 @@ public:
         const Cmpt&
     );
 
+    // Construct from lower and upper vectors
+    inline FaceSpace(const Vector<Cmpt>&, const Vector<Cmpt>&);
+
     // Construct from Istream
     inline FaceSpace(Istream&);
 

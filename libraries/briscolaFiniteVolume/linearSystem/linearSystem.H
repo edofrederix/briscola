@@ -105,6 +105,12 @@ public:
     tmp<meshLevel<Type,MeshType>> evaluate(const label) const;
     tmp<meshDirection<Type,MeshType>> evaluate(const label, const label) const;
 
+    // Correct boundaries
+    void correctBoundaries();
+
+    // Correct boundaries of given level
+    void correctBoundaries(const label);
+
     // Member Operators
 
     void operator=(const linearSystem<SType,Type,MeshType>&);

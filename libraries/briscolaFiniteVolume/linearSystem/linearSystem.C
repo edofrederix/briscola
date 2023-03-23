@@ -363,6 +363,25 @@ linearSystem<SType,Type,MeshType>::evaluate
 }
 
 template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::correctBoundaries()
+{
+    forAll(A_, l)
+        this->correctBoundaries(l);
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::correctBoundaries(const label l)
+{
+    forAll(x_.boundaryConditions(), i)
+    {
+        boundaryCondition<Type,MeshType>& bc =
+            x_.boundaryConditions()[i];
+
+        bc.correctSystem(*this, l);
+    }
+}
+
+template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator=
 (
     const linearSystem<SType,Type,MeshType>& sys

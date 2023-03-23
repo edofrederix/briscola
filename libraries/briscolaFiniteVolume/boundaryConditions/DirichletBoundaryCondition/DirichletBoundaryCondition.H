@@ -88,6 +88,21 @@ public:
     // shifted boundaries
     virtual bool master() const { return false; }
     virtual bool slave() const { return true; }
+
+    // Eliminated boundary conditions
+
+        // Eliminated ghosts for non-shifted boundaries. For shifted boundaries
+        // the values are set directly behaving like a slave boundary.
+        virtual bool eliminated(const bool shifted) const { return !shifted; }
+
+        // Return the boundary coefficient for given level and direction
+        virtual stencil boundaryCoeff(const label, const label)
+        {
+            return -pTraits<diagStencil>::one;
+        }
+
+        // Return the boundary sources for given level and direction
+        virtual tmp<block<Type>> boundarySources(const label, const label);
 };
 
 }

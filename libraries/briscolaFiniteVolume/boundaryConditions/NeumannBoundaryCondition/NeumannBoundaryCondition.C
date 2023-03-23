@@ -72,30 +72,26 @@ template<class Type, class MeshType>
 void NeumannBoundaryCondition<Type,MeshType>::evaluate
 (
     const label l,
-    const bool homogeneousBC
+    const bool homogeneous
 )
 {
     meshLevel<Type,MeshType>& field = this->mshField()[l];
-    const meshLevel<faceScalar,MeshType>& fdl = this->faceDeltas()[l];
 
-    const scalar H = homogeneousBC ? 0.0 : 1.0;
+    const scalar H = homogeneous ? 0.0 : 1.0;
 
     const labelVector bo(this->boundaryOffset());
-    const label fb(faceNumber(bo));
-    const label fi(faceNumber(-bo));
 
     forAll(field, d)
     {
         meshDirection<Type,MeshType>& fd = field[d];
-        const meshDirection<faceScalar,MeshType>& fdld = fdl[d];
 
-        const block<Type>& grad =
-            boundaryGradients_[l*field.size()+d];
-
-        const labelVector S(fd.activeBoundaryStart(bo));
-        const labelVector E(fd.activeBoundaryEnd(bo));
+        const labelVector S(fd.boundaryStart(bo));
+        const labelVector E(fd.boundaryEnd(bo));
+        const block<Type> B(this->boundarySources(l,d));
 
         labelVector ijk;
+
+        // Eliminated so infer value from boundary source
 
         if (fd.shifted(bo))
         {
@@ -103,11 +99,7 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                const scalar delta =
-                    1.0/fdld(ijk)[fb] + 1.0/fdld(ijk)[fi];
-
-                fd(ijk+bo) =
-                    fd(ijk-bo) + H*grad(ijk-S)*delta;
+                fd(ijk+bo) = fd(ijk-bo) + H*B(ijk-S);
             }
         }
         else
@@ -116,11 +108,87 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk+bo) =
-                    fd(ijk) + H*grad(ijk-S)/fdld(ijk)[fb];
+                fd(ijk+bo) = fd(ijk) + H*B(ijk-S);
             }
         }
     }
+}
+
+template<class Type, class MeshType>
+stencil NeumannBoundaryCondition<Type,MeshType>::boundaryCoeff
+(
+    const label l,
+    const label d
+)
+{
+    // For shifted boundaries, add the boundary coefficient to the opposite
+    // coefficient. For non-shifted boundaries, add the boundary coefficient to
+    // the center coefficient.
+
+    const labelVector bo(this->boundaryOffset());
+
+    if (this->mshField_[l][d].shifted(bo))
+    {
+        stencil S(Zero);
+        S[faceNumber(-bo)+1] = 1.0;
+
+        return S;
+    }
+    else
+    {
+        return pTraits<diagStencil>::one;
+    }
+}
+
+template<class Type, class MeshType>
+tmp<block<Type>> NeumannBoundaryCondition<Type,MeshType>::boundarySources
+(
+    const label l,
+    const label d
+)
+{
+    const meshLevel<Type,MeshType>& fl = this->mshField_[l];
+    const meshDirection<Type,MeshType>& fld = fl[d];
+    const meshDirection<faceScalar,MeshType>& fdld = this->faceDeltas()[l][d];
+
+    const block<Type>& grad =
+        boundaryGradients_[l*fl.size()+d];
+
+    const labelVector bo(this->boundaryOffset());
+    const label fb(faceNumber(bo));
+    const label fi(faceNumber(-bo));
+
+    const labelVector S(fld.boundaryStart(bo));
+    const labelVector E(fld.boundaryEnd(bo));
+
+    tmp<block<Type>> tR(new block<Type>(E-S));
+    block<Type>& R = tR.ref();
+
+    labelVector ijk;
+
+    if (fld.shifted(bo))
+    {
+        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+        {
+            const scalar delta =
+                1.0/fdld(ijk)[fb] + 1.0/fdld(ijk)[fi];
+
+            R(ijk-S) = grad(ijk-S)*delta;
+        }
+    }
+    else
+    {
+        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+        {
+            R(ijk-S) = grad(ijk-S)/fdld(ijk)[fb];
+        }
+    }
+
+    return tR;
 }
 
 }

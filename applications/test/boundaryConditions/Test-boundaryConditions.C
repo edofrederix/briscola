@@ -32,9 +32,6 @@ void testDirichlet(const fvMesh& fvMsh)
         field[l][d](i,j,k) = scalar(i+j+k)*pTraits<Type>::one;
     }
 
-    // We need to correct twice because of edges/vertices
-
-    field.correctBoundaryConditions();
     field.correctBoundaryConditions();
 
     forAll(field.boundaryConditions(), bci)
@@ -59,8 +56,8 @@ void testDirichlet(const fvMesh& fvMsh)
         {
             const meshDirection<Type,MeshType>& dd = field[l][d];
 
-            const labelVector S(dd.activeBoundaryStart(bo));
-            const labelVector E(dd.activeBoundaryEnd(bo));
+            const labelVector S(dd.boundaryStart(bo));
+            const labelVector E(dd.boundaryEnd(bo));
 
             if (dd.shifted(bo))
             {
@@ -158,8 +155,8 @@ void testNeumann(const fvMesh& fvMsh)
         {
             const meshDirection<Type,MeshType>& dd = field[l][d];
 
-            const labelVector S(dd.activeBoundaryStart(bo));
-            const labelVector E(dd.activeBoundaryEnd(bo));
+            const labelVector S(dd.boundaryStart(bo));
+            const labelVector E(dd.boundaryEnd(bo));
 
             if (dd.shifted(bo))
             {

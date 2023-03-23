@@ -93,9 +93,6 @@ void testIndexing()
     if (b1.shape() != shape)
         FatalErrorInFunction << "test 6 failed" << abort(FatalError);
 
-    if (b1.shapeTensor() != labelTensor(shape.x(),0,0,0,shape.y(),0,0,0,shape.z()))
-        FatalErrorInFunction << "test 7 failed" << abort(FatalError);
-
     l = 0;
 
     forAllBlockLinear(b1, i)

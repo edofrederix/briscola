@@ -6,6 +6,7 @@
 
 #include "block.H"
 #include "Vector.H"
+#include "faceLabel.H"
 
 #include "fvMesh.H"
 
@@ -42,23 +43,11 @@ class meshDirection
     // Direction number
     label d_;
 
-    // Internal cell block start
-    labelVector S_;
+    // Internal cell block start and end indices
+    faceLabel I_;
 
-    // Internal cell block end
-    labelVector E_;
-
-    // Internal cell block size
-    labelVector N_;
-
-    // Active cell block start
-    labelVector Sa_;
-
-    // Active cell block end
-    labelVector Ea_;
-
-    // Active cell block size
-    labelVector Na_;
+    // Active cell block start and end indices set by the boundary conditions
+    faceLabel A_;
 
     // Pointer to the mesh level, if any
     meshLevel<Type,MeshType>* mshLevelPtr_;
@@ -150,80 +139,43 @@ public:
     // Const access to the base
     inline const block<Type>& B() const { return *this; }
 
-    // Return the internal cell block start
-    inline labelVector S() const { return S_; }
+    // Internal cell start and end indices
+    inline const faceLabel& I() const { return I_; }
 
-    // Return the internal cell block end
-    inline labelVector E() const { return E_; }
+    // Active cell start and end indices
+    inline const faceLabel& A() const { return A_; }
 
-    // Return the internal cell block size
-    inline labelVector N() const { return N_; }
-
-    // Return the active cell block start
-    inline labelVector Sa() const { return Sa_; }
-
-    // Return the active cell block end
-    inline labelVector Ea() const { return Ea_; }
-
-    // Return the active cell block size
-    inline labelVector Na() const { return Na_; }
-
-    // Internal cell boundaries
+    // Internal cell block size
+    inline labelVector N() const { return A_.upper()-A_.lower(); }
 
     // Return the start point of the internal cell boundary at given offset
     inline labelVector boundaryStart(const labelVector& bo) const
     {
-        return labelVector
-        (
-            bo.x() == 0 ? 0 : bo.x() == -1 ? S_.x() : E_.x()-1,
-            bo.y() == 0 ? 0 : bo.y() == -1 ? S_.y() : E_.y()-1,
-            bo.z() == 0 ? 0 : bo.z() == -1 ? S_.z() : E_.z()-1
-        );
+        labelVector S(A_.lower());
+
+        for (label d = 0; d < 3; d++)
+            if (bo[d] == 1)
+                S[d] = A_.upper()[d]-1;
+
+        return S;
+    }
+
+    // Return the end point of the internal cell boundary at given offset
+    inline labelVector boundaryEnd(const labelVector& bo) const
+    {
+        labelVector E(A_.upper());
+
+        for (label d = 0; d < 3; d++)
+            if (bo[d] == -1)
+                E[d] = A_.lower()[d]+1;
+
+        return E;
     }
 
     // Return the shape of the internal cell boundary at given offset
     inline labelVector boundaryN(const labelVector& bo) const
     {
-        return labelVector
-        (
-            bo.x() == 0 ? N_.x() : 1,
-            bo.y() == 0 ? N_.y() : 1,
-            bo.z() == 0 ? N_.z() : 1
-        );
-    }
-
-    // Return the end of the internal cell boundary at given offset
-    inline labelVector boundaryEnd(const labelVector& bo) const
-    {
-        return boundaryStart(bo) + boundaryN(bo);
-    }
-
-    // Return the start point of the active cell boundary at given offset
-    inline labelVector activeBoundaryStart(const labelVector& bo) const
-    {
-        return labelVector
-        (
-            bo.x() == 0 ? 0 : bo.x() == -1 ? Sa_.x() : Ea_.x()-1,
-            bo.y() == 0 ? 0 : bo.y() == -1 ? Sa_.y() : Ea_.y()-1,
-            bo.z() == 0 ? 0 : bo.z() == -1 ? Sa_.z() : Ea_.z()-1
-        );
-    }
-
-    // Return the shape of the active cell boundary at given offset
-    inline labelVector activeBoundaryN(const labelVector& bo) const
-    {
-        return labelVector
-        (
-            bo.x() == 0 ? Na_.x() : 1,
-            bo.y() == 0 ? Na_.y() : 1,
-            bo.z() == 0 ? Na_.z() : 1
-        );
-    }
-
-    // Return the end of the active cell boundary at given offset
-    inline labelVector activeBoundaryEnd(const labelVector& bo) const
-    {
-        return activeBoundaryStart(bo) + activeBoundaryN(bo);
+        return boundaryEnd(bo) - boundaryStart(bo);
     }
 
     // Return true if the boundary at given offset is shifted
@@ -236,17 +188,8 @@ public:
         return false;
     }
 
-    // Return the shape without ghost cells as a diagonal tensor
-    inline labelTensor shapeTensor() const
-    {
-        return labelTensor(N_.x(),0,0,0,N_.y(),0,0,0,N_.z());
-    }
-
     // Return the number of internal cells
-    inline int size() const { return cmptProduct(N_); }
-
-    // Return the number of active cells
-    inline int activeSize() const { return cmptProduct(Na_); }
+    inline int size() const { return cmptProduct(N()); }
 
     // Linear element access operator will not work efficiently due to
     // ghost cells, so let's prevent its use

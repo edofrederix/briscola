@@ -42,7 +42,7 @@ void fluxRestrictionScheme<MeshType>::restrict
 
     // Sum fluxes from corresponding fine grid faces
 
-    forAllActiveCells(coarse, i, j, k)
+    forAllCells(coarse, i, j, k)
     {
         const label fi = i*R.x();
         const label fj = j*R.y();

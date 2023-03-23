@@ -187,8 +187,8 @@ void parallelBoundaryCondition<Type,MeshType>::initEvaluate
     {
         const meshDirection<Type,MeshType>& fd = field[d];
 
-        labelVector S(fd.activeBoundaryStart(bo) - extension_.lower());
-        labelVector E(fd.activeBoundaryEnd(bo) + extension_.upper());
+        labelVector S(fd.boundaryStart(bo) - extension_.lower());
+        labelVector E(fd.boundaryEnd(bo) + extension_.upper());
 
         block<Type>& sendBuffer =
             sendBuffers_[l*field.size()+d];
@@ -264,8 +264,8 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate
 
         meshDirection<Type,MeshType>& fd = field[d1];
 
-        labelVector S(fd.activeBoundaryStart(bo) - extension_.lower());
-        labelVector E(fd.activeBoundaryEnd(bo) + extension_.upper());
+        labelVector S(fd.boundaryStart(bo) - extension_.lower());
+        labelVector E(fd.boundaryEnd(bo) + extension_.upper());
 
         block<Type>& recvBuffer =
             recvBuffers_[l*field.size()+d2];

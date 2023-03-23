@@ -121,8 +121,8 @@ void IO::writeScalarField
 {
     label c = 0;
 
-    const labelVector S = D.S()-unitXYZ*label(ghosts_);
-    const labelVector E = D.E()+unitXYZ*label(ghosts_);
+    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
+    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
 
     List<floatScalar> data(cmptProduct(E-S));
 
@@ -158,8 +158,8 @@ void IO::writeArrayField
 
     label c = 0;
 
-    const labelVector S = D.S()-unitXYZ*label(ghosts_);
-    const labelVector E = D.E()+unitXYZ*label(ghosts_);
+    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
+    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
 
     List<floatScalar> data(cmptProduct(E-S)*n);
 
@@ -197,8 +197,8 @@ void IO::writeArrayArrayField
 
     label c = 0;
 
-    const labelVector S = D.S()-unitXYZ*label(ghosts_);
-    const labelVector E = D.E()+unitXYZ*label(ghosts_);
+    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
+    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
 
     List<floatScalar> data(cmptProduct(E-S)*m*n);
 

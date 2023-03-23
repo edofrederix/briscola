@@ -102,12 +102,6 @@ public:
 
     // Alias for shape()
     inline labelVector N() const { return shape(); }
-
-    // Return the shape of the block without ghost points as a diagonal tensor
-    inline labelTensor shapeTensor() const
-    {
-        return labelTensor(l(),0,0,0,m(),0,0,0,n());
-    }
 };
 
 }

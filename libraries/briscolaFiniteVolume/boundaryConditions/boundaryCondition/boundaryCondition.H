@@ -3,6 +3,8 @@
 
 #include "boundaryConditionBaseTypes.H"
 
+#include "block.H"
+
 #include "faceVector.H"
 #include "faceScalar.H"
 
@@ -24,6 +26,9 @@ class fvMesh;
 
 template<class Type, class MeshType>
 class meshField;
+
+template<class SType, class Type, class MeshType>
+class linearSystem;
 
 template<class Type, class MeshType>
 class boundaryCondition
@@ -210,6 +215,32 @@ public:
     // Evaluate the boundary condition for given level. Optionally force
     // homogeneous BC
     virtual void evaluate(const label, const bool = false) = 0;
+
+    // Correct a linear system at given level, subject to the boundary condition
+    void correctSystem(linearSystem<stencil,Type,MeshType>&, const label);
+    void correctSystem(linearSystem<diagStencil,Type,MeshType>&, const label);
+
+    // Eliminated boundary conditions
+    //
+    // Boundary coefficients and sources are defined from the relation:
+    //
+    //     ghost_cell = coefficients * internal_cells + source,
+    //
+    // which relates the ghost cell value to its internal cell values and
+    // eliminates dependence on the ghost value. The functions below can be
+    // overloaded by boundary conditions that support this mechanism.
+
+        // Return true if the (shifted) boundary condition eliminates the ghost
+        virtual bool eliminated(const bool shifted) const { return false; }
+
+        // Return the boundary coefficient for given level and direction
+        virtual stencil boundaryCoeff(const label, const label)
+        {
+            return pTraits<stencil>::zero;
+        }
+
+        // Return the boundary sources for given level and direction
+        virtual tmp<block<Type>> boundarySources(const label, const label);
 };
 
 // Helper function for global boundary condition type

@@ -47,6 +47,21 @@ inline FaceSpace<Cmpt>::FaceSpace
 }
 
 template<class Cmpt>
+inline FaceSpace<Cmpt>::FaceSpace
+(
+    const Vector<Cmpt>& lower,
+    const Vector<Cmpt>& upper
+)
+{
+    this->v_[L] = lower.x();
+    this->v_[R] = upper.x();
+    this->v_[B] = lower.y();
+    this->v_[T] = upper.y();
+    this->v_[A] = lower.z();
+    this->v_[F] = upper.z();
+}
+
+template<class Cmpt>
 inline FaceSpace<Cmpt>::FaceSpace(Istream& is)
 :
     FaceSpace::csType(is)

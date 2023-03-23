@@ -396,10 +396,7 @@ void meshField<Type,MeshType>::addBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctBoundaryConditions
-(
-    const bool homogeneousBCs
-)
+void meshField<Type,MeshType>::correctBoundaryConditions(const bool homogeneous)
 {
     // A call to correctBoundaryConditions() implies that boundary conditions
     // are needed for this field. Add them if not already done.
@@ -410,7 +407,7 @@ void meshField<Type,MeshType>::correctBoundaryConditions
     }
 
     forAll(*this, l)
-        listType::operator[](l).correctBoundaryConditions(homogeneousBCs);
+        listType::operator[](l).correctBoundaryConditions(homogeneous);
 }
 
 template<class Type, class MeshType>

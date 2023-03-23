@@ -72,9 +72,9 @@ void testOneLinearProlongation(const fvMesh& fvMsh, const word scheme)
             // Also set ghost values which are needed for prolongation
 
             forAll(f[l], d)
-            for (label i = f[l][d].S().x()-1; i < f[l][d].E().x()+1; i++)
-            for (label j = f[l][d].S().y()-1; j < f[l][d].E().y()+1; j++)
-            for (label k = f[l][d].S().z()-1; k < f[l][d].E().z()+1; k++)
+            for (label i = f[l][d].I().left()  -1; i < f[l][d].I().right()+1; i++)
+            for (label j = f[l][d].I().bottom()-1; j < f[l][d].I().top()  +1; j++)
+            for (label k = f[l][d].I().aft()   -1; k < f[l][d].I().fore() +1; k++)
             {
                 f[l][d](i,j,k) = cc[l][d](i,j,k)[dir]*pTraits<Type>::one;
             }
@@ -130,9 +130,9 @@ void testTwoLinearProlongation(const fvMesh& fvMsh, const word scheme)\
             // Also set ghost values which are needed for prolongation
 
             forAll(f[l], d)
-            for (label i = f[l][d].S().x()-1; i < f[l][d].E().x()+1; i++)
-            for (label j = f[l][d].S().y()-1; j < f[l][d].E().y()+1; j++)
-            for (label k = f[l][d].S().z()-1; k < f[l][d].E().z()+1; k++)
+            for (label i = f[l][d].I().left()  -1; i < f[l][d].I().right()+1; i++)
+            for (label j = f[l][d].I().bottom()-1; j < f[l][d].I().top()  +1; j++)
+            for (label k = f[l][d].I().aft()   -1; k < f[l][d].I().fore() +1; k++)
             {
                 f[l][d](i,j,k) =
                     (cc[l][d](i,j,k)[dir1]+cc[l][d](i,j,k)[dir2])
@@ -189,9 +189,9 @@ void testThreeLinearProlongation(const fvMesh& fvMsh, const word scheme)
         // Also set ghost values which are needed for prolongation
 
         forAll(f[l], d)
-        for (label i = f[l][d].S().x()-1; i < f[l][d].E().x()+1; i++)
-        for (label j = f[l][d].S().y()-1; j < f[l][d].E().y()+1; j++)
-        for (label k = f[l][d].S().z()-1; k < f[l][d].E().z()+1; k++)
+        for (label i = f[l][d].I().left()  -1; i < f[l][d].I().right()+1; i++)
+        for (label j = f[l][d].I().bottom()-1; j < f[l][d].I().top()  +1; j++)
+        for (label k = f[l][d].I().aft()   -1; k < f[l][d].I().fore() +1; k++)
         {
             f[l][d](i,j,k) =
                 (

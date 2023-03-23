@@ -94,8 +94,8 @@ void IO::readScalarField
     meshDirection<Type,MeshType>& D
 ) const
 {
-    const labelVector S = D.S()-unitXYZ*label(ghosts_);
-    const labelVector E = D.E()+unitXYZ*label(ghosts_);
+    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
+    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
 
     List<floatScalar> data(cmptProduct(E-S));
 
@@ -130,8 +130,8 @@ void IO::readArrayField
 {
     const label n(Type::nComponents);
 
-    const labelVector S = D.S()-unitXYZ*label(ghosts_);
-    const labelVector E = D.E()+unitXYZ*label(ghosts_);
+    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
+    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
 
     List<floatScalar> data(cmptProduct(E-S)*n);
 
@@ -166,8 +166,8 @@ void IO::readArrayArrayField
     const label n(Type::nComponents);
     const label m(pTraits<typename Type::cmpt>::nComponents);
 
-    const labelVector S = D.S()-unitXYZ*label(ghosts_);
-    const labelVector E = D.E()+unitXYZ*label(ghosts_);
+    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
+    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
 
     List<floatScalar> data(cmptProduct(E-S)*m*n);
 

@@ -60,6 +60,7 @@ midPointGaussDivergenceScheme<Type,MeshType>::div
     }
 
     Sys.b() = Zero;
+    Sys.correctBoundaries();
 
     return tSys;
 }

@@ -84,8 +84,8 @@ void IO::writeData(const word timeName, const label l)
 
         // Create points data
 
-        const labelVector S(ccl[d].S()-unitXYZ*label(ghosts_));
-        const labelVector E(ccl[d].E()+unitXYZ*label(ghosts_));
+        const labelVector S(ccl[d].I().lower()-unitXYZ*label(ghosts_));
+        const labelVector E(ccl[d].I().upper()+unitXYZ*label(ghosts_));
 
         List<floatScalar> myPoints(cmptProduct(E-S+unitXYZ)*3);
 
@@ -431,8 +431,8 @@ void IO::readData(const word timeName, const label l)
 
         file>> dummy >> nCells;
 
-        const labelVector S(ccl[d].S()-unitXYZ*label(ghosts_));
-        const labelVector E(ccl[d].E()+unitXYZ*label(ghosts_));
+        const labelVector S(ccl[d].I().lower()-unitXYZ*label(ghosts_));
+        const labelVector E(ccl[d].I().upper()+unitXYZ*label(ghosts_));
 
         labelList sizes(Pstream::nProcs());
         sizes[Pstream::myProcNo()] = cmptProduct(E-S);

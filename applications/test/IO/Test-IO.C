@@ -39,8 +39,8 @@ tmp<meshField<Type,MeshType>> createField
     forAll(f, l)
     forAll(f[l], d)
     {
-        const labelVector S = f[l][d].S()-unitXYZ;
-        const labelVector E = f[l][d].E()+unitXYZ;
+        const labelVector S = f[l][d].I().lower()-unitXYZ;
+        const labelVector E = f[l][d].I().upper()+unitXYZ;
 
         for (int i = S.x(); i < E.x(); i++)
         for (int j = S.y(); j < E.y(); j++)
@@ -59,8 +59,8 @@ void testField(const meshField<Type,MeshType>& f, bool ghosts)
     forAll(f, l)
     forAll(f[l], d)
     {
-        const labelVector S = f[l][d].S()-unitXYZ*label(ghosts);
-        const labelVector E = f[l][d].E()+unitXYZ*label(ghosts);
+        const labelVector S = f[l][d].I().lower()-unitXYZ*label(ghosts);
+        const labelVector E = f[l][d].I().upper()+unitXYZ*label(ghosts);
 
         for (int i = S.x(); i < E.x(); i++)
         for (int j = S.y(); j < E.y(); j++)

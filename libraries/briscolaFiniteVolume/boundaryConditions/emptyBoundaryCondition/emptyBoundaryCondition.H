@@ -83,6 +83,21 @@ public:
     // shifted boundaries
     virtual inline bool master() const { return false; }
     virtual inline bool slave() const { return true; }
+
+    // Eliminated boundary conditions
+
+        // Eliminated ghosts for all boundaries
+        virtual bool eliminated(const bool shifted) const { return true; }
+
+        // On shifted boundaries the value is set directly. On non-shifted
+        // boundaries we apply homogeneous Neumann.
+        virtual stencil boundaryCoeff(const label l, const label d)
+        {
+            return
+                this->mshField_[l][d].shifted(this->boundaryOffset())
+            ? pTraits<diagStencil>::zero
+            : pTraits<diagStencil>::one;
+        }
 };
 
 }

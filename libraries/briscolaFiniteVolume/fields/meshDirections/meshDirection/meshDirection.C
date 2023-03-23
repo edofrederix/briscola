@@ -16,32 +16,29 @@ template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::setInternalCells()
 {
     const labelVector& padding = MeshType::padding[d_];
-
     const faceLabel slave = fvMsh_.msh().patchSlave();
 
-    S_ = briscola::cmptMultiply(padding, slave.lower());
+    I_ = faceLabel(zeroXYZ, this->B().N()-2*unitXYZ);
 
-    E_ =
-        this->B().N()
-      - 2*unitXYZ
-      - briscola::cmptMultiply(padding, slave.upper());
+    for (int i = 0; i < 6; i++)
+        I_[i] +=
+            (padding[i/2] && slave[i]) ? 1 - 2*(i%2) : 0;
 
-    N_ = E_ - S_;
-
-    // By default, all internal cells are active cells
-
-    Sa_ = S_;
-    Ea_ = E_;
-    Na_ = N_;
+    A_ = I_;
 }
 
 template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::updateActiveCells()
 {
+    const labelVector& padding = MeshType::padding[d_];
+
+    // Find face boundaries with an underlying boundary part patch that are
+    // slave
+
     const PtrList<boundaryCondition<Type,MeshType>>& bcs =
         this->mshLevel().mshField().boundaryConditions();
 
-    faceLabel slaveBoundary(Zero);
+    faceLabel slave = fvMsh_.msh().patchSlave();
 
     forAll(bcs, i)
     {
@@ -54,26 +51,15 @@ void meshDirection<Type,MeshType>::updateActiveCells()
          && bc.slave()
         )
         {
-            slaveBoundary[faceNumber(bc.boundaryOffset())] = 1;
+            slave[faceNumber(bc.boundaryOffset())] = 1;
         }
     }
 
-    // If no boundary conditions are set the slave face label will revert to
-    // that of the mesh, therewith setting Sa = S, Ea = E and Na = N
+    A_ = faceLabel(zeroXYZ, this->B().N()-2*unitXYZ);
 
-    const faceLabel slave =
-        max(fvMsh_.msh().patchSlave(), slaveBoundary);
-
-    const labelVector& padding = MeshType::padding[d_];
-
-    Sa_ = briscola::cmptMultiply(padding, slave.lower());
-
-    Ea_ =
-        this->B().N()
-      - 2*unitXYZ
-      - briscola::cmptMultiply(padding, slave.upper());
-
-    Na_ = Ea_ - Sa_;
+    for (int i = 0; i < 6; i++)
+        A_[i] +=
+            (padding[i/2] && slave[i]) ? 1 - 2*(i%2) : 0;
 }
 
 template<class Type, class MeshType>
@@ -132,12 +118,8 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
-    S_(D.S_),
-    E_(D.E_),
-    N_(D.N_),
-    Sa_(D.Sa_),
-    Ea_(D.Ea_),
-    Na_(D.Na_),
+    I_(D.I_),
+    A_(D.A_),
     mshLevelPtr_(nullptr)
 {
     allocate(D.B().N());
@@ -155,12 +137,8 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
-    S_(D.S_),
-    E_(D.E_),
-    N_(D.N_),
-    Sa_(D.Sa_),
-    Ea_(D.Ea_),
-    Na_(D.Na_),
+    I_(D.I_),
+    A_(D.A_),
     mshLevelPtr_(nullptr)
 {
     allocate(D.B().N());
@@ -178,12 +156,8 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
-    S_(D.S_),
-    E_(D.E_),
-    N_(D.N_),
-    Sa_(D.Sa_),
-    Ea_(D.Ea_),
-    Na_(D.Na_),
+    I_(D.I_),
+    A_(D.A_),
     mshLevelPtr_(nullptr)
 {
     allocate(D.B().N());
@@ -200,12 +174,8 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(tD->fvMsh_),
     l_(tD->l_),
     d_(tD->d_),
-    S_(tD->S_),
-    E_(tD->E_),
-    N_(tD->N_),
-    Sa_(tD->Sa_),
-    Ea_(tD->Ea_),
-    Na_(tD->Na_),
+    I_(tD->I_),
+    A_(tD->A_),
     mshLevelPtr_(nullptr)
 {
     if (tD.isTmp())
@@ -235,12 +205,8 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(tD->fvMsh_),
     l_(tD->l_),
     d_(tD->d_),
-    S_(tD->S_),
-    E_(tD->E_),
-    N_(tD->N_),
-    Sa_(tD->Sa_),
-    Ea_(tD->Ea_),
-    Na_(tD->Na_),
+    I_(tD->I_),
+    A_(tD->A_),
     mshLevelPtr_(nullptr)
 {
     if (tD.isTmp())
@@ -271,12 +237,8 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(tD->fvMsh_),
     l_(tD->l_),
     d_(tD->d_),
-    S_(tD->S_),
-    E_(tD->E_),
-    N_(tD->N_),
-    Sa_(tD->Sa_),
-    Ea_(tD->Ea_),
-    Na_(tD->Na_),
+    I_(tD->I_),
+    A_(tD->A_),
     mshLevelPtr_(nullptr)
 {
     if (tD.isTmp())
