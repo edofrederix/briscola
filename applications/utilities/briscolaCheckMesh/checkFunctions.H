@@ -178,8 +178,8 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
         {
             const meshDirection<faceVector,MeshType>& fcld = fc[l][d];
 
-            labelVector S(fcld.activeBoundaryStart(bo));
-            labelVector E(fcld.activeBoundaryEnd(bo));
+            labelVector S(fcld.boundaryStart(bo));
+            labelVector E(fcld.boundaryEnd(bo));
 
             labelVector ijk;
 
@@ -271,8 +271,8 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
         {
             const meshDirection<faceScalar,MeshType>& fdld = fd[l][d];
 
-            labelVector S(fdld.activeBoundaryStart(bo));
-            labelVector E(fdld.activeBoundaryEnd(bo));
+            labelVector S(fdld.boundaryStart(bo));
+            labelVector E(fdld.boundaryEnd(bo));
 
             labelVector ijk;
 
