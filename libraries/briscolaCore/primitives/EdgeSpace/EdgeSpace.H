@@ -30,7 +30,7 @@ public:
     typedef CellSpace<EdgeSpace<Cmpt>, Cmpt, 12> csType;
 
     // Component labeling enumeration
-    enum components { X0, X1, X2, X3, Y0, Y1, Y2, Y3, Z0, Z1, Z2, Z3 };
+    enum components { BA, TA, BF, TF, LA, RA, LF, RF, LB, RB, LT, RT };
 
     // Construct null
     inline EdgeSpace();
@@ -67,35 +67,31 @@ public:
 
     // Access to edge elements
 
-    inline const Cmpt& x0() const { return this->v_[X0]; }
-    inline const Cmpt& x1() const { return this->v_[X1]; }
-    inline const Cmpt& x2() const { return this->v_[X2]; }
-    inline const Cmpt& x3() const { return this->v_[X3]; }
+    inline const Cmpt& ba() const { return this->v_[BA]; }
+    inline const Cmpt& ta() const { return this->v_[TA]; }
+    inline const Cmpt& bf() const { return this->v_[BF]; }
+    inline const Cmpt& tf() const { return this->v_[TF]; }
+    inline const Cmpt& la() const { return this->v_[LA]; }
+    inline const Cmpt& ra() const { return this->v_[RA]; }
+    inline const Cmpt& lf() const { return this->v_[LF]; }
+    inline const Cmpt& rf() const { return this->v_[RF]; }
+    inline const Cmpt& lb() const { return this->v_[LB]; }
+    inline const Cmpt& rb() const { return this->v_[RB]; }
+    inline const Cmpt& lt() const { return this->v_[LT]; }
+    inline const Cmpt& rt() const { return this->v_[RT]; }
 
-    inline const Cmpt& y0() const { return this->v_[Y0]; }
-    inline const Cmpt& y1() const { return this->v_[Y1]; }
-    inline const Cmpt& y2() const { return this->v_[Y2]; }
-    inline const Cmpt& y3() const { return this->v_[Y3]; }
-
-    inline const Cmpt& z0() const { return this->v_[Z0]; }
-    inline const Cmpt& z1() const { return this->v_[Z1]; }
-    inline const Cmpt& z2() const { return this->v_[Z2]; }
-    inline const Cmpt& z3() const { return this->v_[Z3]; }
-
-    inline Cmpt& x0() { return this->v_[X0]; }
-    inline Cmpt& x1() { return this->v_[X1]; }
-    inline Cmpt& x2() { return this->v_[X2]; }
-    inline Cmpt& x3() { return this->v_[X3]; }
-
-    inline Cmpt& y0() { return this->v_[Y0]; }
-    inline Cmpt& y1() { return this->v_[Y1]; }
-    inline Cmpt& y2() { return this->v_[Y2]; }
-    inline Cmpt& y3() { return this->v_[Y3]; }
-
-    inline Cmpt& z0() { return this->v_[Z0]; }
-    inline Cmpt& z1() { return this->v_[Z1]; }
-    inline Cmpt& z2() { return this->v_[Z2]; }
-    inline Cmpt& z3() { return this->v_[Z3]; }
+    inline Cmpt& ba() { return this->v_[BA]; }
+    inline Cmpt& ta() { return this->v_[TA]; }
+    inline Cmpt& bf() { return this->v_[BF]; }
+    inline Cmpt& tf() { return this->v_[TF]; }
+    inline Cmpt& la() { return this->v_[LA]; }
+    inline Cmpt& ra() { return this->v_[RA]; }
+    inline Cmpt& lf() { return this->v_[LF]; }
+    inline Cmpt& rf() { return this->v_[RF]; }
+    inline Cmpt& lb() { return this->v_[LB]; }
+    inline Cmpt& rb() { return this->v_[RB]; }
+    inline Cmpt& lt() { return this->v_[LT]; }
+    inline Cmpt& rt() { return this->v_[RT]; }
 };
 
 // EdgeSpace partial specialization of CellSpaceCast
@@ -124,29 +120,31 @@ public:
         }
         else
         {
-            const labelVector x0(T & briscola::edgeOffset0);
-            const labelVector x1(T & briscola::edgeOffset1);
+            const labelVector ba(T & briscola::edgeOffset0);
+            const labelVector ta(T & briscola::edgeOffset1);
+            const labelVector bf(T & briscola::edgeOffset2);
+            const labelVector tf(T & briscola::edgeOffset3);
+            const labelVector la(T & briscola::edgeOffset4);
+            const labelVector ra(T & briscola::edgeOffset5);
+            const labelVector lf(T & briscola::edgeOffset6);
+            const labelVector rf(T & briscola::edgeOffset7);
+            const labelVector lb(T & briscola::edgeOffset8);
+            const labelVector rb(T & briscola::edgeOffset9);
+            const labelVector lt(T & briscola::edgeOffset10);
+            const labelVector rt(T & briscola::edgeOffset11);
 
-            const labelVector y0(T & briscola::edgeOffset4);
-            const labelVector y1(T & briscola::edgeOffset5);
-
-            const labelVector z0(T & briscola::edgeOffset8);
-            const labelVector z1(T & briscola::edgeOffset9);
-
-            p_[briscola::edgeNumber( x0)] = h.x0();
-            p_[briscola::edgeNumber( x1)] = h.x1();
-            p_[briscola::edgeNumber(-x1)] = h.x2();
-            p_[briscola::edgeNumber(-x0)] = h.x3();
-
-            p_[briscola::edgeNumber( y0)] = h.y0();
-            p_[briscola::edgeNumber( y1)] = h.y1();
-            p_[briscola::edgeNumber(-y1)] = h.y2();
-            p_[briscola::edgeNumber(-y0)] = h.y3();
-
-            p_[briscola::edgeNumber( z0)] = h.z0();
-            p_[briscola::edgeNumber( z1)] = h.z1();
-            p_[briscola::edgeNumber(-z1)] = h.z2();
-            p_[briscola::edgeNumber(-z0)] = h.z3();
+            p_[briscola::edgeNumber(ba)] = h.ba();
+            p_[briscola::edgeNumber(ta)] = h.ta();
+            p_[briscola::edgeNumber(bf)] = h.bf();
+            p_[briscola::edgeNumber(tf)] = h.tf();
+            p_[briscola::edgeNumber(la)] = h.la();
+            p_[briscola::edgeNumber(ra)] = h.ra();
+            p_[briscola::edgeNumber(lf)] = h.lf();
+            p_[briscola::edgeNumber(rf)] = h.rf();
+            p_[briscola::edgeNumber(lb)] = h.lb();
+            p_[briscola::edgeNumber(rb)] = h.rb();
+            p_[briscola::edgeNumber(lt)] = h.lt();
+            p_[briscola::edgeNumber(rt)] = h.rt();
         }
     }
 
