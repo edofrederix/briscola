@@ -30,6 +30,9 @@ public:
     // Transfer constructor, destroying argument
     rectilinearMesh(autoPtr<mesh>&);
 
+    // Copy constructor
+    rectilinearMesh(const rectilinearMesh& msh);
+
     // Transfer or copy constructor
     rectilinearMesh(rectilinearMesh& msh, bool reuse);
 

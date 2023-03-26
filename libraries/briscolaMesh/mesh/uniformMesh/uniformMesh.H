@@ -30,6 +30,9 @@ public:
     // Transfer constructor, destroying argument
     uniformMesh(autoPtr<mesh>&);
 
+    // Copy constructor
+    uniformMesh(const uniformMesh& msh);
+
     // Transfer or copy constructor
     uniformMesh(uniformMesh& msh, bool reuse);
 

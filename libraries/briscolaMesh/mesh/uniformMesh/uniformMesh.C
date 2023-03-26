@@ -36,6 +36,12 @@ uniformMesh::uniformMesh(autoPtr<mesh>& mshPtr)
     setCellSize();
 }
 
+uniformMesh::uniformMesh(const uniformMesh& msh)
+:
+    rectilinearMesh(msh),
+    cellSize_(msh.cellSize_)
+{}
+
 uniformMesh::uniformMesh(uniformMesh& msh, bool reuse)
 :
     rectilinearMesh(msh, reuse),

@@ -127,6 +127,12 @@ rectilinearMesh::rectilinearMesh(autoPtr<mesh>& mshPtr)
     setCellSizes();
 }
 
+rectilinearMesh::rectilinearMesh(const rectilinearMesh& msh)
+:
+    structuredMesh(msh),
+    cellSizes_(msh.cellSizes_)
+{}
+
 rectilinearMesh::rectilinearMesh(rectilinearMesh& msh, bool reuse)
 :
     structuredMesh(msh, reuse),
