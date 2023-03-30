@@ -201,7 +201,7 @@ void FourierTransforms::FFTWplans()
         stride,
         sep,
         kind_fwd_x,
-        FFTW_ESTIMATE
+        FFTW_MEASURE
     );
 
     bwdPlanX_ = fftw_plan_many_r2r
@@ -218,7 +218,7 @@ void FourierTransforms::FFTWplans()
         stride,
         sep,
         kind_bwd_x,
-        FFTW_ESTIMATE
+        FFTW_MEASURE
     );
 
     fft_rank = 1;
@@ -241,7 +241,7 @@ void FourierTransforms::FFTWplans()
         stride,
         sep,
         kind_fwd_y,
-        FFTW_ESTIMATE
+        FFTW_MEASURE
     );
 
     bwdPlanY_ = fftw_plan_many_r2r
@@ -258,7 +258,7 @@ void FourierTransforms::FFTWplans()
         stride,
         sep,
         kind_bwd_y,
-        FFTW_ESTIMATE
+        FFTW_MEASURE
     );
 }
 

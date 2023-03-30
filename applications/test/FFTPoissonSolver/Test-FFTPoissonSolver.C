@@ -125,9 +125,9 @@ int main(int argc, char *argv[])
     }
 
     if(check(p, f))
-        {
-            Info << "-------------------------------------------" << nl;
-            Info << "Pressure equation solution check successful" << nl;
-            Info << "-------------------------------------------" << endl;
-        }
+    {
+        Info << "-------------------------------------------" << nl;
+        Info << "Pressure equation solution check successful" << nl;
+        Info << "-------------------------------------------" << endl;
+    }
 }

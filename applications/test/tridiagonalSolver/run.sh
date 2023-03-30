@@ -4,7 +4,7 @@ TEST=tridiagonalSolver
 
 if [ -f build/Test-$TEST ]; then
 
-    OUTPUT=$(./build/Test-$TEST 50 > /dev/null 2>&1)
+    OUTPUT=$(./build/Test-$TEST > /dev/null 2>&1)
 
     RET=$?
 

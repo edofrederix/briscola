@@ -3,8 +3,11 @@
 
 #include "vector.H"
 #include "block.H"
+#include "word.H"
 #include "fvMesh.H"
 #include "rectilinearMesh.H"
+#include "processorOverlap.H"
+#include "HashTable.H"
 
 namespace Foam
 {
@@ -17,8 +20,6 @@ namespace fv
 
 class decomposer
 {
-    private:
-
 	// Mesh
     const fvMesh& fvMsh_;
 
@@ -40,12 +41,14 @@ class decomposer
     List<labelVector> Nz_;
 
     // Start cell indices of each processor in each decomposition
-    List<labelVector> si_;
-    List<labelVector> sx_;
-    List<labelVector> sy_;
-    List<labelVector> sz_;
+    List<labelVector> Si_;
+    List<labelVector> Sx_;
+    List<labelVector> Sy_;
+    List<labelVector> Sz_;
 
-    public:
+    HashTable<processorOverlap, string> processorOverlap_;
+
+public:
 
     // Construct from mesh
     decomposer(const fvMesh& fvMsh);
@@ -56,22 +59,22 @@ class decomposer
     // Return initial decomposition
     inline labelVector& I() { return I_; }
     inline List<labelVector>& Ni() { return Ni_; }
-    inline List<labelVector>& si() { return si_; }
+    inline List<labelVector>& Si() { return Si_; }
 
     // Return X-pencil decomposition
     inline labelVector& X() { return X_; }
     inline List<labelVector>& Nx() { return Nx_; }
-    inline List<labelVector>& sx() { return sx_; }
+    inline List<labelVector>& Sx() { return Sx_; }
 
     // Return Y-pencil decomposition
     inline labelVector& Y() { return Y_; }
     inline List<labelVector>& Ny() { return Ny_; }
-    inline List<labelVector>& sy() { return sy_; }
+    inline List<labelVector>& Sy() { return Sy_; }
 
     // Return Z-pencil decomposition
     inline labelVector& Z() { return Z_; }
     inline List<labelVector>& Nz() { return Nz_; }
-    inline List<labelVector>& sz() { return sz_; }
+    inline List<labelVector>& Sz() { return Sz_; }
 
     // Decomposition functions
     void decompInit();
@@ -84,6 +87,9 @@ class decomposer
     label procNumFromIndex(const labelVector ijk, const labelVector D);
     labelVector indexFromProcNum(const label num, const labelVector D);
 
+    // Make key for HashTable
+    word makeKey(labelVector I, labelVector T);
+
     // Return processor dimensions and origins
     List<labelVector> procDims(labelVector D);
     List<labelVector> procOrig(labelVector D);
@@ -95,7 +101,8 @@ class decomposer
         const List<labelVector>& recvStart,
         const List<labelVector>& recvSize,
         scalarBlock& output,
-        List<labelVector>& startIndex
+        List<labelVector>& startIndex,
+        bool yPencil = false
     );
 
     // Transpose function
@@ -106,12 +113,6 @@ class decomposer
         labelVector I,
         labelVector T
     );
-
-    // Transform Y-pencil data from i>j>k indexing to i>k>j indexing and
-    // vice-versa. This is needed to apply the transformation in y-direction
-    void yTransFwd(scalarBlock& yData);
-    void yTransBwd(scalarBlock& yData);
-
 };
 
 } // end namespace fv

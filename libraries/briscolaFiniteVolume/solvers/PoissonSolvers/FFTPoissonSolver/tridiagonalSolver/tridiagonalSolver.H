@@ -29,7 +29,7 @@ class tridiagonalSolver
     labelVector Nz_;
 
     // Z-pencil starting indices
-    labelVector sz_;
+    labelVector Sz_;
 
     // Boundary conditions
     labelVector BC_;
@@ -41,6 +41,17 @@ class tridiagonalSolver
     // Cell size arrays for each direction
     const PtrList<scalarList> cellSizes_;
 
+    // Diagonals
+    scalarBlock D_;
+    scalarList DU_;
+    scalarList DL_;
+
+    // Compute FFT eigenvalues
+    void computeEigenvalues();
+
+    // Compute tridiagonal solver diagonals
+    void computeDiagonals();
+
 public:
 
     // Construct from dictionary
@@ -48,7 +59,7 @@ public:
     (
         const fvMesh& fvMsh,
         labelVector Nz,
-        labelVector sz,
+        labelVector Sz,
         labelVector BC
     );
 
@@ -58,30 +69,20 @@ public:
     // Solve tridiagonal system
     void solve
     (
-        label n,
-        double DU[],
-        double D[],
-        double DL[],
-        double f[],
-        double p[]
+        scalarBlock& f,
+        scalarBlock& p,
+        label start = 0
     );
 
     // Solve cyclic tridiagonal system
     void solveCyclic
     (
-        label n,
-        double DU[],
-        double D[],
-        double DL[],
-        double f[],
-        double p[]
+        scalarBlock& f,
+        scalarBlock& p
     );
 
     // Solve z-direction of a scalarBlock
     void solve(scalarBlock& zPencil);
-
-    // Compute FFT eigenvalues
-    void computeEigenvalues();
 
 };
 

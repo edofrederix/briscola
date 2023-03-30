@@ -139,49 +139,45 @@ void decomposition::updateGlobalData(const mesh& msh)
         // Store
 
         map_.setData(map);
+
+        // Set global processor part starts
+
+        globalStartPerProc_.setSize(Pstream::nProcs());
+
+        labelVector myBrickStart(0,0,0);
+
+        label nBricks = msh.bricks().size();
+
+        List<labelVector> brickSizes(nBricks);
+
+        for (int b = 0; b < nBricks; b++)
+        {
+            brickSizes[b] = msh.bricks()[b].N();
+        }
+
+        labelVector myBrickIndex = msh.topology().map().legend()[myBrickNum()];
+
+        for (int x = 0; x < myBrickIndex.x(); x++)
+        {
+            myBrickStart.x() += brickSizes[brickMap(x,0,0)].x();
+        }
+
+        for (int y = 0; y < myBrickIndex.y(); y++)
+        {
+            myBrickStart.y() += brickSizes[brickMap(0,y,0)].y();
+        }
+
+        for (int z = 0; z < myBrickIndex.z(); z++)
+        {
+            myBrickStart.z() += brickSizes[brickMap(0,0,z)].z();
+        }
+
+        globalStartPerProc_[Pstream::myProcNo()] =
+            myBrickStart + myBrickPartStart();
+
+        Pstream::gatherList(globalStartPerProc_);
+        Pstream::scatterList(globalStartPerProc_);
     }
-
-    globalStartPerProc_.setSize(Pstream::nProcs());
-    globalStartPerProc_[Pstream::myProcNo()] = myPartGlobalStart(msh);
-
-    Pstream::gatherList(globalStartPerProc_);
-    Pstream::scatterList(globalStartPerProc_);
-
-}
-
-labelVector decomposition::myPartGlobalStart(const mesh& msh) const
-{
-    labelVector myBrickStart(0,0,0);
-
-    label nBricks = msh.bricks().size();
-
-    const labelBlock& brickMap = msh.topology().map();
-
-    List<labelVector> brickSizes(nBricks);
-
-    for (int b = 0; b < nBricks; b++)
-    {
-        brickSizes[b] = msh.bricks()[b].N();
-    }
-
-    labelVector myBrickIndex = msh.topology().map().legend()[myBrickNum()];
-
-    for (int x = 0; x < myBrickIndex.x(); x++)
-    {
-        myBrickStart.x() += brickSizes[brickMap(x,0,0)].x();
-    }
-
-    for (int y = 0; y < myBrickIndex.y(); y++)
-    {
-        myBrickStart.y() += brickSizes[brickMap(0,y,0)].y();
-    }
-
-    for (int z = 0; z < myBrickIndex.z(); z++)
-    {
-        myBrickStart.z() += brickSizes[brickMap(0,0,z)].z();
-    }
-
-    return myBrickStart + myBrickPartStart();
 }
 
 decomposition::decomposition(mesh& msh)

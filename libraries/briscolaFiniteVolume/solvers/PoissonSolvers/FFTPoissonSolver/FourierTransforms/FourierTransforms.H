@@ -20,8 +20,6 @@ namespace fv
 
 class FourierTransforms
 {
-    private:
-
 	// Mesh
     const fvMesh& fvMsh_;
 
@@ -54,7 +52,7 @@ class FourierTransforms
     // FFT normalization factor
     scalar normalization_;
 
-    public:
+public:
 
     // Construct from mesh
     FourierTransforms

@@ -24,19 +24,25 @@ class FFTPoissonSolver
     const PtrList<scalarList> cellSizes_;
 
     // Pencil decomposer
-    autoPtr<decomposer> decomp_;
+    decomposer decomp_;
 
-    // Tridiagonal solver
-    autoPtr<tridiagonalSolver> tds_;
-
-    // FFT's
-    autoPtr<FourierTransforms> fft_;
+    // Initial data block
+    scalarBlock initData_;
 
     // x-pencil block
     scalarBlock xPencil_;
 
     // y-pencil block
     scalarBlock yPencil_;
+
+    // z-pencil block
+    scalarBlock zPencil_;
+
+    // FFT's
+    FourierTransforms fft_;
+
+    // Tridiagonal solver
+    tridiagonalSolver tds_;
 
     // Funtion to check if the mesh qualifies for FFTs. Will give error if not
     // all criteria are met.

@@ -1,70 +1,103 @@
 #include "arguments.H"
+#include "Time.H"
 #include "vector.H"
 #include "block.H"
+#include "fv.H"
 #include "tridiagonalSolver.H"
 
 using namespace Foam;
 using namespace briscola;
+using namespace fv;
 
 int main(int argc, char *argv[])
 {
     using std::rand;
     using std::srand;
 
-    arguments::validArgs.append("size");
-
     arguments args(argc, argv);
 
-    const label N(args.argRead<label>(1));
+    // Create case and construct tridiagonal solver
 
+    #include "createBriscolaTime.H"
+
+    labelVector N(64,64,64);
+
+    labelVector Sz(0,0,0);
+    labelVector BC(1,1,1);
+
+    IOdictionary meshDict
+    (
+        IOobject
+        (
+            runTime.system()/"briscolaMeshDict",
+            runTime,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE,
+            false
+        )
+    );
+
+    fvMesh fvMsh(meshDict, runTime);
+
+    tridiagonalSolver tds(fvMsh, N, Sz, BC);
 
     // Input data containing random values
 
     int seed = 123;
     srand(seed);
 
-    List<scalar> DU(N);
-    List<scalar> D (N);
-    List<scalar> DL(N);
-    List<scalar> f (N);
+    scalarList DU(N.z());
+    scalarList DL(N.z());
 
-    List<scalar> p (N);
+    scalarBlock D(N);
+    scalarBlock f(N);
 
-
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N.x(); i++)
     {
-        DU[i] = static_cast<double>(rand()) / RAND_MAX;
-        D [i] = static_cast<double>(rand()) / RAND_MAX;
-        DL[i] = static_cast<double>(rand()) / RAND_MAX;
-        f [i] = static_cast<double>(rand()) / RAND_MAX;
+        for (int j = 0; j < N.y(); j++)
+        {
+            for (int k = 0; k < N.z(); k++)
+            {
+                D(i,j,k) = static_cast<double>(rand()) / RAND_MAX;
+                f(i,j,k) = static_cast<double>(rand()) / RAND_MAX;
+                DU[k] = static_cast<double>(rand()) / RAND_MAX;
+                DL[k] = static_cast<double>(rand()) / RAND_MAX;
+            }
+        }
     }
 
-    autoPtr<tridiagonalSolver> tds;
-    tds = new tridiagonalSolver(N);
+    scalarBlock p(N);
 
-    tds->tridiagonalSolve
+    // Test tridiagonal solver
+
+    tds.solve
     (
-        N,
-        reinterpret_cast<double*>(DU.begin()),
-        reinterpret_cast<double*>(D .begin()),
-        reinterpret_cast<double*>(DL.begin()),
-        reinterpret_cast<double*>(f .begin()),
-        reinterpret_cast<double*>(p .begin())
+        DU,
+        D,
+        DL,
+        f,
+        p
     );
 
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N.x(); i++)
     {
-        scalar residual =
-          ((i == 0)   ?          0 : DL[i] * p[i-1])
-        + ((i == N-1) ?          0 : DU[i] * p[i+1])
-        + (D[i] * p[i] - f[i]);
-
-        if(mag(residual) > 1e-10)
+        for (int j = 0; j < N.y(); j++)
         {
-            FatalError
-                << "Test failed. Residual =  " << residual
-                << " at index " << i << endl
-                << abort(FatalError);
+            for (int k = 0; k < N.z(); k++)
+            {
+                scalar residual =
+                  ((k == 0)       ? 0 : DL[k] * p(i,j,k-1))
+                + ((k == N.z()-1) ? 0 : DU[k] * p(i,j,k+1))
+                + (D(i,j,k) * p(i,j,k) - f(i,j,k));
+
+                if(mag(residual) > 1e-5)
+                {
+                    FatalError
+                        << "Test failed. Residual =  " << residual
+                        << " at index " << labelVector(i,j,k) << endl
+                        << abort(FatalError);
+                }
+            }
         }
     }
 
@@ -72,32 +105,38 @@ int main(int argc, char *argv[])
     Info << "Tridiagonal system solution check successful" << nl;
     Info << "--------------------------------------------" << endl;
 
+    // Test cyclic tridiagonal solver
 
-    tds->cyclicTridiagonalSolve
+    tds.solveCyclic
     (
-        N,
-        reinterpret_cast<double*>(DU.begin()),
-        reinterpret_cast<double*>(D .begin()),
-        reinterpret_cast<double*>(DL.begin()),
-        reinterpret_cast<double*>(f .begin()),
-        reinterpret_cast<double*>(p .begin())
+        DU,
+        D,
+        DL,
+        f,
+        p
     );
 
     Info << nl;
 
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N.x(); i++)
     {
-        scalar residual =
-          ((i == 0)   ?          DL[i] * p[N-1] : DL[i] * p[i-1])
-        + ((i == N-1) ?          DU[N-1] * p[0] : DU[i] * p[i+1])
-        + (D[i] * p[i] - f[i]);
-
-        if(mag(residual) > 1e-10)
+        for (int j = 0; j < N.y(); j++)
         {
-            FatalError
-                << "Test failed. Residual =  " << residual
-                << " at index " << i << endl
-                << abort(FatalError);
+            for (int k = 0; k < N.z(); k++)
+            {
+                scalar residual =
+                  ((k == 0)       ? DL[k] * p(i,j,N.z()-1) : DL[k] * p(i,j,k-1))
+                + ((k == N.z()-1) ? DU[N.z()-1] * p(i,j,0) : DU[k] * p(i,j,k+1))
+                + (D(i,j,k) * p(i,j,k) - f(i,j,k));
+
+                if(mag(residual) > 1e-5)
+                {
+                    FatalError
+                        << "Test failed. Residual =  " << residual
+                        << " at index " << labelVector(i,j,k) << endl
+                        << abort(FatalError);
+                }
+            }
         }
     }
 

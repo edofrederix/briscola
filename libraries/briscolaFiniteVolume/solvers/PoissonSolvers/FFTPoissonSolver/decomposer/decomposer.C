@@ -15,18 +15,16 @@ decomposer::decomposer(const fvMesh& fvMsh)
 :
     fvMsh_(fvMsh),
     N_(fvMsh_.msh().cast<rectilinearMesh>().N()),
-    I_(fvMsh_.msh().decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ)
+    I_(fvMsh_.msh().decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ),
+    Ni_(Pstream::nProcs(), Zero),
+    Nx_(Pstream::nProcs(), Zero),
+    Ny_(Pstream::nProcs(), Zero),
+    Nz_(Pstream::nProcs(), Zero),
+    Si_(Pstream::nProcs(), Zero),
+    Sx_(Pstream::nProcs(), Zero),
+    Sy_(Pstream::nProcs(), Zero),
+    Sz_(Pstream::nProcs(), Zero)
 {
-    Ni_ = List<labelVector>(Pstream::nProcs(), Zero);
-    Nx_ = List<labelVector>(Pstream::nProcs(), Zero);
-    Ny_ = List<labelVector>(Pstream::nProcs(), Zero);
-    Nz_ = List<labelVector>(Pstream::nProcs(), Zero);
-
-    si_ = List<labelVector>(Pstream::nProcs(), Zero);
-    sx_ = List<labelVector>(Pstream::nProcs(), Zero);
-    sy_ = List<labelVector>(Pstream::nProcs(), Zero);
-    sz_ = List<labelVector>(Pstream::nProcs(), Zero);
-
     decompInit();
 }
 
@@ -58,20 +56,10 @@ void decomposer::decompInit()
         FatalError.exit();
     }
 
-    // Print initial processor topology
-
-    Info<< "Initial topology: " << nl;
-
-    for (label proc = 0; proc < Pstream::nProcs(); proc++)
-        Info<< "    Proc " << proc << " at "
-            << fvMsh_.msh().decomp().map().legend()[proc] << endl;
-
-    Info<< endl;
-
     // Initial decomposition
 
     Ni_ = fvMsh_.msh().decomp().partSizePerProc();
-    si_ = fvMsh_.msh().decomp().globalStartPerProc();
+    Si_ = fvMsh_.msh().decomp().globalStartPerProc();
 
     // Pencil decompositions: check if existing decompositions may be reused
 
@@ -83,7 +71,7 @@ void decomposer::decompInit()
     {
         X_ = I_;
         Nx_ = Ni_;
-        sx_ = si_;
+        Sx_ = Si_;
     }
 
     if (X_.y() > 1)
@@ -94,7 +82,7 @@ void decomposer::decompInit()
     {
         Y_ = X_;
         Ny_ = Nx_;
-        sy_ = sx_;
+        Sy_ = Sx_;
     }
 
     if (Y_.z() > 1)
@@ -105,7 +93,7 @@ void decomposer::decompInit()
     {
         Z_ = Y_;
         Nz_ = Ny_;
-        sz_ = sy_;
+        Sz_ = Sy_;
     }
 }
 
@@ -118,7 +106,7 @@ void decomposer::decompX()
     X_ = vector
     (
         1,
-        ceil( Foam::sqrt( static_cast<scalar>( Pstream::nProcs() ) ) ),
+        ceil(Foam::sqrt(scalar(Pstream::nProcs()))),
         0
     );
 
@@ -143,16 +131,7 @@ void decomposer::decompX()
     // Set dimensions and origins
 
     Nx_ = procDims(X_);
-    sx_ = procOrig(X_);
-
-    Info<< "X-pencil topology: " << nl;
-
-    for (label proc = 0; proc < Pstream::nProcs(); proc++)
-        Info<< "    Proc " << proc << " at "
-            << indexFromProcNum(proc, X_) << endl;
-
-    Info<< endl;
-
+    Sx_ = procOrig(X_);
 }
 
 // Initialize Y-pencil decomposition
@@ -182,16 +161,7 @@ void decomposer::decompY()
     // Set dimensions and origins
 
     Ny_ = procDims(Y_);
-    sy_ = procOrig(Y_);
-
-    Info<< "Y-pencil topology: " << nl;
-
-    for (label proc = 0; proc < Pstream::nProcs(); proc++)
-        Info<< "    Proc " << proc << " at "
-            << indexFromProcNum(proc, Y_) << endl;
-
-    Info<< endl;
-
+    Sy_ = procOrig(Y_);
 }
 
 // Initialize Z-pencil decomposition
@@ -221,16 +191,7 @@ void decomposer::decompZ()
     // Set dimensions and origins
 
     Nz_ = procDims(Z_);
-    sz_ = procOrig(Z_);
-
-    Info<< "Z-pencil topology: " << nl;
-
-    for (label proc = 0; proc < Pstream::nProcs(); proc++)
-        Info<< "    Proc " << proc << " at "
-            << indexFromProcNum(proc, Z_) << endl;
-
-    Info<< endl;
-
+    Sz_ = procOrig(Z_);
 }
 
 // Return the processor number given an index and decomposition
@@ -273,6 +234,49 @@ labelVector decomposer::indexFromProcNum
     }
 }
 
+// Make key
+
+word decomposer::makeKey(labelVector I, labelVector T)
+{
+    word key = "";
+
+    if (I == I_)
+    {
+        key += 'I';
+    }
+    else if (I == X_)
+    {
+        key += 'X';
+    }
+    else if (I == Y_)
+    {
+        key += 'Y';
+    }
+    else if (I == Z_)
+    {
+        key += 'Z';
+    }
+
+    if (T ==  I_)
+    {
+        key += 'I';
+    }
+    else if (T ==  X_)
+    {
+        key += 'X';
+    }
+    else if (T ==  Y_)
+    {
+        key += 'Y';
+    }
+    else if (T ==  Z_)
+    {
+        key += 'Z';
+    }
+
+    return key;
+}
+
 // Return the list of processor dimensions for a given decomposition
 
 List<labelVector> decomposer::procDims(labelVector D)
@@ -304,7 +308,7 @@ List<labelVector> decomposer::procDims(labelVector D)
     {
         List<labelVector> Nd(Pstream::nProcs(), Zero);
 
-        for ( int proc = 0; proc < Pstream::nProcs(); proc++ )
+        for (int proc = 0; proc < Pstream::nProcs(); proc++)
         {
             Nd[proc] = cmptDivide(N_,D);
 
@@ -330,33 +334,32 @@ List<labelVector> decomposer::procOrig(labelVector D)
 {
     if (D == I_)
     {
-        return si_;
+        return Si_;
     }
     else
     {
         List<labelVector> Nd(procDims(D));
-        List<labelVector> sd = List<labelVector>(Pstream::nProcs(), Zero);
+        List<labelVector> Sd = List<labelVector>(Pstream::nProcs(), Zero);
 
-        for ( int proc = 0; proc < Pstream::nProcs(); proc++ )
+        for (int proc = 0; proc < Pstream::nProcs(); proc++)
         {
 
             // Set starting indices of each processor
 
-            for ( int x = 0; x < indexFromProcNum(proc, D).x(); x++ )
-                sd[proc].x() +=
+            for (int x = 0; x < indexFromProcNum(proc, D).x(); x++)
+                Sd[proc].x() +=
                     Nd[procNumFromIndex(labelVector(x,0,0), D)].x();
 
-            for ( int y = 0; y < indexFromProcNum(proc, D).y(); y++ )
-                sd[proc].y() +=
+            for (int y = 0; y < indexFromProcNum(proc, D).y(); y++)
+                Sd[proc].y() +=
                     Nd[procNumFromIndex(labelVector(0,y,0), D)].y();
 
-            for ( int z = 0; z < indexFromProcNum(proc, D).z(); z++ )
-                sd[proc].z() +=
+            for (int z = 0; z < indexFromProcNum(proc, D).z(); z++)
+                Sd[proc].z() +=
                     Nd[procNumFromIndex(labelVector(0,0,z), D)].z();
-
         }
 
-        return sd;
+        return Sd;
     }
 }
 
@@ -368,7 +371,8 @@ void decomposer::unpack
     const List<labelVector>& recvStart,
     const List<labelVector>& recvSize,
     scalarBlock& output,
-    List<labelVector>& startIndex
+    List<labelVector>& startIndex,
+    bool yPencil
 )
 {
     label cursor = 0;
@@ -390,7 +394,16 @@ void decomposer::unpack
         for (int j = start.y(); j < start.y() + size.y(); j++)
         for (int k = start.z(); k < start.z() + size.z(); k++)
         {
-            output(i,j,k) = buffer(cursor++);
+            if (!yPencil)
+            {
+                output(i,j,k) = buffer(cursor++);
+            }
+            // y-pencil decomposition is stored as i>k>j
+            // due to the data format requirements of FFTW
+            else
+            {
+                output(i*N.y()*N.z() + k*N.y() + j) = buffer(cursor++);
+            }
         }
     }
 }
@@ -408,124 +421,50 @@ void decomposer::transpose
 {
     if (I == T)
     {
-        Info << "Initial and target decompositions identical." << nl;
-
         dst = src;
     }
     else
     {
-        List<labelVector> Ni = procDims(I);
-        List<labelVector> si = procOrig(I);
+        word IT = makeKey(I,T);
 
-        List<labelVector> Nt = procDims(T);
-        List<labelVector> st = procOrig(T);
-
-        // Compute processor overlap from initial to target,
-        // defined by the global start cell index and block size
-
-        List<labelVector> sendSize(Pstream::nProcs(),Zero);
-        List<labelVector> sendStart(Pstream::nProcs(),Zero);
-
-        List<labelVector> recvSize(Pstream::nProcs(),Zero);
-        List<labelVector> recvStart(Pstream::nProcs(),Zero);
-
-        // Loop over sending processors
-
-        for (int i = 0; i < I.x(); i++)
-        for (int j = 0; j < I.y(); j++)
-        for (int k = 0; k < I.z(); k++)
+        if (!processorOverlap_.found(IT))
         {
-            labelVector ijk(i,j,k);
-            label sendProcNum = procNumFromIndex(ijk,I);
-
-            labelVector ei = si[sendProcNum] + Ni[sendProcNum];
-
-            // Loop over receiving processors
-
-            for (int l = 0; l < T.x(); l++)
-            for (int m = 0; m < T.y(); m++)
-            for (int n = 0; n < T.z(); n++)
-            {
-                labelVector lmn(l,m,n);
-                label recvProcNum = procNumFromIndex(lmn,T);
-
-                // Start and end cell indices of receiving pocessor
-
-                labelVector et = st[recvProcNum] + Nt[recvProcNum];
-
-                // Check if send and recv processors overlap
-
-                if
-                (
-                    st[recvProcNum].x() < ei.x()
-                && st[recvProcNum].y() < ei.y()
-                && st[recvProcNum].z() < ei.z()
-                && et.x() > si[sendProcNum].x()
-                && et.y() > si[sendProcNum].y()
-                && et.z() > si[sendProcNum].z()
-                )
-                {
-                    // Overlap start and end cell indices
-
-                    labelVector s
-                    (
-                        std::max(si[sendProcNum].x(), st[recvProcNum].x()),
-                        std::max(si[sendProcNum].y(), st[recvProcNum].y()),
-                        std::max(si[sendProcNum].z(), st[recvProcNum].z())
-                    );
-
-                    labelVector e
-                    (
-                        std::min(ei.x(), et.x()),
-                        std::min(ei.y(), et.y()),
-                        std::min(ei.z(), et.z())
-                    );
-
-                    // Add send size and start to sendSize lists
-
-                    if (Pstream::myProcNo() == sendProcNum)
-                    {
-                        sendSize[recvProcNum] = e - s;
-                        sendStart[recvProcNum] = s;
-                    }
-
-                    // Add receive size and start to lists
-
-                    if (Pstream::myProcNo() == recvProcNum)
-                    {
-                        recvSize[sendProcNum] = e - s;
-                        recvStart[sendProcNum] = s;
-                    }
-                }
-            }
-
-            // Info << endl;
+            processorOverlap overlap(*this, I, T);
+            processorOverlap_.insert(IT, overlap);
         }
 
-        // Prepare send buffer. Abuse the block class for this. Send a vector
-        // that contains the global cell index. Sizes and displacements are
-        // in bytes because we're sending as char.
+        List<labelVector>& Ni = processorOverlap_[IT].Ni();
+        List<labelVector>& Si = processorOverlap_[IT].Si();
+
+        List<labelVector>& Nt = processorOverlap_[IT].Nt();
+        List<labelVector>& St = processorOverlap_[IT].St();
+
+        List<labelVector>& sendSize = processorOverlap_[IT].sendSize();
+        List<labelVector>& sendStart = processorOverlap_[IT].sendStart();
+        List<labelVector>& recvSize = processorOverlap_[IT].recvSize();
+        List<labelVector>& recvStart = processorOverlap_[IT].recvStart();
+
+        labelList& sendCount = processorOverlap_[IT].sendCount();
+        labelList& sendDisplacement = processorOverlap_[IT].sendDisplacement();
+
+        labelList& recvCount = processorOverlap_[IT].recvCount();
+        labelList& recvDisplacement = processorOverlap_[IT].recvDisplacement();
+
+        // Prepare send buffer
 
         scalarBlock sendBuffer(Ni[Pstream::myProcNo()]);
-
-        labelList sendCount(Pstream::nProcs());
-        labelList sendDisplacement(Pstream::nProcs());
 
         label cursor = 0;
 
         for (label proc = 0; proc < Pstream::nProcs(); proc++)
         {
-            // Send displacement
-
-            sendDisplacement[proc] = cursor*sizeof(scalar);
-
             // Local coordinates of start point of the send buffer
 
             labelVector start
             (
-                sendStart[proc].x() - si[Pstream::myProcNo()].x(),
-                sendStart[proc].y() - si[Pstream::myProcNo()].y(),
-                sendStart[proc].z() - si[Pstream::myProcNo()].z()
+                sendStart[proc].x() - Si[Pstream::myProcNo()].x(),
+                sendStart[proc].y() - Si[Pstream::myProcNo()].y(),
+                sendStart[proc].z() - Si[Pstream::myProcNo()].z()
             );
 
             labelVector size = sendSize[proc];
@@ -534,31 +473,28 @@ void decomposer::transpose
             for (int j = start.y(); j < start.y() + size.y(); j++)
             for (int k = start.z(); k < start.z() + size.z(); k++)
             {
-                sendBuffer(cursor++) = src(i,j,k);
+                if (I != Y_)
+                {
+                    sendBuffer(cursor++) = src(i,j,k);
+                }
+                // y-pencil decomposition is stored as i>k>j
+                // due to the data format requirements of FFTW
+                else
+                {
+                    sendBuffer(cursor++) = src
+                    (
+                          i * Ni[Pstream::myProcNo()].y()
+                            * Ni[Pstream::myProcNo()].z()
+                        + k * Ni[Pstream::myProcNo()].y()
+                        + j
+                    );
+                }
             }
-
-            sendCount[proc] = cmptProduct(size)*sizeof(scalar);
         }
 
-        // Prepare receive buffer. Also abuse the block class for this.
+        // Prepare receive buffer
 
         scalarBlock recvBuffer(Nt[Pstream::myProcNo()]);
-
-        labelList recvCount(Pstream::nProcs());
-        labelList recvDisplacement(Pstream::nProcs());
-
-        cursor = 0;
-
-        for (label proc = 0; proc < Pstream::nProcs(); proc++)
-        {
-            recvDisplacement[proc] = cursor*sizeof(scalar);
-
-            labelVector size = recvSize[proc];
-
-            cursor += cmptProduct(size);
-
-            recvCount[proc] = cmptProduct(size)*sizeof(scalar);
-        }
 
         // All-to-all using OpenFOAM's UPstream wrapper
 
@@ -575,51 +511,17 @@ void decomposer::transpose
 
         // Unpack data
 
-        unpack(recvBuffer, recvStart, recvSize, dst, st);
-    }
-}
-
-// Transform from i>j>k to i>k>j
-
-void decomposer::yTransFwd(scalarBlock& yData)
-{
-    scalarBlock yCopy = yData;
-
-    labelVector N(yData.shape());
-
-    label cursor = 0;
-    for (int i = 0; i < N.x(); i++)
-    {
-        for (int k = 0; k < N.z(); k++)
+        if (T != Y_)
         {
-            for (int j = 0; j < N.y(); j++)
-            {
-                yData(cursor++) = yCopy(i,j,k);
-            }
+            unpack(recvBuffer, recvStart, recvSize, dst, St);
+        }
+        // y-pencil decomposition is stored as i>k>j
+        // due to the data format requirements of FFTW
+        else
+        {
+            unpack(recvBuffer, recvStart, recvSize, dst, St, true);
         }
     }
-}
-
-// Transform from i>k>j to i>j>k
-
-void decomposer::yTransBwd(scalarBlock& yData)
-{
-    scalarBlock yCopy = yData;
-
-    labelVector N(yData.shape());
-
-    label cursor = 0;
-    for (int i = 0; i < N.x(); i++)
-    {
-        for (int k = 0; k < N.z(); k++)
-        {
-            for (int j = 0; j < N.y(); j++)
-            {
-                yData(i,j,k) = yCopy(cursor++);
-            }
-        }
-    }
-
 }
 
 } // end namespace fv

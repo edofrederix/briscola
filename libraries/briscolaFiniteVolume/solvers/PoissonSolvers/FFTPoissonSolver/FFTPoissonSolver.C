@@ -1,5 +1,4 @@
 #include "FFTPoissonSolver.H"
-#include "imSchemes.H"
 #include "rectilinearMesh.H"
 
 namespace Foam
@@ -34,24 +33,22 @@ FFTPoissonSolver::FFTPoissonSolver
 )
 :
     PoissonSolver<stencil,scalar,colocated>(dict,fvMsh),
-    cellSizes_ (fvMsh.msh().cast<rectilinearMesh>().cellSizes())
-{
-    checkMesh();
-
-    decomp_ = new decomposer(fvMsh);
-
-    xPencil_ = scalarBlock(decomp_->Nx()[Pstream::myProcNo()]);
-    yPencil_ = scalarBlock(decomp_->Ny()[Pstream::myProcNo()]);
-
-    fft_ = new FourierTransforms(fvMsh, *decomp_, xPencil_, yPencil_);
-
-    tds_ = new tridiagonalSolver
+    cellSizes_(fvMsh.msh().cast<rectilinearMesh>().cellSizes()),
+    decomp_(fvMsh),
+    initData_(decomp_.Ni()[Pstream::myProcNo()]),
+    xPencil_(decomp_.Nx()[Pstream::myProcNo()]),
+    yPencil_(decomp_.Ny()[Pstream::myProcNo()]),
+    zPencil_(decomp_.Nz()[Pstream::myProcNo()]),
+    fft_(fvMsh, decomp_, xPencil_, yPencil_),
+    tds_
     (
         fvMsh,
-        decomp_->Nz()[Pstream::myProcNo()],
-        decomp_->sz()[Pstream::myProcNo()],
-        fft_->BC()
-    );
+        decomp_.Nz()[Pstream::myProcNo()],
+        decomp_.Sz()[Pstream::myProcNo()],
+        fft_.BC()
+    )
+{
+    checkMesh();
 }
 
 FFTPoissonSolver::FFTPoissonSolver
@@ -59,25 +56,23 @@ FFTPoissonSolver::FFTPoissonSolver
     const fvMesh& fvMsh
 )
 :
-    PoissonSolver<stencil,scalar,colocated>(dictionary(),fvMsh)
-{
-    checkMesh();
-
-
-    decomp_ = new decomposer(fvMsh);
-
-    xPencil_ = scalarBlock(decomp_->Nx()[Pstream::myProcNo()]);
-    yPencil_ = scalarBlock(decomp_->Ny()[Pstream::myProcNo()]);
-
-    fft_ = new FourierTransforms(fvMsh, *decomp_, xPencil_, yPencil_);
-
-    tds_ = new tridiagonalSolver
+    PoissonSolver<stencil,scalar,colocated>(dictionary(),fvMsh),
+    cellSizes_(fvMsh.msh().cast<rectilinearMesh>().cellSizes()),
+    decomp_(fvMsh),
+    initData_(decomp_.Ni()[Pstream::myProcNo()]),
+    xPencil_(decomp_.Nx()[Pstream::myProcNo()]),
+    yPencil_(decomp_.Ny()[Pstream::myProcNo()]),
+    zPencil_(decomp_.Nz()[Pstream::myProcNo()]),
+    fft_(fvMsh, decomp_, xPencil_, yPencil_),
+    tds_
     (
         fvMsh,
-        decomp_->Nz()[Pstream::myProcNo()],
-        decomp_->sz()[Pstream::myProcNo()],
-        fft_->BC()
-    );
+        decomp_.Nz()[Pstream::myProcNo()],
+        decomp_.Sz()[Pstream::myProcNo()],
+        fft_.BC()
+    )
+{
+    checkMesh();
 }
 
 void FFTPoissonSolver::solve
@@ -88,99 +83,72 @@ void FFTPoissonSolver::solve
     const bool ddt
 )
 {
-    int rank = Pstream::myProcNo();
-
-    // Mesh dimensions
-    labelVector N(fvMsh_.msh().cast<rectilinearMesh>().N());
-
-    // Global boundary conditions
-    labelVector BC(fft_->BC());
-
-    // Initial decomposition
-    labelVector I(decomp_->I());
-    List<labelVector> Ni = decomp_->Ni();
-    List<labelVector> si = decomp_->si();
-
-    // Pencil decompositions
-    labelVector X(decomp_->X());
-    List<labelVector> Nx = decomp_->Nx();
-    List<labelVector> sx = decomp_->sx();
-
-    labelVector Y(decomp_->Y());
-    List<labelVector> Ny = decomp_->Ny();
-    List<labelVector> sy = decomp_->sy();
-
-    labelVector Z(decomp_->Z());
-    List<labelVector> Nz = decomp_->Nz();
-    List<labelVector> sz = decomp_->sz();
-    scalarBlock zPencil(Nz[rank]);
-
-    // Copy the data from bPtr to a scalarBlock
-    // minus sign since bPtr = - RHS of the Poisson equation
-    scalarBlock initData(Ni[rank]);
-
-    for (int i = 0; i < Ni[rank].x(); i++)
+    if (bPtr != nullptr)
     {
-        for (int j = 0; j < Ni[rank].y(); j++)
+        // Initial decomposition
+        labelVector I(decomp_.I());
+
+        // Pencil decompositions
+        labelVector X(decomp_.X());
+        labelVector Y(decomp_.Y());
+        labelVector Z(decomp_.Z());
+
+        // Copy the data from bPtr to a scalarBlock
+        // minus sign since bPtr = - RHS of the Poisson equation
+        forAllCells(bPtr[0][0][0], i, j, k)
         {
-            for (int k = 0; k < Ni[rank].z(); k++)
-            {
-                initData(i,j,k) = - bPtr[0][0][0](i,j,k);
-            }
+            initData_(i,j,k) = - bPtr[0][0][0](i,j,k);
         }
+
+        // Transpose the RHS to x-pencils
+        decomp_.transpose(initData_, xPencil_, I, X);
+
+        // FFT of x-pencil data in x-direction
+        fft_.fwdFFTx();
+
+        // Transpose x-pencils to y-pencils
+        decomp_.transpose(xPencil_, yPencil_, X, Y);
+
+        // FFT of y-pencil data in y-direction
+        fft_.fwdFFTy();
+
+        // Transpose y-pencil data to z-pencils
+        decomp_.transpose(yPencil_, zPencil_, Y, Z);
+
+        // Solve tridiagonal systems in z-direction
+        tds_.solve(zPencil_);
+
+        // Transpose z-pencils to y-pencils
+        decomp_.transpose(zPencil_, yPencil_, Z, Y);
+
+        // Backward FFT of y-pencil data in y-direction
+        fft_.bwdFFTy();
+
+        // Transpose y-pencils to x-pencils
+        decomp_.transpose(yPencil_, xPencil_, Y, X);
+
+        // Backward FFT of x-pencil data in x-direction
+        fft_.bwdFFTx();
+
+        // Transpose x-pencils to initial decomposition
+        decomp_.transpose(xPencil_, initData_, X, I);
+    }
+    else
+    {
+        initData_ *= 0;
     }
 
-    // Transpose the RHS to x-pencils
-    decomp_->transpose(initData, xPencil_, I, X);
-
-    // FFT of x-pencil data in x-direction
-    fft_->fwdFFTx();
-
-    // Transpose x-pencils to y-pencils
-    decomp_->transpose(xPencil_, yPencil_, X, Y);
-
-    // FFT of y-pencil data in y-direction
-    decomp_->yTransFwd(yPencil_);
-
-    fft_->fwdFFTy();
-
-    decomp_->yTransBwd(yPencil_);
-
-    // Transpose y-pencil data to z-pencils
-    decomp_->transpose(yPencil_, zPencil, Y, Z);
-
-    // Solve tridiagonal systems in z-direction
-    tds_->solve(zPencil);
-
-    // Transpose z-pencils to y-pencils
-    decomp_->transpose(zPencil, yPencil_, Z, Y);
-
-    // Backward FFT of y-pencil data in y-direction
-    decomp_->yTransFwd(yPencil_);
-
-    fft_->bwdFFTy();
-
-    decomp_->yTransBwd(yPencil_);
-
-    // Transpose y-pencils to x-pencils
-    decomp_->transpose(yPencil_, xPencil_, Y, X);
-
-    // Backward FFT of x-pencil data in x-direction
-    fft_->bwdFFTx();
-
-    // Transpose x-pencils to initial decomposition
-    decomp_->transpose(xPencil_, initData, X, I);
-
     // Copy scalarBlock values to pressure meshField
-    for (int i = 0; i < Ni[rank].x(); i++)
+    if (lambdaPtr == nullptr)
     {
-        for (int j = 0; j < Ni[rank].y(); j++)
+        forAllCells(x[0][0], i, j, k)
         {
-            for (int k = 0; k < Ni[rank].z(); k++)
-            {
-                x[0][0](i,j,k) = initData(i,j,k);
-            }
+            x[0][0](i,j,k) = initData_(i,j,k);
         }
+    }
+    else
+    {
+        NotImplemented;
     }
 
     // Set ghost cells values

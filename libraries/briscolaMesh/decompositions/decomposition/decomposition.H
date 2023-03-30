@@ -113,9 +113,6 @@ public:
         return cmptMultiply(myBrickPart(), partSizePerBrick_[myBrickNum()]);
     }
 
-    // This processor's part start index within the global mesh
-    labelVector myPartGlobalStart(const mesh& msh) const;
-
     // This processor's brick's number of parts
     inline labelVector myBrickDecomp() const
     {

@@ -10,252 +10,8 @@ namespace briscola
 namespace fv
 {
 
-// Constructors
-
-tridiagonalSolver::tridiagonalSolver
-(
-    const fvMesh& fvMsh,
-    labelVector Nz,
-    labelVector sz,
-    labelVector BC
-)
-:
-    fvMsh_(fvMsh),
-    N_(fvMsh.msh().cast<rectilinearMesh>().N()),
-    Nz_(Nz),
-    sz_(sz),
-    BC_(BC),
-    cellSizes_ (fvMsh.msh().cast<rectilinearMesh>().cellSizes())
-{
-    computeEigenvalues();
-}
-
-// Destructor
-
-tridiagonalSolver::~tridiagonalSolver()
-{}
-
-// Public
-
-void tridiagonalSolver::solve
-(
-    label n,
-    double DU[],
-    double D[],
-    double DL[],
-    double f[],
-    double p[]
-)
-{
-    List<scalar> Dh(n);
-    List<scalar> fh(n);
-
-    // Copy D and f arrays so as not to overwrite them
-    for(int i = 0; i < n; i++)
-    {
-        Dh[i] = D[i];
-        fh[i] = f[i];
-    }
-
-    // Forward substitution
-    for (int i = 1; i < n; i++)
-    {
-        scalar m = DL[i] / Dh[i-1];
-        Dh[i] -= m * DU[i-1];
-        fh[i] -= m * fh[i-1];
-    }
-
-    // Backward substitution
-    p[n-1] = fh[n-1] / Dh[n-1];
-    for (int i = n-2; i >= 0; i--)
-    {
-        p[i] = (fh[i] - DU[i] * p[i+1]) / Dh[i];
-    }
-}
-
-void tridiagonalSolver::solveCyclic
-(
-    label n,
-    double DU[],
-    double D[],
-    double DL[],
-    double f[],
-    double p[]
-)
-{
-    List<scalar> u(n, Zero);
-    solve((n-1), &DU[1], &D[1], &DL[1], &f[1], &u[1]);
-
-    List<scalar> v(n, Zero);
-    List<scalar> vf(n, Zero);
-
-    vf[1] = -DL[1];
-    vf[n-1] = -DU[n-1];
-
-    solve((n-1), &DU[1], &D[1], &DL[1], &vf[1], &v[1]);
-
-    p[0] = (f[0] - DL[0] * u[n-1] - DU[0] * u[1])
-         / (D[0] + DL[0] * v[n-1] + DU[0] * v[1]);
-
-    for (int k = 1; k < n; k++)
-    {
-        p[k] = u[k] + p[0]*v[k];
-    }
-}
-
-void tridiagonalSolver::solve(scalarBlock& zPencil)
-{
-    scalarBlock f(zPencil);
-
-    scalar dx2 = sqr(cellSizes_[0][0]);
-    scalar dy2 = sqr(cellSizes_[1][0]);
-    scalarList dz2 = sqr(cellSizes_[2]);
-
-    scalarList DU = 1.0/dz2;
-    scalarList D(N_.z());
-    scalarList DL = 1.0/dz2;
-
-    switch ( BC_.z() )
-    {
-        case 1:
-            for (int i = 0; i < Nz_.x(); i++) // loop and solve row by row
-            {
-                for (int j = 0; j < Nz_.y(); j++) // solve column by column
-                {
-                    D[0]        = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 3.0/dz2[0];
-                    D[N_.z()-1] = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 3.0/dz2[N_.z()-1];
-
-                    for (int k = 1; k < N_.z()-1; k++ )
-                    {
-                        D[k]    = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 2.0/dz2[k];
-                    }
-                    this->solve
-                    (
-                        N_.z(),
-                        reinterpret_cast<double*>(DU.begin()),
-                        reinterpret_cast<double*>(D.begin()),
-                        reinterpret_cast<double*>(DL.begin()),
-                        reinterpret_cast<double*>(&f(i,j,0)),
-                        reinterpret_cast<double*>(&zPencil(i,j,0))
-                    );
-                }
-            }
-            break;
-
-        case 2:
-            for (int i = 0; i < Nz_.x(); i++) // loop and solve row by row
-            {
-                for (int j = 0; j < Nz_.y(); j++) // solve column by column
-                {
-                    D[0]        = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 1.0/dz2[0];
-                    D[N_.z()-1] = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 1.0/dz2[N_.z()-1];
-                    for (int k = 1; k < N_.z()-1; k++ )
-                    {
-                        D[k]    = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 2.0/dz2[k];
-                    }
-                    // If coefficient matrix is singular
-                    if ( lambdaX_[i] == 0 && lambdaY_[j] == 0 )
-                    {
-                        D[0] -= 1e-10;
-                    }
-                    this->solve
-                    (
-                        N_.z(),
-                        reinterpret_cast<double*>(DU.begin()),
-                        reinterpret_cast<double*>(D.begin()),
-                        reinterpret_cast<double*>(DL.begin()),
-                        reinterpret_cast<double*>(&f(i,j,0)),
-                        reinterpret_cast<double*>(&zPencil(i,j,0))
-                    );
-                }
-            }
-            break;
-
-        case 3:
-            for (int i = 0; i < Nz_.x(); i++) // loop and solve row by row
-            {
-                for (int j = 0; j < Nz_.y(); j++) // solve column by column
-                {
-                    D[0]        = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 3.0/dz2[0];
-                    D[N_.z()-1] = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 1.0/dz2[N_.z()-1];
-                    for (int k = 1; k < N_.z()-1; k++ )
-                    {
-                        D[k]    = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 2.0/dz2[k];
-                    }
-                    this->solve
-                    (
-                        N_.z(),
-                        reinterpret_cast<double*>(DU.begin()),
-                        reinterpret_cast<double*>(D.begin()),
-                        reinterpret_cast<double*>(DL.begin()),
-                        reinterpret_cast<double*>(&f(i,j,0)),
-                        reinterpret_cast<double*>(&zPencil(i,j,0))
-                    );
-                }
-            }
-            break;
-
-        case 4:
-            for (int i = 0; i < Nz_.x(); i++) // loop and solve row by row
-            {
-                for (int j = 0; j < Nz_.y(); j++) // solve column by column
-                {
-                    D[0]        = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 1.0/dz2[0];
-                    D[N_.z()-1] = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 3.0/dz2[N_.z()-1];
-                    for (int k = 1; k < N_.z()-1; k++ )
-                    {
-                        D[k]    = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 2.0/dz2[k];
-                    }
-                    this->solve
-                    (
-                        N_.z(),
-                        reinterpret_cast<double*>(DU.begin()),
-                        reinterpret_cast<double*>(D.begin()),
-                        reinterpret_cast<double*>(DL.begin()),
-                        reinterpret_cast<double*>(&f(i,j,0)),
-                        reinterpret_cast<double*>(&zPencil(i,j,0))
-                    );
-                }
-            }
-            break;
-
-        case 5:
-            for (int i = 0; i < Nz_.x(); i++) // loop and solve row by row
-            {
-                for (int j = 0; j < Nz_.y(); j++) // solve column by column
-                {
-                    for (int k = 0; k < N_.z(); k++ )
-                    {
-                        D[k] = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 2.0/dz2[k];
-                    }
-                    // If coefficient matrix is singular
-                    if ( lambdaX_[i] == 0 && lambdaY_[j] == 0 )
-                    {
-                        D[0] -= 1e-10;
-                    }
-                    this->solveCyclic
-                    (
-                        N_.z(),
-                        reinterpret_cast<double*>(DU.begin()),
-                        reinterpret_cast<double*>(D.begin()),
-                        reinterpret_cast<double*>(DL.begin()),
-                        reinterpret_cast<double*>(&f(i,j,0)),
-                        reinterpret_cast<double*>(&zPencil(i,j,0))
-                    );
-                }
-            }
-            break;
-
-        default:
-            FatalError << " Unknown boundary condition "
-            << endl << abort(FatalError);
-    }
-
-}
-
 void tridiagonalSolver::computeEigenvalues()
 {
-    using Foam::pow;
     using Foam::sin;
 
     const scalar pi(constant::mathematical::pi);
@@ -266,51 +22,35 @@ void tridiagonalSolver::computeEigenvalues()
     switch ( BC_.x() )
     {
         case 1:
-            for ( int i = 0; i < Nz_.x(); i++ )
+            for (int i = 0; i < Nz_.x(); i++)
             {
                 lambdaX_[i] = - 4.0
-                * pow
-                (
-                    sin( (sz_.x()+i+1) * pi / (2.0 * N_.x()) ),
-                    2.0
-                );
+                * sqr(sin((Sz_.x()+i+1) * pi / (2.0 * N_.x())));
             }
             break;
 
         case 2:
-            for ( int i = 0; i < Nz_.x(); i++ )
+            for (int i = 0; i < Nz_.x(); i++)
             {
                 lambdaX_[i] = - 4.0
-                * pow
-                (
-                    sin( (sz_.x()+i) * pi / (2.0 * N_.x()) ),
-                    2.0
-                );
+                * sqr(sin((Sz_.x()+i) * pi / (2.0 * N_.x())));
             }
             break;
 
         case 3:
         case 4:
-            for ( int i = 0; i < Nz_.x(); i++ )
+            for (int i = 0; i < Nz_.x(); i++)
             {
                 lambdaX_[i] = - 4.0
-                * pow
-                (
-                    sin( (2.0*(sz_.x()+i+1)-1.0) * pi / (4.0 * N_.x()) ),
-                    2.0
-                );
+                * sqr(sin((2.0*(Sz_.x()+i+1)-1.0) * pi / (4.0 * N_.x())));
             }
             break;
 
         case 5:
-            for ( int i = 0; i < Nz_.x(); i++ )
+            for (int i = 0; i < Nz_.x(); i++)
             {
                 lambdaX_[i] = -4.0
-                * pow
-                (
-                    sin( (sz_.x()+i) * pi / N_.x() ),
-                    2.0
-                );
+                * sqr(sin((Sz_.x()+i) * pi / N_.x()));
             }
             break;
 
@@ -319,61 +59,226 @@ void tridiagonalSolver::computeEigenvalues()
             << endl << abort(FatalError);
     }
 
-
     switch ( BC_.y() )
     {
         case 1:
-            for ( int j = 0; j < Nz_.y(); j++ )
+            for (int j = 0; j < Nz_.y(); j++)
             {
                 lambdaY_[j] = - 4.0
-                * pow
-                (
-                    sin( (sz_.y()+j+1) * pi / (2.0 * N_.y()) ),
-                    2.0
-                );
+                * sqr(sin((Sz_.y()+j+1) * pi / (2.0 * N_.y())));
             }
             break;
 
         case 2:
-            for ( int j = 0; j < Nz_.y(); j++ )
+            for (int j = 0; j < Nz_.y(); j++)
             {
                 lambdaY_[j] = - 4.0
-                * pow
-                (
-                    sin( (sz_.y()+j) * pi / (2.0 * N_.y()) ),
-                    2.0
-                );
+                * sqr(sin((Sz_.y()+j) * pi / (2.0 * N_.y())));
             }
             break;
 
         case 3:
         case 4:
-            for ( int j = 0; j < Nz_.y(); j++ )
+            for (int j = 0; j < Nz_.y(); j++)
             {
                 lambdaY_[j] = - 4.0
-                * pow
-                (
-                    sin( (2.0*(sz_.y()+j+1)-1.0) * pi / (4.0 * N_.y()) ),
-                    2.0
-                );
+                * sqr(sin((2.0*(Sz_.y()+j+1)-1.0) * pi / (4.0 * N_.y())));
             }
             break;
 
         case 5:
-            for ( int j = 0; j < Nz_.y(); j++ )
+            for (int j = 0; j < Nz_.y(); j++)
             {
                 lambdaY_[j] = -4.0
-                * pow
-                (
-                    sin( (sz_.y()+j) * pi / N_.y() ),
-                    2.0
-                );
+                * sqr(sin((Sz_.y()+j) * pi / N_.y()));
             }
             break;
 
         default:
             FatalError << " Unknown boundary condition "
             << endl << abort(FatalError);
+    }
+}
+
+void tridiagonalSolver::computeDiagonals()
+{
+    scalar dx2 = sqr(cellSizes_[0][0]);
+    scalar dy2 = sqr(cellSizes_[1][0]);
+    scalarList dz2 = sqr(cellSizes_[2]);
+
+    for (int i = 0; i < Nz_.x(); i++)
+    {
+        for (int j = 0; j < Nz_.y(); j++)
+        {
+            switch ( BC_.z() )
+            {
+                case 1:
+                    D_(i,j,0) = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 3.0/dz2[0];
+                    D_(i,j,N_.z()-1) = lambdaX_[i]/dx2
+                                     + lambdaY_[j]/dy2 - 3.0/dz2[N_.z()-1];
+                    break;
+
+                case 2:
+                    D_(i,j,0) = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 1.0/dz2[0];
+                    D_(i,j,N_.z()-1) = lambdaX_[i]/dx2
+                                     + lambdaY_[j]/dy2 - 1.0/dz2[N_.z()-1];
+                    // If coefficient matrix is singular
+                    if ( lambdaX_[i] == 0 && lambdaY_[j] == 0 )
+                    {
+                        D_(i,j,0) -= 1e-10;
+                    }
+                    break;
+
+                case 3:
+                    D_(i,j,0) = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 3.0/dz2[0];
+                    D_(i,j,N_.z()-1) = lambdaX_[i]/dx2
+                                     + lambdaY_[j]/dy2 - 1.0/dz2[N_.z()-1];
+                    break;
+
+                case 4:
+                    D_(i,j,0) = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 1.0/dz2[0];
+                    D_(i,j,N_.z()-1) = lambdaX_[i]/dx2
+                                     + lambdaY_[j]/dy2 - 3.0/dz2[N_.z()-1];
+                    break;
+
+                case 5:
+                    D_(i,j,0) = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 2.0/dz2[0];
+                    D_(i,j,N_.z()-1) = lambdaX_[i]/dx2
+                                     + lambdaY_[j]/dy2 - 2.0/dz2[N_.z()-1];
+                    // If coefficient matrix is singular
+                    if ( lambdaX_[i] == 0 && lambdaY_[j] == 0 )
+                    {
+                        D_(i,j,0) -= 1e-10;
+                    }
+                    break;
+            }
+
+            for (int k = 1; k < Nz_.z() - 1; k++)
+            {
+                D_(i,j,k) = lambdaX_[i]/dx2 + lambdaY_[j]/dy2 - 2.0/dz2[k];
+            }
+        }
+    }
+}
+
+tridiagonalSolver::tridiagonalSolver
+(
+    const fvMesh& fvMsh,
+    labelVector Nz,
+    labelVector Sz,
+    labelVector BC
+)
+:
+    fvMsh_(fvMsh),
+    N_(fvMsh.msh().cast<rectilinearMesh>().N()),
+    Nz_(Nz),
+    Sz_(Sz),
+    BC_(BC),
+    cellSizes_(fvMsh.msh().cast<rectilinearMesh>().cellSizes()),
+    D_(Nz, Zero),
+    DU_(1.0 / sqr(cellSizes_[2])),
+    DL_(1.0 / sqr(cellSizes_[2]))
+{
+    computeEigenvalues();
+    computeDiagonals();
+}
+
+tridiagonalSolver::~tridiagonalSolver()
+{}
+
+void tridiagonalSolver::solve
+(
+    scalarBlock& f,
+    scalarBlock& p,
+    label start
+)
+{
+    labelVector N(p.shape());
+
+    for (int i = 0; i < N.x(); i++)
+    {
+        for (int j = 0; j < N.y(); j++)
+        {
+            // Copy D and f so as not to overwrite them
+            scalarList Dh(N.z(), Zero);
+            scalarList fh(N.z(), Zero);
+
+            for (int k = 0; k < N.z(); k++)
+            {
+                Dh[k] = D_(i,j,k);
+                fh[k] = f(i,j,k);
+            }
+
+            // Forward substitution
+            for (int k = 1 + start; k < N.z(); k++)
+            {
+                scalar m = DL_[k] / Dh[k-1];
+                Dh[k] -= m *  DU_[k-1];
+                fh[k] -= m * fh[k-1];
+            }
+
+            // Backward substitution
+            p(i,j,N.z()-1) = fh[N.z()-1] / Dh[N.z()-1];
+            for (int k = N.z()-2; k >= start; k--)
+            {
+                p(i,j,k) = (fh[k] - DU_[k] * p(i,j,k+1)) / Dh[k];
+            }
+        }
+    }
+}
+
+void tridiagonalSolver::solveCyclic
+(
+    scalarBlock& f,
+    scalarBlock& p
+)
+{
+    // Solve first auxiliary system
+    scalarBlock u(Nz_, Zero);
+
+    solve(f, u, 1);
+
+    // Solve second auxiliary system
+    scalarBlock v(Nz_, Zero);
+    scalarBlock vf(Nz_, Zero);
+
+    for (int i = 0; i < Nz_.x(); i++)
+    {
+        for (int j = 0; j < Nz_.y(); j++)
+        {
+            vf(i,j,1) = -DL_[1];
+            vf(i,j,Nz_.z()-1) = -DU_[Nz_.z()-1];
+        }
+    }
+
+    solve(vf, v, 1);
+
+    // Reconstruct solution
+    for (int i = 0; i < Nz_.x(); i++)
+    {
+        for (int j = 0; j < Nz_.y(); j++)
+        {
+            p(i,j,0) = (f(i,j,0) - DL_[0] * u(i,j,N_.z()-1) - DU_[0] * u(i,j,1))
+                     / (D_(i,j,0) + DL_[0] * v(i,j,N_.z()-1) + DU_[0] * v(i,j,1));
+            for (int k = 1; k < Nz_.z(); k++)
+            {
+                p(i,j,k) = u(i,j,k) + p(i,j,0) * v(i,j,k);
+            }
+        }
+    }
+}
+
+void tridiagonalSolver::solve(scalarBlock& zPencil)
+{
+    scalarBlock f(zPencil);
+
+    if (BC_.z() != 5)
+    {
+        solve(f, zPencil);
+    }
+    else
+    {
+        solveCyclic(f, zPencil);
     }
 }
 
