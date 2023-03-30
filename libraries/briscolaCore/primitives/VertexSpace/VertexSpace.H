@@ -30,7 +30,7 @@ public:
     typedef CellSpace<VertexSpace<Cmpt>, Cmpt, 8> csType;
 
     // Component labeling enumeration
-    enum components { V0, V1, V2, V3, V4, V5, V6, V7 };
+    enum components { LBA, RBA, LTA, RTA, LBF, RBF, LTF, RTF };
 
     // Construct null
     inline VertexSpace();
@@ -63,23 +63,23 @@ public:
 
     // Access to vertex elements
 
-    inline const Cmpt& v0() const { return this->v_[V0]; }
-    inline const Cmpt& v1() const { return this->v_[V1]; }
-    inline const Cmpt& v2() const { return this->v_[V2]; }
-    inline const Cmpt& v3() const { return this->v_[V3]; }
-    inline const Cmpt& v4() const { return this->v_[V4]; }
-    inline const Cmpt& v5() const { return this->v_[V5]; }
-    inline const Cmpt& v6() const { return this->v_[V6]; }
-    inline const Cmpt& v7() const { return this->v_[V7]; }
+    inline const Cmpt& lba() const { return this->v_[LBA]; }
+    inline const Cmpt& rba() const { return this->v_[RBA]; }
+    inline const Cmpt& lta() const { return this->v_[LTA]; }
+    inline const Cmpt& rta() const { return this->v_[RTA]; }
+    inline const Cmpt& lbf() const { return this->v_[LBF]; }
+    inline const Cmpt& rbf() const { return this->v_[RBF]; }
+    inline const Cmpt& ltf() const { return this->v_[LTF]; }
+    inline const Cmpt& rtf() const { return this->v_[RTF]; }
 
-    inline Cmpt& v0() { return this->v_[V0]; }
-    inline Cmpt& v1() { return this->v_[V1]; }
-    inline Cmpt& v2() { return this->v_[V2]; }
-    inline Cmpt& v3() { return this->v_[V3]; }
-    inline Cmpt& v4() { return this->v_[V4]; }
-    inline Cmpt& v5() { return this->v_[V5]; }
-    inline Cmpt& v6() { return this->v_[V6]; }
-    inline Cmpt& v7() { return this->v_[V7]; }
+    inline Cmpt& lba() { return this->v_[LBA]; }
+    inline Cmpt& rba() { return this->v_[RBA]; }
+    inline Cmpt& lta() { return this->v_[LTA]; }
+    inline Cmpt& rta() { return this->v_[RTA]; }
+    inline Cmpt& lbf() { return this->v_[LBF]; }
+    inline Cmpt& rbf() { return this->v_[RBF]; }
+    inline Cmpt& ltf() { return this->v_[LTF]; }
+    inline Cmpt& rtf() { return this->v_[RTF]; }
 };
 
 // VertexSpace partial specialization of CellSpaceCast
@@ -108,23 +108,23 @@ public:
         }
         else
         {
-            const labelVector v0(T & briscola::vertexOffset0);
-            const labelVector v1(T & briscola::vertexOffset1);
-            const labelVector v2(T & briscola::vertexOffset2);
-            const labelVector v3(T & briscola::vertexOffset3);
-            const labelVector v4(T & briscola::vertexOffset4);
-            const labelVector v5(T & briscola::vertexOffset5);
-            const labelVector v6(T & briscola::vertexOffset6);
-            const labelVector v7(T & briscola::vertexOffset7);
+            const labelVector lba(T & briscola::vertexOffset0);
+            const labelVector rba(T & briscola::vertexOffset1);
+            const labelVector lta(T & briscola::vertexOffset2);
+            const labelVector rta(T & briscola::vertexOffset3);
+            const labelVector lbf(T & briscola::vertexOffset4);
+            const labelVector rbf(T & briscola::vertexOffset5);
+            const labelVector ltf(T & briscola::vertexOffset6);
+            const labelVector rtf(T & briscola::vertexOffset7);
 
-            p_[briscola::vertexNumber(v0)] = h.v0();
-            p_[briscola::vertexNumber(v1)] = h.v1();
-            p_[briscola::vertexNumber(v2)] = h.v2();
-            p_[briscola::vertexNumber(v3)] = h.v3();
-            p_[briscola::vertexNumber(v4)] = h.v4();
-            p_[briscola::vertexNumber(v5)] = h.v5();
-            p_[briscola::vertexNumber(v6)] = h.v6();
-            p_[briscola::vertexNumber(v7)] = h.v7();
+            p_[briscola::vertexNumber(lba)] = h.lba();
+            p_[briscola::vertexNumber(rba)] = h.rba();
+            p_[briscola::vertexNumber(lta)] = h.lta();
+            p_[briscola::vertexNumber(rta)] = h.rta();
+            p_[briscola::vertexNumber(lbf)] = h.lbf();
+            p_[briscola::vertexNumber(rbf)] = h.rbf();
+            p_[briscola::vertexNumber(ltf)] = h.ltf();
+            p_[briscola::vertexNumber(rtf)] = h.rtf();
         }
     }
 

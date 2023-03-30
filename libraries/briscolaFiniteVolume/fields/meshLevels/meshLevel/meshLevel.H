@@ -131,8 +131,20 @@ public:
     // Part level
     inline const partLevel& level() const { return fvMsh_[l_]; }
 
+    // Add boundary conditions only of not yet added
+    inline void addBoundaryConditions()
+    {
+        if (mshFieldPtr_ && mshFieldPtr_->boundaryConditions().size() == 0)
+        {
+            mshFieldPtr_->addBoundaryConditions();
+        }
+    }
+
     // Correct boundary conditions for this level
     void correctBoundaryConditions(const bool = false);
+
+    // Correct boundary boundary conditions for this level
+    void correctBoundaryBoundaryConditions();
 
     // Correct parallel boundary conditions for this level
     void correctParallelBoundaryConditions();

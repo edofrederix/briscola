@@ -72,12 +72,12 @@ template<class Type, class MeshType>
 void DirichletBoundaryCondition<Type,MeshType>::evaluate
 (
     const label l,
-    const bool homogeneousBC
+    const bool homogeneous
 )
 {
     meshLevel<Type,MeshType>& field = this->mshField()[l];
 
-    const scalar H = homogeneousBC ? 0.0 : 1.0;
+    const scalar H = homogeneous ? 0.0 : 1.0;
 
     const labelVector bo(this->boundaryOffset());
 
@@ -85,39 +85,49 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
     {
         meshDirection<Type,MeshType>& fd = field[d];
 
-        const block<Type>& val =
-            boundaryValues_[l*field.size()+d];
-
         const labelVector S(fd.boundaryStart(bo));
         const labelVector E(fd.boundaryEnd(bo));
+        const block<Type> B(this->boundarySources(l,d));
 
-        // For shifted boundaries, the boundary values are directly set. For
-        // non-shifted boundaries, set the ghost cell values appropriately.
+        const block<Type>& val =
+            boundaryValues_[l*MeshType::numberOfDirections + d];
 
         labelVector ijk;
 
         if (fd.shifted(bo))
         {
+            // Non-eliminated so get value directly
+
             for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk) = H*val(ijk-S);
+                fd(ijk+bo) = H*val(ijk-S);
             }
         }
         else
         {
+            // Eliminated so infer value from boundary source
+
             for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk+bo) = 2.0*H*val(ijk-S) - fd(ijk);
+                fd(ijk+bo) = H*B(ijk-S) - fd(ijk);
             }
         }
     }
 }
 
-makeBoundaryConditionTypes(Dirichlet)
+template<class Type, class MeshType>
+tmp<block<Type>> DirichletBoundaryCondition<Type,MeshType>::boundarySources
+(
+    const label l,
+    const label d
+)
+{
+    return 2.0*boundaryValues_[l*MeshType::numberOfDirections + d];
+}
 
 }
 

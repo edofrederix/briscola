@@ -37,4 +37,20 @@
     adddictionaryConstructorToTable<SCHEME##RestrictionScheme##TYPE##MESHTYPE>  \
     add##SCHEME##RestrictionScheme##TYPE##MESHTYPE##ConstructorToTable_;
 
+#define makeRestrictionSchemeSingleType(SCHEME,TYPE,MESHTYPE)                   \
+                                                                                \
+    typedef SCHEME##RestrictionScheme<MESHTYPE>                                 \
+        SCHEME##RestrictionScheme##MESHTYPE;                                    \
+                                                                                \
+    defineTemplateTypeNameAndDebugWithName                                      \
+    (                                                                           \
+        SCHEME##RestrictionScheme##MESHTYPE,                                    \
+        #SCHEME,                                                                \
+        0                                                                       \
+    );                                                                          \
+                                                                                \
+    restrictionScheme<TYPE,MESHTYPE>::                                          \
+    adddictionaryConstructorToTable<SCHEME##RestrictionScheme##MESHTYPE>        \
+    add##SCHEME##RestrictionScheme##MESHTYPE##ConstructorToTable_;
+
 #endif

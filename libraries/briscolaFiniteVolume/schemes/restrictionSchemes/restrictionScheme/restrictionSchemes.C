@@ -3,6 +3,7 @@
 
 #include "averageRestrictionScheme.H"
 #include "linearRestrictionScheme.H"
+#include "fluxRestrictionScheme.H"
 
 namespace Foam
 {
@@ -33,6 +34,12 @@ makeRestrictionSchemeType(linear,vector,colocated);
 makeRestrictionSchemeType(linear,vector,staggered);
 makeRestrictionSchemeType(linear,tensor,colocated);
 makeRestrictionSchemeType(linear,tensor,staggered);
+
+makeRestrictionScheme(faceScalar,colocated);
+makeRestrictionScheme(faceScalar,staggered);
+
+makeRestrictionSchemeSingleType(flux,faceScalar,colocated);
+makeRestrictionSchemeSingleType(flux,faceScalar,staggered);
 
 }
 

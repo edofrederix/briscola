@@ -339,20 +339,11 @@ meshLevel<Type,MeshType>::~meshLevel()
 {}
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctBoundaryConditions
-(
-    const bool homogeneousBCs
-)
+void meshLevel<Type,MeshType>::correctBoundaryConditions(const bool homogeneous)
 {
     if (mshFieldPtr_)
     {
-        // A call to correctBoundaryConditions() implies that boundary
-        // conditions are needed for this level. Add them if not already done.
-
-        if (mshFieldPtr_->boundaryConditions().size() == 0)
-        {
-            mshFieldPtr_->addBoundaryConditions();
-        }
+        this->addBoundaryConditions();
 
         // First, update all vertex and edge ghost cells as homogeneous Neumann.
         // This is needed because they might not be set by boundary conditions
@@ -399,7 +390,7 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions
 
         forAll(mshFieldPtr_->boundaryConditions(), i)
         {
-            mshFieldPtr_->boundaryConditions()[i].evaluate(l_, homogeneousBCs);
+            mshFieldPtr_->boundaryConditions()[i].evaluate(l_, homogeneous);
         }
     }
 }
@@ -409,13 +400,7 @@ void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
 {
     if (mshFieldPtr_)
     {
-        // A call to correctParallelBoundaryConditions() implies that boundary
-        // conditions are needed for this level. Add them if not already done.
-
-        if (mshFieldPtr_->boundaryConditions().size() == 0)
-        {
-            mshFieldPtr_->addBoundaryConditions();
-        }
+        this->addBoundaryConditions();
 
         // Correct all parallel boundary conditions contained by this part
 
@@ -455,13 +440,7 @@ void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
 {
     if (mshFieldPtr_)
     {
-        // A call to correctPeriodicBoundaryConditions() implies that boundary
-        // conditions are needed for this level. Add them if not already done.
-
-        if (mshFieldPtr_->boundaryConditions().size() == 0)
-        {
-            mshFieldPtr_->addBoundaryConditions();
-        }
+        this->addBoundaryConditions();
 
         // Correct all periodic boundary conditions contained by this part
 

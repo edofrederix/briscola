@@ -28,9 +28,9 @@ void testCellCenters(const fvMesh& fvMsh)
 
     forAll(c, l)
     forAll(c[l], d)
-    for (label i = c[l][d].S().x()-1; i < c[l][d].E().x()+1; i++)
-    for (label j = c[l][d].S().y()-1; j < c[l][d].E().y()+1; j++)
-    for (label k = c[l][d].S().z()-1; k < c[l][d].E().z()+1; k++)
+    for (label i = c[l][d].I().left()  -1; i < c[l][d].I().right()+1; i++)
+    for (label j = c[l][d].I().bottom()-1; j < c[l][d].I().top()  +1; j++)
+    for (label k = c[l][d].I().aft()   -1; k < c[l][d].I().fore() +1; k++)
     {
         const vector cc
         (

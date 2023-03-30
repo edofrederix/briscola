@@ -121,28 +121,28 @@ void fvMeshMetrics<MeshType>::calculateEdgeCenters()
 
                 // Edges in x
 
-                ecld(i,j,k).x0() =
+                ecld(i,j,k).ba() =
                     0.5
                   * (
                         points.interp(ijk)
                       + points.interp(ijk+vector(unitX))
                     );
 
-                ecld(i,j,k).x1() =
+                ecld(i,j,k).ta() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitY))
                       + points.interp(ijk+vector(unitXY))
                     );
 
-                ecld(i,j,k).x2() =
+                ecld(i,j,k).bf() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitZ))
                       + points.interp(ijk+vector(unitXZ))
                     );
 
-                ecld(i,j,k).x3() =
+                ecld(i,j,k).tf() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitYZ))
@@ -151,28 +151,28 @@ void fvMeshMetrics<MeshType>::calculateEdgeCenters()
 
                 // Edges in y
 
-                ecld(i,j,k).y0() =
+                ecld(i,j,k).la() =
                     0.5
                   * (
                         points.interp(ijk)
                       + points.interp(ijk+vector(unitY))
                     );
 
-                ecld(i,j,k).y1() =
+                ecld(i,j,k).ra() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitX))
                       + points.interp(ijk+vector(unitXY))
                     );
 
-                ecld(i,j,k).y2() =
+                ecld(i,j,k).lf() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitZ))
                       + points.interp(ijk+vector(unitYZ))
                     );
 
-                ecld(i,j,k).y3() =
+                ecld(i,j,k).rf() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitXZ))
@@ -181,28 +181,28 @@ void fvMeshMetrics<MeshType>::calculateEdgeCenters()
 
                 // Edges in z
 
-                ecld(i,j,k).z0() =
+                ecld(i,j,k).lb() =
                     0.5
                   * (
                         points.interp(ijk)
                       + points.interp(ijk+vector(unitZ))
                     );
 
-                ecld(i,j,k).z1() =
+                ecld(i,j,k).rb() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitX))
                       + points.interp(ijk+vector(unitXZ))
                     );
 
-                ecld(i,j,k).z2() =
+                ecld(i,j,k).lt() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitY))
                       + points.interp(ijk+vector(unitYZ))
                     );
 
-                ecld(i,j,k).z3() =
+                ecld(i,j,k).rt() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitXY))
@@ -236,14 +236,14 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
             {
                 vector ijk(vector(i,j,k)+shift);
 
-                vcld(i,j,k).v0() = points.interp(ijk);
-                vcld(i,j,k).v1() = points.interp(ijk+vector(unitX));
-                vcld(i,j,k).v2() = points.interp(ijk+vector(unitY));
-                vcld(i,j,k).v3() = points.interp(ijk+vector(unitXY));
-                vcld(i,j,k).v4() = points.interp(ijk+vector(unitZ));
-                vcld(i,j,k).v5() = points.interp(ijk+vector(unitXZ));
-                vcld(i,j,k).v6() = points.interp(ijk+vector(unitYZ));
-                vcld(i,j,k).v7() = points.interp(ijk+vector(unitXYZ));
+                vcld(i,j,k).lba() = points.interp(ijk);
+                vcld(i,j,k).rba() = points.interp(ijk+vector(unitX));
+                vcld(i,j,k).lta() = points.interp(ijk+vector(unitY));
+                vcld(i,j,k).rta() = points.interp(ijk+vector(unitXY));
+                vcld(i,j,k).lbf() = points.interp(ijk+vector(unitZ));
+                vcld(i,j,k).rbf() = points.interp(ijk+vector(unitXZ));
+                vcld(i,j,k).ltf() = points.interp(ijk+vector(unitYZ));
+                vcld(i,j,k).rtf() = points.interp(ijk+vector(unitXYZ));
             }
         }
     }

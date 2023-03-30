@@ -82,4 +82,8 @@ public:
 
 }
 
+#ifdef NoRepository
+    #include "periodicBoundaryCondition.C"
+#endif
+
 #endif

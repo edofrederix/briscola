@@ -32,7 +32,7 @@ if [ -f build/Test-$TEST ]; then
 
             fi
 
-            rm -fr 1 system/controlDict system/briscolaMeshDict briscola*.vtk.series
+            rm -fr [1-8] system/controlDict system/briscolaMeshDict briscola*.vtk.series
 
         done
 

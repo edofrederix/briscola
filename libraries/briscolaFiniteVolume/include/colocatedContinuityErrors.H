@@ -23,6 +23,10 @@
         sumVolume += cv(i,j,k);
     }
 
+    reduce(sumLocalContError, sumOp<scalar>());
+    reduce(globalContError, sumOp<scalar>());
+    reduce(sumVolume, sumOp<scalar>());
+
     sumLocalContError *= runTime.deltaTValue()/sumVolume;
     globalContError *= runTime.deltaTValue()/sumVolume;
 

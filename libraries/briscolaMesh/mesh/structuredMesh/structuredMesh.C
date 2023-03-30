@@ -56,6 +56,12 @@ structuredMesh::structuredMesh(autoPtr<mesh>& mshPtr)
     setGlobalMeshSize();
 }
 
+structuredMesh::structuredMesh(const structuredMesh& msh)
+:
+    unstructuredMesh(msh),
+    N_(msh.N_)
+{}
+
 structuredMesh::structuredMesh(structuredMesh& msh, bool reuse)
 :
     unstructuredMesh(msh, reuse),

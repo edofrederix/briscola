@@ -64,12 +64,12 @@ int main(int argc, char *argv[])
     if (h6.component(6) != v7) FatalErrorInFunction << "test 1g failed" << abort(FatalError);
     if (h6.component(7) != v8) FatalErrorInFunction << "test 1h failed" << abort(FatalError);
 
-    if (h6.v0() != v1) FatalErrorInFunction << "test 1a failed" << abort(FatalError);
-    if (h6.v1() != v2) FatalErrorInFunction << "test 1b failed" << abort(FatalError);
-    if (h6.v2() != v3) FatalErrorInFunction << "test 1c failed" << abort(FatalError);
-    if (h6.v3() != v4) FatalErrorInFunction << "test 1d failed" << abort(FatalError);
-    if (h6.v4() != v5) FatalErrorInFunction << "test 1e failed" << abort(FatalError);
-    if (h6.v5() != v6) FatalErrorInFunction << "test 1f failed" << abort(FatalError);
-    if (h6.v6() != v7) FatalErrorInFunction << "test 1g failed" << abort(FatalError);
-    if (h6.v7() != v8) FatalErrorInFunction << "test 1h failed" << abort(FatalError);
+    if (h6.lba() != v1) FatalErrorInFunction << "test 1a failed" << abort(FatalError);
+    if (h6.rba() != v2) FatalErrorInFunction << "test 1b failed" << abort(FatalError);
+    if (h6.lta() != v3) FatalErrorInFunction << "test 1c failed" << abort(FatalError);
+    if (h6.rta() != v4) FatalErrorInFunction << "test 1d failed" << abort(FatalError);
+    if (h6.lbf() != v5) FatalErrorInFunction << "test 1e failed" << abort(FatalError);
+    if (h6.rbf() != v6) FatalErrorInFunction << "test 1f failed" << abort(FatalError);
+    if (h6.ltf() != v7) FatalErrorInFunction << "test 1g failed" << abort(FatalError);
+    if (h6.rtf() != v8) FatalErrorInFunction << "test 1h failed" << abort(FatalError);
 }

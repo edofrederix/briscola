@@ -85,23 +85,31 @@ public:
     inline bool& singular() { return singular_; }
     inline const bool& singular() const { return singular_; }
 
-    // In-place calculation of the residual b - A&x
+    // Compute the residual b-Ax and store in given object
     void residual(meshField<Type,MeshType>&) const;
-
-    // Return the residual b - A&x
-    tmp<meshField<Type,MeshType>> residual() const;
-
-    // In-place calculation of the residual b - A&x for given mesh level
     void residual(meshLevel<Type,MeshType>&) const;
-
-    // Return the residual b - A&x for given mesh level
-    tmp<meshLevel<Type,MeshType>> residual(const label) const;
-
-    // In-place calculation of the residual b - A&x for given mesh direction
     void residual(meshDirection<Type,MeshType>&) const;
 
-    // Return the residual b - A&x for given mesh level and mesh direction
+    // Compute the residual b-Ax
+    tmp<meshField<Type,MeshType>> residual() const;
+    tmp<meshLevel<Type,MeshType>> residual(const label) const;
     tmp<meshDirection<Type,MeshType>> residual(const label, const label) const;
+
+    // Compute the evaluation (Ax-b)/V and store in given object
+    void evaluate(meshField<Type,MeshType>&) const;
+    void evaluate(meshLevel<Type,MeshType>&) const;
+    void evaluate(meshDirection<Type,MeshType>&) const;
+
+    // Compute the evaluation (Ax-b)/V
+    tmp<meshField<Type,MeshType>> evaluate() const;
+    tmp<meshLevel<Type,MeshType>> evaluate(const label) const;
+    tmp<meshDirection<Type,MeshType>> evaluate(const label, const label) const;
+
+    // Correct boundaries
+    void correctBoundaries();
+
+    // Correct boundaries of given level
+    void correctBoundaries(const label);
 
     // Member Operators
 

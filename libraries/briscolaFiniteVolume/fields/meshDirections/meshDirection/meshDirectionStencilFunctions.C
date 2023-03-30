@@ -22,16 +22,14 @@ void Amul
 {
     res = Zero;
 
-    // Make sure we iterate over the field's active cells only
-
     if (isStencil<Type1>())
     {
-        forAllActiveCells(f2, i, j, k)
+        forAllCells(f2, i, j, k)
             res(i,j,k) = Amul(f1,f2,i,j,k);
     }
     else
     {
-        forAllActiveCells(f1, i, j, k)
+        forAllCells(f1, i, j, k)
             res(i,j,k) = Amul(f1,f2,i,j,k);
     }
 }
@@ -132,7 +130,7 @@ void Amul
 {
     res = Zero;
 
-    forAllActiveCells(f1, i, j, k)
+    forAllCells(f1, i, j, k)
     {
         res(i,j,k) = Amul(f1,s,i,j,k);
     }
@@ -211,7 +209,7 @@ void rowSum
 {
     res = Zero;
 
-    forAllActiveCells(f, i, j, k)
+    forAllCells(f, i, j, k)
         res(i,j,k) = stencilSum(f(i,j,k));
 }
 
@@ -278,7 +276,7 @@ void neighborSum
 {
     res = Zero;
 
-    forAllActiveCells(f, i, j, k)
+    forAllCells(f, i, j, k)
         res(i,j,k) = neighborSum(f(i,j,k));
 }
 

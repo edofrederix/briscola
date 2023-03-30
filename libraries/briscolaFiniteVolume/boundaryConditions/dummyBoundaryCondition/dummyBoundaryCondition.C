@@ -55,9 +55,6 @@ void dummyBoundaryCondition<Type,MeshType>::evaluate
 )
 {}
 
-makeBoundaryConditionTypes(dummy)
-
-
 }
 
 }

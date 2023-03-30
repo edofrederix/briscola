@@ -4,6 +4,7 @@
 #include "boundaryCondition.H"
 
 #include "block.H"
+#include "faceLabel.H"
 
 namespace Foam
 {
@@ -36,6 +37,9 @@ protected:
     // Order in which the mesh directions are received. Given the neighbor's
     // direction, order will return the local corresponding direction
     labelList order_;
+
+    // Parallel patches can extend into a regular boundary
+    faceLabel extension_;
 
     // Outstanding send requests
     label outstandingSendRequest_;
@@ -110,5 +114,9 @@ public:
 }
 
 }
+
+#ifdef NoRepository
+    #include "parallelBoundaryCondition.C"
+#endif
 
 #endif

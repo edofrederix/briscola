@@ -44,10 +44,7 @@ periodicBoundaryCondition<Type,MeshType>::periodicBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void periodicBoundaryCondition<Type,MeshType>::initEvaluate
-(
-    const label l
-)
+void periodicBoundaryCondition<Type,MeshType>::initEvaluate(const label l)
 {
     if (this->neighborProcNum_ != Pstream::myProcNo())
     {
@@ -69,10 +66,23 @@ void periodicBoundaryCondition<Type,MeshType>::initEvaluate
 
             // Source and target start point
 
-            const labelVector Ss(fd.boundaryStart(bo));
-            const labelVector St(fd.boundaryStart(-bo));
+            const labelVector Ss
+            (
+                fd.boundaryStart(bo)
+              - this->extension_.lower()
+            );
 
-            const labelVector Es(fd.boundaryEnd(bo));
+            const labelVector St
+            (
+                fd.boundaryStart(-bo)
+              - this->extension_.lower()
+            );
+
+            const labelVector Es
+            (
+                fd.boundaryEnd(bo)
+              + this->extension_.upper()
+            );
 
             labelVector ijk;
 
@@ -98,8 +108,6 @@ void periodicBoundaryCondition<Type,MeshType>::evaluate
         parallelBoundaryCondition<Type,MeshType>::evaluate(l);
     }
 }
-
-makeBoundaryConditionTypes(periodic)
 
 }
 

@@ -33,18 +33,58 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     sendBuffers_(),
     recvBuffers_(),
     order_(MeshType::numberOfDirections, -1),
+    extension_(Zero),
     outstandingSendRequest_(-1),
     outstandingRecvRequest_(-1)
-
 {
     const labelVector bo(this->boundaryOffset());
+    const label bod(this->boundaryOffsetDegree());
+    const labelTensor T(this->T());
+
+    // If an edge of a face or a vertex of an edge extends into a boundary patch
+    // on both processors, then we can extend the data that is copied into that
+    // boundary, so that boundary values are also transferred. For this it is
+    // important that boundary patches are updated first, which is assured in
+    // the meshField's addBoundaryConditions() function.
+
+    const faceLabel myPatchType = this->fvMsh_.msh().patchType();
+
+    const faceLabel neighPatchType =
+        pTransform<faceLabel>
+        (
+            T,
+            this->fvMsh_.msh().patchTypePerProc()[neighborProcNum_]
+        );
+
+    if (bod < 3)
+    {
+        const label dir =
+            bod == 1 ? faceNumber(bo)/2 : edgeNumber(bo)/4;
+
+        for (int i = 0; i < 6; i++)
+        {
+            const label faceNum = faceNumber(faceOffsets[i]);
+
+            if
+            (
+                (
+                    bod == 1
+                  ? (faceNum/2 != dir)
+                  : (faceNum/2 == dir)
+                )
+             && myPatchType[faceNum] == boundaryPartPatch::typeNumber
+             && neighPatchType[faceNum] == boundaryPartPatch::typeNumber
+            )
+            {
+                extension_[faceNum] = 1;
+            }
+        }
+    }
 
     // Each direction will be received in the order of directions of the
     // neighbor. We should process data in that order. A direction is uniquely
     // identified by its padding, so we find the mapping between local direction
     // (d1) and neighbor direction (d2) by transforming paddings.
-
-    const labelTensor T(this->T());
 
     forAll(mshField[0], d2)
     {
@@ -77,10 +117,20 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
             const label d1 = order_[d];
 
             const labelVector NSend =
-                mshField[l][d].boundaryN(bo);
+                mshField[l][d].boundaryN(bo)
+              + extension_.lower()
+              + extension_.upper();
 
             const labelVector NRecv =
-                cmptMag(T.T() & mshField[l][d1].boundaryN(bo));
+                cmptMag
+                (
+                    T.T()
+                  & (
+                        mshField[l][d1].boundaryN(bo)
+                      + extension_.lower()
+                      + extension_.upper()
+                    )
+                );
 
             sendBuffers_.append(new block<Type>(NSend));
             recvBuffers_.append(new block<Type>(NRecv));
@@ -100,6 +150,7 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     sendBuffers_(bc.sendBuffers_),
     recvBuffers_(bc.recvBuffers_),
     order_(bc.order_),
+    extension_(bc.extension_),
     outstandingSendRequest_(-1),
     outstandingRecvRequest_(-1)
 {}
@@ -117,6 +168,7 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     sendBuffers_(bc.sendBuffers_),
     recvBuffers_(bc.recvBuffers_),
     order_(bc.order_),
+    extension_(bc.extension_),
     outstandingSendRequest_(-1),
     outstandingRecvRequest_(-1)
 {}
@@ -135,8 +187,8 @@ void parallelBoundaryCondition<Type,MeshType>::initEvaluate
     {
         const meshDirection<Type,MeshType>& fd = field[d];
 
-        labelVector S(fd.boundaryStart(bo));
-        labelVector E(fd.boundaryEnd(bo));
+        labelVector S(fd.boundaryStart(bo) - extension_.lower());
+        labelVector E(fd.boundaryEnd(bo) + extension_.upper());
 
         block<Type>& sendBuffer =
             sendBuffers_[l*field.size()+d];
@@ -212,8 +264,8 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate
 
         meshDirection<Type,MeshType>& fd = field[d1];
 
-        labelVector S(fd.boundaryStart(bo));
-        labelVector E(fd.boundaryEnd(bo));
+        labelVector S(fd.boundaryStart(bo) - extension_.lower());
+        labelVector E(fd.boundaryEnd(bo) + extension_.upper());
 
         block<Type>& recvBuffer =
             recvBuffers_[l*field.size()+d2];
@@ -233,9 +285,6 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate
         }
     }
 }
-
-makeBoundaryConditionTypes(parallel)
-
 
 }
 

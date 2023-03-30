@@ -15,7 +15,7 @@ namespace fv
 
 void IO::writeList
 (
-    autoPtr<std::ofstream>& filePtr,
+    List<autoPtr<std::ofstream>>& filePtrs,
     List<floatScalar>& data,
     const word name,
     const label nComponents,
@@ -30,65 +30,71 @@ void IO::writeList
 
     if (Pstream::master())
     {
-        std::ofstream& file = filePtr();
-
-        if (header)
+        forAll(filePtrs, proc)
         {
-            file<< name << " " << nComponents << " "
-                << sum(sizes)/nComponents << " float" << std::endl;
-        }
+            std::ofstream& file = filePtrs[proc]();
 
-        List<floatScalar> buffer;
+            const label size = (partitioned_ ? sizes[proc] : sum(sizes));
 
-        forAll(sizes, proc)
-        {
-            if (proc == Pstream::masterNo())
+            if (header)
             {
-                buffer.clear();
-                buffer = data;
-            }
-            else
-            {
-                buffer.clear();
-                buffer.setSize(sizes[proc]);
-
-                UIPstream::read
-                (
-                    Pstream::commsTypes::blocking,
-                    proc,
-                    reinterpret_cast<char*>(buffer.begin()),
-                    buffer.byteSize(),
-                    tag,
-                    UPstream::worldComm
-                );
+                file<< name << " " << nComponents << " "
+                    << size/nComponents << " float" << std::endl;
             }
 
-            if (ascii)
+            List<floatScalar> buffer;
+
+            forAll(sizes, p)
+            if (!partitioned_ || p == proc)
             {
-                forAll(buffer, i)
+                if (p == Pstream::masterNo())
                 {
-                    file<< buffer[i] << " ";
+                    buffer.clear();
+                    buffer = data;
+                }
+                else
+                {
+                    buffer.clear();
+                    buffer.setSize(sizes[p]);
+
+                    UIPstream::read
+                    (
+                        Pstream::commsTypes::blocking,
+                        p,
+                        reinterpret_cast<char*>(buffer.begin()),
+                        buffer.byteSize(),
+                        tag,
+                        UPstream::worldComm
+                    );
+                }
+
+                if (ascii)
+                {
+                    forAll(buffer, i)
+                    {
+                        file<< buffer[i] << " ";
+                    }
+                }
+                else
+                {
+                    #ifdef LITTLEENDIAN
+                    swapWords
+                    (
+                        buffer.byteSize()/sizeof(label),
+                        reinterpret_cast<label*>(buffer.begin())
+                    );
+                    #endif
+
+                    file.write
+                    (
+                        reinterpret_cast<char*>(buffer.begin()),
+                        buffer.byteSize()
+                    );
                 }
             }
-            else
-            {
-                #ifdef LITTLEENDIAN
-                swapWords
-                (
-                    buffer.byteSize()/sizeof(label),
-                    reinterpret_cast<label*>(buffer.begin())
-                );
-                #endif
 
-                file.write
-                (
-                    reinterpret_cast<char*>(buffer.begin()),
-                    buffer.byteSize()
-                );
-            }
+            file<< std::endl;
         }
-
-        file<< std::endl;
     }
     else
     {
@@ -109,23 +115,30 @@ void IO::writeList
 template<class Type, class MeshType>
 void IO::writeScalarField
 (
-    autoPtr<std::ofstream>& filePtr,
+    List<autoPtr<std::ofstream>>& filePtrs,
     const meshDirection<Type,MeshType>& D
 ) const
 {
-    List<floatScalar> data(D.size());
-
     label c = 0;
 
-    forAllCells(D, i, j, k)
+    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
+    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+
+    List<floatScalar> data(cmptProduct(E-S));
+
+    for (int i = S.x(); i < E.x(); i++)
+    for (int j = S.y(); j < E.y(); j++)
+    for (int k = S.z(); k < E.z(); k++)
+    {
         data[c++] = D(i,j,k);
+    }
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
 
     IO::writeList
     (
-        filePtr,
+        filePtrs,
         data,
         D.mshLevel().mshField().name(),
         1,
@@ -137,26 +150,33 @@ void IO::writeScalarField
 template<class Type, class MeshType>
 void IO::writeArrayField
 (
-    autoPtr<std::ofstream>& filePtr,
+    List<autoPtr<std::ofstream>>& filePtrs,
     const meshDirection<Type,MeshType>& D
 ) const
 {
     const label n(Type::nComponents);
 
-    List<floatScalar> data(D.size()*n);
-
     label c = 0;
 
-    forAllCells(D, i, j, k)
+    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
+    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+
+    List<floatScalar> data(cmptProduct(E-S)*n);
+
+    for (int i = S.x(); i < E.x(); i++)
+    for (int j = S.y(); j < E.y(); j++)
+    for (int k = S.z(); k < E.z(); k++)
+    {
         for (label ii = 0; ii < n; ii++)
             data[c++] = D(i,j,k)[ii];
+    }
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
 
     IO::writeList
     (
-        filePtr,
+        filePtrs,
         data,
         D.mshLevel().mshField().name(),
         n,
@@ -168,27 +188,35 @@ void IO::writeArrayField
 template<class Type, class MeshType>
 void IO::writeArrayArrayField
 (
-    autoPtr<std::ofstream>& filePtr,
+    List<autoPtr<std::ofstream>>& filePtrs,
     const meshDirection<Type,MeshType>& D
 ) const
 {
     const label n(Type::nComponents);
     const label m(pTraits<typename Type::cmpt>::nComponents);
 
-    List<floatScalar> data(D.size()*m*n);
-
     label c = 0;
-    forAllCells(D, i, j, k)
+
+    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
+    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+
+    List<floatScalar> data(cmptProduct(E-S)*m*n);
+
+    for (int i = S.x(); i < E.x(); i++)
+    for (int j = S.y(); j < E.y(); j++)
+    for (int k = S.z(); k < E.z(); k++)
+    {
         for (label ii = 0; ii < n; ii++)
             for (label jj = 0; jj < m; jj++)
                 data[c++] = D(i,j,k)[ii][jj];
+    }
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
 
     IO::writeList
     (
-        filePtr,
+        filePtrs,
         data,
         D.mshLevel().mshField().name(),
         m*n,
@@ -204,16 +232,16 @@ void IO::writeArrayArrayField
 template<>                                                                      \
 void IO::writeField                                                             \
 (                                                                               \
-    autoPtr<std::ofstream>& filePtr,                                            \
+    List<autoPtr<std::ofstream>>& filePtrs,                                     \
     const meshDirection<TYPE,MESHTYPE>& D                                       \
 ) const                                                                         \
 {                                                                               \
-    FUNC(filePtr,D);                                                            \
+    FUNC(filePtrs,D);                                                           \
 }                                                                               \
                                                                                 \
 template void IO::FUNC                                                          \
 (                                                                               \
-    autoPtr<std::ofstream>&,                                                    \
+    List<autoPtr<std::ofstream>>&,                                              \
     const meshDirection<TYPE,MESHTYPE>&                                         \
 ) const;
 

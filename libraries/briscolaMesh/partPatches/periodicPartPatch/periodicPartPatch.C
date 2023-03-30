@@ -8,11 +8,10 @@ namespace Foam
 namespace briscola
 {
 
-namespace partPatches
-{
-
 defineTypeNameAndDebug(periodicPartPatch, 0);
 addToRunTimeSelectionTable(partPatch, periodicPartPatch, dictionary);
+
+const label periodicPartPatch::typeNumber = 2;
 
 periodicPartPatch::periodicPartPatch(const mesh& msh, const dictionary& dict)
 :
@@ -23,8 +22,6 @@ periodicPartPatch::periodicPartPatch(const periodicPartPatch& pp)
 :
     parallelPartPatch(pp)
 {}
-
-}
 
 }
 

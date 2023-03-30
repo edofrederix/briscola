@@ -22,6 +22,11 @@ unstructuredMesh::unstructuredMesh(autoPtr<mesh>& mshPtr)
     mshPtr.clear();
 }
 
+unstructuredMesh::unstructuredMesh(const unstructuredMesh& msh)
+:
+    mesh(msh)
+{}
+
 unstructuredMesh::unstructuredMesh(unstructuredMesh& msh, bool reuse)
 :
     mesh(msh, reuse)

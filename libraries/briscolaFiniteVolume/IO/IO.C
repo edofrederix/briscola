@@ -34,58 +34,78 @@ void IO::writeData(const word timeName, const label l)
 
     forAll(ccl, d)
     {
-        const word vtkFile = vtkFileName<MeshType>(l,d);
+        List<autoPtr<std::ofstream>> filePtrs;
 
-        const fileName vtkFilePath
-        (
-            fvMsh_.time().path()/timeName/vtkFile
-        );
-
-        // Create file stream on master
-
-        autoPtr<std::ofstream> filePtr;
-
-        if (Pstream::master())
-            filePtr.reset(new std::ofstream(vtkFilePath));
-
-        // Write header
-
-        if (Pstream::master())
+        if (partitioned_)
         {
-            std::ofstream& file = filePtr();
+            filePtrs.setSize(Pstream::nProcs());
+        }
+        else
+        {
+            filePtrs.setSize(1);
+        }
 
-            file<< vtkHeader << std::endl
-                << fvMsh_.time().caseName() << " "
-                << Pstream::nProcs() << std::endl;
+        forAll(filePtrs, proc)
+        {
+            const word vtkFile = vtkFileName<MeshType>(l,d,proc);
 
-            if (ascii)
+            const fileName vtkFilePath
+            (
+                fvMsh_.time().path()/timeName/vtkFile
+            );
+
+            // Create file stream on master
+
+            if (Pstream::master())
+                filePtrs[proc].reset(new std::ofstream(vtkFilePath));
+
+            // Write header
+
+            if (Pstream::master())
             {
-                file<< "ASCII" << std::endl;
-            }
-            else
-            {
-                file<< "BINARY" << std::endl;
-            }
+                std::ofstream& file = filePtrs[proc]();
 
-            file<< "DATASET UNSTRUCTURED_GRID" << std::endl;
+                file<< vtkHeader << std::endl
+                    << fvMsh_.time().caseName() << " "
+                    << (partitioned_ ? 1 : Pstream::nProcs()) << std::endl;
+
+                if (ascii)
+                {
+                    file<< "ASCII" << std::endl;
+                }
+                else
+                {
+                    file<< "BINARY" << std::endl;
+                }
+
+                file<< "DATASET UNSTRUCTURED_GRID" << std::endl;
+            }
         }
 
         // Create points data
 
-        const labelVector S(ccl[d].S());
-        const labelVector E(ccl[d].E());
+        const labelVector S(ccl[d].I().lower()-unitXYZ*label(ghosts_));
+        const labelVector E(ccl[d].I().upper()+unitXYZ*label(ghosts_));
 
         List<floatScalar> myPoints(cmptProduct(E-S+unitXYZ)*3);
 
         const vector shift(MeshType::shift[d]);
+
+        const labelVector Sp(-unitXYZ);
+        const labelVector Ep(points.shape()+unitXYZ);
 
         label c = 0;
         for (int i = S.x(); i < E.x()+1; i++)
         for (int j = S.y(); j < E.y()+1; j++)
         for (int k = S.z(); k < E.z()+1; k++)
         {
-            const floatVector p =
-                floatVector(points.interp(vector(i,j,k)+shift));
+            vector ijk(vector(i,j,k)+shift);
+
+            ijk.x() = Foam::min(Foam::max(Sp.x(), ijk.x()), Ep.x()-1);
+            ijk.y() = Foam::min(Foam::max(Sp.y(), ijk.y()), Ep.y()-1);
+            ijk.z() = Foam::min(Foam::max(Sp.z(), ijk.z()), Ep.z()-1);
+
+            const floatVector p = floatVector(points.interp(ijk));
 
             myPoints[c++] = p.x();
             myPoints[c++] = p.y();
@@ -98,21 +118,25 @@ void IO::writeData(const word timeName, const label l)
         shapes[Pstream::myProcNo()] = E-S;
         Pstream::gatherList(shapes);
 
-        if (Pstream::master())
+        forAll(filePtrs, proc)
         {
-            label nPoints = 0;
+            if (Pstream::master())
+            {
+                label nPoints = 0;
 
-            forAll(shapes, proc)
-                nPoints += cmptProduct(shapes[proc]+unitXYZ);
+                forAll(shapes, p)
+                    if (!partitioned_ || p == proc)
+                        nPoints += cmptProduct(shapes[p]+unitXYZ);
 
-            std::ofstream& file = filePtr();
+                std::ofstream& file = filePtrs[proc]();
 
-            file<< "POINTS " << nPoints << " float" << std::endl;
+                file<< "POINTS " << nPoints << " float" << std::endl;
+            }
         }
 
         IO::writeList
         (
-            filePtr,
+            filePtrs,
             myPoints,
             word("points"),
             1,
@@ -123,57 +147,94 @@ void IO::writeData(const word timeName, const label l)
 
         // Write cell data
 
-        if (Pstream::master())
+        forAll(filePtrs, proc)
         {
-            label nCells = 0;
-
-            forAll(shapes, proc)
-                nCells += cmptProduct(shapes[proc]);
-
-            std::ofstream& file = filePtr();
-
-            file<< "CELLS " << nCells << " " << 9*nCells << std::endl;
-
-            label cursor = 0;
-
-            forAll(shapes, proc)
+            if (Pstream::master())
             {
-                const label l = shapes[proc].x();
-                const label m = shapes[proc].y();
-                const label n = shapes[proc].z();
+                label nCells = 0;
 
-                const label L = l+1;
-                const label M = m+1;
-                const label N = n+1;
+                forAll(shapes, p)
+                    if (!partitioned_ || p == proc)
+                        nCells += cmptProduct(shapes[p]);
 
-                labelList buffer(l*m*n*9);
+                std::ofstream& file = filePtrs[proc]();
 
-                label c = 0;
+                file<< "CELLS " << nCells << " " << 9*nCells << std::endl;
 
-                for(int i = 0; i < l; i++)
-                for(int j = 0; j < m; j++)
-                for(int k = 0; k < n; k++)
+                label cursor = 0;
+
+                forAll(shapes, p)
+                if (!partitioned_ || p == proc)
                 {
-                    buffer[c++] = 8;
-                    buffer[c++] = (cursor + (i  )*M*N + (j  )*N+k);
-                    buffer[c++] = (cursor + (i+1)*M*N + (j  )*N+k);
-                    buffer[c++] = (cursor + (i+1)*M*N + (j+1)*N+k);
-                    buffer[c++] = (cursor + (i  )*M*N + (j+1)*N+k);
-                    buffer[c++] = (cursor + (i  )*M*N + (j  )*N+k+1);
-                    buffer[c++] = (cursor + (i+1)*M*N + (j  )*N+k+1);
-                    buffer[c++] = (cursor + (i+1)*M*N + (j+1)*N+k+1);
-                    buffer[c++] = (cursor + (i  )*M*N + (j+1)*N+k+1);
+                    const label l = shapes[p].x();
+                    const label m = shapes[p].y();
+                    const label n = shapes[p].z();
+
+                    const label L = l+1;
+                    const label M = m+1;
+                    const label N = n+1;
+
+                    labelList buffer(l*m*n*9);
+
+                    label c = 0;
+
+                    for(int i = 0; i < l; i++)
+                    for(int j = 0; j < m; j++)
+                    for(int k = 0; k < n; k++)
+                    {
+                        buffer[c++] = 8;
+                        buffer[c++] = (cursor + (i  )*M*N + (j  )*N+k);
+                        buffer[c++] = (cursor + (i+1)*M*N + (j  )*N+k);
+                        buffer[c++] = (cursor + (i+1)*M*N + (j+1)*N+k);
+                        buffer[c++] = (cursor + (i  )*M*N + (j+1)*N+k);
+                        buffer[c++] = (cursor + (i  )*M*N + (j  )*N+k+1);
+                        buffer[c++] = (cursor + (i+1)*M*N + (j  )*N+k+1);
+                        buffer[c++] = (cursor + (i+1)*M*N + (j+1)*N+k+1);
+                        buffer[c++] = (cursor + (i  )*M*N + (j+1)*N+k+1);
+                    }
+
+                    if (ascii)
+                    {
+                        forAll(buffer, i)
+                        {
+                            file<< buffer[i] << " ";
+                        }
+                    }
+                    else
+                    {
+                        #ifdef LITTLEENDIAN
+                        swapWords
+                        (
+                            buffer.size(),
+                            reinterpret_cast<label*>(buffer.begin())
+                        );
+                        #endif
+
+                        file.write
+                        (
+                            reinterpret_cast<char*>(buffer.begin()),
+                            buffer.byteSize()
+                        );
+                    }
+
+                    cursor += L*M*N;
                 }
+
+                file<< std::endl;
+
+                file<< "CELL_TYPES " << nCells << std::endl;
 
                 if (ascii)
                 {
-                    forAll(buffer, i)
+                    for (int i = 0; i < nCells; i++)
                     {
-                        file<< buffer[i] << " ";
+                        file<< "12 ";
                     }
                 }
                 else
                 {
+                    labelList buffer(nCells, 12);
+
                     #ifdef LITTLEENDIAN
                     swapWords
                     (
@@ -189,61 +250,29 @@ void IO::writeData(const word timeName, const label l)
                     );
                 }
 
-                cursor += L*M*N;
+                file<< std::endl;
+                file<< "CELL_DATA " << nCells << std::endl;
             }
-
-            file<< std::endl;
-
-            file<< "CELL_TYPES " << nCells << std::endl;
-
-            if (ascii)
-            {
-                for (int i = 0; i < nCells; i++)
-                {
-                    file<< "12 ";
-                }
-            }
-            else
-            {
-                labelList buffer(nCells, 12);
-
-                #ifdef LITTLEENDIAN
-                swapWords
-                (
-                    buffer.size(),
-                    reinterpret_cast<label*>(buffer.begin())
-                );
-                #endif
-
-                file.write
-                (
-                    reinterpret_cast<char*>(buffer.begin()),
-                    buffer.byteSize()
-                );
-            }
-
-            file<< std::endl;
-            file<< "CELL_DATA " << nCells << std::endl;
         }
 
         // Write fields as cell data. Order is important.
 
-        writeFields<label,MeshType>(filePtr, l, d);
-        writeFields<scalar,MeshType>(filePtr, l, d);
+        writeFields<label,MeshType>(filePtrs, l, d);
+        writeFields<scalar,MeshType>(filePtrs, l, d);
 
-        writeFields<vector,MeshType>(filePtr, l, d);
-        writeFields<tensor,MeshType>(filePtr, l, d);
-        writeFields<diagTensor,MeshType>(filePtr, l, d);
-        writeFields<sphericalTensor,MeshType>(filePtr, l, d);
-        writeFields<symmTensor,MeshType>(filePtr, l, d);
+        writeFields<vector,MeshType>(filePtrs, l, d);
+        writeFields<tensor,MeshType>(filePtrs, l, d);
+        writeFields<diagTensor,MeshType>(filePtrs, l, d);
+        writeFields<sphericalTensor,MeshType>(filePtrs, l, d);
+        writeFields<symmTensor,MeshType>(filePtrs, l, d);
 
-        writeFields<faceScalar,MeshType>(filePtr, l, d);
-        writeFields<edgeScalar,MeshType>(filePtr, l, d);
-        writeFields<vertexScalar,MeshType>(filePtr, l, d);
+        writeFields<faceScalar,MeshType>(filePtrs, l, d);
+        writeFields<edgeScalar,MeshType>(filePtrs, l, d);
+        writeFields<vertexScalar,MeshType>(filePtrs, l, d);
 
-        writeFields<faceVector,MeshType>(filePtr, l, d);
-        writeFields<edgeVector,MeshType>(filePtr, l, d);
-        writeFields<vertexVector,MeshType>(filePtr, l, d);
+        writeFields<faceVector,MeshType>(filePtrs, l, d);
+        writeFields<edgeVector,MeshType>(filePtrs, l, d);
+        writeFields<vertexVector,MeshType>(filePtrs, l, d);
     }
 }
 
@@ -255,7 +284,7 @@ void IO::readData(const word timeName, const label l)
 
     for (label d = 0; d < MeshType::numberOfDirections; d++)
     {
-        const word vtkFile = vtkFileName<MeshType>(l,d);
+        const word vtkFile = vtkFileName<MeshType>(l,d,Pstream::myProcNo());
 
         const fileName vtkFilePath
         (
@@ -298,7 +327,11 @@ void IO::readData(const word timeName, const label l)
         file>> dummy >> nProcs;
         nextLine(file);
 
-        if (nProcs != Pstream::nProcs() && Pstream::master())
+        if
+        (
+            nProcs != (partitioned_ ? 1 : Pstream::nProcs())
+         && Pstream::master()
+        )
             FatalErrorInFunction
                 << "The vtk file " << vtkFilePath << nl
                 << "was generated by " << nProcs << " processors "
@@ -398,14 +431,20 @@ void IO::readData(const word timeName, const label l)
 
         file>> dummy >> nCells;
 
+        const labelVector S(ccl[d].I().lower()-unitXYZ*label(ghosts_));
+        const labelVector E(ccl[d].I().upper()+unitXYZ*label(ghosts_));
+
         labelList sizes(Pstream::nProcs());
-        sizes[Pstream::myProcNo()] = ccl[d].size();
+        sizes[Pstream::myProcNo()] = cmptProduct(E-S);
         Pstream::gatherList(sizes);
         Pstream::scatterList(sizes);
 
-        if (sum(sizes) != nCells && Pstream::master())
+        const label size =
+            partitioned_ ? sizes[Pstream::myProcNo()] : sum(sizes);
+
+        if (size != nCells && Pstream::master())
             FatalErrorInFunction
-                << "Trying to read " << sum(sizes) << " cells "
+                << "Trying to read " << size << " cells "
                 << "but found data for " << nCells << " cells in " << nl
                 << vtkFilePath << endl << abort(FatalError);
 
@@ -433,7 +472,7 @@ void IO::readData(const word timeName, const label l)
 template<class Type, class MeshType>
 void IO::writeFields
 (
-    autoPtr<std::ofstream>& filePtr,
+    List<autoPtr<std::ofstream>>& filePtrs,
     const label l,
     const label d
 ) const
@@ -455,12 +494,15 @@ void IO::writeFields
         }
     }
 
-    if (Pstream::master())
+    forAll(filePtrs, proc)
     {
-        std::ofstream& file = filePtr();
+        if (Pstream::master())
+        {
+            std::ofstream& file = filePtrs[proc]();
 
-        file<< "FIELD " << FieldType::typeName << "s "
-            << count << std::endl;
+            file<< "FIELD " << FieldType::typeName << "s "
+                << count << std::endl;
+        }
     }
 
     if (count > 0)
@@ -472,7 +514,7 @@ void IO::writeFields
 
             if (field.writeOpt() == IOobject::AUTO_WRITE)
             {
-                writeField(filePtr, field[l][d]);
+                writeField(filePtrs, field[l][d]);
             }
         }
     }
@@ -563,13 +605,15 @@ template<class MeshType>
 word IO::vtkFileName
 (
     const label l,
-    const label d
+    const label d,
+    const label p
 ) const
 {
     return
         dataFileNamePrefix
       + "_"
       + (l > 0 ? word(Foam::name(l) + "_") : "")
+      + (partitioned_ ? word(Foam::name(p) + "_") : "")
       + MeshType::typeName
       + (
             MeshType::numberOfDirections > 1
@@ -580,12 +624,13 @@ word IO::vtkFileName
 }
 
 template<class MeshType>
-word IO::seriesFileName(const label l, const label d) const
+word IO::seriesFileName(const label l, const label d, const label p) const
 {
     return
         dataFileNamePrefix
       + "_"
       + (l > 0 ? word(Foam::name(l) + "_") : "")
+      + (partitioned_ ? word(Foam::name(p) + "_") : "")
       + MeshType::typeName
       + (
             MeshType::numberOfDirections > 1
@@ -598,31 +643,38 @@ word IO::seriesFileName(const label l, const label d) const
 template<class MeshType>
 void IO::writeSeries(const label l) const
 {
-    instantList times(fvMsh_.time().times());
-
-    for (label d = 0; d < MeshType::numberOfDirections; d++)
+    if (Pstream::master())
     {
-        OFstream seriesFile(fvMsh_.time().path()/seriesFileName<MeshType>(l,d));
+        instantList times(fvMsh_.time().times());
 
-        seriesFile
-            << "{" << nl
-            << "    \"file-series-version\" : \"1.0\"," << nl
-            << "    \"files\" :" << nl
-            << "    [" << nl;
-
-        forAll(times, i)
-        if (times[i].value() != 0)
+        for (label p = 0; p < (partitioned_ ? Pstream::nProcs() : 1); p++)
+        for (label d = 0; d < MeshType::numberOfDirections; d++)
         {
-            seriesFile
-                << "        { \"name\" : \""
-                << times[i].name() << "/" << vtkFileName<MeshType>(l,d)
-                << "\", \"time\" : "
-                << times[i].name() << " }," << nl;
-        }
+            OFstream seriesFile
+            (
+                fvMsh_.time().path()/seriesFileName<MeshType>(l,d,p)
+            );
 
-        seriesFile
-            << "    ]" << nl
-            << "}" << endl;
+            seriesFile
+                << "{" << nl
+                << "    \"file-series-version\" : \"1.0\"," << nl
+                << "    \"files\" :" << nl
+                << "    [" << nl;
+
+            forAll(times, i)
+            if (times[i].value() != 0)
+            {
+                seriesFile
+                    << "        { \"name\" : \""
+                    << times[i].name() << "/" << vtkFileName<MeshType>(l,d,p)
+                    << "\", \"time\" : "
+                    << times[i].name() << " }," << nl;
+            }
+
+            seriesFile
+                << "    ]" << nl
+                << "}" << endl;
+        }
     }
 }
 
@@ -650,7 +702,17 @@ void IO::swapWords(const label nWords, label* words32) const
 
 IO::IO(const fvMesh& fvMsh)
 :
-    fvMsh_(fvMsh)
+    fvMsh_(fvMsh),
+    partitioned_
+    (
+        fvMsh.time().controlDict()
+       .lookupOrDefault<Switch>("writePartitioned", false)
+    ),
+    ghosts_
+    (
+        fvMsh.time().controlDict()
+       .lookupOrDefault<Switch>("writeGhosts", false)
+    )
 {}
 
 IO::~IO()

@@ -24,6 +24,9 @@ public:
     // Transfer constructor, destroying argument
     unstructuredMesh(autoPtr<mesh>&);
 
+    // Copy constructor
+    unstructuredMesh(const unstructuredMesh& msh);
+
     // Transfer or copy constructor
     unstructuredMesh(unstructuredMesh& msh, bool reuse);
 

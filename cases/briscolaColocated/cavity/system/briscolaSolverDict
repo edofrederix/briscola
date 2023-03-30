@@ -9,15 +9,15 @@ FoamFile
 U
 {
     type        MG;
-    relTol      0.01;
+    relTol      1e-5;
     tolerance   1e-8;
-    maxIter     10;
+    maxIter     100;
 }
 
 p
 {
     type        MG;
-    relTol      0.01;
+    relTol      1e-5;
     tolerance   1e-8;
-    maxIter     10;
+    maxIter     100;
 }

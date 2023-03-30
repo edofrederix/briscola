@@ -32,9 +32,6 @@ void testDirichlet(const fvMesh& fvMsh)
         field[l][d](i,j,k) = scalar(i+j+k)*pTraits<Type>::one;
     }
 
-    // We need to correct twice because of edges/vertices
-
-    field.correctBoundaryConditions();
     field.correctBoundaryConditions();
 
     forAll(field.boundaryConditions(), bci)
@@ -70,7 +67,7 @@ void testDirichlet(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (dd(ijk) != value)
+                    if (dd(ijk+bo) != value)
                     {
                         FatalErrorInFunction
                             << "Test 1a failed" << endl << abort(FatalError);
@@ -85,7 +82,6 @@ void testDirichlet(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (Pstream::master())
                     if (dd(ijk+bo) != 2.0*value - dd(ijk))
                     {
                         FatalErrorInFunction
@@ -105,7 +101,7 @@ void testDirichlet(const fvMesh& fvMsh)
         if(globalBoundaryConditionBaseType(field, bo) != DIRICHLETBC)
         {
             FatalErrorInFunction
-                << "Test 1c failed" << endl
+                << "Test 1b failed" << endl
                 << bo << endl
                 << abort(FatalError);
         }
@@ -185,7 +181,6 @@ void testNeumann(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (Pstream::master())
                     if (dd(ijk+bo) != dd(ijk))
                     {
                         FatalErrorInFunction
@@ -228,7 +223,6 @@ int main(int argc, char *argv[])
     );
 
     fvMesh fvMsh(meshDict, runTime);
-
 
     testDirichlet<scalar,colocated>(fvMsh);
     testDirichlet<vector,colocated>(fvMsh);

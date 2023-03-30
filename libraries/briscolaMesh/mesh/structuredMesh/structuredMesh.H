@@ -30,6 +30,9 @@ public:
     // Transfer constructor, destroying argument
     structuredMesh(autoPtr<mesh>&);
 
+    // Copy constructor
+    structuredMesh(const structuredMesh& msh);
+
     // Transfer or copy constructor
     structuredMesh(structuredMesh& msh, bool reuse);
 

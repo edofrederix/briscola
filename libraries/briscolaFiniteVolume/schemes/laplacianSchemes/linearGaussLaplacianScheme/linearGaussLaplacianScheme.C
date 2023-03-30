@@ -71,6 +71,7 @@ linearGaussLaplacianScheme<Type,MeshType>::laplacian
     }
 
     Sys.b() = Zero;
+    Sys.correctBoundaries();
 
     return tSys;
 }

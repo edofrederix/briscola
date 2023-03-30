@@ -247,7 +247,6 @@ void parallelInfo(const fvMesh& fvMsh)
                 Info<< "            Part patch " << name << nl
                     << "                type   = " << type << nl
                     << "                bo     = " << bo << nl
-                    << "                offset = " << bo << nl
                     << "                T      = " << T << nl
                     << "                master = " << masterPatch[proc][patchi] << endl;
             }
@@ -362,13 +361,13 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
                         << procj << endl;
 
                     Info<< "        at processor " << proci << nl
-                        << "            offset = " << boundaryOffset0 << nl
+                        << "            bo     = " << boundaryOffset0 << nl
                         << "            T      = " << T0 << nl
                         << "            tag    = " << tag0 << nl
                         << "            master = " << master0 << endl;
 
                     Info<< "        at processor " << procj << nl
-                        << "            offset = " << boundaryOffset1 << nl
+                        << "            bo     = " << boundaryOffset1 << nl
                         << "            T      = " << T1 << nl
                         << "            tag    = " << tag1 << nl
                         << "            master = " << master1 << endl;

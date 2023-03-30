@@ -8,11 +8,10 @@ namespace Foam
 namespace briscola
 {
 
-namespace partPatches
-{
-
 defineTypeNameAndDebug(boundaryPartPatch, 0);
 addToRunTimeSelectionTable(partPatch, boundaryPartPatch, dictionary);
+
+const label boundaryPartPatch::typeNumber = 0;
 
 boundaryPartPatch::boundaryPartPatch(const mesh& msh, const dictionary& dict)
 :
@@ -23,8 +22,6 @@ boundaryPartPatch::boundaryPartPatch(const boundaryPartPatch& pp)
 :
     partPatch(pp)
 {}
-
-}
 
 }
 

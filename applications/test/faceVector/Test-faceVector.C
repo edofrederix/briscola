@@ -113,6 +113,13 @@ int main(int argc, char *argv[])
     if (h7.aft()     != v1) FatalErrorInFunction << "test 4e failed" << abort(FatalError);
     if (h7.fore()    != v1) FatalErrorInFunction << "test 4f failed" << abort(FatalError);
 
+    if (h6.lower().x() != v1) FatalErrorInFunction << "test 5a failed" << abort(FatalError);
+    if (h6.lower().y() != v3) FatalErrorInFunction << "test 5b failed" << abort(FatalError);
+    if (h6.lower().z() != v5) FatalErrorInFunction << "test 5c failed" << abort(FatalError);
+    if (h6.upper().x() != v2) FatalErrorInFunction << "test 5d failed" << abort(FatalError);
+    if (h6.upper().y() != v4) FatalErrorInFunction << "test 5e failed" << abort(FatalError);
+    if (h6.upper().z() != v6) FatalErrorInFunction << "test 5f failed" << abort(FatalError);
+
     h7 += h6;
     h7 -= h6;
 

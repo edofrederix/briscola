@@ -105,7 +105,7 @@ void solver<SType,Type,MeshType>::RBGS
 (
     linearSystem<SType,Type,MeshType>& sys,
     const label l,
-    const bool homogeneousBCs,
+    const bool defect,
     const label sweeps,
     const labelList& converged,
     const scalar omega
@@ -128,7 +128,7 @@ void solver<SType,Type,MeshType>::RBGS
             const meshDirection<SType,MeshType>& Ad = A[d];
             const meshDirection<Type,MeshType>& bd = b[d];
 
-            forAllActiveCells(xd, i, j, k)
+            forAllCells(xd, i, j, k)
             {
                 if ((i+j+k) % 2 == 0)
                     xd(i,j,k) +=
@@ -138,7 +138,7 @@ void solver<SType,Type,MeshType>::RBGS
             }
         }
 
-        x.correctBoundaryConditions(homogeneousBCs);
+        x.correctBoundaryConditions(defect);
 
         forAll(x, d)
         if (!converged[d])
@@ -150,7 +150,7 @@ void solver<SType,Type,MeshType>::RBGS
             const meshDirection<SType,MeshType>& Ad = A[d];
             const meshDirection<Type,MeshType>& bd = b[d];
 
-            forAllActiveCells(xd, i, j, k)
+            forAllCells(xd, i, j, k)
             {
                 if ((i+j+k) % 2 == 1)
                     xd(i,j,k) +=
@@ -160,7 +160,7 @@ void solver<SType,Type,MeshType>::RBGS
             }
         }
 
-        x.correctBoundaryConditions(homogeneousBCs);
+        x.correctBoundaryConditions(defect);
     }
 }
 
@@ -169,7 +169,7 @@ void solver<SType,Type,MeshType>::LEXGS
 (
     linearSystem<SType,Type,MeshType>& sys,
     const label l,
-    const bool homogeneousBCs,
+    const bool defect,
     const label sweeps,
     const labelList& converged,
     const scalar omega
@@ -190,7 +190,7 @@ void solver<SType,Type,MeshType>::LEXGS
             const meshDirection<SType,MeshType>& Ad = A[d];
             const meshDirection<Type,MeshType>& bd = b[d];
 
-            forAllActiveCells(xd, i, j, k)
+            forAllCells(xd, i, j, k)
             {
                 xd(i,j,k) +=
                     omega
@@ -199,7 +199,7 @@ void solver<SType,Type,MeshType>::LEXGS
             }
         }
 
-        x.correctBoundaryConditions(homogeneousBCs);
+        x.correctBoundaryConditions(defect);
     }
 }
 
@@ -208,7 +208,7 @@ void solver<SType,Type,MeshType>::JAC
 (
     linearSystem<SType,Type,MeshType>& sys,
     const label l,
-    const bool homogeneousBCs,
+    const bool defect,
     const label sweeps,
     const labelList& converged,
     const scalar omega
@@ -232,7 +232,7 @@ void solver<SType,Type,MeshType>::JAC
             const meshDirection<SType,MeshType>& Ad = A[d];
             const meshDirection<Type,MeshType>& bd = b[d];
 
-            forAllActiveCells(xd, i, j, k)
+            forAllCells(xd, i, j, k)
             {
                 yd(i,j,k) +=
                     omega
@@ -243,7 +243,7 @@ void solver<SType,Type,MeshType>::JAC
 
         x = y;
 
-        x.correctBoundaryConditions(homogeneousBCs);
+        x.correctBoundaryConditions(defect);
     }
 }
 

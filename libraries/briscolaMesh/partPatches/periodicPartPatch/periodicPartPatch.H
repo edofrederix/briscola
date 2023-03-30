@@ -9,9 +9,6 @@ namespace Foam
 namespace briscola
 {
 
-namespace partPatches
-{
-
 class periodicPartPatch
 :
     public parallelPartPatch
@@ -20,6 +17,9 @@ class periodicPartPatch
     void operator=(const periodicPartPatch&);
 
 public:
+
+    // Type number
+    const static label typeNumber;
 
     // Runtime type information
     TypeName("periodic");
@@ -35,9 +35,13 @@ public:
     {
         return autoPtr<partPatch>(new periodicPartPatch(*this));
     }
-};
 
-}
+    // Part patch type number
+    virtual label typeNum() const
+    {
+        return typeNumber;
+    }
+};
 
 }
 

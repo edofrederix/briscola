@@ -1,6 +1,10 @@
 #ifndef boundaryCondition_H
 #define boundaryCondition_H
 
+#include "boundaryConditionBaseTypes.H"
+
+#include "block.H"
+
 #include "faceVector.H"
 #include "faceScalar.H"
 
@@ -23,19 +27,8 @@ class fvMesh;
 template<class Type, class MeshType>
 class meshField;
 
-// Enumeration listing the base boundary condition types
-enum boundaryConditionBaseType
-{
-    DUMMYBC,
-    EMPTYBC,
-    PARALLELBC,
-    PERIODICBC,
-    DIRICHLETBC,
-    NEUMANNBC,
-    ROBINBC
-};
-
-const NamedEnum<boundaryConditionBaseType,7> boundaryConditionBaseTypeNames;
+template<class SType, class Type, class MeshType>
+class linearSystem;
 
 template<class Type, class MeshType>
 class boundaryCondition
@@ -95,25 +88,13 @@ public:
     );
 
     // Construct and return a clone
-    virtual tmp<boundaryCondition<Type,MeshType>> clone() const
-    {
-        return tmp<boundaryCondition<Type,MeshType>>
-        (
-            new boundaryCondition<Type,MeshType>(*this)
-        );
-    }
+    virtual tmp<boundaryCondition<Type,MeshType>> clone() const = 0;
 
     // Construct and return a clone setting field reference
     virtual tmp<boundaryCondition<Type,MeshType>> clone
     (
         const meshField<Type,MeshType>& field
-    ) const
-    {
-        return tmp<boundaryCondition<Type,MeshType>>
-        (
-            new boundaryCondition<Type,MeshType>(field,*this)
-        );
-    }
+    ) const = 0;
 
     // Selector for given type
     static autoPtr<boundaryCondition<Type,MeshType>> New
@@ -226,24 +207,40 @@ public:
     const meshField<faceScalar,MeshType>& faceDeltas() const;
 
     // Boundary condition base type
-    virtual boundaryConditionBaseType baseType() const
-    {
-        NotImplemented;
-        return DUMMYBC;
-    }
+    virtual boundaryConditionBaseType baseType() const = 0;
 
     // Initialize the evaluation of the boundary condition for given level
-    virtual void initEvaluate(const label)
-    {
-        NotImplemented;
-    }
+    virtual void initEvaluate(const label) = 0;
 
     // Evaluate the boundary condition for given level. Optionally force
     // homogeneous BC
-    virtual void evaluate(const label, const bool = false)
-    {
-        NotImplemented;
-    }
+    virtual void evaluate(const label, const bool = false) = 0;
+
+    // Correct a linear system at given level, subject to the boundary condition
+    void correctSystem(linearSystem<stencil,Type,MeshType>&, const label);
+    void correctSystem(linearSystem<diagStencil,Type,MeshType>&, const label);
+
+    // Eliminated boundary conditions
+    //
+    // Boundary coefficients and sources are defined from the relation:
+    //
+    //     ghost_cell = coefficients * internal_cells + source,
+    //
+    // which relates the ghost cell value to its internal cell values and
+    // eliminates dependence on the ghost value. The functions below can be
+    // overloaded by boundary conditions that support this mechanism.
+
+        // Return true if the (shifted) boundary condition eliminates the ghost
+        virtual bool eliminated(const bool shifted) const { return false; }
+
+        // Return the boundary coefficient for given level and direction
+        virtual stencil boundaryCoeff(const label, const label)
+        {
+            return pTraits<stencil>::zero;
+        }
+
+        // Return the boundary sources for given level and direction
+        virtual tmp<block<Type>> boundarySources(const label, const label);
 };
 
 // Helper function for global boundary condition type
@@ -264,89 +261,8 @@ boundaryConditionBaseType globalBoundaryConditionBaseType
 
 }
 
-#define makeBoundaryCondition(Type,MeshType)                                    \
-                                                                                \
-    typedef boundaryCondition<Type,MeshType>                                    \
-        boundaryCondition##Type##MeshType;                                      \
-                                                                                \
-    defineTemplateTypeNameAndDebugWithName                                      \
-    (                                                                           \
-        boundaryCondition##Type##MeshType,                                      \
-        "boundaryCondition",                                                    \
-        0                                                                       \
-    );                                                                          \
-                                                                                \
-    defineTemplateRunTimeSelectionTable                                         \
-    (                                                                           \
-        boundaryCondition##Type##MeshType,                                      \
-        dictionary                                                              \
-    );                                                                          \
-                                                                                \
-    template class boundaryCondition<Type,MeshType>;
-
-#define makeBoundaryConditionType(BC, Type, MeshType)                           \
-                                                                                \
-    typedef BC##BoundaryCondition<Type,MeshType>                                \
-        BC##BoundaryCondition##Type##MeshType;                                  \
-                                                                                \
-    defineTemplateTypeNameAndDebugWithName                                      \
-    (                                                                           \
-        BC##BoundaryCondition##Type##MeshType,                                  \
-        #BC,                                                                    \
-        0                                                                       \
-    );                                                                          \
-                                                                                \
-    boundaryCondition<Type,MeshType>::                                          \
-        adddictionaryConstructorToTable<BC##BoundaryCondition##Type##MeshType>  \
-            add##BC##BoundaryCondition##Type##MeshType##ConstructorToTable_;    \
-                                                                                \
-    template class BC##BoundaryCondition<Type,MeshType>;
-
-#define makeBoundaryConditionTypes(BC)                                          \
-                                                                                \
-makeBoundaryConditionType(BC,label,colocated)                                   \
-makeBoundaryConditionType(BC,label,staggered)                                   \
-                                                                                \
-makeBoundaryConditionType(BC,scalar,colocated)                                  \
-makeBoundaryConditionType(BC,scalar,staggered)                                  \
-                                                                                \
-makeBoundaryConditionType(BC,faceScalar,colocated)                              \
-makeBoundaryConditionType(BC,faceScalar,staggered)                              \
-                                                                                \
-makeBoundaryConditionType(BC,edgeScalar,colocated)                              \
-makeBoundaryConditionType(BC,edgeScalar,staggered)                              \
-                                                                                \
-makeBoundaryConditionType(BC,vertexScalar,colocated)                            \
-makeBoundaryConditionType(BC,vertexScalar,staggered)                            \
-                                                                                \
-makeBoundaryConditionType(BC,vector,colocated)                                  \
-makeBoundaryConditionType(BC,vector,staggered)                                  \
-                                                                                \
-makeBoundaryConditionType(BC,faceVector,colocated)                              \
-makeBoundaryConditionType(BC,faceVector,staggered)                              \
-                                                                                \
-makeBoundaryConditionType(BC,edgeVector,colocated)                              \
-makeBoundaryConditionType(BC,edgeVector,staggered)                              \
-                                                                                \
-makeBoundaryConditionType(BC,vertexVector,colocated)                            \
-makeBoundaryConditionType(BC,vertexVector,staggered)                            \
-                                                                                \
-makeBoundaryConditionType(BC,tensor,colocated)                                  \
-makeBoundaryConditionType(BC,tensor,staggered)                                  \
-                                                                                \
-makeBoundaryConditionType(BC,sphericalTensor,colocated)                         \
-makeBoundaryConditionType(BC,sphericalTensor,staggered)                         \
-                                                                                \
-makeBoundaryConditionType(BC,symmTensor,colocated)                              \
-makeBoundaryConditionType(BC,symmTensor,staggered)                              \
-                                                                                \
-makeBoundaryConditionType(BC,diagTensor,colocated)                              \
-makeBoundaryConditionType(BC,diagTensor,staggered)                              \
-                                                                                \
-makeBoundaryConditionType(BC,stencil,colocated)                                 \
-makeBoundaryConditionType(BC,stencil,staggered)                                 \
-                                                                                \
-makeBoundaryConditionType(BC,diagStencil,colocated)                             \
-makeBoundaryConditionType(BC,diagStencil,staggered)
+#ifdef NoRepository
+    #include "boundaryCondition.C"
+#endif
 
 #endif

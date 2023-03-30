@@ -11,18 +11,6 @@
 namespace Foam
 {
 
-template<>
-const char* NamedEnum<briscola::fv::boundaryConditionBaseType,7>::names[] =
-{
-    "dummy",
-    "empty",
-    "parallel",
-    "periodic",
-    "Dirichlet",
-    "Neumann",
-    "Robin"
-};
-
 namespace briscola
 {
 
@@ -362,53 +350,78 @@ boundaryCondition<Type,MeshType>::faceDeltas() const
     return fvMsh_.template metrics<MeshType>().faceDeltas();
 }
 
-// All meshField types must have the boundaryCondition class compiled. Most
-// types don't actually have boundary conditions implemented.
+template<class Type, class MeshType>
+tmp<block<Type>> boundaryCondition<Type,MeshType>::boundarySources
+(
+    const label l,
+    const label d
+)
+{
+    const labelVector bo(this->boundaryOffset());
+    const meshDirection<Type,MeshType>& fld = mshField_[l][d];
 
-makeBoundaryCondition(label,colocated)
-makeBoundaryCondition(label,staggered)
+    const labelVector S(fld.boundaryStart(bo));
+    const labelVector E(fld.boundaryEnd(bo));
 
-makeBoundaryCondition(scalar,colocated)
-makeBoundaryCondition(scalar,staggered)
+    return tmp<block<Type>>(new block<Type>(E-S, Zero));
+}
 
-makeBoundaryCondition(faceScalar,colocated)
-makeBoundaryCondition(faceScalar,staggered)
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::correctSystem
+(
+    linearSystem<stencil,Type,MeshType>& sys,
+    const label l
+)
+{
+    // Only face boundaries can manipulate a stencil
 
-makeBoundaryCondition(edgeScalar,colocated)
-makeBoundaryCondition(edgeScalar,staggered)
+    if (this->boundaryOffsetDegree() == 1)
+    {
+        const labelVector bo(this->boundaryOffset());
+        const label faceNum(faceNumber(bo));
 
-makeBoundaryCondition(vertexScalar,colocated)
-makeBoundaryCondition(vertexScalar,staggered)
+        forAll(mshField_[l], d)
+        {
+            const meshDirection<Type,MeshType>& fld = this->mshField_[l][d];
 
-makeBoundaryCondition(vector,colocated)
-makeBoundaryCondition(vector,staggered)
+            // Manipulate the linear system for eliminated boundary conditions
 
-makeBoundaryCondition(faceVector,colocated)
-makeBoundaryCondition(faceVector,staggered)
+            if (this->eliminated(fld.shifted(bo)))
+            {
+                meshDirection<stencil,MeshType>& Ad = sys.A()[l][d];
+                meshDirection<Type,MeshType>& bd = sys.b()[l][d];
 
-makeBoundaryCondition(edgeVector,colocated)
-makeBoundaryCondition(edgeVector,staggered)
+                const labelVector S(fld.boundaryStart(bo));
+                const labelVector E(fld.boundaryEnd(bo));
 
-makeBoundaryCondition(vertexVector,colocated)
-makeBoundaryCondition(vertexVector,staggered)
+                const stencil C(this->boundaryCoeff(l,d));
+                const block<Type> B(this->boundarySources(l,d));
 
-makeBoundaryCondition(tensor,colocated)
-makeBoundaryCondition(tensor,staggered)
+                labelVector ijk;
 
-makeBoundaryCondition(sphericalTensor,colocated)
-makeBoundaryCondition(sphericalTensor,staggered)
+                for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                {
+                    Ad(ijk) += Ad(ijk)[faceNum+1]*C;
+                    bd(ijk) -= Ad(ijk)[faceNum+1]*B(ijk-S);
 
-makeBoundaryCondition(symmTensor,colocated)
-makeBoundaryCondition(symmTensor,staggered)
+                    Ad(ijk)[faceNum+1] = 0;
+                }
+            }
+        }
+    }
+}
 
-makeBoundaryCondition(diagTensor,colocated)
-makeBoundaryCondition(diagTensor,staggered)
-
-makeBoundaryCondition(diagStencil,colocated)
-makeBoundaryCondition(diagStencil,staggered)
-
-makeBoundaryCondition(stencil,colocated)
-makeBoundaryCondition(stencil,staggered)
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::correctSystem
+(
+    linearSystem<diagStencil,Type,MeshType>& sys,
+    const label l
+)
+{
+    // Nothing to be done for a diagonal stencil
+}
 
 }
 
