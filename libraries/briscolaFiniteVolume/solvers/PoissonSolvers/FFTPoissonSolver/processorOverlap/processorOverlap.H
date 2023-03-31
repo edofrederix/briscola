@@ -21,42 +21,52 @@ class decomposer;
 
 class processorOverlap
 {
-
+    // Decomposer object
     decomposer& decomp_;
 
+    // Initial and target decomposition vectors
     labelVector I_;
     labelVector T_;
 
+    // List of processor part dimensions and starting indices
+    // for initial decomposition and for target decomposition
     List<labelVector> Ni_;
     List<labelVector> Si_;
 
     List<labelVector> Nt_;
     List<labelVector> St_;
 
+    // Size and start index of block part to be sent to each processor
     List<labelVector> sendSize_;
     List<labelVector> sendStart_;
 
+    // Size and start index of block part to be received from each processor
     List<labelVector> recvSize_;
     List<labelVector> recvStart_;
 
+    // Send size and displacement in bytes
     labelList sendCount_;
     labelList sendDisplacement_;
 
+    // Receive count and displacement in bytes
     labelList recvCount_;
     labelList recvDisplacement_;
 
-    // Processor overlap
+    // Compute processor overlaps
     void computeOverlap();
 
 public:
 
-    // Construct from dictionary
+    // Construct from decomposition parir
     processorOverlap
     (
         decomposer& d,
         labelVector I,
         labelVector T
     );
+
+    // Copy constructor
+    processorOverlap(const processorOverlap&);
 
     // Destructor
     virtual ~processorOverlap();

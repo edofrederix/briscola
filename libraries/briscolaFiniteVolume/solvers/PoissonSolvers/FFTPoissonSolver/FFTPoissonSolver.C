@@ -83,6 +83,14 @@ void FFTPoissonSolver::solve
     const bool ddt
 )
 {
+    if (lambdaPtr != nullptr)
+    {
+        FatalErrorInFunction
+            << "FFT Poisson solver does not support use of "
+            << "lambda argument in solve function." << endl
+            << abort(FatalError);
+    }
+
     if (bPtr != nullptr)
     {
         // Initial decomposition
@@ -95,9 +103,9 @@ void FFTPoissonSolver::solve
 
         // Copy the data from bPtr to a scalarBlock
         // minus sign since bPtr = - RHS of the Poisson equation
-        forAllCells(bPtr[0][0][0], i, j, k)
+        forAllCells((*bPtr)[0][0], i, j, k)
         {
-            initData_(i,j,k) = - bPtr[0][0][0](i,j,k);
+            initData_(i,j,k) = - (*bPtr)[0][0](i,j,k);
         }
 
         // Transpose the RHS to x-pencils
@@ -139,16 +147,9 @@ void FFTPoissonSolver::solve
     }
 
     // Copy scalarBlock values to pressure meshField
-    if (lambdaPtr == nullptr)
+    forAllCells(x[0][0], i, j, k)
     {
-        forAllCells(x[0][0], i, j, k)
-        {
-            x[0][0](i,j,k) = initData_(i,j,k);
-        }
-    }
-    else
-    {
-        NotImplemented;
+        x[0][0](i,j,k) = initData_(i,j,k);
     }
 
     // Set ghost cells values

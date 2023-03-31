@@ -46,7 +46,7 @@ class decomposer
     List<labelVector> Sy_;
     List<labelVector> Sz_;
 
-    HashTable<processorOverlap, string> processorOverlap_;
+    HashTable<processorOverlap> processorOverlap_;
 
 public:
 

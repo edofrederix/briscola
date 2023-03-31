@@ -119,6 +119,8 @@ void processorOverlap::computeOverlap()
     }
 }
 
+// Constructor
+
 processorOverlap::processorOverlap
 (
     decomposer& d,
@@ -140,6 +142,32 @@ processorOverlap::processorOverlap
 {
     computeOverlap();
 }
+
+// Copy constructor
+
+processorOverlap::processorOverlap
+(
+    const processorOverlap& po
+)
+:
+    decomp_(po.decomp_),
+    I_(po.I_),
+    T_(po.T_),
+    Ni_(po.Ni_),
+    Si_(po.Si_),
+    Nt_(po.Nt_),
+    St_(po.St_),
+    sendSize_(po.sendSize_),
+    sendStart_(po.sendStart_),
+    recvSize_(po.recvSize_),
+    recvStart_(po.recvStart_),
+    sendCount_(po.sendCount_),
+    sendDisplacement_(po.sendDisplacement_),
+    recvCount_(po.recvCount_),
+    recvDisplacement_(po.recvDisplacement_)
+{}
+
+// Destructor
 
 processorOverlap::~processorOverlap()
 {}
