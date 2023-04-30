@@ -38,7 +38,6 @@ EU DuC.
 
 Briscola depends on the following third-party packages:
 
-* VTK
 * OpenFOAM (only libOpenFOAM, libPstream and libOSspecific)
 * OpenMPI
 * FFTW3

@@ -22,21 +22,25 @@ class tridiagonalSolver
     // Mesh
     const fvMesh& fvMsh_;
 
+    // Direction in which to solve
+    // 0 = x, 1 = y, 2 = z
+    label solveDir_;
+
     // Global mesh dimensions
     labelVector N_;
 
-    // Z-pencil dimensions
-    labelVector Nz_;
+    // Pencil dimensions
+    labelVector Nd_;
 
-    // Z-pencil starting indices
-    labelVector Sz_;
+    // Pencil starting indices
+    labelVector Sd_;
 
     // Boundary conditions
     labelVector BC_;
 
     // Eigenvalues
-    scalarList lambdaX_;
-    scalarList lambdaY_;
+    scalarList lambda1_;
+    scalarList lambda2_;
 
     // Cell size arrays for each direction
     const PtrList<scalarList> cellSizes_;
@@ -58,8 +62,9 @@ public:
     tridiagonalSolver
     (
         const fvMesh& fvMsh,
-        labelVector Nz,
-        labelVector Sz,
+        label solveDir,
+        labelVector Nd,
+        labelVector Sd,
         labelVector BC
     );
 
@@ -81,8 +86,8 @@ public:
         scalarBlock& p
     );
 
-    // Solve z-direction of a scalarBlock
-    void solve(scalarBlock& zPencil);
+    // Solve x, y or z-direction of a scalarBlock
+    void solve(scalarBlock& xyzPencil);
 
 };
 

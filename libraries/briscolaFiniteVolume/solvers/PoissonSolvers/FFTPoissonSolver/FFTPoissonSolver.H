@@ -3,6 +3,7 @@
 
 #include "PoissonSolver.H"
 #include <fftw3.h>
+#include "planner.H"
 #include "decomposer.H"
 #include "tridiagonalSolver.H"
 #include "FourierTransforms.H"
@@ -22,6 +23,26 @@ class FFTPoissonSolver
 {
     // Cell size arrays for each direction
     const PtrList<scalarList> cellSizes_;
+
+    // Planner
+    planner PoissonPlan_;
+
+    // Initial decomposition type:
+    // 0: Not decomposed
+    // 1: 3D
+    // 2: x-pencil
+    // 3: y-pencil
+    // 4: z-pencil
+    // 5: xy-slab
+    // 6: xz-slab
+    // 7: yz-slab
+    label decompType_;
+
+    // Mesh uniformity per direction (0 = false, 1 = true)
+    labelVector meshUniform_;
+
+    // Solve direction
+    label solveDir_;
 
     // Pencil decomposer
     decomposer decomp_;
@@ -46,7 +67,7 @@ class FFTPoissonSolver
 
     // Funtion to check if the mesh qualifies for FFTs. Will give error if not
     // all criteria are met.
-    void checkMesh() const;
+    void checkMesh();
 
 public:
 

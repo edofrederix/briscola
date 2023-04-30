@@ -15,14 +15,16 @@ FourierTransforms::FourierTransforms
     const fvMesh& fvMsh,
     decomposer& d,
     scalarBlock& xPencil,
-    scalarBlock& yPencil
+    scalarBlock& yPencil,
+    scalarBlock& zPencil
 )
 :
     fvMsh_(fvMsh),
     N_(fvMsh.msh().cast<rectilinearMesh>().N()),
     decomp_(d),
     xPencil_(xPencil),
-    yPencil_(yPencil)
+    yPencil_(yPencil),
+    zPencil_(zPencil)
 {
     FFTBoundaryConditions();
     FFTWplans();
@@ -175,16 +177,21 @@ void FourierTransforms::FFTWplans()
 
     fftw_r2r_kind kind_fwd_x[] = {transforms[BC_.x()-1]};
     fftw_r2r_kind kind_bwd_x[] = {transforms[BC_.x()+4]};
+
     fftw_r2r_kind kind_fwd_y[] = {transforms[BC_.y()-1]};
     fftw_r2r_kind kind_bwd_y[] = {transforms[BC_.y()+4]};
 
+    fftw_r2r_kind kind_fwd_z[] = {transforms[BC_.z()-1]};
+    fftw_r2r_kind kind_bwd_z[] = {transforms[BC_.z()+4]};
+
     labelVector Nx = decomp_.Nx()[Pstream::myProcNo()];
     labelVector Ny = decomp_.Ny()[Pstream::myProcNo()];
+    labelVector Nz = decomp_.Nz()[Pstream::myProcNo()];
 
     int fft_rank = 1;
     int howmany = Nx.y() * Nx.z();
-    int stride = Nx.y() * Nx.z();
-    int sep = 1;
+    int stride = 1;
+    int sep = N_.x();
     const int Na_x[] = {N_.x()};
 
     fwdPlanX_ = fftw_plan_many_r2r
@@ -260,6 +267,46 @@ void FourierTransforms::FFTWplans()
         kind_bwd_y,
         FFTW_MEASURE
     );
+
+    fft_rank = 1;
+    howmany = Nz.x() * Nz.y();
+    stride = 1;
+    sep = N_.z();
+    const int Na_z[] = {N_.z()};
+
+    fwdPlanZ_ = fftw_plan_many_r2r
+    (
+        fft_rank,
+        Na_z,
+        howmany,
+        reinterpret_cast<double*>(zPencil_.begin()),
+        Na_z,
+        stride,
+        sep,
+        reinterpret_cast<double*>(zPencil_.begin()),
+        Na_z,
+        stride,
+        sep,
+        kind_fwd_z,
+        FFTW_MEASURE
+    );
+
+    bwdPlanZ_ = fftw_plan_many_r2r
+    (
+        fft_rank,
+        Na_z,
+        howmany,
+        reinterpret_cast<double*>(zPencil_.begin()),
+        Na_z,
+        stride,
+        sep,
+        reinterpret_cast<double*>(zPencil_.begin()),
+        Na_z,
+        stride,
+        sep,
+        kind_bwd_z,
+        FFTW_MEASURE
+    );
 }
 
 
@@ -282,6 +329,17 @@ void FourierTransforms::fwdFFTy()
 void FourierTransforms::bwdFFTy()
 {
     fftw_execute(bwdPlanY_);
+    yPencil_ /= normalization_;
+}
+
+void FourierTransforms::fwdFFTz()
+{
+    fftw_execute(fwdPlanZ_);
+}
+
+void FourierTransforms::bwdFFTz()
+{
+    fftw_execute(bwdPlanZ_);
 }
 
 } // end namespace fv

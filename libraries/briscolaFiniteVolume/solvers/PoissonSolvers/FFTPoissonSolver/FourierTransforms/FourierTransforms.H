@@ -42,12 +42,17 @@ class FourierTransforms
     fftw_plan bwdPlanX_;
     fftw_plan fwdPlanY_;
     fftw_plan bwdPlanY_;
+    fftw_plan fwdPlanZ_;
+    fftw_plan bwdPlanZ_;
 
     // X-pencil
     scalarBlock& xPencil_;
 
     // Y-pencil
     scalarBlock& yPencil_;
+
+    // Z-pencil
+    scalarBlock& zPencil_;
 
     // FFT normalization factor
     scalar normalization_;
@@ -60,7 +65,8 @@ public:
         const fvMesh& fvMsh,
         decomposer& d,
         scalarBlock& xPencil,
-        scalarBlock& yPencil
+        scalarBlock& yPencil,
+        scalarBlock& zPencil
     );
 
     // Destructor
@@ -77,6 +83,10 @@ public:
     void fwdFFTy();
 
     void bwdFFTy();
+
+    void fwdFFTz();
+
+    void bwdFFTz();
 
     inline labelVector& BC() { return BC_; }
 

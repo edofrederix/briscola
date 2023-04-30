@@ -1,0 +1,110 @@
+#include "planner.H"
+
+namespace Foam
+{
+
+namespace briscola
+{
+
+namespace fv
+{
+
+// Constructor
+
+planner::planner
+(
+    const fvMesh& fvMsh
+)
+:
+    I_(fvMsh.msh().decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ)
+{
+    decompType_ = 0;
+
+    if (I_.x() > 1 && I_.y() > 1 && I_.z() > 1)
+    {
+        decompType_ = 1;
+    }
+    else if (I_.x() == 1 && I_.y() > 1 && I_.z() > 1)
+    {
+        decompType_ = 2;
+    }
+    else if (I_.x() > 1 && I_.y() == 1 && I_.z() > 1)
+    {
+        decompType_ = 3;
+    }
+    else if (I_.x() > 1 && I_.y() > 1 && I_.z() == 1)
+    {
+        decompType_ = 4;
+    }
+    else if (I_.x() == 1 && I_.y() == 1 && I_.z() > 1)
+    {
+        decompType_ = 5;
+    }
+    else if (I_.x() == 1 && I_.y() > 1 && I_.z() == 1)
+    {
+        decompType_ = 6;
+    }
+    else if (I_.x() > 1 && I_.y() == 1 && I_.z() == 1)
+    {
+        decompType_ = 7;
+    }
+
+    const rectilinearMesh& mesh = fvMsh.msh().cast<rectilinearMesh>();
+
+    meshUniform_ = mesh.uniform();
+
+    solveDir_ = -1;
+
+    if (!meshUniform_.x())
+    {
+        solveDir_ = 0;
+    }
+    else if (!meshUniform_.y())
+    {
+        solveDir_ = 1;
+    }
+    else if (!meshUniform_.z())
+    {
+        solveDir_ = 2;
+    }
+    else
+    {
+        if
+        (
+               decompType_ == 0
+            || decompType_ == 1
+            || decompType_ == 3
+            || decompType_ == 4
+            || decompType_ == 7
+        )
+        {
+            solveDir_ = 0;
+        }
+        else if
+        (
+               decompType_ == 2
+            || decompType_ == 6
+        )
+        {
+            solveDir_ = 1;
+        }
+        else if
+        (
+            decompType_ == 5
+        )
+        {
+            solveDir_ = 2;
+        }
+    }
+}
+
+// Destructor
+
+planner::~planner()
+{}
+
+} // end namespace fv
+
+} // end namespace briscola
+
+} // end namespace Foam

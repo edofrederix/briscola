@@ -372,7 +372,7 @@ void decomposer::unpack
     const List<labelVector>& recvSize,
     scalarBlock& output,
     List<labelVector>& startIndex,
-    bool yPencil
+    labelVector T
 )
 {
     label cursor = 0;
@@ -394,15 +394,17 @@ void decomposer::unpack
         for (int j = start.y(); j < start.y() + size.y(); j++)
         for (int k = start.z(); k < start.z() + size.z(); k++)
         {
-            if (!yPencil)
+            if (T == X_)
             {
-                output(i,j,k) = buffer(cursor++);
+                output(k*N.x()*N.y() + j*N.x() + i) = buffer(cursor++);
             }
-            // y-pencil decomposition is stored as i>k>j
-            // due to the data format requirements of FFTW
-            else
+            else if (T ==  Y_)
             {
                 output(i*N.y()*N.z() + k*N.y() + j) = buffer(cursor++);
+            }
+            else
+            {
+                output(i,j,k) = buffer(cursor++);
             }
         }
     }
@@ -473,13 +475,20 @@ void decomposer::transpose
             for (int j = start.y(); j < start.y() + size.y(); j++)
             for (int k = start.z(); k < start.z() + size.z(); k++)
             {
-                if (I != Y_)
+                // x-pencil is stored as k>j>i so that elements
+                // in a line in x are close to each other in memory
+                if (I == X_)
                 {
-                    sendBuffer(cursor++) = src(i,j,k);
+                    sendBuffer(cursor++) = src
+                    (
+                          k * Ni[Pstream::myProcNo()].x()
+                            * Ni[Pstream::myProcNo()].y()
+                        + j * Ni[Pstream::myProcNo()].x()
+                        + i
+                    );
                 }
-                // y-pencil decomposition is stored as i>k>j
-                // due to the data format requirements of FFTW
-                else
+                // y-pencil is stored as i>k>j
+                else if (I == Y_)
                 {
                     sendBuffer(cursor++) = src
                     (
@@ -488,6 +497,11 @@ void decomposer::transpose
                         + k * Ni[Pstream::myProcNo()].y()
                         + j
                     );
+                }
+                // Other decompositions are stored as i>j>k
+                else
+                {
+                    sendBuffer(cursor++) = src(i,j,k);
                 }
             }
         }
@@ -511,16 +525,8 @@ void decomposer::transpose
 
         // Unpack data
 
-        if (T != Y_)
-        {
-            unpack(recvBuffer, recvStart, recvSize, dst, St);
-        }
-        // y-pencil decomposition is stored as i>k>j
-        // due to the data format requirements of FFTW
-        else
-        {
-            unpack(recvBuffer, recvStart, recvSize, dst, St, true);
-        }
+        unpack(recvBuffer, recvStart, recvSize, dst, St, T);
+
     }
 }
 

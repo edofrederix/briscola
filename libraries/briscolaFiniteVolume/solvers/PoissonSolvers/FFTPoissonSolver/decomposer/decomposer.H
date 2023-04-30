@@ -76,6 +76,59 @@ public:
     inline List<labelVector>& Nz() { return Nz_; }
     inline List<labelVector>& Sz() { return Sz_; }
 
+    // Return pencil decomposition for a given direction
+    List<labelVector>& Nd(label dir)
+    {
+        switch (dir)
+        {
+            case 0:
+                return Nx_;
+                break;
+
+            case 1:
+                return Ny_;
+                break;
+
+            case 2:
+                return Nz_;
+                break;
+
+            default:
+                FatalError
+                    << "Invalid direction."
+                    << endl;
+                FatalError.exit();
+                return Nx_;
+                break;
+        }
+    }
+
+    List<labelVector>& Sd(label dir)
+    {
+        switch (dir)
+        {
+            case 0:
+                return Sx_;
+                break;
+
+            case 1:
+                return Sy_;
+                break;
+
+            case 2:
+                return Sz_;
+                break;
+
+            default:
+                FatalError
+                    << "Invalid direction."
+                    << endl;
+                FatalError.exit();
+                return Sx_;
+                break;
+        }
+    }
+
     // Decomposition functions
     void decompInit();
     void decompX();
@@ -95,6 +148,8 @@ public:
     List<labelVector> procOrig(labelVector D);
 
     // Unpack a receive buffer
+    // Pencil flags can be used to indicate that the buffer should be
+    // unpacked in a special order for x and y pencil decompositions
     void unpack
     (
         const scalarBlock& buffer,
@@ -102,7 +157,7 @@ public:
         const List<labelVector>& recvSize,
         scalarBlock& output,
         List<labelVector>& startIndex,
-        bool yPencil = false
+        labelVector T
     );
 
     // Transpose function
