@@ -41,7 +41,7 @@ class FFTPoissonSolver
     // Mesh uniformity per direction (0 = false, 1 = true)
     labelVector meshUniform_;
 
-    // Solve direction
+    // Solve direction (0 = x, 1 = y, 2 = z)
     label solveDir_;
 
     // Pencil decomposer

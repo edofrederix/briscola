@@ -11,7 +11,7 @@ namespace fv
 
 // Constructor
 
-decomposer::decomposer(const fvMesh& fvMsh)
+decomposer::decomposer(const fvMesh& fvMsh, label decompType)
 :
     fvMsh_(fvMsh),
     N_(fvMsh_.msh().cast<rectilinearMesh>().N()),
@@ -25,7 +25,7 @@ decomposer::decomposer(const fvMesh& fvMsh)
     Sy_(Pstream::nProcs(), Zero),
     Sz_(Pstream::nProcs(), Zero)
 {
-    decompInit();
+    decompInit(decompType);
 }
 
 // Destructor
@@ -35,163 +35,141 @@ decomposer::~decomposer()
 
 // Initialize the initial and pencil decompositions
 
-void decomposer::decompInit()
+void decomposer::decompInit(label decompType)
 {
-    // Some checks
-
-    if (cmptProduct(I_) != Pstream::nProcs())
-    {
-        FatalError
-            << "Initial decomposition does not match the number of processors"
-            << endl;
-        FatalError.exit();
-    }
-
-    for (int dir = 0; dir < 3; dir++)
-    if (N_[dir] < I_[dir])
-    {
-        FatalError
-            << "Mesh not decomposable by initial decomposition vector"
-            << endl;
-        FatalError.exit();
-    }
 
     // Initial decomposition
+
+    checkDecomp(I_);
 
     Ni_ = fvMsh_.msh().decomp().partSizePerProc();
     Si_ = fvMsh_.msh().decomp().globalStartPerProc();
 
-    // Pencil decompositions: check if existing decompositions may be reused
+    // Pencil decompositions
 
-    if (I_.x() > 1)
+    switch (decompType)
     {
-        decompX();
+        case 0:
+            X_ = Y_ = Z_ = I_;
+            break;
+
+        case 1:
+            // Factorize number of processors for x-pencil deocmposition
+            X_ = vector
+            (
+                1,
+                ceil(Foam::sqrt(scalar(Pstream::nProcs()))),
+                0
+            );
+
+            while (Pstream::nProcs() % X_.y() != 0)
+            {
+                X_.y() -= 1;
+            }
+
+            X_.z() = Pstream::nProcs() / X_.y();
+
+            // Rotate X-pencils to Y-pencils
+            Y_ = vector(X_.y(), 1, X_.z());
+
+            // Rotate Y-pencils to Z-pencils
+            Z_ = vector(Y_.x(), Y_.z(), 1);
+
+            break;
+
+        case 2:
+            X_ = I_;
+
+            // Rotate X-pencils to Y-pencils
+            Y_ = vector(X_.y(), 1, X_.z());
+
+            // Rotate Y-pencils to Z-pencils
+            Z_ = vector(Y_.x(), Y_.z(), 1);
+
+            break;
+
+        case 3:
+            Y_ = I_;
+
+            // Rotate Y-pencils to Z-pencils
+            Z_ = vector(Y_.x(), Y_.z(), 1);
+
+            // Rotate Z-pencils to X-pencils
+            X_ = vector(1, Z_.x(), Z_.y());
+
+            break;
+
+        case 4:
+            Z_ = I_;
+
+            // Rotate Z-pencils to X-pencils
+            X_ = vector(1, Z_.x(), Z_.y());
+
+            // Rotate X-pencils to Y-pencils
+            Y_ = vector(X_.y(), 1, X_.z());
+
+            break;
+
+        case 5:
+            X_ = Y_ = I_;
+
+            // Rotate XY-slab to XZ-slab
+            Z_ = vector(1, Y_.z(), 1);
+
+            break;
+
+        case 6:
+            X_ = Z_ = I_;
+
+            // Rotate XZ-slab to XY-slab
+            Y_ = vector(1, 1, X_.y());
+
+            break;
+
+        case 7:
+            Y_ = Z_ = I_;
+
+            // Rotate YZ-slab to XZ-slab
+            X_ = vector(1, Z_.x(), 1);
+
+            break;
     }
-    else
-    {
-        X_ = I_;
-        Nx_ = Ni_;
-        Sx_ = Si_;
-    }
 
-    if (X_.y() > 1)
-    {
-        decompY();
-    }
-    else
-    {
-        Y_ = X_;
-        Ny_ = Nx_;
-        Sy_ = Sx_;
-    }
-
-    if (Y_.z() > 1)
-    {
-        decompZ();
-    }
-    else
-    {
-        Z_ = Y_;
-        Nz_ = Ny_;
-        Sz_ = Sy_;
-    }
-}
-
-// Initialize X-pencil decomposition
-
-void decomposer::decompX()
-{
-    // Factorize number of processors for x-pencil deocmposition
-
-    X_ = vector
-    (
-        1,
-        ceil(Foam::sqrt(scalar(Pstream::nProcs()))),
-        0
-    );
-
-    while (Pstream::nProcs() % X_.y() != 0)
-    {
-        X_.y() -= 1;
-    }
-
-    X_.z() = Pstream::nProcs() / X_.y();
-
-    // Check decomposition
-
-    for (int dir = 0; dir < 3; dir++)
-    if (N_[dir] < X_[dir])
-    {
-        FatalError
-            << "X-pencil decomposition failed."
-            << endl;
-        FatalError.exit();
-    }
+    // Check that all decompositions are valid
+    checkDecomp(X_);
+    checkDecomp(Y_);
+    checkDecomp(Z_);
 
     // Set dimensions and origins
 
     Nx_ = procDims(X_);
     Sx_ = procOrig(X_);
-}
-
-// Initialize Y-pencil decomposition
-
-void decomposer::decompY()
-{
-    // Rotate X-pencils to Y-pencils
-
-    Y_ = vector
-    (
-        X_.y(),
-        1,
-        X_.z()
-    );
-
-    // Check decomposition
-
-    for (int dir = 0; dir < 3; dir++)
-    if (N_[dir] < Y_[dir])
-    {
-        FatalError
-            << "Y-pencil decomposition failed."
-            << endl;
-        FatalError.exit();
-    }
-
-    // Set dimensions and origins
 
     Ny_ = procDims(Y_);
     Sy_ = procOrig(Y_);
+
+    Nz_ = procDims(Z_);
+    Sz_ = procOrig(Z_);
 }
 
-// Initialize Z-pencil decomposition
-
-void decomposer::decompZ()
+void decomposer::checkDecomp(labelVector D)
 {
-    // Rotate Y-pencils to Z-pencils
-
-    Z_ = vector
-    (
-        Y_.x(),
-        Y_.z(),
-        1
-    );
-
-    // Check decomposition
-
-    for (int dir = 0; dir < 3; dir++)
-    if (N_[dir] < Z_[dir])
+    if (cmptProduct(D) != Pstream::nProcs())
     {
         FatalError
-            << "Z-pencil decomposition failed."
+            << "Decomposition " << D << " does not match number of processors."
             << endl;
         FatalError.exit();
     }
 
-    // Set dimensions and origins
-
-    Nz_ = procDims(Z_);
-    Sz_ = procOrig(Z_);
+    for (int dir = 0; dir < 3; dir++)
+    if (N_[dir] < D[dir])
+    {
+        FatalError
+            << "Mesh not decomposable by decomposition vector " << D
+            << endl;
+        FatalError.exit();
+    }
 }
 
 // Return the processor number given an index and decomposition
@@ -235,6 +213,7 @@ labelVector decomposer::indexFromProcNum
 }
 
 // Make key
+// Only works when I != T
 
 word decomposer::makeKey(labelVector I, labelVector T)
 {
@@ -281,25 +260,6 @@ word decomposer::makeKey(labelVector I, labelVector T)
 
 List<labelVector> decomposer::procDims(labelVector D)
 {
-    // Some checks
-
-    if (cmptProduct(D) != Pstream::nProcs())
-    {
-        FatalError
-            << "Initial decomposition does not match the number of processors"
-            << endl;
-        FatalError.exit();
-    }
-
-    for (int dir = 0; dir < 3; dir++)
-    if (N_[dir] < D[dir])
-    {
-        FatalError
-            << "Mesh not decomposable by initial decomposition vector"
-            << endl;
-        FatalError.exit();
-    }
-
     if (D == I_)
     {
         return Ni_;
@@ -312,7 +272,7 @@ List<labelVector> decomposer::procDims(labelVector D)
         {
             Nd[proc] = cmptDivide(N_,D);
 
-            // If the data distribution is uneven, remainder > 0
+            // If remainder > 0, the data distribution is uneven
 
             labelVector remainder = N_ - cmptMultiply(Nd[proc], D);
 
@@ -343,7 +303,6 @@ List<labelVector> decomposer::procOrig(labelVector D)
 
         for (int proc = 0; proc < Pstream::nProcs(); proc++)
         {
-
             // Set starting indices of each processor
 
             for (int x = 0; x < indexFromProcNum(proc, D).x(); x++)
@@ -372,7 +331,8 @@ void decomposer::unpack
     const List<labelVector>& recvSize,
     scalarBlock& output,
     List<labelVector>& startIndex,
-    labelVector T
+    labelVector T,
+    string recvMajorOrder
 )
 {
     label cursor = 0;
@@ -394,11 +354,11 @@ void decomposer::unpack
         for (int j = start.y(); j < start.y() + size.y(); j++)
         for (int k = start.z(); k < start.z() + size.z(); k++)
         {
-            if (T == X_)
+            if (recvMajorOrder == "x")
             {
                 output(k*N.x()*N.y() + j*N.x() + i) = buffer(cursor++);
             }
-            else if (T ==  Y_)
+            else if (recvMajorOrder == "y")
             {
                 output(i*N.y()*N.z() + k*N.y() + j) = buffer(cursor++);
             }
@@ -418,22 +378,89 @@ void decomposer::transpose
     const scalarBlock& src,
     scalarBlock& dst,
     labelVector I,
-    labelVector T
+    labelVector T,
+    string sendMajorOrder,
+    string recvMajorOrder
 )
 {
     if (I == T)
     {
-        dst = src;
+        if (sendMajorOrder == recvMajorOrder)
+        {
+            dst = src;
+        }
+        // Only change the major order of the array
+        else
+        {
+            labelVector Nd = src.shape();
+
+            scalarBlock buffer(Nd, Zero);
+
+            if (sendMajorOrder == "x")
+            {
+                for (int i = 0; i < Nd.x(); i++)
+                for (int j = 0; j < Nd.y(); j++)
+                for (int k = 0; k < Nd.z(); k++)
+                {
+                    buffer(i,j,k) = src
+                    (
+                        k * Nd.x()
+                            * Nd.y()
+                        + j * Nd.x()
+                        + i
+                    );
+                }
+            }
+            else if (sendMajorOrder == "y")
+            {
+                for (int i = 0; i < Nd.x(); i++)
+                for (int j = 0; j < Nd.y(); j++)
+                for (int k = 0; k < Nd.z(); k++)
+                {
+                    buffer(i,j,k) = src
+                    (
+                        i * Nd.y()
+                            * Nd.z()
+                        + k * Nd.y()
+                        + j
+                    );
+                }
+            }
+            else
+            {
+                buffer = src;
+            }
+
+            // Most arguments of unpack can be set
+            // to zero due to complete overlap
+
+            List<labelVector> recvStart(Pstream::nProcs(), Zero);
+            List<labelVector> recvSize(Pstream::nProcs(), Zero);
+            List<labelVector> St(Pstream::nProcs(), Zero);
+
+            // Only the recvSize of the current processor is needed
+
+            recvSize[Pstream::myProcNo()] = src.shape();
+
+            unpack(buffer, recvStart, recvSize, dst, St, T, recvMajorOrder);
+        }
+
     }
     else
     {
+        // Make decomposition pair key
+
         word IT = makeKey(I,T);
+
+        // Add processorOverlap to table if it isn't there already
 
         if (!processorOverlap_.found(IT))
         {
             processorOverlap overlap(*this, I, T);
             processorOverlap_.insert(IT, overlap);
         }
+
+        // Processor overlap variables
 
         List<labelVector>& Ni = processorOverlap_[IT].Ni();
         List<labelVector>& Si = processorOverlap_[IT].Si();
@@ -477,7 +504,7 @@ void decomposer::transpose
             {
                 // x-pencil is stored as k>j>i so that elements
                 // in a line in x are close to each other in memory
-                if (I == X_)
+                if (sendMajorOrder == "x")
                 {
                     sendBuffer(cursor++) = src
                     (
@@ -488,7 +515,7 @@ void decomposer::transpose
                     );
                 }
                 // y-pencil is stored as i>k>j
-                else if (I == Y_)
+                else if (sendMajorOrder == "y")
                 {
                     sendBuffer(cursor++) = src
                     (
@@ -525,8 +552,7 @@ void decomposer::transpose
 
         // Unpack data
 
-        unpack(recvBuffer, recvStart, recvSize, dst, St, T);
-
+        unpack(recvBuffer, recvStart, recvSize, dst, St, T, recvMajorOrder);
     }
 }
 

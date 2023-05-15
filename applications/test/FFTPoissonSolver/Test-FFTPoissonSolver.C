@@ -8,17 +8,19 @@ using namespace Foam;
 using namespace briscola;
 using namespace fv;
 
-bool check(colocatedScalarField& p, colocatedScalarField& f)
+bool check(colocatedScalarField& p, colocatedScalarField& f, const fvMesh& fvMsh)
 {
     labelVector Nf(p[0][0].B().shape());
     labelVector N(p.fvMsh().msh().cast<rectilinearMesh>().N());
 
-    // uniform 1m x 1m x 1m meshes only
-    scalar dx2 = sqr(1.0/N.x());
-    scalar dy2 = sqr(1.0/N.y());
-    scalar dz2 = sqr(1.0/N.z());
+    const PtrList<scalarList> cellSizes
+        = fvMsh.msh().cast<rectilinearMesh>().cellSizes();
 
-    // scalar f;
+    labelVector Si = fvMsh.msh().decomp().globalStartPerProc()[Pstream::myProcNo()];
+
+    scalarList dx2 = sqr(cellSizes[0]);
+    scalarList dy2 = sqr(cellSizes[1]);
+    scalarList dz2 = sqr(cellSizes[2]);
 
     for (int i = 1; i < Nf.x() - 1; i++)
     {
@@ -29,13 +31,13 @@ bool check(colocatedScalarField& p, colocatedScalarField& f)
                 scalar residual =
                 (
                     p[0][0].B()(i-1,j,k) - 2.0 * p[0][0].B()(i,j,k) + p[0][0].B()(i+1,j,k)
-                ) / dx2
+                ) / dx2[Si.x() + i-1]
                 + (
                     p[0][0].B()(i,j-1,k) - 2.0 * p[0][0].B()(i,j,k) + p[0][0].B()(i,j+1,k)
-                ) / dy2
+                ) / dy2[Si.y() + j-1]
                 + (
                     p[0][0].B()(i,j,k-1) - 2.0 * p[0][0].B()(i,j,k) + p[0][0].B()(i,j,k+1)
-                ) / dz2
+                ) / dz2[Si.z() + k-1]
                 + f[0][0].B()(i,j,k);
 
                 if(mag(residual) > 1e-10)
@@ -124,7 +126,7 @@ int main(int argc, char *argv[])
         Info << "Run number " << r+1 << " completed." << endl;
     }
 
-    if(check(p, f))
+    if(check(p, f, fvMsh))
     {
         Info << "-------------------------------------------" << nl;
         Info << "Pressure equation solution check successful" << nl;

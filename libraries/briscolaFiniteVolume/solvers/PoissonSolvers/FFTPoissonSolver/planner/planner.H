@@ -21,7 +21,6 @@ namespace fv
 
 class planner
 {
-
     // Initial decomposition
     labelVector I_;
 

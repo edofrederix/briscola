@@ -26,6 +26,10 @@ class tridiagonalSolver
     // 0 = x, 1 = y, 2 = z
     label solveDir_;
 
+    // FFT transformed directions
+    label dir1_;
+    label dir2_;
+
     // Global mesh dimensions
     labelVector N_;
 

@@ -150,19 +150,6 @@ void FourierTransforms::FFTBoundaryConditions()
                 << abort(FatalError);
             break;
     }
-
-    if( BC_.x() != 5 && BC_.y() != 5)
-    {
-        normalization_ = 2.0 * N_.x() * 2.0 * N_.y();
-    }
-    else if ( BC_.x() == 5 && BC_.y() == 5 )
-    {
-        normalization_ = N_.x() * N_.y();
-    }
-    else
-    {
-        normalization_ = 2.0 * N_.x() * N_.y();
-    }
 }
 
 void FourierTransforms::FFTWplans()
@@ -171,9 +158,11 @@ void FourierTransforms::FFTWplans()
     {
         // forward transform types
         FFTW_RODFT10, FFTW_REDFT10, FFTW_RODFT11, FFTW_REDFT11, FFTW_R2HC,
-        // inverse transform types
+        // backward transform types
         FFTW_RODFT01, FFTW_REDFT01, FFTW_RODFT11, FFTW_REDFT11, FFTW_HC2R
     };
+
+    // Transform type based on boundary conditions
 
     fftw_r2r_kind kind_fwd_x[] = {transforms[BC_.x()-1]};
     fftw_r2r_kind kind_bwd_x[] = {transforms[BC_.x()+4]};
@@ -184,9 +173,13 @@ void FourierTransforms::FFTWplans()
     fftw_r2r_kind kind_fwd_z[] = {transforms[BC_.z()-1]};
     fftw_r2r_kind kind_bwd_z[] = {transforms[BC_.z()+4]};
 
+    // Pencil dimensions
+
     labelVector Nx = decomp_.Nx()[Pstream::myProcNo()];
     labelVector Ny = decomp_.Ny()[Pstream::myProcNo()];
     labelVector Nz = decomp_.Nz()[Pstream::myProcNo()];
+
+    // x-FFT plans
 
     int fft_rank = 1;
     int howmany = Nx.y() * Nx.z();
@@ -228,6 +221,8 @@ void FourierTransforms::FFTWplans()
         FFTW_MEASURE
     );
 
+    // y-FFT plans
+
     fft_rank = 1;
     howmany = Ny.x() * Ny.z();
     stride = 1;
@@ -267,6 +262,8 @@ void FourierTransforms::FFTWplans()
         kind_bwd_y,
         FFTW_MEASURE
     );
+
+    // z-FFT plans
 
     fft_rank = 1;
     howmany = Nz.x() * Nz.y();
@@ -312,34 +309,64 @@ void FourierTransforms::FFTWplans()
 
 void FourierTransforms::fwdFFTx()
 {
+    normalization_ = 1.0;
     fftw_execute(fwdPlanX_);
 }
 
 void FourierTransforms::bwdFFTx()
 {
+    if (BC_.x() == 5)
+    {
+        normalization_ *= N_.x();
+    }
+    else
+    {
+        normalization_ *= 2.0 * N_.x();
+    }
     fftw_execute(bwdPlanX_);
-    xPencil_ /= normalization_;
 }
 
 void FourierTransforms::fwdFFTy()
 {
+    normalization_ = 1.0;
     fftw_execute(fwdPlanY_);
 }
 
 void FourierTransforms::bwdFFTy()
 {
+    if (BC_.y() == 5)
+    {
+        normalization_ *= N_.y();
+    }
+    else
+    {
+        normalization_ *= 2.0 * N_.y();
+    }
     fftw_execute(bwdPlanY_);
-    yPencil_ /= normalization_;
 }
 
 void FourierTransforms::fwdFFTz()
 {
+    normalization_ = 1.0;
     fftw_execute(fwdPlanZ_);
 }
 
 void FourierTransforms::bwdFFTz()
 {
+    if (BC_.z() == 5)
+    {
+        normalization_ *= N_.z();
+    }
+    else
+    {
+        normalization_ *= 2.0 * N_.z();
+    }
     fftw_execute(bwdPlanZ_);
+}
+
+void FourierTransforms::normalize(scalarBlock& transformedData)
+{
+    transformedData /= normalization_;
 }
 
 } // end namespace fv

@@ -46,12 +46,13 @@ class decomposer
     List<labelVector> Sy_;
     List<labelVector> Sz_;
 
+    // Processor overlap lookup table
     HashTable<processorOverlap> processorOverlap_;
 
 public:
 
     // Construct from mesh
-    decomposer(const fvMesh& fvMsh);
+    decomposer(const fvMesh& fvMsh, label decompType);
 
     // Destructor
     virtual ~decomposer();
@@ -129,11 +130,11 @@ public:
         }
     }
 
-    // Decomposition functions
-    void decompInit();
-    void decompX();
-    void decompY();
-    void decompZ();
+    // Initialize decompositions
+    void decompInit(label decompType);
+
+    // Check a given decomposition
+    void checkDecomp(labelVector D);
 
     // Return processor rank from its index in the processor map
     // and vice-versa
@@ -148,8 +149,8 @@ public:
     List<labelVector> procOrig(labelVector D);
 
     // Unpack a receive buffer
-    // Pencil flags can be used to indicate that the buffer should be
-    // unpacked in a special order for x and y pencil decompositions
+    // recvMajorOrder represents the major order
+    // of the output block ("x", "y" or "z")
     void unpack
     (
         const scalarBlock& buffer,
@@ -157,16 +158,21 @@ public:
         const List<labelVector>& recvSize,
         scalarBlock& output,
         List<labelVector>& startIndex,
-        labelVector T
+        labelVector T,
+        string recvMajorOrder
     );
 
     // Transpose function
+    // sendMajorOrder represents the major order
+    // of the source block ("x", "y" or "z")
     void transpose
     (
         const scalarBlock& src,
         scalarBlock& dst,
         labelVector I,
-        labelVector T
+        labelVector T,
+        string sendMajorOrder,
+        string recvMajorOrder
     );
 };
 

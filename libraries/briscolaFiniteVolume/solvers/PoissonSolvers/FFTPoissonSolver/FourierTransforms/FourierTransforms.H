@@ -72,9 +72,13 @@ public:
     // Destructor
     virtual ~FourierTransforms();
 
+    // Set boundary condition vector
     void FFTBoundaryConditions();
 
+    // Initialize FFTW plans
     void FFTWplans();
+
+    // Forward and backward FFT's
 
     void fwdFFTx();
 
@@ -88,8 +92,11 @@ public:
 
     void bwdFFTz();
 
-    inline labelVector& BC() { return BC_; }
+    // Normalize transformed data
+    void normalize(scalarBlock&);
 
+    // Return boundary condition vector
+    inline labelVector& BC() { return BC_; }
 };
 
 } // end namespace fv

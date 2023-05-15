@@ -18,6 +18,8 @@ planner::planner
 :
     I_(fvMsh.msh().decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ)
 {
+    // Identify initial decomposition type
+
     decompType_ = 0;
 
     if (I_.x() > 1 && I_.y() > 1 && I_.z() > 1)
@@ -48,6 +50,8 @@ planner::planner
     {
         decompType_ = 7;
     }
+
+    // Select solve direction (for tridiagonal solver)
 
     const rectilinearMesh& mesh = fvMsh.msh().cast<rectilinearMesh>();
 
