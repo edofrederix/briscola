@@ -219,8 +219,6 @@ tridiagonalSolver::tridiagonalSolver
     DU_(1.0 / sqr(cellSizes_[solveDir_])),
     DL_(1.0 / sqr(cellSizes_[solveDir_]))
 {
-    Info << "Solving in direction: " << solveDir_ << endl;
-
     switch (solveDir_)
     {
         case 0:
