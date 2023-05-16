@@ -30,6 +30,7 @@ class FourierTransforms
     decomposer& decomp_;
 
     // Boundary condition vector
+    // 0: Empty - Empty
     // 1: Dirichlet - Dirichlet
     // 2: Neumann - Neumann
     // 3: Dirichlet - Neumann

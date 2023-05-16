@@ -51,9 +51,14 @@ void FourierTransforms::FFTBoundaryConditions()
 
     switch (globalBoundaryConditionBaseType(p, faceOffsets[0]))
     {
+        case 1:
+            BC_.x() = 0;
+            break;
+
         case 3:
             BC_.x() = 5; // C-C
             break;
+
         case 4:
             if (globalBoundaryConditionBaseType(p, faceOffsets[1]) == 4)
             {
@@ -64,6 +69,7 @@ void FourierTransforms::FFTBoundaryConditions()
                 BC_.x() = 3; // D-N
             }
             break;
+
         case 5:
             if (globalBoundaryConditionBaseType(p, faceOffsets[1]) == 4)
             {
@@ -74,6 +80,7 @@ void FourierTransforms::FFTBoundaryConditions()
                 BC_.x() = 2; // N-N
             }
             break;
+
         default:
             FatalError
                 << "Incorrect pressure boundary condition." << endl
@@ -83,6 +90,10 @@ void FourierTransforms::FFTBoundaryConditions()
 
     switch (globalBoundaryConditionBaseType(p, faceOffsets[2]))
     {
+        case 1:
+            BC_.y() = 0;
+            break;
+
         case 3:
             BC_.y() = 5; // C-C
             break;
@@ -118,6 +129,10 @@ void FourierTransforms::FFTBoundaryConditions()
 
     switch (globalBoundaryConditionBaseType(p, faceOffsets[4]))
     {
+        case 1:
+            BC_.z() = 0;
+            break;
+
         case 3:
             BC_.z() = 5; // C-C
             break;
@@ -157,21 +172,21 @@ void FourierTransforms::FFTWplans()
     fftw_r2r_kind transforms[] =
     {
         // forward transform types
-        FFTW_RODFT10, FFTW_REDFT10, FFTW_RODFT11, FFTW_REDFT11, FFTW_R2HC,
+        FFTW_RODFT10, FFTW_RODFT10, FFTW_REDFT10, FFTW_RODFT11, FFTW_REDFT11, FFTW_R2HC,
         // backward transform types
-        FFTW_RODFT01, FFTW_REDFT01, FFTW_RODFT11, FFTW_REDFT11, FFTW_HC2R
+        FFTW_RODFT01, FFTW_RODFT01, FFTW_REDFT01, FFTW_RODFT11, FFTW_REDFT11, FFTW_HC2R
     };
 
     // Transform type based on boundary conditions
 
-    fftw_r2r_kind kind_fwd_x[] = {transforms[BC_.x()-1]};
-    fftw_r2r_kind kind_bwd_x[] = {transforms[BC_.x()+4]};
+    fftw_r2r_kind kind_fwd_x[] = {transforms[BC_.x()]};
+    fftw_r2r_kind kind_bwd_x[] = {transforms[BC_.x()+6]};
 
-    fftw_r2r_kind kind_fwd_y[] = {transforms[BC_.y()-1]};
-    fftw_r2r_kind kind_bwd_y[] = {transforms[BC_.y()+4]};
+    fftw_r2r_kind kind_fwd_y[] = {transforms[BC_.y()]};
+    fftw_r2r_kind kind_bwd_y[] = {transforms[BC_.y()+6]};
 
-    fftw_r2r_kind kind_fwd_z[] = {transforms[BC_.z()-1]};
-    fftw_r2r_kind kind_bwd_z[] = {transforms[BC_.z()+4]};
+    fftw_r2r_kind kind_fwd_z[] = {transforms[BC_.z()]};
+    fftw_r2r_kind kind_bwd_z[] = {transforms[BC_.z()+6]};
 
     // Pencil dimensions
 
@@ -309,59 +324,78 @@ void FourierTransforms::FFTWplans()
 
 void FourierTransforms::fwdFFTx()
 {
-    normalization_ = 1.0;
-    fftw_execute(fwdPlanX_);
+    if (BC_.x()!= 0)
+    {
+        normalization_ = 1.0;
+        fftw_execute(fwdPlanX_);
+    }
 }
 
 void FourierTransforms::bwdFFTx()
 {
-    if (BC_.x() == 5)
+    if (BC_.x() != 0)
     {
-        normalization_ *= N_.x();
+        if (BC_.x() == 5)
+        {
+            normalization_ *= N_.x();
+            fftw_execute(bwdPlanX_);
+        }
+        else
+        {
+            normalization_ *= 2.0 * N_.x();
+            fftw_execute(bwdPlanX_);
+        }
     }
-    else
-    {
-        normalization_ *= 2.0 * N_.x();
-    }
-    fftw_execute(bwdPlanX_);
 }
 
 void FourierTransforms::fwdFFTy()
 {
-    normalization_ = 1.0;
-    fftw_execute(fwdPlanY_);
+    if (BC_.y() != 0)
+    {
+        normalization_ = 1.0;
+        fftw_execute(fwdPlanY_);
+    }
 }
 
 void FourierTransforms::bwdFFTy()
 {
-    if (BC_.y() == 5)
+    if (BC_.y() != 0)
     {
-        normalization_ *= N_.y();
+        if (BC_.y() == 5)
+        {
+            normalization_ *= N_.y();
+        }
+        else
+        {
+            normalization_ *= 2.0 * N_.y();
+        }
+        fftw_execute(bwdPlanY_);
     }
-    else
-    {
-        normalization_ *= 2.0 * N_.y();
-    }
-    fftw_execute(bwdPlanY_);
 }
 
 void FourierTransforms::fwdFFTz()
 {
-    normalization_ = 1.0;
-    fftw_execute(fwdPlanZ_);
+    if (BC_.z() != 0)
+    {
+        normalization_ = 1.0;
+        fftw_execute(fwdPlanZ_);
+    }
 }
 
 void FourierTransforms::bwdFFTz()
 {
-    if (BC_.z() == 5)
+    if (BC_.z() != 0)
     {
-        normalization_ *= N_.z();
+        if (BC_.z() == 5)
+        {
+            normalization_ *= N_.z();
+        }
+        else
+        {
+            normalization_ *= 2.0 * N_.z();
+        }
+        fftw_execute(bwdPlanZ_);
     }
-    else
-    {
-        normalization_ *= 2.0 * N_.z();
-    }
-    fftw_execute(bwdPlanZ_);
 }
 
 void FourierTransforms::normalize(scalarBlock& transformedData)

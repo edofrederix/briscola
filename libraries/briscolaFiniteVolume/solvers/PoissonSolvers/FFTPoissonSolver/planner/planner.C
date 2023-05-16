@@ -16,7 +16,8 @@ planner::planner
     const fvMesh& fvMsh
 )
 :
-    I_(fvMsh.msh().decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ)
+    I_(fvMsh.msh().decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ),
+    N_(fvMsh.msh().cast<rectilinearMesh>().N())
 {
     // Identify initial decomposition type
 
@@ -75,27 +76,34 @@ planner::planner
     {
         if
         (
-               decompType_ == 0
-            || decompType_ == 1
-            || decompType_ == 3
-            || decompType_ == 4
-            || decompType_ == 7
+            (
+                   decompType_ == 0
+                || decompType_ == 1
+                || decompType_ == 3
+                || decompType_ == 4
+                || decompType_ == 7
+            ) &&
+            (
+                N_.x() > 1
+            )
         )
         {
             solveDir_ = 0;
         }
         else if
         (
-               decompType_ == 2
-            || decompType_ == 6
+            (
+                   decompType_ == 2
+                || decompType_ == 6
+            ) &&
+            (
+                N_.y() > 1
+            )
         )
         {
             solveDir_ = 1;
         }
-        else if
-        (
-            decompType_ == 5
-        )
+        else
         {
             solveDir_ = 2;
         }

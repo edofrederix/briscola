@@ -11,7 +11,11 @@ namespace fv
 
 // Constructor
 
-decomposer::decomposer(const fvMesh& fvMsh, label decompType)
+decomposer::decomposer
+(
+    const fvMesh& fvMsh,
+    label decompType
+)
 :
     fvMsh_(fvMsh),
     N_(fvMsh_.msh().cast<rectilinearMesh>().N()),

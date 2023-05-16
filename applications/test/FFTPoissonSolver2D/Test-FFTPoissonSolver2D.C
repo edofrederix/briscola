@@ -1,0 +1,128 @@
+#include "arguments.H"
+#include "Time.H"
+#include "FFTPoissonSolver.H"
+#include "fv.H"
+#include "rectilinearMesh.H"
+
+using namespace Foam;
+using namespace briscola;
+using namespace fv;
+
+bool check(colocatedScalarField& p, colocatedScalarField& f, const fvMesh& fvMsh)
+{
+    labelVector Nf(p[0][0].B().shape());
+    labelVector N(p.fvMsh().msh().cast<rectilinearMesh>().N());
+
+    const PtrList<scalarList> cellSizes
+        = fvMsh.msh().cast<rectilinearMesh>().cellSizes();
+
+    labelVector Si = fvMsh.msh().decomp().globalStartPerProc()[Pstream::myProcNo()];
+
+    scalarList dx2 = sqr(cellSizes[0]);
+    scalarList dy2 = sqr(cellSizes[1]);
+
+    for (int i = 1; i < Nf.x() - 1; i++)
+    {
+        for (int j = 1; j < Nf.y() - 1; j++)
+        {
+            scalar residual =
+            (
+                p[0][0].B()(i-1,j,1) - 2.0 * p[0][0].B()(i,j,1) + p[0][0].B()(i+1,j,1)
+            ) / dx2[Si.x() + i-1]
+            + (
+                p[0][0].B()(i,j-1,1) - 2.0 * p[0][0].B()(i,j,1) + p[0][0].B()(i,j+1,1)
+            ) / dy2[Si.y() + j-1]
+            + f[0][0].B()(i,j,1);
+
+            if(mag(residual) > 1e-10)
+            {
+                FatalError
+                    << "Test failed. Residual =  " << residual
+                    << " at index " << labelVector(i,j,1)
+                    << " on processor " << Pstream::myProcNo()
+                    << endl << abort(FatalError);
+            }
+        }
+    }
+
+    return true;
+}
+
+
+int main(int argc, char *argv[])
+{
+    #include "createParallelBriscolaCase.H"
+    #include "createBriscolaTime.H"
+
+    using std::rand;
+    using std::srand;
+
+    IOdictionary meshDict
+    (
+        IOobject
+        (
+            runTime.system()/"briscolaMeshDict",
+            runTime,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE,
+            false
+        )
+    );
+
+    fvMesh fvMsh(meshDict, runTime);
+
+    colocatedScalarField f
+    (
+        "f",
+        fvMsh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE,
+        true,
+        true
+    );
+
+    colocatedScalarField p
+    (
+        "p",
+        fvMsh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE,
+        true,
+        true
+    );
+
+    labelVector N(fvMsh.msh().cast<rectilinearMesh>().N());
+
+    Info << "Mesh size: " << N << endl;
+
+    int seed = 123 * Pstream::myProcNo();
+    srand(seed);
+
+    scalar average = 0;
+
+    forAllCells(f[0][0], i, j, k)
+    {
+        f[0][0](i,j,k) = 100.0 * static_cast<double>(rand()) / RAND_MAX - 0.5;
+        average += f[0][0](i,j,k) / (cmptProduct(f[0][0].N()));
+    }
+
+    forAllCells(f[0][0], i, j, k)
+    {
+        f[0][0](i,j,k) -= average;
+    }
+
+    FFTPoissonSolver solver(fvMsh);
+
+    for (int r = 0; r < 10; r++)
+    {
+        solver.solve(p,f);
+        Info << "Run number " << r+1 << " completed." << endl;
+    }
+
+    if(check(p, f, fvMsh))
+    {
+        Info << "-------------------------------------------" << nl;
+        Info << "Pressure equation solution check successful" << nl;
+        Info << "-------------------------------------------" << endl;
+    }
+}

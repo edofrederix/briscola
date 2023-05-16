@@ -24,6 +24,9 @@ class planner
     // Initial decomposition
     labelVector I_;
 
+    // Mesh dimensions
+    labelVector N_;
+
     // Initial decomposition type:
     // 0: Not decomposed
     // 1: 3D

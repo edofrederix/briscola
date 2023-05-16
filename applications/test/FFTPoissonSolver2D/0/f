@@ -1,0 +1,55 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      f;
+}
+
+initialCondition
+{
+
+}
+
+boundaryConditions
+{
+    default
+    {
+        type    Dirichlet;
+        values  (0);
+    }
+
+    left
+    {
+        type    Dirichlet;
+        values  (0);
+    }
+
+    right
+    {
+        type    Dirichlet;
+        values  (0);
+    }
+
+    bottom
+    {
+        type    Neumann;
+        gradients  (0);
+    }
+
+    top
+    {
+        type    Neumann;
+        gradients  (0);
+    }
+
+    back
+    {
+        type    empty;
+    }
+
+    front
+    {
+        type    empty;
+    }
+}

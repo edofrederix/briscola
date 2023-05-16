@@ -29,6 +29,8 @@ void tridiagonalSolver::computeEigenvalues()
 
     switch (BC_[dir1_])
     {
+        case 0:
+            break;
         case 1:
             for (int i = 0; i < Nd_[dir1_]; i++)
             {
@@ -71,6 +73,8 @@ void tridiagonalSolver::computeEigenvalues()
 
     switch (BC_[dir2_])
     {
+        case 0:
+            break;
         case 1:
             for (int j = 0; j < Nd_[dir2_]; j++)
             {

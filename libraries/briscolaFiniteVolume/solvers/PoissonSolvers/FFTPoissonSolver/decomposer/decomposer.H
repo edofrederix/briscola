@@ -52,7 +52,11 @@ class decomposer
 public:
 
     // Construct from mesh
-    decomposer(const fvMesh& fvMsh, label decompType);
+    decomposer
+    (
+        const fvMesh& fvMsh,
+        label decompType
+    );
 
     // Destructor
     virtual ~decomposer();
