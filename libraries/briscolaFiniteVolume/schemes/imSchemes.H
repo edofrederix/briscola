@@ -85,6 +85,43 @@ inline tmp<linearSystem<stencil,Type,MeshType>> laplacian
     )->laplacian(field);
 }
 
+template<class Type, class MeshType>
+inline tmp<linearSystem<stencil,Type,MeshType>> source
+(
+    const meshField<scalar,MeshType>& coeff,
+    meshField<Type,MeshType>& field
+)
+{
+    tmp<linearSystem<stencil,Type,MeshType>> tSys
+    (
+        new linearSystem<stencil,Type,MeshType>(field)
+    );
+
+    linearSystem<stencil,Type,MeshType>& Sys = tSys.ref();
+
+    const meshField<scalar,MeshType>& cv =
+        field.fvMsh().template metrics<MeshType>().cellVolumes();
+
+    Sys.A() = Zero;
+
+    forAll(field, l)
+    forAll(field[l], d)
+    {
+        meshDirection<stencil,MeshType>& A = Sys.A()[l][d];
+        const meshDirection<scalar,MeshType>& c = coeff[l][d];
+        const meshDirection<scalar,MeshType>& v = cv[l][d];
+
+        forAllCells(A, i, j, k)
+        {
+            A(i,j,k) = v(i,j,k)*diagStencil(c(i,j,k));
+        }
+    }
+
+    Sys.b() = Zero;
+
+    return tSys;
+}
+
 }
 
 }
