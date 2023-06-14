@@ -403,8 +403,8 @@ void FourierTransforms::normalize(scalarBlock& transformedData)
     transformedData /= normalization_;
 }
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}

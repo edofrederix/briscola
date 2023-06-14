@@ -275,7 +275,7 @@ void tridiagonalSolver::solve
             for (int k = 1 + start; k < Nsolve; k++)
             {
                 scalar m = DL_[k] / Dh[k-1];
-                Dh[k] -= m *  DU_[k-1];
+                Dh[k] -= m * DU_[k-1];
                 fh[k] -= m * fh[k-1];
             }
 
@@ -370,8 +370,8 @@ void tridiagonalSolver::solve(scalarBlock& xyzPencil)
     }
 }
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}

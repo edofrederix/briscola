@@ -289,8 +289,8 @@ void FFTPoissonSolver::solve
     Info << "FFT: Solving for colocated p, residual = 0, nIter = 1" << endl;
 }
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}

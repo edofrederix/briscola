@@ -18,7 +18,6 @@ if [ -f build/Test-$TEST ]; then
 
     fi
 
-
 else
 
     echo Test $TEST is not compiled

@@ -98,11 +98,11 @@ public:
     using PoissonSolver<stencil,scalar,colocated>::solve;
 };
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}
 
 #ifdef NoRepository
     #include "FFTPoissonSolver.C"

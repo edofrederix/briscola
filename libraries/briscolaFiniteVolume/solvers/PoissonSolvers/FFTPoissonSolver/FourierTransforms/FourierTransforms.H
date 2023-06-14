@@ -100,10 +100,10 @@ public:
     inline labelVector& BC() { return BC_; }
 };
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}
 
 #endif
