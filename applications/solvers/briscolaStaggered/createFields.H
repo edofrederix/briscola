@@ -67,6 +67,14 @@ staggeredScalarField source
 
 source = scalarList(solverDict.lookup("source"));
 
+// Immersed boundary
+
+immersedBoundary IB(solverDict, fvMsh);
+
+linearSystem<stencil,scalar,staggered> IBSource(U);
+
+// Solver equations
+
 linearSystem<stencil,scalar,staggered> USys(U);
 
 autoPtr<solver<stencil,scalar,staggered>> USolve

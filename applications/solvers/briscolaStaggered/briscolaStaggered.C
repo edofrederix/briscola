@@ -3,10 +3,12 @@
 #include "Time.H"
 
 #include "fv.H"
+#include "immersedBoundary.H"
 
 using namespace Foam;
 using namespace briscola;
 using namespace fv;
+using namespace ibm;
 
 int main(int argc, char *argv[])
 {
@@ -54,6 +56,24 @@ int main(int argc, char *argv[])
         USys -= im::laplacian(nu,U);
         USys += ex::stagGrad(p);
         USys -= source;
+
+        // IB penalization source term
+
+        if (solverDict.found("ImmersedBoundary"))
+        {
+            IBSource = source;
+            IBSource -= im::div(phi,U);
+            IBSource += im::laplacian(nu,U);
+            IBSource -= ex::stagGrad(p);
+            IBSource += (1.0/deltaT * U);
+
+            IBSource.A() *= IB.stagMask();
+            IBSource.b() *= IB.stagMask();
+
+            USys += IBSource;
+        }
+
+        // Solve momentum equation
 
         USolve->solve(USys);
 
