@@ -1,4 +1,4 @@
-#include "decomposer.H"
+#include "pencilDecomposer.H"
 
 namespace Foam
 {
@@ -11,7 +11,7 @@ namespace fv
 
 // Constructor
 
-decomposer::decomposer
+pencilDecomposer::pencilDecomposer
 (
     const fvMesh& fvMsh,
     label decompType
@@ -34,12 +34,12 @@ decomposer::decomposer
 
 // Destructor
 
-decomposer::~decomposer()
+pencilDecomposer::~pencilDecomposer()
 {}
 
 // Initialize the initial and pencil decompositions
 
-void decomposer::decompInit(label decompType)
+void pencilDecomposer::decompInit(label decompType)
 {
 
     // Initial decomposition
@@ -137,6 +137,12 @@ void decomposer::decompInit(label decompType)
             X_ = vector(1, Z_.x(), 1);
 
             break;
+
+        default:
+            FatalError
+                << "Incorrect decomposition type." << endl
+                << abort(FatalError);
+            break;
     }
 
     // Check that all decompositions are valid
@@ -156,7 +162,7 @@ void decomposer::decompInit(label decompType)
     Sz_ = procOrig(Z_);
 }
 
-void decomposer::checkDecomp(labelVector D)
+void pencilDecomposer::checkDecomp(labelVector D)
 {
     if (cmptProduct(D) != Pstream::nProcs())
     {
@@ -178,7 +184,7 @@ void decomposer::checkDecomp(labelVector D)
 
 // Return the processor number given an index and decomposition
 
-label decomposer::procNumFromIndex
+label pencilDecomposer::procNumFromIndex
 (
     const labelVector ijk,
     const labelVector D
@@ -196,7 +202,7 @@ label decomposer::procNumFromIndex
 
 // Return the index given a processor number and decomposition
 
-labelVector decomposer::indexFromProcNum
+labelVector pencilDecomposer::indexFromProcNum
 (
     const label num,
     const labelVector D
@@ -219,7 +225,7 @@ labelVector decomposer::indexFromProcNum
 // Make key
 // Only works when I != T
 
-word decomposer::makeKey(labelVector I, labelVector T)
+word pencilDecomposer::makeKey(labelVector I, labelVector T)
 {
     word key = "";
 
@@ -239,6 +245,12 @@ word decomposer::makeKey(labelVector I, labelVector T)
     {
         key += 'Z';
     }
+    else
+    {
+        FatalError
+            << "Incorrect initial decomposition." << endl
+            << abort(FatalError);
+    }
 
     if (T ==  I_)
     {
@@ -256,13 +268,19 @@ word decomposer::makeKey(labelVector I, labelVector T)
     {
         key += 'Z';
     }
+    else
+    {
+        FatalError
+            << "Incorrect target decomposition." << endl
+            << abort(FatalError);
+    }
 
     return key;
 }
 
 // Return the list of processor dimensions for a given decomposition
 
-List<labelVector> decomposer::procDims(labelVector D)
+List<labelVector> pencilDecomposer::procDims(labelVector D)
 {
     if (D == I_)
     {
@@ -294,7 +312,7 @@ List<labelVector> decomposer::procDims(labelVector D)
 
 // Return list of processor origin indices for a given decomposition
 
-List<labelVector> decomposer::procOrig(labelVector D)
+List<labelVector> pencilDecomposer::procOrig(labelVector D)
 {
     if (D == I_)
     {
@@ -328,7 +346,7 @@ List<labelVector> decomposer::procOrig(labelVector D)
 
 // Unpack a receive buffer
 
-void decomposer::unpack
+void pencilDecomposer::unpack
 (
     const scalarBlock& buffer,
     const List<labelVector>& recvStart,
@@ -377,7 +395,7 @@ void decomposer::unpack
 // Transpose data from a source to a destination block,
 // from an initial decomposition to a target decomposition
 
-void decomposer::transpose
+void pencilDecomposer::transpose
 (
     const scalarBlock& src,
     scalarBlock& dst,

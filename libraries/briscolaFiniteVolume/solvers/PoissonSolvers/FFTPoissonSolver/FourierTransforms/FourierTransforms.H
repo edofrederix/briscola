@@ -6,7 +6,7 @@
 #include <fftw3.h>
 #include "fvMesh.H"
 #include "colocatedFields.H"
-#include "decomposer.H"
+#include "pencilDecomposer.H"
 #include "rectilinearMesh.H"
 
 namespace Foam
@@ -27,7 +27,7 @@ class FourierTransforms
 	labelVector N_;
 
     // Pencil decomposer
-    decomposer& decomp_;
+    pencilDecomposer& decomp_;
 
     // Boundary condition vector
     // 0: Empty - Empty
@@ -64,7 +64,7 @@ public:
     FourierTransforms
     (
         const fvMesh& fvMsh,
-        decomposer& d,
+        pencilDecomposer& d,
         scalarBlock& xPencil,
         scalarBlock& yPencil,
         scalarBlock& zPencil

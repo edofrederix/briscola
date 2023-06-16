@@ -13,7 +13,7 @@ namespace fv
 FourierTransforms::FourierTransforms
 (
     const fvMesh& fvMsh,
-    decomposer& d,
+    pencilDecomposer& d,
     scalarBlock& xPencil,
     scalarBlock& yPencil,
     scalarBlock& zPencil
@@ -32,7 +32,14 @@ FourierTransforms::FourierTransforms
 
 // Destructor
 FourierTransforms::~FourierTransforms()
-{}
+{
+    fftw_destroy_plan(fwdPlanX_);
+    fftw_destroy_plan(bwdPlanX_);
+    fftw_destroy_plan(fwdPlanY_);
+    fftw_destroy_plan(bwdPlanY_);
+    fftw_destroy_plan(fwdPlanZ_);
+    fftw_destroy_plan(bwdPlanZ_);
+}
 
 void FourierTransforms::FFTBoundaryConditions()
 {
@@ -83,7 +90,7 @@ void FourierTransforms::FFTBoundaryConditions()
 
         default:
             FatalError
-                << "Incorrect pressure boundary condition." << endl
+                << "Incorrect boundary condition." << endl
                 << abort(FatalError);
             break;
     }
@@ -122,7 +129,7 @@ void FourierTransforms::FFTBoundaryConditions()
 
         default:
             FatalError
-                << "Incorrect pressure boundary condition." << endl
+                << "Incorrect boundary condition." << endl
                 << abort(FatalError);
             break;
     }
@@ -161,7 +168,7 @@ void FourierTransforms::FFTBoundaryConditions()
 
         default:
             FatalError
-                << "Incorrect pressure boundary condition." << endl
+                << "Incorrect boundary condition." << endl
                 << abort(FatalError);
             break;
     }

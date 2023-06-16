@@ -16,7 +16,7 @@ if [ -f build/Test-$TEST ]; then
 
             sed -i "s/VARSTRETCH/$s/" "system/briscolaMeshDict"
 
-            sed -i "s/VARDECOMP/${DECOMP[0]}/" "system/briscolaMeshDict"
+            sed -i "s/VARDECOMP/$d/" "system/briscolaMeshDict"
 
             OUTPUT=$(mpirun -np 8 --oversubscribe ./build/Test-$TEST -parallel > /dev/null 2>&1)
 

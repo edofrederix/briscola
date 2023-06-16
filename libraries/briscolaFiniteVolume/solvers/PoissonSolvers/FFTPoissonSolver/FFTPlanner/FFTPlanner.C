@@ -1,4 +1,4 @@
-#include "planner.H"
+#include "FFTPlanner.H"
 
 namespace Foam
 {
@@ -11,7 +11,7 @@ namespace fv
 
 // Constructor
 
-planner::planner
+FFTPlanner::FFTPlanner
 (
     const fvMesh& fvMsh
 )
@@ -56,19 +56,17 @@ planner::planner
 
     const rectilinearMesh& mesh = fvMsh.msh().cast<rectilinearMesh>();
 
-    meshUniform_ = mesh.uniform();
-
     solveDir_ = -1;
 
-    if (!meshUniform_.x())
+    if (!mesh.uniform().x())
     {
         solveDir_ = 0;
     }
-    else if (!meshUniform_.y())
+    else if (!mesh.uniform().y())
     {
         solveDir_ = 1;
     }
-    else if (!meshUniform_.z())
+    else if (!mesh.uniform().z())
     {
         solveDir_ = 2;
     }
@@ -112,7 +110,7 @@ planner::planner
 
 // Destructor
 
-planner::~planner()
+FFTPlanner::~FFTPlanner()
 {}
 
 }

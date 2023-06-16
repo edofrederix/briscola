@@ -1,5 +1,5 @@
-#ifndef decomposer_H
-#define decomposer_H
+#ifndef pencilDecomposer_H
+#define pencilDecomposer_H
 
 #include "vector.H"
 #include "block.H"
@@ -18,7 +18,7 @@ namespace briscola
 namespace fv
 {
 
-class decomposer
+class pencilDecomposer
 {
 	// Mesh
     const fvMesh& fvMsh_;
@@ -52,14 +52,14 @@ class decomposer
 public:
 
     // Construct from mesh
-    decomposer
+    pencilDecomposer
     (
         const fvMesh& fvMsh,
         label decompType
     );
 
     // Destructor
-    virtual ~decomposer();
+    virtual ~pencilDecomposer();
 
     // Return initial decomposition
     inline labelVector& I() { return I_; }

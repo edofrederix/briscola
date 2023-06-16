@@ -17,12 +17,12 @@ namespace briscola
 namespace fv
 {
 
-class decomposer;
+class pencilDecomposer;
 
 class processorOverlap
 {
     // Decomposer object
-    decomposer& decomp_;
+    pencilDecomposer& decomp_;
 
     // Initial and target decomposition vectors
     labelVector I_;
@@ -60,7 +60,7 @@ public:
     // Construct from decomposition parir
     processorOverlap
     (
-        decomposer& d,
+        pencilDecomposer& d,
         labelVector I,
         labelVector T
     );

@@ -184,6 +184,12 @@ void tridiagonalSolver::computeDiagonals()
                         D_(cursor) -= 1e-10;
                     }
                     break;
+
+                default:
+                    FatalError
+                        << "Incorrect solve direction." << endl
+                        << abort(FatalError);
+                    break;
             }
 
             // Set remaining main diagonal values
@@ -234,6 +240,12 @@ tridiagonalSolver::tridiagonalSolver
         case 2:
             dir1_ = 0;
             dir2_ = 1;
+            break;
+
+        default:
+            FatalError
+                << "Incorrect solve direction." << endl
+                << abort(FatalError);
             break;
     }
 

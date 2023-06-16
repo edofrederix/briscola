@@ -10,9 +10,11 @@ namespace briscola
 namespace fv
 {
 
-void FFTPoissonSolver::checkMesh()
+void FFTPoissonSolver::checkMesh(const fvMesh& fvMsh)
 {
-    if (cmptSum(meshUniform_) < 2)
+    const rectilinearMesh& mesh = fvMsh.msh().cast<rectilinearMesh>();
+
+    if (cmptSum(mesh.uniform()) < 2)
     {
         FatalErrorInFunction
             << "At least two mesh directions must be uniform "
@@ -29,12 +31,8 @@ FFTPoissonSolver::FFTPoissonSolver
 )
 :
     PoissonSolver<stencil,scalar,colocated>(dict,fvMsh),
-    cellSizes_(fvMsh.msh().cast<rectilinearMesh>().cellSizes()),
-    PoissonPlan_(fvMsh),
-    decompType_(PoissonPlan_.decompType()),
-    meshUniform_(PoissonPlan_.meshUniform()),
-    solveDir_(PoissonPlan_.solveDir()),
-    decomp_(fvMsh, decompType_),
+    FFTPlan_(fvMsh),
+    decomp_(fvMsh, FFTPlan_.decompType()),
     initData_(decomp_.Ni()[Pstream::myProcNo()]),
     xPencil_(decomp_.Nx()[Pstream::myProcNo()]),
     yPencil_(decomp_.Ny()[Pstream::myProcNo()]),
@@ -43,13 +41,13 @@ FFTPoissonSolver::FFTPoissonSolver
     tds_
     (
         fvMsh,
-        solveDir_,
-        decomp_.Nd(solveDir_)[Pstream::myProcNo()],
-        decomp_.Sd(solveDir_)[Pstream::myProcNo()],
+        FFTPlan_.solveDir(),
+        decomp_.Nd(FFTPlan_.solveDir())[Pstream::myProcNo()],
+        decomp_.Sd(FFTPlan_.solveDir())[Pstream::myProcNo()],
         fft_.BC()
     )
 {
-    checkMesh();
+    checkMesh(fvMsh);
 }
 
 FFTPoissonSolver::FFTPoissonSolver
@@ -58,12 +56,8 @@ FFTPoissonSolver::FFTPoissonSolver
 )
 :
     PoissonSolver<stencil,scalar,colocated>(dictionary(),fvMsh),
-    cellSizes_(fvMsh.msh().cast<rectilinearMesh>().cellSizes()),
-    PoissonPlan_(fvMsh),
-    decompType_(PoissonPlan_.decompType()),
-    meshUniform_(PoissonPlan_.meshUniform()),
-    solveDir_(PoissonPlan_.solveDir()),
-    decomp_(fvMsh, decompType_),
+    FFTPlan_(fvMsh),
+    decomp_(fvMsh, FFTPlan_.decompType()),
     initData_(decomp_.Ni()[Pstream::myProcNo()]),
     xPencil_(decomp_.Nx()[Pstream::myProcNo()]),
     yPencil_(decomp_.Ny()[Pstream::myProcNo()]),
@@ -72,13 +66,13 @@ FFTPoissonSolver::FFTPoissonSolver
     tds_
     (
         fvMsh,
-        solveDir_,
-        decomp_.Nd(solveDir_)[Pstream::myProcNo()],
-        decomp_.Sd(solveDir_)[Pstream::myProcNo()],
+        FFTPlan_.solveDir(),
+        decomp_.Nd(FFTPlan_.solveDir())[Pstream::myProcNo()],
+        decomp_.Sd(FFTPlan_.solveDir())[Pstream::myProcNo()],
         fft_.BC()
     )
 {
-    checkMesh();
+    checkMesh(fvMsh);
 }
 
 void FFTPoissonSolver::solve
@@ -115,10 +109,10 @@ void FFTPoissonSolver::solve
         }
 
         // Transform in two directions and solve in the third direction
-        switch (solveDir_)
+        switch (FFTPlan_.solveDir())
         {
             case 0:
-                if (decompType_ == 4 || decompType_ == 6)
+                if (FFTPlan_.decompType() == 4 || FFTPlan_.decompType() == 6)
                 {
                     decomp_.transpose(initData_, zPencil_, I, Z, "z", "z");
 
@@ -169,7 +163,7 @@ void FFTPoissonSolver::solve
                 break;
 
             case 1:
-                if (decompType_ == 4 || decompType_ == 7)
+                if (FFTPlan_.decompType() == 4 || FFTPlan_.decompType() == 7)
                 {
                     decomp_.transpose(initData_, zPencil_, I, Z, "z", "z");
 
@@ -220,7 +214,7 @@ void FFTPoissonSolver::solve
                 break;
 
             case 2:
-                if (decompType_ == 3 || decompType_ == 7)
+                if (FFTPlan_.decompType() == 3 || FFTPlan_.decompType() == 7)
                 {
                     decomp_.transpose(initData_, yPencil_, I, Y, "z", "y");
 
@@ -268,6 +262,14 @@ void FFTPoissonSolver::solve
 
                     decomp_.transpose(xPencil_, initData_, X, I, "x", "z");
                 }
+                break;
+
+            default:
+                FatalError
+                    << "Invalid solve direction."
+                    << endl;
+                FatalError.exit();
+                break;
         }
     }
     else
@@ -277,7 +279,7 @@ void FFTPoissonSolver::solve
 
     fft_.normalize(initData_);
 
-    // Copy scalarBlock values to pressure meshField
+    // Copy scalarBlock values to solution meshField
     forAllCells(x[0][0], i, j, k)
     {
         x[0][0](i,j,k) = initData_(i,j,k);

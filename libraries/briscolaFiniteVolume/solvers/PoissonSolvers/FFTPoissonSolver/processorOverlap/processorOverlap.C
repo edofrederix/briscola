@@ -1,5 +1,5 @@
 #include "processorOverlap.H"
-#include "decomposer.H"
+#include "pencilDecomposer.H"
 
 namespace Foam
 {
@@ -123,7 +123,7 @@ void processorOverlap::computeOverlap()
 
 processorOverlap::processorOverlap
 (
-    decomposer& d,
+    pencilDecomposer& d,
     labelVector I,
     labelVector T
 )

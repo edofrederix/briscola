@@ -1,5 +1,5 @@
-#ifndef planner_H
-#define planner_H
+#ifndef FFTPlanner_H
+#define FFTPlanner_H
 
 #include "List.H"
 #include "scalarList.H"
@@ -7,7 +7,6 @@
 #include "block.H"
 #include "fvMesh.H"
 #include "rectilinearMesh.H"
-#include "FourierTransforms.H"
 #include "tridiagonalSolver.H"
 
 namespace Foam
@@ -19,7 +18,7 @@ namespace briscola
 namespace fv
 {
 
-class planner
+class FFTPlanner
 {
     // Initial decomposition
     labelVector I_;
@@ -38,25 +37,21 @@ class planner
     // 7: yz-slab
     label decompType_;
 
-    // Mesh uniformity per direction (0 = false, 1 = true)
-    labelVector meshUniform_;
-
     // Solve direction
     label solveDir_;
 
 public:
 
     // Construct
-    planner
+    FFTPlanner
     (
         const fvMesh& fvMsh
     );
 
     // Destructor
-    virtual ~planner();
+    virtual ~FFTPlanner();
 
     inline label decompType() { return decompType_; }
-    inline labelVector meshUniform() { return meshUniform_; }
     inline label solveDir() { return solveDir_; }
 
 };
