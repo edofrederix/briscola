@@ -20,9 +20,9 @@ if [ -f build/Test-$TEST ]; then
 
             OUTPUT=$(mpirun -np 8 --oversubscribe ./build/Test-$TEST -parallel > /dev/null 2>&1)
 
-            rm -f system/briscolaMeshDict
-
             RET=$?
+
+            rm -f system/briscolaMeshDict
 
             if [ "$RET" != "0" ]; then
 

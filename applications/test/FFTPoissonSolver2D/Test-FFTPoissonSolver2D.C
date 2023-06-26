@@ -123,11 +123,7 @@ int main(int argc, char *argv[])
 
     FFTPoissonSolver solver(fvMsh);
 
-    for (int r = 0; r < 10; r++)
-    {
-        solver.solve(p,f);
-        Info << "Run number " << r+1 << " completed." << endl;
-    }
+    solver.solve(p,f);
 
     if(check(p, f, fvMsh))
     {

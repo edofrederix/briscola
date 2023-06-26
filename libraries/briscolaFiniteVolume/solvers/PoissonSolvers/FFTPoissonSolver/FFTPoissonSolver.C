@@ -291,7 +291,7 @@ void FFTPoissonSolver::solve
     // Set ghost cells values
     x.correctBoundaryConditions();
 
-    Info << "FFT: Solving for colocated p, residual = 0, nIter = 1" << endl;
+    Info << "FFT: Solving for colocated " << x.name() << ", residual = 0, nIter = 1" << endl;
 }
 
 }
