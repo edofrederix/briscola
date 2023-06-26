@@ -9,6 +9,9 @@ namespace briscola
 namespace fv
 {
 
+namespace FFT
+{
+
 // Constructor
 
 FFTPlanner::FFTPlanner
@@ -112,6 +115,8 @@ FFTPlanner::FFTPlanner
 
 FFTPlanner::~FFTPlanner()
 {}
+
+}
 
 }
 

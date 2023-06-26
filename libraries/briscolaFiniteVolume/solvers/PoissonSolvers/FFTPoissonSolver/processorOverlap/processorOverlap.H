@@ -17,6 +17,9 @@ namespace briscola
 namespace fv
 {
 
+namespace FFT
+{
+
 class pencilDecomposer;
 
 class processorOverlap
@@ -90,6 +93,8 @@ public:
     inline labelList& recvDisplacement() { return recvDisplacement_; }
 
 };
+
+}
 
 }
 

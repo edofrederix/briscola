@@ -17,6 +17,8 @@ namespace briscola
 namespace fv
 {
 
+using namespace FFT;
+
 class FFTPoissonSolver
 :
     public PoissonSolver<stencil,scalar,colocated>
@@ -40,10 +42,10 @@ class FFTPoissonSolver
     scalarBlock zPencil_;
 
     // FFT's
-    FourierTransforms fft_;
+    autoPtr<FourierTransforms> fft_;
 
     // Tridiagonal solver
-    tridiagonalSolver tds_;
+    autoPtr<tridiagonalSolver> tds_;
 
     // Funtion to check if the mesh qualifies for FFTs. Will give error if not
     // all criteria are met.
@@ -76,6 +78,13 @@ public:
 
     // Use the base class solve support functions
     using PoissonSolver<stencil,scalar,colocated>::solve;
+
+    // Access functions
+    inline pencilDecomposer& decomp() { return decomp_; }
+    inline FFTPlanner& FFTPlan() { return FFTPlan_; }
+    inline scalarBlock& xPencil() { return xPencil_; }
+    inline scalarBlock& yPencil() { return yPencil_; }
+    inline scalarBlock& zPencil() { return zPencil_; }
 };
 
 }
@@ -83,9 +92,5 @@ public:
 }
 
 }
-
-#ifdef NoRepository
-    #include "FFTPoissonSolver.C"
-#endif
 
 #endif

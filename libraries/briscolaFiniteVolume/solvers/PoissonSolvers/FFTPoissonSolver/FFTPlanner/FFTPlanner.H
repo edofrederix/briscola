@@ -18,6 +18,9 @@ namespace briscola
 namespace fv
 {
 
+namespace FFT
+{
+
 class FFTPlanner
 {
     // Initial decomposition
@@ -55,6 +58,8 @@ public:
     inline label solveDir() { return solveDir_; }
 
 };
+
+}
 
 }
 

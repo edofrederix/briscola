@@ -9,6 +9,9 @@ namespace briscola
 namespace fv
 {
 
+namespace FFT
+{
+
 // Constructor
 
 pencilDecomposer::pencilDecomposer
@@ -576,6 +579,8 @@ void pencilDecomposer::transpose
 
         unpack(recvBuffer, recvStart, recvSize, dst, St, T, recvMajorOrder);
     }
+}
+
 }
 
 }

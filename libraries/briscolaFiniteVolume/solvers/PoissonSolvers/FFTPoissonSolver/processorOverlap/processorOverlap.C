@@ -10,6 +10,9 @@ namespace briscola
 namespace fv
 {
 
+namespace FFT
+{
+
 void processorOverlap::computeOverlap()
 {
     Ni_ = decomp_.procDims(I_);
@@ -171,6 +174,8 @@ processorOverlap::processorOverlap
 
 processorOverlap::~processorOverlap()
 {}
+
+}
 
 }
 

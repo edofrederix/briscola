@@ -18,16 +18,21 @@ namespace briscola
 namespace fv
 {
 
+class FFTPoissonSolver;
+
+namespace FFT
+{
+
 class FourierTransforms
 {
-	// Mesh
-    const fvMesh& fvMsh_;
+    // Solver
+    FFTPoissonSolver& solver_;
+
+    // Solved field
+    colocatedScalarField& x_;
 
     // Global Size
 	labelVector N_;
-
-    // Pencil decomposer
-    pencilDecomposer& decomp_;
 
     // Boundary condition vector
     // 0: Empty - Empty
@@ -46,28 +51,16 @@ class FourierTransforms
     fftw_plan fwdPlanZ_;
     fftw_plan bwdPlanZ_;
 
-    // X-pencil
-    scalarBlock& xPencil_;
-
-    // Y-pencil
-    scalarBlock& yPencil_;
-
-    // Z-pencil
-    scalarBlock& zPencil_;
-
     // FFT normalization factor
     scalar normalization_;
 
 public:
 
-    // Construct from mesh
+    // Construct from solver
     FourierTransforms
     (
-        const fvMesh& fvMsh,
-        pencilDecomposer& d,
-        scalarBlock& xPencil,
-        scalarBlock& yPencil,
-        scalarBlock& zPencil
+        FFTPoissonSolver& solver,
+        colocatedScalarField& x
     );
 
     // Destructor
@@ -98,7 +91,12 @@ public:
 
     // Return boundary condition vector
     inline labelVector& BC() { return BC_; }
+
+    // Return solved field reference
+    inline colocatedScalarField& x() { return x_; }
 };
+
+}
 
 }
 

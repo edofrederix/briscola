@@ -52,6 +52,7 @@ schemes/restrictionSchemes/restrictionScheme/restrictionSchemes.C
 solvers/solver/solvers.C
 solvers/solver/solverFwd.C
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C
+solvers/PoissonSolvers/FFTPoissonSolver/FFTPoissonSolver.C
 solvers/PoissonSolvers/FFTPoissonSolver/FFTPlanner/FFTPlanner.C
 solvers/PoissonSolvers/FFTPoissonSolver/pencilDecomposer/pencilDecomposer.C
 solvers/PoissonSolvers/FFTPoissonSolver/processorOverlap/processorOverlap.C

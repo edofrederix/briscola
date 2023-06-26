@@ -17,14 +17,15 @@ namespace briscola
 namespace fv
 {
 
+class FFTPoissonSolver;
+
+namespace FFT
+{
+
 class tridiagonalSolver
 {
-    // Mesh
-    const fvMesh& fvMsh_;
-
-    // Direction in which to solve
-    // 0 = x, 1 = y, 2 = z
-    label solveDir_;
+    // FFT solver
+    FFTPoissonSolver& solver_;
 
     // FFT transformed directions
     label dir1_;
@@ -65,10 +66,7 @@ public:
     // Construct from dictionary
     tridiagonalSolver
     (
-        const fvMesh& fvMsh,
-        label solveDir,
-        labelVector Nd,
-        labelVector Sd,
+        FFTPoissonSolver& solver,
         labelVector BC
     );
 
@@ -94,6 +92,8 @@ public:
     void solve(scalarBlock& xyzPencil);
 
 };
+
+}
 
 }
 

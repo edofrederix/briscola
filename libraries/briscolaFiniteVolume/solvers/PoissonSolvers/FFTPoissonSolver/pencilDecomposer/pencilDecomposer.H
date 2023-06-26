@@ -18,6 +18,9 @@ namespace briscola
 namespace fv
 {
 
+namespace FFT
+{
+
 class pencilDecomposer
 {
 	// Mesh
@@ -179,6 +182,8 @@ public:
         string recvMajorOrder
     );
 };
+
+}
 
 }
 
