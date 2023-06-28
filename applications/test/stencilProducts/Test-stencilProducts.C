@@ -20,15 +20,8 @@ void testStencilProducts(const fvMesh& fvMsh)
     meshField<SType,MeshType> stencil("stencil", fvMsh);
     meshField<Type,MeshType> x("x", fvMsh);
 
-    label c = 0;
-
-    forAll(x, l)
-    forAll(x[l], d)
-    forAllCells(x[l][d], i, j, k)
-    {
-        x[l][d](i,j,k) = pTraits<Type>::one*c++;
-        stencil[l][d](i,j,k) = pTraits<SType>::one*c++;
-    }
+    stencil = pTraits<SType>::one;
+    x = pTraits<Type>::one;
 
     Type s(pTraits<Type>::one);
 

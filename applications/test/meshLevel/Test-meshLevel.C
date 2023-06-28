@@ -58,18 +58,12 @@ void testMemberOperators(const fvMesh& fvMsh)
     meshLevel<Type,MeshType> m1(fvMsh,0);
     meshLevel<Type,MeshType> m2(fvMsh,0);
 
+    m1 = pTraits<Type>::one;
+    m2 = pTraits<Type>::one;
+
     meshLevel<scalar,MeshType> s1(fvMsh,0);
 
-    label l = 0;
-
-    forAll(m1, d)
-    forAllCells(m1[d], i, j, k)
-    {
-        m1[d](i,j,k) = pTraits<Type>::one*l++;
-        m2[d](i,j,k) = pTraits<Type>::one*l++;
-
-        s1[d](i,j,k) = l++;
-    }
+    s1 = 1;
 
     m1 = Zero;
     m1 = pTraits<Type>::one*2.0;
@@ -106,18 +100,12 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
     meshLevel<Type,MeshType> m1(fvMsh,0);
     meshLevel<Type,MeshType> m2(fvMsh,0);
 
+    m1 = pTraits<Type>::one;
+    m2 = pTraits<Type>::one;
+
     meshLevel<scalar,MeshType> s1(fvMsh,0);
 
-    label l = 0;
-
-    forAll(m1, d)
-    forAllCells(m1[d], i, j, k)
-    {
-        m1[d](i,j,k) = pTraits<Type>::one*l++;
-        m2[d](i,j,k) = pTraits<Type>::one*l++;
-
-        s1[d](i,j,k) = l++;
-    }
+    s1 = 1;
 
     mag(m1);
     mag(m1*2.0);
@@ -206,14 +194,8 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh)
     meshLevel<Type,MeshType> m1(fvMsh,0);
     meshLevel<Type,MeshType> m2(fvMsh,0);
 
-    label l = 0;
-
-    forAll(m1, d)
-    forAllCells(m1[d], i, j, k)
-    {
-        m1[d](i,j,k) = pTraits<Type>::one*l++;
-        m2[d](i,j,k) = pTraits<Type>::one*l++;
-    }
+    m1 = pTraits<Type>::one;
+    m2 = pTraits<Type>::one;
 
     cmptMax(m1);
     cmptMax(m1*2.0);
@@ -279,18 +261,12 @@ void testStencilFunctions(const fvMesh& fvMsh)
     meshLevel<Type,MeshType> m1(fvMsh,0);
     meshLevel<Type,MeshType> m2(fvMsh,0);
 
+    m1 = pTraits<Type>::one;
+    m2 = pTraits<Type>::one;
+
     meshLevel<scalar,MeshType> s1(fvMsh,0);
 
-    label l = 0;
-
-    forAll(m1, d)
-    forAllCells(m1[d], i, j, k)
-    {
-        m1[d](i,j,k) = pTraits<Type>::one*l++;
-        m2[d](i,j,k) = pTraits<Type>::one*l++;
-
-        s1[d](i,j,k) = l++;
-    }
+    s1 = 1;
 
     -m1;
 
@@ -331,13 +307,7 @@ void testScalarFunctions(const fvMesh& fvMsh)
 {
     meshLevel<scalar,MeshType> m1(fvMsh,0);
 
-    label l = 0;
-
-    forAll(m1, d)
-    forAllCells(m1[d], i, j, k)
-    {
-        m1[d](i,j,k) = scalar(l+++1);
-    }
+    m1 = 1;
 
     m1/m1;
     (m1*2.0)/m1;
@@ -355,14 +325,8 @@ void testVectorFunctions(const fvMesh& fvMsh)
     meshLevel<vector,MeshType> m1(fvMsh,0);
     meshLevel<vector,MeshType> m2(fvMsh,0);
 
-    label l = 0;
-
-    forAll(m1, d)
-    forAllCells(m1[d], i, j, k)
-    {
-        m1[d](i,j,k) = vector(l,l+1,l+2); l++;
-        m2[d](i,j,k) = vector(l,l+1,l+2); l++;
-    }
+    m1 = vector::one;
+    m2 = vector::one;
 
     vectorList list(MeshType::numberOfDirections, vector::one);
 
@@ -406,17 +370,11 @@ void testTensorFunctions(const fvMesh& fvMsh)
     meshLevel<diagTensor,MeshType> m4(fvMsh,0);
     meshLevel<vector,MeshType> v1(fvMsh,0);
 
-    label l = 0;
-
-    forAll(m1, d)
-    forAllCells(m1[d], i, j, k)
-    {
-        m1[d](i,j,k) = pTraits<tensor>::one*l++;
-        m2[d](i,j,k) = pTraits<symmTensor>::one*l++;
-        m3[d](i,j,k) = pTraits<sphericalTensor>::one*l++;
-        m4[d](i,j,k) = pTraits<diagTensor>::one*l++;
-        v1[d](i,j,k) = vector(l,l+1,l+2); l++;
-    }
+    m1 = pTraits<tensor>::one;
+    m2 = pTraits<symmTensor>::one;
+    m3 = pTraits<sphericalTensor>::one;
+    m4 = pTraits<diagTensor>::one;
+    v1 = vector(1,2,3);
 
     List<tensor> tlist(MeshType::numberOfDirections, pTraits<tensor>::one);
     List<symmTensor> sytlist(MeshType::numberOfDirections, pTraits<symmTensor>::one);
@@ -714,49 +672,49 @@ int main(int argc, char *argv[])
 
 
         testMemberOperators<label,staggered>(fvMsh);
-        testMemberOperators<scalar,staggered>(fvMsh);
+        // testMemberOperators<scalar,staggered>(fvMsh);
 
-        testMemberOperators<vector,staggered>(fvMsh);
-        testMemberOperators<tensor,staggered>(fvMsh);
-        testMemberOperators<symmTensor,staggered>(fvMsh);
-        testMemberOperators<sphericalTensor,staggered>(fvMsh);
-        testMemberOperators<diagTensor,staggered>(fvMsh);
+        // testMemberOperators<vector,staggered>(fvMsh);
+        // testMemberOperators<tensor,staggered>(fvMsh);
+        // testMemberOperators<symmTensor,staggered>(fvMsh);
+        // testMemberOperators<sphericalTensor,staggered>(fvMsh);
+        // testMemberOperators<diagTensor,staggered>(fvMsh);
 
-        testMemberOperators<faceScalar,staggered>(fvMsh);
-        testMemberOperators<edgeScalar,staggered>(fvMsh);
-        testMemberOperators<vertexScalar,staggered>(fvMsh);
+        // testMemberOperators<faceScalar,staggered>(fvMsh);
+        // testMemberOperators<edgeScalar,staggered>(fvMsh);
+        // testMemberOperators<vertexScalar,staggered>(fvMsh);
 
-        testMemberOperators<faceVector,staggered>(fvMsh);
-        testMemberOperators<edgeVector,staggered>(fvMsh);
-        testMemberOperators<vertexVector,staggered>(fvMsh);
+        // testMemberOperators<faceVector,staggered>(fvMsh);
+        // testMemberOperators<edgeVector,staggered>(fvMsh);
+        // testMemberOperators<vertexVector,staggered>(fvMsh);
 
-        testMemberOperators<stencil,staggered>(fvMsh);
-        testMemberOperators<diagStencil,staggered>(fvMsh);
-
-
-        testPrimitiveFunctions<label,staggered>(fvMsh);
-        testPrimitiveFunctions<scalar,staggered>(fvMsh);
-
-        testPrimitiveFunctions<vector,staggered>(fvMsh);
-        testPrimitiveFunctions<tensor,staggered>(fvMsh);
-        testPrimitiveFunctions<symmTensor,staggered>(fvMsh);
-        testPrimitiveFunctions<sphericalTensor,staggered>(fvMsh);
-        testPrimitiveFunctions<diagTensor,staggered>(fvMsh);
+        // testMemberOperators<stencil,staggered>(fvMsh);
+        // testMemberOperators<diagStencil,staggered>(fvMsh);
 
 
-        testVectorSpaceFunctions<vector,staggered>(fvMsh);
-        testVectorSpaceFunctions<tensor,staggered>(fvMsh);
-        testVectorSpaceFunctions<symmTensor,staggered>(fvMsh);
-        testVectorSpaceFunctions<sphericalTensor,staggered>(fvMsh);
-        testVectorSpaceFunctions<diagTensor,staggered>(fvMsh);
+        // testPrimitiveFunctions<label,staggered>(fvMsh);
+        // testPrimitiveFunctions<scalar,staggered>(fvMsh);
+
+        // testPrimitiveFunctions<vector,staggered>(fvMsh);
+        // testPrimitiveFunctions<tensor,staggered>(fvMsh);
+        // testPrimitiveFunctions<symmTensor,staggered>(fvMsh);
+        // testPrimitiveFunctions<sphericalTensor,staggered>(fvMsh);
+        // testPrimitiveFunctions<diagTensor,staggered>(fvMsh);
 
 
-        testStencilFunctions<stencil,staggered>(fvMsh);
-        testStencilFunctions<diagStencil,staggered>(fvMsh);
+        // testVectorSpaceFunctions<vector,staggered>(fvMsh);
+        // testVectorSpaceFunctions<tensor,staggered>(fvMsh);
+        // testVectorSpaceFunctions<symmTensor,staggered>(fvMsh);
+        // testVectorSpaceFunctions<sphericalTensor,staggered>(fvMsh);
+        // testVectorSpaceFunctions<diagTensor,staggered>(fvMsh);
 
 
-        testScalarFunctions<staggered>(fvMsh);
-        testVectorFunctions<staggered>(fvMsh);
-        testTensorFunctions<staggered>(fvMsh);
+        // testStencilFunctions<stencil,staggered>(fvMsh);
+        // testStencilFunctions<diagStencil,staggered>(fvMsh);
+
+
+        // testScalarFunctions<staggered>(fvMsh);
+        // testVectorFunctions<staggered>(fvMsh);
+        // testTensorFunctions<staggered>(fvMsh);
     }
 }

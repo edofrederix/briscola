@@ -47,6 +47,9 @@ void testResiduals(const fvMesh& fvMsh)
     meshField<Type,MeshType> f("f", fvMsh);
     meshField<Type,MeshType> res("res", fvMsh);
 
+    f = Zero;
+    res = Zero;
+
     linearSystem<SType,Type,MeshType> sys(f);
 
     sys.residual(res);
