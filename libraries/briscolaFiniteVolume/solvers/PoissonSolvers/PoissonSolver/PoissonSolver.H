@@ -121,7 +121,7 @@ public:
         const bool ddt = false
     )
     {
-        this->solve(x, tb.ptr(), nullptr, ddt);
+        this->solve(x, &tb(), nullptr, ddt);
     }
 
     virtual void solve
@@ -151,7 +151,7 @@ public:
         const bool ddt = false
     )
     {
-        this->solve(x, nullptr, tlambda.ptr(), ddt);
+        this->solve(x, nullptr, &tlambda(), ddt);
     }
 
     // Three-argument support function
@@ -175,7 +175,7 @@ public:
         const bool ddt = false
     )
     {
-        this->solve(x, tb.ptr(), lambdaPtr, ddt);
+        this->solve(x, &tb(), lambdaPtr, ddt);
     }
 
     virtual void solve
@@ -208,7 +208,7 @@ public:
         const bool ddt = false
     )
     {
-        this->solve(x, tb.ptr(), &lambda, ddt);
+        this->solve(x, &tb(), &lambda, ddt);
     }
 
     virtual void solve
@@ -219,7 +219,7 @@ public:
         const bool ddt = false
     )
     {
-        this->solve(x, bPtr, tlambda.ptr(), ddt);
+        this->solve(x, bPtr, &tlambda(), ddt);
     }
 
     virtual void solve
@@ -230,7 +230,7 @@ public:
         const bool ddt = false
     )
     {
-        this->solve(x, &b, tlambda.ptr(), ddt);
+        this->solve(x, &b, &tlambda(), ddt);
     }
 
     virtual void solve
@@ -241,7 +241,7 @@ public:
         const bool ddt = false
     )
     {
-        this->solve(x, tb.ptr(), tlambda.ptr(), ddt);
+        this->solve(x, &tb(), &tlambda(), ddt);
     }
 };
 

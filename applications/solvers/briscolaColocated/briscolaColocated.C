@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
         USys -= im::laplacian(nu,U);
         USys += ex::grad(p);
         USys -= source;
+        USys -= im::source(sourceCoeff,U);
 
         USolve->solve(USys);
 
