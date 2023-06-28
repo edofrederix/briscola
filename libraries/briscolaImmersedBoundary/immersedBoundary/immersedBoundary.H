@@ -25,15 +25,17 @@ class immersedBoundary
     // Mesh
     const fvMesh& fvMsh_;
 
-    // The colocated IB mask is equal to 0 in colocated cell
-    // centers outside the IB, and equal to 1 in colocated cell
-    // centers inside the IB.
+    // The colocated and staggered IB masks are equal to 0 in
+    // colocated/staggered cell centers outside the IB, and
+    // equal to 1 in cell centers inside the IB.
     colocatedScalarField colMask_;
-
-    // The staggered IB mask is equal to 0 in staggered cell
-    // centers outside the IB, and equal to 1 in staggered cell
-    // centers inside the IB.
     staggeredScalarField stagMask_;
+
+    // The colocated and staggered wall adjacent masks are equal
+    // to 1 in fluid cells with at least one neighboring cell in
+    // the IB, and 0 in other cells
+    colocatedScalarField colWallAdjMask_;
+    staggeredScalarField stagWallAdjMask_;
 
     // List of shapes making up the immersed boundary
     PtrList<shape> shapes_;
@@ -57,6 +59,8 @@ public:
     // Return functions for mask fields
     inline colocatedScalarField& colMask() { return colMask_; }
     inline staggeredScalarField& stagMask() { return stagMask_; }
+    inline colocatedScalarField& colWallAdjMask() { return colWallAdjMask_; }
+    inline staggeredScalarField& stagWallAdjMask() { return stagWallAdjMask_; }
 
 };
 

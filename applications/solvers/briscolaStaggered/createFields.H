@@ -71,8 +71,6 @@ source = scalarList(solverDict.lookup("source"));
 
 immersedBoundary IB(solverDict, fvMsh);
 
-linearSystem<stencil,scalar,staggered> IBSource(U);
-
 // Solver equations
 
 linearSystem<stencil,scalar,staggered> USys(U);

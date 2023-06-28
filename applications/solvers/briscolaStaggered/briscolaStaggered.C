@@ -61,16 +61,21 @@ int main(int argc, char *argv[])
 
         if (solverDict.found("ImmersedBoundary"))
         {
-            IBSource = source;
-            IBSource -= im::div(phi,U);
-            IBSource += im::laplacian(nu,U);
-            IBSource -= ex::stagGrad(p);
-            IBSource += (1.0/deltaT * U);
+            // Set coefficients and sources to 0 in IB
+            USys.A() *= (1.0 - IB.stagMask());
+            USys.b() *= (1.0 - IB.stagMask());
 
-            IBSource.A() *= IB.stagMask();
-            IBSource.b() *= IB.stagMask();
-
-            USys += IBSource;
+            // Set central coefficients to 1 in IB
+            forAll(USys.A(), l)
+            {
+                forAll(USys.A()[l], d)
+                {
+                    forAllCells(USys.A()[l][d], i, j, k)
+                    {
+                        USys.A()[l][d](i,j,k).center() += IB.stagMask()[l][d](i,j,k);
+                    }
+                }
+            }
         }
 
         // Solve momentum equation
