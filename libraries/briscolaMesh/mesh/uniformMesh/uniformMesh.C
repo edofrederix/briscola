@@ -10,15 +10,15 @@ namespace briscola
 defineTypeNameAndDebug(uniformMesh, 0);
 addToRunTimeSelectionTable(mesh, uniformMesh, dictionary);
 
-void uniformMesh::setCellSize()
+void uniformMesh::setMetrics()
 {
     // Take the first value of the rectilinear cell size arrays
 
     cellSize_ = vector
     (
-        cellSizes()[0][0],
-        cellSizes()[1][0],
-        cellSizes()[2][0]
+        localCellSizes()[0][0],
+        localCellSizes()[1][0],
+        localCellSizes()[2][0]
     );
 }
 
@@ -26,14 +26,14 @@ uniformMesh::uniformMesh(const IOdictionary& dict)
 :
     rectilinearMesh(dict)
 {
-    setCellSize();
+    setMetrics();
 }
 
 uniformMesh::uniformMesh(autoPtr<mesh>& mshPtr)
 :
     rectilinearMesh(mshPtr)
 {
-    setCellSize();
+    setMetrics();
 }
 
 uniformMesh::uniformMesh(const uniformMesh& msh)

@@ -13,11 +13,23 @@ class rectilinearMesh
 :
     public structuredMesh
 {
-    // Rectilinear cell sizes
-    PtrList<scalarList> cellSizes_;
+    // Tensor consisting of rectilinear base vectors on its rows
+    tensor base_;
 
-    // Set rectilinear cell sizes
-    void setCellSizes();
+    // Local rectilinear cell sizes
+    PtrList<scalarList> localCellSizes_;
+
+    // Local rectlinear points
+    PtrList<scalarList> localPoints_;
+
+    // Global rectilinear cell sizes
+    PtrList<scalarList> globalCellSizes_;
+
+    // Global rectilinear points
+    PtrList<scalarList> globalPoints_;
+
+    // Set rectiliner metrics
+    void setMetrics();
 
 public:
 
@@ -45,9 +57,31 @@ public:
     // Destructor
     ~rectilinearMesh();
 
-    inline const PtrList<scalarList>& cellSizes() const
+    // Base tensor
+    inline tensor base() const { return base_; }
+
+    // Local cell sizes
+    inline const PtrList<scalarList>& localCellSizes() const
     {
-        return cellSizes_;
+        return localCellSizes_;
+    }
+
+    // Local points
+    inline const PtrList<scalarList>& localPoints() const
+    {
+        return localPoints_;
+    }
+
+    // Global cell sizes
+    inline const PtrList<scalarList>& globalCellSizes() const
+    {
+        return globalCellSizes_;
+    }
+
+    // Global points
+    inline const PtrList<scalarList>& globalPoints() const
+    {
+        return globalPoints_;
     }
 
     //- Disallow default bitwise assignment

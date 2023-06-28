@@ -16,8 +16,8 @@ class uniformMesh
     // Uniform cell size
     vector cellSize_;
 
-    // Set uniform cell size
-    void setCellSize();
+    // Set uniform metrics
+    void setMetrics();
 
 public:
 

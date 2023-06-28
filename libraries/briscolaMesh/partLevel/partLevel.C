@@ -369,31 +369,32 @@ partLevel::partLevel(const mesh& msh, const partLevel* l)
         }
     }
 
-    // Check if part directions are uniform
+    // Check if part directions are uniform, which is true if all cell sizes in
+    // a direction are the same
 
     uniform_ = unitXYZ;
 
     for (int d = 0; d < 3; d++)
+    if (rectilinear_[d])
     {
-        if (rectilinear_[d])
+        const vector base = units[d];
+        const scalar size = Foam::mag(points_(base) - points_(zeroXYZ));
+
+        for (int i = 1; i < this->N()[d]; i++)
         {
-            scalarList sizes(rectilinearCellSizes(d));
+            const scalar next =
+                Foam::mag(points_(base*(i+1)) - points_(base*i));
 
-            scalar size = sizes[0];
-
-            for (int i = 1; i < sizes.size(); i++)
+            if (Foam::mag(next-size) > tol)
             {
-                if (Foam::mag(sizes[i]-size) > tol)
-                {
-                    uniform_[d] = 0;
-                    break;
-                }
+                uniform_[d] = 0;
+                break;
             }
         }
-        else
-        {
-            uniform_[d] = 0;
-        }
+    }
+    else
+    {
+        uniform_[d] = 0;
     }
 }
 
@@ -409,27 +410,6 @@ partLevel::partLevel(const partLevel& l)
 
 partLevel::~partLevel()
 {}
-
-scalarList partLevel::rectilinearCellSizes(const label dir) const
-{
-    if (rectilinear_[dir])
-    {
-        scalarList sizes(N_[dir]);
-
-        labelVector base = units[dir];
-
-        forAll(sizes, i)
-        {
-            sizes[i] = Foam::mag(points_(base*(i+1)) - points_(base*i));
-        }
-
-        return sizes;
-    }
-    else
-    {
-        return scalarList();
-    }
-}
 
 }
 

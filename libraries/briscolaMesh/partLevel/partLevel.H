@@ -89,10 +89,6 @@ public:
     // Return uniform bools
     inline labelVector uniform() const { return uniform_; }
 
-    // For rectlinear directions, return the cell sizes. For non-rectilinear
-    // directions, return a zero list.
-    scalarList rectilinearCellSizes(const label) const;
-
     // Return the start cell of the internal cell boundary at given offset
     inline labelVector boundaryStart(const labelVector& bo) const
     {
