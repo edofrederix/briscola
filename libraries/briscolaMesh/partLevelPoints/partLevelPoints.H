@@ -102,6 +102,28 @@ public:
 
     // Alias for shape()
     inline labelVector N() const { return shape(); }
+
+    // Return the points of given cell
+    inline vectorBlock cellPoints
+    (
+        const label i,
+        const label j,
+        const label k
+    ) const
+    {
+        vectorBlock p(2,2,2);
+
+        p(0,0,0) = this->operator()(i  ,j  ,k  );
+        p(0,0,1) = this->operator()(i  ,j  ,k+1);
+        p(0,1,0) = this->operator()(i  ,j+1,k  );
+        p(0,1,1) = this->operator()(i  ,j+1,k+1);
+        p(1,0,0) = this->operator()(i+1,j  ,k  );
+        p(1,0,1) = this->operator()(i+1,j  ,k+1);
+        p(1,1,0) = this->operator()(i+1,j+1,k  );
+        p(1,1,1) = this->operator()(i+1,j+1,k+1);
+
+        return p;
+    }
 };
 
 }

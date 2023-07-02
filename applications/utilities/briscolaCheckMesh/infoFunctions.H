@@ -60,6 +60,8 @@ void generalInfo(const fvMesh& fvMsh)
             << fvMsh.msh().cast<structuredMesh>().N() << endl;
     }
 
+    Info<< "Global bounding box = " << fvMsh.msh().boundingBox() << endl;
+
     const colocatedScalarField& cv = fvMsh.metrics<colocated>().cellVolumes();
 
     Info<< "Global volume = " << gSum(cv)[0] << endl;

@@ -417,4 +417,32 @@ int main(int argc, char *argv[])
                     FatalErrorInFunction
                         << "Test 19 failed" << endl << abort(FatalError);
     }
+
+    // Test cell search
+
+    label N = 100;
+    vectorList points(N);
+
+    const faceScalar bb(msh.boundingBox());
+
+    forAll(points, i)
+    {
+        points[i] = bb.lower() + (i+0.5)/N*(bb.upper()-bb.lower());
+    }
+
+    forAll(msh, l)
+    {
+        List<labelVector> indices(msh.findCells(points,l));
+
+        forAll(indices, i)
+        {
+            bool found = returnReduce(indices[i] != -unitXYZ, orOp<bool>());
+
+            if (!found)
+            {
+                FatalErrorInFunction
+                    << "Test 20 failed" << endl << abort(FatalError);
+            }
+        }
+    }
 }

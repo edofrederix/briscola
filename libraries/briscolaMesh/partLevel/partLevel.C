@@ -411,6 +411,117 @@ partLevel::partLevel(const partLevel& l)
 partLevel::~partLevel()
 {}
 
+bool partLevel::insideCell
+(
+    const vector& point,
+    const label i,
+    const label j,
+    const label k
+) const
+{
+    // Bounding box check
+
+    const vectorBlock points(points_.cellPoints(i,j,k));
+
+    const scalarBlock x(points & vector(1,0,0));
+    const scalarBlock y(points & vector(0,1,0));
+    const scalarBlock z(points & vector(0,0,1));
+
+    const scalar xMin(min(x));
+    const scalar xMax(max(x));
+    const scalar yMin(min(y));
+    const scalar yMax(max(y));
+    const scalar zMin(min(z));
+    const scalar zMax(max(z));
+
+    const scalar tol = 1e-14;
+
+    if
+    (
+        point.x() < xMin-tol || point.x() > xMax+tol
+     || point.y() < yMin-tol || point.y() > yMax+tol
+     || point.z() < zMin-tol || point.z() > zMax+tol
+    )
+    {
+        return false;
+    }
+
+    // Point is at least close. Try to find the parameters (u,v,w) in the
+    // parametrized function that tri-linearly interpolates the cell. This
+    // function properly accounts for faces being doubly ruled surfaces. If
+    // (u,v,w) is in the unit cube, the point is in the cell. Find (u,v,w) with
+    // Newton's method.
+
+    const vector P(point - points(0));
+    const vectorBlock D(points - points(0));
+
+    const vector F1(D(1,0,0));
+    const vector F2(D(0,1,0));
+    const vector F3(D(0,0,1));
+
+    const vector F4(D(1,1,0)-F1-F2);
+    const vector F5(D(1,0,1)-F1-F3);
+    const vector F6(D(0,1,1)-F2-F3);
+
+    const vector F7(D(1,1,1)-F1-F2-F3-F4-F5-F6);
+
+    // Initial guess (exact for rectangular cells)
+
+    vector u
+    (
+        (P & D(1,0,0))/Foam::magSqr(D(1,0,0)),
+        (P & D(0,1,0))/Foam::magSqr(D(0,1,0)),
+        (P & D(0,0,1))/Foam::magSqr(D(0,0,1))
+    );
+
+    const label maxIter = 100;
+
+    vector du(vector::one);
+    label iter = 0;
+
+    while (mag(du) > tol && iter < maxIter)
+    {
+        const tensor dfdu
+        (
+            F1 + u.y()*F4 + u.z()*F5 + u.y()*u.z()*F7,
+            F2 + u.x()*F4 + u.z()*F6 + u.x()*u.z()*F7,
+            F3 + u.x()*F5 + u.y()*F6 + u.x()*u.y()*F7
+        );
+
+        const vector f
+        (
+            u.x()*F1
+          + u.y()*F2
+          + u.z()*F3
+          + u.x()*u.y()*F4
+          + u.x()*u.z()*F5
+          + u.y()*u.z()*F6
+          + u.x()*u.y()*u.z()*F7
+          - P
+        );
+
+        du = inv(dfdu.T()) & f;
+        u -= du;
+
+        iter++;
+    }
+
+    if (iter == maxIter)
+    {
+        FatalErrorInFunction
+            << "Could not determine if point " << point << " is in cell "
+            << labelVector(i,j,k) << endl << abort(FatalError);
+    }
+
+    // By convention, a point on a face belongs to the upper cell in the local
+    // coordinate direction, unless the point is on an upper boundary.
+
+    return
+        u.x() >= 0 && (u.x() < 1 || (u.x() <= 1+tol && i == this->l()-1))
+     && u.y() >= 0 && (u.y() < 1 || (u.y() <= 1+tol && j == this->m()-1))
+     && u.z() >= 0 && (u.z() < 1 || (u.z() <= 1+tol && k == this->n()-1));
+}
+
 }
 
 }

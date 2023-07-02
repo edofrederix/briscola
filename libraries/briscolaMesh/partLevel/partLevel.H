@@ -144,6 +144,23 @@ public:
     {
         return pointBoundaryStart(bo) + pointBoundaryN(bo);
     }
+
+    // Check if a given point is inside a cell. Arbitrary hexahedron algorithm
+    // is used which is not optimal for simpler shapes, but this is not needed
+    // as this function is only called in a tree search.
+    bool insideCell
+    (
+        const vector& p,
+        const label i,
+        const label j,
+        const label k
+    ) const;
+
+    // Helper
+    bool insideCell(const vector& p, labelVector ijk) const
+    {
+        return insideCell(p, ijk.x(), ijk.y(), ijk.z());
+    }
 };
 
 }

@@ -190,6 +190,19 @@ public:
     // Return uniform bools
     inline labelVector uniform() const { return uniform_; }
 
+    // Find the cell index of the given point at given mesh level. Return
+    // -unitXYZ if it is not found. Tree search, but should be overloaded by
+    // mesh specializations for better performance.
+    virtual labelVector findCell(const vector& p, const label l = 0) const;
+
+    //- Find the cell indices of the given list of points at given mesh level
+    virtual List<labelVector> findCells(const vectorList&, const label) const;
+
+    //- Return the bounding box of the mesh in the form for a faceScalar, where
+    //  left/right corresponds to xMin/xMax, bottom/top to yMin/yMax and
+    //  aft/fore to zMin/zMax.
+    virtual faceScalar boundingBox() const;
+
     //- Disallow default bitwise assignment
     void operator=(const mesh&);
 };
