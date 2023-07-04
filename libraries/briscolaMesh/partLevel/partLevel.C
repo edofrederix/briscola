@@ -396,6 +396,22 @@ partLevel::partLevel(const mesh& msh, const partLevel* l)
     {
         uniform_[d] = 0;
     }
+
+    // Compute bounding box
+
+    scalarBlock xp(this->N()+unitXYZ);
+    scalarBlock yp(this->N()+unitXYZ);
+    scalarBlock zp(this->N()+unitXYZ);
+
+    forAllBlock(xp, i, j, k)
+    {
+        xp(i,j,k) = points_(i,j,k).x();
+        yp(i,j,k) = points_(i,j,k).y();
+        zp(i,j,k) = points_(i,j,k).z();
+    }
+
+    boundingBox_ =
+        faceScalar(min(xp), max(xp), min(yp), max(yp), min(zp), max(zp));
 }
 
 partLevel::partLevel(const partLevel& l)
@@ -405,7 +421,8 @@ partLevel::partLevel(const partLevel& l)
     R_(l.R_),
     points_(l.points_),
     rectilinear_(l.rectilinear_),
-    uniform_(l.uniform_)
+    uniform_(l.uniform_),
+    boundingBox_(l.boundingBox_)
 {}
 
 partLevel::~partLevel()

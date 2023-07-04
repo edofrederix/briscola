@@ -554,6 +554,21 @@ mesh::mesh(const IOdictionary& dict)
         rectilinear_ = zeroXYZ;
         uniform_ = zeroXYZ;
     }
+
+    // Determine bounding box
+
+    const faceScalar bb(this->operator[](0).boundingBox());
+
+    boundingBox_ =
+        faceScalar
+        (
+            returnReduce(bb.left(), minOp<scalar>()),
+            returnReduce(bb.right(), maxOp<scalar>()),
+            returnReduce(bb.bottom(), minOp<scalar>()),
+            returnReduce(bb.top(), maxOp<scalar>()),
+            returnReduce(bb.aft(), minOp<scalar>()),
+            returnReduce(bb.fore(), maxOp<scalar>())
+        );
 }
 
 mesh::mesh(const mesh& msh)
@@ -566,7 +581,8 @@ mesh::mesh(const mesh& msh)
     patchTypePerProc_(msh.patchTypePerProc_),
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
-    uniform_(msh.uniform_)
+    uniform_(msh.uniform_),
+    boundingBox_(msh.boundingBox_)
 {}
 
 mesh::mesh(autoPtr<mesh>& mshPtr)
@@ -579,7 +595,8 @@ mesh::mesh(autoPtr<mesh>& mshPtr)
     patchTypePerProc_(mshPtr->patchTypePerProc_),
     structured_(mshPtr->structured_),
     rectilinear_(mshPtr->rectilinear_),
-    uniform_(mshPtr->uniform_)
+    uniform_(mshPtr->uniform_),
+    boundingBox_(mshPtr->boundingBox_)
 {
     mshPtr.clear();
 }
@@ -594,7 +611,8 @@ mesh::mesh(mesh& msh, bool reuse)
     patchTypePerProc_(msh.patchTypePerProc_),
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
-    uniform_(msh.uniform_)
+    uniform_(msh.uniform_),
+    boundingBox_(msh.boundingBox_)
 {}
 
 autoPtr<mesh> mesh::New(const IOdictionary& dict)
@@ -646,7 +664,21 @@ labelVector mesh::findCell(const vector& point, const label l) const
 {
     const partLevel& lvl = this->operator[](l);
 
-    if (l == this->size()-1)
+    if
+    (
+        point.x() < lvl.boundingBox().left()
+     || point.x() > lvl.boundingBox().right()
+     || point.y() < lvl.boundingBox().bottom()
+     || point.y() > lvl.boundingBox().top()
+     || point.z() < lvl.boundingBox().aft()
+     || point.z() > lvl.boundingBox().fore()
+    )
+    {
+        // Not in bounding box of part
+
+        return -unitXYZ;
+    }
+    else if (l == this->size()-1)
     {
         // Final level, linear search
 
@@ -661,23 +693,22 @@ labelVector mesh::findCell(const vector& point, const label l) const
         const labelVector coarse = this->findCell(point, l+1);
         const labelVector R = this->operator[](l+1).R();
 
-        bool found = returnReduce(coarse != -unitXYZ, orOp<bool>());
-
-        if (!found)
+        if (coarse == -unitXYZ)
         {
-            // Not found on coarse level. Try linear search if the point was not
-            // found elsewhere and if the mesh is not rectlinear. In this case
-            // it may be on an edge.
+            // In bounding box, but not found on the coarse level. Try linear
+            // search if the mesh is not rectlinear. In this case it may be on
+            // an edge.
 
-            if (cmptProduct(this->operator[](l).rectilinear()) == 0)
+            if (cmptProduct(lvl.rectilinear()) == 0)
+            {
                 forAllBlock(lvl, i, j, k)
                     if (lvl.insideCell(point, i, j, k))
                         return labelVector(i,j,k);
+            }
 
             return -unitXYZ;
-
         }
-        else if (coarse != -unitXYZ)
+        else
         {
             // Found on coarse level. Search enclosed cells only.
 
@@ -700,10 +731,6 @@ labelVector mesh::findCell(const vector& point, const label l) const
 
             return -unitXYZ;
         }
-        else
-        {
-            return -unitXYZ;
-        }
     }
 }
 
@@ -717,36 +744,6 @@ List<labelVector> mesh::findCells(const vectorList& points, const label l) const
     }
 
     return res;
-}
-
-faceScalar mesh::boundingBox() const
-{
-    faceScalar bb;
-
-    const partLevel& l = this->operator[](0);
-    const partLevelPoints& points = l.points();
-
-    scalarBlock x(l.N()+unitXYZ);
-    scalarBlock y(l.N()+unitXYZ);
-    scalarBlock z(l.N()+unitXYZ);
-
-    forAllBlock(x, i, j, k)
-    {
-        x(i,j,k) = points(i,j,k).x();
-        y(i,j,k) = points(i,j,k).y();
-        z(i,j,k) = points(i,j,k).z();
-    }
-
-    bb.left() = returnReduce(min(x), minOp<scalar>());
-    bb.right() = returnReduce(max(x), maxOp<scalar>());
-
-    bb.bottom() = returnReduce(min(y), minOp<scalar>());
-    bb.top() = returnReduce(max(y), maxOp<scalar>());
-
-    bb.aft() = returnReduce(min(z), minOp<scalar>());
-    bb.fore() = returnReduce(max(z), maxOp<scalar>());
-
-    return bb;
 }
 
 }
