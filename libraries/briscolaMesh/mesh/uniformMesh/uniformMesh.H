@@ -51,6 +51,9 @@ public:
         return cellSize_;
     }
 
+    // Find cells efficiently using algebraic relation
+    virtual labelVector findCell(const vector& p, const label l = 0) const;
+
     //- Disallow default bitwise assignment
     void operator=(const uniformMesh&);
 };

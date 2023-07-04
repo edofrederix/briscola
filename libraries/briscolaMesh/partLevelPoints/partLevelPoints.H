@@ -124,6 +124,12 @@ public:
 
         return p;
     }
+
+    // Helper
+    inline vectorBlock cellPoints(labelVector ijk) const
+    {
+        return cellPoints(ijk.x(), ijk.y(), ijk.z());
+    }
 };
 
 }

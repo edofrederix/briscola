@@ -52,18 +52,29 @@ void rectilinearMesh::setMetrics()
 
         const labelVector dir = units[d];
 
-        forAll(localCellSizes, i)
-        {
-            localCellSizes[i] =
-                Foam::mag(points(dir*(i+1)) - points(dir*i));
-        }
-
         const vector base =
             d == 0 ? base_.x() : d == 1 ? base_.y() : base_.z();
 
         forAll(localPoints, i)
         {
             localPoints[i] = points(dir*i) & base;
+        }
+
+        forAll(localCellSizes, i)
+        {
+            localCellSizes[i] = localPoints[i+1] - localPoints[i];
+        }
+
+        // Check if local point coordinates form a monotonically increasing list
+
+        for (label i = 1; i < localPoints.size(); i++)
+        {
+            if (localPoints[i] <= localPoints[i-1])
+            {
+                FatalErrorInFunction
+                    << "Could not generate local point list on rectilinear mesh"
+                    << endl << abort(FatalError);
+            }
         }
     }
 
@@ -197,6 +208,38 @@ rectilinearMesh::rectilinearMesh(rectilinearMesh& msh, bool reuse)
 
 rectilinearMesh::~rectilinearMesh()
 {}
+
+labelVector rectilinearMesh::findCell(const vector& p, const label l) const
+{
+    const vector q(p & base_.x(), p & base_.y(), p & base_.z());
+
+    const scalarList& x = localPoints_[0];
+    const scalarList& y = localPoints_[1];
+    const scalarList& z = localPoints_[2];
+
+    if
+    (
+        q.x() < x[0] || q.x() >= x[x.size()-1]
+     || q.y() < y[0] || q.y() >= y[y.size()-1]
+     || q.z() < z[0] || q.z() >= z[z.size()-1]
+    )
+    {
+        return -unitXYZ;
+    }
+
+    const labelVector R
+    (
+        cmptDivide(this->operator[](0).N(),this->operator[](l).N())
+    );
+
+    // Binary search
+
+    const label i = findLower(x, q.x(), 0, lessEqOp<scalar>());
+    const label j = findLower(y, q.y(), 0, lessEqOp<scalar>());
+    const label k = findLower(z, q.z(), 0, lessEqOp<scalar>());
+
+    return labelVector(i/R.x(), j/R.y(), k/R.z());
+}
 
 }
 

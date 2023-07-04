@@ -84,7 +84,6 @@ void checkBrick(const brick& b)
 
     if (b.volume() != (b.rightHanded() ? 1.0 : -1.0) && Pstream::master())
     {
-        Info << b.volume() << " " << endl;
         FatalErrorInFunction
            << "Test 1e failed" << endl << abort(FatalError);
     }
@@ -430,18 +429,79 @@ int main(int argc, char *argv[])
         points[i] = bb.lower() + (i+0.5)/N*(bb.upper()-bb.lower());
     }
 
+    // Create copies of meshes to use actual search functions
+
+    const rectilinearMesh rMsh(msh);
+    const structuredMesh sMsh(msh);
+    const unstructuredMesh uMsh(msh);
+    const mesh mMsh(msh);
+
     forAll(msh, l)
     {
         List<labelVector> indices(msh.findCells(points,l));
+
+        List<labelVector> rIndices(rMsh.findCells(points,l));
+        List<labelVector> sIndices(sMsh.findCells(points,l));
+        List<labelVector> uIndices(uMsh.findCells(points,l));
+        List<labelVector> mIndices(mMsh.findCells(points,l));
+
+        forAll(indices, i)
+        {
+            if (indices[i] != rIndices[i])
+                FatalErrorInFunction
+                    << "Test 20a failed" << endl << abort(FatalError);
+
+            if (indices[i] != sIndices[i])
+                FatalErrorInFunction
+                    << "Test 20b failed" << endl << abort(FatalError);
+
+            if (indices[i] != uIndices[i])
+                FatalErrorInFunction
+                    << "Test 20c failed" << endl << abort(FatalError);
+
+            if (indices[i] != mIndices[i])
+                FatalErrorInFunction
+                    << "Test 20d failed" << endl << abort(FatalError);
+        }
 
         forAll(indices, i)
         {
             bool found = returnReduce(indices[i] != -unitXYZ, orOp<bool>());
 
             if (!found)
-            {
                 FatalErrorInFunction
-                    << "Test 20 failed" << endl << abort(FatalError);
+                    << "Test 21 failed" << endl << abort(FatalError);
+
+            if (indices[i] != -unitXYZ)
+            {
+                const vectorBlock cPoints
+                (
+                    msh[l].points().cellPoints(indices[i])
+                );
+
+                const vector point(points[i]);
+
+                const scalarBlock x(cPoints & vector(1,0,0));
+                const scalarBlock y(cPoints & vector(0,1,0));
+                const scalarBlock z(cPoints & vector(0,0,1));
+
+                const scalar xMin(min(x));
+                const scalar xMax(max(x));
+                const scalar yMin(min(y));
+                const scalar yMax(max(y));
+                const scalar zMin(min(z));
+                const scalar zMax(max(z));
+
+                if
+                (
+                    point.x() < xMin || point.x() > xMax
+                 || point.y() < yMin || point.y() > yMax
+                 || point.z() < zMin || point.z() > zMax
+                )
+                {
+                    FatalErrorInFunction
+                        << "Test 22 failed" << endl << abort(FatalError);
+                }
             }
         }
     }

@@ -84,6 +84,9 @@ public:
         return globalPoints_;
     }
 
+    // Find cells efficiently using the local point data
+    virtual labelVector findCell(const vector& p, const label l = 0) const;
+
     //- Disallow default bitwise assignment
     void operator=(const rectilinearMesh&);
 };
