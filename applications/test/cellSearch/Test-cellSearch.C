@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
                     << "Test 1 failed" << endl << abort(FatalError);
             }
 
-            if (!lvl.insideCell(point, ijk))
+            if (!lvl.points().pointInCell(point, ijk))
                 FatalErrorInFunction
                     << "Test 2 failed" << endl << abort(FatalError);
         }

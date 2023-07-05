@@ -683,7 +683,7 @@ labelVector mesh::findCell(const vector& point, const label l) const
         // Final level, linear search
 
         forAllBlock(lvl, i, j, k)
-            if (lvl.insideCell(point, i, j, k))
+            if (lvl.points().pointInCell(point, i, j, k))
                 return labelVector(i,j,k);
 
         return -unitXYZ;
@@ -702,7 +702,7 @@ labelVector mesh::findCell(const vector& point, const label l) const
             if (cmptProduct(lvl.rectilinear()) == 0)
             {
                 forAllBlock(lvl, i, j, k)
-                    if (lvl.insideCell(point, i, j, k))
+                    if (lvl.points().pointInCell(point, i, j, k))
                         return labelVector(i,j,k);
             }
 
@@ -718,7 +718,7 @@ labelVector mesh::findCell(const vector& point, const label l) const
             for (int i = S.x(); i < E.x(); i++)
             for (int j = S.y(); j < E.y(); j++)
             for (int k = S.z(); k < E.z(); k++)
-                if (lvl.insideCell(point, i, j, k))
+                if (lvl.points().pointInCell(point, i, j, k))
                     return labelVector(i,j,k);
 
             // Otherwise, there is something wrong
