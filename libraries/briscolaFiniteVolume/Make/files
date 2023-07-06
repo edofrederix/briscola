@@ -53,6 +53,10 @@ solvers/solver/solvers.C
 solvers/solver/solverFwd.C
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C
 
+functionObjects/pointInterpolators/pointInterpolator/pointInterpolator.C
+functionObjects/pointInterpolators/linearPointInterpolator/linearPointInterpolator.C
+functionObjects/pointInterpolators/nearestPointInterpolator/nearestPointInterpolator.C
+
 functionObjects/example/example.C
 
 LIB = $(FOAM_USER_LIBBIN)/libbriscolaFiniteVolume
