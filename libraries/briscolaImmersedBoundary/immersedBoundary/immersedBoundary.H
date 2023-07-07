@@ -56,6 +56,10 @@ public:
     // is inside the immersed boundary
     bool isInside(vector);
 
+    // Returns dimensionless wall distance given two points
+    // The first point is a fluid cell and the second point is an IB cell
+    scalar wallDistance(vector, vector);
+
     // Return functions for mask fields
     inline colocatedScalarField& colMask() { return colMask_; }
     inline staggeredScalarField& stagMask() { return stagMask_; }

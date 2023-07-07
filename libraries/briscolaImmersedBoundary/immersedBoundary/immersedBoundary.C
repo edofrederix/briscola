@@ -9,6 +9,9 @@ namespace briscola
 namespace ibm
 {
 
+using Foam::max;
+using Foam::min;
+
 // Constructor
 
 immersedBoundary::immersedBoundary
@@ -92,12 +95,12 @@ immersedBoundary::immersedBoundary
                 }
                 else if
                 (
-                        (i > colMask_[l][0].A().left() && this->isInside(colCC[l][0](i-1,j,k)))
-                    || (j > colMask_[l][0].A().bottom() && this->isInside(colCC[l][0](i,j-1,k)))
-                    || (k > colMask_[l][0].A().aft() && this->isInside(colCC[l][0](i,j,k-1)))
-                    || (i < colMask_[l][0].A().right() - 1 && this->isInside(colCC[l][0](i+1,j,k)))
-                    || (j < colMask_[l][0].A().top() - 1 && this->isInside(colCC[l][0](i,j+1,k)))
-                    || (k < colMask_[l][0].A().fore() - 1 && this->isInside(colCC[l][0](i,j,k+1)))
+                       this->isInside(colCC[l][0](max(colMask_[l][0].A().left(), i-1),j,k))
+                    || this->isInside(colCC[l][0](i,max(colMask_[l][0].A().bottom(), j-1),k))
+                    || this->isInside(colCC[l][0](i,j,max(colMask_[l][0].A().aft(),k-1)))
+                    || this->isInside(colCC[l][0](min(colMask_[l][0].A().right(), i+1),j,k))
+                    || this->isInside(colCC[l][0](i,min(colMask_[l][0].A().top(), j+1),k))
+                    || this->isInside(colCC[l][0](i,j,min(colMask_[l][0].A().fore(), k+1)))
                 )
                 {
                     colWallAdjMask_[l][0](i,j,k) = 1.0;
@@ -119,20 +122,17 @@ immersedBoundary::immersedBoundary
                     {
                         stagMask_[l][d](i,j,k) = 1.0;
                     }
-                    else
+                    else if
+                    (
+                           this->isInside(stagCC[l][d](max(stagMask_[l][d].A().left(), i-1),j,k))
+                        || this->isInside(stagCC[l][d](i,max(stagMask_[l][d].A().bottom(), j-1),k))
+                        || this->isInside(stagCC[l][d](i,j,max(stagMask_[l][d].A().aft(),k-1)))
+                        || this->isInside(stagCC[l][d](min(stagMask_[l][d].A().right(), i+1),j,k))
+                        || this->isInside(stagCC[l][d](i,min(stagMask_[l][d].A().top(), j+1),k))
+                        || this->isInside(stagCC[l][d](i,j,min(stagMask_[l][d].A().fore(), k+1)))
+                    )
                     {
-                        if
-                        (
-                               (i > stagMask_[l][0].A().left() && this->isInside(stagCC[l][d](i-1,j,k)))
-                            || (j > stagMask_[l][0].A().bottom() && this->isInside(stagCC[l][d](i,j-1,k)))
-                            || (k > stagMask_[l][0].A().aft() && this->isInside(stagCC[l][d](i,j,k-1)))
-                            || (i < stagMask_[l][0].A().right() - 1 && this->isInside(stagCC[l][d](i+1,j,k)))
-                            || (j < stagMask_[l][0].A().top() - 1 && this->isInside(stagCC[l][d](i,j+1,k)))
-                            || (k < stagMask_[l][0].A().fore() - 1 && this->isInside(stagCC[l][d](i,j,k+1)))
-                        )
-                        {
-                            stagWallAdjMask_[l][d](i,j,k) = 1.0;
-                        }
+                        stagWallAdjMask_[l][d](i,j,k) = 1.0;
                     }
                 }
             }
@@ -164,6 +164,58 @@ bool immersedBoundary::isInside(vector xyz)
     }
 
     return false;
+}
+
+scalar immersedBoundary::wallDistance(vector c, vector nb)
+{
+    if (this->isInside(c))
+    {
+        FatalError
+            << "Central point should be fluid node."
+            << endl;
+        FatalError.exit();
+    }
+
+    if (!this->isInside(nb))
+    {
+        FatalError
+            << "Neighbor point should be inside the immersed boundary."
+            << endl;
+        FatalError.exit();
+    }
+
+    scalar dist = -1;
+
+    for (int s = 0; s < shapes_.size(); s++)
+    {
+        if (dist == -1)
+        {
+            dist = shapes_[s].wallDistance(c, nb);
+        }
+
+        if
+        (
+               (shapes_[s].wallDistance(c, nb) >= 0)
+            && (shapes_[s].wallDistance(c, nb) <= dist)
+        )
+        {
+            dist = shapes_[s].wallDistance(c, nb);
+        }
+    }
+
+    if
+    (
+           (dist < 0)
+        || (dist > mag(c-nb))
+    )
+    {
+        FatalError
+            << "No immersed boundary intersection found."
+            << endl;
+        FatalError.exit();
+    }
+
+    return dist;
 }
 
 } // end namespace ibm

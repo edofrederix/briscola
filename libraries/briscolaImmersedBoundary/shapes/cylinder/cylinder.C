@@ -81,6 +81,30 @@ bool cylinder::isInside(vector point)
     }
 }
 
+scalar cylinder::wallDistance(vector c, vector nb)
+{
+    // Return -1 if the center point is not a fluid point
+    // or if the neighboring point is not inside the cylinder
+    if (this->isInside(c))
+    {
+        return -1;
+    }
+
+    if (!this->isInside(nb))
+    {
+        return -1;
+    }
+
+    // Normalized direction vector of the line
+    vector D = (nb-c)/mag(nb-c);
+
+    /*
+    Implement distance function
+    */
+
+    return -1;
+}
+
 } // end namespace ibm
 
 } // end namespace briscola

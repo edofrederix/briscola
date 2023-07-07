@@ -58,6 +58,45 @@ bool sphere::isInside(vector point)
     }
 }
 
+scalar sphere::wallDistance(vector c, vector nb)
+{
+    // Return -1 if the center point is not a fluid point
+    // or if the neighboring point is not inside the sphere
+    if (this->isInside(c))
+    {
+        return -1;
+    }
+
+    if (!this->isInside(nb))
+    {
+        return -1;
+    }
+
+    // Normalized direction vector of the line
+    vector D = (nb-c)/mag(nb-c);
+
+    // Vector from origin of the line to center of the sphere
+    vector L = center_-c;
+
+    scalar tc = L & D;
+
+    if (tc < 0)
+    {
+        return -1;
+    }
+
+    scalar d = sqrt(magSqr(L)-sqr(tc));
+
+    if (d > radius_)
+    {
+        return -1;
+    }
+
+    scalar t1c = sqrt(sqr(radius_) - sqr(d));
+
+    return (tc - t1c);
+}
+
 } // end namespace ibm
 
 } // end namespace briscola

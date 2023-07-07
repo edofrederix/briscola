@@ -26,6 +26,10 @@ public:
     // Check if point is inside shape
     virtual bool isInside(vector) = 0;
 
+    // Returns dimensionless wall distance given two points
+    // The first point is a fluid cell and the second point is an IB cell
+    virtual scalar wallDistance(vector, vector) = 0;
+
 };
 
 } // end namespace ibm

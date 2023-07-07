@@ -86,8 +86,6 @@ int main(int argc, char *argv[])
         Info << "IB test 4 successful!" << endl;
     }
 
-
-
     // Test point 5 is defined by its cell indices
     // and is outside the IB
     labelVector testPoint5(1,1,1);
@@ -125,6 +123,59 @@ int main(int argc, char *argv[])
     else
     {
         Info << "IB test 6 successful!" << endl;
+    }
+
+
+    // Test wall distance functions
+
+    sphere sphere2(vector(10,10,10), 1, false);
+
+    // Line passes through sphere center
+    vector c(10,10,11.12345);
+    vector nb(10,10,10);
+
+    if ((sphere2.wallDistance(c,nb) - 0.12345) > 1e-5)
+    {
+        FatalError
+            << "IB wall distance test 1 failed."
+            << endl;
+        FatalError.exit();
+    }
+    else
+    {
+        Info << "IB wall distance test 1 successful!" << endl;
+    }
+
+    // Line is tangent to the sphere
+    c = vector(10,11,11);
+    nb = vector(10,10,11);
+
+    if ((sphere2.wallDistance(c,nb) - 1) > 1e-5)
+    {
+        FatalError
+            << "IB wall distance test 2 failed."
+            << endl;
+        FatalError.exit();
+    }
+    else
+    {
+        Info << "IB wall distance test 2 successful!" << endl;
+    }
+
+    // Line arbitrarily crosses sphere
+    c = vector(10,12,10.5);
+    nb = vector(10,10,10.5);
+
+    if ((sphere2.wallDistance(c,nb) - (2.0 - Foam::sqrt(0.75))) > 1e-5)
+    {
+        FatalError
+            << "IB wall distance test 3 failed."
+            << endl;
+        FatalError.exit();
+    }
+    else
+    {
+        Info << "IB wall distance test 3 successful!" << endl;
     }
 
 }

@@ -43,6 +43,8 @@ public:
 
     bool isInside(vector);
 
+    scalar wallDistance(vector, vector);
+
 };
 
 } // end namespace ibm
