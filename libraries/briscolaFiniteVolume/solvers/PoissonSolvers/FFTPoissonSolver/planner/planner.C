@@ -1,4 +1,4 @@
-#include "FFTPlanner.H"
+#include "planner.H"
 
 namespace Foam
 {
@@ -14,7 +14,7 @@ namespace FFT
 
 // Constructor
 
-FFTPlanner::FFTPlanner
+planner::planner
 (
     const fvMesh& fvMsh
 )
@@ -113,7 +113,7 @@ FFTPlanner::FFTPlanner
 
 // Destructor
 
-FFTPlanner::~FFTPlanner()
+planner::~planner()
 {}
 
 }

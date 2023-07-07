@@ -3,7 +3,7 @@
 
 #include "PoissonSolver.H"
 #include <fftw3.h>
-#include "FFTPlanner.H"
+#include "planner.H"
 #include "pencilDecomposer.H"
 #include "tridiagonalSolver.H"
 #include "FourierTransforms.H"
@@ -17,17 +17,15 @@ namespace briscola
 namespace fv
 {
 
-using namespace FFT;
-
 class FFTPoissonSolver
 :
     public PoissonSolver<stencil,scalar,colocated>
 {
     // Planner
-    FFTPlanner FFTPlan_;
+    FFT::planner FFTPlan_;
 
     // Pencil decomposer
-    pencilDecomposer decomp_;
+    FFT::pencilDecomposer decomp_;
 
     // Initial data block
     scalarBlock initData_;
@@ -42,10 +40,10 @@ class FFTPoissonSolver
     scalarBlock zPencil_;
 
     // FFT's
-    autoPtr<FourierTransforms> fft_;
+    autoPtr<FFT::FourierTransforms> fft_;
 
     // Tridiagonal solver
-    autoPtr<tridiagonalSolver> tds_;
+    autoPtr<FFT::tridiagonalSolver> tds_;
 
     // Funtion to check if the mesh qualifies for FFTs. Will give error if not
     // all criteria are met.
@@ -80,8 +78,8 @@ public:
     using PoissonSolver<stencil,scalar,colocated>::solve;
 
     // Access functions
-    inline pencilDecomposer& decomp() { return decomp_; }
-    inline FFTPlanner& FFTPlan() { return FFTPlan_; }
+    inline FFT::pencilDecomposer& decomp() { return decomp_; }
+    inline FFT::planner& FFTPlan() { return FFTPlan_; }
     inline scalarBlock& xPencil() { return xPencil_; }
     inline scalarBlock& yPencil() { return yPencil_; }
     inline scalarBlock& zPencil() { return zPencil_; }

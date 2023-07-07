@@ -10,8 +10,6 @@ namespace briscola
 namespace fv
 {
 
-using namespace FFT;
-
 defineTypeNameAndDebug(FFTPoissonSolver,0);
 
 PoissonSolver<stencil,scalar,colocated>::
@@ -81,12 +79,20 @@ void FFTPoissonSolver::solve
             << abort(FatalError);
     }
 
+    if (ddt)
+    {
+        FatalErrorInFunction
+            << "FFT Poisson solver does not support use of "
+            << "ddt argument in solve function." << endl
+            << abort(FatalError);
+    }
+
     if (fft_.empty() || &fft_->x() != &x)
     {
-        fft_.reset(new FourierTransforms(*this, x));
+        fft_.reset(new FFT::FourierTransforms(*this, x));
         tds_.reset
         (
-            new tridiagonalSolver
+            new FFT::tridiagonalSolver
             (
                 *this,
                 fft_->BC()

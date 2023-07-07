@@ -1,5 +1,5 @@
-#ifndef FFTPlanner_H
-#define FFTPlanner_H
+#ifndef planner_H
+#define planner_H
 
 #include "List.H"
 #include "scalarList.H"
@@ -21,7 +21,7 @@ namespace fv
 namespace FFT
 {
 
-class FFTPlanner
+class planner
 {
     // Initial decomposition
     labelVector I_;
@@ -46,13 +46,13 @@ class FFTPlanner
 public:
 
     // Construct
-    FFTPlanner
+    planner
     (
         const fvMesh& fvMsh
     );
 
     // Destructor
-    virtual ~FFTPlanner();
+    virtual ~planner();
 
     inline label decompType() { return decompType_; }
     inline label solveDir() { return solveDir_; }
