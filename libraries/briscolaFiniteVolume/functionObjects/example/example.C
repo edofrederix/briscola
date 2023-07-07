@@ -31,20 +31,10 @@ example::example
 )
 :
     briscolaFunctionObject(name, runTime, dict)
-{
-    read(dict);
-}
+{}
 
 example::~example()
 {}
-
-bool example::read(const dictionary& dict)
-{
-    Info<< "Call to read() at t = "
-        << runTime_.time().value() << endl;
-
-    return true;
-}
 
 bool example::execute()
 {
@@ -68,11 +58,6 @@ bool example::end()
         << runTime_.time().value() << endl;
 
     return true;
-}
-
-wordList example::fields() const
-{
-    return wordList{"U", "p"};
 }
 
 }

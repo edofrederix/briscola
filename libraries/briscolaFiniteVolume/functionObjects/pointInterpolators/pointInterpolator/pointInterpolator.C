@@ -36,7 +36,7 @@ pointInterpolator::pointInterpolator
         }
         else
         {
-            cellCoordinates_ = -vector::one;
+            cellCoordinates_[i] = -vector::one;
         }
     }
 }

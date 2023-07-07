@@ -10,7 +10,7 @@ namespace fv
 {
 
 template<class Type>
-class averageNonZeroOp
+class nonZeroOp
 {
     public:
 
@@ -20,17 +20,13 @@ class averageNonZeroOp
             {
                 x = y;
             }
-            else if (y != pTraits<Type>::zero)
-            {
-                x = (x+y)/2.0;
-            }
         }
 };
 
 template<class Type>
 void pointInterpolator::gatherScatter(List<Type>& values)
 {
-    Pstream::listCombineGather(values, averageNonZeroOp<Type>());
+    Pstream::listCombineGather(values, nonZeroOp<Type>());
     Pstream::listCombineScatter(values);
 }
 

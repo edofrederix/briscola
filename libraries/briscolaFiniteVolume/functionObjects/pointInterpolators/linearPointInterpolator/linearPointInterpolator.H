@@ -40,7 +40,7 @@ public:
     // Interpolators
 
     #define INTERPFUNC(TYPE) \
-    virtual List<TYPE> operator() (const meshField<TYPE,colocated>&);
+        virtual List<TYPE> operator() (const meshField<TYPE,colocated>&);
 
     INTERPFUNC(scalar);
     INTERPFUNC(vector);

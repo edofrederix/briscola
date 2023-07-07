@@ -58,5 +58,8 @@ functionObjects/pointInterpolators/linearPointInterpolator/linearPointInterpolat
 functionObjects/pointInterpolators/nearestPointInterpolator/nearestPointInterpolator.C
 
 functionObjects/example/example.C
+functionObjects/sample/sample.C
+functionObjects/sample/sampleTemplates.C
+functionObjects/lineSample/lineSample.C
 
 LIB = $(FOAM_USER_LIBBIN)/libbriscolaFiniteVolume

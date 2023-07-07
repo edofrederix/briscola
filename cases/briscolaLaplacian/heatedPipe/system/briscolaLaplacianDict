@@ -6,5 +6,5 @@ FoamFile
     object      briscolaLaplacianDict;
 }
 
-lambda  1;
+lambda  0.1;
 source  1;
