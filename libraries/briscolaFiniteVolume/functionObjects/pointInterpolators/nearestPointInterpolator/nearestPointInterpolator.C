@@ -79,6 +79,8 @@ List<Type> nearestPointInterpolator::interp
         }
     }
 
+    this->gatherScatter(values);
+
     return values;
 }
 

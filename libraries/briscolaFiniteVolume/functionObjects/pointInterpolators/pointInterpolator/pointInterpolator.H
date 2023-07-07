@@ -29,6 +29,10 @@ protected:
     // Cell coordinates of the points
     vectorList cellCoordinates_;
 
+    // Gather and scatter data
+    template<class Type>
+    void gatherScatter(List<Type>&);
+
 private:
 
     // Disallow default bitwise assignment
@@ -84,6 +88,9 @@ public:
         return cellCoordinates_;
     }
 
+    // Check if all points were found
+    virtual bool allPointsFound() const;
+
     // Interpolators
 
     #define INTERPFUNC(TYPE) \
@@ -106,5 +113,7 @@ public:
 }
 
 }
+
+#include "pointInterpolatorTemplates.C"
 
 #endif

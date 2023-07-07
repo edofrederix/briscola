@@ -712,8 +712,19 @@ labelVector mesh::findCell(const vector& point, const label l) const
         {
             // Found on coarse level. Search enclosed cells only.
 
-            const labelVector S = cmptMultiply(coarse,R)-unitXYZ;
-            const labelVector E = cmptMultiply(coarse,R)+unitXYZ+R;
+            labelVector S = cmptMultiply(coarse,R);
+            labelVector E = cmptMultiply(coarse,R) + R;
+
+            for (int i = S.x(); i < E.x(); i++)
+            for (int j = S.y(); j < E.y(); j++)
+            for (int k = S.z(); k < E.z(); k++)
+                if (lvl.points().pointInCell(point, i, j, k))
+                    return labelVector(i,j,k);
+
+            // Otherwise, search in the vicinity too.
+
+            S = cmptMax(S-unitXYZ, zeroXYZ);
+            E = cmptMin(E+unitXYZ, lvl.points().shape()-unitXYZ);
 
             for (int i = S.x(); i < E.x(); i++)
             for (int j = S.y(); j < E.y(); j++)

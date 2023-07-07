@@ -74,6 +74,23 @@ autoPtr<pointInterpolator> pointInterpolator::New
     return autoPtr<pointInterpolator>(cstrIter()(fvMsh, points));
 }
 
+bool pointInterpolator::allPointsFound() const
+{
+    List<label> found(indices_.size());
+
+    forAll(indices_, i)
+        found[i] = (indices_[i] != -unitXYZ);
+
+    Pstream::listCombineGather(found, plusEqOp<label>());
+    Pstream::listCombineScatter(found);
+
+    forAll(found, i)
+        if (!found[i])
+            return false;
+
+    return true;
+}
+
 }
 
 }

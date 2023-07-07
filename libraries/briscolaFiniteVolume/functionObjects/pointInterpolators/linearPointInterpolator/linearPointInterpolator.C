@@ -149,6 +149,8 @@ List<Type> linearPointInterpolator::interp
         }
     }
 
+    this->gatherScatter(values);
+
     return values;
 }
 

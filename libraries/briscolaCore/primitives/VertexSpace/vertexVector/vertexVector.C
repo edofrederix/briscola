@@ -144,9 +144,9 @@ vector interpolationWeights
     (
         insideOnly
      && (
-            u.x() < 0 || u.x() >= 1
-         || u.y() < 0 || u.y() >= 1
-         || u.z() < 0 || u.z() >= 1
+            u.x() < -tol || u.x() > 1+tol
+         || u.y() < -tol || u.y() > 1+tol
+         || u.z() < -tol || u.z() > 1+tol
         )
     )
     {
@@ -154,7 +154,12 @@ vector interpolationWeights
     }
     else
     {
-        return u;
+        return vector
+        (
+            Foam::min(Foam::max(u.x(),0),1),
+            Foam::min(Foam::max(u.y(),0),1),
+            Foam::min(Foam::max(u.z(),0),1)
+        );
     }
 }
 

@@ -154,7 +154,7 @@ public:
     }
 
     // Check if a point is inside the given cell, which is true if the local
-    // coordinates are on the unit cube [0,1)^3
+    // coordinates are on the unit cube [0,1]^3
     inline bool pointInCell
     (
         const vector& p,
