@@ -57,25 +57,11 @@ int main(int argc, char *argv[])
         USys += ex::stagGrad(p);
         USys -= source;
 
-        // IB penalization source term
+        // Immersed boundary
 
         if (solverDict.found("ImmersedBoundary"))
         {
-            // Set coefficients and sources to 0 in IB
-            USys.A() *= (1.0 - IB.stagMask());
-            USys.b() *= (1.0 - IB.stagMask());
-
-            // Set central coefficients to 1 in IB
-            forAll(USys.A(), l)
-            {
-                forAll(USys.A()[l], d)
-                {
-                    forAllCells(USys.A()[l][d], i, j, k)
-                    {
-                        USys.A()[l][d](i,j,k).center() += IB.stagMask()[l][d](i,j,k);
-                    }
-                }
-            }
+            #include "IBM.H"
         }
 
         // Solve momentum equation

@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     vector c(10,10,11.12345);
     vector nb(10,10,10);
 
-    if ((sphere2.wallDistance(c,nb) - 0.12345) > 1e-5)
+    if (mag(sphere2.wallDistance(c,nb) - 0.12345) > 1e-5)
     {
         FatalError
             << "IB wall distance test 1 failed."
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
     c = vector(10,11,11);
     nb = vector(10,10,11);
 
-    if ((sphere2.wallDistance(c,nb) - 1) > 1e-5)
+    if (mag(sphere2.wallDistance(c,nb) - 1.0) > 1e-5)
     {
         FatalError
             << "IB wall distance test 2 failed."
@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
     c = vector(10,12,10.5);
     nb = vector(10,10,10.5);
 
-    if ((sphere2.wallDistance(c,nb) - (2.0 - Foam::sqrt(0.75))) > 1e-5)
+    if (mag(sphere2.wallDistance(c,nb) - (2.0 - Foam::sqrt(0.75))) > 1e-5)
     {
         FatalError
             << "IB wall distance test 3 failed."
@@ -178,4 +178,53 @@ int main(int argc, char *argv[])
         Info << "IB wall distance test 3 successful!" << endl;
     }
 
+    cylinder cylinder3(vector(0,0,0), vector(0,0,1), 1.0, false);
+
+    // Line passes through cylinder axis
+    c = vector(1.12345,0,0.5);
+    nb = vector(0,0,0.5);
+
+    if (mag(cylinder3.wallDistance(c,nb) - 0.12345) > 1e-5)
+    {
+        FatalError
+            << "IB wall distance test 4 failed."
+            << endl;
+        FatalError.exit();
+    }
+    else
+    {
+        Info << "IB wall distance test 4 successful!" << endl;
+    }
+
+    // Line is tangent to the cylinder
+    c = vector(1,1,0.5);
+    nb = vector(0,1,0.5);
+
+    if (mag(cylinder3.wallDistance(c,nb) - 1) > 1e-5)
+    {
+        FatalError
+            << "IB wall distance test 5 failed."
+            << endl;
+        FatalError.exit();
+    }
+    else
+    {
+        Info << "IB wall distance test 5 successful!" << endl;
+    }
+
+    // Line arbitrarily crosses cylinder
+    c = vector(2,0.5,0.5);
+    nb = vector(0,0.5,0.5);
+
+    if (mag(cylinder3.wallDistance(c,nb) - (2.0 - Foam::sqrt(0.75))) > 1e-5)
+    {
+        FatalError
+            << "IB wall distance test 6 failed."
+            << endl;
+        FatalError.exit();
+    }
+    else
+    {
+        Info << "IB wall distance test 6 successful!" << endl;
+    }
 }

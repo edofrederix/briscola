@@ -98,11 +98,37 @@ scalar cylinder::wallDistance(vector c, vector nb)
     // Normalized direction vector of the line
     vector D = (nb-c)/mag(nb-c);
 
-    /*
-    Implement distance function
-    */
+    // Normalized direction vector of the cylinder axis
+    vector C = (end_ - start_)/mag(end_ - start_);
 
-    return -1;
+    // Vector from line origin to cylinder origin
+    vector w = (c - start_);
+
+    // We define the line through c and nb as L(t)=c+t*D
+    // and solve the quadratic system xt^2 + yt + z = 0
+    scalar x = (D & D) - sqr(D & C);
+    scalar y = 2.0 * ((D & w) - (D & C)*(w & C));
+    scalar z = (w & w) - sqr(w & C) - sqr(radius_);
+
+    if ((sqr(y)-4.0*x*z) < 0)
+    {
+        return -1;
+    }
+    else if
+    (
+           ((sqr(y)-4.0*x*z) == 0)
+        && (mag(D & C) == 1) // Line is on cylinder surface
+    )
+    {
+        return -1;
+    }
+    else
+    {
+        scalar t1 = (-y + sqrt(sqr(y)-4.0*x*z))/(2.0*x);
+        scalar t2 = (-y - sqrt(sqr(y)-4.0*x*z))/(2.0*x);
+
+        return min(mag(t1), mag(t2));
+    }
 }
 
 } // end namespace ibm

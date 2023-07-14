@@ -37,6 +37,11 @@ class immersedBoundary
     colocatedScalarField colWallAdjMask_;
     staggeredScalarField stagWallAdjMask_;
 
+    // The colocated and staggered wall distance fields store the
+    // wall distances to the IB in the components of the stencils
+    colocatedStencilField colWallDist_;
+    staggeredStencilField stagWallDist_;
+
     // List of shapes making up the immersed boundary
     PtrList<shape> shapes_;
 
@@ -65,6 +70,8 @@ public:
     inline staggeredScalarField& stagMask() { return stagMask_; }
     inline colocatedScalarField& colWallAdjMask() { return colWallAdjMask_; }
     inline staggeredScalarField& stagWallAdjMask() { return stagWallAdjMask_; }
+    inline colocatedStencilField& colWallDist() { return colWallDist_; }
+    inline staggeredStencilField& stagWallDist() { return stagWallDist_; }
 
 };
 
