@@ -65,7 +65,17 @@ colocatedVectorField source
     true
 );
 
-source = vector(solverDict.lookup("source"));
+colocatedScalarField sourceCoeff
+(
+    "source",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+source = vector(solverDict.lookupOrDefault("source", vector::zero));
+sourceCoeff = scalar(solverDict.lookupOrDefault("sourceCoeff", 0.0));
 
 linearSystem<stencil,vector,colocated> USys(U);
 linearSystem<stencil,scalar,colocated> pSys(p);

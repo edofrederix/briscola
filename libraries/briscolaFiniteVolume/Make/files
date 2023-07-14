@@ -59,6 +59,13 @@ solvers/PoissonSolvers/FFTPoissonSolver/processorOverlap/processorOverlap.C
 solvers/PoissonSolvers/FFTPoissonSolver/FourierTransforms/FourierTransforms.C
 solvers/PoissonSolvers/FFTPoissonSolver/tridiagonalSolver/tridiagonalSolver.C
 
+functionObjects/pointInterpolators/pointInterpolator/pointInterpolator.C
+functionObjects/pointInterpolators/linearPointInterpolator/linearPointInterpolator.C
+functionObjects/pointInterpolators/nearestPointInterpolator/nearestPointInterpolator.C
+
 functionObjects/example/example.C
+functionObjects/sample/sample.C
+functionObjects/sample/sampleTemplates.C
+functionObjects/lineSample/lineSample.C
 
 LIB = $(FOAM_USER_LIBBIN)/libbriscolaFiniteVolume

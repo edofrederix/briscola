@@ -5,6 +5,8 @@ TEST=meshField
 MESHES=(box bigbox pipe 2x 2y 2z)
 NPROCS=(4 16 5 4 4 4)
 
+unset FOAM_SIGFPE
+
 if [ -f build/Test-$TEST ]; then
 
     for I in ${!MESHES[@]}; do

@@ -84,7 +84,6 @@ void checkBrick(const brick& b)
 
     if (b.volume() != (b.rightHanded() ? 1.0 : -1.0) && Pstream::master())
     {
-        Info << b.volume() << " " << endl;
         FatalErrorInFunction
            << "Test 1e failed" << endl << abort(FatalError);
     }
@@ -343,28 +342,167 @@ int main(int argc, char *argv[])
         }
     }
 
-    const scalarList& dx = msh.cellSizes()[0];
-    const scalarList& dy = msh.cellSizes()[1];
-    const scalarList& dz = msh.cellSizes()[2];
+    const scalarList& dxl = msh.localCellSizes()[0];
+    const scalarList& dyl = msh.localCellSizes()[1];
+    const scalarList& dzl = msh.localCellSizes()[2];
 
-    forAll(dx, i)
+    forAll(dxl, i)
     {
-        if (Foam::mag(dx[i]-1.0/24) > 1e-12)
+        if (Foam::mag(dxl[i]-1.0/24) > 1e-12)
             FatalErrorInFunction
                 << "Test 15a failed" << endl << abort(FatalError);
     }
 
-    forAll(dy, i)
+    forAll(dyl, i)
     {
-        if (Foam::mag(dy[i]-1.0/16) > 1e-12)
+        if (Foam::mag(dyl[i]-1.0/16) > 1e-12)
             FatalErrorInFunction
                 << "Test 15b failed" << endl << abort(FatalError);
     }
 
-    forAll(dz, i)
+    forAll(dzl, i)
     {
-        if (Foam::mag(dz[i]-1.0/16) > 1e-12)
+        if (Foam::mag(dzl[i]-1.0/16) > 1e-12)
             FatalErrorInFunction
                 << "Test 15c failed" << endl << abort(FatalError);
+    }
+
+    const scalarList& dxg = msh.globalCellSizes()[0];
+    const scalarList& dyg = msh.globalCellSizes()[1];
+    const scalarList& dzg = msh.globalCellSizes()[2];
+
+    forAll(dxg, i)
+    {
+        if (Foam::mag(dxg[i]-1.0/24) > 1e-12)
+            FatalErrorInFunction
+                << "Test 16a failed" << endl << abort(FatalError);
+    }
+
+    forAll(dyg, i)
+    {
+        if (Foam::mag(dyg[i]-1.0/16) > 1e-12)
+            FatalErrorInFunction
+                << "Test 16b failed" << endl << abort(FatalError);
+    }
+
+    forAll(dzg, i)
+    {
+        if (Foam::mag(dzg[i]-1.0/16) > 1e-12)
+            FatalErrorInFunction
+                << "Test 16c failed" << endl << abort(FatalError);
+    }
+
+    for (int d = 0; d < 3; d++)
+        if (Foam::mag(msh.cellSize()[d] - msh.globalCellSizes()[d][0]) > 1e-12)
+            FatalErrorInFunction
+                << "Test 17 failed" << endl << abort(FatalError);
+
+    for (int d = 0; d < 3; d++)
+    {
+        const scalarList& points = msh.localPoints()[d];
+
+        for(int i = 1; i < points.size(); i++)
+            if (Foam::mag(points[i]-points[i-1]) - 1.0/16 > 1e-12)
+                    FatalErrorInFunction
+                        << "Test 18 failed" << endl << abort(FatalError);
+    }
+
+    for (int d = 0; d < 3; d++)
+    {
+        const scalarList& points = msh.globalPoints()[d];
+
+        for(int i = 1; i < points.size(); i++)
+            if (Foam::mag(points[i]-points[i-1]) - 1.0/16 > 1e-12)
+                    FatalErrorInFunction
+                        << "Test 19 failed" << endl << abort(FatalError);
+    }
+
+    // Test cell search
+
+    label N = 100;
+    vectorList points(N);
+
+    const faceScalar bb(msh.boundingBox());
+
+    forAll(points, i)
+    {
+        points[i] = bb.lower() + (i+0.5)/N*(bb.upper()-bb.lower());
+    }
+
+    // Create copies of meshes to use actual search functions
+
+    const rectilinearMesh rMsh(msh);
+    const structuredMesh sMsh(msh);
+    const unstructuredMesh uMsh(msh);
+    const mesh mMsh(msh);
+
+    forAll(msh, l)
+    {
+        List<labelVector> indices(msh.findCells(points,l));
+
+        List<labelVector> rIndices(rMsh.findCells(points,l));
+        List<labelVector> sIndices(sMsh.findCells(points,l));
+        List<labelVector> uIndices(uMsh.findCells(points,l));
+        List<labelVector> mIndices(mMsh.findCells(points,l));
+
+        forAll(indices, i)
+        {
+            if (indices[i] != rIndices[i])
+                FatalErrorInFunction
+                    << "Test 20a failed" << endl << abort(FatalError);
+
+            if (indices[i] != sIndices[i])
+                FatalErrorInFunction
+                    << "Test 20b failed" << endl << abort(FatalError);
+
+            if (indices[i] != uIndices[i])
+                FatalErrorInFunction
+                    << "Test 20c failed" << endl << abort(FatalError);
+
+            if (indices[i] != mIndices[i])
+                FatalErrorInFunction
+                    << "Test 20d failed" << endl << abort(FatalError);
+        }
+
+        forAll(indices, i)
+        {
+            bool found = returnReduce(indices[i] != -unitXYZ, orOp<bool>());
+
+            if (!found)
+                FatalErrorInFunction
+                    << "Test 21 failed" << endl << abort(FatalError);
+
+            if (indices[i] != -unitXYZ)
+            {
+                const vectorBlock cPoints
+                (
+                    msh[l].points().cellPoints(indices[i])
+                );
+
+                const vector point(points[i]);
+
+                const scalarBlock x(cPoints & vector(1,0,0));
+                const scalarBlock y(cPoints & vector(0,1,0));
+                const scalarBlock z(cPoints & vector(0,0,1));
+
+                const scalar xMin(min(x));
+                const scalar xMax(max(x));
+                const scalar yMin(min(y));
+                const scalar yMax(max(y));
+                const scalar zMin(min(z));
+                const scalar zMax(max(z));
+
+                if
+                (
+                    point.x() < xMin || point.x() > xMax
+                 || point.y() < yMin || point.y() > yMax
+                 || point.z() < zMin || point.z() > zMax
+                )
+                {
+                    FatalErrorInFunction
+                        << "Test 22 failed" << endl << abort(FatalError);
+                }
+            }
+        }
     }
 }

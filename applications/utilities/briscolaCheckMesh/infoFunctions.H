@@ -1,3 +1,5 @@
+#include "uniformMesh.H"
+#include "rectilinearMesh.H"
 #include "structuredMesh.H"
 
 namespace Foam
@@ -54,9 +56,11 @@ void generalInfo(const fvMesh& fvMsh)
 
     if (fvMsh.structured())
     {
-        Info<< "Global mesh shape = "
+        Info<< "Global mesh size = "
             << fvMsh.msh().cast<structuredMesh>().N() << endl;
     }
+
+    Info<< "Global bounding box = " << fvMsh.msh().boundingBox() << endl;
 
     const colocatedScalarField& cv = fvMsh.metrics<colocated>().cellVolumes();
 
@@ -70,9 +74,28 @@ void generalInfo(const fvMesh& fvMsh)
     {
         Info<< "Global mesh is rectilinear in "
             << directionText(fvMsh.rectilinear()) << endl;
+    }
 
-        Info<< "Global mesh is uniform in "
+    if (fvMsh.rectilinear() == unitXYZ)
+    {
+        const rectilinearMesh& rMesh = fvMsh.msh().cast<rectilinearMesh>();
+
+        Info<< "    First base vector  = " << rMesh.base().x() << nl
+            << "    Second base vector = " << rMesh.base().y() << nl
+            << "    Third base vector  = " << rMesh.base().z() << endl;
+    }
+
+    if (fvMsh.structured())
+    {
+       Info<< "Global mesh is uniform in "
             << directionText(fvMsh.uniform()) << endl;
+    }
+
+    if (fvMsh.uniform() == unitXYZ)
+    {
+        const uniformMesh& uMesh = fvMsh.msh().cast<uniformMesh>();
+
+        Info<< "    Uniform cell size = " << uMesh.cellSize() << endl;
     }
 
     Info<< "Brick topology is "

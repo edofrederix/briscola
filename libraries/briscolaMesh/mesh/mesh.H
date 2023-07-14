@@ -41,6 +41,9 @@ class mesh
     // Check if mesh directions are uniform
     labelVector uniform_;
 
+    // Bounding box
+    faceScalar boundingBox_;
+
     // Add a part patch to the list of part patches
     void addPartPatch
     (
@@ -189,6 +192,17 @@ public:
 
     // Return uniform bools
     inline labelVector uniform() const { return uniform_; }
+
+    // Bounding box
+    inline faceScalar boundingBox() const { return boundingBox_; }
+
+    // Find the cell index of the given point at given mesh level. Return
+    // -unitXYZ if it is not found. Tree search, but should be overloaded by
+    // mesh specializations for better performance.
+    virtual labelVector findCell(const vector& p, const label l = 0) const;
+
+    //- Find the cell indices of the given list of points at given mesh level
+    virtual List<labelVector> findCells(const vectorList&, const label) const;
 
     //- Disallow default bitwise assignment
     void operator=(const mesh&);

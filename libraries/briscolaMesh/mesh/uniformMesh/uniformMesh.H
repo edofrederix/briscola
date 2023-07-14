@@ -16,8 +16,8 @@ class uniformMesh
     // Uniform cell size
     vector cellSize_;
 
-    // Set uniform cell size
-    void setCellSize();
+    // Set uniform metrics
+    void setMetrics();
 
 public:
 
@@ -50,6 +50,9 @@ public:
     {
         return cellSize_;
     }
+
+    // Find cells efficiently using algebraic relation
+    virtual labelVector findCell(const vector& p, const label l = 0) const;
 
     //- Disallow default bitwise assignment
     void operator=(const uniformMesh&);

@@ -16,7 +16,7 @@ defineTypeNameAndDebug(fvMesh, 0);
 
 fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
 :
-    regIOobject(dict),
+    regIOobject(dict, true),
     mshPtr_(mesh::New(dict)),
     schemeDict_
     (
@@ -53,7 +53,7 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
 
 fvMesh::fvMesh(const fvMesh& fvMsh)
 :
-    regIOobject(fvMsh),
+    regIOobject(fvMsh, true),
     mshPtr_(fvMsh.mshPtr_, false),
     schemeDict_(fvMsh.schemeDict_),
     solverDict_(fvMsh.solverDict_),
