@@ -67,7 +67,7 @@ colocatedVectorField source
 
 colocatedScalarField sourceCoeff
 (
-    "source",
+    "sourceCoeff",
     fvMsh,
     IOobject::NO_READ,
     IOobject::NO_WRITE,
