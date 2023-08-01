@@ -58,7 +58,7 @@ public:
     ~rectilinearMesh();
 
     // Base tensor
-    inline tensor base() const { return base_; }
+    inline const tensor& base() const { return base_; }
 
     // Local cell sizes
     inline const PtrList<scalarList>& localCellSizes() const

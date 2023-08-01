@@ -1,0 +1,7 @@
+vof.C
+
+LVE/LVE.C
+LVE/truncatedHex.C
+LVE/truncatedTet.C
+
+LIB = $(FOAM_USER_LIBBIN)/libbriscolaVolumeOfFluid

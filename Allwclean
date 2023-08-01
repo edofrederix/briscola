@@ -3,6 +3,7 @@
 wclean libraries/briscolaCore
 wclean libraries/briscolaMesh
 wclean libraries/briscolaFiniteVolume
+wclean libraries/briscolaVolumeOfFluid
 
 wclean applications/utilities/briscolaCheckMesh
 
