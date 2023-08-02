@@ -6,6 +6,7 @@
 #include "regIOobject.H"
 #include "Time.H"
 #include "LVE.H"
+#include "normalScheme.H"
 
 namespace Foam
 {
@@ -28,6 +29,9 @@ class vof
 
     // Local volume enforcement problem solver
     LVE lve_;
+
+    // Normal scheme
+    autoPtr<normalScheme> normalSchemePtr_;
 
     // Disallow default bitwise assignment
     void operator=(const vof&);
@@ -60,6 +64,9 @@ public:
 
     // Reference to the LVE solver
     inline const LVE& lve() const { return lve_; }
+
+    // Reference to the normal scheme
+    inline const normalScheme& normal() const { return normalSchemePtr_(); }
 };
 
 }

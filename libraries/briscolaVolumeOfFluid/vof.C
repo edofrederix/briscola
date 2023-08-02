@@ -25,7 +25,15 @@ vof::vof(const IOdictionary& dict, const fvMesh& fvMsh)
         true,
         true
     ),
-    lve_(*this)
+    lve_(*this),
+    normalSchemePtr_
+    (
+        normalScheme::New
+        (
+            *this,
+            dict.subDict("normalScheme")
+        ).ptr()
+    )
 {}
 
 vof::~vof()

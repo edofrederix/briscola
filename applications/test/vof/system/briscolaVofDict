@@ -6,3 +6,7 @@ FoamFile
     object      briscolaVofDict;
 }
 
+normalScheme
+{
+    type    Youngs;
+}

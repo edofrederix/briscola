@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TEST=mesh
+TEST=vof
 
 MESHES=(2x 2y 2z 8)
 NPROCS=(4 4 4 16)

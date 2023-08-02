@@ -4,4 +4,7 @@ LVE/LVE.C
 LVE/truncatedHex.C
 LVE/truncatedTet.C
 
+normalSchemes/normalScheme/normalScheme.C
+normalSchemes/Youngs/Youngs.C
+
 LIB = $(FOAM_USER_LIBBIN)/libbriscolaVolumeOfFluid
