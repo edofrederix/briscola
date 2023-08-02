@@ -142,11 +142,13 @@ vector interpolationWeights
 
     if
     (
+        // At faces points belong to the upper cell
+
         insideOnly
      && (
-            u.x() < -tol || u.x() > 1+tol
-         || u.y() < -tol || u.y() > 1+tol
-         || u.z() < -tol || u.z() > 1+tol
+            u.x() < 0 || u.x() >= 1
+         || u.y() < 0 || u.y() >= 1
+         || u.z() < 0 || u.z() >= 1
         )
     )
     {
