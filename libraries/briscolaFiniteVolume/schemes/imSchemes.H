@@ -86,18 +86,18 @@ inline tmp<linearSystem<stencil,Type,MeshType>> laplacian
 }
 
 template<class Type, class MeshType>
-inline tmp<linearSystem<stencil,Type,MeshType>> source
+inline tmp<linearSystem<diagStencil,Type,MeshType>> source
 (
     const meshField<scalar,MeshType>& coeff,
     meshField<Type,MeshType>& field
 )
 {
-    tmp<linearSystem<stencil,Type,MeshType>> tSys
+    tmp<linearSystem<diagStencil,Type,MeshType>> tSys
     (
-        new linearSystem<stencil,Type,MeshType>(field)
+        new linearSystem<diagStencil,Type,MeshType>(field)
     );
 
-    linearSystem<stencil,Type,MeshType>& Sys = tSys.ref();
+    linearSystem<diagStencil,Type,MeshType>& Sys = tSys.ref();
 
     const meshField<scalar,MeshType>& cv =
         field.fvMsh().template metrics<MeshType>().cellVolumes();
@@ -107,13 +107,13 @@ inline tmp<linearSystem<stencil,Type,MeshType>> source
     forAll(field, l)
     forAll(field[l], d)
     {
-        meshDirection<stencil,MeshType>& A = Sys.A()[l][d];
+        meshDirection<diagStencil,MeshType>& A = Sys.A()[l][d];
         const meshDirection<scalar,MeshType>& c = coeff[l][d];
         const meshDirection<scalar,MeshType>& v = cv[l][d];
 
         forAllCells(A, i, j, k)
         {
-            A(i,j,k) = v(i,j,k)*diagStencil(c(i,j,k));
+            A(i,j,k) = v(i,j,k)*c(i,j,k);
         }
     }
 
