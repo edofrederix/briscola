@@ -16,8 +16,8 @@ class Youngs
 :
     public normalScheme
 {
-    // Disallow default bitwise assignment
-    void operator=(const Youngs&);
+    // Normal treshold (defaults to 1e-8)
+    scalar threshold_;
 
 public:
 

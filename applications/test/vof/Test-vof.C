@@ -172,8 +172,26 @@ void testLVE
 
         if (Foam::mag(f1-f2) > 1e-8)
             FatalErrorInFunction
-                << f1 << " " << f2 << " Test 2b failed" << endl << abort(FatalError);
+                << "Test 2b failed" << endl << abort(FatalError);
     }
+
+    // Check if sign is correct
+
+    const scalar Cf =
+        method == "p" ? vf.lve().pLVE(v,n,1)
+                      : vf.lve().aLVE(v,n,1);
+
+    if (Foam::mag(truncatedHex(v,n,Cf).volume()/Vc - 1.0) > 1e-8)
+        FatalErrorInFunction
+                << "Test 2c failed" << endl << abort(FatalError);
+
+    const scalar Ce =
+        method == "p" ? vf.lve().pLVE(v,n,0)
+                      : vf.lve().aLVE(v,n,0);
+
+    if (Foam::mag(truncatedHex(v,n,Ce).volume()/Vc) > 1e-8)
+        FatalErrorInFunction
+                << "Test 2d failed" << endl << abort(FatalError);
 }
 
 void testRotatedLVE
@@ -283,15 +301,16 @@ int main(int argc, char *argv[])
 
     // Normals
 
-    vectorList ns(7);
+    vectorList ns(8);
 
     ns[0] = vector(1, 0, 0);
     ns[1] = vector(0, 1, 0);
     ns[2] = vector(0, 0, 1);
-    ns[3] = vector(-1, 0, 0);
-    ns[4] = vector(0, -1, 0);
-    ns[5] = vector(0, 0, -1);
+    ns[3] = -ns[0];
+    ns[4] = -ns[1];
+    ns[5] = -ns[2];
     ns[6] = vector(4.0/5.0, 1.0/5.0, 2.0*Foam::sqrt(2.0)/5.0);
+    ns[7] = -ns[6];
 
     // Stretch tensor
 
@@ -331,5 +350,33 @@ int main(int argc, char *argv[])
         testRotatedLVE(vf, 0.45*general, n, "a");
         testRotatedLVE(vf, 0.45*(general+unit), n, "a");
         testRotatedLVE(vf, 0.45*(general-unit), n, "a");
+
+        // Test cells
+
+        label N = 100;
+
+        const colocatedVertexVectorDirection& v =
+            fvMsh.template metrics<colocated>().vertexCenters()[0][0];
+
+        const colocatedScalarDirection& V =
+            fvMsh.template metrics<colocated>().cellVolumes()[0][0];
+
+        for (int i = 0; i <= N; i++)
+        {
+            colocatedScalarDirection& a = vf.alpha()[0][0];
+
+            a = scalar(i)/N;
+
+            forAllCells(a, i, j, k)
+            {
+                const scalar C = vf.lve()(i,j,k,n);
+
+                const scalar f = truncatedHex(v(i,j,k),n,C).volume()/V(i,j,k);
+
+                if (Foam::mag(f-a(i,j,k)) > 1e-8)
+                    FatalErrorInFunction
+                        << "Test 3 failed" << endl << abort(FatalError);
+            }
+        }
     }
 }

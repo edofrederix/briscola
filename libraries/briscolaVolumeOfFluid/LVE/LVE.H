@@ -16,7 +16,7 @@ class vof;
 
 class LVE
 {
-    // Reference to the VoF object
+    // Reference to the Vof object
     const vof& vf_;
 
     // Reference to the mesh
@@ -61,6 +61,18 @@ public:
 
     // Solve the local volume enforcement problem
     scalar operator()(const labelVector&, const vector& n) const;
+
+    // Solve the local volume enforcement problem
+    inline scalar operator()
+    (
+        const label& i,
+        const label& j,
+        const label& k,
+        const vector& n
+    ) const
+    {
+        return this->operator()(labelVector(i,j,k), n);
+    }
 
     // Solve the local volume enforcement problem on arbitrary quadrilater
     // hexahedrons

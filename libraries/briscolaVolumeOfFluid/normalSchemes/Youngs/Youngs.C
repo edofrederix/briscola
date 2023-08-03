@@ -17,12 +17,14 @@ addToRunTimeSelectionTable(normalScheme, Youngs, dictionary);
 
 Youngs::Youngs(const vof& vf, const dictionary& dict)
 :
-    normalScheme(vf, dict)
+    normalScheme(vf, dict),
+    threshold_(dict.lookupOrDefault<scalar>("threshold", 1e-3))
 {}
 
 Youngs::Youngs(const Youngs& s)
 :
-    normalScheme(s)
+    normalScheme(s),
+    threshold_(s.threshold_)
 {}
 
 Youngs::~Youngs()
@@ -35,14 +37,15 @@ tmp<colocatedVectorField> Youngs::operator()()
         new colocatedVectorField(ex::grad(vf_.alpha()))
     );
 
-    const colocatedScalarDirection& alpha = vf_.alpha()[0][0];
     colocatedVectorDirection& n = tn.ref()[0][0];
 
     forAllCells(n, i, j, k)
     {
-        if (alpha(i,j,k) > 1e-6 && alpha(i,j,k) < 1-1e-6)
+        const scalar S = Foam::mag(n(i,j,k));
+
+        if (S > threshold_)
         {
-            n(i,j,k) /= Foam::mag(n(i,j,k));
+            n(i,j,k) /= S;
         }
         else
         {

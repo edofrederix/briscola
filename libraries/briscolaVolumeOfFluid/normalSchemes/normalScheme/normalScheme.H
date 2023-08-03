@@ -19,16 +19,11 @@ class normalScheme
 {
 protected:
 
-    // Reference to the VoF object
+    // Reference to the Vof object
     const vof& vf_;
 
     // Reference to the dictionary
     const dictionary& dict_;
-
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const normalScheme&);
 
 public:
 

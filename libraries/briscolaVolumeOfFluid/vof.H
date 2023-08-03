@@ -27,17 +27,36 @@ class vof
     // Volume fraction field
     colocatedScalarField alpha_;
 
+    // Flux field
+    colocatedFaceScalarField flux_;
+
     // Local volume enforcement problem solver
     LVE lve_;
 
     // Normal scheme
     autoPtr<normalScheme> normalSchemePtr_;
 
+    // Void fraction threshold
+    static const scalar threshold_;
+
     // Disallow default bitwise assignment
     void operator=(const vof&);
 
     // Disallow copy constructor
     vof(const vof&);
+
+    // Reset the flux
+    inline void resetFlux()
+    {
+        flux_ = Zero;
+    }
+
+    // Update the flux in given direction
+    void updateFlux
+    (
+        const colocatedFaceScalarField&,
+        const label
+    );
 
 public:
 
@@ -66,7 +85,10 @@ public:
     inline const LVE& lve() const { return lve_; }
 
     // Reference to the normal scheme
-    inline const normalScheme& normal() const { return normalSchemePtr_(); }
+    inline normalScheme& normal() { return normalSchemePtr_(); }
+
+    // Solve the Vof advection equation given a flux
+    void solve(const colocatedFaceScalarField& phi);
 };
 
 }

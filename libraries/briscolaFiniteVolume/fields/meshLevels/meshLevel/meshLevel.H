@@ -119,8 +119,14 @@ public:
         return mshFieldPtr_;
     }
 
-    // Mesh field (unchecked!)
+    // Const reference to the mesh field (unchecked!)
     inline const meshField<Type,MeshType>& mshField() const
+    {
+        return *mshFieldPtr_;
+    }
+
+    // Access to the mesh field (unchecked!)
+    inline meshField<Type,MeshType>& mshField()
     {
         return *mshFieldPtr_;
     }

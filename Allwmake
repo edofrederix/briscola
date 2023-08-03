@@ -10,3 +10,4 @@ wmake applications/utilities/briscolaCheckMesh
 wmake applications/solvers/briscolaLaplacian
 wmake applications/solvers/briscolaColocated
 wmake applications/solvers/briscolaStaggered
+wmake applications/solvers/briscolaVofAdvection
