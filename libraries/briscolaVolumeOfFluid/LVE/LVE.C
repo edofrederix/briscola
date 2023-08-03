@@ -60,16 +60,12 @@ scalar LVE::solveBracketedLVE
 
         if (Vi - VMin < -1e-12 || VMax - Vi < -1e-12)
         {
-            Info<< endl << iter << " " << Vf << endl;
-            Info<< VMin << " " << Vi << " " << VMax << endl;
-            Info<< truncatedHex(v,n,CMin).volume() << " " << truncatedHex(v,n,C).volume() << " " << truncatedHex(v,n,CMax).volume() << endl;
-            Info<< truncatedHex(v,n,CMin-1e-5).volume() << " " << truncatedHex(v,n,C-1e-5).volume() << " " << truncatedHex(v,n,CMax-1e-5).volume() << endl;
-
             FatalErrorInFunction
                 << "Bracketed LVE problem solver failed because the "
                 << "truncated hex volume is non-monotonic." << endl
                 << abort(FatalError);
         }
+
         #endif
 
         // Adjust search boundaries
