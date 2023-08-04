@@ -47,20 +47,23 @@ int main(int argc, char *argv[])
 
         U.setOldTime();
 
-        // Cycle Adams-Bashforth sources
-
-        AB1 = AB0;
-        AB0 = ex::div(phi,U);
-
         // Predictor
 
         USys = im::ddt(U);
-        USys += 1.5*AB0;
-        USys -= 0.5*AB1;
-        USys -= 0.5*LU;
-        USys -= 0.5*LU.evaluate();
+
         USys -= imSource;
         USys -= exSource;
+
+        USys -= 0.5*LapU;
+        USys -= 0.5*LapU.evaluate();
+
+        USys -= 0.5*DivU;
+
+        DivU = ex::div(phi,U);
+
+        USys += 1.5*DivU;
+
+        // Solve predictor
 
         USolve->solve(USys);
 
