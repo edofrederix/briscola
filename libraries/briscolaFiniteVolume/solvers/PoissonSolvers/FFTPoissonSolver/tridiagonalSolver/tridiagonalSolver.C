@@ -221,7 +221,7 @@ tridiagonalSolver::tridiagonalSolver
     Nd_(solver.decomp().Nd(solver_.FFTPlan().solveDir())[Pstream::myProcNo()]),
     Sd_(solver.decomp().Sd(solver_.FFTPlan().solveDir())[Pstream::myProcNo()]),
     BC_(BC),
-    cellSizes_(solver.fvMsh().msh().cast<rectilinearMesh>().cellSizes()),
+    cellSizes_(solver.fvMsh().msh().cast<rectilinearMesh>().globalCellSizes()),
     D_(Nd_, Zero),
     DU_(1.0 / sqr(cellSizes_[solver_.FFTPlan().solveDir()])),
     DL_(1.0 / sqr(cellSizes_[solver_.FFTPlan().solveDir()]))
@@ -280,7 +280,7 @@ void tridiagonalSolver::solve
 
             for (int k = 0; k < Nsolve; k++)
             {
-                Dh[k] = D_(cursor + k);
+                Dh[k] = D_(cursor + k) - solver_.At();
                 fh[k] = f(cursor + k);
             }
 
@@ -353,7 +353,7 @@ void tridiagonalSolver::solveCyclic
                 )
                 /
                 (
-                      D_(cursor)
+                      D_(cursor) - solver_.At()
                     + DL_[0] * v(cursor + Nsolve-1)
                     + DU_[0] * v(cursor + 1)
                 );

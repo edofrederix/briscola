@@ -7,6 +7,7 @@
 #include "pencilDecomposer.H"
 #include "tridiagonalSolver.H"
 #include "FourierTransforms.H"
+#include "imSchemes.H"
 
 namespace Foam
 {
@@ -44,6 +45,10 @@ class FFTPoissonSolver
 
     // Tridiagonal solver
     autoPtr<FFT::tridiagonalSolver> tds_;
+
+    // Ddt scheme coefficient and source term
+    scalar At_;
+    colocatedScalarField bt_;
 
     // Funtion to check if the mesh qualifies for FFTs. Will give error if not
     // all criteria are met.
@@ -83,6 +88,7 @@ public:
     inline scalarBlock& xPencil() { return xPencil_; }
     inline scalarBlock& yPencil() { return yPencil_; }
     inline scalarBlock& zPencil() { return zPencil_; }
+    inline scalar At() { return At_; }
 };
 
 }

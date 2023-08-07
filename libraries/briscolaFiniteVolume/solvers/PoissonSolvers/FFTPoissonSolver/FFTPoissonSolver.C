@@ -42,7 +42,9 @@ FFTPoissonSolver::FFTPoissonSolver
     initData_(decomp_.Ni()[Pstream::myProcNo()]),
     xPencil_(decomp_.Nx()[Pstream::myProcNo()]),
     yPencil_(decomp_.Ny()[Pstream::myProcNo()]),
-    zPencil_(decomp_.Nz()[Pstream::myProcNo()])
+    zPencil_(decomp_.Nz()[Pstream::myProcNo()]),
+    At_(Zero),
+    bt_("bt", fvMsh)
 {
     checkMesh(fvMsh);
 }
@@ -58,7 +60,9 @@ FFTPoissonSolver::FFTPoissonSolver
     initData_(decomp_.Ni()[Pstream::myProcNo()]),
     xPencil_(decomp_.Nx()[Pstream::myProcNo()]),
     yPencil_(decomp_.Ny()[Pstream::myProcNo()]),
-    zPencil_(decomp_.Nz()[Pstream::myProcNo()])
+    zPencil_(decomp_.Nz()[Pstream::myProcNo()]),
+    At_(Zero),
+    bt_("bt", fvMsh)
 {
     checkMesh(fvMsh);
 }
@@ -71,6 +75,23 @@ void FFTPoissonSolver::solve
     const bool ddt
 )
 {
+    const word laplacianSchemeType
+    (
+        laplacianScheme<scalar,colocated>::New
+        (
+            "laplacian("+x.name()+")",
+            this->fvMsh()
+        )->dict().lookup("type")
+    );
+
+    if (laplacianSchemeType != "linearGauss")
+    {
+        WarningInFunction
+            << "FFT Poisson solver is using the linearGauss laplacian scheme"
+            << " laplacian scheme since the " << laplacianSchemeType
+            << " is not supported." << endl;
+    }
+
     if (lambdaPtr != nullptr)
     {
         FatalErrorInFunction
@@ -81,10 +102,20 @@ void FFTPoissonSolver::solve
 
     if (ddt)
     {
-        FatalErrorInFunction
-            << "FFT Poisson solver does not support use of "
-            << "ddt argument in solve function." << endl
-            << abort(FatalError);
+        const colocatedScalarField& cv =
+            this->fvMsh().metrics<colocated>().cellVolumes();
+
+        At_ = ddtScheme<scalar,colocated>::New
+            (
+                "ddt("+x.name()+")",
+                this->fvMsh()
+            )->ddt(x)->A()[0][0](0,0,0).center()/cv[0][0](0,0,0);
+
+        bt_ = ddtScheme<scalar,colocated>::New
+            (
+                "ddt("+x.name()+")",
+                this->fvMsh()
+            )->ddt(x)->b()/cv;
     }
 
     if (fft_.empty() || &fft_->x() != &x)
@@ -115,6 +146,11 @@ void FFTPoissonSolver::solve
         forAllCells((*bPtr)[0][0], i, j, k)
         {
             initData_(i,j,k) = - (*bPtr)[0][0](i,j,k);
+
+            if (ddt)
+            {
+                initData_(i,j,k) -= bt_[0][0](i,j,k);
+            }
         }
 
         // Transform in two directions and solve in the third direction
