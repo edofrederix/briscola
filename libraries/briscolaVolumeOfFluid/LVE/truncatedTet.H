@@ -1,0 +1,88 @@
+#ifndef truncatedTet_H
+#define truncatedTet_H
+
+#include "fvMesh.H"
+#include "vectorList.H"
+
+namespace Foam
+{
+
+namespace briscola
+{
+
+namespace fv
+{
+
+class truncatedTet
+{
+    // Vertices
+    vectorList v_;
+
+    // Plane normal
+    vector n_;
+
+    // Plane constant
+    scalar C_;
+
+    // List of vertex constants
+    scalarList phi_;
+
+    // Set the vertex constants
+    void setVertexConstants();
+
+    // Function to compute the intersection of the plane and the line segment
+    // between two vertices
+    inline vector intersectionPoint(const label i, const label j) const
+    {
+        const vector d = v_[j] - v_[i];
+        return v_[i] - (C_ + (n_ & v_[i]))*d/(n_ & d);
+    }
+
+    // Disallow default bitwise assignment
+    void operator=(const truncatedTet&);
+
+public:
+
+    // Construct from components
+    truncatedTet
+    (
+        const vectorList& v,
+        const vector& n,
+        const scalar& C
+    );
+
+    // Copy constructor
+    truncatedTet(const truncatedTet&);
+
+    // Clone
+    autoPtr<truncatedTet> clone() const
+    {
+        return autoPtr<truncatedTet>(new truncatedTet(*this));
+    }
+
+    // Destructor
+    virtual ~truncatedTet();
+
+    // Access to the vertices
+    inline const vectorList& v() const { return v_; }
+
+    // Return the plane normal
+    inline vector n() const { return n_; }
+
+    // Return the plane constant
+    inline scalar C() const { return C_; }
+
+    // Access to the vertex constants
+    inline const scalarList& phi() const { return phi_; }
+
+    // Compute the volume
+    virtual scalar volume() const;
+};
+
+}
+
+}
+
+}
+
+#endif

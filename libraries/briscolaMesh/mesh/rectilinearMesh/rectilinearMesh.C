@@ -232,7 +232,8 @@ labelVector rectilinearMesh::findCell(const vector& p, const label l) const
         cmptDivide(this->operator[](0).N(),this->operator[](l).N())
     );
 
-    // Binary search
+    // Binary search. Use <= operator so that at faces points belong to the
+    // upper cell.
 
     const label i = findLower(x, q.x(), 0, lessEqOp<scalar>());
     const label j = findLower(y, q.y(), 0, lessEqOp<scalar>());

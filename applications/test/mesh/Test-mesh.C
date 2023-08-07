@@ -474,23 +474,34 @@ int main(int argc, char *argv[])
 
             if (indices[i] != -unitXYZ)
             {
-                const vectorBlock cPoints
+                const vertexVector cPoints
                 (
                     msh[l].points().cellPoints(indices[i])
                 );
 
                 const vector point(points[i]);
 
-                const scalarBlock x(cPoints & vector(1,0,0));
-                const scalarBlock y(cPoints & vector(0,1,0));
-                const scalarBlock z(cPoints & vector(0,0,1));
+                const vertexScalar x(cPoints & vector(1,0,0));
+                const vertexScalar y(cPoints & vector(0,1,0));
+                const vertexScalar z(cPoints & vector(0,0,1));
 
-                const scalar xMin(min(x));
-                const scalar xMax(max(x));
-                const scalar yMin(min(y));
-                const scalar yMax(max(y));
-                const scalar zMin(min(z));
-                const scalar zMax(max(z));
+                scalarList xl(8);
+                scalarList yl(8);
+                scalarList zl(8);
+
+                forAll(xl, i)
+                {
+                    xl[i] = x[i];
+                    yl[i] = y[i];
+                    zl[i] = z[i];
+                }
+
+                const scalar xMin(min(xl));
+                const scalar xMax(max(xl));
+                const scalar yMin(min(yl));
+                const scalar yMax(max(yl));
+                const scalar zMin(min(zl));
+                const scalar zMax(max(zl));
 
                 if
                 (

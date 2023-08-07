@@ -3,9 +3,11 @@
 wclean libraries/briscolaCore
 wclean libraries/briscolaMesh
 wclean libraries/briscolaFiniteVolume
+wclean libraries/briscolaVolumeOfFluid
 
 wclean applications/utilities/briscolaCheckMesh
 
 wclean applications/solvers/briscolaLaplacian
 wclean applications/solvers/briscolaColocated
 wclean applications/solvers/briscolaStaggered
+wclean applications/solvers/briscolaVofAdvection

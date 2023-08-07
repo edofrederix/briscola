@@ -47,21 +47,24 @@ int main(int argc, char *argv[])
 
         U.setOldTime();
 
+        // Cycle Adams-Bashforth sources
+
+        AB1 = AB0;
+        AB0 = ex::div(phi,U);
+
         // Predictor
 
         USys = im::ddt(U);
-        USys += im::div(phi,U);
-        USys -= im::laplacian(nu,U);
-        USys += ex::grad(p);
-        USys -= source;
-        USys -= im::source(sourceCoeff,U);
+        USys += 1.5*AB0;
+        USys -= 0.5*AB1;
+        USys -= 0.5*LU;
+        USys -= 0.5*LU.evaluate();
+        USys -= imSource;
+        USys -= exSource;
 
         USolve->solve(USys);
 
         // Pressure equation
-
-        U += deltaT*ex::grad(p);
-        U.correctBoundaryConditions();
 
         phi = ex::faceFlux(U);
 

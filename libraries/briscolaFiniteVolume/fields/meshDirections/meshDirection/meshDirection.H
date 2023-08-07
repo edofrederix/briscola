@@ -118,8 +118,14 @@ public:
         return mshLevelPtr_;
     }
 
-    // Mesh level (unchecked!)
+    // Const reference to the mesh level (unchecked!)
     inline const meshLevel<Type,MeshType>& mshLevel() const
+    {
+        return *mshLevelPtr_;
+    }
+
+    // Access to the mesh level (unchecked!)
+    inline meshLevel<Type,MeshType>& mshLevel()
     {
         return *mshLevelPtr_;
     }

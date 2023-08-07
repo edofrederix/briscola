@@ -75,7 +75,7 @@ labelVector uniformMesh::findCell(const vector& p, const label l) const
         cmptDivide(N,this->operator[](l).N())
     );
 
-    // Algebraic relation
+    // Algebraic relation. Cast to label automatically applies floor.
 
     const label i = (q.x() - x[0])/(x[x.size()-1] - x[0])*N.x();
     const label j = (q.y() - y[0])/(y[y.size()-1] - y[0])*N.y();
