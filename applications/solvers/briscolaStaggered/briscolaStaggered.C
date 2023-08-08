@@ -49,17 +49,16 @@ int main(int argc, char *argv[])
 
         USys = im::ddt(U);
 
-        USys -= imSource;
+        USys -= im::source(imSourceCoeff,U);
         USys -= exSource;
 
+        LapU = im::laplacian(nu,U);
         USys -= 0.5*LapU;
         USys -= 0.5*LapU.evaluate();
 
         USys -= 0.5*DivU;
-
         phi = ex::faceFlux(U);
         DivU = ex::div(phi,U);
-
         USys += 1.5*DivU;
 
         // Solve predictor

@@ -105,15 +105,7 @@ phi = Zero;
 
 // Stencils
 
-linearSystem<stencil,scalar,staggered> LapU
-(
-    im::laplacian(nu,U)
-);
-
-linearSystem<diagStencil,scalar,staggered> imSource
-(
-    im::source(imSourceCoeff,U)
-);
+linearSystem<stencil,scalar,staggered> LapU(U);
 
 // Adams-Bashforth source
 

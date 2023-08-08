@@ -102,15 +102,7 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
 
 // Stencils
 
-linearSystem<stencil,vector,colocated> LapU
-(
-    im::laplacian(nu,U)
-);
-
-linearSystem<diagStencil,vector,colocated> imSource
-(
-    im::source(imSourceCoeff,U)
-);
+linearSystem<stencil,vector,colocated> LapU(U);
 
 // Adams-Bashforth source
 
