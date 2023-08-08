@@ -507,7 +507,9 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
     const meshField<faceVector,MeshType>& fan = faceAreaNormals_;
     const meshField<faceVector,MeshType>& fc = faceCenters_;
 
-    cv = Zero;
+    // Small number to avoid division by zero in unset ghost cells
+
+    cv = 1e-16;
 
     forAll(cv, l)
     {

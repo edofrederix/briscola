@@ -102,21 +102,13 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
 
 // Stencils
 
-linearSystem<stencil,vector,colocated> LU
-(
-    im::laplacian(nu,U)
-);
+linearSystem<stencil,vector,colocated> LapU(U);
 
-linearSystem<diagStencil,vector,colocated> imSource
-(
-    im::source(imSourceCoeff,U)
-);
+// Adams-Bashforth source
 
-// Adams-Bashforth sources
-
-colocatedVectorField AB0
+colocatedVectorField DivU
 (
-    "AB0",
+    "DivU",
     fvMsh,
     IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
@@ -124,15 +116,4 @@ colocatedVectorField AB0
     false
 );
 
-colocatedVectorField AB1
-(
-    "AB1",
-    fvMsh,
-    IOobject::READ_IF_PRESENT,
-    IOobject::AUTO_WRITE,
-    true,
-    false
-);
-
-AB0 = ex::div(phi,U);
-AB1 = ex::div(phi,U);
+DivU = ex::div(phi,U);

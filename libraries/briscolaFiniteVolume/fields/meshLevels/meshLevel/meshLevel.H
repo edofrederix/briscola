@@ -47,9 +47,6 @@ class meshLevel
     // Transfer data from other mesh level
     void transferData(meshLevel<Type,MeshType>&);
 
-    // Update active cells based on boundary conditions
-    void updateActiveCells();
-
 public:
 
     // Runtime type information

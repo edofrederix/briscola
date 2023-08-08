@@ -47,9 +47,6 @@ protected:
     // Transfer data from other mesh field
     void transferData(meshField<Type,MeshType>&);
 
-    // Update active cells based on boundary conditions
-    void updateActiveCells();
-
 public:
 
     // Runtime type information

@@ -53,15 +53,6 @@ void meshField<Type,MeshType>::transferData
     }
 }
 
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::updateActiveCells()
-{
-    forAll(*this, l)
-    {
-        listType::operator[](l).updateActiveCells();
-    }
-}
-
 // Main constructor
 
 template<class Type, class MeshType>
@@ -387,11 +378,6 @@ void meshField<Type,MeshType>::addBoundaryConditions()
                 }
             }
         }
-
-        // Update active cells. For Dirichlet-like boundary conditions, we do
-        // not need to solve for cells on shifted boundaries.
-
-        this->updateActiveCells();
     }
 }
 

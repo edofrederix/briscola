@@ -6,5 +6,6 @@ FoamFile
     object      briscolaStaggeredDict;
 }
 
-nu      0.005555;
-source  (1 0 0);
+nu          0.005555;
+source      (1 0 0);
+sourceCoeff (0 0 0);

@@ -79,24 +79,21 @@ public:
     // Evaluate the boundary condition for given level
     virtual void evaluate(const label, const bool = false);
 
-    // This boundary condition sets values, so it behaves like a slave patch on
-    // shifted boundaries
-    virtual inline bool master() const { return false; }
-    virtual inline bool slave() const { return true; }
+    // Constrained boundary conditions
+
+        // This boundary condition constrains values on shifted boundaries
+        virtual bool constrained(const bool shifted) const { return shifted; }
 
     // Eliminated boundary conditions
 
         // Eliminated ghosts for all boundaries
-        virtual bool eliminated(const bool shifted) const { return true; }
+        virtual bool eliminated(const bool shifted) const { return !shifted; }
 
         // On shifted boundaries the value is set directly. On non-shifted
         // boundaries we apply homogeneous Neumann.
         virtual stencil boundaryCoeff(const label l, const label d)
         {
-            return
-                this->mshField_[l][d].shifted(this->boundaryOffset())
-            ? pTraits<diagStencil>::zero
-            : pTraits<diagStencil>::one;
+            return pTraits<diagStencil>::one;
         }
 };
 
