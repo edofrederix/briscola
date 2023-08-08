@@ -3,6 +3,8 @@
 #include "vector.H"
 #include "block.H"
 #include "fv.H"
+
+#include "FFTPoissonSolver.H"
 #include "tridiagonalSolver.H"
 
 using namespace Foam;
@@ -39,7 +41,9 @@ int main(int argc, char *argv[])
 
     fvMesh fvMsh(meshDict, runTime);
 
-    tridiagonalSolver tds(fvMsh, N, Sz, BC);
+    FFTPoissonSolver fft(fvMsh);
+
+    FFT::tridiagonalSolver tds(fft,BC);
 
     // Input data containing random values
 

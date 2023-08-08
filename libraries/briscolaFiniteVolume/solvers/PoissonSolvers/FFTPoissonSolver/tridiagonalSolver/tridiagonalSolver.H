@@ -63,11 +63,11 @@ class tridiagonalSolver
 
 public:
 
-    // Construct from dictionary
+    // Construct from FFT solver
     tridiagonalSolver
     (
         FFTPoissonSolver& solver,
-        labelVector BC
+        const labelVector& BC
     );
 
     // Destructor
@@ -76,20 +76,22 @@ public:
     // Solve tridiagonal system
     void solve
     (
-        scalarBlock& f,
         scalarBlock& p,
-        label start = 0
+        const scalarBlock& f,
+        const bool ddt,
+        const label start = 0
     );
 
     // Solve cyclic tridiagonal system
     void solveCyclic
     (
-        scalarBlock& f,
-        scalarBlock& p
+        scalarBlock& p,
+        const scalarBlock& f,
+        const bool ddt
     );
 
     // Solve x, y or z-direction of a scalarBlock
-    void solve(scalarBlock& xyzPencil);
+    void solve(scalarBlock& xyzPencil, const bool ddt);
 
 };
 

@@ -54,8 +54,8 @@ public:
     // Destructor
     virtual ~planner();
 
-    inline label decompType() { return decompType_; }
-    inline label solveDir() { return solveDir_; }
+    inline label decompType() const { return decompType_; }
+    inline label solveDir() const { return solveDir_; }
 
 };
 

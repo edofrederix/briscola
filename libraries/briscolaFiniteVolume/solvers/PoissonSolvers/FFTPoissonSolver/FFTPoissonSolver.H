@@ -22,6 +22,9 @@ class FFTPoissonSolver
 :
     public PoissonSolver<stencil,scalar,colocated>
 {
+    // Reference to the mesh
+    const fvMesh& fvMsh_;
+
     // Planner
     FFT::planner FFTPlan_;
 
@@ -45,10 +48,6 @@ class FFTPoissonSolver
 
     // Tridiagonal solver
     autoPtr<FFT::tridiagonalSolver> tds_;
-
-    // Ddt scheme coefficient and source term
-    scalar At_;
-    colocatedScalarField bt_;
 
     // Funtion to check if the mesh qualifies for FFTs. Will give error if not
     // all criteria are met.
@@ -82,13 +81,19 @@ public:
     // Use the base class solve support functions
     using PoissonSolver<stencil,scalar,colocated>::solve;
 
-    // Access functions
+    // Access to the mesh
+    inline const fvMesh& fvMsh() const { return fvMsh_; }
+
+    // Access to the decomposer
     inline FFT::pencilDecomposer& decomp() { return decomp_; }
+
+    // Access to the FFT plan
     inline FFT::planner& FFTPlan() { return FFTPlan_; }
+
+    // Access to the pencils
     inline scalarBlock& xPencil() { return xPencil_; }
     inline scalarBlock& yPencil() { return yPencil_; }
     inline scalarBlock& zPencil() { return zPencil_; }
-    inline scalar At() { return At_; }
 };
 
 }

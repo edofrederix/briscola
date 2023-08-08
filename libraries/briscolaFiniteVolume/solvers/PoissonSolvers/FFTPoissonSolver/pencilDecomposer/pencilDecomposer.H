@@ -52,6 +52,29 @@ class pencilDecomposer
     // Processor overlap lookup table
     HashTable<processorOverlap> processorOverlap_;
 
+    // Initialize decompositions
+    void decompInit(label decompType);
+
+    // Check a given decomposition
+    void checkDecomp(labelVector D);
+
+    // Make key for HashTable. Only works when I != T.
+    word makeKey(labelVector I, labelVector T);
+
+    // Unpack a receive buffer
+    // recvMajorOrder represents the major order
+    // of the output block ("x", "y" or "z")
+    void unpack
+    (
+        scalarBlock& output,
+        const scalarBlock& buffer,
+        const List<labelVector>& recvStart,
+        const List<labelVector>& recvSize,
+        const List<labelVector>& startIndex,
+        const labelVector T,
+        const string recvMajorOrder
+    );
+
 public:
 
     // Construct from mesh
@@ -137,37 +160,14 @@ public:
         }
     }
 
-    // Initialize decompositions
-    void decompInit(label decompType);
-
-    // Check a given decomposition
-    void checkDecomp(labelVector D);
-
     // Return processor rank from its index in the processor map
     // and vice-versa
     label procNumFromIndex(const labelVector ijk, const labelVector D);
     labelVector indexFromProcNum(const label num, const labelVector D);
 
-    // Make key for HashTable
-    word makeKey(labelVector I, labelVector T);
-
     // Return processor dimensions and origins
     List<labelVector> procDims(labelVector D);
     List<labelVector> procOrig(labelVector D);
-
-    // Unpack a receive buffer
-    // recvMajorOrder represents the major order
-    // of the output block ("x", "y" or "z")
-    void unpack
-    (
-        const scalarBlock& buffer,
-        const List<labelVector>& recvStart,
-        const List<labelVector>& recvSize,
-        scalarBlock& output,
-        List<labelVector>& startIndex,
-        labelVector T,
-        string recvMajorOrder
-    );
 
     // Transpose function
     // sendMajorOrder represents the major order

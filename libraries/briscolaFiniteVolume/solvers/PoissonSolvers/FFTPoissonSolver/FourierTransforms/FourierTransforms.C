@@ -396,7 +396,7 @@ void FourierTransforms::bwdFFTz()
     }
 }
 
-void FourierTransforms::normalize(scalarBlock& transformedData)
+void FourierTransforms::normalize(scalarBlock& transformedData) const
 {
     transformedData /= normalization_;
 }

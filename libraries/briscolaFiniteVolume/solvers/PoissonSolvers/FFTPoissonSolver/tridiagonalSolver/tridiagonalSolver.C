@@ -213,7 +213,7 @@ void tridiagonalSolver::computeDiagonals()
 tridiagonalSolver::tridiagonalSolver
 (
     FFTPoissonSolver& solver,
-    labelVector BC
+    const labelVector& BC
 )
 :
     solver_(solver),
@@ -259,11 +259,14 @@ tridiagonalSolver::~tridiagonalSolver()
 
 void tridiagonalSolver::solve
 (
-    scalarBlock& f,
     scalarBlock& p,
-    label start
+    const scalarBlock& f,
+    const bool ddt,
+    const label start
 )
 {
+    const scalar deltaT = solver_.fvMsh().time().deltaTValue();
+
     labelVector N(p.shape());
 
     label Nsolve = N_[solver_.FFTPlan().solveDir()];
@@ -280,7 +283,7 @@ void tridiagonalSolver::solve
 
             for (int k = 0; k < Nsolve; k++)
             {
-                Dh[k] = D_(cursor + k) - solver_.At();
+                Dh[k] = D_(cursor + k) - (ddt ? 1.0/deltaT : 0.0);
                 fh[k] = f(cursor + k);
             }
 
@@ -308,20 +311,23 @@ void tridiagonalSolver::solve
 
 void tridiagonalSolver::solveCyclic
 (
-    scalarBlock& f,
-    scalarBlock& p
+    scalarBlock& p,
+    const scalarBlock& f,
+    const bool ddt
 )
 {
+    const scalar deltaT = solver_.fvMsh().time().deltaTValue();
+
     // Solve first auxiliary system
     scalarBlock u(Nd_, Zero);
 
-    solve(f, u, 1);
+    solve(u, f, ddt, 1);
 
     // Solve second auxiliary system
     scalarBlock v(Nd_, Zero);
     scalarBlock vf(Nd_, Zero);
 
-    label Nsolve = N_[solver_.FFTPlan().solveDir()];
+    const label Nsolve = N_[solver_.FFTPlan().solveDir()];
 
     label cursor = 0;
 
@@ -336,7 +342,7 @@ void tridiagonalSolver::solveCyclic
         }
     }
 
-    solve(vf, v, 1);
+    solve(v, vf, 1);
 
     cursor = 0;
 
@@ -353,7 +359,7 @@ void tridiagonalSolver::solveCyclic
                 )
                 /
                 (
-                      D_(cursor) - solver_.At()
+                      D_(cursor) - (ddt ? 1.0/deltaT : 0.0)
                     + DL_[0] * v(cursor + Nsolve-1)
                     + DU_[0] * v(cursor + 1)
                 );
@@ -368,18 +374,18 @@ void tridiagonalSolver::solveCyclic
     }
 }
 
-void tridiagonalSolver::solve(scalarBlock& xyzPencil)
+void tridiagonalSolver::solve(scalarBlock& xyzPencil, const bool ddt)
 {
     // Copy RHS of tridiagonal system
     scalarBlock f(xyzPencil);
 
     if (BC_[solver_.FFTPlan().solveDir()] != 5)
     {
-        solve(f, xyzPencil);
+        solve(xyzPencil, f, ddt);
     }
     else
     {
-        solveCyclic(f, xyzPencil);
+        solveCyclic(xyzPencil, f, ddt);
     }
 }
 

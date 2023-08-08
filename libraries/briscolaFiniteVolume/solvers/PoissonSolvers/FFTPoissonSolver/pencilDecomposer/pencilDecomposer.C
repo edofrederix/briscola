@@ -12,36 +12,6 @@ namespace fv
 namespace FFT
 {
 
-// Constructor
-
-pencilDecomposer::pencilDecomposer
-(
-    const fvMesh& fvMsh,
-    label decompType
-)
-:
-    fvMsh_(fvMsh),
-    N_(fvMsh_.msh().cast<rectilinearMesh>().N()),
-    I_(fvMsh_.msh().decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ),
-    Ni_(Pstream::nProcs(), Zero),
-    Nx_(Pstream::nProcs(), Zero),
-    Ny_(Pstream::nProcs(), Zero),
-    Nz_(Pstream::nProcs(), Zero),
-    Si_(Pstream::nProcs(), Zero),
-    Sx_(Pstream::nProcs(), Zero),
-    Sy_(Pstream::nProcs(), Zero),
-    Sz_(Pstream::nProcs(), Zero)
-{
-    decompInit(decompType);
-}
-
-// Destructor
-
-pencilDecomposer::~pencilDecomposer()
-{}
-
-// Initialize the initial and pencil decompositions
-
 void pencilDecomposer::decompInit(label decompType)
 {
 
@@ -185,49 +155,6 @@ void pencilDecomposer::checkDecomp(labelVector D)
     }
 }
 
-// Return the processor number given an index and decomposition
-
-label pencilDecomposer::procNumFromIndex
-(
-    const labelVector ijk,
-    const labelVector D
-)
-{
-    if (D == I_)
-    {
-        return fvMsh_.msh().decomp().map()(ijk);
-    }
-    else
-    {
-        return ijk.x()*D.y()*D.z() + ijk.y()*D.z() + ijk.z();
-    }
-}
-
-// Return the index given a processor number and decomposition
-
-labelVector pencilDecomposer::indexFromProcNum
-(
-    const label num,
-    const labelVector D
-)
-{
-    if (D == I_)
-    {
-        return fvMsh_.msh().decomp().map().legend()[num];
-    }
-    else
-    {
-        label i = num/(D.y()*D.z());
-        label j = (num-i*D.y()*D.z())/D.z();
-        label k = (num-i*D.y()*D.z()-j*D.z());
-
-        return labelVector(i,j,k);
-    }
-}
-
-// Make key
-// Only works when I != T
-
 word pencilDecomposer::makeKey(labelVector I, labelVector T)
 {
     word key = "";
@@ -255,19 +182,19 @@ word pencilDecomposer::makeKey(labelVector I, labelVector T)
             << abort(FatalError);
     }
 
-    if (T ==  I_)
+    if (T == I_)
     {
         key += 'I';
     }
-    else if (T ==  X_)
+    else if (T == X_)
     {
         key += 'X';
     }
-    else if (T ==  Y_)
+    else if (T == Y_)
     {
         key += 'Y';
     }
-    else if (T ==  Z_)
+    else if (T == Z_)
     {
         key += 'Z';
     }
@@ -281,83 +208,15 @@ word pencilDecomposer::makeKey(labelVector I, labelVector T)
     return key;
 }
 
-// Return the list of processor dimensions for a given decomposition
-
-List<labelVector> pencilDecomposer::procDims(labelVector D)
-{
-    if (D == I_)
-    {
-        return Ni_;
-    }
-    else
-    {
-        List<labelVector> Nd(Pstream::nProcs(), Zero);
-
-        for (int proc = 0; proc < Pstream::nProcs(); proc++)
-        {
-            Nd[proc] = cmptDivide(N_,D);
-
-            // If remainder > 0, the data distribution is uneven
-
-            labelVector remainder = N_ - cmptMultiply(Nd[proc], D);
-
-            Nd[proc] += labelVector
-                (
-                    indexFromProcNum(proc,D).x() < remainder.x(),
-                    indexFromProcNum(proc,D).y() < remainder.y(),
-                    indexFromProcNum(proc,D).z() < remainder.z()
-                );
-        }
-
-        return Nd;
-    }
-}
-
-// Return list of processor origin indices for a given decomposition
-
-List<labelVector> pencilDecomposer::procOrig(labelVector D)
-{
-    if (D == I_)
-    {
-        return Si_;
-    }
-    else
-    {
-        List<labelVector> Nd(procDims(D));
-        List<labelVector> Sd = List<labelVector>(Pstream::nProcs(), Zero);
-
-        for (int proc = 0; proc < Pstream::nProcs(); proc++)
-        {
-            // Set starting indices of each processor
-
-            for (int x = 0; x < indexFromProcNum(proc, D).x(); x++)
-                Sd[proc].x() +=
-                    Nd[procNumFromIndex(labelVector(x,0,0), D)].x();
-
-            for (int y = 0; y < indexFromProcNum(proc, D).y(); y++)
-                Sd[proc].y() +=
-                    Nd[procNumFromIndex(labelVector(0,y,0), D)].y();
-
-            for (int z = 0; z < indexFromProcNum(proc, D).z(); z++)
-                Sd[proc].z() +=
-                    Nd[procNumFromIndex(labelVector(0,0,z), D)].z();
-        }
-
-        return Sd;
-    }
-}
-
-// Unpack a receive buffer
-
 void pencilDecomposer::unpack
 (
+    scalarBlock& output,
     const scalarBlock& buffer,
     const List<labelVector>& recvStart,
     const List<labelVector>& recvSize,
-    scalarBlock& output,
-    List<labelVector>& startIndex,
-    labelVector T,
-    string recvMajorOrder
+    const List<labelVector>& startIndex,
+    const labelVector T,
+    const string recvMajorOrder
 )
 {
     label cursor = 0;
@@ -395,8 +254,127 @@ void pencilDecomposer::unpack
     }
 }
 
-// Transpose data from a source to a destination block,
-// from an initial decomposition to a target decomposition
+pencilDecomposer::pencilDecomposer
+(
+    const fvMesh& fvMsh,
+    label decompType
+)
+:
+    fvMsh_(fvMsh),
+    N_(fvMsh_.msh().cast<rectilinearMesh>().N()),
+    I_(fvMsh_.msh().decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ),
+    Ni_(Pstream::nProcs(), Zero),
+    Nx_(Pstream::nProcs(), Zero),
+    Ny_(Pstream::nProcs(), Zero),
+    Nz_(Pstream::nProcs(), Zero),
+    Si_(Pstream::nProcs(), Zero),
+    Sx_(Pstream::nProcs(), Zero),
+    Sy_(Pstream::nProcs(), Zero),
+    Sz_(Pstream::nProcs(), Zero)
+{
+    decompInit(decompType);
+}
+
+pencilDecomposer::~pencilDecomposer()
+{}
+
+label pencilDecomposer::procNumFromIndex
+(
+    const labelVector ijk,
+    const labelVector D
+)
+{
+    if (D == I_)
+    {
+        return fvMsh_.msh().decomp().map()(ijk);
+    }
+    else
+    {
+        return ijk.x()*D.y()*D.z() + ijk.y()*D.z() + ijk.z();
+    }
+}
+
+labelVector pencilDecomposer::indexFromProcNum
+(
+    const label num,
+    const labelVector D
+)
+{
+    if (D == I_)
+    {
+        return fvMsh_.msh().decomp().map().legend()[num];
+    }
+    else
+    {
+        label i = num/(D.y()*D.z());
+        label j = (num-i*D.y()*D.z())/D.z();
+        label k = (num-i*D.y()*D.z()-j*D.z());
+
+        return labelVector(i,j,k);
+    }
+}
+
+List<labelVector> pencilDecomposer::procDims(labelVector D)
+{
+    if (D == I_)
+    {
+        return Ni_;
+    }
+    else
+    {
+        List<labelVector> Nd(Pstream::nProcs(), Zero);
+
+        for (int proc = 0; proc < Pstream::nProcs(); proc++)
+        {
+            Nd[proc] = cmptDivide(N_,D);
+
+            // If remainder > 0, the data distribution is uneven
+
+            labelVector remainder = N_ - cmptMultiply(Nd[proc], D);
+
+            Nd[proc] += labelVector
+                (
+                    indexFromProcNum(proc,D).x() < remainder.x(),
+                    indexFromProcNum(proc,D).y() < remainder.y(),
+                    indexFromProcNum(proc,D).z() < remainder.z()
+                );
+        }
+
+        return Nd;
+    }
+}
+
+List<labelVector> pencilDecomposer::procOrig(labelVector D)
+{
+    if (D == I_)
+    {
+        return Si_;
+    }
+    else
+    {
+        List<labelVector> Nd(procDims(D));
+        List<labelVector> Sd = List<labelVector>(Pstream::nProcs(), Zero);
+
+        for (int proc = 0; proc < Pstream::nProcs(); proc++)
+        {
+            // Set starting indices of each processor
+
+            for (int x = 0; x < indexFromProcNum(proc, D).x(); x++)
+                Sd[proc].x() +=
+                    Nd[procNumFromIndex(labelVector(x,0,0), D)].x();
+
+            for (int y = 0; y < indexFromProcNum(proc, D).y(); y++)
+                Sd[proc].y() +=
+                    Nd[procNumFromIndex(labelVector(0,y,0), D)].y();
+
+            for (int z = 0; z < indexFromProcNum(proc, D).z(); z++)
+                Sd[proc].z() +=
+                    Nd[procNumFromIndex(labelVector(0,0,z), D)].z();
+        }
+
+        return Sd;
+    }
+}
 
 void pencilDecomposer::transpose
 (
@@ -430,9 +408,9 @@ void pencilDecomposer::transpose
                     buffer(i,j,k) = src
                     (
                         k * Nd.x()
-                            * Nd.y()
-                        + j * Nd.x()
-                        + i
+                          * Nd.y()
+                      + j * Nd.x()
+                      + i
                     );
                 }
             }
@@ -445,9 +423,9 @@ void pencilDecomposer::transpose
                     buffer(i,j,k) = src
                     (
                         i * Nd.y()
-                            * Nd.z()
-                        + k * Nd.y()
-                        + j
+                          * Nd.z()
+                      + k * Nd.y()
+                      + j
                     );
                 }
             }
@@ -467,7 +445,7 @@ void pencilDecomposer::transpose
 
             recvSize[Pstream::myProcNo()] = src.shape();
 
-            unpack(buffer, recvStart, recvSize, dst, St, T, recvMajorOrder);
+            unpack(dst, buffer, recvStart, recvSize, St, T, recvMajorOrder);
         }
 
     }
@@ -487,22 +465,24 @@ void pencilDecomposer::transpose
 
         // Processor overlap variables
 
-        List<labelVector>& Ni = processorOverlap_[IT].Ni();
-        List<labelVector>& Si = processorOverlap_[IT].Si();
+        const List<labelVector>& Ni = processorOverlap_[IT].Ni();
+        const List<labelVector>& Si = processorOverlap_[IT].Si();
 
-        List<labelVector>& Nt = processorOverlap_[IT].Nt();
-        List<labelVector>& St = processorOverlap_[IT].St();
+        const List<labelVector>& Nt = processorOverlap_[IT].Nt();
+        const List<labelVector>& St = processorOverlap_[IT].St();
 
-        List<labelVector>& sendSize = processorOverlap_[IT].sendSize();
-        List<labelVector>& sendStart = processorOverlap_[IT].sendStart();
-        List<labelVector>& recvSize = processorOverlap_[IT].recvSize();
-        List<labelVector>& recvStart = processorOverlap_[IT].recvStart();
+        const List<labelVector>& sendSize = processorOverlap_[IT].sendSize();
+        const List<labelVector>& sendStart = processorOverlap_[IT].sendStart();
+        const List<labelVector>& recvSize = processorOverlap_[IT].recvSize();
+        const List<labelVector>& recvStart = processorOverlap_[IT].recvStart();
 
-        labelList& sendCount = processorOverlap_[IT].sendCount();
-        labelList& sendDisplacement = processorOverlap_[IT].sendDisplacement();
+        const labelList& sendCount = processorOverlap_[IT].sendCount();
+        const labelList& sendDisplacement =
+            processorOverlap_[IT].sendDisplacement();
 
-        labelList& recvCount = processorOverlap_[IT].recvCount();
-        labelList& recvDisplacement = processorOverlap_[IT].recvDisplacement();
+        const labelList& recvCount = processorOverlap_[IT].recvCount();
+        const labelList& recvDisplacement =
+            processorOverlap_[IT].recvDisplacement();
 
         // Prepare send buffer
 
@@ -577,7 +557,7 @@ void pencilDecomposer::transpose
 
         // Unpack data
 
-        unpack(recvBuffer, recvStart, recvSize, dst, St, T, recvMajorOrder);
+        unpack(dst, recvBuffer, recvStart, recvSize, St, T, recvMajorOrder);
     }
 }
 

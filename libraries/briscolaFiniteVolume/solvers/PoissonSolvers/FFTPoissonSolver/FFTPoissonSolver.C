@@ -37,14 +37,13 @@ FFTPoissonSolver::FFTPoissonSolver
 )
 :
     PoissonSolver<stencil,scalar,colocated>(dict,fvMsh),
+    fvMsh_(fvMsh),
     FFTPlan_(fvMsh),
     decomp_(fvMsh, FFTPlan_.decompType()),
     initData_(decomp_.Ni()[Pstream::myProcNo()]),
     xPencil_(decomp_.Nx()[Pstream::myProcNo()]),
     yPencil_(decomp_.Ny()[Pstream::myProcNo()]),
-    zPencil_(decomp_.Nz()[Pstream::myProcNo()]),
-    At_(Zero),
-    bt_("bt", fvMsh)
+    zPencil_(decomp_.Nz()[Pstream::myProcNo()])
 {
     checkMesh(fvMsh);
 }
@@ -55,14 +54,13 @@ FFTPoissonSolver::FFTPoissonSolver
 )
 :
     PoissonSolver<stencil,scalar,colocated>(dictionary(),fvMsh),
+    fvMsh_(fvMsh),
     FFTPlan_(fvMsh),
     decomp_(fvMsh, FFTPlan_.decompType()),
     initData_(decomp_.Ni()[Pstream::myProcNo()]),
     xPencil_(decomp_.Nx()[Pstream::myProcNo()]),
     yPencil_(decomp_.Ny()[Pstream::myProcNo()]),
-    zPencil_(decomp_.Nz()[Pstream::myProcNo()]),
-    At_(Zero),
-    bt_("bt", fvMsh)
+    zPencil_(decomp_.Nz()[Pstream::myProcNo()])
 {
     checkMesh(fvMsh);
 }
@@ -75,23 +73,6 @@ void FFTPoissonSolver::solve
     const bool ddt
 )
 {
-    const word laplacianSchemeType
-    (
-        laplacianScheme<scalar,colocated>::New
-        (
-            "laplacian("+x.name()+")",
-            this->fvMsh()
-        )->dict().lookup("type")
-    );
-
-    if (laplacianSchemeType != "linearGauss")
-    {
-        WarningInFunction
-            << "FFT Poisson solver is using the linearGauss laplacian scheme"
-            << " laplacian scheme since the " << laplacianSchemeType
-            << " is not supported." << endl;
-    }
-
     if (lambdaPtr != nullptr)
     {
         FatalErrorInFunction
@@ -100,35 +81,10 @@ void FFTPoissonSolver::solve
             << abort(FatalError);
     }
 
-    if (ddt)
-    {
-        const colocatedScalarField& cv =
-            this->fvMsh().metrics<colocated>().cellVolumes();
-
-        At_ = ddtScheme<scalar,colocated>::New
-            (
-                "ddt("+x.name()+")",
-                this->fvMsh()
-            )->ddt(x)->A()[0][0](0,0,0).center()/cv[0][0](0,0,0);
-
-        bt_ = ddtScheme<scalar,colocated>::New
-            (
-                "ddt("+x.name()+")",
-                this->fvMsh()
-            )->ddt(x)->b()/cv;
-    }
-
     if (fft_.empty() || &fft_->x() != &x)
     {
         fft_.reset(new FFT::FourierTransforms(*this, x));
-        tds_.reset
-        (
-            new FFT::tridiagonalSolver
-            (
-                *this,
-                fft_->BC()
-            )
-        );
+        tds_.reset(new FFT::tridiagonalSolver(*this, fft_->BC()));
     }
 
     if (bPtr != nullptr)
@@ -141,6 +97,8 @@ void FFTPoissonSolver::solve
         labelVector Y(decomp_.Y());
         labelVector Z(decomp_.Z());
 
+        const scalar deltaT = x.fvMsh().time().deltaTValue();
+
         // Copy the data from bPtr to a scalarBlock
         // minus sign since bPtr = - RHS of the Poisson equation
         forAllCells((*bPtr)[0][0], i, j, k)
@@ -149,7 +107,7 @@ void FFTPoissonSolver::solve
 
             if (ddt)
             {
-                initData_(i,j,k) -= bt_[0][0](i,j,k);
+                initData_(i,j,k) -= x.oldTime()[0][0](i,j,k)/deltaT;
             }
         }
 
@@ -169,7 +127,7 @@ void FFTPoissonSolver::solve
 
                     decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
 
-                    tds_->solve(xPencil_);
+                    tds_->solve(xPencil_,ddt);
 
                     decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
 
@@ -193,7 +151,7 @@ void FFTPoissonSolver::solve
 
                     decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
 
-                    tds_->solve(xPencil_);
+                    tds_->solve(xPencil_,ddt);
 
                     decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
 
@@ -220,7 +178,7 @@ void FFTPoissonSolver::solve
 
                     decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
 
-                    tds_->solve(yPencil_);
+                    tds_->solve(yPencil_,ddt);
 
                     decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
 
@@ -244,7 +202,7 @@ void FFTPoissonSolver::solve
 
                     decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
 
-                    tds_->solve(yPencil_);
+                    tds_->solve(yPencil_,ddt);
 
                     decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
 
@@ -271,7 +229,7 @@ void FFTPoissonSolver::solve
 
                     decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
 
-                    tds_->solve(zPencil_);
+                    tds_->solve(zPencil_,ddt);
 
                     decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
 
@@ -295,7 +253,7 @@ void FFTPoissonSolver::solve
 
                     decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
 
-                    tds_->solve(zPencil_);
+                    tds_->solve(zPencil_,ddt);
 
                     decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
 
@@ -333,7 +291,8 @@ void FFTPoissonSolver::solve
     // Set ghost cells values
     x.correctBoundaryConditions();
 
-    Info << "FFT: Solving for colocated " << x.name() << ", residual = 0, nIter = 1" << endl;
+    Info<< "FFT: Solving for colocated " << x.name()
+        << ", residual = 0, nIter = 1" << endl;
 }
 
 }

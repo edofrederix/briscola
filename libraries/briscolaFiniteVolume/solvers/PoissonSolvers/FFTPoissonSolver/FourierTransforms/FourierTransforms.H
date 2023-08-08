@@ -73,27 +73,21 @@ public:
     void FFTWplans();
 
     // Forward and backward FFT's
-
     void fwdFFTx();
-
     void bwdFFTx();
-
     void fwdFFTy();
-
     void bwdFFTy();
-
     void fwdFFTz();
-
     void bwdFFTz();
 
     // Normalize transformed data
-    void normalize(scalarBlock&);
+    void normalize(scalarBlock&) const;
 
     // Return boundary condition vector
-    inline labelVector& BC() { return BC_; }
+    inline const labelVector& BC() const { return BC_; }
 
     // Return solved field reference
-    inline colocatedScalarField& x() { return x_; }
+    inline const colocatedScalarField& x() const { return x_; }
 };
 
 }

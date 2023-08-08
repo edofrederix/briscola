@@ -75,22 +75,28 @@ public:
     virtual ~processorOverlap();
 
     // Inline return fucntions
-    inline List<labelVector>& Ni() { return Ni_; }
-    inline List<labelVector>& Si() { return Si_; }
+    inline const List<labelVector>& Ni() const { return Ni_; }
+    inline const List<labelVector>& Si() const { return Si_; }
 
-    inline List<labelVector>& Nt() { return Nt_; }
-    inline List<labelVector>& St() { return St_; }
+    inline const List<labelVector>& Nt() const { return Nt_; }
+    inline const List<labelVector>& St() const { return St_; }
 
-    inline List<labelVector>& sendSize()  { return sendSize_;  }
-    inline List<labelVector>& sendStart() { return sendStart_; }
-    inline List<labelVector>& recvSize()  { return recvSize_;  }
-    inline List<labelVector>& recvStart() { return recvStart_; }
+    inline const List<labelVector>& sendSize() const { return sendSize_;  }
+    inline const List<labelVector>& sendStart() const { return sendStart_; }
+    inline const List<labelVector>& recvSize() const { return recvSize_;  }
+    inline const List<labelVector>& recvStart() const { return recvStart_; }
 
-    inline labelList& sendCount() { return sendCount_; }
-    inline labelList& sendDisplacement() { return sendDisplacement_; }
+    inline const labelList& sendCount() const { return sendCount_; }
+    inline const labelList& sendDisplacement() const
+    {
+        return sendDisplacement_;
+    }
 
-    inline labelList& recvCount() { return recvCount_; }
-    inline labelList& recvDisplacement() { return recvDisplacement_; }
+    inline const labelList& recvCount() const { return recvCount_; }
+    inline const labelList& recvDisplacement() const
+    {
+        return recvDisplacement_;
+    }
 
 };
 
