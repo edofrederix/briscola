@@ -351,6 +351,22 @@ boundaryCondition<Type,MeshType>::faceDeltas() const
 }
 
 template<class Type, class MeshType>
+tmp<block<Type>> boundaryCondition<Type,MeshType>::internalValue
+(
+    const label l,
+    const label d
+)
+{
+    const labelVector bo(this->boundaryOffset());
+    const meshDirection<Type,MeshType>& fld = mshField_[l][d];
+
+    const labelVector S(fld.boundaryStart(bo));
+    const labelVector E(fld.boundaryEnd(bo));
+
+    return tmp<block<Type>>(new block<Type>(E-S, Zero));
+}
+
+template<class Type, class MeshType>
 tmp<block<Type>> boundaryCondition<Type,MeshType>::boundarySources
 (
     const label l,
@@ -384,29 +400,57 @@ void boundaryCondition<Type,MeshType>::correctSystem
         {
             const meshDirection<Type,MeshType>& fld = this->mshField_[l][d];
 
-            // Manipulate the linear system for eliminated boundary conditions
+            // Manipulate the linear system for eliminated or constrained
+            // boundary conditions
 
-            if (this->eliminated(fld.shifted(bo)))
+            const bool shifted = fld.shifted(bo);
+            const bool eliminated = this->eliminated(shifted);
+            const bool constrained = this->constrained(shifted);
+
+            if (eliminated || constrained)
             {
                 meshDirection<stencil,MeshType>& Ad = sys.A()[l][d];
                 meshDirection<Type,MeshType>& bd = sys.b()[l][d];
 
+                const meshDirection<scalar,MeshType>& cv =
+                    this->cellVolumes()[l][d];
+
                 const labelVector S(fld.boundaryStart(bo));
                 const labelVector E(fld.boundaryEnd(bo));
 
-                const stencil C(this->boundaryCoeff(l,d));
-                const block<Type> B(this->boundarySources(l,d));
-
                 labelVector ijk;
 
-                for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-                for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-                for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                if (eliminated)
                 {
-                    Ad(ijk) += Ad(ijk)[faceNum+1]*C;
-                    bd(ijk) -= Ad(ijk)[faceNum+1]*B(ijk-S);
+                    const stencil C(this->boundaryCoeff(l,d));
+                    const block<Type> B(this->boundarySources(l,d));
 
-                    Ad(ijk)[faceNum+1] = 0;
+                    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                    {
+                        // Eliminate the boundary value
+
+                        Ad(ijk) += Ad(ijk)[faceNum+1]*C;
+                        bd(ijk) -= Ad(ijk)[faceNum+1]*B(ijk-S);
+
+                        Ad(ijk)[faceNum+1] = 0;
+                    }
+                }
+
+                if (constrained)
+                {
+                    const block<Type> V(this->internalValue(l,d));
+
+                    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                    {
+                        // Constrain the internal value
+
+                        Ad(ijk) = diagStencil(cv(ijk));
+                        bd(ijk) = V(ijk-S)*cv(ijk);
+                    }
                 }
             }
         }

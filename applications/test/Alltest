@@ -1,11 +1,27 @@
 #!/bin/bash
 
+# By default run 4 jobs simultaneously
+
+if [ -z "$WM_NCOMPPROCS" ]; then
+    N=4
+else
+    N=$WM_NCOMPPROCS
+fi
+
 for DIR in ./*/; do
-(
+
     TEST=$(echo $DIR | cut -c3- | rev | cut -c2- | rev)
 
-    if [ -f "$TEST/build.sh" ]; then
+    # Wait as long as N jobs are running in the background
 
+    while [ $(jobs | wc -l) -ge $N ]; do
+
+        sleep 1
+
+    done
+
+    if [ -f "$TEST/build.sh" ]; then
+    (
         echo Test $TEST
 
         cd $DIR
@@ -14,9 +30,9 @@ for DIR in ./*/; do
         ./run.sh
 
         cd ..
-
+    ) &
     fi
-) &
+
 done
 
 wait

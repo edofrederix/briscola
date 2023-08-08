@@ -87,7 +87,6 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
 
         const labelVector S(fd.boundaryStart(bo));
         const labelVector E(fd.boundaryEnd(bo));
-        const block<Type> B(this->boundarySources(l,d));
 
         const block<Type>& val =
             boundaryValues_[l*MeshType::numberOfDirections + d];
@@ -96,7 +95,8 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
 
         if (fd.shifted(bo))
         {
-            // Non-eliminated so get value directly
+            // Ghost value not needed because the internal value is constrained.
+            // Set to the internal value.
 
             for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
@@ -109,6 +109,8 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
         {
             // Eliminated so infer value from boundary source
 
+            const block<Type> B(this->boundarySources(l,d));
+
             for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
@@ -117,6 +119,21 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
             }
         }
     }
+}
+
+template<class Type, class MeshType>
+tmp<block<Type>> DirichletBoundaryCondition<Type,MeshType>::internalValue
+(
+    const label l,
+    const label d
+)
+{
+    tmp<block<Type>> tv
+    (
+        new block<Type>(boundaryValues_[l*MeshType::numberOfDirections + d])
+    );
+
+    return tv;
 }
 
 template<class Type, class MeshType>

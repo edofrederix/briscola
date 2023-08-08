@@ -176,18 +176,6 @@ public:
         return patch_.T();
     }
 
-    // Return master bool for shifted boundaries
-    virtual bool master() const
-    {
-        return patch_.master();
-    }
-
-    // Return slave bool for shifted boundaries
-    virtual bool slave() const
-    {
-        return patch_.slave();
-    }
-
     // Access to the face centers of the field this BC belongs to
     const meshField<faceVector,MeshType>& faceCenters() const;
 
@@ -219,6 +207,16 @@ public:
     // Correct a linear system at given level, subject to the boundary condition
     void correctSystem(linearSystem<stencil,Type,MeshType>&, const label);
     void correctSystem(linearSystem<diagStencil,Type,MeshType>&, const label);
+
+    // Constrained boundary conditions
+
+        // Bool that specifies if the internal value at a boundary is
+        // constrained by the boundary condition
+        virtual bool constrained(const bool shifted) const { return false; }
+
+        // Return the internal value (if any) of constrained cells at given
+        // level and direction. By default a zero value is returned.
+        virtual tmp<block<Type>> internalValue(const label, const label);
 
     // Eliminated boundary conditions
     //

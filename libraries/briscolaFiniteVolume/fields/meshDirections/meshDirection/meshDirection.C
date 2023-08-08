@@ -23,43 +23,6 @@ void meshDirection<Type,MeshType>::setInternalCells()
     for (int i = 0; i < 6; i++)
         I_[i] +=
             (padding[i/2] && slave[i]) ? 1 - 2*(i%2) : 0;
-
-    A_ = I_;
-}
-
-template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::updateActiveCells()
-{
-    const labelVector& padding = MeshType::padding[d_];
-
-    // Find face boundaries with an underlying boundary part patch that are
-    // slave
-
-    const PtrList<boundaryCondition<Type,MeshType>>& bcs =
-        this->mshLevel().mshField().boundaryConditions();
-
-    faceLabel slave = fvMsh_.msh().patchSlave();
-
-    forAll(bcs, i)
-    {
-        const boundaryCondition<Type,MeshType>& bc = bcs[i];
-
-        if
-        (
-            bc.boundaryOffsetDegree() == 1
-         && bc.patch().type() == boundaryPartPatch::typeName
-         && bc.slave()
-        )
-        {
-            slave[faceNumber(bc.boundaryOffset())] = 1;
-        }
-    }
-
-    A_ = faceLabel(zeroXYZ, this->B().N()-2*unitXYZ);
-
-    for (int i = 0; i < 6; i++)
-        A_[i] +=
-            (padding[i/2] && slave[i]) ? 1 - 2*(i%2) : 0;
 }
 
 template<class Type, class MeshType>
@@ -119,7 +82,6 @@ meshDirection<Type,MeshType>::meshDirection
     l_(D.l_),
     d_(D.d_),
     I_(D.I_),
-    A_(D.A_),
     mshLevelPtr_(nullptr)
 {
     allocate(D.B().N());
@@ -138,7 +100,6 @@ meshDirection<Type,MeshType>::meshDirection
     l_(D.l_),
     d_(D.d_),
     I_(D.I_),
-    A_(D.A_),
     mshLevelPtr_(nullptr)
 {
     allocate(D.B().N());
@@ -157,7 +118,6 @@ meshDirection<Type,MeshType>::meshDirection
     l_(D.l_),
     d_(D.d_),
     I_(D.I_),
-    A_(D.A_),
     mshLevelPtr_(nullptr)
 {
     allocate(D.B().N());
@@ -175,7 +135,6 @@ meshDirection<Type,MeshType>::meshDirection
     l_(tD->l_),
     d_(tD->d_),
     I_(tD->I_),
-    A_(tD->A_),
     mshLevelPtr_(nullptr)
 {
     if (tD.isTmp())
@@ -206,7 +165,6 @@ meshDirection<Type,MeshType>::meshDirection
     l_(tD->l_),
     d_(tD->d_),
     I_(tD->I_),
-    A_(tD->A_),
     mshLevelPtr_(nullptr)
 {
     if (tD.isTmp())
@@ -238,7 +196,6 @@ meshDirection<Type,MeshType>::meshDirection
     l_(tD->l_),
     d_(tD->d_),
     I_(tD->I_),
-    A_(tD->A_),
     mshLevelPtr_(nullptr)
 {
     if (tD.isTmp())

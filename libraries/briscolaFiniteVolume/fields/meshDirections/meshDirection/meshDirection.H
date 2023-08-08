@@ -46,17 +46,11 @@ class meshDirection
     // Internal cell block start and end indices
     faceLabel I_;
 
-    // Active cell block start and end indices set by the boundary conditions
-    faceLabel A_;
-
     // Pointer to the mesh level, if any
     meshLevel<Type,MeshType>* mshLevelPtr_;
 
     // Set internal cells
     void setInternalCells();
-
-    // Update active cells based on boundary conditions
-    void updateActiveCells();
 
     // Allocate data
     void allocate(const labelVector);
@@ -148,20 +142,17 @@ public:
     // Internal cell start and end indices
     inline const faceLabel& I() const { return I_; }
 
-    // Active cell start and end indices
-    inline const faceLabel& A() const { return A_; }
-
     // Internal cell block size
-    inline labelVector N() const { return A_.upper()-A_.lower(); }
+    inline labelVector N() const { return I_.upper()-I_.lower(); }
 
     // Return the start point of the internal cell boundary at given offset
     inline labelVector boundaryStart(const labelVector& bo) const
     {
-        labelVector S(A_.lower());
+        labelVector S(I_.lower());
 
         for (label d = 0; d < 3; d++)
             if (bo[d] == 1)
-                S[d] = A_.upper()[d]-1;
+                S[d] = I_.upper()[d]-1;
 
         return S;
     }
@@ -169,11 +160,11 @@ public:
     // Return the end point of the internal cell boundary at given offset
     inline labelVector boundaryEnd(const labelVector& bo) const
     {
-        labelVector E(A_.upper());
+        labelVector E(I_.upper());
 
         for (label d = 0; d < 3; d++)
             if (bo[d] == -1)
-                E[d] = A_.lower()[d]+1;
+                E[d] = I_.lower()[d]+1;
 
         return E;
     }
