@@ -30,6 +30,9 @@ class vof
     // Flux field
     colocatedFaceScalarField flux_;
 
+    // Rectilinear bool (stored here for efficiency)
+    bool rectilinear_;
+
     // Local volume enforcement problem solver
     LVE lve_;
 

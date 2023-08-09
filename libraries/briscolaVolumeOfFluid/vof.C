@@ -1,6 +1,7 @@
 #include "vof.H"
 #include "rectilinearMesh.H"
 #include "truncatedHex.H"
+#include "truncatedPiped.H"
 
 namespace Foam
 {
@@ -83,8 +84,11 @@ void vof::updateFlux
                             );
                     }
 
-                    const scalar fluxVolume =
-                        truncatedHex(vertices,n(ijk),C).volume();
+                    scalar fluxVolume;
+
+                    rectilinear_ ?
+                        fluxVolume = truncatedPiped(vertices,n(ijk),C).volume() :
+                        fluxVolume = truncatedHex(vertices,n(ijk),C).volume();
 
                     flux = fluxVolume/dt;
                 }
@@ -169,6 +173,7 @@ vof::vof(const IOdictionary& dict, const fvMesh& fvMsh)
         true
     ),
     lve_(*this),
+    rectilinear_(fvMsh.msh()[0].rectilinear() == unitXYZ),
     normalSchemePtr_
     (
         normalScheme::New
@@ -177,6 +182,7 @@ vof::vof(const IOdictionary& dict, const fvMesh& fvMsh)
             dict.subDict("normalScheme")
         ).ptr()
     )
+
 {}
 
 vof::~vof()
