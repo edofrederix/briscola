@@ -21,7 +21,12 @@ tmp<meshField<ReturnType,MeshType>> Func(const meshField<Type,MeshType>& f)     
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
             #Func "("+f.name()+")",                                             \
-            f.fvMsh()                                                           \
+            f.fvMsh(),                                                          \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f.deep()                                                            \
         )                                                                       \
     );                                                                          \
     Func(tRes.ref(), f);                                                        \
@@ -72,7 +77,9 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
             f.fvMsh(),                                                          \
             IOobject::NO_READ,                                                  \
             IOobject::NO_WRITE,                                                 \
-            false                                                               \
+            false,                                                              \
+            false,                                                              \
+            f.deep()                                                            \
         )                                                                       \
     );                                                                          \
     OpFunc(tRes.ref(), f);                                                      \
@@ -118,7 +125,12 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
             #Func "("+f1.name()+","+f2.name()+")",                              \
-            f1.fvMsh()                                                          \
+            f1.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f1.deep() && f2.deep()                                              \
         )                                                                       \
     );                                                                          \
     Func(tRes.ref(), f1, f2);                                                   \
@@ -138,6 +150,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
             tf2,                                                                \
             #Func "("+f1.name()+","+tf2().name()+")"                            \
         );                                                                      \
+    tRes->make(f1.deep() && tf2->deep());                                       \
     Func(tRes.ref(), f1, tf2());                                                \
     tf2.clear();                                                                \
     return tRes;                                                                \
@@ -156,6 +169,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
             tf1,                                                                \
             #Func "("+tf1().name()+","+f2.name()+")"                            \
         );                                                                      \
+    tRes->make(tf1->deep() && f2.deep());                                       \
     Func(tRes.ref(), tf1(), f2);                                                \
     tf1.clear();                                                                \
     return tRes;                                                                \
@@ -207,7 +221,12 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
             #Func "("+Foam::name(s1)+","+f2.name()+")",                         \
-            f2.fvMsh()                                                          \
+            f2.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f2.deep()                                                           \
         )                                                                       \
     );                                                                          \
     Func(tRes.ref(), s1, f2);                                                   \
@@ -258,7 +277,12 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
             #Func "("+f1.name()+","+Foam::name(s2)+")",                         \
-            f1.fvMsh()                                                          \
+            f1.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f1.deep()                                                           \
         )                                                                       \
     );                                                                          \
     Func(tRes.ref(), f1, s2);                                                   \
@@ -313,7 +337,12 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
             "("+f1.name()+#Op+f2.name()+")",                                    \
-            f1.fvMsh()                                                          \
+            f1.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f1.deep() && f2.deep()                                              \
         )                                                                       \
     );                                                                          \
     OpFunc(tRes.ref(), f1, f2);                                                 \
@@ -333,6 +362,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
             tf2,                                                                \
             "("+f1.name()+#Op+tf2().name()+")"                                  \
         );                                                                      \
+    tRes->make(f1.deep() && tf2->deep());                                       \
     OpFunc(tRes.ref(), f1, tf2());                                              \
     tf2.clear();                                                                \
     return tRes;                                                                \
@@ -351,6 +381,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
             tf1,                                                                \
             "("+tf1().name()+#Op+f2.name()+")"                                  \
         );                                                                      \
+    tRes->make(tf1->deep() && f2.deep());                                       \
     OpFunc(tRes.ref(), tf1(), f2);                                              \
     tf1.clear();                                                                \
     return tRes;                                                                \
@@ -402,7 +433,12 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
             "("+Foam::name(s1)+#Op+f2.name()+")",                               \
-            f2.fvMsh()                                                          \
+            f2.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f2.deep()                                                           \
         )                                                                       \
     );                                                                          \
     OpFunc(tRes.ref(), s1, f2);                                                 \
@@ -453,7 +489,12 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
             "("+f1.name()+#Op+Foam::name(s2)+")",                               \
-            f1.fvMsh()                                                          \
+            f1.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f1.deep()                                                           \
         )                                                                       \
     );                                                                          \
     OpFunc(tRes.ref(), f1, s2);                                                 \
@@ -510,7 +551,12 @@ operator Op                                                                     
         new meshField<productType,MeshType>                                     \
         (                                                                       \
             "("+f1.name()+#Op+f2.name()+")",                                    \
-            f1.fvMsh()                                                          \
+            f1.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f1.deep() && f2.deep()                                              \
         )                                                                       \
     );                                                                          \
     OpFunc(tRes.ref(), f1, f2);                                                 \
@@ -532,6 +578,7 @@ operator Op                                                                     
             tf2,                                                                \
             "("+f1.name()+#Op+tf2().name()+")"                                  \
         );                                                                      \
+    tRes->make(f1.deep() && tf2->deep());                                       \
     OpFunc(tRes.ref(), f1, tf2());                                              \
     tf2.clear();                                                                \
     return tRes;                                                                \
@@ -552,6 +599,7 @@ operator Op                                                                     
             tf1,                                                                \
             "("+tf1().name()+#Op+f2.name()+")"                                  \
         );                                                                      \
+    tRes->make(tf1->deep() && f2.deep());                                       \
     OpFunc(tRes.ref(), tf1(), f2);                                              \
     tf1.clear();                                                                \
     return tRes;                                                                \
@@ -621,7 +669,12 @@ operator Op                                                                     
         new meshField<productType,MeshType>                                     \
         (                                                                       \
             "("+f1.name()+#Op+Foam::name(v2)+")",                               \
-            f1.fvMsh()                                                          \
+            f1.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f1.deep()                                                           \
         )                                                                       \
     );                                                                          \
     OpFunc(tRes.ref(), f1, v2);                                                 \
@@ -695,7 +748,12 @@ operator Op                                                                     
         new meshField<productType,MeshType>                                     \
         (                                                                       \
             "("+Foam::name(v1)+#Op+f2.name()+")",                               \
-            f2.fvMsh()                                                          \
+            f2.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f2.deep()                                                           \
         )                                                                       \
     );                                                                          \
     OpFunc(tRes.ref(), v1, f2);                                                 \
@@ -771,7 +829,12 @@ operator Op                                                                     
         new meshField<productType,MeshType>                                     \
         (                                                                       \
             "("+f1.name()+#Op+Foam::name(v2)+")",                               \
-            f1.fvMsh()                                                          \
+            f1.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f1.deep()                                                           \
         )                                                                       \
     );                                                                          \
     OpFunc(tRes.ref(), f1, v2);                                                 \
@@ -845,7 +908,12 @@ operator Op                                                                     
         new meshField<productType,MeshType>                                     \
         (                                                                       \
             "("+Foam::name(v1)+#Op+f2.name()+")",                               \
-            f2.fvMsh()                                                          \
+            f2.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f2.deep()                                                           \
         )                                                                       \
     );                                                                          \
     OpFunc(tRes.ref(), v1, f2);                                                 \

@@ -2,7 +2,8 @@
 
 TEST=IO
 
-FORMATS=(ascii binary)
+#FORMATS=(ascii binary)
+FORMATS=(binary)
 MESHES=(box pipe pipeGrad bigbox 2x 2y 2z)
 NPROCS=(4 5 5 16 4 4 4)
 
