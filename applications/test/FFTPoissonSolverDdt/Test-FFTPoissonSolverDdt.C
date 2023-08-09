@@ -10,13 +10,14 @@ using namespace fv;
 
 bool check
 (
-    colocatedScalarField& p,
-    colocatedScalarField& f,
-    const fvMesh& fvMsh
+    colocatedScalarField& x,
+    colocatedScalarField& b,
+    const fvMesh& fvMsh,
+    const scalar deltaT
 )
 {
-    labelVector Nf(p[0][0].B().shape());
-    labelVector N(p.fvMsh().msh().cast<rectilinearMesh>().N());
+    labelVector Nf(x[0][0].B().shape());
+    labelVector N(x.fvMsh().msh().cast<rectilinearMesh>().N());
 
     const PtrList<scalarList>& cellSizes
         = fvMsh.msh().cast<rectilinearMesh>().globalCellSizes();
@@ -36,21 +37,23 @@ bool check
             {
                 scalar residual =
                 (
-                    p[0][0].B()(i-1,j,k)
-                  - 2.0 * p[0][0].B()(i,j,k)
-                  + p[0][0].B()(i+1,j,k)
+                    x[0][0].B()(i-1,j,k)
+                  - 2.0 * x[0][0].B()(i,j,k)
+                  + x[0][0].B()(i+1,j,k)
                 ) / dx2[Si.x() + i-1]
               + (
-                    p[0][0].B()(i,j-1,k)
-                  - 2.0 * p[0][0].B()(i,j,k)
-                  + p[0][0].B()(i,j+1,k)
+                    x[0][0].B()(i,j-1,k)
+                  - 2.0 * x[0][0].B()(i,j,k)
+                  + x[0][0].B()(i,j+1,k)
                 ) / dy2[Si.y() + j-1]
               + (
-                    p[0][0].B()(i,j,k-1)
-                  - 2.0 * p[0][0].B()(i,j,k)
-                  + p[0][0].B()(i,j,k+1)
+                    x[0][0].B()(i,j,k-1)
+                  - 2.0 * x[0][0].B()(i,j,k)
+                  + x[0][0].B()(i,j,k+1)
                 ) / dz2[Si.z() + k-1]
-              + f[0][0].B()(i,j,k);
+              - x[0][0].B()(i,j,k) / deltaT
+              + b[0][0].B()(i,j,k)
+              + x.oldTime()[0][0].B()(i,j,k) / deltaT;
 
                 if(mag(residual) > 1e-10)
                 {
@@ -90,9 +93,9 @@ int main(int argc, char *argv[])
 
     fvMesh fvMsh(meshDict, runTime);
 
-    colocatedScalarField f
+    colocatedScalarField b
     (
-        "f",
+        "b",
         fvMsh,
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
@@ -100,9 +103,9 @@ int main(int argc, char *argv[])
         true
     );
 
-    colocatedScalarField p
+    colocatedScalarField x
     (
-        "p",
+        "x",
         fvMsh,
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
@@ -117,28 +120,21 @@ int main(int argc, char *argv[])
     int seed = 123 * Pstream::myProcNo();
     srand(seed);
 
-    scalar average = 0;
-
-    forAllCells(f[0][0], i, j, k)
+    forAllCells(b[0][0], i, j, k)
     {
-        f[0][0](i,j,k) = 100.0 * static_cast<double>(rand()) / RAND_MAX - 0.5;
-        average += f[0][0](i,j,k) / (cmptProduct(f[0][0].N()));
+        b[0][0](i,j,k) = static_cast<double>(rand()) / RAND_MAX - 0.5;
+        x[0][0](i,j,k) = static_cast<double>(rand()) / RAND_MAX - 0.5;
     }
 
-    forAllCells(f[0][0], i, j, k)
-    {
-        f[0][0](i,j,k) -= average;
-    }
+    x.setOldTime();
 
     FFTPoissonSolver solver(fvMsh);
 
-    for (int r = 0; r < 1; r++)
-    {
-        solver.solve(p,f);
-        Info << "Run number " << r+1 << " completed." << endl;
-    }
+    solver.solve(x, b, true);
 
-    if(check(p, f, fvMsh))
+    const scalar deltaT = runTime.deltaTValue();
+
+    if(check(x, b, fvMsh, deltaT))
     {
         Info << "-------------------------------------------" << nl;
         Info << "Pressure equation solution check successful" << nl;

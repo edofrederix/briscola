@@ -2,7 +2,6 @@
 #include "addToRunTimeSelectionTable.H"
 
 #include "defaultPoissonSolver.H"
-#include "FFTPoissonSolver.H"
 
 namespace Foam
 {
@@ -23,14 +22,6 @@ makePoissonSolverType(default,stencil,scalar,colocated);
 makePoissonSolverType(default,stencil,scalar,staggered);
 makePoissonSolverType(default,stencil,vector,colocated);
 makePoissonSolverType(default,stencil,vector,staggered);
-
-// FFT Poisson solver
-
-defineTypeNameAndDebug(FFTPoissonSolver,0);
-
-PoissonSolver<stencil,scalar,colocated>::
-adddictionaryConstructorToTable<FFTPoissonSolver>
-    addFFTPoissonSolverConstructorToTable_;
 
 }
 

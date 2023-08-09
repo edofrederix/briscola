@@ -6,15 +6,17 @@ FoamFile
     object      briscolaSchemesDict;
 }
 
+ddtSchemes
+{
+    ddt(x)
+    {
+        type    Euler;
+    }
+}
 
 laplacianSchemes
 {
-    laplacian(p)
-    {
-        type    linearGauss;
-    }
-
-    laplacian(f)
+    laplacian(x)
     {
         type    linearGauss;
     }

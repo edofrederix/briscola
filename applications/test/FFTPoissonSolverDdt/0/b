@@ -3,7 +3,7 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      f;
+    object      b;
 }
 
 initialCondition
@@ -33,20 +33,20 @@ boundaryConditions
 
     bottom
     {
-        type    Neumann;
-        gradients  (0);
+        type    Dirichlet;
+        values  (0);
     }
 
     top
     {
-        type    Neumann;
-        gradients  (0);
+        type    Dirichlet;
+        values  (0);
     }
 
     back
     {
-        type    Neumann;
-        gradients  (0);
+        type    Dirichlet;
+        values  (0);
     }
 
     front

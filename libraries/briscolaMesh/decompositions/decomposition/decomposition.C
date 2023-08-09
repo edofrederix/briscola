@@ -139,6 +139,44 @@ void decomposition::updateGlobalData(const mesh& msh)
         // Store
 
         map_.setData(map);
+
+        // Set global processor part starts
+
+        globalStartPerProc_.setSize(Pstream::nProcs());
+
+        labelVector myBrickStart(0,0,0);
+
+        label nBricks = msh.bricks().size();
+
+        List<labelVector> brickSizes(nBricks);
+
+        for (int b = 0; b < nBricks; b++)
+        {
+            brickSizes[b] = msh.bricks()[b].N();
+        }
+
+        labelVector myBrickIndex = msh.topology().map().legend()[myBrickNum()];
+
+        for (int x = 0; x < myBrickIndex.x(); x++)
+        {
+            myBrickStart.x() += brickSizes[brickMap(x,0,0)].x();
+        }
+
+        for (int y = 0; y < myBrickIndex.y(); y++)
+        {
+            myBrickStart.y() += brickSizes[brickMap(0,y,0)].y();
+        }
+
+        for (int z = 0; z < myBrickIndex.z(); z++)
+        {
+            myBrickStart.z() += brickSizes[brickMap(0,0,z)].z();
+        }
+
+        globalStartPerProc_[Pstream::myProcNo()] =
+            myBrickStart + myBrickPartStart();
+
+        Pstream::gatherList(globalStartPerProc_);
+        Pstream::scatterList(globalStartPerProc_);
     }
 }
 
@@ -149,7 +187,8 @@ decomposition::decomposition(mesh& msh)
     brickPartPerProc_(),
     partSizePerProc_(),
     procMapPerBrick_(),
-    map_()
+    map_(),
+    globalStartPerProc_()
 {}
 
 decomposition::decomposition
@@ -163,7 +202,8 @@ decomposition::decomposition
     partSizePerProc_(d.partSizePerProc_),
     procMapPerBrick_(d.procMapPerBrick_),
     partSizePerBrick_(d.partSizePerBrick_),
-    map_(d.map_)
+    map_(d.map_),
+    globalStartPerProc_(d.globalStartPerProc_)
 {}
 
 decomposition::~decomposition()

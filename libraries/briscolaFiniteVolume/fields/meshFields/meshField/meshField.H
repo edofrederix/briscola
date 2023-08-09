@@ -144,7 +144,7 @@ public:
         return oldTimePtr_;
     }
 
-    // Access to the old time field. Return the current time of no old time
+    // Access to the old time field. Return the current time if no old time
     // field is set
     inline meshField<Type,MeshType>& oldTime()
     {

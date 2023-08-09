@@ -18,48 +18,39 @@ bool check
     labelVector Nf(p[0][0].B().shape());
     labelVector N(p.fvMsh().msh().cast<rectilinearMesh>().N());
 
-    const PtrList<scalarList>& cellSizes
-        = fvMsh.msh().cast<rectilinearMesh>().globalCellSizes();
+    const PtrList<scalarList> cellSizes
+        = fvMsh.msh().cast<rectilinearMesh>().localCellSizes();
 
     labelVector Si =
         fvMsh.msh().decomp().globalStartPerProc()[Pstream::myProcNo()];
 
     scalarList dx2 = sqr(cellSizes[0]);
     scalarList dy2 = sqr(cellSizes[1]);
-    scalarList dz2 = sqr(cellSizes[2]);
 
     for (int i = 1; i < Nf.x() - 1; i++)
     {
         for (int j = 1; j < Nf.y() - 1; j++)
         {
-            for (int k = 1; k < Nf.z() - 1; k++)
-            {
-                scalar residual =
-                (
-                    p[0][0].B()(i-1,j,k)
-                  - 2.0 * p[0][0].B()(i,j,k)
-                  + p[0][0].B()(i+1,j,k)
-                ) / dx2[Si.x() + i-1]
-              + (
-                    p[0][0].B()(i,j-1,k)
-                  - 2.0 * p[0][0].B()(i,j,k)
-                  + p[0][0].B()(i,j+1,k)
-                ) / dy2[Si.y() + j-1]
-              + (
-                    p[0][0].B()(i,j,k-1)
-                  - 2.0 * p[0][0].B()(i,j,k)
-                  + p[0][0].B()(i,j,k+1)
-                ) / dz2[Si.z() + k-1]
-              + f[0][0].B()(i,j,k);
+            scalar residual =
+            (
+                p[0][0].B()(i-1,j,1)
+              - 2.0 * p[0][0].B()(i,j,1)
+              + p[0][0].B()(i+1,j,1)
+            ) / dx2[Si.x() + i-1]
+          + (
+                p[0][0].B()(i,j-1,1)
+              - 2.0 * p[0][0].B()(i,j,1)
+              + p[0][0].B()(i,j+1,1)
+            ) / dy2[Si.y() + j-1]
+          + f[0][0].B()(i,j,1);
 
-                if(mag(residual) > 1e-10)
-                {
-                    FatalError
-                        << "Test failed. Residual =  " << residual
-                        << " at index " << labelVector(i,j,k)
-                        << " on processor " << Pstream::myProcNo()
-                        << endl << abort(FatalError);
-                }
+            if(mag(residual) > 1e-10)
+            {
+                FatalError
+                    << "Test failed. Residual =  " << residual
+                    << " at index " << labelVector(i,j,1)
+                    << " on processor " << Pstream::myProcNo()
+                    << endl << abort(FatalError);
             }
         }
     }
@@ -132,11 +123,7 @@ int main(int argc, char *argv[])
 
     FFTPoissonSolver solver(fvMsh);
 
-    for (int r = 0; r < 1; r++)
-    {
-        solver.solve(p,f);
-        Info << "Run number " << r+1 << " completed." << endl;
-    }
+    solver.solve(p,f);
 
     if(check(p, f, fvMsh))
     {

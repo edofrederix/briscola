@@ -18,8 +18,8 @@ libOSspecific header files and libraries.
 
 ## Developers
 
-Briscola is developed by [Edo Frederix](mailto:edofrederix@gmail.com) at NRG,
-the Netherlands.
+Briscola is developed by [Edo Frederix](mailto:edofrederix@gmail.com) and
+[Victor Habiyaremye](mailto:habiyaremye@nrg.eu) at NRG, the Netherlands.
 
 ## License
 
@@ -40,6 +40,7 @@ Briscola depends on the following third-party packages:
 
 * OpenFOAM (only libOpenFOAM, libPstream and libOSspecific)
 * OpenMPI
+* FFTW3
 
 ## Contact & Support
 

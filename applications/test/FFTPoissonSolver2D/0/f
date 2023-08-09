@@ -45,13 +45,11 @@ boundaryConditions
 
     back
     {
-        type    Neumann;
-        gradients  (0);
+        type    empty;
     }
 
     front
     {
-        type    Dirichlet;
-        values  (0);
+        type    empty;
     }
 }

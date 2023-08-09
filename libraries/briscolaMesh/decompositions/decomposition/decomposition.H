@@ -42,6 +42,9 @@ private:
     // Global processor topology map, only set on structured brick topologies
     decompositionMap map_;
 
+    // List of part sizes per brick
+    List<labelVector> globalStartPerProc_;
+
     // Disallow default bitwise assignment
     void operator=(const decomposition&);
 
@@ -138,6 +141,12 @@ public:
     inline const PtrList<labelBlock>& procMapPerBrick() const
     {
         return procMapPerBrick_;
+    }
+
+    // Global processor part start index
+    inline const List<labelVector>& globalStartPerProc() const
+    {
+        return globalStartPerProc_;
     }
 
     // Global processor topology, only set on structured brick topologies
