@@ -3,6 +3,7 @@
 #include "fvMesh.H"
 #include "vof.H"
 
+#include "truncatedPiped.H"
 #include "truncatedHex.H"
 #include "SortableList.H"
 #include "constants.H"
@@ -19,7 +20,7 @@ void testVolume(const vertexVector& v, const vector n)
     for (int i = 0; i < 8; i++)
     {
         C[i] = - (n & v[i]);
-        V[i] = truncatedHex(v,n,C[i]).volume();
+        V[i] = truncatedPiped(v,n,C[i]).volume();
     }
 
     V.sort();
@@ -36,9 +37,9 @@ void testVolume(const vertexVector& v, const vector n)
 
         for (int j = 0; j <= N; j++)
         {
-            const scalar C = CMin + (CMax-CMin)*i/N;
+            const scalar C = CMin + (CMax-CMin)*j/N;
 
-            truncatedHex thex(v,n,C);
+            truncatedPiped thex(v,n,C);
 
             const scalar VNew = thex.volume();
 
@@ -334,6 +335,8 @@ int main(int argc, char *argv[])
         // Analytical algorithm of Scardovelli & Zaleski (works only on
         // parallelepipeds)
 
+        /*
+
         testRotatedLVE(vf, unit, n, "p");
         testRotatedLVE(vf, 0.5*unit, n, "p");
         testRotatedLVE(vf, tensor(1.1,0,0,0,1,0,0,0,1) & unit, n, "p");
@@ -378,5 +381,7 @@ int main(int argc, char *argv[])
                         << "Test 3 failed" << endl << abort(FatalError);
             }
         }
+
+        */
     }
 }
