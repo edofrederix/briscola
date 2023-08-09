@@ -22,7 +22,7 @@ forAll(USys.A(), l)
                     scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
                     scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
 
-                    if (xi < 0.5)
+                    if (xi < IB.xiStabilityFactor())
                     {
                         w1 = -2.0*xi/(1.0-xi);
                         w2 = xi/(2.0-xi);
@@ -44,7 +44,7 @@ forAll(USys.A(), l)
                     scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
                     scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
 
-                    if (xi < 0.5)
+                    if (xi < IB.xiStabilityFactor())
                     {
                         w1 = -2.0*xi/(1.0-xi);
                         w2 = xi/(2.0-xi);
@@ -66,7 +66,7 @@ forAll(USys.A(), l)
                     scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
                     scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
 
-                    if (xi < 0.5)
+                    if (xi < IB.xiStabilityFactor())
                     {
                         w1 = -2.0*xi/(1.0-xi);
                         w2 = xi/(2.0-xi);
@@ -88,7 +88,7 @@ forAll(USys.A(), l)
                     scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
                     scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
 
-                    if (xi < 0.5)
+                    if (xi < IB.xiStabilityFactor())
                     {
                         w1 = -2.0*xi/(1.0-xi);
                         w2 = xi/(2.0-xi);
@@ -110,7 +110,7 @@ forAll(USys.A(), l)
                     scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
                     scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
 
-                    if (xi < 0.5)
+                    if (xi < IB.xiStabilityFactor())
                     {
                         w1 = -2.0*xi/(1.0-xi);
                         w2 = xi/(2.0-xi);
@@ -132,7 +132,7 @@ forAll(USys.A(), l)
                     scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
                     scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
 
-                    if (xi < 0.5)
+                    if (xi < IB.xiStabilityFactor())
                     {
                         w1 = -2.0*xi/(1.0-xi);
                         w2 = xi/(2.0-xi);

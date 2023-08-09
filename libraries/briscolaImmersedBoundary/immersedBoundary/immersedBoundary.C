@@ -30,48 +30,54 @@ immersedBoundary::immersedBoundary
 {
     if (solverDict.found("ImmersedBoundary"))
     {
-        int nEntries = solverDict.subDict("ImmersedBoundary").size();
+        dictionary IBDict = solverDict.subDict("ImmersedBoundary");
+
+        int nEntries = IBDict.size();
+
+        xiStabilityFactor_ = IBDict.lookupOrDefault("xiStabilityFactor", 0.5);
 
         // Add shapes to IB according to dictionary entries
         for (int e = 0; e < nEntries; e++)
         {
-            word entry = solverDict.subDict("ImmersedBoundary").toc()[e];
+            word entry = IBDict.toc()[e];
 
-            dictionary entryDict
-                = solverDict.subDict("ImmersedBoundary").subDict(entry);
+            if (IBDict.isDict(entry))
+            {
+                dictionary entryDict = IBDict.subDict(entry);
 
-            if (word(entryDict.lookup("type")) == "cylinder")
-            {
-                shapes_.append
-                (
-                    new cylinder
+                if (word(entryDict.lookup("type")) == "cylinder")
+                {
+                    shapes_.append
                     (
-                        vector(entryDict.lookup("start")),
-                        vector(entryDict.lookup("end")),
-                        readScalar(entryDict.lookup("radius")),
-                        bool(entryDict.lookupOrDefault("inverted", false))
-                    )
-                );
-            }
-            else if (word(entryDict.lookup("type")) == "sphere")
-            {
-                shapes_.append
-                (
-                    new sphere
+                        new cylinder
+                        (
+                            vector(entryDict.lookup("start")),
+                            vector(entryDict.lookup("end")),
+                            readScalar(entryDict.lookup("radius")),
+                            bool(entryDict.lookupOrDefault("inverted", false))
+                        )
+                    );
+                }
+                else if (word(entryDict.lookup("type")) == "sphere")
+                {
+                    shapes_.append
                     (
-                        vector(entryDict.lookup("center")),
-                        readScalar(entryDict.lookup("radius")),
-                        bool(entryDict.lookupOrDefault("inverted", false))
-                    )
-                );
-            }
-            else
-            {
-                FatalError
-                    << "Unknown immersed boundary shape type "
-                    << word(entryDict.lookup("type"))
-                    << endl;
-                FatalError.exit();
+                        new sphere
+                        (
+                            vector(entryDict.lookup("center")),
+                            readScalar(entryDict.lookup("radius")),
+                            bool(entryDict.lookupOrDefault("inverted", false))
+                        )
+                    );
+                }
+                else
+                {
+                    FatalError
+                        << "Unknown immersed boundary shape type "
+                        << word(entryDict.lookup("type"))
+                        << endl;
+                    FatalError.exit();
+                }
             }
         }
 

@@ -25,6 +25,10 @@ class immersedBoundary
     // Mesh
     const fvMesh& fvMsh_;
 
+    // Stability factor for xi. If xi > stability factor,
+    // the IBM will revert to a more stable first order fit.
+    scalar xiStabilityFactor_;
+
     // The colocated and staggered IB masks are equal to 0 in
     // colocated/staggered cell centers outside the IB, and
     // equal to 1 in cell centers inside the IB.
@@ -72,6 +76,9 @@ public:
     inline staggeredScalarField& stagWallAdjMask() { return stagWallAdjMask_; }
     inline colocatedStencilField& colWallDist() { return colWallDist_; }
     inline staggeredStencilField& stagWallDist() { return stagWallDist_; }
+
+    // Return stability factor
+    inline scalar xiStabilityFactor() { return xiStabilityFactor_; }
 
 };
 
