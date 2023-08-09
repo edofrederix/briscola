@@ -172,8 +172,8 @@ vof::vof(const IOdictionary& dict, const fvMesh& fvMsh)
         true,
         true
     ),
-    lve_(*this),
     rectilinear_(fvMsh.msh()[0].rectilinear() == unitXYZ),
+    lve_(*this),
     normalSchemePtr_
     (
         normalScheme::New
