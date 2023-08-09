@@ -2,7 +2,6 @@
 #define truncatedPiped_H
 
 #include "fvMesh.H"
-#include "truncatedTet.H"
 
 namespace Foam
 {
@@ -16,7 +15,10 @@ namespace fv
 class truncatedPiped
 {
     // Vertices
-    vertexVector v_;
+    vector v_lba_;
+    vector v_rba_;
+    vector v_lta_;
+    vector v_lbf_;
 
     // Plane normal
     vector n_;
@@ -24,18 +26,23 @@ class truncatedPiped
     // Plane constant
     scalar C_;
 
-    // List of truncated tets
-    PtrList<truncatedTet> tets_;
-
-    // Set the list of truncated tets
-    void setTets();
-
     // Disallow default bitwise assignment
     void operator=(const truncatedPiped&);
 
 public:
 
     // Construct from components
+    truncatedPiped
+    (
+        const vector& v_lba,
+        const vector& v_rba,
+        const vector& v_lta,
+        const vector& v_lbf,
+        const vector& n,
+        const scalar& C
+    );
+
+    // Construct from hexahedron
     truncatedPiped
     (
         const vertexVector& vertices,
@@ -56,16 +63,16 @@ public:
     virtual ~truncatedPiped();
 
     // Access to the vertices
-    inline const vertexVector& v() const { return v_; }
+    inline vector v_lba() const { return v_lba_; }
+    inline vector v_rba() const { return v_rba_; }
+    inline vector v_lta() const { return v_lta_; }
+    inline vector v_lbf() const { return v_lbf_; }
 
     // Return the plane normal
     inline vector n() const { return n_; }
 
     // Return the plane constant
     inline scalar C() const { return C_; }
-
-    // Access to the faces
-    inline const PtrList<truncatedTet>& tets() const { return tets_; }
 
     // Compute the volume
     virtual scalar volume() const;

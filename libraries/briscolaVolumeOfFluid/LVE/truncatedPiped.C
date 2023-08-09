@@ -9,21 +9,25 @@ namespace briscola
 namespace fv
 {
 
-void truncatedPiped::setTets()
-{
-    tets_.clear();
-    tets_.setSize(5);
 
-    for (int i = 0; i < 5; i++)
-    {
-        vectorList v(4);
+truncatedPiped::truncatedPiped
+(
+    const vector& v_lba,
+    const vector& v_rba,
+    const vector& v_lta,
+    const vector& v_lbf,
+    const vector& n,
+    const scalar& C
+)
+:
+    v_lba_(v_lba),
+    v_rba_(v_rba),
+    v_lta_(v_lta),
+    v_lbf_(v_lbf),
+    n_(n),
+    C_(C)
+{}
 
-        for (int j = 0; j < 4; j++)
-            v[j] = v_[tetDecomp[i][j]];
-
-        tets_.set(i, new truncatedTet(v,n_,C_));
-    }
-}
 
 truncatedPiped::truncatedPiped
 (
@@ -32,19 +36,22 @@ truncatedPiped::truncatedPiped
     const scalar& C
 )
 :
-    v_(v),
+    v_lba_(v.lba()),
+    v_rba_(v.rba()),
+    v_lta_(v.lta()),
+    v_lbf_(v.lbf()),
     n_(n),
     C_(C)
-{
-    setTets();
-}
+{}
 
 truncatedPiped::truncatedPiped(const truncatedPiped& hx)
 :
-    v_(hx.v_),
+    v_lba_(hx.v_lba_),
+    v_rba_(hx.v_rba_),
+    v_lta_(hx.v_lta_),
+    v_lbf_(hx.v_lbf_),
     n_(hx.n_),
-    C_(hx.C_),
-    tets_(hx.tets_)
+    C_(hx.C_)
 {}
 
 truncatedPiped::~truncatedPiped()
@@ -71,13 +78,13 @@ scalar truncatedPiped::volume() const
 
     const tensor T
     (
-        v_.rba() - v_.lba(),
-        v_.lta() - v_.lba(),
-        v_.lbf() - v_.lba()
+        v_rba_ - v_lba_,
+        v_lta_ - v_lba_,
+        v_lbf_ - v_lba_
     );
 
     vector n = T & n_;
-    scalar C = C_ + (n_ & v_.lba());
+    scalar C = C_ + (n_ & v_lba_);
 
     for (int i = 0; i < 3; i++)
     {
