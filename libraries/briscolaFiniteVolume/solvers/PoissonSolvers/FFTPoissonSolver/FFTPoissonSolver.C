@@ -111,29 +111,45 @@ void FFTPoissonSolver::solve
             }
         }
 
+        const labelVector N(fvMsh_.msh().cast<rectilinearMesh>().N());
+
         // Transform in two directions and solve in the third direction
         switch (FFTPlan_.solveDir())
         {
             case 0:
-                if (FFTPlan_.decompType() == 4 || FFTPlan_.decompType() == 6)
+                if (FFTPlan_.firstTransDir() == 2)
                 {
                     decomp_.transpose(initData_, zPencil_, I, Z, "z", "z");
 
                     fft_->fwdFFTz();
 
-                    decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
+                    if (N.y() > 1)
+                    {
+                        decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
 
-                    fft_->fwdFFTy();
+                        fft_->fwdFFTy();
 
-                    decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
+                        decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
+                    }
+                    else
+                    {
+                        decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
+                    }
 
-                    tds_->solve(xPencil_,ddt);
+                    tds_->solve(xPencil_, ddt);
 
-                    decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
+                    if (N.y() > 1)
+                    {
+                        decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
 
-                    fft_->bwdFFTy();
+                        fft_->bwdFFTy();
 
-                    decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
+                        decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
+                    }
+                    else
+                    {
+                        decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
+                    }
 
                     fft_->bwdFFTz();
 
@@ -145,19 +161,33 @@ void FFTPoissonSolver::solve
 
                     fft_->fwdFFTy();
 
-                    decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
+                    if (N.z() > 1)
+                    {
+                        decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
 
-                    fft_->fwdFFTz();
+                        fft_->fwdFFTz();
 
-                    decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
+                        decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
+                    }
+                    else
+                    {
+                        decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
+                    }
 
-                    tds_->solve(xPencil_,ddt);
+                    tds_->solve(xPencil_, ddt);
 
-                    decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
+                    if (N.z() > 1)
+                    {
+                        decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
 
-                    fft_->bwdFFTz();
+                        fft_->bwdFFTz();
 
-                    decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
+                        decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
+                    }
+                    else
+                    {
+                        decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
+                    }
 
                     fft_->bwdFFTy();
 
@@ -166,25 +196,39 @@ void FFTPoissonSolver::solve
                 break;
 
             case 1:
-                if (FFTPlan_.decompType() == 4 || FFTPlan_.decompType() == 7)
+                if (FFTPlan_.firstTransDir() == 2)
                 {
                     decomp_.transpose(initData_, zPencil_, I, Z, "z", "z");
 
                     fft_->fwdFFTz();
 
-                    decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
+                    if (N.x() > 1)
+                    {
+                        decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
 
-                    fft_->fwdFFTx();
+                        fft_->fwdFFTx();
 
-                    decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
+                        decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
+                    }
+                    else
+                    {
+                        decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
+                    }
 
-                    tds_->solve(yPencil_,ddt);
+                    tds_->solve(yPencil_, ddt);
 
-                    decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
+                    if (N.x() > 1)
+                    {
+                        decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
 
-                    fft_->bwdFFTx();
+                        fft_->bwdFFTx();
 
-                    decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
+                        decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
+                    }
+                    else
+                    {
+                        decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
+                    }
 
                     fft_->bwdFFTz();
 
@@ -196,19 +240,33 @@ void FFTPoissonSolver::solve
 
                     fft_->fwdFFTx();
 
-                    decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
+                    if (N.z() > 1)
+                    {
+                        decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
 
-                    fft_->fwdFFTz();
+                        fft_->fwdFFTz();
 
-                    decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
+                        decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
+                    }
+                    else
+                    {
+                        decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
+                    }
 
-                    tds_->solve(yPencil_,ddt);
+                    tds_->solve(yPencil_, ddt);
 
-                    decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
+                    if (N.z() > 1)
+                    {
+                        decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
 
-                    fft_->bwdFFTz();
+                        fft_->bwdFFTz();
 
-                    decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
+                        decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
+                    }
+                    else
+                    {
+                        decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
+                    }
 
                     fft_->bwdFFTx();
 
@@ -217,25 +275,39 @@ void FFTPoissonSolver::solve
                 break;
 
             case 2:
-                if (FFTPlan_.decompType() == 3 || FFTPlan_.decompType() == 7)
+                if (FFTPlan_.firstTransDir() == 1)
                 {
                     decomp_.transpose(initData_, yPencil_, I, Y, "z", "y");
 
                     fft_->fwdFFTy();
 
-                    decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
+                    if (N.x() > 1)
+                    {
+                        decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
 
-                    fft_->fwdFFTx();
+                        fft_->fwdFFTx();
 
-                    decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
+                        decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
+                    }
+                    else
+                    {
+                        decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
+                    }
 
-                    tds_->solve(zPencil_,ddt);
+                    tds_->solve(zPencil_, ddt);
 
-                    decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
+                    if (N.x() > 1)
+                    {
+                        decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
 
-                    fft_->bwdFFTx();
+                        fft_->bwdFFTx();
 
-                    decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
+                        decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
+                    }
+                    else
+                    {
+                        decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
+                    }
 
                     fft_->bwdFFTy();
 
@@ -247,19 +319,34 @@ void FFTPoissonSolver::solve
 
                     fft_->fwdFFTx();
 
-                    decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
+                    if (N.y() > 1)
+                    {
+                        decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
 
-                    fft_->fwdFFTy();
+                        fft_->fwdFFTy();
 
-                    decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
+                        decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
+                    }
+                    else
+                    {
+                        decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
+                    }
 
-                    tds_->solve(zPencil_,ddt);
+                    tds_->solve(zPencil_, ddt);
 
-                    decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
 
-                    fft_->bwdFFTy();
+                    if (N.y() > 1)
+                    {
+                        decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
 
-                    decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
+                        fft_->bwdFFTy();
+
+                        decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
+                    }
+                    else
+                    {
+                        decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
+                    }
 
                     fft_->bwdFFTx();
 

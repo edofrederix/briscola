@@ -109,6 +109,65 @@ planner::planner
             solveDir_ = 2;
         }
     }
+
+    // Select direction for first FFT
+
+    firstTransDir_ = -1;
+
+    switch (solveDir_)
+    {
+        case 0:
+            if
+            (
+                   (decompType_ == 4 || decompType_ == 6)
+                && (N_.z() > 1)
+            )
+            {
+                firstTransDir_ = 2;
+            }
+            else
+            {
+                firstTransDir_ = 1;
+            }
+            break;
+
+        case 1:
+            if
+            (
+                   (decompType_ == 4 || decompType_ == 7)
+                && (N_.z() > 1)
+            )
+            {
+                firstTransDir_ = 2;
+            }
+            else
+            {
+                firstTransDir_ = 0;
+            }
+            break;
+
+        case 2:
+            if
+            (
+                   (decompType_ == 3 || decompType_ == 7)
+                && (N_.y() > 1)
+            )
+            {
+                firstTransDir_ = 1;
+            }
+            else
+            {
+                firstTransDir_ = 0;
+            }
+            break;
+
+        default:
+            FatalError
+                << "Invalid solve direction."
+                << endl;
+            FatalError.exit();
+            break;
+    }
 }
 
 // Destructor

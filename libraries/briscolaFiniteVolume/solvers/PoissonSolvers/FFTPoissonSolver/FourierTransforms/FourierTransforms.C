@@ -46,7 +46,7 @@ void FourierTransforms::FFTBoundaryConditions()
     switch (globalBoundaryConditionBaseType(x_, faceOffsets[0]))
     {
         case 1:
-            BC_.x() = 0;
+            BC_.x() = 0; // Empty
             break;
 
         case 3:
@@ -85,7 +85,7 @@ void FourierTransforms::FFTBoundaryConditions()
     switch (globalBoundaryConditionBaseType(x_, faceOffsets[2]))
     {
         case 1:
-            BC_.y() = 0;
+            BC_.y() = 0; // Empty
             break;
 
         case 3:
@@ -124,7 +124,7 @@ void FourierTransforms::FFTBoundaryConditions()
     switch (globalBoundaryConditionBaseType(x_, faceOffsets[4]))
     {
         case 1:
-            BC_.z() = 0;
+            BC_.z() = 0; // Empty
             break;
 
         case 3:

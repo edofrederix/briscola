@@ -43,6 +43,9 @@ class planner
     // Solve direction
     label solveDir_;
 
+    // Direction of first transform
+    label firstTransDir_;
+
 public:
 
     // Construct
@@ -56,6 +59,7 @@ public:
 
     inline label decompType() const { return decompType_; }
     inline label solveDir() const { return solveDir_; }
+    inline label firstTransDir() const { return firstTransDir_; }
 
 };
 

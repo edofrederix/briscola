@@ -19,7 +19,7 @@ bool check
     labelVector N(p.fvMsh().msh().cast<rectilinearMesh>().N());
 
     const PtrList<scalarList> cellSizes
-        = fvMsh.msh().cast<rectilinearMesh>().localCellSizes();
+        = fvMsh.msh().cast<rectilinearMesh>().globalCellSizes();
 
     labelVector Si =
         fvMsh.msh().decomp().globalStartPerProc()[Pstream::myProcNo()];

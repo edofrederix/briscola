@@ -146,7 +146,7 @@ void pencilDecomposer::checkDecomp(labelVector D)
     }
 
     for (int dir = 0; dir < 3; dir++)
-    if (N_[dir] < D[dir])
+    if ((N_[dir] < D[dir]) && (N_[dir] > 1))
     {
         FatalError
             << "Mesh not decomposable by decomposition vector " << D
