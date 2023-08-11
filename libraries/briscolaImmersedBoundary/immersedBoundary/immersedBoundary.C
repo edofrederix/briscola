@@ -110,9 +110,9 @@ immersedBoundary<MeshType>::immersedBoundary
                 forAllCells(mask_[l][d], i, j, k)
                 {
                     // Base block indices
-                    const label x = i+1 - mask_[l][d].A().left();
-                    const label y = j+1 - mask_[l][d].A().bottom();
-                    const label z = k+1 - mask_[l][d].A().aft();
+                    const label x = i+1 - mask_[l][d].I().left();
+                    const label y = j+1 - mask_[l][d].I().bottom();
+                    const label z = k+1 - mask_[l][d].I().aft();
 
                     mask_[l][d](i,j,k) = 0.0;
                     wallAdjMask_[l][d](i,j,k) = 0.0;
