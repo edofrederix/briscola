@@ -318,6 +318,209 @@ scalar immersedBoundary<MeshType>::wallDistance(vector c, vector nb)
     return dist;
 }
 
+template<class MeshType>
+void immersedBoundary<MeshType>::penalization
+(
+    linearSystem<stencil,scalar,MeshType>& ls
+)
+{
+    // Set coefficients and sources to 0 in IB
+    ls.A() *= (1.0 - mask_);
+    ls.b() *= (1.0 - mask_);
+
+    forAll(ls.A(), l)
+    {
+        forAll(ls.A()[l], d)
+        {
+            forAllCells(ls.A()[l][d], i, j, k)
+            {
+                // Set central coefficients to 1 in IB
+                ls.A()[l][d](i,j,k).center() += mask_[l][d](i,j,k);
+            }
+        }
+    }
+}
+
+template<class MeshType>
+void immersedBoundary<MeshType>::IBM
+(
+    linearSystem<stencil,scalar,MeshType>& ls
+)
+{
+    // We only apply the IBM on the finest mesh (l == 0)
+    forAll(ls.A()[0], d)
+    {
+        forAllCells(ls.A()[0][d], i, j, k)
+        {
+            // Modify stencils in IB-adjacent cells
+            if (wallAdjMask_[0][d](i,j,k) == 1)
+            {
+                if (wallDist_[0][d](i,j,k).left() >= 0)
+                {
+                    scalar xi = wallDist_[0][d](i,j,k).left();
+
+                    scalar w0 = 2.0 /
+                        (
+                              (1.0 - xiStabilityFactor_)
+                            * (2.0 - xiStabilityFactor_)
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
+
+                    if (xi < xiStabilityFactor_)
+                    {
+                        w1 = -2.0*xi/(1.0-xi);
+                        w2 = xi/(2.0-xi);
+                    }
+
+                    scalar a0 = ls.A()[0][d](i,j,k).left();
+
+                    ls.A()[0][d](i,j,k).left() = 0;
+
+                    ls.A()[0][d](i,j,k).center() += a0*w1;
+
+                    ls.A()[0][d](i,j,k).right() += a0*w2;
+                }
+
+                if (wallDist_[0][d](i,j,k).bottom() >= 0)
+                {
+                    scalar xi = wallDist_[0][d](i,j,k).bottom();
+
+                    scalar w0 = 2.0 /
+                        (
+                              (1.0 - xiStabilityFactor_)
+                            * (2.0 - xiStabilityFactor_)
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
+
+                    if (xi < xiStabilityFactor_)
+                    {
+                        w1 = -2.0*xi/(1.0-xi);
+                        w2 = xi/(2.0-xi);
+                    }
+
+                    scalar a0 = ls.A()[0][d](i,j,k).bottom();
+
+                    ls.A()[0][d](i,j,k).bottom() = 0;
+
+                    ls.A()[0][d](i,j,k).center() += a0*w1;
+
+                    ls.A()[0][d](i,j,k).top() += a0*w2;
+                }
+
+                if (wallDist_[0][d](i,j,k).aft() >= 0)
+                {
+                    scalar xi = wallDist_[0][d](i,j,k).aft();
+
+                    scalar w0 = 2.0 /
+                        (
+                              (1.0 - xiStabilityFactor_)
+                            * (2.0 - xiStabilityFactor_)
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
+
+                    if (xi < xiStabilityFactor_)
+                    {
+                        w1 = -2.0*xi/(1.0-xi);
+                        w2 = xi/(2.0-xi);
+                    }
+
+                    scalar a0 = ls.A()[0][d](i,j,k).aft();
+
+                    ls.A()[0][d](i,j,k).aft() = 0;
+
+                    ls.A()[0][d](i,j,k).center() += a0*w1;
+
+                    ls.A()[0][d](i,j,k).fore() += a0*w2;
+                }
+
+                if (wallDist_[0][d](i,j,k).right() >= 0)
+                {
+                    scalar xi = wallDist_[0][d](i,j,k).right();
+
+                    scalar w0 = 2.0 /
+                        (
+                              (1.0 - xiStabilityFactor_)
+                            * (2.0 - xiStabilityFactor_)
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
+
+                    if (xi < xiStabilityFactor_)
+                    {
+                        w1 = -2.0*xi/(1.0-xi);
+                        w2 = xi/(2.0-xi);
+                    }
+
+                    scalar a0 = ls.A()[0][d](i,j,k).right();
+
+                    ls.A()[0][d](i,j,k).right() = 0;
+
+                    ls.A()[0][d](i,j,k).center() += a0*w1;
+
+                    ls.A()[0][d](i,j,k).left() += a0*w2;
+                }
+
+                if (wallDist_[0][d](i,j,k).top() >= 0)
+                {
+                    scalar xi = wallDist_[0][d](i,j,k).top();
+
+                    scalar w0 = 2.0 /
+                        (
+                              (1.0 - xiStabilityFactor_)
+                            * (2.0 - xiStabilityFactor_)
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
+
+                    if (xi < xiStabilityFactor_)
+                    {
+                        w1 = -2.0*xi/(1.0-xi);
+                        w2 = xi/(2.0-xi);
+                    }
+
+                    scalar a0 = ls.A()[0][d](i,j,k).top();
+
+                    ls.A()[0][d](i,j,k).top() = 0;
+
+                    ls.A()[0][d](i,j,k).center() += a0*w1;
+
+                    ls.A()[0][d](i,j,k).bottom() += a0*w2;
+                }
+
+                if (wallDist_[0][d](i,j,k).fore() >= 0)
+                {
+                    scalar xi = wallDist_[0][d](i,j,k).fore();
+
+                    scalar w0 = 2.0 /
+                        (
+                              (1.0 - xiStabilityFactor_)
+                            * (2.0 - xiStabilityFactor_)
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
+
+                    if (xi < xiStabilityFactor_)
+                    {
+                        w1 = -2.0*xi/(1.0-xi);
+                        w2 = xi/(2.0-xi);
+                    }
+
+                    scalar a0 = ls.A()[0][d](i,j,k).fore();
+
+                    ls.A()[0][d](i,j,k).fore() = 0;
+
+                    ls.A()[0][d](i,j,k).center() += a0*w1;
+
+                    ls.A()[0][d](i,j,k).aft() += a0*w2;
+                }
+            }
+        }
+    }
+}
+
 defineTemplateTypeNameAndDebug(immersedBoundary<colocated>, 0);
 defineTemplateTypeNameAndDebug(immersedBoundary<staggered>, 0);
 

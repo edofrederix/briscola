@@ -8,6 +8,7 @@
 #include "fvMesh.H"
 #include "fvMeshMetrics.H"
 #include "meshField.H"
+#include "linearSystem.H"
 
 namespace Foam
 {
@@ -68,13 +69,11 @@ public:
     // The first point is a fluid cell and the second point is an IB cell
     scalar wallDistance(vector, vector);
 
-    // Return functions for mask fields
-    inline meshField<scalar,MeshType>& mask() { return mask_; }
-    inline meshField<scalar,MeshType>& wallAdjMask() { return wallAdjMask_; }
-    inline meshField<stencil,MeshType>& wallDist() { return wallDist_; }
+    // Apply penalization method to a linear system
+    void penalization(linearSystem<stencil,scalar,MeshType>&);
 
-    // Return stability factor
-    inline scalar xiStabilityFactor() { return xiStabilityFactor_; }
+    // Apply immersed boundary method for Dirichlet BC to a linear system
+    void IBM(linearSystem<stencil,scalar,MeshType>&);
 
 };
 

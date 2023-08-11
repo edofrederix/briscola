@@ -61,7 +61,8 @@ int main(int argc, char *argv[])
 
         if (solverDict.found("ImmersedBoundary"))
         {
-            #include "IBM.H"
+            IB.penalization(USys);
+            IB.IBM(USys);
         }
 
         // Solve momentum equation
