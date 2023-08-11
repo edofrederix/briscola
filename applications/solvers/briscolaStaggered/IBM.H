@@ -19,8 +19,13 @@ forAll(USys.A(), l)
                 {
                     scalar xi = IB.wallDist()[l][d](i,j,k).left();
 
-                    scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
-                    scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
+                    scalar w0 = 2.0 /
+                        (
+                              (1.0 - IB.xiStabilityFactor())
+                            * (2.0 - IB.xiStabilityFactor())
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
 
                     if (xi < IB.xiStabilityFactor())
                     {
@@ -41,8 +46,13 @@ forAll(USys.A(), l)
                 {
                     scalar xi = IB.wallDist()[l][d](i,j,k).bottom();
 
-                    scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
-                    scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
+                    scalar w0 = 2.0 /
+                        (
+                              (1.0 - IB.xiStabilityFactor())
+                            * (2.0 - IB.xiStabilityFactor())
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
 
                     if (xi < IB.xiStabilityFactor())
                     {
@@ -63,8 +73,13 @@ forAll(USys.A(), l)
                 {
                     scalar xi = IB.wallDist()[l][d](i,j,k).aft();
 
-                    scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
-                    scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
+                    scalar w0 = 2.0 /
+                        (
+                              (1.0 - IB.xiStabilityFactor())
+                            * (2.0 - IB.xiStabilityFactor())
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
 
                     if (xi < IB.xiStabilityFactor())
                     {
@@ -85,8 +100,13 @@ forAll(USys.A(), l)
                 {
                     scalar xi = IB.wallDist()[l][d](i,j,k).right();
 
-                    scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
-                    scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
+                    scalar w0 = 2.0 /
+                        (
+                              (1.0 - IB.xiStabilityFactor())
+                            * (2.0 - IB.xiStabilityFactor())
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
 
                     if (xi < IB.xiStabilityFactor())
                     {
@@ -107,8 +127,13 @@ forAll(USys.A(), l)
                 {
                     scalar xi = IB.wallDist()[l][d](i,j,k).top();
 
-                    scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
-                    scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
+                    scalar w0 = 2.0 /
+                        (
+                              (1.0 - IB.xiStabilityFactor())
+                            * (2.0 - IB.xiStabilityFactor())
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
 
                     if (xi < IB.xiStabilityFactor())
                     {
@@ -129,8 +154,13 @@ forAll(USys.A(), l)
                 {
                     scalar xi = IB.wallDist()[l][d](i,j,k).fore();
 
-                    scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
-                    scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
+                    scalar w0 = 2.0 /
+                        (
+                              (1.0 - IB.xiStabilityFactor())
+                            * (2.0 - IB.xiStabilityFactor())
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
 
                     if (xi < IB.xiStabilityFactor())
                     {

@@ -34,6 +34,25 @@ immersedBoundary<MeshType>::immersedBoundary
 
         xiStabilityFactor_ = IBDict.lookupOrDefault("xiStabilityFactor", 0.5);
 
+        if (xiStabilityFactor_ < 0)
+        {
+            WarningInFunction
+                << "Stability factor for immersed boundary"
+                << " set to 0 (0 <= stability factor <= 0.99)"
+                << endl;
+
+            xiStabilityFactor_ = 0;
+        }
+        else if (xiStabilityFactor_ > 0.99)
+        {
+            WarningInFunction
+                << "Stability factor for immersed boundary"
+                << " set to 0.99 (0 <= stability factor <= 0.99)"
+                << endl;
+
+            xiStabilityFactor_ = 0.99;
+        }
+
         // Add shapes to IB according to dictionary entries
         for (int e = 0; e < nEntries; e++)
         {
