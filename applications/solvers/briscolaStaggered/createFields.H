@@ -69,7 +69,7 @@ source = scalarList(solverDict.lookup("source"));
 
 // Immersed boundary
 
-immersedBoundary IB(solverDict, fvMsh);
+immersedBoundary<staggered> IB(solverDict, fvMsh);
 
 // Solver equations
 

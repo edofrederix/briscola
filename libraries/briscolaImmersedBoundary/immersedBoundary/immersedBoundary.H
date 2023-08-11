@@ -20,6 +20,7 @@ namespace ibm
 
 using namespace fv;
 
+template<class MeshType>
 class immersedBoundary
 {
     // Mesh
@@ -29,27 +30,25 @@ class immersedBoundary
     // the IBM will revert to a more stable first order fit.
     scalar xiStabilityFactor_;
 
-    // The colocated and staggered IB masks are equal to 0 in
-    // colocated/staggered cell centers outside the IB, and
-    // equal to 1 in cell centers inside the IB.
-    colocatedScalarField colMask_;
-    staggeredScalarField stagMask_;
+    // The IB mask is equal to 0 in cell centers outside the IB,
+    // and equal to 1 in cell centers inside the IB.
+    meshField<scalar,MeshType> mask_;
 
-    // The colocated and staggered wall adjacent masks are equal
-    // to 1 in fluid cells with at least one neighboring cell in
-    // the IB, and 0 in other cells
-    colocatedScalarField colWallAdjMask_;
-    staggeredScalarField stagWallAdjMask_;
+    // The wall adjacent mask is equal to 1 in fluid cells with at
+    // least one neighboring cell in the IB, and 0 in other cells
+    meshField<scalar,MeshType> wallAdjMask_;
 
-    // The colocated and staggered wall distance fields store the
-    // wall distances to the IB in the components of the stencils
-    colocatedStencilField colWallDist_;
-    staggeredStencilField stagWallDist_;
+    // The wall distance field stores the wall distances to the
+    // IB in the components of the stencils
+    meshField<stencil,MeshType> wallDist_;
 
     // List of shapes making up the immersed boundary
     PtrList<shape> shapes_;
 
 public:
+
+    // Declare name of the class and its debug switch
+    ClassName("immersedBoundary");
 
     // Construct from solverDict and fvMesh
     immersedBoundary
@@ -59,7 +58,7 @@ public:
     );
 
     // Destructor
-    virtual ~immersedBoundary();
+    ~immersedBoundary();
 
     // Returns true if the position vector (x,y,z)
     // is inside the immersed boundary
@@ -70,12 +69,9 @@ public:
     scalar wallDistance(vector, vector);
 
     // Return functions for mask fields
-    inline colocatedScalarField& colMask() { return colMask_; }
-    inline staggeredScalarField& stagMask() { return stagMask_; }
-    inline colocatedScalarField& colWallAdjMask() { return colWallAdjMask_; }
-    inline staggeredScalarField& stagWallAdjMask() { return stagWallAdjMask_; }
-    inline colocatedStencilField& colWallDist() { return colWallDist_; }
-    inline staggeredStencilField& stagWallDist() { return stagWallDist_; }
+    inline meshField<scalar,MeshType>& mask() { return mask_; }
+    inline meshField<scalar,MeshType>& wallAdjMask() { return wallAdjMask_; }
+    inline meshField<stencil,MeshType>& wallDist() { return wallDist_; }
 
     // Return stability factor
     inline scalar xiStabilityFactor() { return xiStabilityFactor_; }

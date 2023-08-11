@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
         )
     );
 
-    immersedBoundary IB(solverDict, fvMsh);
+    immersedBoundary<colocated> IB(solverDict, fvMsh);
 
     // Test point 1 is outside of the IB
     vector testPoint1(0,0,0);
@@ -95,10 +95,10 @@ int main(int argc, char *argv[])
     labelVector testPoint6(64,64,64);
 
     // Cell centers
-    // cc[0][0] returns the collocated cell center
+    // cc[0][0] returns the colocated cell center
     // locations on the highest mesh level
-    const staggeredVectorField& cc =
-        fvMsh.metrics<staggered>().cellCenters();
+    const colocatedVectorField& cc =
+        fvMsh.metrics<colocated>().cellCenters();
 
 
     if (IB.isInside(cc[0][0](testPoint5)))

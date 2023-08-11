@@ -14,19 +14,17 @@ using Foam::min;
 
 // Constructor
 
-immersedBoundary::immersedBoundary
+template<class MeshType>
+immersedBoundary<MeshType>::immersedBoundary
 (
     IOdictionary solverDict,
     const fvMesh& fvMsh
 )
 :
     fvMsh_(fvMsh),
-    colMask_("colMask", fvMsh_),
-    stagMask_("stagMask", fvMsh_),
-    colWallAdjMask_("colWallAdjMask", fvMsh_),
-    stagWallAdjMask_("stagWallAdjMask", fvMsh_),
-    colWallDist_("colWallDist", fvMsh_),
-    stagWallDist_("stagWallDist", fvMsh_)
+    mask_("mask", fvMsh_),
+    wallAdjMask_("wallAdjMask", fvMsh_),
+    wallDist_("wallDist", fvMsh_)
 {
     if (solverDict.found("ImmersedBoundary"))
     {
@@ -81,265 +79,139 @@ immersedBoundary::immersedBoundary
             }
         }
 
-        // Colocated cell centers
-        const colocatedVectorField& colCC =
-            fvMsh_.metrics<colocated>().cellCenters();
+        // Cell centers
+        const meshField<vector,MeshType>& CC =
+            fvMsh_.metrics<MeshType>().cellCenters();
 
-        // Staggered cell centers
-        const staggeredVectorField& stagCC =
-            fvMsh_.metrics<staggered>().cellCenters();
-
-        // Set colocated IB masks
-        forAll(colMask_, l)
+        // Set IB masks
+        forAll(mask_, l)
         {
-            forAllCells(colMask_[l][0], i, j, k)
+            forAll(mask_[l], d)
             {
-                colMask_[l][0](i,j,k) = 0.0;
-                colWallAdjMask_[l][0](i,j,k) = 0.0;
-
-                if (this->isInside(colCC[l][0](i,j,k)))
+                forAllCells(mask_[l][d], i, j, k)
                 {
-                    colMask_[l][0](i,j,k) = 1.0;
-                }
-                else
-                {
-                    vector c(colCC[l][0](i,j,k));
+                    // Base block indices
+                    const label x = i+1 - mask_[l][d].A().left();
+                    const label y = j+1 - mask_[l][d].A().bottom();
+                    const label z = k+1 - mask_[l][d].A().aft();
 
-                    if
-                    (
-                        this->isInside(colCC[l][0](max(colMask_[l][0].A().left(), i-1),j,k))
-                    )
+                    mask_[l][d](i,j,k) = 0.0;
+                    wallAdjMask_[l][d](i,j,k) = 0.0;
+
+                    if (this->isInside(CC[l][d](i,j,k)))
                     {
-                        colWallAdjMask_[l][0](i,j,k) = 1.0;
-
-                        vector nb(colCC[l][0](i-1,j,k));
-                        scalar wd = this->wallDistance(c, nb);
-                        scalar xi = (mag(c-nb)-wd)/mag(c-nb);
-
-                        colWallDist_[l][0](i,j,k).left() = xi;
+                        mask_[l][d](i,j,k) = 1.0;
                     }
                     else
                     {
-                        colWallDist_[l][0](i,j,k).left() = -1.0;
-                    }
-
-                    if
-                    (
-                        this->isInside(colCC[l][0](i,max(colMask_[l][0].A().bottom(), j-1),k))
-                    )
-                    {
-                        colWallAdjMask_[l][0](i,j,k) = 1.0;
-
-                        vector nb(colCC[l][0](i,j-1,k));
-                        scalar wd = this->wallDistance(c, nb);
-                        scalar xi = (mag(c-nb)-wd)/mag(c-nb);
-
-                        colWallDist_[l][0](i,j,k).bottom() = xi;
-                    }
-                    else
-                    {
-                        colWallDist_[l][0](i,j,k).bottom() = -1.0;
-                    }
-
-                    if
-                    (
-                        this->isInside(colCC[l][0](i,j,max(colMask_[l][0].A().aft(),k-1)))
-                    )
-                    {
-                        colWallAdjMask_[l][0](i,j,k) = 1.0;
-
-                        vector nb(colCC[l][0](i,j,k-1));
-                        scalar wd = this->wallDistance(c, nb);
-                        scalar xi = (mag(c-nb)-wd)/mag(c-nb);
-
-                        colWallDist_[l][0](i,j,k).aft() = xi;
-                    }
-                    else
-                    {
-                        colWallDist_[l][0](i,j,k).aft() = -1.0;
-                    }
-
-                    if
-                    (
-                        this->isInside(colCC[l][0](min(colMask_[l][0].A().right(), i+1),j,k))
-                    )
-                    {
-                        colWallAdjMask_[l][0](i,j,k) = 1.0;
-
-                        vector nb(colCC[l][0](i+1,j,k));
-                        scalar wd = this->wallDistance(c, nb);
-                        scalar xi = (mag(c-nb)-wd)/mag(c-nb);
-
-                        colWallDist_[l][0](i,j,k).right() = xi;
-                    }
-                    else
-                    {
-                        colWallDist_[l][0](i,j,k).right() = -1.0;
-                    }
-
-                    if
-                    (
-                        this->isInside(colCC[l][0](i,min(colMask_[l][0].A().top(), j+1),k))
-                    )
-                    {
-                        colWallAdjMask_[l][0](i,j,k) = 1.0;
-
-                        vector nb(colCC[l][0](i,j+1,k));
-                        scalar wd = this->wallDistance(c, nb);
-                        scalar xi = (mag(c-nb)-wd)/mag(c-nb);
-
-                        colWallDist_[l][0](i,j,k).top() = xi;
-                    }
-                    else
-                    {
-                        colWallDist_[l][0](i,j,k).top() = -1.0;
-                    }
-
-                    if
-                    (
-                        this->isInside(colCC[l][0](i,j,min(colMask_[l][0].A().fore(), k+1)))
-                    )
-                    {
-                        colWallAdjMask_[l][0](i,j,k) = 1.0;
-
-                        vector nb(colCC[l][0](i,j,k+1));
-                        scalar wd = this->wallDistance(c, nb);
-                        scalar xi = (mag(c-nb)-wd)/mag(c-nb);
-
-                        colWallDist_[l][0](i,j,k).fore() = xi;
-                    }
-                    else
-                    {
-                        colWallDist_[l][0](i,j,k).fore() = -1.0;
-                    }
-                }
-            }
-        }
-
-        // Set staggered IB masks
-        forAll(stagMask_, l)
-        {
-            forAll(stagMask_[l], d)
-            {
-                forAllCells(stagMask_[l][d], i, j, k)
-                {
-                    stagMask_[l][d](i,j,k) = 0.0;
-                    stagWallAdjMask_[l][d](i,j,k) = 0.0;
-
-                    if (this->isInside(stagCC[l][d](i,j,k)))
-                    {
-                        stagMask_[l][d](i,j,k) = 1.0;
-                    }
-                    else
-                    {
-                        vector c(stagCC[l][d](i,j,k));
+                        vector c(CC[l][d](i,j,k));
 
                         if
                         (
-                            this->isInside(stagCC[l][d](max(stagMask_[l][d].A().left(), i-1),j,k))
+                            this->isInside(CC[l][d].B()(x-1,y,z))
                         )
                         {
-                            stagWallAdjMask_[l][d](i,j,k) = 1.0;
+                            wallAdjMask_[l][d](i,j,k) = 1.0;
 
-                            vector nb(stagCC[l][d](i-1,j,k));
+                            vector nb(CC[l][d](i-1,j,k));
                             scalar wd = this->wallDistance(c, nb);
                             scalar xi = (mag(c-nb)-wd)/mag(c-nb);
 
-                            stagWallDist_[l][d](i,j,k).left() = xi;
+                            wallDist_[l][d](i,j,k).left() = xi;
                         }
                         else
                         {
-                            stagWallDist_[l][d](i,j,k).left() = -1.0;
+                            wallDist_[l][d](i,j,k).left() = -1.0;
                         }
 
                         if
                         (
-                            this->isInside(stagCC[l][d](i,max(stagMask_[l][d].A().bottom(), j-1),k))
+                            this->isInside(CC[l][d].B()(x,y-1,z))
                         )
                         {
-                            stagWallAdjMask_[l][d](i,j,k) = 1.0;
+                            wallAdjMask_[l][d](i,j,k) = 1.0;
 
-                            vector nb(stagCC[l][d](i,j-1,k));
+                            vector nb(CC[l][d](i,j-1,k));
                             scalar wd = this->wallDistance(c, nb);
                             scalar xi = (mag(c-nb)-wd)/mag(c-nb);
 
-                            stagWallDist_[l][d](i,j,k).bottom() = xi;
+                            wallDist_[l][d](i,j,k).bottom() = xi;
                         }
                         else
                         {
-                            stagWallDist_[l][d](i,j,k).bottom() = -1.0;
+                            wallDist_[l][d](i,j,k).bottom() = -1.0;
                         }
 
                         if
                         (
-                            this->isInside(stagCC[l][d](i,j,max(stagMask_[l][d].A().aft(),k-1)))
+                            this->isInside(CC[l][d].B()(x,y,z-1))
                         )
                         {
-                            stagWallAdjMask_[l][d](i,j,k) = 1.0;
+                            wallAdjMask_[l][d](i,j,k) = 1.0;
 
-                            vector nb(stagCC[l][d](i,j,k-1));
+                            vector nb(CC[l][d](i,j,k-1));
                             scalar wd = this->wallDistance(c, nb);
                             scalar xi = (mag(c-nb)-wd)/mag(c-nb);
 
-                            stagWallDist_[l][d](i,j,k).aft() = xi;
+                            wallDist_[l][d](i,j,k).aft() = xi;
                         }
                         else
                         {
-                            stagWallDist_[l][d](i,j,k).aft() = -1.0;
+                            wallDist_[l][d](i,j,k).aft() = -1.0;
                         }
 
                         if
                         (
-                            this->isInside(stagCC[l][d](min(stagMask_[l][d].A().right(), i+1),j,k))
+                            this->isInside(CC[l][d].B()(x+1,y,z))
                         )
                         {
-                            stagWallAdjMask_[l][d](i,j,k) = 1.0;
+                            wallAdjMask_[l][d](i,j,k) = 1.0;
 
-                            vector nb(stagCC[l][d](i+1,j,k));
+                            vector nb(CC[l][d](i+1,j,k));
                             scalar wd = this->wallDistance(c, nb);
                             scalar xi = (mag(c-nb)-wd)/mag(c-nb);
 
-                            stagWallDist_[l][d](i,j,k).right() = xi;
+                            wallDist_[l][d](i,j,k).right() = xi;
                         }
                         else
                         {
-                            stagWallDist_[l][d](i,j,k).right() = -1.0;
+                            wallDist_[l][d](i,j,k).right() = -1.0;
                         }
 
                         if
                         (
-                            this->isInside(stagCC[l][d](i,min(stagMask_[l][d].A().top(), j+1),k))
+                            this->isInside(CC[l][d].B()(x,y+1,z))
                         )
                         {
-                            stagWallAdjMask_[l][d](i,j,k) = 1.0;
+                            wallAdjMask_[l][d](i,j,k) = 1.0;
 
-                            vector nb(stagCC[l][d](i,j+1,k));
+                            vector nb(CC[l][d](i,j+1,k));
                             scalar wd = this->wallDistance(c, nb);
                             scalar xi = (mag(c-nb)-wd)/mag(c-nb);
 
-                            stagWallDist_[l][d](i,j,k).top() = xi;
+                            wallDist_[l][d](i,j,k).top() = xi;
                         }
                         else
                         {
-                            stagWallDist_[l][d](i,j,k).top() = -1.0;
+                            wallDist_[l][d](i,j,k).top() = -1.0;
                         }
 
                         if
                         (
-                            this->isInside(stagCC[l][d](i,j,min(stagMask_[l][d].A().fore(), k+1)))
+                            this->isInside(CC[l][d].B()(x,y,z+1))
                         )
                         {
-                            stagWallAdjMask_[l][d](i,j,k) = 1.0;
+                            wallAdjMask_[l][d](i,j,k) = 1.0;
 
-                            vector nb(stagCC[l][d](i,j,k+1));
+                            vector nb(CC[l][d](i,j,k+1));
                             scalar wd = this->wallDistance(c, nb);
                             scalar xi = (mag(c-nb)-wd)/mag(c-nb);
 
-                            stagWallDist_[l][d](i,j,k).fore() = xi;
+                            wallDist_[l][d](i,j,k).fore() = xi;
                         }
                         else
                         {
-                            stagWallDist_[l][d](i,j,k).fore() = -1.0;
+                            wallDist_[l][d](i,j,k).fore() = -1.0;
                         }
                     }
                 }
@@ -348,21 +220,18 @@ immersedBoundary::immersedBoundary
     }
     else
     {
-        colMask_ = Zero;
-        stagMask_ = Zero;
-        colWallAdjMask_ = Zero;
-        stagWallAdjMask_ = Zero;
-        colWallDist_ = Zero;
-        stagWallDist_ = Zero;
+        mask_ = Zero;
+        wallAdjMask_ = Zero;
+        wallDist_ = Zero;
     }
 }
 
-// Destructor
-
-immersedBoundary::~immersedBoundary()
+template<class MeshType>
+immersedBoundary<MeshType>::~immersedBoundary()
 {}
 
-bool immersedBoundary::isInside(vector xyz)
+template<class MeshType>
+bool immersedBoundary<MeshType>::isInside(vector xyz)
 {
     // Check if xyz is inside any of the IB shapes
     for (int s = 0; s < shapes_.size(); s++)
@@ -376,7 +245,8 @@ bool immersedBoundary::isInside(vector xyz)
     return false;
 }
 
-scalar immersedBoundary::wallDistance(vector c, vector nb)
+template<class MeshType>
+scalar immersedBoundary<MeshType>::wallDistance(vector c, vector nb)
 {
     if (this->isInside(c))
     {
@@ -428,6 +298,12 @@ scalar immersedBoundary::wallDistance(vector c, vector nb)
 
     return dist;
 }
+
+defineTemplateTypeNameAndDebug(immersedBoundary<colocated>, 0);
+defineTemplateTypeNameAndDebug(immersedBoundary<staggered>, 0);
+
+template class immersedBoundary<colocated>;
+template class immersedBoundary<staggered>;
 
 } // end namespace ibm
 

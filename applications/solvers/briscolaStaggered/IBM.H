@@ -1,6 +1,6 @@
 // Set coefficients and sources to 0 in IB
-USys.A() *= (1.0 - IB.stagMask());
-USys.b() *= (1.0 - IB.stagMask());
+USys.A() *= (1.0 - IB.mask());
+USys.b() *= (1.0 - IB.mask());
 
 forAll(USys.A(), l)
 {
@@ -9,15 +9,15 @@ forAll(USys.A(), l)
         forAllCells(USys.A()[l][d], i, j, k)
         {
             // Set central coefficients to 1 in IB
-            USys.A()[l][d](i,j,k).center() += IB.stagMask()[l][d](i,j,k);
+            USys.A()[l][d](i,j,k).center() += IB.mask()[l][d](i,j,k);
 
             // Modify stencils in IB-adjacent cells
             // We only apply the IBM on the finest mesh (l == 0)
-            if ((l == 0) && (IB.stagWallAdjMask()[l][d](i,j,k) == 1))
+            if ((l == 0) && (IB.wallAdjMask()[l][d](i,j,k) == 1))
             {
-                if (IB.stagWallDist()[l][d](i,j,k).left() >= 0)
+                if (IB.wallDist()[l][d](i,j,k).left() >= 0)
                 {
-                    scalar xi = IB.stagWallDist()[l][d](i,j,k).left();
+                    scalar xi = IB.wallDist()[l][d](i,j,k).left();
 
                     scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
                     scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
@@ -37,9 +37,9 @@ forAll(USys.A(), l)
                     USys.A()[l][d](i,j,k).right() += a0*w2;
                 }
 
-                if (IB.stagWallDist()[l][d](i,j,k).bottom() >= 0)
+                if (IB.wallDist()[l][d](i,j,k).bottom() >= 0)
                 {
-                    scalar xi = IB.stagWallDist()[l][d](i,j,k).bottom();
+                    scalar xi = IB.wallDist()[l][d](i,j,k).bottom();
 
                     scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
                     scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
@@ -59,9 +59,9 @@ forAll(USys.A(), l)
                     USys.A()[l][d](i,j,k).top() += a0*w2;
                 }
 
-                if (IB.stagWallDist()[l][d](i,j,k).aft() >= 0)
+                if (IB.wallDist()[l][d](i,j,k).aft() >= 0)
                 {
-                    scalar xi = IB.stagWallDist()[l][d](i,j,k).aft();
+                    scalar xi = IB.wallDist()[l][d](i,j,k).aft();
 
                     scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
                     scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
@@ -81,9 +81,9 @@ forAll(USys.A(), l)
                     USys.A()[l][d](i,j,k).fore() += a0*w2;
                 }
 
-                if (IB.stagWallDist()[l][d](i,j,k).right() >= 0)
+                if (IB.wallDist()[l][d](i,j,k).right() >= 0)
                 {
-                    scalar xi = IB.stagWallDist()[l][d](i,j,k).right();
+                    scalar xi = IB.wallDist()[l][d](i,j,k).right();
 
                     scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
                     scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
@@ -103,9 +103,9 @@ forAll(USys.A(), l)
                     USys.A()[l][d](i,j,k).left() += a0*w2;
                 }
 
-                if (IB.stagWallDist()[l][d](i,j,k).top() >= 0)
+                if (IB.wallDist()[l][d](i,j,k).top() >= 0)
                 {
-                    scalar xi = IB.stagWallDist()[l][d](i,j,k).top();
+                    scalar xi = IB.wallDist()[l][d](i,j,k).top();
 
                     scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
                     scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
@@ -125,9 +125,9 @@ forAll(USys.A(), l)
                     USys.A()[l][d](i,j,k).bottom() += a0*w2;
                 }
 
-                if (IB.stagWallDist()[l][d](i,j,k).fore() >= 0)
+                if (IB.wallDist()[l][d](i,j,k).fore() >= 0)
                 {
-                    scalar xi = IB.stagWallDist()[l][d](i,j,k).fore();
+                    scalar xi = IB.wallDist()[l][d](i,j,k).fore();
 
                     scalar w1 = 2.0 - (2.0 - xi) * 8.0/3.0;
                     scalar w2 = -1.0 + (1.0 - xi) * 8.0/3.0;
