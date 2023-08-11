@@ -238,6 +238,19 @@ const labelVector vertexOffsets[] =
     vertexOffset7
 };
 
+// Unit cube
+const vector unitCube[8] =
+{
+    vector(0,0,0),
+    vector(1,0,0),
+    vector(0,1,0),
+    vector(1,1,0),
+    vector(0,0,1),
+    vector(1,0,1),
+    vector(0,1,1),
+    vector(1,1,1)
+};
+
 // Global face numbers contained in a block
 const label faceNumsInBlock[6] = {0,1,2,3,4,5};
 
@@ -252,6 +265,18 @@ const label edgeNumsInFace[6][4] =
     {2,3,6,7}
 };
 
+// Global edge numbers contained in faces in counter-clockwise direction as
+// viewed from outside
+const label edgeNumsInFaceCC[6][4] =
+{
+    {8,6,10,4},
+    {9,5,11,7},
+    {0,9,2,8},
+    {3,11,1,10},
+    {0,4,1,5},
+    {2,7,3,6}
+};
+
 // Global vertex numbers contained in faces
 const label vertexNumsInFace[6][4] =
 {
@@ -261,6 +286,18 @@ const label vertexNumsInFace[6][4] =
     {2,3,6,7},
     {0,1,2,3},
     {4,5,6,7}
+};
+
+// Global vertex numbers contained in faces in counter-clockwise direction as
+// viewed from outside
+const label vertexNumsInFaceCC[6][4] =
+{
+    {0,4,6,2},
+    {5,1,3,7},
+    {0,1,5,4},
+    {6,7,3,2},
+    {1,0,2,3},
+    {4,5,7,6}
 };
 
 // Global vertex numbers contained in edges
@@ -278,6 +315,16 @@ const label vertexNumsInEdge[12][2] =
     {1,5},
     {2,6},
     {3,7}
+};
+
+// A decomposition of a block in five tets
+const label tetDecomp[5][4]
+{
+    {0,3,6,2},
+    {5,0,6,4},
+    {5,6,3,7},
+    {0,5,3,1},
+    {0,5,6,3}
 };
 
 // Return the shift tensor given a rotation tensor

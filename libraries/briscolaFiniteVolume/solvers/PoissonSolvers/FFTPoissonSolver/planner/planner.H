@@ -7,7 +7,6 @@
 #include "block.H"
 #include "fvMesh.H"
 #include "rectilinearMesh.H"
-#include "FourierTransforms.H"
 #include "tridiagonalSolver.H"
 
 namespace Foam
@@ -17,6 +16,9 @@ namespace briscola
 {
 
 namespace fv
+{
+
+namespace FFT
 {
 
 class planner
@@ -38,11 +40,11 @@ class planner
     // 7: yz-slab
     label decompType_;
 
-    // Mesh uniformity per direction (0 = false, 1 = true)
-    labelVector meshUniform_;
-
     // Solve direction
     label solveDir_;
+
+    // Direction of first transform
+    label firstTransDir_;
 
 public:
 
@@ -55,16 +57,18 @@ public:
     // Destructor
     virtual ~planner();
 
-    inline label decompType() { return decompType_; }
-    inline labelVector meshUniform() { return meshUniform_; }
-    inline label solveDir() { return solveDir_; }
+    inline label decompType() const { return decompType_; }
+    inline label solveDir() const { return solveDir_; }
+    inline label firstTransDir() const { return firstTransDir_; }
 
 };
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}
+
+}
 
 #endif

@@ -84,10 +84,13 @@ public:
     // Evaluate the boundary condition for given level
     virtual void evaluate(const label, const bool = false);
 
-    // This boundary condition sets values, so it behaves like a slave patch on
-    // shifted boundaries
-    virtual bool master() const { return false; }
-    virtual bool slave() const { return true; }
+    // Constrained boundary conditions
+
+        // This boundary condition constrains values on shifted boundaries
+        virtual bool constrained(const bool shifted) const { return shifted; }
+
+        // Return the internal value for given level and direction
+        virtual tmp<block<Type>> internalValue(const label, const label);
 
     // Eliminated boundary conditions
 

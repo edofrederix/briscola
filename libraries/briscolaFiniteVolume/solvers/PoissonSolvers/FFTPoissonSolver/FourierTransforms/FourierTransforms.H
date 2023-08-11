@@ -6,7 +6,7 @@
 #include <fftw3.h>
 #include "fvMesh.H"
 #include "colocatedFields.H"
-#include "decomposer.H"
+#include "pencilDecomposer.H"
 #include "rectilinearMesh.H"
 
 namespace Foam
@@ -18,16 +18,21 @@ namespace briscola
 namespace fv
 {
 
+class FFTPoissonSolver;
+
+namespace FFT
+{
+
 class FourierTransforms
 {
-	// Mesh
-    const fvMesh& fvMsh_;
+    // Solver
+    FFTPoissonSolver& solver_;
+
+    // Solved field
+    colocatedScalarField& x_;
 
     // Global Size
 	labelVector N_;
-
-    // Pencil decomposer
-    decomposer& decomp_;
 
     // Boundary condition vector
     // 0: Empty - Empty
@@ -46,28 +51,16 @@ class FourierTransforms
     fftw_plan fwdPlanZ_;
     fftw_plan bwdPlanZ_;
 
-    // X-pencil
-    scalarBlock& xPencil_;
-
-    // Y-pencil
-    scalarBlock& yPencil_;
-
-    // Z-pencil
-    scalarBlock& zPencil_;
-
     // FFT normalization factor
     scalar normalization_;
 
 public:
 
-    // Construct from mesh
+    // Construct from solver
     FourierTransforms
     (
-        const fvMesh& fvMsh,
-        decomposer& d,
-        scalarBlock& xPencil,
-        scalarBlock& yPencil,
-        scalarBlock& zPencil
+        FFTPoissonSolver& solver,
+        colocatedScalarField& x
     );
 
     // Destructor
@@ -80,30 +73,29 @@ public:
     void FFTWplans();
 
     // Forward and backward FFT's
-
     void fwdFFTx();
-
     void bwdFFTx();
-
     void fwdFFTy();
-
     void bwdFFTy();
-
     void fwdFFTz();
-
     void bwdFFTz();
 
     // Normalize transformed data
-    void normalize(scalarBlock&);
+    void normalize(scalarBlock&) const;
 
     // Return boundary condition vector
-    inline labelVector& BC() { return BC_; }
+    inline const labelVector& BC() const { return BC_; }
+
+    // Return solved field reference
+    inline const colocatedScalarField& x() const { return x_; }
 };
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}
+
+}
 
 #endif

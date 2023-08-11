@@ -51,19 +51,16 @@ void testMemberOperators(const fvMesh& fvMsh)
     meshDirection<Type,MeshType> m1(fvMsh,0,0);
     meshDirection<Type,MeshType> m2(fvMsh,0,0);
 
+    m1 = pTraits<Type>::one;
+    m2 = pTraits<Type>::one;
+
     meshDirection<scalar,MeshType> s1(fvMsh,0,0);
 
-    label l = 0;
-
-    forAllCells(m1, i, j, k)
-    {
-        m1(i,j,k) = pTraits<Type>::one*l++;
-        m2(i,j,k) = pTraits<Type>::one*l++;
-
-        s1(i,j,k) = l++;
-    }
+    s1 = 1;
 
     m1 = Zero;
+    m2 = Zero;
+
     m1 = pTraits<Type>::one*2.0;
     m1 = m2;
     m1 = m2*2;
@@ -101,15 +98,9 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
 
     meshDirection<scalar,MeshType> s1(fvMsh,0,0);
 
-    label l = 0;
-
-    forAllCells(m1, i, j, k)
-    {
-        m1(i,j,k) = pTraits<Type>::one*l++;
-        m2(i,j,k) = pTraits<Type>::one*l++;
-
-        s1(i,j,k) = l++;
-    }
+    m1 = pTraits<Type>::one;
+    m2 = pTraits<Type>::one;
+    s1 = 1;
 
     mag(m1);
     mag(m1*2.0);
@@ -180,13 +171,8 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh)
     meshDirection<Type,MeshType> m1(fvMsh,0,0);
     meshDirection<Type,MeshType> m2(fvMsh,0,0);
 
-    label l = 0;
-
-    forAllCells(m1, i, j, k)
-    {
-        m1(i,j,k) = pTraits<Type>::one*l++;
-        m2(i,j,k) = pTraits<Type>::one*l++;
-    }
+    m1 = pTraits<Type>::one;
+    m2 = pTraits<Type>::one;
 
     cmptMax(m1);
     cmptMax(m1*2.0);
@@ -254,15 +240,9 @@ void testStencilFunctions(const fvMesh& fvMsh)
 
     meshDirection<scalar,MeshType> s1(fvMsh,0,0);
 
-    label l = 0;
-
-    forAllCells(m1, i, j, k)
-    {
-        m1(i,j,k) = pTraits<Type>::one*l++;
-        m2(i,j,k) = pTraits<Type>::one*l++;
-
-        s1(i,j,k) = l++;
-    }
+    m1 = pTraits<Type>::one;
+    m2 = pTraits<Type>::one;
+    s1 = 1;
 
     -m1;
 
@@ -303,12 +283,7 @@ void testScalarFunctions(const fvMesh& fvMsh)
 {
     meshDirection<scalar,MeshType> m1(fvMsh,0,0);
 
-    label l = 0;
-
-    forAllCells(m1, i, j, k)
-    {
-        m1(i,j,k) = scalar(l+++1);
-    }
+    m1 = 1;
 
     m1/m1;
     (m1*2.0)/m1;
@@ -321,13 +296,8 @@ void testVectorFunctions(const fvMesh& fvMsh)
     meshDirection<vector,MeshType> m1(fvMsh,0,0);
     meshDirection<vector,MeshType> m2(fvMsh,0,0);
 
-    label l = 0;
-
-    forAllCells(m1, i, j, k)
-    {
-        m1(i,j,k) = vector(l,l+1,l+2); l++;
-        m2(i,j,k) = vector(l,l+1,l+2); l++;
-    }
+    m1 = vector(1,2,3);
+    m2 = vector(1,2,3);
 
     m1*m2;
     (m1*2.0)*m2;
@@ -354,16 +324,11 @@ void testTensorFunctions(const fvMesh& fvMsh)
     meshDirection<diagTensor,MeshType> m4(fvMsh,0,0);
     meshDirection<vector,MeshType> v1(fvMsh,0,0);
 
-    label l = 0;
-
-    forAllCells(m1, i, j, k)
-    {
-        m1(i,j,k) = pTraits<tensor>::one*l++;
-        m2(i,j,k) = pTraits<symmTensor>::one*l++;
-        m3(i,j,k) = pTraits<sphericalTensor>::one*l++;
-        m4(i,j,k) = pTraits<diagTensor>::one*l++;
-        v1(i,j,k) = vector(l,l+1,l+2); l++;
-    }
+    m1 = pTraits<tensor>::one;
+    m2 = pTraits<symmTensor>::one;
+    m3 = pTraits<sphericalTensor>::one;
+    m4 = pTraits<diagTensor>::one;
+    v1 = vector(1,2,3);
 
     // Commented combinations could exist, but are not defined as primitives in
     // OpenFOAM

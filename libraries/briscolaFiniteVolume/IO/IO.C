@@ -488,7 +488,11 @@ void IO::writeFields
         const FieldType& field =
             fvMsh_.time().lookupObject<FieldType>(names[i]);
 
-        if (field.writeOpt() == IOobject::AUTO_WRITE)
+        if
+        (
+            field.writeOpt() == IOobject::AUTO_WRITE
+         && (l == 0 || field.deep())
+        )
         {
             count++;
         }
@@ -512,7 +516,11 @@ void IO::writeFields
             const FieldType& field =
                 fvMsh_.time().lookupObject<FieldType>(names[i]);
 
-            if (field.writeOpt() == IOobject::AUTO_WRITE)
+            if
+            (
+                field.writeOpt() == IOobject::AUTO_WRITE
+             && (l == 0 || field.deep())
+            )
             {
                 writeField(filePtrs, field[l][d]);
             }
@@ -565,8 +573,11 @@ void IO::readFields
 
                 if
                 (
-                    field.readOpt() == IOobject::MUST_READ
-                 || field.readOpt() == IOobject::READ_IF_PRESENT
+                    (
+                        field.readOpt() == IOobject::MUST_READ
+                     || field.readOpt() == IOobject::READ_IF_PRESENT
+                    )
+                 && (l == 0 || field.deep())
                 )
                 {
                     readField(filePtr, ascii, field[l][d]);

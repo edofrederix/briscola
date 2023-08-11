@@ -102,6 +102,74 @@ public:
 
     // Alias for shape()
     inline labelVector N() const { return shape(); }
+
+    // Return the points of given cell
+    inline vertexVector cellPoints
+    (
+        const label i,
+        const label j,
+        const label k
+    ) const
+    {
+        return vertexVector
+        (
+            this->operator()(i  ,j  ,k  ),
+            this->operator()(i+1,j  ,k  ),
+            this->operator()(i  ,j+1,k  ),
+            this->operator()(i+1,j+1,k  ),
+            this->operator()(i  ,j  ,k+1),
+            this->operator()(i+1,j  ,k+1),
+            this->operator()(i  ,j+1,k+1),
+            this->operator()(i+1,j+1,k+1)
+        );
+    }
+
+    inline vertexVector cellPoints(const labelVector& ijk) const
+    {
+        return cellPoints(ijk.x(), ijk.y(), ijk.z());
+    }
+
+    // Compute the local coordinates of a point in the given cell, calculating
+    // the weights of the tri-linear interpolation function in the cell.
+    inline vector cellCoordinates
+    (
+        const vector& p,
+        const label i,
+        const label j,
+        const label k,
+        const bool insideOnly = false
+    ) const
+    {
+        return interpolationWeights(p,this->cellPoints(i,j,k),insideOnly);
+    }
+
+    inline vector cellCoordinates
+    (
+        const vector& p,
+        const labelVector& ijk,
+        const bool insideOnly = false
+    ) const
+    {
+        return interpolationWeights(p,this->cellPoints(ijk),insideOnly);
+    }
+
+    // Check if a point is inside the given cell, which is true if the local
+    // coordinates are on the unit cube [0,1]^3
+    inline bool pointInCell
+    (
+        const vector& p,
+        const label i,
+        const label j,
+        const label k
+    ) const
+    {
+        return this->cellCoordinates(p,i,j,k,true) != -vector::one;
+    }
+
+    inline bool pointInCell(const vector& p, const labelVector& ijk) const
+    {
+        return this->cellCoordinates(p,ijk,true) != -vector::one;
+    }
 };
 
 }

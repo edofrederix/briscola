@@ -4,9 +4,10 @@
 #include "PoissonSolver.H"
 #include <fftw3.h>
 #include "planner.H"
-#include "decomposer.H"
+#include "pencilDecomposer.H"
 #include "tridiagonalSolver.H"
 #include "FourierTransforms.H"
+#include "imSchemes.H"
 
 namespace Foam
 {
@@ -21,31 +22,14 @@ class FFTPoissonSolver
 :
     public PoissonSolver<stencil,scalar,colocated>
 {
-    // Cell size arrays for each direction
-    const PtrList<scalarList> cellSizes_;
+    // Reference to the mesh
+    const fvMesh& fvMsh_;
 
     // Planner
-    planner PoissonPlan_;
-
-    // Initial decomposition type:
-    // 0: Not decomposed
-    // 1: 3D
-    // 2: x-pencil
-    // 3: y-pencil
-    // 4: z-pencil
-    // 5: xy-slab
-    // 6: xz-slab
-    // 7: yz-slab
-    label decompType_;
-
-    // Mesh uniformity per direction (0 = false, 1 = true)
-    labelVector meshUniform_;
-
-    // Solve direction (0 = x, 1 = y, 2 = z)
-    label solveDir_;
+    FFT::planner FFTPlan_;
 
     // Pencil decomposer
-    decomposer decomp_;
+    FFT::pencilDecomposer decomp_;
 
     // Initial data block
     scalarBlock initData_;
@@ -60,14 +44,14 @@ class FFTPoissonSolver
     scalarBlock zPencil_;
 
     // FFT's
-    FourierTransforms fft_;
+    autoPtr<FFT::FourierTransforms> fft_;
 
     // Tridiagonal solver
-    tridiagonalSolver tds_;
+    autoPtr<FFT::tridiagonalSolver> tds_;
 
     // Funtion to check if the mesh qualifies for FFTs. Will give error if not
     // all criteria are met.
-    void checkMesh();
+    void checkMesh(const fvMesh&);
 
 public:
 
@@ -96,16 +80,26 @@ public:
 
     // Use the base class solve support functions
     using PoissonSolver<stencil,scalar,colocated>::solve;
+
+    // Access to the mesh
+    inline const fvMesh& fvMsh() const { return fvMsh_; }
+
+    // Access to the decomposer
+    inline FFT::pencilDecomposer& decomp() { return decomp_; }
+
+    // Access to the FFT plan
+    inline FFT::planner& FFTPlan() { return FFTPlan_; }
+
+    // Access to the pencils
+    inline scalarBlock& xPencil() { return xPencil_; }
+    inline scalarBlock& yPencil() { return yPencil_; }
+    inline scalarBlock& zPencil() { return zPencil_; }
 };
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
-
-#ifdef NoRepository
-    #include "FFTPoissonSolver.C"
-#endif
+}
 
 #endif

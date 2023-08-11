@@ -49,6 +49,12 @@ public:
         return dict_;
     }
 
+    // Return the list of fields required
+    virtual wordList fields() const
+    {
+        return wordList(0);
+    }
+
     // Disallow default bitwise assignment
     void operator=(const briscolaFunctionObject&) = delete;
 };

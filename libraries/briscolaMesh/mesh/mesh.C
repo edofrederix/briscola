@@ -554,6 +554,21 @@ mesh::mesh(const IOdictionary& dict)
         rectilinear_ = zeroXYZ;
         uniform_ = zeroXYZ;
     }
+
+    // Determine bounding box
+
+    const faceScalar bb(this->operator[](0).boundingBox());
+
+    boundingBox_ =
+        faceScalar
+        (
+            returnReduce(bb.left(), minOp<scalar>()),
+            returnReduce(bb.right(), maxOp<scalar>()),
+            returnReduce(bb.bottom(), minOp<scalar>()),
+            returnReduce(bb.top(), maxOp<scalar>()),
+            returnReduce(bb.aft(), minOp<scalar>()),
+            returnReduce(bb.fore(), maxOp<scalar>())
+        );
 }
 
 mesh::mesh(const mesh& msh)
@@ -566,7 +581,8 @@ mesh::mesh(const mesh& msh)
     patchTypePerProc_(msh.patchTypePerProc_),
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
-    uniform_(msh.uniform_)
+    uniform_(msh.uniform_),
+    boundingBox_(msh.boundingBox_)
 {}
 
 mesh::mesh(autoPtr<mesh>& mshPtr)
@@ -579,7 +595,8 @@ mesh::mesh(autoPtr<mesh>& mshPtr)
     patchTypePerProc_(mshPtr->patchTypePerProc_),
     structured_(mshPtr->structured_),
     rectilinear_(mshPtr->rectilinear_),
-    uniform_(mshPtr->uniform_)
+    uniform_(mshPtr->uniform_),
+    boundingBox_(mshPtr->boundingBox_)
 {
     mshPtr.clear();
 }
@@ -594,7 +611,8 @@ mesh::mesh(mesh& msh, bool reuse)
     patchTypePerProc_(msh.patchTypePerProc_),
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
-    uniform_(msh.uniform_)
+    uniform_(msh.uniform_),
+    boundingBox_(msh.boundingBox_)
 {}
 
 autoPtr<mesh> mesh::New(const IOdictionary& dict)
@@ -641,6 +659,103 @@ autoPtr<mesh> mesh::New(const IOdictionary& dict)
 
 mesh::~mesh()
 {}
+
+labelVector mesh::findCell(const vector& point, const label l) const
+{
+    const partLevel& lvl = this->operator[](l);
+
+    if
+    (
+        point.x() < lvl.boundingBox().left()
+     || point.x() > lvl.boundingBox().right()
+     || point.y() < lvl.boundingBox().bottom()
+     || point.y() > lvl.boundingBox().top()
+     || point.z() < lvl.boundingBox().aft()
+     || point.z() > lvl.boundingBox().fore()
+    )
+    {
+        // Not in bounding box of part
+
+        return -unitXYZ;
+    }
+    else if (l == this->size()-1)
+    {
+        // Final level, linear search
+
+        forAllBlock(lvl, i, j, k)
+            if (lvl.points().pointInCell(point, i, j, k))
+                return labelVector(i,j,k);
+
+        return -unitXYZ;
+    }
+    else
+    {
+        const labelVector coarse = this->findCell(point, l+1);
+        const labelVector R = this->operator[](l+1).R();
+
+        if (coarse == -unitXYZ)
+        {
+            // In bounding box, but not found on the coarse level. Try linear
+            // search if the mesh is not rectlinear. In this case it may be on
+            // an edge.
+
+            if (cmptProduct(lvl.rectilinear()) == 0)
+            {
+                forAllBlock(lvl, i, j, k)
+                    if (lvl.points().pointInCell(point, i, j, k))
+                        return labelVector(i,j,k);
+            }
+
+            return -unitXYZ;
+        }
+        else
+        {
+            // Found on coarse level. Search enclosed cells only.
+
+            labelVector S = cmptMultiply(coarse,R);
+            labelVector E = cmptMultiply(coarse,R) + R;
+
+            for (int i = S.x(); i < E.x(); i++)
+            for (int j = S.y(); j < E.y(); j++)
+            for (int k = S.z(); k < E.z(); k++)
+                if (lvl.points().pointInCell(point, i, j, k))
+                    return labelVector(i,j,k);
+
+            // Otherwise, search in the vicinity too.
+
+            S = cmptMax(S-unitXYZ, zeroXYZ);
+            E = cmptMin(E+unitXYZ, lvl.points().shape()-unitXYZ);
+
+            for (int i = S.x(); i < E.x(); i++)
+            for (int j = S.y(); j < E.y(); j++)
+            for (int k = S.z(); k < E.z(); k++)
+                if (lvl.points().pointInCell(point, i, j, k))
+                    return labelVector(i,j,k);
+
+            // Otherwise, there is something wrong
+
+            FatalErrorInFunction
+                << "Found point " << point << " on level " << l+1
+                << " in cell " << coarse << " but could not locate"
+                << " a cell that contains the same point on level " << l
+                << endl << abort(FatalError);
+
+            return -unitXYZ;
+        }
+    }
+}
+
+List<labelVector> mesh::findCells(const vectorList& points, const label l) const
+{
+    List<labelVector> res(points.size());
+
+    forAll(points, i)
+    {
+        res[i] = this->findCell(points[i], l);
+    }
+
+    return res;
+}
 
 }
 

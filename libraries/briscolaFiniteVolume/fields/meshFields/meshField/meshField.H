@@ -41,14 +41,25 @@ class meshField
 
 protected:
 
-    // Allocate data
-    void allocate();
+    // Allocate data and specify depth
+    void allocate(const bool);
 
     // Transfer data from other mesh field
     void transferData(meshField<Type,MeshType>&);
 
-    // Update active cells based on boundary conditions
-    void updateActiveCells();
+    // Check if the given field's depth is compatible with this field's depth to
+    // execute a member operator
+    template<class Type2>
+    inline void checkMemberOperatorArgDepth
+    (
+        const meshField<Type2,MeshType>& F
+    ) const
+    {
+        if (this->deep() && F.shallow())
+            FatalErrorInFunction
+                << "Member operator with a shallow field argument on a deep "
+                << "field is not supported." << endl << abort(FatalError);
+    }
 
 public:
 
@@ -70,7 +81,8 @@ public:
         const IOobject::readOption r = NO_READ,
         const IOobject::writeOption w = NO_WRITE,
         const bool registerObject = false,
-        const bool initBCs = false
+        const bool initBCs = false,
+        const bool deep = true
     );
 
     // Copy constructors: construct from field or tmp of field with option to
@@ -147,7 +159,7 @@ public:
         return oldTimePtr_;
     }
 
-    // Access to the old time field. Return the current time of no old time
+    // Access to the old time field. Return the current time if no old time
     // field is set
     inline meshField<Type,MeshType>& oldTime()
     {
@@ -194,6 +206,33 @@ public:
 
     // Set the old time field
     void setOldTime();
+
+    // Make the field deep
+    void makeDeep();
+
+    // Make the field shallow
+    void makeShallow();
+
+    // Make the field deep or shallow
+    inline void make(const bool deep)
+    {
+        if (deep)
+            makeDeep();
+        else
+            makeShallow();
+    }
+
+    // The field is deep if it contains more than one level
+    inline bool deep() const
+    {
+        return listType::size() > 1;
+    }
+
+    // Shallow if not deep
+    inline bool shallow() const
+    {
+        return !deep();
+    }
 
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }

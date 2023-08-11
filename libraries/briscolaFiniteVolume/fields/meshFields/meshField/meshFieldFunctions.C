@@ -32,7 +32,16 @@ mag(const meshField<Type,MeshType>& f)
 {
     tmp<meshField<SCALARPRODTYPE,MeshType>> tRes
     (
-        new meshField<SCALARPRODTYPE,MeshType>("mag("+f.name()+")", f.fvMsh())
+        new meshField<SCALARPRODTYPE,MeshType>
+        (
+            "mag("+f.name()+")",
+            f.fvMsh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            false,
+            false,
+            f.deep()
+        )
     );
 
     mag(tRes.ref(), f);
@@ -74,7 +83,12 @@ cmptMax(const meshField<Type,MeshType>& f)
         new meshField<typename meshField<Type,MeshType>::cmptType,MeshType>
         (
             "cmptMax("+f.name()+")",
-            f.fvMsh()
+            f.fvMsh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            false,
+            false,
+            f.deep()
         )
     );
 
@@ -118,7 +132,12 @@ cmptMin(const meshField<Type,MeshType>& f)
         new meshField<typename meshField<Type,MeshType>::cmptType,MeshType>
         (
             "cmptMin("+f.name()+")",
-            f.fvMsh()
+            f.fvMsh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            false,
+            false,
+            f.deep()
         )
     );
 
@@ -162,7 +181,12 @@ cmptAv(const meshField<Type,MeshType>& f)
         new meshField<typename meshField<Type,MeshType>::cmptType,MeshType>
         (
             "cmptAv("+f.name()+")",
-            f.fvMsh()
+            f.fvMsh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            false,
+            false,
+            f.deep()
         )
     );
 
@@ -203,7 +227,16 @@ cmptMag(const meshField<Type,MeshType>& f)
 {
     tmp<meshField<Type,MeshType>> tRes
     (
-        new meshField<Type,MeshType>("cmptMag("+f.name()+")", f.fvMsh())
+        new meshField<Type,MeshType>
+        (
+            "cmptMag("+f.name()+")",
+            f.fvMsh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            false,
+            false,
+            f.deep()
+        )
     );
 
     cmptMag(tRes.ref(), f);

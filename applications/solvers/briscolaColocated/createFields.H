@@ -56,7 +56,7 @@ nu = readScalar(solverDict.lookup("nu"));
 
 // Source
 
-colocatedVectorField source
+colocatedVectorField exSource
 (
     "source",
     fvMsh,
@@ -65,17 +65,19 @@ colocatedVectorField source
     true
 );
 
-colocatedScalarField sourceCoeff
+colocatedScalarField imSourceCoeff
 (
-    "source",
+    "sourceCoeff",
     fvMsh,
     IOobject::NO_READ,
     IOobject::NO_WRITE,
     true
 );
 
-source = vector(solverDict.lookupOrDefault("source", vector::zero));
-sourceCoeff = scalar(solverDict.lookupOrDefault("sourceCoeff", 0.0));
+exSource = vector(solverDict.lookupOrDefault("source", vector::zero));
+imSourceCoeff = scalar(solverDict.lookupOrDefault("sourceCoeff", 0.0));
+
+// Solvers
 
 linearSystem<stencil,vector,colocated> USys(U);
 linearSystem<stencil,scalar,colocated> pSys(p);
@@ -97,3 +99,21 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
         fvMsh
     )
 );
+
+// Stencils
+
+linearSystem<stencil,vector,colocated> LapU(U);
+
+// Adams-Bashforth source
+
+colocatedVectorField DivU
+(
+    "DivU",
+    fvMsh,
+    IOobject::READ_IF_PRESENT,
+    IOobject::AUTO_WRITE,
+    true,
+    false
+);
+
+DivU = ex::div(phi,U);

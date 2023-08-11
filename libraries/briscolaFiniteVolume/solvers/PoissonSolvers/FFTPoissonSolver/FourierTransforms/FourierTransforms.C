@@ -1,4 +1,5 @@
 #include "FourierTransforms.H"
+#include "FFTPoissonSolver.H"
 
 namespace Foam
 {
@@ -9,22 +10,19 @@ namespace briscola
 namespace fv
 {
 
+namespace FFT
+{
+
 // Constructor
 FourierTransforms::FourierTransforms
 (
-    const fvMesh& fvMsh,
-    decomposer& d,
-    scalarBlock& xPencil,
-    scalarBlock& yPencil,
-    scalarBlock& zPencil
+    FFTPoissonSolver& solver,
+    colocatedScalarField& x
 )
 :
-    fvMsh_(fvMsh),
-    N_(fvMsh.msh().cast<rectilinearMesh>().N()),
-    decomp_(d),
-    xPencil_(xPencil),
-    yPencil_(yPencil),
-    zPencil_(zPencil)
+    solver_(solver),
+    x_(x),
+    N_(solver.fvMsh().msh().cast<rectilinearMesh>().N())
 {
     FFTBoundaryConditions();
     FFTWplans();
@@ -32,27 +30,23 @@ FourierTransforms::FourierTransforms
 
 // Destructor
 FourierTransforms::~FourierTransforms()
-{}
+{
+    fftw_destroy_plan(fwdPlanX_);
+    fftw_destroy_plan(bwdPlanX_);
+    fftw_destroy_plan(fwdPlanY_);
+    fftw_destroy_plan(bwdPlanY_);
+    fftw_destroy_plan(fwdPlanZ_);
+    fftw_destroy_plan(bwdPlanZ_);
+}
 
 void FourierTransforms::FFTBoundaryConditions()
 {
-
-    colocatedScalarField p
-    (
-        "p",
-        fvMsh_,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE,
-        true,
-        true
-    );
-
     BC_ = labelVector(-1,-1,-1);
 
-    switch (globalBoundaryConditionBaseType(p, faceOffsets[0]))
+    switch (globalBoundaryConditionBaseType(x_, faceOffsets[0]))
     {
         case 1:
-            BC_.x() = 0;
+            BC_.x() = 0; // Empty
             break;
 
         case 3:
@@ -60,22 +54,22 @@ void FourierTransforms::FFTBoundaryConditions()
             break;
 
         case 4:
-            if (globalBoundaryConditionBaseType(p, faceOffsets[1]) == 4)
+            if (globalBoundaryConditionBaseType(x_, faceOffsets[1]) == 4)
             {
                 BC_.x() = 1; // D-D
             }
-            else if (globalBoundaryConditionBaseType(p, faceOffsets[1]) == 5)
+            else if (globalBoundaryConditionBaseType(x_, faceOffsets[1]) == 5)
             {
                 BC_.x() = 3; // D-N
             }
             break;
 
         case 5:
-            if (globalBoundaryConditionBaseType(p, faceOffsets[1]) == 4)
+            if (globalBoundaryConditionBaseType(x_, faceOffsets[1]) == 4)
             {
                 BC_.x() = 4; // N-D
             }
-            else if (globalBoundaryConditionBaseType(p, faceOffsets[1]) == 5)
+            else if (globalBoundaryConditionBaseType(x_, faceOffsets[1]) == 5)
             {
                 BC_.x() = 2; // N-N
             }
@@ -83,15 +77,15 @@ void FourierTransforms::FFTBoundaryConditions()
 
         default:
             FatalError
-                << "Incorrect pressure boundary condition." << endl
+                << "Incorrect boundary condition." << endl
                 << abort(FatalError);
             break;
     }
 
-    switch (globalBoundaryConditionBaseType(p, faceOffsets[2]))
+    switch (globalBoundaryConditionBaseType(x_, faceOffsets[2]))
     {
         case 1:
-            BC_.y() = 0;
+            BC_.y() = 0; // Empty
             break;
 
         case 3:
@@ -99,22 +93,22 @@ void FourierTransforms::FFTBoundaryConditions()
             break;
 
         case 4:
-            if (globalBoundaryConditionBaseType(p, faceOffsets[3]) == 4)
+            if (globalBoundaryConditionBaseType(x_, faceOffsets[3]) == 4)
             {
                 BC_.y() = 1; // D-D
             }
-            else if (globalBoundaryConditionBaseType(p, faceOffsets[3]) == 5)
+            else if (globalBoundaryConditionBaseType(x_, faceOffsets[3]) == 5)
             {
                 BC_.y() = 3; // D-N
             }
             break;
 
         case 5:
-            if (globalBoundaryConditionBaseType(p, faceOffsets[3]) == 4)
+            if (globalBoundaryConditionBaseType(x_, faceOffsets[3]) == 4)
             {
                 BC_.y() = 4; // N-D
             }
-            else if (globalBoundaryConditionBaseType(p, faceOffsets[3]) == 5)
+            else if (globalBoundaryConditionBaseType(x_, faceOffsets[3]) == 5)
             {
                 BC_.y() = 2; // N-N
             }
@@ -122,15 +116,15 @@ void FourierTransforms::FFTBoundaryConditions()
 
         default:
             FatalError
-                << "Incorrect pressure boundary condition." << endl
+                << "Incorrect boundary condition." << endl
                 << abort(FatalError);
             break;
     }
 
-    switch (globalBoundaryConditionBaseType(p, faceOffsets[4]))
+    switch (globalBoundaryConditionBaseType(x_, faceOffsets[4]))
     {
         case 1:
-            BC_.z() = 0;
+            BC_.z() = 0; // Empty
             break;
 
         case 3:
@@ -138,22 +132,22 @@ void FourierTransforms::FFTBoundaryConditions()
             break;
 
         case 4:
-            if (globalBoundaryConditionBaseType(p, faceOffsets[5]) == 4)
+            if (globalBoundaryConditionBaseType(x_, faceOffsets[5]) == 4)
             {
                 BC_.z() = 1; // D-D
             }
-            else if (globalBoundaryConditionBaseType(p, faceOffsets[5]) == 5)
+            else if (globalBoundaryConditionBaseType(x_, faceOffsets[5]) == 5)
             {
                 BC_.z() = 3; // D-N
             }
             break;
 
         case 5:
-            if (globalBoundaryConditionBaseType(p, faceOffsets[5]) == 4)
+            if (globalBoundaryConditionBaseType(x_, faceOffsets[5]) == 4)
             {
                 BC_.z() = 4; // N-D
             }
-            else if (globalBoundaryConditionBaseType(p, faceOffsets[5]) == 5)
+            else if (globalBoundaryConditionBaseType(x_, faceOffsets[5]) == 5)
             {
                 BC_.z() = 2; // N-N
             }
@@ -161,7 +155,7 @@ void FourierTransforms::FFTBoundaryConditions()
 
         default:
             FatalError
-                << "Incorrect pressure boundary condition." << endl
+                << "Incorrect boundary condition." << endl
                 << abort(FatalError);
             break;
     }
@@ -172,9 +166,13 @@ void FourierTransforms::FFTWplans()
     fftw_r2r_kind transforms[] =
     {
         // forward transform types
-        FFTW_RODFT10, FFTW_RODFT10, FFTW_REDFT10, FFTW_RODFT11, FFTW_REDFT11, FFTW_R2HC,
+        FFTW_RODFT10, FFTW_RODFT10,
+        FFTW_REDFT10, FFTW_RODFT11,
+        FFTW_REDFT11, FFTW_R2HC,
         // backward transform types
-        FFTW_RODFT01, FFTW_RODFT01, FFTW_REDFT01, FFTW_RODFT11, FFTW_REDFT11, FFTW_HC2R
+        FFTW_RODFT01, FFTW_RODFT01,
+        FFTW_REDFT01, FFTW_RODFT11,
+        FFTW_REDFT11, FFTW_HC2R
     };
 
     // Transform type based on boundary conditions
@@ -190,9 +188,9 @@ void FourierTransforms::FFTWplans()
 
     // Pencil dimensions
 
-    labelVector Nx = decomp_.Nx()[Pstream::myProcNo()];
-    labelVector Ny = decomp_.Ny()[Pstream::myProcNo()];
-    labelVector Nz = decomp_.Nz()[Pstream::myProcNo()];
+    labelVector Nx = solver_.decomp().Nx()[Pstream::myProcNo()];
+    labelVector Ny = solver_.decomp().Ny()[Pstream::myProcNo()];
+    labelVector Nz = solver_.decomp().Nz()[Pstream::myProcNo()];
 
     // x-FFT plans
 
@@ -207,11 +205,11 @@ void FourierTransforms::FFTWplans()
         fft_rank,
         Na_x,
         howmany,
-        reinterpret_cast<double*>(xPencil_.begin()),
+        reinterpret_cast<double*>(solver_.xPencil().begin()),
         Na_x,
         stride,
         sep,
-        reinterpret_cast<double*>(xPencil_.begin()),
+        reinterpret_cast<double*>(solver_.xPencil().begin()),
         Na_x,
         stride,
         sep,
@@ -224,11 +222,11 @@ void FourierTransforms::FFTWplans()
         fft_rank,
         Na_x,
         howmany,
-        reinterpret_cast<double*>(xPencil_.begin()),
+        reinterpret_cast<double*>(solver_.xPencil().begin()),
         Na_x,
         stride,
         sep,
-        reinterpret_cast<double*>(xPencil_.begin()),
+        reinterpret_cast<double*>(solver_.xPencil().begin()),
         Na_x,
         stride,
         sep,
@@ -249,11 +247,11 @@ void FourierTransforms::FFTWplans()
         fft_rank,
         Na_y,
         howmany,
-        reinterpret_cast<double*>(yPencil_.begin()),
+        reinterpret_cast<double*>(solver_.yPencil().begin()),
         Na_y,
         stride,
         sep,
-        reinterpret_cast<double*>(yPencil_.begin()),
+        reinterpret_cast<double*>(solver_.yPencil().begin()),
         Na_y,
         stride,
         sep,
@@ -266,11 +264,11 @@ void FourierTransforms::FFTWplans()
         fft_rank,
         Na_y,
         howmany,
-        reinterpret_cast<double*>(yPencil_.begin()),
+        reinterpret_cast<double*>(solver_.yPencil().begin()),
         Na_y,
         stride,
         sep,
-        reinterpret_cast<double*>(yPencil_.begin()),
+        reinterpret_cast<double*>(solver_.yPencil().begin()),
         Na_y,
         stride,
         sep,
@@ -291,11 +289,11 @@ void FourierTransforms::FFTWplans()
         fft_rank,
         Na_z,
         howmany,
-        reinterpret_cast<double*>(zPencil_.begin()),
+        reinterpret_cast<double*>(solver_.zPencil().begin()),
         Na_z,
         stride,
         sep,
-        reinterpret_cast<double*>(zPencil_.begin()),
+        reinterpret_cast<double*>(solver_.zPencil().begin()),
         Na_z,
         stride,
         sep,
@@ -308,11 +306,11 @@ void FourierTransforms::FFTWplans()
         fft_rank,
         Na_z,
         howmany,
-        reinterpret_cast<double*>(zPencil_.begin()),
+        reinterpret_cast<double*>(solver_.zPencil().begin()),
         Na_z,
         stride,
         sep,
-        reinterpret_cast<double*>(zPencil_.begin()),
+        reinterpret_cast<double*>(solver_.zPencil().begin()),
         Na_z,
         stride,
         sep,
@@ -398,13 +396,15 @@ void FourierTransforms::bwdFFTz()
     }
 }
 
-void FourierTransforms::normalize(scalarBlock& transformedData)
+void FourierTransforms::normalize(scalarBlock& transformedData) const
 {
     transformedData /= normalization_;
 }
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}
+
+}

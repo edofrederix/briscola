@@ -34,7 +34,16 @@ tmp<meshField<TypeR,MeshType>> New
     {
         tmp<meshField<TypeR,MeshType>> rtf
         (
-            new meshField<TypeR,MeshType>(name, f1.fvMsh())
+            new meshField<TypeR,MeshType>
+            (
+                name,
+                f1.fvMsh(),
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false,
+                false,
+                f1.deep()
+            )
         );
 
         if (initRet)
@@ -64,7 +73,16 @@ public:
     {
         return tmp<meshField<TypeR,MeshType>>
         (
-            new meshField<TypeR,MeshType>(name, tf1->fvMsh())
+            new meshField<TypeR,MeshType>
+            (
+                name,
+                tf1->fvMsh(),
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false,
+                false,
+                tf1->deep()
+            )
         );
     }
 };
@@ -96,7 +114,16 @@ public:
         {
             return tmp<meshField<TypeR,MeshType>>
             (
-                new meshField<TypeR,MeshType>(name, f1.fvMsh())
+                new meshField<TypeR,MeshType>
+                (
+                    name,
+                    f1.fvMsh(),
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE,
+                    false,
+                    false,
+                    f1.deep()
+                )
             );
         }
     }
@@ -123,7 +150,16 @@ public:
     {
         return tmp<meshField<TypeR,MeshType>>
         (
-            new meshField<TypeR,MeshType>(name, tf1->fvMsh())
+            new meshField<TypeR,MeshType>
+            (
+                name,
+                tf1->fvMsh(),
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false,
+                false,
+                tf1->deep() && tf2->deep()
+            )
         );
     }
 };
@@ -151,6 +187,8 @@ public:
 
         if (tf2.isTmp())
         {
+            if (tf1->shallow() || f2.shallow())
+                f2.makeShallow();
             f2.rename(name);
             return tf2;
         }
@@ -158,7 +196,16 @@ public:
         {
             return tmp<meshField<TypeR,MeshType>>
             (
-                new meshField<TypeR,MeshType>(name, f2.fvMsh())
+                new meshField<TypeR,MeshType>
+                (
+                    name,
+                    f2.fvMsh(),
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE,
+                    false,
+                    false,
+                    tf1->deep() && f2.deep()
+                )
             );
         }
     }
@@ -187,6 +234,8 @@ public:
 
         if (tf1.isTmp())
         {
+            if (f1.shallow() || tf2->shallow())
+                f1.makeShallow();
             f1.rename(name);
             return tf1;
         }
@@ -194,7 +243,16 @@ public:
         {
             return tmp<meshField<TypeR,MeshType>>
             (
-                new meshField<TypeR,MeshType>(name, f1.fvMsh())
+                new meshField<TypeR,MeshType>
+                (
+                    name,
+                    f1.fvMsh(),
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE,
+                    false,
+                    false,
+                    f1.deep() && tf2->deep()
+                )
             );
         }
     }
@@ -225,11 +283,15 @@ public:
 
         if (tf1.isTmp())
         {
+            if (f1.shallow() || f2.shallow())
+                f1.makeShallow();
             f1.rename(name);
             return tf1;
         }
         else if (tf2.isTmp())
         {
+            if (f1.shallow() || f2.shallow())
+                f2.makeShallow();
             f2.rename(name);
             return tf2;
         }
@@ -237,7 +299,16 @@ public:
         {
             return tmp<meshField<TypeR,MeshType>>
             (
-                new meshField<TypeR,MeshType>(name, f1.fvMsh())
+                new meshField<TypeR,MeshType>
+                (
+                    name,
+                    f1.fvMsh(),
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE,
+                    false,
+                    false,
+                    f1.deep() && f2.deep()
+                )
             );
         }
     }

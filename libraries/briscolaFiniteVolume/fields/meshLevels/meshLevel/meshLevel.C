@@ -49,15 +49,6 @@ void meshLevel<Type,MeshType>::transferData
         listType::operator[](d).mshLevelPtr_ = this;
 }
 
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::updateActiveCells()
-{
-    forAll(*this, d)
-    {
-        listType::operator[](d).updateActiveCells();
-    }
-}
-
 // Main constructor
 
 template<class Type, class MeshType>

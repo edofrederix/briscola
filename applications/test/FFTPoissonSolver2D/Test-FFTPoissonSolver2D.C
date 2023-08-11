@@ -8,15 +8,21 @@ using namespace Foam;
 using namespace briscola;
 using namespace fv;
 
-bool check(colocatedScalarField& p, colocatedScalarField& f, const fvMesh& fvMsh)
+bool check
+(
+    colocatedScalarField& p,
+    colocatedScalarField& f,
+    const fvMesh& fvMsh
+)
 {
     labelVector Nf(p[0][0].B().shape());
     labelVector N(p.fvMsh().msh().cast<rectilinearMesh>().N());
 
     const PtrList<scalarList> cellSizes
-        = fvMsh.msh().cast<rectilinearMesh>().cellSizes();
+        = fvMsh.msh().cast<rectilinearMesh>().globalCellSizes();
 
-    labelVector Si = fvMsh.msh().decomp().globalStartPerProc()[Pstream::myProcNo()];
+    labelVector Si =
+        fvMsh.msh().decomp().globalStartPerProc()[Pstream::myProcNo()];
 
     scalarList dx2 = sqr(cellSizes[0]);
     scalarList dy2 = sqr(cellSizes[1]);
@@ -27,12 +33,16 @@ bool check(colocatedScalarField& p, colocatedScalarField& f, const fvMesh& fvMsh
         {
             scalar residual =
             (
-                p[0][0].B()(i-1,j,1) - 2.0 * p[0][0].B()(i,j,1) + p[0][0].B()(i+1,j,1)
+                p[0][0].B()(i-1,j,1)
+              - 2.0 * p[0][0].B()(i,j,1)
+              + p[0][0].B()(i+1,j,1)
             ) / dx2[Si.x() + i-1]
-            + (
-                p[0][0].B()(i,j-1,1) - 2.0 * p[0][0].B()(i,j,1) + p[0][0].B()(i,j+1,1)
+          + (
+                p[0][0].B()(i,j-1,1)
+              - 2.0 * p[0][0].B()(i,j,1)
+              + p[0][0].B()(i,j+1,1)
             ) / dy2[Si.y() + j-1]
-            + f[0][0].B()(i,j,1);
+          + f[0][0].B()(i,j,1);
 
             if(mag(residual) > 1e-10)
             {
@@ -113,11 +123,7 @@ int main(int argc, char *argv[])
 
     FFTPoissonSolver solver(fvMsh);
 
-    for (int r = 0; r < 10; r++)
-    {
-        solver.solve(p,f);
-        Info << "Run number " << r+1 << " completed." << endl;
-    }
+    solver.solve(p,f);
 
     if(check(p, f, fvMsh))
     {

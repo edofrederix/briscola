@@ -9,6 +9,9 @@ namespace briscola
 namespace fv
 {
 
+namespace FFT
+{
+
 // Constructor
 
 planner::planner
@@ -56,19 +59,17 @@ planner::planner
 
     const rectilinearMesh& mesh = fvMsh.msh().cast<rectilinearMesh>();
 
-    meshUniform_ = mesh.uniform();
-
     solveDir_ = -1;
 
-    if (!meshUniform_.x())
+    if (!mesh.uniform().x())
     {
         solveDir_ = 0;
     }
-    else if (!meshUniform_.y())
+    else if (!mesh.uniform().y())
     {
         solveDir_ = 1;
     }
-    else if (!meshUniform_.z())
+    else if (!mesh.uniform().z())
     {
         solveDir_ = 2;
     }
@@ -108,6 +109,65 @@ planner::planner
             solveDir_ = 2;
         }
     }
+
+    // Select direction for first FFT
+
+    firstTransDir_ = -1;
+
+    switch (solveDir_)
+    {
+        case 0:
+            if
+            (
+                   (decompType_ == 4 || decompType_ == 6)
+                && (N_.z() > 1)
+            )
+            {
+                firstTransDir_ = 2;
+            }
+            else
+            {
+                firstTransDir_ = 1;
+            }
+            break;
+
+        case 1:
+            if
+            (
+                   (decompType_ == 4 || decompType_ == 7)
+                && (N_.z() > 1)
+            )
+            {
+                firstTransDir_ = 2;
+            }
+            else
+            {
+                firstTransDir_ = 0;
+            }
+            break;
+
+        case 2:
+            if
+            (
+                   (decompType_ == 3 || decompType_ == 7)
+                && (N_.y() > 1)
+            )
+            {
+                firstTransDir_ = 1;
+            }
+            else
+            {
+                firstTransDir_ = 0;
+            }
+            break;
+
+        default:
+            FatalError
+                << "Invalid solve direction."
+                << endl;
+            FatalError.exit();
+            break;
+    }
 }
 
 // Destructor
@@ -115,8 +175,10 @@ planner::planner
 planner::~planner()
 {}
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}
+
+}

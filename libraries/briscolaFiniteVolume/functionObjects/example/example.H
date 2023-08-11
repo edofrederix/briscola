@@ -38,9 +38,6 @@ public:
     // Destructor
     virtual ~example();
 
-    // Read the dictionary. Called at construction.
-    virtual bool read(const dictionary&);
-
     // Code executed at the end of each time step loop
     virtual bool execute();
 
@@ -49,9 +46,6 @@ public:
 
     // Code executed at the end of the simulation
     virtual bool end();
-
-    //- Return the list of fields required
-    virtual wordList fields() const;
 
     // Disallow default bitwise assignment
     void operator=(const example&) = delete;

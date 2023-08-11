@@ -2,22 +2,32 @@
 
 TEST=FFTPoissonSolver2D
 
+STRETCH=("(1 1 1)" "(2 1 1)" "(1 2 1)")
+
 if [ -f build/Test-$TEST ]; then
 
-    OUTPUT=$(./build/Test-$TEST > /dev/null 2>&1)
+    for s in "${STRETCH[@]}"
+    do
+        cat system/briscolaMeshDict.orig > system/briscolaMeshDict
 
-    RET=$?
+        sed -i "s/VARSTRETCH/$s/" "system/briscolaMeshDict"
 
-    if [ "$RET" != "0" ]; then
+        OUTPUT=$(mpirun -np 4 ./build/Test-$TEST -parallel > /dev/null 2>&1)
 
-        echo Test $TEST failed
+        RET=$?
 
-    else
+        rm -f system/briscolaMeshDict
 
-        echo Test $TEST succeeded
+        if [ "$RET" != "0" ]; then
 
-    fi
+            echo Test $TEST failed
 
+        else
+
+            echo Test $TEST succeeded
+
+        fi
+    done
 
 else
 

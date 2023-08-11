@@ -11,7 +11,7 @@ using namespace briscola;
 using namespace fv;
 
 template<class Type, class MeshType>
-void testConstructors(const fvMesh& fvMsh)
+void testConstructors(const fvMesh& fvMsh, const bool deep)
 {
     // Field from name and mesh
 
@@ -26,7 +26,11 @@ void testConstructors(const fvMesh& fvMsh)
       + "-"
       + word(pTraits<Type>::typeName),
         fvMsh,
-        IOobject::MUST_READ
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
     );
 
     // Copy from m2 with same name
@@ -55,7 +59,7 @@ void testConstructors(const fvMesh& fvMsh)
 }
 
 template<class Type, class MeshType>
-void testIndexing(const fvMesh& fvMsh)
+void testIndexing(const fvMesh& fvMsh, const bool deep)
 {
     meshField<Type,MeshType> m1
     (
@@ -64,7 +68,11 @@ void testIndexing(const fvMesh& fvMsh)
       + "-"
       + word(pTraits<Type>::typeName),
         fvMsh,
-        IOobject::MUST_READ
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
     );
 
     label c = 0;
@@ -86,11 +94,73 @@ void testIndexing(const fvMesh& fvMsh)
 }
 
 template<class Type, class MeshType>
-void testMemberOperators(const fvMesh& fvMsh)
+void testMemberOperators(const fvMesh& fvMsh, const bool deep)
 {
-    meshField<Type,MeshType> m1("m1", fvMsh);
-    meshField<Type,MeshType> m2("m2", fvMsh);
-    meshField<scalar,MeshType> s1("s1", fvMsh);
+    meshField<Type,MeshType> m1
+    (
+        "m1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m1o
+    (
+        "m1o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    meshField<Type,MeshType> m2
+    (
+        "m2",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m2o
+    (
+        "m2o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    meshField<scalar,MeshType> s1
+    (
+        "s1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<scalar,MeshType> s1o
+    (
+        "s1o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
 
     forAll(m1, l)
     forAll(m1[l], d)
@@ -99,6 +169,15 @@ void testMemberOperators(const fvMesh& fvMsh)
         m1[l][d](i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
         s1[l][d](i,j,k) = scalar(l+d+i+j+k+1);
     }
+
+    forAll(m1o, l)
+    forAll(m1o[l], d)
+    forAllCells(m1o[l][d], i, j, k)
+    {
+        m1o[l][d](i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
+        s1o[l][d](i,j,k) = scalar(l+d+i+j+k+1);
+    }
+
 
     m2 = m1;
 
@@ -117,6 +196,29 @@ void testMemberOperators(const fvMesh& fvMsh)
                 if (m2[l][d](i,j,k) != m1[l][d](i,j,k))
                     FatalErrorInFunction
                         << "test 1b failed" << abort(FatalError);
+
+    m2 = m1o;
+    m2o = m1o;
+
+    forAll(m1o, l)
+        forAll(m1o[l], d)
+            forAllCells(m1o[l][d], i, j, k)
+                if (m2[l][d](i,j,k) != m1o[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 1c failed" << abort(FatalError);
+
+    m2 = 1.0*m1o;
+    m2o = 1.0*m1o;
+
+    forAll(m1o, l)
+        forAll(m1o[l], d)
+            forAllCells(m1o[l][d], i, j, k)
+                if (m2[l][d](i,j,k) != m1o[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 1d failed" << abort(FatalError);
+
+    // Restore
+    m2 = m1;
 
 
     m1 = Zero;
@@ -156,6 +258,28 @@ void testMemberOperators(const fvMesh& fvMsh)
                     FatalErrorInFunction
                         << "test 3b failed" << abort(FatalError);
 
+    if (deep)
+    {
+        m1o = m2o;
+        m1o += m2;
+
+        forAll(m1o, l)
+            forAll(m1o[l], d)
+                forAllCells(m1o[l][d], i, j, k)
+                    if (m1o[l][d](i,j,k) != 2*m2[l][d](i,j,k))
+                        FatalErrorInFunction
+                            << "test 3c failed" << abort(FatalError);
+
+        m1o += (2*m2);
+
+        forAll(m1o, l)
+            forAll(m1o[l], d)
+                forAllCells(m1o[l][d], i, j, k)
+                    if (m1o[l][d](i,j,k) != 4.0*m2[l][d](i,j,k))
+                        FatalErrorInFunction
+                            << "test 3d failed" << abort(FatalError);
+    }
+
     m1 -= m2;
 
     forAll(m1, l)
@@ -174,6 +298,26 @@ void testMemberOperators(const fvMesh& fvMsh)
                     FatalErrorInFunction
                         << "test 4b failed" << abort(FatalError);
 
+    if (deep)
+    {
+        m1o -= m2;
+
+        forAll(m1o, l)
+            forAll(m1o[l], d)
+                forAllCells(m1o[l][d], i, j, k)
+                    if (m1o[l][d](i,j,k) != 3.0*m2[l][d](i,j,k))
+                        FatalErrorInFunction
+                            << "test 4c failed" << abort(FatalError);
+
+        m1o -= (2*m2);
+
+        forAll(m1o, l)
+            forAll(m1o[l], d)
+                forAllCells(m1o[l][d], i, j, k)
+                    if (m1o[l][d](i,j,k) != m2[l][d](i,j,k))
+                        FatalErrorInFunction
+                            << "test 4d failed" << abort(FatalError);
+    }
 
     m1 *= s1;
 
@@ -193,6 +337,27 @@ void testMemberOperators(const fvMesh& fvMsh)
                     FatalErrorInFunction
                         << "test 5b failed" << abort(FatalError);
 
+    if (deep)
+    {
+        m1o *= s1;
+
+        forAll(m1o, l)
+            forAll(m1o[l], d)
+                forAllCells(m1o[l][d], i, j, k)
+                    if (m1o[l][d](i,j,k) != m2[l][d](i,j,k)*s1[l][d](i,j,k))
+                        FatalErrorInFunction
+                            << "test 5c failed" << abort(FatalError);
+
+        m1o *= (2*s1);
+
+        forAll(m1o, l)
+            forAll(m1o[l], d)
+                forAllCells(m1o[l][d], i, j, k)
+                    if (m1o[l][d](i,j,k) != 2*m2[l][d](i,j,k)*Foam::sqr(s1[l][d](i,j,k)))
+                        FatalErrorInFunction
+                            << "test 5d failed" << abort(FatalError);
+    }
+
     m1 /= s1;
 
     forAll(m1, l)
@@ -210,6 +375,27 @@ void testMemberOperators(const fvMesh& fvMsh)
                 if (m1[l][d](i,j,k) != m2[l][d](i,j,k))
                     FatalErrorInFunction
                         << "test 6b failed" << abort(FatalError);
+
+    if (deep)
+    {
+        m1o /= s1;
+
+        forAll(m1o, l)
+            forAll(m1o[l], d)
+                forAllCells(m1o[l][d], i, j, k)
+                    if (m1o[l][d](i,j,k) != 2*m2[l][d](i,j,k)*s1[l][d](i,j,k))
+                        FatalErrorInFunction
+                            << "test 6c failed" << abort(FatalError);
+
+        m1o /= (2*s1);
+
+        forAll(m1o, l)
+            forAll(m1o[l], d)
+                forAllCells(m1o[l][d], i, j, k)
+                    if (m1o[l][d](i,j,k) != m2[l][d](i,j,k))
+                        FatalErrorInFunction
+                            << "test 6d failed" << abort(FatalError);
+    }
 
     m1 += pTraits<Type>::one;
 
@@ -249,11 +435,73 @@ void testMemberOperators(const fvMesh& fvMsh)
 }
 
 template<class Type, class MeshType>
-void testPrimitiveFunctions(const fvMesh& fvMsh)
+void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
 {
-    meshField<Type,MeshType> m1("m1", fvMsh);
-    meshField<Type,MeshType> m2("m2", fvMsh);
-    meshField<scalar,MeshType> s1("s1", fvMsh);
+    meshField<Type,MeshType> m1
+    (
+        "m1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m1o
+    (
+        "m1o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    meshField<Type,MeshType> m2
+    (
+        "m2",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m2o
+    (
+        "m2o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    meshField<scalar,MeshType> s1
+    (
+        "s1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<scalar,MeshType> s1o
+    (
+        "s1o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
 
     List<Type> sm(m1[0].size(), pTraits<Type>::zero);
 
@@ -269,14 +517,23 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
         }
     }
 
+    forAll(m1o, l)
+    forAll(m1o[l], d)
+    forAllCells(m1o[l][d], i, j, k)
+    {
+        m1o[l][d](i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
+    }
+
     List<Type> av(sm);
 
     forAll(m1[0], d)
         av[d] /= cmptProduct(m1[0][d].N());
 
     m2 = m1;
+    m2o = m1o;
 
     s1 = mag(m1)+scalar(1);
+    s1o = mag(m1o)+scalar(1);
 
     forAll(s1, l)
         forAll(s1[l], d)
@@ -293,6 +550,7 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
                         << "test 9a failed" << abort(FatalError);
 
     s1 = mag(m1*2)+scalar(1);
+    s1o = mag(m1o*2)+scalar(1);
 
     forAll(s1, l)
         forAll(s1[l], d)
@@ -427,6 +685,11 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
     sumProd(m1, m1*2);
     sumProd(m1*2, m1*2);
 
+    sumProd(m1, m1o);
+    sumProd(m1*2, m1o);
+    sumProd(m1, m1o*2);
+    sumProd(m1*2, m1o*2);
+
     meshField<Type,MeshType> m3(max(m1,m2));
 
     forAll(m3, l)
@@ -462,6 +725,42 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
                 if (m3[l][d](i,j,k) != 2*m1[l][d](i,j,k))
                     FatalErrorInFunction
                         << "test 14d failed" << abort(FatalError);
+
+    meshField<Type,MeshType> m3o(max(m1,m2o));
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 14e failed" << abort(FatalError);
+
+    m3o = max(m1*2,m2o);
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != 2*m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 14f failed" << abort(FatalError);
+
+    m3o = max(m1,m2o*2);
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != 2*m2[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 14g failed" << abort(FatalError);
+
+    m3o = max(m1*2,m2o*2);
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != 2*m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 14h failed" << abort(FatalError);
 
 
     m3 = min(m1,m2);
@@ -499,6 +798,42 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
                 if (m3[l][d](i,j,k) != 2*m1[l][d](i,j,k))
                     FatalErrorInFunction
                         << "test 15d failed" << abort(FatalError);
+
+    m3o = min(m1,m2o);
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 15e failed" << abort(FatalError);
+
+    m3o = min(m1*2,m2o);
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != m2[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 15f failed" << abort(FatalError);
+
+    m3o = min(m1,m2o*2);
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 15g failed" << abort(FatalError);
+
+    m3o = min(m1*2,m2o*2);
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != 2*m1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 15h failed" << abort(FatalError);
 
 
     m3 = max(m1,pTraits<Type>::one);
@@ -621,6 +956,41 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
                     FatalErrorInFunction
                         << "test 19d failed" << abort(FatalError);
 
+    m3o = m1*s1o;
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != m1[l][d](i,j,k)*s1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 19e failed" << abort(FatalError);
+
+    m3o = (m1*2)*s1o;
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != m1[l][d](i,j,k)*s1[l][d](i,j,k)*2)
+                    FatalErrorInFunction
+                        << "test 19f failed" << abort(FatalError);
+
+    m3o = s1*m1o;
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != m1[l][d](i,j,k)*s1[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 19g failed" << abort(FatalError);
+
+    m3o = s1*(m1o*2);
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != m1[l][d](i,j,k)*s1[l][d](i,j,k)*2)
+                    FatalErrorInFunction
+                        << "test 19h failed" << abort(FatalError);
 
     m3 = m1/s1;
 
@@ -643,6 +1013,26 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
                     FatalErrorInFunction
                         << "test 20b failed" << abort(FatalError);
 
+    m3o = m1/s1o;
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != Type(m1[l][d](i,j,k)/s1[l][d](i,j,k)))
+                {
+                    Pout<< s1[l][d](i,j,k) << endl;
+                    FatalErrorInFunction
+                        << "test 20c failed" << abort(FatalError);
+                }
+
+    m3o = (m1*2)/s1o;
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != Type((2*m1[l][d](i,j,k))/s1[l][d](i,j,k)))
+                    FatalErrorInFunction
+                        << "test 20d failed" << abort(FatalError);
 
     m3 = m1+m2;
 
@@ -660,15 +1050,71 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
                 if (m3[l][d](i,j,k) != m1[l][d](i,j,k)-m2[l][d](i,j,k))
                     FatalErrorInFunction
                         << "test 21b failed" << abort(FatalError);
+
+    m3o = m1+m2o;
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != m1[l][d](i,j,k)+m2[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 21c failed" << abort(FatalError);
+    m3o = m1-m2o;
+
+    forAll(m3o, l)
+        forAll(m3o[l], d)
+            forAllCells(m3o[l][d], i, j, k)
+                if (m3o[l][d](i,j,k) != m1[l][d](i,j,k)-m2[l][d](i,j,k))
+                    FatalErrorInFunction
+                        << "test 21d failed" << abort(FatalError);
 }
 
 template<class Type, class MeshType>
-void testVectorSpaceFunctions(const fvMesh& fvMsh)
+void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
 {
-    meshField<Type,MeshType> m1("m1", fvMsh);
-    meshField<Type,MeshType> m2("m2", fvMsh);
-    meshField<Type,MeshType> m3("m3", fvMsh);
-    meshField<scalar,MeshType> s1("s1", fvMsh);
+    meshField<Type,MeshType> m1
+    (
+        "m1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m2
+    (
+        "m2",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m3
+    (
+        "m3",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<scalar,MeshType> s1
+    (
+        "s1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
 
     label c = 0;
 
@@ -1018,11 +1464,73 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh)
 }
 
 template<class Type, class MeshType>
-void testStencilFunctions(const fvMesh& fvMsh)
+void testStencilFunctions(const fvMesh& fvMsh, const bool deep)
 {
-    meshField<Type,MeshType> m1("m1", fvMsh);
-    meshField<Type,MeshType> m2("m2", fvMsh);
-    meshField<scalar,MeshType> s1("s1", fvMsh);
+    meshField<Type,MeshType> m1
+    (
+        "m1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m2
+    (
+        "m2",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<scalar,MeshType> s1
+    (
+        "s1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m1o
+    (
+        "m1o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    meshField<Type,MeshType> m2o
+    (
+        "m2o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    meshField<scalar,MeshType> s1o
+    (
+        "s1o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
 
     label c = 0;
 
@@ -1035,6 +1543,15 @@ void testStencilFunctions(const fvMesh& fvMsh)
         s1[l][d](i,j,k) = c++;
     }
 
+    forAll(m1o, l)
+    forAll(m1o[l], d)
+    forAllCells(m1o[l][d], i, j, k)
+    {
+        m1o[l][d](i,j,k) = pTraits<Type>::one*c++;
+        m2o[l][d](i,j,k) = pTraits<Type>::one*c++;
+        s1o[l][d](i,j,k) = c++;
+    }
+
     -m1;
 
     m1+m2;
@@ -1042,37 +1559,88 @@ void testStencilFunctions(const fvMesh& fvMsh)
     m1+(2*m2);
     (2*m1)+(2*m2);
 
-    m1-m2;
-    (2*m1)-m2;
-    m1-(2*m2);
-    (2*m1)-(2*m2);
+    m1+m2o;
+    (2*m1)+m2o;
+    m1+(2*m2o);
+    (2*m1)+(2*m2o);
 
     m1-m2;
     (2*m1)-m2;
     m1-(2*m2);
     (2*m1)-(2*m2);
+
+    m1-m2o;
+    (2*m1)-m2o;
+    m1-(2*m2o);
+    (2*m1)-(2*m2o);
+
+    m1-m2;
+    (2*m1)-m2;
+    m1-(2*m2);
+    (2*m1)-(2*m2);
+
+    m1-m2o;
+    (2*m1)-m2o;
+    m1-(2*m2o);
+    (2*m1)-(2*m2o);
 
     m1*s1;
     s1*m1;
     (2*m1)*s1;
     s1*(2*m1);
 
+    m1*s1o;
+    s1*m1o;
+    (2*m1)*s1o;
+    s1*(2*m1o);
+
     m1*(2*s1);
     (2*s1)*m1;
     (2*m1)*(2*s1);
     (2*s1)*(2*m1);
 
+    m1*(2*s1o);
+    (2*s1)*m1o;
+    (2*m1)*(2*s1o);
+    (2*s1)*(2*m1o);
+
     m1/s1;
     (2*m1)/s1;
 
+    m1/s1o;
+    (2*m1)/s1o;
+
     m1/(2*s1);
     (2*m1)/(2*s1);
+
+    m1/(2*s1o);
+    (2*m1)/(2*s1o);
 }
 
 template<class MeshType>
-void testScalarFunctions(const fvMesh& fvMsh)
+void testScalarFunctions(const fvMesh& fvMsh, const bool deep)
 {
-    meshField<scalar,MeshType> m1("m1", fvMsh);
+    meshField<scalar,MeshType> m1
+    (
+        "m1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<scalar,MeshType> m1o
+    (
+        "m1o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
 
     label c = 0;
 
@@ -1083,16 +1651,46 @@ void testScalarFunctions(const fvMesh& fvMsh)
         m1[l][d](i,j,k) = scalar(c+++1);
     }
 
+    forAll(m1o, l)
+    forAll(m1o[l], d)
+    forAllCells(m1o[l][d], i, j, k)
+    {
+        m1o[l][d](i,j,k) = scalar(c+++1);
+    }
+
     m1/m1;
     (m1*2)/m1;
     m1/(m1*2);
+
+    m1/m1o;
+    (m1*2)/m1o;
+    m1/(m1o*2);
 }
 
 template<class MeshType>
-void testVectorFunctions(const fvMesh& fvMsh)
+void testVectorFunctions(const fvMesh& fvMsh, const bool deep)
 {
-    meshField<vector,MeshType> m1("m1", fvMsh);
-    meshField<vector,MeshType> m2("m2", fvMsh);
+    meshField<vector,MeshType> m1
+    (
+        "m1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<vector,MeshType> m2
+    (
+        "m2",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
 
     label c = 0;
 
@@ -1121,13 +1719,62 @@ void testVectorFunctions(const fvMesh& fvMsh)
 }
 
 template<class MeshType>
-void testTensorFunctions(const fvMesh& fvMsh)
+void testTensorFunctions(const fvMesh& fvMsh, const bool deep)
 {
-    meshField<tensor,MeshType> m1("m1", fvMsh);
-    meshField<symmTensor,MeshType> m2("m2", fvMsh);
-    meshField<sphericalTensor,MeshType> b3("b3", fvMsh);
-    meshField<diagTensor,MeshType> b4("b4", fvMsh);
-    meshField<vector,MeshType> v1("v1", fvMsh);
+    meshField<tensor,MeshType> m1
+    (
+        "m1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<symmTensor,MeshType> m2
+    (
+        "m2",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<sphericalTensor,MeshType> b3
+    (
+        "b3",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<diagTensor,MeshType> b4
+    (
+        "b4",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<vector,MeshType> v1
+    (
+        "v1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
 
     label c = 0;
 
@@ -1204,181 +1851,187 @@ int main(int argc, char *argv[])
 
     // Colocated
 
-    testConstructors<label,colocated>(fvMsh);
-    testConstructors<scalar,colocated>(fvMsh);
+    for (int deep = 0; deep < 2; deep++)
+    {
+        testConstructors<label,colocated>(fvMsh, deep);
+        testConstructors<scalar,colocated>(fvMsh, deep);
 
-    testConstructors<vector,colocated>(fvMsh);
-    testConstructors<tensor,colocated>(fvMsh);
-    testConstructors<symmTensor,colocated>(fvMsh);
-    testConstructors<sphericalTensor,colocated>(fvMsh);
-    testConstructors<diagTensor,colocated>(fvMsh);
+        testConstructors<vector,colocated>(fvMsh, deep);
+        testConstructors<tensor,colocated>(fvMsh, deep);
+        testConstructors<symmTensor,colocated>(fvMsh, deep);
+        testConstructors<sphericalTensor,colocated>(fvMsh, deep);
+        testConstructors<diagTensor,colocated>(fvMsh, deep);
 
-    testConstructors<faceScalar,colocated>(fvMsh);
-    testConstructors<edgeScalar,colocated>(fvMsh);
-    testConstructors<vertexScalar,colocated>(fvMsh);
+        testConstructors<faceScalar,colocated>(fvMsh, deep);
+        testConstructors<edgeScalar,colocated>(fvMsh, deep);
+        testConstructors<vertexScalar,colocated>(fvMsh, deep);
 
-    testConstructors<faceVector,colocated>(fvMsh);
-    testConstructors<edgeVector,colocated>(fvMsh);
-    testConstructors<vertexVector,colocated>(fvMsh);
+        testConstructors<faceVector,colocated>(fvMsh, deep);
+        testConstructors<edgeVector,colocated>(fvMsh, deep);
+        testConstructors<vertexVector,colocated>(fvMsh, deep);
 
-    testConstructors<stencil,colocated>(fvMsh);
-    testConstructors<diagStencil,colocated>(fvMsh);
-
-
-    testIndexing<label,colocated>(fvMsh);
-    testIndexing<scalar,colocated>(fvMsh);
-
-    testIndexing<vector,colocated>(fvMsh);
-    testIndexing<tensor,colocated>(fvMsh);
-    testIndexing<symmTensor,colocated>(fvMsh);
-    testIndexing<sphericalTensor,colocated>(fvMsh);
-    testIndexing<diagTensor,colocated>(fvMsh);
-
-    testIndexing<faceScalar,colocated>(fvMsh);
-    testIndexing<edgeScalar,colocated>(fvMsh);
-    testIndexing<vertexScalar,colocated>(fvMsh);
-
-    testIndexing<faceVector,colocated>(fvMsh);
-    testIndexing<edgeVector,colocated>(fvMsh);
-    testIndexing<vertexVector,colocated>(fvMsh);
-
-    testIndexing<stencil,colocated>(fvMsh);
-    testIndexing<diagStencil,colocated>(fvMsh);
+        testConstructors<stencil,colocated>(fvMsh, deep);
+        testConstructors<diagStencil,colocated>(fvMsh, deep);
 
 
-    testMemberOperators<label,colocated>(fvMsh);
-    testMemberOperators<scalar,colocated>(fvMsh);
+        testIndexing<label,colocated>(fvMsh, deep);
+        testIndexing<scalar,colocated>(fvMsh, deep);
 
-    testMemberOperators<vector,colocated>(fvMsh);
-    testMemberOperators<tensor,colocated>(fvMsh);
-    testMemberOperators<symmTensor,colocated>(fvMsh);
-    testMemberOperators<sphericalTensor,colocated>(fvMsh);
-    testMemberOperators<diagTensor,colocated>(fvMsh);
+        testIndexing<vector,colocated>(fvMsh, deep);
+        testIndexing<tensor,colocated>(fvMsh, deep);
+        testIndexing<symmTensor,colocated>(fvMsh, deep);
+        testIndexing<sphericalTensor,colocated>(fvMsh, deep);
+        testIndexing<diagTensor,colocated>(fvMsh, deep);
 
-    testMemberOperators<faceScalar,colocated>(fvMsh);
-    testMemberOperators<edgeScalar,colocated>(fvMsh);
-    testMemberOperators<vertexScalar,colocated>(fvMsh);
+        testIndexing<faceScalar,colocated>(fvMsh, deep);
+        testIndexing<edgeScalar,colocated>(fvMsh, deep);
+        testIndexing<vertexScalar,colocated>(fvMsh, deep);
 
-    testMemberOperators<faceVector,colocated>(fvMsh);
-    testMemberOperators<edgeVector,colocated>(fvMsh);
-    testMemberOperators<vertexVector,colocated>(fvMsh);
+        testIndexing<faceVector,colocated>(fvMsh, deep);
+        testIndexing<edgeVector,colocated>(fvMsh, deep);
+        testIndexing<vertexVector,colocated>(fvMsh, deep);
 
-    testMemberOperators<stencil,colocated>(fvMsh);
-    testMemberOperators<diagStencil,colocated>(fvMsh);
+        testIndexing<stencil,colocated>(fvMsh, deep);
+        testIndexing<diagStencil,colocated>(fvMsh, deep);
 
 
-    testPrimitiveFunctions<label,colocated>(fvMsh);
-    testPrimitiveFunctions<scalar,colocated>(fvMsh);
+        testMemberOperators<label,colocated>(fvMsh, deep);
+        testMemberOperators<scalar,colocated>(fvMsh, deep);
 
-    testPrimitiveFunctions<vector,colocated>(fvMsh);
-    testPrimitiveFunctions<tensor,colocated>(fvMsh);
-    testPrimitiveFunctions<symmTensor,colocated>(fvMsh);
-    testPrimitiveFunctions<sphericalTensor,colocated>(fvMsh);
-    testPrimitiveFunctions<diagTensor,colocated>(fvMsh);
+        testMemberOperators<vector,colocated>(fvMsh, deep);
+        testMemberOperators<tensor,colocated>(fvMsh, deep);
+        testMemberOperators<symmTensor,colocated>(fvMsh, deep);
+        testMemberOperators<sphericalTensor,colocated>(fvMsh, deep);
+        testMemberOperators<diagTensor,colocated>(fvMsh, deep);
 
-    testVectorSpaceFunctions<vector,colocated>(fvMsh);
-    testVectorSpaceFunctions<tensor,colocated>(fvMsh);
-    testVectorSpaceFunctions<symmTensor,colocated>(fvMsh);
-    testVectorSpaceFunctions<sphericalTensor,colocated>(fvMsh);
-    testVectorSpaceFunctions<diagTensor,colocated>(fvMsh);
+        testMemberOperators<faceScalar,colocated>(fvMsh, deep);
+        testMemberOperators<edgeScalar,colocated>(fvMsh, deep);
+        testMemberOperators<vertexScalar,colocated>(fvMsh, deep);
 
-    testStencilFunctions<stencil,colocated>(fvMsh);
-    testStencilFunctions<diagStencil,colocated>(fvMsh);
+        testMemberOperators<faceVector,colocated>(fvMsh, deep);
+        testMemberOperators<edgeVector,colocated>(fvMsh, deep);
+        testMemberOperators<vertexVector,colocated>(fvMsh, deep);
 
-    testScalarFunctions<colocated>(fvMsh);
-    testVectorFunctions<colocated>(fvMsh);
-    testTensorFunctions<colocated>(fvMsh);
+        testMemberOperators<stencil,colocated>(fvMsh, deep);
+        testMemberOperators<diagStencil,colocated>(fvMsh, deep);
+
+
+        testPrimitiveFunctions<label,colocated>(fvMsh, deep);
+        testPrimitiveFunctions<scalar,colocated>(fvMsh, deep);
+
+        testPrimitiveFunctions<vector,colocated>(fvMsh, deep);
+        testPrimitiveFunctions<tensor,colocated>(fvMsh, deep);
+        testPrimitiveFunctions<symmTensor,colocated>(fvMsh, deep);
+        testPrimitiveFunctions<sphericalTensor,colocated>(fvMsh, deep);
+        testPrimitiveFunctions<diagTensor,colocated>(fvMsh, deep);
+
+        testVectorSpaceFunctions<vector,colocated>(fvMsh, deep);
+        testVectorSpaceFunctions<tensor,colocated>(fvMsh, deep);
+        testVectorSpaceFunctions<symmTensor,colocated>(fvMsh, deep);
+        testVectorSpaceFunctions<sphericalTensor,colocated>(fvMsh, deep);
+        testVectorSpaceFunctions<diagTensor,colocated>(fvMsh, deep);
+
+        testStencilFunctions<stencil,colocated>(fvMsh, deep);
+        testStencilFunctions<diagStencil,colocated>(fvMsh, deep);
+
+        testScalarFunctions<colocated>(fvMsh, deep);
+        testVectorFunctions<colocated>(fvMsh, deep);
+        testTensorFunctions<colocated>(fvMsh, deep);
+    }
 
     // Staggered
 
     if (fvMsh.structured())
     {
-        testConstructors<label,staggered>(fvMsh);
-        testConstructors<scalar,staggered>(fvMsh);
-        testConstructors<vector,staggered>(fvMsh);
+        for (int deep = 0; deep < 2; deep++)
+        {
+            testConstructors<label,staggered>(fvMsh, deep);
+            testConstructors<scalar,staggered>(fvMsh, deep);
+            testConstructors<vector,staggered>(fvMsh, deep);
 
-        testConstructors<tensor,staggered>(fvMsh);
-        testConstructors<symmTensor,staggered>(fvMsh);
-        testConstructors<sphericalTensor,staggered>(fvMsh);
-        testConstructors<diagTensor,staggered>(fvMsh);
+            testConstructors<tensor,staggered>(fvMsh, deep);
+            testConstructors<symmTensor,staggered>(fvMsh, deep);
+            testConstructors<sphericalTensor,staggered>(fvMsh, deep);
+            testConstructors<diagTensor,staggered>(fvMsh, deep);
 
-        testConstructors<faceScalar,staggered>(fvMsh);
-        testConstructors<edgeScalar,staggered>(fvMsh);
-        testConstructors<vertexScalar,staggered>(fvMsh);
+            testConstructors<faceScalar,staggered>(fvMsh, deep);
+            testConstructors<edgeScalar,staggered>(fvMsh, deep);
+            testConstructors<vertexScalar,staggered>(fvMsh, deep);
 
-        testConstructors<faceVector,staggered>(fvMsh);
-        testConstructors<edgeVector,staggered>(fvMsh);
-        testConstructors<vertexVector,staggered>(fvMsh);
+            testConstructors<faceVector,staggered>(fvMsh, deep);
+            testConstructors<edgeVector,staggered>(fvMsh, deep);
+            testConstructors<vertexVector,staggered>(fvMsh, deep);
 
-        testConstructors<stencil,staggered>(fvMsh);
-        testConstructors<diagStencil,staggered>(fvMsh);
-
-
-        testIndexing<label,staggered>(fvMsh);
-        testIndexing<scalar,staggered>(fvMsh);
-
-        testIndexing<vector,staggered>(fvMsh);
-        testIndexing<tensor,staggered>(fvMsh);
-        testIndexing<symmTensor,staggered>(fvMsh);
-        testIndexing<sphericalTensor,staggered>(fvMsh);
-        testIndexing<diagTensor,staggered>(fvMsh);
-
-        testIndexing<faceScalar,staggered>(fvMsh);
-        testIndexing<edgeScalar,staggered>(fvMsh);
-        testIndexing<vertexScalar,staggered>(fvMsh);
-
-        testIndexing<faceVector,staggered>(fvMsh);
-        testIndexing<edgeVector,staggered>(fvMsh);
-        testIndexing<vertexVector,staggered>(fvMsh);
-
-        testIndexing<stencil,staggered>(fvMsh);
-        testIndexing<diagStencil,staggered>(fvMsh);
+            testConstructors<stencil,staggered>(fvMsh, deep);
+            testConstructors<diagStencil,staggered>(fvMsh, deep);
 
 
-        testMemberOperators<label,staggered>(fvMsh);
-        testMemberOperators<scalar,staggered>(fvMsh);
+            testIndexing<label,staggered>(fvMsh, deep);
+            testIndexing<scalar,staggered>(fvMsh, deep);
 
-        testMemberOperators<vector,staggered>(fvMsh);
-        testMemberOperators<tensor,staggered>(fvMsh);
-        testMemberOperators<symmTensor,staggered>(fvMsh);
-        testMemberOperators<sphericalTensor,staggered>(fvMsh);
-        testMemberOperators<diagTensor,staggered>(fvMsh);
+            testIndexing<vector,staggered>(fvMsh, deep);
+            testIndexing<tensor,staggered>(fvMsh, deep);
+            testIndexing<symmTensor,staggered>(fvMsh, deep);
+            testIndexing<sphericalTensor,staggered>(fvMsh, deep);
+            testIndexing<diagTensor,staggered>(fvMsh, deep);
 
-        testMemberOperators<faceScalar,staggered>(fvMsh);
-        testMemberOperators<edgeScalar,staggered>(fvMsh);
-        testMemberOperators<vertexScalar,staggered>(fvMsh);
+            testIndexing<faceScalar,staggered>(fvMsh, deep);
+            testIndexing<edgeScalar,staggered>(fvMsh, deep);
+            testIndexing<vertexScalar,staggered>(fvMsh, deep);
 
-        testMemberOperators<faceVector,staggered>(fvMsh);
-        testMemberOperators<edgeVector,staggered>(fvMsh);
-        testMemberOperators<vertexVector,staggered>(fvMsh);
+            testIndexing<faceVector,staggered>(fvMsh, deep);
+            testIndexing<edgeVector,staggered>(fvMsh, deep);
+            testIndexing<vertexVector,staggered>(fvMsh, deep);
 
-        testMemberOperators<stencil,staggered>(fvMsh);
-        testMemberOperators<diagStencil,staggered>(fvMsh);
-
-
-        testPrimitiveFunctions<label,staggered>(fvMsh);
-        testPrimitiveFunctions<scalar,staggered>(fvMsh);
-
-        testPrimitiveFunctions<vector,staggered>(fvMsh);
-        testPrimitiveFunctions<tensor,staggered>(fvMsh);
-        testPrimitiveFunctions<symmTensor,staggered>(fvMsh);
-        testPrimitiveFunctions<sphericalTensor,staggered>(fvMsh);
-        testPrimitiveFunctions<diagTensor,staggered>(fvMsh);
+            testIndexing<stencil,staggered>(fvMsh, deep);
+            testIndexing<diagStencil,staggered>(fvMsh, deep);
 
 
-        testVectorSpaceFunctions<vector,staggered>(fvMsh);
-        testVectorSpaceFunctions<tensor,staggered>(fvMsh);
-        testVectorSpaceFunctions<symmTensor,staggered>(fvMsh);
-        testVectorSpaceFunctions<sphericalTensor,staggered>(fvMsh);
-        testVectorSpaceFunctions<diagTensor,staggered>(fvMsh);
+            testMemberOperators<label,staggered>(fvMsh, deep);
+            testMemberOperators<scalar,staggered>(fvMsh, deep);
+
+            testMemberOperators<vector,staggered>(fvMsh, deep);
+            testMemberOperators<tensor,staggered>(fvMsh, deep);
+            testMemberOperators<symmTensor,staggered>(fvMsh, deep);
+            testMemberOperators<sphericalTensor,staggered>(fvMsh, deep);
+            testMemberOperators<diagTensor,staggered>(fvMsh, deep);
+
+            testMemberOperators<faceScalar,staggered>(fvMsh, deep);
+            testMemberOperators<edgeScalar,staggered>(fvMsh, deep);
+            testMemberOperators<vertexScalar,staggered>(fvMsh, deep);
+
+            testMemberOperators<faceVector,staggered>(fvMsh, deep);
+            testMemberOperators<edgeVector,staggered>(fvMsh, deep);
+            testMemberOperators<vertexVector,staggered>(fvMsh, deep);
+
+            testMemberOperators<stencil,staggered>(fvMsh, deep);
+            testMemberOperators<diagStencil,staggered>(fvMsh, deep);
 
 
-        testStencilFunctions<stencil,staggered>(fvMsh);
-        testStencilFunctions<diagStencil,staggered>(fvMsh);
+            testPrimitiveFunctions<label,staggered>(fvMsh, deep);
+            testPrimitiveFunctions<scalar,staggered>(fvMsh, deep);
+
+            testPrimitiveFunctions<vector,staggered>(fvMsh, deep);
+            testPrimitiveFunctions<tensor,staggered>(fvMsh, deep);
+            testPrimitiveFunctions<symmTensor,staggered>(fvMsh, deep);
+            testPrimitiveFunctions<sphericalTensor,staggered>(fvMsh, deep);
+            testPrimitiveFunctions<diagTensor,staggered>(fvMsh, deep);
 
 
-        testScalarFunctions<staggered>(fvMsh);
-        testVectorFunctions<staggered>(fvMsh);
-        testTensorFunctions<staggered>(fvMsh);
+            testVectorSpaceFunctions<vector,staggered>(fvMsh, deep);
+            testVectorSpaceFunctions<tensor,staggered>(fvMsh, deep);
+            testVectorSpaceFunctions<symmTensor,staggered>(fvMsh, deep);
+            testVectorSpaceFunctions<sphericalTensor,staggered>(fvMsh, deep);
+            testVectorSpaceFunctions<diagTensor,staggered>(fvMsh, deep);
+
+
+            testStencilFunctions<stencil,staggered>(fvMsh, deep);
+            testStencilFunctions<diagStencil,staggered>(fvMsh, deep);
+
+
+            testScalarFunctions<staggered>(fvMsh, deep);
+            testVectorFunctions<staggered>(fvMsh, deep);
+            testTensorFunctions<staggered>(fvMsh, deep);
+        }
     }
 }

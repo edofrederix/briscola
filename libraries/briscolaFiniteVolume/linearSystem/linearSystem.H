@@ -153,6 +153,8 @@ public:
 
 }
 
+#include "linearSystemI.H"
+
 #ifdef NoRepository
     #include "linearSystem.C"
 #endif

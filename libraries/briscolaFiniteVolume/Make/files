@@ -52,12 +52,20 @@ schemes/restrictionSchemes/restrictionScheme/restrictionSchemes.C
 solvers/solver/solvers.C
 solvers/solver/solverFwd.C
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C
+solvers/PoissonSolvers/FFTPoissonSolver/FFTPoissonSolver.C
 solvers/PoissonSolvers/FFTPoissonSolver/planner/planner.C
-solvers/PoissonSolvers/FFTPoissonSolver/decomposer/decomposer.C
+solvers/PoissonSolvers/FFTPoissonSolver/pencilDecomposer/pencilDecomposer.C
 solvers/PoissonSolvers/FFTPoissonSolver/processorOverlap/processorOverlap.C
 solvers/PoissonSolvers/FFTPoissonSolver/FourierTransforms/FourierTransforms.C
 solvers/PoissonSolvers/FFTPoissonSolver/tridiagonalSolver/tridiagonalSolver.C
 
+functionObjects/pointInterpolators/pointInterpolator/pointInterpolator.C
+functionObjects/pointInterpolators/linearPointInterpolator/linearPointInterpolator.C
+functionObjects/pointInterpolators/nearestPointInterpolator/nearestPointInterpolator.C
+
 functionObjects/example/example.C
+functionObjects/sample/sample.C
+functionObjects/sample/sampleTemplates.C
+functionObjects/lineSample/lineSample.C
 
 LIB = $(FOAM_USER_LIBBIN)/libbriscolaFiniteVolume

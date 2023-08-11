@@ -47,9 +47,6 @@ class meshLevel
     // Transfer data from other mesh level
     void transferData(meshLevel<Type,MeshType>&);
 
-    // Update active cells based on boundary conditions
-    void updateActiveCells();
-
 public:
 
     // Runtime type information
@@ -119,8 +116,14 @@ public:
         return mshFieldPtr_;
     }
 
-    // Mesh field (unchecked!)
+    // Const reference to the mesh field (unchecked!)
     inline const meshField<Type,MeshType>& mshField() const
+    {
+        return *mshFieldPtr_;
+    }
+
+    // Access to the mesh field (unchecked!)
+    inline meshField<Type,MeshType>& mshField()
     {
         return *mshFieldPtr_;
     }

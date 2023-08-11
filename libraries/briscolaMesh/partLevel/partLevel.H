@@ -36,6 +36,9 @@ class partLevel
     // Check if part directions are uniform
     labelVector uniform_;
 
+    // Bounding box
+    faceScalar boundingBox_;
+
     // Calculate the mesh points
     void calcPoints(const mesh&, const partLevel*);
 
@@ -89,9 +92,8 @@ public:
     // Return uniform bools
     inline labelVector uniform() const { return uniform_; }
 
-    // For rectlinear directions, return the cell sizes. For non-rectilinear
-    // directions, return a zero list.
-    scalarList rectilinearCellSizes(const label) const;
+    // Return the bounding box
+    inline faceScalar boundingBox() const { return boundingBox_; }
 
     // Return the start cell of the internal cell boundary at given offset
     inline labelVector boundaryStart(const labelVector& bo) const

@@ -56,7 +56,7 @@ nu = readScalar(solverDict.lookup("nu"));
 
 // Source
 
-staggeredScalarField source
+staggeredScalarField exSource
 (
     "source",
     fvMsh,
@@ -65,7 +65,19 @@ staggeredScalarField source
     true
 );
 
-source = scalarList(solverDict.lookup("source"));
+staggeredScalarField imSourceCoeff
+(
+    "sourceCoeff",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+exSource = scalarList(solverDict.lookup("source"));
+imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
+
+// Solvers
 
 // Immersed boundary
 
@@ -96,3 +108,21 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
 staggeredFaceScalarField phi("phi", fvMsh);
 
 phi = Zero;
+
+// Stencils
+
+linearSystem<stencil,scalar,staggered> LapU(U);
+
+// Adams-Bashforth source
+
+staggeredScalarField DivU
+(
+    "DivU",
+    fvMsh,
+    IOobject::READ_IF_PRESENT,
+    IOobject::AUTO_WRITE,
+    true,
+    false
+);
+
+DivU = ex::div(phi,U);

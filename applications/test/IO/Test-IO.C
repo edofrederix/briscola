@@ -16,7 +16,8 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> createField
 (
     const word name,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const bool deep
 )
 {
     tmp<meshField<Type,MeshType>> tf
@@ -28,7 +29,8 @@ tmp<meshField<Type,MeshType>> createField
             IOobject::NO_READ,
             IOobject::AUTO_WRITE,
             true,
-            true
+            true,
+            deep
         )
     );
 
@@ -98,13 +100,14 @@ int main(int argc, char *argv[])
 
     // Macros
 
-    #define CREATEFIELD(TYPE, TYPENAME, MESHTYPE)                       \
+    #define CREATEFIELD(TYPE, TYPENAME, MESHTYPE, DEEP)                 \
         tmp<meshField<TYPE,MESHTYPE>> MESHTYPE##TYPENAME##TestField     \
         (                                                               \
             createField<TYPE,MESHTYPE>                                  \
             (                                                           \
                 #MESHTYPE #TYPENAME "TestField",                        \
-                fvMsh                                                   \
+                fvMsh,                                                  \
+                DEEP                                                    \
             )                                                           \
         );
 
@@ -121,26 +124,26 @@ int main(int argc, char *argv[])
         );
 
 
-    #define TEST(MESHTYPE,TIME,GHOSTS,PARTITIONED)                      \
+    #define TEST(MESHTYPE,TIME,GHOSTS,PARTITIONED,DEEP)                 \
     {                                                                   \
         runTime.setTime(TIME, TIME);                                    \
                                                                         \
         io.ghosts() = GHOSTS;                                           \
         io.partitioned() = PARTITIONED;                                 \
                                                                         \
-        CREATEFIELD(label,Label,MESHTYPE)                               \
-        CREATEFIELD(scalar,Scalar,MESHTYPE)                             \
-        CREATEFIELD(vector,Vector,MESHTYPE)                             \
-        CREATEFIELD(tensor,Tensor,MESHTYPE)                             \
-        CREATEFIELD(diagTensor,DiagTensor,MESHTYPE)                     \
-        CREATEFIELD(symmTensor,SymmTensor,MESHTYPE)                     \
-        CREATEFIELD(sphericalTensor,SphericalTensor,MESHTYPE)           \
-        CREATEFIELD(faceScalar,FaceScalar,MESHTYPE)                     \
-        CREATEFIELD(edgeScalar,EdgeScalar,MESHTYPE)                     \
-        CREATEFIELD(vertexScalar,VertexScalar,MESHTYPE)                 \
-        CREATEFIELD(faceVector,FaceVector,MESHTYPE)                     \
-        CREATEFIELD(edgeVector,EdgeVector,MESHTYPE)                     \
-        CREATEFIELD(vertexVector,VertexVector,MESHTYPE)                 \
+        CREATEFIELD(label,Label,MESHTYPE,DEEP)                          \
+        CREATEFIELD(scalar,Scalar,MESHTYPE,DEEP)                        \
+        CREATEFIELD(vector,Vector,MESHTYPE,DEEP)                        \
+        CREATEFIELD(tensor,Tensor,MESHTYPE,DEEP)                        \
+        CREATEFIELD(diagTensor,DiagTensor,MESHTYPE,DEEP)                \
+        CREATEFIELD(symmTensor,SymmTensor,MESHTYPE,DEEP)                \
+        CREATEFIELD(sphericalTensor,SphericalTensor,MESHTYPE,DEEP)      \
+        CREATEFIELD(faceScalar,FaceScalar,MESHTYPE,DEEP)                \
+        CREATEFIELD(edgeScalar,EdgeScalar,MESHTYPE,DEEP)                \
+        CREATEFIELD(vertexScalar,VertexScalar,MESHTYPE,DEEP)            \
+        CREATEFIELD(faceVector,FaceVector,MESHTYPE,DEEP)                \
+        CREATEFIELD(edgeVector,EdgeVector,MESHTYPE,DEEP)                \
+        CREATEFIELD(vertexVector,VertexVector,MESHTYPE,DEEP)            \
                                                                         \
         forAll(fvMsh, l)                                                \
         {                                                               \
@@ -183,18 +186,26 @@ int main(int argc, char *argv[])
 
     // Test colocated
 
-    TEST(colocated,1,false,false)
-    TEST(colocated,2,true,false)
-    TEST(colocated,3,false,true)
-    TEST(colocated,4,true,true)
+    TEST(colocated,1,false,false,true)
+    TEST(colocated,2,true,false,true)
+    TEST(colocated,3,false,true,true)
+    TEST(colocated,4,true,true,true)
+    TEST(colocated,1,false,false,false)
+    TEST(colocated,2,true,false,false)
+    TEST(colocated,3,false,true,false)
+    TEST(colocated,4,true,true,false)
 
     // Test staggered only on structures mesh
 
     if (fvMsh.structured())
     {
-        TEST(staggered,5,false,false)
-        TEST(staggered,6,true,false)
-        TEST(staggered,7,false,true)
-        TEST(staggered,8,true,true)
+        TEST(staggered,5,false,false,true)
+        TEST(staggered,6,true,false,true)
+        TEST(staggered,7,false,true,true)
+        TEST(staggered,8,true,true,true)
+        TEST(staggered,5,false,false,false)
+        TEST(staggered,6,true,false,false)
+        TEST(staggered,7,false,true,false)
+        TEST(staggered,8,true,true,false)
     }
 }

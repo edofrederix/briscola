@@ -17,14 +17,15 @@ namespace briscola
 namespace fv
 {
 
+class FFTPoissonSolver;
+
+namespace FFT
+{
+
 class tridiagonalSolver
 {
-    // Mesh
-    const fvMesh& fvMsh_;
-
-    // Direction in which to solve
-    // 0 = x, 1 = y, 2 = z
-    label solveDir_;
+    // FFT solver
+    FFTPoissonSolver& solver_;
 
     // FFT transformed directions
     label dir1_;
@@ -47,7 +48,7 @@ class tridiagonalSolver
     scalarList lambda2_;
 
     // Cell size arrays for each direction
-    const PtrList<scalarList> cellSizes_;
+    const PtrList<scalarList>& cellSizes_;
 
     // Diagonals
     scalarBlock D_;
@@ -62,14 +63,11 @@ class tridiagonalSolver
 
 public:
 
-    // Construct from dictionary
+    // Construct from FFT solver
     tridiagonalSolver
     (
-        const fvMesh& fvMsh,
-        label solveDir,
-        labelVector Nd,
-        labelVector Sd,
-        labelVector BC
+        FFTPoissonSolver& solver,
+        const labelVector& BC
     );
 
     // Destructor
@@ -78,27 +76,31 @@ public:
     // Solve tridiagonal system
     void solve
     (
-        scalarBlock& f,
         scalarBlock& p,
-        label start = 0
+        const scalarBlock& f,
+        const bool ddt,
+        const label start = 0
     );
 
     // Solve cyclic tridiagonal system
     void solveCyclic
     (
-        scalarBlock& f,
-        scalarBlock& p
+        scalarBlock& p,
+        const scalarBlock& f,
+        const bool ddt
     );
 
     // Solve x, y or z-direction of a scalarBlock
-    void solve(scalarBlock& xyzPencil);
+    void solve(scalarBlock& xyzPencil, const bool ddt);
 
 };
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}
+
+}
 
 #endif

@@ -37,7 +37,7 @@ inline scalar triArea
     const vector& c
 )
 {
-    return mag(triAreaVector(a,b,c));
+    return Foam::mag(triAreaVector(a,b,c));
 }
 
 }

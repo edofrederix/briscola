@@ -1,0 +1,3 @@
+Test-FFTPoissonSolverDdt.C
+
+EXE = build/Test-FFTPoissonSolverDdt
