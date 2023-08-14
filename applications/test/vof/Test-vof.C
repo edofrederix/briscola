@@ -3,6 +3,7 @@
 #include "fvMesh.H"
 #include "vof.H"
 
+#include "truncatedPiped.H"
 #include "truncatedHex.H"
 #include "SortableList.H"
 #include "constants.H"
@@ -11,7 +12,7 @@ using namespace Foam;
 using namespace briscola;
 using namespace fv;
 
-void testVolume(const vertexVector& v, const vector n)
+void testVolumeHex(const vertexVector& v, const vector n)
 {
     SortableList<scalar> V(8);
     scalarList C(8);
@@ -36,7 +37,7 @@ void testVolume(const vertexVector& v, const vector n)
 
         for (int j = 0; j <= N; j++)
         {
-            const scalar C = CMin + (CMax-CMin)*i/N;
+            const scalar C = CMin + (CMax-CMin)*j/N;
 
             truncatedHex thex(v,n,C);
 
@@ -51,7 +52,47 @@ void testVolume(const vertexVector& v, const vector n)
     }
 }
 
-void testRotatedVolumes(const vertexVector& v, const vector n)
+void testVolumePiped(const vertexVector& v, const vector n)
+{
+    SortableList<scalar> V(8);
+    scalarList C(8);
+
+    for (int i = 0; i < 8; i++)
+    {
+        C[i] = - (n & v[i]);
+        V[i] = truncatedPiped(v,n,C[i]).volume();
+    }
+
+    V.sort();
+
+    // Test for monotonicity of the solution in the C brackets
+
+    scalar Vi = -1;
+    const label N = 20;
+
+    for (int i = 1; i < 8; i++)
+    {
+        scalar CMin = C[V.indices()[i-1]];
+        scalar CMax = C[V.indices()[i]];
+
+        for (int j = 0; j <= N; j++)
+        {
+            const scalar C = CMin + (CMax-CMin)*j/N;
+
+            truncatedPiped thex(v,n,C);
+
+            const scalar VNew = thex.volume();
+
+            if (VNew - Vi < -1e-12)
+                FatalErrorInFunction
+                    << "Test 1 failed" << endl << abort(FatalError);
+
+            Vi = VNew;
+        }
+    }
+}
+
+void testRotatedVolumesHex(const vertexVector& v, const vector n)
 {
     const scalar theta = 5.0/360*2*Foam::constant::mathematical::pi;
 
@@ -68,7 +109,7 @@ void testRotatedVolumes(const vertexVector& v, const vector n)
 
     for (int i = 0; i < 72; i++)
     {
-        testVolume(hex, n);
+        testVolumeHex(hex, n);
 
         hex = (T & hex);
     }
@@ -86,7 +127,7 @@ void testRotatedVolumes(const vertexVector& v, const vector n)
 
     for (int i = 0; i < 72; i++)
     {
-        testVolume(hex, n);
+        testVolumeHex(hex, n);
 
         hex = (T & hex);
     }
@@ -104,7 +145,66 @@ void testRotatedVolumes(const vertexVector& v, const vector n)
 
     for (int i = 0; i < 72; i++)
     {
-        testVolume(hex, n);
+        testVolumeHex(hex, n);
+
+        hex = (T & hex);
+    }
+}
+
+void testRotatedVolumesPiped(const vertexVector& v, const vector n)
+{
+    const scalar theta = 5.0/360*2*Foam::constant::mathematical::pi;
+
+    // Rotate around x
+
+    tensor T
+    (
+        vector(1,0,0),
+        vector(0,Foam::cos(theta),-Foam::sin(theta)),
+        vector(0,Foam::sin(theta),Foam::cos(theta))
+    );
+
+    vertexVector hex = v;
+
+    for (int i = 0; i < 72; i++)
+    {
+        testVolumePiped(hex, n);
+
+        hex = (T & hex);
+    }
+
+    // Rotate around y
+
+    T = tensor
+    (
+        vector(Foam::cos(theta),0,Foam::sin(theta)),
+        vector(0,1,0),
+        vector(-Foam::sin(theta),0,Foam::cos(theta))
+    );
+
+    hex = v;
+
+    for (int i = 0; i < 72; i++)
+    {
+        testVolumePiped(hex, n);
+
+        hex = (T & hex);
+    }
+
+    // Rotate around z
+
+    T = tensor
+    (
+        vector(Foam::cos(theta),-Foam::sin(theta),0),
+        vector(Foam::sin(theta),Foam::cos(theta),0),
+        vector(0,0,1)
+    );
+
+    hex = v;
+
+    for (int i = 0; i < 72; i++)
+    {
+        testVolumePiped(hex, n);
 
         hex = (T & hex);
     }
@@ -150,7 +250,7 @@ void testLVE
 
         if (Foam::mag(fi - fj) > 1e-8)
             FatalErrorInFunction
-                << fi << " " << fj << " Test 2a failed" << endl << abort(FatalError);
+                << "Test 2a failed" << endl << abort(FatalError);
     }
 
     // Test inverse solution over C range
@@ -320,14 +420,23 @@ int main(int argc, char *argv[])
     {
         const vector n = ns[ni];
 
-        // Volume computation
+        // Volume computation (TruncatedHex)
 
-        testRotatedVolumes(unit, n);
-        testRotatedVolumes(skewed, n);
-        testRotatedVolumes(0.5*skewed, n);
-        testRotatedVolumes(stretch & general, n);
-        testRotatedVolumes(0.9*general, n);
-        testRotatedVolumes(0.1*general+unit, n);
+        testRotatedVolumesHex(unit, n);
+        testRotatedVolumesHex(skewed, n);
+        testRotatedVolumesHex(0.5*skewed, n);
+        testRotatedVolumesHex(stretch & general, n);
+        testRotatedVolumesHex(0.9*general, n);
+        testRotatedVolumesHex(0.1*general+unit, n);
+
+        // Volume computation (TruncatedPiped)
+
+        testRotatedVolumesPiped(unit, n);
+        testRotatedVolumesPiped(skewed, n);
+        testRotatedVolumesPiped(0.5*skewed, n);
+        testRotatedVolumesPiped(stretch & general, n);
+        testRotatedVolumesPiped(0.9*general, n);
+        testRotatedVolumesPiped(0.1*general+unit, n);
 
         // Local volume enforcement
 
@@ -378,5 +487,6 @@ int main(int argc, char *argv[])
                         << "Test 3 failed" << endl << abort(FatalError);
             }
         }
+
     }
 }
