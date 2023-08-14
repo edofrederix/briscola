@@ -95,7 +95,7 @@ public:
     // Eliminated boundary conditions
 
         // Eliminated ghosts for non-shifted boundaries. For shifted boundaries
-        // the values are set directly behaving like a slave boundary.
+        // the ghost value is not important.
         virtual bool eliminated(const bool shifted) const { return !shifted; }
 
         // Return the boundary coefficient for given level and direction

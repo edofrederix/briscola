@@ -101,7 +101,7 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
 
 staggeredFaceScalarField phi("phi", fvMsh);
 
-phi = Zero;
+phi = ex::faceFlux(U);
 
 // Stencils
 

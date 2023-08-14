@@ -172,10 +172,10 @@ tmp<block<Type>> NeumannBoundaryCondition<Type,MeshType>::boundarySources
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            const scalar delta =
+            const scalar twoDelta =
                 1.0/fdld(ijk)[fb] + 1.0/fdld(ijk)[fi];
 
-            R(ijk-S) = grad(ijk-S)*delta;
+            R(ijk-S) = grad(ijk-S)*twoDelta;
         }
     }
     else

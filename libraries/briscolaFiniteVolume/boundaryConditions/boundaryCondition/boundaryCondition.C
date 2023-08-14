@@ -429,7 +429,7 @@ void boundaryCondition<Type,MeshType>::correctSystem
                     for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
                     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                     {
-                        // Eliminate the boundary value
+                        // Eliminate dependence on the ghost
 
                         Ad(ijk) += Ad(ijk)[faceNum+1]*C;
                         bd(ijk) -= Ad(ijk)[faceNum+1]*B(ijk-S);
