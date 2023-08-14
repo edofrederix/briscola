@@ -84,11 +84,10 @@ void vof::updateFlux
                             );
                     }
 
-                    scalar fluxVolume;
-
-                    rectilinear_ ?
-                        fluxVolume = truncatedPiped(vertices,n(ijk),C).volume() :
-                        fluxVolume = truncatedHex(vertices,n(ijk),C).volume();
+                    scalar fluxVolume =
+                        rectilinear_
+                      ? truncatedPiped(vertices,n(ijk),C).volume()
+                      : truncatedHex(vertices,n(ijk),C).volume();
 
                     flux = fluxVolume/dt;
                 }

@@ -12,18 +12,18 @@ namespace fv
 
 truncatedPiped::truncatedPiped
 (
-    const vector& v_lba,
-    const vector& v_rba,
-    const vector& v_lta,
-    const vector& v_lbf,
+    const vector& lba,
+    const vector& rba,
+    const vector& lta,
+    const vector& lbf,
     const vector& n,
     const scalar& C
 )
 :
-    v_lba_(v_lba),
-    v_rba_(v_rba),
-    v_lta_(v_lta),
-    v_lbf_(v_lbf),
+    lba_(lba),
+    rba_(rba),
+    lta_(lta),
+    lbf_(lbf),
     n_(n),
     C_(C)
 {}
@@ -36,22 +36,22 @@ truncatedPiped::truncatedPiped
     const scalar& C
 )
 :
-    v_lba_(v.lba()),
-    v_rba_(v.rba()),
-    v_lta_(v.lta()),
-    v_lbf_(v.lbf()),
+    lba_(v.lba()),
+    rba_(v.rba()),
+    lta_(v.lta()),
+    lbf_(v.lbf()),
     n_(n),
     C_(C)
 {}
 
-truncatedPiped::truncatedPiped(const truncatedPiped& hx)
+truncatedPiped::truncatedPiped(const truncatedPiped& p)
 :
-    v_lba_(hx.v_lba_),
-    v_rba_(hx.v_rba_),
-    v_lta_(hx.v_lta_),
-    v_lbf_(hx.v_lbf_),
-    n_(hx.n_),
-    C_(hx.C_)
+    lba_(p.lba_),
+    rba_(p.rba_),
+    lta_(p.lta_),
+    lbf_(p.lbf_),
+    n_(p.n_),
+    C_(p.C_)
 {}
 
 truncatedPiped::~truncatedPiped()
@@ -59,7 +59,6 @@ truncatedPiped::~truncatedPiped()
 
 scalar truncatedPiped::volume() const
 {
-
     /*
 
     This function computes and returns the volume of the parallelepiped
@@ -69,7 +68,7 @@ scalar truncatedPiped::volume() const
 
     First the linear transform
 
-    x_old = v_.lba + T * x_new
+    x_old = lba + T * x_new
 
     projects the parallelepiped into the unit cube, then the algorithm in
     Scardovelli & Zaleski (2000) is used.
@@ -78,13 +77,13 @@ scalar truncatedPiped::volume() const
 
     const tensor T
     (
-        v_rba_ - v_lba_,
-        v_lta_ - v_lba_,
-        v_lbf_ - v_lba_
+        rba_ - lba_,
+        lta_ - lba_,
+        lbf_ - lba_
     );
 
     vector n = T & n_;
-    scalar C = C_ + (n_ & v_lba_);
+    scalar C = C_ + (n_ & lba_);
 
     for (int i = 0; i < 3; i++)
     {
@@ -114,16 +113,24 @@ scalar truncatedPiped::volume() const
 
     scalar m12 = m1 + m2;
     scalar V, mm;
-    bool flag = false;
 
-    if (C <= 0)
-        return scalingFactor;
-    else if (C >= 1)
-        return 0;
-    else if (C > 0.5)
+    if (C <= 0.0)
     {
-        C = 1 - C;
-        flag = true;
+        return scalingFactor;
+    }
+    else if (C >= 1.0)
+    {
+        return 0;
+    }
+
+    // Solve inverse problem for C > 0.5
+
+    bool inverse = false;
+
+    if (C > 0.5)
+    {
+        C = 1.0 - C;
+        inverse = true;
     }
 
     mm = Foam::min(m12, m3);
@@ -131,50 +138,57 @@ scalar truncatedPiped::volume() const
     // Small modification to prevent round off errors in some extreme cases
     // where m1 is close to 0.
 
-    if ((m2 <= C) & (C < mm) & ((m1/m2) < 1e-12))
+    if ((m2 <= C) && (C < mm) && ((m1/m2) < 1e-12))
     {
         m1 = 0;
         m12 = m2;
         mm = Foam::min(m12, m3);
     }
 
-
-    scalar v1 = Foam::sqr(m1) / Foam::max(6 * m2 * m3, 1e-50);
+    scalar v1 = Foam::sqr(m1) / Foam::max(6.0 * m2 * m3, 1e-50);
 
     if (C < m1)
     {
-        V = Foam::pow3(C) / (6 * m1 * m2 * m3);
+        V = Foam::pow3(C) / (6.0 * m1 * m2 * m3);
     }
     else if (C < m2)
     {
-        V = (C*(C - m1)) / (2*m2*m3) + v1;
+        V = (C*(C - m1)) / (2.0*m2*m3) + v1;
     }
     else if (C < mm)
     {
-        V = (Foam::sqr(C) * (3*m12 - C) + Foam::sqr(m1) * (m1 - 3*C) + Foam::sqr(m2) * (m2 - 3*C))
-            / (6*m1*m2*m3);
+        V =
+            (
+                Foam::sqr(C) * (3.0*m12 - C)
+              + Foam::sqr(m1) * (m1 - 3.0*C)
+              + Foam::sqr(m2) * (m2 - 3.0*C)
+            )
+          / (6*m1*m2*m3);
     }
     else if (m3 < m12)
     {
-        V = (Foam::sqr(C) * (3 - 2*C) + Foam::sqr(m1) * (m1 - 3*C)
-            + Foam::sqr(m2) * (m2 - 3*C) + Foam::sqr(m3) * (m3 - 3*C))
-            / (6*m1*m2*m3);
+        V =
+            (
+                Foam::sqr(C)  * (3.0 - 2.0*C)
+              + Foam::sqr(m1) * (m1 - 3.0*C)
+              + Foam::sqr(m2) * (m2 - 3.0*C)
+              + Foam::sqr(m3) * (m3 - 3.0*C)
+            )
+          / (6*m1*m2*m3);
     }
     else
     {
-        V = (2*C - m12) / (2*m3);
+        V = (2.0*C - m12) / (2.0*m3);
     }
 
-
-    if (flag)
+    if (inverse)
     {
-        return (V) * scalingFactor;
+        return V * scalingFactor;
     }
     else
     {
-        return (1-V) * scalingFactor;
+        return (1.0-V) * scalingFactor;
     }
-
 }
 
 }

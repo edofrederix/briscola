@@ -15,10 +15,10 @@ namespace fv
 class truncatedPiped
 {
     // Vertices
-    vector v_lba_;
-    vector v_rba_;
-    vector v_lta_;
-    vector v_lbf_;
+    vector lba_;
+    vector rba_;
+    vector lta_;
+    vector lbf_;
 
     // Plane normal
     vector n_;
@@ -34,10 +34,10 @@ public:
     // Construct from components
     truncatedPiped
     (
-        const vector& v_lba,
-        const vector& v_rba,
-        const vector& v_lta,
-        const vector& v_lbf,
+        const vector& lba,
+        const vector& rba,
+        const vector& lta,
+        const vector& lbf,
         const vector& n,
         const scalar& C
     );
@@ -63,10 +63,10 @@ public:
     virtual ~truncatedPiped();
 
     // Access to the vertices
-    inline vector v_lba() const { return v_lba_; }
-    inline vector v_rba() const { return v_rba_; }
-    inline vector v_lta() const { return v_lta_; }
-    inline vector v_lbf() const { return v_lbf_; }
+    inline vector lba() const { return lba_; }
+    inline vector rba() const { return rba_; }
+    inline vector lta() const { return lta_; }
+    inline vector lbf() const { return lbf_; }
 
     // Return the plane normal
     inline vector n() const { return n_; }

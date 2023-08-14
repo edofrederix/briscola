@@ -54,7 +54,8 @@ scalar LVE::solveBracketedLVE
             C = CMin + (Vf-VMin)/(VMax-VMin) * (CMax-CMin);
         }
 
-        rectilinear_ ? Vi = truncatedPiped(v,n,C).volume() : Vi = truncatedHex(v,n,C).volume();
+        Vi = truncatedHex(v,n,C).volume();
+
         pos = (Vi - VMin)/(VMax-VMin+1e-50);
 
         #ifdef FULLDEBUG

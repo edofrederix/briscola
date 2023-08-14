@@ -250,7 +250,7 @@ void testLVE
 
         if (Foam::mag(fi - fj) > 1e-8)
             FatalErrorInFunction
-                << fi << " " << fj << " Test 2a failed" << endl << abort(FatalError);
+                << "Test 2a failed" << endl << abort(FatalError);
     }
 
     // Test inverse solution over C range
