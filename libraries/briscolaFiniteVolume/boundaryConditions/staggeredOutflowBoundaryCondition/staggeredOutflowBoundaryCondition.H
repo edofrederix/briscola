@@ -5,6 +5,8 @@
 
 #include "block.H"
 
+// Non-eliminated zero-gradient boundary condition
+
 namespace Foam
 {
 

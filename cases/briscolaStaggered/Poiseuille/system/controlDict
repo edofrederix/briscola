@@ -19,7 +19,7 @@ deltaT          0.001;
 
 writeControl    adjustableRunTime;
 
-writeInterval   1;
+writeInterval   10;
 
 writeFormat     binary;
 
@@ -34,16 +34,3 @@ runTimeModifiable true;
 adjustTimeStep  true;
 
 maxCo           0.5;
-
-libs
-(
-    "code/libcode.so"
-);
-
-functions
-{
-    init
-    {
-        type    initialCondition;
-    }
-}
