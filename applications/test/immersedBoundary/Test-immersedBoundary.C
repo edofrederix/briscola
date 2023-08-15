@@ -227,4 +227,36 @@ int main(int argc, char *argv[])
     {
         Info << "IB wall distance test 6 successful!" << endl;
     }
+
+    // Line is parallel to cylinder axis and intersects end caps
+    c = vector(0.5,0.5,2);
+    nb = vector(0.5,0.5,0.5);
+
+    if (mag(cylinder3.wallDistance(c,nb) - 1) > 1e-5)
+    {
+        FatalError
+            << "IB wall distance test 7 failed."
+            << endl;
+        FatalError.exit();
+    }
+    else
+    {
+        Info << "IB wall distance test 7 successful!" << endl;
+    }
+
+    // Line intersects cylinder end cap
+    c = vector(0,1,2);
+    nb = vector(0,0,1);
+
+    if (mag(cylinder3.wallDistance(c,nb) - Foam::sqrt(2.0)) > 1e-5)
+    {
+        FatalError
+            << "IB wall distance test 8 failed."
+            << endl;
+        FatalError.exit();
+    }
+    else
+    {
+        Info << "IB wall distance test 8 successful!" << endl;
+    }
 }

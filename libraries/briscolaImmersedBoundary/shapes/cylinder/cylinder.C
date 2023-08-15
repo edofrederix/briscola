@@ -95,11 +95,36 @@ scalar cylinder::wallDistance(vector c, vector nb)
         return -1;
     }
 
+    // Cylinder axis
+    vector axis = end_ - start_;
+
     // Normalized direction vector of the line
     vector D = (nb-c)/mag(nb-c);
 
     // Normalized direction vector of the cylinder axis
-    vector C = (end_ - start_)/mag(end_ - start_);
+    vector C = axis/mag(axis);
+
+    // Project c onto the cylinder axis
+    vector cProj = start_ + ((c-start_) & axis) * axis
+        / (axis & axis);
+
+    // Project nb onto the cylinder axis
+    vector nbProj = start_ + ((nb-start_) & axis) * axis
+        / (axis & axis);
+
+    // First check if the line is aligned with the axis and
+    // only intersects at the end caps of the cylinder
+    if
+    (
+        (mag(c - cProj) == mag(nb - nbProj))
+        && (mag(c-cProj) < radius_)
+    )
+    {
+        scalar t1 = (c-start_) & C;
+        scalar t2 = (c-end_) & C;
+
+        return min(mag(t1), mag(t2));
+    }
 
     // Vector from line origin to cylinder origin
     vector w = (c - start_);
@@ -124,8 +149,33 @@ scalar cylinder::wallDistance(vector c, vector nb)
     }
     else
     {
+        // Intersection distances with infinite cylinder
         scalar t1 = (-y + sqrt(sqr(y)-4.0*x*z))/(2.0*x);
         scalar t2 = (-y - sqrt(sqr(y)-4.0*x*z))/(2.0*x);
+
+        // Intersection points
+        vector i1 = c + t1 * D;
+        vector i2 = c + t2 * D;
+
+        // Check whether intersection points are before cylinder start
+        if(((i1 - start_) & C) < 0)
+        {
+            t1 = ((start_-c) & C) / (D & C);
+        }
+        if(((i2 - start_) & C) < 0)
+        {
+            t2 = ((start_-c) & C) / (D & C);
+        }
+
+        // Check whether intersection points are after cylinder end
+        if(((i1 - start_) & C) > mag(axis))
+        {
+            t1 = ((end_-c) & C) / (D & C);
+        }
+        if(((i2 - start_) & C) > mag(axis))
+        {
+            t2 = ((end_-c) & C) / (D & C);
+        }
 
         return min(mag(t1), mag(t2));
     }

@@ -77,13 +77,11 @@ staggeredScalarField imSourceCoeff
 exSource = scalarList(solverDict.lookup("source"));
 imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
 
-// Solvers
-
 // Immersed boundary
 
-immersedBoundary<staggered> IB(solverDict, fvMsh);
+immersedBoundary<staggered> IBs(solverDict, fvMsh);
 
-// Solver equations
+// Solvers
 
 linearSystem<stencil,scalar,staggered> USys(U);
 

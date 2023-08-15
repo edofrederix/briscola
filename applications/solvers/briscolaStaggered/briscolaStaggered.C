@@ -63,17 +63,15 @@ int main(int argc, char *argv[])
         DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
-        // Solve predictor
-
         // Immersed boundary
 
         if (solverDict.found("ImmersedBoundary"))
         {
-            IB.penalization(USys);
-            IB.IBM(USys);
+            IBs.penalization(USys);
+            IBs.IBM(USys);
         }
 
-        // Solve momentum equation
+        // Solve predictor
 
         USolve->solve(USys);
 

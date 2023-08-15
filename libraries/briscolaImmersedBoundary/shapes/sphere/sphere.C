@@ -38,17 +38,20 @@ sphere::~sphere()
 
 bool sphere::isInside(vector point)
 {
-    // Check if point is in the plane between the two sphere ends then
-    // check f the distance to the sphere axis is smaller than the radius
+    // Check if distance from point to sphere center
+    // is smaller than the sphere's radius
     if(mag(center_ - point) <= radius_)
     {
         if(!inverted_)
         {
             return true;
         }
+        else
+        {
+            return false;
+        }
     }
-
-    if(!inverted_)
+    else if(!inverted_)
     {
         return false;
     }

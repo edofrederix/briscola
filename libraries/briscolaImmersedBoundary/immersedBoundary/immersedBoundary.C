@@ -11,6 +11,7 @@ namespace ibm
 
 using Foam::max;
 using Foam::min;
+using Foam::sqr;
 
 // Constructor
 
@@ -23,7 +24,7 @@ immersedBoundary<MeshType>::immersedBoundary
 :
     fvMsh_(fvMsh),
     mask_("mask", fvMsh_),
-    wallAdjMask_("wallAdjMask", fvMsh_),
+    wallAdjMask_("wallAdjMask", fvMsh_,IOobject::NO_READ,IOobject::AUTO_WRITE,true,true),
     wallDist_("wallDist", fvMsh_)
 {
     if (solverDict.found("ImmersedBoundary"))
@@ -116,6 +117,7 @@ immersedBoundary<MeshType>::immersedBoundary
 
                     mask_[l][d](i,j,k) = 0.0;
                     wallAdjMask_[l][d](i,j,k) = 0.0;
+                    wallDist_[l][d](i,j,k).center() = -1.0;
 
                     if (this->isInside(CC[l][d](i,j,k)))
                     {
@@ -125,112 +127,34 @@ immersedBoundary<MeshType>::immersedBoundary
                     {
                         vector c(CC[l][d](i,j,k));
 
-                        if
-                        (
-                            this->isInside(CC[l][d].B()(x-1,y,z))
-                        )
+                        for (int dir = 1; dir < 7; dir++)
                         {
-                            wallAdjMask_[l][d](i,j,k) = 1.0;
+                            // dir and faceOffsets are shifted by 1 due to
+                            // stencil starting with center coefficient
+                            const labelVector fo = faceOffsets[dir-1];
 
-                            vector nb(CC[l][d](i-1,j,k));
-                            scalar wd = this->wallDistance(c, nb);
-                            scalar xi = (mag(c-nb)-wd)/mag(c-nb);
+                            const labelVector xyzOffset =
+                                labelVector(x,y,z) + fo;
+                            const labelVector ijkOffset =
+                                labelVector(i,j,k) + fo;
 
-                            wallDist_[l][d](i,j,k).left() = xi;
-                        }
-                        else
-                        {
-                            wallDist_[l][d](i,j,k).left() = -1.0;
-                        }
+                            if
+                            (
+                                this->isInside(CC[l][d].B()(xyzOffset))
+                            )
+                            {
+                                wallAdjMask_[l][d](i,j,k) = 1.0;
 
-                        if
-                        (
-                            this->isInside(CC[l][d].B()(x,y-1,z))
-                        )
-                        {
-                            wallAdjMask_[l][d](i,j,k) = 1.0;
+                                vector nb(CC[l][d](ijkOffset));
+                                scalar wd = this->wallDistance(c, nb);
+                                scalar xi = (mag(c-nb)-wd)/mag(c-nb);
 
-                            vector nb(CC[l][d](i,j-1,k));
-                            scalar wd = this->wallDistance(c, nb);
-                            scalar xi = (mag(c-nb)-wd)/mag(c-nb);
-
-                            wallDist_[l][d](i,j,k).bottom() = xi;
-                        }
-                        else
-                        {
-                            wallDist_[l][d](i,j,k).bottom() = -1.0;
-                        }
-
-                        if
-                        (
-                            this->isInside(CC[l][d].B()(x,y,z-1))
-                        )
-                        {
-                            wallAdjMask_[l][d](i,j,k) = 1.0;
-
-                            vector nb(CC[l][d](i,j,k-1));
-                            scalar wd = this->wallDistance(c, nb);
-                            scalar xi = (mag(c-nb)-wd)/mag(c-nb);
-
-                            wallDist_[l][d](i,j,k).aft() = xi;
-                        }
-                        else
-                        {
-                            wallDist_[l][d](i,j,k).aft() = -1.0;
-                        }
-
-                        if
-                        (
-                            this->isInside(CC[l][d].B()(x+1,y,z))
-                        )
-                        {
-                            wallAdjMask_[l][d](i,j,k) = 1.0;
-
-                            vector nb(CC[l][d](i+1,j,k));
-                            scalar wd = this->wallDistance(c, nb);
-                            scalar xi = (mag(c-nb)-wd)/mag(c-nb);
-
-                            wallDist_[l][d](i,j,k).right() = xi;
-                        }
-                        else
-                        {
-                            wallDist_[l][d](i,j,k).right() = -1.0;
-                        }
-
-                        if
-                        (
-                            this->isInside(CC[l][d].B()(x,y+1,z))
-                        )
-                        {
-                            wallAdjMask_[l][d](i,j,k) = 1.0;
-
-                            vector nb(CC[l][d](i,j+1,k));
-                            scalar wd = this->wallDistance(c, nb);
-                            scalar xi = (mag(c-nb)-wd)/mag(c-nb);
-
-                            wallDist_[l][d](i,j,k).top() = xi;
-                        }
-                        else
-                        {
-                            wallDist_[l][d](i,j,k).top() = -1.0;
-                        }
-
-                        if
-                        (
-                            this->isInside(CC[l][d].B()(x,y,z+1))
-                        )
-                        {
-                            wallAdjMask_[l][d](i,j,k) = 1.0;
-
-                            vector nb(CC[l][d](i,j,k+1));
-                            scalar wd = this->wallDistance(c, nb);
-                            scalar xi = (mag(c-nb)-wd)/mag(c-nb);
-
-                            wallDist_[l][d](i,j,k).fore() = xi;
-                        }
-                        else
-                        {
-                            wallDist_[l][d](i,j,k).fore() = -1.0;
+                                wallDist_[l][d](i,j,k)[dir] = xi;
+                            }
+                            else
+                            {
+                                wallDist_[l][d](i,j,k)[dir] = -1.0;
+                            }
                         }
                     }
                 }
@@ -355,170 +279,126 @@ void immersedBoundary<MeshType>::IBM
             // Modify stencils in IB-adjacent cells
             if (wallAdjMask_[0][d](i,j,k) == 1)
             {
-                if (wallDist_[0][d](i,j,k).left() >= 0)
+                // Loop over stencil directions (skipping center)
+                for (int dir = 1; dir < 7; dir++)
                 {
-                    scalar xi = wallDist_[0][d](i,j,k).left();
+                    // dir and faceOffsets are shifted by 1 due to
+                    // stencil starting with center coefficient
+                    const label oppositeDir =
+                        faceNumber(-faceOffsets[dir-1]) + 1;
 
-                    scalar w0 = 2.0 /
-                        (
-                              (1.0 - xiStabilityFactor_)
-                            * (2.0 - xiStabilityFactor_)
-                        );
-                    scalar w1 = 2.0 - (2.0 - xi) * w0;
-                    scalar w2 = -1.0 + (1.0 - xi) * w0;
-
-                    if (xi < xiStabilityFactor_)
+                    if (wallDist_[0][d](i,j,k)[dir] >= 0)
                     {
-                        w1 = -2.0*xi/(1.0-xi);
-                        w2 = xi/(2.0-xi);
+                        scalar xi = wallDist_[0][d](i,j,k)[dir];
+
+                        scalar w0 = 2.0 /
+                            (
+                                (1.0 - xiStabilityFactor_)
+                                * (2.0 - xiStabilityFactor_)
+                            );
+                        scalar w1 = 2.0 - (2.0 - xi) * w0;
+                        scalar w2 = -1.0 + (1.0 - xi) * w0;
+
+                        if (xi < xiStabilityFactor_)
+                        {
+                            w1 = -2.0*xi/(1.0-xi);
+                            w2 = xi/(2.0-xi);
+                        }
+
+                        scalar a0 = ls.A()[0][d](i,j,k)[dir];
+
+                        ls.A()[0][d](i,j,k)[dir] = 0;
+
+                        ls.A()[0][d](i,j,k).center() += a0*w1;
+
+                        ls.A()[0][d](i,j,k)[oppositeDir] += a0*w2;
                     }
-
-                    scalar a0 = ls.A()[0][d](i,j,k).left();
-
-                    ls.A()[0][d](i,j,k).left() = 0;
-
-                    ls.A()[0][d](i,j,k).center() += a0*w1;
-
-                    ls.A()[0][d](i,j,k).right() += a0*w2;
-                }
-
-                if (wallDist_[0][d](i,j,k).bottom() >= 0)
-                {
-                    scalar xi = wallDist_[0][d](i,j,k).bottom();
-
-                    scalar w0 = 2.0 /
-                        (
-                              (1.0 - xiStabilityFactor_)
-                            * (2.0 - xiStabilityFactor_)
-                        );
-                    scalar w1 = 2.0 - (2.0 - xi) * w0;
-                    scalar w2 = -1.0 + (1.0 - xi) * w0;
-
-                    if (xi < xiStabilityFactor_)
-                    {
-                        w1 = -2.0*xi/(1.0-xi);
-                        w2 = xi/(2.0-xi);
-                    }
-
-                    scalar a0 = ls.A()[0][d](i,j,k).bottom();
-
-                    ls.A()[0][d](i,j,k).bottom() = 0;
-
-                    ls.A()[0][d](i,j,k).center() += a0*w1;
-
-                    ls.A()[0][d](i,j,k).top() += a0*w2;
-                }
-
-                if (wallDist_[0][d](i,j,k).aft() >= 0)
-                {
-                    scalar xi = wallDist_[0][d](i,j,k).aft();
-
-                    scalar w0 = 2.0 /
-                        (
-                              (1.0 - xiStabilityFactor_)
-                            * (2.0 - xiStabilityFactor_)
-                        );
-                    scalar w1 = 2.0 - (2.0 - xi) * w0;
-                    scalar w2 = -1.0 + (1.0 - xi) * w0;
-
-                    if (xi < xiStabilityFactor_)
-                    {
-                        w1 = -2.0*xi/(1.0-xi);
-                        w2 = xi/(2.0-xi);
-                    }
-
-                    scalar a0 = ls.A()[0][d](i,j,k).aft();
-
-                    ls.A()[0][d](i,j,k).aft() = 0;
-
-                    ls.A()[0][d](i,j,k).center() += a0*w1;
-
-                    ls.A()[0][d](i,j,k).fore() += a0*w2;
-                }
-
-                if (wallDist_[0][d](i,j,k).right() >= 0)
-                {
-                    scalar xi = wallDist_[0][d](i,j,k).right();
-
-                    scalar w0 = 2.0 /
-                        (
-                              (1.0 - xiStabilityFactor_)
-                            * (2.0 - xiStabilityFactor_)
-                        );
-                    scalar w1 = 2.0 - (2.0 - xi) * w0;
-                    scalar w2 = -1.0 + (1.0 - xi) * w0;
-
-                    if (xi < xiStabilityFactor_)
-                    {
-                        w1 = -2.0*xi/(1.0-xi);
-                        w2 = xi/(2.0-xi);
-                    }
-
-                    scalar a0 = ls.A()[0][d](i,j,k).right();
-
-                    ls.A()[0][d](i,j,k).right() = 0;
-
-                    ls.A()[0][d](i,j,k).center() += a0*w1;
-
-                    ls.A()[0][d](i,j,k).left() += a0*w2;
-                }
-
-                if (wallDist_[0][d](i,j,k).top() >= 0)
-                {
-                    scalar xi = wallDist_[0][d](i,j,k).top();
-
-                    scalar w0 = 2.0 /
-                        (
-                              (1.0 - xiStabilityFactor_)
-                            * (2.0 - xiStabilityFactor_)
-                        );
-                    scalar w1 = 2.0 - (2.0 - xi) * w0;
-                    scalar w2 = -1.0 + (1.0 - xi) * w0;
-
-                    if (xi < xiStabilityFactor_)
-                    {
-                        w1 = -2.0*xi/(1.0-xi);
-                        w2 = xi/(2.0-xi);
-                    }
-
-                    scalar a0 = ls.A()[0][d](i,j,k).top();
-
-                    ls.A()[0][d](i,j,k).top() = 0;
-
-                    ls.A()[0][d](i,j,k).center() += a0*w1;
-
-                    ls.A()[0][d](i,j,k).bottom() += a0*w2;
-                }
-
-                if (wallDist_[0][d](i,j,k).fore() >= 0)
-                {
-                    scalar xi = wallDist_[0][d](i,j,k).fore();
-
-                    scalar w0 = 2.0 /
-                        (
-                              (1.0 - xiStabilityFactor_)
-                            * (2.0 - xiStabilityFactor_)
-                        );
-                    scalar w1 = 2.0 - (2.0 - xi) * w0;
-                    scalar w2 = -1.0 + (1.0 - xi) * w0;
-
-                    if (xi < xiStabilityFactor_)
-                    {
-                        w1 = -2.0*xi/(1.0-xi);
-                        w2 = xi/(2.0-xi);
-                    }
-
-                    scalar a0 = ls.A()[0][d](i,j,k).fore();
-
-                    ls.A()[0][d](i,j,k).fore() = 0;
-
-                    ls.A()[0][d](i,j,k).center() += a0*w1;
-
-                    ls.A()[0][d](i,j,k).aft() += a0*w2;
                 }
             }
         }
     }
+}
+
+template<class MeshType>
+tmp<colocatedScalarField> immersedBoundary<MeshType>::exPCorr
+(
+    colocatedScalarField& p
+)
+{
+    tmp<colocatedScalarField> tpCorr
+    (
+        new colocatedScalarField
+        (
+            "tpCorr",
+            p.fvMsh()
+        )
+    );
+
+    colocatedScalarField& pCorr = tpCorr.ref();
+
+    const PtrList<scalarList>& cellSizes
+    (
+        p.fvMsh().msh().cast<rectilinearMesh>().globalCellSizes()
+    );
+
+    forAllCells(pCorr[0][0], i, j, k)
+    {
+        pCorr[0][0](i,j,k) = 0;
+
+        // Modify stencils in IB-adjacent cells
+        if (wallAdjMask_[0][0](i,j,k) == 1)
+        {
+            if (wallDist_[0][0](i,j,k).left() >= 0)
+            {
+                pCorr[0][0](i,j,k) += p[0][0](i,j,k)
+                    / sqr(cellSizes[0][i]);
+                pCorr[0][0](i,j,k) -= p[0][0](i-1,j,k)
+                    / sqr(cellSizes[0][i]);
+            }
+
+            if (wallDist_[0][0](i,j,k).bottom() >= 0)
+            {
+                pCorr[0][0](i,j,k) += p[0][0](i,j,k)
+                    / sqr(cellSizes[1][j]);
+                pCorr[0][0](i,j,k) -= p[0][0](i,j-1,k)
+                    / sqr(cellSizes[1][j]);
+            }
+
+            if (wallDist_[0][0](i,j,k).aft() >= 0)
+            {
+                pCorr[0][0](i,j,k) += p[0][0](i,j,k)
+                    / sqr(cellSizes[2][k]);
+                pCorr[0][0](i,j,k) -= p[0][0](i,j,k-1)
+                    / sqr(cellSizes[2][k]);
+            }
+
+            if (wallDist_[0][0](i,j,k).right() >= 0)
+            {
+                pCorr[0][0](i,j,k) += p[0][0](i,j,k)
+                    / sqr(cellSizes[0][i]);
+                pCorr[0][0](i,j,k) -= p[0][0](i+1,j,k)
+                    / sqr(cellSizes[0][i]);
+            }
+
+            if (wallDist_[0][0](i,j,k).top() >= 0)
+            {
+                pCorr[0][0](i,j,k) += p[0][0](i,j,k)
+                    / sqr(cellSizes[1][j]);
+                pCorr[0][0](i,j,k) -= p[0][0](i,j+1,k)
+                    / sqr(cellSizes[1][j]);
+            }
+
+            if (wallDist_[0][0](i,j,k).fore() >= 0)
+            {
+                pCorr[0][0](i,j,k) += p[0][0](i,j,k)
+                    / sqr(cellSizes[2][k]);
+                pCorr[0][0](i,j,k) -= p[0][0](i,j,k+1)
+                    / sqr(cellSizes[2][k]);
+            }
+        }
+    }
+
+    return tpCorr;
 }
 
 defineTemplateTypeNameAndDebug(immersedBoundary<colocated>, 0);

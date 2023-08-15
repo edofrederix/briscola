@@ -9,6 +9,8 @@
 #include "fvMeshMetrics.H"
 #include "meshField.H"
 #include "linearSystem.H"
+#include "rectilinearMesh.H"
+#include "blockUtils.H"
 
 namespace Foam
 {
@@ -74,6 +76,9 @@ public:
 
     // Apply immersed boundary method for Dirichlet BC to a linear system
     void IBM(linearSystem<stencil,scalar,MeshType>&);
+
+    // Explicit pressure stencil correction for FFT solver
+    tmp<colocatedScalarField> exPCorr(colocatedScalarField&);
 
 };
 
