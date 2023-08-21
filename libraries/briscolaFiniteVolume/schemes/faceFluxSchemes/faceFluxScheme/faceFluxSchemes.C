@@ -3,6 +3,9 @@
 
 #include "midPointFaceFluxScheme.H"
 
+// Also compile non-templated faceFluxScheme
+#include "faceFluxScheme.C"
+
 namespace Foam
 {
 
