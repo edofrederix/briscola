@@ -77,6 +77,9 @@ public:
     // Apply immersed boundary method for Dirichlet BC to a linear system
     void IBM(linearSystem<stencil,scalar,MeshType>&);
 
+    // Implicit pressure correction based on staircase approximation
+    void imPCorr(linearSystem<stencil,scalar,MeshType>&);
+
     // Explicit pressure stencil correction for FFT solver
     tmp<colocatedScalarField> exPCorr(colocatedScalarField&);
 

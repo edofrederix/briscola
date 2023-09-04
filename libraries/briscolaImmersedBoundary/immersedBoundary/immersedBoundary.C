@@ -24,7 +24,7 @@ immersedBoundary<MeshType>::immersedBoundary
 :
     fvMsh_(fvMsh),
     mask_("mask", fvMsh_),
-    wallAdjMask_("wallAdjMask", fvMsh_,IOobject::NO_READ,IOobject::AUTO_WRITE,true,true),
+    wallAdjMask_("wallAdjMask", fvMsh_),
     wallDist_("wallDist", fvMsh_)
 {
     if (solverDict.found("ImmersedBoundary"))
@@ -305,13 +305,44 @@ void immersedBoundary<MeshType>::IBM
                             w2 = xi/(2.0-xi);
                         }
 
-                        scalar a0 = ls.A()[0][d](i,j,k)[dir];
+                        const scalar a0 = ls.A()[0][d](i,j,k)[dir];
 
                         ls.A()[0][d](i,j,k)[dir] = 0;
 
                         ls.A()[0][d](i,j,k).center() += a0*w1;
 
                         ls.A()[0][d](i,j,k)[oppositeDir] += a0*w2;
+                    }
+                }
+            }
+        }
+    }
+}
+
+template<class MeshType>
+void immersedBoundary<MeshType>::imPCorr
+(
+    linearSystem<stencil,scalar,MeshType>& ls
+)
+{
+    // We only apply the IBM on the finest mesh (l == 0)
+    forAll(ls.A()[0], d)
+    {
+        forAllCells(ls.A()[0][d], i, j, k)
+        {
+            // Modify stencils in IB-adjacent cells
+            if (wallAdjMask_[0][d](i,j,k) == 1)
+            {
+                // Loop over stencil directions (skipping center)
+                for (int dir = 1; dir < 7; dir++)
+                {
+                    if (wallDist_[0][d](i,j,k)[dir] >= 0)
+                    {
+                        const scalar a = ls.A()[0][d](i,j,k)[dir];
+
+                        ls.A()[0][d](i,j,k)[dir] = 0;
+
+                        ls.A()[0][d](i,j,k).center() += a;
                     }
                 }
             }
