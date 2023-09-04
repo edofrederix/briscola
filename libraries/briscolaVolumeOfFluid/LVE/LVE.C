@@ -1,6 +1,7 @@
 #include "LVE.H"
 #include "vof.H"
 #include "truncatedHex.H"
+#include "truncatedPiped.H"
 #include "SortableList.H"
 
 namespace Foam
@@ -54,6 +55,7 @@ scalar LVE::solveBracketedLVE
         }
 
         Vi = truncatedHex(v,n,C).volume();
+
         pos = (Vi - VMin)/(VMax-VMin+1e-50);
 
         #ifdef FULLDEBUG

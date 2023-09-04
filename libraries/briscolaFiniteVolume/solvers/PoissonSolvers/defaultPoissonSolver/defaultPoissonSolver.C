@@ -65,6 +65,8 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
         sys -= im::ddt(x);
     }
 
+    sys.correctBoundaries();
+
     solverPtr_->solve(sys);
 }
 

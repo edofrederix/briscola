@@ -69,8 +69,4 @@ public:
 
 }
 
-#ifdef NoRepository
-    #include "faceFluxScheme.C"
-#endif
-
 #endif

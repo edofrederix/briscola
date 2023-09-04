@@ -63,6 +63,8 @@ int main(int argc, char *argv[])
         DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
+        USys.correctBoundaries();
+
         // Immersed boundary
 
         if (solverDict.found("ImmersedBoundary"))
