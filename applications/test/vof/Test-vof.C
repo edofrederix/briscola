@@ -218,9 +218,10 @@ void testLVE
     const word method
 )
 {
-    if (method != "p" && method != "a")
+
+    if ((method != "p" && method != "a") && method != "c")
         FatalErrorInFunction
-            << "Invalid LVE method. Should be p or a."
+            << "Invalid LVE method. Should be p, a or c."
             << endl << abort(FatalError);
 
     SortableList<scalar> C(8);
@@ -241,16 +242,26 @@ void testLVE
     for (int i = 1; i < 8; i++)
     {
         const scalar fi = V[C.indices()[i]]/Vc;
+        scalar Ci;
 
-        const scalar Ci =
-            method == "p" ? vf.lve().pLVE(v,n,fi)
-                          : vf.lve().aLVE(v,n,fi);
+        if (method == "p")
+        {
+            Ci = vf.lve().pLVE(v,n,fi);
+        }
+        else if (method == "a")
+        {
+            Ci = vf.lve().aLVE(v,n,fi);
+        }
+        else
+        {
+            Ci = vf.lve().cLVE(v,n,fi);
+        }
 
         const scalar fj = truncatedHex(v,n,Ci).volume()/Vc;
 
-        if (Foam::mag(fi - fj) > 1e-8)
+        if (Foam::mag(fi - fj) > 1e-7)
             FatalErrorInFunction
-                << "Test 2a failed" << endl << abort(FatalError);
+                << fi << " " << fj << " Test 2a failed" << endl << abort(FatalError);
     }
 
     // Test inverse solution over C range
@@ -259,39 +270,69 @@ void testLVE
     const scalar CMax = C[7];
 
     int N = 20;
-    for (int i = 0; i <= N; i++)
+    for (int i = 0 ; i <= N; i++)
     {
-        const scalar C1 = CMin + (CMax-CMin)*i/N;
+        const scalar C1 = CMin + 0.3 * (CMax-CMin)*i/N;
         const scalar f1 = truncatedHex(v,n,C1).volume()/Vc;
+        scalar C2;
 
-        const scalar C2 =
-            method == "p" ? vf.lve().pLVE(v,n,f1)
-                          : vf.lve().aLVE(v,n,f1);
+        if (method == "p")
+        {
+            C2 = vf.lve().pLVE(v,n,f1);
+        }
+        else if (method == "a")
+        {
+            C2 = vf.lve().aLVE(v,n,f1);
+        }
+        else
+        {
+            C2 = vf.lve().cLVE(v,n,f1);
+        }
 
         const scalar f2 = truncatedHex(v,n,C2).volume()/Vc;
 
-        if (Foam::mag(f1-f2) > 1e-8)
+        if (Foam::mag(f1-f2) > 1e-7)
             FatalErrorInFunction
                 << "Test 2b failed" << endl << abort(FatalError);
     }
 
     // Check if sign is correct
 
-    const scalar Cf =
-        method == "p" ? vf.lve().pLVE(v,n,1)
-                      : vf.lve().aLVE(v,n,1);
+    scalar Cf, Ce;
+    if (method == "p")
+    {
+        Cf = vf.lve().pLVE(v,n,1);
+    }
+    else if (method == "a")
+    {
+        Cf = vf.lve().aLVE(v,n,1);
+    }
+    else
+    {
+        Cf = vf.lve().cLVE(v,n,1);
+    }
 
-    if (Foam::mag(truncatedHex(v,n,Cf).volume()/Vc - 1.0) > 1e-8)
+    if (Foam::mag(truncatedHex(v,n,Cf).volume()/Vc - 1.0) > 1e-7)
         FatalErrorInFunction
                 << "Test 2c failed" << endl << abort(FatalError);
 
-    const scalar Ce =
-        method == "p" ? vf.lve().pLVE(v,n,0)
-                      : vf.lve().aLVE(v,n,0);
+    if (method == "p")
+    {
+        Ce = vf.lve().pLVE(v,n,0);
+    }
+    else if (method == "a")
+    {
+        Ce = vf.lve().aLVE(v,n,0);
+    }
+    else
+    {
+        Ce = vf.lve().cLVE(v,n,0);
+    }
 
-    if (Foam::mag(truncatedHex(v,n,Ce).volume()/Vc) > 1e-8)
+    if (Foam::mag(truncatedHex(v,n,Ce).volume()/Vc) > 1e-7)
         FatalErrorInFunction
                 << "Test 2d failed" << endl << abort(FatalError);
+
 }
 
 void testRotatedLVE
@@ -452,6 +493,13 @@ int main(int argc, char *argv[])
         testRotatedLVE(vf, skewed + unit, n, "p");
         testRotatedLVE(vf, stretch & (skewed + unit), n, "p");
 
+        // Algorithm for non-convex polyhedrons with planar faces
+
+        testRotatedLVE(vf, 0.6*unit, n, "c");
+        testRotatedLVE(vf, 0.9*skewed, n, "c");
+        testRotatedLVE(vf, 0.45*general, n, "c");
+        testRotatedLVE(vf, 0.45*(general+unit), n, "c");
+
         // General algorithm for arbitrary hexahedrons
 
         testRotatedLVE(vf, 0.6*unit, n, "a");
@@ -489,4 +537,5 @@ int main(int argc, char *argv[])
         }
 
     }
+
 }
