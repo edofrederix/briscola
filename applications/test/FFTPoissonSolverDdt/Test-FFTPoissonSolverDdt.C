@@ -19,7 +19,7 @@ bool check
     labelVector Nf(x[0][0].B().shape());
     labelVector N(x.fvMsh().msh().cast<rectilinearMesh>().N());
 
-    const PtrList<scalarList>& cellSizes
+    const PtrList<PartialList<scalar>>& cellSizes
         = fvMsh.msh().cast<rectilinearMesh>().globalCellSizes();
 
     labelVector Si =
