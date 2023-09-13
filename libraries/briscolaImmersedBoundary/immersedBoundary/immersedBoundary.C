@@ -39,19 +39,19 @@ immersedBoundary<MeshType>::immersedBoundary
         {
             WarningInFunction
                 << "Stability factor for immersed boundary"
-                << " set to 0 (0 <= stability factor <= 0.99)"
+                << " set to 0 (0 <= stability factor <= 0.999)"
                 << endl;
 
             xiStabilityFactor_ = 0;
         }
-        else if (xiStabilityFactor_ > 0.99)
+        else if (xiStabilityFactor_ > 0.999)
         {
             WarningInFunction
                 << "Stability factor for immersed boundary"
-                << " set to 0.99 (0 <= stability factor <= 0.99)"
+                << " set to 0.99 (0 <= stability factor <= 0.999)"
                 << endl;
 
-            xiStabilityFactor_ = 0.99;
+            xiStabilityFactor_ = 0.999;
         }
 
         // Add shapes to IB according to dictionary entries
@@ -117,7 +117,7 @@ immersedBoundary<MeshType>::immersedBoundary
 
                     mask_[l][d](i,j,k) = 0.0;
                     wallAdjMask_[l][d](i,j,k) = 0.0;
-                    wallDist_[l][d](i,j,k).center() = -1.0;
+                    wallDist_[l][d](i,j,k) = -1.0;
 
                     if (this->isInside(CC[l][d](i,j,k)))
                     {
@@ -135,8 +135,6 @@ immersedBoundary<MeshType>::immersedBoundary
 
                             const labelVector xyzOffset =
                                 labelVector(x,y,z) + fo;
-                            const labelVector ijkOffset =
-                                labelVector(i,j,k) + fo;
 
                             if
                             (
@@ -145,7 +143,7 @@ immersedBoundary<MeshType>::immersedBoundary
                             {
                                 wallAdjMask_[l][d](i,j,k) = 1.0;
 
-                                vector nb(CC[l][d](ijkOffset));
+                                vector nb(CC[l][d].B()(xyzOffset));
                                 scalar wd = this->wallDistance(c, nb);
                                 scalar xi = (mag(c-nb)-wd)/mag(c-nb);
 

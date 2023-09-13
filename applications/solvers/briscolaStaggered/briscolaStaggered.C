@@ -70,7 +70,15 @@ int main(int argc, char *argv[])
         if (solverDict.found("ImmersedBoundary"))
         {
             IBs.penalization(USys);
-            IBs.IBM(USys);
+
+            if
+            (
+                word(solverDict.subDict("ImmersedBoundary")
+                    .lookup("method")) == "IBM"
+            )
+            {
+                IBs.IBM(USys);
+            }
         }
 
         // Solve predictor
@@ -79,7 +87,17 @@ int main(int argc, char *argv[])
 
         // Pressure equation
 
-        Poisson->solve(p, -ex::coloDiv(U)/deltaT);
+        // if (solverDict.found("ImmersedBoundary"))
+        // {
+        //     for (int iter = 0; iter < 2; iter++)
+        //     {
+        //         Poisson->solve(p, -ex::coloDiv(U)/deltaT - IBc.exPCorr(p));
+        //     }
+        // }
+        // else
+        // {
+            Poisson->solve(p, -ex::coloDiv(U)/deltaT);
+        // }
 
         // Correction
 
