@@ -47,6 +47,16 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
     colocatedVectorDirection& n = tn.ref()[0][0];
 
+    tmp<colocatedVectorField> tn_new
+    (
+        new colocatedVectorField(
+            "new_normal",
+            vf_.fvMsh()
+        )
+    );
+
+    colocatedVectorDirection& n_new = tn_new.ref()[0][0];
+
     colocatedScalarDirection alpha = vf_.alpha()[0][0];
     const colocatedVertexVectorDirection& v =
         vf_.fvMsh().template
@@ -64,6 +74,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
     );
 
     colocatedVectorDirection& xgi = xn.ref()[0][0];
+    const scalar angle_tol = Foam::cos(1e-6);
 
     /*
 
@@ -143,17 +154,19 @@ tmp<colocatedVectorField> LSFIR::operator()()
         {6, 5, 7, 6, 5}
     };
     int originalNf = 12;
-    int maxIterNumber = 4;
-    bool updatedNormals = false;
+    int maxIterNumber = 10;
+    int updatedNormals = 0;
 
     for (int iter = 0; iter < maxIterNumber; iter ++)
     {
-        if (updatedNormals)
+        reduce(updatedNormals, maxOp<int>());
+
+        if (updatedNormals == 1)
         {
             break;
         }
 
-        updatedNormals = true;
+        updatedNormals = 1;
 
         forAllCells(n, i, j, k)
         {
@@ -454,8 +467,26 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
                     if (xgi(i,j,k)[1] != xgi(i,j,k)[1])
                     {
-                    FatalErrorInFunction
-                        <<  "LSFIR: geometric center computation failed." << endl << abort(FatalError);
+                        FatalErrorInFunction << "check" << endl
+                            << "alpha" << endl
+                            <<  alpha(i,j,k) << endl
+                            << "center" << endl
+                            << xgi(i,j,k) << endl
+                            << "normal" << endl
+                            << n(i,j,k) << endl
+                            << maxNormalIndex << endl
+                            << "x0" << endl
+                            << x0 << endl
+                            << IA[0] << " " << IA[1] << " " << IA[2] << " " << IA[3] << " " <<
+                            IA[4] << " " << IA[5] << " " << IA[6] << " " << IA[7] << " " << endl
+                            << IPV1[originalNf][1] << " " << IPV1[originalNf][2] << " " << IPV1[originalNf][3] << " " <<
+                            IPV1[originalNf][4] << " " << IPV1[originalNf][5] << " " << IPV1[originalNf][6] << " " <<
+                            IPV1[originalNf][7] << " " << IPV1[originalNf][8] << " " << IPV1[originalNf][9] << endl
+                            << insertedVertex[0][0] << " " << insertedVertex[0][1] << " " << insertedVertex[0][2] << endl
+                            << insertedVertex[1][0] << " " << insertedVertex[1][1] << " " << insertedVertex[1][2] << endl
+                            << insertedVertex[2][0] << " " << insertedVertex[2][1] << " " << insertedVertex[2][2] << endl
+                            << insertedVertex[3][0] << " " << insertedVertex[3][1] << " " << insertedVertex[3][2] << endl
+                            << endl << abort(FatalError);
                     }
                 }
                 else
@@ -499,7 +530,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
             }
         }
 
-        xn.ref()[0].correctBoundaryConditions(true);
+        xn.ref()[0].correctBoundaryConditions();
 
         forAllCells(n, i, j, k)
         {
@@ -531,6 +562,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
                     value = Foam::mag(n(i,j,k)[2]);
                 }
 
+                int nNeighs = 0;
+
                 for (int aux1 = 0; aux1 < 3; aux1++)
                 {
                     for (int aux2 = 0; aux2 < 3; aux2++)
@@ -540,7 +573,10 @@ tmp<colocatedVectorField> LSFIR::operator()()
                             if (
                                 (alpha(i+aux1-1,j+aux2-1,k+aux3-1) > 1e-12) &&
                                 (alpha(i+aux1-1,j+aux2-1,k+aux3-1) < 1 - 1e-12) &&
-                                ((aux1 != 1) || (aux2 != 1) || (aux3 != 1))
+                                ((aux1 != 1) || (aux2 != 1) || (aux3 != 1)) &&
+                                ((i+aux1-1) >= n.I().left()) && ((i+aux1-1) < n.I().right()) &&
+                                ((j+aux2-1) >= n.I().bottom()) && ((j+aux2-1) < n.I().top()) &&
+                                ((k+aux3-1) >= n.I().aft()) && ((k+aux3-1) < n.I().fore())
                                 )
                             {
                                 scalar angle = (n(i+aux1-1,j+aux2-1,k+aux3-1) & n(i,j,k))
@@ -548,15 +584,14 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
                                 if (angle > Foam::cos(0.25 * Foam::constant::mathematical::pi))
                                 {
-                                    wi = (1.0)/Foam::pow(Foam::mag(xgi(i+aux1-1,j+aux2-1,k+aux3-1)-xgi(i,j,k)),2.5);
-                                    A[0][0] += wi*Foam::sqr(xgi(i+aux1-1,j+aux2-1,k+aux3-1)[d2] - xgi(i,j,k)[d2]);
-                                    A[0][1] += wi*(xgi(i+aux1-1,j+aux2-1,k+aux3-1)[d2] - xgi(i,j,k)[d2])
-                                        *(xgi(i+aux1-1,j+aux2-1,k+aux3-1)[d3] - xgi(i,j,k)[d3]);
-                                    A[1][1] += wi*Foam::sqr(xgi(i+aux1-1,j+aux2-1,k+aux3-1)[d3] - xgi(i,j,k)[d3]);
-                                    b[0] += wi*(xgi(i+aux1-1,j+aux2-1,k+aux3-1)[d2] - xgi(i,j,k)[d2])
-                                        *(xgi(i+aux1-1,j+aux2-1,k+aux3-1)[d1] - xgi(i,j,k)[d1]);
-                                    b[1] += wi*(xgi(i+aux1-1,j+aux2-1,k+aux3-1)[d3] - xgi(i,j,k)[d3])
-                                        *(xgi(i+aux1-1,j+aux2-1,k+aux3-1)[d1] - xgi(i,j,k)[d1]);
+                                    vector dist = xgi(i+aux1-1,j+aux2-1,k+aux3-1)-xgi(i,j,k);
+                                    wi = (1.0)/Foam::max(1e-20,Foam::pow(Foam::mag(dist),2.5));
+                                    A[0][0] += wi*Foam::sqr(dist[d2]);
+                                    A[0][1] += wi*(dist[d2]) * (dist[d3]);
+                                    A[1][1] += wi*Foam::sqr(dist[d3]);
+                                    b[0] += - wi*(dist[d2]) * (dist[d1]);
+                                    b[1] += - wi*(dist[d3]) * (dist[d1]);
+                                    nNeighs++;
                                 }
                             }
                         }
@@ -567,20 +602,96 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
                 vector nc;
 
-                if ((A[0][0] * A[1][1] - A[0][1] * A[1][0]) != 0)
+                if (nNeighs > 0)
                 {
-                    nc[d1] = n(i,j,k)[d1] > 0 ? 1 : -1;
-                    nc[d2] = (A[1][1] * b[0] - A[0][1] * b[1]) / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
-                    nc[d3] = (- A[1][0] * b[0] + A[0][0] * b[1]) / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
+                    if ((A[0][0] == 0.0 && A[1][1] != 0) || (Foam::mag(A[0][0]/A[1][1]) < 1e-12))
+                    {
+                        nc[d2] = 0.0;
+                        nc[d3] = b[1] / A[1][1];
+                    }
+                    else if ((A[0][0] != 0.0 && A[1][1] == 0) || (Foam::mag(A[1][1]/A[0][0]) < 1e-12))
+                    {
+                        nc[d3] = 0.0;
+                        nc[d2] = b[0] / A[0][0];
+                    }
+                    else if ((A[0][0] * A[1][1] - A[0][1] * A[1][0]) != 0)
+                    {
+                        nc[d2] = (A[1][1] * b[0] - A[0][1] * b[1]) / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
+                        nc[d3] = (- A[1][0] * b[0] + A[0][0] * b[1]) / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
+                    }
+                    else
+                    {
+                        nc = n(i,j,k);
+                    }
+
+                    if (n(i,j,k)[d1] < 0)
+                    {
+                        nc[d1] = - 1.0;
+                        nc[d2] = - nc[d2];
+                        nc[d3] = - nc[d3];
+                    }
+                    else
+                    {
+                        nc[d1] = 1.0;
+                    }
+
+
                     nc /= Foam::mag(nc);
                     scalar angle = (nc & n(i,j,k))
                                     / (Foam::mag(nc) * Foam::mag(n(i,j,k)));
-                    if (angle > Foam::cos((1.0 / 6.0) * Foam::constant::mathematical::pi / double(iter)))
+
+                    if (angle > Foam::cos(0.166 * Foam::constant::mathematical::pi / double(iter + 1)))
                     {
-                        n(i,j,k) = nc;
-                        updatedNormals = false;
+                        n_new(i,j,k) = nc;
+                        if (angle < angle_tol)
+                            updatedNormals = 0;
+                    }
+                    else
+                    {
+                        n_new(i,j,k) = n(i,j,k);
                     }
                 }
+                else
+                {
+                    n_new(i,j,k) = n(i,j,k);
+                }
+
+                /*
+                if (nNeighs > 1)
+                {
+                    FatalErrorInFunction << "check" << endl
+                    << "alpha" << endl
+                    << alpha(i-1,j,k-1) << " " << alpha(i,j,k-1) << " " << alpha(i+1,j,k-1) << endl
+                    << alpha(i-1,j,k) << " " << alpha(i,j,k) << " " << alpha(i+1,j,k) << endl
+                    << alpha(i-1,j,k+1) << " " << alpha(i,j,k+1) << " " << alpha(i+1,j,k+1) << endl
+                    << "center" << endl
+                    << xgi(i-1,j,k-1) << " " << xgi(i,j,k-1) << " " << xgi(i+1,j,k-1) << endl
+                    << xgi(i-1,j,k) << " " << xgi(i,j,k) << " " << xgi(i+1,j,k) << endl
+                    << xgi(i-1,j,k+1) << " " << xgi(i,j,k+1) << " " << xgi(i+1,j,k+1) << endl
+                    << "dists" << endl
+                    << xgi(i-1,j,k-1) - xgi(i,j,k) << " " << xgi(i,j,k-1) - xgi(i,j,k) << " " << xgi(i+1,j,k-1) - xgi(i,j,k) << endl
+                    << xgi(i-1,j,k) - xgi(i,j,k) << " " << xgi(i,j,k) - xgi(i,j,k) << " " << xgi(i+1,j,k) - xgi(i,j,k) << endl
+                    << xgi(i-1,j,k+1) - xgi(i,j,k) << " " << xgi(i,j,k+1) - xgi(i,j,k) << " " << xgi(i+1,j,k+1) - xgi(i,j,k) << endl
+                    << "normal" << endl
+                    << n(i-1,j,k-1) << " " << n(i,j,k-1) << " " << n(i+1,j,k-1) << endl
+                    << n(i-1,j,k) << " " << n(i,j,k) << " " << n(i+1,j,k) << endl
+                    << n(i-1,j,k+1) << " " << n(i,j,k+1) << " " << n(i+1,j,k+1) << endl
+                    << "ds" << endl
+                    << d1 << " " << d2 << " " << d3 << endl
+                    << "A" << endl
+                    << A[0][0] << " " << A[0][1] << endl
+                    << A[1][0] << " " << A[1][1] << endl
+                    << "b" << endl
+                    << b[0] << " " << b[1] << endl
+                    << "Solution" << endl
+                    << nc << " " << n_new(i,j,k) << endl
+                    << "loc" << endl
+                    << "i" << i << " " << n.I().left() << " " << n.I().right() << endl
+                    << "j" << j << " " << n.I().bottom() << " " << n.I().top() << endl
+                    << "k" << k << " " << n.I().aft() << " " << n.I().fore() << endl
+                    << endl << abort(FatalError);
+                }
+                */
 
                 if (n(i,j,k)[1] != n(i,j,k)[1])
                 {
@@ -589,6 +700,15 @@ tmp<colocatedVectorField> LSFIR::operator()()
                 }
             }
         }
+
+        forAllCells(n, i, j, k)
+        {
+            if ((alpha(i,j,k) > 1e-12) && (alpha(i,j,k) < 1 - 1e-12))
+            {
+                n(i,j,k) = n_new(i,j,k);
+            }
+        }
+
     }
 
     return tn;

@@ -120,7 +120,7 @@ scalar LVE::operator()(const labelVector& ijk, const vector& n) const
 
     const vector m(n/Foam::mag(n));
 
-    return rectilinear_ ? pLVE(vertices,m,f) : aLVE(vertices,m,f);
+    return rectilinear_ ? pLVE(vertices,m,f) : cLVE(vertices,m,f);
 }
 
 scalar LVE::aLVE

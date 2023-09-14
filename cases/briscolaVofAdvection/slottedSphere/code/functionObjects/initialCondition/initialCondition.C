@@ -68,7 +68,6 @@ bool initialCondition::read(const dictionary& dict)
         forAllCells(alpha, i, j, k)
         {
             vector ccxy = cc(i,j,k);
-            ccxy.z() = 0;
 
             U(i,j,k) = vector
                 (
@@ -81,7 +80,7 @@ bool initialCondition::read(const dictionary& dict)
 
             if
             (
-                ccxy.y() < 0.75-0.15+2*0.125
+                ccxy.y() < 0.75-0.15+0.125
              && ccxy.x() > 0.5-0.025 && ccxy.x() < 0.5+0.025
             )
             {
@@ -155,12 +154,12 @@ bool initialCondition::end()
     forAllCells(alpha, i, j, k)
     {
         vector ccxy = cc(i,j,k);
-        ccxy.z() = 0;
+
 
         if
         (
-            ccxy.y() < 0.75-0.15+2*0.125
-                && ccxy.x() > 0.5-0.025 && ccxy.x() < 0.5+0.025
+            ccxy.y() < 0.75-0.15+0.125
+            && ccxy.x() > 0.5-0.025 && ccxy.x() < 0.5+0.025
         )
         {
             exactAlpha = 0;

@@ -271,7 +271,7 @@ tmp<colocatedVectorField> MYC::operator()()
             n_aux[1] = m[cn][1];
             n_aux[2] = m[cn][2];
 
-            n_aux = T.T() & n_aux;
+            n_aux = T.inv() & n_aux;
             n(i,j,k) = n_aux / Foam::mag(n_aux);
 
         }
