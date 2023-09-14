@@ -367,9 +367,9 @@ int main(int argc, char *argv[])
                 << "Test 15c failed" << endl << abort(FatalError);
     }
 
-    const scalarList& dxg = msh.globalCellSizes()[0];
-    const scalarList& dyg = msh.globalCellSizes()[1];
-    const scalarList& dzg = msh.globalCellSizes()[2];
+    const PartialList<scalar>& dxg = msh.globalCellSizes()[0];
+    const PartialList<scalar>& dyg = msh.globalCellSizes()[1];
+    const PartialList<scalar>& dzg = msh.globalCellSizes()[2];
 
     forAll(dxg, i)
     {
@@ -399,9 +399,9 @@ int main(int argc, char *argv[])
 
     for (int d = 0; d < 3; d++)
     {
-        const scalarList& points = msh.localPoints()[d];
+        const PartialList<scalar>& points = msh.localPoints()[d];
 
-        for(int i = 1; i < points.size(); i++)
+        for(int i = 0; i < points.size()+1; i++)
             if (Foam::mag(points[i]-points[i-1]) - 1.0/16 > 1e-12)
                     FatalErrorInFunction
                         << "Test 18 failed" << endl << abort(FatalError);
@@ -409,9 +409,9 @@ int main(int argc, char *argv[])
 
     for (int d = 0; d < 3; d++)
     {
-        const scalarList& points = msh.globalPoints()[d];
+        const PartialList<scalar>& points = msh.globalPoints()[d];
 
-        for(int i = 1; i < points.size(); i++)
+        for(int i = 0; i < points.size()+1; i++)
             if (Foam::mag(points[i]-points[i-1]) - 1.0/16 > 1e-12)
                     FatalErrorInFunction
                         << "Test 19 failed" << endl << abort(FatalError);

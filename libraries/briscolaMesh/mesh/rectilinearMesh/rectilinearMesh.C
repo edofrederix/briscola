@@ -37,39 +37,40 @@ void rectilinearMesh::setMetrics()
 
     // Local cell sizes and points
 
-    localCellSizes_.clear();
-    localPoints_.clear();
-    localCellSizes_.setSize(3);
-    localPoints_.setSize(3);
+    localCellSizesData_.clear();
+    localPointsData_.clear();
+    localCellSizesData_.setSize(3);
+    localPointsData_.setSize(3);
 
     for (int d = 0; d < 3; d++)
     {
-        localCellSizes_.set(d, new scalarList(part.N()[d]));
-        localPoints_.set(d, new scalarList(part.N()[d]+1));
+        localCellSizesData_.set(d, new scalarList(part.N()[d]+2));
+        localPointsData_.set(d, new scalarList(part.N()[d]+3));
 
-        scalarList& localCellSizes = localCellSizes_[d];
-        scalarList& localPoints = localPoints_[d];
+        scalarList& localCellSizesData = localCellSizesData_[d];
+        scalarList& localPointsData = localPointsData_[d];
 
         const labelVector dir = units[d];
 
         const vector base =
             d == 0 ? base_.x() : d == 1 ? base_.y() : base_.z();
 
-        forAll(localPoints, i)
+        forAll(localPointsData, i)
         {
-            localPoints[i] = points(dir*i) & base;
+            localPointsData[i] = points(dir*(i-1)) & base;
         }
 
-        forAll(localCellSizes, i)
+        forAll(localCellSizesData, i)
         {
-            localCellSizes[i] = localPoints[i+1] - localPoints[i];
+            localCellSizesData[i] =
+                localPointsData[i+1] - localPointsData[i];
         }
 
         // Check if local point coordinates form a monotonically increasing list
 
-        for (label i = 1; i < localPoints.size(); i++)
+        for (label i = 1; i < localPointsData.size(); i++)
         {
-            if (localPoints[i] <= localPoints[i-1])
+            if (localPointsData[i] <= localPointsData[i-1])
             {
                 FatalErrorInFunction
                     << "Could not generate local point list on rectilinear mesh"
@@ -78,20 +79,52 @@ void rectilinearMesh::setMetrics()
         }
     }
 
-    // Global cell sizes
+    // Create local lists without ghosts as sub-lists
 
-    globalCellSizes_.clear();
-    globalPoints_.clear();
-    globalCellSizes_.setSize(3);
-    globalPoints_.setSize(3);
+    localCellSizes_.clear();
+    localPoints_.clear();
+    localCellSizes_.setSize(3);
+    localPoints_.setSize(3);
 
     for (int d = 0; d < 3; d++)
     {
-        globalCellSizes_.set(d, new scalarList(this->N()[d]));
-        globalPoints_.set(d, new scalarList(this->N()[d]+1));
+        localCellSizes_.set
+        (
+            d,
+            new PartialList<scalar>
+            (
+                localCellSizesData_[d],
+                localCellSizesData_[d].size()-2,
+                1
+            )
+        );
 
-        scalarList& globalCellSizes = globalCellSizes_[d];
-        scalarList& globalPoints = globalPoints_[d];
+        localPoints_.set
+        (
+            d,
+            new PartialList<scalar>
+            (
+                localPointsData_[d],
+                localPointsData_[d].size()-2,
+                1
+            )
+        );
+    }
+
+    // Global cell sizes
+
+    globalCellSizesData_.clear();
+    globalPointsData_.clear();
+    globalCellSizesData_.setSize(3);
+    globalPointsData_.setSize(3);
+
+    for (int d = 0; d < 3; d++)
+    {
+        globalCellSizesData_.set(d, new scalarList(this->N()[d]+2));
+        globalPointsData_.set(d, new scalarList(this->N()[d]+3));
+
+        scalarList& globalCellSizes = globalCellSizesData_[d];
+        scalarList& globalPoints = globalPointsData_[d];
 
         const labelVector base = units[d];
         label cursor = 0;
@@ -102,24 +135,27 @@ void rectilinearMesh::setMetrics()
 
             if (proc == Pstream::myProcNo())
             {
-                const scalarList& localCellSizes = localCellSizes_[d];
-                const scalarList& localPoints = localPoints_[d];
+                const scalarList& localCellSizesData =
+                    localCellSizesData_[d];
+
+                const scalarList& localPointsData =
+                    localPointsData_[d];
 
                 if (proc == Pstream::masterNo())
                 {
                     // Copy directly
 
-                    forAll(localCellSizes, j)
+                    forAll(localCellSizesData, j)
                     {
-                        globalCellSizes[cursor+j] = localCellSizes[j];
+                        globalCellSizes[cursor+j] = localCellSizesData[j];
                     }
 
-                    forAll(localPoints, j)
+                    forAll(localPointsData, j)
                     {
-                        globalPoints[cursor+j] = localPoints[j];
+                        globalPoints[cursor+j] = localPointsData[j];
                     }
 
-                    cursor += localCellSizes.size();
+                    cursor += localCellSizesData.size()-2;
                 }
                 else
                 {
@@ -131,16 +167,16 @@ void rectilinearMesh::setMetrics()
                         Pstream::masterNo()
                     );
 
-                    send << localCellSizes;
-                    send << localPoints;
+                    send << localCellSizesData;
+                    send << localPointsData;
                 }
             }
             else if (Pstream::master())
             {
                 // Receive from slave
 
-                scalarList localCellSizes;
-                scalarList localPoints;
+                scalarList localCellSizesData;
+                scalarList localPointsData;
 
                 IPstream recv
                 (
@@ -148,20 +184,20 @@ void rectilinearMesh::setMetrics()
                     proc
                 );
 
-                recv >> localCellSizes;
-                recv >> localPoints;
+                recv >> localCellSizesData;
+                recv >> localPointsData;
 
-                forAll(localCellSizes, j)
+                forAll(localCellSizesData, j)
                 {
-                    globalCellSizes[cursor+j] = localCellSizes[j];
+                    globalCellSizes[cursor+j] = localCellSizesData[j];
                 }
 
-                forAll(localPoints, j)
+                forAll(localPointsData, j)
                 {
-                    globalPoints[cursor+j] = localPoints[j];
+                    globalPoints[cursor+j] = localPointsData[j];
                 }
 
-                cursor += localCellSizes.size();
+                cursor += localCellSizesData.size()-2;
             }
         }
 
@@ -169,6 +205,38 @@ void rectilinearMesh::setMetrics()
 
         Pstream::scatter(globalCellSizes);
         Pstream::scatter(globalPoints);
+    }
+
+    // Create global lists without ghosts as sub-lists
+
+    globalCellSizes_.clear();
+    globalPoints_.clear();
+    globalCellSizes_.setSize(3);
+    globalPoints_.setSize(3);
+
+    for (int d = 0; d < 3; d++)
+    {
+        globalCellSizes_.set
+        (
+            d,
+            new PartialList<scalar>
+            (
+                globalCellSizesData_[d],
+                globalCellSizesData_[d].size()-2,
+                1
+            )
+        );
+
+        globalPoints_.set
+        (
+            d,
+            new PartialList<scalar>
+            (
+                globalPointsData_[d],
+                globalPointsData_[d].size()-2,
+                1
+            )
+        );
     }
 }
 

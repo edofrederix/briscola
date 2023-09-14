@@ -1,0 +1,60 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      briscolaSchemesDict;
+}
+
+ddtSchemes
+{
+    ddt(U)
+    {
+        type    Euler;
+    }
+}
+
+laplacianSchemes
+{
+    laplacian(p)
+    {
+        type    linearGauss;
+    }
+
+    laplacian(nu,U)
+    {
+        type    linearGauss;
+    }
+}
+
+divergenceSchemes
+{
+    div(phi,U)
+    {
+        type    midPointGauss;
+    }
+}
+
+gradientSchemes
+{
+    grad(p)
+    {
+        type    midPointGauss;
+    }
+}
+
+faceGradientSchemes
+{
+    faceGrad(p)
+    {
+        type    midPoint;
+    }
+}
+
+faceFluxSchemes
+{
+    flux(U)
+    {
+        type    midPoint;
+    }
+}
