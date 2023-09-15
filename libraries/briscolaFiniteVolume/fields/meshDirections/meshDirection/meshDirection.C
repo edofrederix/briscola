@@ -16,7 +16,7 @@ template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::setInternalCells()
 {
     const labelVector& padding = MeshType::padding[d_];
-    const faceLabel slave = fvMsh_.msh().patchSlave();
+    const faceLabel slave = fvMsh_.msh().facePatchSlave();
 
     I_ = faceLabel(zeroXYZ, this->B().N()-2*unitXYZ);
 

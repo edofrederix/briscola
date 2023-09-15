@@ -450,16 +450,48 @@ void mesh::setCommTags()
     }
 }
 
-void mesh::generatePartPatches()
+void mesh::setPatchLabels()
 {
-    generateBrickInternalPartPatches();
-    generateBrickExternalPartPatches();
-    generateBoundaryPartPatches();
+    // Initialize edge and vertex master label to -1 as their corresponding part
+    // patches may not exist
 
-    setCommTags();
+    facePatchMasterPerProc_.resize
+    (
+        Pstream::nProcs(),
+        pTraits<faceLabel>::one
+    );
 
-    patchMasterPerProc_.resize(Pstream::nProcs(), pTraits<faceLabel>::one);
-    patchTypePerProc_.resize(Pstream::nProcs(), pTraits<faceLabel>::zero);
+    edgePatchMasterPerProc_.resize
+    (
+        Pstream::nProcs(),
+      - pTraits<edgeLabel>::one
+    );
+    vertexPatchMasterPerProc_.resize
+    (
+        Pstream::nProcs(),
+      - pTraits<vertexLabel>::one
+    );
+
+    // Initialize edge and vertex patch types to -1 as their corresponding part
+    // patches may not exist
+
+    facePatchTypePerProc_.resize
+    (
+        Pstream::nProcs(),
+        pTraits<faceLabel>::zero
+    );
+
+    edgePatchTypePerProc_.resize
+    (
+        Pstream::nProcs(),
+      - pTraits<edgeLabel>::one
+    );
+
+    vertexPatchTypePerProc_.resize
+    (
+        Pstream::nProcs(),
+      - pTraits<vertexLabel>::one
+    );
 
     forAll(partPatches(), i)
     {
@@ -469,16 +501,58 @@ void mesh::generatePartPatches()
         {
             const label facei = faceNumber(patch.boundaryOffset());
 
-            patchMasterPerProc_[Pstream::myProcNo()][facei] = patch.master();
-            patchTypePerProc_[Pstream::myProcNo()][facei] = patch.typeNum();
+            facePatchMasterPerProc_[Pstream::myProcNo()][facei] =
+                patch.master();
+
+            facePatchTypePerProc_[Pstream::myProcNo()][facei] =
+                patch.typeNum();
+        }
+        else if (patch.boundaryOffsetDegree() == 2)
+        {
+            const label edgei = edgeNumber(patch.boundaryOffset());
+
+            edgePatchMasterPerProc_[Pstream::myProcNo()][edgei] =
+                patch.master();
+
+            edgePatchTypePerProc_[Pstream::myProcNo()][edgei] =
+                patch.typeNum();
+        }
+        else
+        {
+            const label vertexi = vertexNumber(patch.boundaryOffset());
+
+            vertexPatchMasterPerProc_[Pstream::myProcNo()][vertexi] =
+                patch.master();
+
+            vertexPatchTypePerProc_[Pstream::myProcNo()][vertexi] =
+                patch.typeNum();
         }
     }
 
-    Pstream::gatherList(patchMasterPerProc_);
-    Pstream::gatherList(patchTypePerProc_);
+    Pstream::gatherList(facePatchMasterPerProc_);
+    Pstream::gatherList(edgePatchMasterPerProc_);
+    Pstream::gatherList(vertexPatchMasterPerProc_);
 
-    Pstream::scatterList(patchMasterPerProc_);
-    Pstream::scatterList(patchTypePerProc_);
+    Pstream::gatherList(facePatchTypePerProc_);
+    Pstream::gatherList(edgePatchTypePerProc_);
+    Pstream::gatherList(vertexPatchTypePerProc_);
+
+    Pstream::scatterList(facePatchMasterPerProc_);
+    Pstream::scatterList(edgePatchMasterPerProc_);
+    Pstream::scatterList(vertexPatchMasterPerProc_);
+
+    Pstream::scatterList(facePatchTypePerProc_);
+    Pstream::scatterList(edgePatchTypePerProc_);
+    Pstream::scatterList(vertexPatchTypePerProc_);
+}
+
+void mesh::generatePartPatches()
+{
+    generateBrickInternalPartPatches();
+    generateBrickExternalPartPatches();
+    generateBoundaryPartPatches();
+    setCommTags();
+    setPatchLabels();
 }
 
 void mesh::generatePartLevels()
@@ -577,8 +651,12 @@ mesh::mesh(const mesh& msh)
     PtrList<partLevel>(msh),
     decomp_(msh.decomp_),
     partPatches_(msh.partPatches_),
-    patchMasterPerProc_(msh.patchMasterPerProc_),
-    patchTypePerProc_(msh.patchTypePerProc_),
+    facePatchMasterPerProc_(msh.facePatchMasterPerProc_),
+    edgePatchMasterPerProc_(msh.edgePatchMasterPerProc_),
+    vertexPatchMasterPerProc_(msh.vertexPatchMasterPerProc_),
+    facePatchTypePerProc_(msh.facePatchTypePerProc_),
+    edgePatchTypePerProc_(msh.edgePatchTypePerProc_),
+    vertexPatchTypePerProc_(msh.vertexPatchTypePerProc_),
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
     uniform_(msh.uniform_),
@@ -591,8 +669,12 @@ mesh::mesh(autoPtr<mesh>& mshPtr)
     PtrList<partLevel>(mshPtr(), true),
     decomp_(mshPtr->decomp_, true),
     partPatches_(mshPtr->partPatches_, true),
-    patchMasterPerProc_(mshPtr->patchMasterPerProc_),
-    patchTypePerProc_(mshPtr->patchTypePerProc_),
+    facePatchMasterPerProc_(mshPtr->facePatchMasterPerProc_),
+    edgePatchMasterPerProc_(mshPtr->edgePatchMasterPerProc_),
+    vertexPatchMasterPerProc_(mshPtr->vertexPatchMasterPerProc_),
+    facePatchTypePerProc_(mshPtr->facePatchTypePerProc_),
+    edgePatchTypePerProc_(mshPtr->edgePatchTypePerProc_),
+    vertexPatchTypePerProc_(mshPtr->vertexPatchTypePerProc_),
     structured_(mshPtr->structured_),
     rectilinear_(mshPtr->rectilinear_),
     uniform_(mshPtr->uniform_),
@@ -607,8 +689,12 @@ mesh::mesh(mesh& msh, bool reuse)
     PtrList<partLevel>(msh, reuse),
     decomp_(msh.decomp_, reuse),
     partPatches_(msh.partPatches_, reuse),
-    patchMasterPerProc_(msh.patchMasterPerProc_),
-    patchTypePerProc_(msh.patchTypePerProc_),
+    facePatchMasterPerProc_(msh.facePatchMasterPerProc_),
+    edgePatchMasterPerProc_(msh.edgePatchMasterPerProc_),
+    vertexPatchMasterPerProc_(msh.vertexPatchMasterPerProc_),
+    facePatchTypePerProc_(msh.facePatchTypePerProc_),
+    edgePatchTypePerProc_(msh.edgePatchTypePerProc_),
+    vertexPatchTypePerProc_(msh.vertexPatchTypePerProc_),
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
     uniform_(msh.uniform_),

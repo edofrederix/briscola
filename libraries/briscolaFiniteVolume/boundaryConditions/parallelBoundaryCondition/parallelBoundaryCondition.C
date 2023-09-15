@@ -47,13 +47,13 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     // important that boundary patches are updated first, which is assured in
     // the meshField's addBoundaryConditions() function.
 
-    const faceLabel myPatchType = this->fvMsh_.msh().patchType();
+    const faceLabel myPatchType = this->fvMsh_.msh().facePatchType();
 
     const faceLabel neighPatchType =
         pTransform<faceLabel>
         (
             T,
-            this->fvMsh_.msh().patchTypePerProc()[neighborProcNum_]
+            this->fvMsh_.msh().facePatchTypePerProc()[neighborProcNum_]
         );
 
     if (bod < 3)
