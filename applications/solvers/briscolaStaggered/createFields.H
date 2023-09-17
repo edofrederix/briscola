@@ -80,6 +80,7 @@ imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
 // Immersed boundary
 
 immersedBoundary<staggered> IBs(solverDict, fvMsh);
+immersedBoundary<colocated> IBc(solverDict, fvMsh);
 
 // Solvers
 

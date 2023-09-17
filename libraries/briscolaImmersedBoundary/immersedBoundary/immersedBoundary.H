@@ -45,6 +45,10 @@ class immersedBoundary
     // IB in the components of the stencils
     meshField<stencil,MeshType> wallDist_;
 
+    // The neighbor distance field stores the distances to neighboring
+    // fluid cell for the quadratic fit on non-uniform grids
+    meshField<stencil, MeshType> neighborDist_;
+
     // List of shapes making up the immersed boundary
     PtrList<shape> shapes_;
 

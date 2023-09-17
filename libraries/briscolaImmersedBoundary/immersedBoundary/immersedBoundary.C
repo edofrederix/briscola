@@ -25,7 +25,8 @@ immersedBoundary<MeshType>::immersedBoundary
     fvMsh_(fvMsh),
     mask_("mask", fvMsh_),
     wallAdjMask_("wallAdjMask", fvMsh_),
-    wallDist_("wallDist", fvMsh_)
+    wallDist_("wallDist", fvMsh_),
+    neighborDist_("neighborDist", fvMsh_)
 {
     if (solverDict.found("ImmersedBoundary"))
     {
@@ -33,7 +34,8 @@ immersedBoundary<MeshType>::immersedBoundary
 
         int nEntries = IBDict.size();
 
-        xiStabilityFactor_ = IBDict.lookupOrDefault("xiStabilityFactor", 0.5);
+        xiStabilityFactor_
+            = IBDict.lookupOrDefault("xiStabilityFactor", 0.999);
 
         if (xiStabilityFactor_ < 0)
         {
@@ -48,7 +50,7 @@ immersedBoundary<MeshType>::immersedBoundary
         {
             WarningInFunction
                 << "Stability factor for immersed boundary"
-                << " set to 0.99 (0 <= stability factor <= 0.999)"
+                << " set to 0.999 (0 <= stability factor <= 0.999)"
                 << endl;
 
             xiStabilityFactor_ = 0.999;
@@ -103,7 +105,7 @@ immersedBoundary<MeshType>::immersedBoundary
         const meshField<vector,MeshType>& CC =
             fvMsh_.metrics<MeshType>().cellCenters();
 
-        // Set IB masks
+        // Set IB mask fields
         forAll(mask_, l)
         {
             forAll(mask_[l], d)
@@ -118,6 +120,7 @@ immersedBoundary<MeshType>::immersedBoundary
                     mask_[l][d](i,j,k) = 0.0;
                     wallAdjMask_[l][d](i,j,k) = 0.0;
                     wallDist_[l][d](i,j,k) = -1.0;
+                    neighborDist_[l][d](i,j,k) = -1.0;
 
                     if (this->isInside(CC[l][d](i,j,k)))
                     {
@@ -132,26 +135,29 @@ immersedBoundary<MeshType>::immersedBoundary
                             // dir and faceOffsets are shifted by 1 due to
                             // stencil starting with center coefficient
                             const labelVector fo = faceOffsets[dir-1];
+                            const label oppositeDir = faceNumber(-fo) + 1;
 
-                            const labelVector xyzOffset =
-                                labelVector(x,y,z) + fo;
+                            const labelVector xyz(x,y,z);
 
                             if
                             (
-                                this->isInside(CC[l][d].B()(xyzOffset))
+                                this->isInside(CC[l][d].B()(xyz+fo))
                             )
                             {
                                 wallAdjMask_[l][d](i,j,k) = 1.0;
 
-                                vector nb(CC[l][d].B()(xyzOffset));
+                                // Neighbor cell in the IB
+                                vector nb(CC[l][d].B()(xyz+fo));
                                 scalar wd = this->wallDistance(c, nb);
                                 scalar xi = (mag(c-nb)-wd)/mag(c-nb);
 
                                 wallDist_[l][d](i,j,k)[dir] = xi;
-                            }
-                            else
-                            {
-                                wallDist_[l][d](i,j,k)[dir] = -1.0;
+
+                                // Neighbor cell in the opposite direction
+                                vector nbo(CC[l][d].B()(xyz-fo));
+                                scalar xi2 = mag(nbo-nb)/mag(c-nb);
+
+                                neighborDist_[l][d](i,j,k)[oppositeDir] = xi2;
                             }
                         }
                     }
@@ -164,6 +170,7 @@ immersedBoundary<MeshType>::immersedBoundary
         mask_ = Zero;
         wallAdjMask_ = Zero;
         wallDist_ = Zero;
+        neighborDist_ = Zero;
     }
 }
 
@@ -289,6 +296,8 @@ void immersedBoundary<MeshType>::IBM
                     {
                         scalar xi = wallDist_[0][d](i,j,k)[dir];
 
+                        scalar xi2 = neighborDist_[0][d](i,j,k)[oppositeDir];
+
                         scalar w0 = 2.0 /
                             (
                                 (1.0 - xiStabilityFactor_)
@@ -299,8 +308,8 @@ void immersedBoundary<MeshType>::IBM
 
                         if (xi < xiStabilityFactor_)
                         {
-                            w1 = -2.0*xi/(1.0-xi);
-                            w2 = xi/(2.0-xi);
+                            w1 = xi*xi2/((1.0-xi)*(1.0-xi2));
+                            w2 = xi/((xi2-xi)*(xi2-1.0));
                         }
 
                         const scalar a0 = ls.A()[0][d](i,j,k)[dir];
