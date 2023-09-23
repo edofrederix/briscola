@@ -151,8 +151,174 @@ public:
         return *listType::operator()(l);
     }
 
+    // Access to the given level
+    inline meshLevel<Type,MeshType>& level(label l)
+    {
+        return this->operator[](l);
+    }
+
+    // Const access to the given level
+    inline const meshLevel<Type,MeshType>& level(label l) const
+    {
+        return this->operator[](l);
+    }
+
+    // Access to the given direction of the first level
+    inline meshDirection<Type,MeshType>& direction(label d)
+    {
+        return this->operator[](0)[d];
+    }
+
+    // Const access to the given direction of the first level
+    inline const meshDirection<Type,MeshType>& direction(label d) const
+    {
+        return this->operator[](0)[d];
+    }
+
     // Number of levels
     inline label size() const { return listType::size(); }
+
+    // Alias to size
+    inline label numberOfLevels() const { return size(); }
+
+    // Number of directions
+    inline label numberOfDirections() const
+    {
+        return MeshType::numberOfDirections;
+    }
+
+    // Direct access to the first direction of the first level
+
+    inline Type& operator()
+    (
+        const int i,
+        const int j,
+        const int k
+    )
+    {
+        return this->operator[](0)[0](i,j,k);
+    }
+
+    inline const Type& operator()
+    (
+        const int i,
+        const int j,
+        const int k
+    ) const
+    {
+        return this->operator[](0)[0](i,j,k);
+    }
+
+    inline Type& operator()
+    (
+        const labelVector& ijk
+    )
+    {
+        return this->operator[](0)[0](ijk);
+    }
+
+    inline const Type& operator()
+    (
+        const labelVector& ijk
+    ) const
+    {
+        return this->operator[](0)[0](ijk);
+    }
+
+    // Direct access to the first level
+
+    inline Type& operator()
+    (
+        const int d,
+        const int i,
+        const int j,
+        const int k
+    )
+    {
+        return this->operator[](0)[d](i,j,k);
+    }
+
+    inline const Type& operator()
+    (
+        const int d,
+        const int i,
+        const int j,
+        const int k
+    ) const
+    {
+        return this->operator[](0)[d](i,j,k);
+    }
+
+    inline Type& operator()
+    (
+        const int d,
+        const labelVector& ijk
+    )
+    {
+        return this->operator[](0)[d](ijk);
+    }
+
+    inline const Type& operator()
+    (
+        const int d,
+        const labelVector& ijk
+    ) const
+    {
+        return this->operator[](0)[d](ijk);
+    }
+
+    // Direct access
+
+    inline Type& operator()
+    (
+        const int l,
+        const int d,
+        const int i,
+        const int j,
+        const int k
+    )
+    {
+        return this->operator[](l)[d](i,j,k);
+    }
+
+    inline const Type& operator()
+    (
+        const int l,
+        const int d,
+        const int i,
+        const int j,
+        const int k
+    ) const
+    {
+        return this->operator[](l)[d](i,j,k);
+    }
+
+    inline Type& operator()
+    (
+        const int l,
+        const int d,
+        const labelVector& ijk
+    )
+    {
+        return this->operator[](l)[d](ijk);
+    }
+
+    inline const Type& operator()
+    (
+        const int l,
+        const int d,
+        const labelVector& ijk
+    ) const
+    {
+        return this->operator[](l)[d](ijk);
+    }
+
+    // Internal cell start and end indices of the first direction of the first
+    // level
+    inline const faceLabel& I() const
+    {
+        return this->operator[](0)[0].I();
+    }
 
     // Return the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
