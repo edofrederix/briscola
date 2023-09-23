@@ -317,7 +317,7 @@ block<Type>::block(const tmp<block<Type>>& tM)
     if (tM.isTmp())
     {
         block<Type>& M = const_cast<block<Type>&>(tM());
-        transferData(M);
+        transfer(M);
     }
     else
     {
@@ -341,7 +341,7 @@ block<Type>::block(const tmp<block<Type>>& tM, const zero&)
     if (tM.isTmp())
     {
         block<Type>& M = const_cast<block<Type>&>(tM());
-        transferData(M);
+        transfer(M);
     }
     else
     {
@@ -363,11 +363,10 @@ block<Type>::block(const tmp<block<Type>>& tM, const Type& v)
     v_(nullptr),
     T_(tM->T())
 {
-{
     if (tM.isTmp())
     {
         block<Type>& M = const_cast<block<Type>&>(tM());
-        transferData(M);
+        transfer(M);
     }
     else
     {
@@ -378,6 +377,70 @@ block<Type>::block(const tmp<block<Type>>& tM, const Type& v)
 
     tM.clear();
 }
+
+template<class Type>
+block<Type>::block(const label reuse, block<Type>& M)
+:
+    refCount(),
+    l_(M.l()),
+    m_(M.m()),
+    n_(M.n()),
+    v_(nullptr),
+    T_(M.T())
+{
+    if (reuse)
+    {
+        transfer(M);
+    }
+    else
+    {
+        allocate();
+        *this = M;
+    }
+}
+
+template<class Type>
+block<Type>::block(const label reuse, block<Type>& M, const zero&)
+:
+    refCount(),
+    l_(M.l()),
+    m_(M.m()),
+    n_(M.n()),
+    v_(nullptr),
+    T_(M.T())
+{
+    if (reuse)
+    {
+        transfer(M);
+    }
+    else
+    {
+        allocate();
+    }
+
+    *this = Zero;
+}
+
+template<class Type>
+block<Type>::block(const label reuse, block<Type>& M, const Type& v)
+:
+    refCount(),
+    l_(M.l()),
+    m_(M.m()),
+    n_(M.n()),
+    v_(nullptr),
+    T_(M.T())
+{
+    if (reuse)
+    {
+        transfer(M);
+    }
+    else
+    {
+        allocate();
+    }
+
+    *this = v;
 }
 
 template<class Type>
@@ -440,7 +503,7 @@ void block<Type>::setSize
         }
     }
 
-    transferData(M);
+    transfer(M);
 }
 
 template<class Type>
@@ -474,7 +537,7 @@ void block<Type>::prepend
         M(labelVector(i,j,k)+units[d]*s) = this->operator()(i,j,k);
     }
 
-    transferData(M);
+    transfer(M);
 }
 
 template<class Type>
@@ -508,7 +571,7 @@ void block<Type>::append
         M(i,j,k) = this->operator()(i,j,k);
     }
 
-    transferData(M);
+    transfer(M);
 }
 
 template<class Type>
@@ -556,7 +619,7 @@ void block<Type>::transform(const labelTensor T)
         M(ijk) = pTransform<Type>(T, this->operator()(i,j,k));
     }
 
-    transferData(M);
+    transfer(M);
 
     T_ = (T & T_);
 }

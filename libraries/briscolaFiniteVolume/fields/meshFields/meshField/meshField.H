@@ -4,6 +4,7 @@
 #include "block.H"
 #include "IOdictionary.H"
 #include "autoPtr.H"
+#include "PtrList.H"
 
 #include "meshLevel.H"
 #include "boundaryCondition.H"
@@ -44,8 +45,11 @@ protected:
     // Allocate data and specify depth
     void allocate(const bool);
 
+    // Set field pointers in levels, needed when data is transferred
+    void setFieldPointers();
+
     // Transfer data from other mesh field
-    void transferData(meshField<Type,MeshType>&);
+    void transfer(meshField<Type,MeshType>&);
 
     // Check if the given field's depth is compatible with this field's depth to
     // execute a member operator

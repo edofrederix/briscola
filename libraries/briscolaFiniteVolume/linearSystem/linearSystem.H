@@ -36,7 +36,7 @@ class linearSystem
     bool singular_;
 
     // Transfer data from other system
-    void transferData(linearSystem<SType,Type,MeshType>&);
+    void transfer(linearSystem<SType,Type,MeshType>&);
 
 public:
 

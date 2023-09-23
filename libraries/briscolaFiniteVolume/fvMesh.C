@@ -80,8 +80,8 @@ const fvMeshMetrics<colocated>& fvMesh::metrics<colocated>() const
 template<>
 const fvMeshMetrics<staggered>& fvMesh::metrics<staggered>() const
 {
-    #if DEBUG
-    if (!topology().structured())
+    #ifdef FULLDEBUG
+    if (!mshPtr_->topology().structured())
     {
         FatalErrorInFunction
             << "Staggered metrics are not generated on unstructured meshes."

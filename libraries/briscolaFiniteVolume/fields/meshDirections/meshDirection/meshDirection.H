@@ -56,7 +56,7 @@ class meshDirection
     void allocate(const labelVector);
 
     // Transfer data from other mesh direction
-    void transferData(meshDirection<Type,MeshType>&);
+    void transfer(meshDirection<Type,MeshType>&);
 
 public:
 
@@ -91,14 +91,54 @@ public:
     meshDirection(const meshDirection<Type,MeshType>&);
     meshDirection(const meshDirection<Type,MeshType>&, const zero&);
     meshDirection(const meshDirection<Type,MeshType>&, const Type&);
+    meshDirection(const meshDirection<Type,MeshType>&, const List<Type>&);
 
     meshDirection(const tmp<meshDirection<Type,MeshType>>&);
     meshDirection(const tmp<meshDirection<Type,MeshType>>&, const zero&);
     meshDirection(const tmp<meshDirection<Type,MeshType>>&, const Type&);
+    meshDirection(const tmp<meshDirection<Type,MeshType>>&, const List<Type>&);
 
     meshDirection(const fvMesh&, const label, const label);
     meshDirection(const fvMesh&, const label, const label, const zero&);
     meshDirection(const fvMesh&, const label, const label, const Type&);
+    meshDirection(const fvMesh&, const label, const label, const List<Type>&);
+
+    // Clone
+
+    inline autoPtr<meshDirection<Type,MeshType>> clone() const
+    {
+        return autoPtr<meshDirection<Type,MeshType>>
+        (
+            new meshDirection<Type,MeshType>(*this)
+        );
+    }
+
+    inline autoPtr<meshDirection<Type,MeshType>> clone(const zero&) const
+    {
+        return autoPtr<meshDirection<Type,MeshType>>
+        (
+            new meshDirection<Type,MeshType>(*this, Zero)
+        );
+    }
+
+    inline autoPtr<meshDirection<Type,MeshType>> clone(const Type& v) const
+    {
+        return autoPtr<meshDirection<Type,MeshType>>
+        (
+            new meshDirection<Type,MeshType>(*this, v)
+        );
+    }
+
+    inline autoPtr<meshDirection<Type,MeshType>> clone
+    (
+        const List<Type>& v
+    ) const
+    {
+        return autoPtr<meshDirection<Type,MeshType>>
+        (
+            new meshDirection<Type,MeshType>(*this, v)
+        );
+    }
 
     // Destructor
     virtual ~meshDirection();

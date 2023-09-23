@@ -10,13 +10,13 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::transferData
+void linearSystem<SType,Type,MeshType>::transfer
 (
     linearSystem<SType,Type,MeshType>& sys
 )
 {
-    A_.transferData(sys.A_);
-    b_.transferData(sys.b_);
+    A_.transfer(sys.A_);
+    b_.transfer(sys.b_);
 
     singular_ = sys.singular_;
 }
@@ -105,7 +105,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         linearSystem<SType,Type,MeshType>& sys =
             const_cast<linearSystem<SType,Type,MeshType>&>(tSys());
 
-        transferData(sys);
+        transfer(sys);
     }
     else
     {
@@ -175,7 +175,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         linearSystem<SType,Type,MeshType>& sys =
             const_cast<linearSystem<SType,Type,MeshType>&>(tSys());
 
-        transferData(sys);
+        transfer(sys);
     }
     else
     {
@@ -403,7 +403,7 @@ void linearSystem<SType,Type,MeshType>::operator=
         linearSystem<SType,Type,MeshType>& sys =
             const_cast<linearSystem<SType,Type,MeshType>&>(tSys());
 
-        transferData(sys);
+        transfer(sys);
     }
     else
     {

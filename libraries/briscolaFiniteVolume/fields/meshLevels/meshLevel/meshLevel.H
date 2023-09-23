@@ -44,8 +44,11 @@ class meshLevel
     // Allocate data
     void allocate();
 
+    // Set level pointers in directions, needed when data is transferred
+    void setLevelPointers();
+
     // Transfer data from other mesh level
-    void transferData(meshLevel<Type,MeshType>&);
+    void transfer(meshLevel<Type,MeshType>&);
 
 public:
 
@@ -83,6 +86,40 @@ public:
     meshLevel(const fvMesh&, const label, const zero&);
     meshLevel(const fvMesh&, const label, const Type&);
     meshLevel(const fvMesh&, const label, const List<Type>&);
+
+    // Clone
+
+    inline autoPtr<meshLevel<Type,MeshType>> clone() const
+    {
+        return autoPtr<meshLevel<Type,MeshType>>
+        (
+            new meshLevel<Type,MeshType>(*this)
+        );
+    }
+
+    inline autoPtr<meshLevel<Type,MeshType>> clone(const zero&) const
+    {
+        return autoPtr<meshLevel<Type,MeshType>>
+        (
+            new meshLevel<Type,MeshType>(*this, Zero)
+        );
+    }
+
+    inline autoPtr<meshLevel<Type,MeshType>> clone(const Type& v) const
+    {
+        return autoPtr<meshLevel<Type,MeshType>>
+        (
+            new meshLevel<Type,MeshType>(*this, v)
+        );
+    }
+
+    inline autoPtr<meshLevel<Type,MeshType>> clone(const List<Type>& v) const
+    {
+        return autoPtr<meshLevel<Type,MeshType>>
+        (
+            new meshLevel<Type,MeshType>(*this, v)
+        );
+    }
 
     // Destructor
     virtual ~meshLevel();

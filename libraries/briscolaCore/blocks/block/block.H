@@ -99,6 +99,12 @@ public:
     block(const tmp<block<Type>>&, const zero&);
     block(const tmp<block<Type>>&, const Type&);
 
+    // Construct as copy or re-use as specified (preserves rotation). Re-use
+    // bool is as first argument to avoid ambiguity with zero.
+    block(const label reuse, block<Type>&);
+    block(const label reuse, block<Type>&, const zero&);
+    block(const label reuse, block<Type>&, const Type&);
+
     // Construct from Istream
     block(Istream& is);
 
@@ -125,7 +131,7 @@ public:
 
     // Transfer the data of the argument block into this block and annul the
     // argument block. Rotation is left as-is
-    inline void transferData(block<Type>&);
+    inline void transfer(block<Type>&);
 
     // Return the first dimension
     inline int l() const { return l_; }

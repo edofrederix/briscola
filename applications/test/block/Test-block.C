@@ -45,6 +45,14 @@ void testConstructors()
     block<Type> b12b(b10*2.0, Zero);
     block<Type> b12c(b10*2.0, pTraits<Type>::one*2);
 
+    block<Type> b13a(false, b10);
+    block<Type> b13b(false, b10, Zero);
+    block<Type> b13c(false, b10, pTraits<Type>::one*2);
+
+    block<Type> b14a(true, b13a);
+    block<Type> b14b(true, b13b, Zero);
+    block<Type> b14c(true, b13c, pTraits<Type>::one*2);
+
     const word fileName =
         "dummy-"
       + word(pTraits<Type>::typeName)
@@ -59,11 +67,11 @@ void testConstructors()
 
     rm(fileName);
 
-    block<Type> b13(is);
+    block<Type> b14(is);
 
-    block<Type> b14;
+    block<Type> b15;
 
-    b14.transferData(b13);
+    b14.transfer(b15);
 }
 
 template<class Type>

@@ -49,7 +49,7 @@ inline void block<Type>::reAllocate(const labelVector& lmn)
 }
 
 template<class Type>
-inline void block<Type>::transferData(block<Type>& M)
+inline void block<Type>::transfer(block<Type>& M)
 {
     l_ = M.l_;
     m_ = M.m_;
@@ -103,7 +103,7 @@ inline void block<Type>::operator=(const tmp<block<Type>>& tM)
     if (tM.isTmp())
     {
         block<Type>& M = const_cast<block<Type>&>(tM());
-        transferData(M);
+        transfer(M);
     }
     else
     {

@@ -37,7 +37,14 @@ void meshField<Type,MeshType>::allocate(const bool deep)
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::transferData
+void meshField<Type,MeshType>::setFieldPointers()
+{
+    forAll(*this, l)
+        listType::operator[](l).mshFieldPtr_ = this;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::transfer
 (
     meshField<Type,MeshType>& field
 )
@@ -47,10 +54,7 @@ void meshField<Type,MeshType>::transferData
     oldTimePtr_ = field.oldTimePtr_;
     field.oldTimePtr_ = nullptr;
 
-    forAll(*this, l)
-    {
-        listType::operator[](l).mshFieldPtr_ = this;
-    }
+    setFieldPointers();
 }
 
 // Main constructor
@@ -123,7 +127,7 @@ meshField<Type,MeshType>::meshField
     const bool copyBCs
 )
 :
-    PtrList<meshLevel<Type,MeshType>>(),
+    PtrList<meshLevel<Type,MeshType>>(field),
     IOdictionary
     (
         IOobject
@@ -141,7 +145,7 @@ meshField<Type,MeshType>::meshField
     oldTimePtr_(nullptr),
     boundaryConditions_()
 {
-    this->allocate(field.deep());
+    setFieldPointers();
 
     if (copyBCs)
     {
@@ -153,8 +157,6 @@ meshField<Type,MeshType>::meshField
 
         boundaryConditions_.transfer(list);
     }
-
-    *this = field;
 }
 
 template<class Type, class MeshType>
@@ -166,7 +168,7 @@ meshField<Type,MeshType>::meshField
     const bool copyBCs
 )
 :
-    PtrList<meshLevel<Type,MeshType>>(),
+    PtrList<meshLevel<Type,MeshType>>(field),
     IOdictionary
     (
         IOobject
@@ -184,7 +186,7 @@ meshField<Type,MeshType>::meshField
     oldTimePtr_(nullptr),
     boundaryConditions_()
 {
-    this->allocate(field.deep());
+    setFieldPointers();
 
     if (copyBCs)
     {
@@ -196,8 +198,6 @@ meshField<Type,MeshType>::meshField
 
         boundaryConditions_.transfer(list);
     }
-
-    *this = field;
 }
 
 template<class Type, class MeshType>
@@ -208,7 +208,11 @@ meshField<Type,MeshType>::meshField
     const bool copyBCs
 )
 :
-    PtrList<meshLevel<Type,MeshType>>(),
+    PtrList<meshLevel<Type,MeshType>>
+    (
+        const_cast<meshField<Type,MeshType>&>(tfield()),
+        tfield.isTmp()
+    ),
     IOdictionary
     (
         IOobject
@@ -226,18 +230,7 @@ meshField<Type,MeshType>::meshField
     oldTimePtr_(),
     boundaryConditions_()
 {
-    if (tfield.isTmp())
-    {
-        meshField<Type,MeshType>& field =
-            const_cast<meshField<Type,MeshType>&>(tfield());
-
-        this->transferData(field);
-    }
-    else
-    {
-        this->allocate(tfield->deep());
-        *this = tfield();
-    }
+    setFieldPointers();
 
     if (copyBCs)
     {
@@ -262,7 +255,11 @@ meshField<Type,MeshType>::meshField
     const bool copyBCs
 )
 :
-    PtrList<meshLevel<Type,MeshType>>(),
+    PtrList<meshLevel<Type,MeshType>>
+    (
+        const_cast<meshField<Type,MeshType>&>(tfield()),
+        tfield.isTmp()
+    ),
     IOdictionary
     (
         IOobject
@@ -280,18 +277,7 @@ meshField<Type,MeshType>::meshField
     oldTimePtr_(),
     boundaryConditions_()
 {
-    if (tfield.isTmp())
-    {
-        meshField<Type,MeshType>& field =
-            const_cast<meshField<Type,MeshType>&>(tfield());
-
-        this->transferData(field);
-    }
-    else
-    {
-        this->allocate(tfield->deep());
-        *this = tfield();
-    }
+    setFieldPointers();
 
     if (copyBCs)
     {
@@ -532,7 +518,7 @@ void meshField<Type,MeshType>::operator=
         meshField<Type,MeshType>& F =
             const_cast<meshField<Type,MeshType>&>(tF());
 
-        transferData(F);
+        transfer(F);
     }
     else
     {
