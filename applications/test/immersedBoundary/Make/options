@@ -2,7 +2,6 @@ EXE_INC = \
     -I../../../libraries/briscolaCore/lnInclude \
     -I../../../libraries/briscolaMesh/lnInclude \
     -I../../../libraries/briscolaFiniteVolume/lnInclude \
-	-I../../../libraries/briscolaImmersedBoundary/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude \
     -DFULLDEBUG -g -O0
 
@@ -11,5 +10,4 @@ EXE_LIBS = \
     -lbriscolaCore \
     -lbriscolaMesh \
     -lbriscolaFiniteVolume \
-    -lbriscolaImmersedBoundary \
     -lOpenFOAM

@@ -18,12 +18,10 @@ namespace Foam
 namespace briscola
 {
 
-namespace ibm
+namespace fv
 {
 
-using namespace fv;
-
-template<class MeshType>
+template<class Type, class MeshType>
 class immersedBoundary
 {
     // Mesh
@@ -43,11 +41,11 @@ class immersedBoundary
 
     // The wall distance field stores the wall distances to the
     // IB in the components of the stencils
-    meshField<stencil,MeshType> wallDist_;
+    meshField<faceScalar,MeshType> wallDist_;
 
     // The neighbor distance field stores the distances to neighboring
     // fluid cell for the quadratic fit on non-uniform grids
-    meshField<stencil, MeshType> neighborDist_;
+    meshField<faceScalar, MeshType> neighborDist_;
 
     // List of shapes making up the immersed boundary
     PtrList<shape> shapes_;
@@ -76,20 +74,20 @@ public:
     scalar wallDistance(vector, vector);
 
     // Apply penalization method to a linear system
-    void penalization(linearSystem<stencil,scalar,MeshType>&);
+    void penalization(linearSystem<stencil,Type,MeshType>&);
 
     // Apply immersed boundary method for Dirichlet BC to a linear system
-    void IBM(linearSystem<stencil,scalar,MeshType>&);
+    void IBM(linearSystem<stencil,Type,MeshType>&);
 
     // Implicit pressure correction based on staircase approximation
-    void imPCorr(linearSystem<stencil,scalar,MeshType>&);
+    void imPCorr(linearSystem<stencil,Type,MeshType>&);
 
     // Explicit pressure stencil correction for FFT solver
     tmp<colocatedScalarField> exPCorr(colocatedScalarField&);
 
 };
 
-} // end namespace ibm
+} // end namespace fv
 
 } // end namespace briscola
 

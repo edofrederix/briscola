@@ -6,7 +6,7 @@ namespace Foam
 namespace briscola
 {
 
-namespace ibm
+namespace fv
 {
 
 // Constructor
@@ -181,7 +181,7 @@ scalar cylinder::wallDistance(vector c, vector nb)
     }
 }
 
-} // end namespace ibm
+} // end namespace fv
 
 } // end namespace briscola
 

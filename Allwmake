@@ -4,7 +4,6 @@ wmake libso libraries/briscolaCore
 wmake libso libraries/briscolaMesh
 wmake libso libraries/briscolaFiniteVolume
 wmake libso libraries/briscolaVolumeOfFluid
-wmake libso libraries/briscolaImmersedBoundary
 
 wmake applications/utilities/briscolaCheckMesh
 

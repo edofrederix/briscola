@@ -1,5 +1,5 @@
-#ifndef sphere_H
-#define sphere_H
+#ifndef cylinder_H
+#define cylinder_H
 
 #include "shape.H"
 #include "vector.H"
@@ -10,36 +10,41 @@ namespace Foam
 namespace briscola
 {
 
-namespace ibm
+namespace fv
 {
 
-class sphere
+class cylinder
 :
     public shape
 {
 
-    // A sphere is defined by a center point and a radius
+    // A cylinder is defined by a center line (start, end)
+    // and a radius around the center line
 
-    vector center_;
+    vector start_;
+
+    vector end_;
 
     scalar radius_;
 
-    // The inverted switch can be set to invert sphere
+    // The inverted switch can be set to invert cylinder
 
     bool inverted_;
+
 
 public:
 
     // Construct
-    sphere
+    cylinder
     (
+        vector,
         vector,
         scalar,
         bool
     );
 
     // Destructor
-    virtual ~sphere();
+    virtual ~cylinder();
 
     bool isInside(vector);
 
@@ -47,7 +52,7 @@ public:
 
 };
 
-} // end namespace ibm
+} // end namespace fv
 
 } // end namespace briscola
 

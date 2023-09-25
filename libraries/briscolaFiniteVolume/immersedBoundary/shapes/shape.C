@@ -6,7 +6,7 @@ namespace Foam
 namespace briscola
 {
 
-namespace ibm
+namespace fv
 {
 
 // Empty constructor
@@ -19,7 +19,7 @@ shape::shape()
 shape::~shape()
 {}
 
-} // end namespace ibm
+} // end namespace fv
 
 } // end namespace briscola
 

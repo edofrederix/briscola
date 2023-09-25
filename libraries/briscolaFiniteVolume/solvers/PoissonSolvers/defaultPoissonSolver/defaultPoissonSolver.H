@@ -33,7 +33,8 @@ public:
     (
         const word,
         const dictionary&,
-        const fvMesh&
+        const fvMesh&,
+        immersedBoundary<Type,MeshType>*
     );
 
     // Solve function

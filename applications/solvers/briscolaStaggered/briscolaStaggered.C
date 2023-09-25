@@ -8,7 +8,6 @@
 using namespace Foam;
 using namespace briscola;
 using namespace fv;
-using namespace ibm;
 
 int main(int argc, char *argv[])
 {
@@ -55,22 +54,15 @@ int main(int argc, char *argv[])
         USys -= exSource;
 
         LapU = im::laplacian(nu,U);
-        USys -= 0.5*LapU;
-        USys -= 0.5*LapU.evaluate();
 
         USys -= 0.5*DivU;
         phi = ex::faceFlux(U);
-        DivU = ex::div(phi,U);
-        USys += 1.5*DivU;
-
-        USys.correctBoundaries();
+        imDivU = im::div(phi,U);
 
         // Immersed boundary
 
         if (solverDict.found("ImmersedBoundary"))
         {
-            IBs.penalization(USys);
-
             if
             (
                 solverDict.subDict("ImmersedBoundary")
@@ -78,7 +70,29 @@ int main(int argc, char *argv[])
             )
             {
                 IBs.IBM(USys);
+                IBs.IBM(LapU);
+                IBs.IBM(imDivU);
                 Info << "IBM!" << endl;
+            }
+        }
+
+        USys -= 0.5*LapU;
+        USys -= 0.5*LapU.evaluate();
+
+        DivU = imDivU.evaluate();
+        USys += 1.5*DivU;
+
+        USys.correctBoundaries();
+
+        if (solverDict.found("ImmersedBoundary"))
+        {
+            if
+            (
+                solverDict.subDict("ImmersedBoundary")
+                    .lookupOrDefault("penalization", true)
+            )
+            {
+                IBs.penalization(USys);
             }
         }
 
@@ -90,16 +104,16 @@ int main(int argc, char *argv[])
 
         if
         (
-            solverDict.found("ImmersedBoundary")
-            && solverDict.subDict("ImmersedBoundary")
-                .lookupOrDefault("PCorr", false)
+               (solverDict.found("ImmersedBoundary"))
+            && (solverDict.subDict("ImmersedBoundary")
+                    .lookupOrDefault("PCorr", false))
+            && (word(Poisson->dict().lookup("type")) == "FFT")
         )
         {
             for (int iter = 0; iter < 3; iter++)
             {
                 Poisson->solve(p, -ex::coloDiv(U)/deltaT + IBc.exPCorr(p));
             }
-            Info << "PCorr!" << endl;
         }
         else
         {

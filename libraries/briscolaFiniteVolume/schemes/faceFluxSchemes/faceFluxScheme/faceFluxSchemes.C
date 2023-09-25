@@ -2,6 +2,7 @@
 #include "addToRunTimeSelectionTable.H"
 
 #include "midPointFaceFluxScheme.H"
+#include "upwindFaceFluxScheme.H"
 
 // Also compile non-templated faceFluxScheme
 #include "faceFluxScheme.C"
@@ -19,6 +20,7 @@ defineTypeNameAndDebug(faceFluxScheme, 0);
 defineRunTimeSelectionTable(faceFluxScheme, dictionary);
 
 makeFaceFluxSchemeType(midPoint)
+makeFaceFluxSchemeType(upwind)
 
 }
 

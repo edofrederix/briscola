@@ -9,7 +9,7 @@ namespace Foam
 namespace briscola
 {
 
-namespace ibm
+namespace fv
 {
 
 class shape
@@ -32,7 +32,7 @@ public:
 
 };
 
-} // end namespace ibm
+} // end namespace fv
 
 } // end namespace briscola
 

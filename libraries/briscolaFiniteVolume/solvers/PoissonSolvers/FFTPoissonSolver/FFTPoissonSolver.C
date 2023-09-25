@@ -33,10 +33,11 @@ FFTPoissonSolver::FFTPoissonSolver
 (
     const word PoissonSolverName,
     const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    immersedBoundary<scalar,colocated>* IB
 )
 :
-    PoissonSolver<stencil,scalar,colocated>(dict,fvMsh),
+    PoissonSolver<stencil,scalar,colocated>(dict,fvMsh,IB),
     fvMsh_(fvMsh),
     FFTPlan_(fvMsh),
     decomp_(fvMsh, FFTPlan_.decompType()),
@@ -53,7 +54,7 @@ FFTPoissonSolver::FFTPoissonSolver
     const fvMesh& fvMsh
 )
 :
-    PoissonSolver<stencil,scalar,colocated>(dictionary(),fvMsh),
+    PoissonSolver<stencil,scalar,colocated>(dictionary(),fvMsh, nullptr),
     fvMsh_(fvMsh),
     FFTPlan_(fvMsh),
     decomp_(fvMsh, FFTPlan_.decompType()),

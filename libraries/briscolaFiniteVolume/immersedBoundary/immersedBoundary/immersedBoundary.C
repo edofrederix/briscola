@@ -6,7 +6,7 @@ namespace Foam
 namespace briscola
 {
 
-namespace ibm
+namespace fv
 {
 
 using Foam::max;
@@ -15,8 +15,8 @@ using Foam::sqr;
 
 // Constructor
 
-template<class MeshType>
-immersedBoundary<MeshType>::immersedBoundary
+template<class Type, class MeshType>
+immersedBoundary<Type,MeshType>::immersedBoundary
 (
     IOdictionary solverDict,
     const fvMesh& fvMsh
@@ -112,10 +112,7 @@ immersedBoundary<MeshType>::immersedBoundary
             {
                 forAllCells(mask_[l][d], i, j, k)
                 {
-                    // Base block indices
-                    const label x = i+1 - mask_[l][d].I().left();
-                    const label y = j+1 - mask_[l][d].I().bottom();
-                    const label z = k+1 - mask_[l][d].I().aft();
+                    const labelVector ijk(i,j,k);
 
                     mask_[l][d](i,j,k) = 0.0;
                     wallAdjMask_[l][d](i,j,k) = 0.0;
@@ -128,34 +125,30 @@ immersedBoundary<MeshType>::immersedBoundary
                     }
                     else
                     {
-                        vector c(CC[l][d](i,j,k));
+                        const vector c(CC[l][d](i,j,k));
 
-                        for (int dir = 1; dir < 7; dir++)
+                        for (int dir = 0; dir < 6; dir++)
                         {
-                            // dir and faceOffsets are shifted by 1 due to
-                            // stencil starting with center coefficient
-                            const labelVector fo = faceOffsets[dir-1];
-                            const label oppositeDir = faceNumber(-fo) + 1;
-
-                            const labelVector xyz(x,y,z);
+                            const labelVector fo = faceOffsets[dir];
+                            const label oppositeDir = faceNumber(-fo);
 
                             if
                             (
-                                this->isInside(CC[l][d].B()(xyz+fo))
+                                this->isInside(CC[l][d](ijk+fo))
                             )
                             {
                                 wallAdjMask_[l][d](i,j,k) = 1.0;
 
                                 // Neighbor cell in the IB
-                                vector nb(CC[l][d].B()(xyz+fo));
-                                scalar wd = this->wallDistance(c, nb);
-                                scalar xi = (mag(c-nb)-wd)/mag(c-nb);
+                                const vector nb(CC[l][d](ijk+fo));
+                                const scalar wd = this->wallDistance(c,nb);
+                                const scalar xi = (mag(c-nb)-wd)/mag(c-nb);
 
                                 wallDist_[l][d](i,j,k)[dir] = xi;
 
                                 // Neighbor cell in the opposite direction
-                                vector nbo(CC[l][d].B()(xyz-fo));
-                                scalar xi2 = mag(nbo-nb)/mag(c-nb);
+                                const vector nbo(CC[l][d](ijk-fo));
+                                const scalar xi2 = mag(nbo-nb)/mag(c-nb);
 
                                 neighborDist_[l][d](i,j,k)[oppositeDir] = xi2;
                             }
@@ -174,12 +167,12 @@ immersedBoundary<MeshType>::immersedBoundary
     }
 }
 
-template<class MeshType>
-immersedBoundary<MeshType>::~immersedBoundary()
+template<class Type, class MeshType>
+immersedBoundary<Type,MeshType>::~immersedBoundary()
 {}
 
-template<class MeshType>
-bool immersedBoundary<MeshType>::isInside(vector xyz)
+template<class Type, class MeshType>
+bool immersedBoundary<Type,MeshType>::isInside(vector xyz)
 {
     // Check if xyz is inside any of the IB shapes
     for (int s = 0; s < shapes_.size(); s++)
@@ -193,8 +186,8 @@ bool immersedBoundary<MeshType>::isInside(vector xyz)
     return false;
 }
 
-template<class MeshType>
-scalar immersedBoundary<MeshType>::wallDistance(vector c, vector nb)
+template<class Type, class MeshType>
+scalar immersedBoundary<Type,MeshType>::wallDistance(vector c, vector nb)
 {
     if (this->isInside(c))
     {
@@ -247,10 +240,10 @@ scalar immersedBoundary<MeshType>::wallDistance(vector c, vector nb)
     return dist;
 }
 
-template<class MeshType>
-void immersedBoundary<MeshType>::penalization
+template<class Type, class MeshType>
+void immersedBoundary<Type,MeshType>::penalization
 (
-    linearSystem<stencil,scalar,MeshType>& ls
+    linearSystem<stencil,Type,MeshType>& ls
 )
 {
     // Set coefficients and sources to 0 in IB
@@ -270,33 +263,37 @@ void immersedBoundary<MeshType>::penalization
     }
 }
 
-template<class MeshType>
-void immersedBoundary<MeshType>::IBM
+template<class Type, class MeshType>
+void immersedBoundary<Type,MeshType>::IBM
 (
-    linearSystem<stencil,scalar,MeshType>& ls
+    linearSystem<stencil,Type,MeshType>& ls
 )
 {
-    // We only apply the IBM on the finest mesh (l == 0)
-    forAll(ls.A()[0], d)
+    forAll(ls.A(), l)
     {
-        forAllCells(ls.A()[0][d], i, j, k)
+        // int l = 0;
+
+    // We only apply the IBM on the finest mesh (l == 0)
+    forAll(ls.A()[l], d)
+    {
+        forAllCells(ls.A()[l][d], i, j, k)
         {
             // Modify stencils in IB-adjacent cells
-            if (wallAdjMask_[0][d](i,j,k) == 1)
+            if (wallAdjMask_[l][d](i,j,k) == 1.0)
             {
-                // Loop over stencil directions (skipping center)
-                for (int dir = 1; dir < 7; dir++)
+                // Loop over face number directions
+                for (int dir = 0; dir < 6; dir++)
                 {
-                    // dir and faceOffsets are shifted by 1 due to
-                    // stencil starting with center coefficient
                     const label oppositeDir =
-                        faceNumber(-faceOffsets[dir-1]) + 1;
+                        faceNumber(-faceOffsets[dir]);
 
-                    if (wallDist_[0][d](i,j,k)[dir] >= 0)
+                    if (wallDist_[l][d](i,j,k)[dir] >= 0)
                     {
-                        scalar xi = wallDist_[0][d](i,j,k)[dir];
+                        const scalar xi
+                            = wallDist_[l][d](i,j,k)[dir];
 
-                        scalar xi2 = neighborDist_[0][d](i,j,k)[oppositeDir];
+                        const scalar xi2
+                            = neighborDist_[l][d](i,j,k)[oppositeDir];
 
                         scalar w0 = 2.0 /
                             (
@@ -312,24 +309,27 @@ void immersedBoundary<MeshType>::IBM
                             w2 = xi/((xi2-xi)*(xi2-1.0));
                         }
 
-                        const scalar a0 = ls.A()[0][d](i,j,k)[dir];
+                        // faceScalar and stencil directions are offset by 1
 
-                        ls.A()[0][d](i,j,k)[dir] = 0;
+                        const scalar a0 = ls.A()[l][d](i,j,k)[dir+1];
 
-                        ls.A()[0][d](i,j,k).center() += a0*w1;
+                        ls.A()[l][d](i,j,k)[dir+1] = 0.0;
 
-                        ls.A()[0][d](i,j,k)[oppositeDir] += a0*w2;
+                        ls.A()[l][d](i,j,k).center() += a0*w1;
+
+                        ls.A()[l][d](i,j,k)[oppositeDir+1] += a0*w2;
                     }
                 }
             }
         }
     }
+    }
 }
 
-template<class MeshType>
-void immersedBoundary<MeshType>::imPCorr
+template<class Type, class MeshType>
+void immersedBoundary<Type,MeshType>::imPCorr
 (
-    linearSystem<stencil,scalar,MeshType>& ls
+    linearSystem<stencil,Type,MeshType>& ls
 )
 {
     // We only apply the IBM on the finest mesh (l == 0)
@@ -337,19 +337,31 @@ void immersedBoundary<MeshType>::imPCorr
     {
         forAllCells(ls.A()[0][d], i, j, k)
         {
+            const labelVector ijk(i,j,k);
+
             // Modify stencils in IB-adjacent cells
             if (wallAdjMask_[0][d](i,j,k) == 1)
             {
-                // Loop over stencil directions (skipping center)
-                for (int dir = 1; dir < 7; dir++)
+                // Loop over face number directions
+                for (int dir = 0; dir < 6; dir++)
                 {
                     if (wallDist_[0][d](i,j,k)[dir] >= 0)
                     {
-                        const scalar a = ls.A()[0][d](i,j,k)[dir];
+                        const labelVector fo = faceOffsets[dir];
+                        const label oppositeDir = faceNumber(-fo);
 
-                        ls.A()[0][d](i,j,k)[dir] = 0;
+                        // faceScalar and stencil directions are offset by 1
+
+                        const scalar a = ls.A()[0][d](i,j,k)[dir+1];
+
+                        ls.A()[0][d](i,j,k)[dir+1] = 0.0;
 
                         ls.A()[0][d](i,j,k).center() += a;
+
+                        const scalar ao = ls.A()[0][d](ijk+fo)[oppositeDir];
+
+                        ls.A()[0][d](ijk+fo)[oppositeDir] = 0.0;
+                        ls.A()[0][d](ijk+fo).center() += ao;
                     }
                 }
             }
@@ -357,8 +369,8 @@ void immersedBoundary<MeshType>::imPCorr
     }
 }
 
-template<class MeshType>
-tmp<colocatedScalarField> immersedBoundary<MeshType>::exPCorr
+template<class Type, class MeshType>
+tmp<colocatedScalarField> immersedBoundary<Type,MeshType>::exPCorr
 (
     colocatedScalarField& p
 )
@@ -439,13 +451,22 @@ tmp<colocatedScalarField> immersedBoundary<MeshType>::exPCorr
     return tpCorr;
 }
 
-defineTemplateTypeNameAndDebug(immersedBoundary<colocated>, 0);
-defineTemplateTypeNameAndDebug(immersedBoundary<staggered>, 0);
+typedef immersedBoundary<scalar,colocated> colocatedScalarImmersedBoundary;
+typedef immersedBoundary<vector,colocated> colocatedVectorImmersedBoundary;
+typedef immersedBoundary<scalar,staggered> staggeredScalarImmersedBoundary;
+typedef immersedBoundary<vector,staggered> staggeredVectorImmersedBoundary;
 
-template class immersedBoundary<colocated>;
-template class immersedBoundary<staggered>;
+defineTemplateTypeNameAndDebug(colocatedScalarImmersedBoundary, 0);
+defineTemplateTypeNameAndDebug(colocatedVectorImmersedBoundary, 0);
+defineTemplateTypeNameAndDebug(staggeredScalarImmersedBoundary, 0);
+defineTemplateTypeNameAndDebug(staggeredVectorImmersedBoundary, 0);
 
-} // end namespace ibm
+template class immersedBoundary<scalar,colocated>;
+template class immersedBoundary<vector,colocated>;
+template class immersedBoundary<scalar,staggered>;
+template class immersedBoundary<vector,staggered>;
+
+} // end namespace fv
 
 } // end namespace briscola
 

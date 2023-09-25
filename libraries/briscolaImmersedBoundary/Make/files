@@ -1,7 +1,0 @@
-immersedBoundary/immersedBoundary.C
-
-shapes/shape.C
-shapes/cylinder/cylinder.C
-shapes/sphere/sphere.C
-
-LIB = $(FOAM_USER_LIBBIN)/libbriscolaImmersedBoundary

@@ -10,10 +10,16 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-PoissonSolver<SType,Type,MeshType>::PoissonSolver(const dictionary& dict, const fvMesh& fvMsh)
+PoissonSolver<SType,Type,MeshType>::PoissonSolver
+(
+    const dictionary& dict,
+    const fvMesh& fvMsh,
+    immersedBoundary<Type,MeshType>* IB
+)
 :
     dict_(dict),
-    fvMsh_(fvMsh)
+    fvMsh_(fvMsh),
+    IB_(IB)
 {}
 
 template<class SType, class Type, class MeshType>
@@ -24,7 +30,8 @@ template<class SType, class Type, class MeshType>
 autoPtr<PoissonSolver<SType,Type,MeshType>> PoissonSolver<SType,Type,MeshType>::New
 (
     const word PoissonSolverName,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    immersedBoundary<Type,MeshType>* IB
 )
 {
     const dictionary dict
@@ -44,7 +51,7 @@ autoPtr<PoissonSolver<SType,Type,MeshType>> PoissonSolver<SType,Type,MeshType>::
 
     return autoPtr<PoissonSolver<SType,Type,MeshType>>
     (
-        cstrIter()(PoissonSolverName, dict, fvMsh)
+        cstrIter()(PoissonSolverName, dict, fvMsh, IB)
     );
 }
 

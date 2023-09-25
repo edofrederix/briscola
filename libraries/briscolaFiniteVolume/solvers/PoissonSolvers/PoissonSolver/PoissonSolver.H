@@ -8,6 +8,7 @@
 #include "colocatedFields.H"
 #include "staggeredFields.H"
 #include "dictionary.H"
+#include "immersedBoundary.H"
 
 namespace Foam
 {
@@ -29,6 +30,9 @@ protected:
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
+    // Pointer to immersed boundary
+    immersedBoundary<Type,MeshType>* IB_;
+
 public:
 
     // Runtime type information
@@ -43,19 +47,21 @@ public:
         (
             const word PoissonSolverName,
             const dictionary& dict,
-            const fvMesh& fvMsh
+            const fvMesh& fvMsh,
+            immersedBoundary<Type,MeshType>* IB
         ),
-        (PoissonSolverName, dict, fvMsh)
+        (PoissonSolverName, dict, fvMsh, IB)
     );
 
     // Construct from dictionary and mesh
-    PoissonSolver(const dictionary&, const fvMesh&);
+    PoissonSolver(const dictionary&, const fvMesh&, immersedBoundary<Type,MeshType>*);
 
     // Selector
     static autoPtr<PoissonSolver<SType,Type,MeshType>> New
     (
         const word,
-        const fvMesh&
+        const fvMesh&,
+        immersedBoundary<Type,MeshType>*
     );
 
     // Destructor

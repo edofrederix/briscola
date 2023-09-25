@@ -15,10 +15,11 @@ defaultPoissonSolver<SType,Type,MeshType>::defaultPoissonSolver
 (
     const word PoissonSolverName,
     const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    immersedBoundary<Type,MeshType>* IB
 )
 :
-    PoissonSolver<SType,Type,MeshType>(dict,fvMsh),
+    PoissonSolver<SType,Type,MeshType>(dict,fvMsh,IB),
     solverPtr_
     (
         word(dict.lookup("type")) == "default"
@@ -66,6 +67,11 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
     }
 
     sys.correctBoundaries();
+
+    if (this->IB_ != nullptr)
+    {
+        this->IB_->imPCorr(sys);
+    }
 
     solverPtr_->solve(sys);
 }
