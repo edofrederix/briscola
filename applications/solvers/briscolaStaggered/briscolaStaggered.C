@@ -54,35 +54,17 @@ int main(int argc, char *argv[])
         USys -= exSource;
 
         LapU = im::laplacian(nu,U);
-
-        USys -= 0.5*DivU;
-        phi = ex::faceFlux(U);
-        imDivU = im::div(phi,U);
-
-        // Immersed boundary
-
-        if (solverDict.found("ImmersedBoundary"))
-        {
-            if
-            (
-                solverDict.subDict("ImmersedBoundary")
-                    .lookupOrDefault("IBM", true)
-            )
-            {
-                IBs.IBM(USys);
-                IBs.IBM(LapU);
-                IBs.IBM(imDivU);
-                Info << "IBM!" << endl;
-            }
-        }
-
         USys -= 0.5*LapU;
         USys -= 0.5*LapU.evaluate();
 
-        DivU = imDivU.evaluate();
+        USys -= 0.5*DivU;
+        phi = ex::faceFlux(U);
+        DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
         USys.correctBoundaries();
+
+        // Immersed boundary corrections
 
         if (solverDict.found("ImmersedBoundary"))
         {
@@ -94,6 +76,15 @@ int main(int argc, char *argv[])
             {
                 IBs.penalization(USys);
             }
+
+            if
+            (
+                solverDict.subDict("ImmersedBoundary")
+                    .lookupOrDefault("IBM", true)
+            )
+            {
+                IBs.IBM(USys);
+            }
         }
 
         // Solve predictor
@@ -102,23 +93,7 @@ int main(int argc, char *argv[])
 
         // Pressure equation
 
-        if
-        (
-               (solverDict.found("ImmersedBoundary"))
-            && (solverDict.subDict("ImmersedBoundary")
-                    .lookupOrDefault("PCorr", false))
-            && (word(Poisson->dict().lookup("type")) == "FFT")
-        )
-        {
-            for (int iter = 0; iter < 3; iter++)
-            {
-                Poisson->solve(p, -ex::coloDiv(U)/deltaT + IBc.exPCorr(p));
-            }
-        }
-        else
-        {
-            Poisson->solve(p, -ex::coloDiv(U)/deltaT);
-        }
+        Poisson->solve(p, -ex::coloDiv(U)/deltaT);
 
         // Correction
 

@@ -96,8 +96,7 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
     PoissonSolver<stencil,scalar,colocated>::New
     (
         pSys.x().name(),
-        fvMsh,
-        nullptr
+        fvMsh
     )
 );
 

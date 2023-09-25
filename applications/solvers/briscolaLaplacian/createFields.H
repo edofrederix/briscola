@@ -46,7 +46,6 @@ autoPtr<PoissonSolver<stencil,scalar,MESHTYPE>> Poisson
     PoissonSolver<stencil,scalar,MESHTYPE>::New
     (
         T.name(),
-        fvMsh,
-        nullptr
+        fvMsh
     )
 );

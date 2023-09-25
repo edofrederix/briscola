@@ -63,8 +63,7 @@ public:
     (
         const word,
         const dictionary&,
-        const fvMesh&,
-        immersedBoundary<scalar,colocated>*
+        const fvMesh&
     );
 
     // Construct from mesh

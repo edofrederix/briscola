@@ -269,17 +269,13 @@ void immersedBoundary<Type,MeshType>::IBM
     linearSystem<stencil,Type,MeshType>& ls
 )
 {
-    forAll(ls.A(), l)
-    {
-        // int l = 0;
-
     // We only apply the IBM on the finest mesh (l == 0)
-    forAll(ls.A()[l], d)
+    forAll(ls.A()[0], d)
     {
-        forAllCells(ls.A()[l][d], i, j, k)
+        forAllCells(ls.A()[0][d], i, j, k)
         {
             // Modify stencils in IB-adjacent cells
-            if (wallAdjMask_[l][d](i,j,k) == 1.0)
+            if (wallAdjMask_[0][d](i,j,k) == 1.0)
             {
                 // Loop over face number directions
                 for (int dir = 0; dir < 6; dir++)
@@ -287,13 +283,13 @@ void immersedBoundary<Type,MeshType>::IBM
                     const label oppositeDir =
                         faceNumber(-faceOffsets[dir]);
 
-                    if (wallDist_[l][d](i,j,k)[dir] >= 0)
+                    if (wallDist_[0][d](i,j,k)[dir] >= 0)
                     {
                         const scalar xi
-                            = wallDist_[l][d](i,j,k)[dir];
+                            = wallDist_[0][d](i,j,k)[dir];
 
                         const scalar xi2
-                            = neighborDist_[l][d](i,j,k)[oppositeDir];
+                            = neighborDist_[0][d](i,j,k)[oppositeDir];
 
                         scalar w0 = 2.0 /
                             (
@@ -311,144 +307,18 @@ void immersedBoundary<Type,MeshType>::IBM
 
                         // faceScalar and stencil directions are offset by 1
 
-                        const scalar a0 = ls.A()[l][d](i,j,k)[dir+1];
-
-                        ls.A()[l][d](i,j,k)[dir+1] = 0.0;
-
-                        ls.A()[l][d](i,j,k).center() += a0*w1;
-
-                        ls.A()[l][d](i,j,k)[oppositeDir+1] += a0*w2;
-                    }
-                }
-            }
-        }
-    }
-    }
-}
-
-template<class Type, class MeshType>
-void immersedBoundary<Type,MeshType>::imPCorr
-(
-    linearSystem<stencil,Type,MeshType>& ls
-)
-{
-    // We only apply the IBM on the finest mesh (l == 0)
-    forAll(ls.A()[0], d)
-    {
-        forAllCells(ls.A()[0][d], i, j, k)
-        {
-            const labelVector ijk(i,j,k);
-
-            // Modify stencils in IB-adjacent cells
-            if (wallAdjMask_[0][d](i,j,k) == 1)
-            {
-                // Loop over face number directions
-                for (int dir = 0; dir < 6; dir++)
-                {
-                    if (wallDist_[0][d](i,j,k)[dir] >= 0)
-                    {
-                        const labelVector fo = faceOffsets[dir];
-                        const label oppositeDir = faceNumber(-fo);
-
-                        // faceScalar and stencil directions are offset by 1
-
-                        const scalar a = ls.A()[0][d](i,j,k)[dir+1];
+                        const scalar a0 = ls.A()[0][d](i,j,k)[dir+1];
 
                         ls.A()[0][d](i,j,k)[dir+1] = 0.0;
 
-                        ls.A()[0][d](i,j,k).center() += a;
+                        ls.A()[0][d](i,j,k).center() += a0*w1;
 
-                        const scalar ao = ls.A()[0][d](ijk+fo)[oppositeDir];
-
-                        ls.A()[0][d](ijk+fo)[oppositeDir] = 0.0;
-                        ls.A()[0][d](ijk+fo).center() += ao;
+                        ls.A()[0][d](i,j,k)[oppositeDir+1] += a0*w2;
                     }
                 }
             }
         }
     }
-}
-
-template<class Type, class MeshType>
-tmp<colocatedScalarField> immersedBoundary<Type,MeshType>::exPCorr
-(
-    colocatedScalarField& p
-)
-{
-    tmp<colocatedScalarField> tpCorr
-    (
-        new colocatedScalarField
-        (
-            "tpCorr",
-            p.fvMsh()
-        )
-    );
-
-    colocatedScalarField& pCorr = tpCorr.ref();
-
-    const PtrList<scalarList>& cellSizes
-    (
-        p.fvMsh().msh().cast<rectilinearMesh>().globalCellSizes()
-    );
-
-    forAllCells(pCorr[0][0], i, j, k)
-    {
-        pCorr[0][0](i,j,k) = 0;
-
-        // Modify stencils in IB-adjacent cells
-        if (wallAdjMask_[0][0](i,j,k) == 1)
-        {
-            if (wallDist_[0][0](i,j,k).left() >= 0)
-            {
-                pCorr[0][0](i,j,k) += p[0][0](i,j,k)
-                    / sqr(cellSizes[0][i]);
-                pCorr[0][0](i,j,k) -= p[0][0](i-1,j,k)
-                    / sqr(cellSizes[0][i]);
-            }
-
-            if (wallDist_[0][0](i,j,k).bottom() >= 0)
-            {
-                pCorr[0][0](i,j,k) += p[0][0](i,j,k)
-                    / sqr(cellSizes[1][j]);
-                pCorr[0][0](i,j,k) -= p[0][0](i,j-1,k)
-                    / sqr(cellSizes[1][j]);
-            }
-
-            if (wallDist_[0][0](i,j,k).aft() >= 0)
-            {
-                pCorr[0][0](i,j,k) += p[0][0](i,j,k)
-                    / sqr(cellSizes[2][k]);
-                pCorr[0][0](i,j,k) -= p[0][0](i,j,k-1)
-                    / sqr(cellSizes[2][k]);
-            }
-
-            if (wallDist_[0][0](i,j,k).right() >= 0)
-            {
-                pCorr[0][0](i,j,k) += p[0][0](i,j,k)
-                    / sqr(cellSizes[0][i]);
-                pCorr[0][0](i,j,k) -= p[0][0](i+1,j,k)
-                    / sqr(cellSizes[0][i]);
-            }
-
-            if (wallDist_[0][0](i,j,k).top() >= 0)
-            {
-                pCorr[0][0](i,j,k) += p[0][0](i,j,k)
-                    / sqr(cellSizes[1][j]);
-                pCorr[0][0](i,j,k) -= p[0][0](i,j+1,k)
-                    / sqr(cellSizes[1][j]);
-            }
-
-            if (wallDist_[0][0](i,j,k).fore() >= 0)
-            {
-                pCorr[0][0](i,j,k) += p[0][0](i,j,k)
-                    / sqr(cellSizes[2][k]);
-                pCorr[0][0](i,j,k) -= p[0][0](i,j,k+1)
-                    / sqr(cellSizes[2][k]);
-            }
-        }
-    }
-
-    return tpCorr;
 }
 
 typedef immersedBoundary<scalar,colocated> colocatedScalarImmersedBoundary;

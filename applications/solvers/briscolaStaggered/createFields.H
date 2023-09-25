@@ -80,7 +80,6 @@ imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
 // Immersed boundary
 
 immersedBoundary<scalar,staggered> IBs(solverDict, fvMsh);
-immersedBoundary<scalar,colocated> IBc(solverDict, fvMsh);
 
 // Solvers
 
@@ -100,8 +99,7 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
     PoissonSolver<stencil,scalar,colocated>::New
     (
         p.name(),
-        fvMsh,
-        &IBc
+        fvMsh
     )
 );
 
@@ -112,7 +110,6 @@ phi = ex::faceFlux(U);
 // Stencils
 
 linearSystem<stencil,scalar,staggered> LapU(U);
-linearSystem<stencil,scalar,staggered> imDivU(U);
 
 // Adams-Bashforth source
 
