@@ -88,33 +88,27 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
 
     staggeredFaceScalarField& Flux = tFlux.ref();
 
+    Flux = Zero;
+
+    const staggeredFaceScalarField& fa =
+        this->fvMsh().metrics<staggered>().faceAreas();
+
     forAll(field, l)
     {
-        const staggeredScalarDirection& f0 = field[l][0];
-        const staggeredScalarDirection& f1 = field[l][1];
-        const staggeredScalarDirection& f2 = field[l][2];
-
         forAll(field[l], d)
         {
-            staggeredFaceScalarDirection& F = Flux[l][d];
-
             const labelVector padding(staggered::padding[d]);
 
             const labelVector ox(d == 0 ? unitX : padding);
             const labelVector oy(d == 1 ? unitY : padding);
             const labelVector oz(d == 2 ? unitZ : padding);
 
-            const staggeredFaceScalarDirection& fa =
-                this->fvMsh().metrics<staggered>().faceAreas()[l][d];
-
             // Left/right flux always come from the x mesh direction, bottom/top
             // flux from the y mesh direction and aft/fore flux from the z mesh
             // direction. If the flux direction does not match the mesh
             // direction, we must average in the direction of mesh padding
 
-            F = Zero;
-
-            forAllCells(F, i, j, k)
+            forAllCells(Flux[l][d], i, j, k)
             {
                 const labelVector ijk(i,j,k);
 
@@ -122,16 +116,16 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
                 const labelVector ijkt(ijk+unitY);
                 const labelVector ijkf(ijk+unitZ);
 
-                F(ijk) =
-                    0.5*fa(ijk)
+                Flux(l,d,ijk) =
+                    0.5*fa(l,d,ijk)
                   * faceScalar
                     (
-                      - f0(ijk)  - f0(ijk  - ox),
-                        f0(ijkr) + f0(ijkr - ox),
-                      - f1(ijk)  - f1(ijk  - oy),
-                        f1(ijkt) + f1(ijkt - oy),
-                      - f2(ijk)  - f2(ijk  - oz),
-                        f2(ijkf) + f2(ijkf - oz)
+                      - field(l,0,ijk)  - field(l,0,ijk -ox),
+                        field(l,0,ijkr) + field(l,0,ijkr-ox),
+                      - field(l,1,ijk)  - field(l,1,ijk -oy),
+                        field(l,1,ijkt) + field(l,1,ijkt-oy),
+                      - field(l,2,ijk)  - field(l,2,ijk -oz),
+                        field(l,2,ijkf) + field(l,2,ijkf-oz)
                     );
             }
         }

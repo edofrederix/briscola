@@ -30,15 +30,13 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 
         forAll(fc[l], d)
         {
-            meshDirection<faceVector,MeshType>& fcld = fc[l][d];
-
             const vector shift = MeshType::shift[d];
 
-            forAllCells(fcld, i, j, k)
+            forAllCells(fc[l][d], i, j, k)
             {
                 vector ijk(vector(i,j,k)+shift);
 
-                fcld(i,j,k).left() =
+                fc(l,d,i,j,k).left() =
                     0.25
                   * (
                         points.interp(ijk)
@@ -47,7 +45,7 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
                       + points.interp(ijk+vector(unitYZ))
                     );
 
-                fcld(i,j,k).right() =
+                fc(l,d,i,j,k).right() =
                     0.25
                   * (
                         points.interp(ijk+vector(unitX))
@@ -56,7 +54,7 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
                       + points.interp(ijk+vector(unitXYZ))
                     );
 
-                fcld(i,j,k).bottom() =
+                fc(l,d,i,j,k).bottom() =
                     0.25
                   * (
                         points.interp(ijk)
@@ -65,7 +63,7 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
                       + points.interp(ijk+vector(unitXZ))
                     );
 
-                fcld(i,j,k).top() =
+                fc(l,d,i,j,k).top() =
                     0.25
                   * (
                         points.interp(ijk+vector(unitY))
@@ -74,7 +72,7 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
                       + points.interp(ijk+vector(unitXYZ))
                     );
 
-                fcld(i,j,k).aft() =
+                fc(l,d,i,j,k).aft() =
                     0.25
                   * (
                         points.interp(ijk)
@@ -83,7 +81,7 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
                       + points.interp(ijk+vector(unitXY))
                     );
 
-                fcld(i,j,k).fore() =
+                fc(l,d,i,j,k).fore() =
                     0.25
                   * (
                         points.interp(ijk+vector(unitZ))
@@ -111,38 +109,36 @@ void fvMeshMetrics<MeshType>::calculateEdgeCenters()
 
         forAll(ec[l], d)
         {
-            meshDirection<edgeVector,MeshType>& ecld = ec[l][d];
-
             const vector shift = MeshType::shift[d];
 
-            forAllCells(ecld, i, j, k)
+            forAllCells(ec[l][d], i, j, k)
             {
                 vector ijk(vector(i,j,k)+shift);
 
                 // Edges in x
 
-                ecld(i,j,k).ba() =
+                ec(l,d,i,j,k).ba() =
                     0.5
                   * (
                         points.interp(ijk)
                       + points.interp(ijk+vector(unitX))
                     );
 
-                ecld(i,j,k).ta() =
+                ec(l,d,i,j,k).ta() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitY))
                       + points.interp(ijk+vector(unitXY))
                     );
 
-                ecld(i,j,k).bf() =
+                ec(l,d,i,j,k).bf() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitZ))
                       + points.interp(ijk+vector(unitXZ))
                     );
 
-                ecld(i,j,k).tf() =
+                ec(l,d,i,j,k).tf() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitYZ))
@@ -151,28 +147,28 @@ void fvMeshMetrics<MeshType>::calculateEdgeCenters()
 
                 // Edges in y
 
-                ecld(i,j,k).la() =
+                ec(l,d,i,j,k).la() =
                     0.5
                   * (
                         points.interp(ijk)
                       + points.interp(ijk+vector(unitY))
                     );
 
-                ecld(i,j,k).ra() =
+                ec(l,d,i,j,k).ra() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitX))
                       + points.interp(ijk+vector(unitXY))
                     );
 
-                ecld(i,j,k).lf() =
+                ec(l,d,i,j,k).lf() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitZ))
                       + points.interp(ijk+vector(unitYZ))
                     );
 
-                ecld(i,j,k).rf() =
+                ec(l,d,i,j,k).rf() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitXZ))
@@ -181,28 +177,28 @@ void fvMeshMetrics<MeshType>::calculateEdgeCenters()
 
                 // Edges in z
 
-                ecld(i,j,k).lb() =
+                ec(l,d,i,j,k).lb() =
                     0.5
                   * (
                         points.interp(ijk)
                       + points.interp(ijk+vector(unitZ))
                     );
 
-                ecld(i,j,k).rb() =
+                ec(l,d,i,j,k).rb() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitX))
                       + points.interp(ijk+vector(unitXZ))
                     );
 
-                ecld(i,j,k).lt() =
+                ec(l,d,i,j,k).lt() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitY))
                       + points.interp(ijk+vector(unitYZ))
                     );
 
-                ecld(i,j,k).rt() =
+                ec(l,d,i,j,k).rt() =
                     0.5
                   * (
                         points.interp(ijk+vector(unitXY))
@@ -228,22 +224,20 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
 
         forAll(vc[l], d)
         {
-            meshDirection<vertexVector,MeshType>& vcld = vc[l][d];
-
             const vector shift = MeshType::shift[d];
 
-            forAllCells(vcld, i, j, k)
+            forAllCells(vc[l][d], i, j, k)
             {
                 vector ijk(vector(i,j,k)+shift);
 
-                vcld(i,j,k).lba() = points.interp(ijk);
-                vcld(i,j,k).rba() = points.interp(ijk+vector(unitX));
-                vcld(i,j,k).lta() = points.interp(ijk+vector(unitY));
-                vcld(i,j,k).rta() = points.interp(ijk+vector(unitXY));
-                vcld(i,j,k).lbf() = points.interp(ijk+vector(unitZ));
-                vcld(i,j,k).rbf() = points.interp(ijk+vector(unitXZ));
-                vcld(i,j,k).ltf() = points.interp(ijk+vector(unitYZ));
-                vcld(i,j,k).rtf() = points.interp(ijk+vector(unitXYZ));
+                vc(l,d,i,j,k).lba() = points.interp(ijk);
+                vc(l,d,i,j,k).rba() = points.interp(ijk+vector(unitX));
+                vc(l,d,i,j,k).lta() = points.interp(ijk+vector(unitY));
+                vc(l,d,i,j,k).rta() = points.interp(ijk+vector(unitXY));
+                vc(l,d,i,j,k).lbf() = points.interp(ijk+vector(unitZ));
+                vc(l,d,i,j,k).rbf() = points.interp(ijk+vector(unitXZ));
+                vc(l,d,i,j,k).ltf() = points.interp(ijk+vector(unitYZ));
+                vc(l,d,i,j,k).rtf() = points.interp(ijk+vector(unitXYZ));
             }
         }
     }
@@ -273,12 +267,9 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
 
         forAll(fn[l], d)
         {
-            meshDirection<faceVector,MeshType>& fnld = fn[l][d];
-            meshDirection<faceScalar,MeshType>& fald = fa[l][d];
-
             const vector shift = MeshType::shift[d];
 
-            forAllCells(fnld, i, j, k)
+            forAllCells(fn[l][d], i, j, k)
             {
                 vector ijk(vector(i,j,k)+shift);
 
@@ -360,7 +351,7 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
                         )
                     );
 
-                fnld(i,j,k) =
+                fn(l,d,i,j,k) =
                     faceVector
                     (
                         normalised(left),
@@ -371,7 +362,7 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
                         normalised(fore)
                     );
 
-                fald(i,j,k) =
+                fa(l,d,i,j,k) =
                     faceScalar
                     (
                         mag(left),
@@ -412,15 +403,13 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
 
         forAll(cc[l], d)
         {
-            meshDirection<vector,MeshType>& ccld = cc[l][d];
-
             const vector shift = MeshType::shift[d];
 
-            forAllCells(ccld, i, j, k)
+            forAllCells(cc[l][d], i, j, k)
             {
                 vector ijk(vector(i,j,k)+shift);
 
-                ccld(i,j,k) =
+                cc(l,d,i,j,k) =
                     0.125
                   * (
                         points.interp(ijk)
@@ -461,8 +450,6 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
 
         forAll(cc[l], d)
         {
-            meshDirection<vector,MeshType>& ccld = cc[l][d];
-
             labelVector bo;
 
             for (bo.x() = -1; bo.x() <= 1; bo.x()++)
@@ -470,8 +457,8 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
             for (bo.z() = -1; bo.z() <= 1; bo.z()++)
             if (cmptSum(cmptMag(bo)) > 0)
             {
-                const labelVector S(ccld.boundaryStart(bo));
-                const labelVector E(ccld.boundaryEnd(bo));
+                const labelVector S(cc.boundaryStart(l,d,bo));
+                const labelVector E(cc.boundaryEnd(l,d,bo));
 
                 const label fi = faceNumber(bo);
                 const label ei = edgeNumber(bo);
@@ -485,10 +472,10 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
                 for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
                 for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                 {
-                    ccld(ijk+bo) =
-                        bod == 1 ? (2.0*fc[l][d](ijk)[fi] - ccld(ijk))
-                      : bod == 2 ? (2.0*ec[l][d](ijk)[ei] - ccld(ijk))
-                      :            (2.0*vc[l][d](ijk)[vi] - ccld(ijk));
+                    cc(l,d,ijk+bo) =
+                        bod == 1 ? (2.0*fc(l,d,ijk)[fi] - cc(l,d,ijk))
+                      : bod == 2 ? (2.0*ec(l,d,ijk)[ei] - cc(l,d,ijk))
+                      :            (2.0*vc(l,d,ijk)[vi] - cc(l,d,ijk));
                 }
             }
         }
@@ -518,22 +505,23 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 
         forAll(cv[l], d)
         {
-            meshDirection<scalar,MeshType>& cvld = cv[l][d];
-
-            const meshDirection<faceVector,MeshType>& fanld = fan[l][d];
-            const meshDirection<faceVector,MeshType>& fcld = fc[l][d];
-
-            forAllCells(cvld, i, j, k)
+            forAllCells(cv[l][d], i, j, k)
             {
-                const vector Sx = fanld(i,j,k).right() - fanld(i,j,k).left();
-                const vector Sy = fanld(i,j,k).top()   - fanld(i,j,k).bottom();
-                const vector Sz = fanld(i,j,k).fore()  - fanld(i,j,k).aft();
+                const vector Sx =
+                    fan(l,d,i,j,k).right() - fan(l,d,i,j,k).left();
+                const vector Sy =
+                    fan(l,d,i,j,k).top()   - fan(l,d,i,j,k).bottom();
+                const vector Sz =
+                    fan(l,d,i,j,k).fore()  - fan(l,d,i,j,k).aft();
 
-                const vector Dx = fcld(i,j,k).right() - fcld(i,j,k).left();
-                const vector Dy = fcld(i,j,k).top()   - fcld(i,j,k).bottom();
-                const vector Dz = fcld(i,j,k).fore()  - fcld(i,j,k).aft();
+                const vector Dx =
+                    fc(l,d,i,j,k).right() - fc(l,d,i,j,k).left();
+                const vector Dy =
+                    fc(l,d,i,j,k).top()   - fc(l,d,i,j,k).bottom();
+                const vector Dz =
+                    fc(l,d,i,j,k).fore()  - fc(l,d,i,j,k).aft();
 
-                cvld(i,j,k) = ((Dx & Sx) + (Dy & Sy) + (Dz & Sz))/6.0;
+                cv(l,d,i,j,k) = ((Dx & Sx) + (Dy & Sy) + (Dz & Sz))/6.0;
             }
         }
     }
@@ -546,8 +534,6 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 
         forAll(cv[l], d)
         {
-            meshDirection<scalar,MeshType>& cvld = cv[l][d];
-
             labelVector bo;
 
             for (bo.x() = -1; bo.x() <= 1; bo.x()++)
@@ -555,8 +541,8 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
             for (bo.z() = -1; bo.z() <= 1; bo.z()++)
             if (cmptSum(cmptMag(bo)) > 0)
             {
-                const labelVector S(cvld.boundaryStart(bo));
-                const labelVector E(cvld.boundaryEnd(bo));
+                const labelVector S(cv.boundaryStart(l,d,bo));
+                const labelVector E(cv.boundaryEnd(l,d,bo));
 
                 labelVector ijk;
 
@@ -564,7 +550,7 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
                 for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
                 for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                 {
-                    cvld(ijk+bo) = cvld(ijk);
+                    cv(l,d,ijk+bo) = cv(l,d,ijk);
                 }
             }
         }
@@ -586,20 +572,17 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
     {
         forAll(cc[l], d)
         {
-            meshDirection<faceScalar,MeshType>& fdld = fd[l][d];
-            const meshDirection<vector,MeshType>& ccld = cc[l][d];
-
-            forAllCells(fdld, i, j, k)
+            forAllCells(fd[l][d], i, j, k)
             {
-                fdld(i,j,k) =
+                fd(l,d,i,j,k) =
                     faceScalar
                     (
-                        1.0/Foam::mag(ccld(i,j,k)-ccld(i-1,j,k)),
-                        1.0/Foam::mag(ccld(i,j,k)-ccld(i+1,j,k)),
-                        1.0/Foam::mag(ccld(i,j,k)-ccld(i,j-1,k)),
-                        1.0/Foam::mag(ccld(i,j,k)-ccld(i,j+1,k)),
-                        1.0/Foam::mag(ccld(i,j,k)-ccld(i,j,k-1)),
-                        1.0/Foam::mag(ccld(i,j,k)-ccld(i,j,k+1))
+                        1.0/Foam::mag(cc(l,d,i,j,k)-cc(l,d,i-1,j,k)),
+                        1.0/Foam::mag(cc(l,d,i,j,k)-cc(l,d,i+1,j,k)),
+                        1.0/Foam::mag(cc(l,d,i,j,k)-cc(l,d,i,j-1,k)),
+                        1.0/Foam::mag(cc(l,d,i,j,k)-cc(l,d,i,j+1,k)),
+                        1.0/Foam::mag(cc(l,d,i,j,k)-cc(l,d,i,j,k-1)),
+                        1.0/Foam::mag(cc(l,d,i,j,k)-cc(l,d,i,j,k+1))
                     );
             }
         }

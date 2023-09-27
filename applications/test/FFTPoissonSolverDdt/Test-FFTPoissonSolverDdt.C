@@ -16,7 +16,7 @@ bool check
     const scalar deltaT
 )
 {
-    labelVector Nf(x[0][0].B().shape());
+    labelVector Nf(x.B().shape());
     labelVector N(x.fvMsh().msh().cast<rectilinearMesh>().N());
 
     const PtrList<PartialList<scalar>>& cellSizes
@@ -37,23 +37,23 @@ bool check
             {
                 scalar residual =
                 (
-                    x[0][0].B()(i-1,j,k)
-                  - 2.0 * x[0][0].B()(i,j,k)
-                  + x[0][0].B()(i+1,j,k)
+                    x.B()(i-1,j,k)
+                  - 2.0 * x.B()(i,j,k)
+                  + x.B()(i+1,j,k)
                 ) / dx2[Si.x() + i-1]
               + (
-                    x[0][0].B()(i,j-1,k)
-                  - 2.0 * x[0][0].B()(i,j,k)
-                  + x[0][0].B()(i,j+1,k)
+                    x.B()(i,j-1,k)
+                  - 2.0 * x.B()(i,j,k)
+                  + x.B()(i,j+1,k)
                 ) / dy2[Si.y() + j-1]
               + (
-                    x[0][0].B()(i,j,k-1)
-                  - 2.0 * x[0][0].B()(i,j,k)
-                  + x[0][0].B()(i,j,k+1)
+                    x.B()(i,j,k-1)
+                  - 2.0 * x.B()(i,j,k)
+                  + x.B()(i,j,k+1)
                 ) / dz2[Si.z() + k-1]
-              - x[0][0].B()(i,j,k) / deltaT
-              + b[0][0].B()(i,j,k)
-              + x.oldTime()[0][0].B()(i,j,k) / deltaT;
+              - x.B()(i,j,k) / deltaT
+              + b.B()(i,j,k)
+              + x.oldTime().B()(i,j,k) / deltaT;
 
                 if(mag(residual) > 1e-10)
                 {
@@ -120,10 +120,10 @@ int main(int argc, char *argv[])
     int seed = 123 * Pstream::myProcNo();
     srand(seed);
 
-    forAllCells(b[0][0], i, j, k)
+    forAllCells(b, i, j, k)
     {
-        b[0][0](i,j,k) = static_cast<double>(rand()) / RAND_MAX - 0.5;
-        x[0][0](i,j,k) = static_cast<double>(rand()) / RAND_MAX - 0.5;
+        b(i,j,k) = static_cast<double>(rand()) / RAND_MAX - 0.5;
+        x(i,j,k) = static_cast<double>(rand()) / RAND_MAX - 0.5;
     }
 
     x.setOldTime();

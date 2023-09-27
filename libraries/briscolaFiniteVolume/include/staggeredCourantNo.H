@@ -3,28 +3,12 @@ scalar meanCoNum = 0.0;
 
 {
     const staggeredScalarLevel& cvl =
-        fvMsh.metrics<staggered>().cellVolumes()[0];
+        fvMsh.metrics<staggered>().cellVolumes().level();
 
-    staggeredScalarLevel sumPhi(fvMsh,0);
+    staggeredScalarLevel sumPhi(fvMsh,0,Zero);
 
-    forAll(sumPhi, d)
-    {
-        staggeredScalarDirection& sumPhid = sumPhi[d];
-        const staggeredFaceScalarDirection& phild = phi[0][d];
-
-        sumPhid = Zero;
-
-        forAllCells(sumPhid, i, j, k)
-        {
-            sumPhid(i,j,k) =
-                mag(phild(i,j,k).left())
-              + mag(phild(i,j,k).right())
-              + mag(phild(i,j,k).bottom())
-              + mag(phild(i,j,k).top())
-              + mag(phild(i,j,k).aft())
-              + mag(phild(i,j,k).fore());
-        }
-    }
+    forAllDirections(sumPhi, d, i, j, k)
+        sumPhi(d,i,j,k) = neighborSum(mag(phi(d,i,j,k)));
 
     CoNum = max(0.5*gMax(sumPhi/cvl)*runTime.deltaTValue());
 

@@ -2,25 +2,13 @@ scalar CoNum = 0.0;
 scalar meanCoNum = 0.0;
 
 {
-    const colocatedFaceScalarDirection& phid = phi[0][0];
-
     const colocatedScalarDirection& cvd =
-        fvMsh.metrics<colocated>().cellVolumes()[0][0];
+        fvMsh.metrics<colocated>().cellVolumes().direction();
 
     colocatedScalarDirection sumPhi(fvMsh,0,0);
 
-    sumPhi = Zero;
-
     forAllCells(sumPhi, i, j, k)
-    {
-        sumPhi(i,j,k) =
-            mag(phid(i,j,k).left())
-          + mag(phid(i,j,k).right())
-          + mag(phid(i,j,k).bottom())
-          + mag(phid(i,j,k).top())
-          + mag(phid(i,j,k).aft())
-          + mag(phid(i,j,k).fore());
-    }
+        sumPhi(i,j,k) = neighborSum(mag(phi(i,j,k)));
 
     CoNum = 0.5*gMax(sumPhi/cvd)*runTime.deltaTValue();
 

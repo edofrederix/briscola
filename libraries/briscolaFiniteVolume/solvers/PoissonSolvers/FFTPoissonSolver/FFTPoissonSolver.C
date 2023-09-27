@@ -98,16 +98,16 @@ void FFTPoissonSolver::solve
 
     // Copy the data from bPtr to a scalarBlock
     // minus sign since bPtr = - RHS of the Poisson equation
-    forAllCells(x[0][0], i, j, k)
+    forAllCells(x, i, j, k)
     {
         if (bPtr != nullptr)
         {
-            initData_(i,j,k) = - (*bPtr)[0][0](i,j,k);
+            initData_(i,j,k) = - (*bPtr)(i,j,k);
         }
 
         if (ddt)
         {
-            initData_(i,j,k) -= x.oldTime()[0][0](i,j,k)/deltaT;
+            initData_(i,j,k) -= x.oldTime()(i,j,k)/deltaT;
         }
     }
 
@@ -129,8 +129,8 @@ void FFTPoissonSolver::solve
             const PtrList<PartialList<scalar>>& cellSizes =
                 fvMsh_.msh().cast<rectilinearMesh>().globalCellSizes();
 
-            const labelVector S(x[0][0].boundaryStart(bo));
-            const labelVector E(x[0][0].boundaryEnd(bo));
+            const labelVector S(x.direction().boundaryStart(bo));
+            const labelVector E(x.direction().boundaryEnd(bo));
 
             labelVector ijk;
 
@@ -148,7 +148,7 @@ void FFTPoissonSolver::solve
                 for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                 {
                     initData_(ijk)
-                        -= (x[0][0](ijk+bo) + x[0][0](ijk))/sqrCellSize;
+                        -= (x(ijk+bo) + x(ijk))/sqrCellSize;
                 }
             }
 
@@ -159,7 +159,7 @@ void FFTPoissonSolver::solve
                 for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                 {
                     initData_(ijk)
-                        -= (x[0][0](ijk+bo) - x[0][0](ijk))/sqrCellSize;
+                        -= (x(ijk+bo) - x(ijk))/sqrCellSize;
                 }
             }
         }
@@ -418,9 +418,9 @@ void FFTPoissonSolver::solve
     fft_->normalize(initData_);
 
     // Copy scalarBlock values to solution meshField
-    forAllCells(x[0][0], i, j, k)
+    forAllCells(x, i, j, k)
     {
-        x[0][0](i,j,k) = initData_(i,j,k);
+        x(i,j,k) = initData_(i,j,k);
     }
 
     // Set ghost cells values

@@ -138,6 +138,15 @@ public:
     // perform any bounds checking which is expensive.
     inline meshLevel<Type,MeshType>& operator[](label l)
     {
+        #ifdef FULLDEBUG
+
+        if (l < 0 || l >= listType::size())
+            FatalErrorInFunction
+                << "Index " << l << " out of range 0 ... " << listType::size()-1
+                << endl << abort(FatalError);
+
+        #endif
+
         return *const_cast<meshLevel<Type,MeshType>*>
         (
             listType::operator()(l)
@@ -148,31 +157,84 @@ public:
     // doesn't perform any bounds checking which is expensive.
     inline const meshLevel<Type,MeshType>& operator[](label l) const
     {
+        #ifdef FULLDEBUG
+
+        if (l < 0 || l >= listType::size())
+            FatalErrorInFunction
+                << "Index " << l << " out of range 0 ... " << listType::size()-1
+                << endl << abort(FatalError);
+
+        #endif
+
         return *listType::operator()(l);
     }
 
-    // Access to the given level
-    inline meshLevel<Type,MeshType>& level(label l)
+    // Alias access function
+    inline meshLevel<Type,MeshType>& level(const int l)
     {
         return this->operator[](l);
     }
 
-    // Const access to the given level
-    inline const meshLevel<Type,MeshType>& level(label l) const
+    // Alias access function
+    inline const meshLevel<Type,MeshType>& level(const int l) const
     {
         return this->operator[](l);
+    }
+
+    // Access to the first level
+    inline meshLevel<Type,MeshType>& level()
+    {
+        return this->operator[](0);
+    }
+
+    // Const access to the first level
+    inline const meshLevel<Type,MeshType>& level() const
+    {
+        return this->operator[](0);
+    }
+
+    // Access to the first direction of the first level
+    inline meshDirection<Type,MeshType>& direction()
+    {
+        return this->operator[](0)[0];
+    }
+
+    // Const access to the first direction of the first level
+    inline const meshDirection<Type,MeshType>& direction() const
+    {
+        return this->operator[](0)[0];
     }
 
     // Access to the given direction of the first level
-    inline meshDirection<Type,MeshType>& direction(label d)
+    inline meshDirection<Type,MeshType>& direction(const int d)
     {
         return this->operator[](0)[d];
     }
 
     // Const access to the given direction of the first level
-    inline const meshDirection<Type,MeshType>& direction(label d) const
+    inline const meshDirection<Type,MeshType>& direction(const int d) const
     {
         return this->operator[](0)[d];
+    }
+
+    // Access to the given direction and level
+    inline meshDirection<Type,MeshType>& direction
+    (
+        const int l,
+        const int d
+    )
+    {
+        return this->operator[](l)[d];
+    }
+
+    // Const access to the given direction and level
+    inline const meshDirection<Type,MeshType>& direction
+    (
+        const int l,
+        const int d
+    ) const
+    {
+        return this->operator[](l)[d];
     }
 
     // Number of levels
@@ -185,139 +247,6 @@ public:
     inline label numberOfDirections() const
     {
         return MeshType::numberOfDirections;
-    }
-
-    // Direct access to the first direction of the first level
-
-    inline Type& operator()
-    (
-        const int i,
-        const int j,
-        const int k
-    )
-    {
-        return this->operator[](0)[0](i,j,k);
-    }
-
-    inline const Type& operator()
-    (
-        const int i,
-        const int j,
-        const int k
-    ) const
-    {
-        return this->operator[](0)[0](i,j,k);
-    }
-
-    inline Type& operator()
-    (
-        const labelVector& ijk
-    )
-    {
-        return this->operator[](0)[0](ijk);
-    }
-
-    inline const Type& operator()
-    (
-        const labelVector& ijk
-    ) const
-    {
-        return this->operator[](0)[0](ijk);
-    }
-
-    // Direct access to the first level
-
-    inline Type& operator()
-    (
-        const int d,
-        const int i,
-        const int j,
-        const int k
-    )
-    {
-        return this->operator[](0)[d](i,j,k);
-    }
-
-    inline const Type& operator()
-    (
-        const int d,
-        const int i,
-        const int j,
-        const int k
-    ) const
-    {
-        return this->operator[](0)[d](i,j,k);
-    }
-
-    inline Type& operator()
-    (
-        const int d,
-        const labelVector& ijk
-    )
-    {
-        return this->operator[](0)[d](ijk);
-    }
-
-    inline const Type& operator()
-    (
-        const int d,
-        const labelVector& ijk
-    ) const
-    {
-        return this->operator[](0)[d](ijk);
-    }
-
-    // Direct access
-
-    inline Type& operator()
-    (
-        const int l,
-        const int d,
-        const int i,
-        const int j,
-        const int k
-    )
-    {
-        return this->operator[](l)[d](i,j,k);
-    }
-
-    inline const Type& operator()
-    (
-        const int l,
-        const int d,
-        const int i,
-        const int j,
-        const int k
-    ) const
-    {
-        return this->operator[](l)[d](i,j,k);
-    }
-
-    inline Type& operator()
-    (
-        const int l,
-        const int d,
-        const labelVector& ijk
-    )
-    {
-        return this->operator[](l)[d](ijk);
-    }
-
-    inline const Type& operator()
-    (
-        const int l,
-        const int d,
-        const labelVector& ijk
-    ) const
-    {
-        return this->operator[](l)[d](ijk);
-    }
-
-    // Internal cell start and end indices of the first direction of the first
-    // level
-    inline const faceLabel& I() const
-    {
-        return this->operator[](0)[0].I();
     }
 
     // Return the mesh
@@ -439,10 +368,16 @@ public:
     template<class Type2> void operator=(const tmp<meshField<Type2,MeshType>>&);
 
     template<class Type2> void operator+=(const meshField<Type2,MeshType>&);
-    template<class Type2> void operator+=(const tmp<meshField<Type2,MeshType>>&);
+    template<class Type2> void operator+=
+    (
+        const tmp<meshField<Type2,MeshType>>&
+    );
 
     template<class Type2> void operator-=(const meshField<Type2,MeshType>&);
-    template<class Type2> void operator-=(const tmp<meshField<Type2,MeshType>>&);
+    template<class Type2> void operator-=
+    (
+        const tmp<meshField<Type2,MeshType>>&
+    );
 
     template<class Type2> void operator=(const Type2&);
     template<class Type2> void operator+=(const Type2&);
@@ -451,6 +386,10 @@ public:
     // Allow a parent linear system to make changes to private data
     template<class SType,class,class>
     friend class linearSystem;
+
+    #include "meshLevelFirstDirectionFunctions.H"
+    #include "meshLevelDirectionFunctions.H"
+    #include "meshFieldDirectionFunctions.H"
 };
 
 }

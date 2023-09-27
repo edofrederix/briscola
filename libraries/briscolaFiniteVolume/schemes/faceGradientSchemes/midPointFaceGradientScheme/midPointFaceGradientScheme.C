@@ -46,33 +46,23 @@ midPointFaceGradientScheme<Type,MeshType>::faceGrad
 
     meshField<FaceSpace<Type>,MeshType>& Grad = tGrad.ref();
 
-    forAll(field, l)
-    forAll(field[l], d)
-    {
-        const meshDirection<faceScalar,MeshType>& fd =
-            field.fvMsh().template
-            metrics<MeshType>().faceDeltas()[l][d];
+    Grad = Zero;
 
-        meshDirection<FaceSpace<Type>,MeshType>& G = Grad[l][d];
-        const meshDirection<Type,MeshType>& f = field[l][d];
+    const meshField<faceScalar,MeshType>& fd =
+        field.fvMsh().template metrics<MeshType>().faceDeltas();
 
-        G = Zero;
-
-        forAllCells(G, i, j, k)
-        {
-            G(i,j,k) =
-                FaceSpace<Type>
-                (
-                    f(i-1,j,  k  ) - f(i,j,k),
-                    f(i+1,j,  k  ) - f(i,j,k),
-                    f(i,  j-1,k  ) - f(i,j,k),
-                    f(i,  j+1,k  ) - f(i,j,k),
-                    f(i,  j,  k-1) - f(i,j,k),
-                    f(i,  j,  k+1) - f(i,j,k)
-                )
-              * fd(i,j,k);
-        }
-    }
+    forAllLevels(Grad, l, d, i, j, k)
+        Grad(l,d,i,j,k) =
+            FaceSpace<Type>
+            (
+                field(l,d,i-1,j,  k  ) - field(l,d,i,j,k),
+                field(l,d,i+1,j,  k  ) - field(l,d,i,j,k),
+                field(l,d,i,  j-1,k  ) - field(l,d,i,j,k),
+                field(l,d,i,  j+1,k  ) - field(l,d,i,j,k),
+                field(l,d,i,  j,  k-1) - field(l,d,i,j,k),
+                field(l,d,i,  j,  k+1) - field(l,d,i,j,k)
+            )
+          * fd(l,d,i,j,k);
 
     return tGrad;
 }

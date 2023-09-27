@@ -358,10 +358,9 @@ tmp<block<Type>> boundaryCondition<Type,MeshType>::internalValue
 )
 {
     const labelVector bo(this->boundaryOffset());
-    const meshDirection<Type,MeshType>& fld = mshField_[l][d];
 
-    const labelVector S(fld.boundaryStart(bo));
-    const labelVector E(fld.boundaryEnd(bo));
+    const labelVector S(mshField_.boundaryStart(l,d,bo));
+    const labelVector E(mshField_.boundaryEnd(l,d,bo));
 
     return tmp<block<Type>>(new block<Type>(E-S, Zero));
 }
@@ -374,10 +373,9 @@ tmp<block<Type>> boundaryCondition<Type,MeshType>::boundarySources
 )
 {
     const labelVector bo(this->boundaryOffset());
-    const meshDirection<Type,MeshType>& fld = mshField_[l][d];
 
-    const labelVector S(fld.boundaryStart(bo));
-    const labelVector E(fld.boundaryEnd(bo));
+    const labelVector S(mshField_.boundaryStart(l,d,bo));
+    const labelVector E(mshField_.boundaryEnd(l,d,bo));
 
     return tmp<block<Type>>(new block<Type>(E-S, Zero));
 }
@@ -396,27 +394,24 @@ void boundaryCondition<Type,MeshType>::correctSystem
         const labelVector bo(this->boundaryOffset());
         const label faceNum(faceNumber(bo));
 
+        meshField<stencil,MeshType>& A = sys.A();
+        meshField<Type,MeshType>& b = sys.b();
+
+        const meshField<scalar,MeshType>& cv = this->cellVolumes();
+
         forAll(mshField_[l], d)
         {
-            const meshDirection<Type,MeshType>& fld = this->mshField_[l][d];
-
             // Manipulate the linear system for eliminated or constrained
             // boundary conditions
 
-            const bool shifted = fld.shifted(bo);
+            const bool shifted = this->mshField_.shifted(l,d,bo);
             const bool eliminated = this->eliminated(shifted);
             const bool constrained = this->constrained(shifted);
 
             if (eliminated || constrained)
             {
-                meshDirection<stencil,MeshType>& Ad = sys.A()[l][d];
-                meshDirection<Type,MeshType>& bd = sys.b()[l][d];
-
-                const meshDirection<scalar,MeshType>& cv =
-                    this->cellVolumes()[l][d];
-
-                const labelVector S(fld.boundaryStart(bo));
-                const labelVector E(fld.boundaryEnd(bo));
+                const labelVector S(this->mshField_.boundaryStart(l,d,bo));
+                const labelVector E(this->mshField_.boundaryEnd(l,d,bo));
 
                 labelVector ijk;
 
@@ -431,10 +426,10 @@ void boundaryCondition<Type,MeshType>::correctSystem
                     {
                         // Eliminate dependence on the ghost
 
-                        Ad(ijk) += Ad(ijk)[faceNum+1]*C;
-                        bd(ijk) -= Ad(ijk)[faceNum+1]*B(ijk-S);
+                        A(l,d,ijk) += A(l,d,ijk)[faceNum+1]*C;
+                        b(l,d,ijk) -= A(l,d,ijk)[faceNum+1]*B(ijk-S);
 
-                        Ad(ijk)[faceNum+1] = 0;
+                        A(l,d,ijk)[faceNum+1] = 0;
                     }
                 }
 
@@ -448,8 +443,8 @@ void boundaryCondition<Type,MeshType>::correctSystem
                     {
                         // Constrain the internal value
 
-                        Ad(ijk) = diagStencil(cv(ijk));
-                        bd(ijk) = V(ijk-S)*cv(ijk);
+                        A(l,d,ijk) = diagStencil(cv(l,d,ijk));
+                        b(l,d,ijk) = V(ijk-S)*cv(l,d,ijk);
                     }
                 }
             }

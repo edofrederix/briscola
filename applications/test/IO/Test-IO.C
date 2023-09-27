@@ -41,14 +41,14 @@ tmp<meshField<Type,MeshType>> createField
     forAll(f, l)
     forAll(f[l], d)
     {
-        const labelVector S = f[l][d].I().lower()-unitXYZ;
-        const labelVector E = f[l][d].I().upper()+unitXYZ;
+        const labelVector S = f.I(l,d).lower()-unitXYZ;
+        const labelVector E = f.I(l,d).upper()+unitXYZ;
 
         for (int i = S.x(); i < E.x(); i++)
         for (int j = S.y(); j < E.y(); j++)
         for (int k = S.z(); k < E.z(); k++)
         {
-            f[l][d](i,j,k) = (Pstream::myProcNo()+i+j+k+l+d)*pTraits<Type>::one;
+            f(l,d,i,j,k) = (Pstream::myProcNo()+i+j+k+l+d)*pTraits<Type>::one;
         }
     }
 
@@ -61,8 +61,8 @@ void testField(const meshField<Type,MeshType>& f, bool ghosts)
     forAll(f, l)
     forAll(f[l], d)
     {
-        const labelVector S = f[l][d].I().lower()-unitXYZ*label(ghosts);
-        const labelVector E = f[l][d].I().upper()+unitXYZ*label(ghosts);
+        const labelVector S = f.I(l,d).lower()-unitXYZ*label(ghosts);
+        const labelVector E = f.I(l,d).upper()+unitXYZ*label(ghosts);
 
         for (int i = S.x(); i < E.x(); i++)
         for (int j = S.y(); j < E.y(); j++)
@@ -70,7 +70,7 @@ void testField(const meshField<Type,MeshType>& f, bool ghosts)
         {
             if
             (
-                f[l][d](i,j,k)
+                f(l,d,i,j,k)
             != (Pstream::myProcNo()+i+j+k+l+d)*pTraits<Type>::one
             )
             {
@@ -84,7 +84,7 @@ void testField(const meshField<Type,MeshType>& f, bool ghosts)
                     << "test ghosts = " << Switch(ghosts) << nl
                     << "expected value = "
                     << (Pstream::myProcNo()+i+j+k)*pTraits<Type>::one << nl
-                    << "actual value = " << f[l][d](i,j,k)
+                    << "actual value = " << f(l,d,i,j,k)
                     << abort(FatalError);
             }
         }

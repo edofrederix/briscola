@@ -117,7 +117,7 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
             const label d1 = order_[d];
 
             const labelVector NSend =
-                mshField[l][d].boundaryN(bo)
+                mshField.boundaryN(l,d,bo)
               + extension_.lower()
               + extension_.upper();
 

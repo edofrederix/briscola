@@ -35,7 +35,7 @@ NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
             (
                 new block<Type>
                 (
-                    mshField[l][d].boundaryN(bo),
+                    mshField.boundaryN(l,d,bo),
                     gradients[d]
                 )
             );
@@ -127,7 +127,7 @@ stencil NeumannBoundaryCondition<Type,MeshType>::boundaryCoeff
 
     const labelVector bo(this->boundaryOffset());
 
-    if (this->mshField_[l][d].shifted(bo))
+    if (this->mshField_.shifted(l,d,bo))
     {
         stencil S(Zero);
         S[faceNumber(-bo)+1] = 1.0;
@@ -147,33 +147,32 @@ tmp<block<Type>> NeumannBoundaryCondition<Type,MeshType>::boundarySources
     const label d
 )
 {
-    const meshLevel<Type,MeshType>& fl = this->mshField_[l];
-    const meshDirection<Type,MeshType>& fld = fl[d];
-    const meshDirection<faceScalar,MeshType>& fdld = this->faceDeltas()[l][d];
+    const meshField<Type,MeshType>& f = this->mshField_;
+    const meshField<faceScalar,MeshType>& fd = this->faceDeltas();
 
     const block<Type>& grad =
-        boundaryGradients_[l*fl.size()+d];
+        boundaryGradients_[l*f.numberOfDirections()+d];
 
     const labelVector bo(this->boundaryOffset());
     const label fb(faceNumber(bo));
     const label fi(faceNumber(-bo));
 
-    const labelVector S(fld.boundaryStart(bo));
-    const labelVector E(fld.boundaryEnd(bo));
+    const labelVector S(f.boundaryStart(l,d,bo));
+    const labelVector E(f.boundaryEnd(l,d,bo));
 
     tmp<block<Type>> tR(new block<Type>(E-S));
     block<Type>& R = tR.ref();
 
     labelVector ijk;
 
-    if (fld.shifted(bo))
+    if (f.shifted(l,d,bo))
     {
         for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
             const scalar twoDelta =
-                1.0/fdld(ijk)[fb] + 1.0/fdld(ijk)[fi];
+                1.0/fd(l,d,ijk)[fb] + 1.0/fd(l,d,ijk)[fi];
 
             R(ijk-S) = grad(ijk-S)*twoDelta;
         }
@@ -184,7 +183,7 @@ tmp<block<Type>> NeumannBoundaryCondition<Type,MeshType>::boundarySources
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            R(ijk-S) = grad(ijk-S)/fdld(ijk)[fb];
+            R(ijk-S) = grad(ijk-S)/fd(l,d,ijk)[fb];
         }
     }
 

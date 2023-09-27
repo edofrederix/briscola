@@ -46,29 +46,20 @@ midPointInterpolationScheme<Type,MeshType>::interp
 
     meshField<FaceSpace<Type>,MeshType>& Interp = tInterp.ref();
 
-    forAll(field, l)
-    forAll(field[l], d)
-    {
-        meshDirection<FaceSpace<Type>,MeshType>& I = Interp[l][d];
-        const meshDirection<Type,MeshType>& f = field[l][d];
+    Interp = Zero;
 
-        I = Zero;
-
-        forAllCells(I, i, j, k)
-        {
-            I(i,j,k) =
-                0.5
-              * FaceSpace<Type>
-                (
-                    f(i-1,j,k) + f(i,j,k),
-                    f(i+1,j,k) + f(i,j,k),
-                    f(i,j-1,k) + f(i,j,k),
-                    f(i,j+1,k) + f(i,j,k),
-                    f(i,j,k-1) + f(i,j,k),
-                    f(i,j,k+1) + f(i,j,k)
-                );
-        }
-    }
+    forAllLevels(Interp, l, d, i, j, k)
+        Interp(l,d,i,j,k) =
+            0.5
+          * FaceSpace<Type>
+            (
+                field(l,d,i-1,j,k) + field(l,d,i,j,k),
+                field(l,d,i+1,j,k) + field(l,d,i,j,k),
+                field(l,d,i,j-1,k) + field(l,d,i,j,k),
+                field(l,d,i,j+1,k) + field(l,d,i,j,k),
+                field(l,d,i,j,k-1) + field(l,d,i,j,k),
+                field(l,d,i,j,k+1) + field(l,d,i,j,k)
+            );
 
     return tInterp;
 }

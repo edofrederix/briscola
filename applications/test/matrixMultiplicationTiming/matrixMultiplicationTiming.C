@@ -52,12 +52,10 @@ int main(int argc, char *argv[])
 
         F = Zero;
 
-        forAll(A, l)
-        forAll(A[l], d)
-        forAllCells(A[l][d], i, j, k)
+        forAllLevels(A, l, d, i, j, k)
         {
-            F[l][d](i,j,k) = vector(i,j,k);
-            A[l][d](i,j,k) = stencil(-6, 1, 1, 1, 1, 1, 1);
+            F(l,d,i,j,k) = vector(i,j,k);
+            A(l,d,i,j,k) = stencil(-6, 1, 1, 1, 1, 1, 1);
         }
 
         // Matrix multiplication for a whole field. Will be slower because it
@@ -93,7 +91,7 @@ int main(int argc, char *argv[])
         t1 = high_resolution_clock::now();
 
         for (label iter = 0; iter < Niter; iter++)
-            Amul(G[0][0], A[0][0], F[0][0]);
+            Amul(G.direction(), A.direction(), F.direction());
 
         t2 = high_resolution_clock::now();
 

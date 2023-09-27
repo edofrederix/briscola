@@ -34,12 +34,11 @@ void testConstantRestriction(const fvMesh& fvMsh, const word scheme)
 
     // Check if a constant value is restricted correctly
 
-    for (label l = 1; l < f.size(); l++)
-        forAll(f[l], d)
-            forAllCells(f[l][d], i, j, k)
-                if (mag(f[l][d](i,j,k) - pTraits<Type>::one*2.0) > 1e-14)
-                    FatalErrorInFunction
-                        << "test 1 failed" << abort(FatalError);
+    forAllLevels(f, l, d, i, j, k)
+    if (l > 0)
+        if (mag(f(l,d,i,j,k) - pTraits<Type>::one*2.0) > 1e-14)
+            FatalErrorInFunction
+                << "test 1 failed" << abort(FatalError);
 }
 
 template<class Type, class MeshType>
@@ -63,19 +62,21 @@ void testOneLinearRestriction(const fvMesh& fvMsh, const word scheme)
     {
         f = Zero;
 
-        forAll(f[0], d)
-        forAllCells(f[0][d], i, j, k)
+        forAllDirections(f, d, i, j, k)
         {
-            f[0][d](i,j,k) = cc[0][d](i,j,k)[dir]*pTraits<Type>::one;
+            f(d,i,j,k) = cc(d,i,j,k)[dir]*pTraits<Type>::one;
         }
 
         S->restrict(f);
 
-        for (label l = 1; l < f.size(); l++)
-        forAll(f[l], d)
-        forAllCells(f[l][d], i, j, k)
+        forAllLevels(f, l, d, i, j, k)
+        if (l > 0)
         {
-            if (mag(f[l][d](i,j,k) - cc[l][d](i,j,k)[dir]*pTraits<Type>::one) > 1e-14)
+            if
+            (
+                mag(f(l,d,i,j,k) - cc(l,d,i,j,k)[dir]*pTraits<Type>::one)
+              > 1e-14
+            )
             {
                 FatalErrorInFunction
                     << "test 2 failed" << abort(FatalError);
@@ -106,26 +107,24 @@ void testTwoLinearRestriction(const fvMesh& fvMsh, const word scheme)
     {
         f = Zero;
 
-        forAll(f[0], d)
-        forAllCells(f[0][d], i, j, k)
+        forAllDirections(f, d, i, j, k)
         {
-            f[0][d](i,j,k) =
-                (cc[0][d](i,j,k)[dir1]+cc[0][d](i,j,k)[dir2])
+            f(d,i,j,k) =
+                (cc(d,i,j,k)[dir1]+cc(d,i,j,k)[dir2])
               * pTraits<Type>::one;
         }
 
         S->restrict(f);
 
-        for (label l = 1; l < f.size(); l++)
-        forAll(f[l], d)
-        forAllCells(f[l][d], i, j, k)
+        forAllLevels(f, l, d, i, j, k)
+        if (l > 0)
         {
             if
             (
                 mag
                 (
-                    f[l][d](i,j,k)
-                  - (cc[l][d](i,j,k)[dir1] + cc[l][d](i,j,k)[dir2])
+                    f(l,d,i,j,k)
+                  - (cc(l,d,i,j,k)[dir1] + cc(l,d,i,j,k)[dir2])
                   * pTraits<Type>::one
                 )
               > 1e-14
@@ -157,33 +156,31 @@ void testThreeLinearRestriction(const fvMesh& fvMsh, const word scheme)
 
     f = Zero;
 
-    forAll(f[0], d)
-    forAllCells(f[0][d], i, j, k)
+    forAllDirections(f, d, i, j, k)
     {
-        f[0][d](i,j,k) =
+        f(d,i,j,k) =
             (
-                cc[0][d](i,j,k).x()
-              + cc[0][d](i,j,k).y()
-              + cc[0][d](i,j,k).z()
+                cc(d,i,j,k).x()
+              + cc(d,i,j,k).y()
+              + cc(d,i,j,k).z()
             )
           * pTraits<Type>::one;
     }
 
     S->restrict(f);
 
-    for (label l = 1; l < f.size(); l++)
-    forAll(f[l], d)
-    forAllCells(f[l][d], i, j, k)
+    forAllLevels(f, l, d, i, j, k)
+    if (l > 0)
     {
         if
         (
             mag
             (
-                f[l][d](i,j,k)
+                f(l,d,i,j,k)
               - (
-                    cc[l][d](i,j,k).x()
-                  + cc[l][d](i,j,k).y()
-                  + cc[l][d](i,j,k).z()
+                    cc(l,d,i,j,k).x()
+                  + cc(l,d,i,j,k).y()
+                  + cc(l,d,i,j,k).z()
                 )
               * pTraits<Type>::one
             )

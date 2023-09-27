@@ -35,7 +35,7 @@ DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
             (
                 new block<Type>
                 (
-                    mshField[l][d].boundaryN(bo),
+                    mshField.boundaryN(l,d,bo),
                     values[d]
                 )
             );

@@ -38,28 +38,19 @@ int main(int argc, char *argv[])
         true
     );
 
+    const colocatedVectorField& cc =
+        fvMsh.metrics<colocated>().cellCenters();
+
     forAll(f, l)
     {
-        forAll(f[l], d)
-        {
-            const colocatedVectorDirection& cc =
-                fvMsh.metrics<colocated>().cellCenters()[l][d];
-
-            forAllCells(f[l][d], i, j, k)
-            {
-                f[l][d](i,j,k) = cc(i,j,k);
-            }
-        }
+        forAllDirections(f[l], d, i, j, k)
+            f(l,d,i,j,k) = cc(l,d,i,j,k);
 
         f[l].correctBoundaryConditions();
 
-        forAll(f[l], d)
-        forAllCells(f[l][d], i, j, k)
+        forAllDirections(f[l], d, i, j, k)
         {
-            const colocatedVectorDirection& cc =
-                fvMsh.metrics<colocated>().cellCenters()[l][d];
-
-            if (f[l][d](i,j,k) != cc(i,j,k))
+            if (f(l,d,i,j,k) != cc(l,d,i,j,k))
             {
                 FatalError << "test 1 failed" << endl;
                 FatalError.exit();
@@ -77,8 +68,8 @@ int main(int argc, char *argv[])
 
                 forAll(f[l], d)
                 {
-                    const labelVector S(f[l][d].boundaryStart(bo));
-                    const labelVector E(f[l][d].boundaryEnd(bo));
+                    const labelVector S(f.boundaryStart(l,d,bo));
+                    const labelVector E(f.boundaryEnd(l,d,bo));
 
                     labelVector ijk;
 
@@ -86,27 +77,32 @@ int main(int argc, char *argv[])
                     for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
                     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                     {
-                        // Domain size is 1x1x1. Uniform parallel partitioning assumed.
+                        // Domain size is 1x1x1. Uniform parallel partitioning
+                        // assumed.
 
                         const scalar cellSize =
-                            1.0/pow(Pstream::nProcs(),1.0/3.0)/f[l][d].N().x();
+                            1.0/pow(Pstream::nProcs(),1.0/3.0)/f.N(l,d).x();
 
-                        const vector cell = f[l][d](ijk);
-                        const vector ghost = f[l][d](ijk+bo);
+                        const vector cell = f(l,d,ijk);
+                        const vector ghost = f(l,d,ijk+bo);
                         const vector target = cell + vector(bo)*cellSize;
 
                         if
                         (
-                            target.x() > ghost.x()+1e-8 || target.x() < ghost.x()-1e-8
-                         || target.y() > ghost.y()+1e-8 || target.y() < ghost.y()-1e-8
-                         || target.z() > ghost.z()+1e-8 || target.z() < ghost.z()-1e-8
+                            target.x() > ghost.x()+1e-8
+                         || target.x() < ghost.x()-1e-8
+                         || target.y() > ghost.y()+1e-8
+                         || target.y() < ghost.y()-1e-8
+                         || target.z() > ghost.z()+1e-8
+                         || target.z() < ghost.z()-1e-8
                         )
                         {
-                            FatalError  << "Cell size at this level = " << cellSize << endl
-                                        << "cell = " << cell << endl
-                                        << "ghost = " << ghost << endl
-                                        << "target = " << target << endl
-                                        << "boundaryOffset = " << bo << endl
+                            FatalError  << "Cell size at this level = "
+                                        << cellSize << nl
+                                        << "cell = " << cell << nl
+                                        << "ghost = " << ghost << nl
+                                        << "target = " << target << nl
+                                        << "boundaryOffset = " << bo << nl
                                         << "test 2 failed" << endl;
 
                             FatalError.exit();

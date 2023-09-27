@@ -128,6 +128,15 @@ public:
     // perform any bounds checking which is expensive.
     inline meshDirection<Type,MeshType>& operator[](label d)
     {
+        #ifdef FULLDEBUG
+
+        if (d < 0 || d >= listType::size())
+            FatalErrorInFunction
+                << "Index " << d << " out of range 0 ... " << listType::size()-1
+                << endl << abort(FatalError);
+
+        #endif
+
         return *const_cast<meshDirection<Type,MeshType>*>
         (
             listType::operator()(d)
@@ -138,19 +147,40 @@ public:
     // doesn't perform any bounds checking which is expensive.
     inline const meshDirection<Type,MeshType>& operator[](label d) const
     {
+        #ifdef FULLDEBUG
+
+        if (d < 0 || d >= listType::size())
+            FatalErrorInFunction
+                << "Index " << d << " out of range 0 ... " << listType::size()-1
+                << endl << abort(FatalError);
+
+        #endif
+
         return *listType::operator()(d);
     }
 
-    // Access to the given direction
-    inline meshDirection<Type,MeshType>& direction(label d)
+    // Alias access function
+    inline meshDirection<Type,MeshType>& direction(const int d)
     {
         return this->operator[](d);
     }
 
-    // Const access to the given direction
-    inline const meshDirection<Type,MeshType>& direction(label d) const
+    // Alias const access function
+    inline const meshDirection<Type,MeshType>& direction(const int d) const
     {
         return this->operator[](d);
+    }
+
+    // Access the first direction
+    inline meshDirection<Type,MeshType>& direction()
+    {
+        return this->operator[](0);
+    }
+
+    // Const access the first direction
+    inline const meshDirection<Type,MeshType>& direction() const
+    {
+        return this->operator[](0);
     }
 
     // Number of directions
@@ -158,92 +188,6 @@ public:
 
     // Alias to size
     inline label numberOfDirections() const { return size(); }
-
-    // Direct access to the first direction
-
-    inline Type& operator()
-    (
-        const int i,
-        const int j,
-        const int k
-    )
-    {
-        return this->operator[](0)(i,j,k);
-    }
-
-    inline const Type& operator()
-    (
-        const int i,
-        const int j,
-        const int k
-    ) const
-    {
-        return this->operator[](0)(i,j,k);
-    }
-
-    inline Type& operator()
-    (
-        const labelVector& ijk
-    )
-    {
-        return this->operator[](0)(ijk);
-    }
-
-    inline const Type& operator()
-    (
-        const labelVector& ijk
-    ) const
-    {
-        return this->operator[](0)(ijk);
-    }
-
-    // Direct access
-
-    inline Type& operator()
-    (
-        const int d,
-        const int i,
-        const int j,
-        const int k
-    )
-    {
-        return this->operator[](d)(i,j,k);
-    }
-
-    inline const Type& operator()
-    (
-        const int d,
-        const int i,
-        const int j,
-        const int k
-    ) const
-    {
-        return this->operator[](d)(i,j,k);
-    }
-
-    inline Type& operator()
-    (
-        const int d,
-        const labelVector& ijk
-    )
-    {
-        return this->operator[](d)(ijk);
-    }
-
-    inline const Type& operator()
-    (
-        const int d,
-        const labelVector& ijk
-    ) const
-    {
-        return this->operator[](d)(ijk);
-    }
-
-    // Internal cell start and end indices of the first direction
-    inline const faceLabel& I() const
-    {
-        return this->operator[](0).I();
-    }
 
     // Return the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
@@ -354,6 +298,9 @@ public:
 
     // Allow the parent field to make changes to private data
     friend class meshField<Type,MeshType>;
+
+    #include "meshLevelFirstDirectionFunctions.H"
+    #include "meshLevelDirectionFunctions.H"
 };
 
 }

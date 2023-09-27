@@ -79,23 +79,13 @@ tmp<meshField<Type,MeshType>> explicitDiv
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 
-    forAll(phi, l)
-    forAll(phi[l], d)
-    {
-        meshDirection<Type,MeshType>& D = Div[l][d];
-        const meshDirection<FaceSpace<Type>,MeshType>& p = phi[l][d];
+    Div = Zero;
 
-        const meshDirection<scalar,MeshType>& cv =
-            phi.fvMsh().template
-            metrics<MeshType>().cellVolumes()[l][d];
+    const meshField<scalar,MeshType>& cv =
+        phi.fvMsh().template metrics<MeshType>().cellVolumes();
 
-        D = Zero;
-
-        forAllCells(p, i, j, k)
-        {
-            D(i,j,k) = neighborSum(p(i,j,k))/cv(i,j,k);
-        }
-    }
+    forAllLevels(Div, l, d, i, j, k)
+        Div(l,d,i,j,k) = neighborSum(phi(l,d,i,j,k))/cv(l,d,i,j,k);
 
     return tDiv;
 }

@@ -25,11 +25,9 @@ void testDirichlet(const fvMesh& fvMsh)
         IOobject::MUST_READ
     );
 
-    forAll(field, l)
-    forAll(field[l], d)
-    forAllCells(field[l][d], i, j, k)
+    forAllLevels(field, l, d, i, j, k)
     {
-        field[l][d](i,j,k) = scalar(i+j+k)*pTraits<Type>::one;
+        field(l,d,i,j,k) = scalar(i+j+k)*pTraits<Type>::one;
     }
 
     field.correctBoundaryConditions();
@@ -54,12 +52,10 @@ void testDirichlet(const fvMesh& fvMsh)
         forAll(field, l)
         forAll(field[l], d)
         {
-            const meshDirection<Type,MeshType>& dd = field[l][d];
+            const labelVector S(field.boundaryStart(l,d,bo));
+            const labelVector E(field.boundaryEnd(l,d,bo));
 
-            const labelVector S(dd.boundaryStart(bo));
-            const labelVector E(dd.boundaryEnd(bo));
-
-            if (dd.shifted(bo))
+            if (field.shifted(l,d,bo))
             {
                 for (label i = S.x(); i < E.x(); i++)
                 for (label j = S.y(); j < E.y(); j++)
@@ -67,11 +63,9 @@ void testDirichlet(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (dd(ijk+bo) != value)
-                    {
+                    if (field(l,d,ijk+bo) != value)
                         FatalErrorInFunction
                             << "Test 1a failed" << endl << abort(FatalError);
-                    }
                 }
             }
             else
@@ -82,11 +76,9 @@ void testDirichlet(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (dd(ijk+bo) != 2.0*value - dd(ijk))
-                    {
+                    if (field(l,d,ijk+bo) != 2.0*value - field(l,d,ijk))
                         FatalErrorInFunction
                             << "Test 1b failed" << endl << abort(FatalError);
-                    }
                 }
             }
         }
@@ -121,12 +113,8 @@ void testNeumann(const fvMesh& fvMsh)
         IOobject::MUST_READ
     );
 
-    forAll(field, l)
-    forAll(field[l], d)
-    forAllCells(field[l][d], i, j, k)
-    {
-        field[l][d](i,j,k) = scalar(i+j+k)*pTraits<Type>::one;
-    }
+    forAllLevels(field, l, d, i, j, k)
+        field(l,d,i,j,k) = scalar(i+j+k)*pTraits<Type>::one;
 
     // We need to correct twice because of edges/vertices
 
@@ -153,12 +141,10 @@ void testNeumann(const fvMesh& fvMsh)
         forAll(field, l)
         forAll(field[l], d)
         {
-            const meshDirection<Type,MeshType>& dd = field[l][d];
+            const labelVector S(field.boundaryStart(l,d,bo));
+            const labelVector E(field.boundaryEnd(l,d,bo));
 
-            const labelVector S(dd.boundaryStart(bo));
-            const labelVector E(dd.boundaryEnd(bo));
-
-            if (dd.shifted(bo))
+            if (field.shifted(l,d,bo))
             {
                 for (label i = S.x(); i < E.x(); i++)
                 for (label j = S.y(); j < E.y(); j++)
@@ -166,11 +152,9 @@ void testNeumann(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (dd(ijk+bo) != dd(ijk-bo))
-                    {
+                    if (field(l,d,ijk+bo) != field(l,d,ijk-bo))
                         FatalErrorInFunction
                             << "Test 2a failed" << endl << abort(FatalError);
-                    }
                 }
             }
             else
@@ -181,11 +165,9 @@ void testNeumann(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (dd(ijk+bo) != dd(ijk))
-                    {
+                    if (field(l,d,ijk+bo) != field(l,d,ijk))
                         FatalErrorInFunction
                             << "Test 2b failed" << endl << abort(FatalError);
-                    }
                 }
             }
         }

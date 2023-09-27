@@ -464,15 +464,15 @@ int main(int argc, char *argv[])
 
         label N = 100;
 
-        const colocatedVertexVectorDirection& v =
-            fvMsh.template metrics<colocated>().vertexCenters()[0][0];
+        const colocatedVertexVectorField& v =
+            fvMsh.template metrics<colocated>().vertexCenters();
 
-        const colocatedScalarDirection& V =
-            fvMsh.template metrics<colocated>().cellVolumes()[0][0];
+        const colocatedScalarField& V =
+            fvMsh.template metrics<colocated>().cellVolumes();
 
         for (int i = 0; i <= N; i++)
         {
-            colocatedScalarDirection& a = vf.alpha()[0][0];
+            colocatedScalarField& a = vf.alpha();
 
             a = scalar(i)/N;
 
