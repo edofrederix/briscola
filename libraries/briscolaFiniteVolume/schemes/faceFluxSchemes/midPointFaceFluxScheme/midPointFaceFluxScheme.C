@@ -47,7 +47,7 @@ tmp<colocatedFaceScalarField> midPointFaceFluxScheme::faceFlux
     const colocatedFaceVectorField& fan =
         this->fvMsh().metrics<colocated>().faceAreaNormals();
 
-    forAllLevels(f, l, d, i, j, k)
+    forAllLevels(Flux, l, d, i, j, k)
         Flux(l,d,i,j,k) =
             0.5
           * faceScalar
@@ -84,7 +84,7 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
     const staggeredFaceScalarField& fa =
         this->fvMsh().metrics<staggered>().faceAreas();
 
-    forAllLevels(f, l, d, i, j, k)
+    forAllLevels(Flux, l, d, i, j, k)
     {
         const labelVector& padding = staggered::padding[d];
 

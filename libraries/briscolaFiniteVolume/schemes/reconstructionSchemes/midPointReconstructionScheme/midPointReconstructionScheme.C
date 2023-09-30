@@ -32,7 +32,7 @@ template<class Type>
 tmp<meshField<typename reconstructionScheme<Type>::ReconType, colocated>>
 midPointReconstructionScheme<Type>::reconstruct
 (
-    const meshField<Type,staggered>& field
+    const meshField<Type,staggered>& f
 )
 {
     typedef typename reconstructionScheme<Type>::ReconType ReconType;
@@ -41,41 +41,29 @@ midPointReconstructionScheme<Type>::reconstruct
     (
         new meshField<ReconType,colocated>
         (
-            "reconstruct("+field.name()+")",
-            field.fvMsh()
+            "reconstruct("+f.name()+")",
+            f.fvMsh()
         )
     );
 
     meshField<ReconType,colocated>& Recon = tRecon.ref();
 
-    forAll(field, l)
-    {
-        const meshDirection<faceVector,colocated>& fn =
-            field.fvMsh().template
-            metrics<colocated>().faceNormals()[l][0];
+    Recon = Zero;
 
-        meshDirection<ReconType,colocated>& R = Recon[l][0];
+    const meshField<faceVector,colocated>& fn =
+        f.fvMsh().template metrics<colocated>().faceNormals();
 
-        const meshDirection<Type,staggered>& f0 = field[l][0];
-        const meshDirection<Type,staggered>& f1 = field[l][1];
-        const meshDirection<Type,staggered>& f2 = field[l][2];
-
-        R = Zero;
-
-        forAllCells(R, i, j, k)
-        {
-            R(i,j,k) =
-                0.5
-              * (
-                  - f0(i,  j,  k  )*fn(i,j,k).left()
-                  + f0(i+1,j,  k  )*fn(i,j,k).right()
-                  - f1(i,  j,  k  )*fn(i,j,k).bottom()
-                  + f1(i,  j+1,k  )*fn(i,j,k).top()
-                  - f2(i,  j,  k  )*fn(i,j,k).aft()
-                  + f2(i,  j,  k+1)*fn(i,j,k).fore()
-                );
-        }
-    }
+    forAllLevels(Recon, l, d, i, j, k)
+        Recon(l,d,i,j,k) =
+            0.5
+          * (
+              - f(l,0,i,  j,  k  ) * fn(l,d,i,j,k).left()
+              + f(l,0,i+1,j,  k  ) * fn(l,d,i,j,k).right()
+              - f(l,1,i,  j,  k  ) * fn(l,d,i,j,k).bottom()
+              + f(l,1,i,  j+1,k  ) * fn(l,d,i,j,k).top()
+              - f(l,2,i,  j,  k  ) * fn(l,d,i,j,k).aft()
+              + f(l,2,i,  j,  k+1) * fn(l,d,i,j,k).fore()
+            );
 
     return tRecon;
 }
