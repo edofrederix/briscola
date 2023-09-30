@@ -52,33 +52,22 @@ bool initialCondition::read(const dictionary& dict)
         const staggeredVectorField& cc =
             fvMsh.metrics<staggered>().cellCenters();
 
-        forAll(U, l)
-        {
-            const staggeredVectorDirection& cc0 = cc[l][0];
-            const staggeredVectorDirection& cc2 = cc[l][2];
-
-            staggeredScalarDirection& U0 = U[l][0];
-            staggeredScalarDirection& U2 = U[l][2];
-
-            forAllCells(U0, i, j, k)
-            {
-                U0(i,j,k) =
+        forAllLevels(U, l, d, i, j, k)
+            if (d == 0)
+                U(l,d,i,j,k) =
                     5300.0/360.0*2.0
                   * (
-                        (1.0-Foam::sqr(cc0(i,j,k).y()))
-                      + 0.4*Foam::sin(cc0(i,j,k).z()*3)
-                      + 0.1*Foam::sin(cc0(i,j,k).y()*3.1415927)
+                        (1.0-Foam::sqr(cc(l,d,i,j,k).y()))
+                      + 0.4*Foam::sin(cc(l,d,i,j,k).z()*3)
+                      + 0.1*Foam::sin(cc(l,d,i,j,k).y()*3.1415927)
                     );
-            }
 
-            forAllCells(U2, i, j, k)
-            {
-                U2(i,j,k) =
+        forAllLevels(U, l, d, i, j, k)
+            if (d == 2)
+                U(l,d,i,j,k) =
                     5300.0/360.0/2.0
-                  * Foam::sin(cc2(i,j,k).x()*3)
-                  * Foam::sin(cc2(i,j,k).y()*3.1415927);
-            }
-        }
+                  * Foam::sin(cc(l,d,i,j,k).x()*3)
+                  * Foam::sin(cc(l,d,i,j,k).y()*3.1415927);
 
         U.correctBoundaryConditions();
     }

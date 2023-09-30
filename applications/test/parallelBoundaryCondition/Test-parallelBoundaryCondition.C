@@ -41,31 +41,26 @@ int main(int argc, char *argv[])
     const colocatedVectorField& cc =
         fvMsh.metrics<colocated>().cellCenters();
 
-    forAll(f, l)
+    forAllLevels(f, l, d, i, j, k)
+        f(l,d,i,j,k) = cc(l,d,i,j,k);
+
+    f.correctBoundaryConditions();
+
+    forAllLevels(f, l, d, i, j, k)
+        if (f(l,d,i,j,k) != cc(l,d,i,j,k))
+            FatalError << "test 1 failed" << endl;
+
+    forAll(f.boundaryConditions(), b)
     {
-        forAllDirections(f[l], d, i, j, k)
-            f(l,d,i,j,k) = cc(l,d,i,j,k);
+        const boundaryCondition<vector,colocated>& bc =
+            f.boundaryConditions()[b];
 
-        f[l].correctBoundaryConditions();
-
-        forAllDirections(f[l], d, i, j, k)
+        if (bc.type() == "parallel")
         {
-            if (f(l,d,i,j,k) != cc(l,d,i,j,k))
+            const labelVector bo(bc.boundaryOffset());
+
+            forAll(f, l)
             {
-                FatalError << "test 1 failed" << endl;
-                FatalError.exit();
-            }
-        }
-
-        forAll(f.boundaryConditions(), b)
-        {
-            const boundaryCondition<vector,colocated>& bc =
-                f.boundaryConditions()[b];
-
-            if (bc.type() == "parallel")
-            {
-                const labelVector bo(bc.boundaryOffset());
-
                 forAll(f[l], d)
                 {
                     const labelVector S(f.boundaryStart(l,d,bo));

@@ -71,7 +71,7 @@ void testField(const meshField<Type,MeshType>& f, bool ghosts)
             if
             (
                 f(l,d,i,j,k)
-            != (Pstream::myProcNo()+i+j+k+l+d)*pTraits<Type>::one
+             != (Pstream::myProcNo()+i+j+k+l+d)*pTraits<Type>::one
             )
             {
                 FatalErrorInFunction

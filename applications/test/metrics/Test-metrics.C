@@ -48,10 +48,8 @@ void testCellCenters(const fvMesh& fvMsh)
         );
 
         if (mag(c(l,d,i,j,k) - cc) > 1e-12)
-        {
             FatalErrorInFunction
                 << "test 1 failed" << abort(FatalError);
-        }
     }
 }
 
@@ -66,7 +64,7 @@ void testCellVolumes(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAll(v, l)
+    forAllLevels(v, l, d, i, j, k)
     {
         const scalar V
         (
@@ -75,14 +73,9 @@ void testCellVolumes(const fvMesh& fvMsh)
           * Lp.z()/fvMsh[l].N().z()
         );
 
-        forAllDirections(v[l], d, i, j, k)
-        {
-            if (mag(v(l,d,i,j,k) - V) > 1e-12)
-            {
-                FatalErrorInFunction
-                    << "test 2 failed" << abort(FatalError);
-            }
-        }
+        if (mag(v(l,d,i,j,k) - V) > 1e-12)
+            FatalErrorInFunction
+                << "test 2 failed" << abort(FatalError);
     }
 }
 
@@ -117,10 +110,8 @@ void testFaceCenters(const fvMesh& fvMsh)
         );
 
         if (mag(c(l,d,i,j,k)[o] - cc) > 1e-12)
-        {
             FatalErrorInFunction
                 << "test 3a failed" << abort(FatalError);
-        }
     }
 }
 
@@ -155,10 +146,8 @@ void testEdgeCenters(const fvMesh& fvMsh)
         );
 
         if (mag(c(l,d,i,j,k)[o] - cc) > 1e-12)
-        {
             FatalErrorInFunction
                 << "test 3b failed" << abort(FatalError);
-        }
     }
 }
 
@@ -193,10 +182,8 @@ void testVertexCenters(const fvMesh& fvMsh)
         );
 
         if (mag(c(l,d,i,j,k)[o] - cc) > 1e-12)
-        {
             FatalErrorInFunction
                 << "test 3c failed" << abort(FatalError);
-        }
     }
 }
 
@@ -211,7 +198,7 @@ void testFaceAreas(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAll(a, l)
+    forAllLevels(a, l, d, i, j, k)
     {
         const vector A
         (
@@ -220,15 +207,10 @@ void testFaceAreas(const fvMesh& fvMsh)
             Lp.x()/fvMsh[l].N().x() * Lp.y()/fvMsh[l].N().y()
         );
 
-        forAllDirections(a[l], d, i, j, k)
         for (label o = 0; o < 6; o++)
-        {
             if (mag(a(l,d,i,j,k)[o] - A[o/2]) > 1e-12)
-            {
                 FatalErrorInFunction
                     << "test 4 failed" << abort(FatalError);
-            }
-        }
     }
 }
 
@@ -244,10 +226,8 @@ void testFaceNormals(const fvMesh& fvMsh)
         label lr = 2*(o%2)-1;
 
         if (mag(fn(l,d,i,j,k)[o] - lr*vector(units[o/2])) > 1e-12)
-        {
             FatalErrorInFunction
                 << "test 5 failed" << abort(FatalError);
-        }
     }
 
     // Check if face normals are pointing outwards
@@ -265,10 +245,8 @@ void testFaceNormals(const fvMesh& fvMsh)
         vector n = fn(l,d,i,j,k)[o];
 
         if ((f & n) < 0)
-        {
             FatalErrorInFunction
                 << "test 6 failed" << abort(FatalError);
-        }
     }
 }
 
@@ -283,7 +261,7 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAll(fan, l)
+    forAllLevels(fan, l, d, i, j, k)
     {
         const vector A
         (
@@ -292,7 +270,6 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
             Lp.x()/fvMsh[l].N().x() * Lp.y()/fvMsh[l].N().y()
         );
 
-        forAllDirections(fan[l], d, i, j, k)
         for (label o = 0; o < 6; o++)
         {
             label lr = 2*(o%2)-1;
@@ -320,10 +297,8 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
         vector n = fan(l,d,i,j,k)[o];
 
         if ((f & n) < 0)
-        {
             FatalErrorInFunction
                 << "test 8 failed" << abort(FatalError);
-        }
     }
 }
 
@@ -338,7 +313,7 @@ void testFaceDeltas(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAll(fd, l)
+    forAllLevels(fd, l, d, i, j, k)
     {
         const vector D
         (
@@ -347,15 +322,10 @@ void testFaceDeltas(const fvMesh& fvMsh)
             1.0/(Lp.z()/fvMsh[l].N().z())
         );
 
-        forAllDirections(fd[l], d, i, j, k)
         for (label o = 0; o < 6; o++)
-        {
             if (mag(fd(l,d,i,j,k)[o] - D[o/2]) > 1e-12)
-            {
                 FatalErrorInFunction
                     << "test 9 failed" << abort(FatalError);
-            }
-        }
     }
 }
 
