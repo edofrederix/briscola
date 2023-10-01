@@ -101,7 +101,6 @@ public:
     (
         linearSystem<SType,Type,MeshType>&,
         const label,
-        const bool,
         const label,
         const labelList&,
         const scalar = 1.0
@@ -112,7 +111,6 @@ public:
     (
         linearSystem<SType,Type,MeshType>&,
         const label,
-        const bool,
         const label,
         const labelList&,
         const scalar = 1.0
@@ -123,7 +121,6 @@ public:
     (
         linearSystem<SType,Type,MeshType>& sys,
         const label,
-        const bool,
         const label,
         const labelList&,
         const scalar = 0.8

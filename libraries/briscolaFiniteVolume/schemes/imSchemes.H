@@ -92,6 +92,8 @@ inline tmp<linearSystem<diagStencil,Type,MeshType>> source
     meshField<Type,MeshType>& field
 )
 {
+    const_cast<meshField<scalar,MeshType>&>(coeff).restrict();
+
     tmp<linearSystem<diagStencil,Type,MeshType>> tSys
     (
         new linearSystem<diagStencil,Type,MeshType>(field)
@@ -110,6 +112,8 @@ inline tmp<linearSystem<diagStencil,Type,MeshType>> source
         A(l,d,i,j,k) = cv(l,d,i,j,k)*coeff(l,d,i,j,k);
 
     Sys.b() = Zero;
+
+    const_cast<meshField<scalar,MeshType>&>(coeff).makeShallow();
 
     return tSys;
 }

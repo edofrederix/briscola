@@ -6,7 +6,8 @@ const int
 Foam::briscola::fv::colocated::meshType::numberOfDirections = 1;
 
 template<>
-const char* const Foam::briscola::fv::colocated::meshType::directionNames[] = {""};
+const char* const Foam::briscola::fv::colocated::meshType::directionNames[] =
+    {""};
 
 template<>
 const Foam::labelVector

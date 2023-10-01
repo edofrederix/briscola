@@ -226,7 +226,7 @@ public:
     }
 
     // Correct boundary conditions for this level
-    void correctBoundaryConditions(const bool = false);
+    void correctBoundaryConditions();
 
     // Correct boundary boundary conditions for this level
     void correctBoundaryBoundaryConditions();
@@ -240,6 +240,9 @@ public:
     // Correct communicating (parallel and periodic) boundary conditions for
     // this level
     void correctCommBoundaryConditions();
+
+    // Correct non-communicating boundary conditions for this level
+    void correctNonCommBoundaryConditions();
 
     // Member operators
 

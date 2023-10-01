@@ -84,8 +84,8 @@ tmp<meshField<Type,MeshType>> explicitDiv
     const meshField<scalar,MeshType>& cv =
         phi.fvMsh().template metrics<MeshType>().cellVolumes();
 
-    forAllLevels(Div, l, d, i, j, k)
-        Div(l,d,i,j,k) = neighborSum(phi(l,d,i,j,k))/cv(l,d,i,j,k);
+    forAllDirections(Div, d, i, j, k)
+        Div(d,i,j,k) = neighborSum(phi(d,i,j,k))/cv(d,i,j,k);
 
     return tDiv;
 }
@@ -115,17 +115,17 @@ tmp<meshField<Type,colocated>> explicitColoDiv
     const meshField<faceScalar,colocated>& fa =
         field.fvMsh().template metrics<colocated>().faceAreas();
 
-    forAllLevels(Div, l, d, i, j, k)
-        Div(l,d,i,j,k) =
+    forAllDirections(Div, d, i, j, k)
+        Div(d,i,j,k) =
             (
-              - field(l,0,i,  j,  k  ) * fa(l,d,i,j,k).left()
-              + field(l,0,i+1,j,  k  ) * fa(l,d,i,j,k).right()
-              - field(l,1,i,  j,  k  ) * fa(l,d,i,j,k).bottom()
-              + field(l,1,i,  j+1,k  ) * fa(l,d,i,j,k).top()
-              - field(l,2,i,  j,  k  ) * fa(l,d,i,j,k).aft()
-              + field(l,2,i,  j,  k+1) * fa(l,d,i,j,k).fore()
+              - field(0,i,  j,  k  ) * fa(d,i,j,k).left()
+              + field(0,i+1,j,  k  ) * fa(d,i,j,k).right()
+              - field(1,i,  j,  k  ) * fa(d,i,j,k).bottom()
+              + field(1,i,  j+1,k  ) * fa(d,i,j,k).top()
+              - field(2,i,  j,  k  ) * fa(d,i,j,k).aft()
+              + field(2,i,  j,  k+1) * fa(d,i,j,k).fore()
             )
-          / cv(l,d,i,j,k);
+          / cv(d,i,j,k);
 
     return tDiv;
 }

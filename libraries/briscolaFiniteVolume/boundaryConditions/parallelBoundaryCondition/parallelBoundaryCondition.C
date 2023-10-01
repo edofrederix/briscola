@@ -93,7 +93,7 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
             Foam::cmptMag(T & MeshType::padding[d2])
         );
 
-        forAll(mshField[0], d1)
+        for (int d1 = 0; d1 < MeshType::numberOfDirections; d1++)
         {
             if (padding == MeshType::padding[d1])
             {
@@ -110,23 +110,24 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
         }
     }
 
-    forAll(mshField, l)
+    // Set send/recv buffers for all mesh levels (even though the mesh field may
+    // be shallow at this point)
+
+    forAll(this->fvMsh_, l)
     {
-        forAll(mshField[l], d)
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
             const label d1 = order_[d];
 
             const labelVector NSend =
-                mshField.boundaryN(l,d,bo)
-              + extension_.lower()
-              + extension_.upper();
+                this->N(l,d) + extension_.lower() + extension_.upper();
 
             const labelVector NRecv =
                 cmptMag
                 (
                     T.T()
                   & (
-                        mshField[l][d1].boundaryN(bo)
+                        this->N(l,d1)
                       + extension_.lower()
                       + extension_.upper()
                     )
@@ -187,8 +188,8 @@ void parallelBoundaryCondition<Type,MeshType>::initEvaluate
     {
         const meshDirection<Type,MeshType>& fd = field[d];
 
-        labelVector S(fd.boundaryStart(bo) - extension_.lower());
-        labelVector E(fd.boundaryEnd(bo) + extension_.upper());
+        labelVector S(this->S(l,d) - extension_.lower());
+        labelVector E(this->E(l,d) + extension_.upper());
 
         block<Type>& sendBuffer =
             sendBuffers_[l*field.size()+d];
@@ -233,11 +234,7 @@ void parallelBoundaryCondition<Type,MeshType>::initEvaluate
 }
 
 template<class Type, class MeshType>
-void parallelBoundaryCondition<Type,MeshType>::evaluate
-(
-    const label l,
-    const bool
-)
+void parallelBoundaryCondition<Type,MeshType>::evaluate(const label l)
 {
     if
     (
@@ -264,11 +261,10 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate
 
         meshDirection<Type,MeshType>& fd = field[d1];
 
-        labelVector S(fd.boundaryStart(bo) - extension_.lower());
-        labelVector E(fd.boundaryEnd(bo) + extension_.upper());
+        labelVector S(this->S(l,d1) - extension_.lower());
+        labelVector E(this->E(l,d1) + extension_.upper());
 
-        block<Type>& recvBuffer =
-            recvBuffers_[l*field.size()+d2];
+        block<Type>& recvBuffer = recvBuffers_[l*field.size()+d2];
 
         // Transform the receive buffer back to the orientation of the patch
 

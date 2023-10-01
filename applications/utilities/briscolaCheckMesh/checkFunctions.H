@@ -164,8 +164,8 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
         forAll(fc, l)
         forAll(fc[l], d)
         {
-            labelVector S(fc.boundaryStart(l,d,bo));
-            labelVector E(fc.boundaryEnd(l,d,bo));
+            labelVector S(fc.fvMsh().template S<MeshType>(l,d,bo));
+            labelVector E(fc.fvMsh().template E<MeshType>(l,d,bo));
 
             labelVector ijk;
 
@@ -196,7 +196,8 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
                         << "internal cell index = " << ijk << nl
                         << "ghost cell index = " << ijk+bo << nl
                         << "direction size = " << fc.N(l,d) << nl
-                        << "shifted = " << Switch(fc.shifted(l,d,bo)) << nl
+                        << "shifted = " << Switch(MeshType::shifted(d,bo))
+                        << nl
                         << "slave = " << Switch(slave) << endl
                         << exit(FatalError);
                 }
@@ -255,8 +256,8 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
         forAll(fd, l)
         forAll(fd[l], d)
         {
-            labelVector S(fd.boundaryStart(l,d,bo));
-            labelVector E(fd.boundaryEnd(l,d,bo));
+            labelVector S(fd.fvMsh().template S<MeshType>(l,d,bo));
+            labelVector E(fd.fvMsh().template E<MeshType>(l,d,bo));
 
             labelVector ijk;
 
@@ -286,7 +287,8 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
                         << "internal cell index = " << ijk << nl
                         << "ghost cell index = " << ijk+bo << nl
                         << "direction size = " << fd.N(l,d) << endl
-                        << "shifted = " << Switch(fd.shifted(l,d,bo)) << nl
+                        << "shifted = " << Switch(MeshType::shifted(d,bo))
+                        << nl
                         << "slave = " << Switch(slave) << endl
                         << exit(FatalError);
                 }

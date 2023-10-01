@@ -24,6 +24,9 @@ template<class SType, class Type, class MeshType>
 class linearSystem;
 
 template<class Type, class MeshType>
+class restrictionScheme;
+
+template<class Type, class MeshType>
 class meshField
 :
     public PtrList<meshLevel<Type,MeshType>>,
@@ -39,6 +42,9 @@ class meshField
 
     // Boundary conditions
     PtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
+
+    // Restriction scheme associated with this field
+    autoPtr<restrictionScheme<Type,MeshType>> reScheme_;
 
 protected:
 
@@ -86,7 +92,7 @@ public:
         const IOobject::writeOption w = NO_WRITE,
         const bool registerObject = false,
         const bool initBCs = false,
-        const bool deep = true
+        const bool deep = false
     );
 
     // Copy constructors: construct from field or tmp of field with option to
@@ -288,7 +294,7 @@ public:
     void addBoundaryConditions();
 
     // Correct boundary conditions
-    void correctBoundaryConditions(const bool = false);
+    void correctBoundaryConditions();
 
     // Correct parallel boundary conditions
     void correctParallelBoundaryConditions();
@@ -299,9 +305,8 @@ public:
     // Correct communicating (parallel and periodic) boundary conditions
     void correctCommBoundaryConditions();
 
-    // Check if boundary conditions are singular, which is true if all boundary
-    // conditions are empty, parallel, periodic or Neumann
-    bool singularBoundaryConditions();
+    // Correct non-communicating boundary conditions
+    void correctNonCommBoundaryConditions();
 
     // Set the old time field
     void setOldTime();
@@ -332,6 +337,13 @@ public:
     {
         return !deep();
     }
+
+    // Set the restriction operator that is associated with this field
+    void setRestrictionScheme(const word scheme);
+
+    // Restrict the field to lower levels. If no restriction scheme is set, set
+    // the default restriction scheme first. A shallow field will be made deep.
+    void restrict();
 
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }

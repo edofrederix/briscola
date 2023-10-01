@@ -56,6 +56,8 @@ EulerDdtScheme<Type,MeshType>::ddt
     meshField<Type,MeshType>& field
 )
 {
+    const_cast<meshField<scalar,MeshType>&>(coeff).restrict();
+
     tmp<linearSystem<diagStencil,Type,MeshType>> tSys
     (
         new linearSystem<diagStencil,Type,MeshType>(field)
@@ -68,6 +70,8 @@ EulerDdtScheme<Type,MeshType>::ddt
 
     Sys.A() = cv*coeff/this->deltaT();
     Sys.b() = cv*coeff.oldTime()*field.oldTime()/this->deltaT();
+
+    const_cast<meshField<scalar,MeshType>&>(coeff).makeShallow();
 
     return tSys;
 }

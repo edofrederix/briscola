@@ -58,83 +58,35 @@ protected:
     // Restriction operator. By default the average scheme is used
     autoPtr<restrictionScheme<Type,MeshType>> reScheme_;
 
-    // Solve system by starting from the given level. Also provide defect
-    // system, relTol, absTol, minIter and maxIter
-    virtual void solve
-    (
-        linearSystem<SType,Type,MeshType>&,
-        const label,
-        const scalar,
-        const scalar,
-        const label,
-        const label,
-        const label,
-        const label
-    );
-
-    // Same function with default arguments
+    // Solve system and provide parameters
     virtual void solve
     (
         linearSystem<SType,Type,MeshType>& xEqn,
-        const label l
-    )
-    {
-        solve
-        (
-            xEqn,
-            l,
-            this->relTol_,
-            this->tolerance_,
-            this->minIter_,
-            this->maxIter_,
-            this->nSweepsPre_,
-            this->nSweepsPost_
-        );
-    }
-
-    // Multigrid cycle for given mesh level
-    virtual void cycle
-    (
-        linearSystem<SType,Type,MeshType>&,
-        meshField<Type,MeshType>&,
-        labelList&,
-        const label,
-        const label,
-        const labelList&,
-        const label,
-        const label
+        const scalar relTol,
+        const scalar absTol,
+        const label minIter,
+        const label maxIter,
+        const label nSweepsPre,
+        const label nSweepsPost
     );
 
-    // Same function with default arguments
+    // Multigrid cycle for given mesh level
     virtual void cycle
     (
         linearSystem<SType,Type,MeshType>& xEqn,
         meshField<Type,MeshType>& r,
         labelList& visits,
         const label l,
-        const label l0,
-        const labelList& converged
-    )
-    {
-        cycle
-        (
-            xEqn,
-            r,
-            visits,
-            l,
-            l0,
-            converged,
-            this->nSweepsPre_,
-            this->nSweepsPost_
-        );
-    }
+        const labelList& converged,
+        const label nSweepsPre,
+        const label nSweepsPost
+    );
 
     // Smoother function pointer
     void (*smooth)
     (
         linearSystem<SType,Type,MeshType>&,
         const label,
-        const bool,
         const label,
         const labelList&,
         const scalar
@@ -155,7 +107,6 @@ public:
     inline label levelReps
     (
         const label l,
-        const label l0,
         const labelList& visits
     )
     {
@@ -165,11 +116,11 @@ public:
         }
         else if (cycleType_ == WCYCLE)
         {
-            return 1 + (l > l0);
+            return 1 + (l > 0);
         }
         else
         {
-            return 1 + (l > l0 && visits[l] == 0);
+            return 1 + (l > 0 && visits[l] == 0);
         }
     }
 };

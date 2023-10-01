@@ -13,19 +13,6 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::setInternalCells()
-{
-    const labelVector& padding = MeshType::padding[d_];
-    const faceLabel slave = fvMsh_.msh().facePatchSlave();
-
-    I_ = faceLabel(zeroXYZ, this->B().N()-2*unitXYZ);
-
-    for (int i = 0; i < 6; i++)
-        I_[i] +=
-            (padding[i/2] && slave[i]) ? 1 - 2*(i%2) : 0;
-}
-
-template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::allocate(const labelVector B)
 {
     blockType::reAllocate(B);
@@ -62,10 +49,10 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(&mshLevel)
 {
     allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
-    setInternalCells();
 }
 
 // Copy constructors
@@ -227,10 +214,10 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(nullptr)
 {
     allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
-    setInternalCells();
 }
 
 template<class Type, class MeshType>
@@ -246,11 +233,11 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(nullptr)
 {
     allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
     *this = Zero;
-    setInternalCells();
 }
 
 template<class Type, class MeshType>
@@ -266,11 +253,11 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(nullptr)
 {
     allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
     *this = v;
-    setInternalCells();
 }
 
 template<class Type, class MeshType>
@@ -286,11 +273,11 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(nullptr)
 {
     allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
     *this = v[d];
-    setInternalCells();
 }
 
 template<class Type, class MeshType>

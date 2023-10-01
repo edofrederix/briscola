@@ -22,26 +22,8 @@ DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
 )
 :
     boundaryCondition<Type,MeshType>(mshField, patch),
-    boundaryValues_()
-{
-    const labelVector bo(this->boundaryOffset());
-    List<Type> values(this->dict().lookup("values"));
-
-    forAll(mshField, l)
-    {
-        forAll(mshField[l], d)
-        {
-            boundaryValues_.append
-            (
-                new block<Type>
-                (
-                    mshField.boundaryN(l,d,bo),
-                    values[d]
-                )
-            );
-        }
-    }
-}
+    boundaryValues_(this->dict().lookup("values"))
+{}
 
 template<class Type, class MeshType>
 DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
@@ -69,15 +51,11 @@ void DirichletBoundaryCondition<Type,MeshType>::initEvaluate(const label)
 {}
 
 template<class Type, class MeshType>
-void DirichletBoundaryCondition<Type,MeshType>::evaluate
-(
-    const label l,
-    const bool homogeneous
-)
+void DirichletBoundaryCondition<Type,MeshType>::evaluate(const label l)
 {
     meshLevel<Type,MeshType>& field = this->mshField()[l];
 
-    const scalar H = homogeneous ? 0.0 : 1.0;
+    const scalar H = l == 0;
 
     const labelVector bo(this->boundaryOffset());
 
@@ -85,15 +63,12 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
     {
         meshDirection<Type,MeshType>& fd = field[d];
 
-        const labelVector S(fd.boundaryStart(bo));
-        const labelVector E(fd.boundaryEnd(bo));
-
-        const block<Type>& val =
-            boundaryValues_[l*MeshType::numberOfDirections + d];
+        const labelVector S(this->S(l,d));
+        const labelVector E(this->E(l,d));
 
         labelVector ijk;
 
-        if (fd.shifted(bo))
+        if (MeshType::shifted(d,bo))
         {
             // Ghost value not needed because the internal value is constrained.
             // Set to the internal value.
@@ -102,7 +77,7 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk+bo) = H*val(ijk-S);
+                fd(ijk+bo) = H*boundaryValues_[d];
             }
         }
         else
@@ -128,12 +103,12 @@ tmp<block<Type>> DirichletBoundaryCondition<Type,MeshType>::internalValue
     const label d
 )
 {
-    tmp<block<Type>> tv
-    (
-        new block<Type>(boundaryValues_[l*MeshType::numberOfDirections + d])
-    );
+    const scalar H = l == 0;
 
-    return tv;
+    return tmp<block<Type>>
+    (
+        new block<Type>(this->N(l,d), H*boundaryValues_[d])
+    );
 }
 
 template<class Type, class MeshType>
@@ -143,7 +118,12 @@ tmp<block<Type>> DirichletBoundaryCondition<Type,MeshType>::boundarySources
     const label d
 )
 {
-    return 2.0*boundaryValues_[l*MeshType::numberOfDirections + d];
+    const scalar H = l == 0;
+
+    return tmp<block<Type>>
+    (
+        new block<Type>(this->N(l,d), H*2.0*boundaryValues_[d])
+    );
 }
 
 }

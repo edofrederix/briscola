@@ -59,27 +59,3 @@ inline labelVector N() const
 {
     return direction().N();
 }
-
-// Boundary start
-inline labelVector boundaryStart(const labelVector& bo) const
-{
-    return direction().boundaryStart(bo);
-}
-
-// Boundary end
-inline labelVector boundaryEnd(const labelVector& bo) const
-{
-    return direction().boundaryEnd(bo);
-}
-
-// Boundary size
-inline labelVector boundaryN(const labelVector& bo) const
-{
-    return direction().boundaryN(bo);
-}
-
-// Shifted boundary
-inline bool shifted(const labelVector& bo) const
-{
-    return direction().shifted(bo);
-}

@@ -300,7 +300,7 @@ meshLevel<Type,MeshType>::~meshLevel()
 {}
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctBoundaryConditions(const bool homogeneous)
+void meshLevel<Type,MeshType>::correctBoundaryConditions()
 {
     if (mshFieldPtr_)
     {
@@ -320,8 +320,8 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions(const bool homogeneous)
             for (bo.z() = -1; bo.z() <= 1; bo.z()++)
             if (cmptSum(cmptMag(bo)) > 1)
             {
-                const labelVector S(field.boundaryStart(bo));
-                const labelVector E(field.boundaryEnd(bo));
+                const labelVector S(fvMsh_.template S<MeshType>(l_,d,bo));
+                const labelVector E(fvMsh_.template E<MeshType>(l_,d,bo));
 
                 labelVector ijk;
 
@@ -351,7 +351,7 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions(const bool homogeneous)
 
         forAll(mshFieldPtr_->boundaryConditions(), i)
         {
-            mshFieldPtr_->boundaryConditions()[i].evaluate(l_, homogeneous);
+            mshFieldPtr_->boundaryConditions()[i].evaluate(l_);
         }
     }
 }
@@ -363,7 +363,7 @@ void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
     {
         this->addBoundaryConditions();
 
-        // Correct all parallel boundary conditions contained by this part
+        // Correct all parallel boundary conditions
 
         const label nReq = Pstream::nRequests();
 
@@ -403,7 +403,7 @@ void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
     {
         this->addBoundaryConditions();
 
-        // Correct all periodic boundary conditions contained by this part
+        // Correct all periodic boundary conditions
 
         const label nReq = Pstream::nRequests();
 
@@ -441,6 +441,39 @@ void meshLevel<Type,MeshType>::correctCommBoundaryConditions()
 {
     this->correctParallelBoundaryConditions();
     this->correctPeriodicBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctNonCommBoundaryConditions()
+{
+    if (mshFieldPtr_)
+    {
+        this->addBoundaryConditions();
+
+        // Correct all non-communicating boundary conditions
+
+        forAll(mshFieldPtr_->boundaryConditions(), i)
+        {
+            boundaryCondition<Type,MeshType>& bc =
+                mshFieldPtr_->boundaryConditions()[i];
+
+            if (bc.baseType() != PARALLELBC && bc.baseType() != PERIODICBC)
+            {
+                bc.initEvaluate(l_);
+            }
+        }
+
+        forAll(mshFieldPtr_->boundaryConditions(), i)
+        {
+            boundaryCondition<Type,MeshType>& bc =
+                mshFieldPtr_->boundaryConditions()[i];
+
+            if (bc.baseType() != PARALLELBC && bc.baseType() != PERIODICBC)
+            {
+                bc.evaluate(l_);
+            }
+        }
+    }
 }
 
 template<class Type, class MeshType>

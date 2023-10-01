@@ -5,6 +5,8 @@
 #include "parallelPartPatch.H"
 #include "periodicPartPatch.H"
 
+#include "restrictionScheme.H"
+
 namespace Foam
 {
 
@@ -87,7 +89,8 @@ meshField<Type,MeshType>::meshField
     refCount(),
     fvMsh_(fvMsh),
     oldTimePtr_(nullptr),
-    boundaryConditions_()
+    boundaryConditions_(),
+    reScheme_()
 {
     if (!fvMsh.structured() && MeshType::numberOfDirections > 1)
     {
@@ -143,7 +146,8 @@ meshField<Type,MeshType>::meshField
     refCount(),
     fvMsh_(field.fvMsh()),
     oldTimePtr_(nullptr),
-    boundaryConditions_()
+    boundaryConditions_(),
+    reScheme_()
 {
     setFieldPointers();
 
@@ -184,7 +188,8 @@ meshField<Type,MeshType>::meshField
     refCount(),
     fvMsh_(field.fvMsh()),
     oldTimePtr_(nullptr),
-    boundaryConditions_()
+    boundaryConditions_(),
+    reScheme_()
 {
     setFieldPointers();
 
@@ -228,7 +233,8 @@ meshField<Type,MeshType>::meshField
     refCount(),
     fvMsh_(tfield->fvMsh_),
     oldTimePtr_(),
-    boundaryConditions_()
+    boundaryConditions_(),
+    reScheme_()
 {
     setFieldPointers();
 
@@ -275,7 +281,8 @@ meshField<Type,MeshType>::meshField
     refCount(),
     fvMsh_(tfield->fvMsh_),
     oldTimePtr_(),
-    boundaryConditions_()
+    boundaryConditions_(),
+    reScheme_()
 {
     setFieldPointers();
 
@@ -369,30 +376,18 @@ void meshField<Type,MeshType>::addBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctBoundaryConditions(const bool homogeneous)
+void meshField<Type,MeshType>::correctBoundaryConditions()
 {
-    // A call to correctBoundaryConditions() implies that boundary conditions
-    // are needed for this field. Add them if not already done.
-
-    if (boundaryConditions_.size() == 0)
-    {
-        addBoundaryConditions();
-    }
+    addBoundaryConditions();
 
     forAll(*this, l)
-        listType::operator[](l).correctBoundaryConditions(homogeneous);
+        listType::operator[](l).correctBoundaryConditions();
 }
 
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::correctParallelBoundaryConditions()
 {
-    // A call to correctParallelBoundaryConditions() implies that boundary
-    // conditions are needed for this field. Add them if not already done.
-
-    if (boundaryConditions_.size() == 0)
-    {
-        addBoundaryConditions();
-    }
+    addBoundaryConditions();
 
     forAll(*this, l)
         listType::operator[](l).correctParallelBoundaryConditions();
@@ -401,13 +396,7 @@ void meshField<Type,MeshType>::correctParallelBoundaryConditions()
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::correctPeriodicBoundaryConditions()
 {
-    // A call to correctPeriodicBoundaryConditions() implies that boundary
-    // conditions are needed for this field. Add them if not already done.
-
-    if (boundaryConditions_.size() == 0)
-    {
-        addBoundaryConditions();
-    }
+    addBoundaryConditions();
 
     forAll(*this, l)
         listType::operator[](l).correctPeriodicBoundaryConditions();
@@ -421,32 +410,12 @@ void meshField<Type,MeshType>::correctCommBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-bool meshField<Type,MeshType>::singularBoundaryConditions()
+void meshField<Type,MeshType>::correctNonCommBoundaryConditions()
 {
-    forAll(boundaryConditions_, i)
-    {
-        const boundaryConditionBaseType baseType =
-            boundaryConditions_[i].baseType();
+    addBoundaryConditions();
 
-        // If there's a BC that's not Neumann, periodic, parallel or empty, then
-        // the boundary conditions are not singular
-
-        if
-        (
-            baseType != NEUMANNBC
-         && baseType != PERIODICBC
-         && baseType != PARALLELBC
-         && baseType != EMPTYBC
-        )
-        {
-            return false;
-        }
-    }
-
-    // If we reach this point, all BCs are either Neumann, periodic, parallel or
-    // empty, giving a singular system
-
-    return true;
+    forAll(*this, l)
+        listType::operator[](l).correctNonCommBoundaryConditions();
 }
 
 template<class Type, class MeshType>
@@ -497,6 +466,29 @@ void meshField<Type,MeshType>::makeShallow()
 {
     if (this->deep())
         listType::setSize(1);
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::setRestrictionScheme(const word scheme)
+{
+    reScheme_.reset
+    (
+        restrictionScheme<Type,MeshType>::New(scheme, fvMsh_).ptr()
+    );
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::restrict()
+{
+    if (reScheme_.empty())
+        this->setRestrictionScheme
+        (
+            restrictionScheme<Type,MeshType>::defaultScheme
+        );
+
+    makeDeep();
+
+    reScheme_->restrict(*this);
 }
 
 template<class Type, class MeshType>

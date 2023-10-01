@@ -36,6 +36,8 @@ midPointGaussDivergenceScheme<Type,MeshType>::div
     meshField<Type,MeshType>& field
 )
 {
+    const_cast<meshField<faceScalar,MeshType>&>(phi).restrict();
+
     tmp<linearSystem<stencil,Type,MeshType>> tSys
     (
         new linearSystem<stencil,Type,MeshType>(field)
@@ -53,6 +55,8 @@ midPointGaussDivergenceScheme<Type,MeshType>::div
     }
 
     Sys.b() = Zero;
+
+    const_cast<meshField<faceScalar,MeshType>&>(phi).makeShallow();
 
     return tSys;
 }

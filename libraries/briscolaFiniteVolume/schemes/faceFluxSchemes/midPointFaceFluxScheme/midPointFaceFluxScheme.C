@@ -28,15 +28,15 @@ midPointFaceFluxScheme::midPointFaceFluxScheme
 
 tmp<colocatedFaceScalarField> midPointFaceFluxScheme::faceFlux
 (
-    const colocatedVectorField& f
+    const colocatedVectorField& field
 )
 {
     tmp<colocatedFaceScalarField> tFlux
     (
         new colocatedFaceScalarField
         (
-            "faceFlux("+f.name()+")",
-            f.fvMsh()
+            "faceFlux("+field.name()+")",
+            field.fvMsh()
         )
     );
 
@@ -47,17 +47,17 @@ tmp<colocatedFaceScalarField> midPointFaceFluxScheme::faceFlux
     const colocatedFaceVectorField& fan =
         this->fvMsh().metrics<colocated>().faceAreaNormals();
 
-    forAllLevels(Flux, l, d, i, j, k)
-        Flux(l,d,i,j,k) =
+    forAllCells(Flux, i, j, k)
+        Flux(i,j,k) =
             0.5
           * faceScalar
             (
-                (f(l,d,i,j,k) + f(l,d,i-1,j,k)) & fan(l,d,i,j,k).left(),
-                (f(l,d,i,j,k) + f(l,d,i+1,j,k)) & fan(l,d,i,j,k).right(),
-                (f(l,d,i,j,k) + f(l,d,i,j-1,k)) & fan(l,d,i,j,k).bottom(),
-                (f(l,d,i,j,k) + f(l,d,i,j+1,k)) & fan(l,d,i,j,k).top(),
-                (f(l,d,i,j,k) + f(l,d,i,j,k-1)) & fan(l,d,i,j,k).aft(),
-                (f(l,d,i,j,k) + f(l,d,i,j,k+1)) & fan(l,d,i,j,k).fore()
+                (field(i,j,k) + field(i-1,j,k)) & fan(i,j,k).left(),
+                (field(i,j,k) + field(i+1,j,k)) & fan(i,j,k).right(),
+                (field(i,j,k) + field(i,j-1,k)) & fan(i,j,k).bottom(),
+                (field(i,j,k) + field(i,j+1,k)) & fan(i,j,k).top(),
+                (field(i,j,k) + field(i,j,k-1)) & fan(i,j,k).aft(),
+                (field(i,j,k) + field(i,j,k+1)) & fan(i,j,k).fore()
             );
 
     return tFlux;
@@ -65,15 +65,15 @@ tmp<colocatedFaceScalarField> midPointFaceFluxScheme::faceFlux
 
 tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
 (
-    const staggeredScalarField& f
+    const staggeredScalarField& field
 )
 {
     tmp<staggeredFaceScalarField> tFlux
     (
         new staggeredFaceScalarField
         (
-            "faceFlux("+f.name()+")",
-            f.fvMsh()
+            "faceFlux("+field.name()+")",
+            field.fvMsh()
         )
     );
 
@@ -84,7 +84,7 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
     const staggeredFaceScalarField& fa =
         this->fvMsh().metrics<staggered>().faceAreas();
 
-    forAllLevels(Flux, l, d, i, j, k)
+    forAllDirections(Flux, d, i, j, k)
     {
         const labelVector& padding = staggered::padding[d];
 
@@ -99,16 +99,16 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
         // direction. If the flux direction does not match the mesh direction,
         // we must average in the direction of mesh padding
 
-        Flux(l,d,ijk) =
-            0.5*fa(l,d,ijk)
+        Flux(d,ijk) =
+            0.5*fa(d,ijk)
           * faceScalar
             (
-              - f(l,0,ijk)       - f(l,0,-ox+ijk),
-                f(l,0,ijk+unitX) + f(l,0,-ox+ijk+unitX),
-              - f(l,1,ijk)       - f(l,1,-oy+ijk),
-                f(l,1,ijk+unitY) + f(l,1,-oy+ijk+unitY),
-              - f(l,2,ijk)       - f(l,2,-oz+ijk),
-                f(l,2,ijk+unitZ) + f(l,2,-oz+ijk+unitZ)
+              - field(0,ijk)       - field(0,-ox+ijk),
+                field(0,ijk+unitX) + field(0,-ox+ijk+unitX),
+              - field(1,ijk)       - field(1,-oy+ijk),
+                field(1,ijk+unitY) + field(1,-oy+ijk+unitY),
+              - field(2,ijk)       - field(2,-oz+ijk),
+                field(2,ijk+unitZ) + field(2,-oz+ijk+unitZ)
             );
     }
 

@@ -133,8 +133,8 @@ void vof::updateFlux
             const label l = faceNumber( bo);
             const label u = faceNumber(-bo);
 
-            const labelVector S(f.boundaryStart(bo));
-            const labelVector E(f.boundaryEnd(bo));
+            const labelVector S(fvMsh_.S<colocated>(bo));
+            const labelVector E(fvMsh_.E<colocated>(bo));
 
             labelVector ijk;
 

@@ -32,7 +32,7 @@ template<class Type>
 tmp<meshField<typename reconstructionScheme<Type>::ReconType, colocated>>
 midPointReconstructionScheme<Type>::reconstruct
 (
-    const meshField<Type,staggered>& f
+    const meshField<Type,staggered>& field
 )
 {
     typedef typename reconstructionScheme<Type>::ReconType ReconType;
@@ -41,8 +41,8 @@ midPointReconstructionScheme<Type>::reconstruct
     (
         new meshField<ReconType,colocated>
         (
-            "reconstruct("+f.name()+")",
-            f.fvMsh()
+            "reconstruct("+field.name()+")",
+            field.fvMsh()
         )
     );
 
@@ -51,18 +51,18 @@ midPointReconstructionScheme<Type>::reconstruct
     Recon = Zero;
 
     const meshField<faceVector,colocated>& fn =
-        f.fvMsh().template metrics<colocated>().faceNormals();
+        field.fvMsh().template metrics<colocated>().faceNormals();
 
-    forAllLevels(Recon, l, d, i, j, k)
-        Recon(l,d,i,j,k) =
+    forAllCells(Recon, i, j, k)
+        Recon(i,j,k) =
             0.5
           * (
-              - f(l,0,i,  j,  k  ) * fn(l,d,i,j,k).left()
-              + f(l,0,i+1,j,  k  ) * fn(l,d,i,j,k).right()
-              - f(l,1,i,  j,  k  ) * fn(l,d,i,j,k).bottom()
-              + f(l,1,i,  j+1,k  ) * fn(l,d,i,j,k).top()
-              - f(l,2,i,  j,  k  ) * fn(l,d,i,j,k).aft()
-              + f(l,2,i,  j,  k+1) * fn(l,d,i,j,k).fore()
+              - field(0,i,  j,  k  ) * fn(i,j,k).left()
+              + field(0,i+1,j,  k  ) * fn(i,j,k).right()
+              - field(1,i,  j,  k  ) * fn(i,j,k).bottom()
+              + field(1,i,  j+1,k  ) * fn(i,j,k).top()
+              - field(2,i,  j,  k  ) * fn(i,j,k).aft()
+              + field(2,i,  j,  k+1) * fn(i,j,k).fore()
             );
 
     return tRecon;

@@ -26,10 +26,10 @@ class linearSystem
     // Reference to the unknown
     meshField<Type,MeshType>& x_;
 
-    // Pointer to the stencil matrix
+    // The stencil matrix which is deep by default
     meshField<SType,MeshType> A_;
 
-    // Pointer to the right-hand side source
+    // Right-hand side source which is shallow by default
     meshField<Type,MeshType> b_;
 
     // Bool that keeps track of system singularity
@@ -105,11 +105,11 @@ public:
     tmp<meshLevel<Type,MeshType>> evaluate(const label) const;
     tmp<meshDirection<Type,MeshType>> evaluate(const label, const label) const;
 
-    // Correct boundaries
-    void correctBoundaries();
+    // Eliminate ghosts from the linear system where possible
+    void eliminateGhosts();
 
-    // Correct boundaries of given level
-    void correctBoundaries(const label);
+    // Eliminate ghosts from the linear system where possible, at given level
+    void eliminateGhosts(const label);
 
     // Member Operators
 

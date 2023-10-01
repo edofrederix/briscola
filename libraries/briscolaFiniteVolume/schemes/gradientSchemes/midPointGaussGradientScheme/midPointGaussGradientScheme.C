@@ -56,18 +56,18 @@ midPointGaussGradientScheme<Type,MeshType>::grad
     const meshField<scalar,MeshType>& cv =
         field.fvMsh().template metrics<MeshType>().cellVolumes();
 
-    forAllLevels(Grad, l, d, i, j, k)
-        Grad(l,d,i,j,k) =
+    forAllDirections(Grad, d, i, j, k)
+        Grad(d,i,j,k) =
             0.5
           * (
-                (field(l,d,i,j,k)+field(l,d,i-1,j,k))*fan(l,d,i,j,k).left()
-              + (field(l,d,i,j,k)+field(l,d,i+1,j,k))*fan(l,d,i,j,k).right()
-              + (field(l,d,i,j,k)+field(l,d,i,j-1,k))*fan(l,d,i,j,k).bottom()
-              + (field(l,d,i,j,k)+field(l,d,i,j+1,k))*fan(l,d,i,j,k).top()
-              + (field(l,d,i,j,k)+field(l,d,i,j,k-1))*fan(l,d,i,j,k).aft()
-              + (field(l,d,i,j,k)+field(l,d,i,j,k+1))*fan(l,d,i,j,k).fore()
+                (field(d,i,j,k) + field(d,i-1,j,k)) * fan(d,i,j,k).left()
+              + (field(d,i,j,k) + field(d,i+1,j,k)) * fan(d,i,j,k).right()
+              + (field(d,i,j,k) + field(d,i,j-1,k)) * fan(d,i,j,k).bottom()
+              + (field(d,i,j,k) + field(d,i,j+1,k)) * fan(d,i,j,k).top()
+              + (field(d,i,j,k) + field(d,i,j,k-1)) * fan(d,i,j,k).aft()
+              + (field(d,i,j,k) + field(d,i,j,k+1)) * fan(d,i,j,k).fore()
             )
-          / cv(l,d,i,j,k);
+          / cv(d,i,j,k);
 
     return tGrad;
 }
@@ -95,13 +95,13 @@ midPointGaussGradientScheme<Type,MeshType>::stagGrad
     const meshField<faceScalar,colocated>& fd =
             field.fvMsh().template metrics<colocated>().faceDeltas();
 
-    forAllLevels(Grad, l, d, i, j, k)
+    forAllDirections(Grad, d, i, j, k)
     {
         const labelVector& o = staggered::padding[d];
         const labelVector ijk(i,j,k);
 
-        Grad(l,d,ijk) =
-            (field(l,0,ijk)-field(l,0,ijk-o))*fd(l,0,ijk)[d*2];
+        Grad(d,ijk) =
+            (field(0,ijk)-field(0,ijk-o))*fd(0,ijk)[d*2];
     }
 
     return tGrad;

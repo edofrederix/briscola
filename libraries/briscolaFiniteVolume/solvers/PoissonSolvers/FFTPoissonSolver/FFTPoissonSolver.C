@@ -129,8 +129,8 @@ void FFTPoissonSolver::solve
             const PtrList<PartialList<scalar>>& cellSizes =
                 fvMsh_.msh().cast<rectilinearMesh>().globalCellSizes();
 
-            const labelVector S(x.direction().boundaryStart(bo));
-            const labelVector E(x.direction().boundaryEnd(bo));
+            const labelVector S(fvMsh_.template S<colocated>(bo));
+            const labelVector E(fvMsh_.template E<colocated>(bo));
 
             labelVector ijk;
 

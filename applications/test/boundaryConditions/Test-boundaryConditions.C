@@ -52,10 +52,10 @@ void testDirichlet(const fvMesh& fvMsh)
         forAll(field, l)
         forAll(field[l], d)
         {
-            const labelVector S(field.boundaryStart(l,d,bo));
-            const labelVector E(field.boundaryEnd(l,d,bo));
+            const labelVector S(field.fvMsh().template S<MeshType>(l,d,bo));
+            const labelVector E(field.fvMsh().template E<MeshType>(l,d,bo));
 
-            if (field.shifted(l,d,bo))
+            if (MeshType::shifted(d,bo))
             {
                 for (label i = S.x(); i < E.x(); i++)
                 for (label j = S.y(); j < E.y(); j++)
@@ -141,10 +141,10 @@ void testNeumann(const fvMesh& fvMsh)
         forAll(field, l)
         forAll(field[l], d)
         {
-            const labelVector S(field.boundaryStart(l,d,bo));
-            const labelVector E(field.boundaryEnd(l,d,bo));
+            const labelVector S(field.fvMsh().template S<MeshType>(l,d,bo));
+            const labelVector E(field.fvMsh().template E<MeshType>(l,d,bo));
 
-            if (field.shifted(l,d,bo))
+            if (MeshType::shifted(d,bo))
             {
                 for (label i = S.x(); i < E.x(); i++)
                 for (label j = S.y(); j < E.y(); j++)

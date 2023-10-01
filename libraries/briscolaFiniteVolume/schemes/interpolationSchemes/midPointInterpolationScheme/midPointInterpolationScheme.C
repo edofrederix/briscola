@@ -48,17 +48,17 @@ midPointInterpolationScheme<Type,MeshType>::interp
 
     Interp = Zero;
 
-    forAllLevels(Interp, l, d, i, j, k)
-        Interp(l,d,i,j,k) =
+    forAllDirections(Interp, d, i, j, k)
+        Interp(d,i,j,k) =
             0.5
           * FaceSpace<Type>
             (
-                field(l,d,i-1,j,k) + field(l,d,i,j,k),
-                field(l,d,i+1,j,k) + field(l,d,i,j,k),
-                field(l,d,i,j-1,k) + field(l,d,i,j,k),
-                field(l,d,i,j+1,k) + field(l,d,i,j,k),
-                field(l,d,i,j,k-1) + field(l,d,i,j,k),
-                field(l,d,i,j,k+1) + field(l,d,i,j,k)
+                field(d,i-1,j,k) + field(d,i,j,k),
+                field(d,i+1,j,k) + field(d,i,j,k),
+                field(d,i,j-1,k) + field(d,i,j,k),
+                field(d,i,j+1,k) + field(d,i,j,k),
+                field(d,i,j,k-1) + field(d,i,j,k),
+                field(d,i,j,k+1) + field(d,i,j,k)
             );
 
     return tInterp;

@@ -36,6 +36,8 @@ linearGaussLaplacianScheme<Type,MeshType>::laplacian
     meshField<Type,MeshType>& field
 )
 {
+    const_cast<meshField<faceScalar,MeshType>&>(lambda).restrict();
+
     tmp<linearSystem<stencil,Type,MeshType>> tSys
     (
         new linearSystem<stencil,Type,MeshType>(field)
@@ -61,6 +63,8 @@ linearGaussLaplacianScheme<Type,MeshType>::laplacian
     }
 
     Sys.b() = Zero;
+
+    // const_cast<meshField<faceScalar,MeshType>&>(lambda).makeShallow();
 
     return tSys;
 }

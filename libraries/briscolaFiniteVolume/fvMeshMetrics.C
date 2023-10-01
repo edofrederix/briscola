@@ -424,8 +424,8 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
             for (bo.z() = -1; bo.z() <= 1; bo.z()++)
             if (cmptSum(cmptMag(bo)) > 0)
             {
-                const labelVector S(cc.boundaryStart(l,d,bo));
-                const labelVector E(cc.boundaryEnd(l,d,bo));
+                const labelVector S(cc.fvMsh().template S<MeshType>(l,d,bo));
+                const labelVector E(cc.fvMsh().template E<MeshType>(l,d,bo));
 
                 const label fi = faceNumber(bo);
                 const label ei = edgeNumber(bo);
@@ -502,8 +502,8 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
             for (bo.z() = -1; bo.z() <= 1; bo.z()++)
             if (cmptSum(cmptMag(bo)) > 0)
             {
-                const labelVector S(cv.boundaryStart(l,d,bo));
-                const labelVector E(cv.boundaryEnd(l,d,bo));
+                const labelVector S(cv.fvMsh().template S<MeshType>(l,d,bo));
+                const labelVector E(cv.fvMsh().template E<MeshType>(l,d,bo));
 
                 labelVector ijk;
 
@@ -557,6 +557,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
+        true,
         true
     ),
     edgeCenters_
@@ -565,6 +566,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
+        true,
         true,
         true
     ),
@@ -575,6 +577,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
+        true,
         true
     ),
     faceNormals_
@@ -583,6 +586,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
+        true,
         true,
         true
     ),
@@ -593,6 +597,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
+        true,
         true
     ),
     faceAreaNormals_
@@ -601,6 +606,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
+        true,
         true,
         true
     ),
@@ -611,6 +617,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
+        true,
         true
     ),
     cellVolumes_
@@ -620,6 +627,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
+        true,
         true
     ),
     faceDeltas_
@@ -628,6 +636,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
+        true,
         true,
         true
     )

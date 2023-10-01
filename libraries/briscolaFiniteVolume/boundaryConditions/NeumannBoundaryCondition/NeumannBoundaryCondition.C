@@ -22,26 +22,8 @@ NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
 )
 :
     boundaryCondition<Type,MeshType>(mshField, patch),
-    boundaryGradients_()
-{
-    const labelVector bo(this->boundaryOffset());
-    List<Type> gradients(this->dict().lookup("gradients"));
-
-    forAll(mshField, l)
-    {
-        forAll(mshField[l], d)
-        {
-            boundaryGradients_.append
-            (
-                new block<Type>
-                (
-                    mshField.boundaryN(l,d,bo),
-                    gradients[d]
-                )
-            );
-        }
-    }
-}
+    boundaryGradients_(this->dict().lookup("gradients"))
+{}
 
 template<class Type, class MeshType>
 NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
@@ -69,15 +51,9 @@ void NeumannBoundaryCondition<Type,MeshType>::initEvaluate(const label)
 {}
 
 template<class Type, class MeshType>
-void NeumannBoundaryCondition<Type,MeshType>::evaluate
-(
-    const label l,
-    const bool homogeneous
-)
+void NeumannBoundaryCondition<Type,MeshType>::evaluate(const label l)
 {
     meshLevel<Type,MeshType>& field = this->mshField()[l];
-
-    const scalar H = homogeneous ? 0.0 : 1.0;
 
     const labelVector bo(this->boundaryOffset());
 
@@ -85,21 +61,21 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate
     {
         meshDirection<Type,MeshType>& fd = field[d];
 
-        const labelVector S(fd.boundaryStart(bo));
-        const labelVector E(fd.boundaryEnd(bo));
+        const labelVector S(this->S(l,d));
+        const labelVector E(this->E(l,d));
         const block<Type> B(this->boundarySources(l,d));
 
         labelVector ijk;
 
         // Eliminated so infer value from boundary source
 
-        if (fd.shifted(bo))
+        if (MeshType::shifted(d,bo))
         {
             for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk+bo) = fd(ijk-bo) + H*B(ijk-S);
+                fd(ijk+bo) = fd(ijk-bo) + B(ijk-S);
             }
         }
         else
@@ -108,7 +84,7 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                fd(ijk+bo) = fd(ijk) + H*B(ijk-S);
+                fd(ijk+bo) = fd(ijk) + B(ijk-S);
             }
         }
     }
@@ -127,7 +103,7 @@ stencil NeumannBoundaryCondition<Type,MeshType>::boundaryCoeff
 
     const labelVector bo(this->boundaryOffset());
 
-    if (this->mshField_.shifted(l,d,bo))
+    if (MeshType::shifted(d,bo))
     {
         stencil S(Zero);
         S[faceNumber(-bo)+1] = 1.0;
@@ -147,44 +123,47 @@ tmp<block<Type>> NeumannBoundaryCondition<Type,MeshType>::boundarySources
     const label d
 )
 {
-    const meshField<Type,MeshType>& f = this->mshField_;
     const meshField<faceScalar,MeshType>& fd = this->faceDeltas();
-
-    const block<Type>& grad =
-        boundaryGradients_[l*f.numberOfDirections()+d];
 
     const labelVector bo(this->boundaryOffset());
     const label fb(faceNumber(bo));
     const label fi(faceNumber(-bo));
 
-    const labelVector S(f.boundaryStart(l,d,bo));
-    const labelVector E(f.boundaryEnd(l,d,bo));
+    const labelVector S(this->S(l,d));
+    const labelVector E(this->E(l,d));
 
     tmp<block<Type>> tR(new block<Type>(E-S));
     block<Type>& R = tR.ref();
 
-    labelVector ijk;
-
-    if (f.shifted(l,d,bo))
+    if (l == 0)
     {
-        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-        {
-            const scalar twoDelta =
-                1.0/fd(l,d,ijk)[fb] + 1.0/fd(l,d,ijk)[fi];
+        labelVector ijk;
 
-            R(ijk-S) = grad(ijk-S)*twoDelta;
+        if (MeshType::shifted(d,bo))
+        {
+            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+            {
+                const scalar twoDelta =
+                    1.0/fd(l,d,ijk)[fb] + 1.0/fd(l,d,ijk)[fi];
+
+                R(ijk-S) = boundaryGradients_[d]*twoDelta;
+            }
+        }
+        else
+        {
+            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+            {
+                R(ijk-S) = boundaryGradients_[d]/fd(l,d,ijk)[fb];
+            }
         }
     }
     else
     {
-        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-        {
-            R(ijk-S) = grad(ijk-S)/fd(l,d,ijk)[fb];
-        }
+        R = Zero;
     }
 
     return tR;

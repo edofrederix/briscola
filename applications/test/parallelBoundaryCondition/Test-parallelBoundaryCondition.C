@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
             {
                 forAll(f[l], d)
                 {
-                    const labelVector S(f.boundaryStart(l,d,bo));
-                    const labelVector E(f.boundaryEnd(l,d,bo));
+                    const labelVector S(fvMsh.template S<colocated>(l,d,bo));
+                    const labelVector E(fvMsh.template E<colocated>(l,d,bo));
 
                     labelVector ijk;
 

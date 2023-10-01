@@ -116,9 +116,9 @@ void partLevel::calcGhostPoints(const mesh& msh)
         const labelVector bo(p.boundaryOffset());
         const labelTensor T(p.T());
 
-        const labelVector S(pointBoundaryStart(bo));
-        const labelVector E(pointBoundaryEnd(bo));
-        const labelVector N(pointBoundaryN(bo));
+        const labelVector S(pS(bo));
+        const labelVector E(pE(bo));
+        const labelVector N(pN(bo));
 
         neighborProcNums[patchi] =
             readLabel(p.dict().lookup("neighborProcNum"));
@@ -223,8 +223,8 @@ void partLevel::calcGhostPoints(const mesh& msh)
         const labelVector bo(p.boundaryOffset());
         const labelTensor T(p.T());
 
-        const labelVector S(pointBoundaryStart(bo));
-        const labelVector E(pointBoundaryEnd(bo));
+        const labelVector S(pS(bo));
+        const labelVector E(pE(bo));
 
         vectorBlock& recv = recvBuffers[patchi];
 
