@@ -77,7 +77,7 @@ public:
     virtual void initEvaluate(const label);
 
     // Evaluate the boundary condition for given level
-    virtual void evaluate(const label, const bool = false);
+    virtual void evaluate(const label);
 
     // Constrained boundary conditions
 
@@ -89,8 +89,7 @@ public:
         // Eliminated ghosts for all boundaries
         virtual bool eliminated(const bool shifted) const { return !shifted; }
 
-        // On shifted boundaries the value is set directly. On non-shifted
-        // boundaries we apply homogeneous Neumann.
+        // Return the boundary coefficient for given level and direction
         virtual stencil boundaryCoeff(const label l, const label d)
         {
             return pTraits<diagStencil>::one;

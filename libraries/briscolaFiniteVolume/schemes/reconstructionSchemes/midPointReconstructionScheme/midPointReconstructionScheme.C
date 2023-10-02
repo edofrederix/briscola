@@ -48,34 +48,22 @@ midPointReconstructionScheme<Type>::reconstruct
 
     meshField<ReconType,colocated>& Recon = tRecon.ref();
 
-    forAll(field, l)
-    {
-        const meshDirection<faceVector,colocated>& fn =
-            field.fvMsh().template
-            metrics<colocated>().faceNormals()[l][0];
+    Recon = Zero;
 
-        meshDirection<ReconType,colocated>& R = Recon[l][0];
+    const meshField<faceVector,colocated>& fn =
+        field.fvMsh().template metrics<colocated>().faceNormals();
 
-        const meshDirection<Type,staggered>& f0 = field[l][0];
-        const meshDirection<Type,staggered>& f1 = field[l][1];
-        const meshDirection<Type,staggered>& f2 = field[l][2];
-
-        R = Zero;
-
-        forAllCells(R, i, j, k)
-        {
-            R(i,j,k) =
-                0.5
-              * (
-                  - f0(i,  j,  k  )*fn(i,j,k).left()
-                  + f0(i+1,j,  k  )*fn(i,j,k).right()
-                  - f1(i,  j,  k  )*fn(i,j,k).bottom()
-                  + f1(i,  j+1,k  )*fn(i,j,k).top()
-                  - f2(i,  j,  k  )*fn(i,j,k).aft()
-                  + f2(i,  j,  k+1)*fn(i,j,k).fore()
-                );
-        }
-    }
+    forAllCells(Recon, i, j, k)
+        Recon(i,j,k) =
+            0.5
+          * (
+              - field(0,i,  j,  k  ) * fn(i,j,k).left()
+              + field(0,i+1,j,  k  ) * fn(i,j,k).right()
+              - field(1,i,  j,  k  ) * fn(i,j,k).bottom()
+              + field(1,i,  j+1,k  ) * fn(i,j,k).top()
+              - field(2,i,  j,  k  ) * fn(i,j,k).aft()
+              + field(2,i,  j,  k+1) * fn(i,j,k).fore()
+            );
 
     return tRecon;
 }

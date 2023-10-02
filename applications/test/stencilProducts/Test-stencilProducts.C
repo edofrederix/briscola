@@ -79,29 +79,29 @@ void testStencilProducts(const fvMesh& fvMsh)
 
     // Directions
 
-    Amul(stencil[0][0],x[0][0]);
-    Amul(stencil[0][0],(x[0][0]*2.0));
-    Amul((2.0*stencil[0][0]),x[0][0]);
-    Amul((2.0*stencil[0][0]),(x[0][0]*2.0));
+    Amul(stencil.direction(),x.direction());
+    Amul(stencil.direction(),(x.direction()*2.0));
+    Amul((2.0*stencil.direction()),x.direction());
+    Amul((2.0*stencil.direction()),(x.direction()*2.0));
 
-    Amul(x[0][0],stencil[0][0]);
-    Amul((x[0][0]*2.0),stencil[0][0]);
-    Amul(x[0][0],(2.0*stencil[0][0]));
-    Amul((x[0][0]*2.0),(2.0*stencil[0][0]));
+    Amul(x.direction(),stencil.direction());
+    Amul((x.direction()*2.0),stencil.direction());
+    Amul(x.direction(),(2.0*stencil.direction()));
+    Amul((x.direction()*2.0),(2.0*stencil.direction()));
 
-    Amul(stencil[0][0],s);
-    Amul(s,stencil[0][0]);
-    Amul((2.0*stencil[0][0]),s);
-    Amul(s,(2.0*stencil[0][0]));
+    Amul(stencil.direction(),s);
+    Amul(s,stencil.direction());
+    Amul((2.0*stencil.direction()),s);
+    Amul(s,(2.0*stencil.direction()));
 
-    rowSum(stencil[0][0]);
-    rowSum(2.0*stencil[0][0]);
+    rowSum(stencil.direction());
+    rowSum(2.0*stencil.direction());
 
-    matrixSum(stencil[0][0]);
-    matrixSum(2.0*stencil[0][0]);
+    matrixSum(stencil.direction());
+    matrixSum(2.0*stencil.direction());
 
-    neighborSum(stencil[0][0]);
-    neighborSum(2.0*stencil[0][0]);
+    neighborSum(stencil.direction());
+    neighborSum(2.0*stencil.direction());
 }
 
 int main(int argc, char *argv[])

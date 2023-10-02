@@ -105,7 +105,6 @@ void solver<SType,Type,MeshType>::RBGS
 (
     linearSystem<SType,Type,MeshType>& sys,
     const label l,
-    const bool defect,
     const label sweeps,
     const labelList& converged,
     const scalar omega
@@ -138,7 +137,7 @@ void solver<SType,Type,MeshType>::RBGS
             }
         }
 
-        x.correctBoundaryConditions(defect);
+        x.correctCommBoundaryConditions();
 
         forAll(x, d)
         if (!converged[d])
@@ -160,8 +159,10 @@ void solver<SType,Type,MeshType>::RBGS
             }
         }
 
-        x.correctBoundaryConditions(defect);
+        x.correctCommBoundaryConditions();
     }
+
+    x.correctNonCommBoundaryConditions();
 }
 
 template<class SType, class Type, class MeshType>
@@ -169,7 +170,6 @@ void solver<SType,Type,MeshType>::LEXGS
 (
     linearSystem<SType,Type,MeshType>& sys,
     const label l,
-    const bool defect,
     const label sweeps,
     const labelList& converged,
     const scalar omega
@@ -199,8 +199,10 @@ void solver<SType,Type,MeshType>::LEXGS
             }
         }
 
-        x.correctBoundaryConditions(defect);
+        x.correctCommBoundaryConditions();
     }
+
+    x.correctNonCommBoundaryConditions();
 }
 
 template<class SType, class Type, class MeshType>
@@ -208,7 +210,6 @@ void solver<SType,Type,MeshType>::JAC
 (
     linearSystem<SType,Type,MeshType>& sys,
     const label l,
-    const bool defect,
     const label sweeps,
     const labelList& converged,
     const scalar omega
@@ -243,8 +244,10 @@ void solver<SType,Type,MeshType>::JAC
 
         x = y;
 
-        x.correctBoundaryConditions(defect);
+        x.correctCommBoundaryConditions();
     }
+
+    x.correctNonCommBoundaryConditions();
 }
 
 template<class SType, class Type, class MeshType>

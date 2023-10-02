@@ -64,24 +64,17 @@ void periodicBoundaryCondition<Type,MeshType>::initEvaluate(const label l)
         {
             meshDirection<Type,MeshType>& fd = field[d];
 
-            // Source and target start point
+            // Source start and end point
 
-            const labelVector Ss
-            (
-                fd.boundaryStart(bo)
-              - this->extension_.lower()
-            );
+            const labelVector Ss(this->S(l,d) - this->extension_.lower());
+            const labelVector Es(this->E(l,d) + this->extension_.upper());
+
+            // Target start point
 
             const labelVector St
             (
-                fd.boundaryStart(-bo)
+                this->fvMsh_.template S<MeshType>(l,d,-bo)
               - this->extension_.lower()
-            );
-
-            const labelVector Es
-            (
-                fd.boundaryEnd(bo)
-              + this->extension_.upper()
             );
 
             labelVector ijk;
@@ -97,11 +90,7 @@ void periodicBoundaryCondition<Type,MeshType>::initEvaluate(const label l)
 }
 
 template<class Type, class MeshType>
-void periodicBoundaryCondition<Type,MeshType>::evaluate
-(
-    const label l,
-    const bool
-)
+void periodicBoundaryCondition<Type,MeshType>::evaluate(const label l)
 {
     if (this->neighborProcNum_ != Pstream::myProcNo())
     {

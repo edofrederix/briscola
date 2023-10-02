@@ -19,12 +19,8 @@ class NeumannBoundaryCondition
 :
     public boundaryCondition<Type,MeshType>
 {
-protected:
-
-    // Boundary gradients for each level and direction
-    PtrList<block<Type>> boundaryGradients_;
-
-private:
+    // Boundary gradients
+    List<Type> boundaryGradients_;
 
     // Disallow default bitwise assignment
     void operator=(const NeumannBoundaryCondition<Type,MeshType>&);
@@ -82,7 +78,7 @@ public:
     virtual void initEvaluate(const label);
 
     // Evaluate the boundary condition for given level
-    virtual void evaluate(const label, const bool = false);
+    virtual void evaluate(const label);
 
     // Eliminated boundary conditions
 

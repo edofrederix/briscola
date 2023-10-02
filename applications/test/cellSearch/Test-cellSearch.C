@@ -13,7 +13,7 @@ void testColocatedInterpolations(const fvMesh& fvMsh)
     const partLevel& lvl = fvMsh.msh()[0];
 
     const meshDirection<vector,colocated>& cc =
-        fvMsh.template metrics<colocated>().cellCenters()[0][0];
+        fvMsh.template metrics<colocated>().cellCenters().direction();
 
     vectorList points(lvl.size());
 
@@ -39,11 +39,9 @@ void testColocatedInterpolations(const fvMesh& fvMsh)
     meshField<Type,colocated> field("field", fvMsh);
     field = Zero;
 
-    forAll(field, l)
-    forAll(field[l], d)
-    forAllCells(field[l][d], i, j, k)
+    forAllLevels(field, l, d, i, j, k)
     {
-        field[l][d](i,j,k) = (i+j+k+l+d)*pTraits<Type>::one;
+        field(l,d,i,j,k) = (i+j+k+l+d)*pTraits<Type>::one;
     }
 
     List<Type> nValues(nInterp(field));
@@ -52,7 +50,7 @@ void testColocatedInterpolations(const fvMesh& fvMsh)
     c = 0;
     forAllBlock(lvl, i, j, k)
     {
-        if (nValues[c] != field[0][0](i,j,k))
+        if (nValues[c] != field(i,j,k))
             FatalErrorInFunction
                 << "test 3 failed" << endl << abort(FatalError);
 
@@ -62,7 +60,7 @@ void testColocatedInterpolations(const fvMesh& fvMsh)
     c = 0;
     forAllBlock(lvl, i, j, k)
     {
-        if (lValues[c] != field[0][0](i,j,k))
+        if (lValues[c] != field(i,j,k))
             FatalErrorInFunction
                 << "test 4 failed" << endl << abort(FatalError);
 

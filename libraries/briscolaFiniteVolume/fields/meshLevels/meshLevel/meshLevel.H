@@ -44,8 +44,11 @@ class meshLevel
     // Allocate data
     void allocate();
 
+    // Set level pointers in directions, needed when data is transferred
+    void setLevelPointers();
+
     // Transfer data from other mesh level
-    void transferData(meshLevel<Type,MeshType>&);
+    void transfer(meshLevel<Type,MeshType>&);
 
 public:
 
@@ -84,6 +87,40 @@ public:
     meshLevel(const fvMesh&, const label, const Type&);
     meshLevel(const fvMesh&, const label, const List<Type>&);
 
+    // Clone
+
+    inline autoPtr<meshLevel<Type,MeshType>> clone() const
+    {
+        return autoPtr<meshLevel<Type,MeshType>>
+        (
+            new meshLevel<Type,MeshType>(*this)
+        );
+    }
+
+    inline autoPtr<meshLevel<Type,MeshType>> clone(const zero&) const
+    {
+        return autoPtr<meshLevel<Type,MeshType>>
+        (
+            new meshLevel<Type,MeshType>(*this, Zero)
+        );
+    }
+
+    inline autoPtr<meshLevel<Type,MeshType>> clone(const Type& v) const
+    {
+        return autoPtr<meshLevel<Type,MeshType>>
+        (
+            new meshLevel<Type,MeshType>(*this, v)
+        );
+    }
+
+    inline autoPtr<meshLevel<Type,MeshType>> clone(const List<Type>& v) const
+    {
+        return autoPtr<meshLevel<Type,MeshType>>
+        (
+            new meshLevel<Type,MeshType>(*this, v)
+        );
+    }
+
     // Destructor
     virtual ~meshLevel();
 
@@ -91,6 +128,15 @@ public:
     // perform any bounds checking which is expensive.
     inline meshDirection<Type,MeshType>& operator[](label d)
     {
+        #ifdef FULLDEBUG
+
+        if (d < 0 || d >= listType::size())
+            FatalErrorInFunction
+                << "Index " << d << " out of range 0 ... " << listType::size()-1
+                << endl << abort(FatalError);
+
+        #endif
+
         return *const_cast<meshDirection<Type,MeshType>*>
         (
             listType::operator()(d)
@@ -101,11 +147,47 @@ public:
     // doesn't perform any bounds checking which is expensive.
     inline const meshDirection<Type,MeshType>& operator[](label d) const
     {
+        #ifdef FULLDEBUG
+
+        if (d < 0 || d >= listType::size())
+            FatalErrorInFunction
+                << "Index " << d << " out of range 0 ... " << listType::size()-1
+                << endl << abort(FatalError);
+
+        #endif
+
         return *listType::operator()(d);
     }
 
+    // Alias access function
+    inline meshDirection<Type,MeshType>& direction(const int d)
+    {
+        return this->operator[](d);
+    }
+
+    // Alias const access function
+    inline const meshDirection<Type,MeshType>& direction(const int d) const
+    {
+        return this->operator[](d);
+    }
+
+    // Access the first direction
+    inline meshDirection<Type,MeshType>& direction()
+    {
+        return this->operator[](0);
+    }
+
+    // Const access the first direction
+    inline const meshDirection<Type,MeshType>& direction() const
+    {
+        return this->operator[](0);
+    }
+
     // Number of directions
-    inline label size() const { return listType::size(); }
+    inline label size() const { return MeshType::numberOfDirections; }
+
+    // Alias to size
+    inline label numberOfDirections() const { return size(); }
 
     // Return the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
@@ -144,7 +226,7 @@ public:
     }
 
     // Correct boundary conditions for this level
-    void correctBoundaryConditions(const bool = false);
+    void correctBoundaryConditions();
 
     // Correct boundary boundary conditions for this level
     void correctBoundaryBoundaryConditions();
@@ -158,6 +240,9 @@ public:
     // Correct communicating (parallel and periodic) boundary conditions for
     // this level
     void correctCommBoundaryConditions();
+
+    // Correct non-communicating boundary conditions for this level
+    void correctNonCommBoundaryConditions();
 
     // Member operators
 
@@ -196,10 +281,16 @@ public:
     template<class Type2> void operator=(const tmp<meshLevel<Type2,MeshType>>&);
 
     template<class Type2> void operator+=(const meshLevel<Type2,MeshType>&);
-    template<class Type2> void operator+=(const tmp<meshLevel<Type2,MeshType>>&);
+    template<class Type2> void operator+=
+    (
+        const tmp<meshLevel<Type2,MeshType>>&
+    );
 
     template<class Type2> void operator-=(const meshLevel<Type2,MeshType>&);
-    template<class Type2> void operator-=(const tmp<meshLevel<Type2,MeshType>>&);
+    template<class Type2> void operator-=
+    (
+        const tmp<meshLevel<Type2,MeshType>>&
+    );
 
     template<class Type2> void operator=(const Type2&);
     template<class Type2> void operator=(const List<Type2>&);
@@ -210,6 +301,9 @@ public:
 
     // Allow the parent field to make changes to private data
     friend class meshField<Type,MeshType>;
+
+    #include "meshLevelFirstDirectionFunctions.H"
+    #include "meshLevelDirectionFunctions.H"
 };
 
 }

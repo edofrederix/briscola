@@ -43,10 +43,17 @@ public:
     restrictionScheme(const restrictionScheme<Type,MeshType>&);
 
     // Selector
-    static autoPtr<restrictionScheme<Type,MeshType>> New(const word, const fvMesh&);
+    static autoPtr<restrictionScheme<Type,MeshType>> New
+    (
+        const word,
+        const fvMesh&
+    );
 
     // Destructor
     virtual ~restrictionScheme();
+
+    // Default restriction scheme for this mesh and type
+    static const word defaultScheme;
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
     // level, with option to scale by cell volume

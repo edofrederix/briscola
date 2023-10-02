@@ -98,16 +98,16 @@ void FFTPoissonSolver::solve
 
     // Copy the data from bPtr to a scalarBlock
     // minus sign since bPtr = - RHS of the Poisson equation
-    forAllCells(x[0][0], i, j, k)
+    forAllCells(x, i, j, k)
     {
         if (bPtr != nullptr)
         {
-            initData_(i,j,k) = - (*bPtr)[0][0](i,j,k);
+            initData_(i,j,k) = - (*bPtr)(i,j,k);
         }
 
         if (ddt)
         {
-            initData_(i,j,k) -= x.oldTime()[0][0](i,j,k)/deltaT;
+            initData_(i,j,k) -= x.oldTime()(i,j,k)/deltaT;
         }
     }
 
@@ -116,170 +116,50 @@ void FFTPoissonSolver::solve
     const PtrList<boundaryCondition<scalar,colocated>>& bcs =
         x.boundaryConditions();
 
+    // Correct boundaries to evaluate boundary values
+    x.correctBoundaryConditions();
+
+    // Correct RHS for inhomogeneous BC's
     forAll(bcs, bci)
     {
-        const labelVector bo = bcs[bci].boundaryOffset();
-
-        if (bcs[bci].baseType() == 4)
+        if (bcs[bci].boundaryOffsetDegree() == 1)
         {
-            // Get Dirichlet BC value
-            scalarList values(bcs[bci].dict().lookup("values"));
-            scalar value(values[0]);
+            const labelVector bo = bcs[bci].boundaryOffset();
 
-            // Correct inhomogeneous BC
-            if (value != 0)
+            const PtrList<PartialList<scalar>>& cellSizes =
+                fvMsh_.msh().cast<rectilinearMesh>().globalCellSizes();
+
+            const labelVector S(fvMsh_.template S<colocated>(bo));
+            const labelVector E(fvMsh_.template E<colocated>(bo));
+
+            labelVector ijk;
+
+            const label dir(abs(bo.y())*1+abs(bo.z())*2);
+            const label cellIndex((bo[dir] < 0) ? 0 : (N[dir]-1));
+            const scalar sqrCellSize
+            (
+                Foam::sqr(cellSizes[dir][cellIndex])
+            );
+
+            if (bcs[bci].baseType() == DIRICHLETBC)
             {
-                const PtrList<PartialList<scalar>>& cellSizes =
-                    fvMsh_.msh().cast<rectilinearMesh>().globalCellSizes();
-
-                scalar cellSize = -1;
-                if (bo.x() == -1)
+                for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                 {
-                    cellSize = cellSizes[0][0];
-
-                    for (int j = 0; j < initData_.m(); j++)
-                    for (int k = 0; k < initData_.n(); k++)
-                    {
-                        initData_(0,j,k) -=
-                            2.0*value/Foam::sqr(cellSize);
-                    }
-                }
-                else if (bo.x() == 1)
-                {
-                    cellSize = cellSizes[0][N.x()-1];
-
-                    for (int j = 0; j < initData_.m(); j++)
-                    for (int k = 0; k < initData_.n(); k++)
-                    {
-                        initData_(initData_.l()-1,j,k) -=
-                            2.0*value/Foam::sqr(cellSize);
-                    }
-                }
-                else if (bo.y() == -1)
-                {
-                    cellSize = cellSizes[1][0];
-
-                    for (int i = 0; i < initData_.l(); i++)
-                    for (int k = 0; k < initData_.n(); k++)
-                    {
-                        initData_(i,0,k) -=
-                            2.0*value/Foam::sqr(cellSize);
-                    }
-                }
-                else if (bo.y() == 1)
-                {
-                    cellSize = cellSizes[1][N.y()-1];
-
-                    for (int i = 0; i < initData_.l(); i++)
-                    for (int k = 0; k < initData_.n(); k++)
-                    {
-                        initData_(i,initData_.m()-1,k) -=
-                            2.0*value/Foam::sqr(cellSize);
-                    }
-                }
-                else if (bo.z() == -1)
-                {
-                    cellSize = cellSizes[2][0];
-
-                    for (int i = 0; i < initData_.l(); i++)
-                    for (int j = 0; j < initData_.m(); j++)
-                    {
-                        initData_(i,j,0) -=
-                            2.0*value/Foam::sqr(cellSize);
-                    }
-                }
-                else if (bo.z() == 1)
-                {
-                    cellSize = cellSizes[2][N.z()-1];
-
-                    for (int i = 0; i < initData_.l(); i++)
-                    for (int j = 0; j < initData_.m(); j++)
-                    {
-                        initData_(i,j,initData_.n()-1) -=
-                            2.0*value/Foam::sqr(cellSize);
-                    }
+                    initData_(ijk)
+                        -= (x(ijk+bo) + x(ijk))/sqrCellSize;
                 }
             }
-        }
 
-        if (bcs[bci].baseType() == 5)
-        {
-            // Get Neumann BC gradient
-            scalarList gradients(bcs[bci].dict().lookup("gradients"));
-            scalar gradient(gradients[0]);
-
-            // Correct inhomogeneous BC
-            if (gradient != 0)
+            if (bcs[bci].baseType() == NEUMANNBC)
             {
-                const PtrList<PartialList<scalar>>& cellSizes =
-                    fvMsh_.msh().cast<rectilinearMesh>().globalCellSizes();
-
-                scalar cellSize = -1;
-                if (bo.x() == -1)
+                for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                 {
-                    cellSize = cellSizes[0][0];
-
-                    for (int j = 0; j < initData_.m(); j++)
-                    for (int k = 0; k < initData_.n(); k++)
-                    {
-                        initData_(0,j,k) -=
-                            gradient/cellSize;
-                    }
-                }
-                else if (bo.x() == 1)
-                {
-                    cellSize = cellSizes[0][N.x()-1];
-
-                    for (int j = 0; j < initData_.m(); j++)
-                    for (int k = 0; k < initData_.n(); k++)
-                    {
-                        initData_(initData_.l()-1,j,k) -=
-                            gradient/cellSize;
-                    }
-                }
-                else if (bo.y() == -1)
-                {
-                    cellSize = cellSizes[1][0];
-
-                    for (int i = 0; i < initData_.l(); i++)
-                    for (int k = 0; k < initData_.n(); k++)
-                    {
-                        initData_(i,0,k) -=
-                            gradient/cellSize;
-                    }
-                }
-                else if (bo.y() == 1)
-                {
-                    cellSize = cellSizes[1][N.y()-1];
-
-                    for (int i = 0; i < initData_.l(); i++)
-                    for (int k = 0; k < initData_.n(); k++)
-                    {
-                        initData_(i,initData_.m()-1,k) -=
-                            gradient/cellSize;
-                    }
-                }
-                else if (bo.z() == -1)
-                {
-                    cellSize = cellSizes[2][0];
-
-                    for (int i = 0; i < initData_.l(); i++)
-                    for (int j = 0; j < initData_.m(); j++)
-                    {
-                        initData_(i,j,0) -=
-                            gradient/cellSize;
-                    }
-                }
-                else if (bo.z() == 1)
-                {
-                    cellSize = cellSizes[2][N.z()-1];
-
-                    for (int i = 0; i < initData_.l(); i++)
-                    for (int j = 0; j < initData_.m(); j++)
-                    {
-                        initData_(i,j,initData_.n()-1) -=
-                            gradient/cellSize;
-                    }
+                    initData_(ijk)
+                        -= (x(ijk+bo) - x(ijk))/sqrCellSize;
                 }
             }
         }
@@ -538,9 +418,9 @@ void FFTPoissonSolver::solve
     fft_->normalize(initData_);
 
     // Copy scalarBlock values to solution meshField
-    forAllCells(x[0][0], i, j, k)
+    forAllCells(x, i, j, k)
     {
-        x[0][0](i,j,k) = initData_(i,j,k);
+        x(i,j,k) = initData_(i,j,k);
     }
 
     // Set ghost cells values

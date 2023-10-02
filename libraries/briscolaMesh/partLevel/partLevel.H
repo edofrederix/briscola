@@ -96,7 +96,7 @@ public:
     inline faceScalar boundingBox() const { return boundingBox_; }
 
     // Return the start cell of the internal cell boundary at given offset
-    inline labelVector boundaryStart(const labelVector& bo) const
+    inline labelVector S(const labelVector& bo) const
     {
         return labelVector
         (
@@ -107,7 +107,7 @@ public:
     }
 
     // Return the shape of the internal cell boundary at given offset
-    inline labelVector boundaryN(const labelVector& bo) const
+    inline labelVector N(const labelVector& bo) const
     {
         return labelVector
         (
@@ -118,13 +118,13 @@ public:
     }
 
     // Return the end of the internal cell boundary at given offset
-    inline labelVector boundaryEnd(const labelVector& bo) const
+    inline labelVector E(const labelVector& bo) const
     {
-        return boundaryStart(bo) + boundaryN(bo);
+        return S(bo) + N(bo);
     }
 
     // Return the start point of the point boundary at given offset
-    inline labelVector pointBoundaryStart(const labelVector& bo) const
+    inline labelVector pS(const labelVector& bo) const
     {
         return labelVector
         (
@@ -135,7 +135,7 @@ public:
     }
 
     // Return the shape of the point boundary at given offset
-    inline labelVector pointBoundaryN(const labelVector& bo) const
+    inline labelVector pN(const labelVector& bo) const
     {
         return labelVector
         (
@@ -146,9 +146,9 @@ public:
     }
 
     // Return the end of the point boundary at given offset
-    inline labelVector pointBoundaryEnd(const labelVector& bo) const
+    inline labelVector pE(const labelVector& bo) const
     {
-        return pointBoundaryStart(bo) + pointBoundaryN(bo);
+        return pS(bo) + pN(bo);
     }
 };
 

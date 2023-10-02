@@ -15,7 +15,7 @@ bool check
     const fvMesh& fvMsh
 )
 {
-    labelVector Nf(p[0][0].B().shape());
+    labelVector Nf(p.B().shape());
     labelVector N(p.fvMsh().msh().cast<rectilinearMesh>().N());
 
     const PtrList<PartialList<scalar>>& cellSizes
@@ -36,21 +36,21 @@ bool check
             {
                 scalar residual =
                 (
-                    p[0][0].B()(i-1,j,k)
-                  - 2.0 * p[0][0].B()(i,j,k)
-                  + p[0][0].B()(i+1,j,k)
+                    p.B()(i-1,j,k)
+                  - 2.0 * p.B()(i,j,k)
+                  + p.B()(i+1,j,k)
                 ) / dx2[Si.x() + i-1]
               + (
-                    p[0][0].B()(i,j-1,k)
-                  - 2.0 * p[0][0].B()(i,j,k)
-                  + p[0][0].B()(i,j+1,k)
+                    p.B()(i,j-1,k)
+                  - 2.0 * p.B()(i,j,k)
+                  + p.B()(i,j+1,k)
                 ) / dy2[Si.y() + j-1]
               + (
-                    p[0][0].B()(i,j,k-1)
-                  - 2.0 * p[0][0].B()(i,j,k)
-                  + p[0][0].B()(i,j,k+1)
+                    p.B()(i,j,k-1)
+                  - 2.0 * p.B()(i,j,k)
+                  + p.B()(i,j,k+1)
                 ) / dz2[Si.z() + k-1]
-              + f[0][0].B()(i,j,k);
+              + f.B()(i,j,k);
 
                 if(mag(residual) > 1e-10)
                 {
@@ -119,15 +119,15 @@ int main(int argc, char *argv[])
 
     scalar average = 0;
 
-    forAllCells(f[0][0], i, j, k)
+    forAllCells(f, i, j, k)
     {
-        f[0][0](i,j,k) = 100.0 * static_cast<double>(rand()) / RAND_MAX - 0.5;
-        average += f[0][0](i,j,k) / (cmptProduct(f[0][0].N()));
+        f(i,j,k) = 100.0 * static_cast<double>(rand()) / RAND_MAX - 0.5;
+        average += f(i,j,k) / (cmptProduct(f.N()));
     }
 
-    forAllCells(f[0][0], i, j, k)
+    forAllCells(f, i, j, k)
     {
-        f[0][0](i,j,k) -= average;
+        f(i,j,k) -= average;
     }
 
     FFTPoissonSolver solver(fvMsh);

@@ -39,6 +39,7 @@ colocatedFaceScalarField phi
     true
 );
 
+phi.setRestrictionScheme("flux");
 phi = ex::faceFlux(U);
 
 // Viscosity

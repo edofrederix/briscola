@@ -48,11 +48,7 @@ void dummyBoundaryCondition<Type,MeshType>::initEvaluate(const label)
 {}
 
 template<class Type, class MeshType>
-void dummyBoundaryCondition<Type,MeshType>::evaluate
-(
-    const label,
-    const bool
-)
+void dummyBoundaryCondition<Type,MeshType>::evaluate(const label)
 {}
 
 }

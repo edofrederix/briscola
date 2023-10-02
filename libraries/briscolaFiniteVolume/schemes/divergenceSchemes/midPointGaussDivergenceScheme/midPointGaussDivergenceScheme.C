@@ -36,6 +36,8 @@ midPointGaussDivergenceScheme<Type,MeshType>::div
     meshField<Type,MeshType>& field
 )
 {
+    const_cast<meshField<faceScalar,MeshType>&>(phi).restrict();
+
     tmp<linearSystem<stencil,Type,MeshType>> tSys
     (
         new linearSystem<stencil,Type,MeshType>(field)
@@ -43,23 +45,18 @@ midPointGaussDivergenceScheme<Type,MeshType>::div
 
     linearSystem<stencil,Type,MeshType>& Sys = tSys.ref();
 
-    forAll(field, l)
-    forAll(field[l], d)
+    meshField<stencil,MeshType>& A = Sys.A();
+    A = Zero;
+
+    forAllLevels(A, l, d, i, j, k)
     {
-        meshDirection<stencil,MeshType>& A = Sys.A()[l][d];
-
-        A = Zero;
-
-        const meshDirection<faceScalar,MeshType>& p = phi[l][d];
-
-        forAllCells(A, i, j, k)
-        {
-            A(i,j,k) = 0.5*p(i,j,k);
-            A(i,j,k).center() = neighborSum(A(i,j,k));
-        }
+        A(l,d,i,j,k) = 0.5*phi(l,d,i,j,k);
+        A(l,d,i,j,k).center() = neighborSum(A(l,d,i,j,k));
     }
 
     Sys.b() = Zero;
+
+    const_cast<meshField<faceScalar,MeshType>&>(phi).makeShallow();
 
     return tSys;
 }

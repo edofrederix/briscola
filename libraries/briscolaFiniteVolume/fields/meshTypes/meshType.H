@@ -35,6 +35,16 @@ public:
 
     // Mesh type name
     static const char* const typeName;
+
+    // Check if the given mesh direction is shifted in given offset direction
+    static inline bool shifted(const label d, const labelVector& bo)
+    {
+        for (int dim = 0; dim < 3; dim++)
+            if (bo[dim] != 0 && shift[d][dim] != 0.0)
+                return true;
+
+        return false;
+    }
 };
 
 }

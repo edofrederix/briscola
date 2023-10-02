@@ -43,20 +43,17 @@ class meshDirection
     // Direction number
     label d_;
 
-    // Internal cell block start and end indices
+    // Store internal cell block start and end indices for faster access
     faceLabel I_;
 
     // Pointer to the mesh level, if any
     meshLevel<Type,MeshType>* mshLevelPtr_;
 
-    // Set internal cells
-    void setInternalCells();
-
     // Allocate data
     void allocate(const labelVector);
 
     // Transfer data from other mesh direction
-    void transferData(meshDirection<Type,MeshType>&);
+    void transfer(meshDirection<Type,MeshType>&);
 
 public:
 
@@ -91,14 +88,54 @@ public:
     meshDirection(const meshDirection<Type,MeshType>&);
     meshDirection(const meshDirection<Type,MeshType>&, const zero&);
     meshDirection(const meshDirection<Type,MeshType>&, const Type&);
+    meshDirection(const meshDirection<Type,MeshType>&, const List<Type>&);
 
     meshDirection(const tmp<meshDirection<Type,MeshType>>&);
     meshDirection(const tmp<meshDirection<Type,MeshType>>&, const zero&);
     meshDirection(const tmp<meshDirection<Type,MeshType>>&, const Type&);
+    meshDirection(const tmp<meshDirection<Type,MeshType>>&, const List<Type>&);
 
     meshDirection(const fvMesh&, const label, const label);
     meshDirection(const fvMesh&, const label, const label, const zero&);
     meshDirection(const fvMesh&, const label, const label, const Type&);
+    meshDirection(const fvMesh&, const label, const label, const List<Type>&);
+
+    // Clone
+
+    inline autoPtr<meshDirection<Type,MeshType>> clone() const
+    {
+        return autoPtr<meshDirection<Type,MeshType>>
+        (
+            new meshDirection<Type,MeshType>(*this)
+        );
+    }
+
+    inline autoPtr<meshDirection<Type,MeshType>> clone(const zero&) const
+    {
+        return autoPtr<meshDirection<Type,MeshType>>
+        (
+            new meshDirection<Type,MeshType>(*this, Zero)
+        );
+    }
+
+    inline autoPtr<meshDirection<Type,MeshType>> clone(const Type& v) const
+    {
+        return autoPtr<meshDirection<Type,MeshType>>
+        (
+            new meshDirection<Type,MeshType>(*this, v)
+        );
+    }
+
+    inline autoPtr<meshDirection<Type,MeshType>> clone
+    (
+        const List<Type>& v
+    ) const
+    {
+        return autoPtr<meshDirection<Type,MeshType>>
+        (
+            new meshDirection<Type,MeshType>(*this, v)
+        );
+    }
 
     // Destructor
     virtual ~meshDirection();
@@ -144,46 +181,6 @@ public:
 
     // Internal cell block size
     inline labelVector N() const { return I_.upper()-I_.lower(); }
-
-    // Return the start point of the internal cell boundary at given offset
-    inline labelVector boundaryStart(const labelVector& bo) const
-    {
-        labelVector S(I_.lower());
-
-        for (label d = 0; d < 3; d++)
-            if (bo[d] == 1)
-                S[d] = I_.upper()[d]-1;
-
-        return S;
-    }
-
-    // Return the end point of the internal cell boundary at given offset
-    inline labelVector boundaryEnd(const labelVector& bo) const
-    {
-        labelVector E(I_.upper());
-
-        for (label d = 0; d < 3; d++)
-            if (bo[d] == -1)
-                E[d] = I_.lower()[d]+1;
-
-        return E;
-    }
-
-    // Return the shape of the internal cell boundary at given offset
-    inline labelVector boundaryN(const labelVector& bo) const
-    {
-        return boundaryEnd(bo) - boundaryStart(bo);
-    }
-
-    // Return true if the boundary at given offset is shifted
-    inline bool shifted(const labelVector& bo) const
-    {
-        for (int dim = 0; dim < 3; dim++)
-            if (bo[dim] != 0 && MeshType::shift[d_][dim] != 0.0)
-                return true;
-
-        return false;
-    }
 
     // Return the number of internal cells
     inline int size() const { return cmptProduct(N()); }

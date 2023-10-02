@@ -38,47 +38,33 @@ int main(int argc, char *argv[])
         true
     );
 
-    forAll(f, l)
+    const colocatedVectorField& cc =
+        fvMsh.metrics<colocated>().cellCenters();
+
+    forAllLevels(f, l, d, i, j, k)
+        f(l,d,i,j,k) = cc(l,d,i,j,k);
+
+    f.correctBoundaryConditions();
+
+    forAllLevels(f, l, d, i, j, k)
+        if (f(l,d,i,j,k) != cc(l,d,i,j,k))
+            FatalError << "test 1 failed" << endl;
+
+    forAll(f.boundaryConditions(), b)
     {
-        forAll(f[l], d)
+        const boundaryCondition<vector,colocated>& bc =
+            f.boundaryConditions()[b];
+
+        if (bc.type() == "parallel")
         {
-            const colocatedVectorDirection& cc =
-                fvMsh.metrics<colocated>().cellCenters()[l][d];
+            const labelVector bo(bc.boundaryOffset());
 
-            forAllCells(f[l][d], i, j, k)
+            forAll(f, l)
             {
-                f[l][d](i,j,k) = cc(i,j,k);
-            }
-        }
-
-        f[l].correctBoundaryConditions();
-
-        forAll(f[l], d)
-        forAllCells(f[l][d], i, j, k)
-        {
-            const colocatedVectorDirection& cc =
-                fvMsh.metrics<colocated>().cellCenters()[l][d];
-
-            if (f[l][d](i,j,k) != cc(i,j,k))
-            {
-                FatalError << "test 1 failed" << endl;
-                FatalError.exit();
-            }
-        }
-
-        forAll(f.boundaryConditions(), b)
-        {
-            const boundaryCondition<vector,colocated>& bc =
-                f.boundaryConditions()[b];
-
-            if (bc.type() == "parallel")
-            {
-                const labelVector bo(bc.boundaryOffset());
-
                 forAll(f[l], d)
                 {
-                    const labelVector S(f[l][d].boundaryStart(bo));
-                    const labelVector E(f[l][d].boundaryEnd(bo));
+                    const labelVector S(fvMsh.template S<colocated>(l,d,bo));
+                    const labelVector E(fvMsh.template E<colocated>(l,d,bo));
 
                     labelVector ijk;
 
@@ -86,27 +72,32 @@ int main(int argc, char *argv[])
                     for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
                     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                     {
-                        // Domain size is 1x1x1. Uniform parallel partitioning assumed.
+                        // Domain size is 1x1x1. Uniform parallel partitioning
+                        // assumed.
 
                         const scalar cellSize =
-                            1.0/pow(Pstream::nProcs(),1.0/3.0)/f[l][d].N().x();
+                            1.0/pow(Pstream::nProcs(),1.0/3.0)/f.N(l,d).x();
 
-                        const vector cell = f[l][d](ijk);
-                        const vector ghost = f[l][d](ijk+bo);
+                        const vector cell = f(l,d,ijk);
+                        const vector ghost = f(l,d,ijk+bo);
                         const vector target = cell + vector(bo)*cellSize;
 
                         if
                         (
-                            target.x() > ghost.x()+1e-8 || target.x() < ghost.x()-1e-8
-                         || target.y() > ghost.y()+1e-8 || target.y() < ghost.y()-1e-8
-                         || target.z() > ghost.z()+1e-8 || target.z() < ghost.z()-1e-8
+                            target.x() > ghost.x()+1e-8
+                         || target.x() < ghost.x()-1e-8
+                         || target.y() > ghost.y()+1e-8
+                         || target.y() < ghost.y()-1e-8
+                         || target.z() > ghost.z()+1e-8
+                         || target.z() < ghost.z()-1e-8
                         )
                         {
-                            FatalError  << "Cell size at this level = " << cellSize << endl
-                                        << "cell = " << cell << endl
-                                        << "ghost = " << ghost << endl
-                                        << "target = " << target << endl
-                                        << "boundaryOffset = " << bo << endl
+                            FatalError  << "Cell size at this level = "
+                                        << cellSize << nl
+                                        << "cell = " << cell << nl
+                                        << "ghost = " << ghost << nl
+                                        << "target = " << target << nl
+                                        << "boundaryOffset = " << bo << nl
                                         << "test 2 failed" << endl;
 
                             FatalError.exit();

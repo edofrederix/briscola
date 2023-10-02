@@ -5,6 +5,8 @@
 #include "geometry.H"
 #include "partLevel.H"
 #include "faceLabel.H"
+#include "edgeLabel.H"
+#include "vertexLabel.H"
 
 namespace Foam
 {
@@ -25,11 +27,15 @@ class mesh
 
     // Patch master face labels, indicating for each processor which face part
     // patches are master. Orientation is processor-specific.
-    List<faceLabel> patchMasterPerProc_;
+    List<faceLabel> facePatchMasterPerProc_;
+    List<edgeLabel> edgePatchMasterPerProc_;
+    List<vertexLabel> vertexPatchMasterPerProc_;
 
     // Patch type face labels, indicating for each processor the type of the
     // face part patches. Orientation is processor-specific.
-    List<faceLabel> patchTypePerProc_;
+    List<faceLabel> facePatchTypePerProc_;
+    List<edgeLabel> edgePatchTypePerProc_;
+    List<vertexLabel> vertexPatchTypePerProc_;
 
     // Bool to check if mesh is structured or unstructured. If the brick
     // topology is structured, so is the mesh.
@@ -73,6 +79,9 @@ class mesh
     // Set communication tags in parallel and periodic patches. Tags avoid
     // inconsistent communication.
     void setCommTags();
+
+    // Set patch master and type label lists
+    void setPatchLabels();
 
     // Generate part levels
     void generatePartLevels();
@@ -152,36 +161,95 @@ public:
         return partPatches_;
     }
 
-    // Const access to the patch master face label list
-    inline const List<faceLabel> patchMasterPerProc() const
+    // Const access to the patch master label lists
+
+    inline const List<faceLabel> facePatchMasterPerProc() const
     {
-        return patchMasterPerProc_;
+        return facePatchMasterPerProc_;
     }
 
-    // Const access to the patch type face label list
-    inline const List<faceLabel> patchTypePerProc() const
+    inline const List<edgeLabel> edgePatchMasterPerProc() const
     {
-        return patchTypePerProc_;
+        return edgePatchMasterPerProc_;
     }
 
-    // Return this processor's patch master face label
-    inline faceLabel patchMaster() const
+    inline const List<vertexLabel> vertexPatchMasterPerProc() const
     {
-        return patchMasterPerProc_[Pstream::myProcNo()];
+        return vertexPatchMasterPerProc_;
+    }
+
+    // Const access to the patch type label list
+
+    inline const List<faceLabel> facePatchTypePerProc() const
+    {
+        return facePatchTypePerProc_;
+    }
+
+    inline const List<edgeLabel> edgePatchTypePerProc() const
+    {
+        return edgePatchTypePerProc_;
+    }
+
+    inline const List<vertexLabel> vertexPatchTypePerProc() const
+    {
+        return vertexPatchTypePerProc_;
+    }
+
+    // Return this processor's patch master labels
+
+    inline faceLabel facePatchMaster() const
+    {
+        return facePatchMasterPerProc_[Pstream::myProcNo()];
+    }
+
+    inline edgeLabel edgePatchMaster() const
+    {
+        return edgePatchMasterPerProc_[Pstream::myProcNo()];
+    }
+
+    inline vertexLabel vertexPatchMaster() const
+    {
+        return vertexPatchMasterPerProc_[Pstream::myProcNo()];
     }
 
     // Return this processor's patch slave face label
-    inline faceLabel patchSlave() const
+
+    inline faceLabel facePatchSlave() const
     {
         return
             pTraits<faceLabel>::one
-          - patchMasterPerProc_[Pstream::myProcNo()];
+          - facePatchMasterPerProc_[Pstream::myProcNo()];
+    }
+
+    inline edgeLabel edgePatchSlave() const
+    {
+        return
+            pTraits<edgeLabel>::one
+          - edgePatchMasterPerProc_[Pstream::myProcNo()];
+    }
+
+    inline vertexLabel vertexPatchSlave() const
+    {
+        return
+            pTraits<vertexLabel>::one
+          - vertexPatchMasterPerProc_[Pstream::myProcNo()];
     }
 
     // Return this processor's patch type face label
-    inline faceLabel patchType() const
+
+    inline faceLabel facePatchType() const
     {
-        return patchTypePerProc_[Pstream::myProcNo()];
+        return facePatchTypePerProc_[Pstream::myProcNo()];
+    }
+
+    inline edgeLabel edgePatchType() const
+    {
+        return edgePatchTypePerProc_[Pstream::myProcNo()];
+    }
+
+    inline vertexLabel vertexPatchType() const
+    {
+        return vertexPatchTypePerProc_[Pstream::myProcNo()];
     }
 
     // Structured mesh bool

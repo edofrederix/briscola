@@ -24,7 +24,6 @@ void MGSolver<SType,Type,MeshType>::cycle
     meshField<Type,MeshType>& r,
     labelList& visits,
     const label l,
-    const label l0,
     const labelList& converged,
     const label nSweepsPre,
     const label nSweepsPost
@@ -33,28 +32,26 @@ void MGSolver<SType,Type,MeshType>::cycle
     meshField<Type, MeshType>& x = xEqn.x();
     meshField<Type, MeshType>& b = xEqn.b();
 
-    const bool defect = l > l0;
-
     // Initialize defects to zero
 
-    if (defect)
+    if (l > 0)
         x[l] = Zero;
 
     // Pre-smooth
 
-    this->smooth(xEqn, l, defect, nSweepsPre, converged, omega_);
+    this->smooth(xEqn, l, nSweepsPre, converged, omega_);
 
     // If we are not on the coarsest level, continue to traverse levels.
     // Otherwise, just smooth (could be better to use a direct solver here)
 
     if (l < x.size()-1)
     {
-        for (label rep = 0; rep < levelReps(l,l0,visits); rep++)
+        for (label rep = 0; rep < levelReps(l,visits); rep++)
         {
             // Don't compute the residual for the finest level during the first
             // repetition
 
-            if (rep > 0 || defect)
+            if (rep > 0 || l > 0)
                 forAll(x[l], d)
                     if (!converged[d])
                         xEqn.residual(r[l][d]);
@@ -73,7 +70,6 @@ void MGSolver<SType,Type,MeshType>::cycle
                 r,
                 visits,
                 l+1,
-                l0,
                 converged,
                 nSweepsPre,
                 nSweepsPost
@@ -86,7 +82,7 @@ void MGSolver<SType,Type,MeshType>::cycle
                 if (!converged[d])
                     proScheme_->prolong(x[l][d], x[l+1][d], plusEqOp<Type>());
 
-            x[l].correctBoundaryConditions(defect);
+            x[l].correctCommBoundaryConditions();
 
             // Post-smooth
 
@@ -94,7 +90,6 @@ void MGSolver<SType,Type,MeshType>::cycle
             (
                 xEqn,
                 l,
-                defect,
                 nSweepsPost,
                 converged,
                 omega_
@@ -107,7 +102,6 @@ void MGSolver<SType,Type,MeshType>::cycle
         (
             xEqn,
             l,
-            defect,
             Foam::max(nSweepsPost,2),
             converged,
             omega_
@@ -121,7 +115,6 @@ template<class SType, class Type, class MeshType>
 void MGSolver<SType,Type,MeshType>::solve
 (
     linearSystem<SType,Type,MeshType>& xEqn,
-    const label l,
     const scalar relTol,
     const scalar absTol,
     const label minIter,
@@ -132,31 +125,33 @@ void MGSolver<SType,Type,MeshType>::solve
 {
     meshField<Type, MeshType>& x = xEqn.x();
 
-    // Correct the system's boundary conditions
+    // Correct the boundary conditions
 
-    for (label i = l; i < x.size(); i++)
-    {
-        x[i].correctBoundaryConditions(i > l);
-    }
+    x[0].correctCommBoundaryConditions();
 
     // Residual field
 
     meshField<Type, MeshType> r
     (
         IOobject::groupName(x.name(), "residual"),
-        x.fvMsh()
+        x.fvMsh(),
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        true
     );
 
     // Residual normalization factors
 
-    const List<Type> normFactors(this->normFactors(xEqn,l));
+    const List<Type> normFactors(this->normFactors(xEqn,0));
 
     // Initial residual
 
-    xEqn.residual(r[l]);
+    xEqn.residual(r[0]);
 
     const List<Type> initialResiduals =
-        cmptDivide(gSum(cmptMag(r[l])), normFactors);
+        cmptDivide(gSum(cmptMag(r[0])), normFactors);
 
     List<Type> currentResiduals(initialResiduals);
 
@@ -196,8 +191,7 @@ void MGSolver<SType,Type,MeshType>::solve
             xEqn,
             r,
             visits,
-            l,
-            l,
+            0,
             converged,
             nSweepsPre,
             nSweepsPost
@@ -205,12 +199,12 @@ void MGSolver<SType,Type,MeshType>::solve
 
         // Recompute the residual
 
-        forAll(x[l], d)
+        forAll(x[0], d)
             if (!converged[d])
-                xEqn.residual(r[l][d]);
+                xEqn.residual(r[0][d]);
 
         currentResiduals =
-            cmptDivide(gSum(cmptMag(r[l])), normFactors);
+            cmptDivide(gSum(cmptMag(r[0])), normFactors);
 
         converged =
             this->checkConvergence
@@ -228,7 +222,7 @@ void MGSolver<SType,Type,MeshType>::solve
 
     this->printSolverStats
     (
-        MGSolver<SType,Type,MeshType>::typeName,
+        this->typeName,
         x.name(),
         initialResiduals,
         currentResiduals,
@@ -308,15 +302,24 @@ void MGSolver<SType,Type,MeshType>::solve
     linearSystem<SType,Type,MeshType>& xEqn
 )
 {
-    meshField<Type, MeshType>& x = xEqn.x();
+    xEqn.eliminateGhosts();
 
-    // Solve starting from level 0
+    xEqn.x().makeDeep();
+    xEqn.b().makeDeep();
 
-    this->solve(xEqn,0);
+    this->solve
+    (
+        xEqn,
+        this->relTol_,
+        this->tolerance_,
+        this->minIter_,
+        this->maxIter_,
+        this->nSweepsPre_,
+        this->nSweepsPost_
+    );
 
-    // Restrict solution from fine to coarse
-
-    reScheme_->restrict(x);
+    xEqn.x().makeShallow();
+    xEqn.b().makeShallow();
 }
 
 }
