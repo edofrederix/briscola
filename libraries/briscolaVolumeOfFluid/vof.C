@@ -22,21 +22,16 @@ void vof::updateFlux
     const label d
 )
 {
-    const colocatedVectorField normal(this->normal()());
+    const colocatedVectorField n(this->normal()());
 
-    const colocatedScalarDirection& a = alpha_[0][0];
-    const colocatedVectorDirection& n = normal[0][0];
-    const colocatedFaceScalarDirection& p = phi[0][0];
-    const colocatedScalarDirection& V =
-        fvMsh_.template metrics<colocated>().cellVolumes()[0][0];
-    const colocatedVertexVectorDirection& v =
-        fvMsh_.template metrics<colocated>().vertexCenters()[0][0];
-
-    colocatedFaceScalarDirection& f = flux_[0][0];
+    const colocatedScalarField& cv =
+        fvMsh_.template metrics<colocated>().cellVolumes();
+    const colocatedVertexVectorField& v =
+        fvMsh_.template metrics<colocated>().vertexCenters();
 
     const scalar dt = fvMsh_.time().deltaT().value();
 
-    forAllCells(f, i, j, k)
+    forAllCells(alpha_, i, j, k)
     {
         const labelVector ijk(i,j,k);
 
@@ -45,31 +40,35 @@ void vof::updateFlux
 
         // For donating cells only
 
-        if ((p(ijk)[d*2] > 0 || p(ijk)[d*2+1] > 0) && a(ijk) > threshold_)
+        if
+        (
+            (phi(ijk)[d*2] > 0 || phi(ijk)[d*2+1] > 0)
+         && alpha_(ijk) > threshold_
+        )
         {
             const scalar magn = Foam::mag(n(ijk));
 
             const scalar C = magn > 0 ? lve_(ijk,n(ijk)) : 0;
 
             for (int fi = 0; fi < 2; fi++)
-            if (p(ijk)[d*2+fi] > 0)
+            if (phi(ijk)[d*2+fi] > 0)
             {
                 const label l = d*2 + fi;
                 const label u = d*2 + (fi == 0);
 
-                const scalar frac = p(ijk)[l]*dt/V(ijk);
+                const scalar frac = phi(ijk)[l]*dt/cv(ijk);
 
                 scalar flux = 0;
 
-                if (a(ijk) > 1-threshold_)
+                if (alpha_(ijk) > 1-threshold_)
                 {
-                    flux = V(ijk)*frac/dt;
+                    flux = cv(ijk)*frac/dt;
                 }
                 else if (magn)
                 {
-                    // Truncate the hexahedron in face-normal direction.
-                    // This is not necessarily volume conserving on general
-                    // hexahedrons and should be improved.
+                    // Truncate the hexahedron in face-normal direction. This is
+                    // not necessarily volume conserving on general hexahedrons
+                    // and should be improved.
 
                     vertexVector vertices(v(ijk));
 
@@ -94,17 +93,17 @@ void vof::updateFlux
 
                 if (flux != 0)
                 {
-                    f(ijk)[l] = flux;
+                    flux_(ijk)[l] = flux;
 
                     // Also set the flux on the receiving end
 
                     if (fi == 0)
                     {
-                        f(ijkl)[u] = -flux;
+                        flux_(ijkl)[u] = -flux;
                     }
                     else
                     {
-                        f(ijku)[u] = -flux;
+                        flux_(ijku)[u] = -flux;
                     }
                 }
             }
@@ -142,8 +141,8 @@ void vof::updateFlux
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                if (f(ijk+bo)[u] > 0)
-                    f(ijk)[l] = -f(ijk+bo)[u];
+                if (flux_(ijk+bo)[u] > 0)
+                    flux_(ijk)[l] = -flux_(ijk+bo)[u];
             }
         }
     }
@@ -160,7 +159,8 @@ vof::vof(const IOdictionary& dict, const fvMesh& fvMsh)
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
         true,
-        true
+        true,
+        false
     ),
     flux_
     (
@@ -169,7 +169,8 @@ vof::vof(const IOdictionary& dict, const fvMesh& fvMsh)
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        true
+        true,
+        false
     ),
     rectilinear_(fvMsh.msh()[0].rectilinear() == unitXYZ),
     lve_(*this),
@@ -199,17 +200,13 @@ void vof::solve(const colocatedFaceScalarField& phi)
         IOobject::NO_WRITE
     );
 
-    const colocatedFaceScalarDirection& p = phi[0][0];
-    const colocatedScalarDirection& V =
-        fvMsh_.template metrics<colocated>().cellVolumes()[0][0];
-
-    colocatedScalarDirection& a = alpha_[0][0];
-    colocatedLabelDirection& ac = alphac[0][0];
+    const colocatedScalarField& cv =
+        fvMsh_.template metrics<colocated>().cellVolumes();
 
     // Central volume fraction value of Weymouth & Yue (2010)
 
-    forAllCells(ac, i, j, k)
-        ac(i,j,k) = a(i,j,k) > 0.5;
+    forAllCells(alpha_, i, j, k)
+        alphac(i,j,k) = alpha_(i,j,k) > 0.5;
 
     // Solve the advection equation in a split way. Rotate directions.
 
@@ -226,16 +223,14 @@ void vof::solve(const colocatedFaceScalarField& phi)
 
         this->updateFlux(phi,dir);
 
-        const colocatedFaceScalarDirection& f = flux_[0][0];
-
-        forAllCells(a, i, j, k)
+        forAllCells(alpha_, i, j, k)
         {
-            a(i,j,k) +=
-                dt/V(i,j,k)
+            alpha_(i,j,k) +=
+                dt/cv(i,j,k)
               * (
-                    scalar(ac(i,j,k))*(p(i,j,k)[l] + p(i,j,k)[u])
-                  - f(i,j,k)[l]
-                  - f(i,j,k)[u]
+                    scalar(alphac(i,j,k))*(phi(i,j,k)[l] + phi(i,j,k)[u])
+                  - flux_(i,j,k)[l]
+                  - flux_(i,j,k)[u]
                 );
         }
 
