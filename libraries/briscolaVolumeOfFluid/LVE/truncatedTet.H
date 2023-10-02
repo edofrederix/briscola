@@ -35,7 +35,18 @@ class truncatedTet
     inline vector intersectionPoint(const label i, const label j) const
     {
         const vector d = v_[j] - v_[i];
-        return v_[i] - (C_ + (n_ & v_[i]))*d/(n_ & d);
+        scalar factor = - (C_ + (n_ & v_[i]))/(n_ & d);
+
+        if (factor >= 0 && factor <= 1)
+            return v_[i] + factor * d;
+        else if (factor < 0)
+            factor = 1e-12;
+        else if (factor > 1)
+            factor = 1 - 1e-12;
+        else
+            factor = 0.5;
+
+        return v_[i] + factor * d;
     }
 
     // Disallow default bitwise assignment

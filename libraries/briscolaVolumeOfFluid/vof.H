@@ -87,6 +87,9 @@ public:
     // Reference to the LVE solver
     inline const LVE& lve() const { return lve_; }
 
+    // Reference to the threshold
+    inline const scalar& threshold() const { return threshold_; }
+
     // Reference to the normal scheme
     inline normalScheme& normal() { return normalSchemePtr_(); }
 

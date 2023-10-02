@@ -8,5 +8,5 @@ FoamFile
 
 normalScheme
 {
-    type    LSGIR;
+    type    MYC;
 }

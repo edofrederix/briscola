@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 
         Info << "Time = " << runTime.timeName() << endl;
 
-        n = vf.normal()();
+        // n = vf.normal()();
         vf.solve(phi);
 
         io.write<colocated>();

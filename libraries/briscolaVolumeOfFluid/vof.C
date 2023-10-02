@@ -14,7 +14,7 @@ namespace fv
 
 defineTypeNameAndDebug(vof, 0);
 
-const scalar vof::threshold_ = 1e-6;
+const scalar vof::threshold_ = 1e-12;
 
 void vof::updateFlux
 (

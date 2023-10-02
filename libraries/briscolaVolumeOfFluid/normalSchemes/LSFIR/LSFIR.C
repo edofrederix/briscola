@@ -5,6 +5,7 @@
 #include "LVE.H"
 #include "SortableList.H"
 #include "constants.H"
+#include "Time.H"
 
 namespace Foam
 {
@@ -21,21 +22,141 @@ addToRunTimeSelectionTable(normalScheme, LSFIR, dictionary);
 LSFIR::LSFIR(const vof& vf, const dictionary& dict)
 :
     normalScheme(vf, dict),
-    threshold_(dict.lookupOrDefault<scalar>("threshold", 1e-3))
-{}
+    threshold_(vf.threshold()),
+    planarFaces_(dict.lookupOrDefault<bool>("planarFaces", true)),
+    centerAveraging_(dict.lookupOrDefault<bool>("centerAveraging", false))
+{
+    createBoundaryTypes();
+    createHexagonDescription();
+}
 
 LSFIR::LSFIR(const LSFIR& s)
 :
     normalScheme(s),
-    threshold_(s.threshold_)
-{}
+    threshold_(s.threshold_),
+    planarFaces_(s.planarFaces_),
+    centerAveraging_(s.centerAveraging_)
+{
+    createBoundaryTypes();
+    createHexagonDescription();
+}
 
 LSFIR::~LSFIR()
 {}
 
+void LSFIR::createBoundaryTypes()
+{
+    const faceLabel faceType =
+        vf_.fvMsh().msh().patchType();
+
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            for (int k = 0; k < 3; k++)
+            {
+                bool aux1 = true;
+                bool aux2 = true;
+
+                if (i != 1)
+                {
+                    if (vf_.fvMsh()[0].l() > 1)
+                    {
+                        aux1 = (i == 0) ? (aux1 && (faceType.left() > 0)) : (aux1 && (faceType.right() > 0));
+                    }
+                    aux2 = (i == 0) ? (aux2 && (faceType.left() > 0)) : (aux2 && (faceType.right() > 0));
+                }
+
+                if (j != 1)
+                {
+                    if (vf_.fvMsh()[0].m() > 1)
+                    {
+                        aux1 = (j == 0) ? (aux1 && (faceType.bottom() > 0)) : (aux1 && (faceType.top() > 0));
+                    }
+                    aux2 = (j == 0) ? (aux2 && (faceType.bottom() > 0)) : (aux2 && (faceType.top() > 0));
+                }
+
+                if (k != 1)
+                {
+                    if (vf_.fvMsh()[0].n() > 1)
+                    {
+                        aux1 = (k == 0) ? (aux1 && (faceType.aft() > 0)) : (aux1 && (faceType.fore() > 0));
+                    }
+                    aux2 = (k == 0) ? (aux2 && (faceType.aft() > 0)) : (aux2 && (faceType.fore() > 0));
+                }
+
+                boundaryTypeLSGIR_[i][j][k] = aux1;
+                boundaryTypeLSFIR_[i][j][k] = aux2;
+
+            }
+        }
+    }
+}
+
+void LSFIR::createHexagonDescription()
+{
+    /*
+
+    +++++++++++++++++++++++++++++++++++++++++++++++
+
+    Create the table to describe the heaxedron for
+    planar faces or no planar faces hexahedrons
+
+    +++++++++++++++++++++++++++++++++++++++++++++++
+
+    */
+
+    if (planarFaces_)
+    {
+        int NIPV0[12] = {4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0};
+
+        for (int i = 0; i < 6; i++)
+        {
+            NIPV0_[i] = NIPV0[i];
+            for (int j = 0; j < 4; j++)
+            {
+                IPV0_[i][j + 1] = vertexNumsInFaceCC[i][j];
+            }
+
+            IPV0_[i][0] = IPV0_[i][NIPV0[i]];
+            IPV0_[i][NIPV0[i] + 1] = IPV0_[i][1];
+        }
+
+        originalNf_ = 6;
+    }
+    else
+    {
+        int NIPV0[12] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
+
+        for (int i = 0; i < 12; i++)
+        {
+            NIPV0_[i] = NIPV0[i];
+            for (int j = 0; j < 3; j++)
+            {
+                IPV0_[i][j + 1] = vertexNumsInFaceGeneralHexCC[i][j];
+            }
+
+            IPV0_[i][0] = IPV0_[i][NIPV0[i]];
+            IPV0_[i][NIPV0[i] + 1] = IPV0_[i][1];
+        }
+
+        originalNf_ = 12;
+    }
+}
+
+
 tmp<colocatedVectorField> LSFIR::operator()()
 {
+    /*
 
+    +++++++++++++++++++++++++++++++++++++++++++++++
+
+    Reconstruct the interface normal using the version
+    of LSFIR presented in Lopez (2022).
+
+    +++++++++++++++++++++++++++++++++++++++++++++++
+
+    */
 
     tmp<colocatedVectorField> tn
     (
@@ -74,7 +195,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
     );
 
     colocatedVectorDirection& xgi = xn.ref()[0][0];
-    const scalar angle_tol = Foam::cos(1e-6);
+    const scalar angleTol = Foam::cos(1e-3);
+    const scalar validAngleTol = Foam::cos(0.25 * Foam::constant::mathematical::pi);
 
     /*
 
@@ -82,15 +204,16 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
     */
 
+
     forAllCells(n, i, j, k)
     {
-        if ((alpha(i,j,k) > 1e-12) && (alpha(i,j,k) < 1 - 1e-12))
-        {
+        int index;
+        scalar weight;
 
-            double Aaux[26][3];
-            double baux[26];
-            int index;
-            scalarList weights(26);
+        if ((alpha(i,j,k) > threshold_) && (alpha(i,j,k) < 1 - threshold_))
+        {
+            double Aaux[26][3] = {0};
+            double baux[26] = {0};
             tensor A = Zero;
             vector b = Zero;
 
@@ -100,17 +223,25 @@ tmp<colocatedVectorField> LSFIR::operator()()
                 {
                     for (int aux3 = 0; aux3 < 3; aux3++)
                     {
-                        if ((aux1 != 1) || (aux2 != 1) || (aux3 != 1))
-                        {
-                            index = aux1 + 3 * aux2 + 9 * aux3;
-                            if (index > 13)
-                                index--;
-                            weights[index] = (1.0) / Foam::sqr(Foam::mag(centers(i,j,k) - centers(i+aux1-1,j+aux2-1,k+aux3-1)));
-                            baux[index] = weights[index] * (alpha(i+aux1-1,j+aux2-1,k+aux3-1) - alpha(i,j,k));
-                            Aaux[index][0] = weights[index] * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[0] - centers(i,j,k)[0]);
-                            Aaux[index][1] = weights[index] * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[1] - centers(i,j,k)[1]);
-                            Aaux[index][2] = weights[index] * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[2] - centers(i,j,k)[2]);
-                        }
+                        bool interiorNode = (((i+aux1-1) >= n.I().left()) &&
+                            ((i+aux1-1) < n.I().right()) &&
+                            ((j+aux2-1) >= n.I().bottom()) &&
+                            ((j+aux2-1) < n.I().top()) &&
+                            ((k+aux3-1) >= n.I().aft()) &&
+                            ((k+aux3-1) < n.I().fore()));
+
+                        if (((aux1 != 1) || (aux2 != 1) || (aux3 != 1)) &&
+                            (interiorNode || boundaryTypeLSGIR_[aux1][aux2][aux3]))
+                            {
+                                index = aux1 + 3 * aux2 + 9 * aux3;
+                                if (index > 13)
+                                    index--;
+                                weight = (1.0) / Foam::pow(Foam::mag(centers(i,j,k) - centers(i+aux1-1,j+aux2-1,k+aux3-1)),1.5);
+                                baux[index] = weight * (alpha(i+aux1-1,j+aux2-1,k+aux3-1) - alpha(i,j,k));
+                                Aaux[index][0] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[0] - centers(i,j,k)[0]);
+                                Aaux[index][1] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[1] - centers(i,j,k)[1]);
+                                Aaux[index][2] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[2] - centers(i,j,k)[2]);
+                            }
                     }
                 }
             }
@@ -127,10 +258,16 @@ tmp<colocatedVectorField> LSFIR::operator()()
                 }
             }
 
+            if (Foam::det(A) == 0)
+            {
+                FatalErrorInFunction
+                    << "LSFIR failed: LSGIR 0 determinat."
+                    << endl << abort(FatalError);
+            }
+
             n(i,j,k) = A.inv() & b;
             const scalar S = Foam::mag(n(i,j,k));
             n(i,j,k) /= S;
-
         }
         else
         {
@@ -138,56 +275,57 @@ tmp<colocatedVectorField> LSFIR::operator()()
         }
     }
 
-    int NIPV0[12] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
-    int IPV0[12][5] = {
-        {2, 0, 6, 2, 0},
-        {6, 0, 4, 6, 0},
-        {5, 1, 3, 5, 1},
-        {5, 3, 7, 5, 3},
-        {5, 0, 1, 5, 0},
-        {4, 0, 5, 4, 0},
-        {6, 3, 2, 6, 3},
-        {7, 3, 6, 7, 3},
-        {3, 0, 2, 3, 0},
-        {1, 0, 3, 1, 0},
-        {6, 4, 5, 6, 4},
-        {6, 5, 7, 6, 5}
-    };
-    int originalNf = 12;
-    int maxIterNumber = 10;
-    int updatedNormals = 0;
+    //////////////////////////////////////
+
+    // LSFIR iteration
+
+    /////////////////////////////////////
+
+    int maxIterNumber = 4;
+    int updatedNormals = 1;
 
     for (int iter = 0; iter < maxIterNumber; iter ++)
     {
+
+        /* Check the stoping criterium */
+
         reduce(updatedNormals, maxOp<int>());
 
-        if (updatedNormals == 1)
+        if (updatedNormals == 0)
         {
             break;
         }
 
-        updatedNormals = 1;
+        scalar maxAngleTol = Foam::cos(0.166 * Foam::constant::mathematical::pi / double(iter + 1));
+        updatedNormals = 0;
+
+        /* Compute the centers of the interface for all interfacial cells */
 
         forAllCells(n, i, j, k)
         {
             xgi(i,j,k) = Foam::zero();
 
-            if ((alpha(i,j,k) > 1e-12) && (alpha(i,j,k) < (1 - 1e-12)))
+            if ((alpha(i,j,k) > threshold_) && (alpha(i,j,k) < (1 - threshold_)))
             {
+
+                /* Prevent computing interface for zero normal */
 
                 const scalar S = Foam::mag(n(i,j,k));
 
-                if (S < threshold_)
+                if (S < 1e-12)
                 {
                     n(i,j,k)[0] = 1;
                 }
 
-                const scalar C = vf_.lve()(i,j,k,n(i,j,k));
+                /* Compute which vertex are inside the liquid
+                for the truncated cell */
+
+                scalar C = vf_.lve()(i,j,k,n(i,j,k));
                 double originalCs[8];
 
-                for (int il = 0; il < 8; il++)
+                for (int aux1 = 0; aux1 < 8; aux1++)
                 {
-                    originalCs[il] = (n(i,j,k) & v(i,j,k)[il]);
+                    originalCs[aux1] = (n(i,j,k) & v(i,j,k)[aux1]);
                 }
 
                 double SortedCs[8] = {0};
@@ -199,26 +337,26 @@ tmp<colocatedVectorField> LSFIR::operator()()
                 SortedCs[0] = originalCs[0];
                 sortedCsIndex[0] = 0;
 
-                for (int il = 1; il < 8; il++)
+                for (int aux1 = 1; aux1 < 8; aux1++)
                 {
                     place = len;
-                    for (int jl = 0; jl < len; jl++)
+                    for (int aux2 = 0; aux2 < len; aux2++)
                     {
-                        if (originalCs[il] < SortedCs[jl])
+                        if (originalCs[aux1] < SortedCs[aux2])
                         {
-                            place = jl;
+                            place = aux2;
                             break;
                         }
                     }
 
-                    for (int jl = len; jl > place; jl--)
+                    for (int aux2 = len; aux2 > place; aux2--)
                     {
-                    SortedCs[jl] = SortedCs[jl-1];
-                    sortedCsIndex[jl] = sortedCsIndex[jl-1];
+                    SortedCs[aux2] = SortedCs[aux2-1];
+                    sortedCsIndex[aux2] = sortedCsIndex[aux2-1];
                     }
 
-                    SortedCs[place] = originalCs[il];
-                    sortedCsIndex[place] = il;
+                    SortedCs[place] = originalCs[aux1];
+                    sortedCsIndex[place] = aux1;
                     len++;
 
                 }
@@ -232,261 +370,305 @@ tmp<colocatedVectorField> LSFIR::operator()()
                 Kmap[sortedCsIndex[0]] = 0;
                 int Knum = 0;
 
-                for (int il = 1; il < 8; il++)
+                for (int aux1 = 1; aux1 < 8; aux1++)
                 {
-                    if (Foam::mag(SortedCs[il-1] - SortedCs[il]) < 1e-12)
+                    if (Foam::mag(SortedCs[aux1-1] - SortedCs[aux1]) < 1e-12)
                     {
-                        Kmap[sortedCsIndex[il]] = Knum;
+                        Kmap[sortedCsIndex[aux1]] = Knum;
                     }
                     else
                     {
                         Knum++;
-                        Cs[Knum] = SortedCs[il];
-                        Kmap[sortedCsIndex[il]] = Knum;
+                        Cs[Knum] = SortedCs[aux1];
+                        Kmap[sortedCsIndex[aux1]] = Knum;
                     }
                 }
 
-                for (int il = 1; il <= Knum; il++)
+                if (Foam::mag(Cs[0] + C)/(Cs[Knum] - Cs[0]) < 1e-8)
                 {
-                    if (Cs[il] > -C)
+                    C += - (Cs[Knum] - Cs[0]) * 1e-8;
+                }
+                else if (Foam::mag(Cs[Knum] + C)/(Cs[Knum] - Cs[0]) < 1e-8)
+                {
+                    C += (Cs[Knum] - Cs[0]) * 1e-8;
+                }
+
+                for (int aux1 = 1; aux1 <= Knum; aux1++)
+                {
+                    if (Cs[aux1] > -C)
                     {
-                        Kf = il - 1;
+                        Kf = aux1 - 1;
                         break;
                     }
 
-                    if (il == Knum)
+                    if (aux1 == Knum)
                     {
-                        Kf = il - 1;
+                        Kf = aux1 - 1;
                     }
                 }
 
 
-                for (int il = 0; il < 8; il++)
+                for (int aux1 = 0; aux1 < 8; aux1++)
                 {
-                    if (Kmap[il] <= Kf)
-                        IA[il] = 0;
+                    if (Kmap[aux1] <= Kf)
+                        IA[aux1] = 0;
                     else
-                        IA[il] = 1;
+                        IA[aux1] = 1;
                 }
 
-                int NIPV1[16] = {0};
-                int IPV1[16][14];
+                /* If centerAveraging is true compute the center as the average
+                of the vertex, if not compute it as a center of mass */
 
-                int insertedVertex[12][6];
-                int totalInsertedVertex = 0;
-                int Nf = originalNf;
-                int Ip = 8;
-
-                for (int jt = 0; jt < originalNf; jt++)
+                if (!centerAveraging_)
                 {
-                    for (int it = 1; it <= NIPV0[jt]; it++)
-                    {
-                        if (IA[IPV0[jt][it]] == 1)
-                            NIPV1[jt]++;
-                    }
 
-                    if (NIPV1[jt] > 0)
+                    /* Find the truncated interface using Lopez (2020) algorithm */
+
+                    int NIPV1[16] = {0};
+                    int IPV1[16][14];
+
+                    int insertedVertex[12][6];
+                    int totalInsertedVertex = 0;
+                    int Nf = originalNf_;
+                    int Ip = 8;
+
+                    for (int jt = 0; jt < originalNf_; jt++)
                     {
-                        int index = 0;
-                        for (int it = 1; it <= NIPV0[jt]; it++)
+                        for (int it = 1; it <= NIPV0_[jt]; it++)
                         {
-                            int ip1 = IPV0[jt][it];
-                            int ip2 = IPV0[jt][it+1];
-
-                            if (IA[ip1] == 1)
-                            {
-                                index++;
-                                IPV1[jt][index] = ip1;
-                            }
-                            if (IA[ip1] != IA[ip2])
-                            {
-                                index++;
-                                bool flag = true;
-
-                                for (int aux = 0; aux < totalInsertedVertex; aux ++)
-                                {
-                                    if
-                                    (
-                                        ((insertedVertex[aux][1] == ip1)
-                                            || (insertedVertex[aux][2] == ip1))
-                                        & ((insertedVertex[aux][1] == ip2)
-                                            || (insertedVertex[aux][2] == ip2))
-                                    )
-                                    {
-                                        flag = false;
-                                        IPV1[jt][index] = insertedVertex[aux][0];
-                                        if (IA[ip2] == 1)
-                                        {
-                                            insertedVertex[aux][3] = jt;
-                                            insertedVertex[aux][4] = index;
-                                        }
-                                        break;
-                                    }
-                                }
-
-                                if (flag)
-                                {
-                                    insertedVertex[totalInsertedVertex][0] = Ip;
-                                    IPV1[jt][index] = Ip;
-
-                                    if (IA[ip2] == 1)
-                                    {
-                                        insertedVertex[totalInsertedVertex][3] = jt;
-                                        insertedVertex[totalInsertedVertex][4] = index;
-                                        insertedVertex[totalInsertedVertex][2] = ip1;
-                                        insertedVertex[totalInsertedVertex][1] = ip2;
-                                    }
-                                    else
-                                    {
-                                        insertedVertex[totalInsertedVertex][1] = ip1;
-                                        insertedVertex[totalInsertedVertex][2] = ip2;
-                                    }
-
-                                    insertedVertex[totalInsertedVertex][5] = 0;
-                                    totalInsertedVertex++;
-                                    Ip++;
-                                }
-                            }
+                            if (IA[IPV0_[jt][it]] == 1)
+                                NIPV1[jt]++;
                         }
 
-                        NIPV1[jt] = index;
-                        IPV1[jt][0] = IPV1[jt][NIPV1[jt]];
-                        IPV1[jt][NIPV1[jt]+1] = IPV1[jt][1];
-                    }
-                }
-
-                int index = 1;
-                bool untaggedVertex = true;
-                int taggedVertex = 1;
-
-                IPV1[Nf][index] = 8;
-                insertedVertex[0][5] = 1;
-                int counter = 0;
-
-                while (untaggedVertex)
-                {
-                    if (counter > 13)
-                    {
-                        FatalErrorInFunction
-                            << " Arrangement of the new face in LVE failed."
-                            << endl << abort(FatalError);
-                    }
-
-                    int auxj = insertedVertex[IPV1[Nf][index]-8][3];
-                    int auxi = insertedVertex[IPV1[Nf][index]-8][4];
-
-                    if (IPV1[auxj][auxi - 1] != IPV1[Nf][1])
-                    {
-                        index++;
-                        IPV1[Nf][index] = IPV1[auxj][auxi - 1];
-                        insertedVertex[IPV1[Nf][index]-8][5] = 1;
-                        taggedVertex++;
-                    }
-                    else
-                    {
-                        NIPV1[Nf] = index;
-                        IPV1[Nf][0] = IPV1[Nf][NIPV1[Nf]];
-                        IPV1[Nf][NIPV1[Nf]+1] = IPV1[Nf][1];
-                        Nf++;
-
-                        if (taggedVertex == totalInsertedVertex)
+                        if (NIPV1[jt] > 0)
                         {
-                            untaggedVertex = false;
+                            int index = 0;
+                            for (int it = 1; it <= NIPV0_[jt]; it++)
+                            {
+                                int ip1 = IPV0_[jt][it];
+                                int ip2 = IPV0_[jt][it+1];
+
+                                if (IA[ip1] == 1)
+                                {
+                                    index++;
+                                    IPV1[jt][index] = ip1;
+                                }
+                                if (IA[ip1] != IA[ip2])
+                                {
+                                    index++;
+                                    bool flag = true;
+
+                                    for (int aux = 0; aux < totalInsertedVertex; aux ++)
+                                    {
+                                        if
+                                        (
+                                            ((insertedVertex[aux][1] == ip1)
+                                                || (insertedVertex[aux][2] == ip1))
+                                            & ((insertedVertex[aux][1] == ip2)
+                                                || (insertedVertex[aux][2] == ip2))
+                                        )
+                                        {
+                                            flag = false;
+                                            IPV1[jt][index] = insertedVertex[aux][0];
+                                            if (IA[ip2] == 1)
+                                            {
+                                                insertedVertex[aux][3] = jt;
+                                                insertedVertex[aux][4] = index;
+                                            }
+                                            break;
+                                        }
+                                    }
+
+                                    if (flag)
+                                    {
+                                        insertedVertex[totalInsertedVertex][0] = Ip;
+                                        IPV1[jt][index] = Ip;
+
+                                        if (IA[ip2] == 1)
+                                        {
+                                            insertedVertex[totalInsertedVertex][3] = jt;
+                                            insertedVertex[totalInsertedVertex][4] = index;
+                                            insertedVertex[totalInsertedVertex][2] = ip1;
+                                            insertedVertex[totalInsertedVertex][1] = ip2;
+                                        }
+                                        else
+                                        {
+                                            insertedVertex[totalInsertedVertex][1] = ip1;
+                                            insertedVertex[totalInsertedVertex][2] = ip2;
+                                        }
+
+                                        insertedVertex[totalInsertedVertex][5] = 0;
+                                        totalInsertedVertex++;
+                                        Ip++;
+                                    }
+                                }
+                            }
+
+                            NIPV1[jt] = index;
+                            IPV1[jt][0] = IPV1[jt][NIPV1[jt]];
+                            IPV1[jt][NIPV1[jt]+1] = IPV1[jt][1];
+                        }
+                    }
+
+                    int index = 1;
+                    bool untaggedVertex = true;
+                    int taggedVertex = 1;
+
+                    IPV1[Nf][index] = 8;
+                    insertedVertex[0][5] = 1;
+                    int counter = 0;
+
+                    while (untaggedVertex)
+                    {
+                        if (counter > 13)
+                        {
+                            FatalErrorInFunction
+                                << " Arrangement of the new face in LVE failed."
+                                << endl << abort(FatalError);
+                        }
+
+                        int auxj = insertedVertex[IPV1[Nf][index]-8][3];
+                        int auxi = insertedVertex[IPV1[Nf][index]-8][4];
+
+                        if (IPV1[auxj][auxi - 1] != IPV1[Nf][1])
+                        {
+                            index++;
+                            IPV1[Nf][index] = IPV1[auxj][auxi - 1];
+                            insertedVertex[IPV1[Nf][index]-8][5] = 1;
+                            taggedVertex++;
                         }
                         else
                         {
-                            index = 1;
-                            for (int auxip = 0; auxip < totalInsertedVertex; auxip++)
+                            NIPV1[Nf] = index;
+                            IPV1[Nf][0] = IPV1[Nf][NIPV1[Nf]];
+                            IPV1[Nf][NIPV1[Nf]+1] = IPV1[Nf][1];
+                            Nf++;
+
+                            if (taggedVertex == totalInsertedVertex)
                             {
-                                if (insertedVertex[auxip][5] == 0)
+                                untaggedVertex = false;
+                            }
+                            else
+                            {
+                                index = 1;
+                                for (int auxip = 0; auxip < totalInsertedVertex; auxip++)
                                 {
-                                    IPV1[Nf][index] = insertedVertex[auxip][0];
-                                    insertedVertex[auxip][5] = 1;
-                                    taggedVertex++;
-                                    break;
+                                    if (insertedVertex[auxip][5] == 0)
+                                    {
+                                        IPV1[Nf][index] = insertedVertex[auxip][0];
+                                        insertedVertex[auxip][5] = 1;
+                                        taggedVertex++;
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+
+                        counter++;
+                    }
+
+                    /* If there are more than one interface polygons
+                    compute the center as an average of vertex */
+
+                    if (Nf - originalNf_ == 1)
+                    {
+                        vector Xin;
+                        vector e;
+                        vectorList x0(totalInsertedVertex);
+
+                        for (int it = 0; it < totalInsertedVertex; it++)
+                        {
+                            e = v(i,j,k)[insertedVertex[it][2]] - v(i,j,k)[insertedVertex[it][1]];
+                            e /= Foam::mag(e);
+                            Xin = v(i,j,k)[insertedVertex[it][1]];
+                            x0[insertedVertex[it][0] - 8] = Xin + (-C - (n(i,j,k) & Xin)) * e * (1 / (n(i,j,k) & e));
+                        }
+
+                        scalar auxMax;
+                        int maxNormalIndex;
+
+                        auxMax = Foam::mag(n(i,j,k)[0]);
+                        maxNormalIndex = 0;
+
+                        for (int it = 1; it < 3; it++)
+                        {
+                            if (Foam::mag(n(i,j,k)[it]) > auxMax)
+                            {
+                                auxMax = Foam::mag(n(i,j,k)[it]);
+                                maxNormalIndex = it;
+                            }
+                        }
+
+                        scalar TotalArea = 0;
+                        vector Centroid;
+                        scalar Area;
+
+                        for (int it = 2; it < NIPV1[originalNf_]; it++)
+                        {
+                            Centroid = x0[IPV1[originalNf_][1]-8];
+                            Centroid += x0[IPV1[originalNf_][it]-8];
+                            Centroid += x0[IPV1[originalNf_][it+1]-8];
+                            Centroid /= 3;
+
+                            Area = vectorialProductProjection(
+                                x0[IPV1[originalNf_][it]-8] - x0[IPV1[originalNf_][1]-8],
+                                x0[IPV1[originalNf_][it+1]-8] - x0[IPV1[originalNf_][1]-8],
+                                maxNormalIndex);
+                            Area /= n(i,j,k)[maxNormalIndex];
+
+                            TotalArea += Area;
+                            xgi(i,j,k) += Area * Centroid;
+                        }
+
+                        xgi(i,j,k) /= TotalArea;
+
+                        if (xgi(i,j,k)[1] != xgi(i,j,k)[1])
+                        {
+                            FatalErrorInFunction
+                                << "LSFIR: geometric center computation failed."
+                                << endl << abort(FatalError);
+                        }
+                    }
+                    else
+                    {
+                        int numberOfPoints = 0;
+                        vector e;
+                        vector Xin;
+
+                        for (int aux1 = 0; aux1 < originalNf_; aux1++)
+                        {
+                            for (int aux2 = 1; aux2 <= NIPV0_[aux1]; aux2++)
+                            {
+                                if (((IA[IPV0_[aux1][aux2]] == 0) && (IA[IPV0_[aux1][aux2 + 1]] == 1)))
+                                {
+                                    if (IA[IPV0_[aux1][aux2]] == 1)
+                                    {
+                                        e = v(i,j,k)[IPV0_[aux1][aux2 + 1]] - v(i,j,k)[IPV0_[aux1][aux2]];
+                                        Xin = v(i,j,k)[IPV0_[aux1][aux2]];
+                                    }
+                                    else
+                                    {
+                                        e = v(i,j,k)[IPV0_[aux1][aux2]] - v(i,j,k)[IPV0_[aux1][aux2 + 1]];
+                                        Xin = v(i,j,k)[IPV0_[aux1][aux2 + 1]];
+                                    }
+
+                                    e /= Foam::mag(e);
+                                    xgi(i,j,k) += Xin + (-C - (n(i,j,k) & Xin)) * e * (1 / (n(i,j,k) & e));
+                                    numberOfPoints++;
                                 }
                             }
                         }
 
-                    }
+                        xgi(i,j,k) /= numberOfPoints;
 
-                    counter++;
-                }
-
-                if (Nf - originalNf == 1)
-                {
-                    vector Xin;
-                    vector e;
-                    vectorList x0(totalInsertedVertex);
-
-                    for (int it = 0; it < totalInsertedVertex; it++)
-                    {
-                        e = v(i,j,k)[insertedVertex[it][2]] - v(i,j,k)[insertedVertex[it][1]];
-                        e /= Foam::mag(e);
-                        Xin = v(i,j,k)[insertedVertex[it][1]];
-                        x0[insertedVertex[it][0] - 8] = Xin + (-C - (n(i,j,k) & Xin)) * e * (1 / (n(i,j,k) & e));
-                    }
-
-                    scalar auxMax;
-                    int maxNormalIndex;
-
-                    auxMax = Foam::mag(n(i,j,k)[0]);
-                    maxNormalIndex = 0;
-
-                    for (int it = 1; it < 3; it++)
-                    {
-                        if (Foam::mag(n(i,j,k)[it]) > auxMax)
+                        if (xgi(i,j,k)[1] != xgi(i,j,k)[1])
                         {
-                            auxMax = Foam::mag(n(i,j,k)[it]);
-                            maxNormalIndex = it;
+
+                            FatalErrorInFunction
+                                <<  "LSFIR: center of vertex computation failed."
+                                << endl << abort(FatalError);
                         }
-                    }
-
-                    scalar TotalArea = 0;
-                    vector Centroid;
-                    scalar Area;
-
-                    for (int it = 2; it < NIPV1[originalNf]; it++)
-                    {
-                        Centroid = x0[IPV1[originalNf][1]-8];
-                        Centroid += x0[IPV1[originalNf][it]-8];
-                        Centroid += x0[IPV1[originalNf][it+1]-8];
-                        Centroid /= 3;
-
-                        Area = vectorialProductProjection(
-                            x0[IPV1[originalNf][it]-8] - x0[IPV1[originalNf][1]-8],
-                            x0[IPV1[originalNf][it+1]-8] - x0[IPV1[originalNf][1]-8],
-                            maxNormalIndex);
-                        Area /= n(i,j,k)[maxNormalIndex];
-
-                        TotalArea += Area;
-                        xgi(i,j,k) += Area * Centroid;
-                    }
-
-                    xgi(i,j,k) /= TotalArea;
-
-                    if (xgi(i,j,k)[1] != xgi(i,j,k)[1])
-                    {
-                        FatalErrorInFunction << "check" << endl
-                            << "alpha" << endl
-                            <<  alpha(i,j,k) << endl
-                            << "center" << endl
-                            << xgi(i,j,k) << endl
-                            << "normal" << endl
-                            << n(i,j,k) << endl
-                            << maxNormalIndex << endl
-                            << "x0" << endl
-                            << x0 << endl
-                            << IA[0] << " " << IA[1] << " " << IA[2] << " " << IA[3] << " " <<
-                            IA[4] << " " << IA[5] << " " << IA[6] << " " << IA[7] << " " << endl
-                            << IPV1[originalNf][1] << " " << IPV1[originalNf][2] << " " << IPV1[originalNf][3] << " " <<
-                            IPV1[originalNf][4] << " " << IPV1[originalNf][5] << " " << IPV1[originalNf][6] << " " <<
-                            IPV1[originalNf][7] << " " << IPV1[originalNf][8] << " " << IPV1[originalNf][9] << endl
-                            << insertedVertex[0][0] << " " << insertedVertex[0][1] << " " << insertedVertex[0][2] << endl
-                            << insertedVertex[1][0] << " " << insertedVertex[1][1] << " " << insertedVertex[1][2] << endl
-                            << insertedVertex[2][0] << " " << insertedVertex[2][1] << " " << insertedVertex[2][2] << endl
-                            << insertedVertex[3][0] << " " << insertedVertex[3][1] << " " << insertedVertex[3][2] << endl
-                            << endl << abort(FatalError);
                     }
                 }
                 else
@@ -495,22 +677,21 @@ tmp<colocatedVectorField> LSFIR::operator()()
                     vector e;
                     vector Xin;
 
-                    for (int aux1 = 0; aux1 < originalNf; aux1++)
+                    for (int aux1 = 0; aux1 < originalNf_; aux1++)
                     {
-                        for (int aux2 = 1; aux2 <= NIPV0[aux1]; aux2++)
+                        for (int aux2 = 1; aux2 <= NIPV0_[aux1]; aux2++)
                         {
-                            if (((IA[IPV0[aux1][aux2]] == 0) && (IA[IPV0[aux1][aux2 + 1]] == 1)) ||
-                                ((IA[IPV0[aux1][aux2]] == 1) && (IA[IPV0[aux1][aux2 + 1]] == 0)))
+                            if (((IA[IPV0_[aux1][aux2]] == 0) && (IA[IPV0_[aux1][aux2 + 1]] == 1)))
                             {
-                                if (IA[IPV0[aux1][aux2]] == 1)
+                                if (IA[IPV0_[aux1][aux2]] == 1)
                                 {
-                                    e = v(i,j,k)[IPV0[aux1][aux2 + 1]] - v(i,j,k)[IPV0[aux1][aux2]];
-                                    Xin = v(i,j,k)[IPV0[aux1][aux2]];
+                                    e = v(i,j,k)[IPV0_[aux1][aux2 + 1]] - v(i,j,k)[IPV0_[aux1][aux2]];
+                                    Xin = v(i,j,k)[IPV0_[aux1][aux2]];
                                 }
                                 else
                                 {
-                                    e = v(i,j,k)[IPV0[aux1][aux2]] - v(i,j,k)[IPV0[aux1][aux2 + 1]];
-                                    Xin = v(i,j,k)[IPV0[aux1][aux2 + 1]];
+                                    e = v(i,j,k)[IPV0_[aux1][aux2]] - v(i,j,k)[IPV0_[aux1][aux2 + 1]];
+                                    Xin = v(i,j,k)[IPV0_[aux1][aux2 + 1]];
                                 }
 
                                 e /= Foam::mag(e);
@@ -519,23 +700,29 @@ tmp<colocatedVectorField> LSFIR::operator()()
                             }
                         }
                     }
+
                     xgi(i,j,k) /= numberOfPoints;
+
+                    if (xgi(i,j,k)[1] != xgi(i,j,k)[1])
+                    {
+                        FatalErrorInFunction
+                            <<  "LSFIR: center of vertex computation failed."
+                            << endl << abort(FatalError);
+                    }
                 }
 
-                if (xgi(i,j,k)[1] != xgi(i,j,k)[1])
-                {
-                    FatalErrorInFunction
-                        <<  "LSFIR: center of vertex computation failed." << endl << abort(FatalError);
-                }
             }
+
         }
 
         xn.ref()[0].correctBoundaryConditions();
 
+        /* Minimize the square problem for all cells and store the solution */
+
         forAllCells(n, i, j, k)
         {
 
-            if ((alpha(i,j,k) > 1e-12) && (alpha(i,j,k) < 1 - 1e-12))
+            if ((alpha(i,j,k) > threshold_) && (alpha(i,j,k) < 1 - threshold_))
             {
 
                 int d1 = 0;
@@ -570,29 +757,32 @@ tmp<colocatedVectorField> LSFIR::operator()()
                     {
                         for (int aux3 = 0; aux3 < 3; aux3++)
                         {
-                            if (
-                                (alpha(i+aux1-1,j+aux2-1,k+aux3-1) > 1e-12) &&
+                            bool interiorNode = (((i+aux1-1) >= n.I().left()) &&
+                                                ((i+aux1-1) < n.I().right()) &&
+                                                ((j+aux2-1) >= n.I().bottom()) &&
+                                                ((j+aux2-1) < n.I().top()) &&
+                                                ((k+aux3-1) >= n.I().aft()) &&
+                                                ((k+aux3-1) < n.I().fore()));
+
+                            if ((alpha(i+aux1-1,j+aux2-1,k+aux3-1) > 1e-12) &&
                                 (alpha(i+aux1-1,j+aux2-1,k+aux3-1) < 1 - 1e-12) &&
                                 ((aux1 != 1) || (aux2 != 1) || (aux3 != 1)) &&
-                                ((i+aux1-1) >= n.I().left()) && ((i+aux1-1) < n.I().right()) &&
-                                ((j+aux2-1) >= n.I().bottom()) && ((j+aux2-1) < n.I().top()) &&
-                                ((k+aux3-1) >= n.I().aft()) && ((k+aux3-1) < n.I().fore())
-                                )
+                                (interiorNode || boundaryTypeLSFIR_[aux1][aux2][aux3]))
                             {
-                                scalar angle = (n(i+aux1-1,j+aux2-1,k+aux3-1) & n(i,j,k))
-                                                / (Foam::mag(n(i+aux1-1,j+aux2-1,k+aux3-1)) * Foam::mag(n(i,j,k)));
+                                    scalar angle = (n(i+aux1-1,j+aux2-1,k+aux3-1) & n(i,j,k))
+                                                    / (Foam::mag(n(i+aux1-1,j+aux2-1,k+aux3-1)) * Foam::mag(n(i,j,k)));
 
-                                if (angle > Foam::cos(0.25 * Foam::constant::mathematical::pi))
-                                {
-                                    vector dist = xgi(i+aux1-1,j+aux2-1,k+aux3-1)-xgi(i,j,k);
-                                    wi = (1.0)/Foam::max(1e-20,Foam::pow(Foam::mag(dist),2.5));
-                                    A[0][0] += wi*Foam::sqr(dist[d2]);
-                                    A[0][1] += wi*(dist[d2]) * (dist[d3]);
-                                    A[1][1] += wi*Foam::sqr(dist[d3]);
-                                    b[0] += - wi*(dist[d2]) * (dist[d1]);
-                                    b[1] += - wi*(dist[d3]) * (dist[d1]);
-                                    nNeighs++;
-                                }
+                                    if (angle > validAngleTol)
+                                    {
+                                        vector dist = xgi(i+aux1-1,j+aux2-1,k+aux3-1)-xgi(i,j,k);
+                                        wi = (1.0)/Foam::max(1e-20,Foam::pow(Foam::mag(dist),2.5));
+                                        A[0][0] += wi*Foam::sqr(dist[d2]);
+                                        A[0][1] += wi*(dist[d2]) * (dist[d3]);
+                                        A[1][1] += wi*Foam::sqr(dist[d3]);
+                                        b[0] += - wi*(dist[d2]) * (dist[d1]);
+                                        b[1] += - wi*(dist[d3]) * (dist[d1]);
+                                        nNeighs++;
+                                    }
                             }
                         }
                     }
@@ -604,47 +794,51 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
                 if (nNeighs > 0)
                 {
-                    if ((A[0][0] == 0.0 && A[1][1] != 0) || (Foam::mag(A[0][0]/A[1][1]) < 1e-12))
-                    {
-                        nc[d2] = 0.0;
-                        nc[d3] = b[1] / A[1][1];
-                    }
-                    else if ((A[0][0] != 0.0 && A[1][1] == 0) || (Foam::mag(A[1][1]/A[0][0]) < 1e-12))
-                    {
-                        nc[d3] = 0.0;
-                        nc[d2] = b[0] / A[0][0];
-                    }
-                    else if ((A[0][0] * A[1][1] - A[0][1] * A[1][0]) != 0)
-                    {
-                        nc[d2] = (A[1][1] * b[0] - A[0][1] * b[1]) / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
-                        nc[d3] = (- A[1][0] * b[0] + A[0][0] * b[1]) / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
-                    }
-                    else
+                    if ((A[0][0] * A[1][1] - A[0][1] * A[1][0]) == 0)
                     {
                         nc = n(i,j,k);
                     }
-
-                    if (n(i,j,k)[d1] < 0)
-                    {
-                        nc[d1] = - 1.0;
-                        nc[d2] = - nc[d2];
-                        nc[d3] = - nc[d3];
-                    }
                     else
                     {
-                        nc[d1] = 1.0;
-                    }
+                        if ((A[0][0] == 0.0 && A[1][1] != 0) || (Foam::mag(A[0][0]/A[1][1]) < 1e-12))
+                        {
+                            nc[d2] = 0.0;
+                            nc[d3] = b[1] / A[1][1];
+                        }
+                        else if ((A[0][0] != 0.0 && A[1][1] == 0) || (Foam::mag(A[1][1]/A[0][0]) < 1e-12))
+                        {
+                            nc[d3] = 0.0;
+                            nc[d2] = b[0] / A[0][0];
+                        }
+                        else
+                        {
+                            nc[d2] = (A[1][1] * b[0] - A[0][1] * b[1]) / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
+                            nc[d3] = (- A[1][0] * b[0] + A[0][0] * b[1]) / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
+                        }
 
+                        if (n(i,j,k)[d1] < 0)
+                        {
+                            nc[d1] = - 1.0;
+                            nc[d2] = - nc[d2];
+                            nc[d3] = - nc[d3];
+                        }
+                        else
+                        {
+                            nc[d1] = 1.0;
+                        }
+                    }
 
                     nc /= Foam::mag(nc);
                     scalar angle = (nc & n(i,j,k))
                                     / (Foam::mag(nc) * Foam::mag(n(i,j,k)));
 
-                    if (angle > Foam::cos(0.166 * Foam::constant::mathematical::pi / double(iter + 1)))
+                    if (angle > maxAngleTol)
                     {
                         n_new(i,j,k) = nc;
-                        if (angle < angle_tol)
-                            updatedNormals = 0;
+                        if (angle < angleTol)
+                        {
+                            updatedNormals = 1;
+                        }
                     }
                     else
                     {
@@ -656,54 +850,21 @@ tmp<colocatedVectorField> LSFIR::operator()()
                     n_new(i,j,k) = n(i,j,k);
                 }
 
-                /*
-                if (nNeighs > 1)
-                {
-                    FatalErrorInFunction << "check" << endl
-                    << "alpha" << endl
-                    << alpha(i-1,j,k-1) << " " << alpha(i,j,k-1) << " " << alpha(i+1,j,k-1) << endl
-                    << alpha(i-1,j,k) << " " << alpha(i,j,k) << " " << alpha(i+1,j,k) << endl
-                    << alpha(i-1,j,k+1) << " " << alpha(i,j,k+1) << " " << alpha(i+1,j,k+1) << endl
-                    << "center" << endl
-                    << xgi(i-1,j,k-1) << " " << xgi(i,j,k-1) << " " << xgi(i+1,j,k-1) << endl
-                    << xgi(i-1,j,k) << " " << xgi(i,j,k) << " " << xgi(i+1,j,k) << endl
-                    << xgi(i-1,j,k+1) << " " << xgi(i,j,k+1) << " " << xgi(i+1,j,k+1) << endl
-                    << "dists" << endl
-                    << xgi(i-1,j,k-1) - xgi(i,j,k) << " " << xgi(i,j,k-1) - xgi(i,j,k) << " " << xgi(i+1,j,k-1) - xgi(i,j,k) << endl
-                    << xgi(i-1,j,k) - xgi(i,j,k) << " " << xgi(i,j,k) - xgi(i,j,k) << " " << xgi(i+1,j,k) - xgi(i,j,k) << endl
-                    << xgi(i-1,j,k+1) - xgi(i,j,k) << " " << xgi(i,j,k+1) - xgi(i,j,k) << " " << xgi(i+1,j,k+1) - xgi(i,j,k) << endl
-                    << "normal" << endl
-                    << n(i-1,j,k-1) << " " << n(i,j,k-1) << " " << n(i+1,j,k-1) << endl
-                    << n(i-1,j,k) << " " << n(i,j,k) << " " << n(i+1,j,k) << endl
-                    << n(i-1,j,k+1) << " " << n(i,j,k+1) << " " << n(i+1,j,k+1) << endl
-                    << "ds" << endl
-                    << d1 << " " << d2 << " " << d3 << endl
-                    << "A" << endl
-                    << A[0][0] << " " << A[0][1] << endl
-                    << A[1][0] << " " << A[1][1] << endl
-                    << "b" << endl
-                    << b[0] << " " << b[1] << endl
-                    << "Solution" << endl
-                    << nc << " " << n_new(i,j,k) << endl
-                    << "loc" << endl
-                    << "i" << i << " " << n.I().left() << " " << n.I().right() << endl
-                    << "j" << j << " " << n.I().bottom() << " " << n.I().top() << endl
-                    << "k" << k << " " << n.I().aft() << " " << n.I().fore() << endl
-                    << endl << abort(FatalError);
-                }
-                */
-
-                if (n(i,j,k)[1] != n(i,j,k)[1])
+                if ((n_new(i,j,k)[1] != n_new(i,j,k)[1]) || (n_new(i,j,k)[2] != n_new(i,j,k)[2]) || (n_new(i,j,k)[0] != n_new(i,j,k)[0]))
                 {
                     FatalErrorInFunction
-                        <<  "LSFIR: normal computation failed." << endl << abort(FatalError);
+                        <<  "LSFIR: normal computation failed."
+                        <<  "n new: " << n_new(i,j,k) << endl
+                        << endl << abort(FatalError);
                 }
             }
         }
 
+        /* Update the normals */
+
         forAllCells(n, i, j, k)
         {
-            if ((alpha(i,j,k) > 1e-12) && (alpha(i,j,k) < 1 - 1e-12))
+            if ((alpha(i,j,k) > threshold_) && (alpha(i,j,k) < 1 - threshold_))
             {
                 n(i,j,k) = n_new(i,j,k);
             }

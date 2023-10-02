@@ -15,7 +15,7 @@ stopAt          endTime;
 
 endTime         8;
 
-deltaT          0.0025;
+deltaT          125e-5;
 
 writeControl    adjustableRunTime;
 

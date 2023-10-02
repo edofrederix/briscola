@@ -111,8 +111,17 @@ public:
     (
         const vertexVector& vertices,
         const vector& n,
+        const scalar& f,
+        const scalar& Vtotal
+    ) const;
+
+    scalar cLVE
+    (
+        const vertexVector& vertices,
+        const vector& n,
         const scalar& f
     ) const;
+
 
     // Solve the local volume enforcement problem on parallelepiped quadrilater
     // hexahedrons
@@ -122,8 +131,6 @@ public:
         const vector& n,
         const scalar& f
     ) const;
-
-
 
     scalar exactCubicSolver
     (
@@ -140,6 +147,20 @@ public:
     ) const;
 
     scalar newtonCubicSolver
+    (
+        const scalar& Vf,
+        const scalar& alpha0,
+        const scalar& alpha1,
+        const scalar& alpha2,
+        const scalar& alpha3,
+        const scalar& Cmin,
+        const scalar& Cmax,
+        const scalar& Vkmin,
+        const scalar& Vkmax,
+        const scalar& Vtotal
+    ) const;
+
+    scalar bisectionCubicSolver
     (
         const scalar& Vf,
         const scalar& alpha0,

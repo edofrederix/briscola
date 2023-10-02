@@ -5,6 +5,7 @@
 #include "meshFields.H"
 #include "constants.H"
 #include "exSchemes.H"
+#include <fstream>
 
 namespace Foam
 {
@@ -65,6 +66,9 @@ bool initialCondition::read(const dictionary& dict)
         const colocatedScalarDirection& cv =
             fvMsh.metrics<colocated>().cellVolumes()[0][0];
 
+        const meshDirection<vertexVector,colocated>& vertex =
+            fvMsh.metrics<colocated>().vertexCenters()[0][0];
+
         forAllCells(alpha, i, j, k)
         {
             vector ccxy = cc(i,j,k);
@@ -76,16 +80,24 @@ bool initialCondition::read(const dictionary& dict)
                     0
                 );
 
-            alpha(i,j,k) = Foam::mag(ccxy - vector(0.5,0.75,0)) < 0.15;
-
-            if
-            (
-                ccxy.y() < 0.75-0.15+0.125
-             && ccxy.x() > 0.5-0.025 && ccxy.x() < 0.5+0.025
-            )
+            alpha(i,j,k) = 0;
+            for (int l = 0; l < 8; l++)
             {
-                alpha(i,j,k) = 0;
+                vector v = vertex(i,j,k)[l];
+
+                scalar tag = Foam::mag(v - vector(0.5,0.75,0)) < 0.15;
+
+                if
+                (
+                    v.y() < 0.75-0.15+0.125
+                && v.x() > 0.5-0.025 && v.x() < 0.5+0.025
+                )
+                {
+                    tag = 0;
+                }
+                alpha(i,j,k) += 0.125 * (tag);
             }
+
             TotalVolume += cv(i,j,k) * alpha(i,j,k);
         }
 
@@ -138,38 +150,40 @@ bool initialCondition::end()
     scalar L1Error = 0;
     scalar Volume = 0;
     scalar LocalBoundError;
-    scalar exactAlpha;
 
     colocatedScalarDirection& alpha =
         runTime_.lookupObjectRef<colocatedScalarField>("alpha")[0][0];
 
     const fvMesh& fvMsh = alpha.fvMsh();
 
-    const colocatedVectorDirection& cc =
-        fvMsh.metrics<colocated>().cellCenters()[0][0];
-
     const colocatedScalarDirection& cv =
         fvMsh.metrics<colocated>().cellVolumes()[0][0];
 
+    const meshDirection<vertexVector,colocated>& vertex =
+        fvMsh.metrics<colocated>().vertexCenters()[0][0];
+
     forAllCells(alpha, i, j, k)
     {
-        vector ccxy = cc(i,j,k);
+        scalar exactVol = 0;
 
-
-        if
-        (
-            ccxy.y() < 0.75-0.15+0.125
-            && ccxy.x() > 0.5-0.025 && ccxy.x() < 0.5+0.025
-        )
+        for (int l = 0; l < 8; l++)
         {
-            exactAlpha = 0;
-        }
-        else
-        {
-            exactAlpha = Foam::mag(ccxy - vector(0.5,0.75,0)) < 0.15;
+            vector v = vertex(i,j,k)[l];
+
+            scalar tag = Foam::mag(v - vector(0.5,0.75,0)) < 0.15;
+
+            if
+            (
+                v.y() < 0.75-0.15+0.125
+            && v.x() > 0.5-0.025 && v.x() < 0.5+0.025
+            )
+            {
+                tag = 0;
+            }
+            exactVol += 0.125 * (tag);
         }
 
-        L1Error += cv(i,j,k) * Foam::mag(exactAlpha - alpha(i,j,k));
+        L1Error += cv(i,j,k) * Foam::mag(exactVol - alpha(i,j,k));
         Volume += cv(i,j,k) * alpha(i,j,k);
         LocalBoundError = cv(i,j,k) * Foam::max(-alpha(i,j,k), alpha(i,j,k)-1);
 
@@ -181,6 +195,21 @@ bool initialCondition::end()
     reduce(BoundError, maxOp<scalar>());
     reduce(Volume, sumOp<scalar>());
     reduce(L1Error, sumOp<scalar>());
+
+    /*
+
+    if (Pstream::master())
+    {
+        std::ofstream myfile;
+        myfile.open ("errors.txt", std::ios::out|std::ios::app);
+        myfile  << TotalVolume << " "
+                << L1Error << " " << L1Error / TotalVolume << " "
+                << TotalVolume - Volume << " " << (TotalVolume - Volume) / TotalVolume << " "
+                << BoundError << "\n";
+        myfile.close();
+    }
+
+    */
 
     Info << "Total Volume: " << TotalVolume << endl <<
             "Shape Error (absolute L1 norm): " << L1Error << endl <<

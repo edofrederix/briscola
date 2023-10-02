@@ -300,6 +300,24 @@ const label vertexNumsInFaceCC[6][4] =
     {4,5,7,6}
 };
 
+// Global vertex numbers contained in general hexadron faces (decomposing each
+// face into two triangles) in counter-clockwise direction as viewed from outside
+const label vertexNumsInFaceGeneralHexCC[12][3] =
+{
+    {0,6,2},
+    {0,4,6},
+    {1,3,5},
+    {3,7,5},
+    {0,1,5},
+    {0,5,4},
+    {3,2,6},
+    {3,6,7},
+    {0,2,3},
+    {0,3,1},
+    {4,5,6},
+    {5,7,6}
+};
+
 // Global vertex numbers contained in edges
 const label vertexNumsInEdge[12][2] =
 {
