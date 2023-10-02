@@ -2,7 +2,7 @@
 #define EdgeSpace_H
 
 #include "CellSpace.H"
-#include "blockUtils.H"
+#include "briscolaUtils.H"
 #include "pTransform.H"
 #include "stencil.H"
 

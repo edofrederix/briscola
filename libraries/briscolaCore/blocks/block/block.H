@@ -11,7 +11,7 @@
 #include "products.H"
 
 #include "blockFwd.H"
-#include "blockUtils.H"
+#include "briscolaUtils.H"
 
 namespace Foam
 {
