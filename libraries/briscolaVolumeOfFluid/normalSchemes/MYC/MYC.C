@@ -21,7 +21,7 @@ addToRunTimeSelectionTable(normalScheme, MYC, dictionary);
 MYC::MYC(const vof& vf, const dictionary& dict)
 :
     normalScheme(vf, dict),
-    threshold_(vf.threshold())
+    threshold_(vof::threshold)
 {}
 
 MYC::MYC(const MYC& s)
@@ -35,46 +35,33 @@ MYC::~MYC()
 
 tmp<colocatedVectorField> MYC::operator()()
 {
-
-    /*
-
-    +++++++++++++++++++++++++++++++++++++++++++++++
-
-    Reconstruct the normal interface usign the Mixed
-    Youngs method in Aulisa (2007).
-
-    The method has been generalized for non uniform
-    meshes using three points lagrange derivative
-    aproximations and for skwewed meshes by transforming
-    the coorinate system into a perpendicular one.
-
-    +++++++++++++++++++++++++++++++++++++++++++++++
-
-    */
+    // Reconstruct the normal interface using the Mixed Youngs method in Aulisa
+    // (2007).
+    //
+    // The method has been generalized for non uniform meshes using three points
+    // lagrange derivative approximations and for skewed meshes by transforming
+    // the coordinate system into a perpendicular one.
 
     tmp<colocatedVectorField> tn
     (
-        new colocatedVectorField(
+        new colocatedVectorField
+        (
             "normal",
             vf_.fvMsh()
         )
     );
 
-    colocatedVectorDirection& n = tn.ref()[0][0];
+    colocatedVectorField& n = tn.ref();
     n = Zero;
 
-    colocatedScalarField aux = vf_.alpha();
-    colocatedScalarDirection alpha = aux[0][0];
+    const colocatedScalarField& alpha = vf_.alpha();
 
-    const mesh& mh = vf_.fvMsh().msh();
-    const rectilinearMesh& recMh = mh.cast<rectilinearMesh>();
-    tensor T = recMh.base();
+    const rectilinearMesh& rMsh = vf_.fvMsh().msh().cast<rectilinearMesh>();
+    tensor T = rMsh.base();
 
-    PtrList<PartialList<scalar>> localCellSizes = recMh.localCellSizes();
-
-    PartialList<scalar> xSize = localCellSizes[0];
-    PartialList<scalar> ySize = localCellSizes[1];
-    PartialList<scalar> zSize = localCellSizes[2];
+    const PartialList<scalar>& xSize = rMsh.localCellSizes()[0];
+    const PartialList<scalar>& ySize = rMsh.localCellSizes()[1];
+    const PartialList<scalar>& zSize = rMsh.localCellSizes()[2];
 
     forAllCells(n, i, j, k)
     {
@@ -84,8 +71,8 @@ tmp<colocatedVectorField> MYC::operator()()
             int cn;
             vector n_aux;
 
-            /* write the plane as: sgn(mx) X =  my Y +  mz Z + alpha
-                                        m00 X = m01 Y + m02 Z + alpha */
+            // Write the plane as: sgn(mx) X =  my Y +  mz Z + alpha m00 X = m01
+            // Y + m02 Z + alpha
 
             m1 = xSize[i-1] * (ySize[j]*zSize[k]*alpha(i-1,j,k) + ySize[j+1]*zSize[k]*alpha(i-1,j+1,k)
                     + ySize[j-1]*zSize[k]*alpha(i-1,j-1,k) + ySize[j]*zSize[k+1]*alpha(i-1,j,k+1) +
@@ -110,8 +97,8 @@ tmp<colocatedVectorField> MYC::operator()()
                     + m2 * (2*(zSize[k+1]-zSize[k-1])/((zSize[k]+zSize[k+1])*(zSize[k]+zSize[k-1])))
                     + m3 * ((zSize[k]+zSize[k-1])/((zSize[k]+zSize[k+1])*(0.5*(zSize[k+1]+zSize[k-1])+zSize[k])));
 
-            /* write the plane as: sgn(my) Y =  mx X +  mz Z + alpha
-                                        m11 Y = m10 X + m12 Z + alpha */
+            // Write the plane as: sgn(my) Y =  mx X +  mz Z + alpha m11 Y = m10
+            // X + m12 Z + alpha
 
             m1 = ySize[j-1]*alpha(i-1,j-1,k) + ySize[j+1]*alpha(i-1,j+1,k) + ySize[j]*alpha(i-1,j,k);
             m2 = ySize[j-1]*alpha(i,j-1,k) + ySize[j+1]*alpha(i,j+1,k) + ySize[j]*alpha(i,j,k);
@@ -135,8 +122,8 @@ tmp<colocatedVectorField> MYC::operator()()
                     + m2 * (2*(zSize[k+1]-zSize[k-1])/((zSize[k]+zSize[k+1])*(zSize[k]+zSize[k-1])))
                     + m3 * ((zSize[k]+zSize[k-1])/((zSize[k]+zSize[k+1])*(0.5*(zSize[k+1]+zSize[k-1])+zSize[k])));
 
-            /* write the plane as: sgn(mz) Z =  mx X +  my Y + alpha
-                                        m22 Z = m20 X + m21 Y + alpha */
+            // Write the plane as: sgn(mz) Z =  mx X +  my Y + alpha m22 Z = m20
+            // X + m21 Y + alpha
 
             m1 = zSize[k-1]*alpha(i-1,j,k-1) + zSize[k+1]*alpha(i-1,j,k+1) + zSize[k]*alpha(i-1,j,k);
             m2 = zSize[k-1]*alpha(i,j,k-1) + zSize[k+1]*alpha(i,j,k+1) + zSize[k]*alpha(i,j,k);
@@ -160,7 +147,7 @@ tmp<colocatedVectorField> MYC::operator()()
                     xSize[i]*ySize[j]*alpha(i,j,k+1));
             m[2][2] = m1 > m2 ? -1. : 1.;
 
-            /* normalize each set (mx,my,mz): |mx|+|my|+|mz| = 1 */
+            // Normalize each set (mx,my,mz): |mx|+|my|+|mz| = 1
 
             t0 = Foam::mag(m[0][0]) + Foam::mag(m[0][1]) + Foam::mag(m[0][2]);
             m[0][0] /= t0;
@@ -177,23 +164,27 @@ tmp<colocatedVectorField> MYC::operator()()
             m[2][1] /= t0;
             m[2][2] /= t0;
 
-            /* choose among the three central scheme */
+            // choose among the three central scheme
+
             t0 = Foam::mag(m[0][0]);
             t1 = Foam::mag(m[1][1]);
             t2 = Foam::mag(m[2][2]);
 
             cn = 0;
+
             if (t1 > t0)
             {
                 t0 = t1;
                 cn = 1;
             }
+
             if (t2 > t0)
             {
                 cn = 2;
             }
 
-            /* compute gradient averaging the gradient in every vertex of the cell*/
+            // Compute gradient averaging the gradient in every vertex of the
+            // cell
 
             double Cx1, Cx2, Cy1, Cy2, Cz1, Cz2;
             m[3][0] = 0;
@@ -234,13 +225,15 @@ tmp<colocatedVectorField> MYC::operator()()
             }
 
             t0 = Foam::mag(m[3][0]) + Foam::mag(m[3][1]) + Foam::mag(m[3][2]);
+
             if (t0 > 1e-30)
             {
                 m[3][0] /= t0;
                 m[3][1] /= t0;
                 m[3][2] /= t0;
 
-                /* choose between the previous choice and Youngs-CIAM */
+                // Choose between the previous choice and Youngs-CIAM
+
                 t0 = Foam::mag(m[3][0]);
                 t1 = Foam::mag(m[3][1]);
                 t2 = Foam::mag(m[3][2]);
@@ -253,15 +246,16 @@ tmp<colocatedVectorField> MYC::operator()()
                     cn = 3;
             }
 
-            /* set normal */
+            // Set normal
+
             n_aux[0] = m[cn][0];
             n_aux[1] = m[cn][1];
             n_aux[2] = m[cn][2];
 
-            /* transform normal to orginal coordinates*/
+            // Transform normal to orginal coordinates
+
             n_aux = T.inv() & n_aux;
             n(i,j,k) = n_aux / Foam::mag(n_aux);
-
         }
     }
 

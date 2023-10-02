@@ -1,7 +1,10 @@
 #ifndef LVE_H
 #define LVE_H
 
-#include "fvMesh.H"
+#include "truncatedHex.H"
+#include "truncatedPiped.H"
+#include "SortableList.H"
+#include "constants.H"
 
 namespace Foam
 {
@@ -16,12 +19,6 @@ class vof;
 
 class LVE
 {
-    // Reference to the Vof object
-    const vof& vf_;
-
-    // Reference to the mesh
-    const fvMesh& fvMsh_;
-
     // Rectilinear bool (stored here for efficiency)
     bool rectilinear_;
 
@@ -39,7 +36,7 @@ class LVE
 
     // Functions to solve the local volume enforcement problem given a solution
     // bracket
-    scalar solveBracketedLVE
+    inline scalar solveBracketedLVE
     (
         const vertexVector& v,
         const scalar& V,
@@ -51,54 +48,61 @@ class LVE
         scalar fMax
     ) const;
 
-    // Compute only one component of a vectorial product
-    inline scalar vectorialProductProjection
+    // Solvers
+
+    inline scalar exactCubicSolver
     (
-        const vector& v1,
-        const vector& v2,
-        const int& i
-    ) const
-    {
-        if (i == 0)
-        {
-            return v1[1] * v2[2] - v1[2] * v2[1];
-        }
-        else if (i == 1)
-        {
-            return v1[2] * v2[0] - v1[0] * v2[2];
-        }
-        else
-        {
-            return v1[0] * v2[1] - v1[1] * v2[0];
-        }
-    }
+        const scalar& Vf,
+        const scalar& alpha0,
+        const scalar& alpha1,
+        const scalar& alpha2,
+        const scalar& alpha3,
+        const scalar& Cmin,
+        const scalar& Cmax,
+        const scalar& Vkmin,
+        const scalar& Vkmax,
+        const scalar& Vtotal
+    ) const;
+
+    inline scalar newtonCubicSolver
+    (
+        const scalar& Vf,
+        const scalar& alpha0,
+        const scalar& alpha1,
+        const scalar& alpha2,
+        const scalar& alpha3,
+        const scalar& Cmin,
+        const scalar& Cmax,
+        const scalar& Vkmin,
+        const scalar& Vkmax,
+        const scalar& Vtotal
+    ) const;
+
+    inline scalar bisectionCubicSolver
+    (
+        const scalar& Vf,
+        const scalar& alpha0,
+        const scalar& alpha1,
+        const scalar& alpha2,
+        const scalar& alpha3,
+        const scalar& Cmin,
+        const scalar& Cmax,
+        const scalar& Vkmin,
+        const scalar& Vkmax,
+        const scalar& Vtotal
+    ) const;
 
 public:
 
-    // Construct from vof object
-    LVE(const vof&);
+    // Construct from rectilinear bool
+    LVE(const bool rectilinear);
 
     // Destructor
     ~LVE();
 
-    // Solve the local volume enforcement problem
-    scalar operator()(const labelVector&, const vector& n) const;
-
-    // Solve the local volume enforcement problem
-    inline scalar operator()
-    (
-        const label& i,
-        const label& j,
-        const label& k,
-        const vector& n
-    ) const
-    {
-        return this->operator()(labelVector(i,j,k), n);
-    }
-
     // Solve the local volume enforcement problem on arbitrary quadrilater
     // hexahedrons
-    scalar aLVE
+    inline scalar aLVE
     (
         const vertexVector& vertices,
         const vector& n,
@@ -107,7 +111,7 @@ public:
 
     // CIBRAVE algorithm
 
-    scalar cLVE
+    inline scalar cLVE
     (
         const vertexVector& vertices,
         const vector& n,
@@ -115,65 +119,35 @@ public:
         const scalar& Vtotal
     ) const;
 
-    scalar cLVE
+    inline scalar cLVE
     (
         const vertexVector& vertices,
         const vector& n,
         const scalar& f
     ) const;
-
 
     // Solve the local volume enforcement problem on parallelepiped quadrilater
     // hexahedrons
-    scalar pLVE
+    inline scalar pLVE
     (
         const vertexVector& vertices,
         const vector& n,
         const scalar& f
     ) const;
 
-    scalar exactCubicSolver
+    // Solve the local volume enforcement problem
+    inline scalar operator()
     (
-        const scalar& Vf,
-        const scalar& alpha0,
-        const scalar& alpha1,
-        const scalar& alpha2,
-        const scalar& alpha3,
-        const scalar& Cmin,
-        const scalar& Cmax,
-        const scalar& Vkmin,
-        const scalar& Vkmax,
-        const scalar& Vtotal
-    ) const;
+        const scalar f,
+        const vertexVector& v,
+        const scalar cv,
+        const vector& n
+    ) const
+    {
+        const vector m(n/Foam::mag(n));
 
-    scalar newtonCubicSolver
-    (
-        const scalar& Vf,
-        const scalar& alpha0,
-        const scalar& alpha1,
-        const scalar& alpha2,
-        const scalar& alpha3,
-        const scalar& Cmin,
-        const scalar& Cmax,
-        const scalar& Vkmin,
-        const scalar& Vkmax,
-        const scalar& Vtotal
-    ) const;
-
-    scalar bisectionCubicSolver
-    (
-        const scalar& Vf,
-        const scalar& alpha0,
-        const scalar& alpha1,
-        const scalar& alpha2,
-        const scalar& alpha3,
-        const scalar& Cmin,
-        const scalar& Cmax,
-        const scalar& Vkmin,
-        const scalar& Vkmax,
-        const scalar& Vtotal
-    ) const;
-
+        return rectilinear_ ? pLVE(v,m,f) : cLVE(v,m,f,cv);
+    }
 };
 
 }
@@ -181,5 +155,7 @@ public:
 }
 
 }
+
+#include "LVEI.H"
 
 #endif

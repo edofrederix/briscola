@@ -18,7 +18,7 @@ addToRunTimeSelectionTable(normalScheme, LSGIR, dictionary);
 LSGIR::LSGIR(const vof& vf, const dictionary& dict)
 :
     normalScheme(vf, dict),
-    threshold_(vf.threshold())
+    threshold_(vof::threshold)
 {
     createBoundaryType();
 }
@@ -37,7 +37,7 @@ LSGIR::~LSGIR()
 void LSGIR::createBoundaryType()
 {
     const faceLabel faceType =
-        vf_.fvMsh().msh().patchType();
+        vf_.fvMsh().msh().facePatchType();
 
     for (int i = 0; i < 3; i++)
     {
@@ -71,34 +71,24 @@ void LSGIR::createBoundaryType()
 
 tmp<colocatedVectorField> LSGIR::operator()()
 {
+    // Reconstruct the interface normal using the version of LSGIR presented in
+    // Lopez (2022)
 
-    /*
-
-    +++++++++++++++++++++++++++++++++++++++++++++++
-
-    Reconstruc the interface normal using the version
-    of LSGIR presented in Lopez (2022).
-
-    +++++++++++++++++++++++++++++++++++++++++++++++
-
-    */
-
-    colocatedScalarField aux = vf_.alpha();
-    colocatedScalarDirection alpha = aux[0][0];
+    const colocatedScalarField& alpha = vf_.alpha();
 
     tmp<colocatedVectorField> tn
     (
-        new colocatedVectorField(
+        new colocatedVectorField
+        (
             "normal",
             vf_.fvMsh()
         )
     );
 
-    colocatedVectorDirection& n = tn.ref()[0][0];
+    colocatedVectorField& n = tn.ref();
 
-    const meshDirection<vector,colocated>& centers =
-            vf_.fvMsh().template
-            metrics<colocated>().cellCenters()[0][0];
+    const meshField<vector,colocated>& centers =
+        vf_.fvMsh().template metrics<colocated>().cellCenters();
 
     int index;
     scalar weight;

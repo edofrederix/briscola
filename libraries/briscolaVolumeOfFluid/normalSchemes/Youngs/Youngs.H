@@ -16,7 +16,7 @@ class Youngs
 :
     public normalScheme
 {
-    // Normal treshold (defaults to 1e-8)
+    // Normal threshold (defaults to 1e-8)
     scalar threshold_;
 
 public:

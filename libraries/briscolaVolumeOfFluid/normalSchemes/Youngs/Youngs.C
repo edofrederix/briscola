@@ -37,7 +37,7 @@ tmp<colocatedVectorField> Youngs::operator()()
         new colocatedVectorField(ex::grad(vf_.alpha()))
     );
 
-    colocatedVectorDirection& n = tn.ref()[0][0];
+    colocatedVectorField& n = tn.ref();
 
     forAllCells(n, i, j, k)
     {

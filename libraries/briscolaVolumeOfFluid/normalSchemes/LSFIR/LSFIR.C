@@ -22,7 +22,7 @@ addToRunTimeSelectionTable(normalScheme, LSFIR, dictionary);
 LSFIR::LSFIR(const vof& vf, const dictionary& dict)
 :
     normalScheme(vf, dict),
-    threshold_(vf.threshold()),
+    threshold_(vof::threshold),
     planarFaces_(dict.lookupOrDefault<bool>("planarFaces", true)),
     centerAveraging_(dict.lookupOrDefault<bool>("centerAveraging", false))
 {
@@ -46,8 +46,7 @@ LSFIR::~LSFIR()
 
 void LSFIR::createBoundaryTypes()
 {
-    const faceLabel faceType =
-        vf_.fvMsh().msh().patchType();
+    const faceLabel faceType = vf_.fvMsh().msh().facePatchType();
 
     for (int i = 0; i < 3; i++)
     {
@@ -95,16 +94,8 @@ void LSFIR::createBoundaryTypes()
 
 void LSFIR::createHexagonDescription()
 {
-    /*
-
-    +++++++++++++++++++++++++++++++++++++++++++++++
-
-    Create the table to describe the heaxedron for
-    planar faces or no planar faces hexahedrons
-
-    +++++++++++++++++++++++++++++++++++++++++++++++
-
-    */
+    // Create the table to describe the heaxedron for planar faces or no planar
+    // faces hexahedrons
 
     if (planarFaces_)
     {
@@ -133,7 +124,7 @@ void LSFIR::createHexagonDescription()
             NIPV0_[i] = NIPV0[i];
             for (int j = 0; j < 3; j++)
             {
-                IPV0_[i][j + 1] = vertexNumsInFaceGeneralHexCC[i][j];
+                IPV0_[i][j + 1] = faceTriangleDecompCC[i][j];
             }
 
             IPV0_[i][0] = IPV0_[i][NIPV0[i]];
@@ -147,16 +138,8 @@ void LSFIR::createHexagonDescription()
 
 tmp<colocatedVectorField> LSFIR::operator()()
 {
-    /*
-
-    +++++++++++++++++++++++++++++++++++++++++++++++
-
-    Reconstruct the interface normal using the version
-    of LSFIR presented in Lopez (2022).
-
-    +++++++++++++++++++++++++++++++++++++++++++++++
-
-    */
+    // Reconstruct the interface normal using the version of LSFIR presented in
+    // Lopez (2022).
 
     tmp<colocatedVectorField> tn
     (
@@ -166,7 +149,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
         )
     );
 
-    colocatedVectorDirection& n = tn.ref()[0][0];
+    colocatedVectorField& n = tn.ref();
 
     tmp<colocatedVectorField> tn_new
     (
@@ -176,15 +159,16 @@ tmp<colocatedVectorField> LSFIR::operator()()
         )
     );
 
-    colocatedVectorDirection& n_new = tn_new.ref()[0][0];
+    colocatedVectorField& n_new = tn_new.ref();
 
-    colocatedScalarDirection alpha = vf_.alpha()[0][0];
-    const colocatedVertexVectorDirection& v =
-        vf_.fvMsh().template
-            metrics<colocated>().vertexCenters()[0][0];
-    const meshDirection<vector,colocated>& centers =
-        vf_.fvMsh().template
-            metrics<colocated>().cellCenters()[0][0];
+    const colocatedScalarField& alpha = vf_.alpha();
+
+    const colocatedVertexVectorField& v =
+        vf_.fvMsh().template metrics<colocated>().vertexCenters();
+    const colocatedVectorField& cc =
+        vf_.fvMsh().template metrics<colocated>().cellCenters();
+    const colocatedScalarField& cv =
+        vf_.fvMsh().template metrics<colocated>().cellVolumes();
 
     tmp<colocatedVectorField> xn
     (
@@ -194,16 +178,13 @@ tmp<colocatedVectorField> LSFIR::operator()()
         )
     );
 
-    colocatedVectorDirection& xgi = xn.ref()[0][0];
+    colocatedVectorField& xgi = xn.ref();
+
     const scalar angleTol = Foam::cos(1e-3);
-    const scalar validAngleTol = Foam::cos(0.25 * Foam::constant::mathematical::pi);
+    const scalar validAngleTol =
+        Foam::cos(0.25 * Foam::constant::mathematical::pi);
 
-    /*
-
-    Initialise the field using LSGIR
-
-    */
-
+    // Initialise the field using LSGIR
 
     forAllCells(n, i, j, k)
     {
@@ -236,11 +217,11 @@ tmp<colocatedVectorField> LSFIR::operator()()
                                 index = aux1 + 3 * aux2 + 9 * aux3;
                                 if (index > 13)
                                     index--;
-                                weight = (1.0) / Foam::pow(Foam::mag(centers(i,j,k) - centers(i+aux1-1,j+aux2-1,k+aux3-1)),1.5);
+                                weight = (1.0) / Foam::pow(Foam::mag(cc(i,j,k) - cc(i+aux1-1,j+aux2-1,k+aux3-1)),1.5);
                                 baux[index] = weight * (alpha(i+aux1-1,j+aux2-1,k+aux3-1) - alpha(i,j,k));
-                                Aaux[index][0] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[0] - centers(i,j,k)[0]);
-                                Aaux[index][1] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[1] - centers(i,j,k)[1]);
-                                Aaux[index][2] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[2] - centers(i,j,k)[2]);
+                                Aaux[index][0] = weight * (cc(i+aux1-1,j+aux2-1,k+aux3-1)[0] - cc(i,j,k)[0]);
+                                Aaux[index][1] = weight * (cc(i+aux1-1,j+aux2-1,k+aux3-1)[1] - cc(i,j,k)[1]);
+                                Aaux[index][2] = weight * (cc(i+aux1-1,j+aux2-1,k+aux3-1)[2] - cc(i,j,k)[2]);
                             }
                     }
                 }
@@ -275,11 +256,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
         }
     }
 
-    //////////////////////////////////////
-
     // LSFIR iteration
-
-    /////////////////////////////////////
 
     int maxIterNumber = 4;
     int updatedNormals = 1;
@@ -287,7 +264,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
     for (int iter = 0; iter < maxIterNumber; iter ++)
     {
 
-        /* Check the stoping criterium */
+        // Check the stopping criterion
 
         reduce(updatedNormals, maxOp<int>());
 
@@ -299,7 +276,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
         scalar maxAngleTol = Foam::cos(0.166 * Foam::constant::mathematical::pi / double(iter + 1));
         updatedNormals = 0;
 
-        /* Compute the centers of the interface for all interfacial cells */
+        // Compute the centers of the interface for all interfacial cells
 
         forAllCells(n, i, j, k)
         {
@@ -308,7 +285,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
             if ((alpha(i,j,k) > threshold_) && (alpha(i,j,k) < (1 - threshold_)))
             {
 
-                /* Prevent computing interface for zero normal */
+                // Prevent computing interface for zero normal
 
                 const scalar S = Foam::mag(n(i,j,k));
 
@@ -317,10 +294,12 @@ tmp<colocatedVectorField> LSFIR::operator()()
                     n(i,j,k)[0] = 1;
                 }
 
-                /* Compute which vertex are inside the liquid
-                for the truncated cell */
+                // Compute which vertex are inside the liquid for the truncated
+                // cell
 
-                scalar C = vf_.lve()(i,j,k,n(i,j,k));
+                scalar C =
+                    vf_.lve()(alpha(i,j,k),v(i,j,k),cv(i,j,k),n(i,j,k));
+
                 double originalCs[8];
 
                 for (int aux1 = 0; aux1 < 8; aux1++)
@@ -416,13 +395,12 @@ tmp<colocatedVectorField> LSFIR::operator()()
                         IA[aux1] = 1;
                 }
 
-                /* If centerAveraging is true compute the center as the average
-                of the vertex, if not compute it as a center of mass */
+                // If centerAveraging is true compute the center as the average
+                // of the vertex, if not compute it as a center of mass
 
                 if (!centerAveraging_)
                 {
-
-                    /* Find the truncated interface using Lopez (2020) algorithm */
+                    // Find the truncated interface using Lopez (2020) algorithm
 
                     int NIPV1[16] = {0};
                     int IPV1[16][14];
@@ -568,8 +546,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
                         counter++;
                     }
 
-                    /* If there are more than one interface polygons
-                    compute the center as an average of vertex */
+                    // If there are more than one interface polygons
+                    // compute the center as an average of vertex
 
                     if (Nf - originalNf_ == 1)
                     {
@@ -611,7 +589,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
                             Centroid += x0[IPV1[originalNf_][it+1]-8];
                             Centroid /= 3;
 
-                            Area = vectorialProductProjection(
+                            Area = crossProductComponent(
                                 x0[IPV1[originalNf_][it]-8] - x0[IPV1[originalNf_][1]-8],
                                 x0[IPV1[originalNf_][it+1]-8] - x0[IPV1[originalNf_][1]-8],
                                 maxNormalIndex);
@@ -717,7 +695,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
         xn.ref()[0].correctBoundaryConditions();
 
-        /* Minimize the square problem for all cells and store the solution */
+        // Minimize the square problem for all cells and store the solution
 
         forAllCells(n, i, j, k)
         {
@@ -860,7 +838,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
             }
         }
 
-        /* Update the normals */
+        // Update the normals
 
         forAllCells(n, i, j, k)
         {

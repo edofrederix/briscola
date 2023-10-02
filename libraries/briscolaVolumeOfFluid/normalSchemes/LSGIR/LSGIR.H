@@ -16,7 +16,7 @@ class LSGIR
 :
     public normalScheme
 {
-    // Volume fraction treshold (takes value from vof)
+    // Volume fraction threshold (takes value from vof)
     scalar threshold_;
 
     // Boundary type stencil (true for parallel, periodic and empty boundaries)

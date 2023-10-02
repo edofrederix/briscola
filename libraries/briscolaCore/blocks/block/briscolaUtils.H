@@ -300,24 +300,6 @@ const label vertexNumsInFaceCC[6][4] =
     {4,5,7,6}
 };
 
-// Global vertex numbers contained in general hexadron faces (decomposing each
-// face into two triangles) in counter-clockwise direction as viewed from outside
-const label vertexNumsInFaceGeneralHexCC[12][3] =
-{
-    {0,6,2},
-    {0,4,6},
-    {1,3,5},
-    {3,7,5},
-    {0,1,5},
-    {0,5,4},
-    {3,2,6},
-    {3,6,7},
-    {0,2,3},
-    {0,3,1},
-    {4,5,6},
-    {5,7,6}
-};
-
 // Global vertex numbers contained in edges
 const label vertexNumsInEdge[12][2] =
 {
@@ -343,6 +325,25 @@ const label tetDecomp[5][4]
     {5,6,3,7},
     {0,5,3,1},
     {0,5,6,3}
+};
+
+// Global vertex numbers contained in general hexadron faces (decomposing each
+// face into two triangles) in counter-clockwise direction as viewed from
+// outside
+const label faceTriangleDecompCC[12][3] =
+{
+    {0,6,2},
+    {0,4,6},
+    {1,3,5},
+    {3,7,5},
+    {0,1,5},
+    {0,5,4},
+    {3,2,6},
+    {3,6,7},
+    {0,2,3},
+    {0,3,1},
+    {4,5,6},
+    {5,7,6}
 };
 
 // Return the shift tensor given a rotation tensor
@@ -459,16 +460,16 @@ inline labelTensor offsetRotation
     if (faceNumber(o1) == -1 && edgeNumber(o1) == -1 && vertexNumber(o1) == -1)
     {
         FatalErrorInFunction
-            << "Offset vector " << o1 << " is not a face, edge or vertex offset,"
-            << " so cannot find offset rotation."
+            << "Offset vector " << o1 << " is not a face, edge or vertex "
+            << "offset, so cannot find offset rotation."
             << endl << abort(FatalError);
     }
 
     if (faceNumber(o2) == -1 && edgeNumber(o2) == -1 && vertexNumber(o2) == -1)
     {
         FatalErrorInFunction
-            << "Offset vector " << o2 << " is not a face, edge or vertex offset,"
-            << " so cannot find offset rotation."
+            << "Offset vector " << o2 << " is not a face, edge or vertex "
+            << "offset, so cannot find offset rotation."
             << endl << abort(FatalError);
     }
 
@@ -557,6 +558,20 @@ inline label sharedVertexNumber
     }
 
     return -1;
+}
+
+// Compute only one component of a cross product
+inline scalar crossProductComponent
+(
+    const vector& v1,
+    const vector& v2,
+    const label i
+)
+{
+    return
+        i == 0 ? v1.y()*v2.z() - v1.z()*v2.y()
+      : i == 1 ? v1.z()*v2.x() - v1.x()*v2.z()
+      :          v1.x()*v2.y() - v1.y()*v2.x();
 }
 
 }

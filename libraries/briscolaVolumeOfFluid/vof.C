@@ -14,7 +14,7 @@ namespace fv
 
 defineTypeNameAndDebug(vof, 0);
 
-const scalar vof::threshold_ = 1e-12;
+const scalar vof::threshold = 1e-12;
 
 void vof::updateFlux
 (
@@ -43,12 +43,13 @@ void vof::updateFlux
         if
         (
             (phi(ijk)[d*2] > 0 || phi(ijk)[d*2+1] > 0)
-         && alpha_(ijk) > threshold_
+         && alpha_(ijk) > vof::threshold
         )
         {
             const scalar magn = Foam::mag(n(ijk));
 
-            const scalar C = magn > 0 ? lve_(ijk,n(ijk)) : 0;
+            const scalar C =
+                magn > 0 ? lve_(alpha_(ijk),v(ijk),cv(ijk),n(ijk)) : 0;
 
             for (int fi = 0; fi < 2; fi++)
             if (phi(ijk)[d*2+fi] > 0)
@@ -60,7 +61,7 @@ void vof::updateFlux
 
                 scalar flux = 0;
 
-                if (alpha_(ijk) > 1-threshold_)
+                if (alpha_(ijk) > 1-vof::threshold)
                 {
                     flux = cv(ijk)*frac/dt;
                 }
@@ -173,7 +174,7 @@ vof::vof(const IOdictionary& dict, const fvMesh& fvMsh)
         false
     ),
     rectilinear_(fvMsh.msh()[0].rectilinear() == unitXYZ),
-    lve_(*this),
+    lve_(rectilinear_),
     normalSchemePtr_
     (
         normalScheme::New
@@ -182,7 +183,6 @@ vof::vof(const IOdictionary& dict, const fvMesh& fvMsh)
             dict.subDict("normalScheme")
         ).ptr()
     )
-
 {}
 
 vof::~vof()

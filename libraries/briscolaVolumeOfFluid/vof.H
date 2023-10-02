@@ -39,9 +39,6 @@ class vof
     // Normal scheme
     autoPtr<normalScheme> normalSchemePtr_;
 
-    // Void fraction threshold
-    static const scalar threshold_;
-
     // Disallow default bitwise assignment
     void operator=(const vof&);
 
@@ -62,6 +59,9 @@ class vof
     );
 
 public:
+
+    // Void fraction threshold
+    static const scalar threshold;
 
     // Declare name of the class and its debug switch
     ClassName("vof");
@@ -86,9 +86,6 @@ public:
 
     // Reference to the LVE solver
     inline const LVE& lve() const { return lve_; }
-
-    // Reference to the threshold
-    inline const scalar& threshold() const { return threshold_; }
 
     // Reference to the normal scheme
     inline normalScheme& normal() { return normalSchemePtr_(); }
