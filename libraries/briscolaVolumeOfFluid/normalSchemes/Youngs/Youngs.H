@@ -16,8 +16,8 @@ class Youngs
 :
     public normalScheme
 {
-    // Normal threshold (defaults to 1e-8)
-    scalar threshold_;
+    // Volume fraction gradient threshold (defaults to 1e-8)
+    scalar gradThreshold_;
 
 public:
 

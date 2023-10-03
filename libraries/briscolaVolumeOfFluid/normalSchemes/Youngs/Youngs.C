@@ -18,13 +18,13 @@ addToRunTimeSelectionTable(normalScheme, Youngs, dictionary);
 Youngs::Youngs(const vof& vf, const dictionary& dict)
 :
     normalScheme(vf, dict),
-    threshold_(dict.lookupOrDefault<scalar>("threshold", 1e-3))
+    gradThreshold_(dict.lookupOrDefault<scalar>("threshold", 1e-3))
 {}
 
 Youngs::Youngs(const Youngs& s)
 :
     normalScheme(s),
-    threshold_(s.threshold_)
+    gradThreshold_(s.gradThreshold_)
 {}
 
 Youngs::~Youngs()
@@ -43,7 +43,7 @@ tmp<colocatedVectorField> Youngs::operator()()
     {
         const scalar S = Foam::mag(n(i,j,k));
 
-        if (S > threshold_)
+        if (S > gradThreshold_)
         {
             n(i,j,k) /= S;
         }

@@ -108,28 +108,63 @@ tmp<colocatedVectorField> LSGIR::operator()()
                     {
                         bool interiorNode =
                             (
-                                ((i+aux1-1) >= n.I().left()) &&
-                                ((i+aux1-1) < n.I().right()) &&
-                                ((j+aux2-1) >= n.I().bottom()) &&
-                                ((j+aux2-1) < n.I().top()) &&
-                                ((k+aux3-1) >= n.I().aft()) &&
-                                ((k+aux3-1) < n.I().fore())
+                                (i+aux1-1) >= n.I().left()
+                             && (i+aux1-1) <  n.I().right()
+                             && (j+aux2-1) >= n.I().bottom()
+                             && (j+aux2-1) <  n.I().top()
+                             && (k+aux3-1) >= n.I().aft()
+                             && (k+aux3-1) <  n.I().fore()
                             );
 
                         if
                         (
-                            ((aux1 != 1) || (aux2 != 1) || (aux3 != 1)) &&
-                            (interiorNode || boundaryType_[aux1][aux2][aux3])
+                            ((aux1 != 1) || (aux2 != 1) || (aux3 != 1))
+                         && (interiorNode || boundaryType_[aux1][aux2][aux3])
                         )
                         {
                             index = aux1 + 3 * aux2 + 9 * aux3;
+
                             if (index > 13)
                                 index--;
-                            weight = (1.0) / Foam::pow(Foam::mag(centers(i,j,k) - centers(i+aux1-1,j+aux2-1,k+aux3-1)),1.5);
-                            baux[index] = weight * (alpha(i+aux1-1,j+aux2-1,k+aux3-1) - alpha(i,j,k));
-                            Aaux[index][0] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[0] - centers(i,j,k)[0]);
-                            Aaux[index][1] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[1] - centers(i,j,k)[1]);
-                            Aaux[index][2] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[2] - centers(i,j,k)[2]);
+
+                            weight =
+                                1.0/Foam::pow
+                                (
+                                    Foam::mag
+                                    (
+                                        centers(i,j,k)
+                                      - centers(i+aux1-1,j+aux2-1,k+aux3-1)
+                                    ),
+                                    1.5
+                                );
+
+                            baux[index] =
+                                weight *
+                                (
+                                    alpha(i+aux1-1,j+aux2-1,k+aux3-1)
+                                  - alpha(i,j,k)
+                                );
+
+                            Aaux[index][0] =
+                                weight *
+                                (
+                                    centers(i+aux1-1,j+aux2-1,k+aux3-1)[0]
+                                  - centers(i,j,k)[0]
+                                );
+
+                            Aaux[index][1] =
+                                weight *
+                                (
+                                    centers(i+aux1-1,j+aux2-1,k+aux3-1)[1]
+                                  - centers(i,j,k)[1]
+                                );
+
+                            Aaux[index][2] =
+                                weight *
+                                (
+                                    centers(i+aux1-1,j+aux2-1,k+aux3-1)[2]
+                                  - centers(i,j,k)[2]
+                                );
                         }
                     }
                 }
@@ -141,8 +176,10 @@ tmp<colocatedVectorField> LSGIR::operator()()
                 {
                     for (int aux2 = 0; aux2 < 3; aux2++)
                     {
-                        A[3 * aux1 + aux2] += Aaux[aux3][aux1] * Aaux[aux3][aux2];
+                        A[3 * aux1 + aux2] +=
+                            Aaux[aux3][aux1] * Aaux[aux3][aux2];
                     }
+
                     b[aux1] += Aaux[aux3][aux1] * baux[aux3];
                 }
             }
