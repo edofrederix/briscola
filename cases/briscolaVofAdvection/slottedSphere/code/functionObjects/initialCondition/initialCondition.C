@@ -19,8 +19,8 @@ namespace fv
 namespace functionObjects
 {
 
-scalar TotalVolume = 0;
-scalar BoundError = 0;
+scalar initialCondition::TotalVolume_ = 0;
+scalar initialCondition::BoundError_ = 0;
 
 defineTypeNameAndDebug(initialCondition, 0);
 
@@ -100,10 +100,10 @@ bool initialCondition::read(const dictionary& dict)
                 alpha(i,j,k) += 0.125 * (tag);
             }
 
-            TotalVolume += cv(i,j,k) * alpha(i,j,k);
+            TotalVolume_ += cv(i,j,k) * alpha(i,j,k);
         }
 
-        reduce(TotalVolume, sumOp<scalar>());
+        reduce(TotalVolume_, sumOp<scalar>());
 
         alpha.correctBoundaryConditions();
 
@@ -134,11 +134,11 @@ bool initialCondition::execute()
     {
         LocalBoundError = cv(i,j,k) * Foam::max(-alpha(i,j,k), alpha(i,j,k)-1);
 
-        if (LocalBoundError > BoundError)
-            BoundError = LocalBoundError;
+        if (LocalBoundError > BoundError_)
+            BoundError_ = LocalBoundError;
     }
 
-    reduce(BoundError, maxOp<scalar>());
+    reduce(BoundError_, maxOp<scalar>());
 
     return true;
 }
@@ -187,22 +187,22 @@ bool initialCondition::end()
         Volume += cv(i,j,k) * alpha(i,j,k);
         LocalBoundError = cv(i,j,k) * Foam::max(-alpha(i,j,k), alpha(i,j,k)-1);
 
-        if (LocalBoundError > BoundError)
-            BoundError = LocalBoundError;
+        if (LocalBoundError > BoundError_)
+            BoundError_ = LocalBoundError;
 
     }
 
-    reduce(BoundError, maxOp<scalar>());
+    reduce(BoundError_, maxOp<scalar>());
     reduce(Volume, sumOp<scalar>());
     reduce(L1Error, sumOp<scalar>());
 
-    Info<< "Total Volume: " << TotalVolume << nl
+    Info<< "Total Volume: " << TotalVolume_ << nl
         << "Shape Error (absolute L1 norm): " << L1Error << nl
-        << "Shape Error (relative L1 norm): " << L1Error / TotalVolume << nl
-        << "Volume Error (absolute L1 norm): " << TotalVolume - Volume << nl
+        << "Shape Error (relative L1 norm): " << L1Error / TotalVolume_ << nl
+        << "Volume Error (absolute L1 norm): " << TotalVolume_ - Volume << nl
         << "Volume Error (relative L1 norm): "
-        << (TotalVolume - Volume) / TotalVolume << nl
-        << "Boundedness Error (infinite norm): " << BoundError << endl;
+        << (TotalVolume_ - Volume) / TotalVolume_ << nl
+        << "Boundedness Error (infinite norm): " << BoundError_ << endl;
 
     return true;
 }

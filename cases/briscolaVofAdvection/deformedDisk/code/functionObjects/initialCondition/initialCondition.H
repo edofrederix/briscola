@@ -19,6 +19,15 @@ class initialCondition
 :
     public briscolaFunctionObject
 {
+
+    static const scalar T_;
+    static scalar TotalVolume_;
+    static scalar BoundError_;
+
+    static const int Nx_;
+    static const int Ny_;
+    static const int Nz_;
+
 public:
 
     // Runtime type information
