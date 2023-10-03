@@ -445,7 +445,6 @@ scalar LVE::cLVE
     scalarList Cs(8);
 
     int IA[8];
-    int NIPV0[12] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
 
     // Sorting vertex by their C value
 
@@ -610,7 +609,7 @@ scalar LVE::cLVE
 
         for (int j = 0; j < 12; j++)
         {
-            for (int i = 0; i < NIPV0[j]; i++)
+            for (int i = 0; i < 3; i++)
             {
                 if (IA[faceTriangleDecompCC[j][i]] == 1)
                     NIPV1[j]++;
@@ -619,10 +618,10 @@ scalar LVE::cLVE
             if (NIPV1[j] > 0)
             {
                 int index = 0;
-                for (int i = 1; i <= NIPV0[j]; i++)
+                for (int i = 1; i <= 3; i++)
                 {
-                    int ip1 = faceTriangleDecompCC[j][i % NIPV0[j]];
-                    int ip2 = faceTriangleDecompCC[j][(i+1) % NIPV0[j]];
+                    int ip1 = faceTriangleDecompCC[j][i % 3];
+                    int ip2 = faceTriangleDecompCC[j][(i+1) % 3];
 
                     if (IA[ip1] == 1)
                     {
@@ -986,8 +985,6 @@ inline scalar LVE::cLVE
 
     vectorList ns(12);
     scalarList Cjs(12);
-    int NIPV0[12] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
-
     vector aux;
 
     for (int j = 0; j < 12; j++)
@@ -1027,8 +1024,8 @@ inline scalar LVE::cLVE
 
     for (int j = 0; j < 12; j++)
     {
-        hjs[j] = int((NIPV0[j]-2)/2);
-        epsilonjs[j] = NIPV0[j] % 2;
+        hjs[j] = int((3-2)/2);
+        epsilonjs[j] = 3 % 2;
 
         Ajs[j] = Foam::zero();
 
@@ -1038,12 +1035,12 @@ inline scalar LVE::cLVE
                 crossProductComponent
                 (
                     (
-                        v[faceTriangleDecompCC[j][(2*i - 1) % NIPV0[j]]]
+                        v[faceTriangleDecompCC[j][(2*i - 1) % 3]]
                       - v[faceTriangleDecompCC[j][0]]
                     ),
                     (
-                        v[faceTriangleDecompCC[j][(2*i) % NIPV0[j]]]
-                      - v[faceTriangleDecompCC[j][(2*i-2) % NIPV0[j]]]
+                        v[faceTriangleDecompCC[j][(2*i) % 3]]
+                      - v[faceTriangleDecompCC[j][(2*i-2) % 3]]
                     ),
                     maxNormalIndex[j]
                 );
@@ -1055,12 +1052,12 @@ inline scalar LVE::cLVE
                 crossProductComponent
                 (
                     (
-                        v[faceTriangleDecompCC[j][NIPV0[j]-1]] -
+                        v[faceTriangleDecompCC[j][2]] -
                         v[faceTriangleDecompCC[j][0]]
                     ),
                     (
                         v[faceTriangleDecompCC[j][0]] -
-                        v[faceTriangleDecompCC[j][NIPV0[j]-2]]
+                        v[faceTriangleDecompCC[j][1]]
                     ),
                     maxNormalIndex[j]
                 );

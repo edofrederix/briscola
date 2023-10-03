@@ -219,9 +219,9 @@ void testLVE
 )
 {
 
-    if ((method != "p" && method != "a") && method != "c")
+    if (method != "p" && method != "c")
         FatalErrorInFunction
-            << "Invalid LVE method. Should be p, a or c."
+            << "Invalid LVE method. Should be p or c."
             << endl << abort(FatalError);
 
     SortableList<scalar> C(8);
@@ -247,10 +247,6 @@ void testLVE
         if (method == "p")
         {
             Ci = vf.lve().pLVE(v,n,fi);
-        }
-        else if (method == "a")
-        {
-            Ci = vf.lve().aLVE(v,n,fi);
         }
         else
         {
@@ -280,10 +276,6 @@ void testLVE
         {
             C2 = vf.lve().pLVE(v,n,f1);
         }
-        else if (method == "a")
-        {
-            C2 = vf.lve().aLVE(v,n,f1);
-        }
         else
         {
             C2 = vf.lve().cLVE(v,n,f1);
@@ -303,10 +295,6 @@ void testLVE
     {
         Cf = vf.lve().pLVE(v,n,1);
     }
-    else if (method == "a")
-    {
-        Cf = vf.lve().aLVE(v,n,1);
-    }
     else
     {
         Cf = vf.lve().cLVE(v,n,1);
@@ -319,10 +307,6 @@ void testLVE
     if (method == "p")
     {
         Ce = vf.lve().pLVE(v,n,0);
-    }
-    else if (method == "a")
-    {
-        Ce = vf.lve().aLVE(v,n,0);
     }
     else
     {
@@ -493,20 +477,12 @@ int main(int argc, char *argv[])
         testRotatedLVE(vf, skewed + unit, n, "p");
         testRotatedLVE(vf, stretch & (skewed + unit), n, "p");
 
-        // Algorithm for non-convex polyhedrons with planar faces
+        // General algorithm for arbitrary hexahedrons
 
         testRotatedLVE(vf, 0.6*unit, n, "c");
         testRotatedLVE(vf, 0.9*skewed, n, "c");
         testRotatedLVE(vf, 0.45*general, n, "c");
         testRotatedLVE(vf, 0.45*(general+unit), n, "c");
-
-        // General algorithm for arbitrary hexahedrons
-
-        testRotatedLVE(vf, 0.6*unit, n, "a");
-        testRotatedLVE(vf, 0.9*skewed, n, "a");
-        testRotatedLVE(vf, 0.45*general, n, "a");
-        testRotatedLVE(vf, 0.45*(general+unit), n, "a");
-        testRotatedLVE(vf, 0.45*(general-unit), n, "a");
 
         // Test cells
 
@@ -515,7 +491,7 @@ int main(int argc, char *argv[])
         const colocatedVertexVectorField& v =
             fvMsh.template metrics<colocated>().vertexCenters();
 
-        const colocatedScalarField& V =
+        const colocatedScalarField& cv =
             fvMsh.template metrics<colocated>().cellVolumes();
 
         for (int i = 0; i <= N; i++)
@@ -526,9 +502,9 @@ int main(int argc, char *argv[])
 
             forAllCells(a, i, j, k)
             {
-                const scalar C = vf.lve()(i,j,k,n);
+                const scalar C = vf.lve()(a(i,j,k),v(i,j,k),cv(i,j,k),n);
 
-                const scalar f = truncatedHex(v(i,j,k),n,C).volume()/V(i,j,k);
+                const scalar f = truncatedHex(v(i,j,k),n,C).volume()/cv(i,j,k);
 
                 if (Foam::mag(f-a(i,j,k)) > 1e-8)
                     FatalErrorInFunction

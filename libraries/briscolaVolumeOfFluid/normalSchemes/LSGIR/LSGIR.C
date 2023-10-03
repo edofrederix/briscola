@@ -17,16 +17,14 @@ addToRunTimeSelectionTable(normalScheme, LSGIR, dictionary);
 
 LSGIR::LSGIR(const vof& vf, const dictionary& dict)
 :
-    normalScheme(vf, dict),
-    threshold_(vof::threshold)
+    normalScheme(vf, dict)
 {
     createBoundaryType();
 }
 
 LSGIR::LSGIR(const LSGIR& s)
 :
-    normalScheme(s),
-    threshold_(s.threshold_)
+    normalScheme(s)
 {
     createBoundaryType();
 }
@@ -36,7 +34,7 @@ LSGIR::~LSGIR()
 
 void LSGIR::createBoundaryType()
 {
-    const faceLabel faceType =
+    const faceLabel& faceType =
         vf_.fvMsh().msh().facePatchType();
 
     for (int i = 0; i < 3; i++)
@@ -95,7 +93,7 @@ tmp<colocatedVectorField> LSGIR::operator()()
 
     forAllCells(n, i, j, k)
     {
-        if ((alpha(i,j,k) > threshold_) && (alpha(i,j,k) < 1 - threshold_))
+        if ((alpha(i,j,k) > vof::threshold) && (alpha(i,j,k) < 1 - vof::threshold))
         {
             double Aaux[26][3] = {0};
             double baux[26] = {0};
@@ -108,25 +106,31 @@ tmp<colocatedVectorField> LSGIR::operator()()
                 {
                     for (int aux3 = 0; aux3 < 3; aux3++)
                     {
-                        bool interiorNode = (((i+aux1-1) >= n.I().left()) &&
-                            ((i+aux1-1) < n.I().right()) &&
-                            ((j+aux2-1) >= n.I().bottom()) &&
-                            ((j+aux2-1) < n.I().top()) &&
-                            ((k+aux3-1) >= n.I().aft()) &&
-                            ((k+aux3-1) < n.I().fore()));
+                        bool interiorNode =
+                            (
+                                ((i+aux1-1) >= n.I().left()) &&
+                                ((i+aux1-1) < n.I().right()) &&
+                                ((j+aux2-1) >= n.I().bottom()) &&
+                                ((j+aux2-1) < n.I().top()) &&
+                                ((k+aux3-1) >= n.I().aft()) &&
+                                ((k+aux3-1) < n.I().fore())
+                            );
 
-                        if (((aux1 != 1) || (aux2 != 1) || (aux3 != 1)) &&
-                            (interiorNode || boundaryType_[aux1][aux2][aux3]))
-                            {
-                                index = aux1 + 3 * aux2 + 9 * aux3;
-                                if (index > 13)
-                                    index--;
-                                weight = (1.0) / Foam::pow(Foam::mag(centers(i,j,k) - centers(i+aux1-1,j+aux2-1,k+aux3-1)),1.5);
-                                baux[index] = weight * (alpha(i+aux1-1,j+aux2-1,k+aux3-1) - alpha(i,j,k));
-                                Aaux[index][0] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[0] - centers(i,j,k)[0]);
-                                Aaux[index][1] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[1] - centers(i,j,k)[1]);
-                                Aaux[index][2] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[2] - centers(i,j,k)[2]);
-                            }
+                        if
+                        (
+                            ((aux1 != 1) || (aux2 != 1) || (aux3 != 1)) &&
+                            (interiorNode || boundaryType_[aux1][aux2][aux3])
+                        )
+                        {
+                            index = aux1 + 3 * aux2 + 9 * aux3;
+                            if (index > 13)
+                                index--;
+                            weight = (1.0) / Foam::pow(Foam::mag(centers(i,j,k) - centers(i+aux1-1,j+aux2-1,k+aux3-1)),1.5);
+                            baux[index] = weight * (alpha(i+aux1-1,j+aux2-1,k+aux3-1) - alpha(i,j,k));
+                            Aaux[index][0] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[0] - centers(i,j,k)[0]);
+                            Aaux[index][1] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[1] - centers(i,j,k)[1]);
+                            Aaux[index][2] = weight * (centers(i+aux1-1,j+aux2-1,k+aux3-1)[2] - centers(i,j,k)[2]);
+                        }
                     }
                 }
             }

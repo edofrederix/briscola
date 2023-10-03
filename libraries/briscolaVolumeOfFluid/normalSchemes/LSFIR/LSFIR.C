@@ -22,7 +22,6 @@ addToRunTimeSelectionTable(normalScheme, LSFIR, dictionary);
 LSFIR::LSFIR(const vof& vf, const dictionary& dict)
 :
     normalScheme(vf, dict),
-    threshold_(vof::threshold),
     planarFaces_(dict.lookupOrDefault<bool>("planarFaces", true)),
     centerAveraging_(dict.lookupOrDefault<bool>("centerAveraging", false))
 {
@@ -33,7 +32,6 @@ LSFIR::LSFIR(const vof& vf, const dictionary& dict)
 LSFIR::LSFIR(const LSFIR& s)
 :
     normalScheme(s),
-    threshold_(s.threshold_),
     planarFaces_(s.planarFaces_),
     centerAveraging_(s.centerAveraging_)
 {
@@ -191,7 +189,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
         int index;
         scalar weight;
 
-        if ((alpha(i,j,k) > threshold_) && (alpha(i,j,k) < 1 - threshold_))
+        if ((alpha(i,j,k) > vof::threshold) && (alpha(i,j,k) < 1 - vof::threshold))
         {
             double Aaux[26][3] = {0};
             double baux[26] = {0};
@@ -204,25 +202,31 @@ tmp<colocatedVectorField> LSFIR::operator()()
                 {
                     for (int aux3 = 0; aux3 < 3; aux3++)
                     {
-                        bool interiorNode = (((i+aux1-1) >= n.I().left()) &&
-                            ((i+aux1-1) < n.I().right()) &&
-                            ((j+aux2-1) >= n.I().bottom()) &&
-                            ((j+aux2-1) < n.I().top()) &&
-                            ((k+aux3-1) >= n.I().aft()) &&
-                            ((k+aux3-1) < n.I().fore()));
+                        bool interiorNode =
+                            (
+                                ((i+aux1-1) >= n.I().left()) &&
+                                ((i+aux1-1) < n.I().right()) &&
+                                ((j+aux2-1) >= n.I().bottom()) &&
+                                ((j+aux2-1) < n.I().top()) &&
+                                ((k+aux3-1) >= n.I().aft()) &&
+                                ((k+aux3-1) < n.I().fore())
+                            );
 
-                        if (((aux1 != 1) || (aux2 != 1) || (aux3 != 1)) &&
-                            (interiorNode || boundaryTypeLSGIR_[aux1][aux2][aux3]))
-                            {
-                                index = aux1 + 3 * aux2 + 9 * aux3;
-                                if (index > 13)
-                                    index--;
-                                weight = (1.0) / Foam::pow(Foam::mag(cc(i,j,k) - cc(i+aux1-1,j+aux2-1,k+aux3-1)),1.5);
-                                baux[index] = weight * (alpha(i+aux1-1,j+aux2-1,k+aux3-1) - alpha(i,j,k));
-                                Aaux[index][0] = weight * (cc(i+aux1-1,j+aux2-1,k+aux3-1)[0] - cc(i,j,k)[0]);
-                                Aaux[index][1] = weight * (cc(i+aux1-1,j+aux2-1,k+aux3-1)[1] - cc(i,j,k)[1]);
-                                Aaux[index][2] = weight * (cc(i+aux1-1,j+aux2-1,k+aux3-1)[2] - cc(i,j,k)[2]);
-                            }
+                        if
+                        (
+                            ((aux1 != 1) || (aux2 != 1) || (aux3 != 1)) &&
+                            (interiorNode || boundaryTypeLSGIR_[aux1][aux2][aux3])
+                        )
+                        {
+                            index = aux1 + 3 * aux2 + 9 * aux3;
+                            if (index > 13)
+                                index--;
+                            weight = (1.0) / Foam::pow(Foam::mag(cc(i,j,k) - cc(i+aux1-1,j+aux2-1,k+aux3-1)),1.5);
+                            baux[index] = weight * (alpha(i+aux1-1,j+aux2-1,k+aux3-1) - alpha(i,j,k));
+                            Aaux[index][0] = weight * (cc(i+aux1-1,j+aux2-1,k+aux3-1)[0] - cc(i,j,k)[0]);
+                            Aaux[index][1] = weight * (cc(i+aux1-1,j+aux2-1,k+aux3-1)[1] - cc(i,j,k)[1]);
+                            Aaux[index][2] = weight * (cc(i+aux1-1,j+aux2-1,k+aux3-1)[2] - cc(i,j,k)[2]);
+                        }
                     }
                 }
             }
@@ -273,7 +277,11 @@ tmp<colocatedVectorField> LSFIR::operator()()
             break;
         }
 
-        scalar maxAngleTol = Foam::cos(0.166 * Foam::constant::mathematical::pi / double(iter + 1));
+        scalar maxAngleTol = Foam::cos
+                                    (
+                                        0.166 * Foam::constant::mathematical::pi
+                                        / double(iter + 1)
+                                    );
         updatedNormals = 0;
 
         // Compute the centers of the interface for all interfacial cells
@@ -282,7 +290,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
         {
             xgi(i,j,k) = Foam::zero();
 
-            if ((alpha(i,j,k) > threshold_) && (alpha(i,j,k) < (1 - threshold_)))
+            if ((alpha(i,j,k) > vof::threshold) && (alpha(i,j,k) < (1 - vof::threshold)))
             {
 
                 // Prevent computing interface for zero normal
@@ -557,10 +565,13 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
                         for (int it = 0; it < totalInsertedVertex; it++)
                         {
-                            e = v(i,j,k)[insertedVertex[it][2]] - v(i,j,k)[insertedVertex[it][1]];
+                            e = v(i,j,k)[insertedVertex[it][2]]
+                                - v(i,j,k)[insertedVertex[it][1]];
                             e /= Foam::mag(e);
                             Xin = v(i,j,k)[insertedVertex[it][1]];
-                            x0[insertedVertex[it][0] - 8] = Xin + (-C - (n(i,j,k) & Xin)) * e * (1 / (n(i,j,k) & e));
+                            x0[insertedVertex[it][0] - 8] = Xin
+                                    + (-C - (n(i,j,k) & Xin))
+                                        * e * (1 / (n(i,j,k) & e));
                         }
 
                         scalar auxMax;
@@ -618,21 +629,29 @@ tmp<colocatedVectorField> LSFIR::operator()()
                         {
                             for (int aux2 = 1; aux2 <= NIPV0_[aux1]; aux2++)
                             {
-                                if (((IA[IPV0_[aux1][aux2]] == 0) && (IA[IPV0_[aux1][aux2 + 1]] == 1)))
+                                if
+                                (
+                                    ((IA[IPV0_[aux1][aux2]] == 0)
+                                    && (IA[IPV0_[aux1][aux2 + 1]] == 1))
+                                )
                                 {
                                     if (IA[IPV0_[aux1][aux2]] == 1)
                                     {
-                                        e = v(i,j,k)[IPV0_[aux1][aux2 + 1]] - v(i,j,k)[IPV0_[aux1][aux2]];
+                                        e = v(i,j,k)[IPV0_[aux1][aux2 + 1]]
+                                            - v(i,j,k)[IPV0_[aux1][aux2]];
                                         Xin = v(i,j,k)[IPV0_[aux1][aux2]];
                                     }
                                     else
                                     {
-                                        e = v(i,j,k)[IPV0_[aux1][aux2]] - v(i,j,k)[IPV0_[aux1][aux2 + 1]];
+                                        e = v(i,j,k)[IPV0_[aux1][aux2]]
+                                            - v(i,j,k)[IPV0_[aux1][aux2 + 1]];
                                         Xin = v(i,j,k)[IPV0_[aux1][aux2 + 1]];
                                     }
 
                                     e /= Foam::mag(e);
-                                    xgi(i,j,k) += Xin + (-C - (n(i,j,k) & Xin)) * e * (1 / (n(i,j,k) & e));
+                                    xgi(i,j,k) += Xin
+                                        + (-C - (n(i,j,k) & Xin))
+                                        * e * (1 / (n(i,j,k) & e));
                                     numberOfPoints++;
                                 }
                             }
@@ -659,21 +678,29 @@ tmp<colocatedVectorField> LSFIR::operator()()
                     {
                         for (int aux2 = 1; aux2 <= NIPV0_[aux1]; aux2++)
                         {
-                            if (((IA[IPV0_[aux1][aux2]] == 0) && (IA[IPV0_[aux1][aux2 + 1]] == 1)))
+                            if
+                            (
+                                ((IA[IPV0_[aux1][aux2]] == 0)
+                                && (IA[IPV0_[aux1][aux2 + 1]] == 1))
+                            )
                             {
                                 if (IA[IPV0_[aux1][aux2]] == 1)
                                 {
-                                    e = v(i,j,k)[IPV0_[aux1][aux2 + 1]] - v(i,j,k)[IPV0_[aux1][aux2]];
+                                    e = v(i,j,k)[IPV0_[aux1][aux2 + 1]]
+                                        - v(i,j,k)[IPV0_[aux1][aux2]];
                                     Xin = v(i,j,k)[IPV0_[aux1][aux2]];
                                 }
                                 else
                                 {
-                                    e = v(i,j,k)[IPV0_[aux1][aux2]] - v(i,j,k)[IPV0_[aux1][aux2 + 1]];
+                                    e = v(i,j,k)[IPV0_[aux1][aux2]]
+                                        - v(i,j,k)[IPV0_[aux1][aux2 + 1]];
                                     Xin = v(i,j,k)[IPV0_[aux1][aux2 + 1]];
                                 }
 
                                 e /= Foam::mag(e);
-                                xgi(i,j,k) += Xin + (-C - (n(i,j,k) & Xin)) * e * (1 / (n(i,j,k) & e));
+                                xgi(i,j,k) += Xin
+                                        + (-C - (n(i,j,k) & Xin))
+                                        * e * (1 / (n(i,j,k) & e));
                                 numberOfPoints++;
                             }
                         }
@@ -700,7 +727,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
         forAllCells(n, i, j, k)
         {
 
-            if ((alpha(i,j,k) > threshold_) && (alpha(i,j,k) < 1 - threshold_))
+            if ((alpha(i,j,k) > vof::threshold) && (alpha(i,j,k) < 1 - vof::threshold))
             {
 
                 int d1 = 0;
@@ -735,32 +762,41 @@ tmp<colocatedVectorField> LSFIR::operator()()
                     {
                         for (int aux3 = 0; aux3 < 3; aux3++)
                         {
-                            bool interiorNode = (((i+aux1-1) >= n.I().left()) &&
-                                                ((i+aux1-1) < n.I().right()) &&
-                                                ((j+aux2-1) >= n.I().bottom()) &&
-                                                ((j+aux2-1) < n.I().top()) &&
-                                                ((k+aux3-1) >= n.I().aft()) &&
-                                                ((k+aux3-1) < n.I().fore()));
+                            bool interiorNode =
+                                (
+                                    ((i+aux1-1) >= n.I().left()) &&
+                                    ((i+aux1-1) < n.I().right()) &&
+                                    ((j+aux2-1) >= n.I().bottom()) &&
+                                    ((j+aux2-1) < n.I().top()) &&
+                                    ((k+aux3-1) >= n.I().aft()) &&
+                                    ((k+aux3-1) < n.I().fore())
+                                );
 
-                            if ((alpha(i+aux1-1,j+aux2-1,k+aux3-1) > 1e-12) &&
+                            if
+                            (
+                                (alpha(i+aux1-1,j+aux2-1,k+aux3-1) > 1e-12) &&
                                 (alpha(i+aux1-1,j+aux2-1,k+aux3-1) < 1 - 1e-12) &&
                                 ((aux1 != 1) || (aux2 != 1) || (aux3 != 1)) &&
-                                (interiorNode || boundaryTypeLSFIR_[aux1][aux2][aux3]))
+                                (interiorNode || boundaryTypeLSFIR_[aux1][aux2][aux3])
+                            )
                             {
-                                    scalar angle = (n(i+aux1-1,j+aux2-1,k+aux3-1) & n(i,j,k))
-                                                    / (Foam::mag(n(i+aux1-1,j+aux2-1,k+aux3-1)) * Foam::mag(n(i,j,k)));
+                                scalar angle = (n(i+aux1-1,j+aux2-1,k+aux3-1) & n(i,j,k)) /
+                                                (
+                                                    Foam::mag(n(i+aux1-1,j+aux2-1,k+aux3-1))
+                                                    * Foam::mag(n(i,j,k))
+                                                );
 
-                                    if (angle > validAngleTol)
-                                    {
-                                        vector dist = xgi(i+aux1-1,j+aux2-1,k+aux3-1)-xgi(i,j,k);
-                                        wi = (1.0)/Foam::max(1e-20,Foam::pow(Foam::mag(dist),2.5));
-                                        A[0][0] += wi*Foam::sqr(dist[d2]);
-                                        A[0][1] += wi*(dist[d2]) * (dist[d3]);
-                                        A[1][1] += wi*Foam::sqr(dist[d3]);
-                                        b[0] += - wi*(dist[d2]) * (dist[d1]);
-                                        b[1] += - wi*(dist[d3]) * (dist[d1]);
-                                        nNeighs++;
-                                    }
+                                if (angle > validAngleTol)
+                                {
+                                    vector dist = xgi(i+aux1-1,j+aux2-1,k+aux3-1)-xgi(i,j,k);
+                                    wi = (1.0)/Foam::max(1e-20,Foam::pow(Foam::mag(dist),2.5));
+                                    A[0][0] += wi*Foam::sqr(dist[d2]);
+                                    A[0][1] += wi*(dist[d2]) * (dist[d3]);
+                                    A[1][1] += wi*Foam::sqr(dist[d3]);
+                                    b[0] += - wi*(dist[d2]) * (dist[d1]);
+                                    b[1] += - wi*(dist[d3]) * (dist[d1]);
+                                    nNeighs++;
+                                }
                             }
                         }
                     }
@@ -778,20 +814,30 @@ tmp<colocatedVectorField> LSFIR::operator()()
                     }
                     else
                     {
-                        if ((A[0][0] == 0.0 && A[1][1] != 0) || (Foam::mag(A[0][0]/A[1][1]) < 1e-12))
+                        if
+                        (
+                            (A[0][0] == 0.0 && A[1][1] != 0)
+                            || (Foam::mag(A[0][0]/A[1][1]) < 1e-12)
+                        )
                         {
                             nc[d2] = 0.0;
                             nc[d3] = b[1] / A[1][1];
                         }
-                        else if ((A[0][0] != 0.0 && A[1][1] == 0) || (Foam::mag(A[1][1]/A[0][0]) < 1e-12))
+                        else if
+                        (
+                            (A[0][0] != 0.0 && A[1][1] == 0)
+                            || (Foam::mag(A[1][1]/A[0][0]) < 1e-12)
+                        )
                         {
                             nc[d3] = 0.0;
                             nc[d2] = b[0] / A[0][0];
                         }
                         else
                         {
-                            nc[d2] = (A[1][1] * b[0] - A[0][1] * b[1]) / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
-                            nc[d3] = (- A[1][0] * b[0] + A[0][0] * b[1]) / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
+                            nc[d2] = (A[1][1] * b[0] - A[0][1] * b[1])
+                                    / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
+                            nc[d3] = (- A[1][0] * b[0] + A[0][0] * b[1])
+                                    / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
                         }
 
                         if (n(i,j,k)[d1] < 0)
@@ -828,7 +874,12 @@ tmp<colocatedVectorField> LSFIR::operator()()
                     n_new(i,j,k) = n(i,j,k);
                 }
 
-                if ((n_new(i,j,k)[1] != n_new(i,j,k)[1]) || (n_new(i,j,k)[2] != n_new(i,j,k)[2]) || (n_new(i,j,k)[0] != n_new(i,j,k)[0]))
+                if
+                (
+                    (n_new(i,j,k)[1] != n_new(i,j,k)[1])
+                    || (n_new(i,j,k)[2] != n_new(i,j,k)[2])
+                    || (n_new(i,j,k)[0] != n_new(i,j,k)[0])
+                )
                 {
                     FatalErrorInFunction
                         <<  "LSFIR: normal computation failed."
@@ -842,7 +893,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
         forAllCells(n, i, j, k)
         {
-            if ((alpha(i,j,k) > threshold_) && (alpha(i,j,k) < 1 - threshold_))
+            if ((alpha(i,j,k) > vof::threshold) && (alpha(i,j,k) < 1 - vof::threshold))
             {
                 n(i,j,k) = n_new(i,j,k);
             }

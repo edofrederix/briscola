@@ -16,9 +16,6 @@ class LSFIR
 :
     public normalScheme
 {
-    // alpha threshold (takes value from vof)
-    scalar threshold_;
-
     // mesh formed by hexaedrons with planar faces (default true)
     bool planarFaces_;
 

@@ -20,14 +20,12 @@ addToRunTimeSelectionTable(normalScheme, MYC, dictionary);
 
 MYC::MYC(const vof& vf, const dictionary& dict)
 :
-    normalScheme(vf, dict),
-    threshold_(vof::threshold)
+    normalScheme(vf, dict)
 {}
 
 MYC::MYC(const MYC& s)
 :
-    normalScheme(s),
-    threshold_(s.threshold_)
+    normalScheme(s)
 {}
 
 MYC::~MYC()
@@ -52,8 +50,6 @@ tmp<colocatedVectorField> MYC::operator()()
     );
 
     colocatedVectorField& n = tn.ref();
-    n = Zero;
-
     const colocatedScalarField& alpha = vf_.alpha();
 
     const rectilinearMesh& rMsh = vf_.fvMsh().msh().cast<rectilinearMesh>();
@@ -65,7 +61,7 @@ tmp<colocatedVectorField> MYC::operator()()
 
     forAllCells(n, i, j, k)
     {
-        if ((alpha(i,j,k) > threshold_) && (alpha(i,j,k) < 1 - threshold_))
+        if ((alpha(i,j,k) > vof::threshold) && (alpha(i,j,k) < 1 - vof::threshold))
         {
             double m1,m2,m3,m[4][3],t0,t1,t2;
             int cn;
@@ -74,77 +70,292 @@ tmp<colocatedVectorField> MYC::operator()()
             // Write the plane as: sgn(mx) X =  my Y +  mz Z + alpha m00 X = m01
             // Y + m02 Z + alpha
 
-            m1 = xSize[i-1] * (ySize[j]*zSize[k]*alpha(i-1,j,k) + ySize[j+1]*zSize[k]*alpha(i-1,j+1,k)
-                    + ySize[j-1]*zSize[k]*alpha(i-1,j-1,k) + ySize[j]*zSize[k+1]*alpha(i-1,j,k+1) +
-                    ySize[j]*zSize[k-1]*alpha(i-1,j,k-1));
-            m2 = xSize[i+1] * (ySize[j]*zSize[k]*alpha(i+1,j,k) + ySize[j+1]*zSize[k]*alpha(i+1,j+1,k)
-                    + ySize[j-1]*zSize[k]*alpha(i+1,j-1,k) + ySize[j]*zSize[k+1]*alpha(i+1,j,k+1) +
-                    ySize[j]*zSize[k-1]*alpha(i+1,j,k-1));
+            m1 = xSize[i-1] *
+                            (
+                            ySize[j]*zSize[k]*alpha(i-1,j,k)
+                            + ySize[j+1]*zSize[k]*alpha(i-1,j+1,k)
+                            + ySize[j-1]*zSize[k]*alpha(i-1,j-1,k)
+                            + ySize[j]*zSize[k+1]*alpha(i-1,j,k+1)
+                            + ySize[j]*zSize[k-1]*alpha(i-1,j,k-1)
+                            );
+
+            m2 = xSize[i+1] *
+                            (
+                            ySize[j]*zSize[k]*alpha(i+1,j,k)
+                            + ySize[j+1]*zSize[k]*alpha(i+1,j+1,k)
+                            + ySize[j-1]*zSize[k]*alpha(i+1,j-1,k)
+                            + ySize[j]*zSize[k+1]*alpha(i+1,j,k+1)
+                            + ySize[j]*zSize[k-1]*alpha(i+1,j,k-1)
+                            );
 
             m[0][0] = m1 > m2 ? -1. : 1.;
 
-            m1 = xSize[i-1]*alpha(i-1,j-1,k) + xSize[i+1]*alpha(i+1,j-1,k) + xSize[i]*alpha(i,j-1,k);
-            m2 = xSize[i-1]*alpha(i-1,j,k) + xSize[i+1]*alpha(i+1,j,k) + xSize[i]*alpha(i,j,k);
-            m3 = xSize[i-1]*alpha(i-1,j+1,k) + xSize[i+1]*alpha(i+1,j+1,k) + xSize[i]*alpha(i,j+1,k);
-            m[0][1] = m1 * ((-ySize[j]-ySize[j+1])/((ySize[j]+ySize[j-1])*(0.5*(ySize[j-1]+ySize[j+1])+ySize[j])))
-                    + m2 * (2*(ySize[j+1]-ySize[j-1])/((ySize[j]+ySize[j+1])*(ySize[j]+ySize[j-1])))
-                    + m3 * ((ySize[j]+ySize[j-1])/((ySize[j]+ySize[j+1])*(0.5*(ySize[j+1]+ySize[j-1])+ySize[j])));
+            m1 = xSize[i-1]*alpha(i-1,j-1,k)
+                + xSize[i+1]*alpha(i+1,j-1,k)
+                + xSize[i]*alpha(i,j-1,k);
 
-            m1 = xSize[i-1]*alpha(i-1,j,k-1) + xSize[i+1]*alpha(i+1,j,k-1) + xSize[i]*alpha(i,j,k-1);
-            m2 = xSize[i-1]*alpha(i-1,j,k) + xSize[i+1]*alpha(i+1,j,k) + xSize[i]*alpha(i,j,k);
-            m3 = xSize[i-1]*alpha(i-1,j,k+1) + xSize[i+1]*alpha(i+1,j,k+1) + xSize[i]*alpha(i,j,k+1);
-            m[0][2] = m1 * ((-zSize[k]-zSize[k+1])/((zSize[k]+zSize[k-1])*(0.5*(zSize[k-1]+zSize[k+1])+zSize[k])))
-                    + m2 * (2*(zSize[k+1]-zSize[k-1])/((zSize[k]+zSize[k+1])*(zSize[k]+zSize[k-1])))
-                    + m3 * ((zSize[k]+zSize[k-1])/((zSize[k]+zSize[k+1])*(0.5*(zSize[k+1]+zSize[k-1])+zSize[k])));
+            m2 = xSize[i-1]*alpha(i-1,j,k)
+                + xSize[i+1]*alpha(i+1,j,k)
+                + xSize[i]*alpha(i,j,k);
+
+            m3 = xSize[i-1]*alpha(i-1,j+1,k)
+                + xSize[i+1]*alpha(i+1,j+1,k)
+                + xSize[i]*alpha(i,j+1,k);
+
+            m[0][1] = m1 *
+                        (
+                            (-ySize[j]-ySize[j+1]) /
+                            (
+                                (ySize[j]+ySize[j-1])
+                                *(0.5*(ySize[j-1]+ySize[j+1])+ySize[j])
+                            )
+                        )
+                    + m2 *
+                        (
+                            2*(ySize[j+1]-ySize[j-1]) /
+                            (
+                                (ySize[j]+ySize[j+1])
+                                *(ySize[j]+ySize[j-1])
+                            )
+                        )
+                    + m3 *
+                        (
+                            (ySize[j]+ySize[j-1]) /
+                            (
+                                (ySize[j]+ySize[j+1])
+                                *(0.5*(ySize[j+1]+ySize[j-1])+ySize[j])
+                            )
+                        );
+
+            m1 = xSize[i-1]*alpha(i-1,j,k-1)
+                + xSize[i+1]*alpha(i+1,j,k-1)
+                + xSize[i]*alpha(i,j,k-1);
+
+            m2 = xSize[i-1]*alpha(i-1,j,k)
+                + xSize[i+1]*alpha(i+1,j,k)
+                + xSize[i]*alpha(i,j,k);
+
+            m3 = xSize[i-1]*alpha(i-1,j,k+1)
+                + xSize[i+1]*alpha(i+1,j,k+1)
+                + xSize[i]*alpha(i,j,k+1);
+
+            m[0][2] = m1 *
+                        (
+                            (-zSize[k]-zSize[k+1]) /
+                            (
+                                (zSize[k]+zSize[k-1])
+                                *(0.5*(zSize[k-1]+zSize[k+1])+zSize[k])
+                            )
+                        )
+                    + m2 *
+                        (
+                            2*(zSize[k+1]-zSize[k-1]) /
+                            (
+                                (zSize[k]+zSize[k+1])
+                                *(zSize[k]+zSize[k-1])
+                            )
+                        )
+                    + m3 *
+                        (
+                            (zSize[k]+zSize[k-1]) /
+                            (
+                                (zSize[k]+zSize[k+1])
+                                *(0.5*(zSize[k+1]+zSize[k-1])+zSize[k])
+                            )
+                        );
 
             // Write the plane as: sgn(my) Y =  mx X +  mz Z + alpha m11 Y = m10
             // X + m12 Z + alpha
 
-            m1 = ySize[j-1]*alpha(i-1,j-1,k) + ySize[j+1]*alpha(i-1,j+1,k) + ySize[j]*alpha(i-1,j,k);
-            m2 = ySize[j-1]*alpha(i,j-1,k) + ySize[j+1]*alpha(i,j+1,k) + ySize[j]*alpha(i,j,k);
-            m3 = ySize[j-1]*alpha(i+1,j-1,k) + ySize[j+1]*alpha(i+1,j+1,k) + ySize[j]*alpha(i+1,j,k);
-            m[1][0] = m1 * ((-xSize[i]-xSize[i+1])/((xSize[i]+xSize[i-1])*(0.5*(xSize[i-1]+xSize[i+1])+xSize[i])))
-                    + m2 * (2*(xSize[i+1]-xSize[i-1])/((xSize[i]+xSize[i+1])*(xSize[i]+xSize[i-1])))
-                    + m3 * ((xSize[i]+xSize[i-1])/((xSize[i]+xSize[i+1])*(0.5*(xSize[i+1]+xSize[i-1])+xSize[i])));
+            m1 = ySize[j-1]*alpha(i-1,j-1,k)
+                + ySize[j+1]*alpha(i-1,j+1,k)
+                + ySize[j]*alpha(i-1,j,k);
 
-            m1 = ySize[j-1]*(xSize[i]*zSize[k-1]*alpha(i,j-1,k-1) + xSize[i]*zSize[k+1]*alpha(i,j-1,k+1)
-                    + xSize[i-1]*zSize[k]*alpha(i-1,j-1,k) + xSize[i+1]*zSize[k]*alpha(i+1,j-1,k) +
-                    xSize[i]*zSize[k]*alpha(i,j-1,k));
-            m2 = ySize[j+1]*(xSize[i]*zSize[k-1]*alpha(i,j+1,k-1) + xSize[i]*zSize[k+1]*alpha(i,j+1,k+1)
-                    + xSize[i-1]*zSize[k]*alpha(i-1,j+1,k) + xSize[i+1]*zSize[k]*alpha(i+1,j+1,k) +
-                    xSize[i]*zSize[k]*alpha(i,j+1,k));
+            m2 = ySize[j-1]*alpha(i,j-1,k)
+                + ySize[j+1]*alpha(i,j+1,k)
+                + ySize[j]*alpha(i,j,k);
+
+            m3 = ySize[j-1]*alpha(i+1,j-1,k)
+                + ySize[j+1]*alpha(i+1,j+1,k)
+                + ySize[j]*alpha(i+1,j,k);
+
+            m[1][0] = m1 *
+                        (
+                            (-xSize[i]-xSize[i+1]) /
+                            (
+                                (xSize[i]+xSize[i-1])
+                                *(0.5*(xSize[i-1]+xSize[i+1])+xSize[i])
+                            )
+                        )
+                    + m2 *
+                        (
+                            2*(xSize[i+1]-xSize[i-1]) /
+                            (
+                                (xSize[i]+xSize[i+1])
+                                *(xSize[i]+xSize[i-1])
+                            )
+                        )
+                    + m3 *
+                        (
+                            (xSize[i]+xSize[i-1]) /
+                            (
+                                (xSize[i]+xSize[i+1])
+                                *(0.5*(xSize[i+1]+xSize[i-1])+xSize[i])
+                            )
+                        );
+
+            m1 = ySize[j-1] *
+                            (
+                            xSize[i]*zSize[k-1]*alpha(i,j-1,k-1)
+                            + xSize[i]*zSize[k+1]*alpha(i,j-1,k+1)
+                            + xSize[i-1]*zSize[k]*alpha(i-1,j-1,k)
+                            + xSize[i+1]*zSize[k]*alpha(i+1,j-1,k)
+                            + xSize[i]*zSize[k]*alpha(i,j-1,k)
+                            );
+
+            m2 = ySize[j+1] *
+                            (
+                            xSize[i]*zSize[k-1]*alpha(i,j+1,k-1)
+                            + xSize[i]*zSize[k+1]*alpha(i,j+1,k+1)
+                            + xSize[i-1]*zSize[k]*alpha(i-1,j+1,k)
+                            + xSize[i+1]*zSize[k]*alpha(i+1,j+1,k)
+                            + xSize[i]*zSize[k]*alpha(i,j+1,k)
+                            );
+
             m[1][1] = m1 > m2 ? -1. : 1.;
 
-            m1 = ySize[j-1]*alpha(i,j-1,k-1) + ySize[j+1]*alpha(i,j+1,k-1) + ySize[j]*alpha(i,j,k-1);
-            m2 = ySize[j-1]*alpha(i,j-1,k) + ySize[j+1]*alpha(i,j+1,k) + ySize[j]*alpha(i,j,k);
-            m3 = ySize[j-1]*alpha(i,j-1,k+1) + ySize[j+1]*alpha(i,j+1,k+1) + ySize[j]*alpha(i,j,k+1);
-            m[1][2] = m1 * ((-zSize[k]-zSize[k+1])/((zSize[k]+zSize[k-1])*(0.5*(zSize[k-1]+zSize[k+1])+zSize[k])))
-                    + m2 * (2*(zSize[k+1]-zSize[k-1])/((zSize[k]+zSize[k+1])*(zSize[k]+zSize[k-1])))
-                    + m3 * ((zSize[k]+zSize[k-1])/((zSize[k]+zSize[k+1])*(0.5*(zSize[k+1]+zSize[k-1])+zSize[k])));
+            m1 = ySize[j-1]*alpha(i,j-1,k-1)
+                + ySize[j+1]*alpha(i,j+1,k-1)
+                + ySize[j]*alpha(i,j,k-1);
+
+            m2 = ySize[j-1]*alpha(i,j-1,k)
+                + ySize[j+1]*alpha(i,j+1,k)
+                + ySize[j]*alpha(i,j,k);
+
+            m3 = ySize[j-1]*alpha(i,j-1,k+1)
+                + ySize[j+1]*alpha(i,j+1,k+1)
+                + ySize[j]*alpha(i,j,k+1);
+
+            m[1][2] = m1 *
+                        (
+                            (-zSize[k]-zSize[k+1]) /
+                            (
+                                (zSize[k]+zSize[k-1])
+                                *(0.5*(zSize[k-1]+zSize[k+1])+zSize[k])
+                            )
+                        )
+                    + m2 *
+                        (
+                            2*(zSize[k+1]-zSize[k-1]) /
+                            (
+                                (zSize[k]+zSize[k+1])
+                                *(zSize[k]+zSize[k-1])
+                            )
+                        )
+                    + m3 *
+                        (
+                            (zSize[k]+zSize[k-1]) /
+                            (
+                                (zSize[k]+zSize[k+1])
+                                *(0.5*(zSize[k+1]+zSize[k-1])+zSize[k])
+                            )
+                        );
 
             // Write the plane as: sgn(mz) Z =  mx X +  my Y + alpha m22 Z = m20
             // X + m21 Y + alpha
 
-            m1 = zSize[k-1]*alpha(i-1,j,k-1) + zSize[k+1]*alpha(i-1,j,k+1) + zSize[k]*alpha(i-1,j,k);
-            m2 = zSize[k-1]*alpha(i,j,k-1) + zSize[k+1]*alpha(i,j,k+1) + zSize[k]*alpha(i,j,k);
-            m3 = zSize[k-1]*alpha(i+1,j,k-1) + zSize[k+1]*alpha(i+1,j,k+1) + zSize[k]*alpha(i+1,j,k);
-            m[2][0] = m1 * ((-xSize[i]-xSize[i+1])/((xSize[i]+xSize[i-1])*(0.5*(xSize[i-1]+xSize[i+1])+xSize[i])))
-                    + m2 * (2*(xSize[i+1]-xSize[i-1])/((xSize[i]+xSize[i+1])*(xSize[i]+xSize[i-1])))
-                    + m3 * ((xSize[i]+xSize[i-1])/((xSize[i]+xSize[i+1])*(0.5*(xSize[i+1]+xSize[i-1])+xSize[i])));
+            m1 = zSize[k-1]*alpha(i-1,j,k-1)
+                + zSize[k+1]*alpha(i-1,j,k+1)
+                + zSize[k]*alpha(i-1,j,k);
 
-            m1 = zSize[k-1]*alpha(i,j-1,k-1) + zSize[k+1]*alpha(i,j-1,k+1) + zSize[k]*alpha(i,j-1,k);
-            m2 = zSize[k-1]*alpha(i,j,k-1) + zSize[k+1]*alpha(i,j,k+1) + zSize[k]*alpha(i,j,k);
-            m3 = zSize[k-1]*alpha(i,j+1,k-1) + zSize[k+1]*alpha(i,j+1,k+1) + zSize[k]*alpha(i,j+1,k);
-            m[2][1] = m1 * ((-ySize[j]-ySize[j+1])/((ySize[j]+ySize[j-1])*(0.5*(ySize[j-1]+ySize[j+1])+ySize[j])))
-                    + m2 * (2*(ySize[j+1]-ySize[j-1])/((ySize[j]+ySize[j+1])*(ySize[j]+ySize[j-1])))
-                    + m3 * ((ySize[j]+ySize[j-1])/((ySize[j]+ySize[j+1])*(0.5*(ySize[j+1]+ySize[j-1])+ySize[j])));
+            m2 = zSize[k-1]*alpha(i,j,k-1)
+                + zSize[k+1]*alpha(i,j,k+1)
+                + zSize[k]*alpha(i,j,k);
 
-            m1 = zSize[k-1]*(xSize[i]*ySize[j-1]*alpha(i,j-1,k-1) + xSize[i]*ySize[j+1]*alpha(i,j+1,k-1)
-                    + xSize[i-1]*ySize[j]*alpha(i-1,j,k-1) + xSize[i+1]*ySize[j]*alpha(i+1,j,k-1) +
-                    xSize[i]*ySize[j]*alpha(i,j,k-1));
-            m2 = zSize[k+1]*(xSize[i]*ySize[j-1]*alpha(i,j-1,k+1) + xSize[i]*ySize[j+1]*alpha(i,j+1,k+1)
-                    + xSize[i-1]*ySize[j]*alpha(i-1,j,k+1) + xSize[i+1]*ySize[j]*alpha(i+1,j,k+1) +
-                    xSize[i]*ySize[j]*alpha(i,j,k+1));
+            m3 = zSize[k-1]*alpha(i+1,j,k-1)
+                + zSize[k+1]*alpha(i+1,j,k+1)
+                + zSize[k]*alpha(i+1,j,k);
+
+            m[2][0] = m1 *
+                        (
+                            (-xSize[i]-xSize[i+1]) /
+                            (
+                                (xSize[i]+xSize[i-1])
+                                *(0.5*(xSize[i-1]+xSize[i+1])+xSize[i])
+                            )
+                        )
+                    + m2 *
+                        (
+                            2*(xSize[i+1]-xSize[i-1]) /
+                            (
+                                (xSize[i]+xSize[i+1])
+                                *(xSize[i]+xSize[i-1])
+                            )
+                        )
+                    + m3 *
+                        (
+                            (xSize[i]+xSize[i-1]) /
+                            (
+                                (xSize[i]+xSize[i+1])
+                                *(0.5*(xSize[i+1]+xSize[i-1])+xSize[i])
+                            )
+                        );
+
+            m1 = zSize[k-1]*alpha(i,j-1,k-1)
+                + zSize[k+1]*alpha(i,j-1,k+1)
+                + zSize[k]*alpha(i,j-1,k);
+
+            m2 = zSize[k-1]*alpha(i,j,k-1)
+                + zSize[k+1]*alpha(i,j,k+1)
+                + zSize[k]*alpha(i,j,k);
+
+            m3 = zSize[k-1]*alpha(i,j+1,k-1)
+                + zSize[k+1]*alpha(i,j+1,k+1)
+                + zSize[k]*alpha(i,j+1,k);
+
+            m[2][1] = m1 *
+                        (
+                            (-ySize[j]-ySize[j+1]) /
+                            (
+                                (ySize[j]+ySize[j-1])
+                                *(0.5*(ySize[j-1]+ySize[j+1])+ySize[j])
+                            )
+                        )
+                    + m2 *
+                        (
+                            2*(ySize[j+1]-ySize[j-1]) /
+                            (
+                                (ySize[j]+ySize[j+1])
+                                *(ySize[j]+ySize[j-1])
+                            )
+                        )
+                    + m3 *
+                        (
+                            (ySize[j]+ySize[j-1]) /
+                            (
+                                (ySize[j]+ySize[j+1])
+                                *(0.5*(ySize[j+1]+ySize[j-1])+ySize[j])
+                            )
+                        );
+
+            m1 = zSize[k-1] *
+                            (
+                            xSize[i]*ySize[j-1]*alpha(i,j-1,k-1)
+                            + xSize[i]*ySize[j+1]*alpha(i,j+1,k-1)
+                            + xSize[i-1]*ySize[j]*alpha(i-1,j,k-1)
+                            + xSize[i+1]*ySize[j]*alpha(i+1,j,k-1)
+                            + xSize[i]*ySize[j]*alpha(i,j,k-1)
+                            );
+
+            m2 = zSize[k+1] *
+                            (
+                            xSize[i]*ySize[j-1]*alpha(i,j-1,k+1)
+                            + xSize[i]*ySize[j+1]*alpha(i,j+1,k+1)
+                            + xSize[i-1]*ySize[j]*alpha(i-1,j,k+1)
+                            + xSize[i+1]*ySize[j]*alpha(i+1,j,k+1)
+                            + xSize[i]*ySize[j]*alpha(i,j,k+1)
+                            );
+
             m[2][2] = m1 > m2 ? -1. : 1.;
 
             // Normalize each set (mx,my,mz): |mx|+|my|+|mz| = 1
@@ -197,24 +408,77 @@ tmp<colocatedVectorField> MYC::operator()()
                 {
                     for (int kl = k - 1; kl <= k; kl++)
                     {
-                        Cx1 = (ySize[jl]*zSize[kl]*alpha(il,jl,kl) + ySize[jl+1]*zSize[kl]*alpha(il,jl+1,kl)
-                                + ySize[jl]*zSize[kl+1]*alpha(il,jl,kl+1) + ySize[jl+1]*zSize[kl+1]*alpha(il,jl+1,kl+1))
-                                /((ySize[jl] + ySize[jl+1])*(zSize[kl] + zSize[kl+1]));
-                        Cx2 = (ySize[jl]*zSize[kl]*alpha(il+1,jl,kl) + ySize[jl+1]*zSize[kl]*alpha(il+1,jl+1,kl)
-                                + ySize[jl]*zSize[kl+1]*alpha(il+1,jl,kl+1) + ySize[jl+1]*zSize[kl+1]*alpha(il+1,jl+1,kl+1))
-                                /((ySize[jl] + ySize[jl+1])*(zSize[kl] + zSize[kl+1]));
-                        Cy1 = (xSize[il]*zSize[kl]*alpha(il,jl,kl) + xSize[il+1]*zSize[kl]*alpha(il+1,jl,kl)
-                                + xSize[il]*zSize[kl+1]*alpha(il,jl,kl+1) + xSize[il+1]*zSize[kl+1]*alpha(il+1,jl,kl+1))
-                                /((xSize[il] + xSize[il+1])*(zSize[kl] + zSize[kl+1]));
-                        Cy2 = (xSize[il]*zSize[kl]*alpha(il,jl+1,kl) + xSize[il+1]*zSize[kl]*alpha(il+1,jl+1,kl)
-                                + xSize[il]*zSize[kl+1]*alpha(il,jl+1,kl+1) + xSize[il+1]*zSize[kl+1]*alpha(il+1,jl+1,kl+1))
-                                /((xSize[il] + xSize[il+1])*(zSize[kl] + zSize[kl+1]));
-                        Cz1 = (xSize[il]*ySize[jl]*alpha(il,jl,kl) + xSize[il+1]*ySize[jl]*alpha(il+1,jl,kl)
-                                + xSize[il]*ySize[jl+1]*alpha(il,jl+1,kl) + xSize[il+1]*ySize[jl+1]*alpha(il+1,jl+1,kl))
-                                /((xSize[il] + xSize[il+1])*(ySize[jl] + ySize[jl+1]));
-                        Cz2 = (xSize[il]*ySize[jl]*alpha(il,jl,kl+1) + xSize[il+1]*ySize[jl]*alpha(il+1,jl,kl+1)
-                                + xSize[il]*ySize[jl+1]*alpha(il,jl+1,kl+1) + xSize[il+1]*ySize[jl+1]*alpha(il+1,jl+1,kl+1))
-                                /((xSize[il] + xSize[il+1])*(ySize[jl] + ySize[jl+1]));
+                        Cx1 =
+                            (
+                                ySize[jl]*zSize[kl]*alpha(il,jl,kl)
+                              + ySize[jl+1]*zSize[kl]*alpha(il,jl+1,kl)
+                              + ySize[jl]*zSize[kl+1]*alpha(il,jl,kl+1)
+                              + ySize[jl+1]*zSize[kl+1]*alpha(il,jl+1,kl+1)
+                            ) /
+                            (
+                                (ySize[jl] + ySize[jl+1])
+                                *(zSize[kl] + zSize[kl+1])
+                            );
+
+                        Cx2 =
+                            (
+                                ySize[jl]*zSize[kl]*alpha(il+1,jl,kl)
+                              + ySize[jl+1]*zSize[kl]*alpha(il+1,jl+1,kl)
+                              + ySize[jl]*zSize[kl+1]*alpha(il+1,jl,kl+1)
+                              + ySize[jl+1]*zSize[kl+1]*alpha(il+1,jl+1,kl+1)
+                            ) /
+                            (
+                                (ySize[jl] + ySize[jl+1])
+                                *(zSize[kl] + zSize[kl+1])
+                            );
+
+                        Cy1 =
+                            (
+                                xSize[il]*zSize[kl]*alpha(il,jl,kl)
+                              + xSize[il+1]*zSize[kl]*alpha(il+1,jl,kl)
+                              + xSize[il]*zSize[kl+1]*alpha(il,jl,kl+1)
+                              + xSize[il+1]*zSize[kl+1]*alpha(il+1,jl,kl+1)
+                            ) /
+                            (
+                                (xSize[il] + xSize[il+1])
+                               *(zSize[kl] + zSize[kl+1])
+                            );
+
+                        Cy2 =
+                            (
+                                xSize[il]*zSize[kl]*alpha(il,jl+1,kl)
+                              + xSize[il+1]*zSize[kl]*alpha(il+1,jl+1,kl)
+                              + xSize[il]*zSize[kl+1]*alpha(il,jl+1,kl+1)
+                              + xSize[il+1]*zSize[kl+1]*alpha(il+1,jl+1,kl+1)
+                            ) /
+                            (
+                                (xSize[il] + xSize[il+1])
+                                *(zSize[kl] + zSize[kl+1])
+                            );
+
+                        Cz1 =
+                            (
+                                xSize[il]*ySize[jl]*alpha(il,jl,kl)
+                              + xSize[il+1]*ySize[jl]*alpha(il+1,jl,kl)
+                              + xSize[il]*ySize[jl+1]*alpha(il,jl+1,kl)
+                              + xSize[il+1]*ySize[jl+1]*alpha(il+1,jl+1,kl)
+                            ) /
+                            (
+                                (xSize[il] + xSize[il+1])
+                               *(ySize[jl] + ySize[jl+1])
+                            );
+
+                        Cz2 =
+                            (
+                                xSize[il]*ySize[jl]*alpha(il,jl,kl+1)
+                              + xSize[il+1]*ySize[jl]*alpha(il+1,jl,kl+1)
+                              + xSize[il]*ySize[jl+1]*alpha(il,jl+1,kl+1)
+                              + xSize[il+1]*ySize[jl+1]*alpha(il+1,jl+1,kl+1)
+                            ) /
+                            (
+                                (xSize[il] + xSize[il+1])
+                                *(ySize[jl] + ySize[jl+1])
+                            );
 
                         m[3][0] += (Cx2 - Cx1)/(16 * (xSize[il] + xSize[il+1]));
                         m[3][1] += (Cy2 - Cy1)/(16 * (ySize[jl] + ySize[jl+1]));
@@ -256,6 +520,10 @@ tmp<colocatedVectorField> MYC::operator()()
 
             n_aux = T.inv() & n_aux;
             n(i,j,k) = n_aux / Foam::mag(n_aux);
+        }
+        else
+        {
+            n(i,j,k) = Zero;
         }
     }
 
