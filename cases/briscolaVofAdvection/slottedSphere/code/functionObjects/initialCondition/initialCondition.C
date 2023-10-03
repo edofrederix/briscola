@@ -52,22 +52,22 @@ bool initialCondition::read(const dictionary& dict)
     {
         const scalar pi = constant::mathematical::pi;
 
-        colocatedVectorDirection& U =
-            runTime_.lookupObjectRef<colocatedVectorField>("U")[0][0];
+        colocatedVectorField& U =
+            runTime_.lookupObjectRef<colocatedVectorField>("U");
 
-        colocatedScalarDirection& alpha =
-            runTime_.lookupObjectRef<colocatedScalarField>("alpha")[0][0];
+        colocatedScalarField& alpha =
+            runTime_.lookupObjectRef<colocatedScalarField>("alpha");
 
         const fvMesh& fvMsh = U.fvMsh();
 
-        const colocatedVectorDirection& cc =
-            fvMsh.metrics<colocated>().cellCenters()[0][0];
+        const colocatedVectorField& cc =
+            fvMsh.metrics<colocated>().cellCenters();
 
-        const colocatedScalarDirection& cv =
-            fvMsh.metrics<colocated>().cellVolumes()[0][0];
+        const colocatedScalarField& cv =
+            fvMsh.metrics<colocated>().cellVolumes();
 
-        const meshDirection<vertexVector,colocated>& vertex =
-            fvMsh.metrics<colocated>().vertexCenters()[0][0];
+        const meshField<vertexVector,colocated>& vertex =
+            fvMsh.metrics<colocated>().vertexCenters();
 
         forAllCells(alpha, i, j, k)
         {
@@ -81,6 +81,7 @@ bool initialCondition::read(const dictionary& dict)
                 );
 
             alpha(i,j,k) = 0;
+
             for (int l = 0; l < 8; l++)
             {
                 vector v = vertex(i,j,k)[l];
@@ -90,11 +91,12 @@ bool initialCondition::read(const dictionary& dict)
                 if
                 (
                     v.y() < 0.75-0.15+0.125
-                && v.x() > 0.5-0.025 && v.x() < 0.5+0.025
+                 && v.x() > 0.5-0.025 && v.x() < 0.5+0.025
                 )
                 {
                     tag = 0;
                 }
+
                 alpha(i,j,k) += 0.125 * (tag);
             }
 
@@ -103,17 +105,14 @@ bool initialCondition::read(const dictionary& dict)
 
         reduce(TotalVolume, sumOp<scalar>());
 
-        alpha.mshLevel().mshField().correctBoundaryConditions();
+        alpha.correctBoundaryConditions();
 
-        colocatedFaceScalarField& phif =
+        colocatedFaceScalarField& phi =
             runTime_.lookupObjectRef<colocatedFaceScalarField>("phi");
 
-        colocatedVectorField& Uf =
-            runTime_.lookupObjectRef<colocatedVectorField>("U");
+        U.correctBoundaryConditions();
 
-        Uf.correctBoundaryConditions();
-
-        phif = ex::faceFlux(Uf);
+        phi = ex::faceFlux(U);
     }
 
     return true;
@@ -123,20 +122,20 @@ bool initialCondition::execute()
 {
     scalar LocalBoundError;
 
-    colocatedScalarDirection& alpha =
-        runTime_.lookupObjectRef<colocatedScalarField>("alpha")[0][0];
+    const colocatedScalarField& alpha =
+        runTime_.lookupObjectRef<colocatedScalarField>("alpha");
 
     const fvMesh& fvMsh = alpha.fvMsh();
 
-    const colocatedScalarDirection& cv =
-        fvMsh.metrics<colocated>().cellVolumes()[0][0];
+    const colocatedScalarField& cv =
+        fvMsh.metrics<colocated>().cellVolumes();
 
     forAllCells(alpha, i, j, k)
     {
         LocalBoundError = cv(i,j,k) * Foam::max(-alpha(i,j,k), alpha(i,j,k)-1);
+
         if (LocalBoundError > BoundError)
             BoundError = LocalBoundError;
-
     }
 
     reduce(BoundError, maxOp<scalar>());
@@ -151,16 +150,16 @@ bool initialCondition::end()
     scalar Volume = 0;
     scalar LocalBoundError;
 
-    colocatedScalarDirection& alpha =
-        runTime_.lookupObjectRef<colocatedScalarField>("alpha")[0][0];
+    const colocatedScalarField& alpha =
+        runTime_.lookupObjectRef<colocatedScalarField>("alpha");
 
     const fvMesh& fvMsh = alpha.fvMsh();
 
-    const colocatedScalarDirection& cv =
-        fvMsh.metrics<colocated>().cellVolumes()[0][0];
+    const colocatedScalarField& cv =
+        fvMsh.metrics<colocated>().cellVolumes();
 
-    const meshDirection<vertexVector,colocated>& vertex =
-        fvMsh.metrics<colocated>().vertexCenters()[0][0];
+    const meshField<vertexVector,colocated>& vertex =
+        fvMsh.metrics<colocated>().vertexCenters();
 
     forAllCells(alpha, i, j, k)
     {
@@ -175,11 +174,12 @@ bool initialCondition::end()
             if
             (
                 v.y() < 0.75-0.15+0.125
-            && v.x() > 0.5-0.025 && v.x() < 0.5+0.025
+             && v.x() > 0.5-0.025 && v.x() < 0.5+0.025
             )
             {
                 tag = 0;
             }
+
             exactVol += 0.125 * (tag);
         }
 
@@ -196,27 +196,13 @@ bool initialCondition::end()
     reduce(Volume, sumOp<scalar>());
     reduce(L1Error, sumOp<scalar>());
 
-    /*
-
-    if (Pstream::master())
-    {
-        std::ofstream myfile;
-        myfile.open ("errors.txt", std::ios::out|std::ios::app);
-        myfile  << TotalVolume << " "
-                << L1Error << " " << L1Error / TotalVolume << " "
-                << TotalVolume - Volume << " " << (TotalVolume - Volume) / TotalVolume << " "
-                << BoundError << "\n";
-        myfile.close();
-    }
-
-    */
-
-    Info << "Total Volume: " << TotalVolume << endl <<
-            "Shape Error (absolute L1 norm): " << L1Error << endl <<
-            "Shape Error (relative L1 norm): " << L1Error / TotalVolume << endl <<
-            "Volume Error (absolute L1 norm): " << TotalVolume - Volume << endl <<
-            "Volume Error (relative L1 norm): " << (TotalVolume - Volume) / TotalVolume << endl <<
-            "Boundness Error (infinite norm): " << BoundError << endl;
+    Info<< "Total Volume: " << TotalVolume << nl
+        << "Shape Error (absolute L1 norm): " << L1Error << nl
+        << "Shape Error (relative L1 norm): " << L1Error / TotalVolume << nl
+        << "Volume Error (absolute L1 norm): " << TotalVolume - Volume << nl
+        << "Volume Error (relative L1 norm): "
+        << (TotalVolume - Volume) / TotalVolume << nl
+        << "Boundedness Error (infinite norm): " << BoundError << endl;
 
     return true;
 }
