@@ -19,9 +19,8 @@ class initialCondition
 :
     public briscolaFunctionObject
 {
-
-    static scalar TotalVolume_;
-    static scalar BoundError_;
+    scalar TotalVolume_;
+    scalar BoundError_;
 
 public:
 

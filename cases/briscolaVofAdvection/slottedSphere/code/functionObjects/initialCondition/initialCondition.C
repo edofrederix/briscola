@@ -19,9 +19,6 @@ namespace fv
 namespace functionObjects
 {
 
-scalar initialCondition::TotalVolume_ = 0;
-scalar initialCondition::BoundError_ = 0;
-
 defineTypeNameAndDebug(initialCondition, 0);
 
 addToRunTimeSelectionTable
@@ -38,7 +35,9 @@ initialCondition::initialCondition
     const dictionary& dict
 )
 :
-    briscolaFunctionObject(name, runTime, dict)
+    briscolaFunctionObject(name, runTime, dict),
+    TotalVolume_(0.0),
+    BoundError_(0.0)
 {
     read(dict);
 }

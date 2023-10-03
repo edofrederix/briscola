@@ -19,14 +19,14 @@ class initialCondition
 :
     public briscolaFunctionObject
 {
+    const scalar T_;
 
-    static const scalar T_;
-    static scalar TotalVolume_;
-    static scalar BoundError_;
+    scalar TotalVolume_;
+    scalar BoundError_;
 
-    static const int Nx_;
-    static const int Ny_;
-    static const int Nz_;
+    const label Nx_;
+    const label Ny_;
+    const label Nz_;
 
 public:
 
