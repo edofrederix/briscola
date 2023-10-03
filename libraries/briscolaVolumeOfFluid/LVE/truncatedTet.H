@@ -28,7 +28,7 @@ class truncatedTet
     scalarList phi_;
 
     // Set the vertex constants
-    void setVertexConstants();
+    inline void setVertexConstants();
 
     // Function to compute the intersection of the plane and the line segment
     // between two vertices
@@ -55,7 +55,7 @@ class truncatedTet
 public:
 
     // Construct from components
-    truncatedTet
+    inline truncatedTet
     (
         const vectorList& v,
         const vector& n,
@@ -63,10 +63,10 @@ public:
     );
 
     // Copy constructor
-    truncatedTet(const truncatedTet&);
+    inline truncatedTet(const truncatedTet&);
 
     // Clone
-    autoPtr<truncatedTet> clone() const
+    inline autoPtr<truncatedTet> clone() const
     {
         return autoPtr<truncatedTet>(new truncatedTet(*this));
     }
@@ -87,7 +87,7 @@ public:
     inline const scalarList& phi() const { return phi_; }
 
     // Compute the volume
-    virtual scalar volume() const;
+    inline scalar volume() const;
 };
 
 }
@@ -95,5 +95,7 @@ public:
 }
 
 }
+
+#include "truncatedTetI.H"
 
 #endif

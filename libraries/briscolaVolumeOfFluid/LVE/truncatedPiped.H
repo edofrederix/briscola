@@ -32,7 +32,7 @@ class truncatedPiped
 public:
 
     // Construct from components
-    truncatedPiped
+    inline truncatedPiped
     (
         const vector& lba,
         const vector& rba,
@@ -43,7 +43,7 @@ public:
     );
 
     // Construct from hexahedron
-    truncatedPiped
+    inline truncatedPiped
     (
         const vertexVector& vertices,
         const vector& n,
@@ -51,10 +51,10 @@ public:
     );
 
     // Copy constructor
-    truncatedPiped(const truncatedPiped&);
+    inline truncatedPiped(const truncatedPiped&);
 
     // Clone
-    autoPtr<truncatedPiped> clone() const
+    inline autoPtr<truncatedPiped> clone() const
     {
         return autoPtr<truncatedPiped>(new truncatedPiped(*this));
     }
@@ -84,5 +84,7 @@ public:
 }
 
 }
+
+#include "truncatedPipedI.H"
 
 #endif

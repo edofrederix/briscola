@@ -28,7 +28,7 @@ class truncatedHex
     PtrList<truncatedTet> tets_;
 
     // Set the list of truncated tets
-    void setTets();
+    inline void setTets();
 
     // Disallow default bitwise assignment
     void operator=(const truncatedHex&);
@@ -36,7 +36,7 @@ class truncatedHex
 public:
 
     // Construct from components
-    truncatedHex
+    inline truncatedHex
     (
         const vertexVector& vertices,
         const vector& n,
@@ -44,10 +44,10 @@ public:
     );
 
     // Copy constructor
-    truncatedHex(const truncatedHex&);
+    inline truncatedHex(const truncatedHex&);
 
     // Clone
-    autoPtr<truncatedHex> clone() const
+    inline autoPtr<truncatedHex> clone() const
     {
         return autoPtr<truncatedHex>(new truncatedHex(*this));
     }
@@ -68,7 +68,7 @@ public:
     inline const PtrList<truncatedTet>& tets() const { return tets_; }
 
     // Compute the volume
-    virtual scalar volume() const;
+    inline scalar volume() const;
 };
 
 }
@@ -76,5 +76,7 @@ public:
 }
 
 }
+
+#include "truncatedHexI.H"
 
 #endif
