@@ -34,20 +34,6 @@ class LVE
     // Disallow copy constructor
     LVE(const LVE&);
 
-    // Functions to solve the local volume enforcement problem given a solution
-    // bracket
-    inline scalar solveBracketedLVE
-    (
-        const vertexVector& v,
-        const scalar& V,
-        const vector& n,
-        const scalar& f,
-        scalar CMin,
-        scalar CMax,
-        scalar fMin,
-        scalar fMax
-    ) const;
-
     // Solvers
 
     inline scalar exactCubicSolver
@@ -99,15 +85,6 @@ public:
 
     // Destructor
     ~LVE();
-
-    // Solve the local volume enforcement problem on arbitrary quadrilater
-    // hexahedrons
-    inline scalar aLVE
-    (
-        const vertexVector& vertices,
-        const vector& n,
-        const scalar& f
-    ) const;
 
     // CIBRAVE algorithm
 
