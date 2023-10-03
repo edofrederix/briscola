@@ -36,10 +36,10 @@ inline scalar LVE::exactCubicSolver
             (
                 Foam::min
                 (
-                    Foam::mag(alpha3/alpha0),
-                    Foam::mag(alpha3/alpha1)
+                    Foam::mag(alpha3/stabilise(alpha0,1e-16)),
+                    Foam::mag(alpha3/stabilise(alpha1,1e-16))
                 ),
-                Foam::mag(alpha3/alpha2)
+                Foam::mag(alpha3/stabilise(alpha2,1e-16))
             ) < tol_
         )
         {
@@ -68,8 +68,10 @@ inline scalar LVE::exactCubicSolver
 
             if ((Foam::sqr(r) + Foam::pow3(q)) > 0)
             {
-                const scalar A = Foam::cbrt(Foam::mag(r)
-                    + Foam::sqrt((Foam::sqr(r) + Foam::pow3(q))));
+                const scalar A =
+                    Foam::cbrt(Foam::mag(r)
+                  + Foam::sqrt((Foam::sqr(r) + Foam::pow3(q))));
+
                 scalar t1 = 0;
 
                 if (r >= 0)
@@ -184,7 +186,14 @@ inline scalar LVE::exactCubicSolver
     }
     else if (Foam::mag(alpha2) > 0)
     {
-        if (Foam::min(Foam::mag(alpha2/alpha0),Foam::mag(alpha2/alpha1)) < tol_)
+        if
+        (
+            Foam::min
+            (
+                Foam::mag(alpha2/stabilise(alpha0,1e-16)),
+                Foam::mag(alpha2/stabilise(alpha1,1e-16))
+            ) < tol_
+        )
         {
             return LVE::newtonCubicSolver
             (

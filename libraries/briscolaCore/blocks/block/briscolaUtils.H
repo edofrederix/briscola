@@ -317,8 +317,10 @@ const label vertexNumsInEdge[12][2] =
     {3,7}
 };
 
-// A decomposition of a block in five tets
-const label tetDecomp[5][4]
+// Decomposition of a block in tets, used throughout the code mostly for
+// geometric calculations
+const label numberOfTets = 5;
+const label tetDecomp[numberOfTets][4]
 {
     {0,3,6,2},
     {5,0,6,4},
