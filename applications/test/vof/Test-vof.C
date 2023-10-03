@@ -12,6 +12,9 @@ using namespace Foam;
 using namespace briscola;
 using namespace fv;
 
+const label Ntheta = 8;
+const label NC = 8;
+
 void testVolumeHex(const vertexVector& v, const vector n)
 {
     SortableList<scalar> V(8);
@@ -28,16 +31,15 @@ void testVolumeHex(const vertexVector& v, const vector n)
     // Test for monotonicity of the solution in the C brackets
 
     scalar Vi = -1;
-    const label N = 20;
 
     for (int i = 1; i < 8; i++)
     {
         scalar CMin = C[V.indices()[i-1]];
         scalar CMax = C[V.indices()[i]];
 
-        for (int j = 0; j <= N; j++)
+        for (int j = 0; j <= NC; j++)
         {
-            const scalar C = CMin + (CMax-CMin)*j/N;
+            const scalar C = CMin + (CMax-CMin)*j/scalar(NC);
 
             truncatedHex thex(v,n,C);
 
@@ -68,16 +70,15 @@ void testVolumePiped(const vertexVector& v, const vector n)
     // Test for monotonicity of the solution in the C brackets
 
     scalar Vi = -1;
-    const label N = 20;
 
     for (int i = 1; i < 8; i++)
     {
         scalar CMin = C[V.indices()[i-1]];
         scalar CMax = C[V.indices()[i]];
 
-        for (int j = 0; j <= N; j++)
+        for (int j = 0; j <= NC; j++)
         {
-            const scalar C = CMin + (CMax-CMin)*j/N;
+            const scalar C = CMin + (CMax-CMin)*j/scalar(NC);
 
             truncatedPiped thex(v,n,C);
 
@@ -94,7 +95,8 @@ void testVolumePiped(const vertexVector& v, const vector n)
 
 void testRotatedVolumesHex(const vertexVector& v, const vector n)
 {
-    const scalar theta = 5.0/360*2*Foam::constant::mathematical::pi;
+    const scalar theta =
+        2.0*Foam::constant::mathematical::pi/scalar(Ntheta);
 
     // Rotate around x
 
@@ -107,7 +109,7 @@ void testRotatedVolumesHex(const vertexVector& v, const vector n)
 
     vertexVector hex = v;
 
-    for (int i = 0; i < 72; i++)
+    for (int i = 0; i < Ntheta; i++)
     {
         testVolumeHex(hex, n);
 
@@ -125,7 +127,7 @@ void testRotatedVolumesHex(const vertexVector& v, const vector n)
 
     hex = v;
 
-    for (int i = 0; i < 72; i++)
+    for (int i = 0; i < Ntheta; i++)
     {
         testVolumeHex(hex, n);
 
@@ -143,7 +145,7 @@ void testRotatedVolumesHex(const vertexVector& v, const vector n)
 
     hex = v;
 
-    for (int i = 0; i < 72; i++)
+    for (int i = 0; i < Ntheta; i++)
     {
         testVolumeHex(hex, n);
 
@@ -153,7 +155,8 @@ void testRotatedVolumesHex(const vertexVector& v, const vector n)
 
 void testRotatedVolumesPiped(const vertexVector& v, const vector n)
 {
-    const scalar theta = 5.0/360*2*Foam::constant::mathematical::pi;
+    const scalar theta =
+        2.0*Foam::constant::mathematical::pi/scalar(Ntheta);
 
     // Rotate around x
 
@@ -166,7 +169,7 @@ void testRotatedVolumesPiped(const vertexVector& v, const vector n)
 
     vertexVector hex = v;
 
-    for (int i = 0; i < 72; i++)
+    for (int i = 0; i < Ntheta; i++)
     {
         testVolumePiped(hex, n);
 
@@ -184,7 +187,7 @@ void testRotatedVolumesPiped(const vertexVector& v, const vector n)
 
     hex = v;
 
-    for (int i = 0; i < 72; i++)
+    for (int i = 0; i < Ntheta; i++)
     {
         testVolumePiped(hex, n);
 
@@ -202,7 +205,7 @@ void testRotatedVolumesPiped(const vertexVector& v, const vector n)
 
     hex = v;
 
-    for (int i = 0; i < 72; i++)
+    for (int i = 0; i < Ntheta; i++)
     {
         testVolumePiped(hex, n);
 
@@ -327,7 +330,8 @@ void testRotatedLVE
     const word method
 )
 {
-    const scalar theta = 5.0/360*2*Foam::constant::mathematical::pi;
+    const scalar theta =
+        2.0*Foam::constant::mathematical::pi/scalar(Ntheta);
 
     // Rotate around x
 
@@ -340,7 +344,7 @@ void testRotatedLVE
 
     vertexVector hex = v;
 
-    for (int i = 0; i < 72; i++)
+    for (int i = 0; i < Ntheta; i++)
     {
         testLVE(vf, hex, n, method);
 
@@ -358,7 +362,7 @@ void testRotatedLVE
 
     hex = v;
 
-    for (int i = 0; i < 72; i++)
+    for (int i = 0; i < Ntheta; i++)
     {
         testLVE(vf, hex, n, method);
 
@@ -376,7 +380,7 @@ void testRotatedLVE
 
     hex = v;
 
-    for (int i = 0; i < 72; i++)
+    for (int i = 0; i < Ntheta; i++)
     {
         testLVE(vf, hex, n, method);
 
@@ -486,19 +490,17 @@ int main(int argc, char *argv[])
 
         // Test cells
 
-        label N = 100;
-
         const colocatedVertexVectorField& v =
             fvMsh.template metrics<colocated>().vertexCenters();
 
         const colocatedScalarField& cv =
             fvMsh.template metrics<colocated>().cellVolumes();
 
-        for (int i = 0; i <= N; i++)
+        for (int i = 0; i <= NC; i++)
         {
             colocatedScalarField& a = vf.alpha();
 
-            a = scalar(i)/N;
+            a = scalar(i)/NC;
 
             forAllCells(a, i, j, k)
             {
@@ -511,7 +513,5 @@ int main(int argc, char *argv[])
                         << "Test 3 failed" << endl << abort(FatalError);
             }
         }
-
     }
-
 }
