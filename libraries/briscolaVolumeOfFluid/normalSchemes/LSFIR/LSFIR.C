@@ -324,7 +324,6 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
     for (int iter = 0; iter < maxIterNumber; iter ++)
     {
-
         // Check the stopping criterion
 
         reduce(updatedNormals, maxOp<int>());
@@ -416,7 +415,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
                 for (int aux1 = 1; aux1 < 8; aux1++)
                 {
-                    if (Foam::mag(SortedCs[aux1-1] - SortedCs[aux1]) < 1e-12)
+                    if (Foam::mag(SortedCs[aux1-1] - SortedCs[aux1])/Foam::mag(SortedCs[0] - SortedCs[7]) < 1e-8)
                     {
                         Kmap[sortedCsIndex[aux1]] = Knum;
                     }
@@ -819,6 +818,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
         }
 
         xn.ref()[0].correctBoundaryConditions();
+        tn.ref()[0].correctBoundaryConditions();
 
         // Minimize the square problem for all cells and store the solution
 
@@ -827,7 +827,6 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
             if ((alpha(i,j,k) > vof::threshold) && (alpha(i,j,k) < 1 - vof::threshold))
             {
-
                 int d1 = 0;
                 int d2 = 1;
                 int d3 = 2;
@@ -872,10 +871,10 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
                             if
                             (
-                                (alpha(i+aux1-1,j+aux2-1,k+aux3-1) > 1e-12)
+                                (alpha(i+aux1-1,j+aux2-1,k+aux3-1) > vof::threshold)
                              && (
                                     alpha(i+aux1-1,j+aux2-1,k+aux3-1)
-                                  < 1 - 1e-12
+                                  < (1 - vof::threshold)
                                 )
                              && (
                                     (aux1 != 1)
@@ -932,20 +931,20 @@ tmp<colocatedVectorField> LSFIR::operator()()
                         if
                         (
                             (A[0][0] == 0.0 && A[1][1] != 0)
-                            || (Foam::mag(A[0][0]/A[1][1]) < 1e-12)
+                            || (Foam::mag(A[0][0]/stabilise(A[1][1], 1e-40)) < 1e-12)
                         )
                         {
                             nc[d2] = 0.0;
-                            nc[d3] = b[1] / A[1][1];
+                            nc[d3] = b[1] / stabilise(A[1][1], 1e-40);
                         }
                         else if
                         (
                             (A[0][0] != 0.0 && A[1][1] == 0)
-                            || (Foam::mag(A[1][1]/A[0][0]) < 1e-12)
+                            || (Foam::mag(A[1][1]/stabilise(A[0][0], 1e-40)) < 1e-12)
                         )
                         {
                             nc[d3] = 0.0;
-                            nc[d2] = b[0] / A[0][0];
+                            nc[d2] = b[0] / stabilise(A[0][0], 1e-40);
                         }
                         else
                         {
@@ -1015,6 +1014,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
                 n(i,j,k) = n_new(i,j,k);
             }
         }
+
     }
 
     return tn;

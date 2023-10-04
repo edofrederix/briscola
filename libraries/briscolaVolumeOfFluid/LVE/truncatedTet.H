@@ -35,7 +35,7 @@ class truncatedTet
     inline vector intersectionPoint(const label i, const label j) const
     {
         const vector d = v_[j] - v_[i];
-        scalar factor = - (C_ + (n_ & v_[i]))/(n_ & d);
+        scalar factor = - (C_ + (n_ & v_[i]))/stabilise(n_ & d, 1e-16);
 
         if (factor >= 0 && factor <= 1)
             return v_[i] + factor * d;

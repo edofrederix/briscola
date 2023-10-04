@@ -360,7 +360,7 @@ inline scalar LVE::newtonCubicSolver
         dfn = (1.0/6.0) * ((3.0 * alpha3 * Foam::sqr(Cn))
             + (2.0 * alpha2 * Cn) + (alpha1));
 
-        Cn = Cn - fn / (dfn);
+        Cn = Cn - fn / (stabilise(dfn,1e-25));
     }
 
     return LVE::bisectionCubicSolver
