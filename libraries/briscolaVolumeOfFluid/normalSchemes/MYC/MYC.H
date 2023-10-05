@@ -16,7 +16,6 @@ class MYC
 :
     public normalScheme
 {
-
 public:
 
     // Runtime type information

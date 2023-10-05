@@ -60,7 +60,8 @@ public:
     }
 
     // Destructor
-    virtual ~truncatedPiped();
+    inline ~truncatedPiped()
+    {}
 
     // Access to the vertices
     inline vector lba() const { return lba_; }
@@ -75,7 +76,7 @@ public:
     inline scalar C() const { return C_; }
 
     // Compute the volume
-    virtual scalar volume() const;
+    inline scalar volume() const;
 
 };
 

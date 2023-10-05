@@ -16,8 +16,12 @@ class LSGIR
 :
     public normalScheme
 {
+protected:
+
     // Boundary type stencil (true for parallel, periodic and empty boundaries)
     bool boundaryType_[3][3][3];
+
+private:
 
     // Construct boundaryType
     void createBoundaryType();

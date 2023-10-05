@@ -12,14 +12,6 @@ namespace fv
 const scalar LVE::tol_ = 1e-8;
 const label LVE::maxIter_ = 100;
 
-LVE::LVE(const bool rectilinear)
-:
-    rectilinear_(rectilinear)
-{}
-
-LVE::~LVE()
-{}
-
 }
 
 }

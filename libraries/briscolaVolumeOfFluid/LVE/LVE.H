@@ -81,10 +81,14 @@ class LVE
 public:
 
     // Construct from rectilinear bool
-    LVE(const bool rectilinear);
+    inline LVE(const bool rectilinear)
+    :
+        rectilinear_(rectilinear)
+    {}
 
     // Destructor
-    ~LVE();
+    inline ~LVE()
+    {}
 
     // CIBRAVE algorithm
 
@@ -103,8 +107,8 @@ public:
         const scalar& f
     ) const;
 
-    // Solve the local volume enforcement problem on parallelepiped quadrilater
-    // hexahedrons
+    // Solve the local volume enforcement problem on parallelepiped
+    // quadrilateral hexahedrons
     inline scalar pLVE
     (
         const vertexVector& vertices,

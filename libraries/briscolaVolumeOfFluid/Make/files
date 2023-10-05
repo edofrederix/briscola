@@ -1,9 +1,6 @@
 vof.C
 
 LVE/LVE.C
-LVE/truncatedHex.C
-LVE/truncatedPiped.C
-LVE/truncatedTet.C
 
 normalSchemes/normalScheme/normalScheme.C
 normalSchemes/Youngs/Youngs.C

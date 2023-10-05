@@ -19,32 +19,10 @@ namespace fv
 defineTypeNameAndDebug(LSFIR, 0);
 addToRunTimeSelectionTable(normalScheme, LSFIR, dictionary);
 
-LSFIR::LSFIR(const vof& vf, const dictionary& dict)
-:
-    normalScheme(vf, dict),
-    planarFaces_(dict.lookupOrDefault<bool>("planarFaces", true)),
-    centerAveraging_(dict.lookupOrDefault<bool>("centerAveraging", false))
-{
-    createBoundaryTypes();
-    createHexagonDescription();
-}
-
-LSFIR::LSFIR(const LSFIR& s)
-:
-    normalScheme(s),
-    planarFaces_(s.planarFaces_),
-    centerAveraging_(s.centerAveraging_)
-{
-    createBoundaryTypes();
-    createHexagonDescription();
-}
-
-LSFIR::~LSFIR()
-{}
 
 void LSFIR::createBoundaryTypes()
 {
-    const faceLabel faceType = vf_.fvMsh().msh().facePatchType();
+    const faceLabel& faceType = vf_.fvMsh().msh().facePatchType();
 
     for (int i = 0; i < 3; i++)
     {
@@ -61,14 +39,14 @@ void LSFIR::createBoundaryTypes()
                     {
                         aux1 =
                             (i == 0)
-                          ? (aux1 && (faceType.left() > 0))
-                          : (aux1 && (faceType.right() > 0));
+                          ? (aux1 && faceType.left() > 0)
+                          : (aux1 && faceType.right() > 0);
                     }
 
                     aux2 =
                         (i == 0)
-                      ? (aux2 && (faceType.left() > 0))
-                      : (aux2 && (faceType.right() > 0));
+                      ? (aux2 && faceType.left() > 0)
+                      : (aux2 && faceType.right() > 0);
                 }
 
                 if (j != 1)
@@ -77,14 +55,14 @@ void LSFIR::createBoundaryTypes()
                     {
                         aux1 =
                             (j == 0)
-                          ? (aux1 && (faceType.bottom() > 0))
-                          : (aux1 && (faceType.top() > 0));
+                          ? (aux1 && faceType.bottom() > 0)
+                          : (aux1 && faceType.top() > 0);
                     }
 
                     aux2 =
                         (j == 0)
-                      ? (aux2 && (faceType.bottom() > 0))
-                      : (aux2 && (faceType.top() > 0));
+                      ? (aux2 && faceType.bottom() > 0)
+                      : (aux2 && faceType.top() > 0);
                 }
 
                 if (k != 1)
@@ -93,18 +71,17 @@ void LSFIR::createBoundaryTypes()
                     {
                         aux1 =
                             (k == 0)
-                          ? (aux1 && (faceType.aft() > 0))
-                          : (aux1 && (faceType.fore() > 0));
+                          ? aux1 && (faceType.aft() > 0)
+                          : aux1 && (faceType.fore() > 0);
                     }
                     aux2 =
                         (k == 0)
-                      ? (aux2 && (faceType.aft() > 0))
-                      : (aux2 && (faceType.fore() > 0));
+                      ? (aux2 && faceType.aft() > 0)
+                      : (aux2 && faceType.fore() > 0);
                 }
 
                 boundaryTypeLSGIR_[i][j][k] = aux1;
                 boundaryTypeLSFIR_[i][j][k] = aux2;
-
             }
         }
     }
@@ -153,6 +130,28 @@ void LSFIR::createHexagonDescription()
     }
 }
 
+LSFIR::LSFIR(const vof& vf, const dictionary& dict)
+:
+    normalScheme(vf, dict),
+    planarFaces_(dict.lookupOrDefault<bool>("planarFaces", true)),
+    centerAveraging_(dict.lookupOrDefault<bool>("centerAveraging", false))
+{
+    createBoundaryTypes();
+    createHexagonDescription();
+}
+
+LSFIR::LSFIR(const LSFIR& s)
+:
+    normalScheme(s),
+    planarFaces_(s.planarFaces_),
+    centerAveraging_(s.centerAveraging_)
+{
+    createBoundaryTypes();
+    createHexagonDescription();
+}
+
+LSFIR::~LSFIR()
+{}
 
 tmp<colocatedVectorField> LSFIR::operator()()
 {
@@ -190,7 +189,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
     tmp<colocatedVectorField> xn
     (
-        new colocatedVectorField(
+        new colocatedVectorField
+        (
             "surface_centers",
             vf_.fvMsh()
         )
@@ -199,6 +199,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
     colocatedVectorField& xgi = xn.ref();
 
     const scalar angleTol = Foam::cos(1e-3);
+
     const scalar validAngleTol =
         Foam::cos(0.25 * Foam::constant::mathematical::pi);
 
@@ -209,7 +210,11 @@ tmp<colocatedVectorField> LSFIR::operator()()
         int index;
         scalar weight;
 
-        if ((alpha(i,j,k) > vof::threshold) && (alpha(i,j,k) < 1 - vof::threshold))
+        if
+        (
+            (alpha(i,j,k) > vof::threshold)
+         && (alpha(i,j,k) < 1 - vof::threshold)
+        )
         {
             double Aaux[26][3] = {0};
             double baux[26] = {0};
@@ -449,7 +454,6 @@ tmp<colocatedVectorField> LSFIR::operator()()
                         Kf = aux1 - 1;
                     }
                 }
-
 
                 for (int aux1 = 0; aux1 < 8; aux1++)
                 {
@@ -940,7 +944,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
                         else if
                         (
                             (A[0][0] != 0.0 && A[1][1] == 0)
-                            || (Foam::mag(A[1][1]/stabilise(A[0][0], 1e-40)) < 1e-12)
+                         || (Foam::mag(A[1][1]/stabilise(A[0][0], 1e-40)) < 1e-12)
                         )
                         {
                             nc[d3] = 0.0;
@@ -1009,7 +1013,11 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
         forAllCells(n, i, j, k)
         {
-            if ((alpha(i,j,k) > vof::threshold) && (alpha(i,j,k) < 1 - vof::threshold))
+            if
+            (
+                (alpha(i,j,k) > vof::threshold)
+             && (alpha(i,j,k) < 1 - vof::threshold)
+            )
             {
                 n(i,j,k) = n_new(i,j,k);
             }

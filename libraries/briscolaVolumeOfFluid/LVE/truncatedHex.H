@@ -53,7 +53,8 @@ public:
     }
 
     // Destructor
-    virtual ~truncatedHex();
+    inline ~truncatedHex()
+    {}
 
     // Access to the vertices
     inline const vertexVector& v() const { return v_; }

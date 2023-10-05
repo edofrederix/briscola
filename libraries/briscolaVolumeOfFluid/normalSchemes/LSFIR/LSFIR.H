@@ -16,7 +16,7 @@ class LSFIR
 :
     public normalScheme
 {
-    // mesh formed by hexaedrons with planar faces (default true)
+    // Mesh formed by hexahedrons with planar faces (default true)
     bool planarFaces_;
 
     // True for using vertex averages instead of centers of mass (default false)

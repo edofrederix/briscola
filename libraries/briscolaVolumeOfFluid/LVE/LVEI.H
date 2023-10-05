@@ -424,7 +424,7 @@ inline scalar LVE::bisectionCubicSolver
     return - Cn;
 }
 
-scalar LVE::cLVE
+inline scalar LVE::cLVE
 (
     const vertexVector& v,
     const vector& n,
@@ -1061,12 +1061,12 @@ inline scalar LVE::cLVE
                 crossProductComponent
                 (
                     (
-                        v[faceTriangleDecompCC[j][2]] -
-                        v[faceTriangleDecompCC[j][0]]
+                        v[faceTriangleDecompCC[j][2]]
+                      - v[faceTriangleDecompCC[j][0]]
                     ),
                     (
-                        v[faceTriangleDecompCC[j][0]] -
-                        v[faceTriangleDecompCC[j][1]]
+                        v[faceTriangleDecompCC[j][0]]
+                      - v[faceTriangleDecompCC[j][1]]
                     ),
                     maxNormalIndex[j]
                 );

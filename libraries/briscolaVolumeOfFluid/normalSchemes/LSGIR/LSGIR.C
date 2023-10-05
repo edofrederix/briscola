@@ -15,6 +15,49 @@ namespace fv
 defineTypeNameAndDebug(LSGIR, 0);
 addToRunTimeSelectionTable(normalScheme, LSGIR, dictionary);
 
+void LSGIR::createBoundaryType()
+{
+    const faceLabel& faceType =
+        vf_.fvMsh().msh().facePatchType();
+
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            for (int k = 0; k < 3; k++)
+            {
+                bool aux = true;
+
+                if ((vf_.fvMsh()[0].l() > 1) && (i != 1))
+                {
+                    aux =
+                        (i == 0)
+                      ? (aux && (faceType.left()  > 0))
+                      : (aux && (faceType.right() > 0));
+                }
+
+                if ((vf_.fvMsh()[0].m() > 1) && (j != 1))
+                {
+                    aux =
+                        (j == 0)
+                      ? (aux && (faceType.bottom() > 0))
+                      : (aux && (faceType.top()    > 0));
+                }
+
+                if ((vf_.fvMsh()[0].n() > 1) && (k != 1))
+                {
+                    aux =
+                        (k == 0)
+                      ? (aux && (faceType.aft()  > 0))
+                      : (aux && (faceType.fore() > 0));
+                }
+
+                boundaryType_[i][j][k] = aux;
+            }
+        }
+    }
+}
+
 LSGIR::LSGIR(const vof& vf, const dictionary& dict)
 :
     normalScheme(vf, dict)
@@ -31,41 +74,6 @@ LSGIR::LSGIR(const LSGIR& s)
 
 LSGIR::~LSGIR()
 {}
-
-void LSGIR::createBoundaryType()
-{
-    const faceLabel& faceType =
-        vf_.fvMsh().msh().facePatchType();
-
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            for (int k = 0; k < 3; k++)
-            {
-                bool aux = true;
-
-                if ((vf_.fvMsh()[0].l() > 1) && (i != 1))
-                {
-                    aux = (i == 0) ? (aux && (faceType.left() > 0)) : (aux && (faceType.right() > 0));
-                }
-
-                if ((vf_.fvMsh()[0].m() > 1) && (j != 1))
-                {
-                    aux = (j == 0) ? (aux && (faceType.bottom() > 0)) : (aux && (faceType.top() > 0));
-                }
-
-                if ((vf_.fvMsh()[0].n() > 1) && (k != 1))
-                {
-                    aux = (k == 0) ? (aux && (faceType.aft() > 0)) : (aux && (faceType.fore() > 0));
-                }
-
-                boundaryType_[i][j][k] = aux;
-
-            }
-        }
-    }
-}
 
 tmp<colocatedVectorField> LSGIR::operator()()
 {
@@ -97,6 +105,7 @@ tmp<colocatedVectorField> LSGIR::operator()()
         {
             double Aaux[26][3] = {0};
             double baux[26] = {0};
+
             tensor A = Zero;
             vector b = Zero;
 
@@ -118,7 +127,7 @@ tmp<colocatedVectorField> LSGIR::operator()()
 
                         if
                         (
-                            ((aux1 != 1) || (aux2 != 1) || (aux3 != 1))
+                            (aux1 != 1 || aux2 != 1 || aux3 != 1)
                          && (interiorNode || boundaryType_[aux1][aux2][aux3])
                         )
                         {
@@ -176,7 +185,7 @@ tmp<colocatedVectorField> LSGIR::operator()()
                 {
                     for (int aux2 = 0; aux2 < 3; aux2++)
                     {
-                        A[3 * aux1 + aux2] +=
+                        A[3*aux1 + aux2] +=
                             Aaux[aux3][aux1] * Aaux[aux3][aux2];
                     }
 
@@ -185,8 +194,7 @@ tmp<colocatedVectorField> LSGIR::operator()()
             }
 
             n(i,j,k) = A.inv() & b;
-            const scalar S = Foam::mag(n(i,j,k));
-            n(i,j,k) /= S;
+            n(i,j,k) /= Foam::mag(n(i,j,k));
         }
         else
         {

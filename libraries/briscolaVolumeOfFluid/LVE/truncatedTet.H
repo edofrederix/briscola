@@ -72,7 +72,8 @@ public:
     }
 
     // Destructor
-    virtual ~truncatedTet();
+    inline ~truncatedTet()
+    {}
 
     // Access to the vertices
     inline const vectorList& v() const { return v_; }
