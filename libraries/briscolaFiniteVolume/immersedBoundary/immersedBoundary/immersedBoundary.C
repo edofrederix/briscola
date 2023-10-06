@@ -12,6 +12,7 @@ namespace fv
 using Foam::max;
 using Foam::min;
 using Foam::sqr;
+using Foam::mag;
 
 // Constructor
 
@@ -23,10 +24,46 @@ immersedBoundary<Type,MeshType>::immersedBoundary
 )
 :
     fvMsh_(fvMsh),
-    mask_("mask", fvMsh_),
-    wallAdjMask_("wallAdjMask", fvMsh_),
-    wallDist_("wallDist", fvMsh_),
-    neighborDist_("neighborDist", fvMsh_)
+    mask_
+    (
+        "mask",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        true
+    ),
+    wallAdjMask_
+    (
+        "wallAdjMask",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        true
+    ),
+    wallDist_
+    (
+        "wallDist",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        true
+    ),
+    neighborDist_
+    (
+        "neighborDist",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        true
+    )
 {
     if (solverDict.found("ImmersedBoundary"))
     {
@@ -106,53 +143,47 @@ immersedBoundary<Type,MeshType>::immersedBoundary
             fvMsh_.metrics<MeshType>().cellCenters();
 
         // Set IB mask fields
-        forAll(mask_, l)
+        forAllLevels(mask_,l,d,i,j,k)
         {
-            forAll(mask_[l], d)
+            const labelVector ijk(i,j,k);
+
+            mask_(l,d,i,j,k) = 0.0;
+            wallAdjMask_(l,d,i,j,k) = 0.0;
+            wallDist_(l,d,i,j,k) = -1.0;
+            neighborDist_(l,d,i,j,k) = -1.0;
+
+            if (this->isInside(CC(l,d,i,j,k)))
             {
-                forAllCells(mask_[l][d], i, j, k)
+                mask_(l,d,i,j,k) = 1.0;
+            }
+            else
+            {
+                const vector c(CC(l,d,i,j,k));
+
+                for (int dir = 0; dir < 6; dir++)
                 {
-                    const labelVector ijk(i,j,k);
+                    const labelVector fo = faceOffsets[dir];
+                    const label oppositeDir = faceNumber(-fo);
 
-                    mask_[l][d](i,j,k) = 0.0;
-                    wallAdjMask_[l][d](i,j,k) = 0.0;
-                    wallDist_[l][d](i,j,k) = -1.0;
-                    neighborDist_[l][d](i,j,k) = -1.0;
-
-                    if (this->isInside(CC[l][d](i,j,k)))
+                    if
+                    (
+                        this->isInside(CC[l][d](ijk+fo))
+                    )
                     {
-                        mask_[l][d](i,j,k) = 1.0;
-                    }
-                    else
-                    {
-                        const vector c(CC[l][d](i,j,k));
+                        wallAdjMask_(l,d,i,j,k) = 1.0;
 
-                        for (int dir = 0; dir < 6; dir++)
-                        {
-                            const labelVector fo = faceOffsets[dir];
-                            const label oppositeDir = faceNumber(-fo);
+                        // Neighbor cell in the IB
+                        const vector nb(CC[l][d](ijk+fo));
+                        const scalar wd = this->wallDistance(c,nb);
+                        const scalar xi = (mag(c-nb)-wd)/mag(c-nb);
 
-                            if
-                            (
-                                this->isInside(CC[l][d](ijk+fo))
-                            )
-                            {
-                                wallAdjMask_[l][d](i,j,k) = 1.0;
+                        wallDist_(l,d,i,j,k)[dir] = xi;
 
-                                // Neighbor cell in the IB
-                                const vector nb(CC[l][d](ijk+fo));
-                                const scalar wd = this->wallDistance(c,nb);
-                                const scalar xi = (mag(c-nb)-wd)/mag(c-nb);
+                        // Neighbor cell in the opposite direction
+                        const vector nbo(CC[l][d](ijk-fo));
+                        const scalar xi2 = mag(nbo-nb)/mag(c-nb);
 
-                                wallDist_[l][d](i,j,k)[dir] = xi;
-
-                                // Neighbor cell in the opposite direction
-                                const vector nbo(CC[l][d](ijk-fo));
-                                const scalar xi2 = mag(nbo-nb)/mag(c-nb);
-
-                                neighborDist_[l][d](i,j,k)[oppositeDir] = xi2;
-                            }
-                        }
+                        neighborDist_(l,d,i,j,k)[oppositeDir] = xi2;
                     }
                 }
             }
@@ -209,7 +240,7 @@ scalar immersedBoundary<Type,MeshType>::wallDistance(vector c, vector nb)
 
     for (int s = 0; s < shapes_.size(); s++)
     {
-        if (dist == -1)
+        if (mag(dist+1) < 0.01)
         {
             dist = shapes_[s].wallDistance(c, nb);
         }
@@ -250,16 +281,10 @@ void immersedBoundary<Type,MeshType>::penalization
     ls.A() *= (1.0 - mask_);
     ls.b() *= (1.0 - mask_);
 
-    forAll(ls.A(), l)
+    forAllLevels(ls.A(),l,d,i,j,k)
     {
-        forAll(ls.A()[l], d)
-        {
-            forAllCells(ls.A()[l][d], i, j, k)
-            {
-                // Set central coefficients to 1 in IB
-                ls.A()[l][d](i,j,k).center() += mask_[l][d](i,j,k);
-            }
-        }
+        // Set central coefficients to 1 in IB
+        ls.A()(l,d,i,j,k).center() += mask_(l,d,i,j,k);
     }
 }
 
@@ -269,54 +294,48 @@ void immersedBoundary<Type,MeshType>::IBM
     linearSystem<stencil,Type,MeshType>& ls
 )
 {
-    forAll(ls.A(),l)
+    forAllLevels(ls.A(),l,d,i,j,k)
     {
-        forAll(ls.A()[l], d)
+        // Modify stencils in IB-adjacent cells
+        if (mag(wallAdjMask_(l,d,i,j,k) - 1.0) < 0.01)
         {
-            forAllCells(ls.A()[l][d], i, j, k)
+            // Loop over face number directions
+            for (int dir = 0; dir < 6; dir++)
             {
-                // Modify stencils in IB-adjacent cells
-                if (wallAdjMask_[l][d](i,j,k) == 1.0)
+                const label oppositeDir =
+                    faceNumber(-faceOffsets[dir]);
+
+                if (wallDist_(l,d,i,j,k)[dir] >= 0)
                 {
-                    // Loop over face number directions
-                    for (int dir = 0; dir < 6; dir++)
+                    const scalar xi
+                        = wallDist_(l,d,i,j,k)[dir];
+
+                    const scalar xi2
+                        = neighborDist_(l,d,i,j,k)[oppositeDir];
+
+                    scalar w0 = 2.0 /
+                        (
+                            (1.0 - xiStabilityFactor_)
+                            * (2.0 - xiStabilityFactor_)
+                        );
+                    scalar w1 = 2.0 - (2.0 - xi) * w0;
+                    scalar w2 = -1.0 + (1.0 - xi) * w0;
+
+                    if (xi < xiStabilityFactor_)
                     {
-                        const label oppositeDir =
-                            faceNumber(-faceOffsets[dir]);
-
-                        if (wallDist_[l][d](i,j,k)[dir] >= 0)
-                        {
-                            const scalar xi
-                                = wallDist_[l][d](i,j,k)[dir];
-
-                            const scalar xi2
-                                = neighborDist_[l][d](i,j,k)[oppositeDir];
-
-                            scalar w0 = 2.0 /
-                                (
-                                    (1.0 - xiStabilityFactor_)
-                                    * (2.0 - xiStabilityFactor_)
-                                );
-                            scalar w1 = 2.0 - (2.0 - xi) * w0;
-                            scalar w2 = -1.0 + (1.0 - xi) * w0;
-
-                            if (xi < xiStabilityFactor_)
-                            {
-                                w1 = xi*xi2/((1.0-xi)*(1.0-xi2));
-                                w2 = xi/((xi2-xi)*(xi2-1.0));
-                            }
-
-                            // faceScalar and stencil directions are offset by 1
-
-                            const scalar a0 = ls.A()[l][d](i,j,k)[dir+1];
-
-                            ls.A()[l][d](i,j,k)[dir+1] = 0.0;
-
-                            ls.A()[l][d](i,j,k).center() += a0*w1;
-
-                            ls.A()[l][d](i,j,k)[oppositeDir+1] += a0*w2;
-                        }
+                        w1 = xi*xi2/((1.0-xi)*(1.0-xi2));
+                        w2 = xi/((xi2-xi)*(xi2-1.0));
                     }
+
+                    // faceScalar and stencil directions are offset by 1
+
+                    const scalar a0 = ls.A()(l,d,i,j,k)[dir+1];
+
+                    ls.A()(l,d,i,j,k)[dir+1] = 0.0;
+
+                    ls.A()(l,d,i,j,k).center() += a0*w1;
+
+                    ls.A()(l,d,i,j,k)[oppositeDir+1] += a0*w2;
                 }
             }
         }
@@ -329,36 +348,30 @@ void immersedBoundary<Type,MeshType>::IBM2
     linearSystem<stencil,Type,MeshType>& ls
 )
 {
+    ls.b() *= (1.0 - wallAdjMask_);
 
-    forAll(ls.A(),l)
+    forAllLevels(ls.A(),l,d,i,j,k)
     {
-        forAll(ls.A()[l], d)
+        // Modify stencils in IB-adjacent cells
+        if (mag(wallAdjMask_(l,d,i,j,k) - 1.0) < 0.01)
         {
-            forAllCells(ls.A()[l][d], i, j, k)
+            scalar ximax = 0;
+            // Loop over face number directions
+            for (int dir = 0; dir < 6; dir++)
             {
-                // Modify stencils in IB-adjacent cells
-                if (wallAdjMask_[l][d](i,j,k) == 1.0)
+                const label oppositeDir =
+                    faceNumber(-faceOffsets[dir]);
+
+                if (wallDist_(l,d,i,j,k)[dir] > ximax)
                 {
-                    scalar ximax = 0;
-                    // Loop over face number directions
-                    for (int dir = 0; dir < 6; dir++)
-                    {
-                        const label oppositeDir =
-                            faceNumber(-faceOffsets[dir]);
+                    ximax = wallDist_(l,d,i,j,k)[dir];
+                    const scalar xic = 1.0 - wallDist_(l,d,i,j,k)[dir];
+                    const scalar xinb = 1.0 + xic;
+                    const scalar w = xic/xinb;
 
-                        if (wallDist_[l][d](i,j,k)[dir] >= ximax)
-                        {
-                            ximax = wallDist_[l][d](i,j,k)[dir];
-                            const scalar xic = 1.0 - wallDist_[l][d](i,j,k)[dir];
-                            const scalar xinb = 1.0 + xic;
-                            const scalar w = xic/xinb;
-
-                            ls.A()[l][d](i,j,k) = Zero;
-                            ls.b()[l][d](i,j,k) = Zero;
-                            ls.A()[l][d](i,j,k).center() = 1.0;
-                            ls.A()[l][d](i,j,k)[oppositeDir+1] = -w;
-                        }
-                    }
+                    ls.A()(l,d,i,j,k) = Zero;
+                    ls.A()(l,d,i,j,k).center() = 1.0;
+                    ls.A()(l,d,i,j,k)[oppositeDir+1] = -w;
                 }
             }
         }

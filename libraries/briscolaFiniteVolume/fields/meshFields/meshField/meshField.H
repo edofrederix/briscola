@@ -4,6 +4,7 @@
 #include "block.H"
 #include "IOdictionary.H"
 #include "autoPtr.H"
+#include "PtrList.H"
 
 #include "meshLevel.H"
 #include "boundaryCondition.H"
@@ -23,6 +24,9 @@ template<class SType, class Type, class MeshType>
 class linearSystem;
 
 template<class Type, class MeshType>
+class restrictionScheme;
+
+template<class Type, class MeshType>
 class meshField
 :
     public PtrList<meshLevel<Type,MeshType>>,
@@ -39,13 +43,19 @@ class meshField
     // Boundary conditions
     PtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
 
+    // Restriction scheme associated with this field
+    autoPtr<restrictionScheme<Type,MeshType>> reScheme_;
+
 protected:
 
     // Allocate data and specify depth
     void allocate(const bool);
 
+    // Set field pointers in levels, needed when data is transferred
+    void setFieldPointers();
+
     // Transfer data from other mesh field
-    void transferData(meshField<Type,MeshType>&);
+    void transfer(meshField<Type,MeshType>&);
 
     // Check if the given field's depth is compatible with this field's depth to
     // execute a member operator
@@ -82,7 +92,7 @@ public:
         const IOobject::writeOption w = NO_WRITE,
         const bool registerObject = false,
         const bool initBCs = false,
-        const bool deep = true
+        const bool deep = false
     );
 
     // Copy constructors: construct from field or tmp of field with option to
@@ -134,6 +144,15 @@ public:
     // perform any bounds checking which is expensive.
     inline meshLevel<Type,MeshType>& operator[](label l)
     {
+        #ifdef FULLDEBUG
+
+        if (l < 0 || l >= listType::size())
+            FatalErrorInFunction
+                << "Index " << l << " out of range 0 ... " << listType::size()-1
+                << endl << abort(FatalError);
+
+        #endif
+
         return *const_cast<meshLevel<Type,MeshType>*>
         (
             listType::operator()(l)
@@ -144,11 +163,97 @@ public:
     // doesn't perform any bounds checking which is expensive.
     inline const meshLevel<Type,MeshType>& operator[](label l) const
     {
+        #ifdef FULLDEBUG
+
+        if (l < 0 || l >= listType::size())
+            FatalErrorInFunction
+                << "Index " << l << " out of range 0 ... " << listType::size()-1
+                << endl << abort(FatalError);
+
+        #endif
+
         return *listType::operator()(l);
+    }
+
+    // Alias access function
+    inline meshLevel<Type,MeshType>& level(const int l)
+    {
+        return this->operator[](l);
+    }
+
+    // Alias access function
+    inline const meshLevel<Type,MeshType>& level(const int l) const
+    {
+        return this->operator[](l);
+    }
+
+    // Access to the first level
+    inline meshLevel<Type,MeshType>& level()
+    {
+        return this->operator[](0);
+    }
+
+    // Const access to the first level
+    inline const meshLevel<Type,MeshType>& level() const
+    {
+        return this->operator[](0);
+    }
+
+    // Access to the first direction of the first level
+    inline meshDirection<Type,MeshType>& direction()
+    {
+        return this->operator[](0)[0];
+    }
+
+    // Const access to the first direction of the first level
+    inline const meshDirection<Type,MeshType>& direction() const
+    {
+        return this->operator[](0)[0];
+    }
+
+    // Access to the given direction of the first level
+    inline meshDirection<Type,MeshType>& direction(const int d)
+    {
+        return this->operator[](0)[d];
+    }
+
+    // Const access to the given direction of the first level
+    inline const meshDirection<Type,MeshType>& direction(const int d) const
+    {
+        return this->operator[](0)[d];
+    }
+
+    // Access to the given direction and level
+    inline meshDirection<Type,MeshType>& direction
+    (
+        const int l,
+        const int d
+    )
+    {
+        return this->operator[](l)[d];
+    }
+
+    // Const access to the given direction and level
+    inline const meshDirection<Type,MeshType>& direction
+    (
+        const int l,
+        const int d
+    ) const
+    {
+        return this->operator[](l)[d];
     }
 
     // Number of levels
     inline label size() const { return listType::size(); }
+
+    // Alias to size
+    inline label numberOfLevels() const { return size(); }
+
+    // Number of directions
+    inline label numberOfDirections() const
+    {
+        return MeshType::numberOfDirections;
+    }
 
     // Return the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
@@ -189,7 +294,7 @@ public:
     void addBoundaryConditions();
 
     // Correct boundary conditions
-    void correctBoundaryConditions(const bool = false);
+    void correctBoundaryConditions();
 
     // Correct parallel boundary conditions
     void correctParallelBoundaryConditions();
@@ -200,9 +305,8 @@ public:
     // Correct communicating (parallel and periodic) boundary conditions
     void correctCommBoundaryConditions();
 
-    // Check if boundary conditions are singular, which is true if all boundary
-    // conditions are empty, parallel, periodic or Neumann
-    bool singularBoundaryConditions();
+    // Correct non-communicating boundary conditions
+    void correctNonCommBoundaryConditions();
 
     // Set the old time field
     void setOldTime();
@@ -233,6 +337,13 @@ public:
     {
         return !deep();
     }
+
+    // Set the restriction operator that is associated with this field
+    void setRestrictionScheme(const word scheme);
+
+    // Restrict the field to lower levels. If no restriction scheme is set, set
+    // the default restriction scheme first. A shallow field will be made deep.
+    void restrict();
 
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }
@@ -269,10 +380,16 @@ public:
     template<class Type2> void operator=(const tmp<meshField<Type2,MeshType>>&);
 
     template<class Type2> void operator+=(const meshField<Type2,MeshType>&);
-    template<class Type2> void operator+=(const tmp<meshField<Type2,MeshType>>&);
+    template<class Type2> void operator+=
+    (
+        const tmp<meshField<Type2,MeshType>>&
+    );
 
     template<class Type2> void operator-=(const meshField<Type2,MeshType>&);
-    template<class Type2> void operator-=(const tmp<meshField<Type2,MeshType>>&);
+    template<class Type2> void operator-=
+    (
+        const tmp<meshField<Type2,MeshType>>&
+    );
 
     template<class Type2> void operator=(const Type2&);
     template<class Type2> void operator+=(const Type2&);
@@ -281,6 +398,10 @@ public:
     // Allow a parent linear system to make changes to private data
     template<class SType,class,class>
     friend class linearSystem;
+
+    #include "meshLevelFirstDirectionFunctions.H"
+    #include "meshLevelDirectionFunctions.H"
+    #include "meshFieldDirectionFunctions.H"
 };
 
 }

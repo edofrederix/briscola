@@ -10,13 +10,13 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::transferData
+void linearSystem<SType,Type,MeshType>::transfer
 (
     linearSystem<SType,Type,MeshType>& sys
 )
 {
-    A_.transferData(sys.A_);
-    b_.transferData(sys.b_);
+    A_.transfer(sys.A_);
+    b_.transfer(sys.b_);
 
     singular_ = sys.singular_;
 }
@@ -35,7 +35,10 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject::groupName("A", x_.name()),
         fvMsh_,
         IOobject::NO_READ,
-        IOobject::NO_WRITE
+        IOobject::NO_WRITE,
+        false,
+        false,
+        true
     ),
     b_
     (
@@ -61,7 +64,10 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject::groupName("A", x_.name()),
         fvMsh_,
         IOobject::NO_READ,
-        IOobject::NO_WRITE
+        IOobject::NO_WRITE,
+        false,
+        false,
+        true
     ),
     b_
     (
@@ -89,7 +95,10 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject::groupName("A", x_.name()),
         fvMsh_,
         IOobject::NO_READ,
-        IOobject::NO_WRITE
+        IOobject::NO_WRITE,
+        false,
+        false,
+        true
     ),
     b_
     (
@@ -105,7 +114,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         linearSystem<SType,Type,MeshType>& sys =
             const_cast<linearSystem<SType,Type,MeshType>&>(tSys());
 
-        transferData(sys);
+        transfer(sys);
     }
     else
     {
@@ -130,7 +139,10 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject::groupName("A", x_.name()),
         fvMsh_,
         IOobject::NO_READ,
-        IOobject::NO_WRITE
+        IOobject::NO_WRITE,
+        false,
+        false,
+        true
     ),
     b_
     (
@@ -159,7 +171,10 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject::groupName("A", x_.name()),
         fvMsh_,
         IOobject::NO_READ,
-        IOobject::NO_WRITE
+        IOobject::NO_WRITE,
+        false,
+        false,
+        true
     ),
     b_
     (
@@ -175,7 +190,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         linearSystem<SType,Type,MeshType>& sys =
             const_cast<linearSystem<SType,Type,MeshType>&>(tSys());
 
-        transferData(sys);
+        transfer(sys);
     }
     else
     {
@@ -363,22 +378,17 @@ linearSystem<SType,Type,MeshType>::evaluate
 }
 
 template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::correctBoundaries()
+void linearSystem<SType,Type,MeshType>::eliminateGhosts()
 {
     forAll(A_, l)
-        this->correctBoundaries(l);
+        this->eliminateGhosts(l);
 }
 
 template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::correctBoundaries(const label l)
+void linearSystem<SType,Type,MeshType>::eliminateGhosts(const label l)
 {
     forAll(x_.boundaryConditions(), i)
-    {
-        boundaryCondition<Type,MeshType>& bc =
-            x_.boundaryConditions()[i];
-
-        bc.correctSystem(*this, l);
-    }
+        x_.boundaryConditions()[i].eliminateGhosts(*this, l);
 }
 
 template<class SType, class Type, class MeshType>
@@ -403,7 +413,7 @@ void linearSystem<SType,Type,MeshType>::operator=
         linearSystem<SType,Type,MeshType>& sys =
             const_cast<linearSystem<SType,Type,MeshType>&>(tSys());
 
-        transferData(sys);
+        transfer(sys);
     }
     else
     {

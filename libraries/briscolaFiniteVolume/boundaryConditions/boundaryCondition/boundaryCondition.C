@@ -309,6 +309,36 @@ boundaryCondition<Type,MeshType>::globalBaseType
 }
 
 template<class Type, class MeshType>
+inline labelVector boundaryCondition<Type,MeshType>::S
+(
+    const label l,
+    const label d
+) const
+{
+    return this->fvMsh_.template S<MeshType>(l,d,this->boundaryOffset());
+}
+
+template<class Type, class MeshType>
+inline labelVector boundaryCondition<Type,MeshType>::E
+(
+    const label l,
+    const label d
+) const
+{
+    return this->fvMsh_.template E<MeshType>(l,d,this->boundaryOffset());
+}
+
+template<class Type, class MeshType>
+inline labelVector boundaryCondition<Type,MeshType>::N
+(
+    const label l,
+    const label d
+) const
+{
+    return this->fvMsh_.template N<MeshType>(l,d,this->boundaryOffset());
+}
+
+template<class Type, class MeshType>
 const meshField<faceVector,MeshType>&
 boundaryCondition<Type,MeshType>::faceCenters() const
 {
@@ -357,13 +387,7 @@ tmp<block<Type>> boundaryCondition<Type,MeshType>::internalValue
     const label d
 )
 {
-    const labelVector bo(this->boundaryOffset());
-    const meshDirection<Type,MeshType>& fld = mshField_[l][d];
-
-    const labelVector S(fld.boundaryStart(bo));
-    const labelVector E(fld.boundaryEnd(bo));
-
-    return tmp<block<Type>>(new block<Type>(E-S, Zero));
+    return tmp<block<Type>>(new block<Type>(this->N(l,d), Zero));
 }
 
 template<class Type, class MeshType>
@@ -373,17 +397,11 @@ tmp<block<Type>> boundaryCondition<Type,MeshType>::boundarySources
     const label d
 )
 {
-    const labelVector bo(this->boundaryOffset());
-    const meshDirection<Type,MeshType>& fld = mshField_[l][d];
-
-    const labelVector S(fld.boundaryStart(bo));
-    const labelVector E(fld.boundaryEnd(bo));
-
-    return tmp<block<Type>>(new block<Type>(E-S, Zero));
+    return tmp<block<Type>>(new block<Type>(this->N(l,d), Zero));
 }
 
 template<class Type, class MeshType>
-void boundaryCondition<Type,MeshType>::correctSystem
+void boundaryCondition<Type,MeshType>::eliminateGhosts
 (
     linearSystem<stencil,Type,MeshType>& sys,
     const label l
@@ -396,27 +414,24 @@ void boundaryCondition<Type,MeshType>::correctSystem
         const labelVector bo(this->boundaryOffset());
         const label faceNum(faceNumber(bo));
 
-        forAll(mshField_[l], d)
-        {
-            const meshDirection<Type,MeshType>& fld = this->mshField_[l][d];
+        meshField<stencil,MeshType>& A = sys.A();
+        meshField<Type,MeshType>& b = sys.b();
 
+        const meshField<scalar,MeshType>& cv = this->cellVolumes();
+
+        forAll(A[l], d)
+        {
             // Manipulate the linear system for eliminated or constrained
             // boundary conditions
 
-            const bool shifted = fld.shifted(bo);
+            const bool shifted = MeshType::shifted(d,bo);
             const bool eliminated = this->eliminated(shifted);
             const bool constrained = this->constrained(shifted);
 
             if (eliminated || constrained)
             {
-                meshDirection<stencil,MeshType>& Ad = sys.A()[l][d];
-                meshDirection<Type,MeshType>& bd = sys.b()[l][d];
-
-                const meshDirection<scalar,MeshType>& cv =
-                    this->cellVolumes()[l][d];
-
-                const labelVector S(fld.boundaryStart(bo));
-                const labelVector E(fld.boundaryEnd(bo));
+                const labelVector S(this->S(l,d));
+                const labelVector E(this->E(l,d));
 
                 labelVector ijk;
 
@@ -431,10 +446,12 @@ void boundaryCondition<Type,MeshType>::correctSystem
                     {
                         // Eliminate dependence on the ghost
 
-                        Ad(ijk) += Ad(ijk)[faceNum+1]*C;
-                        bd(ijk) -= Ad(ijk)[faceNum+1]*B(ijk-S);
+                        A(l,d,ijk) += A(l,d,ijk)[faceNum+1]*C;
 
-                        Ad(ijk)[faceNum+1] = 0;
+                        if (l == 0)
+                            b(l,d,ijk) -= A(l,d,ijk)[faceNum+1]*B(ijk-S);
+
+                        A(l,d,ijk)[faceNum+1] = 0;
                     }
                 }
 
@@ -448,8 +465,10 @@ void boundaryCondition<Type,MeshType>::correctSystem
                     {
                         // Constrain the internal value
 
-                        Ad(ijk) = diagStencil(cv(ijk));
-                        bd(ijk) = V(ijk-S)*cv(ijk);
+                        A(l,d,ijk) = diagStencil(cv(l,d,ijk));
+
+                        if (l == 0)
+                            b(l,d,ijk) = V(ijk-S)*cv(l,d,ijk);
                     }
                 }
             }
@@ -458,7 +477,7 @@ void boundaryCondition<Type,MeshType>::correctSystem
 }
 
 template<class Type, class MeshType>
-void boundaryCondition<Type,MeshType>::correctSystem
+void boundaryCondition<Type,MeshType>::eliminateGhosts
 (
     linearSystem<diagStencil,Type,MeshType>& sys,
     const label l

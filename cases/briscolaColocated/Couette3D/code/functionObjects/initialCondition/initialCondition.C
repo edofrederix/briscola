@@ -47,27 +47,19 @@ bool initialCondition::read(const dictionary& dict)
         colocatedVectorField& U =
             runTime_.lookupObjectRef<colocatedVectorField>("U");
 
-        const fvMesh& fvMsh = U.fvMsh();
+        const colocatedVectorField& cc =
+            U.fvMsh().metrics<colocated>().cellCenters();
 
-        const colocatedVectorField& cc = fvMsh.metrics<colocated>().cellCenters();
-
-        forAll(U, l)
-        forAll(U[l], d)
+        forAllLevels(U, l, d, i, j, k)
         {
-            const colocatedVectorDirection& ccd = cc[l][d];
-            colocatedVectorDirection& Ud = U[l][d];
+            U(l,d,i,j,k).x() =
+                cc(l,d,i,j,k).y()
+              + 0.4*Foam::sin(cc(l,d,i,j,k).z()*3)
+              + 0.1*Foam::sin(cc(l,d,i,j,k).y()*3.1415927*2);
 
-            forAllCells(Ud, i, j, k)
-            {
-                Ud(i,j,k).x() =
-                    ccd(i,j,k).y()
-                + 0.4*Foam::sin(ccd(i,j,k).z()*3)
-                + 0.1*Foam::sin(ccd(i,j,k).y()*3.1415927*2);
-
-                Ud(i,j,k).z() =
-                    Foam::sin(ccd(i,j,k).x()*3)
-                * Foam::cos(ccd(i,j,k).y()*3.1415927);
-            }
+            U(l,d,i,j,k).z() =
+                Foam::sin(cc(l,d,i,j,k).x()*3)
+              * Foam::cos(cc(l,d,i,j,k).y()*3.1415927);
         }
 
         U.correctBoundaryConditions();

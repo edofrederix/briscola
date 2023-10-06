@@ -79,23 +79,13 @@ tmp<meshField<Type,MeshType>> explicitDiv
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 
-    forAll(phi, l)
-    forAll(phi[l], d)
-    {
-        meshDirection<Type,MeshType>& D = Div[l][d];
-        const meshDirection<FaceSpace<Type>,MeshType>& p = phi[l][d];
+    Div = Zero;
 
-        const meshDirection<scalar,MeshType>& cv =
-            phi.fvMsh().template
-            metrics<MeshType>().cellVolumes()[l][d];
+    const meshField<scalar,MeshType>& cv =
+        phi.fvMsh().template metrics<MeshType>().cellVolumes();
 
-        D = Zero;
-
-        forAllCells(p, i, j, k)
-        {
-            D(i,j,k) = neighborSum(p(i,j,k))/cv(i,j,k);
-        }
-    }
+    forAllDirections(Div, d, i, j, k)
+        Div(d,i,j,k) = neighborSum(phi(d,i,j,k))/cv(d,i,j,k);
 
     return tDiv;
 }
@@ -117,38 +107,25 @@ tmp<meshField<Type,colocated>> explicitColoDiv
 
     meshField<Type,colocated>& Div = tDiv.ref();
 
-    forAll(Div, l)
-    {
-        const meshDirection<Type,staggered>& f0 = field[l][0];
-        const meshDirection<Type,staggered>& f1 = field[l][1];
-        const meshDirection<Type,staggered>& f2 = field[l][2];
+    Div = Zero;
 
-        meshDirection<Type,colocated>& D = Div[l][0];
+    const meshField<scalar,colocated>& cv =
+        field.fvMsh().template metrics<colocated>().cellVolumes();
 
-        const meshDirection<scalar,colocated>& cv =
-            field.fvMsh().template
-            metrics<colocated>().cellVolumes()[l][0];
+    const meshField<faceScalar,colocated>& fa =
+        field.fvMsh().template metrics<colocated>().faceAreas();
 
-        const meshDirection<faceScalar,colocated>& fa =
-            field.fvMsh().template
-            metrics<colocated>().faceAreas()[l][0];
-
-        D = Zero;
-
-        forAllCells(D, i, j, k)
-        {
-            D(i,j,k) =
-                (
-                  - f0(i,  j,  k  ) * fa(i,j,k).left()
-                  + f0(i+1,j,  k  ) * fa(i,j,k).right()
-                  - f1(i,  j,  k  ) * fa(i,j,k).bottom()
-                  + f1(i,  j+1,k  ) * fa(i,j,k).top()
-                  - f2(i,  j,  k  ) * fa(i,j,k).aft()
-                  + f2(i,  j,  k+1) * fa(i,j,k).fore()
-                )
-              / cv(i,j,k);
-        }
-    }
+    forAllDirections(Div, d, i, j, k)
+        Div(d,i,j,k) =
+            (
+              - field(0,i,  j,  k  ) * fa(d,i,j,k).left()
+              + field(0,i+1,j,  k  ) * fa(d,i,j,k).right()
+              - field(1,i,  j,  k  ) * fa(d,i,j,k).bottom()
+              + field(1,i,  j+1,k  ) * fa(d,i,j,k).top()
+              - field(2,i,  j,  k  ) * fa(d,i,j,k).aft()
+              + field(2,i,  j,  k+1) * fa(d,i,j,k).fore()
+            )
+          / cv(d,i,j,k);
 
     return tDiv;
 }

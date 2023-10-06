@@ -13,26 +13,13 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::setInternalCells()
-{
-    const labelVector& padding = MeshType::padding[d_];
-    const faceLabel slave = fvMsh_.msh().patchSlave();
-
-    I_ = faceLabel(zeroXYZ, this->B().N()-2*unitXYZ);
-
-    for (int i = 0; i < 6; i++)
-        I_[i] +=
-            (padding[i/2] && slave[i]) ? 1 - 2*(i%2) : 0;
-}
-
-template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::allocate(const labelVector B)
 {
     blockType::reAllocate(B);
 }
 
 template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::transferData
+void meshDirection<Type,MeshType>::transfer
 (
     meshDirection<Type,MeshType>& D
 )
@@ -42,7 +29,7 @@ void meshDirection<Type,MeshType>::transferData
     l_ = D.l_;
     d_ = D.d_;
 
-    blockType::transferData(D);
+    blockType::transfer(D);
 
     D.mshLevelPtr_ = nullptr;
 }
@@ -62,11 +49,10 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(&mshLevel)
 {
     allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
-
-    setInternalCells();
 }
 
 // Copy constructors
@@ -77,16 +63,13 @@ meshDirection<Type,MeshType>::meshDirection
     const meshDirection<Type,MeshType>& D
 )
 :
-    block<Type>(),
+    block<Type>(D),
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
     I_(D.I_),
     mshLevelPtr_(nullptr)
-{
-    allocate(D.B().N());
-    *this = D;
-}
+{}
 
 template<class Type, class MeshType>
 meshDirection<Type,MeshType>::meshDirection
@@ -95,16 +78,13 @@ meshDirection<Type,MeshType>::meshDirection
     const zero&
 )
 :
-    block<Type>(),
+    block<Type>(D,Zero),
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
     I_(D.I_),
     mshLevelPtr_(nullptr)
-{
-    allocate(D.B().N());
-    *this = Zero;
-}
+{}
 
 template<class Type, class MeshType>
 meshDirection<Type,MeshType>::meshDirection
@@ -113,16 +93,28 @@ meshDirection<Type,MeshType>::meshDirection
     const Type& v
 )
 :
-    block<Type>(),
+    block<Type>(D,v),
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
     I_(D.I_),
     mshLevelPtr_(nullptr)
-{
-    allocate(D.B().N());
-    *this = v;
-}
+{}
+
+template<class Type, class MeshType>
+meshDirection<Type,MeshType>::meshDirection
+(
+    const meshDirection<Type,MeshType>& D,
+    const List<Type>& v
+)
+:
+    block<Type>(D, v[D.d_]),
+    fvMsh_(D.fvMsh_),
+    l_(D.l_),
+    d_(D.d_),
+    I_(D.I_),
+    mshLevelPtr_(nullptr)
+{}
 
 template<class Type, class MeshType>
 meshDirection<Type,MeshType>::meshDirection
@@ -130,26 +122,17 @@ meshDirection<Type,MeshType>::meshDirection
     const tmp<meshDirection<Type,MeshType>>& tD
 )
 :
-    block<Type>(),
+    block<Type>
+    (
+        tD.isTmp(),
+        const_cast<meshDirection<Type,MeshType>&>(tD())
+    ),
     fvMsh_(tD->fvMsh_),
     l_(tD->l_),
     d_(tD->d_),
     I_(tD->I_),
     mshLevelPtr_(nullptr)
 {
-    if (tD.isTmp())
-    {
-        meshDirection<Type,MeshType>& D =
-            const_cast<meshDirection<Type,MeshType>&>(tD());
-
-        transferData(D);
-    }
-    else
-    {
-        allocate(tD->B().N());
-        *this = tD();
-    }
-
     tD.clear();
 }
 
@@ -160,27 +143,18 @@ meshDirection<Type,MeshType>::meshDirection
     const zero&
 )
 :
-    block<Type>(),
+    block<Type>
+    (
+        tD.isTmp(),
+        const_cast<meshDirection<Type,MeshType>&>(tD()),
+        Zero
+    ),
     fvMsh_(tD->fvMsh_),
     l_(tD->l_),
     d_(tD->d_),
     I_(tD->I_),
     mshLevelPtr_(nullptr)
 {
-    if (tD.isTmp())
-    {
-        meshDirection<Type,MeshType>& D =
-            const_cast<meshDirection<Type,MeshType>&>(tD());
-
-        transferData(D);
-    }
-    else
-    {
-        allocate(tD->B().N());
-    }
-
-    *this = Zero;
-
     tD.clear();
 }
 
@@ -191,27 +165,40 @@ meshDirection<Type,MeshType>::meshDirection
     const Type& v
 )
 :
-    block<Type>(),
+    block<Type>
+    (
+        tD.isTmp(),
+        const_cast<meshDirection<Type,MeshType>&>(tD()),
+        v
+    ),
     fvMsh_(tD->fvMsh_),
     l_(tD->l_),
     d_(tD->d_),
     I_(tD->I_),
     mshLevelPtr_(nullptr)
 {
-    if (tD.isTmp())
-    {
-        meshDirection<Type,MeshType>& D =
-            const_cast<meshDirection<Type,MeshType>&>(tD());
+    tD.clear();
+}
 
-        transferData(D);
-    }
-    else
-    {
-        allocate(tD->B().N());
-    }
-
-    *this = v;
-
+template<class Type, class MeshType>
+meshDirection<Type,MeshType>::meshDirection
+(
+    const tmp<meshDirection<Type,MeshType>>& tD,
+    const List<Type>& v
+)
+:
+    block<Type>
+    (
+        tD.isTmp(),
+        const_cast<meshDirection<Type,MeshType>&>(tD()),
+        v[tD->d_]
+    ),
+    fvMsh_(tD->fvMsh_),
+    l_(tD->l_),
+    d_(tD->d_),
+    I_(tD->I_),
+    mshLevelPtr_(nullptr)
+{
     tD.clear();
 }
 
@@ -227,11 +214,10 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(nullptr)
 {
     allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
-
-    setInternalCells();
 }
 
 template<class Type, class MeshType>
@@ -247,12 +233,11 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(nullptr)
 {
     allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
     *this = Zero;
-
-    setInternalCells();
 }
 
 template<class Type, class MeshType>
@@ -268,12 +253,31 @@ meshDirection<Type,MeshType>::meshDirection
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
+    I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(nullptr)
 {
     allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
     *this = v;
+}
 
-    setInternalCells();
+template<class Type, class MeshType>
+meshDirection<Type,MeshType>::meshDirection
+(
+    const fvMesh& fvMsh,
+    const label l,
+    const label d,
+    const List<Type>& v
+)
+:
+    block<Type>(),
+    fvMsh_(fvMsh),
+    l_(l),
+    d_(d),
+    I_(fvMsh.I<MeshType>(l,d)),
+    mshLevelPtr_(nullptr)
+{
+    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
+    *this = v[d];
 }
 
 template<class Type, class MeshType>
@@ -300,7 +304,7 @@ void meshDirection<Type,MeshType>::operator=
         meshDirection<Type,MeshType>& D =
             const_cast<meshDirection<Type,MeshType>&>(tD());
 
-        transferData(D);
+        transfer(D);
     }
     else
     {

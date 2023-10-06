@@ -109,7 +109,9 @@ linearRestrictionScheme<Type,MeshType>::linearRestrictionScheme
         this->fvMsh(),
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        false
+        false,
+        false,
+        true
     )
 {
     setWeights();
@@ -125,7 +127,9 @@ linearRestrictionScheme<Type,MeshType>::linearRestrictionScheme(const fvMesh& fv
         this->fvMsh(),
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        false
+        false,
+        false,
+        true
     )
 {
     setWeights();

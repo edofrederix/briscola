@@ -50,11 +50,7 @@ staggeredOutflowBoundaryCondition::staggeredOutflowBoundaryCondition
 void staggeredOutflowBoundaryCondition::initEvaluate(const label)
 {}
 
-void staggeredOutflowBoundaryCondition::evaluate
-(
-    const label l,
-    const bool
-)
+void staggeredOutflowBoundaryCondition::evaluate(const label l)
 {
     staggeredScalarLevel& field = this->mshField()[l];
 
@@ -64,8 +60,8 @@ void staggeredOutflowBoundaryCondition::evaluate
     {
         staggeredScalarDirection& fd = field[d];
 
-        const labelVector S(fd.boundaryStart(bo));
-        const labelVector E(fd.boundaryEnd(bo));
+        const labelVector S(this->S(l,d));
+        const labelVector E(this->E(l,d));
 
         labelVector ijk;
 

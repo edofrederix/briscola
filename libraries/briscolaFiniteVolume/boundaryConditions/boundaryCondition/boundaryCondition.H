@@ -176,6 +176,15 @@ public:
         return patch_.T();
     }
 
+    // Return the start point of the internal cell boundary
+    labelVector S(const label l, const label d) const;
+
+    // Return the end point of the internal cell boundary
+    labelVector E(const label l, const label d) const;
+
+    // Return the shape of the internal cell boundary
+    labelVector N(const label l, const label d) const;
+
     // Access to the face centers of the field this BC belongs to
     const meshField<faceVector,MeshType>& faceCenters() const;
 
@@ -200,13 +209,12 @@ public:
     // Initialize the evaluation of the boundary condition for given level
     virtual void initEvaluate(const label) = 0;
 
-    // Evaluate the boundary condition for given level. Optionally force
-    // homogeneous BC
-    virtual void evaluate(const label, const bool = false) = 0;
+    // Evaluate the boundary condition for given level
+    virtual void evaluate(const label) = 0;
 
-    // Correct a linear system at given level, subject to the boundary condition
-    void correctSystem(linearSystem<stencil,Type,MeshType>&, const label);
-    void correctSystem(linearSystem<diagStencil,Type,MeshType>&, const label);
+    // Eliminate ghosts from the given linear system
+    void eliminateGhosts(linearSystem<stencil,Type,MeshType>&, const label);
+    void eliminateGhosts(linearSystem<diagStencil,Type,MeshType>&, const label);
 
     // Constrained boundary conditions
 

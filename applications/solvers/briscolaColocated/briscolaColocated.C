@@ -62,8 +62,6 @@ int main(int argc, char *argv[])
         DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
-        USys.correctBoundaries();
-
         // Solve predictor
 
         USolve->solve(USys);
@@ -72,7 +70,7 @@ int main(int argc, char *argv[])
 
         phi = ex::faceFlux(U);
 
-        Poisson->solve(p, -ex::div(phi)/deltaT);
+        Poisson->solve(p, ex::div(phi)/(-deltaT));
 
         // Rhie-Chow correction
 

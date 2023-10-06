@@ -22,36 +22,36 @@ boundaryConditions
     left
     {
         type    Dirichlet;
-        values  (0);
+        values  (1);
     }
 
     right
     {
         type    Dirichlet;
-        values  (0);
+        values  (2);
     }
 
     bottom
     {
         type    Neumann;
-        gradients  (0);
+        gradients  (3);
     }
 
     top
     {
         type    Neumann;
-        gradients  (0);
+        gradients  (4);
     }
 
     back
     {
         type    Neumann;
-        gradients  (0);
+        gradients  (5);
     }
 
     front
     {
         type    Dirichlet;
-        values  (0);
+        values  (6);
     }
 }

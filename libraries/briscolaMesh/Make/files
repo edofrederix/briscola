@@ -9,6 +9,7 @@ edges/arcEdge/arcEdge.C
 gradings/grading/grading.C
 gradings/noGrading/noGrading.C
 gradings/geometricGrading/geometricGrading.C
+gradings/geometricEdgeGrading/geometricEdgeGrading.C
 
 vertex/vertex.C
 face/face.C

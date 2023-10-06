@@ -5,9 +5,11 @@ primitives/FaceSpace/faceLabel/faceLabel.C
 primitives/FaceSpace/faceVector/faceVector.C
 
 primitives/EdgeSpace/edgeScalar/edgeScalar.C
+primitives/EdgeSpace/edgeLabel/edgeLabel.C
 primitives/EdgeSpace/edgeVector/edgeVector.C
 
 primitives/VertexSpace/vertexScalar/vertexScalar.C
+primitives/VertexSpace/vertexLabel/vertexLabel.C
 primitives/VertexSpace/vertexVector/vertexVector.C
 
 primitives/StencilSpace/stencil/stencil.C

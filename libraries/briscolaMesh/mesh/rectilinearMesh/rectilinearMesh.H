@@ -2,6 +2,7 @@
 #define rectilinearMesh_H
 
 #include "structuredMesh.H"
+#include "PartialList.H"
 
 namespace Foam
 {
@@ -16,17 +17,33 @@ class rectilinearMesh
     // Tensor consisting of rectilinear base vectors on its rows
     tensor base_;
 
-    // Local rectilinear cell sizes
-    PtrList<scalarList> localCellSizes_;
+    // Cell sizes and points with ghosts
 
-    // Local rectlinear points
-    PtrList<scalarList> localPoints_;
+        // Local rectilinear cell sizes
+        PtrList<scalarList> localCellSizesData_;
 
-    // Global rectilinear cell sizes
-    PtrList<scalarList> globalCellSizes_;
+        // Local rectilinear points
+        PtrList<scalarList> localPointsData_;
 
-    // Global rectilinear points
-    PtrList<scalarList> globalPoints_;
+        // Global rectilinear cell sizes
+        PtrList<scalarList> globalCellSizesData_;
+
+        // Global rectilinear points
+        PtrList<scalarList> globalPointsData_;
+
+    // Cell sizes and points without ghosts as partial lists
+
+        // Local rectilinear cell sizes
+        PtrList<PartialList<scalar>> localCellSizes_;
+
+        // Local rectilinear points
+        PtrList<PartialList<scalar>> localPoints_;
+
+        // Global rectilinear cell sizes
+        PtrList<PartialList<scalar>> globalCellSizes_;
+
+        // Global rectilinear points
+        PtrList<PartialList<scalar>> globalPoints_;
 
     // Set rectiliner metrics
     void setMetrics();
@@ -60,26 +77,29 @@ public:
     // Base tensor
     inline const tensor& base() const { return base_; }
 
+    // Cell sizes and points without ghosts as partial lists. Ghost cell
+    // indexing (at -1 or N) is allowed.
+
     // Local cell sizes
-    inline const PtrList<scalarList>& localCellSizes() const
+    inline const PtrList<PartialList<scalar>>& localCellSizes() const
     {
         return localCellSizes_;
     }
 
     // Local points
-    inline const PtrList<scalarList>& localPoints() const
+    inline const PtrList<PartialList<scalar>>& localPoints() const
     {
         return localPoints_;
     }
 
     // Global cell sizes
-    inline const PtrList<scalarList>& globalCellSizes() const
+    inline const PtrList<PartialList<scalar>>& globalCellSizes() const
     {
         return globalCellSizes_;
     }
 
     // Global points
-    inline const PtrList<scalarList>& globalPoints() const
+    inline const PtrList<PartialList<scalar>>& globalPoints() const
     {
         return globalPoints_;
     }

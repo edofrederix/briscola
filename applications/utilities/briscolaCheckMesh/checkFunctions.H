@@ -13,60 +13,53 @@ void checkInternalFaceCenters(const fvMesh& fvMsh)
     const meshField<faceVector,MeshType>& fc =
         fvMsh.metrics<MeshType>().faceCenters();
 
-    forAll(fc, l)
-    forAll(fc[l], d)
+    forAllLevels(fc, l, d, i, j, k)
     {
-        const meshDirection<faceVector,MeshType>& fcld = fc[l][d];
+        const labelVector N(fc.N(l,d));
+        const labelVector ijk0(i,j,k);
 
-        const labelVector N(fcld.N());
-
-        forAllCells(fcld, i, j, k)
+        for (label face0 = 0; face0 < 6; face0++)
         {
-            const labelVector ijk0(i,j,k);
+            const labelVector offset(faceOffsets[face0]);
+            const labelVector ijk1(ijk0+offset);
 
-            for (label face0 = 0; face0 < 6; face0++)
+            const label face1 = faceNumber(-offset);
+
+            if
+            (
+                ijk1.x() >= 0 && ijk1.x() < N.x()
+             && ijk1.y() >= 0 && ijk1.y() < N.y()
+             && ijk1.z() >= 0 && ijk1.z() < N.z()
+            )
             {
-                const labelVector offset(faceOffsets[face0]);
-                const labelVector ijk1(ijk0+offset);
-
-                const label face1 = faceNumber(-offset);
-
                 if
                 (
-                    ijk1.x() >= 0 && ijk1.x() < N.x()
-                 && ijk1.y() >= 0 && ijk1.y() < N.y()
-                 && ijk1.z() >= 0 && ijk1.z() < N.z()
+                    Foam::mag
+                    (
+                        fc(l,d,ijk0)[face0]
+                      - fc(l,d,ijk1)[face1]
+                    )
+                  > 1e-12
                 )
                 {
-                    if
-                    (
-                        Foam::mag
-                        (
-                            fcld(ijk0)[face0]
-                          - fcld(ijk1)[face1]
-                        )
-                      > 1e-12
-                    )
-                    {
-                        FatalErrorInFunction
-                            << "Found mismatch in face centers at "
-                            << "offset = " << offset << nl
-                            << "mesh type = " << MeshType::typeName << nl
-                            << "mesh direction = " << d << nl
-                            << "first cell face = " << fcld(ijk0)[face0] << nl
-                            << "first cell faces = " << fcld(ijk0) << nl
-                            << "second cell face = " << fcld(ijk1)[face1] << nl
-                            << "second cell faces = " << fcld(ijk1)<< nl
-                            << "level = " << l << nl
-                            << "first cell index = " << ijk0 << nl
-                            << "second cell index = " << ijk1 << nl
-                            << "direction size = " << fcld.N() << endl
-                            << exit(FatalError);
-                    }
+                    FatalErrorInFunction
+                        << "Found mismatch in face centers at "
+                        << "offset = " << offset << nl
+                        << "mesh type = " << MeshType::typeName << nl
+                        << "mesh direction = " << d << nl
+                        << "first cell face = " << fc(l,d,ijk0)[face0] << nl
+                        << "first cell faces = " << fc(l,d,ijk0) << nl
+                        << "second cell face = "
+                        << fc(l,d,ijk1)[face1] << nl
+                        << "second cell faces = " << fc(l,d,ijk1)<< nl
+                        << "level = " << l << nl
+                        << "first cell index = " << ijk0 << nl
+                        << "second cell index = " << ijk1 << nl
+                        << "direction size = " << fc.N(l,d) << endl
+                        << exit(FatalError);
                 }
             }
         }
-
     }
 }
 
@@ -76,60 +69,55 @@ void checkInternalFaceDeltas(const fvMesh& fvMsh)
     const meshField<faceScalar,MeshType>& fd =
         fvMsh.metrics<MeshType>().faceDeltas();
 
-    forAll(fd, l)
-    forAll(fd[l], d)
+    forAllLevels(fd, l, d, i, j, k)
     {
-        const meshDirection<faceScalar,MeshType>& fdld = fd[l][d];
+        const labelVector N(fd.N(l,d));
 
-        const labelVector N(fdld.N());
+        const labelVector ijk0(i,j,k);
 
-        forAllCells(fdld, i, j, k)
+        for (label face0 = 0; face0 < 6; face0++)
         {
-            const labelVector ijk0(i,j,k);
+            const labelVector offset(faceOffsets[face0]);
+            const labelVector ijk1(ijk0+offset);
 
-            for (label face0 = 0; face0 < 6; face0++)
+            const label face1 = faceNumber(-offset);
+
+            if
+            (
+                ijk1.x() >= 0 && ijk1.x() < N.x()
+             && ijk1.y() >= 0 && ijk1.y() < N.y()
+             && ijk1.z() >= 0 && ijk1.z() < N.z()
+            )
             {
-                const labelVector offset(faceOffsets[face0]);
-                const labelVector ijk1(ijk0+offset);
-
-                const label face1 = faceNumber(-offset);
-
                 if
                 (
-                    ijk1.x() >= 0 && ijk1.x() < N.x()
-                 && ijk1.y() >= 0 && ijk1.y() < N.y()
-                 && ijk1.z() >= 0 && ijk1.z() < N.z()
+                    Foam::mag
+                    (
+                        1.0/fd(l,d,ijk0)[face0]
+                      - 1.0/fd(l,d,ijk1)[face1]
+                    )
+                  > 1e-12
                 )
                 {
-                    if
-                    (
-                        Foam::mag
-                        (
-                            1.0/fdld(ijk0)[face0]
-                          - 1.0/fdld(ijk1)[face1]
-                        )
-                      > 1e-12
-                    )
-                    {
-                        FatalErrorInFunction
-                            << "Found mismatch in face deltas at "
-                            << "offset = " << offset << nl
-                            << "mesh type = " << MeshType::typeName << nl
-                            << "mesh direction = " << d << nl
-                            << "first cell delta = " << fdld(ijk0)[face0] << nl
-                            << "first cell deltas = " << fdld(ijk0) << nl
-                            << "second cell delta = " << fdld(ijk1)[face1] << nl
-                            << "second cell deltas = " << fdld(ijk1)<< nl
-                            << "level = " << l << nl
-                            << "fist cell index = " << ijk0 << nl
-                            << "second cell index = " << ijk1 << nl
-                            << "direction size = " << fdld.N() << endl
-                            << exit(FatalError);
-                    }
+                    FatalErrorInFunction
+                        << "Found mismatch in face deltas at "
+                        << "offset = " << offset << nl
+                        << "mesh type = " << MeshType::typeName << nl
+                        << "mesh direction = " << d << nl
+                        << "first cell delta = "
+                        << fd(l,d,ijk0)[face0] << nl
+                        << "first cell deltas = " << fd(l,d,ijk0) << nl
+                        << "second cell delta = "
+                        << fd(l,d,ijk1)[face1] << nl
+                        << "second cell deltas = " << fd(l,d,ijk1)<< nl
+                        << "level = " << l << nl
+                        << "fist cell index = " << ijk0 << nl
+                        << "second cell index = " << ijk1 << nl
+                        << "direction size = " << fd.N(l,d) << endl
+                        << exit(FatalError);
                 }
             }
         }
-
     }
 }
 
@@ -176,10 +164,8 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
         forAll(fc, l)
         forAll(fc[l], d)
         {
-            const meshDirection<faceVector,MeshType>& fcld = fc[l][d];
-
-            labelVector S(fcld.boundaryStart(bo));
-            labelVector E(fcld.boundaryEnd(bo));
+            labelVector S(fc.fvMsh().template S<MeshType>(l,d,bo));
+            labelVector E(fc.fvMsh().template E<MeshType>(l,d,bo));
 
             labelVector ijk;
 
@@ -191,8 +177,8 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
                 (
                     Foam::mag
                     (
-                        fcld(ijk+bo)[dir2]
-                      - fcld(ijk)[dir1]
+                        fc(l,d,ijk+bo)[dir2]
+                      - fc(l,d,ijk)[dir1]
                     )
                   > 1e-12
                 )
@@ -202,15 +188,16 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
                         << "boundary offset = " << bo << nl
                         << "mesh type = " << MeshType::typeName << nl
                         << "mesh direction = " << d << nl
-                        << "internal cell face = " << fcld(ijk)[dir1] << nl
-                        << "internal cell faces = " << fcld(ijk) << nl
-                        << "ghost cell face = " << fcld(ijk+bo)[dir2] << nl
-                        << "ghost cell face vector = " << fcld(ijk+bo)<< nl
+                        << "internal cell face = " << fc(l,d,ijk)[dir1] << nl
+                        << "internal cell faces = " << fc(l,d,ijk) << nl
+                        << "ghost cell face = " << fc(l,d,ijk+bo)[dir2] << nl
+                        << "ghost cell face vector = " << fc(l,d,ijk+bo)<< nl
                         << "level = " << l << nl
                         << "internal cell index = " << ijk << nl
                         << "ghost cell index = " << ijk+bo << nl
-                        << "direction size = " << fcld.N() << nl
-                        << "shifted = " << Switch(fcld.shifted(bo)) << nl
+                        << "direction size = " << fc.N(l,d) << nl
+                        << "shifted = " << Switch(MeshType::shifted(d,bo))
+                        << nl
                         << "slave = " << Switch(slave) << endl
                         << exit(FatalError);
                 }
@@ -269,10 +256,8 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
         forAll(fd, l)
         forAll(fd[l], d)
         {
-            const meshDirection<faceScalar,MeshType>& fdld = fd[l][d];
-
-            labelVector S(fdld.boundaryStart(bo));
-            labelVector E(fdld.boundaryEnd(bo));
+            labelVector S(fd.fvMsh().template S<MeshType>(l,d,bo));
+            labelVector E(fd.fvMsh().template E<MeshType>(l,d,bo));
 
             labelVector ijk;
 
@@ -284,8 +269,8 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
                 (
                     Foam::mag
                     (
-                        1.0/fdld(ijk+bo)[dir2]
-                      - 1.0/fdld(ijk)[dir1]
+                        1.0/fd(l,d,ijk+bo)[dir2]
+                      - 1.0/fd(l,d,ijk)[dir1]
                     )
                     > 1e-12
                 )
@@ -294,15 +279,16 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
                         << "Found mismatch in face deltas at "
                         << "boundary offset = " << bo << nl
                         << "mesh direction = " << d << nl
-                        << "internal cell delta = " << fdld(ijk)[dir1] << nl
-                        << "internal cell deltas = " << fdld(ijk) << nl
-                        << "ghost cell delta = " << fdld(ijk+bo)[dir2] << nl
-                        << "ghost cell deltas = " << fdld(ijk+bo)<< nl
+                        << "internal cell delta = " << fd(l,d,ijk)[dir1] << nl
+                        << "internal cell deltas = " << fd(l,d,ijk) << nl
+                        << "ghost cell delta = " << fd(l,d,ijk+bo)[dir2] << nl
+                        << "ghost cell deltas = " << fd(l,d,ijk+bo)<< nl
                         << "level = " << l << nl
                         << "internal cell index = " << ijk << nl
                         << "ghost cell index = " << ijk+bo << nl
-                        << "direction size = " << fdld.N() << endl
-                        << "shifted = " << Switch(fdld.shifted(bo)) << nl
+                        << "direction size = " << fd.N(l,d) << endl
+                        << "shifted = " << Switch(MeshType::shifted(d,bo))
+                        << nl
                         << "slave = " << Switch(slave) << endl
                         << exit(FatalError);
                 }

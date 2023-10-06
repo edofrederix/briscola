@@ -1,3 +1,13 @@
+// Macros to iterative over directions and internal cells
+
+#define forAllDirections(LEV, d, i, j, k)                                       \
+    for (int d = 0; d < (LEV).numberOfDirections(); d++)                        \
+        forAllCells((LEV).direction(d), i, j, k)
+
+#define forAllDirectionsReversed(LEV, d, i, j, k)                               \
+    for (int d = (LEV).numberOfDirections()-1; d >= 0; d--)                     \
+        forAllCellsReversed((LEV).direction(d), i, j, k)
+
 #define UNARY_FUNCTION(ReturnType, Type1, Func)                                 \
                                                                                 \
 TEMPLATE                                                                        \

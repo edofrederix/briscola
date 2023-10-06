@@ -61,11 +61,7 @@ void emptyBoundaryCondition<Type,MeshType>::initEvaluate(const label)
 {}
 
 template<class Type, class MeshType>
-void emptyBoundaryCondition<Type,MeshType>::evaluate
-(
-    const label l,
-    const bool
-)
+void emptyBoundaryCondition<Type,MeshType>::evaluate(const label l)
 {
     meshLevel<Type,MeshType>& field = this->mshField()[l];
 
@@ -75,15 +71,15 @@ void emptyBoundaryCondition<Type,MeshType>::evaluate
     {
         meshDirection<Type,MeshType>& fd = field[d];
 
-        const labelVector S(fd.boundaryStart(bo));
-        const labelVector E(fd.boundaryEnd(bo));
+        const labelVector S(this->S(l,d));
+        const labelVector E(this->E(l,d));
 
         // For shifted boundaries, the boundary values are set to zero. For
         // non-shifted boundaries, apply homogeneous Neumann
 
         labelVector ijk;
 
-        if (fd.shifted(bo))
+        if (MeshType::shifted(d,bo))
         {
             for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)

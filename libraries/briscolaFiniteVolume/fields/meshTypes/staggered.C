@@ -6,7 +6,8 @@ const int
 Foam::briscola::fv::staggered::meshType::numberOfDirections = 3;
 
 template<>
-const char* const Foam::briscola::fv::staggered::meshType::directionNames[] = {"x", "y", "z"};
+const char* const Foam::briscola::fv::staggered::meshType::directionNames[] =
+    {"x", "y", "z"};
 
 template<>
 const Foam::labelVector

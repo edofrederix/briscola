@@ -72,11 +72,11 @@ void testOneLinearProlongation(const fvMesh& fvMsh, const word scheme)
             // Also set ghost values which are needed for prolongation
 
             forAll(f[l], d)
-            for (label i = f[l][d].I().left()  -1; i < f[l][d].I().right()+1; i++)
-            for (label j = f[l][d].I().bottom()-1; j < f[l][d].I().top()  +1; j++)
-            for (label k = f[l][d].I().aft()   -1; k < f[l][d].I().fore() +1; k++)
+            for (label i = f.I(l,d).left()  -1; i < f.I(l,d).right()+1; i++)
+            for (label j = f.I(l,d).bottom()-1; j < f.I(l,d).top()  +1; j++)
+            for (label k = f.I(l,d).aft()   -1; k < f.I(l,d).fore() +1; k++)
             {
-                f[l][d](i,j,k) = cc[l][d](i,j,k)[dir]*pTraits<Type>::one;
+                f(l,d,i,j,k) = cc(l,d,i,j,k)[dir]*pTraits<Type>::one;
             }
 
             forAll(f[l], d)
@@ -130,12 +130,12 @@ void testTwoLinearProlongation(const fvMesh& fvMsh, const word scheme)\
             // Also set ghost values which are needed for prolongation
 
             forAll(f[l], d)
-            for (label i = f[l][d].I().left()  -1; i < f[l][d].I().right()+1; i++)
-            for (label j = f[l][d].I().bottom()-1; j < f[l][d].I().top()  +1; j++)
-            for (label k = f[l][d].I().aft()   -1; k < f[l][d].I().fore() +1; k++)
+            for (label i = f.I(l,d).left()  -1; i < f.I(l,d).right()+1; i++)
+            for (label j = f.I(l,d).bottom()-1; j < f.I(l,d).top()  +1; j++)
+            for (label k = f.I(l,d).aft()   -1; k < f.I(l,d).fore() +1; k++)
             {
-                f[l][d](i,j,k) =
-                    (cc[l][d](i,j,k)[dir1]+cc[l][d](i,j,k)[dir2])
+                f(l,d,i,j,k) =
+                    (cc(l,d,i,j,k)[dir1]+cc(l,d,i,j,k)[dir2])
                   * pTraits<Type>::one;
             }
 
@@ -189,15 +189,15 @@ void testThreeLinearProlongation(const fvMesh& fvMsh, const word scheme)
         // Also set ghost values which are needed for prolongation
 
         forAll(f[l], d)
-        for (label i = f[l][d].I().left()  -1; i < f[l][d].I().right()+1; i++)
-        for (label j = f[l][d].I().bottom()-1; j < f[l][d].I().top()  +1; j++)
-        for (label k = f[l][d].I().aft()   -1; k < f[l][d].I().fore() +1; k++)
+        for (label i = f.I(l,d).left()  -1; i < f.I(l,d).right()+1; i++)
+        for (label j = f.I(l,d).bottom()-1; j < f.I(l,d).top()  +1; j++)
+        for (label k = f.I(l,d).aft()   -1; k < f.I(l,d).fore() +1; k++)
         {
-            f[l][d](i,j,k) =
+            f(l,d,i,j,k) =
                 (
-                    cc[l][d](i,j,k).x()
-                  + cc[l][d](i,j,k).y()
-                  + cc[l][d](i,j,k).z()
+                    cc(l,d,i,j,k).x()
+                  + cc(l,d,i,j,k).y()
+                  + cc(l,d,i,j,k).z()
                 )
               * pTraits<Type>::one;
         }

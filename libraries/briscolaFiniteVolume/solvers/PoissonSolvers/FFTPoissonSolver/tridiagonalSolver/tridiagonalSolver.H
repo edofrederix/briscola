@@ -48,7 +48,7 @@ class tridiagonalSolver
     scalarList lambda2_;
 
     // Cell size arrays for each direction
-    const PtrList<scalarList>& cellSizes_;
+    const PtrList<PartialList<scalar>>& cellSizes_;
 
     // Diagonals
     scalarBlock D_;

@@ -48,16 +48,16 @@ bool initialCondition::read(const dictionary& dict)
     {
         const scalar pi = constant::mathematical::pi;
 
-        colocatedVectorDirection& U =
-            runTime_.lookupObjectRef<colocatedVectorField>("U")[0][0];
+        colocatedVectorField& U =
+            runTime_.lookupObjectRef<colocatedVectorField>("U");
 
-        colocatedScalarDirection& alpha =
-            runTime_.lookupObjectRef<colocatedScalarField>("alpha")[0][0];
+        colocatedScalarField& alpha =
+            runTime_.lookupObjectRef<colocatedScalarField>("alpha");
 
         const fvMesh& fvMsh = U.fvMsh();
 
-        const colocatedVectorDirection& cc =
-            fvMsh.metrics<colocated>().cellCenters()[0][0];
+        const colocatedVectorField& cc =
+            fvMsh.metrics<colocated>().cellCenters();
 
         forAllCells(alpha, i, j, k)
         {

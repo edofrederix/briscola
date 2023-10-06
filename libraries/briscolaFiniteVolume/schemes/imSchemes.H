@@ -92,6 +92,8 @@ inline tmp<linearSystem<diagStencil,Type,MeshType>> source
     meshField<Type,MeshType>& field
 )
 {
+    const_cast<meshField<scalar,MeshType>&>(coeff).restrict();
+
     tmp<linearSystem<diagStencil,Type,MeshType>> tSys
     (
         new linearSystem<diagStencil,Type,MeshType>(field)
@@ -102,22 +104,16 @@ inline tmp<linearSystem<diagStencil,Type,MeshType>> source
     const meshField<scalar,MeshType>& cv =
         field.fvMsh().template metrics<MeshType>().cellVolumes();
 
-    Sys.A() = Zero;
+    meshField<diagStencil,MeshType>& A = Sys.A();
 
-    forAll(field, l)
-    forAll(field[l], d)
-    {
-        meshDirection<diagStencil,MeshType>& A = Sys.A()[l][d];
-        const meshDirection<scalar,MeshType>& c = coeff[l][d];
-        const meshDirection<scalar,MeshType>& v = cv[l][d];
+    A = Zero;
 
-        forAllCells(A, i, j, k)
-        {
-            A(i,j,k) = v(i,j,k)*c(i,j,k);
-        }
-    }
+    forAllLevels(A, l, d, i, j, k)
+        A(l,d,i,j,k) = cv(l,d,i,j,k)*coeff(l,d,i,j,k);
 
     Sys.b() = Zero;
+
+    const_cast<meshField<scalar,MeshType>&>(coeff).makeShallow();
 
     return tSys;
 }

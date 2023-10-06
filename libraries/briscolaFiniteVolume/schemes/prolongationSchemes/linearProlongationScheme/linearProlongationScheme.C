@@ -143,7 +143,9 @@ linearProlongationScheme<Type,MeshType>::linearProlongationScheme
         this->fvMsh(),
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        false
+        false,
+        false,
+        true
     )
 {
     setWeights();
@@ -162,7 +164,9 @@ linearProlongationScheme<Type,MeshType>::linearProlongationScheme
         this->fvMsh(),
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        false
+        false,
+        false,
+        true
     )
 {
     setWeights();

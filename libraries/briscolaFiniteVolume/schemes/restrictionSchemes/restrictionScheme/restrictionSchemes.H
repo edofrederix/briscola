@@ -3,10 +3,13 @@
 
 #include "restrictionScheme.H"
 
-#define makeRestrictionScheme(TYPE,MESHTYPE)                                    \
+#define makeRestrictionScheme(TYPE,MESHTYPE,DEFAULT)                            \
                                                                                 \
     typedef restrictionScheme<TYPE,MESHTYPE>                                    \
         restrictionScheme##TYPE##MESHTYPE;                                      \
+                                                                                \
+    template<>                                                                  \
+    const word restrictionScheme##TYPE##MESHTYPE::defaultScheme = DEFAULT;      \
                                                                                 \
     defineTemplateTypeNameAndDebugWithName                                      \
     (                                                                           \

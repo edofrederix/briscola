@@ -36,6 +36,8 @@ linearGaussLaplacianScheme<Type,MeshType>::laplacian
     meshField<Type,MeshType>& field
 )
 {
+    const_cast<meshField<faceScalar,MeshType>&>(lambda).restrict();
+
     tmp<linearSystem<stencil,Type,MeshType>> tSys
     (
         new linearSystem<stencil,Type,MeshType>(field)
@@ -43,34 +45,26 @@ linearGaussLaplacianScheme<Type,MeshType>::laplacian
 
     linearSystem<stencil,Type,MeshType>& Sys = tSys.ref();
 
+    meshField<stencil,MeshType>& A = Sys.A();
+
+    A = Zero;
     Sys.singular() = true;
 
-    forAll(field, l)
-    forAll(field[l], d)
+    const meshField<faceScalar,MeshType>& fa =
+        field.fvMsh().template metrics<MeshType>().faceAreas();
+
+    const meshField<faceScalar,MeshType>& fd =
+        field.fvMsh().template metrics<MeshType>().faceDeltas();
+
+    forAllLevels(A, l, d, i, j, k)
     {
-        const meshDirection<faceScalar,MeshType>& fa =
-            field.fvMsh().template
-            metrics<MeshType>().faceAreas()[l][d];
-
-        const meshDirection<faceScalar,MeshType>& fd =
-            field.fvMsh().template
-            metrics<MeshType>().faceDeltas()[l][d];
-
-        meshDirection<stencil,MeshType>& A = Sys.A()[l][d];
-
-        A = Zero;
-
-        const meshDirection<faceScalar,MeshType>& lam = lambda[l][d];
-
-        forAllCells(A, i, j, k)
-        {
-            A(i,j,k) = lam(i,j,k)*fa(i,j,k)*fd(i,j,k);
-
-            A(i,j,k).center() = - neighborSum(A(i,j,k));
-        }
+        A(l,d,i,j,k) = lambda(l,d,i,j,k)*fa(l,d,i,j,k)*fd(l,d,i,j,k);
+        A(l,d,i,j,k).center() = - neighborSum(A(l,d,i,j,k));
     }
 
     Sys.b() = Zero;
+
+    // const_cast<meshField<faceScalar,MeshType>&>(lambda).makeShallow();
 
     return tSys;
 }

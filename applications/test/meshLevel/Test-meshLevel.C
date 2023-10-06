@@ -38,17 +38,43 @@ void testIndexing(const fvMesh& fvMsh)
 
     label l = 0;
 
-    forAll(m1, d)
-    forAllCells(m1[d], i, j, k)
+    forAllDirections(m1, d, i, j, k)
     {
         m1[d](i,j,k) = pTraits<Type>::one*l++;
     }
 
-    forAll(m1, d)
-    forAllCells(m1[d], i, j, k)
+    forAllDirections(m1, d, i, j, k)
     {
         if (m1[d](i,j,k) != m1[d](labelVector(i,j,k)))
-            FatalErrorInFunction << "test 2 failed" << abort(FatalError);
+            FatalErrorInFunction << "test 2a failed" << abort(FatalError);
+    }
+
+    // Direct access on level
+
+    forAllDirections(m1, d, i, j, k)
+    {
+        if (m1[d](i,j,k) != m1(d,i,j,k))
+            FatalErrorInFunction << "test 2b failed" << abort(FatalError);
+    }
+
+    forAllDirections(m1, d, i, j, k)
+    {
+        if (m1[d](i,j,k) != m1(d,labelVector(i,j,k)))
+            FatalErrorInFunction << "test 2c failed" << abort(FatalError);
+    }
+
+    // Direct access to first direction
+
+    forAllCells(m1, i, j, k)
+    {
+        if (m1[0](i,j,k) != m1(i,j,k))
+            FatalErrorInFunction << "test 2d failed" << abort(FatalError);
+    }
+
+    forAllCells(m1, i, j, k)
+    {
+        if (m1[0](i,j,k) != m1(labelVector(i,j,k)))
+            FatalErrorInFunction << "test 2e failed" << abort(FatalError);
     }
 }
 

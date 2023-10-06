@@ -63,15 +63,13 @@ List<Type> nearestPointInterpolator::interp
     const meshField<Type,colocated>& field
 )
 {
-    const meshDirection<Type,colocated>& f = field[0][0];
-
     List<Type> values(points_.size());
 
     forAll(points_, i)
     {
         if (indices_[i] != -unitXYZ)
         {
-            values[i] = f(indices_[i]);
+            values[i] = field(indices_[i]);
         }
         else
         {

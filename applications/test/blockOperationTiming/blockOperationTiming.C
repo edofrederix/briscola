@@ -141,10 +141,10 @@ int main(int argc, char *argv[])
     colocatedVectorField f1("f1", fvMsh);
     colocatedVectorField f2("f2", fvMsh);
 
-    forAllCells(f1[0][0], i, j, k)
+    forAllCells(f1, i, j, k)
     {
-        f1[0][0](i,j,k) = vector(i,j,k);
-        f2[0][0](i,j,k) = vector(i*2,j*3,-k*4);
+        f1(i,j,k) = vector(i,j,k);
+        f2(i,j,k) = vector(i*2,j*3,-k*4);
     }
 
     colocatedTensorField f3("f3", fvMsh);
@@ -155,8 +155,8 @@ int main(int argc, char *argv[])
     t1 = high_resolution_clock::now();
 
     for (label iter = 0; iter < Niter; iter++)
-        forAllCells(f3[0][0], i, j, k)
-            f3[0][0](i,j,k) = f1[0][0](i,j,k) * f2[0][0](i,j,k);
+        forAllCells(f3, i, j, k)
+            f3(i,j,k) = f1(i,j,k) * f2(i,j,k);
 
     t2 = high_resolution_clock::now();
 
@@ -174,8 +174,8 @@ int main(int argc, char *argv[])
     t1 = high_resolution_clock::now();
 
     for (label iter = 0; iter < Niter; iter++)
-        forAllCells(lf3[0], i, j, k)
-            lf3[0](i,j,k) = lf1[0](i,j,k) * lf2[0](i,j,k);
+        forAllCells(lf3, i, j, k)
+            lf3(i,j,k) = lf1(i,j,k) * lf2(i,j,k);
 
     t2 = high_resolution_clock::now();
 
@@ -186,9 +186,9 @@ int main(int argc, char *argv[])
     // Direction reference looped: avoid level/direction access operators and
     // access elements in the direction directly.
 
-    const colocatedVectorDirection& df1 = f1[0][0];
-    const colocatedVectorDirection& df2 = f2[0][0];
-    colocatedTensorDirection& df3 = f3[0][0];
+    const colocatedVectorDirection& df1 = f1.direction();
+    const colocatedVectorDirection& df2 = f2.direction();
+    colocatedTensorDirection& df3 = f3.direction();
 
     t1 = high_resolution_clock::now();
 
@@ -206,9 +206,9 @@ int main(int argc, char *argv[])
     // This gives a bit of overhead because the ghost cells are also taken into
     // account.
 
-    const vectorBlock& bf1 = f1[0][0].B();
-    const vectorBlock& bf2 = f2[0][0].B();
-    tensorBlock& bf3 = f3[0][0].B();
+    const vectorBlock& bf1 = f1.B();
+    const vectorBlock& bf2 = f2.B();
+    tensorBlock& bf3 = f3.B();
 
     t1 = high_resolution_clock::now();
 
@@ -244,11 +244,11 @@ int main(int argc, char *argv[])
     t1 = high_resolution_clock::now();
 
     for (label iter = 0; iter < Niter; iter++)
-        f3[0][0].B() = f1[0][0].B() * f2[0][0].B();
+        f3.B() = f1.B() * f2.B();
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Field block operator calculation time = "
+    Info<< "Field block operator calculation time (expensive) = "
         << duration_cast<milliseconds>(t2 - t1).count()
         << " ms" << endl;
 
@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
     t1 = high_resolution_clock::now();
 
     for (label iter = 0; iter < Niter; iter++)
-        outer(f3[0][0].B(), f1[0][0].B(), f2[0][0].B());
+        outer(f3.B(), f1.B(), f2.B());
 
     t2 = high_resolution_clock::now();
 
@@ -272,11 +272,11 @@ int main(int argc, char *argv[])
     t1 = high_resolution_clock::now();
 
     for (label iter = 0; iter < Niter; iter++)
-        f3[0][0] = f1[0][0] * f2[0][0];
+        f3.direction() = f1.direction() * f2.direction();
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Field direct operator calculation time = "
+    Info<< "Field direct operator calculation time (expensive)= "
         << duration_cast<milliseconds>(t2 - t1).count()
         << " ms" << endl;
 
@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
     t1 = high_resolution_clock::now();
 
     for (label iter = 0; iter < Niter; iter++)
-        outer(f3[0][0], f1[0][0], f2[0][0]);
+        outer(f3.direction(), f1.direction(), f2.direction());
 
     t2 = high_resolution_clock::now();
 

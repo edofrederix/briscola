@@ -62,8 +62,6 @@ int main(int argc, char *argv[])
         DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
-        USys.correctBoundaries();
-
         // Immersed boundary corrections
 
         if (solverDict.found("ImmersedBoundary"))
@@ -102,7 +100,7 @@ int main(int argc, char *argv[])
 
         // Pressure equation
 
-        Poisson->solve(p, -ex::coloDiv(U)/deltaT);
+        Poisson->solve(p, ex::coloDiv(U)/(-deltaT));
 
         // Correction
 

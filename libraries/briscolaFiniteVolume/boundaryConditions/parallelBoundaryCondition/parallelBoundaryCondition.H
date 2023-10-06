@@ -47,7 +47,6 @@ protected:
     // Outstanding receive requests
     label outstandingRecvRequest_;
 
-
 private:
 
     // Disallow default bitwise assignment
@@ -106,7 +105,7 @@ public:
     virtual void initEvaluate(const label);
 
     // Evaluate the boundary condition for given level
-    virtual void evaluate(const label, const bool = false);
+    virtual void evaluate(const label);
 };
 
 }

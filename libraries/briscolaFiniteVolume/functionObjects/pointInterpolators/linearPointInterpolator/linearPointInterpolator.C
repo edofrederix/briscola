@@ -29,8 +29,8 @@ linearPointInterpolator::linearPointInterpolator
     pointInterpolator(fvMsh, points),
     weights_(points.size())
 {
-    const meshDirection<vector,colocated>& cc =
-        fvMsh_.template metrics<colocated>().cellCenters()[0][0];
+    const meshField<vector,colocated>& cc =
+        fvMsh_.template metrics<colocated>().cellCenters();
 
     forAll(points_, i)
     {
@@ -115,8 +115,6 @@ List<Type> linearPointInterpolator::interp
     const meshField<Type,colocated>& field
 )
 {
-    const meshDirection<Type,colocated>& f = field[0][0];
-
     List<Type> values(points_.size());
 
     forAll(points_, i)
@@ -134,14 +132,14 @@ List<Type> linearPointInterpolator::interp
             const label dk = u.z() < 0.5 ? -1 : 1;
 
             values[i] =
-                weights_[i].lba()*f(ii,   jj,   kk   )
-              + weights_[i].rba()*f(ii+di,jj,   kk   )
-              + weights_[i].lta()*f(ii,   jj+dj,kk   )
-              + weights_[i].rta()*f(ii+di,jj+dj,kk   )
-              + weights_[i].lbf()*f(ii,   jj,   kk+dk)
-              + weights_[i].rbf()*f(ii+di,jj,   kk+dk)
-              + weights_[i].ltf()*f(ii,   jj+dj,kk+dk)
-              + weights_[i].rtf()*f(ii+di,jj+dj,kk+dk);
+                weights_[i].lba()*field(ii,   jj,   kk   )
+              + weights_[i].rba()*field(ii+di,jj,   kk   )
+              + weights_[i].lta()*field(ii,   jj+dj,kk   )
+              + weights_[i].rta()*field(ii+di,jj+dj,kk   )
+              + weights_[i].lbf()*field(ii,   jj,   kk+dk)
+              + weights_[i].rbf()*field(ii+di,jj,   kk+dk)
+              + weights_[i].ltf()*field(ii,   jj+dj,kk+dk)
+              + weights_[i].rtf()*field(ii+di,jj+dj,kk+dk);
         }
         else
         {

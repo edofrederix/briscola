@@ -1,14 +1,12 @@
 {
     scalarBlock contError(fvMsh[0].N());
 
-    const meshDirection<scalar,colocated>& cv =
-        fvMsh.metrics<colocated>().cellVolumes()[0][0];
-
-    const meshDirection<faceScalar,colocated>& phid = phi[0][0];
+    const meshField<scalar,colocated>& cv =
+        fvMsh.metrics<colocated>().cellVolumes();
 
     forAllBlock(contError, i, j, k)
     {
-        contError(i,j,k) = neighborSum(phid(i,j,k));
+        contError(i,j,k) = neighborSum(phi(i,j,k));
     }
 
     scalar sumLocalContError = 0.0;
