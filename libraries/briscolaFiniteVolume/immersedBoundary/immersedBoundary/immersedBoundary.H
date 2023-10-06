@@ -76,8 +76,11 @@ public:
     // Apply penalization method to a linear system
     void penalization(linearSystem<stencil,Type,MeshType>&);
 
-    // Apply immersed boundary method for Dirichlet BC to a linear system
+    // Apply Deen immersed boundary method for Dirichlet BC to a linear system
     void IBM(linearSystem<stencil,Type,MeshType>&);
+
+    // Apply Fadlun immersed boundary method for Dirichlet BC to a linear system
+    void IBM2(linearSystem<stencil,Type,MeshType>&);
 
 };
 

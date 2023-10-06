@@ -80,10 +80,19 @@ int main(int argc, char *argv[])
             if
             (
                 solverDict.subDict("ImmersedBoundary")
-                    .lookupOrDefault("IBM", true)
+                    .lookupOrDefault("IBM", false)
             )
             {
                 IBs.IBM(USys);
+            }
+
+            if
+            (
+                solverDict.subDict("ImmersedBoundary")
+                    .lookupOrDefault("IBM2", false)
+            )
+            {
+                IBs.IBM2(USys);
             }
         }
 
