@@ -2,6 +2,7 @@
 #define LSFIR_H
 
 #include "normalScheme.H"
+#include "LSGIR.H"
 
 namespace Foam
 {
@@ -14,17 +15,13 @@ namespace fv
 
 class LSFIR
 :
-    public normalScheme
+    public LSGIR
 {
     // Mesh formed by hexahedrons with planar faces (default true)
     bool planarFaces_;
 
     // True for using vertex averages instead of centers of mass (default false)
     bool centerAveraging_;
-
-    // Boundary type stencil for LSGIR (true for parallel, periodic and empty
-    // boundaries)
-    bool boundaryTypeLSGIR_[3][3][3];
 
     // Boundary type stencil for the LSFIR iteration (true for parallel and
     // periodic boundaries)
