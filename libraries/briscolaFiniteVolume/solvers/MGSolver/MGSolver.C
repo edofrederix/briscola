@@ -39,7 +39,7 @@ void MGSolver<SType,Type,MeshType>::cycle
 
     // Pre-smooth
 
-    this->smooth(xEqn, l, nSweepsPre, converged, omega_);
+    this->smooth(xEqn, l, nSweepsPre, converged, omega_, this->IB_);
 
     // If we are not on the coarsest level, continue to traverse levels.
     // Otherwise, just smooth (could be better to use a direct solver here)
@@ -54,7 +54,17 @@ void MGSolver<SType,Type,MeshType>::cycle
             if (rep > 0 || l > 0)
                 forAll(x[l], d)
                     if (!converged[d])
+                    {
                         xEqn.residual(r[l][d]);
+                        if (this->IB_ != nullptr)
+                        {
+                            r[l][d] *=
+                                (
+                                    1.0 - this->IB_->mask()[l][d]
+                                    - this->IB_->wallAdjMask()[l][d]
+                                );
+                        }
+                    }
 
             // Restrict the current level residual to coarse level
 
@@ -83,6 +93,7 @@ void MGSolver<SType,Type,MeshType>::cycle
                     proScheme_->prolong(x[l][d], x[l+1][d], plusEqOp<Type>());
 
             x[l].correctCommBoundaryConditions();
+            this->correctImmersedBoundaryConditions(this->IB_,xEqn,l);
 
             // Post-smooth
 
@@ -92,7 +103,8 @@ void MGSolver<SType,Type,MeshType>::cycle
                 l,
                 nSweepsPost,
                 converged,
-                omega_
+                omega_,
+                this->IB_
             );
         }
     }
@@ -104,7 +116,8 @@ void MGSolver<SType,Type,MeshType>::cycle
             l,
             Foam::max(nSweepsPost,2),
             converged,
-            omega_
+            omega_,
+            this->IB_
         );
     }
 
@@ -128,6 +141,7 @@ void MGSolver<SType,Type,MeshType>::solve
     // Correct the boundary conditions
 
     x[0].correctCommBoundaryConditions();
+    this->correctImmersedBoundaryConditions(this->IB_,xEqn,0);
 
     // Residual field
 
@@ -149,6 +163,11 @@ void MGSolver<SType,Type,MeshType>::solve
     // Initial residual
 
     xEqn.residual(r[0]);
+
+    if (this->IB_ != nullptr)
+    {
+        r[0] *= (1.0 - this->IB_->mask()[0] - this->IB_->wallAdjMask()[0]);
+    }
 
     const List<Type> initialResiduals =
         cmptDivide(gSum(cmptMag(r[0])), normFactors);
@@ -201,7 +220,17 @@ void MGSolver<SType,Type,MeshType>::solve
 
         forAll(x[0], d)
             if (!converged[d])
+            {
                 xEqn.residual(r[0][d]);
+                if (this->IB_ != nullptr)
+                {
+                    r[0][d] *=
+                        (
+                            1.0 - this->IB_->mask()[0][d]
+                            - this->IB_->wallAdjMask()[0][d]
+                        );
+                }
+            }
 
         currentResiduals =
             cmptDivide(gSum(cmptMag(r[0])), normFactors);
@@ -234,10 +263,11 @@ template<class SType, class Type, class MeshType>
 MGSolver<SType,Type,MeshType>::MGSolver
 (
     const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    immersedBoundary<Type,MeshType>* IB
 )
 :
-    solver<SType,Type,MeshType>(dict,fvMsh),
+    solver<SType,Type,MeshType>(dict,fvMsh,IB),
     smoother_
     (
         smootherTypeNames

@@ -62,45 +62,24 @@ int main(int argc, char *argv[])
         DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
-        // Immersed boundary corrections
-
-        if (solverDict.found("ImmersedBoundary"))
-        {
-            if
-            (
-                solverDict.subDict("ImmersedBoundary")
-                    .lookupOrDefault("penalization", true)
-            )
-            {
-                IBs.penalization(USys);
-            }
-
-            if
-            (
-                solverDict.subDict("ImmersedBoundary")
-                    .lookupOrDefault("IBM", false)
-            )
-            {
-                IBs.IBM(USys);
-            }
-
-            if
-            (
-                solverDict.subDict("ImmersedBoundary")
-                    .lookupOrDefault("IBM2", false)
-            )
-            {
-                IBs.IBM2(USys);
-            }
-        }
-
         // Solve predictor
 
         USolve->solve(USys);
 
         // Pressure equation
 
-        Poisson->solve(p, ex::coloDiv(U)/(-deltaT));
+        if (solverDict.found("ImmersedBoundary"))
+        {
+            Poisson->solve
+                (
+                    p,
+                    (ex::coloDiv(U)-IBs.IBMSource(U))/(-deltaT)
+                );
+        }
+        else
+        {
+            Poisson->solve(p, ex::coloDiv(U)/(-deltaT));
+        }
 
         // Correction
 

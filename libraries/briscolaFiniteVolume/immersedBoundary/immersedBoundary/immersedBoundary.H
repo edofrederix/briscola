@@ -1,6 +1,8 @@
 #ifndef immersedBoundary_H
 #define immersedBoundary_H
 
+#include "immersedBoundaryFwd.H"
+
 #include "List.H"
 #include "cylinder.H"
 #include "sphere.H"
@@ -39,13 +41,17 @@ class immersedBoundary
     // least one neighboring cell in the IB, and 0 in other cells
     meshField<scalar,MeshType> wallAdjMask_;
 
+    // The ghost cell mask is equal to 1 in IB cells with at least
+    // one neighboring fluid cell and 0 in other cells
+    meshField<scalar,MeshType> ghostMask_;
+
     // The wall distance field stores the wall distances to the
     // IB in the components of the stencils
     meshField<faceScalar,MeshType> wallDist_;
 
     // The neighbor distance field stores the distances to neighboring
     // fluid cell for the quadratic fit on non-uniform grids
-    meshField<faceScalar, MeshType> neighborDist_;
+    meshField<faceScalar,MeshType> neighborDist_;
 
     // List of shapes making up the immersed boundary
     PtrList<shape> shapes_;
@@ -77,10 +83,24 @@ public:
     void penalization(linearSystem<stencil,Type,MeshType>&);
 
     // Apply Deen immersed boundary method for Dirichlet BC to a linear system
-    void IBM(linearSystem<stencil,Type,MeshType>&);
+    void DeenIBM(linearSystem<stencil,Type,MeshType>&);
 
     // Apply Fadlun immersed boundary method for Dirichlet BC to a linear system
-    void IBM2(linearSystem<stencil,Type,MeshType>&);
+    void FadlunIBM(linearSystem<stencil,Type,MeshType>&);
+
+    // Return colocated volume source term for a staggered velocity field.
+    // Only defined for staggeredScalarImmersedBoundary
+    tmp<meshField<scalar,colocated>> IBMSource
+    (
+        const meshField<scalar,staggered>&
+    );
+
+    // Inline access functions
+    inline meshField<scalar,MeshType>& mask() { return mask_; }
+    inline meshField<scalar,MeshType>& wallAdjMask() { return wallAdjMask_; }
+    inline meshField<scalar,MeshType>& ghostMask() { return ghostMask_; }
+    inline meshField<faceScalar,MeshType>& wallDist() { return wallDist_; }
+    inline meshField<faceScalar,MeshType>& neighborDist() { return neighborDist_; }
 
 };
 

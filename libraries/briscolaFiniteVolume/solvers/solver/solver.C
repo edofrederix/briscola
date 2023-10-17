@@ -10,14 +10,20 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-solver<SType,Type,MeshType>::solver(const dictionary& dict, const fvMesh& fvMsh)
+solver<SType,Type,MeshType>::solver
+(
+    const dictionary& dict,
+    const fvMesh& fvMsh,
+    immersedBoundary<Type,MeshType>* IB
+)
 :
     dict_(dict),
     fvMsh_(fvMsh),
     relTol_(readScalar(dict.lookup("relTol"))),
     tolerance_(readScalar(dict.lookup("tolerance"))),
     minIter_(dict.lookupOrDefault<label>("minIter", 0)),
-    maxIter_(dict.lookupOrDefault<label>("maxIter", 999))
+    maxIter_(dict.lookupOrDefault<label>("maxIter", 999)),
+    IB_(IB)
 {}
 
 template<class SType, class Type, class MeshType>
@@ -28,7 +34,8 @@ template<class SType, class Type, class MeshType>
 autoPtr<solver<SType,Type,MeshType>> solver<SType,Type,MeshType>::New
 (
     const word solverName,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    immersedBoundary<Type,MeshType>* IB
 )
 {
     const dictionary dict
@@ -51,14 +58,15 @@ autoPtr<solver<SType,Type,MeshType>> solver<SType,Type,MeshType>::New
             << exit(FatalError);
     }
 
-    return autoPtr<solver<SType,Type,MeshType>>(cstrIter()(dict, fvMsh));
+    return autoPtr<solver<SType,Type,MeshType>>(cstrIter()(dict, fvMsh, IB));
 }
 
 template<class SType, class Type, class MeshType>
 autoPtr<solver<SType,Type,MeshType>> solver<SType,Type,MeshType>::New
 (
     const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    immersedBoundary<Type,MeshType>* IB
 )
 {
     const word solverType(dict.lookup("type"));
@@ -76,7 +84,7 @@ autoPtr<solver<SType,Type,MeshType>> solver<SType,Type,MeshType>::New
             << exit(FatalError);
     }
 
-    return autoPtr<solver<SType,Type,MeshType>>(cstrIter()(dict, fvMsh));
+    return autoPtr<solver<SType,Type,MeshType>>(cstrIter()(dict, fvMsh, IB));
 }
 
 template<class SType, class Type, class MeshType>
@@ -107,7 +115,8 @@ void solver<SType,Type,MeshType>::RBGS
     const label l,
     const label sweeps,
     const labelList& converged,
-    const scalar omega
+    const scalar omega,
+    immersedBoundary<Type, MeshType>* IB
 )
 {
     meshLevel<Type,MeshType>& x = sys.x()[l];
@@ -138,6 +147,7 @@ void solver<SType,Type,MeshType>::RBGS
         }
 
         x.correctCommBoundaryConditions();
+        correctImmersedBoundaryConditions(IB,sys,l);
 
         forAll(x, d)
         if (!converged[d])
@@ -160,6 +170,7 @@ void solver<SType,Type,MeshType>::RBGS
         }
 
         x.correctCommBoundaryConditions();
+        correctImmersedBoundaryConditions(IB,sys,l);
     }
 
     x.correctNonCommBoundaryConditions();
@@ -172,7 +183,8 @@ void solver<SType,Type,MeshType>::LEXGS
     const label l,
     const label sweeps,
     const labelList& converged,
-    const scalar omega
+    const scalar omega,
+    immersedBoundary<Type, MeshType>* IB
 )
 {
     meshLevel<Type,MeshType>& x = sys.x()[l];
@@ -200,6 +212,7 @@ void solver<SType,Type,MeshType>::LEXGS
         }
 
         x.correctCommBoundaryConditions();
+        correctImmersedBoundaryConditions(IB,sys,l);
     }
 
     x.correctNonCommBoundaryConditions();
@@ -212,7 +225,8 @@ void solver<SType,Type,MeshType>::JAC
     const label l,
     const label sweeps,
     const labelList& converged,
-    const scalar omega
+    const scalar omega,
+    immersedBoundary<Type, MeshType>* IB
 )
 {
     meshLevel<Type,MeshType>& x = sys.x()[l];
@@ -245,6 +259,7 @@ void solver<SType,Type,MeshType>::JAC
         x = y;
 
         x.correctCommBoundaryConditions();
+        correctImmersedBoundaryConditions(IB,sys,l);
     }
 
     x.correctNonCommBoundaryConditions();
@@ -265,6 +280,96 @@ void solver<SType,Type,MeshType>::printSolverStats
         << ", initial residual = " << max(cmptMax(initialResiduals))
         << ", final residual = " << max(cmptMax(finalResiduals))
         << ", nIter = " << nIter << endl;
+}
+
+template<class SType, class Type, class MeshType>
+void solver<SType,Type,MeshType>::correctImmersedBoundaryConditions
+(
+    immersedBoundary<Type, MeshType>* IB,
+    linearSystem<SType,Type,MeshType>& sys,
+    const label l
+)
+{
+    if (IB != nullptr)
+    {
+        meshLevel<Type,MeshType>& x = sys.x()[l];
+
+        // Penalization
+        // forAllDirections(x,d,i,j,k)
+        // {
+        //     if (Foam::mag(IB->mask()(l,d,i,j,k)-1.0) < 0.01)
+        //     {
+        //         x(d,i,j,k) = Zero;
+        //     }
+        // }
+
+        // Fadlun method
+        // forAllDirections(x,d,i,j,k)
+        // {
+        //     const labelVector ijk(i,j,k);
+        //     if (Foam::mag(IB->wallAdjMask()(l,d,i,j,k)-1.0) < 0.01)
+        //     {
+        //         scalar ximax = 0;
+        //         for (int dir = 0; dir < 6; dir++)
+        //         {
+        //             const label oppositeDir =
+        //                 faceNumber(-faceOffsets[dir]);
+
+        //             if (IB->wallDist()(l,d,i,j,k)[dir] > ximax)
+        //             {
+        //                 ximax = IB->wallDist()(l,d,i,j,k)[dir];
+        //                 const scalar xic = 1.0 - IB->wallDist()(l,d,i,j,k)[dir];
+        //                 const scalar xinb = 1.0 + xic;
+        //                 const scalar w = xic/xinb;
+
+        //                 x(d,i,j,k) = w*x[d](ijk+faceOffsets[oppositeDir]);
+        //             }
+        //         }
+        //     }
+        // }
+
+        // Deen method
+        forAllDirections(x,d,i,j,k)
+        {
+            const labelVector ijk(i,j,k);
+            if (Foam::mag(IB->wallAdjMask()(l,d,i,j,k)-1.0) < 0.01)
+            {
+                for (int dir = 0; dir < 6; dir++)
+                {
+                    const label oppositeDir =
+                        faceNumber(-faceOffsets[dir]);
+
+                    if (IB->wallDist()(l,d,i,j,k)[dir] > 0)
+                    {
+                        scalar xiStabilityFactor = 0;
+
+                        const scalar xi
+                            = IB->wallDist()(l,d,i,j,k)[dir];
+
+                        const scalar xi2
+                            = IB->neighborDist()(l,d,i,j,k)[oppositeDir];
+
+                        scalar w0 = 2.0 /
+                            (
+                                (1.0 - xiStabilityFactor)
+                                * (2.0 - xiStabilityFactor)
+                            );
+                        scalar w1 = 2.0 - (2.0 - xi) * w0;
+                        scalar w2 = -1.0 + (1.0 - xi) * w0;
+
+                        if (xi < xiStabilityFactor)
+                        {
+                            w1 = xi*xi2/((1.0-xi)*(1.0-xi2));
+                            w2 = xi/((xi2-xi)*(xi2-1.0));
+                        }
+
+                        x[d](ijk+faceOffsets[dir])
+                            = w1*x[d](ijk) + w2*x[d](ijk-faceOffsets[dir]);
+                    }
+                }
+            }
+        }
+    }
 }
 
 template<class SType, class Type, class MeshType>

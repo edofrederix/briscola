@@ -44,6 +44,16 @@ immersedBoundary<Type,MeshType>::immersedBoundary
         false,
         true
     ),
+    ghostMask_
+    (
+        "ghostMask",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        true
+    ),
     wallDist_
     (
         "wallDist",
@@ -149,12 +159,25 @@ immersedBoundary<Type,MeshType>::immersedBoundary
 
             mask_(l,d,i,j,k) = 0.0;
             wallAdjMask_(l,d,i,j,k) = 0.0;
+            ghostMask_(l,d,i,j,k) = 0.0;
             wallDist_(l,d,i,j,k) = -1.0;
             neighborDist_(l,d,i,j,k) = -1.0;
 
             if (this->isInside(CC(l,d,i,j,k)))
             {
                 mask_(l,d,i,j,k) = 1.0;
+                for (int dir = 0; dir < 6; dir++)
+                {
+                    const labelVector fo = faceOffsets[dir];
+
+                    if
+                    (
+                        !this->isInside(CC[l][d](ijk+fo))
+                    )
+                    {
+                        ghostMask_(l,d,i,j,k) = 1.0;
+                    }
+                }
             }
             else
             {
@@ -193,6 +216,7 @@ immersedBoundary<Type,MeshType>::immersedBoundary
     {
         mask_ = Zero;
         wallAdjMask_ = Zero;
+        ghostMask_ = Zero;
         wallDist_ = Zero;
         neighborDist_ = Zero;
     }
@@ -289,7 +313,7 @@ void immersedBoundary<Type,MeshType>::penalization
 }
 
 template<class Type, class MeshType>
-void immersedBoundary<Type,MeshType>::IBM
+void immersedBoundary<Type,MeshType>::DeenIBM
 (
     linearSystem<stencil,Type,MeshType>& ls
 )
@@ -343,7 +367,7 @@ void immersedBoundary<Type,MeshType>::IBM
 }
 
 template<class Type, class MeshType>
-void immersedBoundary<Type,MeshType>::IBM2
+void immersedBoundary<Type,MeshType>::FadlunIBM
 (
     linearSystem<stencil,Type,MeshType>& ls
 )
@@ -378,10 +402,56 @@ void immersedBoundary<Type,MeshType>::IBM2
     }
 }
 
-typedef immersedBoundary<scalar,colocated> colocatedScalarImmersedBoundary;
-typedef immersedBoundary<vector,colocated> colocatedVectorImmersedBoundary;
-typedef immersedBoundary<scalar,staggered> staggeredScalarImmersedBoundary;
-typedef immersedBoundary<vector,staggered> staggeredVectorImmersedBoundary;
+template<>
+tmp<colocatedScalarField> immersedBoundary<scalar,staggered>::IBMSource
+(
+    const staggeredScalarField& field
+)
+{
+    tmp<colocatedScalarField> tSource
+    (
+        new colocatedScalarField
+        (
+            "IBMSource",
+            field.fvMsh()
+        )
+    );
+
+    colocatedScalarField& source = tSource.ref();
+
+    source = Zero;
+
+    const colocatedFaceScalarField& fa =
+        fvMsh_.metrics<colocated>().faceAreas();
+
+    const colocatedScalarField& cv =
+        fvMsh_.metrics<colocated>().cellVolumes();
+
+    forAllCells(source[0][0],i,j,k)
+    {
+        source(0,0,i,j,k) -=
+            ghostMask_(0,0,i,j,k) * field(0,0,i,j,k) * fa(0,0,i,j,k).left();
+
+        source(0,0,i,j,k) +=
+            ghostMask_(0,0,i+1,j,k) * field(0,0,i+1,j,k) * fa(0,0,i,j,k).right();
+
+        source(0,0,i,j,k) -=
+            ghostMask_(0,1,i,j,k) * field(0,1,i,j,k) * fa(0,0,i,j,k).bottom();
+
+        source(0,0,i,j,k) +=
+            ghostMask_(0,1,i,j+1,k) * field(0,1,i,j+1,k) * fa(0,0,i,j,k).top();
+
+        source(0,0,i,j,k) -=
+            ghostMask_(0,2,i,j,k) * field(0,2,i,j,k) * fa(0,0,i,j,k).aft();
+
+        source(0,0,i,j,k) +=
+            ghostMask_(0,2,i,j,k+1) * field(0,2,i,j,k+1) * fa(0,0,i,j,k).fore();
+
+        source(0,0,i,j,k) /= cv(0,0,i,j,k);
+    }
+
+    return tSource;
+}
 
 defineTemplateTypeNameAndDebug(colocatedScalarImmersedBoundary, 0);
 defineTemplateTypeNameAndDebug(colocatedVectorImmersedBoundary, 0);

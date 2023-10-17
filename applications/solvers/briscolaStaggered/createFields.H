@@ -90,7 +90,8 @@ autoPtr<solver<stencil,scalar,staggered>> USolve
     solver<stencil,scalar,staggered>::New
     (
         USys.x().name(),
-        fvMsh
+        fvMsh,
+        &IBs
     )
 );
 
