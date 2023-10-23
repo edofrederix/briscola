@@ -129,6 +129,15 @@ public:
 
         return rectilinear_ ? pLVE(v,m,f) : cLVE(v,m,f,cv);
     }
+
+    scalar fluxVolumeLVE
+    (
+        const vertexVector& v,
+        const scalar& Vtotal,
+        const scalar& Vf,
+        const label& u,
+        const label& l
+    ) const;
 };
 
 }

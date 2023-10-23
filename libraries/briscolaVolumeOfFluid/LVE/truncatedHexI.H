@@ -10,9 +10,9 @@ namespace fv
 inline void truncatedHex::setTets()
 {
     tets_.clear();
-    tets_.setSize(5);
+    tets_.setSize(numberOfTets);
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < numberOfTets; i++)
     {
         vectorList v(4);
 
