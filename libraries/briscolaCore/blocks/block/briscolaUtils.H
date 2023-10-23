@@ -329,7 +329,7 @@ const label tetDecomp[numberOfTets][4]
     {0,5,6,3}
 };
 
-// Global vertex numbers contained in general hexadron faces (decomposing each
+// Global vertex numbers contained in general hexahedron faces (decomposing each
 // face into two triangles) in counter-clockwise direction as viewed from
 // outside
 const label faceTriangleDecompCC[12][3] =
@@ -574,6 +574,40 @@ inline scalar crossProductComponent
         i == 0 ? v1.y()*v2.z() - v1.z()*v2.y()
       : i == 1 ? v1.z()*v2.x() - v1.x()*v2.z()
       :          v1.x()*v2.y() - v1.y()*v2.x();
+}
+
+// Volume of a tetrahedron
+inline scalar tetVolume
+(
+    const vector& a,
+    const vector& b,
+    const vector& c,
+    const vector& d
+)
+{
+    return ((a-d) & ((c-d)^(b-d)))/6.0;
+}
+
+// Triangle area vector
+inline vector triAreaVector
+(
+    const vector& a,
+    const vector& b,
+    const vector& c
+)
+{
+    return 0.5*((b-a) ^ (c-a));
+}
+
+// Triangle area
+inline scalar triArea
+(
+    const vector& a,
+    const vector& b,
+    const vector& c
+)
+{
+    return Foam::mag(triAreaVector(a,b,c));
 }
 
 }

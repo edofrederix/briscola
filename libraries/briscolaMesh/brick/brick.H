@@ -5,7 +5,6 @@
 #include "PtrList.H"
 #include "face.H"
 #include "block.H"
-#include "geometryFun.H"
 #include "dictionary.H"
 #include "labelVector.H"
 #include "grading.H"

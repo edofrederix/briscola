@@ -467,24 +467,53 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 
     forAllLevels(cv, l, d, i, j, k)
     {
-        // Cell volume is given by Wesseling's efficient formula (Wesseling, p.
-        // 484)
+        if (fvMsh_.msh()[0].rectilinear() == unitXYZ)
+        {
+            // Cell volume is given by Wesseling's efficient formula (Wesseling,
+            // p. 484)
 
-        const vector Sx =
-            fan(l,d,i,j,k).right() - fan(l,d,i,j,k).left();
-        const vector Sy =
-            fan(l,d,i,j,k).top()   - fan(l,d,i,j,k).bottom();
-        const vector Sz =
-            fan(l,d,i,j,k).fore()  - fan(l,d,i,j,k).aft();
+            const vector Sx =
+                fan(l,d,i,j,k).right() - fan(l,d,i,j,k).left();
+            const vector Sy =
+                fan(l,d,i,j,k).top()   - fan(l,d,i,j,k).bottom();
+            const vector Sz =
+                fan(l,d,i,j,k).fore()  - fan(l,d,i,j,k).aft();
 
-        const vector Dx =
-            fc(l,d,i,j,k).right() - fc(l,d,i,j,k).left();
-        const vector Dy =
-            fc(l,d,i,j,k).top()   - fc(l,d,i,j,k).bottom();
-        const vector Dz =
-            fc(l,d,i,j,k).fore()  - fc(l,d,i,j,k).aft();
+            const vector Dx =
+                fc(l,d,i,j,k).right() - fc(l,d,i,j,k).left();
+            const vector Dy =
+                fc(l,d,i,j,k).top()   - fc(l,d,i,j,k).bottom();
+            const vector Dz =
+                fc(l,d,i,j,k).fore()  - fc(l,d,i,j,k).aft();
 
-        cv(l,d,i,j,k) = ((Dx & Sx) + (Dy & Sy) + (Dz & Sz))/6.0;
+            cv(l,d,i,j,k) = ((Dx & Sx) + (Dy & Sy) + (Dz & Sz))/6.0;
+        }
+        else
+        {
+            // Cell volume computed from tet decomposition
+
+            const partLevelPoints& points = fvMsh_[l].points();
+
+            const vector shift = MeshType::shift[d];
+            const vector ijk(vector(i,j,k)+shift);
+
+            cv(l,d,i,j,k) = 0.0;
+
+            vertexVector v;
+
+            for (int vi = 0; vi < 8; vi++)
+                v[vi] = points.interp(ijk + vector(vertexOffsets[vi]));
+
+            for (int t = 0; t < numberOfTets; t++)
+                cv(l,d,i,j,k) +=
+                    tetVolume
+                    (
+                        v[tetDecomp[t][0]],
+                        v[tetDecomp[t][1]],
+                        v[tetDecomp[t][2]],
+                        v[tetDecomp[t][3]]
+                    );
+        }
     }
 
     // Extrapolate cell volumes to ghost cells
