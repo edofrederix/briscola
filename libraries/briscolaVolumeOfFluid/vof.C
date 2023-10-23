@@ -73,15 +73,41 @@ void vof::updateFlux
 
                     vertexVector vertices(v(ijk));
 
-                    for (int iv = 0; iv < 4; iv++)
+                    if (rectilinear_)
                     {
-                        vertices[vertexNumsInFace[u][iv]] =
-                            vertices[vertexNumsInFace[l][iv]]
-                          + frac
-                          * (
+                        for (int iv = 0; iv < 4; iv++)
+                        {
+                            vertices[vertexNumsInFace[u][iv]] =
+                                vertices[vertexNumsInFace[l][iv]]
+                            + frac
+                            * (
+                                    vertices[vertexNumsInFace[u][iv]]
+                                - vertices[vertexNumsInFace[l][iv]]
+                                );
+                        }
+                    }
+                    else
+                    {
+                        scalar cutC = lve_.fluxVolumeLVE
+                        (
+                            v(ijk),
+                            cv(ijk),
+                            frac * cv(ijk),
+                            u,
+                            l
+                        );
+
+                        for (int iv = 0; iv < 4; iv++)
+                        {
+                            vertices[vertexNumsInFace[u][iv]] =
                                 vertices[vertexNumsInFace[u][iv]]
-                              - vertices[vertexNumsInFace[l][iv]]
-                            );
+                            + cutC
+                            * (
+                                    vertices[vertexNumsInFace[l][iv]]
+                                - vertices[vertexNumsInFace[u][iv]]
+                                );
+                        }
+
                     }
 
                     scalar fluxVolume =

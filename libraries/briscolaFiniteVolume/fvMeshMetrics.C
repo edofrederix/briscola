@@ -485,6 +485,12 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
                 fc(l,d,i,j,k).top()   - fc(l,d,i,j,k).bottom();
             const vector Dz =
                 fc(l,d,i,j,k).fore()  - fc(l,d,i,j,k).aft();
+            const vector Dx =
+                fc(l,d,i,j,k).right() - fc(l,d,i,j,k).left();
+            const vector Dy =
+                fc(l,d,i,j,k).top()   - fc(l,d,i,j,k).bottom();
+            const vector Dz =
+                fc(l,d,i,j,k).fore()  - fc(l,d,i,j,k).aft();
 
             cv(l,d,i,j,k) = ((Dx & Sx) + (Dy & Sy) + (Dz & Sz))/6.0;
         }

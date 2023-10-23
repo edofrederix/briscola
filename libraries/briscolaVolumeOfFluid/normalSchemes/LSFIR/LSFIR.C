@@ -30,19 +30,10 @@ void LSFIR::createBoundaryTypes()
         {
             for (int k = 0; k < 3; k++)
             {
-                bool aux1 = true;
                 bool aux2 = true;
 
                 if (i != 1)
                 {
-                    if (vf_.fvMsh()[0].l() > 1)
-                    {
-                        aux1 =
-                            (i == 0)
-                          ? (aux1 && faceType.left() > 0)
-                          : (aux1 && faceType.right() > 0);
-                    }
-
                     aux2 =
                         (i == 0)
                       ? (aux2 && faceType.left() > 0)
@@ -51,14 +42,6 @@ void LSFIR::createBoundaryTypes()
 
                 if (j != 1)
                 {
-                    if (vf_.fvMsh()[0].m() > 1)
-                    {
-                        aux1 =
-                            (j == 0)
-                          ? (aux1 && faceType.bottom() > 0)
-                          : (aux1 && faceType.top() > 0);
-                    }
-
                     aux2 =
                         (j == 0)
                       ? (aux2 && faceType.bottom() > 0)
@@ -67,20 +50,12 @@ void LSFIR::createBoundaryTypes()
 
                 if (k != 1)
                 {
-                    if (vf_.fvMsh()[0].n() > 1)
-                    {
-                        aux1 =
-                            (k == 0)
-                          ? aux1 && (faceType.aft() > 0)
-                          : aux1 && (faceType.fore() > 0);
-                    }
                     aux2 =
                         (k == 0)
                       ? (aux2 && faceType.aft() > 0)
                       : (aux2 && faceType.fore() > 0);
                 }
 
-                boundaryTypeLSGIR_[i][j][k] = aux1;
                 boundaryTypeLSFIR_[i][j][k] = aux2;
             }
         }
@@ -132,7 +107,7 @@ void LSFIR::createHexagonDescription()
 
 LSFIR::LSFIR(const vof& vf, const dictionary& dict)
 :
-    normalScheme(vf, dict),
+    LSGIR(vf, dict),
     planarFaces_(dict.lookupOrDefault<bool>("planarFaces", true)),
     centerAveraging_(dict.lookupOrDefault<bool>("centerAveraging", false))
 {
@@ -142,7 +117,7 @@ LSFIR::LSFIR(const vof& vf, const dictionary& dict)
 
 LSFIR::LSFIR(const LSFIR& s)
 :
-    normalScheme(s),
+    LSGIR(s),
     planarFaces_(s.planarFaces_),
     centerAveraging_(s.centerAveraging_)
 {
@@ -168,6 +143,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
     colocatedVectorField& n = tn.ref();
 
+    /*
+
     tmp<colocatedVectorField> tn_new
     (
         new colocatedVectorField(
@@ -178,12 +155,12 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
     colocatedVectorField& n_new = tn_new.ref();
 
+    */
+
     const colocatedScalarField& alpha = vf_.alpha();
 
     const colocatedVertexVectorField& v =
         vf_.fvMsh().template metrics<colocated>().vertexCenters();
-    const colocatedVectorField& cc =
-        vf_.fvMsh().template metrics<colocated>().cellCenters();
     const colocatedScalarField& cv =
         vf_.fvMsh().template metrics<colocated>().cellVolumes();
 
@@ -205,124 +182,14 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
     // Initialise the field using LSGIR
 
-    forAllCells(n, i, j, k)
-    {
-        int index;
-        scalar weight;
-
-        if
-        (
-            (alpha(i,j,k) > vof::threshold)
-         && (alpha(i,j,k) < 1 - vof::threshold)
-        )
-        {
-            double Aaux[26][3] = {0};
-            double baux[26] = {0};
-            tensor A = Zero;
-            vector b = Zero;
-
-            for (int aux1 = 0; aux1 < 3; aux1++)
-            {
-                for (int aux2 = 0; aux2 < 3; aux2++)
-                {
-                    for (int aux3 = 0; aux3 < 3; aux3++)
-                    {
-                        bool interiorNode =
-                            (
-                                ((i+aux1-1) >= n.I().left())
-                             && ((i+aux1-1) < n.I().right())
-                             && ((j+aux2-1) >= n.I().bottom())
-                             && ((j+aux2-1) < n.I().top())
-                             && ((k+aux3-1) >= n.I().aft())
-                             && ((k+aux3-1) < n.I().fore())
-                            );
-
-                        if
-                        (
-                            ((aux1 != 1) || (aux2 != 1) || (aux3 != 1))
-                         && (
-                                interiorNode
-                             || boundaryTypeLSGIR_[aux1][aux2][aux3]
-                            )
-                        )
-                        {
-                            index = aux1 + 3 * aux2 + 9 * aux3;
-
-                            if (index > 13)
-                                index--;
-
-                            weight = 1.0/Foam::pow
-                                (
-                                    Foam::mag
-                                    (
-                                        cc(i,j,k)
-                                      - cc(i+aux1-1,j+aux2-1,k+aux3-1)
-                                    ),
-                                    1.5
-                                );
-
-                            baux[index] =
-                                weight *
-                                (
-                                    alpha(i+aux1-1,j+aux2-1,k+aux3-1)
-                                  - alpha(i,j,k)
-                                );
-
-                            Aaux[index][0] =
-                                weight *
-                                (
-                                    cc(i+aux1-1,j+aux2-1,k+aux3-1)[0]
-                                  - cc(i,j,k)[0]
-                                );
-
-                            Aaux[index][1] =
-                                weight *
-                                (
-                                    cc(i+aux1-1,j+aux2-1,k+aux3-1)[1]
-                                  - cc(i,j,k)[1]
-                                );
-
-                            Aaux[index][2] =
-                                weight *
-                                (
-                                    cc(i+aux1-1,j+aux2-1,k+aux3-1)[2]
-                                  - cc(i,j,k)[2]
-                                );
-                        }
-                    }
-                }
-            }
-
-            for (int aux3 = 0; aux3 < 26; aux3++)
-            {
-                for (int aux1 = 0; aux1 < 3; aux1++)
-                {
-                    for (int aux2 = 0; aux2 < 3; aux2++)
-                    {
-                        A[3 * aux1 + aux2] += Aaux[aux3][aux1] * Aaux[aux3][aux2];
-                    }
-                    b[aux1] += Aaux[aux3][aux1] * baux[aux3];
-                }
-            }
-
-            if (Foam::det(A) == 0)
-            {
-                FatalErrorInFunction
-                    << "LSFIR failed: LSGIR 0 determinat."
-                    << endl << abort(FatalError);
-            }
-
-            n(i,j,k) = A.inv() & b;
-            const scalar S = Foam::mag(n(i,j,k));
-            n(i,j,k) /= S;
-        }
-        else
-        {
-            n(i,j,k) = Zero;
-        }
-    }
+    colocatedVectorField n_new(LSGIR::operator()());
 
     // LSFIR iteration
+
+    forAllCells(n, i, j, k)
+    {
+        n(i,j,k) = n_new(i,j,k);
+    }
 
     int maxIterNumber = 4;
     int updatedNormals = 1;
