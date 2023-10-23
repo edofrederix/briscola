@@ -318,7 +318,8 @@ const label vertexNumsInEdge[12][2] =
 };
 
 // Decomposition of a block in tets, used throughout the code mostly for
-// geometric calculations
+// geometric calculations. We use six tets such that opposing cell faces can be
+// split in two triangles consistently.
 const label numberOfTets = 6;
 const label tetDecomp[numberOfTets][4]
 {
@@ -586,7 +587,7 @@ inline scalar tetVolume
     const vector& d
 )
 {
-    return ((a-d) & ((c-d)^(b-d)))/6.0;
+    return ((a-d) & ((b-d)^(c-d)))/6.0;
 }
 
 // Triangle area vector

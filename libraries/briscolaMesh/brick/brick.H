@@ -396,22 +396,22 @@ public:
     inline scalar volume() const
     {
         return
-            tetVolume(v4(), v5(), v0(), v6())
-          + tetVolume(v1(), v0(), v5(), v3())
-          + tetVolume(v2(), v3(), v6(), v0())
-          + tetVolume(v7(), v6(), v3(), v5())
-          + tetVolume(v6(), v0(), v3(), v5());
+            tetVolume(v4(), v0(), v5(), v6())
+          + tetVolume(v1(), v5(), v0(), v3())
+          + tetVolume(v2(), v6(), v3(), v0())
+          + tetVolume(v7(), v3(), v6(), v5())
+          + tetVolume(v6(), v3(), v0(), v5());
     }
 
     // Volume of the brick (using magnitude of tet volumes)
     inline scalar magVolume() const
     {
         return
-            Foam::mag(tetVolume(v4(), v5(), v0(), v6()))
-          + Foam::mag(tetVolume(v1(), v0(), v5(), v3()))
-          + Foam::mag(tetVolume(v2(), v3(), v6(), v0()))
-          + Foam::mag(tetVolume(v7(), v6(), v3(), v5()))
-          + Foam::mag(tetVolume(v6(), v0(), v3(), v5()));
+            Foam::mag(tetVolume(v4(), v0(), v5(), v6()))
+          + Foam::mag(tetVolume(v1(), v5(), v0(), v3()))
+          + Foam::mag(tetVolume(v2(), v6(), v3(), v0()))
+          + Foam::mag(tetVolume(v7(), v3(), v6(), v5()))
+          + Foam::mag(tetVolume(v6(), v3(), v0(), v5()));
     }
 
     // Check if brick is right-handed. The coordinates of the vertices are

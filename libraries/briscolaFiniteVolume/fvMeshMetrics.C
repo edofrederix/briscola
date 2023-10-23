@@ -460,6 +460,7 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 
     const meshField<faceVector,MeshType>& fan = faceAreaNormals_;
     const meshField<faceVector,MeshType>& fc = faceCenters_;
+    const meshField<vertexVector,MeshType>& vc = vertexCenters_;
 
     // Small number to avoid division by zero in unset ghost cells
 
@@ -485,12 +486,6 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
                 fc(l,d,i,j,k).top()   - fc(l,d,i,j,k).bottom();
             const vector Dz =
                 fc(l,d,i,j,k).fore()  - fc(l,d,i,j,k).aft();
-            const vector Dx =
-                fc(l,d,i,j,k).right() - fc(l,d,i,j,k).left();
-            const vector Dy =
-                fc(l,d,i,j,k).top()   - fc(l,d,i,j,k).bottom();
-            const vector Dz =
-                fc(l,d,i,j,k).fore()  - fc(l,d,i,j,k).aft();
 
             cv(l,d,i,j,k) = ((Dx & Sx) + (Dy & Sy) + (Dz & Sz))/6.0;
         }
@@ -498,17 +493,9 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
         {
             // Cell volume computed from tet decomposition
 
-            const partLevelPoints& points = fvMsh_[l].points();
-
-            const vector shift = MeshType::shift[d];
-            const vector ijk(vector(i,j,k)+shift);
+            const vertexVector& v = vc(l,d,i,j,k);
 
             cv(l,d,i,j,k) = 0.0;
-
-            vertexVector v;
-
-            for (int vi = 0; vi < 8; vi++)
-                v[vi] = points.interp(ijk + vector(vertexOffsets[vi]));
 
             for (int t = 0; t < numberOfTets; t++)
                 cv(l,d,i,j,k) +=
