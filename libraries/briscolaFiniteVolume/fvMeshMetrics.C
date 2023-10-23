@@ -465,7 +465,7 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 
     cv = 1e-16;
 
-    if (fvMsh_.msh().rectilinear_)
+    if (fvMsh_.msh()[0].rectilinear() == unitXYZ)
     {
         forAllLevels(cv, l, d, i, j, k)
         {
