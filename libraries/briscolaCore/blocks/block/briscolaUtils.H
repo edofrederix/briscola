@@ -318,8 +318,9 @@ const label vertexNumsInEdge[12][2] =
 };
 
 // Decomposition of a block in tets, used throughout the code mostly for
-// geometric calculations. We use six tets such that opposing cell faces can be
-// split in two triangles consistently.
+// geometric calculations. We use six tets such that opposing cell faces are
+// split consistently along the same diagonal. Ordering of vertices is such that
+// (v0-v3), (v1-v3) and (v2-v3) produce a right-handed base.
 const label numberOfTets = 6;
 const label tetDecomp[numberOfTets][4]
 {
@@ -333,21 +334,21 @@ const label tetDecomp[numberOfTets][4]
 
 // Global vertex numbers contained in general hexahedron faces (decomposing each
 // face into two triangles) in counter-clockwise direction as viewed from
-// outside
+// outside. The first two indices correspond to the face diagonal.
 const label faceTriangleDecompCC[12][3] =
 {
-    {0,4,2},
+    {4,2,0},
     {2,4,6},
-    {1,3,5},
-    {3,7,5},
-    {0,1,4},
-    {1,5,4},
-    {3,2,6},
+    {3,5,1},
+    {5,3,7},
+    {1,4,0},
+    {4,1,5},
+    {6,3,2},
     {3,6,7},
-    {0,2,1},
+    {2,1,0},
     {1,2,3},
-    {4,5,6},
-    {5,7,6}
+    {5,6,4},
+    {6,5,7}
 };
 
 // Return the shift tensor given a rotation tensor
