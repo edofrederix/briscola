@@ -108,7 +108,8 @@ LSFIR::LSFIR(const vof& vf, const dictionary& dict)
 :
     LSGIR(vf, dict),
     planarFaces_(dict.lookupOrDefault<bool>("planarFaces", true)),
-    centerAveraging_(dict.lookupOrDefault<bool>("centerAveraging", false))
+    centerAveraging_(dict.lookupOrDefault<bool>("centerAveraging", false)),
+    lve_(vf.fvMsh().msh()[0].rectilinear() == unitXYZ)
 {
     createBoundaryTypes();
     createHexagonDescription();
@@ -118,7 +119,8 @@ LSFIR::LSFIR(const LSFIR& s)
 :
     LSGIR(s),
     planarFaces_(s.planarFaces_),
-    centerAveraging_(s.centerAveraging_)
+    centerAveraging_(s.centerAveraging_),
+    lve_(vf_.fvMsh().msh()[0].rectilinear() == unitXYZ)
 {
     createBoundaryTypes();
     createHexagonDescription();
@@ -224,7 +226,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
                 // cell
 
                 scalar C =
-                    vf_.lve()(alpha(i,j,k),v(i,j,k),cv(i,j,k),n(i,j,k));
+                    lve_(alpha(i,j,k),v(i,j,k),cv(i,j,k),n(i,j,k));
 
                 double originalCs[8];
 

@@ -4,9 +4,6 @@
 #include "fvMesh.H"
 #include "meshFields.H"
 #include "regIOobject.H"
-#include "Time.H"
-#include "LVE.H"
-#include "normalScheme.H"
 
 namespace Foam
 {
@@ -21,56 +18,54 @@ class vof
 :
     public regIOobject
 {
+protected:
+
     // Reference to the mesh
     const fvMesh& fvMsh_;
+
+    // Reference to the IO dictionary
+    const IOdictionary& dict_;
 
     // Volume fraction field
     colocatedScalarField alpha_;
 
-    // Flux field
-    colocatedFaceScalarField flux_;
-
-    // Rectilinear bool (stored here for efficiency)
-    bool rectilinear_;
-
-    // Local volume enforcement problem solver
-    LVE lve_;
-
-    // Normal scheme
-    autoPtr<normalScheme> normalSchemePtr_;
+private:
 
     // Disallow default bitwise assignment
     void operator=(const vof&);
-
-    // Disallow copy constructor
-    vof(const vof&);
-
-    // Reset the flux
-    inline void resetFlux()
-    {
-        flux_ = Zero;
-    }
-
-    // Update the flux in given direction
-    void updateFlux
-    (
-        const colocatedFaceScalarField&,
-        const label
-    );
 
 public:
 
     // Void fraction threshold
     static const scalar threshold;
 
-    // Declare name of the class and its debug switch
-    ClassName("vof");
+    // Runtime type information
+    TypeName("vof");
+
+    // Declare run-time constructor selection tables
+    declareRunTimeSelectionTable
+    (
+        autoPtr,
+        vof,
+        dictionary,
+        (const IOdictionary& dict, const fvMesh& fvMsh),
+        (dict, fvMsh)
+    );
 
     // Construct from IOdictionary
     vof(const IOdictionary&, const fvMesh&);
 
+    // Copy constructor
+    vof(const vof&);
+
+    // Clone vof
+    virtual autoPtr<vof> clone() const = 0;
+
+    // Selector
+    static autoPtr<vof> New(const IOdictionary&, const fvMesh&);
+
     // Destructor
-    ~vof();
+    virtual ~vof();
 
     // Needed by regIOobject
     virtual bool writeData(Ostream&) const { return true; }
@@ -84,14 +79,8 @@ public:
     // Return const access to the volume fraction field
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
-    // Reference to the LVE solver
-    inline const LVE& lve() const { return lve_; }
-
-    // Reference to the normal scheme
-    inline normalScheme& normal() { return normalSchemePtr_(); }
-
-    // Solve the Vof advection equation given a flux
-    void solve(const colocatedFaceScalarField& phi);
+    // Solve the Vof advection equation given a flux field
+    virtual void solve(const colocatedFaceScalarField&) = 0;
 };
 
 }

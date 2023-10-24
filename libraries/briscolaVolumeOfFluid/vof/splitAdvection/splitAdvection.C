@@ -1,4 +1,6 @@
-#include "vof.H"
+#include "splitAdvection.H"
+
+#include "addToRunTimeSelectionTable.H"
 #include "rectilinearMesh.H"
 #include "truncatedHex.H"
 #include "truncatedPiped.H"
@@ -12,11 +14,10 @@ namespace briscola
 namespace fv
 {
 
-defineTypeNameAndDebug(vof, 0);
+defineTypeNameAndDebug(splitAdvection, 0);
+addToRunTimeSelectionTable(vof, splitAdvection, dictionary);
 
-const scalar vof::threshold = 1e-12;
-
-void vof::updateFlux
+void splitAdvection::updateFlux
 (
     const colocatedFaceScalarField& phi,
     const label d
@@ -175,20 +176,9 @@ void vof::updateFlux
     }
 }
 
-vof::vof(const IOdictionary& dict, const fvMesh& fvMsh)
+splitAdvection::splitAdvection(const IOdictionary& dict, const fvMesh& fvMsh)
 :
-    regIOobject(dict, true),
-    fvMsh_(fvMsh),
-    alpha_
-    (
-        "alpha",
-        fvMsh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE,
-        true,
-        true,
-        false
-    ),
+    vof(dict, fvMsh),
     flux_
     (
         IOobject::groupName("flux", alpha_.name()),
@@ -211,10 +201,35 @@ vof::vof(const IOdictionary& dict, const fvMesh& fvMsh)
     )
 {}
 
-vof::~vof()
+splitAdvection::splitAdvection(const splitAdvection& vf)
+:
+    vof(vf),
+    flux_
+    (
+        IOobject::groupName("flux", alpha_.name()),
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        false
+    ),
+    rectilinear_(vf.rectilinear_),
+    lve_(rectilinear_),
+    normalSchemePtr_
+    (
+        normalScheme::New
+        (
+            *this,
+            dict_.subDict("normalScheme")
+        ).ptr()
+    )
 {}
 
-void vof::solve(const colocatedFaceScalarField& phi)
+splitAdvection::~splitAdvection()
+{}
+
+void splitAdvection::solve(const colocatedFaceScalarField& phi)
 {
     alpha_.setOldTime();
 

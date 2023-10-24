@@ -6,6 +6,8 @@ FoamFile
     object      briscolaVofDict;
 }
 
+type    splitAdvection;
+
 normalScheme
 {
     type    MYC;

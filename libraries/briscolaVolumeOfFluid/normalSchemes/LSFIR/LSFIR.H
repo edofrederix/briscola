@@ -2,6 +2,7 @@
 #define LSFIR_H
 
 #include "LSGIR.H"
+#include "LVE.H"
 
 namespace Foam
 {
@@ -34,6 +35,9 @@ class LSFIR
 
     // Number of faces
     int originalNf_;
+
+    // Local volume enforcement problem solver
+    LVE lve_;
 
     // Construct boundaryTypes
     void createBoundaryTypes();

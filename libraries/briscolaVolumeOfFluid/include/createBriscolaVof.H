@@ -10,4 +10,6 @@ IOdictionary vofDict
     )
 );
 
-vof vf(vofDict, fvMsh);
+autoPtr<vof> vfPtr(vof::New(vofDict, fvMsh));
+
+vof& vf = vfPtr();
