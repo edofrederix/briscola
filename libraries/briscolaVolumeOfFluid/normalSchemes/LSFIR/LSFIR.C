@@ -19,7 +19,6 @@ namespace fv
 defineTypeNameAndDebug(LSFIR, 0);
 addToRunTimeSelectionTable(normalScheme, LSFIR, dictionary);
 
-
 void LSFIR::createBoundaryTypes()
 {
     const faceLabel& faceType = vf_.fvMsh().msh().facePatchType();
@@ -64,8 +63,8 @@ void LSFIR::createBoundaryTypes()
 
 void LSFIR::createHexagonDescription()
 {
-    // Create the table to describe the heaxedron for planar faces or no planar
-    // faces hexahedrons
+    // Create the table to describe the hexahedron for planar faces or
+    // non-planar faces hexahedrons
 
     if (planarFaces_)
     {
@@ -143,20 +142,6 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
     colocatedVectorField& n = tn.ref();
 
-    /*
-
-    tmp<colocatedVectorField> tn_new
-    (
-        new colocatedVectorField(
-            "new_normal",
-            vf_.fvMsh()
-        )
-    );
-
-    colocatedVectorField& n_new = tn_new.ref();
-
-    */
-
     const colocatedScalarField& alpha = vf_.alpha();
 
     const colocatedVertexVectorField& v =
@@ -182,13 +167,13 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
     // Initialise the field using LSGIR
 
-    colocatedVectorField n_new(LSGIR::operator()());
+    colocatedVectorField nNew(LSGIR::operator()());
 
     // LSFIR iteration
 
     forAllCells(n, i, j, k)
     {
-        n(i,j,k) = n_new(i,j,k);
+        n(i,j,k) = nNew(i,j,k);
     }
 
     int maxIterNumber = 4;
@@ -206,19 +191,24 @@ tmp<colocatedVectorField> LSFIR::operator()()
         }
 
         scalar maxAngleTol = Foam::cos
-                                    (
-                                        0.166 * Foam::constant::mathematical::pi
-                                        / double(iter + 1)
-                                    );
+        (
+            0.166 * Foam::constant::mathematical::pi
+          / scalar(iter + 1)
+        );
+
         updatedNormals = 0;
 
         // Compute the centers of the interface for all interfacial cells
 
         forAllCells(n, i, j, k)
         {
-            xgi(i,j,k) = Foam::zero();
+            xgi(i,j,k) = Zero;
 
-            if ((alpha(i,j,k) > vof::threshold) && (alpha(i,j,k) < (1 - vof::threshold)))
+            if
+            (
+                alpha(i,j,k) > vof::threshold
+             && alpha(i,j,k) < (1.0 - vof::threshold)
+            )
             {
 
                 // Prevent computing interface for zero normal
@@ -287,7 +277,12 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
                 for (int aux1 = 1; aux1 < 8; aux1++)
                 {
-                    if (Foam::mag(SortedCs[aux1-1] - SortedCs[aux1])/Foam::mag(SortedCs[0] - SortedCs[7]) < 1e-8)
+                    if
+                    (
+                        Foam::mag(SortedCs[aux1-1] - SortedCs[aux1])
+                      / Foam::mag(SortedCs[0] - SortedCs[7])
+                      < 1e-8
+                    )
                     {
                         Kmap[sortedCsIndex[aux1]] = Knum;
                     }
@@ -487,11 +482,17 @@ tmp<colocatedVectorField> LSFIR::operator()()
                             else
                             {
                                 index = 1;
-                                for (int auxip = 0; auxip < totalInsertedVertex; auxip++)
+                                for
+                                (
+                                    int auxip = 0;
+                                    auxip < totalInsertedVertex;
+                                    auxip++
+                                )
                                 {
                                     if (insertedVertex[auxip][5] == 0)
                                     {
-                                        IPV1[Nf][index] = insertedVertex[auxip][0];
+                                        IPV1[Nf][index] =
+                                            insertedVertex[auxip][0];
                                         insertedVertex[auxip][5] = 1;
                                         taggedVertex++;
                                         break;
@@ -587,8 +588,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
                             {
                                 if
                                 (
-                                    ((IA[IPV0_[aux1][aux2]] == 0)
-                                    && (IA[IPV0_[aux1][aux2 + 1]] == 1))
+                                    IA[IPV0_[aux1][aux2]] == 0
+                                 && IA[IPV0_[aux1][aux2 + 1]] == 1
                                 )
                                 {
                                     if (IA[IPV0_[aux1][aux2]] == 1)
@@ -623,9 +624,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
                         if (xgi(i,j,k)[1] != xgi(i,j,k)[1])
                         {
-
                             FatalErrorInFunction
-                                <<  "LSFIR: center of vertex computation failed."
+                                << "LSFIR: center of vertex computation failed."
                                 << endl << abort(FatalError);
                         }
                     }
@@ -642,8 +642,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
                         {
                             if
                             (
-                                (IA[IPV0_[aux1][aux2]] == 0)
-                             && (IA[IPV0_[aux1][aux2 + 1]] == 1)
+                                IA[IPV0_[aux1][aux2]] == 0
+                             && IA[IPV0_[aux1][aux2 + 1]] == 1
                             )
                             {
                                 if (IA[IPV0_[aux1][aux2]] == 1)
@@ -696,7 +696,11 @@ tmp<colocatedVectorField> LSFIR::operator()()
         forAllCells(n, i, j, k)
         {
 
-            if ((alpha(i,j,k) > vof::threshold) && (alpha(i,j,k) < 1 - vof::threshold))
+            if
+            (
+                alpha(i,j,k) > vof::threshold
+             && alpha(i,j,k) < 1 - vof::threshold
+            )
             {
                 int d1 = 0;
                 int d2 = 1;
@@ -742,11 +746,10 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
                             if
                             (
-                                (alpha(i+aux1-1,j+aux2-1,k+aux3-1) > vof::threshold)
-                             && (
-                                    alpha(i+aux1-1,j+aux2-1,k+aux3-1)
-                                  < (1 - vof::threshold)
-                                )
+                                alpha(i+aux1-1,j+aux2-1,k+aux3-1)
+                              > vof::threshold
+                             && alpha(i+aux1-1,j+aux2-1,k+aux3-1)
+                              < (1.0 - vof::threshold)
                              && (
                                     (aux1 != 1)
                                  || (aux2 != 1)
@@ -771,7 +774,13 @@ tmp<colocatedVectorField> LSFIR::operator()()
                                         xgi(i+aux1-1,j+aux2-1,k+aux3-1)
                                       - xgi(i,j,k);
 
-                                    wi = 1.0/Foam::max(1e-20,Foam::pow(Foam::mag(dist),2.5));
+                                    wi =
+                                        1.0
+                                      / Foam::max
+                                        (
+                                            1e-20,
+                                            Foam::pow(Foam::mag(dist),2.5)
+                                        );
 
                                     A[0][0] += wi*Foam::sqr(dist[d2]);
                                     A[0][1] += wi*(dist[d2]) * (dist[d3]);
@@ -802,7 +811,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
                         if
                         (
                             (A[0][0] == 0.0 && A[1][1] != 0)
-                            || (Foam::mag(A[0][0]/stabilise(A[1][1], 1e-40)) < 1e-12)
+                         || Foam::mag(A[0][0]/stabilise(A[1][1], 1e-40))
+                          < 1e-12
                         )
                         {
                             nc[d2] = 0.0;
@@ -811,7 +821,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
                         else if
                         (
                             (A[0][0] != 0.0 && A[1][1] == 0)
-                         || (Foam::mag(A[1][1]/stabilise(A[0][0], 1e-40)) < 1e-12)
+                         || Foam::mag(A[1][1]/stabilise(A[0][0], 1e-40))
+                          < 1e-12
                         )
                         {
                             nc[d3] = 0.0;
@@ -822,6 +833,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
                             nc[d2] =
                                 (A[1][1] * b[0] - A[0][1] * b[1])
                               / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
+
                             nc[d3] =
                                 (- A[1][0] * b[0] + A[0][0] * b[1])
                               / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
@@ -845,32 +857,31 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
                     if (angle > maxAngleTol)
                     {
-                        n_new(i,j,k) = nc;
+                        nNew(i,j,k) = nc;
+
                         if (angle < angleTol)
-                        {
                             updatedNormals = 1;
-                        }
                     }
                     else
                     {
-                        n_new(i,j,k) = n(i,j,k);
+                        nNew(i,j,k) = n(i,j,k);
                     }
                 }
                 else
                 {
-                    n_new(i,j,k) = n(i,j,k);
+                    nNew(i,j,k) = n(i,j,k);
                 }
 
                 if
                 (
-                    n_new(i,j,k)[1] != n_new(i,j,k)[1]
-                 || n_new(i,j,k)[2] != n_new(i,j,k)[2]
-                 || n_new(i,j,k)[0] != n_new(i,j,k)[0]
+                    nNew(i,j,k)[1] != nNew(i,j,k)[1]
+                 || nNew(i,j,k)[2] != nNew(i,j,k)[2]
+                 || nNew(i,j,k)[0] != nNew(i,j,k)[0]
                 )
                 {
                     FatalErrorInFunction
                         <<  "LSFIR: normal computation failed."
-                        <<  "n new: " << n_new(i,j,k) << endl
+                        <<  "n new: " << nNew(i,j,k) << endl
                         << endl << abort(FatalError);
                 }
             }
@@ -882,11 +893,11 @@ tmp<colocatedVectorField> LSFIR::operator()()
         {
             if
             (
-                (alpha(i,j,k) > vof::threshold)
-             && (alpha(i,j,k) < 1 - vof::threshold)
+                alpha(i,j,k) > vof::threshold
+             && alpha(i,j,k) < 1.0 - vof::threshold
             )
             {
-                n(i,j,k) = n_new(i,j,k);
+                n(i,j,k) = nNew(i,j,k);
             }
         }
 

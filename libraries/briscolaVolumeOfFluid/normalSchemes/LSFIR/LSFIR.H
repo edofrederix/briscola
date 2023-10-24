@@ -1,7 +1,6 @@
 #ifndef LSFIR_H
 #define LSFIR_H
 
-#include "normalScheme.H"
 #include "LSGIR.H"
 
 namespace Foam

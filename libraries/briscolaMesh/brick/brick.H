@@ -87,19 +87,6 @@ public:
     inline labelTensor& T() { return v_.T(); }
     inline const labelTensor& T() const { return v_.T(); }
 
-    //  Faces in x-direction numbering
-    //
-    //         # # # # # # # # #
-    //         # #             . #
-    //         #   #           .   #
-    //         #     #         .     #
-    //  (0) -------o   # # # # # # # # #
-    //         # . . . # . . . .   o---#----- (1)
-    //           #     #         .     #
-    //             #   #           .   #
-    //               # #             . #
-    //                 # # # # # # # # #
-
     // Zeroth face (x-)
     inline const face& f0() const
     {
@@ -112,23 +99,6 @@ public:
         return faces_[1];
     }
 
-    //  Faces in y-direction numbering
-    //
-    //             (3)
-    //              |
-    //  # # # # # # | # #
-    //  # #         |   . #
-    //  #   #       o   .   #
-    //  #     #         .     #
-    //  #       # # # # # # # # #
-    //  # . . . # . . . .       #
-    //    #     #         .     #
-    //      #   #     o     .   #
-    //        # #     |       . #
-    //          # # # # # # # # #
-    //                |
-    //               (2)
-
     // Second face (y-)
     inline const face& f2() const
     {
@@ -140,23 +110,6 @@ public:
     {
         return faces_[3];
     }
-
-    //  Faces in z-direction numbering
-    //
-    //      (4)
-    //        \.
-    //  # # # # # # # # #
-    //  # #     \       . #
-    //  #   #    o      .   #
-    //  #     #         .     #
-    //  #       # # # # # # # # #
-    //  # . . . # . . . .       #
-    //    #     #      o  .     #
-    //      #   #       \   .   #
-    //        # #        \    . #
-    //          # # # # # \ # # #
-    //                     \.
-    //                      (5)
 
     // Fourth face (z-)
     inline const face& f4() const
@@ -175,19 +128,6 @@ public:
     {
         return faces_[i];
     }
-
-    //  Edges in x-direction numbering
-    //
-    //         # # # # (1) # # #
-    //         # #             . #
-    //         #   #           .   #
-    //         #     #         .     #
-    //         #       # # # # (3) # # #
-    //         # . . . # (0) . .       #
-    //           #     #         .     #
-    //             #   #           .   #
-    //               # #             . #
-    //                 # # # # (2) # # #
 
     // Zeroth edge (x- to x+ for y-,z-)
     inline const edge& e0() const
@@ -213,20 +153,6 @@ public:
         return f5().e1();
     }
 
-    //  Edges in y-direction numbering
-    //
-    //   # # # # # # # # #
-    //   # #             . #
-    //   #   #           .   #
-    //  (4)    #        (5)    #
-    //   #       # # # # # # # # #
-    //   # . . . # . . . .       #
-    //     #     #         .     #
-    //       #  (6)          .  (7)
-    //         # #             . #
-    //           # # # # # # # # #
-    //
-
     // Fourth edge (y- to y+ for x-,z-)
     inline const edge& e4() const
     {
@@ -250,20 +176,6 @@ public:
     {
         return f5().e3();
     }
-
-    //  Edges in z-direction numbering
-    //
-    //  # # # # # # # # #
-    //  # #             . #
-    //  #  (10)         .  (11)
-    //  #     #         .     #
-    //  #       # # # # # # # # #
-    //  # . . . # . . . .       #
-    //    #     #         .     #
-    //     (8)  #          (9)  #
-    //        # #             . #
-    //          # # # # # # # # #
-    //
 
     // Eighth edge (z- to z+ for x-,y-)
     inline const edge& e8() const
@@ -306,23 +218,6 @@ public:
           : i == 10 ? e10()
           :           e11();
     }
-
-    //  Vertex numbering:
-    //
-    //    (2)                 (3)
-    //      \                 /
-    //       o # # # # # # # o
-    //       # #             . #
-    //       #   #    (6)    .   #    (7)
-    //       #     #  /      .     #  /
-    //       #       o # # # # # # # o
-    //  (0)--o . . . # . . . o       #
-    //         #     #      /  .     #
-    //           #   #    (1)    .   #
-    //             # #             . #
-    //               o # # # # # # # o
-    //              /                 \.
-    //            (4)                 (5)
 
     // Zeroth vertex (x-, y-, z-)
     inline const vertex& v0() const

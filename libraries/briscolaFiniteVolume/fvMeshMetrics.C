@@ -491,7 +491,8 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
         }
         else
         {
-            // Cell volume computed from tet decomposition
+            // Cell volume computed from tet decomposition, needed for
+            // consistency with geometric VoF calculations.
 
             const vertexVector& v = vc(l,d,i,j,k);
 

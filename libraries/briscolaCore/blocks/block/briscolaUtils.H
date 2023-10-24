@@ -163,11 +163,58 @@ const labelVector units[] =
 
 // Face offsets
 
+//  Faces in x-direction numbering
+//
+//         # # # # # # # # #
+//         # #             . #
+//         #   #           .   #
+//         #     #         .     #
+//  (0) -------o   # # # # # # # # #
+//         # . . . # . . . .   o---#----- (1)
+//           #     #         .     #
+//             #   #           .   #
+//               # #             . #
+//                 # # # # # # # # #
+
 const labelVector faceOffset0(-1,0,0);
 const labelVector faceOffset1( 1,0,0);
 
+//  Faces in y-direction numbering
+//
+//             (3)
+//              |
+//  # # # # # # | # #
+//  # #         |   . #
+//  #   #       o   .   #
+//  #     #         .     #
+//  #       # # # # # # # # #
+//  # . . . # . . . .       #
+//    #     #         .     #
+//      #   #     o     .   #
+//        # #     |       . #
+//          # # # # # # # # #
+//                |
+//               (2)
+
 const labelVector faceOffset2(0,-1,0);
 const labelVector faceOffset3(0, 1,0);
+
+//  Faces in z-direction numbering
+//
+//      (4)
+//        \.
+//  # # # # # # # # #
+//  # #     \       . #
+//  #   #    o      .   #
+//  #     #         .     #
+//  #       # # # # # # # # #
+//  # . . . # . . . .       #
+//    #     #      o  .     #
+//      #   #       \   .   #
+//        # #        \    . #
+//          # # # # # \ # # #
+//                     \.
+//                      (5)
 
 const labelVector faceOffset4(0,0,-1);
 const labelVector faceOffset5(0,0, 1);
@@ -184,15 +231,54 @@ const labelVector faceOffsets[] =
 
 // Edge offsets
 
+//  Edges in x-direction numbering
+//
+//   # # # # (1) # # #
+//   # #             . #
+//   #   #           .   #
+//   #     #         .     #
+//   #       # # # # (3) # # #
+//   # . . . # (0) . .       #
+//     #     #         .     #
+//       #   #           .   #
+//         # #             . #
+//           # # # # (2) # # #
+
 const labelVector edgeOffset0(0,-1,-1);
 const labelVector edgeOffset1(0, 1,-1);
 const labelVector edgeOffset2(0,-1, 1);
 const labelVector edgeOffset3(0, 1, 1);
 
+//  Edges in y-direction numbering
+//
+//   # # # # # # # # #
+//   # #             . #
+//   #   #           .   #
+//  (4)    #        (5)    #
+//   #       # # # # # # # # #
+//   # . . . # . . . .       #
+//     #     #         .     #
+//       #  (6)          .  (7)
+//         # #             . #
+//           # # # # # # # # #
+
 const labelVector edgeOffset4(-1,0,-1);
 const labelVector edgeOffset5( 1,0,-1);
 const labelVector edgeOffset6(-1,0, 1);
 const labelVector edgeOffset7( 1,0, 1);
+
+//  Edges in z-direction numbering
+//
+//   # # # # # # # # #
+//   # #             . #
+//   #  (10)         .  (11)
+//   #     #         .     #
+//   #       # # # # # # # # #
+//   # . . . # . . . .       #
+//     #     #         .     #
+//      (8)  #          (9)  #
+//         # #             . #
+//           # # # # # # # # #
 
 const labelVector edgeOffset8 (-1,-1,0);
 const labelVector edgeOffset9 ( 1,-1,0);
@@ -216,6 +302,23 @@ const labelVector edgeOffsets[] =
 };
 
 // Vertex offsets
+
+//  Vertex numbering:
+//
+//    (2)                 (3)
+//      \                 /
+//       o # # # # # # # o
+//       # #             . #
+//       #   #    (6)    .   #    (7)
+//       #     #  /      .     #  /
+//       #       o # # # # # # # o
+//  (0)--o . . . # . . . o       #
+//         #     #      /  .     #
+//           #   #    (1)    .   #
+//             # #             . #
+//               o # # # # # # # o
+//              /                 \.
+//            (4)                 (5)
 
 const labelVector vertexOffset0(-1,-1,-1);
 const labelVector vertexOffset1( 1,-1,-1);
