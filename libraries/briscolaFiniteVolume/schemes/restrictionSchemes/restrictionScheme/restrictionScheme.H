@@ -18,6 +18,18 @@ class restrictionScheme
 :
     public scheme
 {
+protected:
+
+    // Raise error for restriction schemes that are incompatible with scaling
+    void errorNoScaling(const bool scale)
+    {
+        if (scale)
+            FatalErrorInFunction
+                << "Restriction scheme type " << this->typeName
+                << " cannot be used as a scaled restriction scheme"
+                << endl << abort(FatalError);
+    }
+
 public:
 
     // Runtime type information

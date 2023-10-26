@@ -86,7 +86,7 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
 
     // Only generate staggered metrics when the brick topology is structured
 
-    if (mshPtr_->topology().structured())
+    if (mshPtr_->structured())
         staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
 }
 
@@ -105,7 +105,7 @@ fvMesh::fvMesh(const fvMesh& fvMsh)
 
     // Only generate staggered metrics when the brick topology is structured
 
-    if (mshPtr_->topology().structured())
+    if (mshPtr_->structured())
         staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
 }
 
@@ -134,7 +134,7 @@ template<>
 const fvMeshMetrics<staggered>& fvMesh::metrics<staggered>() const
 {
     #ifdef FULLDEBUG
-    if (!mshPtr_->topology().structured())
+    if (!mshPtr_->structured())
     {
         FatalErrorInFunction
             << "Staggered metrics are not generated on unstructured meshes."

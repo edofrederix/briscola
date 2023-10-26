@@ -1,4 +1,4 @@
-#include "fluxRestrictionScheme.H"
+#include "faceAverageRestrictionScheme.H"
 
 #include "colocated.H"
 #include "staggered.H"
@@ -12,27 +12,30 @@ namespace briscola
 namespace fv
 {
 
-template<class MeshType>
-fluxRestrictionScheme<MeshType>::fluxRestrictionScheme
+template<class Type, class MeshType>
+faceAverageRestrictionScheme<Type,MeshType>::faceAverageRestrictionScheme
 (
     const dictionary& dict,
     const fvMesh& fvMsh
 )
 :
-    restrictionScheme<faceScalar,MeshType>(dict,fvMsh)
+    restrictionScheme<Type,MeshType>(dict,fvMsh)
 {}
 
-template<class MeshType>
-fluxRestrictionScheme<MeshType>::fluxRestrictionScheme(const fvMesh& fvMsh)
-:
-    restrictionScheme<faceScalar,MeshType>(dictionary(),fvMsh)
-{}
-
-template<class MeshType>
-void fluxRestrictionScheme<MeshType>::restrict
+template<class Type, class MeshType>
+faceAverageRestrictionScheme<Type,MeshType>::faceAverageRestrictionScheme
 (
-    meshDirection<faceScalar,MeshType>& coarse,
-    const meshDirection<faceScalar,MeshType>& fine,
+    const fvMesh& fvMsh
+)
+:
+    restrictionScheme<Type,MeshType>(dictionary(),fvMsh)
+{}
+
+template<class Type, class MeshType>
+void faceAverageRestrictionScheme<Type,MeshType>::restrict
+(
+    meshDirection<Type,MeshType>& coarse,
+    const meshDirection<Type,MeshType>& fine,
     const bool scale
 )
 {
@@ -42,7 +45,7 @@ void fluxRestrictionScheme<MeshType>::restrict
 
     coarse = Zero;
 
-    // Sum fluxes from corresponding fine grid faces
+    // Average face values of corresponding fine grid faces
 
     forAllCells(coarse, i, j, k)
     {
@@ -51,36 +54,39 @@ void fluxRestrictionScheme<MeshType>::restrict
         const label fk = k*R.z();
 
         int ii = (R.x() == 2);
+        scalar nFaces = R.y()*R.z();
         for (int jj = 0; jj < R.y(); jj++)
         for (int kk = 0; kk < R.z(); kk++)
         {
             coarse(i,j,k).left() +=
-                fine(fi, fj+jj, fk+kk).left();
+                fine(fi, fj+jj, fk+kk).left()/nFaces;
 
             coarse(i,j,k).right() +=
-                fine(fi+ii, fj+jj, fk+kk).right();
+                fine(fi+ii, fj+jj, fk+kk).right()/nFaces;
         }
 
         int jj = (R.y() == 2);
+        nFaces = R.x()*R.z();
         for (int ii = 0; ii < R.x(); ii++)
         for (int kk = 0; kk < R.z(); kk++)
         {
             coarse(i,j,k).bottom() +=
-                fine(fi+ii, fj, fk+kk).bottom();
+                fine(fi+ii, fj, fk+kk).bottom()/nFaces;
 
             coarse(i,j,k).top() +=
-                fine(fi+ii, fj+jj, fk+kk).top();
+                fine(fi+ii, fj+jj, fk+kk).top()/nFaces;
         }
 
         int kk = (R.z() == 2);
+        nFaces = R.x()*R.y();
         for (int ii = 0; ii < R.x(); ii++)
         for (int jj = 0; jj < R.y(); jj++)
         {
             coarse(i,j,k).aft() +=
-                fine(fi+ii, fj+jj, fk).aft();
+                fine(fi+ii, fj+jj, fk).aft()/nFaces;
 
             coarse(i,j,k).fore() +=
-                fine(fi+ii, fj+jj, fk+kk).fore();
+                fine(fi+ii, fj+jj, fk+kk).fore()/nFaces;
         }
     }
 }

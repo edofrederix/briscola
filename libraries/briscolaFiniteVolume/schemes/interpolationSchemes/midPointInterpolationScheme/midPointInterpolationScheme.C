@@ -39,7 +39,7 @@ midPointInterpolationScheme<Type,MeshType>::interp
     (
         new meshField<FaceSpace<Type>,MeshType>
         (
-            "interpolate("+field.name()+")",
+            "interp("+field.name()+")",
             field.fvMsh()
         )
     );

@@ -23,7 +23,10 @@ averageRestrictionScheme<Type,MeshType>::averageRestrictionScheme
 {}
 
 template<class Type, class MeshType>
-averageRestrictionScheme<Type,MeshType>::averageRestrictionScheme(const fvMesh& fvMsh)
+averageRestrictionScheme<Type,MeshType>::averageRestrictionScheme
+(
+    const fvMesh& fvMsh
+)
 :
     restrictionScheme<Type,MeshType>(dictionary(),fvMsh)
 {}

@@ -29,7 +29,7 @@ public:
     fluxRestrictionScheme(const fvMesh&);
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
-    // level, with option to scale by cell volume
+    // level
     virtual void restrict
     (
         meshDirection<faceScalar,MeshType>&,
