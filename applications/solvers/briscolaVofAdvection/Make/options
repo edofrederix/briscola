@@ -2,11 +2,11 @@ EXE_INC = \
     -I../../../libraries/briscolaCore/lnInclude \
     -I../../../libraries/briscolaMesh/lnInclude \
     -I../../../libraries/briscolaFiniteVolume/lnInclude \
-    -I../../../libraries/briscolaVolumeOfFluid/lnInclude \
+    -I../../../libraries/briscolaTwoPhase/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lbriscolaFiniteVolume \
-    -lbriscolaVolumeOfFluid \
+    -lbriscolaTwoPhase \
     -lOpenFOAM

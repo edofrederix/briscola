@@ -10,6 +10,8 @@ namespace briscola
 namespace fv
 {
 
+defineTypeNameAndDebug(incompressibleTwoPhaseModel, 0);
+
 incompressibleTwoPhaseModel::incompressibleTwoPhaseModel
 (
     const IOdictionary& dict,

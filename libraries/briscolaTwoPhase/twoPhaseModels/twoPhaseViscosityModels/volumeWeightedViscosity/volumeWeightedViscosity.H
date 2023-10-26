@@ -1,5 +1,5 @@
-#ifndef harmonicViscosity_H
-#define harmonicViscosity_H
+#ifndef volumeWeightedViscosity_H
+#define volumeWeightedViscosity_H
 
 #include "twoPhaseModel.H"
 
@@ -13,7 +13,7 @@ namespace fv
 {
 
 template<class BaseModel>
-class harmonicViscosity
+class volumeWeightedViscosity
 :
     public BaseModel
 {
@@ -26,18 +26,18 @@ protected:
 private:
 
     // Disallow default bitwise assignment
-    void operator=(const harmonicViscosity&);
+    void operator=(const volumeWeightedViscosity&);
 
 public:
 
     // Construct from IOdictionary
-    harmonicViscosity(const IOdictionary&, const fvMesh&);
+    volumeWeightedViscosity(const IOdictionary&, const fvMesh&);
 
     // Copy constructor
-    harmonicViscosity(const harmonicViscosity&);
+    volumeWeightedViscosity(const volumeWeightedViscosity&);
 
     // Destructor
-    virtual ~harmonicViscosity();
+    virtual ~volumeWeightedViscosity();
 
     // Dynamic viscosity of the first phase
     virtual scalar mu1() { return mu1_; }
@@ -56,7 +56,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "harmonicViscosity.C"
+    #include "volumeWeightedViscosity.C"
 #endif
 
 #endif

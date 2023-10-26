@@ -1,3 +1,15 @@
+vof/vof/vof.C
+vof/geometricVof/geometricVof.C
+vof/splitAdvection/splitAdvection.C
+
+LVE/LVE.C
+
+normalSchemes/normalScheme/normalScheme.C
+normalSchemes/Youngs/Youngs.C
+normalSchemes/LSGIR/LSGIR.C
+normalSchemes/LSFIR/LSFIR.C
+normalSchemes/MYC/MYC.C
+
 twoPhaseModels/twoPhaseModel/twoPhaseModel.C
 twoPhaseModels/twoPhaseDensityModels/incompressibleTwoPhaseModel/incompressibleTwoPhaseModel.C
 twoPhaseModels/twoPhaseModel/twoPhaseModels.C
