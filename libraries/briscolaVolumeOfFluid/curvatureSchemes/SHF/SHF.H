@@ -1,0 +1,50 @@
+#ifndef SHF_H
+#define SHF_H
+
+#include "curvatureScheme.H"
+
+namespace Foam
+{
+
+namespace briscola
+{
+
+namespace fv
+{
+
+class SHF
+:
+    public curvatureScheme
+{
+
+public:
+
+    // Runtime type information
+    TypeName("SHF");
+
+    // Construct from components
+    SHF(const vof&, const dictionary&);
+
+    // Copy constructor
+    SHF(const SHF&);
+
+    // Destructor
+    virtual ~SHF();
+
+    // Clone curvatureScheme
+    virtual autoPtr<curvatureScheme> clone() const
+    {
+        return autoPtr<curvatureScheme>(new SHF(*this));
+    }
+
+    // Calculate curvature
+    virtual tmp<colocatedScalarField> operator()(const colocatedVectorField&);
+};
+
+}
+
+}
+
+}
+
+#endif
