@@ -3,7 +3,6 @@
 
 #include "fvMesh.H"
 #include "meshFields.H"
-#include "regIOobject.H"
 
 namespace Foam
 {
@@ -15,8 +14,6 @@ namespace fv
 {
 
 class vof
-:
-    public regIOobject
 {
 protected:
 
@@ -24,7 +21,7 @@ protected:
     const fvMesh& fvMsh_;
 
     // Reference to the IO dictionary
-    const IOdictionary& dict_;
+    const dictionary& dict_;
 
     // Volume fraction field
     colocatedScalarField alpha_;
@@ -48,12 +45,12 @@ public:
         autoPtr,
         vof,
         dictionary,
-        (const IOdictionary& dict, const fvMesh& fvMsh),
+        (const dictionary& dict, const fvMesh& fvMsh),
         (dict, fvMsh)
     );
 
-    // Construct from IOdictionary
-    vof(const IOdictionary&, const fvMesh&);
+    // Construct from dictionary
+    vof(const dictionary&, const fvMesh&);
 
     // Copy constructor
     vof(const vof&);
@@ -62,10 +59,34 @@ public:
     virtual autoPtr<vof> clone() const = 0;
 
     // Selector
-    static autoPtr<vof> New(const IOdictionary&, const fvMesh&);
+    static autoPtr<vof> New(const dictionary&, const fvMesh&);
 
     // Destructor
     virtual ~vof();
+
+    // Check if cast to derived type is possible
+    template<class VofType>
+    inline bool castable() const
+    {
+        return dynamic_cast<const VofType*>(this);
+    }
+
+    // Cast to derived type, if possible. Returns error otherwise.
+    template<class VofType>
+    inline VofType& cast()
+    {
+        VofType* vfPtr = dynamic_cast<VofType*>(this);
+
+        if (!vfPtr)
+        {
+            FatalErrorInFunction
+                << "Vof object cannot be cast to " << VofType::typeName
+                << " because it is " << this->type()
+                << abort(FatalError);
+        }
+
+        return *vfPtr;
+    }
 
     // Needed by regIOobject
     virtual bool writeData(Ostream&) const { return true; }
@@ -81,6 +102,9 @@ public:
 
     // Solve the Vof advection equation given a flux field
     virtual void solve(const colocatedFaceScalarField&) = 0;
+
+    // Solve the Vof advection equation given a staggered velocity field
+    virtual void solve(const staggeredScalarField&);
 };
 
 }

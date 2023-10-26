@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TEST=vof
+TEST=geometricVof
 
 MESHES=(2x 2y 2z 8)
 NPROCS=(4 4 4 16)

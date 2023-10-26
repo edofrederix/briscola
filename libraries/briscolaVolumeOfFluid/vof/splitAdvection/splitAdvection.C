@@ -176,9 +176,9 @@ void splitAdvection::updateFlux
     }
 }
 
-splitAdvection::splitAdvection(const IOdictionary& dict, const fvMesh& fvMsh)
+splitAdvection::splitAdvection(const dictionary& dict, const fvMesh& fvMsh)
 :
-    vof(dict, fvMsh),
+    geometricVof(dict, fvMsh),
     flux_
     (
         IOobject::groupName("flux", alpha_.name()),
@@ -188,22 +188,12 @@ splitAdvection::splitAdvection(const IOdictionary& dict, const fvMesh& fvMsh)
         true,
         true,
         false
-    ),
-    rectilinear_(fvMsh.msh()[0].rectilinear() == unitXYZ),
-    lve_(rectilinear_),
-    normalSchemePtr_
-    (
-        normalScheme::New
-        (
-            *this,
-            dict.subDict("normalScheme")
-        ).ptr()
     )
 {}
 
 splitAdvection::splitAdvection(const splitAdvection& vf)
 :
-    vof(vf),
+    geometricVof(vf),
     flux_
     (
         IOobject::groupName("flux", alpha_.name()),
@@ -213,16 +203,6 @@ splitAdvection::splitAdvection(const splitAdvection& vf)
         true,
         true,
         false
-    ),
-    rectilinear_(vf.rectilinear_),
-    lve_(rectilinear_),
-    normalSchemePtr_
-    (
-        normalScheme::New
-        (
-            *this,
-            dict_.subDict("normalScheme")
-        ).ptr()
     )
 {}
 
@@ -275,8 +255,10 @@ void splitAdvection::solve(const colocatedFaceScalarField& phi)
                 );
         }
 
-        alpha_.correctBoundaryConditions();
+        alpha_[0].correctBoundaryConditions();
     }
+
+    alpha_.restrict();
 }
 
 }

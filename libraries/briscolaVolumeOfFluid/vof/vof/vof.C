@@ -1,5 +1,7 @@
 #include "vof.H"
+
 #include "addToRunTimeSelectionTable.H"
+#include "faceFluxScheme.H"
 
 namespace Foam
 {
@@ -15,9 +17,8 @@ defineRunTimeSelectionTable(vof, dictionary);
 
 const scalar vof::threshold = 1e-12;
 
-vof::vof(const IOdictionary& dict, const fvMesh& fvMsh)
+vof::vof(const dictionary& dict, const fvMesh& fvMsh)
 :
-    regIOobject(dict, true),
     fvMsh_(fvMsh),
     dict_(dict),
     alpha_
@@ -28,13 +29,14 @@ vof::vof(const IOdictionary& dict, const fvMesh& fvMsh)
         IOobject::AUTO_WRITE,
         true,
         true,
-        false
+        true
     )
-{}
+{
+    alpha_.setRestrictionScheme("volumeWeighted");
+}
 
 vof::vof(const vof& vf)
 :
-    regIOobject(vf),
     fvMsh_(vf.fvMsh_),
     dict_(vf.dict_),
     alpha_
@@ -45,16 +47,18 @@ vof::vof(const vof& vf)
         IOobject::AUTO_WRITE,
         true,
         true,
-        false
+        true
     )
-{}
+{
+    alpha_.setRestrictionScheme("volumeWeighted");
+}
 
 vof::~vof()
 {}
 
 autoPtr<vof> vof::New
 (
-    const IOdictionary& dict,
+    const dictionary& dict,
     const fvMesh& fvMsh
 )
 {
@@ -73,6 +77,11 @@ autoPtr<vof> vof::New
     }
 
     return autoPtr<vof>(cstrIter()(dict, fvMsh));
+}
+
+void vof::solve(const staggeredScalarField& U)
+{
+    solve(coloFaceFlux(U)());
 }
 
 }

@@ -1,9 +1,7 @@
 #ifndef splitAdvection_H
 #define splitAdvection_H
 
-#include "vof.H"
-#include "LVE.H"
-#include "normalScheme.H"
+#include "geometricVof.H"
 
 namespace Foam
 {
@@ -16,21 +14,12 @@ namespace fv
 
 class splitAdvection
 :
-    public vof
+    public geometricVof
 {
 protected:
 
     // Flux field
     colocatedFaceScalarField flux_;
-
-    // Rectilinear bool (stored here for efficiency)
-    bool rectilinear_;
-
-    // Local volume enforcement problem solver
-    LVE lve_;
-
-    // Normal scheme
-    autoPtr<normalScheme> normalSchemePtr_;
 
     // Reset the flux
     inline void resetFlux()
@@ -55,8 +44,8 @@ public:
     // Runtime type information
     TypeName("splitAdvection");
 
-    // Construct from IOdictionary
-    splitAdvection(const IOdictionary&, const fvMesh&);
+    // Construct from dictionary
+    splitAdvection(const dictionary&, const fvMesh&);
 
     // Copy constructor
     splitAdvection(const splitAdvection&);
@@ -69,12 +58,6 @@ public:
 
     // Destructor
     ~splitAdvection();
-
-    // Reference to the LVE solver
-    inline const LVE& lve() const { return lve_; }
-
-    // Reference to the normal scheme
-    inline normalScheme& normal() { return normalSchemePtr_(); }
 
     // Solve the Vof advection equation given a flux
     void solve(const colocatedFaceScalarField&);

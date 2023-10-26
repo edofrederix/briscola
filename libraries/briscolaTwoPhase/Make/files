@@ -1,0 +1,4 @@
+twoPhaseModels/twoPhaseModel/twoPhaseModel.C
+twoPhaseModels/incompressibleVof/incompressibleVof.C
+
+LIB = $(FOAM_USER_LIBBIN)/libbriscolaTwoPhase

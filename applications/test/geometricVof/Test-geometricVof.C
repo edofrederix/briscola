@@ -1,7 +1,7 @@
 #include "arguments.H"
 #include "Time.H"
 #include "fvMesh.H"
-#include "vof.H"
+#include "geometricVof.H"
 
 #include "truncatedPiped.H"
 #include "truncatedHex.H"
@@ -215,7 +215,7 @@ void testRotatedVolumesPiped(const vertexVector& v, const vector n)
 
 void testLVE
 (
-    const vof& vf,
+    const geometricVof& gvf,
     const vertexVector& v,
     const vector n,
     const word method
@@ -249,11 +249,11 @@ void testLVE
 
         if (method == "p")
         {
-            Ci = vf.lve().pLVE(v,n,fi);
+            Ci = gvf.lve().pLVE(v,n,fi);
         }
         else
         {
-            Ci = vf.lve().cLVE(v,n,fi);
+            Ci = gvf.lve().cLVE(v,n,fi);
         }
 
         const scalar fj = truncatedHex(v,n,Ci).volume()/Vc;
@@ -277,11 +277,11 @@ void testLVE
 
         if (method == "p")
         {
-            C2 = vf.lve().pLVE(v,n,f1);
+            C2 = gvf.lve().pLVE(v,n,f1);
         }
         else
         {
-            C2 = vf.lve().cLVE(v,n,f1);
+            C2 = gvf.lve().cLVE(v,n,f1);
         }
 
         const scalar f2 = truncatedHex(v,n,C2).volume()/Vc;
@@ -296,11 +296,11 @@ void testLVE
     scalar Cf, Ce;
     if (method == "p")
     {
-        Cf = vf.lve().pLVE(v,n,1);
+        Cf = gvf.lve().pLVE(v,n,1);
     }
     else
     {
-        Cf = vf.lve().cLVE(v,n,1);
+        Cf = gvf.lve().cLVE(v,n,1);
     }
 
     if (Foam::mag(truncatedHex(v,n,Cf).volume()/Vc - 1.0) > 1e-7)
@@ -309,11 +309,11 @@ void testLVE
 
     if (method == "p")
     {
-        Ce = vf.lve().pLVE(v,n,0);
+        Ce = gvf.lve().pLVE(v,n,0);
     }
     else
     {
-        Ce = vf.lve().cLVE(v,n,0);
+        Ce = gvf.lve().cLVE(v,n,0);
     }
 
     if (Foam::mag(truncatedHex(v,n,Ce).volume()/Vc) > 1e-7)
@@ -324,7 +324,7 @@ void testLVE
 
 void testRotatedLVE
 (
-    const vof& vf,
+    const geometricVof& gvf,
     const vertexVector& v,
     const vector n,
     const word method
@@ -346,7 +346,7 @@ void testRotatedLVE
 
     for (int i = 0; i < Ntheta; i++)
     {
-        testLVE(vf, hex, n, method);
+        testLVE(gvf, hex, n, method);
 
         hex = (T & hex);
     }
@@ -364,7 +364,7 @@ void testRotatedLVE
 
     for (int i = 0; i < Ntheta; i++)
     {
-        testLVE(vf, hex, n, method);
+        testLVE(gvf, hex, n, method);
 
         hex = (T & hex);
     }
@@ -382,7 +382,7 @@ void testRotatedLVE
 
     for (int i = 0; i < Ntheta; i++)
     {
-        testLVE(vf, hex, n, method);
+        testLVE(gvf, hex, n, method);
 
         hex = (T & hex);
     }
@@ -394,6 +394,10 @@ int main(int argc, char *argv[])
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
     #include "createBriscolaVof.H"
+
+    // Vof object must be castable to geometricVof
+
+    geometricVof& gvf = vf.cast<geometricVof>();
 
     // Unit cube
 
@@ -472,21 +476,21 @@ int main(int argc, char *argv[])
         // Analytical algorithm of Scardovelli & Zaleski (works only on
         // parallelepipeds)
 
-        testRotatedLVE(vf, unit, n, "p");
-        testRotatedLVE(vf, 0.5*unit, n, "p");
-        testRotatedLVE(vf, tensor(1.1,0,0,0,1,0,0,0,1) & unit, n, "p");
-        testRotatedLVE(vf, stretch & unit, n, "p");
-        testRotatedLVE(vf, unit+unit, n, "p");
-        testRotatedLVE(vf, skewed, n, "p");
-        testRotatedLVE(vf, skewed + unit, n, "p");
-        testRotatedLVE(vf, stretch & (skewed + unit), n, "p");
+        testRotatedLVE(gvf, unit, n, "p");
+        testRotatedLVE(gvf, 0.5*unit, n, "p");
+        testRotatedLVE(gvf, tensor(1.1,0,0,0,1,0,0,0,1) & unit, n, "p");
+        testRotatedLVE(gvf, stretch & unit, n, "p");
+        testRotatedLVE(gvf, unit+unit, n, "p");
+        testRotatedLVE(gvf, skewed, n, "p");
+        testRotatedLVE(gvf, skewed + unit, n, "p");
+        testRotatedLVE(gvf, stretch & (skewed + unit), n, "p");
 
         // General algorithm for arbitrary hexahedrons
 
-        testRotatedLVE(vf, 0.6*unit, n, "c");
-        testRotatedLVE(vf, 0.9*skewed, n, "c");
-        testRotatedLVE(vf, 0.45*general, n, "c");
-        testRotatedLVE(vf, 0.45*(general+unit), n, "c");
+        testRotatedLVE(gvf, 0.6*unit, n, "c");
+        testRotatedLVE(gvf, 0.9*skewed, n, "c");
+        testRotatedLVE(gvf, 0.45*general, n, "c");
+        testRotatedLVE(gvf, 0.45*(general+unit), n, "c");
 
         // Test cells
 
@@ -498,13 +502,13 @@ int main(int argc, char *argv[])
 
         for (int i = 0; i <= NC; i++)
         {
-            colocatedScalarField& a = vf.alpha();
+            colocatedScalarField& a = gvf.alpha();
 
             a = scalar(i)/NC;
 
             forAllCells(a, i, j, k)
             {
-                const scalar C = vf.lve()(a(i,j,k),v(i,j,k),cv(i,j,k),n);
+                const scalar C = gvf.lve()(a(i,j,k),v(i,j,k),cv(i,j,k),n);
 
                 const scalar f = truncatedHex(v(i,j,k),n,C).volume()/cv(i,j,k);
 
