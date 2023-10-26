@@ -77,6 +77,30 @@ public:
     // Destructor
     virtual ~twoPhaseModel();
 
+    // Check if cast to derived model is possible
+    template<class Model>
+    inline bool castable() const
+    {
+        return dynamic_cast<const Model*>(this);
+    }
+
+    // Cast to derived model, if possible. Returns error otherwise.
+    template<class Model>
+    inline Model& cast()
+    {
+        Model* tpmPtr = dynamic_cast<Model*>(this);
+
+        if (!tpmPtr)
+        {
+            FatalErrorInFunction
+                << "Two-phase model cannot be cast to " << Model::typeName
+                << " because it is " << this->type()
+                << abort(FatalError);
+        }
+
+        return *tpmPtr;
+    }
+
     // Needed by regIOobject
     virtual bool writeData(Ostream&) const { return true; }
 

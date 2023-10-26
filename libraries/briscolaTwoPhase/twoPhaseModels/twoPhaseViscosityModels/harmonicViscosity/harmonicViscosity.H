@@ -30,6 +30,12 @@ private:
 
 public:
 
+    // Return the instantiated type name
+    static word typeName()
+    {
+        return "harmonicViscosity<" + word(BaseModel::typeName) + '>';
+    }
+
     // Construct from IOdictionary
     harmonicViscosity(const IOdictionary&, const fvMesh&);
 
