@@ -124,6 +124,30 @@ autoPtr<twoPhaseModel> twoPhaseModel::New
     return autoPtr<twoPhaseModel>(cstrIter()(dict, fvMsh));
 }
 
+template<>
+const colocatedScalarField& twoPhaseModel::rho<colocated>() const
+{
+    return rhoc_;
+}
+
+template<>
+const staggeredScalarField& twoPhaseModel::rho<staggered>() const
+{
+    return rhosPtr_();
+}
+
+template<>
+const colocatedFaceScalarField& twoPhaseModel::mu<colocated>() const
+{
+    return muc_;
+}
+
+template<>
+const staggeredFaceScalarField& twoPhaseModel::mu<staggered>() const
+{
+    return musPtr_();
+}
+
 }
 
 }

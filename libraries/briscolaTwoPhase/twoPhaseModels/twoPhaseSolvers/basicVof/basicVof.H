@@ -1,7 +1,6 @@
-#ifndef incompressibleVof_H
-#define incompressibleVof_H
+#ifndef basicVof_H
+#define basicVof_H
 
-#include "twoPhaseModel.H"
 #include "vof.H"
 
 namespace Foam
@@ -13,22 +12,15 @@ namespace briscola
 namespace fv
 {
 
-class incompressibleVof
+template<class BaseModel>
+class basicVof
 :
-    public twoPhaseModel
+    public BaseModel
 {
 protected:
 
     // The Vof model
     autoPtr<vof> vfPtr_;
-
-    // The mass densities of the two components
-    const scalar rho1_;
-    const scalar rho2_;
-
-    // The dynamic viscosities of the two components
-    const scalar mu1_;
-    const scalar mu2_;
 
     // Name of the colocated volumetric mixture flux field (defaults to phi)
     const word fluxName_;
@@ -40,27 +32,27 @@ protected:
 private:
 
     // Disallow default bitwise assignment
-    void operator=(const incompressibleVof&);
+    void operator=(const basicVof&);
 
 public:
 
     // Runtime type information
-    TypeName("incompressibleVof");
+    TypeName("basicVof");
 
     // Construct from IOdictionary
-    incompressibleVof(const IOdictionary&, const fvMesh&);
+    basicVof(const IOdictionary&, const fvMesh&);
 
     // Copy constructor
-    incompressibleVof(const incompressibleVof&);
+    basicVof(const basicVof&);
 
-    // Clone incompressibleVof
+    // Clone basicVof
     virtual autoPtr<twoPhaseModel> clone() const
     {
-        return autoPtr<twoPhaseModel>(new incompressibleVof(*this));
+        return autoPtr<twoPhaseModel>(new basicVof(*this));
     }
 
     // Destructor
-    ~incompressibleVof();
+    virtual ~basicVof();
 
     // Return access to the Vof model
     inline vof& vf() { return vfPtr_(); }
@@ -69,7 +61,7 @@ public:
     inline const vof& vf() const { return vfPtr_; }
 
     // Correct the two-phase model
-    void correct();
+    virtual void correct();
 };
 
 }
@@ -77,5 +69,9 @@ public:
 }
 
 }
+
+#ifdef NoRepository
+    #include "basicVof.C"
+#endif
 
 #endif

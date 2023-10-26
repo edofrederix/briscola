@@ -83,15 +83,16 @@ public:
     // Return const access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
-    // Return const access to the colocated mixture mass density and dynamic
-    // viscosity
-    inline const colocatedScalarField& rhoc() const { return rhoc_; }
-    inline const colocatedFaceScalarField& muc() const { return muc_; }
+    // Return const access to the mixture mass density
+    template<class MeshType>
+    const meshField<scalar,MeshType>& rho() const;
 
-    // Return const access to the staggered mixture mass density and dynamic
-    // viscosity fields (only valid on structured meshes)
-    inline const staggeredScalarField& rhos() const { return rhosPtr_(); }
-    inline const staggeredFaceScalarField& mus() const { return musPtr_(); }
+    // Return const access to the mixture dynamic viscosity
+    template<class MeshType>
+    const meshField<faceScalar,MeshType>& mu() const;
+
+    // Correct the mixture properties based on a colocated volume fraction
+    virtual void correctMixture(const colocatedScalarField&) = 0;
 
     // Correct the two-phase model
     virtual void correct() = 0;
