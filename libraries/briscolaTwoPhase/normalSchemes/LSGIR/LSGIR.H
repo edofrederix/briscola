@@ -32,7 +32,7 @@ public:
     TypeName("LSGIR");
 
     // Construct from components
-    LSGIR(const vof&, const dictionary&);
+    LSGIR(const fvMesh&, const dictionary&, const colocatedScalarField&);
 
     // Copy constructor
     LSGIR(const LSGIR&);
@@ -46,8 +46,8 @@ public:
         return autoPtr<normalScheme>(new LSGIR(*this));
     }
 
-    // Calculate normal
-    virtual tmp<colocatedVectorField> operator()();
+    // Correct the normal
+    virtual void correct();
 };
 
 }

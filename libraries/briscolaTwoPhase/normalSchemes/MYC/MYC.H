@@ -22,7 +22,7 @@ public:
     TypeName("MYC");
 
     // Construct from components
-    MYC(const vof&, const dictionary&);
+    MYC(const fvMesh&, const dictionary&, const colocatedScalarField&);
 
     // Copy constructor
     MYC(const MYC&);
@@ -36,8 +36,8 @@ public:
         return autoPtr<normalScheme>(new MYC(*this));
     }
 
-    // Calculate normal
-    virtual tmp<colocatedVectorField> operator()();
+    // Correct the normal
+    virtual void correct();
 };
 
 }

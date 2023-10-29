@@ -51,7 +51,7 @@ public:
     TypeName("LSFIR");
 
     // Construct from components
-    LSFIR(const vof&, const dictionary&);
+    LSFIR(const fvMesh&, const dictionary&, const colocatedScalarField&);
 
     // Copy constructor
     LSFIR(const LSFIR&);
@@ -65,8 +65,8 @@ public:
         return autoPtr<normalScheme>(new LSFIR(*this));
     }
 
-    // Calculate normal
-    virtual tmp<colocatedVectorField> operator()();
+    // Correct the normal
+    virtual void correct();
 };
 
 }

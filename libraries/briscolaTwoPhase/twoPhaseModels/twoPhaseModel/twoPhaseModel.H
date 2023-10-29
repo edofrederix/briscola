@@ -4,6 +4,8 @@
 #include "fvMesh.H"
 #include "meshFields.H"
 #include "regIOobject.H"
+#include "normalScheme.H"
+#include "surfaceTensionScheme.H"
 
 namespace Foam
 {
@@ -26,6 +28,9 @@ protected:
     // Reference to the IO dictionary
     const IOdictionary& dict_;
 
+    // Volume fraction field
+    colocatedScalarField alpha_;
+
     // Colocated mixture mass density and dynamic viscosity
     colocatedScalarField rhoc_;
     colocatedFaceScalarField muc_;
@@ -34,6 +39,12 @@ protected:
     // structured meshes
     autoPtr<staggeredScalarField> rhosPtr_;
     autoPtr<staggeredFaceScalarField> musPtr_;
+
+    // Normal scheme
+    autoPtr<normalScheme> normalSchemePtr_;
+
+    // Surface tension scheme
+    autoPtr<surfaceTensionScheme> surfaceTensionSchemePtr_;
 
     // Function to set the density and viscosity restriction schemes. Can be
     // overloaded by derived types.
@@ -58,12 +69,15 @@ public:
         autoPtr,
         twoPhaseModel,
         dictionary,
-        (const IOdictionary& dict, const fvMesh& fvMsh),
-        (dict, fvMsh)
+        (
+            const fvMesh& fvMsh,
+            const IOdictionary& dict
+        ),
+        (fvMsh, dict)
     );
 
     // Construct from IOdictionary
-    twoPhaseModel(const IOdictionary&, const fvMesh&);
+    twoPhaseModel(const fvMesh&, const IOdictionary&);
 
     // Copy constructor
     twoPhaseModel(const twoPhaseModel&);
@@ -72,7 +86,7 @@ public:
     virtual autoPtr<twoPhaseModel> clone() const = 0;
 
     // Selector
-    static autoPtr<twoPhaseModel> New(const IOdictionary&, const fvMesh&);
+    static autoPtr<twoPhaseModel> New(const fvMesh&, const IOdictionary&);
 
     // Destructor
     virtual ~twoPhaseModel();
@@ -107,6 +121,12 @@ public:
     // Return const access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
+    // Return access to the volume fraction
+    inline colocatedScalarField& alpha() { return alpha_; }
+
+    // Return const access to the volume fraction
+    inline const colocatedScalarField& alpha() const { return alpha_; }
+
     // Return const access to the mixture mass density
     template<class MeshType>
     const meshField<scalar,MeshType>& rho() const;
@@ -115,8 +135,26 @@ public:
     template<class MeshType>
     const meshField<faceScalar,MeshType>& mu() const;
 
-    // Correct the mixture properties based on a colocated volume fraction
-    virtual void correctMixture(const colocatedScalarField&) = 0;
+    // Return access the normal scheme
+    normalScheme& normal() { return normalSchemePtr_(); }
+
+    // Return const access to the normal scheme
+    const normalScheme& normal() const { return normalSchemePtr_(); }
+
+    // Return access the surface tension scheme
+    surfaceTensionScheme& surfaceTension()
+    {
+        return surfaceTensionSchemePtr_();
+    }
+
+    // Return const access to the surface tension scheme
+    const surfaceTensionScheme& surfaceTension() const
+    {
+        return surfaceTensionSchemePtr_();
+    }
+
+    // Correct the two-phase mixture
+    virtual void correctMixture() = 0;
 
     // Correct the two-phase model
     virtual void correct() = 0;

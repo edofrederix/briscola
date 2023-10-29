@@ -17,49 +17,58 @@ defineRunTimeSelectionTable(vof, dictionary);
 
 const scalar vof::threshold = 1e-12;
 
-vof::vof(const dictionary& dict, const fvMesh& fvMsh)
+vof::vof
+(
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    normalScheme& normal,
+    colocatedScalarField& alpha
+)
 :
+    regIOobject
+    (
+        IOobject
+        (
+            "vof",
+            fvMsh.time().timeName(),
+            fvMsh.time(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        )
+    ),
     fvMsh_(fvMsh),
     dict_(dict),
-    alpha_
-    (
-        "alpha",
-        fvMsh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE,
-        true,
-        true,
-        true
-    )
-{
-    alpha_.setRestrictionScheme("volumeWeighted");
-}
+    normal_(normal),
+    alpha_(alpha)
+{}
 
 vof::vof(const vof& vf)
 :
+    regIOobject(vf),
     fvMsh_(vf.fvMsh_),
     dict_(vf.dict_),
-    alpha_
-    (
-        "alpha",
-        fvMsh_,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE,
-        true,
-        true,
-        true
-    )
-{
-    alpha_.setRestrictionScheme("volumeWeighted");
-}
+    normal_(vf.normal_),
+    alpha_(vf.alpha_)
+{}
 
 vof::~vof()
 {}
 
 autoPtr<vof> vof::New
 (
+    twoPhaseModel& tpm,
+    const dictionary& dict
+)
+{
+    return vof::New(tpm.fvMsh(), dict, tpm.normal(), tpm.alpha());
+}
+
+autoPtr<vof> vof::New
+(
+    const fvMesh& fvMsh,
     const dictionary& dict,
-    const fvMesh& fvMsh
+    normalScheme& normal,
+    colocatedScalarField& alpha
 )
 {
     const word vofType(dict.lookup("type"));
@@ -76,7 +85,7 @@ autoPtr<vof> vof::New
             << exit(FatalError);
     }
 
-    return autoPtr<vof>(cstrIter()(dict, fvMsh));
+    return autoPtr<vof>(cstrIter()(fvMsh, dict, normal, alpha));
 }
 
 void vof::solve(const staggeredScalarField& U)

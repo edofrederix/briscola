@@ -15,9 +15,14 @@ namespace fv
 defineTypeNameAndDebug(Youngs, 0);
 addToRunTimeSelectionTable(normalScheme, Youngs, dictionary);
 
-Youngs::Youngs(const vof& vf, const dictionary& dict)
+Youngs::Youngs
+(
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const colocatedScalarField& alpha
+)
 :
-    normalScheme(vf, dict),
+    normalScheme(fvMsh, dict, alpha),
     gradThreshold_(dict.lookupOrDefault<scalar>("threshold", 1e-3))
 {}
 
@@ -30,14 +35,11 @@ Youngs::Youngs(const Youngs& s)
 Youngs::~Youngs()
 {}
 
-tmp<colocatedVectorField> Youngs::operator()()
+void Youngs::correct()
 {
-    tmp<colocatedVectorField> tn
-    (
-        new colocatedVectorField(ex::grad(vf_.alpha()))
-    );
+    colocatedVectorField& n = *this;
 
-    colocatedVectorField& n = tn.ref();
+    n = ex::grad(alpha_);
 
     forAllCells(n, i, j, k)
     {
@@ -53,7 +55,7 @@ tmp<colocatedVectorField> Youngs::operator()()
         }
     }
 
-    return tn;
+    n[0].correctBoundaryConditions();
 }
 
 }

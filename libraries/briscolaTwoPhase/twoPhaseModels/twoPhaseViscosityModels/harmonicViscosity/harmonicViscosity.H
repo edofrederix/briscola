@@ -37,7 +37,7 @@ public:
     }
 
     // Construct from IOdictionary
-    harmonicViscosity(const IOdictionary&, const fvMesh&);
+    harmonicViscosity(const fvMesh&, const IOdictionary&);
 
     // Copy constructor
     harmonicViscosity(const harmonicViscosity&);
@@ -52,7 +52,7 @@ public:
     virtual scalar mu2() { return mu2_; }
 
     // Correct the two-phase mixture
-    virtual void correctMixture(const colocatedScalarField&);
+    virtual void correctMixture();
 };
 
 }

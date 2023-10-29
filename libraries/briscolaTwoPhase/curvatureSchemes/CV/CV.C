@@ -1,8 +1,9 @@
 #include "CV.H"
 #include "addToRunTimeSelectionTable.H"
-#include "vof.H"
+#include "surfaceTensionScheme.H"
 #include "exSchemes.H"
 #include "rectilinearMesh.H"
+#include "vof.H"
 
 namespace Foam
 {
@@ -16,9 +17,15 @@ namespace fv
 defineTypeNameAndDebug(CV, 0);
 addToRunTimeSelectionTable(curvatureScheme, CV, dictionary);
 
-CV::CV(const vof& vf, const dictionary& dict)
+CV::CV
+(
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const normalScheme& normal,
+    const colocatedScalarField& alpha
+)
 :
-    curvatureScheme(vf, dict)
+    curvatureScheme(fvMsh, dict, normal, alpha)
 {}
 
 CV::CV(const CV& s)
@@ -29,98 +36,63 @@ CV::CV(const CV& s)
 CV::~CV()
 {}
 
-tmp<colocatedScalarField> CV::operator()(const colocatedVectorField& n)
+void CV::correct()
 {
-    tmp<colocatedScalarField> tconvolutedAlpha
-    (
-        new colocatedScalarField
-        (
-            "alpha",
-            vf_.fvMsh()
-        )
-    );
+    colocatedScalarField& kappa = *this;
 
-    colocatedScalarField& convolutedAlpha = tconvolutedAlpha.ref();
+    colocatedScalarField cAlpha("cAlpha", fvMsh_);
 
-    const colocatedScalarField& alpha = vf_.alpha();
-
-    const meshField<vector,colocated>& centers =
-        vf_.fvMsh().template metrics<colocated>().cellCenters();
-
-    scalar h = Foam::mag(centers(1,1,1) - centers(0,0,0));
-    reduce(h, maxOp<scalar>());
-
-    double kernel[3][3] = {
+    scalar kernel[3][3] =
+    {
         {1.0/16.0, 2.0/16.0, 1.0/16.0},
         {2.0/16.0, 4.0/16.0, 2.0/16.0},
         {1.0/16.0, 2.0/16.0, 1.0/16.0}
     };
 
-    forAllCells(alpha, i, j, k)
-    {
-        convolutedAlpha(i,j,k) = 0;
+    cAlpha = Zero;
 
+    forAllCells(alpha_, i, j, k)
+    {
         for (int aux1 = -1; aux1 <= 1; aux1++)
         {
             for (int aux2 = -1; aux2 <= 1; aux2++)
             {
-                    convolutedAlpha(i,j,k) +=
-                        kernel[aux1 + 1][aux2 + 1]
-                        *alpha(i+aux1,j+aux2,k);
+                cAlpha(i,j,k) +=
+                    kernel[aux1 + 1][aux2 + 1]
+                  * alpha_(i+aux1,j+aux2,k);
             }
         }
     }
 
-    tmp<colocatedVectorField> tn
-    (
-        new colocatedVectorField(ex::grad(tconvolutedAlpha()))
-    );
+    colocatedVectorField normal(ex::grad(cAlpha));
 
-    colocatedVectorField& normal = tn.ref();
-
-    forAllCells(alpha, i, j, k)
+    forAllCells(alpha_, i, j, k)
     {
         scalar S = Foam::mag(normal(i,j,k));
 
         if (S > 1e-8)
+        {
             normal(i,j,k) /= S;
+        }
         else
+        {
             normal(i,j,k) = Zero;
+        }
     }
 
-    const colocatedFaceScalarField nFlux
-    (
-        ex::faceFlux(normal)
-    );
+    const colocatedScalarField kappa2(ex::div(ex::faceFlux(normal)()));
 
-    tmp<colocatedScalarField> tk2
-    (
-        new colocatedScalarField(ex::div(nFlux))
-    );
+    kappa = Zero;
 
-    colocatedScalarField& kc2 = tk2.ref();
-
-    tmp<colocatedScalarField> tk
-    (
-        new colocatedScalarField
-        (
-            "curvature",
-            vf_.fvMsh()
-        )
-    );
-
-    colocatedScalarField& kc = tk.ref();
-
-    forAllCells(alpha, i, j, k)
+    forAllCells(alpha_, i, j, k)
     {
         if
         (
-            (alpha(i,j,k) > vof::threshold)
-            && (alpha(i,j,k) < 1 - vof::threshold)
+            (alpha_(i,j,k) >     vof::threshold)
+         && (alpha_(i,j,k) < 1 - vof::threshold)
         )
         {
             int count = 0;
-            kc(i,j,k) = 0;
 
             for (int aux1 = -1; aux1 <= 1; aux1++)
             {
@@ -128,23 +100,19 @@ tmp<colocatedScalarField> CV::operator()(const colocatedVectorField& n)
                 {
                     if
                     (
-                        (alpha(i+aux1,j+aux2,k) > vof::threshold)
-                        && (alpha(i+aux1,j+aux2,k) < 1 - vof::threshold)
+                        (alpha_(i+aux1,j+aux2,k) >     vof::threshold)
+                     && (alpha_(i+aux1,j+aux2,k) < 1 - vof::threshold)
                     )
                     {
                         count++;
-                        kc(i,j,k) += kc2(i+aux1,j+aux2,k);
+                        kappa(i,j,k) += kappa2(i+aux1,j+aux2,k);
                     }
                 }
             }
 
-            kc(i,j,k) /= double(count);
+            kappa(i,j,k) /= scalar(count);
         }
-        else
-            kc(i,j,k) = 0;
     }
-
-    return tk2;
 }
 
 }

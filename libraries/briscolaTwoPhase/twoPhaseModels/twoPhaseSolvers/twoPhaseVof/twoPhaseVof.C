@@ -1,4 +1,4 @@
-#include "basicVof.H"
+#include "twoPhaseVof.H"
 
 #include "addToRunTimeSelectionTable.H"
 #include "exSchemes.H"
@@ -14,20 +14,20 @@ namespace fv
 {
 
 template<class BaseModel>
-basicVof<BaseModel>::basicVof
+twoPhaseVof<BaseModel>::twoPhaseVof
 (
-    const IOdictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const IOdictionary& dict
 )
 :
-    BaseModel(dict, fvMsh),
-    vfPtr_(vof::New(dict.subDict("vof"), fvMsh)),
+    BaseModel(fvMsh, dict),
+    vfPtr_(vof::New(*this, dict.subDict("vof"))),
     fluxName_(dict.lookupOrDefault<word>("flux", "phi")),
     velocityName_(dict.lookupOrDefault<word>("velocity", "U"))
 {}
 
 template<class BaseModel>
-basicVof<BaseModel>::basicVof(const basicVof& tpm)
+twoPhaseVof<BaseModel>::twoPhaseVof(const twoPhaseVof& tpm)
 :
     BaseModel(tpm),
     vfPtr_(tpm.vf().clone()),
@@ -36,11 +36,11 @@ basicVof<BaseModel>::basicVof(const basicVof& tpm)
 {}
 
 template<class BaseModel>
-basicVof<BaseModel>::~basicVof()
+twoPhaseVof<BaseModel>::~twoPhaseVof()
 {}
 
 template<class BaseModel>
-void basicVof<BaseModel>::correct()
+void twoPhaseVof<BaseModel>::correct()
 {
     // Update the volume fraction by solving the Vof advection equation
 
@@ -65,9 +65,9 @@ void basicVof<BaseModel>::correct()
         vfPtr_->solve(U);
     }
 
-    // Update mixture
+    // Correct the mixture
 
-    BaseModel::correctMixture(vfPtr_->alpha());
+    BaseModel::correctMixture();
 }
 
 }

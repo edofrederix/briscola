@@ -1,9 +1,10 @@
-#ifndef curvatureScheme_H
-#define curvatureScheme_H
+#ifndef surfaceTensionScheme_H
+#define surfaceTensionScheme_H
 
 #include "dictionary.H"
 #include "colocatedFields.H"
 #include "normalScheme.H"
+#include "curvatureScheme.H"
 
 namespace Foam
 {
@@ -16,9 +17,7 @@ namespace fv
 
 class twoPhaseModel;
 
-class curvatureScheme
-:
-    public colocatedScalarField
+class surfaceTensionScheme
 {
 protected:
 
@@ -34,16 +33,28 @@ protected:
     // Reference to the void fraction
     const colocatedScalarField& alpha_;
 
+    // Colocated surface tension force field
+    colocatedVectorField coloForce_;
+
+    // Staggered surface tension force field, only created on structured meshes
+    autoPtr<staggeredScalarField> stagForcePtr_;
+
+    // Surface tension field
+    colocatedScalarField sigma_;
+
+    // Curvature scheme
+    autoPtr<curvatureScheme> curvatureSchemePtr_;
+
 public:
 
     // Runtime type information
-    TypeName("curvatureScheme");
+    TypeName("surfaceTensionScheme");
 
     // Declare run-time constructor selection tables
     declareRunTimeSelectionTable
     (
         autoPtr,
-        curvatureScheme,
+        surfaceTensionScheme,
         dictionary,
         (
             const fvMesh& fvMsh,
@@ -55,7 +66,7 @@ public:
     );
 
     // Construct from components
-    curvatureScheme
+    surfaceTensionScheme
     (
         const fvMesh&,
         const dictionary&,
@@ -64,20 +75,20 @@ public:
     );
 
     // Copy constructor
-    curvatureScheme(const curvatureScheme&);
+    surfaceTensionScheme(const surfaceTensionScheme&);
 
-    // Clone normalScheme
-    virtual autoPtr<curvatureScheme> clone() const = 0;
+    // Clone surfaceTensionScheme
+    virtual autoPtr<surfaceTensionScheme> clone() const = 0;
 
     // Selector from two-phase model
-    static autoPtr<curvatureScheme> New
+    static autoPtr<surfaceTensionScheme> New
     (
         const twoPhaseModel&,
         const dictionary&
     );
 
     // Selector from components
-    static autoPtr<curvatureScheme> New
+    static autoPtr<surfaceTensionScheme> New
     (
         const fvMesh&,
         const dictionary&,
@@ -86,9 +97,9 @@ public:
     );
 
     // Destructor
-    virtual ~curvatureScheme();
+    virtual ~surfaceTensionScheme();
 
-    // Return const access to the mesh
+    // Access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
     // Access to the dictionary
@@ -97,16 +108,31 @@ public:
     // Access to the normal scheme
     inline const normalScheme& normal() const { return normal_; }
 
-    // Access to the volume fraction
+    // Access to the volume fraction field
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
-    // Return the curvature field
-    inline colocatedScalarField& kappa() { return *this; }
+    // Access to the colocated surface tension force
+    inline const colocatedVectorField& coloForce() const
+    {
+        return coloForce_;
+    }
 
-    // Return const access to the curvature field
-    inline const colocatedScalarField& kappa() const { return *this; }
+    // Access to the staggered surface tension force
+    inline const staggeredScalarField& stagForce() const
+    {
+        return stagForcePtr_();
+    }
 
-    // Correct the curvature
+    // Access to the curvature scheme
+    inline const curvatureScheme& kappa() const
+    {
+        return curvatureSchemePtr_();
+    }
+
+    // Access to the sigma field
+    inline const colocatedScalarField& sigma() const { return sigma_; }
+
+    // Correct the surface tension model
     virtual void correct() = 0;
 };
 

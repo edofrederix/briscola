@@ -26,9 +26,6 @@ protected:
     // Local volume enforcement problem solver
     LVE lve_;
 
-    // Normal scheme
-    autoPtr<normalScheme> normalSchemePtr_;
-
 private:
 
     // Disallow default bitwise assignment
@@ -39,8 +36,14 @@ public:
     // Runtime type information
     TypeName("geometricVof");
 
-    // Construct from dictionary
-    geometricVof(const dictionary&, const fvMesh&);
+    // Construct from components
+    geometricVof
+    (
+        const fvMesh&,
+        const dictionary&,
+        normalScheme&,
+        colocatedScalarField&
+    );
 
     // Copy constructor
     geometricVof(const geometricVof&);
@@ -50,9 +53,6 @@ public:
 
     // Reference to the LVE solver
     inline const LVE& lve() const { return lve_; }
-
-    // Reference to the normal scheme
-    inline normalScheme& normal() { return normalSchemePtr_(); }
 };
 
 }

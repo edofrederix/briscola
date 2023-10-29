@@ -14,11 +14,11 @@ namespace fv
 template<class BaseModel>
 harmonicViscosity<BaseModel>::harmonicViscosity
 (
-    const IOdictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const IOdictionary& dict
 )
 :
-    BaseModel(dict, fvMsh),
+    BaseModel(fvMsh, dict),
     mu1_(readScalar(dict.lookup("mu1"))),
     mu2_(readScalar(dict.lookup("mu2")))
 {}
@@ -36,14 +36,11 @@ harmonicViscosity<BaseModel>::~harmonicViscosity()
 {}
 
 template<class BaseModel>
-void harmonicViscosity<BaseModel>::correctMixture
-(
-    const colocatedScalarField& alpha
-)
+void harmonicViscosity<BaseModel>::correctMixture()
 {
     const colocatedFaceScalarField alphaf
     (
-        ex::interp(alpha)
+        ex::interp(this->alpha_)
     );
 
     this->muc_ = 1.0/(alphaf/mu2_ + (1.0-alphaf)/mu1_);
@@ -54,13 +51,13 @@ void harmonicViscosity<BaseModel>::correctMixture
 
         const staggeredFaceScalarField alphafs
         (
-            stagFaceInterp(alpha)
+            stagFaceInterp(this->alpha_)
         );
 
         mus = 1.0/(alphafs/mu2_ + (1.0-alphafs)/mu1_);
     }
 
-    BaseModel::correctMixture(alpha);
+    BaseModel::correctMixture();
 }
 
 }

@@ -44,8 +44,14 @@ public:
     // Runtime type information
     TypeName("splitAdvection");
 
-    // Construct from dictionary
-    splitAdvection(const dictionary&, const fvMesh&);
+    // Construct from components
+    splitAdvection
+    (
+        const fvMesh&,
+        const dictionary&,
+        normalScheme&,
+        colocatedScalarField&
+    );
 
     // Copy constructor
     splitAdvection(const splitAdvection&);

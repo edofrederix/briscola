@@ -1,8 +1,9 @@
 #ifndef vof_H
 #define vof_H
 
-#include "fvMesh.H"
+#include "twoPhaseModel.H"
 #include "meshFields.H"
+#include "normalScheme.H"
 
 namespace Foam
 {
@@ -14,6 +15,8 @@ namespace fv
 {
 
 class vof
+:
+    public regIOobject
 {
 protected:
 
@@ -23,8 +26,11 @@ protected:
     // Reference to the IO dictionary
     const dictionary& dict_;
 
-    // Volume fraction field
-    colocatedScalarField alpha_;
+    // Reference to the normal scheme
+    normalScheme& normal_;
+
+    // Reference to the volume fraction field
+    colocatedScalarField& alpha_;
 
 private:
 
@@ -45,12 +51,17 @@ public:
         autoPtr,
         vof,
         dictionary,
-        (const dictionary& dict, const fvMesh& fvMsh),
-        (dict, fvMsh)
+        (
+            const fvMesh& fvMsh,
+            const dictionary& dict,
+            normalScheme& normal,
+            colocatedScalarField& alpha
+        ),
+        (fvMsh, dict, normal, alpha)
     );
 
     // Construct from dictionary
-    vof(const dictionary&, const fvMesh&);
+    vof(const fvMesh&, const dictionary&, normalScheme&, colocatedScalarField&);
 
     // Copy constructor
     vof(const vof&);
@@ -58,8 +69,21 @@ public:
     // Clone vof
     virtual autoPtr<vof> clone() const = 0;
 
-    // Selector
-    static autoPtr<vof> New(const dictionary&, const fvMesh&);
+    // Selector from two-phase model
+    static autoPtr<vof> New
+    (
+        twoPhaseModel&,
+        const dictionary&
+    );
+
+    // Selector from components
+    static autoPtr<vof> New
+    (
+        const fvMesh&,
+        const dictionary&,
+        normalScheme&,
+        colocatedScalarField&
+    );
 
     // Destructor
     virtual ~vof();
@@ -94,10 +118,19 @@ public:
     // Return const access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
-    // Return access to the volume fraction field
+    // Access to the dictionary
+    inline const dictionary& dict() const { return dict_; }
+
+    // Access to the normal scheme
+    inline normalScheme& normal() { return normal_; }
+
+    // Const access to the normal scheme
+    inline const normalScheme& normal() const { return normal_; }
+
+    // Access to the volume fraction field
     inline colocatedScalarField& alpha() { return alpha_; }
 
-    // Return const access to the volume fraction field
+    // Const access to the volume fraction field
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
     // Solve the Vof advection equation given a flux field

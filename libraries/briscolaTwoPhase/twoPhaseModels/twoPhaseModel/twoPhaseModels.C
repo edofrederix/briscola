@@ -4,7 +4,7 @@
 #include "incompressibleTwoPhaseModel.H"
 #include "harmonicViscosity.H"
 #include "volumeWeightedViscosity.H"
-#include "basicVof.H"
+#include "twoPhaseVof.H"
 
 namespace Foam
 {
@@ -19,8 +19,8 @@ namespace fv
 
 makeTwoPhaseModel
 (
-    basicVof,
-    basicVof,
+    twoPhaseVof,
+    twoPhaseVof,
     harmonicViscosity,
     incompressibleTwoPhaseModel
 )
@@ -29,8 +29,8 @@ makeTwoPhaseModel
 
 makeTwoPhaseModel
 (
-    basicVofDF,
-    basicVof,
+    twoPhaseVofDF,
+    twoPhaseVof,
     volumeWeightedViscosity,
     incompressibleTwoPhaseModel
 )

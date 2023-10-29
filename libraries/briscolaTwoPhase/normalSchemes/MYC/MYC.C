@@ -18,9 +18,14 @@ namespace fv
 defineTypeNameAndDebug(MYC, 0);
 addToRunTimeSelectionTable(normalScheme, MYC, dictionary);
 
-MYC::MYC(const vof& vf, const dictionary& dict)
+MYC::MYC
+(
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const colocatedScalarField& alpha
+)
 :
-    normalScheme(vf, dict)
+    normalScheme(fvMsh, dict, alpha)
 {}
 
 MYC::MYC(const MYC& s)
@@ -31,8 +36,10 @@ MYC::MYC(const MYC& s)
 MYC::~MYC()
 {}
 
-tmp<colocatedVectorField> MYC::operator()()
+void MYC::correct()
 {
+    colocatedVectorField& n = *this;
+
     // Reconstruct the normal interface using the Mixed Youngs method of Aulisa
     // et al. (2007).
     //
@@ -40,19 +47,7 @@ tmp<colocatedVectorField> MYC::operator()()
     // Lagrange derivative approximations and for skewed meshes by transforming
     // the coordinate system into a perpendicular one.
 
-    tmp<colocatedVectorField> tn
-    (
-        new colocatedVectorField
-        (
-            "normal",
-            vf_.fvMsh()
-        )
-    );
-
-    colocatedVectorField& n = tn.ref();
-    const colocatedScalarField& alpha = vf_.alpha();
-
-    const rectilinearMesh& rMsh = vf_.fvMsh().msh().cast<rectilinearMesh>();
+    const rectilinearMesh& rMsh = fvMsh_.msh().cast<rectilinearMesh>();
     tensor T = rMsh.base();
 
     const PartialList<scalar>& xSize = rMsh.localCellSizes()[0];
@@ -63,8 +58,8 @@ tmp<colocatedVectorField> MYC::operator()()
     {
         if
         (
-            (alpha(i,j,k) > vof::threshold)
-         && (alpha(i,j,k) < 1 - vof::threshold)
+            (alpha_(i,j,k) > vof::threshold)
+         && (alpha_(i,j,k) < 1 - vof::threshold)
         )
         {
             double m1,m2,m3;
@@ -79,38 +74,38 @@ tmp<colocatedVectorField> MYC::operator()()
 
             m1 = xSize[i-1] *
                 (
-                    ySize[j]  *zSize[k]  *alpha(i-1,j,k)
-                  + ySize[j+1]*zSize[k]  *alpha(i-1,j+1,k)
-                  + ySize[j-1]*zSize[k]  *alpha(i-1,j-1,k)
-                  + ySize[j]  *zSize[k+1]*alpha(i-1,j,k+1)
-                  + ySize[j]  *zSize[k-1]*alpha(i-1,j,k-1)
+                    ySize[j]  *zSize[k]  *alpha_(i-1,j,k)
+                  + ySize[j+1]*zSize[k]  *alpha_(i-1,j+1,k)
+                  + ySize[j-1]*zSize[k]  *alpha_(i-1,j-1,k)
+                  + ySize[j]  *zSize[k+1]*alpha_(i-1,j,k+1)
+                  + ySize[j]  *zSize[k-1]*alpha_(i-1,j,k-1)
                 );
 
             m2 = xSize[i+1] *
                 (
-                    ySize[j]  *zSize[k]  *alpha(i+1,j,k)
-                  + ySize[j+1]*zSize[k]  *alpha(i+1,j+1,k)
-                  + ySize[j-1]*zSize[k]  *alpha(i+1,j-1,k)
-                  + ySize[j]  *zSize[k+1]*alpha(i+1,j,k+1)
-                  + ySize[j]  *zSize[k-1]*alpha(i+1,j,k-1)
+                    ySize[j]  *zSize[k]  *alpha_(i+1,j,k)
+                  + ySize[j+1]*zSize[k]  *alpha_(i+1,j+1,k)
+                  + ySize[j-1]*zSize[k]  *alpha_(i+1,j-1,k)
+                  + ySize[j]  *zSize[k+1]*alpha_(i+1,j,k+1)
+                  + ySize[j]  *zSize[k-1]*alpha_(i+1,j,k-1)
                 );
 
             m[0][0] = m1 > m2 ? -1. : 1.;
 
             m1 =
-                xSize[i-1]*alpha(i-1,j-1,k)
-              + xSize[i+1]*alpha(i+1,j-1,k)
-              + xSize[i]  *alpha(i,j-1,k);
+                xSize[i-1]*alpha_(i-1,j-1,k)
+              + xSize[i+1]*alpha_(i+1,j-1,k)
+              + xSize[i]  *alpha_(i,j-1,k);
 
             m2 =
-                xSize[i-1]*alpha(i-1,j,k)
-              + xSize[i+1]*alpha(i+1,j,k)
-              + xSize[i]  *alpha(i,j,k);
+                xSize[i-1]*alpha_(i-1,j,k)
+              + xSize[i+1]*alpha_(i+1,j,k)
+              + xSize[i]  *alpha_(i,j,k);
 
             m3 =
-                xSize[i-1]*alpha(i-1,j+1,k)
-              + xSize[i+1]*alpha(i+1,j+1,k)
-              + xSize[i]  *alpha(i,j+1,k);
+                xSize[i-1]*alpha_(i-1,j+1,k)
+              + xSize[i+1]*alpha_(i+1,j+1,k)
+              + xSize[i]  *alpha_(i,j+1,k);
 
             m[0][1] =
                 m1 *
@@ -139,19 +134,19 @@ tmp<colocatedVectorField> MYC::operator()()
                 );
 
             m1 =
-                xSize[i-1]*alpha(i-1,j,k-1)
-              + xSize[i+1]*alpha(i+1,j,k-1)
-              + xSize[i]  *alpha(i,j,k-1);
+                xSize[i-1]*alpha_(i-1,j,k-1)
+              + xSize[i+1]*alpha_(i+1,j,k-1)
+              + xSize[i]  *alpha_(i,j,k-1);
 
             m2 =
-                xSize[i-1]*alpha(i-1,j,k)
-              + xSize[i+1]*alpha(i+1,j,k)
-              + xSize[i]  *alpha(i,j,k);
+                xSize[i-1]*alpha_(i-1,j,k)
+              + xSize[i+1]*alpha_(i+1,j,k)
+              + xSize[i]  *alpha_(i,j,k);
 
             m3 =
-                xSize[i-1]*alpha(i-1,j,k+1)
-              + xSize[i+1]*alpha(i+1,j,k+1)
-              + xSize[i]  *alpha(i,j,k+1);
+                xSize[i-1]*alpha_(i-1,j,k+1)
+              + xSize[i+1]*alpha_(i+1,j,k+1)
+              + xSize[i]  *alpha_(i,j,k+1);
 
             m[0][2] =
                 m1 *
@@ -183,19 +178,19 @@ tmp<colocatedVectorField> MYC::operator()()
             // X + m12 Z + alpha
 
             m1 =
-                ySize[j-1]*alpha(i-1,j-1,k)
-              + ySize[j+1]*alpha(i-1,j+1,k)
-              + ySize[j]  *alpha(i-1,j,k);
+                ySize[j-1]*alpha_(i-1,j-1,k)
+              + ySize[j+1]*alpha_(i-1,j+1,k)
+              + ySize[j]  *alpha_(i-1,j,k);
 
             m2 =
-                ySize[j-1]*alpha(i,j-1,k)
-              + ySize[j+1]*alpha(i,j+1,k)
-              + ySize[j]  *alpha(i,j,k);
+                ySize[j-1]*alpha_(i,j-1,k)
+              + ySize[j+1]*alpha_(i,j+1,k)
+              + ySize[j]  *alpha_(i,j,k);
 
             m3 =
-                ySize[j-1]*alpha(i+1,j-1,k)
-              + ySize[j+1]*alpha(i+1,j+1,k)
-              + ySize[j]  *alpha(i+1,j,k);
+                ySize[j-1]*alpha_(i+1,j-1,k)
+              + ySize[j+1]*alpha_(i+1,j+1,k)
+              + ySize[j]  *alpha_(i+1,j,k);
 
             m[1][0] =
                 m1 *
@@ -226,39 +221,39 @@ tmp<colocatedVectorField> MYC::operator()()
             m1 =
                 ySize[j-1] *
                 (
-                    xSize[i]  *zSize[k-1]*alpha(i,j-1,k-1)
-                  + xSize[i]  *zSize[k+1]*alpha(i,j-1,k+1)
-                  + xSize[i-1]*zSize[k]  *alpha(i-1,j-1,k)
-                  + xSize[i+1]*zSize[k]  *alpha(i+1,j-1,k)
-                  + xSize[i]  *zSize[k]  *alpha(i,j-1,k)
+                    xSize[i]  *zSize[k-1]*alpha_(i,j-1,k-1)
+                  + xSize[i]  *zSize[k+1]*alpha_(i,j-1,k+1)
+                  + xSize[i-1]*zSize[k]  *alpha_(i-1,j-1,k)
+                  + xSize[i+1]*zSize[k]  *alpha_(i+1,j-1,k)
+                  + xSize[i]  *zSize[k]  *alpha_(i,j-1,k)
                 );
 
             m2 =
                 ySize[j+1] *
                 (
-                    xSize[i]  *zSize[k-1]*alpha(i,j+1,k-1)
-                  + xSize[i]  *zSize[k+1]*alpha(i,j+1,k+1)
-                  + xSize[i-1]*zSize[k]  *alpha(i-1,j+1,k)
-                  + xSize[i+1]*zSize[k]  *alpha(i+1,j+1,k)
-                  + xSize[i]  *zSize[k]  *alpha(i,j+1,k)
+                    xSize[i]  *zSize[k-1]*alpha_(i,j+1,k-1)
+                  + xSize[i]  *zSize[k+1]*alpha_(i,j+1,k+1)
+                  + xSize[i-1]*zSize[k]  *alpha_(i-1,j+1,k)
+                  + xSize[i+1]*zSize[k]  *alpha_(i+1,j+1,k)
+                  + xSize[i]  *zSize[k]  *alpha_(i,j+1,k)
                 );
 
             m[1][1] = m1 > m2 ? -1. : 1.;
 
             m1 =
-                ySize[j-1]*alpha(i,j-1,k-1)
-              + ySize[j+1]*alpha(i,j+1,k-1)
-              + ySize[j]  *alpha(i,j,k-1);
+                ySize[j-1]*alpha_(i,j-1,k-1)
+              + ySize[j+1]*alpha_(i,j+1,k-1)
+              + ySize[j]  *alpha_(i,j,k-1);
 
             m2 =
-                ySize[j-1]*alpha(i,j-1,k)
-              + ySize[j+1]*alpha(i,j+1,k)
-              + ySize[j]  *alpha(i,j,k);
+                ySize[j-1]*alpha_(i,j-1,k)
+              + ySize[j+1]*alpha_(i,j+1,k)
+              + ySize[j]  *alpha_(i,j,k);
 
             m3 =
-                ySize[j-1]*alpha(i,j-1,k+1)
-              + ySize[j+1]*alpha(i,j+1,k+1)
-              + ySize[j]  *alpha(i,j,k+1);
+                ySize[j-1]*alpha_(i,j-1,k+1)
+              + ySize[j+1]*alpha_(i,j+1,k+1)
+              + ySize[j]  *alpha_(i,j,k+1);
 
             m[1][2] =
                 m1 *
@@ -290,19 +285,19 @@ tmp<colocatedVectorField> MYC::operator()()
             // X + m21 Y + alpha
 
             m1 =
-                zSize[k-1]*alpha(i-1,j,k-1)
-              + zSize[k+1]*alpha(i-1,j,k+1)
-              + zSize[k]  *alpha(i-1,j,k);
+                zSize[k-1]*alpha_(i-1,j,k-1)
+              + zSize[k+1]*alpha_(i-1,j,k+1)
+              + zSize[k]  *alpha_(i-1,j,k);
 
             m2 =
-                zSize[k-1]*alpha(i,j,k-1)
-              + zSize[k+1]*alpha(i,j,k+1)
-              + zSize[k]  *alpha(i,j,k);
+                zSize[k-1]*alpha_(i,j,k-1)
+              + zSize[k+1]*alpha_(i,j,k+1)
+              + zSize[k]  *alpha_(i,j,k);
 
             m3 =
-                zSize[k-1]*alpha(i+1,j,k-1)
-              + zSize[k+1]*alpha(i+1,j,k+1)
-              + zSize[k]  *alpha(i+1,j,k);
+                zSize[k-1]*alpha_(i+1,j,k-1)
+              + zSize[k+1]*alpha_(i+1,j,k+1)
+              + zSize[k]  *alpha_(i+1,j,k);
 
             m[2][0] =
                 m1 *
@@ -331,19 +326,19 @@ tmp<colocatedVectorField> MYC::operator()()
                 );
 
             m1 =
-                zSize[k-1]*alpha(i,j-1,k-1)
-              + zSize[k+1]*alpha(i,j-1,k+1)
-              + zSize[k]  *alpha(i,j-1,k);
+                zSize[k-1]*alpha_(i,j-1,k-1)
+              + zSize[k+1]*alpha_(i,j-1,k+1)
+              + zSize[k]  *alpha_(i,j-1,k);
 
             m2 =
-                zSize[k-1]*alpha(i,j,k-1)
-              + zSize[k+1]*alpha(i,j,k+1)
-              + zSize[k]  *alpha(i,j,k);
+                zSize[k-1]*alpha_(i,j,k-1)
+              + zSize[k+1]*alpha_(i,j,k+1)
+              + zSize[k]  *alpha_(i,j,k);
 
             m3 =
-                zSize[k-1]*alpha(i,j+1,k-1)
-              + zSize[k+1]*alpha(i,j+1,k+1)
-              + zSize[k]  *alpha(i,j+1,k);
+                zSize[k-1]*alpha_(i,j+1,k-1)
+              + zSize[k+1]*alpha_(i,j+1,k+1)
+              + zSize[k]  *alpha_(i,j+1,k);
 
             m[2][1] =
                 m1 *
@@ -374,21 +369,21 @@ tmp<colocatedVectorField> MYC::operator()()
             m1 =
                 zSize[k-1] *
                 (
-                    xSize[i]  *ySize[j-1]*alpha(i,j-1,k-1)
-                  + xSize[i]  *ySize[j+1]*alpha(i,j+1,k-1)
-                  + xSize[i-1]*ySize[j]  *alpha(i-1,j,k-1)
-                  + xSize[i+1]*ySize[j]  *alpha(i+1,j,k-1)
-                  + xSize[i]  *ySize[j]  *alpha(i,j,k-1)
+                    xSize[i]  *ySize[j-1]*alpha_(i,j-1,k-1)
+                  + xSize[i]  *ySize[j+1]*alpha_(i,j+1,k-1)
+                  + xSize[i-1]*ySize[j]  *alpha_(i-1,j,k-1)
+                  + xSize[i+1]*ySize[j]  *alpha_(i+1,j,k-1)
+                  + xSize[i]  *ySize[j]  *alpha_(i,j,k-1)
                 );
 
             m2 =
                 zSize[k+1] *
                 (
-                    xSize[i]  *ySize[j-1]*alpha(i,j-1,k+1)
-                  + xSize[i]  *ySize[j+1]*alpha(i,j+1,k+1)
-                  + xSize[i-1]*ySize[j]  *alpha(i-1,j,k+1)
-                  + xSize[i+1]*ySize[j]  *alpha(i+1,j,k+1)
-                  + xSize[i]  *ySize[j]  *alpha(i,j,k+1)
+                    xSize[i]  *ySize[j-1]*alpha_(i,j-1,k+1)
+                  + xSize[i]  *ySize[j+1]*alpha_(i,j+1,k+1)
+                  + xSize[i-1]*ySize[j]  *alpha_(i-1,j,k+1)
+                  + xSize[i+1]*ySize[j]  *alpha_(i+1,j,k+1)
+                  + xSize[i]  *ySize[j]  *alpha_(i,j,k+1)
                 );
 
             m[2][2] = m1 > m2 ? -1. : 1.;
@@ -445,10 +440,10 @@ tmp<colocatedVectorField> MYC::operator()()
                     {
                         Cx1 =
                             (
-                                ySize[jl]  *zSize[kl]  *alpha(il,jl,kl)
-                              + ySize[jl+1]*zSize[kl]  *alpha(il,jl+1,kl)
-                              + ySize[jl]  *zSize[kl+1]*alpha(il,jl,kl+1)
-                              + ySize[jl+1]*zSize[kl+1]*alpha(il,jl+1,kl+1)
+                                ySize[jl]  *zSize[kl]  *alpha_(il,jl,kl)
+                              + ySize[jl+1]*zSize[kl]  *alpha_(il,jl+1,kl)
+                              + ySize[jl]  *zSize[kl+1]*alpha_(il,jl,kl+1)
+                              + ySize[jl+1]*zSize[kl+1]*alpha_(il,jl+1,kl+1)
                             )
                           / (
                                 (ySize[jl] + ySize[jl+1])
@@ -457,10 +452,10 @@ tmp<colocatedVectorField> MYC::operator()()
 
                         Cx2 =
                             (
-                                ySize[jl]  *zSize[kl]  *alpha(il+1,jl,kl)
-                              + ySize[jl+1]*zSize[kl]  *alpha(il+1,jl+1,kl)
-                              + ySize[jl]  *zSize[kl+1]*alpha(il+1,jl,kl+1)
-                              + ySize[jl+1]*zSize[kl+1]*alpha(il+1,jl+1,kl+1)
+                                ySize[jl]  *zSize[kl]  *alpha_(il+1,jl,kl)
+                              + ySize[jl+1]*zSize[kl]  *alpha_(il+1,jl+1,kl)
+                              + ySize[jl]  *zSize[kl+1]*alpha_(il+1,jl,kl+1)
+                              + ySize[jl+1]*zSize[kl+1]*alpha_(il+1,jl+1,kl+1)
                             )
                           / (
                                 (ySize[jl] + ySize[jl+1])
@@ -469,10 +464,10 @@ tmp<colocatedVectorField> MYC::operator()()
 
                         Cy1 =
                             (
-                                xSize[il]  *zSize[kl]  *alpha(il,jl,kl)
-                              + xSize[il+1]*zSize[kl]  *alpha(il+1,jl,kl)
-                              + xSize[il]  *zSize[kl+1]*alpha(il,jl,kl+1)
-                              + xSize[il+1]*zSize[kl+1]*alpha(il+1,jl,kl+1)
+                                xSize[il]  *zSize[kl]  *alpha_(il,jl,kl)
+                              + xSize[il+1]*zSize[kl]  *alpha_(il+1,jl,kl)
+                              + xSize[il]  *zSize[kl+1]*alpha_(il,jl,kl+1)
+                              + xSize[il+1]*zSize[kl+1]*alpha_(il+1,jl,kl+1)
                             )
                           / (
                                 (xSize[il] + xSize[il+1])
@@ -481,10 +476,10 @@ tmp<colocatedVectorField> MYC::operator()()
 
                         Cy2 =
                             (
-                                xSize[il]  *zSize[kl]  *alpha(il,jl+1,kl)
-                              + xSize[il+1]*zSize[kl]  *alpha(il+1,jl+1,kl)
-                              + xSize[il]  *zSize[kl+1]*alpha(il,jl+1,kl+1)
-                              + xSize[il+1]*zSize[kl+1]*alpha(il+1,jl+1,kl+1)
+                                xSize[il]  *zSize[kl]  *alpha_(il,jl+1,kl)
+                              + xSize[il+1]*zSize[kl]  *alpha_(il+1,jl+1,kl)
+                              + xSize[il]  *zSize[kl+1]*alpha_(il,jl+1,kl+1)
+                              + xSize[il+1]*zSize[kl+1]*alpha_(il+1,jl+1,kl+1)
                             )
                           / (
                                 (xSize[il] + xSize[il+1])
@@ -493,10 +488,10 @@ tmp<colocatedVectorField> MYC::operator()()
 
                         Cz1 =
                             (
-                                xSize[il]  *ySize[jl]  *alpha(il,jl,kl)
-                              + xSize[il+1]*ySize[jl]  *alpha(il+1,jl,kl)
-                              + xSize[il]  *ySize[jl+1]*alpha(il,jl+1,kl)
-                              + xSize[il+1]*ySize[jl+1]*alpha(il+1,jl+1,kl)
+                                xSize[il]  *ySize[jl]  *alpha_(il,jl,kl)
+                              + xSize[il+1]*ySize[jl]  *alpha_(il+1,jl,kl)
+                              + xSize[il]  *ySize[jl+1]*alpha_(il,jl+1,kl)
+                              + xSize[il+1]*ySize[jl+1]*alpha_(il+1,jl+1,kl)
                             )
                           / (
                                 (xSize[il] + xSize[il+1])
@@ -505,10 +500,10 @@ tmp<colocatedVectorField> MYC::operator()()
 
                         Cz2 =
                             (
-                                xSize[il]  *ySize[jl]  *alpha(il,jl,kl+1)
-                              + xSize[il+1]*ySize[jl]  *alpha(il+1,jl,kl+1)
-                              + xSize[il]  *ySize[jl+1]*alpha(il,jl+1,kl+1)
-                              + xSize[il+1]*ySize[jl+1]*alpha(il+1,jl+1,kl+1)
+                                xSize[il]  *ySize[jl]  *alpha_(il,jl,kl+1)
+                              + xSize[il+1]*ySize[jl]  *alpha_(il+1,jl,kl+1)
+                              + xSize[il]  *ySize[jl+1]*alpha_(il,jl+1,kl+1)
+                              + xSize[il+1]*ySize[jl+1]*alpha_(il+1,jl+1,kl+1)
                             )
                           / (
                                 (xSize[il] + xSize[il+1])
@@ -562,7 +557,7 @@ tmp<colocatedVectorField> MYC::operator()()
         }
     }
 
-    return tn;
+    n[0].correctBoundaryConditions();
 }
 
 }

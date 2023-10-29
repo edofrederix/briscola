@@ -31,7 +31,7 @@ private:
 public:
 
     // Construct from IOdictionary
-    volumeWeightedViscosity(const IOdictionary&, const fvMesh&);
+    volumeWeightedViscosity(const fvMesh&, const IOdictionary&);
 
     // Copy constructor
     volumeWeightedViscosity(const volumeWeightedViscosity&);
@@ -46,7 +46,7 @@ public:
     virtual scalar mu2() { return mu2_; }
 
     // Correct the two-phase mixture
-    virtual void correctMixture(const colocatedScalarField&);
+    virtual void correctMixture();
 };
 
 }

@@ -1,6 +1,6 @@
 #include "curvatureScheme.H"
 #include "addToRunTimeSelectionTable.H"
-#include "vof.H"
+#include "twoPhaseModel.H"
 
 namespace Foam
 {
@@ -14,16 +14,28 @@ namespace fv
 defineTypeNameAndDebug(curvatureScheme, 0);
 defineRunTimeSelectionTable(curvatureScheme, dictionary);
 
-curvatureScheme::curvatureScheme(const vof& vf, const dictionary& dict)
+curvatureScheme::curvatureScheme
+(
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const normalScheme& normal,
+    const colocatedScalarField& alpha
+)
 :
-    vf_(vf),
-    dict_(dict)
+    colocatedScalarField("kappa", fvMsh),
+    fvMsh_(fvMsh),
+    dict_(dict),
+    normal_(normal),
+    alpha_(alpha)
 {}
 
 curvatureScheme::curvatureScheme(const curvatureScheme& s)
 :
-    vf_(s.vf_),
-    dict_(s.dict_)
+    colocatedScalarField(s),
+    fvMsh_(s.fvMsh_),
+    dict_(s.dict_),
+    normal_(s.normal_),
+    alpha_(s.alpha_)
 {}
 
 curvatureScheme::~curvatureScheme()
@@ -31,8 +43,19 @@ curvatureScheme::~curvatureScheme()
 
 autoPtr<curvatureScheme> curvatureScheme::New
 (
-    const vof& vf,
+    const twoPhaseModel& tpm,
     const dictionary& dict
+)
+{
+    return curvatureScheme::New(tpm.fvMsh(), dict, tpm.normal(), tpm.alpha());
+}
+
+autoPtr<curvatureScheme> curvatureScheme::New
+(
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const normalScheme& normal,
+    const colocatedScalarField& alpha
 )
 {
     const word curvatureSchemeType(dict.lookup("type"));
@@ -49,7 +72,10 @@ autoPtr<curvatureScheme> curvatureScheme::New
             << exit(FatalError);
     }
 
-    return autoPtr<curvatureScheme>(cstrIter()(vf, dict));
+    return autoPtr<curvatureScheme>
+    (
+        cstrIter()(fvMsh, dict, normal, alpha)
+    );
 }
 
 }

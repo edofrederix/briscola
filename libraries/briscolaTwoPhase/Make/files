@@ -14,4 +14,12 @@ twoPhaseModels/twoPhaseModel/twoPhaseModel.C
 twoPhaseModels/twoPhaseDensityModels/incompressibleTwoPhaseModel/incompressibleTwoPhaseModel.C
 twoPhaseModels/twoPhaseModel/twoPhaseModels.C
 
+surfaceTensionSchemes/surfaceTensionScheme/surfaceTensionScheme.C
+surfaceTensionSchemes/sigmaModels/constantSigma/constantSigma.C
+surfaceTensionSchemes/surfaceTensionScheme/surfaceTensionSchemes.C
+
+curvatureSchemes/curvatureScheme/curvatureScheme.C
+curvatureSchemes/CV/CV.C
+curvatureSchemes/SHF/SHF.C
+
 LIB = $(FOAM_USER_LIBBIN)/libbriscolaTwoPhase

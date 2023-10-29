@@ -1,5 +1,5 @@
-#ifndef basicVof_H
-#define basicVof_H
+#ifndef twoPhaseVof_H
+#define twoPhaseVof_H
 
 #include "vof.H"
 
@@ -13,7 +13,7 @@ namespace fv
 {
 
 template<class BaseModel>
-class basicVof
+class twoPhaseVof
 :
     public BaseModel
 {
@@ -32,27 +32,27 @@ protected:
 private:
 
     // Disallow default bitwise assignment
-    void operator=(const basicVof&);
+    void operator=(const twoPhaseVof&);
 
 public:
 
     // Runtime type information
-    TypeName("basicVof");
+    TypeName("twoPhaseVof");
 
     // Construct from IOdictionary
-    basicVof(const IOdictionary&, const fvMesh&);
+    twoPhaseVof(const fvMesh&, const IOdictionary&);
 
     // Copy constructor
-    basicVof(const basicVof&);
+    twoPhaseVof(const twoPhaseVof&);
 
-    // Clone basicVof
+    // Clone twoPhaseVof
     virtual autoPtr<twoPhaseModel> clone() const
     {
-        return autoPtr<twoPhaseModel>(new basicVof(*this));
+        return autoPtr<twoPhaseModel>(new twoPhaseVof(*this));
     }
 
     // Destructor
-    virtual ~basicVof();
+    virtual ~twoPhaseVof();
 
     // Return access to the Vof model
     inline vof& vf() { return vfPtr_(); }
@@ -71,7 +71,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "basicVof.C"
+    #include "twoPhaseVof.C"
 #endif
 
 #endif

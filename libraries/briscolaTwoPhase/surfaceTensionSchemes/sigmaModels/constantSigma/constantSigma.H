@@ -1,7 +1,7 @@
-#ifndef SHF_H
-#define SHF_H
+#ifndef constantSigma_H
+#define constantSigma_H
 
-#include "curvatureScheme.H"
+#include "surfaceTensionScheme.H"
 
 namespace Foam
 {
@@ -12,18 +12,17 @@ namespace briscola
 namespace fv
 {
 
-class SHF
+class constantSigma
 :
-    public curvatureScheme
+    public surfaceTensionScheme
 {
-
 public:
 
     // Runtime type information
-    TypeName("SHF");
+    TypeName("constantSigma");
 
     // Construct from components
-    SHF
+    constantSigma
     (
         const fvMesh&,
         const dictionary&,
@@ -32,18 +31,12 @@ public:
     );
 
     // Copy constructor
-    SHF(const SHF&);
+    constantSigma(const constantSigma&);
 
     // Destructor
-    virtual ~SHF();
+    virtual ~constantSigma();
 
-    // Clone curvatureScheme
-    virtual autoPtr<curvatureScheme> clone() const
-    {
-        return autoPtr<curvatureScheme>(new SHF(*this));
-    }
-
-    // Correct the curvature
+    // Correct sigma
     virtual void correct();
 };
 

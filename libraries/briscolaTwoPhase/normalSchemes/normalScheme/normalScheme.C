@@ -1,6 +1,6 @@
 #include "normalScheme.H"
 #include "addToRunTimeSelectionTable.H"
-#include "vof.H"
+#include "twoPhaseModel.H"
 
 namespace Foam
 {
@@ -14,16 +14,25 @@ namespace fv
 defineTypeNameAndDebug(normalScheme, 0);
 defineRunTimeSelectionTable(normalScheme, dictionary);
 
-normalScheme::normalScheme(const vof& vf, const dictionary& dict)
+normalScheme::normalScheme
+(
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const colocatedScalarField& alpha
+)
 :
-    vf_(vf),
-    dict_(dict)
+    colocatedVectorField("normal", fvMsh),
+    fvMsh_(fvMsh),
+    dict_(dict),
+    alpha_(alpha)
 {}
 
 normalScheme::normalScheme(const normalScheme& s)
 :
-    vf_(s.vf_),
-    dict_(s.dict_)
+    colocatedVectorField(s),
+    fvMsh_(s.fvMsh_),
+    dict_(s.dict_),
+    alpha_(s.alpha_)
 {}
 
 normalScheme::~normalScheme()
@@ -31,8 +40,18 @@ normalScheme::~normalScheme()
 
 autoPtr<normalScheme> normalScheme::New
 (
-    const vof& vf,
+    const twoPhaseModel& tpm,
     const dictionary& dict
+)
+{
+    return normalScheme::New(tpm.fvMsh(), dict, tpm.alpha());
+}
+
+autoPtr<normalScheme> normalScheme::New
+(
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const colocatedScalarField& alpha
 )
 {
     const word normalSchemeType(dict.lookup("type"));
@@ -49,7 +68,7 @@ autoPtr<normalScheme> normalScheme::New
             << exit(FatalError);
     }
 
-    return autoPtr<normalScheme>(cstrIter()(vf, dict));
+    return autoPtr<normalScheme>(cstrIter()(fvMsh, dict, alpha));
 }
 
 }

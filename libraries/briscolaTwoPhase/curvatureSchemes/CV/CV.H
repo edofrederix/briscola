@@ -23,7 +23,13 @@ public:
     TypeName("CV");
 
     // Construct from components
-    CV(const vof&, const dictionary&);
+    CV
+    (
+        const fvMesh&,
+        const dictionary&,
+        const normalScheme&,
+        const colocatedScalarField&
+    );
 
     // Copy constructor
     CV(const CV&);
@@ -37,8 +43,8 @@ public:
         return autoPtr<curvatureScheme>(new CV(*this));
     }
 
-    // Calculate curvature
-    virtual tmp<colocatedScalarField> operator()(const colocatedVectorField&);
+    // Correct the curvature
+    virtual void correct();
 };
 
 }

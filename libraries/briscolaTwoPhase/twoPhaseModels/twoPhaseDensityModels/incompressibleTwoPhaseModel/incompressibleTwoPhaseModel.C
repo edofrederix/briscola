@@ -14,16 +14,19 @@ defineTypeNameAndDebug(incompressibleTwoPhaseModel, 0);
 
 incompressibleTwoPhaseModel::incompressibleTwoPhaseModel
 (
-    const IOdictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const IOdictionary& dict
 )
 :
-    twoPhaseModel(dict, fvMsh),
+    twoPhaseModel(fvMsh, dict),
     rho1_(readScalar(dict.lookup("rho1"))),
     rho2_(readScalar(dict.lookup("rho2")))
 {}
 
-incompressibleTwoPhaseModel::incompressibleTwoPhaseModel(const incompressibleTwoPhaseModel& tpm)
+incompressibleTwoPhaseModel::incompressibleTwoPhaseModel
+(
+    const incompressibleTwoPhaseModel& tpm
+)
 :
     twoPhaseModel(tpm),
     rho1_(tpm.rho1_),
@@ -33,12 +36,9 @@ incompressibleTwoPhaseModel::incompressibleTwoPhaseModel(const incompressibleTwo
 incompressibleTwoPhaseModel::~incompressibleTwoPhaseModel()
 {}
 
-void incompressibleTwoPhaseModel::correctMixture
-(
-    const colocatedScalarField& alpha
-)
+void incompressibleTwoPhaseModel::correctMixture()
 {
-    rhoc_ = rho2_*alpha + rho1_*(1.0-alpha);
+    rhoc_ = rho2_*alpha_ + rho1_*(1.0-alpha_);
 
     if (rhosPtr_.valid())
     {
@@ -46,7 +46,7 @@ void incompressibleTwoPhaseModel::correctMixture
 
         const staggeredScalarField alphas
         (
-            stagInterp(alpha)
+            stagInterp(alpha_)
         );
 
         rhos = rho2_*alphas + rho1_*(1.0-alphas);

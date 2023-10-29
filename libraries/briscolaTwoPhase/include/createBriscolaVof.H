@@ -1,3 +1,14 @@
+colocatedScalarField alpha
+(
+    "alpha",
+    fvMsh,
+    IOobject::MUST_READ,
+    IOobject::AUTO_WRITE,
+    true,
+    true,
+    false
+);
+
 IOdictionary vofDict
 (
     IOobject
@@ -10,6 +21,13 @@ IOdictionary vofDict
     )
 );
 
-autoPtr<vof> vfPtr(vof::New(vofDict, fvMsh));
+autoPtr<normalScheme> normalSchemePtr
+(
+    normalScheme::New(fvMsh, vofDict.subDict("normalScheme"), alpha).ptr()
+);
+
+normalScheme& normal = normalSchemePtr();
+
+autoPtr<vof> vfPtr(vof::New(fvMsh, vofDict, normal, alpha));
 
 vof& vf = vfPtr();

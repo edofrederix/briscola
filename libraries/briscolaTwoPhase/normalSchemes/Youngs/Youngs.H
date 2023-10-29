@@ -25,7 +25,7 @@ public:
     TypeName("Youngs");
 
     // Construct from components
-    Youngs(const vof&, const dictionary&);
+    Youngs(const fvMesh&, const dictionary&, const colocatedScalarField&);
 
     // Copy constructor
     Youngs(const Youngs&);
@@ -39,8 +39,8 @@ public:
         return autoPtr<normalScheme>(new Youngs(*this));
     }
 
-    // Calculate normal
-    virtual tmp<colocatedVectorField> operator()();
+    // Correct the normal
+    virtual void correct();
 };
 
 }

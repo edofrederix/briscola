@@ -4,6 +4,7 @@
 #include "rectilinearMesh.H"
 #include "truncatedHex.H"
 #include "truncatedPiped.H"
+#include "twoPhaseModel.H"
 
 namespace Foam
 {
@@ -23,7 +24,8 @@ void splitAdvection::updateFlux
     const label d
 )
 {
-    const colocatedVectorField n(this->normal()());
+    normal_.correct();
+    const colocatedVectorField& n = normal_;
 
     const colocatedScalarField& cv =
         fvMsh_.template metrics<colocated>().cellVolumes();
@@ -176,13 +178,19 @@ void splitAdvection::updateFlux
     }
 }
 
-splitAdvection::splitAdvection(const dictionary& dict, const fvMesh& fvMsh)
+splitAdvection::splitAdvection
+(
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    normalScheme& normal,
+    colocatedScalarField& alpha
+)
 :
-    geometricVof(dict, fvMsh),
+    geometricVof(fvMsh, dict, normal, alpha),
     flux_
     (
-        IOobject::groupName("flux", alpha_.name()),
-        fvMsh_,
+        IOobject::groupName("flux", alpha.name()),
+        fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
@@ -196,8 +204,8 @@ splitAdvection::splitAdvection(const splitAdvection& vf)
     geometricVof(vf),
     flux_
     (
-        IOobject::groupName("flux", alpha_.name()),
-        fvMsh_,
+        IOobject::groupName("flux", vf.alpha().name()),
+        vf.fvMsh(),
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,

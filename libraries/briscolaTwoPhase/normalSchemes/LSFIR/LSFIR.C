@@ -21,7 +21,7 @@ addToRunTimeSelectionTable(normalScheme, LSFIR, dictionary);
 
 void LSFIR::createBoundaryTypes()
 {
-    const faceLabel& faceType = vf_.fvMsh().msh().facePatchType();
+    const faceLabel& faceType = fvMsh_.msh().facePatchType();
 
     for (int i = 0; i < 3; i++)
     {
@@ -104,12 +104,17 @@ void LSFIR::createHexagonDescription()
     }
 }
 
-LSFIR::LSFIR(const vof& vf, const dictionary& dict)
+LSFIR::LSFIR
+(
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const colocatedScalarField& alpha
+)
 :
-    LSGIR(vf, dict),
+    LSGIR(fvMsh, dict, alpha),
     planarFaces_(dict.lookupOrDefault<bool>("planarFaces", true)),
     centerAveraging_(dict.lookupOrDefault<bool>("centerAveraging", false)),
-    lve_(vf.fvMsh().msh()[0].rectilinear() == unitXYZ)
+    lve_(fvMsh.msh()[0].rectilinear() == unitXYZ)
 {
     createBoundaryTypes();
     createHexagonDescription();
@@ -120,7 +125,7 @@ LSFIR::LSFIR(const LSFIR& s)
     LSGIR(s),
     planarFaces_(s.planarFaces_),
     centerAveraging_(s.centerAveraging_),
-    lve_(vf_.fvMsh().msh()[0].rectilinear() == unitXYZ)
+    lve_(s.fvMsh().msh()[0].rectilinear() == unitXYZ)
 {
     createBoundaryTypes();
     createHexagonDescription();
@@ -129,54 +134,29 @@ LSFIR::LSFIR(const LSFIR& s)
 LSFIR::~LSFIR()
 {}
 
-tmp<colocatedVectorField> LSFIR::operator()()
+void LSFIR::correct()
 {
+    colocatedVectorField& n = *this;
+
     // Reconstruct the interface normal using the version of LSFIR presented in
     // Lopez (2022).
 
-    tmp<colocatedVectorField> tn
-    (
-        new colocatedVectorField(
-            "normal",
-            vf_.fvMsh()
-        )
-    );
-
-    colocatedVectorField& n = tn.ref();
-
-    const colocatedScalarField& alpha = vf_.alpha();
-
     const colocatedVertexVectorField& v =
-        vf_.fvMsh().template metrics<colocated>().vertexCenters();
+        fvMsh_.template metrics<colocated>().vertexCenters();
     const colocatedScalarField& cv =
-        vf_.fvMsh().template metrics<colocated>().cellVolumes();
+        fvMsh_.template metrics<colocated>().cellVolumes();
 
-    tmp<colocatedVectorField> xn
-    (
-        new colocatedVectorField
-        (
-            "surface_centers",
-            vf_.fvMsh()
-        )
-    );
-
-    colocatedVectorField& xgi = xn.ref();
+    colocatedVectorField xgi("surface_centers", fvMsh_);
 
     const scalar angleTol = Foam::cos(1e-3);
 
     const scalar validAngleTol =
         Foam::cos(0.25 * Foam::constant::mathematical::pi);
 
-    // Initialise the field using LSGIR
+    // Initialise the normal using LSGIR and store that one
 
-    colocatedVectorField nNew(LSGIR::operator()());
-
-    // LSFIR iteration
-
-    forAllCells(n, i, j, k)
-    {
-        n(i,j,k) = nNew(i,j,k);
-    }
+    LSGIR::correct();
+    colocatedVectorField nNew(n);
 
     int maxIterNumber = 4;
     int updatedNormals = 1;
@@ -208,8 +188,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
             if
             (
-                alpha(i,j,k) > vof::threshold
-             && alpha(i,j,k) < (1.0 - vof::threshold)
+                alpha_(i,j,k) > vof::threshold
+             && alpha_(i,j,k) < (1.0 - vof::threshold)
             )
             {
 
@@ -226,7 +206,7 @@ tmp<colocatedVectorField> LSFIR::operator()()
                 // cell
 
                 scalar C =
-                    lve_(alpha(i,j,k),v(i,j,k),cv(i,j,k),n(i,j,k));
+                    lve_(alpha_(i,j,k),v(i,j,k),cv(i,j,k),n(i,j,k));
 
                 double originalCs[8];
 
@@ -522,9 +502,10 @@ tmp<colocatedVectorField> LSFIR::operator()()
                                 - v(i,j,k)[insertedVertex[it][1]];
                             e /= Foam::mag(e);
                             Xin = v(i,j,k)[insertedVertex[it][1]];
-                            x0[insertedVertex[it][0] - 8] = Xin
-                                    + (-C - (n(i,j,k) & Xin))
-                                        * e * (1 / (n(i,j,k) & e));
+                            x0[insertedVertex[it][0] - 8] =
+                                Xin
+                              + (-C - (n(i,j,k) & Xin))
+                              * e * (1.0 / (n(i,j,k) & e));
                         }
 
                         scalar auxMax;
@@ -690,8 +671,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
         }
 
-        xn.ref()[0].correctBoundaryConditions();
-        tn.ref()[0].correctBoundaryConditions();
+        xgi[0].correctBoundaryConditions();
+        n[0].correctBoundaryConditions();
 
         // Minimize the square problem for all cells and store the solution
 
@@ -700,8 +681,8 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
             if
             (
-                alpha(i,j,k) > vof::threshold
-             && alpha(i,j,k) < 1 - vof::threshold
+                alpha_(i,j,k) > vof::threshold
+             && alpha_(i,j,k) < 1 - vof::threshold
             )
             {
                 int d1 = 0;
@@ -748,9 +729,9 @@ tmp<colocatedVectorField> LSFIR::operator()()
 
                             if
                             (
-                                alpha(i+aux1-1,j+aux2-1,k+aux3-1)
+                                alpha_(i+aux1-1,j+aux2-1,k+aux3-1)
                               > vof::threshold
-                             && alpha(i+aux1-1,j+aux2-1,k+aux3-1)
+                             && alpha_(i+aux1-1,j+aux2-1,k+aux3-1)
                               < (1.0 - vof::threshold)
                              && (
                                     (aux1 != 1)
@@ -764,9 +745,15 @@ tmp<colocatedVectorField> LSFIR::operator()()
                             )
                             {
                                 scalar angle =
-                                    (n(i+aux1-1,j+aux2-1,k+aux3-1) & n(i,j,k))
+                                    (
+                                        n(i+aux1-1,j+aux2-1,k+aux3-1)
+                                      & n(i,j,k)
+                                    )
                                   / (
-                                        Foam::mag(n(i+aux1-1,j+aux2-1,k+aux3-1))
+                                        Foam::mag
+                                        (
+                                            n(i+aux1-1,j+aux2-1,k+aux3-1)
+                                        )
                                       * Foam::mag(n(i,j,k))
                                     );
 
@@ -854,8 +841,9 @@ tmp<colocatedVectorField> LSFIR::operator()()
                     }
 
                     nc /= Foam::mag(nc);
-                    scalar angle = (nc & n(i,j,k))
-                                    / (Foam::mag(nc) * Foam::mag(n(i,j,k)));
+                    scalar angle =
+                        (nc & n(i,j,k))
+                      / (Foam::mag(nc) * Foam::mag(n(i,j,k)));
 
                     if (angle > maxAngleTol)
                     {
@@ -895,17 +883,16 @@ tmp<colocatedVectorField> LSFIR::operator()()
         {
             if
             (
-                alpha(i,j,k) > vof::threshold
-             && alpha(i,j,k) < 1.0 - vof::threshold
+                alpha_(i,j,k) > vof::threshold
+             && alpha_(i,j,k) < 1.0 - vof::threshold
             )
             {
                 n(i,j,k) = nNew(i,j,k);
             }
         }
-
     }
 
-    return tn;
+    n[0].correctBoundaryConditions();
 }
 
 }

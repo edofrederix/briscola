@@ -18,7 +18,7 @@ addToRunTimeSelectionTable(normalScheme, LSGIR, dictionary);
 void LSGIR::createBoundaryType()
 {
     const faceLabel& faceType =
-        vf_.fvMsh().msh().facePatchType();
+        fvMsh_.msh().facePatchType();
 
     for (int i = 0; i < 3; i++)
     {
@@ -28,7 +28,7 @@ void LSGIR::createBoundaryType()
             {
                 bool aux = true;
 
-                if ((vf_.fvMsh()[0].l() > 1) && (i != 1))
+                if ((fvMsh_[0].l() > 1) && (i != 1))
                 {
                     aux =
                         (i == 0)
@@ -36,7 +36,7 @@ void LSGIR::createBoundaryType()
                       : (aux && (faceType.right() > 0));
                 }
 
-                if ((vf_.fvMsh()[0].m() > 1) && (j != 1))
+                if ((fvMsh_[0].m() > 1) && (j != 1))
                 {
                     aux =
                         (j == 0)
@@ -44,7 +44,7 @@ void LSGIR::createBoundaryType()
                       : (aux && (faceType.top()    > 0));
                 }
 
-                if ((vf_.fvMsh()[0].n() > 1) && (k != 1))
+                if ((fvMsh_[0].n() > 1) && (k != 1))
                 {
                     aux =
                         (k == 0)
@@ -58,9 +58,14 @@ void LSGIR::createBoundaryType()
     }
 }
 
-LSGIR::LSGIR(const vof& vf, const dictionary& dict)
+LSGIR::LSGIR
+(
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const colocatedScalarField& alpha
+)
 :
-    normalScheme(vf, dict)
+    normalScheme(fvMsh, dict, alpha)
 {
     createBoundaryType();
 }
@@ -75,33 +80,26 @@ LSGIR::LSGIR(const LSGIR& s)
 LSGIR::~LSGIR()
 {}
 
-tmp<colocatedVectorField> LSGIR::operator()()
+void LSGIR::correct()
 {
+    colocatedVectorField& n = *this;
+
     // Reconstruct the interface normal using the version of LSGIR presented in
     // Lopez (2022)
 
-    const colocatedScalarField& alpha = vf_.alpha();
-
-    tmp<colocatedVectorField> tn
-    (
-        new colocatedVectorField
-        (
-            "normal",
-            vf_.fvMsh()
-        )
-    );
-
-    colocatedVectorField& n = tn.ref();
-
-    const meshField<vector,colocated>& centers =
-        vf_.fvMsh().template metrics<colocated>().cellCenters();
+    const meshField<vector,colocated>& cc =
+        fvMsh_.template metrics<colocated>().cellCenters();
 
     int index;
     scalar weight;
 
     forAllCells(n, i, j, k)
     {
-        if ((alpha(i,j,k) > vof::threshold) && (alpha(i,j,k) < 1 - vof::threshold))
+        if
+        (
+            (alpha_(i,j,k) > vof::threshold)
+         && (alpha_(i,j,k) < 1 - vof::threshold)
+        )
         {
             double Aaux[26][3] = {0};
             double baux[26] = {0};
@@ -141,8 +139,8 @@ tmp<colocatedVectorField> LSGIR::operator()()
                                 (
                                     Foam::mag
                                     (
-                                        centers(i,j,k)
-                                      - centers(i+aux1-1,j+aux2-1,k+aux3-1)
+                                        cc(i,j,k)
+                                      - cc(i+aux1-1,j+aux2-1,k+aux3-1)
                                     ),
                                     1.5
                                 );
@@ -150,29 +148,29 @@ tmp<colocatedVectorField> LSGIR::operator()()
                             baux[index] =
                                 weight *
                                 (
-                                    alpha(i+aux1-1,j+aux2-1,k+aux3-1)
-                                  - alpha(i,j,k)
+                                    alpha_(i+aux1-1,j+aux2-1,k+aux3-1)
+                                  - alpha_(i,j,k)
                                 );
 
                             Aaux[index][0] =
                                 weight *
                                 (
-                                    centers(i+aux1-1,j+aux2-1,k+aux3-1)[0]
-                                  - centers(i,j,k)[0]
+                                    cc(i+aux1-1,j+aux2-1,k+aux3-1)[0]
+                                  - cc(i,j,k)[0]
                                 );
 
                             Aaux[index][1] =
                                 weight *
                                 (
-                                    centers(i+aux1-1,j+aux2-1,k+aux3-1)[1]
-                                  - centers(i,j,k)[1]
+                                    cc(i+aux1-1,j+aux2-1,k+aux3-1)[1]
+                                  - cc(i,j,k)[1]
                                 );
 
                             Aaux[index][2] =
                                 weight *
                                 (
-                                    centers(i+aux1-1,j+aux2-1,k+aux3-1)[2]
-                                  - centers(i,j,k)[2]
+                                    cc(i+aux1-1,j+aux2-1,k+aux3-1)[2]
+                                  - cc(i,j,k)[2]
                                 );
                         }
                     }
@@ -202,7 +200,7 @@ tmp<colocatedVectorField> LSGIR::operator()()
         }
     }
 
-    return tn;
+    n[0].correctBoundaryConditions();
 }
 
 }

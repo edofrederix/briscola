@@ -34,7 +34,7 @@ public:
     TypeName("incompressibleTwoPhaseModel");
 
     // Construct from IOdictionary
-    incompressibleTwoPhaseModel(const IOdictionary&, const fvMesh&);
+    incompressibleTwoPhaseModel(const fvMesh&, const IOdictionary&);
 
     // Copy constructor
     incompressibleTwoPhaseModel(const incompressibleTwoPhaseModel&);
@@ -49,7 +49,7 @@ public:
     virtual scalar rho2() { return rho2_; }
 
     // Correct the two-phase mixture
-    virtual void correctMixture(const colocatedScalarField&);
+    virtual void correctMixture();
 };
 
 }
