@@ -11,9 +11,14 @@ using namespace fv;
 
 int main(int argc, char *argv[])
 {
+    arguments::addBoolOption("curvature", "Calculate interface curvature");
+
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
+
+    Switch curvature = args.optionFound("curvature");
+
     #include "createBriscolaVof.H"
 
     #include "createFields.H"
@@ -27,8 +32,10 @@ int main(int argc, char *argv[])
 
         Info << "Time = " << runTime.timeName() << endl;
 
-        // n = vf.normal()();
         vf.solve(phi);
+
+        if (curvature)
+            curvatureSchemePtr->correct();
 
         io.write<colocated>();
 

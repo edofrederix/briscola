@@ -21,7 +21,16 @@ normalScheme::normalScheme
     const colocatedScalarField& alpha
 )
 :
-    colocatedVectorField("normal", fvMsh),
+    colocatedVectorField
+    (
+        "normal",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        false
+    ),
     fvMsh_(fvMsh),
     dict_(dict),
     alpha_(alpha)

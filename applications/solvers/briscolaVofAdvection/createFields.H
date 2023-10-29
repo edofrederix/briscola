@@ -25,13 +25,23 @@ colocatedFaceScalarField phi
 
 phi = Zero;
 
-//  Normal
+// Curvature scheme
 
-colocatedVectorField n
-(
-    "n",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::AUTO_WRITE,
-    true
-);
+autoPtr<curvatureScheme> curvatureSchemePtr;
+
+if (curvature)
+    curvatureSchemePtr =
+        curvatureScheme::New
+        (
+            fvMsh,
+            vofDict.subDict("curvatureScheme"),
+            normal,
+            alpha
+        ).ptr();
+
+// Write normal and kappa
+
+normal.writeOpt() = IOobject::AUTO_WRITE;
+
+if (curvature)
+    curvatureSchemePtr->writeOpt() = IOobject::AUTO_WRITE;

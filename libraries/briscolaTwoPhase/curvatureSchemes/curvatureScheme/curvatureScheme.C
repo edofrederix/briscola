@@ -22,7 +22,16 @@ curvatureScheme::curvatureScheme
     const colocatedScalarField& alpha
 )
 :
-    colocatedScalarField("kappa", fvMsh),
+    colocatedScalarField
+    (
+        "kappa",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        false
+    ),
     fvMsh_(fvMsh),
     dict_(dict),
     normal_(normal),
