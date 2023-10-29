@@ -20,8 +20,8 @@ class incompressibleTwoPhaseModel
 protected:
 
     // The mass densities of the two phases
-    const scalar rho1_;
-    const scalar rho2_;
+    const scalar Rho1_;
+    const scalar Rho2_;
 
 private:
 
@@ -43,10 +43,10 @@ public:
     virtual ~incompressibleTwoPhaseModel();
 
     // Mass density of the first phase
-    virtual scalar rho1() { return rho1_; }
+    virtual scalar Rho1() { return Rho1_; }
 
     // Mass density of the second phase
-    virtual scalar rho2() { return rho2_; }
+    virtual scalar Rho2() { return Rho2_; }
 
     // Correct the two-phase mixture
     virtual void correctMixture();

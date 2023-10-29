@@ -44,6 +44,26 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
         true,
         false
     ),
+    rho1_
+    (
+        "rho1",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        false
+    ),
+    rho2_
+    (
+        "rho2",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        false
+    ),
     rhoc_
     (
         "rhoc",
@@ -79,6 +99,34 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
 {
     if (fvMsh.structured())
     {
+        rho1Ptr_.reset
+        (
+            new staggeredScalarField
+            (
+                "rho1",
+                fvMsh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                true,
+                true,
+                false
+            )
+        );
+
+        rho2Ptr_.reset
+        (
+            new staggeredScalarField
+            (
+                "rho2",
+                fvMsh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                true,
+                true,
+                false
+            )
+        );
+
         rhosPtr_.reset
         (
             new staggeredScalarField
@@ -117,8 +165,12 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
     fvMsh_(tpm.fvMsh_),
     dict_(tpm.dict_),
     alpha_(tpm.alpha_),
+    rho1_(tpm.rho1_),
+    rho2_(tpm.rho2_),
     rhoc_(tpm.rhoc_),
     muc_(tpm.muc_),
+    rho1Ptr_(tpm.rho1Ptr_, false),
+    rho2Ptr_(tpm.rho2Ptr_, false),
     rhosPtr_(tpm.rhosPtr_, false),
     musPtr_(tpm.musPtr_, false),
     normalSchemePtr_(tpm.normalSchemePtr_, false),
@@ -175,6 +227,18 @@ template<>
 const staggeredFaceScalarField& twoPhaseModel::mu<staggered>() const
 {
     return musPtr_();
+}
+
+template<>
+tmp<colocatedScalarField> twoPhaseModel::meanRho<colocated>() const
+{
+    return (rho1_+rho2_)/2.0;
+}
+
+template<>
+tmp<staggeredScalarField> twoPhaseModel::meanRho<staggered>() const
+{
+    return (rho1Ptr_()+rho2Ptr_())/2.0;
 }
 
 }

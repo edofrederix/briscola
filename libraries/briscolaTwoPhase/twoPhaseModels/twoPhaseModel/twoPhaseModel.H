@@ -31,9 +31,17 @@ protected:
     // Volume fraction field
     colocatedScalarField alpha_;
 
+    // Colocated phase densities
+    colocatedScalarField rho1_;
+    colocatedScalarField rho2_;
+
     // Colocated mixture mass density and dynamic viscosity
     colocatedScalarField rhoc_;
     colocatedFaceScalarField muc_;
+
+    // Staggered phase densities
+    autoPtr<staggeredScalarField> rho1Ptr_;
+    autoPtr<staggeredScalarField> rho2Ptr_;
 
     // Staggered mixture mass density and dynamic viscosity, only created on
     // structured meshes
@@ -152,6 +160,10 @@ public:
     {
         return surfaceTensionSchemePtr_();
     }
+
+    // Return the mean mixture mass density defined as <rho> = (rho1+rho2)/2
+    template<class MeshType>
+    tmp<meshField<scalar,MeshType>> meanRho() const;
 
     // Correct the two-phase mixture
     virtual void correctMixture() = 0;

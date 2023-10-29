@@ -24,10 +24,8 @@ public:
     // Construct from components
     constantSigma
     (
-        const fvMesh&,
-        const dictionary&,
-        const normalScheme&,
-        const colocatedScalarField&
+        const twoPhaseModel&,
+        const dictionary&
     );
 
     // Copy constructor

@@ -14,13 +14,11 @@ defineTypeNameAndDebug(constantSigma, 0);
 
 constantSigma::constantSigma
 (
-    const fvMesh& fvMsh,
-    const dictionary& dict,
-    const normalScheme& normal,
-    const colocatedScalarField& alpha
+    const twoPhaseModel& tpm,
+    const dictionary& dict
 )
 :
-    surfaceTensionScheme(fvMsh, dict, normal, alpha)
+    surfaceTensionScheme(tpm, dict)
 {
     this->sigma_ = readScalar(dict.lookup("sigma"));
 }
@@ -35,7 +33,7 @@ constantSigma::~constantSigma()
 
 void constantSigma::correct()
 {
-    // Nothing to be updated because sigma is constant
+    surfaceTensionScheme::correct();
 }
 
 }

@@ -1,5 +1,6 @@
 #include "Brackbill.H"
 #include "twoPhaseModel.H"
+#include "exSchemes.H"
 
 namespace Foam
 {
@@ -13,13 +14,11 @@ namespace fv
 template<class SigmaModel>
 Brackbill<SigmaModel>::Brackbill
 (
-    const fvMesh& fvMsh,
-    const dictionary& dict,
-    const normalScheme& normal,
-    const colocatedScalarField& alpha
+    const twoPhaseModel& tpm,
+    const dictionary& dict
 )
 :
-    SigmaModel(fvMsh, dict, normal, alpha)
+    SigmaModel(tpm, dict)
 {}
 
 template<class SigmaModel>
@@ -36,6 +35,13 @@ template<class SigmaModel>
 void Brackbill<SigmaModel>::correct()
 {
     SigmaModel::correct();
+
+    this->coloForce_ =
+        this->sigma()*this->kappa()*ex::grad(this->alpha())
+      / this->tpm_.template meanRho<colocated>();
+
+    // if (this->fvMsh_.structured())
+    //     this->stagForce_ = ...
 }
 
 }

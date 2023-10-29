@@ -16,20 +16,19 @@ defineRunTimeSelectionTable(surfaceTensionScheme, dictionary);
 
 surfaceTensionScheme::surfaceTensionScheme
 (
-    const fvMesh& fvMsh,
-    const dictionary& dict,
-    const normalScheme& normal,
-    const colocatedScalarField& alpha
+    const twoPhaseModel& tpm,
+    const dictionary& dict
 )
 :
-    fvMsh_(fvMsh),
+    tpm_(tpm),
+    fvMsh_(tpm.fvMsh()),
     dict_(dict),
-    normal_(normal),
-    alpha_(alpha),
+    normal_(tpm.normal()),
+    alpha_(tpm.alpha()),
     coloForce_
     (
         "surfaceTension",
-        fvMsh,
+        fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
@@ -39,7 +38,7 @@ surfaceTensionScheme::surfaceTensionScheme
     sigma_
     (
         "sigma",
-        fvMsh,
+        fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
@@ -50,20 +49,20 @@ surfaceTensionScheme::surfaceTensionScheme
     (
         curvatureScheme::New
         (
-            fvMsh,
+            fvMsh_,
             dict.subDict("curvatureScheme"),
-            normal,
-            alpha
+            normal_,
+            alpha_
         ).ptr()
     )
 {
-    if (fvMsh.structured())
+    if (fvMsh_.structured())
         stagForcePtr_.reset
         (
             new staggeredScalarField
             (
                 "surfaceTension",
-                fvMsh,
+                fvMsh_,
                 IOobject::NO_READ,
                 IOobject::NO_WRITE,
                 true,
@@ -75,6 +74,7 @@ surfaceTensionScheme::surfaceTensionScheme
 
 surfaceTensionScheme::surfaceTensionScheme(const surfaceTensionScheme& s)
 :
+    tpm_(s.tpm_),
     fvMsh_(s.fvMsh_),
     dict_(s.dict_),
     normal_(s.normal_),
@@ -94,23 +94,6 @@ autoPtr<surfaceTensionScheme> surfaceTensionScheme::New
     const dictionary& dict
 )
 {
-    return surfaceTensionScheme::New
-    (
-        tpm.fvMsh(),
-        dict,
-        tpm.normal(),
-        tpm.alpha()
-    );
-}
-
-autoPtr<surfaceTensionScheme> surfaceTensionScheme::New
-(
-    const fvMesh& fvMsh,
-    const dictionary& dict,
-    const normalScheme& normal,
-    const colocatedScalarField& alpha
-)
-{
     const word surfaceTensionSchemeType(dict.lookup("type"));
 
     dictionaryConstructorTable::iterator cstrIter =
@@ -127,8 +110,13 @@ autoPtr<surfaceTensionScheme> surfaceTensionScheme::New
 
     return autoPtr<surfaceTensionScheme>
     (
-        cstrIter()(fvMsh, dict, normal, alpha)
+        cstrIter()(tpm, dict)
     );
+}
+
+void surfaceTensionScheme::correct()
+{
+    curvatureSchemePtr_->correct();
 }
 
 }

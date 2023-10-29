@@ -19,9 +19,12 @@ incompressibleTwoPhaseModel::incompressibleTwoPhaseModel
 )
 :
     twoPhaseModel(fvMsh, dict),
-    rho1_(readScalar(dict.lookup("rho1"))),
-    rho2_(readScalar(dict.lookup("rho2")))
-{}
+    Rho1_(readScalar(dict.lookup("rho1"))),
+    Rho2_(readScalar(dict.lookup("rho2")))
+{
+    this->rho1_ = Rho1_;
+    this->rho2_ = Rho2_;
+}
 
 incompressibleTwoPhaseModel::incompressibleTwoPhaseModel
 (
@@ -29,16 +32,19 @@ incompressibleTwoPhaseModel::incompressibleTwoPhaseModel
 )
 :
     twoPhaseModel(tpm),
-    rho1_(tpm.rho1_),
-    rho2_(tpm.rho2_)
-{}
+    Rho1_(tpm.Rho1_),
+    Rho2_(tpm.Rho2_)
+{
+    this->rho1_ = Rho1_;
+    this->rho2_ = Rho2_;
+}
 
 incompressibleTwoPhaseModel::~incompressibleTwoPhaseModel()
 {}
 
 void incompressibleTwoPhaseModel::correctMixture()
 {
-    rhoc_ = rho2_*alpha_ + rho1_*(1.0-alpha_);
+    rhoc_ = Rho1_*alpha_ + Rho2_*(1.0-alpha_);
 
     if (rhosPtr_.valid())
     {
@@ -49,7 +55,7 @@ void incompressibleTwoPhaseModel::correctMixture()
             stagInterp(alpha_)
         );
 
-        rhos = rho2_*alphas + rho1_*(1.0-alphas);
+        rhos = Rho1_*alphas + Rho2_*(1.0-alphas);
     }
 }
 

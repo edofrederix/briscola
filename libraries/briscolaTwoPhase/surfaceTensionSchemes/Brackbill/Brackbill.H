@@ -25,10 +25,8 @@ public:
     // Construct from components
     Brackbill
     (
-        const fvMesh&,
-        const dictionary&,
-        const normalScheme&,
-        const colocatedScalarField&
+        const twoPhaseModel&,
+        const dictionary&
     );
 
     // Copy constructor
