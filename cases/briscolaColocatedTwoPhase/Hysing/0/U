@@ -1,0 +1,27 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      U;
+}
+
+boundaryConditions
+{
+    bottomAndTop
+    {
+        type        Dirichlet;
+        values      ((0 0 0));
+    }
+
+    sides
+    {
+        type        Dirichlet;
+        values      ((0 0 0));
+    }
+
+    empties
+    {
+        type        empty;
+    }
+}

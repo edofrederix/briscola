@@ -122,12 +122,15 @@ public:
     void operator-=(const linearSystem<SType,Type,MeshType>&);
     void operator-=(const tmp<linearSystem<SType,Type,MeshType>>&);
 
+    void operator=(const Type&);
     void operator=(const meshField<Type,MeshType>&);
     void operator=(const tmp<meshField<Type,MeshType>>&);
 
+    void operator+=(const Type&);
     void operator+=(const meshField<Type,MeshType>&);
     void operator+=(const tmp<meshField<Type,MeshType>>&);
 
+    void operator-=(const Type&);
     void operator-=(const meshField<Type,MeshType>&);
     void operator-=(const tmp<meshField<Type,MeshType>>&);
 

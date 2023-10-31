@@ -11,3 +11,4 @@ wmake applications/solvers/briscolaLaplacian
 wmake applications/solvers/briscolaColocated
 wmake applications/solvers/briscolaStaggered
 wmake applications/solvers/briscolaVofAdvection
+wmake applications/solvers/briscolaColocatedTwoPhase

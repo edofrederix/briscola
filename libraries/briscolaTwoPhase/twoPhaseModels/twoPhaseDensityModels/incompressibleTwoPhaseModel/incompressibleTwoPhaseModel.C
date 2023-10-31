@@ -44,7 +44,7 @@ incompressibleTwoPhaseModel::~incompressibleTwoPhaseModel()
 
 void incompressibleTwoPhaseModel::correctMixture()
 {
-    rhoc_ = Rho1_*alpha_ + Rho2_*(1.0-alpha_);
+    rhoc_ = Rho2_*alpha_ + Rho1_*(1.0-alpha_);
 
     if (rhosPtr_.valid())
     {
@@ -55,8 +55,10 @@ void incompressibleTwoPhaseModel::correctMixture()
             stagInterp(alpha_)
         );
 
-        rhos = Rho1_*alphas + Rho2_*(1.0-alphas);
+        rhos = Rho2_*alphas + Rho1_*(1.0-alphas);
     }
+
+    twoPhaseModel::correctMixture();
 }
 
 }

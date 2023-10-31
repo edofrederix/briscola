@@ -40,21 +40,28 @@ interpolationScheme<Type,MeshType>::New
     const fvMesh& fvMsh
 )
 {
+    const dictionary dict
+    (
+        fvMsh.schemeDict().subDict("interpolationSchemes").subDict(name)
+    );
+
+    const word interpolationSchemeType(dict.lookup("type"));
+
     typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(name);
+        dictionaryConstructorTablePtr_->find(interpolationSchemeType);
 
     if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown interpolation scheme " << name << nl << nl
-            << "Valid interpolation schemes are:" << nl
+            << "Unknown interpolation scheme " << interpolationSchemeType
+            << nl << nl << "Valid interpolation schemes are:" << nl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
     return autoPtr<interpolationScheme<Type,MeshType>>
     (
-        cstrIter()(dictionary(), fvMsh)
+        cstrIter()(dict, fvMsh)
     );
 }
 
@@ -86,7 +93,7 @@ tmp<meshField<Type,staggered>> stagInterp
         // cell centers
 
         Interp(d,ijk) =
-            0.5*(field(d,ijk) + field(d,ijkm));
+            0.5*(field(ijk) + field(ijkm));
     }
 
     return tInterp;

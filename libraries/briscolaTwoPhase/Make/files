@@ -16,6 +16,7 @@ twoPhaseModels/twoPhaseModel/twoPhaseModels.C
 
 surfaceTensionSchemes/surfaceTensionScheme/surfaceTensionScheme.C
 surfaceTensionSchemes/sigmaModels/constantSigma/constantSigma.C
+surfaceTensionSchemes/sigmaModels/zeroSigma/zeroSigma.C
 surfaceTensionSchemes/surfaceTensionScheme/surfaceTensionSchemes.C
 
 curvatureSchemes/curvatureScheme/curvatureScheme.C

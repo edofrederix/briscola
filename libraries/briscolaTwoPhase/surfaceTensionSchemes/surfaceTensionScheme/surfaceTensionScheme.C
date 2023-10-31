@@ -20,21 +20,21 @@ surfaceTensionScheme::surfaceTensionScheme
     const dictionary& dict
 )
 :
-    tpm_(tpm),
-    fvMsh_(tpm.fvMsh()),
-    dict_(dict),
-    normal_(tpm.normal()),
-    alpha_(tpm.alpha()),
-    coloForce_
+    colocatedVectorField
     (
         "surfaceTension",
-        fvMsh_,
+        tpm.fvMsh(),
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
         true,
         false
     ),
+    tpm_(tpm),
+    fvMsh_(tpm.fvMsh()),
+    dict_(dict),
+    normal_(tpm.normal()),
+    alpha_(tpm.alpha()),
     sigma_
     (
         "sigma",
@@ -74,12 +74,12 @@ surfaceTensionScheme::surfaceTensionScheme
 
 surfaceTensionScheme::surfaceTensionScheme(const surfaceTensionScheme& s)
 :
+    colocatedVectorField(s),
     tpm_(s.tpm_),
     fvMsh_(s.fvMsh_),
     dict_(s.dict_),
     normal_(s.normal_),
     alpha_(s.alpha_),
-    coloForce_(s.coloForce_),
     stagForcePtr_(s.stagForcePtr_, false),
     sigma_(s.sigma_),
     curvatureSchemePtr_(s.curvatureSchemePtr_, false)

@@ -54,6 +54,9 @@ protected:
     // Surface tension scheme
     autoPtr<surfaceTensionScheme> surfaceTensionSchemePtr_;
 
+    // Gravitational acceleration
+    vector g_;
+
     // Function to set the density and viscosity restriction schemes. Can be
     // overloaded by derived types.
     virtual void setRestrictionSchemes();
@@ -165,8 +168,11 @@ public:
     template<class MeshType>
     tmp<meshField<scalar,MeshType>> meanRho() const;
 
+    // Gravitational acceleration
+    const vector& g() const { return g_; }
+
     // Correct the two-phase mixture
-    virtual void correctMixture() = 0;
+    virtual void correctMixture();
 
     // Correct the two-phase model
     virtual void correct() = 0;
