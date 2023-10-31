@@ -40,13 +40,11 @@ void CV::correct()
 {
     colocatedScalarField& kappa = *this;
 
-    colocatedScalarField cAlpha("cAlpha", fvMsh_);
+    colocatedScalarField cAlpha("alpha", fvMsh_);
 
-    scalar kernel[3][3] =
+    scalar kernel[3] =
     {
-        {1.0/16.0, 2.0/16.0, 1.0/16.0},
-        {2.0/16.0, 4.0/16.0, 2.0/16.0},
-        {1.0/16.0, 2.0/16.0, 1.0/16.0}
+        0.25, 0.5, 0.25
     };
 
     cAlpha = Zero;
@@ -57,9 +55,14 @@ void CV::correct()
         {
             for (int aux2 = -1; aux2 <= 1; aux2++)
             {
-                cAlpha(i,j,k) +=
-                    kernel[aux1 + 1][aux2 + 1]
-                  * alpha_(i+aux1,j+aux2,k);
+                for (int aux3 = -1; aux3 <= 1; aux3++)
+                {
+                    cAlpha(i,j,k) +=
+                        kernel[aux1 + 1]
+                      * kernel[aux2 + 1]
+                      * kernel[aux3 + 1]
+                      * alpha_(i+aux1,j+aux2,k+aux3);
+                }
             }
         }
     }

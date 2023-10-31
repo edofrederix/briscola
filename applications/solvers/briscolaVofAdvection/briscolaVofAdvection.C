@@ -35,7 +35,10 @@ int main(int argc, char *argv[])
         vf.solve(phi);
 
         if (curvature)
+        {
+            normalSchemePtr->correct();
             curvatureSchemePtr->correct();
+        }
 
         io.write<colocated>();
 
