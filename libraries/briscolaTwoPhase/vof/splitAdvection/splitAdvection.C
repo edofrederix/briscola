@@ -265,8 +265,6 @@ void splitAdvection::solve(const colocatedFaceScalarField& phi)
 
         alpha_[0].correctBoundaryConditions();
     }
-
-    alpha_.restrict();
 }
 
 }

@@ -36,9 +36,11 @@ void Brackbill<SigmaModel>::correct()
 {
     SigmaModel::correct();
 
-    this->coloForce_ =
+    colocatedVectorField::operator=
+    (
         this->sigma()*this->kappa()*ex::grad(this->alpha())
-      / this->tpm_.template meanRho<colocated>();
+      / this->tpm_.template meanRho<colocated>()
+    );
 
     // if (this->fvMsh_.structured())
     //     this->stagForce_ = ...

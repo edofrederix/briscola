@@ -18,6 +18,8 @@ namespace fv
 class twoPhaseModel;
 
 class surfaceTensionScheme
+:
+    public colocatedVectorField
 {
 protected:
 
@@ -35,9 +37,6 @@ protected:
 
     // Reference to the void fraction
     const colocatedScalarField& alpha_;
-
-    // Colocated surface tension force field
-    colocatedVectorField coloForce_;
 
     // Staggered surface tension force field, only created on structured meshes
     autoPtr<staggeredScalarField> stagForcePtr_;
@@ -107,7 +106,7 @@ public:
     // Access to the colocated surface tension force
     inline const colocatedVectorField& coloForce() const
     {
-        return coloForce_;
+        return *this;
     }
 
     // Access to the staggered surface tension force

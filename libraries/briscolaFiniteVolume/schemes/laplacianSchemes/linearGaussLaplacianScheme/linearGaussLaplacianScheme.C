@@ -64,7 +64,7 @@ linearGaussLaplacianScheme<Type,MeshType>::laplacian
 
     Sys.b() = Zero;
 
-    // const_cast<meshField<faceScalar,MeshType>&>(lambda).makeShallow();
+    const_cast<meshField<faceScalar,MeshType>&>(lambda).makeShallow();
 
     return tSys;
 }

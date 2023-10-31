@@ -19,12 +19,18 @@ void twoPhaseModel::setRestrictionSchemes()
 {
     alpha_.setRestrictionScheme("volumeWeighted");
 
+    rho1_.setRestrictionScheme("volumeWeighted");
+    rho2_.setRestrictionScheme("volumeWeighted");
     rhoc_.setRestrictionScheme("volumeWeighted");
+
     muc_.setRestrictionScheme("harmonicFaceAreaWeighted");
 
     if (fvMsh_.structured())
     {
+        rho1Ptr_->setRestrictionScheme("volumeWeighted");
+        rho2Ptr_->setRestrictionScheme("volumeWeighted");
         rhosPtr_->setRestrictionScheme("volumeWeighted");
+
         musPtr_->setRestrictionScheme("harmonicFaceAreaWeighted");
     }
 }
@@ -66,7 +72,7 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
     ),
     rhoc_
     (
-        "rhoc",
+        "rho",
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -76,7 +82,7 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
     ),
     muc_
     (
-        "muc",
+        "mu",
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -95,7 +101,8 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
             *this,
             dict.subDict("surfaceTensionScheme")
         ).ptr()
-    )
+    ),
+    g_(dict.lookup("g"))
 {
     if (fvMsh.structured())
     {
@@ -131,7 +138,7 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
         (
             new staggeredScalarField
             (
-                "rhos",
+                "rho",
                 fvMsh_,
                 IOobject::NO_READ,
                 IOobject::NO_WRITE,
@@ -145,7 +152,7 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
         (
             new staggeredFaceScalarField
             (
-                "mus",
+                "mu",
                 fvMsh_,
                 IOobject::NO_READ,
                 IOobject::NO_WRITE,
@@ -174,7 +181,8 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
     rhosPtr_(tpm.rhosPtr_, false),
     musPtr_(tpm.musPtr_, false),
     normalSchemePtr_(tpm.normalSchemePtr_, false),
-    surfaceTensionSchemePtr_(tpm.surfaceTensionSchemePtr_, false)
+    surfaceTensionSchemePtr_(tpm.surfaceTensionSchemePtr_, false),
+    g_(tpm.g_)
 {
     setRestrictionSchemes();
 }
@@ -239,6 +247,11 @@ template<>
 tmp<staggeredScalarField> twoPhaseModel::meanRho<staggered>() const
 {
     return (rho1Ptr_()+rho2Ptr_())/2.0;
+}
+
+void twoPhaseModel::correctMixture()
+{
+    surfaceTensionSchemePtr_->correct();
 }
 
 }
