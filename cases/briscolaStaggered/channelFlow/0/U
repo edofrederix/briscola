@@ -6,23 +6,16 @@ FoamFile
     object      U;
 }
 
-initialCondition
-{
-
-}
-
 boundaryConditions
 {
     top
     {
-        type        Dirichlet;
-        values      (0 0 0);
+        type        noSlip;
     }
 
     bottom
     {
-        type        Dirichlet;
-        values      (0 0 0);
+        type        noSlip;
     }
 
     inlet

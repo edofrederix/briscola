@@ -22,12 +22,11 @@ normalScheme
 
 surfaceTensionScheme
 {
-//    type    Brackbill;
-    type    none;
+    type    Brackbill;
 
     curvatureScheme
     {
-        type    CV;
+        type    parabolicFitting;
     }
 
     sigma   24.5;

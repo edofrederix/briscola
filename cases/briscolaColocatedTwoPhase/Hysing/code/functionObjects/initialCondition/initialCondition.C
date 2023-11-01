@@ -55,7 +55,7 @@ bool initialCondition::read(const dictionary& dict)
         forAllCells(alpha, i, j, k)
             if
             (
-                Foam::sqr(cc(i,j,k).x()) + Foam::sqr(cc(i,j,k).y()-1)
+                Foam::sqr(cc(i,j,k).x()) + Foam::sqr(cc(i,j,k).y()-0.5)
               < Foam::sqr(0.25)
             )
                 alpha(i,j,k) = 1.0;

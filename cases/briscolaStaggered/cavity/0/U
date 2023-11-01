@@ -6,17 +6,11 @@ FoamFile
     object      U;
 }
 
-initialCondition
-{
-
-}
-
 boundaryConditions
 {
     walls
     {
-        type        Dirichlet;
-        values      (0 0 0);
+        type        noSlip;
     }
 
     movingWall
