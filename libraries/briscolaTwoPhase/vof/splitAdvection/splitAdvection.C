@@ -24,7 +24,6 @@ void splitAdvection::updateFlux
     const label d
 )
 {
-    normal_.correct();
     const colocatedVectorField& n = normal_;
 
     const colocatedScalarField& cv =
@@ -264,6 +263,11 @@ void splitAdvection::solve(const colocatedFaceScalarField& phi)
         }
 
         alpha_[0].correctBoundaryConditions();
+
+        // Update the normal after the alpha update, so that it is consistent
+        // with alpha and can be reused by other parts of the code
+
+        normal_.correct();
     }
 }
 
