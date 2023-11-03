@@ -64,11 +64,30 @@ int main(int argc, char *argv[])
 
         // Solve predictor
 
+        if
+        (
+            solverDict.found("ImmersedBoundary")
+        )
+        {
+            if (IBs.type() == "penalization")
+            {
+                IBs.penalization(USys);
+            }
+            else if (IBs.type() == "Fadlun")
+            {
+                IBs.FadlunIBM(USys);
+            }
+        }
+
         USolve->solve(USys);
 
         // Pressure equation
 
-        if (solverDict.found("ImmersedBoundary"))
+        if
+        (
+            solverDict.found("ImmersedBoundary")
+            && IBs.massSourceActive()
+        )
         {
             Poisson->solve
                 (

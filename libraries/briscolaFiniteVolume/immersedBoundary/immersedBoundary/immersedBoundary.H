@@ -26,24 +26,26 @@ namespace fv
 template<class Type, class MeshType>
 class immersedBoundary
 {
-    // Mesh
+    // Reference to mesh
     const fvMesh& fvMsh_;
 
-    // Stability factor for xi. If xi > stability factor,
-    // the IBM will revert to a more stable first order fit.
-    scalar xiStabilityFactor_;
+    // IBM type
+    word type_;
+
+    // Mass source active switch
+    bool massSourceActive_;
 
     // The IB mask is equal to 0 in cell centers outside the IB,
     // and equal to 1 in cell centers inside the IB.
-    meshField<scalar,MeshType> mask_;
+    meshField<label,MeshType> mask_;
 
     // The wall adjacent mask is equal to 1 in fluid cells with at
     // least one neighboring cell in the IB, and 0 in other cells
-    meshField<scalar,MeshType> wallAdjMask_;
+    meshField<label,MeshType> wallAdjMask_;
 
     // The ghost cell mask is equal to 1 in IB cells with at least
     // one neighboring fluid cell and 0 in other cells
-    meshField<scalar,MeshType> ghostMask_;
+    meshField<label,MeshType> ghostMask_;
 
     // The wall distance field stores the wall distances to the
     // IB in the components of the stencils
@@ -79,6 +81,14 @@ public:
     // The first point is a fluid cell and the second point is an IB cell
     scalar wallDistance(vector, vector);
 
+    // Returns the distance from a ghost cell to the immersed boundary in
+    // the wall-normal direction
+    scalar wallNormalDistance(vector);
+
+    // Returns the coordinates of the mirror point in the wall-normal direction
+    // of a point located inside of the immersed boundary
+    vector mirrorPoint(vector);
+
     // Apply penalization method to a linear system
     void penalization(linearSystem<stencil,Type,MeshType>&);
 
@@ -96,9 +106,11 @@ public:
     );
 
     // Inline access functions
-    inline meshField<scalar,MeshType>& mask() { return mask_; }
-    inline meshField<scalar,MeshType>& wallAdjMask() { return wallAdjMask_; }
-    inline meshField<scalar,MeshType>& ghostMask() { return ghostMask_; }
+    inline word& type() { return type_; }
+    inline bool massSourceActive() {return massSourceActive_; }
+    inline meshField<label,MeshType>& mask() { return mask_; }
+    inline meshField<label,MeshType>& wallAdjMask() { return wallAdjMask_; }
+    inline meshField<label,MeshType>& ghostMask() { return ghostMask_; }
     inline meshField<faceScalar,MeshType>& wallDist() { return wallDist_; }
     inline meshField<faceScalar,MeshType>& neighborDist() { return neighborDist_; }
 

@@ -181,6 +181,50 @@ scalar cylinder::wallDistance(vector c, vector nb)
     }
 }
 
+scalar cylinder::wallNormalDistance(vector gc)
+{
+    // Return -1 if the point is outside of the cylinder
+    if (!this->isInside(gc))
+    {
+        return -1;
+    }
+
+    // Normalized cylinder axis vector
+    vector axis = (end_-start_)/mag(end_-start_);
+
+    // GC vector
+    vector g = (gc-start_);
+
+    // Return radius minus distance from axis to ghost cell
+    return (radius_ - mag(axis ^ g));
+}
+
+vector cylinder::mirrorPoint(vector gc)
+{
+    scalar dist = this->wallNormalDistance(gc);
+
+    if (dist < 0)
+    {
+        // This could be a problem if gc is exactly on the IB
+        return gc;
+    }
+
+    // Normalized cylinder axis vector
+    vector axis = (end_-start_)/mag(end_-start_);
+
+    // GC vector
+    vector g = (gc-start_);
+
+    // Intersection of axis and wall-normal line through gc
+    vector p = start_ + axis * (axis & g);
+
+    // Wall-normal unit vector
+    vector n = (gc-p)/mag(gc-p);
+
+    // Return gc plus twice the normal vector
+    return (gc + 2.0*n*(radius_-mag(gc-p)));
+}
+
 } // end namespace fv
 
 } // end namespace briscola

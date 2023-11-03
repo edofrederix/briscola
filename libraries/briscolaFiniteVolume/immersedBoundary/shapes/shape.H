@@ -30,6 +30,14 @@ public:
     // The first point is a fluid cell and the second point is an IB cell
     virtual scalar wallDistance(vector, vector) = 0;
 
+    // Returns the distance from a ghost cell to the immersed boundary in
+    // the wall-normal direction
+    virtual scalar wallNormalDistance(vector) = 0;
+
+    // Returns the coordinates of the mirror point of a ghost cell
+    // in the wall-normal direction of a shape
+    virtual vector mirrorPoint(vector) = 0;
+
 };
 
 } // end namespace fv

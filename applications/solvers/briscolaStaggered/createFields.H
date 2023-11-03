@@ -81,6 +81,19 @@ imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
 
 immersedBoundary<scalar,staggered> IBs(solverDict, fvMsh);
 
+if (solverDict.found("ImmersedBoundary"))
+{
+    forAllLevels(exSource,l,d,i,j,k)
+    {
+        if (IBs.mask()(l,d,i,j,k) == 1)
+        {
+            // Set source terms to zero inside IB
+            exSource = Zero;
+            imSourceCoeff = Zero;
+        }
+    }
+}
+
 // Solvers
 
 linearSystem<stencil,scalar,staggered> USys(U);
@@ -91,7 +104,10 @@ autoPtr<solver<stencil,scalar,staggered>> USolve
     (
         USys.x().name(),
         fvMsh,
-        &IBs
+        (
+            (IBs.type() == "penalization" || IBs.type() == "Fadlun") ?
+            nullptr : &IBs
+        )
     )
 );
 

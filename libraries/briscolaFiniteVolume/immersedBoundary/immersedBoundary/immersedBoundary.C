@@ -24,6 +24,18 @@ immersedBoundary<Type,MeshType>::immersedBoundary
 )
 :
     fvMsh_(fvMsh),
+    type_
+    (
+        solverDict.found("ImmersedBoundary") ?
+        solverDict.subDict("ImmersedBoundary").
+            lookupOrDefault<word>("type", "Fadlun") : "none"
+    ),
+    massSourceActive_
+    (
+        solverDict.found("ImmersedBoundary") ?
+        solverDict.subDict("ImmersedBoundary").
+            lookupOrDefault<bool>("massSourceActive", false) : false
+    ),
     mask_
     (
         "mask",
@@ -75,33 +87,13 @@ immersedBoundary<Type,MeshType>::immersedBoundary
         true
     )
 {
+    Info << "Immersed boundary type: " << type_ << endl;
+
     if (solverDict.found("ImmersedBoundary"))
     {
         dictionary IBDict = solverDict.subDict("ImmersedBoundary");
 
         int nEntries = IBDict.size();
-
-        xiStabilityFactor_
-            = IBDict.lookupOrDefault("xiStabilityFactor", 0.999);
-
-        if (xiStabilityFactor_ < 0)
-        {
-            WarningInFunction
-                << "Stability factor for immersed boundary"
-                << " set to 0 (0 <= stability factor <= 0.999)"
-                << endl;
-
-            xiStabilityFactor_ = 0;
-        }
-        else if (xiStabilityFactor_ > 0.999)
-        {
-            WarningInFunction
-                << "Stability factor for immersed boundary"
-                << " set to 0.999 (0 <= stability factor <= 0.999)"
-                << endl;
-
-            xiStabilityFactor_ = 0.999;
-        }
 
         // Add shapes to IB according to dictionary entries
         for (int e = 0; e < nEntries; e++)
@@ -157,15 +149,15 @@ immersedBoundary<Type,MeshType>::immersedBoundary
         {
             const labelVector ijk(i,j,k);
 
-            mask_(l,d,i,j,k) = 0.0;
-            wallAdjMask_(l,d,i,j,k) = 0.0;
-            ghostMask_(l,d,i,j,k) = 0.0;
+            mask_(l,d,i,j,k) = 0;
+            wallAdjMask_(l,d,i,j,k) = 0;
+            ghostMask_(l,d,i,j,k) = 0;
             wallDist_(l,d,i,j,k) = -1.0;
             neighborDist_(l,d,i,j,k) = -1.0;
 
             if (this->isInside(CC(l,d,i,j,k)))
             {
-                mask_(l,d,i,j,k) = 1.0;
+                mask_(l,d,i,j,k) = 1;
                 for (int dir = 0; dir < 6; dir++)
                 {
                     const labelVector fo = faceOffsets[dir];
@@ -175,7 +167,7 @@ immersedBoundary<Type,MeshType>::immersedBoundary
                         !this->isInside(CC[l][d](ijk+fo))
                     )
                     {
-                        ghostMask_(l,d,i,j,k) = 1.0;
+                        ghostMask_(l,d,i,j,k) = 1;
                     }
                 }
             }
@@ -193,7 +185,7 @@ immersedBoundary<Type,MeshType>::immersedBoundary
                         this->isInside(CC[l][d](ijk+fo))
                     )
                     {
-                        wallAdjMask_(l,d,i,j,k) = 1.0;
+                        wallAdjMask_(l,d,i,j,k) = 1;
 
                         // Neighbor cell in the IB
                         const vector nb(CC[l][d](ijk+fo));
@@ -296,19 +288,125 @@ scalar immersedBoundary<Type,MeshType>::wallDistance(vector c, vector nb)
 }
 
 template<class Type, class MeshType>
+scalar immersedBoundary<Type,MeshType>::wallNormalDistance
+(
+    vector gc
+)
+{
+    if (!this->isInside(gc))
+    {
+        FatalError
+            << "Ghost cell should be inside the immersed boundary."
+            << endl;
+        FatalError.exit();
+    }
+
+    scalar dist = -1;
+
+    for (int s = 0; s < shapes_.size(); s++)
+    {
+        if (mag(dist+1) < 0.01)
+        {
+            dist = shapes_[s].wallNormalDistance(gc);
+        }
+
+        if
+        (
+               (shapes_[s].wallNormalDistance(gc) >= 0)
+            && (shapes_[s].wallNormalDistance(gc) <= dist)
+        )
+        {
+            dist = shapes_[s].wallNormalDistance(gc);
+        }
+    }
+
+    if (dist < 0)
+    {
+        FatalError
+            << "No immersed boundary intersection found."
+            << " Distance = " << dist << ", for ghost cell = "
+            << gc
+            << endl;
+        FatalError.exit();
+    }
+
+    return dist;
+}
+
+template<class Type, class MeshType>
+vector immersedBoundary<Type,MeshType>::mirrorPoint
+(
+    vector gc
+)
+{
+    if (!this->isInside(gc))
+    {
+        FatalError
+            << "Ghost cell should be inside the immersed boundary."
+            << endl;
+        FatalError.exit();
+    }
+
+    vector mirror = gc;
+    scalar dist = -1;
+
+    for (int s = 0; s < shapes_.size(); s++)
+    {
+        if (mag(dist+1) < 0.01)
+        {
+            dist = shapes_[s].wallNormalDistance(gc);
+            mirror = shapes_[s].mirrorPoint(gc);
+        }
+
+        if
+        (
+               (shapes_[s].wallNormalDistance(gc) >= 0)
+            && (shapes_[s].wallNormalDistance(gc) <= dist)
+        )
+        {
+            dist = shapes_[s].wallNormalDistance(gc);
+            mirror = shapes_[s].mirrorPoint(gc);
+        }
+    }
+
+    if (dist < 0)
+    {
+        FatalError
+            << "No immersed boundary intersection found."
+            << " Distance = " << dist << ", for ghost cell = "
+            << gc
+            << endl;
+        FatalError.exit();
+    }
+
+    return mirror;
+}
+
+template<class Type, class MeshType>
 void immersedBoundary<Type,MeshType>::penalization
 (
     linearSystem<stencil,Type,MeshType>& ls
 )
 {
-    // Set coefficients and sources to 0 in IB
-    ls.A() *= (1.0 - mask_);
-    ls.b() *= (1.0 - mask_);
+    forAllLevels(ls.b(),l,d,i,j,k)
+    {
+        if (mask_(l,d,i,j,k) == 1)
+        {
+            // Set sources to 0 in IB
+            ls.b()(l,d,i,j,k) = Zero;
+        }
+    }
 
     forAllLevels(ls.A(),l,d,i,j,k)
     {
-        // Set central coefficients to 1 in IB
-        ls.A()(l,d,i,j,k).center() += mask_(l,d,i,j,k);
+        if (mask_(l,d,i,j,k) == 1)
+        {
+            // Set coefficients to 0 in IB
+            ls.A()(l,d,i,j,k) = Zero;
+
+            // Set central coefficients to 1 in IB
+            ls.A()(l,d,i,j,k).center() = 1.0;
+        }
     }
 }
 
@@ -318,10 +416,14 @@ void immersedBoundary<Type,MeshType>::DeenIBM
     linearSystem<stencil,Type,MeshType>& ls
 )
 {
+    // Stability factor for xi. If xi > stability factor,
+    // the IBM will revert to a more stable second order fit
+    scalar xiStabilityFactor = 0.5;
+
     forAllLevels(ls.A(),l,d,i,j,k)
     {
         // Modify stencils in IB-adjacent cells
-        if (mag(wallAdjMask_(l,d,i,j,k) - 1.0) < 0.01)
+        if (wallAdjMask_(l,d,i,j,k) == 1)
         {
             // Loop over face number directions
             for (int dir = 0; dir < 6; dir++)
@@ -339,13 +441,13 @@ void immersedBoundary<Type,MeshType>::DeenIBM
 
                     scalar w0 = 2.0 /
                         (
-                            (1.0 - xiStabilityFactor_)
-                            * (2.0 - xiStabilityFactor_)
+                            (1.0 - xiStabilityFactor)
+                            * (2.0 - xiStabilityFactor)
                         );
                     scalar w1 = 2.0 - (2.0 - xi) * w0;
                     scalar w2 = -1.0 + (1.0 - xi) * w0;
 
-                    if (xi < xiStabilityFactor_)
+                    if (xi < xiStabilityFactor)
                     {
                         w1 = xi*xi2/((1.0-xi)*(1.0-xi2));
                         w2 = xi/((xi2-xi)*(xi2-1.0));
@@ -372,12 +474,18 @@ void immersedBoundary<Type,MeshType>::FadlunIBM
     linearSystem<stencil,Type,MeshType>& ls
 )
 {
-    ls.b() *= (1.0 - wallAdjMask_);
+    forAllLevels(ls.b(),l,d,i,j,k)
+    {
+        if (wallAdjMask_(l,d,i,j,k) == 1)
+        {
+            ls.b()(l,d,i,j,k) = Zero;
+        }
+    }
 
     forAllLevels(ls.A(),l,d,i,j,k)
     {
         // Modify stencils in IB-adjacent cells
-        if (mag(wallAdjMask_(l,d,i,j,k) - 1.0) < 0.01)
+        if (wallAdjMask_(l,d,i,j,k) == 1)
         {
             scalar ximax = 0;
             // Loop over face number directions

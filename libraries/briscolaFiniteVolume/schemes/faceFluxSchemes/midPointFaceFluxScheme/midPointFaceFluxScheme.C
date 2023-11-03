@@ -86,11 +86,7 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
 
     forAllDirections(Flux, d, i, j, k)
     {
-        const labelVector& padding = staggered::padding[d];
-
-        const labelVector ox(d == 0 ? unitX : padding);
-        const labelVector oy(d == 1 ? unitY : padding);
-        const labelVector oz(d == 2 ? unitZ : padding);
+        const labelVector& o = staggered::padding[d];
 
         const labelVector ijk(i,j,k);
 
@@ -103,12 +99,12 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
             0.5*fa(d,ijk)
           * faceScalar
             (
-              - field(0,ijk)       - field(0,-ox+ijk),
-                field(0,ijk+unitX) + field(0,-ox+ijk+unitX),
-              - field(1,ijk)       - field(1,-oy+ijk),
-                field(1,ijk+unitY) + field(1,-oy+ijk+unitY),
-              - field(2,ijk)       - field(2,-oz+ijk),
-                field(2,ijk+unitZ) + field(2,-oz+ijk+unitZ)
+              - field(0,ijk)       - field(0,-o+ijk),
+                field(0,ijk+unitX) + field(0,-o+ijk+unitX),
+              - field(1,ijk)       - field(1,-o+ijk),
+                field(1,ijk+unitY) + field(1,-o+ijk+unitY),
+              - field(2,ijk)       - field(2,-o+ijk),
+                field(2,ijk+unitZ) + field(2,-o+ijk+unitZ)
             );
     }
 

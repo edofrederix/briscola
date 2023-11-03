@@ -50,6 +50,10 @@ public:
 
     scalar wallDistance(vector, vector);
 
+    scalar wallNormalDistance(vector);
+
+    vector mirrorPoint(vector);
+
 };
 
 } // end namespace fv

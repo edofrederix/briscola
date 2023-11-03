@@ -100,6 +100,35 @@ scalar sphere::wallDistance(vector c, vector nb)
     return (tc - t1c);
 }
 
+scalar sphere::wallNormalDistance(vector gc)
+{
+    // Return -1 if the point is outside of the sphere
+    if (!this->isInside(gc))
+    {
+        return -1;
+    }
+
+    // Return radius minus distance from center to ghost cell
+    return (radius_ - mag(gc-center_));
+}
+
+vector sphere::mirrorPoint(vector gc)
+{
+    scalar dist = this->wallNormalDistance(gc);
+
+    if (dist < 0)
+    {
+        // This could be a problem if gc is exactly on the IB
+        return gc;
+    }
+
+    // Wall-normal unit vector
+    vector n = (gc-center_)/mag(gc-center_);
+
+    // Return gc plus twice the normal vector
+    return (gc + 2.0*n);
+}
+
 } // end namespace fv
 
 } // end namespace briscola

@@ -58,11 +58,13 @@ void MGSolver<SType,Type,MeshType>::cycle
                         xEqn.residual(r[l][d]);
                         if (this->IB_ != nullptr)
                         {
-                            r[l][d] *=
-                                (
-                                    1.0 - this->IB_->mask()[l][d]
-                                    - this->IB_->wallAdjMask()[l][d]
-                                );
+                            forAllCells(r[l][d],i,j,k)
+                            {
+                                if (this->IB_->ghostMask()[l][d](i,j,k) == 1)
+                                {
+                                    r[l][d](i,j,k) = Zero;
+                                }
+                            }
                         }
                     }
 
@@ -166,7 +168,13 @@ void MGSolver<SType,Type,MeshType>::solve
 
     if (this->IB_ != nullptr)
     {
-        r[0] *= (1.0 - this->IB_->mask()[0] - this->IB_->wallAdjMask()[0]);
+        forAllDirections(r[0],d,i,j,k)
+        {
+            if (this->IB_->ghostMask()[0][d](i,j,k) == 1)
+            {
+                r[0][d](i,j,k) = Zero;
+            }
+        }
     }
 
     const List<Type> initialResiduals =
@@ -224,11 +232,13 @@ void MGSolver<SType,Type,MeshType>::solve
                 xEqn.residual(r[0][d]);
                 if (this->IB_ != nullptr)
                 {
-                    r[0][d] *=
-                        (
-                            1.0 - this->IB_->mask()[0][d]
-                            - this->IB_->wallAdjMask()[0][d]
-                        );
+                    forAllCells(r[0][d],i,j,k)
+                    {
+                        if (this->IB_->ghostMask()[0][d](i,j,k) == 1)
+                        {
+                            r[0][d](i,j,k) = Zero;
+                        }
+                    }
                 }
             }
 
