@@ -39,7 +39,6 @@ void SHF::correct()
 {
     colocatedScalarField& kappa = *this;
 
-    colocatedScalarField kc2("curvature2", fvMsh_);
     colocatedScalarField marker("marker", fvMsh_);
 
     const rectilinearMesh& rMsh = fvMsh_.msh().cast<rectilinearMesh>();
@@ -48,8 +47,6 @@ void SHF::correct()
     const PartialList<scalar>& ySize = rMsh.localCellSizes()[1];
     const PartialList<scalar>& zSize = rMsh.localCellSizes()[2];
 
-    const tensor T = rMsh.base();
-    const tensor TtT = T & T.T();
     const scalar angleTol = Foam::cos(0.8);
 
     forAllCells(kappa, i, j, k)
@@ -531,49 +528,20 @@ void SHF::correct()
                 scalar dyy =
                     (gamma * (Hyy[0] + Hyy[2]) + Hyy[1]) / (1 + 2 * gamma);
 
-                vector normal;
-                normal[d2] = -dx;
-                normal[d3] = -dy;
-                normal[d1] = 1;
-                normal = T.inv() & normal;
-                normal /= Foam::mag(normal);
-
-                vector dfdx = Zero;
-                vector dfdy = Zero;
-                vector dfdxx = Zero;
-                vector dfdxy = Zero;
-                vector dfdyy = Zero;
-
-                dfdx[d1] = dx;
-                dfdy[d1] = dy;
-                dfdx[d2] = 1;
-                dfdy[d3] = 1;
-                dfdxx[d1] = dxx;
-                dfdxy[d1] = Hxy;
-                dfdyy[d1] = dyy;
-
-                scalar kE = dfdx & (TtT & dfdx);
-                scalar kF = dfdx & (TtT & dfdy);
-                scalar kG = dfdy & (TtT & dfdy);
-
-                scalar kL = dfdxx & (T & normal);
-                scalar kM = dfdxy & (T & normal);
-                scalar kN = dfdyy & (T & normal);
 
 
-                kc2(i,j,k) =
+                kappa(i,j,k) = -
                     (
-                        kG * kL - 2 * kF * kM + kE * kN
+                        dxx * (1 + Foam::sqr(dy)) + dyy * (1 + Foam::sqr(dx)) - 2 * Hxy * dx * dy
                     )
                   / (
-                        kE * kG - Foam::sqr(kF)
+                        Foam::pow(1 + Foam::sqr(dx) + Foam::sqr(dy),1.5)
                     );
 
                 marker(i,j,k) = 1;
             }
             else
             {
-                kc2(i,j,k) = 0;
                 marker(i,j,k) = 0;
             }
         }
@@ -590,6 +558,7 @@ void SHF::correct()
         (
             (alpha_(i,j,k) > vof::threshold)
          && (alpha_(i,j,k) < 1 - vof::threshold)
+         && (Foam::mag(marker(i,j,k)) < 1e-12)
         )
         {
             int count = 0;
@@ -599,13 +568,16 @@ void SHF::correct()
             {
                 for (int aux2 = -1; aux2 <= 1; aux2++)
                 {
-                    if
-                    (
-                        Foam::mag(marker(i+aux1,j+aux2,k) - 1) < 1e-12
-                    )
+                    for (int aux3 = -1; aux3 <= 1; aux3++)
                     {
-                        count++;
-                        kappa(i,j,k) += kc2(i+aux1,j+aux2,k);
+                        if
+                        (
+                            Foam::mag(marker(i+aux1,j+aux2,k+aux3) - 1) < 1e-12
+                        )
+                        {
+                            count++;
+                            kappa(i,j,k) += kappa(i+aux1,j+aux2,k+aux3);
+                        }
                     }
                 }
             }
@@ -613,6 +585,7 @@ void SHF::correct()
             kappa(i,j,k) /= scalar(count);
         }
     }
+
 }
 
 }

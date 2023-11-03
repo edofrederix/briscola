@@ -83,37 +83,17 @@ void CV::correct()
         }
     }
 
-    const colocatedScalarField kappa2(ex::div(ex::faceFlux(normal)()));
-
-    kappa = Zero;
+    kappa = - ex::div(ex::faceFlux(normal)());
 
     forAllCells(alpha_, i, j, k)
     {
         if
         (
-            (alpha_(i,j,k) >     vof::threshold)
-         && (alpha_(i,j,k) < 1 - vof::threshold)
+            (alpha_(i,j,k) <=     vof::threshold)
+         || (alpha_(i,j,k) >= 1 - vof::threshold)
         )
         {
-            int count = 0;
-
-            for (int aux1 = -1; aux1 <= 1; aux1++)
-            {
-                for (int aux2 = -1; aux2 <= 1; aux2++)
-                {
-                    if
-                    (
-                        (alpha_(i+aux1,j+aux2,k) >     vof::threshold)
-                     && (alpha_(i+aux1,j+aux2,k) < 1 - vof::threshold)
-                    )
-                    {
-                        count++;
-                        kappa(i,j,k) += kappa2(i+aux1,j+aux2,k);
-                    }
-                }
-            }
-
-            kappa(i,j,k) /= scalar(count);
+            kappa(i,j,k) = 0;
         }
     }
 }

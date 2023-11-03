@@ -26,7 +26,7 @@ surfaceTensionScheme
 
     curvatureScheme
     {
-        type    parabolicFitting;
+        type    SHF;
     }
 
     sigma   24.5;

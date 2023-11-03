@@ -46,11 +46,6 @@ gradientSchemes
     {
         type    midPointGauss;
     }
-
-    grad(cAlpha)
-    {
-        type    midPointGauss;
-    }
 }
 
 faceGradientSchemes
@@ -68,7 +63,7 @@ faceFluxSchemes
         type    midPoint;
     }
 
-    flux(grad(cAlpha))
+    flux(grad(alpha))
     {
         type    midPoint;
     }
