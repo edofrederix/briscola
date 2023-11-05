@@ -47,13 +47,15 @@ surfaceTensionScheme::surfaceTensionScheme
     ),
     curvatureSchemePtr_
     (
-        curvatureScheme::New
+        word(dict.lookup("type")) != "none"
+      ? curvatureScheme::New
         (
             fvMsh_,
             dict.subDict("curvatureScheme"),
             normal_,
             alpha_
         ).ptr()
+      : nullptr
     )
 {
     if (fvMsh_.structured())
@@ -116,7 +118,8 @@ autoPtr<surfaceTensionScheme> surfaceTensionScheme::New
 
 void surfaceTensionScheme::correct()
 {
-    curvatureSchemePtr_->correct();
+    if (curvatureSchemePtr_.valid())
+        curvatureSchemePtr_->correct();
 }
 
 }
