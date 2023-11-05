@@ -22,6 +22,6 @@ surfaceTensionSchemes/surfaceTensionScheme/surfaceTensionSchemes.C
 curvatureSchemes/curvatureScheme/curvatureScheme.C
 curvatureSchemes/CV/CV.C
 curvatureSchemes/SHF/SHF.C
-curvatureSchemes/parabolicFitting/parabolicFitting.C
+curvatureSchemes/parabolicFit/parabolicFit.C
 
 LIB = $(FOAM_USER_LIBBIN)/libbriscolaTwoPhase

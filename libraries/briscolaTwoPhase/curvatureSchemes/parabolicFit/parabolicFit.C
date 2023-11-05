@@ -1,4 +1,4 @@
-#include "parabolicFitting.H"
+#include "parabolicFit.H"
 #include "addToRunTimeSelectionTable.H"
 #include "vof.H"
 #include "exSchemes.H"
@@ -14,10 +14,10 @@ namespace briscola
 namespace fv
 {
 
-defineTypeNameAndDebug(parabolicFitting, 0);
-addToRunTimeSelectionTable(curvatureScheme, parabolicFitting, dictionary);
+defineTypeNameAndDebug(parabolicFit, 0);
+addToRunTimeSelectionTable(curvatureScheme, parabolicFit, dictionary);
 
-void parabolicFitting::createBoundaryTypes()
+void parabolicFit::createBoundaryTypes()
 {
     const faceLabel& faceType = fvMsh_.msh().facePatchType();
 
@@ -59,7 +59,7 @@ void parabolicFitting::createBoundaryTypes()
     }
 }
 
-void parabolicFitting::createHexagonDescription()
+void parabolicFit::createHexagonDescription()
 {
     int NIPV0[12] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
 
@@ -78,7 +78,7 @@ void parabolicFitting::createHexagonDescription()
     originalNf_ = 12;
 }
 
-parabolicFitting::parabolicFitting
+parabolicFit::parabolicFit
 (
     const fvMesh& fvMsh,
     const dictionary& dict,
@@ -93,7 +93,7 @@ parabolicFitting::parabolicFitting
     createHexagonDescription();
 }
 
-parabolicFitting::parabolicFitting(const parabolicFitting& s)
+parabolicFit::parabolicFit(const parabolicFit& s)
 :
     curvatureScheme(s),
     lve_(fvMsh_.msh()[0].rectilinear() == unitXYZ)
@@ -103,10 +103,10 @@ parabolicFitting::parabolicFitting(const parabolicFitting& s)
 }
 
 
-parabolicFitting::~parabolicFitting()
+parabolicFit::~parabolicFit()
 {}
 
-void parabolicFitting::correct()
+void parabolicFit::correct()
 {
 
     colocatedScalarField& kappa = *this;
@@ -375,7 +375,7 @@ void parabolicFitting::correct()
                 if (counter > 13)
                 {
                     FatalErrorInFunction
-                        << "Curvature (parabolicFitting): Arrangement of the new face failed."
+                        << "Curvature (parabolicFit): Arrangement of the new face failed."
                         << endl << abort(FatalError);
                 }
 
@@ -493,7 +493,7 @@ void parabolicFitting::correct()
                 if (xgi(i,j,k)[1] != xgi(i,j,k)[1])
                 {
                     FatalErrorInFunction
-                        << "Curvature (parabolicFitting): geometric center computation failed."
+                        << "Curvature (parabolicFit): geometric center computation failed."
                         << normal_(i,j,k) << endl
                         << C << endl
                         << xgi(i,j,k) << endl
@@ -549,7 +549,7 @@ void parabolicFitting::correct()
                 if (xgi(i,j,k)[1] != xgi(i,j,k)[1])
                 {
                     FatalErrorInFunction
-                        << "Curvature (parabolicFitting): center of vertex computation failed."
+                        << "Curvature (parabolicFit): center of vertex computation failed."
                         << endl << abort(FatalError);
                 }
             }

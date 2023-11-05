@@ -1,5 +1,5 @@
-#ifndef parabolicFitting_H
-#define parabolicFitting_H
+#ifndef parabolicFit_H
+#define parabolicFit_H
 
 #include "curvatureScheme.H"
 #include "LVE.H"
@@ -13,7 +13,7 @@ namespace briscola
 namespace fv
 {
 
-class parabolicFitting
+class parabolicFit
 :
     public curvatureScheme
 {
@@ -43,10 +43,10 @@ class parabolicFitting
 public:
 
     // Runtime type information
-    TypeName("parabolicFitting");
+    TypeName("parabolicFit");
 
     // Construct from components
-    parabolicFitting
+    parabolicFit
     (
         const fvMesh&,
         const dictionary&,
@@ -55,15 +55,15 @@ public:
     );
 
     // Copy constructor
-    parabolicFitting(const parabolicFitting&);
+    parabolicFit(const parabolicFit&);
 
     // Destructor
-    virtual ~parabolicFitting();
+    virtual ~parabolicFit();
 
     // Clone curvatureScheme
     virtual autoPtr<curvatureScheme> clone() const
     {
-        return autoPtr<curvatureScheme>(new parabolicFitting(*this));
+        return autoPtr<curvatureScheme>(new parabolicFit(*this));
     }
 
     // Correct the curvature
