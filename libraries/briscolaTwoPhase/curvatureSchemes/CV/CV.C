@@ -96,6 +96,8 @@ void CV::correct()
             kappa(i,j,k) = 0;
         }
     }
+
+    kappa.correctBoundaryConditions();
 }
 
 }

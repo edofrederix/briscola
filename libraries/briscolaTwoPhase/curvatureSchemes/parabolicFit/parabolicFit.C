@@ -183,8 +183,8 @@ void parabolicFit::correct()
 
                 for (int aux2 = len; aux2 > place; aux2--)
                 {
-                SortedCs[aux2] = SortedCs[aux2-1];
-                sortedCsIndex[aux2] = sortedCsIndex[aux2-1];
+                    SortedCs[aux2] = SortedCs[aux2-1];
+                    sortedCsIndex[aux2] = sortedCsIndex[aux2-1];
                 }
 
                 SortedCs[place] = originalCs[aux1];
@@ -207,8 +207,8 @@ void parabolicFit::correct()
                 if
                 (
                     Foam::mag(SortedCs[aux1-1] - SortedCs[aux1])
-                    / Foam::mag(SortedCs[0] - SortedCs[7])
-                    < 1e-8
+                  / Foam::mag(SortedCs[0] - SortedCs[7])
+                  < 1e-8
                 )
                 {
                     Kmap[sortedCsIndex[aux1]] = Knum;
@@ -264,10 +264,8 @@ void parabolicFit::correct()
             for (int jt = 0; jt < originalNf_; jt++)
             {
                 for (int it = 1; it <= NIPV0_[jt]; it++)
-                {
                     if (IA[IPV0_[jt][it]] == 1)
                         NIPV1[jt]++;
-                }
 
                 if (NIPV1[jt] > 0)
                 {
@@ -298,11 +296,11 @@ void parabolicFit::correct()
                                 (
                                     (
                                         (insertedVertex[aux][1] == ip1)
-                                        || (insertedVertex[aux][2] == ip1)
+                                     || (insertedVertex[aux][2] == ip1)
                                     )
-                                    && (
+                                 && (
                                         (insertedVertex[aux][1] == ip2)
-                                        || (insertedVertex[aux][2] == ip2)
+                                     || (insertedVertex[aux][2] == ip2)
                                     )
                                 )
                                 {
@@ -328,26 +326,24 @@ void parabolicFit::correct()
 
                                 if (IA[ip2] == 1)
                                 {
-                                    insertedVertex
-                                        [totalInsertedVertex][3] = jt;
-                                    insertedVertex
-                                        [totalInsertedVertex][4] =
-                                            index;
-                                    insertedVertex
-                                        [totalInsertedVertex][2] = ip1;
-                                    insertedVertex
-                                        [totalInsertedVertex][1] = ip2;
+                                    insertedVertex[totalInsertedVertex][3]
+                                        = jt;
+                                    insertedVertex[totalInsertedVertex][4]
+                                        = index;
+                                    insertedVertex[totalInsertedVertex][2]
+                                        = ip1;
+                                    insertedVertex[totalInsertedVertex][1]
+                                        = ip2;
                                 }
                                 else
                                 {
-                                    insertedVertex
-                                        [totalInsertedVertex][1] = ip1;
-                                    insertedVertex
-                                        [totalInsertedVertex][2] = ip2;
+                                    insertedVertex[totalInsertedVertex][1]
+                                        = ip1;
+                                    insertedVertex[totalInsertedVertex][2]
+                                        = ip2;
                                 }
 
-                                insertedVertex
-                                    [totalInsertedVertex][5] = 0;
+                                insertedVertex[totalInsertedVertex][5] = 0;
 
                                 totalInsertedVertex++;
 
@@ -476,9 +472,9 @@ void parabolicFit::correct()
                         crossProductComponent
                         (
                             x0[IPV1[originalNf_][it]-8]
-                            - x0[IPV1[originalNf_][1]-8],
+                          - x0[IPV1[originalNf_][1]-8],
                             x0[IPV1[originalNf_][it+1]-8]
-                            - x0[IPV1[originalNf_][1]-8],
+                          - x0[IPV1[originalNf_][1]-8],
                             maxNormalIndex
                         );
 
@@ -520,7 +516,7 @@ void parabolicFit::correct()
                             {
                                 e =
                                     v(i,j,k)[IPV0_[aux1][aux2 + 1]]
-                                    - v(i,j,k)[IPV0_[aux1][aux2]];
+                                  - v(i,j,k)[IPV0_[aux1][aux2]];
 
                                 Xin = v(i,j,k)[IPV0_[aux1][aux2]];
                             }
@@ -528,16 +524,17 @@ void parabolicFit::correct()
                             {
                                 e =
                                     v(i,j,k)[IPV0_[aux1][aux2]]
-                                    - v(i,j,k)[IPV0_[aux1][aux2 + 1]];
+                                  - v(i,j,k)[IPV0_[aux1][aux2 + 1]];
 
                                 Xin = v(i,j,k)[IPV0_[aux1][aux2 + 1]];
                             }
 
                             e /= Foam::mag(e);
 
-                            xgi(i,j,k) += Xin
-                                + (-C - (normal_(i,j,k) & Xin))
-                                * e * (1 / (normal_(i,j,k) & e));
+                            xgi(i,j,k) +=
+                                Xin
+                              + (-C - (normal_(i,j,k) & Xin))
+                              * e * (1 / (normal_(i,j,k) & e));
 
                             numberOfPoints++;
                         }
@@ -563,8 +560,8 @@ void parabolicFit::correct()
 
         if
         (
-            alpha_(i,j,k) > vof::threshold
-            && alpha_(i,j,k) < (1.0 - vof::threshold)
+            alpha_(i,j,k) >       vof::threshold
+         && alpha_(i,j,k) < 1.0 - vof::threshold
         )
         {
             if (fvMsh_[0].n() > 1)
@@ -600,47 +597,70 @@ void parabolicFit::correct()
                         for (int aux3 = -1; aux3 <= 1; aux3++)
                         {
                             bool interiorNode =
-                                    (
-                                        (i+aux1-1) >= kappa.I().left()
-                                    && (i+aux1-1) <  kappa.I().right()
-                                    && (j+aux2-1) >= kappa.I().bottom()
-                                    && (j+aux2-1) <  kappa.I().top()
-                                    && (k+aux3-1) >= kappa.I().aft()
-                                    && (k+aux3-1) <  kappa.I().fore()
-                                    );
+                                (
+                                    (i+aux1-1) >= kappa.I().left()
+                                 && (i+aux1-1) <  kappa.I().right()
+                                 && (j+aux2-1) >= kappa.I().bottom()
+                                 && (j+aux2-1) <  kappa.I().top()
+                                 && (k+aux3-1) >= kappa.I().aft()
+                                 && (k+aux3-1) <  kappa.I().fore()
+                                );
 
                             if
                             (
-                                (alpha_(i+aux1,j+aux2,k+aux3) > vof::threshold)
-                                && (alpha_(i+aux1,j+aux2,k+aux3) < (1.0 - vof::threshold))
-                                && (
-                                        interiorNode
-                                    || boundaryType_[aux1 + 1][aux2 + 1][aux3 + 1]
-                                    )
+                                alpha_(i+aux1,j+aux2,k+aux3) > vof::threshold
+                             && alpha_(i+aux1,j+aux2,k+aux3)
+                              < 1.0 - vof::threshold
+                             && (
+                                    interiorNode
+                                 || boundaryType_[aux1 + 1][aux2 + 1][aux3 + 1]
+                                )
                             )
                             {
-                                vector xNew = T & (xgi(i+aux1,j+aux2,k+aux3) - xgi(i,j,k));
+                                vector xNew =
+                                    T
+                                  & (xgi(i+aux1,j+aux2,k+aux3) - xgi(i,j,k));
 
                                 A[0][0] += Foam::pow(xNew.x(),4);
-                                A[0][1] += Foam::pow(xNew.x(),2) * Foam::pow(xNew.y(),2);
-                                A[0][2] += Foam::pow(xNew.x(),3) * Foam::pow(xNew.y(),1);
+                                A[0][1] +=
+                                    Foam::pow(xNew.x(),2)
+                                  * Foam::pow(xNew.y(),2);
+                                A[0][2] +=
+                                    Foam::pow(xNew.x(),3)
+                                  * Foam::pow(xNew.y(),1);
                                 A[0][3] += Foam::pow(xNew.x(),3);
-                                A[0][4] += Foam::pow(xNew.x(),2) * Foam::pow(xNew.y(),1);
+                                A[0][4] +=
+                                    Foam::pow(xNew.x(),2)
+                                  * Foam::pow(xNew.y(),1);
                                 A[0][5] += Foam::pow(xNew.x(),2);
 
                                 A[1][1] += Foam::pow(xNew.y(),4);
-                                A[1][2] += Foam::pow(xNew.x(),1) * Foam::pow(xNew.y(),3);
-                                A[1][3] += Foam::pow(xNew.x(),1) * Foam::pow(xNew.y(),2);
+                                A[1][2] +=
+                                    Foam::pow(xNew.x(),1)
+                                  * Foam::pow(xNew.y(),3);
+                                A[1][3] +=
+                                    Foam::pow(xNew.x(),1)
+                                  * Foam::pow(xNew.y(),2);
                                 A[1][4] += Foam::pow(xNew.y(),3);
                                 A[1][5] += Foam::pow(xNew.y(),2);
 
-                                A[2][2] += Foam::pow(xNew.x(),2) * Foam::pow(xNew.y(),2);
-                                A[2][3] += Foam::pow(xNew.x(),2) * Foam::pow(xNew.y(),1);
-                                A[2][4] += Foam::pow(xNew.x(),1) * Foam::pow(xNew.y(),2);
-                                A[2][5] += Foam::pow(xNew.x(),1) * Foam::pow(xNew.y(),1);
+                                A[2][2] +=
+                                    Foam::pow(xNew.x(),2)
+                                  * Foam::pow(xNew.y(),2);
+                                A[2][3] +=
+                                    Foam::pow(xNew.x(),2)
+                                  * Foam::pow(xNew.y(),1);
+                                A[2][4] +=
+                                    Foam::pow(xNew.x(),1)
+                                  * Foam::pow(xNew.y(),2);
+                                A[2][5] +=
+                                    Foam::pow(xNew.x(),1)
+                                  * Foam::pow(xNew.y(),1);
 
                                 A[3][3] += Foam::pow(xNew.x(),2);
-                                A[3][4] += Foam::pow(xNew.x(),1) * Foam::pow(xNew.y(),1);
+                                A[3][4] +=
+                                    Foam::pow(xNew.x(),1)
+                                  * Foam::pow(xNew.y(),1);
                                 A[3][5] += Foam::pow(xNew.x(),1);
 
                                 A[4][4] += Foam::pow(xNew.y(),2);
@@ -650,13 +670,14 @@ void parabolicFit::correct()
 
                                 b[0] += xNew.z() * Foam::pow(xNew.x(),2);
                                 b[1] += xNew.z() * Foam::pow(xNew.y(),2);
-                                b[2] += xNew.z() * Foam::pow(xNew.x(),1) * Foam::pow(xNew.y(),1);
+                                b[2] +=
+                                    xNew.z() * Foam::pow(xNew.x(),1)
+                                  * Foam::pow(xNew.y(),1);
                                 b[3] += xNew.z() * Foam::pow(xNew.x(),1);
                                 b[4] += xNew.z() * Foam::pow(xNew.y(),1);
                                 b[5] += xNew.z();
 
                                 count++;
-
                             }
                         }
                     }
@@ -666,12 +687,8 @@ void parabolicFit::correct()
                 {
 
                     for (int it = 1; it < 6; it++)
-                    {
                         for(int jt = 0; jt < it; jt++)
-                        {
                             A[it][jt] = A[jt][it];
-                        }
-                    }
 
                     for (int it = 0; it < 6; it++)
                     {
@@ -724,11 +741,15 @@ void parabolicFit::correct()
                                 coefs[0] * (1 + Foam::sqr(coefs[4]))
                                 + coefs[1] * (1 + Foam::sqr(coefs[3]))
                                 - coefs[2] * coefs[3] * coefs[4]
-                            )/
-                            (
-                                Foam::pow(1 + Foam::sqr(coefs[3]) + Foam::sqr(coefs[4]), 1.5)
+                            )
+                          / (
+                                Foam::pow
+                                (
+                                    1 + Foam::sqr(coefs[3])
+                                  + Foam::sqr(coefs[4]),
+                                    1.5
+                                )
                             );
-
                 }
                 else
                 {
@@ -761,24 +782,27 @@ void parabolicFit::correct()
                             bool interiorNode =
                                     (
                                         (i+aux1) >= kappa.I().left()
-                                    && (i+aux1) <  kappa.I().right()
-                                    && (j+aux2) >= kappa.I().bottom()
-                                    && (j+aux2) <  kappa.I().top()
-                                    && (k+aux3) >= kappa.I().aft()
-                                    && (k+aux3) <  kappa.I().fore()
+                                     && (i+aux1) <  kappa.I().right()
+                                     && (j+aux2) >= kappa.I().bottom()
+                                     && (j+aux2) <  kappa.I().top()
+                                     && (k+aux3) >= kappa.I().aft()
+                                     && (k+aux3) <  kappa.I().fore()
                                     );
 
                             if
                             (
-                                (alpha_(i+aux1,j+aux2,k+aux3) > vof::threshold)
-                                && (alpha_(i+aux1,j+aux2,k+aux3) < (1.0 - vof::threshold))
-                                && (
-                                        interiorNode
-                                    || boundaryType_[aux1 + 1][aux2 + 1][aux3 + 1]
-                                    )
+                                alpha_(i+aux1,j+aux2,k+aux3) > vof::threshold
+                             && alpha_(i+aux1,j+aux2,k+aux3)
+                              < (1.0 - vof::threshold)
+                             && (
+                                    interiorNode
+                                 || boundaryType_[aux1 + 1][aux2 + 1][aux3 + 1]
+                                )
                             )
                             {
-                                vector xNew = T & (xgi(i+aux1,j+aux2,k+aux3) - xgi(i,j,k));
+                                vector xNew =
+                                    T
+                                  & (xgi(i+aux1,j+aux2,k+aux3) - xgi(i,j,k));
 
                                 A[0][0] += Foam::pow(xNew.x(),4);
                                 A[0][1] += Foam::pow(xNew.x(),3);
@@ -801,12 +825,8 @@ void parabolicFit::correct()
                 }
 
                 for (int it = 1; it < 3; it++)
-                {
                     for(int jt = 0; jt < it; jt++)
-                    {
                         A[it][jt] = A[jt][it];
-                    }
-                }
 
                 if (count > 2)
                 {
@@ -859,8 +879,8 @@ void parabolicFit::correct()
                     kappa(i,j,k) = 2 *
                             (
                                 coefs[0]
-                            )/
-                            (
+                            )
+                          / (
                                 Foam::pow(1 + Foam::sqr(coefs[1]), 1.5)
                             );
 
@@ -876,6 +896,8 @@ void parabolicFit::correct()
             kappa(i,j,k) = 0;
         }
     }
+
+    kappa.correctBoundaryConditions();
 }
 
 }
