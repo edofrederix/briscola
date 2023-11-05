@@ -53,7 +53,7 @@ void SHF::correct()
     {
         if
         (
-            (alpha_(i,j,k) > vof::threshold)
+            (alpha_(i,j,k) >     vof::threshold)
          && (alpha_(i,j,k) < 1 - vof::threshold)
         )
         {
@@ -528,14 +528,14 @@ void SHF::correct()
                 scalar dyy =
                     (gamma * (Hyy[0] + Hyy[2]) + Hyy[1]) / (1 + 2 * gamma);
 
-
-
                 kappa(i,j,k) = -
                     (
-                        dxx * (1 + Foam::sqr(dy)) + dyy * (1 + Foam::sqr(dx)) - 2 * Hxy * dx * dy
+                        dxx * (1 + Foam::sqr(dy))
+                      + dyy * (1 + Foam::sqr(dx))
+                      - 2 * Hxy * dx * dy
                     )
                   / (
-                        Foam::pow(1 + Foam::sqr(dx) + Foam::sqr(dy),1.5)
+                        Foam::pow(1 + Foam::sqr(dx) + Foam::sqr(dy), 1.5)
                     );
 
                 marker(i,j,k) = 1;
@@ -552,11 +552,14 @@ void SHF::correct()
         }
     }
 
+    marker.correctCommBoundaryConditions();
+    kappa.correctCommBoundaryConditions();
+
     forAllCells(kappa, i, j, k)
     {
         if
         (
-            (alpha_(i,j,k) > vof::threshold)
+            (alpha_(i,j,k) >     vof::threshold)
          && (alpha_(i,j,k) < 1 - vof::threshold)
          && (Foam::mag(marker(i,j,k)) < 1e-12)
         )
@@ -586,6 +589,7 @@ void SHF::correct()
         }
     }
 
+    kappa.correctBoundaryConditions();
 }
 
 }
