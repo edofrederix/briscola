@@ -2,6 +2,7 @@
 #define shape_H
 
 #include "vector.H"
+#include "IOdictionary.H"
 
 namespace Foam
 {
@@ -14,11 +15,36 @@ namespace fv
 
 class shape
 {
+protected:
+
+bool inverted_;
 
 public:
+    // Runtime type information
+    TypeName("shape");
 
-    // Empty constructor
-    shape();
+    // Declare run-time constructor selection tables
+    declareRunTimeSelectionTable
+    (
+        autoPtr,
+        shape,
+        dictionary,
+        (
+            const dictionary& dict,
+            bool inverted
+        ),
+        (dict, inverted)
+    );
+
+    // Base constructor
+    shape(const dictionary&, bool);
+
+    // Selector from dictionary
+    static autoPtr<shape> New
+    (
+        const dictionary&,
+        bool inverted = false
+    );
 
     // Destructor
     virtual ~shape();

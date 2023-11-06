@@ -2,7 +2,6 @@
 #define cylinder_H
 
 #include "shape.H"
-#include "vector.H"
 
 namespace Foam
 {
@@ -27,19 +26,15 @@ class cylinder
 
     scalar radius_;
 
-    // The inverted switch can be set to invert cylinder
-
-    bool inverted_;
-
-
 public:
+
+    // Runtime type information
+    TypeName("cylinder");
 
     // Construct
     cylinder
     (
-        vector,
-        vector,
-        scalar,
+        const dictionary&,
         bool
     );
 
@@ -61,5 +56,9 @@ public:
 } // end namespace briscola
 
 } // end namespace Foam
+
+#ifdef NoRepository
+    #include "cylinder.C"
+#endif
 
 #endif

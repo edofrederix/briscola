@@ -4,8 +4,7 @@
 #include "immersedBoundaryFwd.H"
 
 #include "List.H"
-#include "cylinder.H"
-#include "sphere.H"
+#include "shape.H"
 #include "IOdictionary.H"
 #include "fvMesh.H"
 #include "fvMeshMetrics.H"
@@ -58,6 +57,12 @@ class immersedBoundary
     // List of shapes making up the immersed boundary
     PtrList<shape> shapes_;
 
+    // List of cell coordinates to be sent to/received from
+    // processors.
+    // sendRecvList[pr][ps] contains the list of cell indices
+    // that processor pr needs to receive from processor ps
+    // List<List<List<List<List<labelVector>>>>> sendRecvList_;
+
 public:
 
     // Declare name of the class and its debug switch
@@ -91,9 +96,6 @@ public:
 
     // Apply penalization method to a linear system
     void penalization(linearSystem<stencil,Type,MeshType>&);
-
-    // Apply Deen immersed boundary method for Dirichlet BC to a linear system
-    void DeenIBM(linearSystem<stencil,Type,MeshType>&);
 
     // Apply Fadlun immersed boundary method for Dirichlet BC to a linear system
     void FadlunIBM(linearSystem<stencil,Type,MeshType>&);

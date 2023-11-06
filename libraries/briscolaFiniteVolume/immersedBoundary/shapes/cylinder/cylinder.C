@@ -13,16 +13,14 @@ namespace fv
 
 cylinder::cylinder
 (
-    vector start,
-    vector end,
-    scalar radius,
+    const dictionary& dict,
     bool inverted
 )
 :
-    start_(start),
-    end_(end),
-    radius_(radius),
-    inverted_(inverted)
+    shape(dict,inverted),
+    start_(vector(dict.lookup("start"))),
+    end_(vector(dict.lookup("end"))),
+    radius_(readScalar(dict.lookup("radius")))
 {
     if (start_ == end_)
     {
@@ -32,7 +30,7 @@ cylinder::cylinder
         FatalError.exit();
     }
 
-    if (radius <= 0.0)
+    if (radius_ <= 0.0)
     {
         FatalError
             << "Cylinder radius has to be a positive value."
@@ -61,7 +59,7 @@ bool cylinder::isInside(vector point)
         )
     )
     {
-        if(!inverted_)
+        if(!this->inverted_)
         {
             return true;
         }
@@ -71,7 +69,7 @@ bool cylinder::isInside(vector point)
         }
     }
 
-    if(!inverted_)
+    if(!this->inverted_)
     {
         return false;
     }

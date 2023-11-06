@@ -2,7 +2,6 @@
 #define sphere_H
 
 #include "shape.H"
-#include "vector.H"
 
 namespace Foam
 {
@@ -24,17 +23,15 @@ class sphere
 
     scalar radius_;
 
-    // The inverted switch can be set to invert sphere
-
-    bool inverted_;
-
 public:
+
+    // Runtime type information
+    TypeName("sphere");
 
     // Construct
     sphere
     (
-        vector,
-        scalar,
+        const dictionary&,
         bool
     );
 
@@ -56,5 +53,9 @@ public:
 } // end namespace briscola
 
 } // end namespace Foam
+
+#ifdef NoRepository
+    #include "sphere.C"
+#endif
 
 #endif

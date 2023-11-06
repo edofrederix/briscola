@@ -13,16 +13,15 @@ namespace fv
 
 sphere::sphere
 (
-    vector center,
-    scalar radius,
+    const dictionary& dict,
     bool inverted
 )
 :
-    center_(center),
-    radius_(radius),
-    inverted_(inverted)
+    shape(dict,inverted),
+    center_(vector(dict.lookup("center"))),
+    radius_(readScalar(dict.lookup("radius")))
 {
-    if (radius <= 0.0)
+    if (radius_ <= 0.0)
     {
         FatalError
             << "Sphere radius has to be a positive value."
@@ -42,7 +41,7 @@ bool sphere::isInside(vector point)
     // is smaller than the sphere's radius
     if(mag(center_ - point) <= radius_)
     {
-        if(!inverted_)
+        if(!this->inverted_)
         {
             return true;
         }
@@ -51,7 +50,7 @@ bool sphere::isInside(vector point)
             return false;
         }
     }
-    else if(!inverted_)
+    else if(!this->inverted_)
     {
         return false;
     }

@@ -86,11 +86,36 @@ immersedBoundary<Type,MeshType>::immersedBoundary
         false,
         true
     )
+    // ,sendRecvList_(Pstream::nProcs())
 {
     Info << "Immersed boundary type: " << type_ << endl;
 
     if (solverDict.found("ImmersedBoundary"))
     {
+        // Set send/recv list sizes
+        // for (int pr = 0; pr < Pstream::nProcs(); pr++)
+        // {
+        //     sendRecvList_[pr].setSize(Pstream::nProcs());
+
+        //     for (int ps = 0; ps < Pstream::nProcs(); ps++)
+        //     {
+        //         const label nLevels = mask_.numberOfLevels();
+        //         const label nDirections = MeshType::numberOfDirections;
+
+        //         sendRecvList_[pr][ps].setSize(nLevels);
+
+        //         for (int l = 0; l < nLevels; l++)
+        //         {
+        //             sendRecvList_[pr][ps][l].setSize(nDirections);
+
+        //             for (int d = 0; d < nDirections; d++)
+        //             {
+        //                 sendRecvList_[pr][ps][l][d].setSize(0);
+        //             }
+        //         }
+        //     }
+        // }
+
         dictionary IBDict = solverDict.subDict("ImmersedBoundary");
 
         int nEntries = IBDict.size();
@@ -104,39 +129,14 @@ immersedBoundary<Type,MeshType>::immersedBoundary
             {
                 dictionary entryDict = IBDict.subDict(entry);
 
-                if (word(entryDict.lookup("type")) == "cylinder")
-                {
-                    shapes_.append
+                shapes_.append
+                (
+                    shape::New
                     (
-                        new cylinder
-                        (
-                            vector(entryDict.lookup("start")),
-                            vector(entryDict.lookup("end")),
-                            readScalar(entryDict.lookup("radius")),
-                            bool(entryDict.lookupOrDefault("inverted", false))
-                        )
-                    );
-                }
-                else if (word(entryDict.lookup("type")) == "sphere")
-                {
-                    shapes_.append
-                    (
-                        new sphere
-                        (
-                            vector(entryDict.lookup("center")),
-                            readScalar(entryDict.lookup("radius")),
-                            bool(entryDict.lookupOrDefault("inverted", false))
-                        )
-                    );
-                }
-                else
-                {
-                    FatalError
-                        << "Unknown immersed boundary shape type "
-                        << word(entryDict.lookup("type"))
-                        << endl;
-                    FatalError.exit();
-                }
+                        entryDict,
+                        bool(entryDict.lookupOrDefault("inverted", false))
+                    )
+                );
             }
         }
 
@@ -203,6 +203,58 @@ immersedBoundary<Type,MeshType>::immersedBoundary
                 }
             }
         }
+
+        // Set recv lists
+        // const decomposition& procDecomp = fvMsh_.msh().decomp();
+        // forAllLevels(ghostMask_,l,d,i,j,k)
+        // {
+        //     if (ghostMask_(l,d,i,j,k) == 1)
+        //     {
+        //         const labelVector ijk(i,j,k);
+        //         for (int dir = 0; dir < 6; dir++)
+        //         {
+        //             int xyzDir = dir / 2;
+        //             const labelVector secondNeighbor
+        //                 = ijk + 2.0*faceOffsets[dir];
+
+        //             // If the neigboring cell in dir direction is a fluid cell
+        //             // and the second neighbor is outside of the processor part
+        //             if
+        //             (
+        //                 (mask_[l][d](ijk+faceOffsets[dir]) == 0)
+        //                 &&
+        //                 (
+        //                     (dir%2 == 0) ?
+        //                       (secondNeighbor[xyzDir] < ghostMask_[l][d].I()[dir])
+        //                     : (secondNeighbor[xyzDir] > ghostMask_[l][d].I()[dir])
+        //                 )
+        //             )
+        //             {
+        //                 labelVector myProcIndex
+        //                     = procDecomp.map().legend()[Pstream::myProcNo()];
+
+        //                 labelVector neighborProcIndex = myProcIndex;
+        //                 neighborProcIndex[xyzDir] +=  (dir%2 == 0) ? -1 : 1;
+
+        //                 int neighborProc = procDecomp.map()(neighborProcIndex);
+
+        //                 // Second neighbor global index
+        //                 const labelVector globalSecondNeighbor = secondNeighbor
+        //                     + procDecomp.globalStartPerProc()[Pstream::myProcNo()];
+
+        //                 // Add index to list
+        //                 sendRecvList_[Pstream::myProcNo()][neighborProc][l][d]
+        //                     .append(globalSecondNeighbor);
+
+        //                 break;
+        //             }
+        //         }
+        //     }
+        // }
+
+        Pstream::gatherList(sendRecvList_);
+        Pstream::scatterList(sendRecvList_);
+
     }
     else
     {
@@ -406,64 +458,6 @@ void immersedBoundary<Type,MeshType>::penalization
 
             // Set central coefficients to 1 in IB
             ls.A()(l,d,i,j,k).center() = 1.0;
-        }
-    }
-}
-
-template<class Type, class MeshType>
-void immersedBoundary<Type,MeshType>::DeenIBM
-(
-    linearSystem<stencil,Type,MeshType>& ls
-)
-{
-    // Stability factor for xi. If xi > stability factor,
-    // the IBM will revert to a more stable second order fit
-    scalar xiStabilityFactor = 0.5;
-
-    forAllLevels(ls.A(),l,d,i,j,k)
-    {
-        // Modify stencils in IB-adjacent cells
-        if (wallAdjMask_(l,d,i,j,k) == 1)
-        {
-            // Loop over face number directions
-            for (int dir = 0; dir < 6; dir++)
-            {
-                const label oppositeDir =
-                    faceNumber(-faceOffsets[dir]);
-
-                if (wallDist_(l,d,i,j,k)[dir] >= 0)
-                {
-                    const scalar xi
-                        = wallDist_(l,d,i,j,k)[dir];
-
-                    const scalar xi2
-                        = neighborDist_(l,d,i,j,k)[oppositeDir];
-
-                    scalar w0 = 2.0 /
-                        (
-                            (1.0 - xiStabilityFactor)
-                            * (2.0 - xiStabilityFactor)
-                        );
-                    scalar w1 = 2.0 - (2.0 - xi) * w0;
-                    scalar w2 = -1.0 + (1.0 - xi) * w0;
-
-                    if (xi < xiStabilityFactor)
-                    {
-                        w1 = xi*xi2/((1.0-xi)*(1.0-xi2));
-                        w2 = xi/((xi2-xi)*(xi2-1.0));
-                    }
-
-                    // faceScalar and stencil directions are offset by 1
-
-                    const scalar a0 = ls.A()(l,d,i,j,k)[dir+1];
-
-                    ls.A()(l,d,i,j,k)[dir+1] = 0.0;
-
-                    ls.A()(l,d,i,j,k).center() += a0*w1;
-
-                    ls.A()(l,d,i,j,k)[oppositeDir+1] += a0*w2;
-                }
-            }
         }
     }
 }

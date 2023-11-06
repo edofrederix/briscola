@@ -33,9 +33,7 @@ fields/staggeredFields/staggeredFields.C
 
 immersedBoundary/immersedBoundary/immersedBoundary.C
 
-immersedBoundary/shapes/shape.C
-immersedBoundary/shapes/cylinder/cylinder.C
-immersedBoundary/shapes/sphere/sphere.C
+immersedBoundary/shapes//shape/shapes.C
 
 IO/IO.C
 IO/IOReadTemplates.C

@@ -294,43 +294,15 @@ void solver<SType,Type,MeshType>::correctImmersedBoundaryConditions
 {
     if (IB != nullptr)
     {
+        // Relaxation factor for better convergence
         scalar omega = 0.8;
 
         meshLevel<Type,MeshType>& x = sys.x()[l];
 
-        // Penalization
-        // forAllDirections(x,d,i,j,k)
-        // {
-        //     if (IB->mask()(l,d,i,j,k) == 1)
-        //     {
-        //         x(d,i,j,k) = Zero;
-        //     }
-        // }
+        // Mesh
+        const fvMesh& fvMsh = sys.fvMsh();
+        const mesh& msh = fvMsh.msh();
 
-        // Fadlun method
-        // forAllDirections(x,d,i,j,k)
-        // {
-        //     const labelVector ijk(i,j,k);
-        //     if (IB->wallAdjMask()(l,d,i,j,k) == 1)
-        //     {
-        //         scalar ximax = 0;
-        //         for (int dir = 0; dir < 6; dir++)
-        //         {
-        //             const label oppositeDir =
-        //                 faceNumber(-faceOffsets[dir]);
-
-        //             if (IB->wallDist()(l,d,i,j,k)[dir] > ximax)
-        //             {
-        //                 ximax = IB->wallDist()(l,d,i,j,k)[dir];
-        //                 const scalar xic = 1.0 - IB->wallDist()(l,d,i,j,k)[dir];
-        //                 const scalar xinb = 1.0 + xic;
-        //                 const scalar w = xic/xinb;
-
-        //                 x(d,i,j,k) = w*x[d](ijk+faceOffsets[oppositeDir]);
-        //             }
-        //         }
-        //     }
-        // }
 
         // Deen/Vreman method
         if (IB->type() == "Vreman")
@@ -338,41 +310,34 @@ void solver<SType,Type,MeshType>::correctImmersedBoundaryConditions
         forAllDirections(x,d,i,j,k)
         {
             const labelVector ijk(i,j,k);
-            if (IB->wallAdjMask()(l,d,i,j,k) == 1)
+            if (IB->ghostMask()(l,d,i,j,k) == 1)
             {
                 for (int dir = 0; dir < 6; dir++)
                 {
                     const label oppositeDir =
                         faceNumber(-faceOffsets[dir]);
 
-                    if (IB->wallDist()(l,d,i,j,k)[dir] > 0)
+                    const labelVector neighbor = ijk + faceOffsets[dir];
+                    const labelVector secondNeighbor
+                        = ijk + 2.0*faceOffsets[dir];
+
+                    if (IB->mask()[l][d](ijk+faceOffsets[dir]) == 0)
                     {
-                        scalar xiStabilityFactor = 0;
-
                         const scalar xi
-                            = IB->wallDist()(l,d,i,j,k)[dir];
+                            = IB->wallDist()[l][d](neighbor)[oppositeDir];
 
-                        const scalar xi2
-                            = IB->neighborDist()(l,d,i,j,k)[oppositeDir];
+                        scalar w1 = 2.0 - (2.0 - xi);
+                        scalar w2 = -1.0 + (1.0 - xi);
 
-                        scalar w0 = 2.0 /
+                        // if second neighbor is inside processor
+                        x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
+                            + omega *
                             (
-                                (1.0 - xiStabilityFactor)
-                                * (2.0 - xiStabilityFactor)
+                                w1*x[d](neighbor) + w2*x[d](secondNeighbor)
                             );
-                        scalar w1 = 2.0 - (2.0 - xi) * w0;
-                        scalar w2 = -1.0 + (1.0 - xi) * w0;
 
-                        if (xi < xiStabilityFactor)
-                        {
-                            w1 = xi*xi2/((1.0-xi)*(1.0-xi2));
-                            w2 = xi/((xi2-xi)*(xi2-1.0));
-                        }
-
-                        x[d](ijk+faceOffsets[dir]) = (1.0 - omega) * x(d,i,j,k)
-                            + omega * (w1*x[d](ijk) + w2*x[d](ijk-faceOffsets[dir]));
-
-
+                        // else { ... }
+                        break;
                     }
                 }
             }
@@ -384,10 +349,8 @@ void solver<SType,Type,MeshType>::correctImmersedBoundaryConditions
         if (IB->type() ==  "Mittal")
         {
         // Cell centers
-        const fvMesh& fvMsh = sys.fvMsh();
         const meshField<vector,MeshType>& CC =
             fvMsh.metrics<MeshType>().cellCenters();
-        const mesh& msh = fvMsh.msh();
 
         scalar tol = 1e-5;
         // Info << msh[l].boundingBox().fore() << endl;
