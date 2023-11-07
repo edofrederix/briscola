@@ -57,10 +57,10 @@ bool initialCondition::read(const dictionary& dict)
         {
             scalar R = 0.25;
 
-            scalar x0 = vertex(i,j,k).lba()[0];
-            scalar x1 = vertex(i,j,k).rba()[0];
-            scalar y0 = vertex(i,j,k).lba()[1] - 0.5;
-            scalar y1 = vertex(i,j,k).lta()[1] - 0.5;
+            scalar x0 = vertex(i,j,k).lba().x();
+            scalar x1 = vertex(i,j,k).rba().x();
+            scalar y0 = vertex(i,j,k).lba().y() - 0.5;
+            scalar y1 = vertex(i,j,k).lta().y() - 0.5;
 
             if (x0 < -1e-12)
             {
@@ -91,12 +91,12 @@ bool initialCondition::read(const dictionary& dict)
                     scalar vol = 0.5 *
                         (
                             Foam::sqr(R) * Foam::asin(x1 / R)
-                            - Foam::sqr(R) * Foam::asin(aux / R)
-                            + x1 * Foam::sqrt(Foam::sqr(R) - Foam::sqr(x1))
-                            - aux * Foam::sqrt(Foam::sqr(R) - Foam::sqr(aux))
+                          - Foam::sqr(R) * Foam::asin(aux / R)
+                          + x1 * Foam::sqrt(Foam::sqr(R) - Foam::sqr(x1))
+                          - aux * Foam::sqrt(Foam::sqr(R) - Foam::sqr(aux))
                         )
-                        - y0 * (x1 - aux)
-                        + (y1 - y0) * (aux - x0);
+                      - y0 * (x1 - aux)
+                      + (y1 - y0) * (aux - x0);
 
                     alpha(i,j,k) = vol / totalVol;
 
@@ -106,11 +106,11 @@ bool initialCondition::read(const dictionary& dict)
                     scalar vol = 0.5 *
                         (
                             Foam::sqr(R) * Foam::asin(y1 / R)
-                            - Foam::sqr(R) * Foam::asin(y0 / R)
-                            + y1 * Foam::sqrt(Foam::sqr(R) - Foam::sqr(y1))
-                            - y0 * Foam::sqrt(Foam::sqr(R) - Foam::sqr(y0))
+                          - Foam::sqr(R) * Foam::asin(y0 / R)
+                          + y1 * Foam::sqrt(Foam::sqr(R) - Foam::sqr(y1))
+                          - y0 * Foam::sqrt(Foam::sqr(R) - Foam::sqr(y0))
                         )
-                        - x0 * (y1 - y0);
+                      - x0 * (y1 - y0);
 
                     alpha(i,j,k) = vol / totalVol;
                 }
@@ -120,11 +120,11 @@ bool initialCondition::read(const dictionary& dict)
                 scalar vol = 0.5 *
                     (
                         Foam::sqr(R) * Foam::asin(x1 / R)
-                        - Foam::sqr(R) * Foam::asin(x0 / R)
-                        + x1 * Foam::sqrt(Foam::sqr(R) - Foam::sqr(x1))
-                        - x0 * Foam::sqrt(Foam::sqr(R) - Foam::sqr(x0))
+                      - Foam::sqr(R) * Foam::asin(x0 / R)
+                      + x1 * Foam::sqrt(Foam::sqr(R) - Foam::sqr(x1))
+                      - x0 * Foam::sqrt(Foam::sqr(R) - Foam::sqr(x0))
                     )
-                    - y0 * (x1 - x0);
+                  - y0 * (x1 - x0);
 
                 alpha(i,j,k) = vol / totalVol;
             }
@@ -135,11 +135,11 @@ bool initialCondition::read(const dictionary& dict)
                 scalar vol = 0.5 *
                     (
                         Foam::sqr(R) * Foam::asin(aux / R)
-                        - Foam::sqr(R) * Foam::asin(x0 / R)
-                        + aux * Foam::sqrt(Foam::sqr(R) - Foam::sqr(aux))
-                        - x0 * Foam::sqrt(Foam::sqr(R) - Foam::sqr(x0))
+                      - Foam::sqr(R) * Foam::asin(x0 / R)
+                      + aux * Foam::sqrt(Foam::sqr(R) - Foam::sqr(aux))
+                      - x0 * Foam::sqrt(Foam::sqr(R) - Foam::sqr(x0))
                     )
-                    - y0 * (aux - x0);
+                  - y0 * (aux - x0);
 
                 alpha(i,j,k) = vol / totalVol;
 
