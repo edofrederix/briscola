@@ -79,20 +79,37 @@ imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
 
 // Immersed boundary
 
-immersedBoundary<scalar,staggered> IBs(solverDict, fvMsh);
-
+autoPtr<immersedBoundaryMethod<scalar,staggered>> IBs;
 if (solverDict.found("ImmersedBoundary"))
 {
-    forAllLevels(exSource,l,d,i,j,k)
-    {
-        if (IBs.mask()(l,d,i,j,k) == 1)
-        {
-            // Set source terms to zero inside IB
-            exSource = Zero;
-            imSourceCoeff = Zero;
-        }
-    }
+    IBs = immersedBoundaryMethod<scalar,staggered>::New
+    (
+        solverDict.subDict("ImmersedBoundary"),
+        fvMsh
+    );
 }
+
+// autoPtr<immersedBoundaryMethod<scalar,staggered>> IBs
+// (
+//     immersedBoundaryMethod<scalar,staggered>::New
+//     (
+//         solverDict.subDict("ImmersedBoundary"),
+//         fvMsh
+//     )
+// );
+
+// if (solverDict.found("ImmersedBoundary"))
+// {
+//     forAllLevels(exSource,l,d,i,j,k)
+//     {
+//         if (IBs.mask()(l,d,i,j,k) == 1)
+//         {
+//             // Set source terms to zero inside IB
+//             exSource = Zero;
+//             imSourceCoeff = Zero;
+//         }
+//     }
+// }
 
 // Solvers
 
@@ -104,10 +121,7 @@ autoPtr<solver<stencil,scalar,staggered>> USolve
     (
         USys.x().name(),
         fvMsh,
-        (
-            (IBs.type() == "penalization" || IBs.type() == "Fadlun") ?
-            nullptr : &IBs
-        )
+        (IBs.empty() ? nullptr : &IBs())
     )
 );
 

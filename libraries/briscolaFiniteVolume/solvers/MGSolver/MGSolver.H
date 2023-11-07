@@ -90,7 +90,7 @@ protected:
         const label,
         const labelList&,
         const scalar,
-        immersedBoundary<Type, MeshType>*
+        immersedBoundaryMethod<Type,MeshType>*
     );
 
 public:
@@ -99,7 +99,13 @@ public:
     TypeName("MG");
 
     // Construct from dictionary and mesh
-    MGSolver(const dictionary&, const fvMesh&, immersedBoundary<Type,MeshType>* = nullptr);
+    MGSolver
+    (
+        const dictionary&,
+        const fvMesh&,
+        immersedBoundaryMethod<Type,MeshType>*
+            = nullptr
+    );
 
     // Solve the given system
     virtual void solve(linearSystem<SType,Type,MeshType>&);

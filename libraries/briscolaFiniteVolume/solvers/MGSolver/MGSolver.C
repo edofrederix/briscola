@@ -56,7 +56,11 @@ void MGSolver<SType,Type,MeshType>::cycle
                     if (!converged[d])
                     {
                         xEqn.residual(r[l][d]);
-                        if (this->IB_ != nullptr)
+                        if
+                        (
+                            (this->IB_ != nullptr)
+                            && (this->IB_->Jac())
+                        )
                         {
                             forAllCells(r[l][d],i,j,k)
                             {
@@ -95,7 +99,10 @@ void MGSolver<SType,Type,MeshType>::cycle
                     proScheme_->prolong(x[l][d], x[l+1][d], plusEqOp<Type>());
 
             x[l].correctCommBoundaryConditions();
-            this->correctImmersedBoundaryConditions(this->IB_,xEqn,l);
+            if (this->IB_ != nullptr)
+            {
+                this->IB_->correctJacobiPoints(x[l]);
+            }
 
             // Post-smooth
 
@@ -143,7 +150,10 @@ void MGSolver<SType,Type,MeshType>::solve
     // Correct the boundary conditions
 
     x[0].correctCommBoundaryConditions();
-    this->correctImmersedBoundaryConditions(this->IB_,xEqn,0);
+    if (this->IB_ != nullptr)
+    {
+        this->IB_->correctJacobiPoints(x[0]);
+    }
 
     // Residual field
 
@@ -166,7 +176,11 @@ void MGSolver<SType,Type,MeshType>::solve
 
     xEqn.residual(r[0]);
 
-    if (this->IB_ != nullptr)
+    if
+    (
+        (this->IB_ != nullptr)
+        && (this->IB_->Jac())
+    )
     {
         forAllDirections(r[0],d,i,j,k)
         {
@@ -230,7 +244,11 @@ void MGSolver<SType,Type,MeshType>::solve
             if (!converged[d])
             {
                 xEqn.residual(r[0][d]);
-                if (this->IB_ != nullptr)
+                if
+                (
+                    (this->IB_ != nullptr)
+                    && (this->IB_->Jac())
+                )
                 {
                     forAllCells(r[0][d],i,j,k)
                     {
@@ -274,7 +292,7 @@ MGSolver<SType,Type,MeshType>::MGSolver
 (
     const dictionary& dict,
     const fvMesh& fvMsh,
-    immersedBoundary<Type,MeshType>* IB
+    immersedBoundaryMethod<Type,MeshType>* IB
 )
 :
     solver<SType,Type,MeshType>(dict,fvMsh,IB),

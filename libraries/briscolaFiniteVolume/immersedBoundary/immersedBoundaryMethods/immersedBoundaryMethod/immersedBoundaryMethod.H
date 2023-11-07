@@ -1,11 +1,11 @@
-#ifndef immersedBoundary_H
-#define immersedBoundary_H
+#ifndef immersedBoundaryMethod_H
+#define immersedBoundaryMethod_H
 
-#include "immersedBoundaryFwd.H"
+#include "immersedBoundaryMethodFwd.H"
 
 #include "List.H"
 #include "shape.H"
-#include "IOdictionary.H"
+#include "dictionary.H"
 #include "fvMesh.H"
 #include "fvMeshMetrics.H"
 #include "meshField.H"
@@ -23,60 +23,63 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-class immersedBoundary
+class immersedBoundaryMethod
 {
+protected:
     // Reference to mesh
     const fvMesh& fvMsh_;
-
-    // IBM type
-    word type_;
 
     // Mass source active switch
     bool massSourceActive_;
 
-    // The IB mask is equal to 0 in cell centers outside the IB,
-    // and equal to 1 in cell centers inside the IB.
-    meshField<label,MeshType> mask_;
+    // True for ghost-cell methods updating values as Jacobi points
+    bool JacobiGhostMethod_;
 
-    // The wall adjacent mask is equal to 1 in fluid cells with at
-    // least one neighboring cell in the IB, and 0 in other cells
-    meshField<label,MeshType> wallAdjMask_;
+    // Convergence relaxation parameter
+    scalar omega_;
 
     // The ghost cell mask is equal to 1 in IB cells with at least
     // one neighboring fluid cell and 0 in other cells
     meshField<label,MeshType> ghostMask_;
 
-    // The wall distance field stores the wall distances to the
-    // IB in the components of the stencils
-    meshField<faceScalar,MeshType> wallDist_;
-
-    // The neighbor distance field stores the distances to neighboring
-    // fluid cell for the quadratic fit on non-uniform grids
-    meshField<faceScalar,MeshType> neighborDist_;
-
     // List of shapes making up the immersed boundary
     PtrList<shape> shapes_;
-
-    // List of cell coordinates to be sent to/received from
-    // processors.
-    // sendRecvList[pr][ps] contains the list of cell indices
-    // that processor pr needs to receive from processor ps
-    // List<List<List<List<List<labelVector>>>>> sendRecvList_;
 
 public:
 
     // Declare name of the class and its debug switch
-    ClassName("immersedBoundary");
+    TypeName("immersedBoundaryMethod");
+
+    // Declare run-time constructor selection tables
+    declareRunTimeSelectionTable
+    (
+        autoPtr,
+        immersedBoundaryMethod,
+        dictionary,
+        (
+            dictionary& dict,
+            const fvMesh& fvMsh
+        ),
+        (dict, fvMsh)
+    );
 
     // Construct from solverDict and fvMesh
-    immersedBoundary
+    immersedBoundaryMethod
     (
-        IOdictionary,
-        const fvMesh&
+        dictionary&,
+        const fvMesh&,
+        bool = false
+    );
+
+    // Selector from dictionary
+    static autoPtr<immersedBoundaryMethod<Type,MeshType>> New
+    (
+        dictionary&,
+        const fvMesh& fvMsh
     );
 
     // Destructor
-    ~immersedBoundary();
+    virtual ~immersedBoundaryMethod();
 
     // Returns true if the position vector (x,y,z)
     // is inside the immersed boundary
@@ -94,11 +97,20 @@ public:
     // of a point located inside of the immersed boundary
     vector mirrorPoint(vector);
 
-    // Apply penalization method to a linear system
-    void penalization(linearSystem<stencil,Type,MeshType>&);
+    // Correct the stencils of a linear system to apply the IBM correction.
+    // This function is overwritten by fully implicit IBM types and does
+    // nothing otherwise.
+    virtual void correctLinearSystem
+    (
+        linearSystem<stencil,Type,MeshType>&
+    );
 
-    // Apply Fadlun immersed boundary method for Dirichlet BC to a linear system
-    void FadlunIBM(linearSystem<stencil,Type,MeshType>&);
+    // Correct the forcing points as Jacobi points. This function is
+    // overwritten by IBM types with large stencils (> 7 points in 3D).
+    virtual void correctJacobiPoints
+    (
+        meshLevel<Type,MeshType>&
+    );
 
     // Return colocated volume source term for a staggered velocity field.
     // Only defined for staggeredScalarImmersedBoundary
@@ -108,13 +120,9 @@ public:
     );
 
     // Inline access functions
-    inline word& type() { return type_; }
     inline bool massSourceActive() {return massSourceActive_; }
-    inline meshField<label,MeshType>& mask() { return mask_; }
-    inline meshField<label,MeshType>& wallAdjMask() { return wallAdjMask_; }
+    inline bool Jac() {return JacobiGhostMethod_; }
     inline meshField<label,MeshType>& ghostMask() { return ghostMask_; }
-    inline meshField<faceScalar,MeshType>& wallDist() { return wallDist_; }
-    inline meshField<faceScalar,MeshType>& neighborDist() { return neighborDist_; }
 
 };
 
@@ -123,5 +131,11 @@ public:
 } // end namespace briscola
 
 } // end namespace Foam
+
+#ifndef solver_H
+#ifdef NoRepository
+    #include "immersedBoundaryMethod.C"
+#endif
+#endif
 
 #endif

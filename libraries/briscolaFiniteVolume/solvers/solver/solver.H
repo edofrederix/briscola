@@ -8,7 +8,7 @@
 #include "staggeredFields.H"
 #include "dictionary.H"
 
-#include "immersedBoundary.H"
+#include "immersedBoundaryMethod.H"
 
 namespace Foam
 {
@@ -42,8 +42,8 @@ protected:
     // Maximum number of iterations (defaults to 999)
     label maxIter_;
 
-    // Reference to immersed boundary (if any)
-    immersedBoundary<Type, MeshType>* IB_;
+    // Pointer to immersed boundary (if any)
+    immersedBoundaryMethod<Type,MeshType>* IB_;
 
 public:
 
@@ -59,20 +59,27 @@ public:
         (
             const dictionary& dict,
             const fvMesh& fvMsh,
-            immersedBoundary<Type,MeshType>* IB
+            immersedBoundaryMethod<Type,MeshType>* IB
         ),
         (dict, fvMsh, IB)
     );
 
     // Construct from dictionary and mesh
-    solver(const dictionary&, const fvMesh&, immersedBoundary<Type,MeshType>* = nullptr);
+    solver
+    (
+        const dictionary&,
+        const fvMesh&,
+        immersedBoundaryMethod<Type,MeshType>*
+            = nullptr
+    );
 
     // Selector from solver name
     static autoPtr<solver<SType,Type,MeshType>> New
     (
         const word,
         const fvMesh&,
-        immersedBoundary<Type,MeshType>* = nullptr
+        immersedBoundaryMethod<Type,MeshType>*
+            = nullptr
     );
 
     // Selector from dictionary
@@ -80,7 +87,8 @@ public:
     (
         const dictionary&,
         const fvMesh&,
-        immersedBoundary<Type,MeshType>* = nullptr
+        immersedBoundaryMethod<Type,MeshType>*
+            = nullptr
     );
 
     // Destructor
@@ -112,7 +120,8 @@ public:
         const label,
         const labelList&,
         const scalar = 1.0,
-        immersedBoundary<Type, MeshType>* = nullptr
+        immersedBoundaryMethod<Type,MeshType>*
+            = nullptr
     );
 
     // Lexicographic Gauss-Seidel smoother
@@ -123,7 +132,8 @@ public:
         const label,
         const labelList&,
         const scalar = 1.0,
-        immersedBoundary<Type, MeshType>* = nullptr
+        immersedBoundaryMethod<Type,MeshType>*
+            = nullptr
     );
 
     // Jacobi smoother
@@ -134,7 +144,8 @@ public:
         const label,
         const labelList&,
         const scalar = 0.8,
-        immersedBoundary<Type, MeshType>* = nullptr
+        immersedBoundaryMethod<Type,MeshType>*
+            = nullptr
     );
 
     // Print the statistics of the solver outcome for given solver name, field
@@ -146,14 +157,6 @@ public:
         const List<Type>,
         const List<Type>,
         const label
-    );
-
-    // Correct immersed boundary condition
-    static void correctImmersedBoundaryConditions
-    (
-        immersedBoundary<Type, MeshType>*,
-        linearSystem<SType,Type,MeshType>& sys,
-        const label l
     );
 
     // For each direction, check if the solution is converged, given a current

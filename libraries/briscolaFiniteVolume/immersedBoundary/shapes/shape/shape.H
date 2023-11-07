@@ -2,7 +2,7 @@
 #define shape_H
 
 #include "vector.H"
-#include "IOdictionary.H"
+#include "dictionary.H"
 
 namespace Foam
 {

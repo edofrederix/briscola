@@ -3,7 +3,6 @@
 #include "Time.H"
 
 #include "fv.H"
-#include "immersedBoundary.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -64,19 +63,9 @@ int main(int argc, char *argv[])
 
         // Solve predictor
 
-        if
-        (
-            solverDict.found("ImmersedBoundary")
-        )
+        if (!IBs.empty())
         {
-            if (IBs.type() == "penalization")
-            {
-                IBs.penalization(USys);
-            }
-            else if (IBs.type() == "Fadlun")
-            {
-                IBs.FadlunIBM(USys);
-            }
+            IBs->correctLinearSystem(USys);
         }
 
         USolve->solve(USys);
@@ -85,15 +74,15 @@ int main(int argc, char *argv[])
 
         if
         (
-            solverDict.found("ImmersedBoundary")
-            && IBs.massSourceActive()
+            !IBs.empty()
+            && IBs->massSourceActive()
         )
         {
             Poisson->solve
-                (
-                    p,
-                    (ex::coloDiv(U)-IBs.IBMSource(U))/(-deltaT)
-                );
+            (
+                p,
+                (ex::coloDiv(U)-IBs->IBMSource(U))/(-deltaT)
+            );
         }
         else
         {

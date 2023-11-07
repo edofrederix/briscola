@@ -31,9 +31,9 @@ fields/staggeredLevels/staggeredLevels.C
 fields/colocatedFields/colocatedFields.C
 fields/staggeredFields/staggeredFields.C
 
-immersedBoundary/immersedBoundary/immersedBoundary.C
+immersedBoundary/immersedBoundaryMethods/immersedBoundaryMethod/immersedBoundaryMethods.C
 
-immersedBoundary/shapes//shape/shapes.C
+immersedBoundary/shapes/shape/shapes.C
 
 IO/IO.C
 IO/IOReadTemplates.C
