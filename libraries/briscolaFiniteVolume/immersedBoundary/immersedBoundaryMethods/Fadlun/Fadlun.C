@@ -126,8 +126,8 @@ void Fadlun<Type,MeshType>::correctLinearSystem
     }
 }
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}

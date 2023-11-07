@@ -361,8 +361,8 @@ tmp<colocatedScalarField> immersedBoundaryMethod<scalar,staggered>::IBMSource
     return tSource;
 }
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}

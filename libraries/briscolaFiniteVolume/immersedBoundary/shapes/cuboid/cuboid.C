@@ -37,8 +37,8 @@ scalar cuboid::wallDistance(vector c, vector nb)
     return -1;
 }
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}

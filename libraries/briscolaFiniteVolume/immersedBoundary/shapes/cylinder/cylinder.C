@@ -223,8 +223,8 @@ vector cylinder::mirrorPoint(vector gc)
     return (gc + 2.0*n*(radius_-mag(gc-p)));
 }
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}

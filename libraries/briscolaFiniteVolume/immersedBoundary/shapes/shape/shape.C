@@ -49,8 +49,8 @@ autoPtr<shape> shape::New
 shape::~shape()
 {}
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}

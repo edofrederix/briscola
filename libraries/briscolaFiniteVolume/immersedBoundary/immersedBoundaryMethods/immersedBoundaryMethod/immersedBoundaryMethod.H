@@ -126,11 +126,11 @@ public:
 
 };
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}
 
 #ifndef solver_H
 #ifdef NoRepository

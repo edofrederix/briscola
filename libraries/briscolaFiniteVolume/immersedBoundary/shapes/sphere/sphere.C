@@ -128,8 +128,8 @@ vector sphere::mirrorPoint(vector gc)
     return (gc + 2.0*n);
 }
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}

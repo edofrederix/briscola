@@ -89,28 +89,6 @@ if (solverDict.found("ImmersedBoundary"))
     );
 }
 
-// autoPtr<immersedBoundaryMethod<scalar,staggered>> IBs
-// (
-//     immersedBoundaryMethod<scalar,staggered>::New
-//     (
-//         solverDict.subDict("ImmersedBoundary"),
-//         fvMsh
-//     )
-// );
-
-// if (solverDict.found("ImmersedBoundary"))
-// {
-//     forAllLevels(exSource,l,d,i,j,k)
-//     {
-//         if (IBs.mask()(l,d,i,j,k) == 1)
-//         {
-//             // Set source terms to zero inside IB
-//             exSource = Zero;
-//             imSourceCoeff = Zero;
-//         }
-//     }
-// }
-
 // Solvers
 
 linearSystem<stencil,scalar,staggered> USys(U);

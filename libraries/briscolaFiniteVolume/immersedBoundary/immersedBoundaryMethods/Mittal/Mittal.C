@@ -215,8 +215,8 @@ void Mittal<Type,MeshType>::correctJacobiPoints
     }
 }
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}

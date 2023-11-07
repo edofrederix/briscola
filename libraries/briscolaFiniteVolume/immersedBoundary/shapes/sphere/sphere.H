@@ -48,11 +48,11 @@ public:
 
 };
 
-} // end namespace fv
+}
 
-} // end namespace briscola
+}
 
-} // end namespace Foam
+}
 
 #ifdef NoRepository
     #include "sphere.C"
