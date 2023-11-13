@@ -44,6 +44,9 @@ public:
     {
         return typeNumber;
     }
+
+    // Neighbor processor number
+    virtual label neighborProcNum() const { return neighborProcNum_; }
 };
 
 }

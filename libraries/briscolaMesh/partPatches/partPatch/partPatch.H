@@ -105,6 +105,9 @@ public:
 
     // Part patch type number
     virtual label typeNum() const = 0;
+
+    // Neighbor processor number
+    virtual label neighborProcNum() const { return -1; }
 };
 
 }
