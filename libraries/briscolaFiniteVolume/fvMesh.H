@@ -214,6 +214,25 @@ public:
     template<class MeshType>
     const fvMeshMetrics<MeshType>& metrics() const;
 
+    // Cell find function templated for the mesh type. Uses the cell find
+    // function of the base mesh and always acts on the first level.
+    template<class MeshType>
+    labelVector findCell
+    (
+        const vector& p,
+        const label l = 0,
+        const label d = 0
+    ) const;
+
+    // Helper to the find cell function
+    template<class MeshType>
+    List<labelVector> findCells
+    (
+        const vectorList&,
+        const label l = 0,
+        const label d = 0
+    ) const;
+
     // Scheme dictionary
     inline const dictionary& schemeDict() const { return schemeDict_; }
 

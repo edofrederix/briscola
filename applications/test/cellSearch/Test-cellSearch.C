@@ -7,36 +7,44 @@ using namespace Foam;
 using namespace briscola;
 using namespace fv;
 
-template<class Type>
-void testColocatedInterpolations(const fvMesh& fvMsh)
+template<class MeshType>
+void testCellCenters(const fvMesh& fvMsh)
 {
-    const partLevel& lvl = fvMsh.msh()[0];
+    const meshField<vector,MeshType>& cc =
+        fvMsh.template metrics<MeshType>().cellCenters();
 
-    const meshDirection<vector,colocated>& cc =
-        fvMsh.template metrics<colocated>().cellCenters().direction();
-
-    vectorList points(lvl.size());
-
-    label c = 0;
-    forAllBlock(lvl, i, j, k)
+    forAllLevels(cc, l, d, i, j, k)
     {
-        points[c++] = cc(i,j,k);
+        // Near edges, move the point a little bit inward to avoid issues
+
+        const labelVector shift
+        (
+            i == 0 ? 1 : i == cc.I(l,d).right()-1 ? -1 : 0,
+            j == 0 ? 1 : j == cc.I(l,d).top()  -1 ? -1 : 0,
+            k == 0 ? 1 : k == cc.I(l,d).fore() -1 ? -1 : 0
+        );
+
+        const vector point =
+            (1.0-1e-12)*cc(l,d,i,j,k)
+          + 1e-12*cc(l,d,i+shift.x(),j+shift.y(),k+shift.z());
+
+        labelVector ijk = fvMsh.findCell<MeshType>(point, l, d);
+
+        if (ijk != labelVector(i,j,k))
+            FatalErrorInFunction
+                << "Test 1 failed" << endl << abort(FatalError);
     }
+}
 
-    autoPtr<pointInterpolator> nInterpPtr
-    (
-        pointInterpolator::New(fvMsh,points,"nearest")
-    );
+template<class Type, class MeshType>
+void testInterpolations(const fvMesh& fvMsh)
+{
+    const meshField<vector,MeshType>& cc =
+        fvMsh.template metrics<MeshType>().cellCenters();
 
-    autoPtr<pointInterpolator> lInterpPtr
-    (
-        pointInterpolator::New(fvMsh,points,"nearest")
-    );
+    meshField<Type,MeshType> field("field", fvMsh);
+    field.makeDeep();
 
-    pointInterpolator& nInterp = nInterpPtr();
-    pointInterpolator& lInterp = lInterpPtr();
-
-    meshField<Type,colocated> field("field", fvMsh);
     field = Zero;
 
     forAllLevels(field, l, d, i, j, k)
@@ -44,27 +52,76 @@ void testColocatedInterpolations(const fvMesh& fvMsh)
         field(l,d,i,j,k) = (i+j+k+l+d)*pTraits<Type>::one;
     }
 
-    List<Type> nValues(nInterp(field));
-    List<Type> lValues(lInterp(field));
-
-    c = 0;
-    forAllBlock(lvl, i, j, k)
+    forAll(cc, l)
     {
-        if (nValues[c] != field(i,j,k))
-            FatalErrorInFunction
-                << "test 3 failed" << endl << abort(FatalError);
+        forAll(cc[l], d)
+        {
+            const meshDirection<vector,MeshType>& ccld = cc[l][d];
 
-        c++;
-    }
+            vectorList points(ccld.size());
 
-    c = 0;
-    forAllBlock(lvl, i, j, k)
-    {
-        if (lValues[c] != field(i,j,k))
-            FatalErrorInFunction
-                << "test 4 failed" << endl << abort(FatalError);
+            label c = 0;
+            forAllCells(ccld, i, j, k)
+            {
+                // Near edges, move the point a little bit inward to avoid
+                // issues
 
-        c++;
+                const labelVector shift
+                (
+                    i == 0 ? 1 : i == cc.I(l,d).right()-1 ? -1 : 0,
+                    j == 0 ? 1 : j == cc.I(l,d).top()  -1 ? -1 : 0,
+                    k == 0 ? 1 : k == cc.I(l,d).fore() -1 ? -1 : 0
+                );
+
+                points[c++] =
+                    (1.0-1e-12)*ccld(i,j,k)
+                  + 1e-12*ccld(i+shift.x(),j+shift.y(),k+shift.z());
+            }
+
+            autoPtr<pointInterpolator<MeshType>> nInterpPtr
+            (
+                pointInterpolator<MeshType>::New
+                (
+                    fvMsh,
+                    points,
+                    "nearest",
+                    false,
+                    l,
+                    d
+                )
+            );
+
+            autoPtr<pointInterpolator<MeshType>> lInterpPtr
+            (
+                pointInterpolator<MeshType>::New
+                (
+                    fvMsh,
+                    points,
+                    "linear",
+                    false,
+                    l,
+                    d
+                )
+            );
+
+            pointInterpolator<MeshType>& nInterp = nInterpPtr();
+            pointInterpolator<MeshType>& lInterp = lInterpPtr();
+
+            List<Type> nValues(move(nInterp(field)));
+            List<Type> lValues(move(lInterp(field)));
+
+            c = 0;
+            forAllCells(ccld, i, j, k)
+                if (Foam::mag(nValues[c++] - field(l,d,i,j,k)) > 1e-4)
+                    FatalErrorInFunction
+                        << "test 2 failed" << endl << abort(FatalError);
+
+            c = 0;
+            forAllCells(ccld, i, j, k)
+                if (Foam::mag(lValues[c++] - field(l,d,i,j,k)) > 1e-4)
+                    FatalErrorInFunction
+                        << "test 3 failed" << endl << abort(FatalError);
+        }
     }
 }
 
@@ -87,44 +144,29 @@ int main(int argc, char *argv[])
 
     fvMesh fvMsh(meshDict, runTime);
 
-    const mesh& msh = fvMsh.msh();
-
     // Find cell centers and see if they match
 
-    forAll(msh, l)
-    {
-        const partLevel& lvl = msh[l];
+    testCellCenters<colocated>(fvMsh);
 
-        forAllBlock(lvl, i, j, k)
-        {
-            const vertexVector vertices(lvl.points().cellPoints(i,j,k));
-
-            vector point = Zero;
-            for(int v = 0; v < 8; v++)
-                point += vertices[v]/8.0;
-
-            labelVector ijk = msh.findCell(point, l);
-
-            if (ijk != labelVector(i,j,k))
-            {
-                FatalErrorInFunction
-                    << "Test 1 failed" << endl << abort(FatalError);
-            }
-
-            if (!lvl.points().pointInCell(point, ijk))
-                FatalErrorInFunction
-                    << "Test 2 failed" << endl << abort(FatalError);
-        }
-    }
+    if (fvMsh.structured())
+        testCellCenters<staggered>(fvMsh);
 
     // Interpolate points
 
-    testColocatedInterpolations<scalar>(fvMsh);
-    testColocatedInterpolations<vector>(fvMsh);
-    testColocatedInterpolations<tensor>(fvMsh);
-    testColocatedInterpolations<sphericalTensor>(fvMsh);
-    testColocatedInterpolations<symmTensor>(fvMsh);
-    testColocatedInterpolations<diagTensor>(fvMsh);
-    testColocatedInterpolations<faceScalar>(fvMsh);
-    testColocatedInterpolations<faceVector>(fvMsh);
+    testInterpolations<scalar,colocated>(fvMsh);
+    testInterpolations<vector,colocated>(fvMsh);
+    testInterpolations<tensor,colocated>(fvMsh);
+    testInterpolations<sphericalTensor,colocated>(fvMsh);
+    testInterpolations<symmTensor,colocated>(fvMsh);
+    testInterpolations<diagTensor,colocated>(fvMsh);
+
+    if (fvMsh.structured())
+    {
+        testInterpolations<scalar,staggered>(fvMsh);
+        testInterpolations<vector,staggered>(fvMsh);
+        testInterpolations<tensor,staggered>(fvMsh);
+        testInterpolations<sphericalTensor,staggered>(fvMsh);
+        testInterpolations<symmTensor,staggered>(fvMsh);
+        testInterpolations<diagTensor,staggered>(fvMsh);
+    }
 }

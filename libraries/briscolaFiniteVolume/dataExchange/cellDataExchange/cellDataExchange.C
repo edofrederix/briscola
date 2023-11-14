@@ -14,14 +14,84 @@ defineTemplateTypeNameAndDebug(cellDataExchange<colocated>, 0);
 defineTemplateTypeNameAndDebug(cellDataExchange<staggered>, 0);
 
 template<class MeshType>
+void cellDataExchange<MeshType>::setupComms
+(
+    const labelList& myProcsToTalkTo,
+    const labelList& recvCounts
+)
+{
+    recvProcNums_ = myProcsToTalkTo;
+    recvCounts_ = recvCounts;
+
+    List<List<Tuple2<label,label>>> globalData(Pstream::nProcs());
+
+    globalData[Pstream::myProcNo()].setSize(myProcsToTalkTo.size());
+
+    forAll(myProcsToTalkTo, i)
+        globalData[Pstream::myProcNo()][i] =
+            Tuple2<label,label>(myProcsToTalkTo[i], recvCounts[i]);
+
+    Pstream::gatherList(globalData);
+    Pstream::scatterList(globalData);
+
+    // Collect
+
+    sendProcNums_.setSize(0);
+    sendCounts_.setSize(0);
+
+    forAll(globalData, i)
+    if (i != Pstream::myProcNo())
+    {
+        forAll(globalData[i], j)
+        {
+            if (globalData[i][j].first() == Pstream::myProcNo())
+            {
+                sendProcNums_.append(i);
+                sendCounts_.append(globalData[i][j].second());
+            }
+        }
+    }
+
+    // Set patch pointers if they exist
+
+    recvPatchPtrs_.setSize(recvProcNums_.size());
+    sendPatchPtrs_.setSize(sendProcNums_.size());
+
+    recvPatchPtrs_ = nullptr;
+    sendPatchPtrs_ = nullptr;
+
+    const mesh& msh = this->fvMsh_.msh();
+
+    forAll(msh.partPatches(), i)
+    {
+        const partPatch& patch = msh.partPatches()[i];
+
+        if (patch.typeNum() != boundaryPartPatch::typeNumber)
+        {
+            const label procNum = patch.neighborProcNum();
+
+            const label ir = findIndex(recvProcNums_, procNum);
+            const label is = findIndex(sendProcNums_, procNum);
+
+            if (ir > -1)
+                sendPatchPtrs_[ir] = &patch;
+
+            if (is > -1)
+                recvPatchPtrs_[is] = &patch;
+        }
+    }
+}
+
+template<class MeshType>
 cellDataExchange<MeshType>::cellDataExchange
 (
     const List<labelVector>& indices,
     const fvMesh& fvMsh,
+    const label l,
     const label d
 )
 :
-    dataExchange<MeshType>(fvMsh,d)
+    dataExchange<MeshType>(fvMsh,l,d)
 {
     init(indices);
 }
@@ -36,7 +106,13 @@ cellDataExchange<MeshType>::cellDataExchange
     indices_(e.indices_),
     map_(e.map_),
     sendCells_(e.sendCells_),
-    recvCells_(e.recvCells_)
+    recvCells_(e.recvCells_),
+    sendProcNums_(e.sendProcNums_),
+    recvProcNums_(e.recvProcNums_),
+    sendCounts_(e.sendCounts_),
+    recvCounts_(e.recvCounts_),
+    sendPatchPtrs_(e.sendPatchPtrs_),
+    recvPatchPtrs_(e.recvPatchPtrs_)
 {}
 
 template<class MeshType>
@@ -51,7 +127,7 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
     map_.clear();
     map_.setSize(indices.size());
 
-    const faceLabel I = this->fvMsh_.template I<MeshType>(this->d_);
+    const faceLabel I = this->fvMsh_.template I<MeshType>(this->l_,this->d_);
 
     const labelVector U = I.upper();
     const labelVector L = I.lower();
@@ -143,7 +219,7 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
         cellCount.append(recvCells_[i].size());
     }
 
-    this->setupComms(myProcsToTalkTo, cellCount);
+    setupComms(myProcsToTalkTo, cellCount);
 
     // Trim recv data
 
@@ -158,27 +234,27 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
     // Send indices to neighbors and receive from neighbors
 
     sendCells_.clear();
-    sendCells_.setSize(this->sendProcNums_.size());
+    sendCells_.setSize(sendProcNums_.size());
 
-    forAll(this->sendProcNums_, i)
+    forAll(sendProcNums_, i)
     {
-        sendCells_[i].setSize(this->sendCounts_[i]);
+        sendCells_[i].setSize(sendCounts_[i]);
 
         UIPstream::read
         (
             Pstream::commsTypes::nonBlocking,
-            this->sendProcNums_[i],
+            sendProcNums_[i],
             reinterpret_cast<char*>(sendCells_[i].begin()),
             sendCells_[i].byteSize()
         );
     }
 
-    forAll(this->recvProcNums_, i)
+    forAll(recvProcNums_, i)
     {
         UOPstream::write
         (
             Pstream::commsTypes::nonBlocking,
-            this->recvProcNums_[i],
+            recvProcNums_[i],
             reinterpret_cast<char*>(recvCells_[i].begin()),
             recvCells_[i].byteSize()
         );
@@ -188,9 +264,9 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
     // Transform send cell indices
 
-    forAll(this->sendProcNums_, i)
+    forAll(sendProcNums_, i)
     {
-        const partPatch& patch = *this->sendPatchPtrs_[i];
+        const partPatch& patch = *sendPatchPtrs_[i];
         const labelTensor& T = patch.T();
 
         faceLabel J = pTransform<faceLabel>(T,I);
@@ -229,12 +305,12 @@ List<Type> cellDataExchange<MeshType>::dataFunc
 
     forAll(recvCells_, i)
     {
-        data[i].setSize(this->recvCounts_[i]);
+        data[i].setSize(recvCounts_[i]);
 
         UIPstream::read
         (
             Pstream::commsTypes::nonBlocking,
-            this->recvProcNums_[i],
+            recvProcNums_[i],
             reinterpret_cast<char*>(data[i].begin()),
             data[i].byteSize()
         );
@@ -245,12 +321,12 @@ List<Type> cellDataExchange<MeshType>::dataFunc
         List<Type> data(sendCells_[i].size());
 
         forAll(data, j)
-            data[j] = field(this->d_,sendCells_[i][j]);
+            data[j] = field(this->l_,this->d_,sendCells_[i][j]);
 
         UOPstream::write
         (
             Pstream::commsTypes::nonBlocking,
-            this->sendProcNums_[i],
+            sendProcNums_[i],
             reinterpret_cast<char*>(data.begin()),
             data.byteSize()
         );

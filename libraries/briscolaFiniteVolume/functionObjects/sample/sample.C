@@ -19,7 +19,7 @@ void sample::init()
 {
     interpPtr_.reset
     (
-        pointInterpolator::New
+        pointInterpolator<colocated>::New
         (
             fvMsh_,
             this->points(),

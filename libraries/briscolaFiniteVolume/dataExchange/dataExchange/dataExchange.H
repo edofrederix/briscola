@@ -20,30 +20,11 @@ protected:
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
+    // Mesh level
+    const label l_;
+
     // Mesh direction
     const label d_;
-
-    // List of processors to send to
-    labelList sendProcNums_;
-
-    // List of processors ro receive from
-    labelList recvProcNums_;
-
-    // List of send counts per processor
-    labelList sendCounts_;
-
-    // List of receive counts per processor
-    labelList recvCounts_;
-
-    // List of patch pointers corresponding to send processors
-    List<const partPatch*> sendPatchPtrs_;
-
-    // List of patch pointers corresponding to receive processors
-    List<const partPatch*> recvPatchPtrs_;
-
-    // Given a local list of processor numbers to talk to and receive counts,
-    // setup send/recv lists
-    void setupComms(const labelList&, const labelList&);
 
 private:
 
@@ -56,7 +37,7 @@ public:
     ClassName("dataExchange");
 
     // Construct from mesh and mesh direction
-    dataExchange(const fvMesh&, const label d = 0);
+    dataExchange(const fvMesh&, const label l = 0, const label d = 0);
 
     // Copy constructor
     dataExchange(const dataExchange&);
@@ -69,6 +50,12 @@ public:
     {
         return fvMsh_;
     }
+
+    // Return the level number
+    inline label l() const { return l_; }
+
+    // Return the direction number
+    inline label d() const { return d_; }
 
     // Obtain the data
 

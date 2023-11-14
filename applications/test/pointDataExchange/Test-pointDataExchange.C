@@ -6,12 +6,17 @@
 
 #include "fvMesh.H"
 
-#include "cellDataExchange.H"
-#include "parallelPartPatch.H"
+#include "pointDataExchange.H"
+
+#include "Random.H"
+#include "constants.H"
 
 using namespace Foam;
 using namespace briscola;
 using namespace fv;
+
+int seed = 0;
+const int N = 100;
 
 template<class MeshType>
 inline scalar coord
@@ -51,62 +56,58 @@ inline bool test
 template<class Type, class MeshType>
 void testDataExchange(const fvMesh& fvMsh)
 {
-    meshField<Type,MeshType> f("f", fvMsh);
-
     const meshField<vector,MeshType>& cc =
         fvMsh.metrics<MeshType>().cellCenters();
 
-    for (int dir = 0; dir < 2; dir++)
-    {
-        forAllDirections(f, d, i, j, k)
-        {
-            f(d,i,j,k) = cc(d,i,j,k)[dir]*pTraits<Type>::one;
-        }
+    meshField<Type,MeshType> f("f", fvMsh);
+    f.makeDeep();
 
+    const faceScalar bb(fvMsh.msh().boundingBox());
+
+    for (int dir = 0; dir < 3; dir++)
+    {
+        // Copy all data including ghosts, not just cell data
+
+        forAll(f, l)
+            forAll(f[l], d)
+                forAllBlock(f[l][d].B(), i, j, k)
+                    f[l][d].B()(i,j,k) =
+                        cc[l][d].B()(i,j,k)[dir]*pTraits<Type>::one;
+
+        forAll(f, l)
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
-            const faceLabel I = fvMsh.I<MeshType>(d);
+            // Generate random points, assuming a domain that coincides with its
+            // bounding box
 
-            // Add some sample cells that are outside this processor domain
+            Random R(Pstream::myProcNo() + seed++);
 
-            List<labelVector> cells;
+            vectorList points(N);
+            forAll(points, c)
+                points[c] = vector
+                (
+                    R.scalarAB(bb.left(),   bb.right()),
+                    R.scalarAB(bb.bottom(), bb.top()  ),
+                    R.scalarAB(bb.aft(),    bb.fore() )
+                );
 
-            forAll(fvMsh.msh().partPatches(), i)
-            {
-                const partPatch& patch = fvMsh.msh().partPatches()[i];
-
-                if (patch.typeNum() == parallelPartPatch::typeNumber)
-                {
-                    const labelVector bo = patch.boundaryOffset();
-
-                    for (int j = 0; j < 4+Pstream::myProcNo(); j++)
-                        cells.append
-                        (
-                            (
-                                bo.x() == 0 ? unitX*(j*3+2)
-                              : bo.x() == 1 ? (I.right()-1)*unitX
-                              :               zeroXYZ
-                            )
-                          + (
-                                bo.y() == 0 ? unitY*(j*3+2)
-                              : bo.y() == 1 ? (I.top()-1)*unitY
-                              :               zeroXYZ
-                            )
-                          + labelVector(bo*(j+1))
-                        );
-                }
-            }
-
-            cellDataExchange<MeshType> exchange(cells, fvMsh, 0, d);
+            pointDataExchange<MeshType> exchange(points, fvMsh, l, d);
 
             List<Type> data(move(exchange(f)));
 
             // Check the coordinate
 
             forAll(data, i)
-                if (!test<Type,MeshType>(data[i],cells[i],d,dir))
+                if
+                (
+                    Foam::mag
+                    (
+                        Foam::mag(data[i])/Foam::mag(pTraits<Type>::one)
+                      - points[i][dir]
+                    ) > 1e-3
+                )
                     FatalErrorInFunction
-                        << "Test 1a failed" << endl << abort(FatalError);
+                        << "Test 1 failed" << endl << abort(FatalError);
         }
     }
 }

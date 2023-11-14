@@ -269,10 +269,10 @@ public:
     // mesh specializations for better performance.
     virtual labelVector findCell(const vector& p, const label l = 0) const;
 
-    //- Find the cell indices of the given list of points at given mesh level
+    // Find the cell indices of the given list of points at given mesh level
     virtual List<labelVector> findCells(const vectorList&, const label) const;
 
-    //- Disallow default bitwise assignment
+    // Disallow default bitwise assignment
     void operator=(const mesh&);
 };
 
