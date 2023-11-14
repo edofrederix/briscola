@@ -2,6 +2,7 @@
 #include "addToRunTimeSelectionTable.H"
 
 #include "midPointInterpolationScheme.H"
+#include "curvatureInterpolationScheme.H"
 
 namespace Foam
 {
@@ -23,6 +24,12 @@ makeInterpolationSchemeType(midPoint,scalar,staggered)
 
 makeInterpolationSchemeType(midPoint,vector,colocated)
 makeInterpolationSchemeType(midPoint,vector,staggered)
+
+makeInterpolationSchemeType(curvature,scalar,colocated)
+makeInterpolationSchemeType(curvature,scalar,staggered)
+
+makeInterpolationSchemeType(curvature,vector,colocated)
+makeInterpolationSchemeType(curvature,vector,staggered)
 
 }
 

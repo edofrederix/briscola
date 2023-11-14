@@ -138,6 +138,10 @@ public:
     // Return const access to the volume fraction
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
+    // Return field with the minimun density of both phases
+    template<class MeshType>
+    tmp<meshField<scalar,MeshType>> minRho() const;
+
     // Return const access to the mixture mass density
     template<class MeshType>
     const meshField<scalar,MeshType>& rho() const;

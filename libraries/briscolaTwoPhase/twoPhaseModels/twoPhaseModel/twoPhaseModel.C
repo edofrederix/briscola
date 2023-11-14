@@ -254,6 +254,18 @@ void twoPhaseModel::correctMixture()
     surfaceTensionSchemePtr_->correct();
 }
 
+template<>
+tmp<colocatedScalarField> twoPhaseModel::minRho<colocated>() const
+{
+    return min(rho1_, rho2_);
+}
+
+template<>
+tmp<staggeredScalarField> twoPhaseModel::minRho<staggered>() const
+{
+    return min(rho1Ptr_(), rho2Ptr_());
+}
+
 }
 
 }
