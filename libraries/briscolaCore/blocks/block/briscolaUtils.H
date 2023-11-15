@@ -509,43 +509,29 @@ inline labelVector cmptMax(const labelVector& a, const labelVector& b)
 // Return the face number given a face offset
 inline label faceNumber(const labelVector& o)
 {
-    for (label i = 0; i < 6; i++)
-    {
-        if (faceOffsets[i] == o)
-        {
-            return i;
-        }
-    }
-
-    return -1;
+    return
+        cmptSum(cmptMag(o)) != 1 ? -1
+      : o.x() != 0 ? (o.x()+1)/2
+      : o.y() != 0 ? (o.y()+1)/2 + 2
+      :              (o.z()+1)/2 + 4;
 }
 
 // Return the edge number given an edge offset
 inline label edgeNumber(const labelVector& o)
 {
-    for (label i = 0; i < 12; i++)
-    {
-        if (edgeOffsets[i] == o)
-        {
-            return i;
-        }
-    }
-
-    return -1;
+    return
+        cmptSum(cmptMag(o)) != 2 ? -1
+      : o.x() == 0 ? (o.y()+1)/2 + (o.z()+1)
+      : o.y() == 0 ? (o.x()+1)/2 + (o.z()+1) + 4
+      :              (o.x()+1)/2 + (o.y()+1) + 8;
 }
 
 // Return the vertex number given vertex offset
 inline label vertexNumber(const labelVector& o)
 {
-    for (label i = 0; i < 8; i++)
-    {
-        if (vertexOffsets[i] == o)
-        {
-            return i;
-        }
-    }
-
-    return -1;
+    return
+        cmptSum(cmptMag(o)) != 3 ? -1
+      : (o.x()+1)/2 + (o.y()+1) + (o.z()+1)*2;
 }
 
 // Calculate the rotation tensor of one face offset vector to another
