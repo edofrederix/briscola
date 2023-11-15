@@ -95,6 +95,12 @@ void testDataExchange(const fvMesh& fvMsh)
                           + labelVector(bo*(j+1))
                         );
                 }
+
+                // Also add some local cells
+
+                cells.append(labelVector(1,1,0));
+                cells.append(labelVector(2,0,0));
+                cells.append(labelVector(4,3,0));
             }
 
             cellDataExchange<MeshType> exchange(cells, fvMsh, 0, d);
@@ -106,7 +112,7 @@ void testDataExchange(const fvMesh& fvMsh)
             forAll(data, i)
                 if (!test<Type,MeshType>(data[i],cells[i],d,dir))
                     FatalErrorInFunction
-                        << "Test 1a failed" << endl << abort(FatalError);
+                        << "Test 1 failed" << endl << abort(FatalError);
         }
     }
 }

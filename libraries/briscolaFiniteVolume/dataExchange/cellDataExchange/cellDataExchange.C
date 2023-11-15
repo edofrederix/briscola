@@ -14,75 +14,6 @@ defineTemplateTypeNameAndDebug(cellDataExchange<colocated>, 0);
 defineTemplateTypeNameAndDebug(cellDataExchange<staggered>, 0);
 
 template<class MeshType>
-void cellDataExchange<MeshType>::setupComms
-(
-    const labelList& myProcsToTalkTo,
-    const labelList& recvCounts
-)
-{
-    recvProcNums_ = myProcsToTalkTo;
-    recvCounts_ = recvCounts;
-
-    List<List<Tuple2<label,label>>> globalData(Pstream::nProcs());
-
-    globalData[Pstream::myProcNo()].setSize(myProcsToTalkTo.size());
-
-    forAll(myProcsToTalkTo, i)
-        globalData[Pstream::myProcNo()][i] =
-            Tuple2<label,label>(myProcsToTalkTo[i], recvCounts[i]);
-
-    Pstream::gatherList(globalData);
-    Pstream::scatterList(globalData);
-
-    // Collect
-
-    sendProcNums_.setSize(0);
-    sendCounts_.setSize(0);
-
-    forAll(globalData, i)
-    if (i != Pstream::myProcNo())
-    {
-        forAll(globalData[i], j)
-        {
-            if (globalData[i][j].first() == Pstream::myProcNo())
-            {
-                sendProcNums_.append(i);
-                sendCounts_.append(globalData[i][j].second());
-            }
-        }
-    }
-
-    // Set patch pointers if they exist
-
-    recvPatchPtrs_.setSize(recvProcNums_.size());
-    sendPatchPtrs_.setSize(sendProcNums_.size());
-
-    recvPatchPtrs_ = nullptr;
-    sendPatchPtrs_ = nullptr;
-
-    const mesh& msh = this->fvMsh_.msh();
-
-    forAll(msh.partPatches(), i)
-    {
-        const partPatch& patch = msh.partPatches()[i];
-
-        if (patch.typeNum() != boundaryPartPatch::typeNumber)
-        {
-            const label procNum = patch.neighborProcNum();
-
-            const label ir = findIndex(recvProcNums_, procNum);
-            const label is = findIndex(sendProcNums_, procNum);
-
-            if (ir > -1)
-                sendPatchPtrs_[ir] = &patch;
-
-            if (is > -1)
-                recvPatchPtrs_[is] = &patch;
-        }
-    }
-}
-
-template<class MeshType>
 cellDataExchange<MeshType>::cellDataExchange
 (
     const List<labelVector>& indices,
@@ -105,14 +36,9 @@ cellDataExchange<MeshType>::cellDataExchange
     dataExchange<MeshType>(e),
     indices_(e.indices_),
     map_(e.map_),
+    neighbors_(e.neighbors_),
     sendCells_(e.sendCells_),
-    recvCells_(e.recvCells_),
-    sendProcNums_(e.sendProcNums_),
-    recvProcNums_(e.recvProcNums_),
-    sendCounts_(e.sendCounts_),
-    recvCounts_(e.recvCounts_),
-    sendPatchPtrs_(e.sendPatchPtrs_),
-    recvPatchPtrs_(e.recvPatchPtrs_)
+    recvCells_(e.recvCells_)
 {}
 
 template<class MeshType>
@@ -124,9 +50,6 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 {
     indices_ = indices;
 
-    map_.clear();
-    map_.setSize(indices.size());
-
     const faceLabel I = this->fvMsh_.template I<MeshType>(this->l_,this->d_);
 
     const labelVector U = I.upper();
@@ -134,10 +57,23 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
     const mesh& msh = this->fvMsh_.msh();
 
+    // Set neighboring processor numbers and patches. The first one is us.
+
+    neighbors_.clear();
+    neighbors_.setSize(msh.partPatches().size()+1,-1);
+    neighbors_[0] = Pstream::myProcNo();
+
+    forAll(msh.partPatches(), i)
+        if (msh.partPatches()[i].typeNum() != boundaryPartPatch::typeNumber)
+            neighbors_[i+1] = msh.partPatches()[i].neighborProcNum();
+
     // Collect the required cells and store per neighbor processor
 
     recvCells_.clear();
-    recvCells_.setSize(msh.partPatches().size());
+    recvCells_.setSize(msh.partPatches().size()+1);
+
+    map_.clear();
+    map_.setSize(indices.size());
 
     forAll(indices, i)
     {
@@ -153,120 +89,123 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
         const labelVector offset = index - closest;
 
         if (offset == zeroXYZ)
-            FatalErrorInFunction
-                << "Requesting data exchange for a local cell" << endl
-                << abort(FatalError);
-
-        const labelVector bo =
-            briscola::cmptMin(briscola::cmptMax(offset, -unitXYZ), unitXYZ);
-
-        const label degree = cmptSum(cmptMag(bo));
-
-        if (!this->fvMsh_.structured() && degree > 1)
-            FatalErrorInFunction
-                << "Can only obtain cell data across faces "
-                << "on unstructured meshes" << endl
-                << abort(FatalError);
-
-        // Get the patch to the other processor
-
-        label patchNum = -1;
-
-        forAll(msh.partPatches(), patchi)
-        if (msh.partPatches()[patchi].boundaryOffset() == bo)
         {
-            patchNum = patchi;
-            break;
+            // Local point
+
+            recvCells_[0].append(index);
+            map_[i] = Tuple2<label,label>(0,recvCells_[0].size()-1);
         }
+        else
+        {
+            const labelVector bo =
+                briscola::cmptMin(briscola::cmptMax(offset, -unitXYZ), unitXYZ);
 
-        if (patchNum == -1)
-            FatalErrorInFunction
-                << "Could not find patch corresponding to boundary offset "
-                << bo << endl << abort(FatalError);
+            const label degree = cmptSum(cmptMag(bo));
 
-        const partPatch& patch = msh.partPatches()[patchNum];
+            if (!this->fvMsh_.structured() && degree > 1)
+                FatalErrorInFunction
+                    << "Can only obtain cell data across faces "
+                    << "on unstructured meshes" << endl
+                    << abort(FatalError);
 
-        if (patch.typeNum() == boundaryPartPatch::typeNumber)
-            FatalErrorInFunction
-                << "Cannot exchange cell data across a boundary part patch"
-                << endl << abort(FatalError);
+            // Get the patch to the other processor
 
-        // Store trimmed index
+            label patchNum = -1;
 
-        for (int j = 0; j < 3; j++)
-            if (bo[j] != 0)
-                index[j] = bo[j] > 0 ? index[j]-(U[j]-1) : index[j]-L[j];
+            forAll(msh.partPatches(), patchi)
+            if (msh.partPatches()[patchi].boundaryOffset() == bo)
+            {
+                patchNum = patchi;
+                break;
+            }
 
-        recvCells_[patchNum].append(index);
+            if (patchNum == -1)
+                FatalErrorInFunction
+                    << "Could not find patch corresponding to boundary offset "
+                    << bo << endl << abort(FatalError);
 
-        map_[i] =
-            Tuple2<label,label>
-            (
-                patchNum,
-                recvCells_[patchNum].size()-1
-            );
+            const partPatch& patch = msh.partPatches()[patchNum];
+
+            if (patch.typeNum() == boundaryPartPatch::typeNumber)
+                FatalErrorInFunction
+                    << "Cannot exchange cell data across a boundary part patch"
+                    << endl << abort(FatalError);
+
+            // Store trimmed index
+
+            for (int j = 0; j < 3; j++)
+                if (bo[j] != 0)
+                    index[j] = bo[j] > 0 ? index[j]-(U[j]-1) : index[j]-L[j];
+
+            recvCells_[patchNum+1].append(index);
+
+            map_[i] =
+                Tuple2<label,label>
+                (
+                    patchNum+1,
+                    recvCells_[patchNum+1].size()-1
+                );
+        }
     }
 
-    // Exchange processor numbers to talk to
+    // Exchange processor numbers to talk to and data sizes
 
-    labelList myProcsToTalkTo;
-    labelList cellCount;
-
-    forAll(recvCells_, i)
-    if (recvCells_[i].size() > 0)
-    {
-        myProcsToTalkTo.append(msh.partPatches()[i].neighborProcNum());
-        cellCount.append(recvCells_[i].size());
-    }
-
-    setupComms(myProcsToTalkTo, cellCount);
-
-    // Trim recv data
-
-    List<List<labelVector>> recvCellsTemp;
+    List<List<Tuple2<label,label>>> globalData(Pstream::nProcs());
 
     forAll(recvCells_, i)
         if (recvCells_[i].size() > 0)
-            recvCellsTemp.append(recvCells_[i]);
+            globalData[Pstream::myProcNo()].append
+            (
+                Tuple2<label,label>(neighbors_[i], recvCells_[i].size())
+            );
 
-    recvCells_ = recvCellsTemp;
+    Pstream::gatherList(globalData);
+    Pstream::scatterList(globalData);
+
+    // Collect
+
+    sendCells_.clear();
+    sendCells_.setSize(recvCells_.size());
+
+    forAll(sendCells_, i)
+        if (neighbors_[i] > -1)
+            forAll(globalData[neighbors_[i]], j)
+                if (globalData[neighbors_[i]][j].first() == Pstream::myProcNo())
+                    sendCells_[i].setSize
+                    (
+                        globalData[neighbors_[i]][j].second()
+                    );
 
     // Send indices to neighbors and receive from neighbors
 
-    sendCells_.clear();
-    sendCells_.setSize(sendProcNums_.size());
+    forAll(sendCells_, i)
+        if (sendCells_[i].size() > 0)
+            UIPstream::read
+            (
+                Pstream::commsTypes::nonBlocking,
+                neighbors_[i],
+                reinterpret_cast<char*>(sendCells_[i].begin()),
+                sendCells_[i].byteSize()
+            );
 
-    forAll(sendProcNums_, i)
-    {
-        sendCells_[i].setSize(sendCounts_[i]);
-
-        UIPstream::read
-        (
-            Pstream::commsTypes::nonBlocking,
-            sendProcNums_[i],
-            reinterpret_cast<char*>(sendCells_[i].begin()),
-            sendCells_[i].byteSize()
-        );
-    }
-
-    forAll(recvProcNums_, i)
-    {
-        UOPstream::write
-        (
-            Pstream::commsTypes::nonBlocking,
-            recvProcNums_[i],
-            reinterpret_cast<char*>(recvCells_[i].begin()),
-            recvCells_[i].byteSize()
-        );
-    }
+    forAll(recvCells_, i)
+        if (recvCells_[i].size() > 0)
+            UOPstream::write
+            (
+                Pstream::commsTypes::nonBlocking,
+                neighbors_[i],
+                reinterpret_cast<char*>(recvCells_[i].begin()),
+                recvCells_[i].byteSize()
+            );
 
     UPstream::waitRequests();
 
-    // Transform send cell indices
+    // Displace and transform send cell indices. Not needed for local cells.
 
-    forAll(sendProcNums_, i)
+    forAll(sendCells_, i)
+    if (i != 0 && sendCells_[i].size() > 0)
     {
-        const partPatch& patch = *sendPatchPtrs_[i];
+        const partPatch& patch = msh.partPatches()[i-1];
         const labelTensor& T = patch.T();
 
         faceLabel J = pTransform<faceLabel>(T,I);
@@ -304,19 +243,21 @@ List<Type> cellDataExchange<MeshType>::dataFunc
     List<List<Type>> data(recvCells_.size());
 
     forAll(recvCells_, i)
+    if (recvCells_[i].size() > 0)
     {
-        data[i].setSize(recvCounts_[i]);
+        data[i].setSize(recvCells_[i].size());
 
         UIPstream::read
         (
             Pstream::commsTypes::nonBlocking,
-            recvProcNums_[i],
+            neighbors_[i],
             reinterpret_cast<char*>(data[i].begin()),
             data[i].byteSize()
         );
     }
 
     forAll(sendCells_, i)
+    if (sendCells_[i].size() > 0)
     {
         List<Type> data(sendCells_[i].size());
 
@@ -326,7 +267,7 @@ List<Type> cellDataExchange<MeshType>::dataFunc
         UOPstream::write
         (
             Pstream::commsTypes::nonBlocking,
-            sendProcNums_[i],
+            neighbors_[i],
             reinterpret_cast<char*>(data.begin()),
             data.byteSize()
         );

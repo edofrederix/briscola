@@ -24,33 +24,14 @@ class cellDataExchange
     // For each index, the receive number and index number
     List<Tuple2<label,label>> map_;
 
+    // Neighboring processor numbers
+    labelList neighbors_;
+
     // For each processor the cell indices to be sent
     List<List<labelVector>> sendCells_;
 
     // For each processor the cell indices to be received
     List<List<labelVector>> recvCells_;
-
-    // List of processors to send to
-    labelList sendProcNums_;
-
-    // List of processors ro receive from
-    labelList recvProcNums_;
-
-    // List of send counts per processor
-    labelList sendCounts_;
-
-    // List of receive counts per processor
-    labelList recvCounts_;
-
-    // List of patch pointers corresponding to send processors
-    List<const partPatch*> sendPatchPtrs_;
-
-    // List of patch pointers corresponding to receive processors
-    List<const partPatch*> recvPatchPtrs_;
-
-    // Given a local list of processor numbers to talk to and receive counts,
-    // setup send/recv lists
-    void setupComms(const labelList&, const labelList&);
 
 private:
 
