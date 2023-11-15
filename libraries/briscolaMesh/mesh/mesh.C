@@ -341,7 +341,7 @@ void mesh::setCommTags()
         // to track pairs. On 10.000 processors, the array will consume 381 MB,
         // which should be doable.
 
-        int pairCount[n][n];
+        List<labelList> pairCount(n, labelList(n));
 
         for (label i = 0; i < n; i++)
             for (label j = 0; j < n; j++)
@@ -466,6 +466,7 @@ void mesh::setPatchLabels()
         Pstream::nProcs(),
       - pTraits<edgeLabel>::one
     );
+
     vertexPatchMasterPerProc_.resize
     (
         Pstream::nProcs(),

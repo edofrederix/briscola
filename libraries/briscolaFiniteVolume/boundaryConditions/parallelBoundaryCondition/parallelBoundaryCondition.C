@@ -32,7 +32,6 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     ),
     sendBuffers_(),
     recvBuffers_(),
-    order_(MeshType::numberOfDirections, -1),
     extension_(Zero),
     outstandingSendRequest_(-1),
     outstandingRecvRequest_(-1)
@@ -81,35 +80,6 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
         }
     }
 
-    // Each direction will be received in the order of directions of the
-    // neighbor. We should process data in that order. A direction is uniquely
-    // identified by its padding, so we find the mapping between local direction
-    // (d1) and neighbor direction (d2) by transforming paddings.
-
-    forAll(mshField[0], d2)
-    {
-        const labelVector padding
-        (
-            Foam::cmptMag(T & MeshType::padding[d2])
-        );
-
-        for (int d1 = 0; d1 < MeshType::numberOfDirections; d1++)
-        {
-            if (padding == MeshType::padding[d1])
-            {
-                order_[d2] = d1;
-                break;
-            }
-        }
-
-        if (order_[d2] == -1)
-        {
-            FatalErrorInFunction
-                << "Could not determine mesh direction ordering at neighbor" << endl
-                << exit(FatalError);
-        }
-    }
-
     // Set send/recv buffers for all mesh levels (even though the mesh field may
     // be shallow at this point)
 
@@ -117,8 +87,6 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     {
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
-            const label d1 = order_[d];
-
             const labelVector NSend =
                 this->N(l,d) + extension_.lower() + extension_.upper();
 
@@ -127,7 +95,7 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
                 (
                     T.T()
                   & (
-                        this->N(l,d1)
+                        this->N(l,d)
                       + extension_.lower()
                       + extension_.upper()
                     )
@@ -150,7 +118,6 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     tag_(bc.tag_),
     sendBuffers_(bc.sendBuffers_),
     recvBuffers_(bc.recvBuffers_),
-    order_(bc.order_),
     extension_(bc.extension_),
     outstandingSendRequest_(-1),
     outstandingRecvRequest_(-1)
@@ -168,7 +135,6 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     tag_(bc.tag_),
     sendBuffers_(bc.sendBuffers_),
     recvBuffers_(bc.recvBuffers_),
-    order_(bc.order_),
     extension_(bc.extension_),
     outstandingSendRequest_(-1),
     outstandingRecvRequest_(-1)
@@ -253,18 +219,14 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate(const label l)
     const labelTensor T(this->T());
     const labelVector bo(this->boundaryOffset());
 
-    forAll(field, d2)
+    forAll(field, d)
     {
-        // Direction d1 corresponds to the neighbor's direction d2
+        meshDirection<Type,MeshType>& fd = field[d];
 
-        const label d1 = order_[d2];
+        labelVector S(this->S(l,d) - extension_.lower());
+        labelVector E(this->E(l,d) + extension_.upper());
 
-        meshDirection<Type,MeshType>& fd = field[d1];
-
-        labelVector S(this->S(l,d1) - extension_.lower());
-        labelVector E(this->E(l,d1) + extension_.upper());
-
-        block<Type>& recvBuffer = recvBuffers_[l*field.size()+d2];
+        block<Type>& recvBuffer = recvBuffers_[l*field.size()+d];
 
         // Transform the receive buffer back to the orientation of the patch
 

@@ -34,10 +34,6 @@ protected:
     // Receive buffers for each mesh direction
     PtrList<block<Type>> recvBuffers_;
 
-    // Order in which the mesh directions are received. Given the neighbor's
-    // direction, order will return the local corresponding direction
-    labelList order_;
-
     // Parallel patches can extend into a regular boundary
     faceLabel extension_;
 
