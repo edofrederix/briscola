@@ -18,35 +18,8 @@ penalization<Type,MeshType>::penalization
     const fvMesh& fvMsh
 )
 :
-    immersedBoundaryMethod<Type,MeshType>(dict,fvMsh,false),
-    mask_
-    (
-        "mask",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
-        true,
-        false,
-        true
-    )
-{
-    // Cell centers
-    const meshField<vector,MeshType>& CC =
-        fvMsh.metrics<MeshType>().cellCenters();
-
-    // Set IB mask fields
-    forAllLevels(mask_,l,d,i,j,k)
-    {
-        const labelVector ijk(i,j,k);
-
-        mask_(l,d,i,j,k) = 0;
-
-        if (this->isInside(CC(l,d,i,j,k)))
-        {
-            mask_(l,d,i,j,k) = 1;
-        }
-    }
-}
+    immersedBoundaryMethod<Type,MeshType>(dict,fvMsh,false)
+{}
 
 // Destructor
 
@@ -62,7 +35,7 @@ void penalization<Type,MeshType>::correctLinearSystem
 {
     forAllLevels(ls.b(),l,d,i,j,k)
     {
-        if (mask_(l,d,i,j,k) == 1)
+        if (this->mask_(l,d,i,j,k) == 1)
         {
             // Set sources to 0 in IB
             ls.b()(l,d,i,j,k) = Zero;
@@ -71,7 +44,7 @@ void penalization<Type,MeshType>::correctLinearSystem
 
     forAllLevels(ls.A(),l,d,i,j,k)
     {
-        if (mask_(l,d,i,j,k) == 1)
+        if (this->mask_(l,d,i,j,k) == 1)
         {
             // Set coefficients to 0 in IB
             ls.A()(l,d,i,j,k) = Zero;

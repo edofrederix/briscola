@@ -34,12 +34,22 @@ immersedBoundaryMethod<Type,MeshType>::immersedBoundaryMethod
     (
         dict.lookupOrDefault<scalar>("omega", 0.8)
     ),
+    mask_
+    (
+        "mask",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        false,
+        true
+    ),
     ghostMask_
     (
         "ghostMask",
         fvMsh_,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
+        IOobject::NO_WRITE,
         true,
         false,
         true
@@ -72,14 +82,17 @@ immersedBoundaryMethod<Type,MeshType>::immersedBoundaryMethod
         fvMsh_.metrics<MeshType>().cellCenters();
 
     // Set IB mask fields
-    forAllLevels(ghostMask_,l,d,i,j,k)
+    forAllLevels(mask_,l,d,i,j,k)
     {
         const labelVector ijk(i,j,k);
 
+        mask_(l,d,i,j,k) = 0;
         ghostMask_(l,d,i,j,k) = 0;
 
         if (this->isInside(CC(l,d,i,j,k)))
         {
+            mask_(l,d,i,j,k) = 1;
+
             for (int dir = 0; dir < 6; dir++)
             {
                 const labelVector fo = faceOffsets[dir];

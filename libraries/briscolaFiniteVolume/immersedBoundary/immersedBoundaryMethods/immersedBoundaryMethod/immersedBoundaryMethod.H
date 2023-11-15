@@ -38,6 +38,10 @@ protected:
     // Convergence relaxation parameter
     scalar omega_;
 
+    // The IB mask is equal to 0 in cell centers outside the IB,
+    // and equal to 1 in cell centers inside the IB.
+    meshField<label,MeshType> mask_;
+
     // The ghost cell mask is equal to 1 in IB cells with at least
     // one neighboring fluid cell and 0 in other cells
     meshField<label,MeshType> ghostMask_;
@@ -122,6 +126,7 @@ public:
     // Inline access functions
     inline bool massSourceActive() {return massSourceActive_; }
     inline bool Jac() {return JacobiGhostMethod_; }
+    inline meshField<label,MeshType>& mask() { return mask_; }
     inline meshField<label,MeshType>& ghostMask() { return ghostMask_; }
 
 };

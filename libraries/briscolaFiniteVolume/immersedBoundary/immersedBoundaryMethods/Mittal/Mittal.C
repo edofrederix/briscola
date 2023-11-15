@@ -19,9 +19,7 @@ Mittal<Type,MeshType>::Mittal
 )
 :
     immersedBoundaryMethod<Type,MeshType>(dict,fvMsh,true)
-{
-
-}
+{}
 
 // Destructor
 

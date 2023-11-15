@@ -19,16 +19,6 @@ Vreman<Type,MeshType>::Vreman
 )
 :
     immersedBoundaryMethod<Type,MeshType>(dict,fvMsh,true),
-    mask_
-    (
-        "wallAdjMask",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false,
-        false,
-        true
-    ),
     wallDist_
     (
         "wallDist",
@@ -55,19 +45,14 @@ Vreman<Type,MeshType>::Vreman
         fvMsh.metrics<MeshType>().cellCenters();
 
     // Set IB mask fields
-    forAllLevels(mask_,l,d,i,j,k)
+    forAllLevels(wallDist_,l,d,i,j,k)
     {
         const labelVector ijk(i,j,k);
 
-        mask_(l,d,i,j,k) = 0;
         wallDist_(l,d,i,j,k) = -1.0;
         neighborDist_(l,d,i,j,k) = -1.0;
 
-        if (this->isInside(CC(l,d,i,j,k)))
-        {
-            mask_(l,d,i,j,k) = 1;
-        }
-        else
+        if (!this->isInside(CC(l,d,i,j,k)))
         {
             const vector c(CC(l,d,i,j,k));
 
@@ -76,10 +61,7 @@ Vreman<Type,MeshType>::Vreman
                 const labelVector fo = faceOffsets[dir];
                 const label oppositeDir = faceNumber(-fo);
 
-                if
-                (
-                    this->isInside(CC[l][d](ijk+fo))
-                )
+                if (this->isInside(CC[l][d](ijk+fo)))
                 {
                     // Neighbor cell in the IB
                     const vector nb(CC[l][d](ijk+fo));
@@ -128,7 +110,7 @@ void Vreman<Type,MeshType>::correctJacobiPoints
                 const labelVector secondNeighbor
                     = ijk + 2.0*faceOffsets[dir];
 
-                if (mask_[l][d](ijk+faceOffsets[dir]) == 0)
+                if (this->mask_[l][d](ijk+faceOffsets[dir]) == 0)
                 {
                     const scalar xi
                         = wallDist_[l][d](neighbor)[oppositeDir];

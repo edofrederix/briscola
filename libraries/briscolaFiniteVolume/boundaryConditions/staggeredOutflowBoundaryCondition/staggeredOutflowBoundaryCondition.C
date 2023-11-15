@@ -71,6 +71,17 @@ void staggeredOutflowBoundaryCondition::evaluate(const label l)
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
+            // Set velocity to zero if reverse flow
+            if
+            (
+                   (Foam::mag(bo[d]) == 1)
+                && (fd(ijk)*bo[d] < 0)
+            )
+            {
+                fd(ijk) = Zero;
+            }
+
+            // Zero gradient
             fd(ijk+bo) = fd(ijk);
         }
     }

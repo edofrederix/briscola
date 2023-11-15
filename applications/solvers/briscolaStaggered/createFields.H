@@ -87,6 +87,16 @@ if (solverDict.found("ImmersedBoundary"))
         solverDict.subDict("ImmersedBoundary"),
         fvMsh
     );
+
+    // Set source terms to zero inside IB
+    forAllLevels(exSource,l,d,i,j,k)
+    {
+        if (IBs->mask()(l,d,i,j,k) == 1)
+        {
+            exSource = Zero;
+            imSourceCoeff = Zero;
+        }
+    }
 }
 
 // Solvers
