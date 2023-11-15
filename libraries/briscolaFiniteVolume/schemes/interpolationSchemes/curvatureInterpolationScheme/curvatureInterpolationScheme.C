@@ -16,7 +16,8 @@ curvatureInterpolationScheme<Type,MeshType>::curvatureInterpolationScheme
     const fvMesh& fvMsh
 )
 :
-    interpolationScheme<Type,MeshType>(dict,fvMsh)
+    interpolationScheme<Type,MeshType>(dict,fvMsh),
+    threshold_(dict.lookupOrDefault<bool>("threshold", 1e-12))
 {}
 
 template<class Type, class MeshType>
@@ -25,7 +26,8 @@ curvatureInterpolationScheme<Type,MeshType>::curvatureInterpolationScheme
     const fvMesh& fvMsh
 )
 :
-    interpolationScheme<Type,MeshType>(dictionary(),fvMsh)
+    interpolationScheme<Type,MeshType>(dictionary(),fvMsh),
+    threshold_(dictionary().lookupOrDefault<bool>("threshold", 1e-12))
 {}
 
 template<class Type, class MeshType>
@@ -58,8 +60,8 @@ curvatureInterpolationScheme<Type,MeshType>::interp
 
         if
         (
-            alpha(ijk) > 1e-12
-            && alpha(ijk) < (1.0 - 1e-12)
+            alpha(ijk) > threshold_
+            && alpha(ijk) < (1.0 - threshold_)
         )
         {
             for (int dir = 0; dir < 2; dir++)
@@ -69,8 +71,8 @@ curvatureInterpolationScheme<Type,MeshType>::interp
 
                 if
                 (
-                    alpha(ijku) > 1e-12
-                    && alpha(ijku) < (1.0 - 1e-12)
+                    alpha(ijku) > threshold_
+                    && alpha(ijku) < (1.0 - threshold_)
                 )
                 {
                     Interp(ijk)[2*dir+1] = 0.5 * (field(ijk) + field(ijku));
@@ -82,8 +84,8 @@ curvatureInterpolationScheme<Type,MeshType>::interp
 
                 if
                 (
-                    alpha(ijkl) > 1e-12
-                    && alpha(ijkl) < (1.0 - 1e-12)
+                    alpha(ijkl) > threshold_
+                    && alpha(ijkl) < (1.0 - threshold_)
                 )
                 {
                     Interp(ijk)[2*dir] = 0.5 * (field(ijk) + field(ijkl));

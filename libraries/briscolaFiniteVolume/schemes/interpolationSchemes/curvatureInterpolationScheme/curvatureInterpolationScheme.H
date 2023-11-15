@@ -17,6 +17,9 @@ class curvatureInterpolationScheme
 :
     public interpolationScheme<Type,MeshType>
 {
+
+    scalar threshold_;
+
 public:
 
     // Runtime type information
