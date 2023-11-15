@@ -12,9 +12,10 @@ namespace briscola
 namespace fv
 {
 
+template<class MeshType>
 class nearestPointInterpolator
 :
-    public pointInterpolator
+    public pointInterpolator<MeshType>
 {
     // Disallow default bitwise assignment
     void operator=(const nearestPointInterpolator&);
@@ -25,15 +26,34 @@ public:
     TypeName("nearest");
 
     // Construct from components
-    nearestPointInterpolator(const fvMesh&, const vectorList&);
+    nearestPointInterpolator
+    (
+        const fvMesh&,
+        const vectorList&,
+        const bool global = true,
+        const label l = 0,
+        const label d = 0
+    );
 
     // Copy constructors
-    nearestPointInterpolator(const nearestPointInterpolator&);
+    nearestPointInterpolator(const nearestPointInterpolator<MeshType>&);
+
+    // Clone the interpolator
+    virtual autoPtr<pointInterpolator<MeshType>> clone() const
+    {
+        return autoPtr<pointInterpolator<MeshType>>
+        (
+            new nearestPointInterpolator(*this)
+        );
+    }
+
+    // Destructor
+    virtual ~nearestPointInterpolator();
 
     // Interpolators
 
     #define INTERPFUNC(TYPE) \
-    virtual List<TYPE> operator() (const meshField<TYPE,colocated>&);
+    virtual List<TYPE> operator() (const meshField<TYPE,MeshType>&);
 
     INTERPFUNC(scalar);
     INTERPFUNC(vector);
@@ -48,7 +68,7 @@ public:
 
     // Colocated interpolator
     template<class Type>
-    List<Type> interp(const meshField<Type,colocated>&);
+    List<Type> interp(const meshField<Type,MeshType>&);
 };
 
 }

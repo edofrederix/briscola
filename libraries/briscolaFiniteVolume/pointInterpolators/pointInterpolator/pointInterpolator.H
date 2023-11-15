@@ -3,6 +3,7 @@
 
 #include "fvMesh.H"
 #include "meshField.H"
+#include "SubList.H"
 
 namespace Foam
 {
@@ -13,12 +14,29 @@ namespace briscola
 namespace fv
 {
 
+template<class MeshType>
 class pointInterpolator
 {
 protected:
 
     // Reference to the mesh
     const fvMesh& fvMsh_;
+
+    // Is the provided list of points global? If it is global, it means all
+    // processors have a copy of all points. If it is local, each processor has
+    // its own set of points.
+    const Switch global_;
+
+    // Start and size of this processor's part, only relevant when the provided
+    // list of points is local
+    label start_;
+    label size_;
+
+    // Mesh level
+    label l_;
+
+    // Mesh direction
+    label d_;
 
     // List of points to interpolate to
     vectorList points_;
@@ -31,7 +49,7 @@ protected:
 
     // Gather and scatter data
     template<class Type>
-    void gatherScatter(List<Type>&);
+    List<Type> combine(List<Type>&);
 
 private:
 
@@ -51,30 +69,52 @@ public:
         dictionary,
         (
             const fvMesh& fvMsh,
-            const vectorList& points
+            const vectorList& points,
+            const bool global,
+            const label l,
+            const label d
         ),
-        (fvMsh, points)
+        (fvMsh, points, global, l, d)
     );
 
     // Construct from mesh and points
-    pointInterpolator(const fvMesh& fvMsh, const vectorList& points);
-
-    // Copy constructor
-    pointInterpolator(const pointInterpolator&);
-
-    // Selector
-    static autoPtr<pointInterpolator> New
+    pointInterpolator
     (
         const fvMesh& fvMsh,
-        const vectorList& point,
-        const word type
+        const vectorList& points,
+        const bool global = true,
+        const label l = 0,
+        const label d = 0
     );
+
+    // Copy constructor
+    pointInterpolator(const pointInterpolator<MeshType>&);
+
+    // Selector from a list of points that can be global or local
+    static autoPtr<pointInterpolator<MeshType>> New
+    (
+        const fvMesh& fvMsh,
+        const vectorList& points,
+        const word type,
+        const bool global = true,
+        const label l = 0,
+        const label d = 0
+    );
+
+    // Clone the interpolator
+    virtual autoPtr<pointInterpolator<MeshType>> clone() const = 0;
 
     // Destructor
     virtual ~pointInterpolator();
 
     // Access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
+
+    // Return the mesh level
+    inline label l() const { return l_; }
+
+    // Return the mesh direction
+    inline label d() const { return d_; }
 
     // Access to the points list
     inline const vectorList& points() const { return points_; }
@@ -94,7 +134,7 @@ public:
     // Interpolators
 
     #define INTERPFUNC(TYPE) \
-    virtual List<TYPE> operator() (const meshField<TYPE,colocated>&) = 0;
+    virtual List<TYPE> operator() (const meshField<TYPE,MeshType>&) = 0;
 
     INTERPFUNC(scalar);
     INTERPFUNC(vector);

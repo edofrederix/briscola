@@ -23,11 +23,21 @@ class nonZeroOp
         }
 };
 
+template<class MeshType>
 template<class Type>
-void pointInterpolator::gatherScatter(List<Type>& values)
+List<Type> pointInterpolator<MeshType>::combine(List<Type>& values)
 {
     Pstream::listCombineGather(values, nonZeroOp<Type>());
     Pstream::listCombineScatter(values);
+
+    if (global_)
+    {
+        return List<Type>(move(values));
+    }
+    else
+    {
+        return List<Type>(SubList<Type>(values, size_, start_));
+    }
 }
 
 }
