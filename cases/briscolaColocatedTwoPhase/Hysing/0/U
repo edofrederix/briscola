@@ -1,0 +1,25 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      U;
+}
+
+boundaryConditions
+{
+    bottomAndTop
+    {
+        type        noSlip;
+    }
+
+    sides
+    {
+        type        slip;
+    }
+
+    empties
+    {
+        type        empty;
+    }
+}

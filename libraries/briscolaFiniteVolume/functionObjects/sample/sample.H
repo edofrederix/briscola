@@ -27,7 +27,7 @@ protected:
     const fvMesh& fvMsh_;
 
     // Point interpolator
-    autoPtr<pointInterpolator> interpPtr_;
+    autoPtr<pointInterpolator<colocated>> interpPtr_;
 
     // Fields to be sampled
     wordList fields_;

@@ -421,19 +421,14 @@ void meshField<Type,MeshType>::correctNonCommBoundaryConditions()
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::setOldTime()
 {
-    if (oldTimePtr_ != nullptr)
+    if (oldTimePtr_ == nullptr)
     {
-        delete oldTimePtr_;
+        oldTimePtr_ = new meshField<Type,MeshType>
+        (
+            IOobject::groupName(name(), "oldTime"),
+            fvMsh_
+        );
     }
-
-    oldTimePtr_ = new meshField<Type,MeshType>
-    (
-        IOobject::groupName(name(), "oldTime"),
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false
-    );
 
     *oldTimePtr_ = *this;
 }

@@ -1,0 +1,47 @@
+#include "pointInterpolator.H"
+
+namespace Foam
+{
+
+namespace briscola
+{
+
+namespace fv
+{
+
+template<class Type>
+class nonZeroOp
+{
+    public:
+
+        void operator()(Type& x, Type& y) const
+        {
+            if (x == pTraits<Type>::zero)
+            {
+                x = y;
+            }
+        }
+};
+
+template<class MeshType>
+template<class Type>
+List<Type> pointInterpolator<MeshType>::combine(List<Type>& values)
+{
+    Pstream::listCombineGather(values, nonZeroOp<Type>());
+    Pstream::listCombineScatter(values);
+
+    if (global_)
+    {
+        return List<Type>(move(values));
+    }
+    else
+    {
+        return List<Type>(SubList<Type>(values, size_, start_));
+    }
+}
+
+}
+
+}
+
+}

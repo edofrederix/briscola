@@ -36,6 +36,8 @@ void fluxRestrictionScheme<MeshType>::restrict
     const bool scale
 )
 {
+    this->errorNoScaling(scale);
+
     const labelVector R(coarse.level().R());
 
     coarse = Zero;

@@ -115,17 +115,17 @@ tmp<meshField<Type,colocated>> explicitColoDiv
     const meshField<faceScalar,colocated>& fa =
         field.fvMsh().template metrics<colocated>().faceAreas();
 
-    forAllDirections(Div, d, i, j, k)
-        Div(d,i,j,k) =
+    forAllCells(Div, i, j, k)
+        Div(i,j,k) =
             (
-              - field(0,i,  j,  k  ) * fa(d,i,j,k).left()
-              + field(0,i+1,j,  k  ) * fa(d,i,j,k).right()
-              - field(1,i,  j,  k  ) * fa(d,i,j,k).bottom()
-              + field(1,i,  j+1,k  ) * fa(d,i,j,k).top()
-              - field(2,i,  j,  k  ) * fa(d,i,j,k).aft()
-              + field(2,i,  j,  k+1) * fa(d,i,j,k).fore()
+              - field(0,i,  j,  k  ) * fa(i,j,k).left()
+              + field(0,i+1,j,  k  ) * fa(i,j,k).right()
+              - field(1,i,  j,  k  ) * fa(i,j,k).bottom()
+              + field(1,i,  j+1,k  ) * fa(i,j,k).top()
+              - field(2,i,  j,  k  ) * fa(i,j,k).aft()
+              + field(2,i,  j,  k+1) * fa(i,j,k).fore()
             )
-          / cv(d,i,j,k);
+          / cv(i,j,k);
 
     return tDiv;
 }

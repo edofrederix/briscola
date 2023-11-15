@@ -20,10 +20,10 @@ void sample::appendScalarData
     wordList& headers
 )
 {
-    pointInterpolator& interp = interpPtr_();
+    pointInterpolator<colocated>& interp = interpPtr_();
 
     headers.append(field.name());
-    data.append(new scalarList(interp(field)));
+    data.append(new scalarList(move(interp(field))));
 }
 
 template<class Type>
@@ -34,9 +34,9 @@ void sample::appendArrayData
     wordList& headers
 )
 {
-    pointInterpolator& interp = interpPtr_();
+    pointInterpolator<colocated>& interp = interpPtr_();
 
-    List<Type> interpData(interp(field));
+    List<Type> interpData(move(interp(field)));
 
     const label n(Type::nComponents);
 
@@ -63,9 +63,9 @@ void sample::appendArrayArrayData
     wordList& headers
 )
 {
-    pointInterpolator& interp = interpPtr_();
+    pointInterpolator<colocated>& interp = interpPtr_();
 
-    List<Type> interpData(interp(field));
+    List<Type> interpData(move(interp(field)));
 
     const label n(Type::nComponents);
     const label m(pTraits<typename Type::cmpt>::nComponents);

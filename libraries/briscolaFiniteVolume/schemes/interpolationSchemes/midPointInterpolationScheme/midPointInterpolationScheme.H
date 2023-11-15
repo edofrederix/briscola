@@ -28,7 +28,7 @@ public:
     // Construct from mesh only, with empty dictionary
     midPointInterpolationScheme(const fvMesh&);
 
-    // Interpolation of u to the face
+    // Interpolation to the face
     virtual tmp<meshField<FaceSpace<Type>,MeshType>> interp
     (
         const meshField<Type,MeshType>&

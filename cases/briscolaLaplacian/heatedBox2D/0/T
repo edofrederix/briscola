@@ -6,17 +6,12 @@ FoamFile
     object      T;
 }
 
-initialCondition
-{
-
-}
-
 boundaryConditions
 {
     walls
     {
         type        Dirichlet;
-        values      (0 0 0);
+        values      (0);
     }
 
     empties

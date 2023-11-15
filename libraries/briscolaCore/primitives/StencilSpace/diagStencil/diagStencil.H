@@ -2,7 +2,7 @@
 #define diagStencil_H
 
 #include "StencilSpace.H"
-#include "blockUtils.H"
+#include "briscolaUtils.H"
 #include "pTransform.H"
 #include "contiguous.H"
 

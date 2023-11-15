@@ -2,7 +2,6 @@
 #define face_H
 
 #include "meshObject.H"
-#include "geometryFun.H"
 #include "PtrList.H"
 #include "edge.H"
 #include "block.H"

@@ -86,7 +86,7 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
 
     // Only generate staggered metrics when the brick topology is structured
 
-    if (mshPtr_->topology().structured())
+    if (mshPtr_->structured())
         staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
 }
 
@@ -105,7 +105,7 @@ fvMesh::fvMesh(const fvMesh& fvMsh)
 
     // Only generate staggered metrics when the brick topology is structured
 
-    if (mshPtr_->topology().structured())
+    if (mshPtr_->structured())
         staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
 }
 
@@ -134,7 +134,7 @@ template<>
 const fvMeshMetrics<staggered>& fvMesh::metrics<staggered>() const
 {
     #ifdef FULLDEBUG
-    if (!mshPtr_->topology().structured())
+    if (!mshPtr_->structured())
     {
         FatalErrorInFunction
             << "Staggered metrics are not generated on unstructured meshes."
@@ -144,6 +144,109 @@ const fvMeshMetrics<staggered>& fvMesh::metrics<staggered>() const
 
     return staggeredMetrics_();
 }
+
+template<>
+labelVector fvMesh::findCell<colocated>
+(
+    const vector& p,
+    const label l,
+    const label
+) const
+{
+    return mshPtr_->findCell(p,l);
+}
+
+template<>
+labelVector fvMesh::findCell<staggered>
+(
+    const vector& p,
+    const label l,
+    const label d
+) const
+{
+    labelVector colo = mshPtr_->findCell(p,l);
+
+    const meshDirection<vertexVector,staggered>& v =
+        this->metrics<staggered>().vertexCenters()[l][d];
+
+    labelVector vU(v.I().upper());
+
+    if (colo != -unitXYZ)
+    {
+        // Search staggered cells that may overlap with the colocated one
+
+        labelVector L(colo);
+        labelVector U(colo + staggered::padding[d] + unitXYZ);
+
+        if (this->rectilinear() != unitXYZ)
+        {
+            // Add surrounding cells in non-shifted direction
+
+            for (int dir = 0; dir < 3; dir++)
+            if (dir != d)
+            {
+                L -= staggered::padding[dir];
+                U += staggered::padding[dir];
+            }
+
+            // Trim
+
+            for (int dir = 0; dir < 3; dir++)
+            if (dir != d)
+            {
+                L[dir] = Foam::max(L[dir], 0);
+                U[dir] = Foam::min(U[dir], vU[dir]);
+            }
+        }
+
+        for (int i = L.x(); i < U.x(); i++)
+            for (int j = L.y(); j < U.y(); j++)
+                for (int k = L.z(); k < U.z(); k++)
+                    if (interpolationWeights(p,v(i,j,k),true) != -vector::one)
+                        return labelVector(i,j,k);
+
+        // When the point is near a shifted boundary, it may be found on the
+        // colocated mesh but not on the staggered mesh.
+
+        return -unitXYZ;
+    }
+    else
+    {
+        // Near shifted boundaries, the point may be outside the colocated mesh
+        // but still on the staggered mesh. This happens in two situations:
+        //
+        // 1) The point is outside the physical domain -> return -unitXYZ
+        // 2) The point is on a parallel/periodic master/slave slab of cells.
+        //    Data on such cells is redundantly stored across two processors, so
+        //    we let the processor which has the point on its colocated mesh
+        //    handle the situation -> return -unitXYZ
+
+        return -unitXYZ;
+    }
+}
+
+template<class MeshType>
+List<labelVector> fvMesh::findCells
+(
+    const vectorList& points,
+    const label l,
+    const label d
+) const
+{
+    List<labelVector> res(points.size());
+
+    forAll(points, i)
+        res[i] = this->findCell<MeshType>(points[i], l, d);
+
+    return res;
+}
+
+// Instantiate
+
+template List<labelVector>
+fvMesh::findCells<colocated>(const vectorList&, const label, const label) const;
+template List<labelVector>
+fvMesh::findCells<staggered>(const vectorList&, const label, const label) const;
 
 }
 

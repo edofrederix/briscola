@@ -1,0 +1,78 @@
+#ifndef LSFIR_H
+#define LSFIR_H
+
+#include "LSGIR.H"
+#include "LVE.H"
+
+namespace Foam
+{
+
+namespace briscola
+{
+
+namespace fv
+{
+
+class LSFIR
+:
+    public LSGIR
+{
+    // Mesh formed by hexahedrons with planar faces (default true)
+    bool planarFaces_;
+
+    // True for using vertex averages instead of centers of mass (default false)
+    bool centerAveraging_;
+
+    // Boundary type stencil for the LSFIR iteration (true for parallel and
+    // periodic boundaries)
+    bool boundaryTypeLSFIR_[3][3][3];
+
+    // Number of vertex in each face
+    int NIPV0_[12] = {0};
+
+    // Vertex index for each face in counter clock wise order
+    int IPV0_[12][6] = {0};
+
+    // Number of faces
+    int originalNf_;
+
+    // Local volume enforcement problem solver
+    LVE lve_;
+
+    // Construct boundaryTypes
+    void createBoundaryTypes();
+
+    // Construct NIPV0, IPV0 and originalNf
+    void createHexagonDescription();
+
+public:
+
+    // Runtime type information
+    TypeName("LSFIR");
+
+    // Construct from components
+    LSFIR(const fvMesh&, const dictionary&, const colocatedScalarField&);
+
+    // Copy constructor
+    LSFIR(const LSFIR&);
+
+    // Destructor
+    virtual ~LSFIR();
+
+    // Clone normalScheme
+    virtual autoPtr<normalScheme> clone() const
+    {
+        return autoPtr<normalScheme>(new LSFIR(*this));
+    }
+
+    // Correct the normal
+    virtual void correct();
+};
+
+}
+
+}
+
+}
+
+#endif

@@ -43,17 +43,33 @@ public:
     interpolationScheme(const interpolationScheme<Type,MeshType>&);
 
     // Selector
-    static autoPtr<interpolationScheme<Type,MeshType>> New(const word, const fvMesh&);
+    static autoPtr<interpolationScheme<Type,MeshType>> New
+    (
+        const word,
+        const fvMesh&
+    );
 
     // Destructor
     virtual ~interpolationScheme();
 
-    // Interpolation of u to the face
+    // Interpolation to the face
     virtual tmp<meshField<FaceSpace<Type>,MeshType>> interp
     (
         const meshField<Type,MeshType>&
     ) = 0;
 };
+
+template<class Type>
+tmp<meshField<Type,staggered>> stagInterp
+(
+    const meshField<Type,colocated>& field
+);
+
+template<class Type>
+tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
+(
+    const meshField<Type,colocated>& field
+);
 
 }
 

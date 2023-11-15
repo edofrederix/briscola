@@ -63,6 +63,13 @@ public:
     ) = 0;
 };
 
+// Reconstruct colocated flux field from staggered velocity
+
+tmp<colocatedFaceScalarField> coloFaceFlux
+(
+    const staggeredScalarField& U
+);
+
 }
 
 }

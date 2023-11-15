@@ -468,6 +468,19 @@ void linearSystem<SType,Type,MeshType>::operator-=
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator=
 (
+    const Type& v
+)
+{
+    const meshField<scalar,MeshType>& cv =
+        fvMsh_.template metrics<MeshType>().cellVolumes();
+
+    this->A() = diagStencil(0.0);
+    this->b() = -cv*v;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator=
+(
     const meshField<Type,MeshType>& field
 )
 {
@@ -491,6 +504,18 @@ void linearSystem<SType,Type,MeshType>::operator=
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator+=
 (
+    const Type& v
+)
+{
+    const meshField<scalar,MeshType>& cv =
+        fvMsh_.template metrics<MeshType>().cellVolumes();
+
+    this->b() -= cv*v;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator+=
+(
     const meshField<Type,MeshType>& field
 )
 {
@@ -508,6 +533,18 @@ void linearSystem<SType,Type,MeshType>::operator+=
 {
     *this += tField();
     tField.clear();
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator-=
+(
+    const Type& v
+)
+{
+    const meshField<scalar,MeshType>& cv =
+        fvMsh_.template metrics<MeshType>().cellVolumes();
+
+    this->b() += cv*v;
 }
 
 template<class SType, class Type, class MeshType>

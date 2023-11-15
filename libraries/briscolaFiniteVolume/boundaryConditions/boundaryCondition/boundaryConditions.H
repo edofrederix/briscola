@@ -39,7 +39,7 @@
     makeBoundaryConditionBase(stencil,MESHTYPE)                                 \
     makeBoundaryConditionBase(diagStencil,MESHTYPE)
 
-#define makeBoundaryConditionType(BC, Type, MeshType)                           \
+#define makeBoundaryConditionTypeWithName(BC, NAME, Type, MeshType)             \
                                                                                 \
     typedef BC##BoundaryCondition<Type,MeshType>                                \
         BC##BoundaryCondition##Type##MeshType;                                  \
@@ -47,13 +47,16 @@
     defineTemplateTypeNameAndDebugWithName                                      \
     (                                                                           \
         BC##BoundaryCondition##Type##MeshType,                                  \
-        #BC,                                                                    \
+        #NAME,                                                                  \
         0                                                                       \
     );                                                                          \
                                                                                 \
     boundaryCondition<Type,MeshType>::                                          \
         adddictionaryConstructorToTable<BC##BoundaryCondition##Type##MeshType>  \
         add##BC##BoundaryCondition##Type##MeshType##ConstructorToTable_;
+
+#define makeBoundaryConditionType(BC, Type, MeshType)                           \
+    makeBoundaryConditionTypeWithName(BC, BC, Type, MeshType)
 
 #define makeBoundaryConditionTypes(BC,MESHTYPE)                                 \
                                                                                 \

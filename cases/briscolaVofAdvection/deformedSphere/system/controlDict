@@ -1,0 +1,49 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         3;
+
+deltaT          15e-4;
+
+writeControl    adjustableRunTime;
+
+writeInterval   0.05;
+
+writeFormat     binary;
+
+writePrecision  6;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable true;
+
+adjustTimeStep  false;
+
+maxCo           0.5;
+
+libs
+(
+    "code/libcode.so"
+);
+
+functions
+{
+    init
+    {
+        type    initialCondition;
+    }
+}
