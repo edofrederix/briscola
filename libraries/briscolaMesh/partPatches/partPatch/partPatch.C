@@ -10,6 +10,13 @@ namespace briscola
 defineTypeNameAndDebug(partPatch, 0);
 defineRunTimeSelectionTable(partPatch, dictionary);
 
+void partPatch::extend()
+{
+    for (int i = 0; i < 6; i++)
+        if (boundaryOffset_[i/2] == 0)
+            extension_[i] = 1;
+}
+
 partPatch::partPatch(const mesh& msh, const dictionary& dict)
 :
     dict_(dict),
@@ -20,7 +27,8 @@ partPatch::partPatch(const mesh& msh, const dictionary& dict)
         cmptSum(cmptMag(boundaryOffset_))
     ),
     T_(dict.lookupOrDefault<labelTensor>("T", eye)),
-    master_(true)
+    master_(true),
+    extension_(Zero)
 {}
 
 partPatch::partPatch
@@ -33,7 +41,8 @@ partPatch::partPatch
     boundaryOffset_(pp.boundaryOffset_),
     boundaryOffsetDegree_(pp.boundaryOffsetDegree_),
     T_(pp.T_),
-    master_(pp.master_)
+    master_(pp.master_),
+    extension_(Zero)
 {}
 
 partPatch::~partPatch()

@@ -5,6 +5,11 @@
 #include "rectilinearMesh.H"
 #include "uniformMesh.H"
 
+#include "boundaryPartPatch.H"
+#include "emptyPartPatch.H"
+#include "parallelPartPatch.H"
+#include "periodicPartPatch.H"
+
 namespace Foam
 {
 
@@ -42,6 +47,7 @@ void mesh::addPartPatch
         partPatch::New(*this, dict)
     );
 }
+
 void mesh::generateBrickInternalPartPatches()
 {
     // Add parallel brick-internal patches
@@ -279,7 +285,8 @@ void mesh::generateBoundaryPartPatches()
                 addPartPatch
                 (
                     p.name(),
-                    "boundary",
+                    patches()[patchi].type() == patch::EMPTY
+                  ? "empty" : "boundary",
                     eye,
                     offset
                 );
@@ -311,8 +318,8 @@ void mesh::setCommTags()
 
         if
         (
-            patch.type() == "parallel"
-        ||  patch.type() == "periodic"
+            patch.typeNum() == parallelPartPatch::typeNumber
+         || patch.typeNum() == periodicPartPatch::typeNumber
         )
         {
             patchDicts[m].append
@@ -441,13 +448,71 @@ void mesh::setCommTags()
 
         if
         (
-            patch.type() == "parallel"
-        ||  patch.type() == "periodic"
+            patch.typeNum() == parallelPartPatch::typeNumber
+         || patch.typeNum() == periodicPartPatch::typeNumber
         )
         {
             patch.dict().add("tag", myTags[c++]);
         }
     }
+}
+
+void mesh::setPatchExtension()
+{
+    edgePatchExtension_ = Zero;
+    vertexPatchExtension_ = Zero;
+
+    forAll(partPatches_, i)
+    {
+        const partPatch& patch = partPatches_[i];
+
+        //  Add edges to extended faces, and vertices to extended edges
+
+        for (int j = 0; j < 6; j++)
+        if (patch.extension()[j] == 1)
+        {
+            const labelVector offset =
+                patch.boundaryOffset() + faceOffsets[j];
+
+            if (edgeNumber(offset) != -1)
+            {
+                edgePatchExtension_[edgeNumber(offset)] = 1;
+            }
+            else
+            {
+                vertexPatchExtension_[vertexNumber(offset)] = 1;
+            }
+        }
+
+        // Also add vertices for face patches extended in two directions
+
+        if (patch.boundaryOffsetDegree() == 1)
+        {
+            for (int j = 0; j < 5; j++)
+            for (int k = j+1; k < 6; k++)
+            if (patch.extension()[j] == 1 && patch.extension()[k] == 1)
+            {
+                const labelVector offset =
+                    patch.boundaryOffset() + faceOffsets[j] + faceOffsets[k];
+
+                if (vertexNumber(offset) != -1)
+                    vertexPatchExtension_[vertexNumber(offset)] = 1;
+            }
+        }
+    }
+}
+
+void mesh::setEmptyPatchOffsets()
+{
+    emptyPatchOffsets_.clear();
+
+    for (int i = 0; i < 12; i++)
+        if (edgePatchType()[i] == -1 && edgePatchExtension()[i] == 0)
+            emptyPatchOffsets_.append(edgeOffsets[i]);
+
+    for (int i = 0; i < 8; i++)
+        if (vertexPatchType()[i] == -1 && vertexPatchExtension()[i] == 0)
+            emptyPatchOffsets_.append(vertexOffsets[i]);
 }
 
 void mesh::setPatchLabels()
@@ -494,7 +559,7 @@ void mesh::setPatchLabels()
       - pTraits<vertexLabel>::one
     );
 
-    forAll(partPatches(), i)
+    forAll(partPatches_, i)
     {
         const partPatch& patch = partPatches_[i];
 
@@ -552,8 +617,11 @@ void mesh::generatePartPatches()
     generateBrickInternalPartPatches();
     generateBrickExternalPartPatches();
     generateBoundaryPartPatches();
+
     setCommTags();
     setPatchLabels();
+    setPatchExtension();
+    setEmptyPatchOffsets();
 }
 
 void mesh::generatePartLevels()
@@ -658,6 +726,9 @@ mesh::mesh(const mesh& msh)
     facePatchTypePerProc_(msh.facePatchTypePerProc_),
     edgePatchTypePerProc_(msh.edgePatchTypePerProc_),
     vertexPatchTypePerProc_(msh.vertexPatchTypePerProc_),
+    edgePatchExtension_(msh.edgePatchExtension_),
+    vertexPatchExtension_(msh.vertexPatchExtension_),
+    emptyPatchOffsets_(msh.emptyPatchOffsets_),
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
     uniform_(msh.uniform_),
@@ -676,6 +747,9 @@ mesh::mesh(autoPtr<mesh>& mshPtr)
     facePatchTypePerProc_(mshPtr->facePatchTypePerProc_),
     edgePatchTypePerProc_(mshPtr->edgePatchTypePerProc_),
     vertexPatchTypePerProc_(mshPtr->vertexPatchTypePerProc_),
+    edgePatchExtension_(mshPtr->edgePatchExtension_),
+    vertexPatchExtension_(mshPtr->vertexPatchExtension_),
+    emptyPatchOffsets_(mshPtr->emptyPatchOffsets_),
     structured_(mshPtr->structured_),
     rectilinear_(mshPtr->rectilinear_),
     uniform_(mshPtr->uniform_),
@@ -696,6 +770,9 @@ mesh::mesh(mesh& msh, bool reuse)
     facePatchTypePerProc_(msh.facePatchTypePerProc_),
     edgePatchTypePerProc_(msh.edgePatchTypePerProc_),
     vertexPatchTypePerProc_(msh.vertexPatchTypePerProc_),
+    edgePatchExtension_(msh.edgePatchExtension_),
+    vertexPatchExtension_(msh.vertexPatchExtension_),
+    emptyPatchOffsets_(msh.emptyPatchOffsets_),
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
     uniform_(msh.uniform_),

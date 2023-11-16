@@ -22,6 +22,18 @@ int main(int argc, char *argv[])
         if (vertexNumber(faceOffsets[i]) != -1)
             FatalErrorInFunction
                 << "Error in faceNumber function" << abort(FatalError);
+
+        if (faceNumber(2*faceOffsets[i]) != -1)
+            FatalErrorInFunction
+                << "Error in faceNumber function" << abort(FatalError);
+
+        if (edgeNumber(2*faceOffsets[i]) != -1)
+            FatalErrorInFunction
+                << "Error in faceNumber function" << abort(FatalError);
+
+        if (vertexNumber(2*faceOffsets[i]) != -1)
+            FatalErrorInFunction
+                << "Error in faceNumber function" << abort(FatalError);
     }
 
     for (int i = 0; i < 12; i++)
@@ -37,6 +49,18 @@ int main(int argc, char *argv[])
         if (vertexNumber(edgeOffsets[i]) != -1)
             FatalErrorInFunction
                 << "Error in edgeNumber function" << abort(FatalError);
+
+        if (edgeNumber(2*edgeOffsets[i]) != -1)
+            FatalErrorInFunction
+                << "Error in edgeNumber function" << abort(FatalError);
+
+        if (faceNumber(2*edgeOffsets[i]) != -1)
+            FatalErrorInFunction
+                << "Error in edgeNumber function" << abort(FatalError);
+
+        if (vertexNumber(2*edgeOffsets[i]) != -1)
+            FatalErrorInFunction
+                << "Error in edgeNumber function" << abort(FatalError);
     }
 
     for (int i = 0; i < 8; i++)
@@ -50,6 +74,18 @@ int main(int argc, char *argv[])
                 << "Error in vertexNumber function" << abort(FatalError);
 
         if (edgeNumber(vertexOffsets[i]) != -1)
+            FatalErrorInFunction
+                << "Error in vertexNumber function" << abort(FatalError);
+
+        if (vertexNumber(2*vertexOffsets[i]) != -1)
+            FatalErrorInFunction
+                << "Error in vertexNumber function" << abort(FatalError);
+
+        if (faceNumber(2*vertexOffsets[i]) != -1)
+            FatalErrorInFunction
+                << "Error in vertexNumber function" << abort(FatalError);
+
+        if (edgeNumber(2*vertexOffsets[i]) != -1)
             FatalErrorInFunction
                 << "Error in vertexNumber function" << abort(FatalError);
     }

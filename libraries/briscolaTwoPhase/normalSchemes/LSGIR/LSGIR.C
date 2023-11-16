@@ -31,25 +31,31 @@ void LSGIR::createBoundaryType()
                 if ((fvMsh_[0].l() > 1) && (i != 1))
                 {
                     aux =
-                        (i == 0)
-                      ? (aux && (faceType.left()  > 0))
-                      : (aux && (faceType.right() > 0));
+                        i == 0
+                      ? aux && faceType.left()
+                      > boundaryPartPatch::typeNumber
+                      : aux && faceType.right()
+                      > boundaryPartPatch::typeNumber;
                 }
 
                 if ((fvMsh_[0].m() > 1) && (j != 1))
                 {
                     aux =
-                        (j == 0)
-                      ? (aux && (faceType.bottom() > 0))
-                      : (aux && (faceType.top()    > 0));
+                        j == 0
+                      ? aux && faceType.bottom()
+                      > boundaryPartPatch::typeNumber
+                      : aux && faceType.top()
+                      > boundaryPartPatch::typeNumber;
                 }
 
                 if ((fvMsh_[0].n() > 1) && (k != 1))
                 {
                     aux =
-                        (k == 0)
-                      ? (aux && (faceType.aft()  > 0))
-                      : (aux && (faceType.fore() > 0));
+                        k == 0
+                      ? aux && faceType.aft()
+                      > boundaryPartPatch::typeNumber
+                      : aux && faceType.fore()
+                      > boundaryPartPatch::typeNumber;
                 }
 
                 boundaryType_[i][j][k] = aux;

@@ -510,7 +510,8 @@ inline labelVector cmptMax(const labelVector& a, const labelVector& b)
 inline label faceNumber(const labelVector& o)
 {
     return
-        cmptSum(cmptMag(o)) != 1 ? -1
+        cmptMax(cmptMag(o)) != 1 ? -1
+      : cmptSum(cmptMag(o)) != 1 ? -1
       : o.x() != 0 ? (o.x()+1)/2
       : o.y() != 0 ? (o.y()+1)/2 + 2
       :              (o.z()+1)/2 + 4;
@@ -520,7 +521,8 @@ inline label faceNumber(const labelVector& o)
 inline label edgeNumber(const labelVector& o)
 {
     return
-        cmptSum(cmptMag(o)) != 2 ? -1
+        cmptMax(cmptMag(o)) != 1 ? -1
+      : cmptSum(cmptMag(o)) != 2 ? -1
       : o.x() == 0 ? (o.y()+1)/2 + (o.z()+1)
       : o.y() == 0 ? (o.x()+1)/2 + (o.z()+1) + 4
       :              (o.x()+1)/2 + (o.y()+1) + 8;
@@ -530,7 +532,8 @@ inline label edgeNumber(const labelVector& o)
 inline label vertexNumber(const labelVector& o)
 {
     return
-        cmptSum(cmptMag(o)) != 3 ? -1
+        cmptMax(cmptMag(o)) != 1 ? -1
+      : cmptSum(cmptMag(o)) != 3 ? -1
       : (o.x()+1)/2 + (o.y()+1) + (o.z()+1)*2;
 }
 

@@ -39,6 +39,7 @@ partPatches/partPatch/partPatch.C
 partPatches/parallelPartPatch/parallelPartPatch.C
 partPatches/periodicPartPatch/periodicPartPatch.C
 partPatches/boundaryPartPatch/boundaryPartPatch.C
+partPatches/emptyPartPatch/emptyPartPatch.C
 
 partLevelPoints/partLevelPoints.C
 partLevel/partLevel.C

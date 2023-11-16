@@ -34,9 +34,6 @@ protected:
     // Receive buffers for each mesh direction
     PtrList<block<Type>> recvBuffers_;
 
-    // Parallel patches can extend into a regular boundary
-    faceLabel extension_;
-
     // Outstanding send requests
     label outstandingSendRequest_;
 

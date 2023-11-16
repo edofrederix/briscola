@@ -59,6 +59,7 @@ void periodicBoundaryCondition<Type,MeshType>::initEvaluate(const label l)
         meshLevel<Type,MeshType>& field = this->mshField()[l];
 
         const labelVector bo(this->boundaryOffset());
+        const faceLabel extension(this->extension());
 
         forAll(field, d)
         {
@@ -66,15 +67,15 @@ void periodicBoundaryCondition<Type,MeshType>::initEvaluate(const label l)
 
             // Source start and end point
 
-            const labelVector Ss(this->S(l,d) - this->extension_.lower());
-            const labelVector Es(this->E(l,d) + this->extension_.upper());
+            const labelVector Ss(this->S(l,d) - extension.lower());
+            const labelVector Es(this->E(l,d) + extension.upper());
 
             // Target start point
 
             const labelVector St
             (
                 this->fvMsh_.template S<MeshType>(l,d,-bo)
-              - this->extension_.lower()
+              - extension.lower()
             );
 
             labelVector ijk;
