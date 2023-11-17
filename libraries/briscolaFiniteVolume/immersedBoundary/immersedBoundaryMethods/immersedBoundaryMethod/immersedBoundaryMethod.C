@@ -41,7 +41,7 @@ immersedBoundaryMethod<Type,MeshType>::immersedBoundaryMethod
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        false,
+        true,
         true
     ),
     ghostMask_
@@ -51,7 +51,7 @@ immersedBoundaryMethod<Type,MeshType>::immersedBoundaryMethod
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        false,
+        true,
         true
     )
 {
@@ -107,6 +107,9 @@ immersedBoundaryMethod<Type,MeshType>::immersedBoundaryMethod
             }
         }
     }
+
+    mask_.correctParallelBoundaryConditions();
+    ghostMask_.correctParallelBoundaryConditions();
 }
 
 template<class Type, class MeshType>

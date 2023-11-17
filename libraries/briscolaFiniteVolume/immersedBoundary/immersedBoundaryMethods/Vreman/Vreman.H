@@ -2,6 +2,7 @@
 #define Vreman_H
 
 #include "immersedBoundaryMethod.H"
+#include "cellDataExchange.H"
 
 namespace Foam
 {
@@ -24,6 +25,10 @@ class Vreman
     // The neighbor distance field stores the distances to neighboring
     // fluid cell for the quadratic fit on non-uniform grids
     meshField<faceScalar,MeshType> neighborDist_;
+
+    // List of out of bounds indices needed to correct ghost cell values
+    // defined for each level and direction
+    List<List<List<labelVector>>> exchangePoints_;
 
 public:
 

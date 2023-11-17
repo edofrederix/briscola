@@ -38,8 +38,14 @@ Vreman<Type,MeshType>::Vreman
         false,
         false,
         true
-    )
+    ),
+    exchangePoints_(this->mask_.numberOfLevels())
 {
+    forAll(exchangePoints_, l)
+    {
+        exchangePoints_[l].setSize(MeshType::numberOfDirections);
+    }
+
     // Cell centers
     const meshField<vector,MeshType>& CC =
         fvMsh.metrics<MeshType>().cellCenters();
@@ -52,29 +58,41 @@ Vreman<Type,MeshType>::Vreman
         wallDist_(l,d,i,j,k) = -1.0;
         neighborDist_(l,d,i,j,k) = -1.0;
 
-        if (!this->isInside(CC(l,d,i,j,k)))
+        if (this->ghostMask_(l,d,i,j,k) == 1)
         {
-            const vector c(CC(l,d,i,j,k));
+            // Ghost cell
+            const vector gc(CC(l,d,i,j,k));
 
             for (int dir = 0; dir < 6; dir++)
             {
                 const labelVector fo = faceOffsets[dir];
-                const label oppositeDir = faceNumber(-fo);
 
-                if (this->isInside(CC[l][d](ijk+fo)))
+                if (!this->isInside(CC[l][d](ijk+fo)))
                 {
-                    // Neighbor cell in the IB
-                    const vector nb(CC[l][d](ijk+fo));
-                    const scalar wd = this->wallDistance(c,nb);
-                    const scalar xi = (mag(c-nb)-wd)/mag(c-nb);
+                    // Wall-adjacent cell
+                    const vector wa(CC[l][d](ijk+fo));
+                    const scalar wd = this->wallDistance(wa,gc);
+                    const scalar xi = (mag(gc-wa)-wd)/mag(gc-wa);
 
                     wallDist_(l,d,i,j,k)[dir] = xi;
 
-                    // Neighbor cell in the opposite direction
-                    const vector nbo(CC[l][d](ijk-fo));
-                    const scalar xi2 = mag(nbo-nb)/mag(c-nb);
+                    // Second neighbor
+                    const vector sn(CC[l][d](ijk+2.0*fo));
+                    const scalar xi2 = mag(gc-sn)/mag(gc-wa);
 
-                    neighborDist_(l,d,i,j,k)[oppositeDir] = xi2;
+                    neighborDist_(l,d,i,j,k)[dir] = xi2;
+
+                    if
+                    (
+                           (i+2.0*fo.x() < 0 || i+2.0*fo.x() > neighborDist_[l][d].I().right())
+                        || (j+2.0*fo.y() < 0 || j+2.0*fo.y() > neighborDist_[l][d].I().top())
+                        || (k+2.0*fo.z() < 0 || k+2.0*fo.z() > neighborDist_[l][d].I().fore())
+                    )
+                    {
+                        exchangePoints_[l][d].append(ijk+2.0*fo);
+                    }
+
+                    break;
                 }
             }
         }
@@ -94,43 +112,66 @@ void Vreman<Type,MeshType>::correctJacobiPoints
 )
 {
     scalar omega = this->omega_;
+
+    const fvMesh& fvMsh = x.fvMsh();
+
     label l = x.levelNum();
 
-    forAllDirections(x,d,i,j,k)
+    forAll(x, d)
     {
-        const labelVector ijk(i,j,k);
-        if (this->ghostMask_(l,d,i,j,k) == 1)
+        cellDataExchange<MeshType> exchange(exchangePoints_[l][d], fvMsh, l, d);
+
+        List<Type> exchangeData(move(exchange(x.mshField())));
+
+        scalar cursor = 0;
+
+        forAllCells(x[d],i,j,k)
         {
-            for (int dir = 0; dir < 6; dir++)
+            if (this->ghostMask_(l,d,i,j,k) == 1)
             {
-                const label oppositeDir =
-                    faceNumber(-faceOffsets[dir]);
-
-                const labelVector neighbor = ijk + faceOffsets[dir];
-                const labelVector secondNeighbor
-                    = ijk + 2.0*faceOffsets[dir];
-
-                if (this->mask_[l][d](ijk+faceOffsets[dir]) == 0)
+                const labelVector ijk(i,j,k);
+                for (int dir = 0; dir < 6; dir++)
                 {
-                    const scalar xi
-                        = wallDist_[l][d](neighbor)[oppositeDir];
+                    const labelVector fo = faceOffsets[dir];
 
-                    scalar w1 = 2.0 - (2.0 - xi);
-                    scalar w2 = -1.0 + (1.0 - xi);
+                    if (this->wallDist_(l,d,i,j,k)[dir] > 0)
+                    {
+                        const scalar xi
+                            = wallDist_(l,d,i,j,k)[dir];
 
-                    // if second neighbor is inside processor
-                    x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
-                        + omega *
+                        scalar w1 = 2.0 - (2.0 - xi);
+                        scalar w2 = -1.0 + (1.0 - xi);
+
+                        Type secondNeighborValue;
+
+                        if
                         (
-                            w1*x[d](neighbor) + w2*x[d](secondNeighbor)
-                        );
+                               (i+2.0*fo.x() < 0 || i+2.0*fo.x() > neighborDist_[l][d].I().right())
+                            || (j+2.0*fo.y() < 0 || j+2.0*fo.y() > neighborDist_[l][d].I().top())
+                            || (k+2.0*fo.z() < 0 || k+2.0*fo.z() > neighborDist_[l][d].I().fore())
+                        )
+                        {
+                            secondNeighborValue = exchangeData[cursor++];
+                        }
+                        else
+                        {
+                            secondNeighborValue = x[d](ijk+2.0*fo);
+                        }
 
-                    // else { ... }
-                    break;
+                        x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
+                            + omega *
+                            (
+                                w1*x[d](ijk+fo) + w2*secondNeighborValue
+                            );
+
+                        break;
+                    }
                 }
             }
         }
     }
+
+
 }
 
 }

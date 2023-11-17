@@ -2,6 +2,7 @@
 #define Mittal_H
 
 #include "immersedBoundaryMethod.H"
+#include "pointDataExchange.H"
 
 namespace Foam
 {
@@ -17,6 +18,14 @@ class Mittal
 :
     public immersedBoundaryMethod<Type,MeshType>
 {
+
+    // List of coordinates of points that need to be exchanged
+    // defined for each level and direction
+    List<List<vectorList>> exchangePoints_;
+
+    // Field containing the coordinates of the ghost mirror points
+    // stored in the ghost cells
+    meshField<vector,MeshType> mirrorPoints_;
 
 public:
 
