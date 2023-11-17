@@ -82,7 +82,7 @@ void MGSolver<SType,Type,MeshType>::cycle
                 if (!converged[d])
                     proScheme_->prolong(x[l][d], x[l+1][d], plusEqOp<Type>());
 
-            x[l].correctCommBoundaryConditions();
+            x[l].correctBoundaryConditions();
 
             // Post-smooth
 
@@ -127,7 +127,7 @@ void MGSolver<SType,Type,MeshType>::solve
 
     // Correct the boundary conditions
 
-    x[0].correctCommBoundaryConditions();
+    x[0].correctBoundaryConditions();
 
     // Residual field
 
