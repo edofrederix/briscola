@@ -17,9 +17,4 @@ boundaryConditions
     {
         type        slip;
     }
-
-    empties
-    {
-        type        empty;
-    }
 }
