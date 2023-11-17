@@ -4,6 +4,7 @@
 #include "boundaryPartPatch.H"
 #include "parallelPartPatch.H"
 #include "periodicPartPatch.H"
+#include "emptyPartPatch.H"
 
 #include "restrictionScheme.H"
 
@@ -324,7 +325,7 @@ void meshField<Type,MeshType>::addBoundaryConditions()
         {
             const partPatch& patch = fvMsh_.partPatches()[patchi];
 
-            if (patch.type() == boundaryPartPatch::typeName)
+            if (patch.typeNum() == boundaryPartPatch::typeNumber)
             {
                 boundaryConditions_.append
                 (
@@ -348,7 +349,7 @@ void meshField<Type,MeshType>::addBoundaryConditions()
 
             if (cmptSum(cmptMag(bo)) == order)
             {
-                if (patch.type() == parallelPartPatch::typeName)
+                if (patch.typeNum() == parallelPartPatch::typeNumber)
                 {
                     boundaryConditions_.append
                     (
@@ -359,7 +360,7 @@ void meshField<Type,MeshType>::addBoundaryConditions()
                         )
                     );
                 }
-                else if (patch.type() == periodicPartPatch::typeName)
+                else if (patch.typeNum() == periodicPartPatch::typeNumber)
                 {
                     boundaryConditions_.append
                     (
@@ -370,6 +371,25 @@ void meshField<Type,MeshType>::addBoundaryConditions()
                         )
                     );
                 }
+            }
+        }
+
+        // Finally add empties
+
+        forAll(fvMsh_.partPatches(), patchi)
+        {
+            const partPatch& patch = fvMsh_.partPatches()[patchi];
+
+            if (patch.typeNum() == emptyPartPatch::typeNumber)
+            {
+                boundaryConditions_.append
+                (
+                    boundaryCondition<Type,MeshType>::NewEmpty
+                    (
+                        *this,
+                        patch
+                    )
+                );
             }
         }
     }

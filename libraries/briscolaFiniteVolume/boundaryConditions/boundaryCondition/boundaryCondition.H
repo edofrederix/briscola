@@ -125,6 +125,13 @@ public:
         const partPatch& p
     );
 
+    // Selector for an empty boundary condition
+    static autoPtr<boundaryCondition<Type,MeshType>> NewEmpty
+    (
+        const meshField<Type,MeshType>&,
+        const partPatch& p
+    );
+
     // Determine a field's boundary condition base type for a global boundary
     // offset. Works only on rectilinear meshes. Gives error for inconistent
     // boundaries.
@@ -168,6 +175,12 @@ public:
     inline label boundaryOffsetDegree() const
     {
         return patch_.boundaryOffsetDegree();
+    }
+
+    // Boundary extension
+    inline const faceLabel& extension() const
+    {
+        return patch_.extension();
     }
 
     // Return the transformation tensor

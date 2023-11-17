@@ -11,7 +11,7 @@ namespace briscola
 defineTypeNameAndDebug(boundaryPartPatch, 0);
 addToRunTimeSelectionTable(partPatch, boundaryPartPatch, dictionary);
 
-const label boundaryPartPatch::typeNumber = 0;
+const label boundaryPartPatch::typeNumber = 1;
 
 boundaryPartPatch::boundaryPartPatch(const mesh& msh, const dictionary& dict)
 :

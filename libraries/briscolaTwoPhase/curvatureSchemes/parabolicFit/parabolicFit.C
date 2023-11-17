@@ -32,25 +32,31 @@ void parabolicFit::createBoundaryTypes()
                 if (i != 1)
                 {
                     aux2 =
-                        (i == 0)
-                      ? (aux2 && faceType.left() > 0)
-                      : (aux2 && faceType.right() > 0);
+                        i == 0
+                      ? aux2 && faceType.left()
+                      > boundaryPartPatch::typeNumber
+                      : aux2 && faceType.right()
+                      > boundaryPartPatch::typeNumber;
                 }
 
                 if (j != 1)
                 {
                     aux2 =
-                        (j == 0)
-                      ? (aux2 && faceType.bottom() > 0)
-                      : (aux2 && faceType.top() > 0);
+                        j == 0
+                      ? aux2 && faceType.bottom()
+                      > boundaryPartPatch::typeNumber
+                      : aux2 && faceType.top()
+                      > boundaryPartPatch::typeNumber;
                 }
 
                 if (k != 1)
                 {
                     aux2 =
-                        (k == 0)
-                      ? (aux2 && faceType.aft() > 0)
-                      : (aux2 && faceType.fore() > 0);
+                        k == 0
+                      ? aux2 && faceType.aft()
+                      > boundaryPartPatch::typeNumber
+                      : aux2 && faceType.fore()
+                      > boundaryPartPatch::typeNumber;
                 }
 
                 boundaryType_[i][j][k] = aux2;

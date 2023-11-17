@@ -64,7 +64,11 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
     neighbors_[0] = Pstream::myProcNo();
 
     forAll(msh.partPatches(), i)
-        if (msh.partPatches()[i].typeNum() != boundaryPartPatch::typeNumber)
+        if
+        (
+            msh.partPatches()[i].typeNum() == parallelPartPatch::typeNumber
+         || msh.partPatches()[i].typeNum() == periodicPartPatch::typeNumber
+        )
             neighbors_[i+1] = msh.partPatches()[i].neighborProcNum();
 
     // Collect the required cells and store per neighbor processor
@@ -126,7 +130,11 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
             const partPatch& patch = msh.partPatches()[patchNum];
 
-            if (patch.typeNum() == boundaryPartPatch::typeNumber)
+            if
+            (
+                patch.typeNum() == boundaryPartPatch::typeNumber
+             || patch.typeNum() == emptyPartPatch::typeNumber
+            )
                 FatalErrorInFunction
                     << "Cannot exchange cell data across a boundary part patch"
                     << endl << abort(FatalError);

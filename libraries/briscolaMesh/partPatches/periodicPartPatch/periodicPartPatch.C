@@ -11,7 +11,7 @@ namespace briscola
 defineTypeNameAndDebug(periodicPartPatch, 0);
 addToRunTimeSelectionTable(partPatch, periodicPartPatch, dictionary);
 
-const label periodicPartPatch::typeNumber = 2;
+const label periodicPartPatch::typeNumber = 3;
 
 periodicPartPatch::periodicPartPatch(const mesh& msh, const dictionary& dict)
 :

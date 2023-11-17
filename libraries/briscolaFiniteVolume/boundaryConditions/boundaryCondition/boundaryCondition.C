@@ -168,6 +168,23 @@ boundaryCondition<Type,MeshType>::NewParallel
 }
 
 template<class Type, class MeshType>
+autoPtr<boundaryCondition<Type,MeshType>>
+boundaryCondition<Type,MeshType>::NewEmpty
+(
+    const meshField<Type,MeshType>& mshField,
+    const partPatch& patch
+)
+{
+    typename dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find("empty");
+
+    return autoPtr<boundaryCondition<Type,MeshType>>
+    (
+        cstrIter()(mshField, patch)
+    );
+}
+
+template<class Type, class MeshType>
 boundaryConditionBaseType
 boundaryCondition<Type,MeshType>::globalBaseType
 (

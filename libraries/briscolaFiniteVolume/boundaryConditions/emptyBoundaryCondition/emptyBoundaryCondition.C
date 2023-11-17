@@ -34,7 +34,6 @@ emptyBoundaryCondition<Type,MeshType>::emptyBoundaryCondition
                 << "The empty boundary condition can only be applied "
                 << "normal to mesh dimensions with only 1 cell thickness."
                 << endl << exit(FatalError);
-
 }
 
 template<class Type, class MeshType>
@@ -66,13 +65,14 @@ void emptyBoundaryCondition<Type,MeshType>::evaluate(const label l)
     meshLevel<Type,MeshType>& field = this->mshField()[l];
 
     const labelVector bo(this->boundaryOffset());
+    const faceLabel extension(this->extension());
 
     forAll(field, d)
     {
         meshDirection<Type,MeshType>& fd = field[d];
 
-        const labelVector S(this->S(l,d));
-        const labelVector E(this->E(l,d));
+        const labelVector S(this->S(l,d) - extension.lower());
+        const labelVector E(this->E(l,d) + extension.upper());
 
         // For shifted boundaries, the boundary values are set to zero. For
         // non-shifted boundaries, apply homogeneous Neumann

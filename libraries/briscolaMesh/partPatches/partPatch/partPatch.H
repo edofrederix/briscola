@@ -5,6 +5,7 @@
 #include "labelVector.H"
 #include "labelTensor.H"
 #include "Pstream.H"
+#include "faceLabel.H"
 
 namespace Foam
 {
@@ -39,6 +40,12 @@ protected:
     // slave. By default a part patch is master. Can be modified by derived
     // classes.
     bool master_;
+
+    // Extension of the patch into other patches
+    faceLabel extension_;
+
+    // Function to make the patch an extended one
+    void extend();
 
 public:
 
@@ -102,6 +109,13 @@ public:
     // Master bool
     inline bool master() const { return master_; }
     inline bool slave() const { return !master_; }
+
+    // Access to the extension face label
+    inline faceLabel& extension() { return extension_; }
+    inline const faceLabel& extension() const { return extension_; }
+
+    // Check if the part patch is extended
+    inline bool extended() const { return extension_ != faceLabel::zero; }
 
     // Part patch type number
     virtual label typeNum() const = 0;
