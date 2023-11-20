@@ -225,6 +225,9 @@ public:
         }
     }
 
+    // Correct unset boundary conditions as homogeneous Neumann
+    void correctUnsetBoundaryConditions();
+
     // Correct boundary conditions for this level
     void correctBoundaryConditions();
 

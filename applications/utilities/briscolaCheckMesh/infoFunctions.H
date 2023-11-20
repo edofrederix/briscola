@@ -293,8 +293,8 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
 
         if
         (
-            patch.type() == "parallel"
-        ||  patch.type() == "periodic"
+            patch.typeNum() == parallelPartPatch::typeNumber
+         || patch.typeNum() == periodicPartPatch::typeNumber
         )
         {
             dictionary dict(patch.dict());

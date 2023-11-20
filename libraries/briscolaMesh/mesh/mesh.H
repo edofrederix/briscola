@@ -37,6 +37,14 @@ class mesh
     List<edgeLabel> edgePatchTypePerProc_;
     List<vertexLabel> vertexPatchTypePerProc_;
 
+    // Patch extension labels
+    edgeLabel edgePatchExtension_;
+    vertexLabel vertexPatchExtension_;
+
+    // List of empty patch offsets, which are boundary offsets in which no patch
+    // is present
+    List<labelVector> emptyPatchOffsets_;
+
     // Bool to check if mesh is structured or unstructured. If the brick
     // topology is structured, so is the mesh.
     bool structured_;
@@ -82,6 +90,12 @@ class mesh
 
     // Set patch master and type label lists
     void setPatchLabels();
+
+    // Set patch extension labels
+    void setPatchExtension();
+
+    // Generate the list of empty patch offsets
+    void setEmptyPatchOffsets();
 
     // Generate part levels
     void generatePartLevels();
@@ -163,51 +177,51 @@ public:
 
     // Const access to the patch master label lists
 
-    inline const List<faceLabel> facePatchMasterPerProc() const
+    inline const List<faceLabel>& facePatchMasterPerProc() const
     {
         return facePatchMasterPerProc_;
     }
 
-    inline const List<edgeLabel> edgePatchMasterPerProc() const
+    inline const List<edgeLabel>& edgePatchMasterPerProc() const
     {
         return edgePatchMasterPerProc_;
     }
 
-    inline const List<vertexLabel> vertexPatchMasterPerProc() const
+    inline const List<vertexLabel>& vertexPatchMasterPerProc() const
     {
         return vertexPatchMasterPerProc_;
     }
 
     // Const access to the patch type label list
 
-    inline const List<faceLabel> facePatchTypePerProc() const
+    inline const List<faceLabel>& facePatchTypePerProc() const
     {
         return facePatchTypePerProc_;
     }
 
-    inline const List<edgeLabel> edgePatchTypePerProc() const
+    inline const List<edgeLabel>& edgePatchTypePerProc() const
     {
         return edgePatchTypePerProc_;
     }
 
-    inline const List<vertexLabel> vertexPatchTypePerProc() const
+    inline const List<vertexLabel>& vertexPatchTypePerProc() const
     {
         return vertexPatchTypePerProc_;
     }
 
     // Return this processor's patch master labels
 
-    inline faceLabel facePatchMaster() const
+    inline const faceLabel& facePatchMaster() const
     {
         return facePatchMasterPerProc_[Pstream::myProcNo()];
     }
 
-    inline edgeLabel edgePatchMaster() const
+    inline const edgeLabel& edgePatchMaster() const
     {
         return edgePatchMasterPerProc_[Pstream::myProcNo()];
     }
 
-    inline vertexLabel vertexPatchMaster() const
+    inline const vertexLabel& vertexPatchMaster() const
     {
         return vertexPatchMasterPerProc_[Pstream::myProcNo()];
     }
@@ -237,19 +251,37 @@ public:
 
     // Return this processor's patch type face label
 
-    inline faceLabel facePatchType() const
+    inline const faceLabel& facePatchType() const
     {
         return facePatchTypePerProc_[Pstream::myProcNo()];
     }
 
-    inline edgeLabel edgePatchType() const
+    inline const edgeLabel& edgePatchType() const
     {
         return edgePatchTypePerProc_[Pstream::myProcNo()];
     }
 
-    inline vertexLabel vertexPatchType() const
+    inline const vertexLabel& vertexPatchType() const
     {
         return vertexPatchTypePerProc_[Pstream::myProcNo()];
+    }
+
+    // Return patch extension
+
+    inline const edgeLabel& edgePatchExtension() const
+    {
+        return edgePatchExtension_;
+    }
+
+    inline const vertexLabel& vertexPatchExtension() const
+    {
+        return vertexPatchExtension_;
+    }
+
+    // Return the list of empty patch offsets
+    inline const List<labelVector>& emptyPatchOffsets() const
+    {
+        return emptyPatchOffsets_;
     }
 
     // Structured mesh bool

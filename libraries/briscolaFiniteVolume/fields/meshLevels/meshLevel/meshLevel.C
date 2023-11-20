@@ -300,42 +300,43 @@ meshLevel<Type,MeshType>::~meshLevel()
 {}
 
 template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctUnsetBoundaryConditions()
+{
+    forAll(*this, d)
+    {
+        meshDirection<Type,MeshType>& field = listType::operator[](d);
+
+        forAll(fvMsh_.msh().emptyPatchOffsets(), i)
+        {
+            const labelVector bo(fvMsh_.msh().emptyPatchOffsets()[i]);
+
+            const labelVector S(fvMsh_.template S<MeshType>(l_,d,bo));
+            const labelVector E(fvMsh_.template E<MeshType>(l_,d,bo));
+
+            labelVector ijk;
+
+            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+            {
+                field(ijk+bo) = field(ijk);
+            }
+        }
+    }
+}
+
+template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctBoundaryConditions()
 {
     if (mshFieldPtr_)
     {
         this->addBoundaryConditions();
 
-        // First, update all vertex and edge ghost cells as homogeneous Neumann.
-        // This is needed because they might not be set by boundary conditions
+        // Correct unset boundary conditions first
 
-        forAll(*this, d)
-        {
-            meshDirection<Type,MeshType>& field = listType::operator[](d);
+        this->correctUnsetBoundaryConditions();
 
-            labelVector bo;
-
-            for (bo.x() = -1; bo.x() <= 1; bo.x()++)
-            for (bo.y() = -1; bo.y() <= 1; bo.y()++)
-            for (bo.z() = -1; bo.z() <= 1; bo.z()++)
-            if (cmptSum(cmptMag(bo)) > 1)
-            {
-                const labelVector S(fvMsh_.template S<MeshType>(l_,d,bo));
-                const labelVector E(fvMsh_.template E<MeshType>(l_,d,bo));
-
-                labelVector ijk;
-
-                for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-                for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-                for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-                {
-                    field(ijk+bo) = field(ijk);
-                }
-            }
-        }
-
-        // Next, correct all boundary conditions contained by this part. This
-        // may overwrite the edge and vertex Neumann BCs just set.
+        // Next, correct all boundary conditions contained by this part
 
         const label nReq = Pstream::nRequests();
 
@@ -449,6 +450,10 @@ void meshLevel<Type,MeshType>::correctNonCommBoundaryConditions()
     if (mshFieldPtr_)
     {
         this->addBoundaryConditions();
+
+        // Correct unset boundary conditions first
+
+        this->correctUnsetBoundaryConditions();
 
         // Correct all non-communicating boundary conditions
 

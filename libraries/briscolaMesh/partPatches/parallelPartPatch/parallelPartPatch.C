@@ -11,7 +11,7 @@ namespace briscola
 defineTypeNameAndDebug(parallelPartPatch, 0);
 addToRunTimeSelectionTable(partPatch, parallelPartPatch, dictionary);
 
-const label parallelPartPatch::typeNumber = 1;
+const label parallelPartPatch::typeNumber = 2;
 
 parallelPartPatch::parallelPartPatch(const mesh& msh, const dictionary& dict)
 :
@@ -51,6 +51,10 @@ parallelPartPatch::parallelPartPatch(const mesh& msh, const dictionary& dict)
     {
         master_ = Pstream::myProcNo() < neighborProcNum_;
     }
+
+    // Parallel patches are extended patches
+
+    this->extend();
 }
 
 parallelPartPatch::parallelPartPatch(const parallelPartPatch& pp)

@@ -40,7 +40,17 @@ class meshField
     // any operation
     meshField<Type,MeshType>* oldTimePtr_;
 
-    // Boundary conditions
+    // Boundary conditions, assigned in the order:
+    //
+    //  1) non-empty boundaries,
+    //  2) parallel/periodic faces,
+    //  3) parallel/periodic edges,
+    //  4) parallel/periodic vertices and
+    //  5) empty boundaries.
+    //
+    //  This order is important, so that parallel boundary conditions can copy
+    //  normal boundaries and empty boundaries can copy both normal and
+    //  parallel/periodic boundaries.
     PtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
 
     // Restriction scheme associated with this field
