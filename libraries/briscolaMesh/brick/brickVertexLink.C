@@ -1,5 +1,6 @@
 #include "brickVertexLink.H"
 #include "brickTopology.H"
+#include "brickLink.H"
 
 namespace Foam
 {
@@ -23,6 +24,11 @@ brickVertexLink::brickVertexLink
 
 brickVertexLink::~brickVertexLink()
 {}
+
+brickLink brickVertexLink::link() const
+{
+    return brickLink(*this);
+}
 
 }
 

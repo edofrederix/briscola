@@ -83,6 +83,7 @@ int main(int argc, char *argv[])
 
         returnReduce(0, sumOp<label>());
 
+        checkParallelPatches(fvMsh);
         checkParallelFaceCenters<colocated>(fvMsh);
         checkParallelFaceDeltas<colocated>(fvMsh);
 

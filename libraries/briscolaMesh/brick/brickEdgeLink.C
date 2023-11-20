@@ -1,5 +1,6 @@
 #include "brickEdgeLink.H"
 #include "brickTopology.H"
+#include "brickLink.H"
 
 namespace Foam
 {
@@ -23,6 +24,11 @@ brickEdgeLink::brickEdgeLink
 
 brickEdgeLink::~brickEdgeLink()
 {}
+
+brickLink brickEdgeLink::link() const
+{
+    return brickLink(*this);
+}
 
 }
 

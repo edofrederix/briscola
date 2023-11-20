@@ -5,6 +5,7 @@
 
 #include "fvMesh.H"
 #include "meshFields.H"
+#include "OFstream.H"
 
 namespace Foam
 {
@@ -67,7 +68,7 @@ public:
     virtual ~linearSystem();
 
     // Return the mesh
-    inline const fvMesh& fvMsh() { return fvMsh_; }
+    inline const fvMesh& fvMsh() const { return fvMsh_; }
 
     // Return the unknown
     inline meshField<Type,MeshType>& x() { return x_; }
@@ -149,6 +150,17 @@ public:
     template<class SType2>
     void operator-=(const tmp<linearSystem<SType2,Type,MeshType>>&);
 };
+
+// Write a stencil system at given level to a file. The last column is the
+// right-hand side source. Full matrix is written, so use only on very coarse
+// meshes.
+template<class Type, class MeshType>
+void writeToFile
+(
+    const linearSystem<stencil,Type,MeshType>&,
+    OFstream&,
+    const label
+);
 
 }
 

@@ -1,5 +1,6 @@
 #include "brickFaceLink.H"
 #include "brickTopology.H"
+#include "brickLink.H"
 
 namespace Foam
 {
@@ -85,6 +86,11 @@ brickFaceLink::brickFaceLink
 
 brickFaceLink::~brickFaceLink()
 {}
+
+brickLink brickFaceLink::link() const
+{
+    return brickLink(*this);
+}
 
 }
 
