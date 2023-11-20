@@ -30,27 +30,27 @@ curvatureInterpolationScheme<Type,MeshType>::curvatureInterpolationScheme
     threshold_(dictionary().lookupOrDefault<bool>("threshold", 1e-12))
 {}
 
-template<class Type, class MeshType>
-tmp<meshField<FaceSpace<Type>,MeshType>>
-curvatureInterpolationScheme<Type,MeshType>::interp
+template<>
+tmp<colocatedFaceScalarField>
+curvatureInterpolationScheme<scalar,colocated>::interp
 (
-    const meshField<Type,MeshType>& field
+    const colocatedScalarField& field
 )
 {
-    tmp<meshField<FaceSpace<Type>,MeshType>> tInterp
+    tmp<colocatedFaceScalarField> tInterp
     (
-        new meshField<FaceSpace<Type>,MeshType>
+        new colocatedFaceScalarField
         (
             "interp("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    meshField<FaceSpace<Type>,MeshType>& Interp = tInterp.ref();
+    colocatedFaceScalarField& Interp = tInterp.ref();
 
     Interp = Zero;
 
-    colocatedScalarField alpha = field.fvMsh().db().template
+    const colocatedScalarField& alpha = field.fvMsh().db().template
             lookupObject<colocatedScalarField>("alpha");
 
     forAllCells(field, i, j, k)
@@ -107,6 +107,104 @@ curvatureInterpolationScheme<Type,MeshType>::interp
 
                 Interp(ijk)[2*dir+1] = field(ijku);
                 Interp(ijk)[2*dir] = field(ijkl);
+
+            }
+        }
+    }
+
+    return tInterp;
+}
+
+template<>
+tmp<staggeredFaceScalarField>
+curvatureInterpolationScheme<scalar,staggered>::interp
+(
+    const staggeredScalarField& field
+)
+{
+    tmp<staggeredFaceScalarField> tInterp
+    (
+        new staggeredFaceScalarField
+        (
+            "interp("+field.name()+")",
+            field.fvMsh()
+        )
+    );
+
+    staggeredFaceScalarField& Interp = tInterp.ref();
+
+    Interp = Zero;
+
+    const colocatedScalarField& alphaColocated = field.fvMsh().db().template
+            lookupObject<colocatedScalarField>("alpha");
+
+    staggeredScalarField alpha
+        (
+            "alpha",
+            field.fvMsh()
+        );
+
+    forAllDirections(alpha, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector ijkl(ijk - units[d]);
+        alpha(d,i,j,k) = 0.5 * (alphaColocated(ijk) + alphaColocated(ijkl));
+    }
+
+    forAllDirections(field, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        Interp(ijk) = Zero;
+
+        if
+        (
+            alpha(d, ijk) > threshold_
+            && alpha(d, ijk) < (1.0 - threshold_)
+        )
+        {
+            for (int dir = 0; dir < 2; dir++)
+            {
+                const labelVector ijku(ijk + units[dir]);
+                const labelVector ijkl(ijk - units[dir]);
+
+                if
+                (
+                    alpha(d, ijku) > threshold_
+                    && alpha(d, ijku) < (1.0 - threshold_)
+                )
+                {
+                    Interp(d, ijk)[2*dir+1] = 0.5 * (field(d, ijk) + field(d, ijku));
+                }
+                else
+                {
+                    Interp(d, ijk)[2*dir+1] = field(d, ijk);
+                }
+
+                if
+                (
+                    alpha(d, ijkl) > threshold_
+                    && alpha(d, ijkl) < (1.0 - threshold_)
+                )
+                {
+                    Interp(d, ijk)[2*dir] = 0.5 * (field(d, ijk) + field(d, ijkl));
+                }
+                else
+                {
+                    Interp(d, ijk)[2*dir] = field(d, ijk);
+                }
+
+            }
+
+        }
+        else
+        {
+            for (int dir = 0; dir < 2; dir++)
+            {
+                const labelVector ijku(ijk + units[dir]);
+                const labelVector ijkl(ijk - units[dir]);
+
+                Interp(d, ijk)[2*dir+1] = field(d, ijku);
+                Interp(d, ijk)[2*dir] = field(d, ijkl);
 
             }
         }

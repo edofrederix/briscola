@@ -206,6 +206,8 @@ bool initialCondition::end()
         }
     }
 
+    reduce(error, sumOp<scalar>());
+    reduce(count, sumOp<int>());
     error = R_ * Foam::sqrt(error/double(count));
     Info << "Real curvature: " << 1/R_ << endl
          << "Curvature error: " << error << endl;

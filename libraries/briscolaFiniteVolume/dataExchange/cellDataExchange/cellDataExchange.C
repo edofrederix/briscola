@@ -97,7 +97,7 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
         }
         else
         {
-            const labelVector bo =
+            labelVector bo =
                 briscola::cmptMin(briscola::cmptMax(offset, -unitXYZ), unitXYZ);
 
             const label degree = cmptSum(cmptMag(bo));
@@ -119,17 +119,41 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
                 break;
             }
 
-            if (patchNum == -1)
-                FatalErrorInFunction
-                    << "Could not find patch corresponding to boundary offset "
-                    << bo << endl << abort(FatalError);
-
             const partPatch& patch = msh.partPatches()[patchNum];
 
-            if (patch.typeNum() == boundaryPartPatch::typeNumber)
-                FatalErrorInFunction
-                    << "Cannot exchange cell data across a boundary part patch"
-                    << endl << abort(FatalError);
+            // If no processor can be found, check if the cell can be found in
+            // the ghost cells of a neighbouring processor
+
+            if
+            (   patchNum == -1
+             || patch.typeNum() == boundaryPartPatch::typeNumber
+            )
+            {
+                for (int j = 0; j < 3; j++)
+                    if (Foam::mag(offset[j]) < 2)
+                        bo[j] = 0;
+
+                patchNum = -1;
+
+                forAll(msh.partPatches(), patchi)
+                if (msh.partPatches()[patchi].boundaryOffset() == bo)
+                {
+                    patchNum = patchi;
+                    break;
+                }
+
+                if (patchNum == -1)
+                    FatalErrorInFunction
+                        << "Could not find patch corresponding to boundary offset"
+                        << bo << endl << abort(FatalError);
+
+                const partPatch& patch1 = msh.partPatches()[patchNum];
+
+                if (patch1.typeNum() == boundaryPartPatch::typeNumber)
+                    FatalErrorInFunction
+                        << "Cannot exchange cell data across a boundary part patch"
+                        << bo << endl << abort(FatalError);
+            }
 
             // Store trimmed index
 

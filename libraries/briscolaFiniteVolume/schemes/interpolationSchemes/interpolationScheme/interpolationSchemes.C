@@ -28,9 +28,6 @@ makeInterpolationSchemeType(midPoint,vector,staggered)
 makeInterpolationSchemeType(curvature,scalar,colocated)
 makeInterpolationSchemeType(curvature,scalar,staggered)
 
-makeInterpolationSchemeType(curvature,vector,colocated)
-makeInterpolationSchemeType(curvature,vector,staggered)
-
 }
 
 }

@@ -3,6 +3,7 @@
 #include "vof.H"
 #include "exSchemes.H"
 #include "rectilinearMesh.H"
+#include "cellDataExchange.H"
 
 namespace Foam
 {
@@ -16,6 +17,52 @@ namespace fv
 defineTypeNameAndDebug(SHF, 0);
 addToRunTimeSelectionTable(curvatureScheme, SHF, dictionary);
 
+void SHF::setCommunicationIndices()
+{
+    const faceLabel& faceType = fvMsh_.msh().facePatchType();
+    const faceLabel I = fvMsh_.template I<colocated>(0, 0);
+
+    communicationIndices_.clear();
+    communicationIndices_.setSize(6);
+
+    if (faceType.left() > 0)
+        for (int i = I.left() - 3; i < I.left() - 1; i++)
+            for (int j = I.bottom() - 1; j < I.top() + 1; j++)
+                for (int k = I.aft() - 1; k < I.fore() + 1; k++)
+                    communicationIndices_[0].append(labelVector(i,j,k));
+
+    if (faceType.right() > 0)
+        for (int i = I.right() + 1; i < I.right() + 3; i++)
+            for (int j = I.bottom() - 1; j < I.top() + 1; j++)
+                for (int k = I.aft() - 1; k < I.fore() + 1; k++)
+                    communicationIndices_[1].append(labelVector(i,j,k));
+
+    if (faceType.bottom() > 0)
+        for (int i = I.left() - 1; i < I.right(); i++)
+            for (int j = I.bottom() - 3; j < I.bottom() - 1; j++)
+                for (int k = I.aft() - 1; k < I.fore() + 1; k++)
+                    communicationIndices_[2].append(labelVector(i,j,k));
+
+    if (faceType.top() > 0)
+        for (int i = I.left() - 1; i < I.right(); i++)
+            for (int j = I.top() + 1; j < I.top() + 3; j++)
+                for (int k = I.aft() - 1; k < I.fore() + 1; k++)
+                    communicationIndices_[3].append(labelVector(i,j,k));
+
+    if (faceType.aft() > 0)
+        for (int i = I.left() - 1; i < I.right(); i++)
+            for (int j = I.bottom() - 1; j < I.top(); j++)
+                for (int k = I.aft() - 3; k < I.aft() - 1; k++)
+                    communicationIndices_[4].append(labelVector(i,j,k));
+
+    if (faceType.fore() > 0)
+        for (int i = I.left() - 1; i < I.right(); i++)
+            for (int j = I.bottom() - 1; j < I.top(); j++)
+                for (int k = I.fore() + 1; k < I.fore() + 3; k++)
+                    communicationIndices_[5].append(labelVector(i,j,k));
+
+}
+
 SHF::SHF
 (
     const fvMesh& fvMsh,
@@ -25,11 +72,14 @@ SHF::SHF
 )
 :
     curvatureScheme(fvMsh, dict, normal, alpha)
-{}
+{
+    setCommunicationIndices();
+}
 
 SHF::SHF(const SHF& s)
 :
-    curvatureScheme(s)
+    curvatureScheme(s),
+    communicationIndices_(s.communicationIndices_)
 {}
 
 SHF::~SHF()
@@ -38,6 +88,9 @@ SHF::~SHF()
 void SHF::correct()
 {
     colocatedScalarField& kappa = *this;
+
+    const faceLabel& faceType = fvMsh_.msh().facePatchType();
+    const labelVector& N = fvMsh_.template N<colocated>(0, 0);
 
     colocatedScalarField marker("marker", fvMsh_);
 
@@ -48,6 +101,15 @@ void SHF::correct()
     const PartialList<scalar>& zSize = rMsh.localCellSizes()[2];
 
     const scalar angleTol = Foam::cos(0.8);
+
+    commKappa_.clear();
+
+    for (int i = 0; i < 6; i++)
+    {
+        cellDataExchange<colocated> exchange(communicationIndices_[i], fvMsh_, 0, 0);
+        List<scalar> data(move(exchange(kappa)));
+        commKappa_.append(data);
+    }
 
     forAllCells(kappa, i, j, k)
     {
@@ -110,16 +172,34 @@ void SHF::correct()
                 {
                     newSum = 0;
 
+                    if
+                    (
+                        (i + aux3) > kappa.I().right()
+                     && faceType.right() == 0
+                    )
+                    {
+                        break;
+                    }
+
                     for (int aux1 = -1; aux1 <= 1; aux1++)
                         for (int aux2 = -1; aux2 <= 1; aux2++)
-                            newSum += alpha_(i + aux3,j + aux1,k + aux2);
+                            if ((i + aux3) <= kappa.I().right())
+                            {
+                                newSum += alpha_(i + aux3,j + aux1,k + aux2);
+                            }
+                            else
+                            {
+                                int index = (i + aux3 - kappa.I().right() - 1)
+                                          * (N[1] + 2) * (N[2] + 2)
+                                          + (j + aux1) * (N[2] + 2) + k + aux2;
+                                newSum += commKappa_[1][index];
+                            }
 
                     if
                     (
                         nsign * (newSum - prevSum) >= 0
                      && newSum != 0
                      && newSum != 9
-                     && (i + aux3) <= kappa.I().right()
                     )
                     {
                         tup++;
@@ -138,16 +218,34 @@ void SHF::correct()
                 {
                     newSum = 0;
 
+                    if
+                    (
+                        (i - aux3) < (kappa.I().left() - 1)
+                     && faceType.left() == 0
+                    )
+                    {
+                        break;
+                    }
+
                     for (int aux1 = -1; aux1 <= 1; aux1++)
                         for (int aux2 = -1; aux2 <= 1; aux2++)
-                            newSum += alpha_(i - aux3,j + aux1,k + aux2);
+                            if ((i - aux3) >= (kappa.I().left() - 1))
+                            {
+                                newSum += alpha_(i - aux3,j + aux1,k + aux2);
+                            }
+                            else
+                            {
+                                int index = (i - aux3 - kappa.I().left() + 3)
+                                          * (N[1] + 2) * (N[2] + 2)
+                                          + (j + aux1) * (N[2] + 2) + k + aux2;
+                                newSum += commKappa_[0][index];
+                            }
 
                     if
                     (
                         nsign * (newSum - prevSum) <= 0
                      && newSum != 0
                      && newSum != 9
-                     && (i - aux3) >= (kappa.I().left() - 1)
                     )
                     {
                         tdown++;
@@ -169,31 +267,63 @@ void SHF::correct()
                 {
                     for (int aux2 = -1; aux2 <= 1; aux2++)
                     {
+                        scalar value = 0;
+                        scalar valuePrev = alpha_(i, j + aux1, k + aux2);
                         H[aux1 + 1][aux2 + 1] =
-                            xSize[i] * alpha_(i, j + aux1, k + aux2);
+                            xSize[i] * valuePrev;
 
                         for (int aux3 = 1; aux3 <= tup; aux3++)
                         {
+                            if ((i + aux3) <= kappa.I().right())
+                            {
+                                value = alpha_(i + aux3,j + aux1,k + aux2);
+                            }
+                            else
+                            {
+                                int index = (i + aux3 - kappa.I().right() - 1)
+                                          * (N[1] + 2) * (N[2] + 2)
+                                          + (j + aux1) * (N[2] + 2) + k + aux2;
+                                value = commKappa_[1][index];
+                            }
+
                             H[aux1 + 1][aux2 + 1] +=
                                 nsign
                               * (
-                                    alpha_(i+aux3,j+aux1,k+aux2)
-                                  - alpha_(i+aux3-1,j+aux1,k+aux2)
+                                    value
+                                  - valuePrev
                                 ) > 0
-                              ? xSize[i+aux3]*alpha_(i+aux3,j+aux1,k+aux2)
+                              ? xSize[i+aux3]*value
                               : nsign > 0 ? xSize[i+aux3] : 0;
+
+                            valuePrev = value;
                         }
+
+                        valuePrev = alpha_(i, j + aux1, k + aux2);
 
                         for (int aux3 = 1; aux3 <= tdown; aux3++)
                         {
+                            if ((i - aux3) >= (kappa.I().left() - 1))
+                            {
+                                value = alpha_(i - aux3,j + aux1,k + aux2);
+                            }
+                            else
+                            {
+                                int index = (i - aux3 - kappa.I().left() + 3)
+                                          * (N[1] + 2) * (N[2] + 2)
+                                          + (j + aux1) * (N[2] + 2) + k + aux2;
+                                value = commKappa_[0][index];
+                            }
+
                             H[aux1 + 1][aux2 + 1] +=
                                 nsign
                               * (
-                                    alpha_(i-aux3,j+aux1,k+aux2)
-                                  - alpha_(i-aux3+1,j+aux1,k+aux2)
+                                    value
+                                  - valuePrev
                                 ) < 0
-                              ? xSize[i-aux3]*alpha_(i-aux3,j+aux1,k+aux2)
+                              ? xSize[i-aux3]*value
                               : nsign < 0 ? xSize[i-aux3] : 0;
+
+                            valuePrev = value;
                         }
                     }
                 }
@@ -210,16 +340,34 @@ void SHF::correct()
                 {
                     newSum = 0;
 
+                    if
+                    (
+                        (j + aux3) > kappa.I().top()
+                     && faceType.top() == 0
+                    )
+                    {
+                        break;
+                    }
+
                     for (int aux1 = -1; aux1 <= 1; aux1++)
                         for (int aux2 = -1; aux2 <= 1; aux2++)
-                            newSum += alpha_(i + aux1,j + aux3,k + aux2);
+                            if ((j + aux3) <= kappa.I().top())
+                            {
+                                newSum += alpha_(i + aux1,j + aux3,k + aux2);
+                            }
+                            else
+                            {
+                                int index = (i + aux1) * 2 * (N[2] + 2)
+                                          + (j + aux3 - kappa.I().top() - 1)
+                                          * (N[2] + 2) + k + aux2;
+                                newSum += commKappa_[3][index];
+                            }
 
                     if
                     (
                         nsign * (newSum - prevSum) >= 0
                       && newSum != 0
                       && newSum != 9
-                      && (j + aux3) <= kappa.I().top()
                     )
                     {
                         tup++;
@@ -238,16 +386,34 @@ void SHF::correct()
                 {
                     newSum = 0;
 
+                    if
+                    (
+                        (j - aux3) < (kappa.I().bottom() - 1)
+                     && faceType.bottom() == 0
+                    )
+                    {
+                        break;
+                    }
+
                     for (int aux1 = -1; aux1 <= 1; aux1++)
                         for (int aux2 = -1; aux2 <= 1; aux2++)
-                            newSum += alpha_(i + aux1,j - aux3,k + aux2);
+                            if ((j - aux3) >= (kappa.I().bottom() - 1))
+                            {
+                                newSum += alpha_(i + aux1,j - aux3,k + aux2);
+                            }
+                            else
+                            {
+                                int index = (i + aux1) * 2 * (N[2] + 2)
+                                          + (j - aux3 - kappa.I().bottom() + 3)
+                                          * (N[2] + 2) + k + aux2;
+                                newSum += commKappa_[2][index];
+                            }
 
                     if
                     (
                         nsign * (newSum - prevSum) <= 0
                       && newSum != 0
                       && newSum != 9
-                      && (j - aux3) >= (kappa.I().bottom() - 1)
                     )
                     {
                         tdown++;
@@ -269,31 +435,65 @@ void SHF::correct()
                 {
                     for (int aux2 = -1; aux2 <= 1; aux2++)
                     {
+                        scalar value = 0;
+                        scalar valuePrev = alpha_(i + aux1, j, k + aux2);
+
                         H[aux1 + 1][aux2 + 1] =
-                            ySize[j] * alpha_(i + aux1, j, k + aux2);
+                            ySize[j] * valuePrev;
 
                         for (int aux3 = 1; aux3 <= tup; aux3++)
                         {
+                            if ((j + aux3) <= kappa.I().top())
+                            {
+                                value = alpha_(i + aux1,j + aux3,k + aux2);
+                            }
+                            else
+                            {
+
+                                int index = (i + aux1) * 2 * (N[2] + 2)
+                                          + (j + aux3 - kappa.I().top() - 1)
+                                          * (N[2] + 2) + k + aux2;
+                                value = commKappa_[3][index];
+                            }
+
                             H[aux1 + 1][aux2 + 1] +=
                                 nsign
                               * (
-                                    alpha_(i+aux1,j+aux3,k+aux2)
-                                  - alpha_(i+aux1,j+aux3-1,k+aux2)
+                                    value
+                                  - valuePrev
                                 ) > 0
-                              ? ySize[j+aux3]*alpha_(i+aux1,j+aux3,k+aux2)
+                              ? ySize[j+aux3]*value
                               : nsign > 0 ? ySize[j+aux3] : 0;
+
+                            valuePrev = value;
                         }
+
+                        valuePrev = alpha_(i + aux1, j, k + aux2);
 
                         for (int aux3 = 1; aux3 <= tdown; aux3++)
                         {
+                            if ((j - aux3) >= (kappa.I().bottom() - 1))
+                            {
+                                value = alpha_(i + aux1,j - aux3,k + aux2);
+                            }
+                            else
+                            {
+
+                                int index = (i + aux1) * 2 * (N[2] + 2)
+                                          + (j - aux3 - kappa.I().bottom() + 3)
+                                          * (N[2] + 2) + k + aux2;
+                                value = commKappa_[2][index];
+                            }
                             H[aux1 + 1][aux2 + 1] +=
                                 nsign
                               * (
-                                    alpha_(i+aux1,j-aux3,k+aux2)
-                                  - alpha_(i+aux1,j-aux3+1,k+aux2)
+                                    value
+                                  - valuePrev
                                 ) < 0
-                              ? ySize[j-aux3]*alpha_(i+aux1,j-aux3,k+aux2)
+                              ? ySize[j-aux3]*value
                               : nsign < 0 ? ySize[j-aux3] : 0;
+
+                            valuePrev = value;
                         }
                     }
                 }
@@ -310,16 +510,34 @@ void SHF::correct()
                 {
                     newSum = 0;
 
+                    if
+                    (
+                        (k + aux3) > kappa.I().fore()
+                     && faceType.fore() == 0
+                    )
+                    {
+                        break;
+                    }
+
                     for (int aux1 = -1; aux1 <= 1; aux1++)
                         for (int aux2 = -1; aux2 <= 1; aux2++)
-                            newSum += alpha_(i + aux1,j + aux2,k + aux3);
+                            if ((k + aux3) <= kappa.I().fore())
+                            {
+                                newSum += alpha_(i + aux1,j + aux2,k + aux3);
+                            }
+                            else
+                            {
+                                int index = (i + aux1) * 2 * (N[1] + 2)
+                                          + (j + aux2) * 2
+                                          + k + aux3 - kappa.I().fore() - 1;
+                                newSum += commKappa_[5][index];
+                            }
 
                     if
                     (
                         nsign * (newSum - prevSum) >= 0
                       && newSum != 0
                       && newSum != 9
-                      && (k + aux3) <= kappa.I().fore()
                     )
                     {
                         tup++;
@@ -338,16 +556,34 @@ void SHF::correct()
                 {
                     newSum = 0;
 
+                    if
+                    (
+                        (k - aux3) < (kappa.I().aft() - 1)
+                     && faceType.fore() == 0
+                    )
+                    {
+                        break;
+                    }
+
                     for (int aux1 = -1; aux1 <= 1; aux1++)
                         for (int aux2 = -1; aux2 <= 1; aux2++)
-                            newSum += alpha_(i + aux1,j + aux2,k - aux3);
+                            if ((k - aux3) >= (kappa.I().aft() - 1))
+                            {
+                                newSum += alpha_(i + aux1,j + aux2,k - aux3);
+                            }
+                            else
+                            {
+                                int index = (i + aux1) * 2 * (N[1] + 2)
+                                          + (j + aux2) * 2
+                                          + k - aux3 - kappa.I().aft() + 3;
+                                newSum += commKappa_[4][index];
+                            }
 
                     if
                     (
                         nsign * (newSum - prevSum) <= 0
                      && newSum != 0
                      && newSum != 9
-                     && (k - aux3) >= (kappa.I().aft() - 1)
                     )
                     {
                         tdown++;
@@ -369,31 +605,64 @@ void SHF::correct()
                 {
                     for (int aux2 = -1; aux2 <= 1; aux2++)
                     {
+                        scalar value = 0;
+                        scalar valuePrev = alpha_(i + aux1, j + aux2, k);
+
                         H[aux1 + 1][aux2 + 1] =
-                            zSize[k] * alpha_(i + aux1, j + aux2, k);
+                            zSize[k] * valuePrev;
 
                         for (int aux3 = 1; aux3 <= tup; aux3++)
                         {
+                            if ((k + aux3) <= kappa.I().fore())
+                            {
+                                value = alpha_(i + aux1,j + aux2,k + aux3);
+                            }
+                            else
+                            {
+                                int index = (i + aux1) * 2 * (N[1] + 2)
+                                          + (j + aux2) * 2
+                                          + k + aux3 - kappa.I().fore() - 1;
+                                value = commKappa_[5][index];
+                            }
+
                             H[aux1 + 1][aux2 + 1] +=
                                 nsign
                               * (
-                                    alpha_(i+aux1,j+aux2,k+aux3)
-                                  - alpha_(i+aux1,j+aux2,k+aux3-1)
+                                    value
+                                  - valuePrev
                                 ) > 0
-                              ? zSize[k+aux3]*alpha_(i+aux1,j+aux2,k+aux3)
+                              ? zSize[k+aux3]*value
                               : nsign > 0 ? zSize[k+aux3] : 0;
+
+                            valuePrev = value;
                         }
+
+                        valuePrev = alpha_(i + aux1, j + aux2, k);
 
                         for (int aux3 = 1; aux3 <= tdown; aux3++)
                         {
+                            if ((k - aux3) >= (kappa.I().aft() - 1))
+                            {
+                                value = alpha_(i+aux1,j+aux2,k-aux3);
+                            }
+                            else
+                            {
+                                int index = (i + aux1) * 2 * (N[1] + 2)
+                                          + (j + aux2) * 2
+                                          + k - aux3 - kappa.I().aft() + 3;
+                                value = commKappa_[4][index];
+                            }
+
                             H[aux1 + 1][aux2 + 1] +=
                                 nsign
                               * (
-                                    alpha_(i+aux1,j+aux2,k-aux3)
-                                  - alpha_(i+aux1,j+aux2,k-aux3+1)
+                                    value
+                                  - valuePrev
                                 ) < 0
-                              ? zSize[k-aux3]*alpha_(i+aux1,j+aux2,k-aux3)
+                              ? zSize[k-aux3]*value
                               : nsign < 0 ? zSize[k-aux3] : 0;
+
+                            valuePrev = value;
                         }
                     }
                 }
