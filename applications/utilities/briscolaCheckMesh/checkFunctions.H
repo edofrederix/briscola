@@ -48,16 +48,10 @@ void checkParallelPatches(const fvMesh& fvMsh)
                 const label edgeNum = edgeNumber(bo);
 
                 if (edgeNeighbors[edgeNum] != patch.neighborProcNum())
-                {
-                    Info<< edgeNeighbors[edgeNum] << endl;
-                    Info<< patch.neighborProcNum() << endl;
-                    Info<< bo << endl;
-                    std::exit(-1);
                     FatalErrorInFunction
                         << "Mismatch in edge part patch neighbor "
                         << "processor number."
                         << endl << exit(FatalError);
-                }
             }
             else
             {

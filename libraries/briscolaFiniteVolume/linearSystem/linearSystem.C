@@ -639,10 +639,10 @@ void linearSystem<SType,Type,MeshType>::operator-=
     tSys.clear();
 }
 
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
 void writeToFile
 (
-    linearSystem<stencil,Type,MeshType>& sys,
+    linearSystem<SType,Type,MeshType>& sys,
     OFstream& file,
     const label l
 )
@@ -682,7 +682,7 @@ void writeToFile
 
         OFstream& file2 = *file2Ptr;
 
-        const meshDirection<stencil,MeshType>& A = sys.A()[l][d];
+        const meshDirection<SType,MeshType>& A = sys.A()[l][d];
         const meshDirection<Type,MeshType>& b = sys.b()[l][d];
 
         const labelVector N = A.N();

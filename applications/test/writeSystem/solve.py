@@ -10,7 +10,7 @@ for i,meshType in enumerate(meshTypes):
     for d in range(0,n):
 
         appendix = '_'+str(d) if d > 0 else ''
-        data = np.loadtxt('f.' + meshType + appendix)
+        data = np.loadtxt('f.' + meshType + '_laplacian' + appendix)
 
         A = np.array(data[:,:-1])
         b = np.array(data[:,-1])

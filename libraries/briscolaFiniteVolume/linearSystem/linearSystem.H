@@ -154,10 +154,10 @@ public:
 // Write a stencil system at given level to a file. The last column is the
 // right-hand side source. Full matrix is written, so use only on very coarse
 // meshes.
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
 void writeToFile
 (
-    const linearSystem<stencil,Type,MeshType>&,
+    const linearSystem<SType,Type,MeshType>&,
     OFstream&,
     const label
 );

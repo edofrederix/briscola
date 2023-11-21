@@ -19,3 +19,15 @@ laplacianSchemes
     }
 }
 
+ddtSchemes
+{
+    ddt(f.colocated)
+    {
+        type    Euler;
+    }
+
+    ddt(f.staggered)
+    {
+        type    Euler;
+    }
+}
