@@ -7,6 +7,66 @@ namespace briscola
 namespace fv
 {
 
+void checkParallelPatches(const fvMesh& fvMsh)
+{
+    const mesh& msh = fvMsh.msh();
+    const decomposition& decomp = msh.decomp();
+
+    const faceLabel& faceNeighbors =
+        decomp.faceNeighborsPerProc()[Pstream::myProcNo()];
+
+    const edgeLabel& edgeNeighbors =
+        decomp.edgeNeighborsPerProc()[Pstream::myProcNo()];
+
+    const vertexLabel& vertexNeighbors =
+        decomp.vertexNeighborsPerProc()[Pstream::myProcNo()];
+
+    forAll(msh.partPatches(), i)
+    {
+        const partPatch& patch = msh.partPatches()[i];
+
+        if
+        (
+            patch.typeNum() == periodicPartPatch::typeNumber
+         || patch.typeNum() == parallelPartPatch::typeNumber
+        )
+        {
+            const labelVector bo = patch.boundaryOffset();
+
+            if (patch.boundaryOffsetDegree() == 1)
+            {
+                const label faceNum = faceNumber(bo);
+
+                if (faceNeighbors[faceNum] != patch.neighborProcNum())
+                    FatalErrorInFunction
+                        << "Mismatch in face part patch neighbor "
+                        << "processor number."
+                        << endl << exit(FatalError);
+            }
+            else if (patch.boundaryOffsetDegree() == 2)
+            {
+                const label edgeNum = edgeNumber(bo);
+
+                if (edgeNeighbors[edgeNum] != patch.neighborProcNum())
+                    FatalErrorInFunction
+                        << "Mismatch in edge part patch neighbor "
+                        << "processor number."
+                        << endl << exit(FatalError);
+            }
+            else
+            {
+                const label vertexNum = vertexNumber(bo);
+
+                if (vertexNeighbors[vertexNum] != patch.neighborProcNum())
+                    FatalErrorInFunction
+                        << "Mismatch in vertex part patch neighbor "
+                        << "processor number."
+                        << endl << exit(FatalError);
+            }
+        }
+    }
+}
+
 template<class MeshType>
 void checkInternalFaceCenters(const fvMesh& fvMsh)
 {

@@ -26,61 +26,48 @@ void linearProlongationScheme<Type,MeshType>::setWeights()
                 this->fvMsh().template metrics<MeshType>()
                .cellCenters()[l+1][d];
 
-            meshDirection<tensor,MeshType>& weights = weights_[l][d];
+            meshDirection<vertexScalar,MeshType>& weights = weights_[l][d];
 
             weights = Zero;
 
             forAllCells(ccf, i, j, k)
             {
-                scalar sum = 0.0;
+                const label ox = (i%2)*2-1;
+                const label oy = (j%2)*2-1;
+                const label oz = (k%2)*2-1;
 
-                const label ox = (i % 2)*2 - 1;
-                const label oy = (j % 2)*2 - 1;
-                const label oz = (k % 2)*2 - 1;
+                vertexVector vertices;
 
-                for (label a = 0; a < R.x(); a++)
-                for (label b = 0; b < R.y(); b++)
-                for (label c = 0; c < R.z(); c++)
-                {
-                    const label i0 = i/R.x() + a*ox;
-                    const label j0 = j/R.y() + b*oy;
-                    const label k0 = k/R.z() + c*oz;
+                int q = 0;
+                for (int c = 0; c < 2; c++)
+                    for (int b = 0; b < 2; b++)
+                        for (int a = 0; a < 2; a++)
+                            vertices[q++] =
+                                ccc
+                                (
+                                    i/R.x() + a*ox,
+                                    j/R.y() + b*oy,
+                                    k/R.z() + c*oz
+                                );
 
-                    const label i1 = i/R.x() + (1-a)*ox;
-                    const label j1 = j/R.y() + (1-b)*oy;
-                    const label k1 = k/R.z() + (1-c)*oz;
+                // Calculate the tri-linear interpolation point
 
-                    const vector dx = ccc(i1,j0,k0) - ccc(i0,j0,k0);
-                    const vector dy = ccc(i0,j1,k0) - ccc(i0,j0,k0);
-                    const vector dz = ccc(i0,j0,k1) - ccc(i0,j0,k0);
+                const vector w = interpolationWeights(ccf(i,j,k), vertices);
 
-                    const scalar dxf = Foam::mag(dx);
-                    const scalar dyf = Foam::mag(dy);
-                    const scalar dzf = Foam::mag(dz);
+                // Set the weights
 
-                    const scalar wx =
-                        R.x() > 1
-                      ? Foam::mag((ccf(i,j,k)-ccc(i0,j0,k0)) & dx/dxf)/dxf
-                      : 0;
-
-                    const scalar wy =
-                        R.y() > 1
-                      ? Foam::mag((ccf(i,j,k)-ccc(i0,j0,k0)) & dy/dyf)/dyf
-                      : 0;
-
-                    const scalar wz =
-                        R.z() > 1
-                      ? Foam::mag((ccf(i,j,k)-ccc(i0,j0,k0)) & dz/dzf)/dzf
-                      : 0;
-
-                    const scalar w = (1.0-wx)*(1.0-wy)*(1.0-wz);
-
-                    sum += w;
-
-                    weights(i,j,k)[a*4+b*2+c] = w;
-                }
-
-                weights(i,j,k) /= sum;
+                weights(i,j,k) =
+                    vertexScalar
+                    (
+                        (1.0-w.x()) * (1.0-w.y()) * (1.0-w.z()),
+                        (    w.x()) * (1.0-w.y()) * (1.0-w.z()),
+                        (1.0-w.x()) * (    w.y()) * (1.0-w.z()),
+                        (    w.x()) * (    w.y()) * (1.0-w.z()),
+                        (1.0-w.x()) * (1.0-w.y()) * (    w.z()),
+                        (    w.x()) * (1.0-w.y()) * (    w.z()),
+                        (1.0-w.x()) * (    w.y()) * (    w.z()),
+                        (    w.x()) * (    w.y()) * (    w.z())
+                    );
             }
         }
     }
@@ -97,35 +84,31 @@ void linearProlongationScheme<Type,MeshType>::prolong
 {
     const labelVector R(coarse.level().R());
 
-    meshDirection<tensor,MeshType>& weights =
+    meshDirection<vertexScalar,MeshType>& weights =
         weights_[fine.levelNum()][fine.directionNum()];
 
     forAllCells(fine, i, j, k)
     {
-        const label il = i/R.x();
-        const label jl = j/R.y();
-        const label kl = k/R.z();
+        const label ox = ((i%2)*2-1) * (R.x()>1);
+        const label oy = ((j%2)*2-1) * (R.y()>1);
+        const label oz = ((k%2)*2-1) * (R.z()>1);
 
-        const label ox = (i % 2)*2 - 1;
-        const label oy = (j % 2)*2 - 1;
-        const label oz = (k % 2)*2 - 1;
+        Type value = Zero;
 
-        const label iu = il + (R.x() == 1 ? 0 : ox);
-        const label ju = jl + (R.y() == 1 ? 0 : oy);
-        const label ku = kl + (R.z() == 1 ? 0 : oz);
+        int q = 0;
+        for (int c = 0; c < 2; c++)
+            for (int b = 0; b < 2; b++)
+                for (int a = 0; a < 2; a++)
+                    value +=
+                        weights(i,j,k)[q++]
+                      * coarse
+                        (
+                            i/R.x() + a*ox,
+                            j/R.y() + b*oy,
+                            k/R.z() + c*oz
+                        );
 
-        bop
-        (
-            fine(i,j,k),
-            weights(i,j,k)[0] * coarse(il,jl,kl)
-          + weights(i,j,k)[1] * coarse(il,jl,ku)
-          + weights(i,j,k)[2] * coarse(il,ju,kl)
-          + weights(i,j,k)[3] * coarse(il,ju,ku)
-          + weights(i,j,k)[4] * coarse(iu,jl,kl)
-          + weights(i,j,k)[5] * coarse(iu,jl,ku)
-          + weights(i,j,k)[6] * coarse(iu,ju,kl)
-          + weights(i,j,k)[7] * coarse(iu,ju,ku)
-        );
+        bop(fine(i,j,k), value);
     }
 }
 

@@ -13,9 +13,4 @@ boundaryConditions
         type        Neumann;
         gradients   (0);
     }
-
-    empties
-    {
-        type        empty;
-    }
 }

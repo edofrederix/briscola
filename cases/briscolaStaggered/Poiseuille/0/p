@@ -25,9 +25,4 @@ boundaryConditions
         type        Dirichlet;
         values      (0);
     }
-
-    empties
-    {
-        type        empty;
-    }
 }

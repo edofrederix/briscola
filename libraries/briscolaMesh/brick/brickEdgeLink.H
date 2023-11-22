@@ -13,6 +13,7 @@ namespace briscola
 {
 
 class brickTopology;
+class brickLink;
 
 class brickEdgeLink
 {
@@ -75,6 +76,9 @@ public:
 
     // Periodic link
     inline bool periodic() const { return periodic_; }
+
+    // Generate brick link
+    brickLink link() const;
 };
 
 }

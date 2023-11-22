@@ -7,6 +7,13 @@
 #include "brickDecompositionInterface.H"
 #include "decompositionMap.H"
 
+#include "faceLabel.H"
+#include "faceLabelTensor.H"
+#include "edgeLabel.H"
+#include "edgeLabelTensor.H"
+#include "vertexLabel.H"
+#include "vertexLabelTensor.H"
+
 namespace Foam
 {
 
@@ -36,7 +43,7 @@ private:
     // List of processor topologies per brick
     PtrList<labelBlock> procMapPerBrick_;
 
-    // List of part sizes per brick
+    // Global processor part start index
     List<labelVector> partSizePerBrick_;
 
     // Global processor topology map, only set on structured brick topologies
@@ -44,6 +51,16 @@ private:
 
     // List of part sizes per brick
     List<labelVector> globalStartPerProc_;
+
+    // Lists of neighbor processor numbers per processor
+    List<faceLabel> faceNeighborsPerProc_;
+    List<edgeLabel> edgeNeighborsPerProc_;
+    List<vertexLabel> vertexNeighborsPerProc_;
+
+    // Lists of neighbor transformation tensors per processor
+    List<faceLabelTensor> faceTsPerProc_;
+    List<edgeLabelTensor> edgeTsPerProc_;
+    List<vertexLabelTensor> vertexTsPerProc_;
 
     // Disallow default bitwise assignment
     void operator=(const decomposition&);
@@ -177,6 +194,40 @@ public:
         }
 
         return -1;
+    }
+
+    // Lists of neighbor processor numbers per processor
+
+    inline const List<faceLabel>& faceNeighborsPerProc() const
+    {
+        return faceNeighborsPerProc_;
+    }
+
+    inline const List<edgeLabel>& edgeNeighborsPerProc() const
+    {
+        return edgeNeighborsPerProc_;
+    }
+
+    inline const List<vertexLabel>& vertexNeighborsPerProc() const
+    {
+        return vertexNeighborsPerProc_;
+    }
+
+    // Lists of neighbor transformation tensors per processor
+
+    inline const List<faceLabelTensor>& faceTsPerProc() const
+    {
+        return faceTsPerProc_;
+    }
+
+    inline const List<edgeLabelTensor>& edgeTsPerProc() const
+    {
+        return edgeTsPerProc_;
+    }
+
+    inline const List<vertexLabelTensor>& vertexTsPerProc() const
+    {
+        return vertexTsPerProc_;
     }
 };
 

@@ -137,7 +137,7 @@ void solver<SType,Type,MeshType>::RBGS
             }
         }
 
-        x.correctCommBoundaryConditions();
+        x.correctBoundaryConditions();
 
         forAll(x, d)
         if (!converged[d])
@@ -159,10 +159,8 @@ void solver<SType,Type,MeshType>::RBGS
             }
         }
 
-        x.correctCommBoundaryConditions();
+        x.correctBoundaryConditions();
     }
-
-    x.correctNonCommBoundaryConditions();
 }
 
 template<class SType, class Type, class MeshType>
@@ -199,10 +197,8 @@ void solver<SType,Type,MeshType>::LEXGS
             }
         }
 
-        x.correctCommBoundaryConditions();
+        x.correctBoundaryConditions();
     }
-
-    x.correctNonCommBoundaryConditions();
 }
 
 template<class SType, class Type, class MeshType>
@@ -244,10 +240,8 @@ void solver<SType,Type,MeshType>::JAC
 
         x = y;
 
-        x.correctCommBoundaryConditions();
+        x.correctBoundaryConditions();
     }
-
-    x.correctNonCommBoundaryConditions();
 }
 
 template<class SType, class Type, class MeshType>

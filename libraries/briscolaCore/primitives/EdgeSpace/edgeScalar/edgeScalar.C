@@ -8,7 +8,7 @@ const char* const edgeScalar::csType::typeName = "edgeScalar";
 
 template<>
 const char* const edgeScalar::csType::componentNames[] =
-    {"x0", "x1", "x2", "x3", "y0", "y1", "y2", "y3", "z0", "z1", "z2", "z3"};
+    {"ba", "ta", "bf", "tf", "la", "ra", "lf", "rf", "lb", "rb", "lt", "rt"};
 
 template<>
 const edgeScalar edgeScalar::csType::zero(edgeScalar::uniform(0));

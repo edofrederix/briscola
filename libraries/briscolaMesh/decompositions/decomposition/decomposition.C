@@ -178,6 +178,144 @@ void decomposition::updateGlobalData(const mesh& msh)
         Pstream::gatherList(globalStartPerProc_);
         Pstream::scatterList(globalStartPerProc_);
     }
+
+    // Set the neighbor processor numbers and transformation tensors, if any
+
+    faceNeighborsPerProc_.setSize(Pstream::nProcs(), -faceLabel::one);
+    edgeNeighborsPerProc_.setSize(Pstream::nProcs(), -edgeLabel::one);
+    vertexNeighborsPerProc_.setSize(Pstream::nProcs(), -vertexLabel::one);
+
+    faceTsPerProc_.setSize(Pstream::nProcs(), faceLabelTensor::zero);
+    edgeTsPerProc_.setSize(Pstream::nProcs(), edgeLabelTensor::zero);
+    vertexTsPerProc_.setSize(Pstream::nProcs(), vertexLabelTensor::zero);
+
+    const brickTopology& topo = msh.topology();
+
+    for (int proc = 0; proc < Pstream::nProcs(); proc++)
+    {
+        const label bricki = brickNumPerProc_[proc];
+        const labelVector ijk = brickPartPerProc_[proc];
+        const labelBlock& procMap = procMapPerBrick_[bricki];
+
+        for (int oi = -1; oi <= 1; oi++)
+        for (int oj = -1; oj <= 1; oj++)
+        for (int ok = -1; ok <= 1; ok++)
+        if (oi != 0 || oj != 0 || ok != 0)
+        {
+            const labelVector offset(oi,oj,ok);
+            const label offsetDegree = cmptSum(cmptMag(offset));
+
+            const label offsetNum =
+                offsetDegree == 1 ? faceNumber(offset)
+              : offsetDegree == 2 ? edgeNumber(offset)
+              :                     vertexNumber(offset);
+
+            labelVector neighbor = ijk + offset;
+
+            labelVector brickOffset;
+
+            for (int i = 0; i < 3; i++)
+                brickOffset[i] =
+                    neighbor[i] >= procMap.shape()[i] ? 1
+                  : neighbor[i] < 0 ? -1
+                  : 0;
+
+            const label brickOffsetDegree = cmptSum(cmptMag(brickOffset));
+
+            const label brickOffsetNum =
+                brickOffsetDegree == 0 ? -1
+              : brickOffsetDegree == 1 ? faceNumber(brickOffset)
+              : brickOffsetDegree == 2 ? edgeNumber(brickOffset)
+              :                          vertexNumber(brickOffset);
+
+            if (brickOffsetDegree == 0)
+            {
+                // Neighbor is in the same brick
+
+                if (offsetDegree == 1)
+                {
+                    faceNeighborsPerProc_[proc][offsetNum] =
+                        procMap(neighbor);
+
+                    faceTsPerProc_[proc][offsetNum] = eye;
+                }
+                else if (offsetDegree == 2)
+                {
+                    edgeNeighborsPerProc_[proc][offsetNum] =
+                        procMap(neighbor);
+
+                    edgeTsPerProc_[proc][offsetNum] = eye;
+                }
+                else
+                {
+                    vertexNeighborsPerProc_[proc][offsetNum] =
+                        procMap(neighbor);
+
+                    vertexTsPerProc_[proc][offsetNum] = eye;
+                }
+            }
+            else if
+            (
+                (
+                    brickOffsetDegree == 1
+                 && topo.links()[bricki].faceLinks().set(brickOffsetNum)
+                )
+             || (
+                    brickOffsetDegree == 2
+                 && topo.links()[bricki].edgeLinks().set(brickOffsetNum)
+                )
+             || (
+                    brickOffsetDegree == 3
+                 && topo.links()[bricki].vertexLinks().set(brickOffsetNum)
+                )
+            )
+            {
+                // Neighbor is across a brick boundary
+
+                const brickLink link
+                (
+                    brickOffsetDegree == 1
+                  ? topo.links()[bricki].faceLinks()[brickOffsetNum].link()
+                  : brickOffsetDegree == 2
+                  ? topo.links()[bricki].edgeLinks()[brickOffsetNum].link()
+                  : topo.links()[bricki].vertexLinks()[brickOffsetNum].link()
+                );
+
+                const labelTensor T = link.T();
+                const label brickj = link.b1().num();
+
+                labelBlock neighProcMap(procMapPerBrick_[brickj]);
+                neighProcMap.transform(T);
+
+                for (int i = 0; i < 3; i++)
+                    if (brickOffset[i] != 0)
+                        neighbor[i] =
+                            neighbor[i] < 0 ? neighProcMap.shape()[i]-1 : 0;
+
+                if (offsetDegree == 1)
+                {
+                    faceNeighborsPerProc_[proc][offsetNum] =
+                        neighProcMap(neighbor);
+
+                    faceTsPerProc_[proc][offsetNum] = T;
+                }
+                else if (offsetDegree == 2)
+                {
+                    edgeNeighborsPerProc_[proc][offsetNum] =
+                        neighProcMap(neighbor);
+
+                    edgeTsPerProc_[proc][offsetNum] = T;
+                }
+                else
+                {
+                    vertexNeighborsPerProc_[proc][offsetNum] =
+                        neighProcMap(neighbor);
+
+                    vertexTsPerProc_[proc][offsetNum] = T;
+                }
+            }
+        }
+    }
 }
 
 decomposition::decomposition(mesh& msh)

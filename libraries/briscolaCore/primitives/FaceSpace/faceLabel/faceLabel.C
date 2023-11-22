@@ -26,6 +26,9 @@ template<>
 const faceLabel faceLabel::csType::rootMax(faceLabel::uniform(::sqrt(INT_MAX)));
 
 template<>
-const faceLabel faceLabel::csType::rootMin(faceLabel::uniform(-::sqrt(INT_MAX)));
+const faceLabel faceLabel::csType::rootMin
+(
+    faceLabel::uniform(-::sqrt(INT_MAX))
+);
 
 }
