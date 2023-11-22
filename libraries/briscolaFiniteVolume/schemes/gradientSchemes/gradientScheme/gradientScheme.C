@@ -66,6 +66,41 @@ gradientScheme<Type,MeshType>::New
     );
 }
 
+template<class Type, class MeshType>
+inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
+centerGrad
+(
+    const meshField<FaceSpace<Type>,MeshType>& field
+)
+{
+    tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>> tGrad
+    (
+        new meshField<typename outerProduct<vector,Type>::type,MeshType>
+        (
+            "centerGrad("+field.name()+")",
+            field.fvMsh()
+        )
+    );
+
+    meshField<typename outerProduct<vector,Type>::type,MeshType>& Grad =
+        tGrad.ref();
+
+    Grad = Zero;
+
+    const meshField<scalar,MeshType>& cv =
+        field.fvMsh().template metrics<MeshType>().cellVolumes();
+
+    const meshField<faceVector,MeshType>& fan =
+        field.fvMsh().template metrics<MeshType>().faceAreaNormals();
+
+    forAllDirections(Grad, d, i, j, k)
+        for (int f = 0; f < 6; f++)
+            Grad(d,i,j,k) +=
+                field(d,i,j,k)[f]*fan(d,i,j,k)[f]/cv(d,i,j,k);
+
+    return tGrad;
+}
+
 }
 
 }

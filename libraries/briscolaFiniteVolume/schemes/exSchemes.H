@@ -132,6 +132,16 @@ grad
     )->grad(field);
 }
 
+template<class Type, class MeshType>
+inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
+grad
+(
+    const meshField<FaceSpace<Type>,MeshType>& field
+)
+{
+    return centerGrad(field);
+}
+
 template<class Type>
 inline tmp<meshField<Type,staggered>>
 stagGrad
