@@ -130,8 +130,8 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
             if
             (   patchNum == -1
-             || patch.typeNum() == boundaryPartPatch::typeNumber
              || patch.typeNum() == emptyPartPatch::typeNumber
+             || patch.typeNum() == boundaryPartPatch::typeNumber
             )
             {
                 for (int j = 0; j < 3; j++)
@@ -156,8 +156,8 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
                 if
                 (
-                    patch1.typeNum() == boundaryPartPatch::typeNumber
-                 || patch.typeNum() == emptyPartPatch::typeNumber
+                    patch1.typeNum() == emptyPartPatch::typeNumber
+                 || patch1.typeNum() == boundaryPartPatch::typeNumber
                 )
                     FatalErrorInFunction
                         << "Cannot exchange cell data across a boundary part patch"

@@ -25,37 +25,37 @@ void SHF::setCommunicationIndices()
     communicationIndices_.clear();
     communicationIndices_.setSize(6);
 
-    if (faceType.left() > 0)
+    if (faceType.left() > 1)
         for (int i = I.left() - 3; i < I.left() - 1; i++)
             for (int j = I.bottom() - 1; j < I.top() + 1; j++)
                 for (int k = I.aft() - 1; k < I.fore() + 1; k++)
                     communicationIndices_[0].append(labelVector(i,j,k));
 
-    if (faceType.right() > 0)
+    if (faceType.right() > 1)
         for (int i = I.right() + 1; i < I.right() + 3; i++)
             for (int j = I.bottom() - 1; j < I.top() + 1; j++)
                 for (int k = I.aft() - 1; k < I.fore() + 1; k++)
                     communicationIndices_[1].append(labelVector(i,j,k));
 
-    if (faceType.bottom() > 0)
+    if (faceType.bottom() > 1)
         for (int i = I.left() - 1; i < I.right(); i++)
             for (int j = I.bottom() - 3; j < I.bottom() - 1; j++)
                 for (int k = I.aft() - 1; k < I.fore() + 1; k++)
                     communicationIndices_[2].append(labelVector(i,j,k));
 
-    if (faceType.top() > 0)
+    if (faceType.top() > 1)
         for (int i = I.left() - 1; i < I.right(); i++)
             for (int j = I.top() + 1; j < I.top() + 3; j++)
                 for (int k = I.aft() - 1; k < I.fore() + 1; k++)
                     communicationIndices_[3].append(labelVector(i,j,k));
 
-    if (faceType.aft() > 0)
+    if (faceType.aft() > 1)
         for (int i = I.left() - 1; i < I.right(); i++)
             for (int j = I.bottom() - 1; j < I.top(); j++)
                 for (int k = I.aft() - 3; k < I.aft() - 1; k++)
                     communicationIndices_[4].append(labelVector(i,j,k));
 
-    if (faceType.fore() > 0)
+    if (faceType.fore() > 1)
         for (int i = I.left() - 1; i < I.right(); i++)
             for (int j = I.bottom() - 1; j < I.top(); j++)
                 for (int k = I.fore() + 1; k < I.fore() + 3; k++)
@@ -175,7 +175,7 @@ void SHF::correct()
                     if
                     (
                         (i + aux3) > kappa.I().right()
-                     && faceType.right() == 0
+                     && faceType.right() < 2
                     )
                     {
                         break;
@@ -221,7 +221,7 @@ void SHF::correct()
                     if
                     (
                         (i - aux3) < (kappa.I().left() - 1)
-                     && faceType.left() == 0
+                     && faceType.left() < 2
                     )
                     {
                         break;
@@ -343,7 +343,7 @@ void SHF::correct()
                     if
                     (
                         (j + aux3) > kappa.I().top()
-                     && faceType.top() == 0
+                     && faceType.top() < 2
                     )
                     {
                         break;
@@ -389,7 +389,7 @@ void SHF::correct()
                     if
                     (
                         (j - aux3) < (kappa.I().bottom() - 1)
-                     && faceType.bottom() == 0
+                     && faceType.bottom() < 2
                     )
                     {
                         break;
@@ -513,7 +513,7 @@ void SHF::correct()
                     if
                     (
                         (k + aux3) > kappa.I().fore()
-                     && faceType.fore() == 0
+                     && faceType.fore() < 2
                     )
                     {
                         break;
@@ -559,7 +559,7 @@ void SHF::correct()
                     if
                     (
                         (k - aux3) < (kappa.I().aft() - 1)
-                     && faceType.fore() == 0
+                     && faceType.fore() < 2
                     )
                     {
                         break;
