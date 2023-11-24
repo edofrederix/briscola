@@ -28,6 +28,21 @@ colocatedScalarField p
 p = Zero;
 p.correctBoundaryConditions();
 
+// Extrapolated pressure (Dodd & Ferrante)
+
+colocatedScalarField extrapolatedP
+(
+    "extrapolatedP",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true,
+    false
+);
+
+extrapolatedP = Zero;
+extrapolatedP.correctBoundaryConditions();
+
 // Flux
 
 colocatedFaceScalarField phi
@@ -81,4 +96,4 @@ colocatedVectorField H
     false
 );
 
-H = ex::div(phi,U) - itpm.surfaceTension();
+H = ex::div(phi,U) - itpm.surfaceTension() - ((ex::grad(mu) & ex::grad(U)) / rho);
