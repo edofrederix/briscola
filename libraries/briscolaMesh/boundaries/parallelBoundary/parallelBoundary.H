@@ -1,7 +1,7 @@
-#ifndef parallelPartPatch_H
-#define parallelPartPatch_H
+#ifndef parallelBoundary_H
+#define parallelBoundary_H
 
-#include "partPatch.H"
+#include "boundary.H"
 
 namespace Foam
 {
@@ -9,15 +9,15 @@ namespace Foam
 namespace briscola
 {
 
-class parallelPartPatch
+class parallelBoundary
 :
-    public partPatch
+    public boundary
 {
     // Processor number of the other side
     label neighborProcNum_;
 
     // Disallow default bitwise assignment
-    void operator=(const parallelPartPatch&);
+    void operator=(const parallelBoundary&);
 
 public:
 
@@ -28,18 +28,18 @@ public:
     TypeName("parallel");
 
     // Construct from components
-    parallelPartPatch(const mesh& msh, const dictionary& dict);
+    parallelBoundary(const mesh& msh, const dictionary& dict);
 
     // Copy constructor
-    parallelPartPatch(const parallelPartPatch&);
+    parallelBoundary(const parallelBoundary&);
 
-    // Clone part patch
-    virtual autoPtr<partPatch> clone() const
+    // Clone boundary
+    virtual autoPtr<boundary> clone() const
     {
-        return autoPtr<partPatch>(new parallelPartPatch(*this));
+        return autoPtr<boundary>(new parallelBoundary(*this));
     }
 
-    // Part patch type number
+    // Boundary type number
     virtual label typeNum() const
     {
         return typeNumber;

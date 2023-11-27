@@ -1,5 +1,5 @@
-#ifndef partPatch_H
-#define partPatch_H
+#ifndef boundary_H
+#define boundary_H
 
 #include "dictionary.H"
 #include "labelVector.H"
@@ -15,48 +15,48 @@ namespace briscola
 
 class mesh;
 
-class partPatch
+class boundary
 {
 protected:
 
     // Copy of the dictionary
     dictionary dict_;
 
-    // Name of the patch
+    // Name of the boundary
     const word name_;
 
-    // Boundary offset of this patch
-    labelVector boundaryOffset_;
+    // Boundary offset of this boundary
+    labelVector offset_;
 
     // Boundary offset degree, giving the number on non-zero components in the
     // boundary offset vector
-    label boundaryOffsetDegree_;
+    label offsetDegree_;
 
-    // Rotation of the neighbor in case of a parallel patch (defaults to the
+    // Rotation of the neighbor in case of a parallel boundary (defaults to the
     // identity tensor)
     labelTensor T_;
 
-    // Master bool. Part patches that require communication can be master or
-    // slave. By default a part patch is master. Can be modified by derived
+    // Master bool. Boundaries that require communication can be master or
+    // slave. By default a boundary is master. Can be modified by derived
     // classes.
     bool master_;
 
-    // Extension of the patch into other patches
+    // Extension of the boundary into other boundaries
     faceLabel extension_;
 
-    // Function to make the patch an extended one
+    // Function to make the boundary an extended one
     void extend();
 
 public:
 
     // Runtime type information
-    TypeName("partPatch");
+    TypeName("boundary");
 
     // Declare run-time constructor selection tables
     declareRunTimeSelectionTable
     (
         autoPtr,
-        partPatch,
+        boundary,
         dictionary,
         (
             const mesh& msh,
@@ -66,41 +66,41 @@ public:
     );
 
     // Construct from components
-    partPatch(const mesh& msh, const dictionary& dict);
+    boundary(const mesh& msh, const dictionary& dict);
 
     // Copy constructor
-    partPatch(const partPatch& pp);
+    boundary(const boundary&);
 
-    // Clone part patch
-    virtual autoPtr<partPatch> clone() const = 0;
+    // Clone part boundary
+    virtual autoPtr<boundary> clone() const = 0;
 
     // Selector
-    static autoPtr<partPatch> New
+    static autoPtr<boundary> New
     (
         const mesh& msh,
         const dictionary& dict
     );
 
     // Destructor
-    virtual ~partPatch();
+    virtual ~boundary();
 
     // Access to the dictionary
     inline dictionary& dict() { return dict_; }
     inline const dictionary& dict() const { return dict_; }
 
-    // Name of the patch
+    // Name of the boundary
     inline const word& name() const { return name_; }
 
-    // Offset of the patch to the boundary
-    inline const labelVector& boundaryOffset() const
+    // Offset of the boundary
+    inline const labelVector& offset() const
     {
-        return boundaryOffset_;
+        return offset_;
     }
 
     // Boundary offset degree
-    inline label boundaryOffsetDegree() const
+    inline label offsetDegree() const
     {
-        return boundaryOffsetDegree_;
+        return offsetDegree_;
     }
 
     // Rotation of the neighbor
@@ -114,10 +114,10 @@ public:
     inline faceLabel& extension() { return extension_; }
     inline const faceLabel& extension() const { return extension_; }
 
-    // Check if the part patch is extended
+    // Check if the boundary is extended
     inline bool extended() const { return extension_ != faceLabel::zero; }
 
-    // Part patch type number
+    // Boundary type number
     virtual label typeNum() const = 0;
 
     // Neighbor processor number

@@ -8,7 +8,7 @@
 #include "faceVector.H"
 #include "faceScalar.H"
 
-#include "partPatch.H"
+#include "boundary.H"
 
 #include "PtrList.H"
 #include "NamedEnum.H"
@@ -43,8 +43,8 @@ protected:
     // Reference to the mesh field
     meshField<Type,MeshType>& mshField_;
 
-    // Reference to the part patch
-    const partPatch& patch_;
+    // Reference to the base boundary
+    const boundary& b_;
 
     // Copy of the dictionary
     dictionary dict_;
@@ -65,16 +65,16 @@ public:
         dictionary,
         (
             const meshField<Type,MeshType>& mshField,
-            const partPatch& patch
+            const boundary& b
         ),
-        (mshField, patch)
+        (mshField, b)
     );
 
     // Construct from components
     boundaryCondition
     (
         const meshField<Type,MeshType>&,
-        const partPatch&
+        const boundary&
     );
 
     // Copy constructor
@@ -100,36 +100,36 @@ public:
     static autoPtr<boundaryCondition<Type,MeshType>> New
     (
         const meshField<Type,MeshType>&,
-        const partPatch&,
+        const boundary&,
         const word
     );
 
     // Selector for a normal boundary condition
-    static autoPtr<boundaryCondition<Type,MeshType>> NewBoundary
+    static autoPtr<boundaryCondition<Type,MeshType>> NewDomain
     (
         const meshField<Type,MeshType>&,
-        const partPatch&
+        const boundary&
     );
 
     // Selector for a periodic boundary condition
     static autoPtr<boundaryCondition<Type,MeshType>> NewPeriodic
     (
         const meshField<Type,MeshType>&,
-        const partPatch& p
+        const boundary&
     );
 
     // Selector for a parallel boundary condition
     static autoPtr<boundaryCondition<Type,MeshType>> NewParallel
     (
         const meshField<Type,MeshType>&,
-        const partPatch& p
+        const boundary&
     );
 
     // Selector for an empty boundary condition
     static autoPtr<boundaryCondition<Type,MeshType>> NewEmpty
     (
         const meshField<Type,MeshType>&,
-        const partPatch& p
+        const boundary&
     );
 
     // Determine a field's boundary condition base type for a global boundary
@@ -159,34 +159,34 @@ public:
         return mshField_;
     }
 
-    // Access to the part patch
-    inline const partPatch& patch() const { return patch_; }
+    // Access to the base boundary
+    inline const boundary& base() const { return b_; }
 
     // Access to the dictionary
     inline const dictionary& dict() const { return dict_; }
 
     // Return the boundary offset
-    inline labelVector boundaryOffset() const
+    inline labelVector offset() const
     {
-        return patch_.boundaryOffset();
+        return b_.offset();
     }
 
     // Boundary offset degree
-    inline label boundaryOffsetDegree() const
+    inline label offsetDegree() const
     {
-        return patch_.boundaryOffsetDegree();
+        return b_.offsetDegree();
     }
 
     // Boundary extension
     inline const faceLabel& extension() const
     {
-        return patch_.extension();
+        return b_.extension();
     }
 
     // Return the transformation tensor
     inline labelTensor T() const
     {
-        return patch_.T();
+        return b_.T();
     }
 
     // Return the start point of the internal cell boundary

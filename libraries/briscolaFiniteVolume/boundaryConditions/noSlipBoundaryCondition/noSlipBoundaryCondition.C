@@ -18,10 +18,10 @@ template<class Type, class MeshType>
 noSlipBoundaryCondition<Type,MeshType>::noSlipBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, patch)
+    boundaryCondition<Type,MeshType>(mshField, b)
 {}
 
 template<class Type, class MeshType>
@@ -30,7 +30,7 @@ noSlipBoundaryCondition<Type,MeshType>::noSlipBoundaryCondition
     const noSlipBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.patch())
+    boundaryCondition<Type,MeshType>(bc.mshField(), bc.base())
 {}
 
 template<class Type, class MeshType>
@@ -40,7 +40,7 @@ noSlipBoundaryCondition<Type,MeshType>::noSlipBoundaryCondition
     const noSlipBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.patch())
+    boundaryCondition<Type,MeshType>(field, bc.base())
 {}
 
 template<class Type, class MeshType>
@@ -52,7 +52,7 @@ void noSlipBoundaryCondition<Type,MeshType>::evaluate(const label l)
 {
     meshLevel<Type,MeshType>& field = this->mshField()[l];
 
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
 
     forAll(field, d)
     {

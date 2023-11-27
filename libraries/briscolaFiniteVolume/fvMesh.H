@@ -262,10 +262,10 @@ public:
             return mshPtr_->size();
         }
 
-        // Const access to part patched
-        inline const PtrList<partPatch>& partPatches() const
+        // Const access to boundaries
+        inline const PtrList<boundary>& boundaries() const
         {
-            return mshPtr_->partPatches();
+            return mshPtr_->boundaries();
         }
 
         // Structured mesh bool

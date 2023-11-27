@@ -89,64 +89,64 @@ void partLevel::calcGhostPoints(const mesh& msh)
         }
     }
 
-    // Next, at parallel and periodic part patches, set the ghost points equal
-    // to the neighboring points
+    // Next, at parallel and periodic boundaries, set the ghost points equal to
+    // the neighboring points
 
-    List<const partPatch*> partPatchPtrs(0);
+    List<const boundary*> boundaryPtrs(0);
 
-    forAll(msh.partPatches(), patchi)
+    forAll(msh.boundaries(), bi)
     {
-        const word type = msh.partPatches()[patchi].type();
+        const word type = msh.boundaries()[bi].type();
 
         if (type == "parallel" || type == "periodic")
-            partPatchPtrs.append(&msh.partPatches()[patchi]);
+            boundaryPtrs.append(&msh.boundaries()[bi]);
     }
 
-    const label Np = partPatchPtrs.size();
+    const label Np = boundaryPtrs.size();
 
     labelList neighborProcNums(Np);
 
     PtrList<vectorBlock> sendBuffers(Np);
     PtrList<vectorBlock> recvBuffers(Np);
 
-    forAll(partPatchPtrs, patchi)
+    forAll(boundaryPtrs, bi)
     {
-        const partPatch& p = *partPatchPtrs[patchi];
+        const boundary& b = *boundaryPtrs[bi];
 
-        const labelVector bo(p.boundaryOffset());
-        const labelTensor T(p.T());
+        const labelVector bo(b.offset());
+        const labelTensor T(b.T());
 
         const labelVector S(pS(bo));
         const labelVector E(pE(bo));
         const labelVector N(pN(bo));
 
-        neighborProcNums[patchi] =
-            readLabel(p.dict().lookup("neighborProcNum"));
+        neighborProcNums[bi] =
+            readLabel(b.dict().lookup("neighborProcNum"));
 
         sendBuffers.set
         (
-            patchi,
+            bi,
             new vectorBlock(N, Zero)
         );
 
         recvBuffers.set
         (
-            patchi,
+            bi,
             new vectorBlock(cmptMag(T.T() & N))
         );
 
-        // For parallel patches, send the point coordinate. For periodic
-        // patches, send the point-to-point distance vector.
+        // For parallel boundaries, send the point coordinate. For periodic
+        // boundaries, send the point-to-point distance vector.
 
         labelVector ijk;
 
-        if (p.type() == "parallel")
+        if (b.type() == "parallel")
         {
             for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                sendBuffers[patchi](ijk-S) = points_(ijk-bo);
+                sendBuffers[bi](ijk-S) = points_(ijk-bo);
             }
         }
         else
@@ -155,19 +155,19 @@ void partLevel::calcGhostPoints(const mesh& msh)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                sendBuffers[patchi](ijk-S) = points_(ijk-bo)-points_(ijk);
+                sendBuffers[bi](ijk-S) = points_(ijk-bo)-points_(ijk);
             }
         }
     }
 
     // Send/receive
 
-    forAll(partPatchPtrs, patchi)
+    forAll(boundaryPtrs, bi)
     {
-        const label neighborProcNum = neighborProcNums[patchi];
+        const label neighborProcNum = neighborProcNums[bi];
 
         const label tag =
-            readLabel(partPatchPtrs[patchi]->dict().lookup("tag"));
+            readLabel(boundaryPtrs[bi]->dict().lookup("tag"));
 
         // Send/receive
 
@@ -177,8 +177,8 @@ void partLevel::calcGhostPoints(const mesh& msh)
             (
                 Pstream::commsTypes::nonBlocking,
                 neighborProcNum,
-                reinterpret_cast<char*>(recvBuffers[patchi].begin()),
-                recvBuffers[patchi].byteSize(),
+                reinterpret_cast<char*>(recvBuffers[bi].begin()),
+                recvBuffers[bi].byteSize(),
                 tag,
                 UPstream::worldComm
             );
@@ -187,26 +187,26 @@ void partLevel::calcGhostPoints(const mesh& msh)
             (
                 Pstream::commsTypes::nonBlocking,
                 neighborProcNum,
-                reinterpret_cast<char*>(sendBuffers[patchi].begin()),
-                sendBuffers[patchi].byteSize(),
+                reinterpret_cast<char*>(sendBuffers[bi].begin()),
+                sendBuffers[bi].byteSize(),
                 tag,
                 UPstream::worldComm
             );
         }
         else
         {
-            // On the same processor the patch part must be periodic, and its
+            // On the same processor the boundary must be periodic, and its
             // neighbor is assumed to be on the opposing face/edge/vertex. Copy
             // buffers directly.
 
-            const partPatch& p = *partPatchPtrs[patchi];
+            const boundary& b = *boundaryPtrs[bi];
 
-            const labelVector bo(p.boundaryOffset());
+            const labelVector bo(b.offset());
 
-            forAll(partPatchPtrs, patchj)
-            if (partPatchPtrs[patchj]->boundaryOffset() == -bo)
+            forAll(boundaryPtrs, bj)
+            if (boundaryPtrs[bj]->offset() == -bo)
             {
-                recvBuffers[patchi] = sendBuffers[patchj];
+                recvBuffers[bi] = sendBuffers[bj];
                 break;
             }
         }
@@ -216,17 +216,17 @@ void partLevel::calcGhostPoints(const mesh& msh)
 
     // Unpack
 
-    forAll(partPatchPtrs, patchi)
+    forAll(boundaryPtrs, bi)
     {
-        const partPatch& p = *partPatchPtrs[patchi];
+        const boundary& b = *boundaryPtrs[bi];
 
-        const labelVector bo(p.boundaryOffset());
-        const labelTensor T(p.T());
+        const labelVector bo(b.offset());
+        const labelTensor T(b.T());
 
         const labelVector S(pS(bo));
         const labelVector E(pE(bo));
 
-        vectorBlock& recv = recvBuffers[patchi];
+        vectorBlock& recv = recvBuffers[bi];
 
         recv.transform(T);
 
@@ -234,7 +234,7 @@ void partLevel::calcGhostPoints(const mesh& msh)
 
         labelVector ijk;
 
-        if (p.type() == "parallel")
+        if (b.type() == "parallel")
         {
             for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)

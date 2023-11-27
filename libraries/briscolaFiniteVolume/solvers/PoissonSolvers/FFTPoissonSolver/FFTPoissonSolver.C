@@ -122,9 +122,9 @@ void FFTPoissonSolver::solve
     // Correct RHS for inhomogeneous BC's
     forAll(bcs, bci)
     {
-        if (bcs[bci].boundaryOffsetDegree() == 1)
+        if (bcs[bci].offsetDegree() == 1)
         {
-            const labelVector bo = bcs[bci].boundaryOffset();
+            const labelVector bo = bcs[bci].offset();
 
             const PtrList<PartialList<scalar>>& cellSizes =
                 fvMsh_.msh().cast<rectilinearMesh>().globalCellSizes();

@@ -21,35 +21,35 @@ void checkParallelPatches(const fvMesh& fvMsh)
     const vertexLabel& vertexNeighbors =
         decomp.vertexNeighborsPerProc()[Pstream::myProcNo()];
 
-    forAll(msh.partPatches(), i)
+    forAll(msh.boundaries(), i)
     {
-        const partPatch& patch = msh.partPatches()[i];
+        const boundary& b = msh.boundaries()[i];
 
         if
         (
-            patch.typeNum() == periodicPartPatch::typeNumber
-         || patch.typeNum() == parallelPartPatch::typeNumber
+            b.typeNum() == periodicBoundary::typeNumber
+         || b.typeNum() == parallelBoundary::typeNumber
         )
         {
-            const labelVector bo = patch.boundaryOffset();
+            const labelVector bo = b.offset();
 
-            if (patch.boundaryOffsetDegree() == 1)
+            if (b.offsetDegree() == 1)
             {
                 const label faceNum = faceNumber(bo);
 
-                if (faceNeighbors[faceNum] != patch.neighborProcNum())
+                if (faceNeighbors[faceNum] != b.neighborProcNum())
                     FatalErrorInFunction
-                        << "Mismatch in face part patch neighbor "
+                        << "Mismatch in face boundary neighbor "
                         << "processor number."
                         << endl << exit(FatalError);
             }
-            else if (patch.boundaryOffsetDegree() == 2)
+            else if (b.offsetDegree() == 2)
             {
                 const label edgeNum = edgeNumber(bo);
 
-                if (edgeNeighbors[edgeNum] != patch.neighborProcNum())
+                if (edgeNeighbors[edgeNum] != b.neighborProcNum())
                     FatalErrorInFunction
-                        << "Mismatch in edge part patch neighbor "
+                        << "Mismatch in edge boundary neighbor "
                         << "processor number."
                         << endl << exit(FatalError);
             }
@@ -57,9 +57,9 @@ void checkParallelPatches(const fvMesh& fvMsh)
             {
                 const label vertexNum = vertexNumber(bo);
 
-                if (vertexNeighbors[vertexNum] != patch.neighborProcNum())
+                if (vertexNeighbors[vertexNum] != b.neighborProcNum())
                     FatalErrorInFunction
-                        << "Mismatch in vertex part patch neighbor "
+                        << "Mismatch in vertex boundary neighbor "
                         << "processor number."
                         << endl << exit(FatalError);
             }
@@ -207,10 +207,10 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
             const boundaryCondition<faceVector,MeshType>& bc =
                 fc.boundaryConditions()[bci];
 
-            if (bc.boundaryOffset() == bo && bc.baseType() == PARALLELBC)
+            if (bc.offset() == bo && bc.baseType() == PARALLELBC)
             {
                 found = true;
-                slave = bc.patch().slave();
+                slave = bc.base().slave();
                 break;
             }
         }
@@ -294,7 +294,7 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
 
             if
             (
-                bc.boundaryOffset() == bo
+                bc.offset() == bo
              && (
                     bc.baseType() == PERIODICBC
                  || bc.baseType() == PARALLELBC
@@ -302,7 +302,7 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
             )
             {
                 found = true;
-                slave = bc.patch().slave();
+                slave = bc.base().slave();
                 break;
             }
         }

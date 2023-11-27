@@ -34,7 +34,7 @@ public:
     staggeredOutflowBoundaryCondition
     (
         const staggeredScalarField&,
-        const partPatch&
+        const boundary&
     );
 
     // Copy constructor

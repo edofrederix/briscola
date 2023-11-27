@@ -4,7 +4,7 @@
 #include "labelVector.H"
 #include "block.H"
 #include "face.H"
-#include "partPatch.H"
+#include "boundary.H"
 #include "partLevelPoints.H"
 #include "brickLink.H"
 

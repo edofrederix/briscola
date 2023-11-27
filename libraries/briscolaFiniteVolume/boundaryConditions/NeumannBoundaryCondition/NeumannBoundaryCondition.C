@@ -18,10 +18,10 @@ template<class Type, class MeshType>
 NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, patch),
+    boundaryCondition<Type,MeshType>(mshField, b),
     boundaryGradients_(this->dict().lookup("gradients"))
 {}
 
@@ -31,7 +31,7 @@ NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
     const NeumannBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.patch()),
+    boundaryCondition<Type,MeshType>(bc.mshField(), bc.base()),
     boundaryGradients_(bc.boundaryGradients_)
 {}
 
@@ -42,7 +42,7 @@ NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
     const NeumannBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.patch()),
+    boundaryCondition<Type,MeshType>(field, bc.base()),
     boundaryGradients_(bc.boundaryGradients_)
 {}
 
@@ -55,7 +55,7 @@ void NeumannBoundaryCondition<Type,MeshType>::evaluate(const label l)
 {
     meshLevel<Type,MeshType>& field = this->mshField()[l];
 
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
 
     forAll(field, d)
     {
@@ -101,7 +101,7 @@ stencil NeumannBoundaryCondition<Type,MeshType>::boundaryCoeff
     // coefficient. For non-shifted boundaries, add the boundary coefficient to
     // the center coefficient.
 
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
 
     if (MeshType::shifted(d,bo))
     {
@@ -125,7 +125,7 @@ tmp<block<Type>> NeumannBoundaryCondition<Type,MeshType>::boundarySources
 {
     const meshField<faceScalar,MeshType>& fd = this->faceDeltas();
 
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
     const label fb(faceNumber(bo));
     const label fi(faceNumber(-bo));
 

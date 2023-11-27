@@ -35,11 +35,11 @@ decompositions/manualDecomp/manualDecomp.C
 decompositions/brickDecompositionInterface/brickDecompositionInterface.C
 decompositions/brickDecompositionInterface/brickDecompositionSlice.C
 
-partPatches/partPatch/partPatch.C
-partPatches/parallelPartPatch/parallelPartPatch.C
-partPatches/periodicPartPatch/periodicPartPatch.C
-partPatches/boundaryPartPatch/boundaryPartPatch.C
-partPatches/emptyPartPatch/emptyPartPatch.C
+boundaries/boundary/boundary.C
+boundaries/parallelBoundary/parallelBoundary.C
+boundaries/periodicBoundary/periodicBoundary.C
+boundaries/domainBoundary/domainBoundary.C
+boundaries/emptyBoundary/emptyBoundary.C
 
 partLevelPoints/partLevelPoints.C
 partLevel/partLevel.C

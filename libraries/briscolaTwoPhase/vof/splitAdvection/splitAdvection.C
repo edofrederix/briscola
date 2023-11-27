@@ -149,14 +149,14 @@ void splitAdvection::updateFlux
 
         if
         (
-            bc.boundaryOffsetDegree() == 1
+            bc.offsetDegree() == 1
          && (
                 bc.baseType() == PARALLELBC
              || bc.baseType() == PERIODICBC
             )
         )
         {
-            const labelVector bo = bc.boundaryOffset();
+            const labelVector bo = bc.offset();
 
             const label l = faceNumber( bo);
             const label u = faceNumber(-bo);

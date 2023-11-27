@@ -5,10 +5,10 @@
 #include "rectilinearMesh.H"
 #include "uniformMesh.H"
 
-#include "boundaryPartPatch.H"
-#include "emptyPartPatch.H"
-#include "parallelPartPatch.H"
-#include "periodicPartPatch.H"
+#include "domainBoundary.H"
+#include "emptyBoundary.H"
+#include "parallelBoundary.H"
+#include "periodicBoundary.H"
 
 namespace Foam
 {
@@ -19,12 +19,12 @@ namespace briscola
 defineTypeNameAndDebug(mesh, 0);
 defineRunTimeSelectionTable(mesh, dictionary);
 
-void mesh::addPartPatch
+void mesh::addBoundary
 (
     const word name,
     const word type,
     const labelTensor T,
-    const labelVector boundaryOffset,
+    const labelVector offset,
     const labelVector neighborOffset,
     const label neighborProcNum
 )
@@ -34,7 +34,7 @@ void mesh::addPartPatch
     dict.add("name", name);
     dict.add("type", type);
     dict.add("T", T);
-    dict.add("boundaryOffset", boundaryOffset);
+    dict.add("offset", offset);
 
     if (neighborOffset != zeroXYZ)
         dict.add("neighborOffset", neighborOffset);
@@ -42,15 +42,15 @@ void mesh::addPartPatch
     if (neighborProcNum >= 0)
         dict.add("neighborProcNum", neighborProcNum);
 
-    partPatches_.append
+    boundaries_.append
     (
-        partPatch::New(*this, dict)
+        boundary::New(*this, dict)
     );
 }
 
-void mesh::generateBrickInternalPartPatches()
+void mesh::generateBrickInternalBoundaries()
 {
-    // Add parallel brick-internal patches
+    // Add parallel brick-internal boundaries
 
     const labelVector myBrickDecomp(decomp().myBrickDecomp());
     const labelVector myBrickPart(decomp().myBrickPart());
@@ -59,7 +59,7 @@ void mesh::generateBrickInternalPartPatches()
     {
         // Try all boundary offset vectors, including faces, edges and vertices.
         // Even if the bricks are unstructured, within a brick we can add edge
-        // and vertex part patches anyway.
+        // and vertex boundaries anyway.
 
         labelVector bo;
 
@@ -81,9 +81,9 @@ void mesh::generateBrickInternalPartPatches()
 
             if (neighborProcNum == -1) continue;
 
-            // Add to part patches
+            // Add to boundaries
 
-            addPartPatch
+            addBoundary
             (
                 word
                 (
@@ -100,7 +100,7 @@ void mesh::generateBrickInternalPartPatches()
     }
 }
 
-void mesh::generateBrickExternalPartPatches()
+void mesh::generateBrickExternalBoundaries()
 {
     const brickTopology& topo = topology();
 
@@ -111,7 +111,7 @@ void mesh::generateBrickExternalPartPatches()
         {
             const brickLink link(topo.links()[bricki].faceLinks()[linki]);
 
-            generateLinkPartPatches(link);
+            generateLinkBoundaries(link);
         }
 
         forAll(topo.links()[bricki].edgeLinks(), linki)
@@ -119,7 +119,7 @@ void mesh::generateBrickExternalPartPatches()
         {
             const brickLink link(topo.links()[bricki].edgeLinks()[linki]);
 
-            generateLinkPartPatches(link);
+            generateLinkBoundaries(link);
         }
 
         forAll(topo.links()[bricki].vertexLinks(), linki)
@@ -127,12 +127,12 @@ void mesh::generateBrickExternalPartPatches()
         {
             const brickLink link(topo.links()[bricki].vertexLinks()[linki]);
 
-            generateLinkPartPatches(link);
+            generateLinkBoundaries(link);
         }
     }
 }
 
-void mesh::generateLinkPartPatches(const brickLink& link)
+void mesh::generateLinkBoundaries(const brickLink& link)
 {
     const brickDecompositionInterface interface(link, *this);
 
@@ -150,7 +150,7 @@ void mesh::generateLinkPartPatches(const brickLink& link)
         const labelVector ijk(i,j,k);
         const brickDecompositionSlice& slice = slices[map(ijk)];
 
-        addPartPatch
+        addBoundary
         (
             word
             (
@@ -165,7 +165,7 @@ void mesh::generateLinkPartPatches(const brickLink& link)
             slice.procNum1()
         );
 
-        // Add internal edges and vertices of face part patches
+        // Add internal edges and vertices of face boundaries
 
         if (cmptSum(cmptMag(bo)) == 1)
         {
@@ -193,7 +193,7 @@ void mesh::generateLinkPartPatches(const brickLink& link)
                 {
                     const brickDecompositionSlice& slice2 = slices[map(ijk2)];
 
-                    addPartPatch
+                    addBoundary
                     (
                         word
                         (
@@ -211,7 +211,7 @@ void mesh::generateLinkPartPatches(const brickLink& link)
             }
         }
 
-        // Add internal vertices of edge part patches
+        // Add internal vertices of edge boundaries
 
         if (cmptSum(cmptMag(bo)) == 2)
         {
@@ -236,7 +236,7 @@ void mesh::generateLinkPartPatches(const brickLink& link)
                 {
                     const brickDecompositionSlice& slice2 = slices[map(ijk2)];
 
-                    addPartPatch
+                    addBoundary
                     (
                         word
                         (
@@ -256,10 +256,10 @@ void mesh::generateLinkPartPatches(const brickLink& link)
     }
 }
 
-void mesh::generateBoundaryPartPatches()
+void mesh::generateDomainBoundaries()
 {
-    // All face part patches that are not yet set must be part of a boundary
-    // patch
+    // All face boundaries that are not yet set must be part of a domain
+    // boundary
 
     for (label facei = 0; facei < 6; facei++)
     {
@@ -268,8 +268,8 @@ void mesh::generateBoundaryPartPatches()
         const brick& b = bricks()[brickNum];
         const face& f = b.faces()[facei];
 
-        forAll(partPatches_, patchi)
-        if (partPatches_[patchi].boundaryOffset() == offset)
+        forAll(boundaries_, bi)
+        if (boundaries_[bi].offset() == offset)
         {
             goto found;
         }
@@ -282,7 +282,7 @@ void mesh::generateBoundaryPartPatches()
             forAll(p.facePtrs(), facej)
             if (&f == p.facePtrs()[facej])
             {
-                addPartPatch
+                addBoundary
                 (
                     p.name(),
                     patches()[patchi].type() == patch::EMPTY
@@ -310,26 +310,26 @@ void mesh::setCommTags()
     const label n = Pstream::nProcs();
     const label m = Pstream::myProcNo();
 
-    List<List<dictionary>> patchDicts(n, List<dictionary>(0));
+    List<List<dictionary>> bDicts(n, List<dictionary>(0));
 
-    forAll(partPatches_, patchi)
+    forAll(boundaries_, bi)
     {
-        const partPatch& patch = partPatches_[patchi];
+        const boundary& b = boundaries_[bi];
 
         if
         (
-            patch.typeNum() == parallelPartPatch::typeNumber
-         || patch.typeNum() == periodicPartPatch::typeNumber
+            b.typeNum() == parallelBoundary::typeNumber
+         || b.typeNum() == periodicBoundary::typeNumber
         )
         {
-            patchDicts[m].append
+            bDicts[m].append
             (
-                dictionary(patch.dict())
+                dictionary(b.dict())
             );
         }
     }
 
-    Pstream::gatherList(patchDicts);
+    Pstream::gatherList(bDicts);
 
     labelList myTags;
 
@@ -339,7 +339,7 @@ void mesh::setCommTags()
 
         forAll(tags, i)
         {
-            tags[i].setSize(patchDicts[i].size());
+            tags[i].setSize(bDicts[i].size());
             tags[i] = 1;
         }
 
@@ -354,15 +354,15 @@ void mesh::setCommTags()
             for (label j = 0; j < n; j++)
                 pairCount[i][j] = 0;
 
-        forAll(patchDicts, i)
-        forAll(patchDicts[i], patchi)
+        forAll(bDicts, i)
+        forAll(bDicts[i], bi)
         {
-            const dictionary& dict0 = patchDicts[i][patchi];
+            const dictionary& dict0 = bDicts[i][bi];
 
             const labelVector source
             (
               - labelTensor(dict0.lookup("T")).T()
-              & labelVector(dict0.lookup("boundaryOffset"))
+              & labelVector(dict0.lookup("offset"))
             );
 
             const label j = readLabel(dict0.lookup("neighborProcNum"));
@@ -373,23 +373,23 @@ void mesh::setCommTags()
             {
                 bool found = false;
 
-                forAll(patchDicts[j], patchj)
-                if (i != j || patchi != patchj)
+                forAll(bDicts[j], bj)
+                if (i != j || bi != bj)
                 {
-                    const dictionary& dict1 = patchDicts[j][patchj];
+                    const dictionary& dict1 = bDicts[j][bj];
 
                     const label k =
                         readLabel(dict1.lookup("neighborProcNum"));
 
                     const labelVector target =
-                        dict1.lookup("boundaryOffset");
+                        dict1.lookup("offset");
 
                     if (k == i && source == target)
                     {
                         pairCount[i][j]++;
 
-                        tags[i][patchi] = pairCount[i][j];
-                        tags[j][patchj] = pairCount[i][j];
+                        tags[i][bi] = pairCount[i][j];
+                        tags[j][bj] = pairCount[i][j];
 
                         found = true;
                         break;
@@ -399,7 +399,7 @@ void mesh::setCommTags()
                 if (!found)
                 {
                     FatalErrorInFunction
-                        << "Could not find neighbor of patch "
+                        << "Could not find neighbor of boundary "
                         << word(dict0.lookup("name"))
                         << " of processor " << j << endl
                         << abort(FatalError);
@@ -409,7 +409,7 @@ void mesh::setCommTags()
 
         // Send
 
-        forAll(patchDicts, i)
+        forAll(bDicts, i)
         {
             if (i == Pstream::masterNo())
             {
@@ -442,17 +442,17 @@ void mesh::setCommTags()
 
     label c = 0;
 
-    forAll(partPatches_, patchi)
+    forAll(boundaries_, bi)
     {
-        partPatch& patch = partPatches_[patchi];
+        boundary& b = boundaries_[bi];
 
         if
         (
-            patch.typeNum() == parallelPartPatch::typeNumber
-         || patch.typeNum() == periodicPartPatch::typeNumber
+            b.typeNum() == parallelBoundary::typeNumber
+         || b.typeNum() == periodicBoundary::typeNumber
         )
         {
-            patch.dict().add("tag", myTags[c++]);
+            b.dict().add("tag", myTags[c++]);
         }
     }
 }
@@ -462,17 +462,17 @@ void mesh::setPatchExtension()
     edgePatchExtension_ = Zero;
     vertexPatchExtension_ = Zero;
 
-    forAll(partPatches_, i)
+    forAll(boundaries_, i)
     {
-        const partPatch& patch = partPatches_[i];
+        const boundary& b = boundaries_[i];
 
         //  Add edges to extended faces, and vertices to extended edges
 
         for (int j = 0; j < 6; j++)
-        if (patch.extension()[j] == 1)
+        if (b.extension()[j] == 1)
         {
             const labelVector offset =
-                patch.boundaryOffset() + faceOffsets[j];
+                b.offset() + faceOffsets[j];
 
             if (edgeNumber(offset) != -1)
             {
@@ -484,16 +484,16 @@ void mesh::setPatchExtension()
             }
         }
 
-        // Also add vertices for face patches extended in two directions
+        // Also add vertices for face boundaries extended in two directions
 
-        if (patch.boundaryOffsetDegree() == 1)
+        if (b.offsetDegree() == 1)
         {
             for (int j = 0; j < 5; j++)
             for (int k = j+1; k < 6; k++)
-            if (patch.extension()[j] == 1 && patch.extension()[k] == 1)
+            if (b.extension()[j] == 1 && b.extension()[k] == 1)
             {
                 const labelVector offset =
-                    patch.boundaryOffset() + faceOffsets[j] + faceOffsets[k];
+                    b.offset() + faceOffsets[j] + faceOffsets[k];
 
                 if (vertexNumber(offset) != -1)
                     vertexPatchExtension_[vertexNumber(offset)] = 1;
@@ -507,116 +507,116 @@ void mesh::setEmptyPatchOffsets()
     emptyPatchOffsets_.clear();
 
     for (int i = 0; i < 12; i++)
-        if (edgePatchType()[i] == -1 && edgePatchExtension()[i] == 0)
+        if (edgeBoundaryType()[i] == -1 && edgePatchExtension()[i] == 0)
             emptyPatchOffsets_.append(edgeOffsets[i]);
 
     for (int i = 0; i < 8; i++)
-        if (vertexPatchType()[i] == -1 && vertexPatchExtension()[i] == 0)
+        if (vertexBoundaryType()[i] == -1 && vertexPatchExtension()[i] == 0)
             emptyPatchOffsets_.append(vertexOffsets[i]);
 }
 
 void mesh::setPatchLabels()
 {
-    // Initialize edge and vertex master label to -1 as their corresponding part
-    // patches may not exist
+    // Initialize edge and vertex master label to -1 as their corresponding
+    // boundaries may not exist
 
-    facePatchMasterPerProc_.resize
+    faceBoundaryMasterPerProc_.resize
     (
         Pstream::nProcs(),
         pTraits<faceLabel>::one
     );
 
-    edgePatchMasterPerProc_.resize
+    edgeBoundaryMasterPerProc_.resize
     (
         Pstream::nProcs(),
       - pTraits<edgeLabel>::one
     );
 
-    vertexPatchMasterPerProc_.resize
+    vertexBoundaryMasterPerProc_.resize
     (
         Pstream::nProcs(),
       - pTraits<vertexLabel>::one
     );
 
-    // Initialize edge and vertex patch types to -1 as their corresponding part
-    // patches may not exist
+    // Initialize edge and vertex boundary types to -1 as their corresponding
+    // boundaries may not exist
 
-    facePatchTypePerProc_.resize
+    faceBoundaryTypePerProc_.resize
     (
         Pstream::nProcs(),
         pTraits<faceLabel>::zero
     );
 
-    edgePatchTypePerProc_.resize
+    edgeBoundaryTypePerProc_.resize
     (
         Pstream::nProcs(),
       - pTraits<edgeLabel>::one
     );
 
-    vertexPatchTypePerProc_.resize
+    vertexBoundaryTypePerProc_.resize
     (
         Pstream::nProcs(),
       - pTraits<vertexLabel>::one
     );
 
-    forAll(partPatches_, i)
+    forAll(boundaries_, i)
     {
-        const partPatch& patch = partPatches_[i];
+        const boundary& b = boundaries_[i];
 
-        if (patch.boundaryOffsetDegree() == 1)
+        if (b.offsetDegree() == 1)
         {
-            const label facei = faceNumber(patch.boundaryOffset());
+            const label facei = faceNumber(b.offset());
 
-            facePatchMasterPerProc_[Pstream::myProcNo()][facei] =
-                patch.master();
+            faceBoundaryMasterPerProc_[Pstream::myProcNo()][facei] =
+                b.master();
 
-            facePatchTypePerProc_[Pstream::myProcNo()][facei] =
-                patch.typeNum();
+            faceBoundaryTypePerProc_[Pstream::myProcNo()][facei] =
+                b.typeNum();
         }
-        else if (patch.boundaryOffsetDegree() == 2)
+        else if (b.offsetDegree() == 2)
         {
-            const label edgei = edgeNumber(patch.boundaryOffset());
+            const label edgei = edgeNumber(b.offset());
 
-            edgePatchMasterPerProc_[Pstream::myProcNo()][edgei] =
-                patch.master();
+            edgeBoundaryMasterPerProc_[Pstream::myProcNo()][edgei] =
+                b.master();
 
-            edgePatchTypePerProc_[Pstream::myProcNo()][edgei] =
-                patch.typeNum();
+            edgeBoundaryTypePerProc_[Pstream::myProcNo()][edgei] =
+                b.typeNum();
         }
         else
         {
-            const label vertexi = vertexNumber(patch.boundaryOffset());
+            const label vertexi = vertexNumber(b.offset());
 
-            vertexPatchMasterPerProc_[Pstream::myProcNo()][vertexi] =
-                patch.master();
+            vertexBoundaryMasterPerProc_[Pstream::myProcNo()][vertexi] =
+                b.master();
 
-            vertexPatchTypePerProc_[Pstream::myProcNo()][vertexi] =
-                patch.typeNum();
+            vertexBoundaryTypePerProc_[Pstream::myProcNo()][vertexi] =
+                b.typeNum();
         }
     }
 
-    Pstream::gatherList(facePatchMasterPerProc_);
-    Pstream::gatherList(edgePatchMasterPerProc_);
-    Pstream::gatherList(vertexPatchMasterPerProc_);
+    Pstream::gatherList(faceBoundaryMasterPerProc_);
+    Pstream::gatherList(edgeBoundaryMasterPerProc_);
+    Pstream::gatherList(vertexBoundaryMasterPerProc_);
 
-    Pstream::gatherList(facePatchTypePerProc_);
-    Pstream::gatherList(edgePatchTypePerProc_);
-    Pstream::gatherList(vertexPatchTypePerProc_);
+    Pstream::gatherList(faceBoundaryTypePerProc_);
+    Pstream::gatherList(edgeBoundaryTypePerProc_);
+    Pstream::gatherList(vertexBoundaryTypePerProc_);
 
-    Pstream::scatterList(facePatchMasterPerProc_);
-    Pstream::scatterList(edgePatchMasterPerProc_);
-    Pstream::scatterList(vertexPatchMasterPerProc_);
+    Pstream::scatterList(faceBoundaryMasterPerProc_);
+    Pstream::scatterList(edgeBoundaryMasterPerProc_);
+    Pstream::scatterList(vertexBoundaryMasterPerProc_);
 
-    Pstream::scatterList(facePatchTypePerProc_);
-    Pstream::scatterList(edgePatchTypePerProc_);
-    Pstream::scatterList(vertexPatchTypePerProc_);
+    Pstream::scatterList(faceBoundaryTypePerProc_);
+    Pstream::scatterList(edgeBoundaryTypePerProc_);
+    Pstream::scatterList(vertexBoundaryTypePerProc_);
 }
 
-void mesh::generatePartPatches()
+void mesh::generateBoundaries()
 {
-    generateBrickInternalPartPatches();
-    generateBrickExternalPartPatches();
-    generateBoundaryPartPatches();
+    generateBrickInternalBoundaries();
+    generateBrickExternalBoundaries();
+    generateDomainBoundaries();
 
     setCommTags();
     setPatchLabels();
@@ -666,7 +666,7 @@ mesh::mesh(const IOdictionary& dict)
     PtrList<partLevel>(0),
     decomp_(decomposition::New(*this))
 {
-    generatePartPatches();
+    generateBoundaries();
     generatePartLevels();
 
     // Mesh is structured if the brick topology is too
@@ -719,13 +719,13 @@ mesh::mesh(const mesh& msh)
     geometry(msh),
     PtrList<partLevel>(msh),
     decomp_(msh.decomp_),
-    partPatches_(msh.partPatches_),
-    facePatchMasterPerProc_(msh.facePatchMasterPerProc_),
-    edgePatchMasterPerProc_(msh.edgePatchMasterPerProc_),
-    vertexPatchMasterPerProc_(msh.vertexPatchMasterPerProc_),
-    facePatchTypePerProc_(msh.facePatchTypePerProc_),
-    edgePatchTypePerProc_(msh.edgePatchTypePerProc_),
-    vertexPatchTypePerProc_(msh.vertexPatchTypePerProc_),
+    boundaries_(msh.boundaries_),
+    faceBoundaryMasterPerProc_(msh.faceBoundaryMasterPerProc_),
+    edgeBoundaryMasterPerProc_(msh.edgeBoundaryMasterPerProc_),
+    vertexBoundaryMasterPerProc_(msh.vertexBoundaryMasterPerProc_),
+    faceBoundaryTypePerProc_(msh.faceBoundaryTypePerProc_),
+    edgeBoundaryTypePerProc_(msh.edgeBoundaryTypePerProc_),
+    vertexBoundaryTypePerProc_(msh.vertexBoundaryTypePerProc_),
     edgePatchExtension_(msh.edgePatchExtension_),
     vertexPatchExtension_(msh.vertexPatchExtension_),
     emptyPatchOffsets_(msh.emptyPatchOffsets_),
@@ -740,13 +740,13 @@ mesh::mesh(autoPtr<mesh>& mshPtr)
     geometry(mshPtr(), true),
     PtrList<partLevel>(mshPtr(), true),
     decomp_(mshPtr->decomp_, true),
-    partPatches_(mshPtr->partPatches_, true),
-    facePatchMasterPerProc_(mshPtr->facePatchMasterPerProc_),
-    edgePatchMasterPerProc_(mshPtr->edgePatchMasterPerProc_),
-    vertexPatchMasterPerProc_(mshPtr->vertexPatchMasterPerProc_),
-    facePatchTypePerProc_(mshPtr->facePatchTypePerProc_),
-    edgePatchTypePerProc_(mshPtr->edgePatchTypePerProc_),
-    vertexPatchTypePerProc_(mshPtr->vertexPatchTypePerProc_),
+    boundaries_(mshPtr->boundaries_, true),
+    faceBoundaryMasterPerProc_(mshPtr->faceBoundaryMasterPerProc_),
+    edgeBoundaryMasterPerProc_(mshPtr->edgeBoundaryMasterPerProc_),
+    vertexBoundaryMasterPerProc_(mshPtr->vertexBoundaryMasterPerProc_),
+    faceBoundaryTypePerProc_(mshPtr->faceBoundaryTypePerProc_),
+    edgeBoundaryTypePerProc_(mshPtr->edgeBoundaryTypePerProc_),
+    vertexBoundaryTypePerProc_(mshPtr->vertexBoundaryTypePerProc_),
     edgePatchExtension_(mshPtr->edgePatchExtension_),
     vertexPatchExtension_(mshPtr->vertexPatchExtension_),
     emptyPatchOffsets_(mshPtr->emptyPatchOffsets_),
@@ -763,13 +763,13 @@ mesh::mesh(mesh& msh, bool reuse)
     geometry(msh, reuse),
     PtrList<partLevel>(msh, reuse),
     decomp_(msh.decomp_, reuse),
-    partPatches_(msh.partPatches_, reuse),
-    facePatchMasterPerProc_(msh.facePatchMasterPerProc_),
-    edgePatchMasterPerProc_(msh.edgePatchMasterPerProc_),
-    vertexPatchMasterPerProc_(msh.vertexPatchMasterPerProc_),
-    facePatchTypePerProc_(msh.facePatchTypePerProc_),
-    edgePatchTypePerProc_(msh.edgePatchTypePerProc_),
-    vertexPatchTypePerProc_(msh.vertexPatchTypePerProc_),
+    boundaries_(msh.boundaries_, reuse),
+    faceBoundaryMasterPerProc_(msh.faceBoundaryMasterPerProc_),
+    edgeBoundaryMasterPerProc_(msh.edgeBoundaryMasterPerProc_),
+    vertexBoundaryMasterPerProc_(msh.vertexBoundaryMasterPerProc_),
+    faceBoundaryTypePerProc_(msh.faceBoundaryTypePerProc_),
+    edgeBoundaryTypePerProc_(msh.edgeBoundaryTypePerProc_),
+    vertexBoundaryTypePerProc_(msh.vertexBoundaryTypePerProc_),
     edgePatchExtension_(msh.edgePatchExtension_),
     vertexPatchExtension_(msh.vertexPatchExtension_),
     emptyPatchOffsets_(msh.emptyPatchOffsets_),

@@ -1,4 +1,4 @@
-#include "parallelPartPatch.H"
+#include "parallelBoundary.H"
 #include "addToRunTimeSelectionTable.H"
 #include "mesh.H"
 
@@ -8,21 +8,21 @@ namespace Foam
 namespace briscola
 {
 
-defineTypeNameAndDebug(parallelPartPatch, 0);
-addToRunTimeSelectionTable(partPatch, parallelPartPatch, dictionary);
+defineTypeNameAndDebug(parallelBoundary, 0);
+addToRunTimeSelectionTable(boundary, parallelBoundary, dictionary);
 
-const label parallelPartPatch::typeNumber = 2;
+const label parallelBoundary::typeNumber = 2;
 
-parallelPartPatch::parallelPartPatch(const mesh& msh, const dictionary& dict)
+parallelBoundary::parallelBoundary(const mesh& msh, const dictionary& dict)
 :
-    partPatch(msh, dict),
+    boundary(msh, dict),
     neighborProcNum_(readLabel(dict.lookup("neighborProcNum")))
 {
-    // Set master bool. This part patch is master if its face, edge or vertex
+    // Set master bool. This boundary is master if its face, edge or vertex
     // number is even and the neighboring one is odd. If they are both odd or
     // both even, the lower processor number is master.
 
-    const labelVector bo(dict.lookup("boundaryOffset"));
+    const labelVector bo(dict.lookup("offset"));
     const labelVector no(dict.lookup("neighborOffset"));
 
     const label n1 =
@@ -57,9 +57,9 @@ parallelPartPatch::parallelPartPatch(const mesh& msh, const dictionary& dict)
     this->extend();
 }
 
-parallelPartPatch::parallelPartPatch(const parallelPartPatch& pp)
+parallelBoundary::parallelBoundary(const parallelBoundary& pp)
 :
-    partPatch(pp),
+    boundary(pp),
     neighborProcNum_(pp.neighborProcNum_)
 {}
 

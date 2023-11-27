@@ -18,15 +18,15 @@ template<class Type, class MeshType>
 emptyBoundaryCondition<Type,MeshType>::emptyBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, patch)
+    boundaryCondition<Type,MeshType>(mshField, b)
 {
     // Empty boundaries can only sit normal to unit mesh size. Check.
 
     const partLevel& l = this->fvMsh_[0];
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
 
     for (label d = 0; d < 3; d++)
         if (Foam::mag(bo[d]) != 0 && l.N()[d] != 1)
@@ -42,7 +42,7 @@ emptyBoundaryCondition<Type,MeshType>::emptyBoundaryCondition
     const emptyBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.patch())
+    boundaryCondition<Type,MeshType>(bc.mshField(), bc.base())
 {}
 
 template<class Type, class MeshType>
@@ -52,7 +52,7 @@ emptyBoundaryCondition<Type,MeshType>::emptyBoundaryCondition
     const emptyBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.patch())
+    boundaryCondition<Type,MeshType>(field, bc.base())
 {}
 
 template<class Type, class MeshType>
@@ -64,7 +64,7 @@ void emptyBoundaryCondition<Type,MeshType>::evaluate(const label l)
 {
     meshLevel<Type,MeshType>& field = this->mshField()[l];
 
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
     const faceLabel extension(this->extension());
 
     forAll(field, d)

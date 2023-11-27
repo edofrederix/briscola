@@ -21,18 +21,18 @@ template<class Type, class MeshType>
 boundaryCondition<Type,MeshType>::boundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 :
     refCount(),
     fvMsh_(mshField.fvMsh()),
     mshField_(const_cast<meshField<Type,MeshType>&>(mshField)),
-    patch_(patch),
+    b_(b),
     dict_
     (
         mshField_.found("boundaryConditions")
-     && mshField_.subDict("boundaryConditions").found(patch_.name())
-      ? mshField_.subDict("boundaryConditions").subDict(patch_.name())
+     && mshField_.subDict("boundaryConditions").found(b_.name())
+      ? mshField_.subDict("boundaryConditions").subDict(b_.name())
       : dictionary::null
     )
 {}
@@ -47,7 +47,7 @@ boundaryCondition<Type,MeshType>::boundaryCondition
     refCount(),
     fvMsh_(bc.fvMsh_),
     mshField_(bc.mshField_),
-    patch_(bc.patch_),
+    b_(bc.b_),
     dict_(bc.dict_)
 {}
 
@@ -61,7 +61,7 @@ boundaryCondition<Type,MeshType>::boundaryCondition
     refCount(),
     fvMsh_(bc.fvMsh_),
     mshField_(const_cast<meshField<Type,MeshType>&>(field)),
-    patch_(bc.patch_),
+    b_(bc.b_),
     dict_(bc.dict_)
 {}
 
@@ -73,7 +73,7 @@ template<class Type, class MeshType>
 autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch,
+    const boundary& b,
     const word boundaryConditionType
 )
 {
@@ -92,15 +92,15 @@ autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
 
     return autoPtr<boundaryCondition<Type,MeshType>>
     (
-        cstrIter()(mshField, patch)
+        cstrIter()(mshField, b)
     );
 }
 
 template<class Type, class MeshType>
-autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::NewBoundary
+autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::NewDomain
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 {
     const word boundaryConditionType
@@ -109,7 +109,7 @@ autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::NewB
       ? word
         (
             mshField.subDict("boundaryConditions")
-           .subDict(patch.name()).lookup("type")
+           .subDict(b.name()).lookup("type")
         )
       : word("dummy")
     );
@@ -129,7 +129,7 @@ autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::NewB
 
     return autoPtr<boundaryCondition<Type,MeshType>>
     (
-        cstrIter()(mshField, patch)
+        cstrIter()(mshField, b)
     );
 }
 
@@ -138,7 +138,7 @@ autoPtr<boundaryCondition<Type,MeshType>>
 boundaryCondition<Type,MeshType>::NewPeriodic
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 {
     typename dictionaryConstructorTable::iterator cstrIter =
@@ -146,7 +146,7 @@ boundaryCondition<Type,MeshType>::NewPeriodic
 
     return autoPtr<boundaryCondition<Type,MeshType>>
     (
-        cstrIter()(mshField, patch)
+        cstrIter()(mshField, b)
     );
 }
 
@@ -155,7 +155,7 @@ autoPtr<boundaryCondition<Type,MeshType>>
 boundaryCondition<Type,MeshType>::NewParallel
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 {
     typename dictionaryConstructorTable::iterator cstrIter =
@@ -163,7 +163,7 @@ boundaryCondition<Type,MeshType>::NewParallel
 
     return autoPtr<boundaryCondition<Type,MeshType>>
     (
-        cstrIter()(mshField, patch)
+        cstrIter()(mshField, b)
     );
 }
 
@@ -172,7 +172,7 @@ autoPtr<boundaryCondition<Type,MeshType>>
 boundaryCondition<Type,MeshType>::NewEmpty
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 {
     typename dictionaryConstructorTable::iterator cstrIter =
@@ -180,7 +180,7 @@ boundaryCondition<Type,MeshType>::NewEmpty
 
     return autoPtr<boundaryCondition<Type,MeshType>>
     (
-        cstrIter()(mshField, patch)
+        cstrIter()(mshField, b)
     );
 }
 
@@ -230,7 +230,7 @@ boundaryCondition<Type,MeshType>::globalBaseType
 
             forAll(bcs, bci)
             {
-                if (bcs[bci].boundaryOffset() == bo)
+                if (bcs[bci].offset() == bo)
                 {
                     type = static_cast<label>(bcs[bci].baseType());
                     break;
@@ -332,7 +332,7 @@ inline labelVector boundaryCondition<Type,MeshType>::S
     const label d
 ) const
 {
-    return this->fvMsh_.template S<MeshType>(l,d,this->boundaryOffset());
+    return this->fvMsh_.template S<MeshType>(l,d,this->offset());
 }
 
 template<class Type, class MeshType>
@@ -342,7 +342,7 @@ inline labelVector boundaryCondition<Type,MeshType>::E
     const label d
 ) const
 {
-    return this->fvMsh_.template E<MeshType>(l,d,this->boundaryOffset());
+    return this->fvMsh_.template E<MeshType>(l,d,this->offset());
 }
 
 template<class Type, class MeshType>
@@ -352,7 +352,7 @@ inline labelVector boundaryCondition<Type,MeshType>::N
     const label d
 ) const
 {
-    return this->fvMsh_.template N<MeshType>(l,d,this->boundaryOffset());
+    return this->fvMsh_.template N<MeshType>(l,d,this->offset());
 }
 
 template<class Type, class MeshType>
@@ -426,9 +426,9 @@ void boundaryCondition<Type,MeshType>::eliminateGhosts
 {
     // Only face boundaries can manipulate a stencil
 
-    if (this->boundaryOffsetDegree() == 1)
+    if (this->offsetDegree() == 1)
     {
-        const labelVector bo(this->boundaryOffset());
+        const labelVector bo(this->offset());
         const label faceNum(faceNumber(bo));
 
         meshField<stencil,MeshType>& A = sys.A();

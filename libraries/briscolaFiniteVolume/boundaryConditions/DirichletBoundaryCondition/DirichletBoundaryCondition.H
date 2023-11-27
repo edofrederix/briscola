@@ -34,7 +34,7 @@ public:
     DirichletBoundaryCondition
     (
         const meshField<Type,MeshType>&,
-        const partPatch&
+        const boundary&
     );
 
     // Copy constructor

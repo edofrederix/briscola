@@ -232,7 +232,7 @@ public:
     void correctBoundaryConditions();
 
     // Correct boundary boundary conditions for this level
-    void correctBoundaryBoundaryConditions();
+    void correctDomainBoundaryConditions();
 
     // Correct parallel boundary conditions for this level
     void correctParallelBoundaryConditions();

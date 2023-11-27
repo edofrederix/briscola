@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
         if (bc.type() == "parallel")
         {
-            const labelVector bo(bc.boundaryOffset());
+            const labelVector bo(bc.offset());
 
             forAll(f, l)
             {
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
                                         << "cell = " << cell << nl
                                         << "ghost = " << ghost << nl
                                         << "target = " << target << nl
-                                        << "boundaryOffset = " << bo << nl
+                                        << "offset = " << bo << nl
                                         << "test 2 failed" << endl;
 
                             FatalError.exit();

@@ -1,7 +1,7 @@
 #include "meshDirection.H"
 #include "meshField.H"
 #include "boundaryCondition.H"
-#include "boundaryPartPatch.H"
+#include "domainBoundary.H"
 
 namespace Foam
 {
