@@ -1,7 +1,7 @@
 #include "solvers.H"
 #include "addToRunTimeSelectionTable.H"
 
-#include "MGSolver.H"
+#include "MG.H"
 
 namespace Foam
 {

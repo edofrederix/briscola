@@ -1,5 +1,5 @@
-#ifndef MGSolver_H
-#define MGSolver_H
+#ifndef MG_H
+#define MG_H
 
 #include "solver.H"
 #include "prolongationScheme.H"
@@ -14,6 +14,9 @@ namespace briscola
 namespace fv
 {
 
+// Forward declaration of direct solver
+template<class SType, class Type, class MeshType> class directSolver;
+
 // Enumeration of cycle types
 enum MGCycleType
 {
@@ -22,11 +25,21 @@ enum MGCycleType
     FCYCLE
 };
 
+// Enumeration of coarse level modes
+enum MGCoarseMode
+{
+    SMOOTH,
+    DIRECT
+};
+
 // Cycle type names
 static const NamedEnum<MGCycleType,3> MGCycleTypeNames;
 
+// Coarse level modes
+static const NamedEnum<MGCoarseMode,2> MGCoarseModeNames;
+
 template<class SType, class Type, class MeshType>
-class MGSolver
+class MG
 :
     public solver<SType,Type,MeshType>
 {
@@ -48,6 +61,9 @@ protected:
     // Cycle type
     MGCycleType cycleType_;
 
+    // Coarse level mode
+    MGCoarseMode coarseMode_;
+
     // Number of level repetitions. Use 1 for a V-cycle, use 2 for a W-cycle.
     // Defaults to 2
     label levelReps_;
@@ -57,6 +73,9 @@ protected:
 
     // Restriction operator. By default the average scheme is used
     autoPtr<restrictionScheme<Type,MeshType>> reScheme_;
+
+    // Optional direct solver for the coarsest level
+    autoPtr<directSolver<SType,Type,MeshType>> directSolver_;
 
     // Solve system and provide parameters
     virtual void solve
@@ -98,7 +117,7 @@ public:
     TypeName("MG");
 
     // Construct from dictionary and mesh
-    MGSolver(const dictionary&, const fvMesh&);
+    MG(const dictionary&, const fvMesh&);
 
     // Solve the given system
     virtual void solve(linearSystem<SType,Type,MeshType>&);
@@ -132,7 +151,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "MGSolver.C"
+    #include "MG.C"
 #endif
 
 #endif

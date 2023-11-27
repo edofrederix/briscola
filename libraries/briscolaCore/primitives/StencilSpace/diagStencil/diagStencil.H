@@ -5,6 +5,7 @@
 #include "briscolaUtils.H"
 #include "pTransform.H"
 #include "contiguous.H"
+#include "Row.H"
 
 #include "stencil.H"
 
@@ -52,6 +53,15 @@ public:
 
 template<>
 inline bool contiguous<diagStencil>() { return true; }
+
+template<>
+inline bool contiguous<Row<diagStencil,scalar>>() { return true; }
+
+template<>
+inline bool contiguous<Row<diagStencil,vector>>() { return true; }
+
+template<>
+inline bool contiguous<Row<diagStencil,tensor>>() { return true; }
 
 // diagStencil casts
 

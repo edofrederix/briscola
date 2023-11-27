@@ -11,22 +11,53 @@ const char* const vertexVector::csType::componentNames[] =
     {"v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7"};
 
 template<>
-const vertexVector vertexVector::csType::zero(vertexVector::uniform(vector::uniform(0)));
+const labelVector vertexVector::csType::componentOffsets[] =
+    {
+        briscola::vertexOffset0,
+        briscola::vertexOffset1,
+        briscola::vertexOffset2,
+        briscola::vertexOffset3,
+        briscola::vertexOffset4,
+        briscola::vertexOffset5,
+        briscola::vertexOffset6,
+        briscola::vertexOffset7,
+    };
 
 template<>
-const vertexVector vertexVector::csType::one(vertexVector::uniform(vector::uniform(1)));
+const vertexVector vertexVector::csType::zero
+(
+    vertexVector::uniform(vector::uniform(0))
+);
 
 template<>
-const vertexVector vertexVector::csType::max(vertexVector::uniform(vector::uniform(vGreat)));
+const vertexVector vertexVector::csType::one
+(
+    vertexVector::uniform(vector::uniform(1))
+);
 
 template<>
-const vertexVector vertexVector::csType::min(vertexVector::uniform(vector::uniform(-vGreat)));
+const vertexVector vertexVector::csType::max
+(
+    vertexVector::uniform(vector::uniform(vGreat))
+);
 
 template<>
-const vertexVector vertexVector::csType::rootMax(vertexVector::uniform(vector::uniform(rootVGreat)));
+const vertexVector vertexVector::csType::min
+(
+    vertexVector::uniform(vector::uniform(-vGreat))
+);
 
 template<>
-const vertexVector vertexVector::csType::rootMin(vertexVector::uniform(vector::uniform(-rootVGreat)));
+const vertexVector vertexVector::csType::rootMax
+(
+    vertexVector::uniform(vector::uniform(rootVGreat))
+);
+
+template<>
+const vertexVector vertexVector::csType::rootMin
+(
+    vertexVector::uniform(vector::uniform(-rootVGreat))
+);
 
 vector interpolationWeights
 (

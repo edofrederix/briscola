@@ -1,4 +1,5 @@
-#include "MGSolver.H"
+#include "MG.H"
+#include "directSolver.H"
 
 namespace Foam
 {
@@ -17,8 +18,15 @@ const char* NamedEnum<MGCycleType,3>::names[] =
     "F"
 };
 
+template<>
+const char* NamedEnum<MGCoarseMode,2>::names[] =
+{
+    "smooth",
+    "direct"
+};
+
 template<class SType, class Type, class MeshType>
-void MGSolver<SType,Type,MeshType>::cycle
+void MG<SType,Type,MeshType>::cycle
 (
     linearSystem<SType,Type,MeshType>& xEqn,
     meshField<Type,MeshType>& r,
@@ -98,21 +106,28 @@ void MGSolver<SType,Type,MeshType>::cycle
     }
     else
     {
-        this->smooth
-        (
-            xEqn,
-            l,
-            Foam::max(nSweepsPost,2),
-            converged,
-            omega_
-        );
+        if (coarseMode_ == DIRECT)
+        {
+            directSolver_->solve(xEqn);
+        }
+        else
+        {
+            this->smooth
+            (
+                xEqn,
+                l,
+                Foam::max(nSweepsPost,2),
+                converged,
+                omega_
+            );
+        }
     }
 
     visits[l]++;
 }
 
 template<class SType, class Type, class MeshType>
-void MGSolver<SType,Type,MeshType>::solve
+void MG<SType,Type,MeshType>::solve
 (
     linearSystem<SType,Type,MeshType>& xEqn,
     const scalar relTol,
@@ -231,7 +246,7 @@ void MGSolver<SType,Type,MeshType>::solve
 }
 
 template<class SType, class Type, class MeshType>
-MGSolver<SType,Type,MeshType>::MGSolver
+MG<SType,Type,MeshType>::MG
 (
     const dictionary& dict,
     const fvMesh& fvMsh
@@ -262,6 +277,10 @@ MGSolver<SType,Type,MeshType>::MGSolver
     cycleType_
     (
         MGCycleTypeNames[dict.lookupOrDefault<word>("cycleType", "F")]
+    ),
+    coarseMode_
+    (
+        MGCoarseModeNames[dict.lookupOrDefault<word>("coarseMode", "smooth")]
     ),
     proScheme_
     (
@@ -294,10 +313,38 @@ MGSolver<SType,Type,MeshType>::MGSolver
     {
         smooth = &this->JAC;
     }
+
+    // Set the coarse level solver
+
+    if (coarseMode_ == DIRECT)
+    {
+        dictionary directSolverDict;
+
+        // Use the APLU solver by default
+
+        if (!dict.found("directSolver"))
+        {
+            directSolverDict.add("type", "APLU");
+        }
+        else
+        {
+            directSolverDict = dict.subDict("directSolver");
+        }
+
+        directSolver_.reset
+        (
+            directSolver<SType,Type,MeshType>::New
+            (
+                directSolverDict,
+                fvMsh,
+                fvMsh.msh().size()-1
+            ).ptr()
+        );
+    }
 }
 
 template<class SType, class Type, class MeshType>
-void MGSolver<SType,Type,MeshType>::solve
+void MG<SType,Type,MeshType>::solve
 (
     linearSystem<SType,Type,MeshType>& xEqn
 )

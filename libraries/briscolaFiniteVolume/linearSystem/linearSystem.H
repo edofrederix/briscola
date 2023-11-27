@@ -158,8 +158,8 @@ template<class SType, class Type, class MeshType>
 void writeToFile
 (
     const linearSystem<SType,Type,MeshType>&,
-    OFstream&,
-    const label
+    const fileName file,
+    const label = 0
 );
 
 }
