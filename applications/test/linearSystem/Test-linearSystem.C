@@ -106,6 +106,12 @@ void testMemberOperators(const fvMesh& fvMsh)
 
     sys1 -= g;
     sys1 -= (2*g);
+
+    sys1 += pTraits<Type>::one;
+    sys1 -= pTraits<Type>::one;
+
+    sys1 += List<Type>(MeshType::numberOfDirections,pTraits<Type>::one);
+    sys1 -= List<Type>(MeshType::numberOfDirections,pTraits<Type>::one);
 }
 
 int main(int argc, char *argv[])

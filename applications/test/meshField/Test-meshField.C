@@ -200,6 +200,8 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
         !deep
     );
 
+    List<Type> list(MeshType::numberOfDirections, pTraits<Type>::one*2);
+
     forAllLevels(m1, l, d, i, j, k)
     {
         m1(l,d,i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
@@ -260,6 +262,13 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
         if (m1(l,d,i,j,k) != pTraits<Type>::one*2)
             FatalErrorInFunction
                 << "test 2b failed" << abort(FatalError);
+
+    m1 = list;
+
+    forAllLevels(m1, l, d, i, j, k)
+        if (m1(l,d,i,j,k) != list[d])
+            FatalErrorInFunction
+                << "test 2c failed" << abort(FatalError);
 
     m1 = m2;
     m1 += m2;
@@ -394,12 +403,26 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
             FatalErrorInFunction
                 << "test 7a failed" << abort(FatalError);
 
+    m1 += list;
+
+    forAllLevels(m1, l, d, i, j, k)
+        if (m1(l,d,i,j,k) != m2(l,d,i,j,k)+pTraits<Type>::one+list[d])
+            FatalErrorInFunction
+                << "test 7b failed" << abort(FatalError);
+
     m1 -= pTraits<Type>::one;
+
+    forAllLevels(m1, l, d, i, j, k)
+        if (m1(l,d,i,j,k) != m2(l,d,i,j,k)+list[d])
+            FatalErrorInFunction
+                << "test 7c failed" << abort(FatalError);
+
+    m1 -= list;
 
     forAllLevels(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != m2(l,d,i,j,k))
             FatalErrorInFunction
-                << "test 7b failed" << abort(FatalError);
+                << "test 7d failed" << abort(FatalError);
 
     m1 *= scalar(2);
 
@@ -408,12 +431,26 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
             FatalErrorInFunction
                 << "test 8a failed" << abort(FatalError);
 
+    m1 *= scalarList(MeshType::numberOfDirections, 2.0);
+
+    forAllLevels(m1, l, d, i, j, k)
+        if (m1(l,d,i,j,k) != 4*m2(l,d,i,j,k))
+            FatalErrorInFunction
+                << "test 8b failed" << abort(FatalError);
+
     m1 /= scalar(2);
+
+    forAllLevels(m1, l, d, i, j, k)
+        if (m1(l,d,i,j,k) != 2*m2(l,d,i,j,k))
+            FatalErrorInFunction
+                << "test 8c failed" << abort(FatalError);
+
+    m1 /= scalarList(MeshType::numberOfDirections, 2.0);
 
     forAllLevels(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != m2(l,d,i,j,k))
             FatalErrorInFunction
-                << "test 8b failed" << abort(FatalError);
+                << "test 8d failed" << abort(FatalError);
 }
 
 template<class Type, class MeshType>
@@ -951,6 +988,12 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
         if (m3o(l,d,i,j,k) != m1(l,d,i,j,k)-m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 21d failed" << abort(FatalError);
+
+    m3 = (m3 + pTraits<Type>::one);
+    m3 = m3 - pTraits<Type>::one;
+
+    m3 = m3 + List<Type>(MeshType::numberOfDirections, pTraits<Type>::one);
+    m3 = m3 - List<Type>(MeshType::numberOfDirections, pTraits<Type>::one);
 }
 
 template<class Type, class MeshType>
