@@ -35,7 +35,7 @@ staggeredOutflowBoundaryCondition::staggeredOutflowBoundaryCondition
     const staggeredOutflowBoundaryCondition& bc
 )
 :
-    boundaryCondition<scalar,staggered>(bc.mshField(), bc.base())
+    boundaryCondition<scalar,staggered>(bc.mshField(), bc.mshBoundary())
 {}
 
 staggeredOutflowBoundaryCondition::staggeredOutflowBoundaryCondition
@@ -44,7 +44,7 @@ staggeredOutflowBoundaryCondition::staggeredOutflowBoundaryCondition
     const staggeredOutflowBoundaryCondition& bc
 )
 :
-    boundaryCondition<scalar,staggered>(field, bc.base())
+    boundaryCondition<scalar,staggered>(field, bc.mshBoundary())
 {}
 
 void staggeredOutflowBoundaryCondition::initEvaluate(const label)

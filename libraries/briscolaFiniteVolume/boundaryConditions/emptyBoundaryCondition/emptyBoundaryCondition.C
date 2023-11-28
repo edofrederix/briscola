@@ -42,7 +42,7 @@ emptyBoundaryCondition<Type,MeshType>::emptyBoundaryCondition
     const emptyBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.base())
+    boundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>
@@ -52,7 +52,7 @@ emptyBoundaryCondition<Type,MeshType>::emptyBoundaryCondition
     const emptyBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.base())
+    boundaryCondition<Type,MeshType>(field, bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>

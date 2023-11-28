@@ -31,7 +31,7 @@ DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
     const DirichletBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.base()),
+    boundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary()),
     boundaryValues_(bc.boundaryValues_)
 {}
 
@@ -42,7 +42,7 @@ DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
     const DirichletBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.base()),
+    boundaryCondition<Type,MeshType>(field, bc.mshBoundary()),
     boundaryValues_(bc.boundaryValues_)
 {}
 

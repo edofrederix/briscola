@@ -30,7 +30,7 @@ periodicBoundaryCondition<Type,MeshType>::periodicBoundaryCondition
     const periodicBoundaryCondition<Type,MeshType>& bc
 )
 :
-    parallelBoundaryCondition<Type,MeshType>(bc.mshField(), bc.base())
+    parallelBoundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>
@@ -40,7 +40,7 @@ periodicBoundaryCondition<Type,MeshType>::periodicBoundaryCondition
     const periodicBoundaryCondition<Type,MeshType>& bc
 )
 :
-    parallelBoundaryCondition<Type,MeshType>(field, bc.base())
+    parallelBoundaryCondition<Type,MeshType>(field, bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>

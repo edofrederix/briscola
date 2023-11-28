@@ -160,7 +160,7 @@ public:
     }
 
     // Access to the base boundary
-    inline const boundary& base() const { return b_; }
+    inline const boundary& mshBoundary() const { return b_; }
 
     // Access to the dictionary
     inline const dictionary& dict() const { return dict_; }

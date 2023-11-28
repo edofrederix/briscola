@@ -30,7 +30,7 @@ colocatedSlipBoundaryCondition<Type,MeshType>::colocatedSlipBoundaryCondition
     const colocatedSlipBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.base())
+    boundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>
@@ -40,7 +40,7 @@ colocatedSlipBoundaryCondition<Type,MeshType>::colocatedSlipBoundaryCondition
     const colocatedSlipBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.base())
+    boundaryCondition<Type,MeshType>(field, bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>
