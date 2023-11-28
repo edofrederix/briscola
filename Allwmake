@@ -12,3 +12,4 @@ wmake applications/solvers/briscolaColocated
 wmake applications/solvers/briscolaStaggered
 wmake applications/solvers/briscolaVofAdvection
 wmake applications/solvers/briscolaColocatedTwoPhase
+wmake applications/solvers/briscolaStaggeredTwoPhase
