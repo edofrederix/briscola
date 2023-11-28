@@ -274,7 +274,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
     (                                                                           \
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
-            #Func "(list,"+f2.name()+")",                                       \
+            #Func "("+Foam::name(s1)+","+f2.name()+")",                         \
             f2.fvMsh(),                                                         \
             IOobject::NO_READ,                                                  \
             IOobject::NO_WRITE,                                                 \
@@ -298,7 +298,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
         reuseFieTmp<ReturnType,Type2,MeshType>::New                             \
         (                                                                       \
             tf2,                                                                \
-            #Func "(list,"+tf2().name()+")"                                     \
+            #Func "("+Foam::name(s1)+","+tf2().name()+")"                       \
         );                                                                      \
     Func(tRes.ref(), s1, tf2());                                                \
     tf2.clear();                                                                \
@@ -330,7 +330,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
     (                                                                           \
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
-            #Func "("+f1.name()+",list)",                                       \
+            #Func "("+f1.name()+","+Foam::name(s2)+")",                         \
             f1.fvMsh(),                                                         \
             IOobject::NO_READ,                                                  \
             IOobject::NO_WRITE,                                                 \
@@ -354,7 +354,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
         reuseFieTmp<ReturnType,Type1,MeshType>::New                             \
         (                                                                       \
             tf1,                                                                \
-            #Func "("+tf1().name()+",list)"                                     \
+            #Func "("+tf1().name()+","+Foam::name(s2)+")"                       \
         );                                                                      \
     Func(tRes.ref(), tf1(), s2);                                                \
     tf1.clear();                                                                \
@@ -384,7 +384,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
     (                                                                           \
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
-            #Func "("+f1.name()+",list",                                        \
+            #Func "("+f1.name()+","+Foam::name(s2)+")",                         \
             f1.fvMsh(),                                                         \
             IOobject::NO_READ,                                                  \
             IOobject::NO_WRITE,                                                 \
@@ -408,7 +408,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
         reuseFieTmp<ReturnType,Type1,MeshType>::New                             \
         (                                                                       \
             tf1,                                                                \
-            #Func "("+tf1().name()+",list)"                                     \
+            #Func "("+tf1().name()+","+Foam::name(s2)+")"                       \
         );                                                                      \
     Func(tRes.ref(), tf1(), s2);                                                \
     tf1.clear();                                                                \
@@ -594,7 +594,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
     (                                                                           \
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
-            word("(list")+#Op+f2.name()+")",                                    \
+            "("+Foam::name(s1)+#Op+f2.name()+")",                               \
             f2.fvMsh(),                                                         \
             IOobject::NO_READ,                                                  \
             IOobject::NO_WRITE,                                                 \
@@ -618,7 +618,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
         reuseFieTmp<ReturnType,Type2,MeshType>::New                             \
         (                                                                       \
             tf2,                                                                \
-            word("(list")+#Op+tf2().name()+")"                                  \
+            "("+Foam::name(s1)+#Op+tf2().name()+")"                             \
         );                                                                      \
     OpFunc(tRes.ref(), s1, tf2());                                              \
     tf2.clear();                                                                \
@@ -704,7 +704,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
     (                                                                           \
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
-            "("+f1.name()+#Op+"list)",                                          \
+            "("+f1.name()+#Op+Foam::name(s2)+")",                               \
             f1.fvMsh(),                                                         \
             IOobject::NO_READ,                                                  \
             IOobject::NO_WRITE,                                                 \
@@ -728,7 +728,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
         reuseFieTmp<ReturnType,Type1,MeshType>::New                             \
         (                                                                       \
             tf1,                                                                \
-            "("+tf1().name()+#Op+"list)"                                        \
+            "("+tf1().name()+#Op+Foam::name(s2)+")"                             \
         );                                                                      \
     OpFunc(tRes.ref(), tf1(), s2);                                              \
     tf1.clear();                                                                \
@@ -1190,7 +1190,7 @@ operator Op                                                                     
     (                                                                           \
         new meshField<productType,MeshType>                                     \
         (                                                                       \
-            "("+f1.name()+#Op+"list)",                                          \
+            "("+f1.name()+#Op+Foam::name(v2)+")",                               \
             f1.fvMsh(),                                                         \
             IOobject::NO_READ,                                                  \
             IOobject::NO_WRITE,                                                 \
@@ -1216,7 +1216,7 @@ operator Op                                                                     
         reuseFieTmp<productType,Type,MeshType>::New                             \
         (                                                                       \
             tf1,                                                                \
-            "("+tf1->name()+#Op+"list)"                                         \
+            "("+tf1->name()+#Op+Foam::name(v2)+")"                              \
         );                                                                      \
     OpFunc(tRes.ref(), tf1(), v2);                                              \
     tf1.clear();                                                                \
@@ -1248,7 +1248,7 @@ operator Op                                                                     
     (                                                                           \
         new meshField<productType,MeshType>                                     \
         (                                                                       \
-            word("list(")+#Op+f2.name()+")",                                    \
+            "("+Foam::name(v1)+#Op+f2.name()+")",                               \
             f2.fvMsh(),                                                         \
             IOobject::NO_READ,                                                  \
             IOobject::NO_WRITE,                                                 \
@@ -1274,7 +1274,7 @@ operator Op                                                                     
         reuseFieTmp<productType,Type,MeshType>::New                             \
         (                                                                       \
             tf2,                                                                \
-            word("(list")+#Op+tf2->name()+")"                                   \
+            "("+Foam::name(v1)+#Op+tf2->name()+")"                              \
         );                                                                      \
     OpFunc(tRes.ref(), v1, tf2);                                                \
     tf2.clear();                                                                \
