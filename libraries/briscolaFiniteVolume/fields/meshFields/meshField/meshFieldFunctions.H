@@ -507,6 +507,56 @@ operator Op                                                                     
 (                                                                               \
     const CellSpace<Form,Cmpt,nCmpt>&,                                          \
     const tmp<meshField<Type,MeshType>>&                                        \
+);                                                                              \
+                                                                                \
+/* Lists */                                                                     \
+                                                                                \
+template<class Type, class Form, class MeshType>                                \
+void OpFunc                                                                     \
+(                                                                               \
+    meshField<typename product<Type, Form>::type,MeshType>&,                    \
+    const meshField<Type,MeshType>&,                                            \
+    const List<Form>&                                                           \
+);                                                                              \
+                                                                                \
+template<class Type, class Form, class MeshType>                                \
+tmp<meshField<typename product<Type, Form>::type,MeshType>>                     \
+operator Op                                                                     \
+(                                                                               \
+    const meshField<Type,MeshType>&,                                            \
+    const List<Form>&                                                           \
+);                                                                              \
+                                                                                \
+template<class Type, class Form, class MeshType>                                \
+tmp<meshField<typename product<Type, Form>::type,MeshType>>                     \
+operator Op                                                                     \
+(                                                                               \
+    const tmp<meshField<Type,MeshType>>&,                                       \
+    const List<Form>&                                                           \
+);                                                                              \
+                                                                                \
+template<class Form, class Type, class MeshType>                                \
+void OpFunc                                                                     \
+(                                                                               \
+    meshField<typename product<Form, Type>::type,MeshType>&,                    \
+    const List<Form>&,                                                          \
+    const meshField<Type,MeshType>&                                             \
+);                                                                              \
+                                                                                \
+template<class Form, class Type, class MeshType>                                \
+tmp<meshField<typename product<Form, Type>::type,MeshType>>                     \
+operator Op                                                                     \
+(                                                                               \
+    const List<Form>&,                                                          \
+    const meshField<Type,MeshType>&                                             \
+);                                                                              \
+                                                                                \
+template<class Form, class Type, class MeshType>                                \
+tmp<meshField<typename product<Form, Type>::type,MeshType>>                     \
+operator Op                                                                     \
+(                                                                               \
+    const List<Form>&,                                                          \
+    const tmp<meshField<Type,MeshType>>&                                        \
 );
 
 PRODUCT_OPERATOR(typeOfSum, +, add)

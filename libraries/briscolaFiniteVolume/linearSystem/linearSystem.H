@@ -128,10 +128,12 @@ public:
     void operator=(const tmp<meshField<Type,MeshType>>&);
 
     void operator+=(const Type&);
+    void operator+=(const List<Type>&);
     void operator+=(const meshField<Type,MeshType>&);
     void operator+=(const tmp<meshField<Type,MeshType>>&);
 
     void operator-=(const Type&);
+    void operator-=(const List<Type>&);
     void operator-=(const meshField<Type,MeshType>&);
     void operator-=(const tmp<meshField<Type,MeshType>>&);
 
@@ -141,10 +143,14 @@ public:
     void operator=(const tmp<linearSystem<SType2,Type,MeshType>>&);
 
     template<class SType2>
+    void operator+=(const SType2&);
+    template<class SType2>
     void operator+=(const linearSystem<SType2,Type,MeshType>&);
     template<class SType2>
     void operator+=(const tmp<linearSystem<SType2,Type,MeshType>>&);
 
+    template<class SType2>
+    void operator-=(const SType2&);
     template<class SType2>
     void operator-=(const linearSystem<SType2,Type,MeshType>&);
     template<class SType2>

@@ -544,6 +544,13 @@ void meshField<Type,MeshType>::operator=(const Type& v)
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator=(const List<Type>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) = v;
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator=(const zero)
 {
     forAll(*this, l)
@@ -634,7 +641,21 @@ void meshField<Type,MeshType>::operator+=(const Type& v)
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator+=(const List<Type>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) += v;
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator-=(const Type& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) -= v;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator-=(const List<Type>& v)
 {
     forAll(*this, l)
         listType::operator[](l) -= v;
@@ -648,7 +669,21 @@ void meshField<Type,MeshType>::operator*=(const scalar& v)
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator*=(const scalarList& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) *= v;
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator/=(const scalar& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) /= v;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator/=(const scalarList& v)
 {
     forAll(*this, l)
         listType::operator[](l) /= v;
@@ -727,6 +762,14 @@ void meshField<Type,MeshType>::operator=(const Type2& v)
 
 template<class Type, class MeshType>
 template<class Type2>
+void meshField<Type,MeshType>::operator=(const List<Type2>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) = v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
 void meshField<Type,MeshType>::operator+=(const Type2& v)
 {
     forAll(*this, l)
@@ -735,7 +778,23 @@ void meshField<Type,MeshType>::operator+=(const Type2& v)
 
 template<class Type, class MeshType>
 template<class Type2>
+void meshField<Type,MeshType>::operator+=(const List<Type2>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) += v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
 void meshField<Type,MeshType>::operator-=(const Type2& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) -= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator-=(const List<Type2>& v)
 {
     forAll(*this, l)
         listType::operator[](l) -= v;

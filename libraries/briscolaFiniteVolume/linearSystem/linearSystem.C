@@ -517,6 +517,18 @@ void linearSystem<SType,Type,MeshType>::operator+=
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator+=
 (
+    const List<Type>& v
+)
+{
+    const meshField<scalar,MeshType>& cv =
+        fvMsh_.template metrics<MeshType>().cellVolumes();
+
+    this->b() -= cv*v;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator+=
+(
     const meshField<Type,MeshType>& field
 )
 {
@@ -540,6 +552,18 @@ template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator-=
 (
     const Type& v
+)
+{
+    const meshField<scalar,MeshType>& cv =
+        fvMsh_.template metrics<MeshType>().cellVolumes();
+
+    this->b() += cv*v;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator-=
+(
+    const List<Type>& v
 )
 {
     const meshField<scalar,MeshType>& cv =
@@ -597,6 +621,16 @@ template<class SType, class Type, class MeshType>
 template<class SType2>
 void linearSystem<SType,Type,MeshType>::operator+=
 (
+    const SType2& v
+)
+{
+    this->b() -= v;
+}
+
+template<class SType, class Type, class MeshType>
+template<class SType2>
+void linearSystem<SType,Type,MeshType>::operator+=
+(
     const linearSystem<SType2,Type,MeshType>& sys
 )
 {
@@ -614,6 +648,16 @@ void linearSystem<SType,Type,MeshType>::operator+=
 {
     *this += tSys();
     tSys.clear();
+}
+
+template<class SType, class Type, class MeshType>
+template<class SType2>
+void linearSystem<SType,Type,MeshType>::operator-=
+(
+    const SType2& v
+)
+{
+    this->b() += v;
 }
 
 template<class SType, class Type, class MeshType>

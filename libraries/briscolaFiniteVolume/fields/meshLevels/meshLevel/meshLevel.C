@@ -489,7 +489,10 @@ void meshLevel<Type,MeshType>::operator=(const meshLevel<Type,MeshType>& L)
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator=(const tmp<meshLevel<Type,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator=
+(
+    const tmp<meshLevel<Type,MeshType>>& tL
+)
 {
     if (tL.isTmp())
     {
@@ -535,7 +538,10 @@ void meshLevel<Type,MeshType>::operator+=(const meshLevel<Type,MeshType>& L)
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator+=(const tmp<meshLevel<Type,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator+=
+(
+    const tmp<meshLevel<Type,MeshType>>& tL
+)
 {
     *this += tL();
     tL.clear();
@@ -549,7 +555,10 @@ void meshLevel<Type,MeshType>::operator-=(const meshLevel<Type,MeshType>& L)
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator-=(const tmp<meshLevel<Type,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator-=
+(
+    const tmp<meshLevel<Type,MeshType>>& tL
+)
 {
     *this -= tL();
     tL.clear();
@@ -563,7 +572,10 @@ void meshLevel<Type,MeshType>::operator*=(const meshLevel<scalar,MeshType>& L)
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator*=(const tmp<meshLevel<scalar,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator*=
+(
+    const tmp<meshLevel<scalar,MeshType>>& tL
+)
 {
     *this *= tL();
     tL.clear();
@@ -577,7 +589,10 @@ void meshLevel<Type,MeshType>::operator/=(const meshLevel<scalar,MeshType>& L)
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator/=(const tmp<meshLevel<scalar,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator/=
+(
+    const tmp<meshLevel<scalar,MeshType>>& tL
+)
 {
     *this /= tL();
     tL.clear();
@@ -649,7 +664,10 @@ void meshLevel<Type,MeshType>::operator=(const meshLevel<Type2,MeshType>& L)
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshLevel<Type,MeshType>::operator=(const tmp<meshLevel<Type2,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator=
+(
+    const tmp<meshLevel<Type2,MeshType>>& tL
+)
 {
     *this = tL();
     tL.clear();
@@ -665,7 +683,10 @@ void meshLevel<Type,MeshType>::operator+=(const meshLevel<Type2,MeshType>& L)
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshLevel<Type,MeshType>::operator+=(const tmp<meshLevel<Type2,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator+=
+(
+    const tmp<meshLevel<Type2,MeshType>>& tL
+)
 {
     *this += tL();
     tL.clear();
@@ -673,7 +694,10 @@ void meshLevel<Type,MeshType>::operator+=(const tmp<meshLevel<Type2,MeshType>>& 
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshLevel<Type,MeshType>::operator-=(const meshLevel<Type2,MeshType>& L)
+void meshLevel<Type,MeshType>::operator-=
+(
+    const meshLevel<Type2,MeshType>& L
+)
 {
     forAll(*this, d)
         listType::operator[](d) -= L[d];
@@ -681,7 +705,10 @@ void meshLevel<Type,MeshType>::operator-=(const meshLevel<Type2,MeshType>& L)
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshLevel<Type,MeshType>::operator-=(const tmp<meshLevel<Type2,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator-=
+(
+    const tmp<meshLevel<Type2,MeshType>>& tL
+)
 {
     *this -= tL();
     tL.clear();

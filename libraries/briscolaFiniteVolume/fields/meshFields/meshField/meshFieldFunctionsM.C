@@ -249,6 +249,60 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
     Func(tRes.ref(), s1, tf2());                                                \
     tf2.clear();                                                                \
     return tRes;                                                                \
+}                                                                               \
+                                                                                \
+TEMPLATE                                                                        \
+void Func                                                                       \
+(                                                                               \
+    meshField<ReturnType,MeshType>& res,                                        \
+    const List<Type1>& s1,                                                      \
+    const meshField<Type2,MeshType>& f2                                         \
+)                                                                               \
+{                                                                               \
+    forAll(res, i)                                                              \
+        Func(res[i], s1, f2[i]);                                                \
+}                                                                               \
+                                                                                \
+TEMPLATE                                                                        \
+tmp<meshField<ReturnType,MeshType>> Func                                        \
+(                                                                               \
+    const List<Type1>& s1,                                                      \
+    const meshField<Type2,MeshType>& f2                                         \
+)                                                                               \
+{                                                                               \
+    tmp<meshField<ReturnType,MeshType>> tRes                                    \
+    (                                                                           \
+        new meshField<ReturnType,MeshType>                                      \
+        (                                                                       \
+            #Func "(list,"+f2.name()+")",                                       \
+            f2.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f2.deep()                                                           \
+        )                                                                       \
+    );                                                                          \
+    Func(tRes.ref(), s1, f2);                                                   \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+TEMPLATE                                                                        \
+tmp<meshField<ReturnType,MeshType>> Func                                        \
+(                                                                               \
+    const List<Type1>& s1,                                                      \
+    const tmp<meshField<Type2,MeshType>>& tf2                                   \
+)                                                                               \
+{                                                                               \
+    tmp<meshField<ReturnType,MeshType>> tRes =                                  \
+        reuseFieTmp<ReturnType,Type2,MeshType>::New                             \
+        (                                                                       \
+            tf2,                                                                \
+            #Func "(list,"+tf2().name()+")"                                     \
+        );                                                                      \
+    Func(tRes.ref(), s1, tf2());                                                \
+    tf2.clear();                                                                \
+    return tRes;                                                                \
 }
 
 #define BINARY_TYPE_FUNCTION_FS(ReturnType, Type1, Type2, Func)                 \
@@ -276,7 +330,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
     (                                                                           \
         new meshField<ReturnType,MeshType>                                      \
         (                                                                       \
-            #Func "("+f1.name()+","+Foam::name(s2)+")",                         \
+            #Func "("+f1.name()+",list)",                                       \
             f1.fvMsh(),                                                         \
             IOobject::NO_READ,                                                  \
             IOobject::NO_WRITE,                                                 \
@@ -300,7 +354,61 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
         reuseFieTmp<ReturnType,Type1,MeshType>::New                             \
         (                                                                       \
             tf1,                                                                \
-            #Func "("+tf1().name()+","+Foam::name(s2)+")"                       \
+            #Func "("+tf1().name()+",list)"                                     \
+        );                                                                      \
+    Func(tRes.ref(), tf1(), s2);                                                \
+    tf1.clear();                                                                \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+TEMPLATE                                                                        \
+void Func                                                                       \
+(                                                                               \
+    meshField<ReturnType,MeshType>& res,                                        \
+    const meshField<Type1,MeshType>& f1,                                        \
+    const List<Type2>& s2                                                       \
+)                                                                               \
+{                                                                               \
+    forAll(res, i)                                                              \
+        Func(res[i], f1[i], s2);                                                \
+}                                                                               \
+                                                                                \
+TEMPLATE                                                                        \
+tmp<meshField<ReturnType,MeshType>> Func                                        \
+(                                                                               \
+    const meshField<Type1,MeshType>& f1,                                        \
+    const List<Type2>& s2                                                       \
+)                                                                               \
+{                                                                               \
+    tmp<meshField<ReturnType,MeshType>> tRes                                    \
+    (                                                                           \
+        new meshField<ReturnType,MeshType>                                      \
+        (                                                                       \
+            #Func "("+f1.name()+",list",                                        \
+            f1.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f1.deep()                                                           \
+        )                                                                       \
+    );                                                                          \
+    Func(tRes.ref(), f1, s2);                                                   \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+TEMPLATE                                                                        \
+tmp<meshField<ReturnType,MeshType>> Func                                        \
+(                                                                               \
+    const tmp<meshField<Type1,MeshType>>& tf1,                                  \
+    const List<Type2>& s2                                                       \
+)                                                                               \
+{                                                                               \
+    tmp<meshField<ReturnType,MeshType>> tRes =                                  \
+        reuseFieTmp<ReturnType,Type1,MeshType>::New                             \
+        (                                                                       \
+            tf1,                                                                \
+            #Func "("+tf1().name()+",list)"                                     \
         );                                                                      \
     Func(tRes.ref(), tf1(), s2);                                                \
     tf1.clear();                                                                \
@@ -461,6 +569,60 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
     OpFunc(tRes.ref(), s1, tf2());                                              \
     tf2.clear();                                                                \
     return tRes;                                                                \
+}                                                                               \
+                                                                                \
+TEMPLATE                                                                        \
+void OpFunc                                                                     \
+(                                                                               \
+    meshField<ReturnType,MeshType>& res,                                        \
+    const List<Type1>& s1,                                                      \
+    const meshField<Type2,MeshType>& f2                                         \
+)                                                                               \
+{                                                                               \
+    forAll(res, i)                                                              \
+        OpFunc(res[i], s1, f2[i]);                                              \
+}                                                                               \
+                                                                                \
+TEMPLATE                                                                        \
+tmp<meshField<ReturnType,MeshType>> operator Op                                 \
+(                                                                               \
+    const List<Type1>& s1,                                                      \
+    const meshField<Type2,MeshType>& f2                                         \
+)                                                                               \
+{                                                                               \
+    tmp<meshField<ReturnType,MeshType>> tRes                                    \
+    (                                                                           \
+        new meshField<ReturnType,MeshType>                                      \
+        (                                                                       \
+            word("(list")+#Op+f2.name()+")",                                    \
+            f2.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f2.deep()                                                           \
+        )                                                                       \
+    );                                                                          \
+    OpFunc(tRes.ref(), s1, f2);                                                 \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+TEMPLATE                                                                        \
+tmp<meshField<ReturnType,MeshType>> operator Op                                 \
+(                                                                               \
+    const List<Type1>& s1,                                                      \
+    const tmp<meshField<Type2,MeshType>>& tf2                                   \
+)                                                                               \
+{                                                                               \
+    tmp<meshField<ReturnType,MeshType>> tRes =                                  \
+        reuseFieTmp<ReturnType,Type2,MeshType>::New                             \
+        (                                                                       \
+            tf2,                                                                \
+            word("(list")+#Op+tf2().name()+")"                                  \
+        );                                                                      \
+    OpFunc(tRes.ref(), s1, tf2());                                              \
+    tf2.clear();                                                                \
+    return tRes;                                                                \
 }
 
 #define BINARY_TYPE_OPERATOR_FS(ReturnType, Type1, Type2, Op, OpFunc)           \
@@ -513,6 +675,60 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
         (                                                                       \
             tf1,                                                                \
             "("+tf1().name()+#Op+Foam::name(s2)+")"                             \
+        );                                                                      \
+    OpFunc(tRes.ref(), tf1(), s2);                                              \
+    tf1.clear();                                                                \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+TEMPLATE                                                                        \
+void OpFunc                                                                     \
+(                                                                               \
+    meshField<ReturnType,MeshType>& res,                                        \
+    const meshField<Type1,MeshType>& f1,                                        \
+    const List<Type2>& s2                                                       \
+)                                                                               \
+{                                                                               \
+    forAll(res, i)                                                              \
+        OpFunc(res[i], f1[i], s2);                                              \
+}                                                                               \
+                                                                                \
+TEMPLATE                                                                        \
+tmp<meshField<ReturnType,MeshType>> operator Op                                 \
+(                                                                               \
+    const meshField<Type1,MeshType>& f1,                                        \
+    const List<Type2>& s2                                                       \
+)                                                                               \
+{                                                                               \
+    tmp<meshField<ReturnType,MeshType>> tRes                                    \
+    (                                                                           \
+        new meshField<ReturnType,MeshType>                                      \
+        (                                                                       \
+            "("+f1.name()+#Op+"list)",                                          \
+            f1.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f1.deep()                                                           \
+        )                                                                       \
+    );                                                                          \
+    OpFunc(tRes.ref(), f1, s2);                                                 \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+TEMPLATE                                                                        \
+tmp<meshField<ReturnType,MeshType>> operator Op                                 \
+(                                                                               \
+    const tmp<meshField<Type1,MeshType>>& tf1,                                  \
+    const List<Type2>& s2                                                       \
+)                                                                               \
+{                                                                               \
+    tmp<meshField<ReturnType,MeshType>> tRes =                                  \
+        reuseFieTmp<ReturnType,Type1,MeshType>::New                             \
+        (                                                                       \
+            tf1,                                                                \
+            "("+tf1().name()+#Op+"list)"                                        \
         );                                                                      \
     OpFunc(tRes.ref(), tf1(), s2);                                              \
     tf1.clear();                                                                \
@@ -941,6 +1157,124 @@ operator Op                                                                     
         (                                                                       \
             tf2,                                                                \
             "("+Foam::name(v1)+#Op+tf2->name()+")"                              \
+        );                                                                      \
+    OpFunc(tRes.ref(), v1, tf2);                                                \
+    tf2.clear();                                                                \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+/* Lists */                                                                     \
+                                                                                \
+template<class Type, class Form, class MeshType>                                \
+void OpFunc                                                                     \
+(                                                                               \
+    meshField<typename product<Type, Form>::type,MeshType>& res,                \
+    const meshField<Type,MeshType>& f1,                                         \
+    const List<Form>& v2                                                        \
+)                                                                               \
+{                                                                               \
+    forAll(res, i)                                                              \
+        OpFunc(res[i], f1[i], v2);                                              \
+}                                                                               \
+                                                                                \
+template<class Type, class Form, class MeshType>                                \
+tmp<meshField<typename product<Type, Form>::type,MeshType>>                     \
+operator Op                                                                     \
+(                                                                               \
+    const meshField<Type,MeshType>& f1,                                         \
+    const List<Form>& v2                                                        \
+)                                                                               \
+{                                                                               \
+    typedef typename product<Type, Form>::type productType;                     \
+    tmp<meshField<productType,MeshType>> tRes                                   \
+    (                                                                           \
+        new meshField<productType,MeshType>                                     \
+        (                                                                       \
+            "("+f1.name()+#Op+"list)",                                          \
+            f1.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f1.deep()                                                           \
+        )                                                                       \
+    );                                                                          \
+    OpFunc(tRes.ref(), f1, v2);                                                 \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+template<class Type, class Form, class MeshType>                                \
+tmp<meshField<typename product<Type, Form>::type,MeshType>>                     \
+operator Op                                                                     \
+(                                                                               \
+    const tmp<meshField<Type,MeshType>>& tf1,                                   \
+    const List<Form>& v2                                                        \
+)                                                                               \
+{                                                                               \
+    typedef typename product<Type, Form>::type productType;                     \
+    tmp<meshField<productType,MeshType>> tRes =                                 \
+        reuseFieTmp<productType,Type,MeshType>::New                             \
+        (                                                                       \
+            tf1,                                                                \
+            "("+tf1->name()+#Op+"list)"                                         \
+        );                                                                      \
+    OpFunc(tRes.ref(), tf1(), v2);                                              \
+    tf1.clear();                                                                \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+template<class Type, class Form, class MeshType>                                \
+void OpFunc                                                                     \
+(                                                                               \
+    meshField<typename product<Form,Type>::type,MeshType>& res,                 \
+    const List<Form>& v1,                                                       \
+    const meshField<Type,MeshType>& f2                                          \
+)                                                                               \
+{                                                                               \
+    forAll(res, i)                                                              \
+        OpFunc(res[i], v1, f2[i]);                                              \
+}                                                                               \
+                                                                                \
+template<class Type, class Form, class MeshType>                                \
+tmp<meshField<typename product<Form,Type>::type,MeshType>>                      \
+operator Op                                                                     \
+(                                                                               \
+    const List<Form>& v1,                                                       \
+    const meshField<Type,MeshType>& f2                                          \
+)                                                                               \
+{                                                                               \
+    typedef typename product<Form, Type>::type productType;                     \
+    tmp<meshField<productType,MeshType>> tRes                                   \
+    (                                                                           \
+        new meshField<productType,MeshType>                                     \
+        (                                                                       \
+            word("list(")+#Op+f2.name()+")",                                    \
+            f2.fvMsh(),                                                         \
+            IOobject::NO_READ,                                                  \
+            IOobject::NO_WRITE,                                                 \
+            false,                                                              \
+            false,                                                              \
+            f2.deep()                                                           \
+        )                                                                       \
+    );                                                                          \
+    OpFunc(tRes.ref(), v1, f2);                                                 \
+    return tRes;                                                                \
+}                                                                               \
+                                                                                \
+template<class Type, class Form, class MeshType>                                \
+tmp<meshField<typename product<Form,Type>::type,MeshType>>                      \
+operator Op                                                                     \
+(                                                                               \
+    const List<Form>& v1,                                                       \
+    const tmp<meshField<Type,MeshType>>& tf2                                    \
+)                                                                               \
+{                                                                               \
+    typedef typename product<Form, Type>::type productType;                     \
+    tmp<meshField<productType,MeshType>> tRes =                                 \
+        reuseFieTmp<productType,Type,MeshType>::New                             \
+        (                                                                       \
+            tf2,                                                                \
+            word("(list")+#Op+tf2->name()+")"                                   \
         );                                                                      \
     OpFunc(tRes.ref(), v1, tf2);                                                \
     tf2.clear();                                                                \

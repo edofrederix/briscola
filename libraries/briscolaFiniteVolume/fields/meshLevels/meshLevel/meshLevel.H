@@ -269,11 +269,13 @@ public:
 
     void operator+=(const Type&);
     void operator+=(const List<Type>&);
+
     void operator-=(const Type&);
     void operator-=(const List<Type>&);
 
     void operator*=(const scalar&);
     void operator*=(const List<scalar>&);
+
     void operator/=(const scalar&);
     void operator/=(const List<scalar>&);
 
@@ -297,8 +299,10 @@ public:
 
     template<class Type2> void operator=(const Type2&);
     template<class Type2> void operator=(const List<Type2>&);
+
     template<class Type2> void operator+=(const Type2&);
     template<class Type2> void operator+=(const List<Type2>&);
+
     template<class Type2> void operator-=(const Type2&);
     template<class Type2> void operator-=(const List<Type2>&);
 
