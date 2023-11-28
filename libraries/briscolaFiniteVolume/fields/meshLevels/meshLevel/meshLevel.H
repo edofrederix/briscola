@@ -213,8 +213,8 @@ public:
     // Level number
     inline label levelNum() const { return l_; }
 
-    // Part level
-    inline const partLevel& level() const { return fvMsh_[l_]; }
+    // Mesh part
+    inline const part& mshPart() const { return fvMsh_[l_]; }
 
     // Add boundary conditions only of not yet added
     inline void addBoundaryConditions()

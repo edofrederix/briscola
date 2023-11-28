@@ -18,7 +18,7 @@ void injectionProlongationScheme<Type,MeshType>::prolong
     const OpType<Type>& bop
 )
 {
-    const labelVector R(coarse.level().R());
+    const labelVector R(coarse.mshPart().R());
 
     forAllCells(fine, i, j, k)
     {

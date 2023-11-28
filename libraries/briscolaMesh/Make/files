@@ -41,8 +41,8 @@ boundaries/periodicBoundary/periodicBoundary.C
 boundaries/domainBoundary/domainBoundary.C
 boundaries/emptyBoundary/emptyBoundary.C
 
-partLevelPoints/partLevelPoints.C
-partLevel/partLevel.C
+partPoints/partPoints.C
+part/part.C
 
 mesh/unstructuredMesh/unstructuredMesh.C
 mesh/structuredMesh/structuredMesh.C

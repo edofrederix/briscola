@@ -244,14 +244,14 @@ public:
 
     // Member functions that pass directly to the mesh object
 
-        // Access to the part level
-        inline partLevel& operator[](const label i)
+        // Access to the mesh part
+        inline part& operator[](const label i)
         {
             return mshPtr_->operator[](i);
         }
 
-        // Const access to the part level
-        inline const partLevel& operator[](const label i) const
+        // Const access to the mesh part
+        inline const part& operator[](const label i) const
         {
             return mshPtr_->operator[](i);
         }

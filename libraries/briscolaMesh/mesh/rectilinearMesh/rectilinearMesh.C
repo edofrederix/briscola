@@ -13,8 +13,8 @@ addToRunTimeSelectionTable(mesh, rectilinearMesh, dictionary);
 void rectilinearMesh::setMetrics()
 {
     const decompositionMap& map = decomp().map();
-    const partLevel& part = this->operator[](0);
-    const partLevelPoints& points = part.points();
+    const part& p = this->operator[](0);
+    const partPoints& points = p.points();
 
     // Base vectors
 
@@ -44,8 +44,8 @@ void rectilinearMesh::setMetrics()
 
     for (int d = 0; d < 3; d++)
     {
-        localCellSizesData_.set(d, new scalarList(part.N()[d]+2));
-        localPointsData_.set(d, new scalarList(part.N()[d]+3));
+        localCellSizesData_.set(d, new scalarList(p.N()[d]+2));
+        localPointsData_.set(d, new scalarList(p.N()[d]+3));
 
         scalarList& localCellSizesData = localCellSizesData_[d];
         scalarList& localPointsData = localPointsData_[d];

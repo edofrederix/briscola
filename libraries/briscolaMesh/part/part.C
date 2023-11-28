@@ -1,4 +1,4 @@
-#include "partLevel.H"
+#include "part.H"
 #include "mesh.H"
 #include "SubList.H"
 
@@ -8,7 +8,7 @@ namespace Foam
 namespace briscola
 {
 
-void partLevel::calcPoints(const mesh& msh, const partLevel* l)
+void part::calcPoints(const mesh& msh, const part* l)
 {
     points_.clear();
     points_.setSizeFromCells(N_);
@@ -52,7 +52,7 @@ void partLevel::calcPoints(const mesh& msh, const partLevel* l)
     }
 }
 
-void partLevel::calcGhostPoints(const mesh& msh)
+void part::calcGhostPoints(const mesh& msh)
 {
     // First, project all inner points along the point-to-point vector
 
@@ -261,9 +261,9 @@ void partLevel::calcGhostPoints(const mesh& msh)
     }
 }
 
-partLevel::partLevel(const mesh& msh, const partLevel* l)
+part::part(const mesh& msh, const part* l)
 :
-    l_(l == nullptr ? 0 : l->partLevelNum()+1)
+    l_(l == nullptr ? 0 : l->partNum()+1)
 {
     if (l == nullptr)
     {
@@ -414,7 +414,7 @@ partLevel::partLevel(const mesh& msh, const partLevel* l)
         faceScalar(min(xp), max(xp), min(yp), max(yp), min(zp), max(zp));
 }
 
-partLevel::partLevel(const partLevel& l)
+part::part(const part& l)
 :
     l_(l.l_),
     N_(l.N_),
@@ -425,7 +425,7 @@ partLevel::partLevel(const partLevel& l)
     boundingBox_(l.boundingBox_)
 {}
 
-partLevel::~partLevel()
+part::~part()
 {}
 
 }

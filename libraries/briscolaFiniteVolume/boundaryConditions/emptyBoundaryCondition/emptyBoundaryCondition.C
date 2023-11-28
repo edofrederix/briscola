@@ -25,11 +25,11 @@ emptyBoundaryCondition<Type,MeshType>::emptyBoundaryCondition
 {
     // Empty boundaries can only sit normal to unit mesh size. Check.
 
-    const partLevel& l = this->fvMsh_[0];
+    const part& p = this->fvMsh_[0];
     const labelVector bo(this->offset());
 
     for (label d = 0; d < 3; d++)
-        if (Foam::mag(bo[d]) != 0 && l.N()[d] != 1)
+        if (Foam::mag(bo[d]) != 0 && p.N()[d] != 1)
             FatalErrorInFunction
                 << "The empty boundary condition can only be applied "
                 << "normal to mesh dimensions with only 1 cell thickness."

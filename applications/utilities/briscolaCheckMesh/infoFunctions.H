@@ -196,14 +196,14 @@ void parallelInfo(const fvMesh& fvMsh)
     Info<< endl;
     Info<< "Number of processors = " << Pstream::nProcs() << ":" << endl;
 
-    List<dictionary> partDicts(Pstream::nProcs(), dictionary());
+    List<dictionary> pDicts(Pstream::nProcs(), dictionary());
     List<List<dictionary>> bDicts(Pstream::nProcs(), List<dictionary>(0));
     List<labelList> masterPatch(Pstream::nProcs(), labelList(0));
 
-    const partLevel& part = fvMsh[0];
+    const part& p = fvMsh[0];
 
-    partDicts[Pstream::myProcNo()].add("rectilinear", part.rectilinear());
-    partDicts[Pstream::myProcNo()].add("uniform", part.uniform());
+    pDicts[Pstream::myProcNo()].add("rectilinear", p.rectilinear());
+    pDicts[Pstream::myProcNo()].add("uniform", p.uniform());
 
 
     forAll(fvMsh.boundaries(), bi)
@@ -214,7 +214,7 @@ void parallelInfo(const fvMesh& fvMsh)
         masterPatch[Pstream::myProcNo()].append(b.master());
     }
 
-    Pstream::gatherList(partDicts);
+    Pstream::gatherList(pDicts);
     Pstream::gatherList(bDicts);
     Pstream::gatherList(masterPatch);
 
@@ -233,22 +233,22 @@ void parallelInfo(const fvMesh& fvMsh)
             fvMsh.msh().decomp().decompPerBrick()[brickNum]
         );
 
-        const dictionary& partDict = partDicts[proc];
+        const dictionary& pDict = pDicts[proc];
 
-        const labelVector partSize
+        const labelVector pSize
         (
             briscola::cmptDivide(fvMsh.msh().bricks()[brickNum].N(),brickDecomp)
         );
 
         Info<< "    Processor " << proc << " is in brick " << brickNum
             << " with part index = " << brickPart << endl
-            << "        Number of cells = " << partSize << " = "
-            << cmptProduct(partSize) << endl
+            << "        Number of cells = " << pSize << " = "
+            << cmptProduct(pSize) << endl
             << "        Part is rectilinear in "
-            << directionText(labelVector(partDict.lookup("rectilinear")))
+            << directionText(labelVector(pDict.lookup("rectilinear")))
             << endl
             << "        Part is uniform in "
-            << directionText(labelVector(partDict.lookup("uniform")))
+            << directionText(labelVector(pDict.lookup("uniform")))
             << endl;
 
         Info<< "        Number of part boundaries = "

@@ -23,7 +23,7 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 
     forAllLevels(fc, l, d, i, j, k)
     {
-        const partLevelPoints& points = fvMsh_[l].points();
+        const partPoints& points = fvMsh_[l].points();
 
         // For each cell the face centers are calculated from the average of the
         // four face vertices (Wesseling, p. 483).
@@ -98,7 +98,7 @@ void fvMeshMetrics<MeshType>::calculateEdgeCenters()
 
     forAllLevels(ec, l, d, i, j, k)
     {
-        const partLevelPoints& points = fvMsh_[l].points();
+        const partPoints& points = fvMsh_[l].points();
 
         const vector shift = MeshType::shift[d];
         const vector ijk(vector(i,j,k)+shift);
@@ -206,7 +206,7 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
 
     forAllLevels(vc, l, d, i, j, k)
     {
-        const partLevelPoints& points = fvMsh_[l].points();
+        const partPoints& points = fvMsh_[l].points();
 
         const vector shift = MeshType::shift[d];
         const vector ijk(vector(i,j,k)+shift);
@@ -237,7 +237,7 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
 
     forAllLevels(fn, l, d, i, j, k)
     {
-        const partLevelPoints& points = fvMsh_[l].points();
+        const partPoints& points = fvMsh_[l].points();
 
         // For each cell the lower face normal in three directions is calculated
         // by taking half the cross product of the two vectors connecting the
@@ -372,7 +372,7 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
 
     forAllLevels(cc, l, d, i, j, k)
     {
-        const partLevelPoints& points = fvMsh_[l].points();
+        const partPoints& points = fvMsh_[l].points();
 
         const vector shift = MeshType::shift[d];
 

@@ -624,17 +624,17 @@ void mesh::generateBoundaries()
     setEmptyPatchOffsets();
 }
 
-void mesh::generatePartLevels()
+void mesh::generateLevels()
 {
     label l = 0;
     bool add = true;
-    const partLevel* parent = nullptr;
+    const part* parent = nullptr;
 
     while (add)
     {
         this->append
         (
-            new partLevel(*this, parent)
+            new part(*this, parent)
         );
 
         parent = this->operator()(l);
@@ -663,11 +663,11 @@ void mesh::generatePartLevels()
 mesh::mesh(const IOdictionary& dict)
 :
     geometry(dict),
-    PtrList<partLevel>(0),
+    PtrList<part>(0),
     decomp_(decomposition::New(*this))
 {
     generateBoundaries();
-    generatePartLevels();
+    generateLevels();
 
     // Mesh is structured if the brick topology is too
 
@@ -675,7 +675,7 @@ mesh::mesh(const IOdictionary& dict)
 
     if (structured_)
     {
-        const partLevel& part = this->operator[](0);
+        const part& p = this->operator[](0);
 
         for (int d = 0; d < 3; d++)
         {
@@ -683,13 +683,13 @@ mesh::mesh(const IOdictionary& dict)
             // in that direction
 
             rectilinear_[d] =
-                returnReduce(part.rectilinear()[d], minOp<label>());
+                returnReduce(p.rectilinear()[d], minOp<label>());
 
             // Mesh is uniform in a direction of all parts are uniform in that
             // direction
 
             uniform_[d] =
-                returnReduce(part.uniform()[d], minOp<label>());
+                returnReduce(p.uniform()[d], minOp<label>());
         }
     }
     else
@@ -717,7 +717,7 @@ mesh::mesh(const IOdictionary& dict)
 mesh::mesh(const mesh& msh)
 :
     geometry(msh),
-    PtrList<partLevel>(msh),
+    PtrList<part>(msh),
     decomp_(msh.decomp_),
     boundaries_(msh.boundaries_),
     faceBoundaryMasterPerProc_(msh.faceBoundaryMasterPerProc_),
@@ -738,7 +738,7 @@ mesh::mesh(const mesh& msh)
 mesh::mesh(autoPtr<mesh>& mshPtr)
 :
     geometry(mshPtr(), true),
-    PtrList<partLevel>(mshPtr(), true),
+    PtrList<part>(mshPtr(), true),
     decomp_(mshPtr->decomp_, true),
     boundaries_(mshPtr->boundaries_, true),
     faceBoundaryMasterPerProc_(mshPtr->faceBoundaryMasterPerProc_),
@@ -761,7 +761,7 @@ mesh::mesh(autoPtr<mesh>& mshPtr)
 mesh::mesh(mesh& msh, bool reuse)
 :
     geometry(msh, reuse),
-    PtrList<partLevel>(msh, reuse),
+    PtrList<part>(msh, reuse),
     decomp_(msh.decomp_, reuse),
     boundaries_(msh.boundaries_, reuse),
     faceBoundaryMasterPerProc_(msh.faceBoundaryMasterPerProc_),
@@ -826,16 +826,16 @@ mesh::~mesh()
 
 labelVector mesh::findCell(const vector& point, const label l) const
 {
-    const partLevel& lvl = this->operator[](l);
+    const part& p = this->operator[](l);
 
     if
     (
-        point.x() < lvl.boundingBox().left()
-     || point.x() > lvl.boundingBox().right()
-     || point.y() < lvl.boundingBox().bottom()
-     || point.y() > lvl.boundingBox().top()
-     || point.z() < lvl.boundingBox().aft()
-     || point.z() > lvl.boundingBox().fore()
+        point.x() < p.boundingBox().left()
+     || point.x() > p.boundingBox().right()
+     || point.y() < p.boundingBox().bottom()
+     || point.y() > p.boundingBox().top()
+     || point.z() < p.boundingBox().aft()
+     || point.z() > p.boundingBox().fore()
     )
     {
         // Not in bounding box of part
@@ -846,8 +846,8 @@ labelVector mesh::findCell(const vector& point, const label l) const
     {
         // Final level, linear search
 
-        forAllBlock(lvl, i, j, k)
-            if (lvl.points().pointInCell(point, i, j, k))
+        forAllBlock(p, i, j, k)
+            if (p.points().pointInCell(point, i, j, k))
                 return labelVector(i,j,k);
 
         return -unitXYZ;
@@ -863,10 +863,10 @@ labelVector mesh::findCell(const vector& point, const label l) const
             // search if the mesh is not rectlinear. In this case it may be on
             // an edge.
 
-            if (cmptProduct(lvl.rectilinear()) == 0)
+            if (cmptProduct(p.rectilinear()) == 0)
             {
-                forAllBlock(lvl, i, j, k)
-                    if (lvl.points().pointInCell(point, i, j, k))
+                forAllBlock(p, i, j, k)
+                    if (p.points().pointInCell(point, i, j, k))
                         return labelVector(i,j,k);
             }
 
@@ -882,18 +882,18 @@ labelVector mesh::findCell(const vector& point, const label l) const
             for (int i = S.x(); i < E.x(); i++)
             for (int j = S.y(); j < E.y(); j++)
             for (int k = S.z(); k < E.z(); k++)
-                if (lvl.points().pointInCell(point, i, j, k))
+                if (p.points().pointInCell(point, i, j, k))
                     return labelVector(i,j,k);
 
             // Otherwise, search in the vicinity too.
 
             S = cmptMax(S-unitXYZ, zeroXYZ);
-            E = cmptMin(E+unitXYZ, lvl.points().shape()-unitXYZ);
+            E = cmptMin(E+unitXYZ, p.points().shape()-unitXYZ);
 
             for (int i = S.x(); i < E.x(); i++)
             for (int j = S.y(); j < E.y(); j++)
             for (int k = S.z(); k < E.z(); k++)
-                if (lvl.points().pointInCell(point, i, j, k))
+                if (p.points().pointInCell(point, i, j, k))
                     return labelVector(i,j,k);
 
             // Otherwise, there is something wrong

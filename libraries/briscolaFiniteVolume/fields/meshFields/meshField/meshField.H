@@ -198,13 +198,13 @@ public:
     }
 
     // Access to the first level
-    inline meshLevel<Type,MeshType>& level()
+    inline meshLevel<Type,MeshType>& mshPart()
     {
         return this->operator[](0);
     }
 
     // Const access to the first level
-    inline const meshLevel<Type,MeshType>& level() const
+    inline const meshLevel<Type,MeshType>& mshPart() const
     {
         return this->operator[](0);
     }

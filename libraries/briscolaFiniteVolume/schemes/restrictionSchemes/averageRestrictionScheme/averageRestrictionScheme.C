@@ -39,7 +39,7 @@ void averageRestrictionScheme<Type,MeshType>::restrict
     const bool scale
 )
 {
-    const labelVector R(coarse.level().R());
+    const labelVector R(coarse.mshPart().R());
     const vector shift(MeshType::shift[coarse.directionNum()]);
 
     // In a shifted direction, coarse grid and fine grid cell centers have the

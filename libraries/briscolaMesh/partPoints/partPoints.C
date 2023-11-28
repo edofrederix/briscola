@@ -1,4 +1,4 @@
-#include "partLevelPoints.H"
+#include "partPoints.H"
 
 namespace Foam
 {
@@ -6,20 +6,20 @@ namespace Foam
 namespace briscola
 {
 
-partLevelPoints::partLevelPoints()
+partPoints::partPoints()
 :
     vectorBlock()
 {}
 
-partLevelPoints::~partLevelPoints()
+partPoints::~partPoints()
 {}
 
-void partLevelPoints::clear()
+void partPoints::clear()
 {
     vectorBlock::clear();
 }
 
-void partLevelPoints::setSizeFromCells(const labelVector& size)
+void partPoints::setSizeFromCells(const labelVector& size)
 {
     // On each face of the block a layer of ghost points, plus one additional
     // layer because these are points, not cells.

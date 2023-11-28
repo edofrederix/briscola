@@ -167,8 +167,8 @@ public:
     // Direction number
     inline label directionNum() const { return d_; }
 
-    // Part level
-    inline const partLevel& level() const { return fvMsh_[l_]; }
+    // Mesh part
+    inline const part& mshPart() const { return fvMsh_[l_]; }
 
     // Access to base block
     inline block<Type>& B() { return *this; }

@@ -3,7 +3,7 @@
 
 #include "decomposition.H"
 #include "geometry.H"
-#include "partLevel.H"
+#include "part.H"
 #include "faceLabel.H"
 #include "edgeLabel.H"
 #include "vertexLabel.H"
@@ -17,7 +17,7 @@ namespace briscola
 class mesh
 :
     public geometry,
-    public PtrList<partLevel>
+    public PtrList<part>
 {
     // Mesh decomposition
     autoPtr<decomposition> decomp_;
@@ -97,8 +97,8 @@ class mesh
     // Generate the list of empty boundary offsets
     void setEmptyPatchOffsets();
 
-    // Generate part levels
-    void generatePartLevels();
+    // Generate mesh part levels
+    void generateLevels();
 
 public:
 

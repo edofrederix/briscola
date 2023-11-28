@@ -18,7 +18,7 @@ void midPointProlongationScheme<Type,MeshType>::prolong
     const OpType<Type>& bop
 )
 {
-    const labelVector R(coarse.level().R());
+    const labelVector R(coarse.mshPart().R());
     const vector s(MeshType::shift[coarse.directionNum()]);
 
     forAllCells(fine, i, j, k)

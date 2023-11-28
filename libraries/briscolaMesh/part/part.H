@@ -1,11 +1,11 @@
-#ifndef partLevel_H
-#define partLevel_H
+#ifndef part_H
+#define part_H
 
 #include "labelVector.H"
 #include "block.H"
 #include "face.H"
 #include "boundary.H"
-#include "partLevelPoints.H"
+#include "partPoints.H"
 #include "brickLink.H"
 
 namespace Foam
@@ -16,19 +16,19 @@ namespace briscola
 
 class mesh;
 
-class partLevel
+class part
 {
-    // Part level number
+    // Level number of this mesh part
     label l_;
 
-    // Mesh size of this part level
+    // Size of this mesh part
     labelVector N_;
 
-    // Refinement factors of this part level with respect to its parent
+    // Refinement factors of this level with respect to its parent
     labelVector R_;
 
     // Mesh points
-    partLevelPoints points_;
+    partPoints points_;
 
     // Check if part directions are rectilinear
     labelVector rectilinear_;
@@ -40,30 +40,30 @@ class partLevel
     faceScalar boundingBox_;
 
     // Calculate the mesh points
-    void calcPoints(const mesh&, const partLevel*);
+    void calcPoints(const mesh&, const part*);
 
     // Calculate ghost points of the mesh
     void calcGhostPoints(const mesh&);
 
 public:
 
-    // Construct from mesh and parent part level pointer (if any)
-    partLevel(const mesh&, const partLevel*);
+    // Construct from mesh and part at parent level (if any)
+    part(const mesh&, const part*);
 
     // Copy constructor
-    partLevel(const partLevel&);
+    part(const part&);
 
-    // Clone this part level
-    inline autoPtr<partLevel> clone() const
+    // Clone this mesh part
+    inline autoPtr<part> clone() const
     {
-        return autoPtr<partLevel>(new partLevel(*this));
+        return autoPtr<part>(new part(*this));
     }
 
     // Destructor
-    ~partLevel();
+    ~part();
 
-    // Part level number
-    inline label partLevelNum() const { return l_; }
+    // Level number of this mesh part
+    inline label partNum() const { return l_; }
 
     // Mesh size
     inline labelVector N() const { return N_; }
@@ -84,7 +84,7 @@ public:
     inline labelVector R() const { return R_; }
 
     // Points
-    inline const partLevelPoints& points() const { return points_; }
+    inline const partPoints& points() const { return points_; }
 
     // Return rectilinear bools
     inline labelVector rectilinear() const { return rectilinear_; }
