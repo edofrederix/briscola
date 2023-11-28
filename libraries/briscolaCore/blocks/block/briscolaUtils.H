@@ -706,6 +706,22 @@ inline scalar triArea
     return Foam::mag(triAreaVector(a,b,c));
 }
 
+// Make a list from a vector
+inline scalarList list(const vector& v)
+{
+    scalarList l(3);
+    for (int i = 0; i < 3; i++) l[i] = v[i];
+    return l;
+}
+
+// Make a vector from a list
+inline vector vec(const scalarList& l)
+{
+    vector v;
+    for (int i = 0; i < 3; i++) v[i] = l[i];
+    return v;
+}
+
 }
 
 // Return a string representation of a list (defined in the Foam namespace like
