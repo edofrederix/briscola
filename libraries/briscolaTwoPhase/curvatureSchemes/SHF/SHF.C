@@ -19,7 +19,7 @@ addToRunTimeSelectionTable(curvatureScheme, SHF, dictionary);
 
 void SHF::setCommunicationIndices()
 {
-    const faceLabel& faceType = fvMsh_.msh().facePatchType();
+    const faceLabel& faceType = fvMsh_.msh().faceBoundaryType();
     const faceLabel I = fvMsh_.template I<colocated>(0, 0);
 
     communicationIndices_.clear();
@@ -89,7 +89,7 @@ void SHF::correct()
 {
     colocatedScalarField& kappa = *this;
 
-    const faceLabel& faceType = fvMsh_.msh().facePatchType();
+    const faceLabel& faceType = fvMsh_.msh().faceBoundaryType();
     const labelVector& N = fvMsh_.template N<colocated>(0, 0);
 
     colocatedScalarField marker("marker", fvMsh_);
