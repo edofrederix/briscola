@@ -146,6 +146,14 @@ public:
     template<class MeshType>
     const meshField<scalar,MeshType>& rho() const;
 
+    // Return const access to the mixture mass density
+    template<class MeshType>
+    const meshField<scalar,MeshType>& rho1() const;
+
+    // Return const access to the mixture mass density
+    template<class MeshType>
+    const meshField<scalar,MeshType>& rho2() const;
+
     // Return const access to the mixture dynamic viscosity
     template<class MeshType>
     const meshField<faceScalar,MeshType>& mu() const;

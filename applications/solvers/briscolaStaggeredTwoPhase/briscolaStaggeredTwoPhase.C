@@ -74,15 +74,32 @@ int main(int argc, char *argv[])
         // Pressure equation
 
         const staggeredScalarField rhoInv("rhoInv", 1.0/rho);
-        const staggeredFaceScalarField rhoInvf("rhoInv",1.0/ex::interp(rho));
-        const colocatedFaceScalarField coloRhoInvf("rhoInv",1.0/ex::interp(coloRho));
+        const colocatedFaceScalarField coloRhoInvf("coloRhoInv",1.0/ex::interp(coloRho));
 
-        Poisson->solve(p, ex::coloDiv(U)/(-deltaT), coloRhoInvf);
+        if (split)
+        {
+            extrapolatedP = (1+deltaT/deltaT0)*p - (deltaT/deltaT0)*p.oldTime();
+            extrapolatedP.correctBoundaryConditions();
 
-        // Rhie-Chow correction
+            p.setOldTime();
 
-        U -= deltaT*ex::stagGrad(p)*rhoInv;
-        U.correctBoundaryConditions();
+            colocatedFaceScalarField splitCorrection = fa * (1 - coloMinRhof * coloRhoInvf) * ex::faceGrad(extrapolatedP);
+            Poisson->solve(p, coloMinRho*ex::coloDiv(U)/(-deltaT) - ex::div(splitCorrection));
+
+            // Rhie-Chow correction
+
+            U -= deltaT*(ex::stagGrad(p)*minRhoInv + (rhoInv - minRhoInv)*ex::stagGrad(extrapolatedP));
+            U.correctBoundaryConditions();
+        }
+        else
+        {
+            Poisson->solve(p, ex::coloDiv(U)/(-deltaT), coloRhoInvf);
+
+            // Rhie-Chow correction
+
+            U -= deltaT*ex::stagGrad(p)*rhoInv;
+            U.correctBoundaryConditions();
+        }
 
         if (fvMsh.time().writeTime())
             Uc = ex::reconstruct(U);

@@ -21,6 +21,11 @@ laplacianSchemes
         type    linearGauss;
     }
 
+    laplacian(coloRhoInv,p)
+    {
+        type    linearGauss;
+    }
+
     laplacian(p)
     {
         type    linearGauss;
@@ -63,6 +68,11 @@ gradientSchemes
     }
 
     stagGrad(p)
+    {
+        type    midPointGauss;
+    }
+
+    stagGrad(extrapolatedP)
     {
         type    midPointGauss;
     }

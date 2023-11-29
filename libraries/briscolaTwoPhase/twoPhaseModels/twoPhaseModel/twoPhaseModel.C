@@ -226,6 +226,30 @@ const staggeredScalarField& twoPhaseModel::rho<staggered>() const
 }
 
 template<>
+const colocatedScalarField& twoPhaseModel::rho1<colocated>() const
+{
+    return rho1_;
+}
+
+template<>
+const staggeredScalarField& twoPhaseModel::rho1<staggered>() const
+{
+    return rho1Ptr_();
+}
+
+template<>
+const colocatedScalarField& twoPhaseModel::rho2<colocated>() const
+{
+    return rho2_;
+}
+
+template<>
+const staggeredScalarField& twoPhaseModel::rho2<staggered>() const
+{
+    return rho2Ptr_();
+}
+
+template<>
 const colocatedFaceScalarField& twoPhaseModel::mu<colocated>() const
 {
     return muc_;
