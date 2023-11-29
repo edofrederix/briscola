@@ -244,14 +244,14 @@ public:
 
     // Member functions that pass directly to the mesh object
 
-        // Access to the part level
-        inline partLevel& operator[](const label i)
+        // Access to the mesh part
+        inline part& operator[](const label i)
         {
             return mshPtr_->operator[](i);
         }
 
-        // Const access to the part level
-        inline const partLevel& operator[](const label i) const
+        // Const access to the mesh part
+        inline const part& operator[](const label i) const
         {
             return mshPtr_->operator[](i);
         }
@@ -262,10 +262,10 @@ public:
             return mshPtr_->size();
         }
 
-        // Const access to part patched
-        inline const PtrList<partPatch>& partPatches() const
+        // Const access to boundaries
+        inline const PtrList<boundary>& boundaries() const
         {
-            return mshPtr_->partPatches();
+            return mshPtr_->boundaries();
         }
 
         // Structured mesh bool

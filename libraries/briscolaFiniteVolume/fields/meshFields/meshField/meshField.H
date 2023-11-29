@@ -198,13 +198,13 @@ public:
     }
 
     // Access to the first level
-    inline meshLevel<Type,MeshType>& level()
+    inline meshLevel<Type,MeshType>& mshPart()
     {
         return this->operator[](0);
     }
 
     // Const access to the first level
-    inline const meshLevel<Type,MeshType>& level() const
+    inline const meshLevel<Type,MeshType>& mshPart() const
     {
         return this->operator[](0);
     }
@@ -363,6 +363,7 @@ public:
     void operator=(const meshField<Type,MeshType>&);
     void operator=(const tmp<meshField<Type,MeshType>>&);
     void operator=(const Type&);
+    void operator=(const List<Type>&);
     void operator=(const zero);
 
     void operator+=(const meshField<Type,MeshType>&);
@@ -378,10 +379,16 @@ public:
     void operator/=(const tmp<meshField<scalar,MeshType>>&);
 
     void operator+=(const Type&);
+    void operator+=(const List<Type>&);
+
     void operator-=(const Type&);
+    void operator-=(const List<Type>&);
 
     void operator*=(const scalar&);
+    void operator*=(const scalarList&);
+
     void operator/=(const scalar&);
+    void operator/=(const scalarList&);
 
     // Templated functions are needed for types which can be cast to another
     // type
@@ -402,8 +409,13 @@ public:
     );
 
     template<class Type2> void operator=(const Type2&);
+    template<class Type2> void operator=(const List<Type2>&);
+
     template<class Type2> void operator+=(const Type2&);
+    template<class Type2> void operator+=(const List<Type2>&);
+
     template<class Type2> void operator-=(const Type2&);
+    template<class Type2> void operator-=(const List<Type2>&);
 
     // Allow a parent linear system to make changes to private data
     template<class SType,class,class>

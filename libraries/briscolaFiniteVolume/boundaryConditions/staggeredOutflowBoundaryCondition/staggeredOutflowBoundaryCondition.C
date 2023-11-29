@@ -24,10 +24,10 @@ boundaryCondition<scalar,staggered>::
 staggeredOutflowBoundaryCondition::staggeredOutflowBoundaryCondition
 (
     const staggeredScalarField& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 :
-    boundaryCondition<scalar,staggered>(mshField, patch)
+    boundaryCondition<scalar,staggered>(mshField, b)
 {}
 
 staggeredOutflowBoundaryCondition::staggeredOutflowBoundaryCondition
@@ -35,7 +35,7 @@ staggeredOutflowBoundaryCondition::staggeredOutflowBoundaryCondition
     const staggeredOutflowBoundaryCondition& bc
 )
 :
-    boundaryCondition<scalar,staggered>(bc.mshField(), bc.patch())
+    boundaryCondition<scalar,staggered>(bc.mshField(), bc.mshBoundary())
 {}
 
 staggeredOutflowBoundaryCondition::staggeredOutflowBoundaryCondition
@@ -44,7 +44,7 @@ staggeredOutflowBoundaryCondition::staggeredOutflowBoundaryCondition
     const staggeredOutflowBoundaryCondition& bc
 )
 :
-    boundaryCondition<scalar,staggered>(field, bc.patch())
+    boundaryCondition<scalar,staggered>(field, bc.mshBoundary())
 {}
 
 void staggeredOutflowBoundaryCondition::initEvaluate(const label)
@@ -54,7 +54,7 @@ void staggeredOutflowBoundaryCondition::evaluate(const label l)
 {
     staggeredScalarLevel& field = this->mshField()[l];
 
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
 
     forAll(field, d)
     {

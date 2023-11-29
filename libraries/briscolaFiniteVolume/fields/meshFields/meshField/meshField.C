@@ -1,10 +1,10 @@
 #include "meshField.H"
 #include "fvMesh.H"
 
-#include "boundaryPartPatch.H"
-#include "parallelPartPatch.H"
-#include "periodicPartPatch.H"
-#include "emptyPartPatch.H"
+#include "domainBoundary.H"
+#include "parallelBoundary.H"
+#include "periodicBoundary.H"
+#include "emptyBoundary.H"
 
 #include "restrictionScheme.H"
 
@@ -319,55 +319,55 @@ void meshField<Type,MeshType>::addBoundaryConditions()
 {
     if (boundaryConditions_.size() == 0)
     {
-        // First add boundary patches
+        // First add domain boundaries
 
-        forAll(fvMsh_.partPatches(), patchi)
+        forAll(fvMsh_.boundaries(), bi)
         {
-            const partPatch& patch = fvMsh_.partPatches()[patchi];
+            const boundary& b = fvMsh_.boundaries()[bi];
 
-            if (patch.typeNum() == boundaryPartPatch::typeNumber)
+            if (b.typeNum() == domainBoundary::typeNumber)
             {
                 boundaryConditions_.append
                 (
-                    boundaryCondition<Type,MeshType>::NewBoundary
+                    boundaryCondition<Type,MeshType>::NewDomain
                     (
                         *this,
-                        patch
+                        b
                     )
                 );
             }
         }
 
-        // Add parallel and periodic patches. First faces, then edges and
+        // Add parallel and periodic boundaries. First faces, then edges and
         // finally vertices.
 
         for(label order = 1; order <= 3; order++)
-        forAll(fvMsh_.partPatches(), patchi)
+        forAll(fvMsh_.boundaries(), bi)
         {
-            const partPatch& patch = fvMsh_.partPatches()[patchi];
-            const labelVector bo(patch.boundaryOffset());
+            const boundary& b = fvMsh_.boundaries()[bi];
+            const labelVector bo(b.offset());
 
             if (cmptSum(cmptMag(bo)) == order)
             {
-                if (patch.typeNum() == parallelPartPatch::typeNumber)
+                if (b.typeNum() == parallelBoundary::typeNumber)
                 {
                     boundaryConditions_.append
                     (
                         boundaryCondition<Type,MeshType>::NewParallel
                         (
                             *this,
-                            patch
+                            b
                         )
                     );
                 }
-                else if (patch.typeNum() == periodicPartPatch::typeNumber)
+                else if (b.typeNum() == periodicBoundary::typeNumber)
                 {
                     boundaryConditions_.append
                     (
                         boundaryCondition<Type,MeshType>::NewPeriodic
                         (
                             *this,
-                            patch
+                            b
                         )
                     );
                 }
@@ -376,18 +376,18 @@ void meshField<Type,MeshType>::addBoundaryConditions()
 
         // Finally add empties
 
-        forAll(fvMsh_.partPatches(), patchi)
+        forAll(fvMsh_.boundaries(), bi)
         {
-            const partPatch& patch = fvMsh_.partPatches()[patchi];
+            const boundary& b = fvMsh_.boundaries()[bi];
 
-            if (patch.typeNum() == emptyPartPatch::typeNumber)
+            if (b.typeNum() == emptyBoundary::typeNumber)
             {
                 boundaryConditions_.append
                 (
                     boundaryCondition<Type,MeshType>::NewEmpty
                     (
                         *this,
-                        patch
+                        b
                     )
                 );
             }
@@ -544,6 +544,13 @@ void meshField<Type,MeshType>::operator=(const Type& v)
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator=(const List<Type>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) = v;
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator=(const zero)
 {
     forAll(*this, l)
@@ -634,7 +641,21 @@ void meshField<Type,MeshType>::operator+=(const Type& v)
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator+=(const List<Type>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) += v;
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator-=(const Type& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) -= v;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator-=(const List<Type>& v)
 {
     forAll(*this, l)
         listType::operator[](l) -= v;
@@ -648,7 +669,21 @@ void meshField<Type,MeshType>::operator*=(const scalar& v)
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator*=(const scalarList& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) *= v;
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator/=(const scalar& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) /= v;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator/=(const scalarList& v)
 {
     forAll(*this, l)
         listType::operator[](l) /= v;
@@ -727,6 +762,14 @@ void meshField<Type,MeshType>::operator=(const Type2& v)
 
 template<class Type, class MeshType>
 template<class Type2>
+void meshField<Type,MeshType>::operator=(const List<Type2>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) = v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
 void meshField<Type,MeshType>::operator+=(const Type2& v)
 {
     forAll(*this, l)
@@ -735,7 +778,23 @@ void meshField<Type,MeshType>::operator+=(const Type2& v)
 
 template<class Type, class MeshType>
 template<class Type2>
+void meshField<Type,MeshType>::operator+=(const List<Type2>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) += v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
 void meshField<Type,MeshType>::operator-=(const Type2& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) -= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator-=(const List<Type2>& v)
 {
     forAll(*this, l)
         listType::operator[](l) -= v;

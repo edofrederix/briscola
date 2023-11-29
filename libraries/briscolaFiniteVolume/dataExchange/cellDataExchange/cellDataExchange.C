@@ -1,5 +1,5 @@
 #include "cellDataExchange.H"
-#include "boundaryPartPatch.H"
+#include "domainBoundary.H"
 
 namespace Foam
 {
@@ -57,24 +57,24 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
     const mesh& msh = this->fvMsh_.msh();
 
-    // Set neighboring processor numbers and patches. The first one is us.
+    // Set neighboring processor numbers and boundaries. The first one is us.
 
     neighbors_.clear();
-    neighbors_.setSize(msh.partPatches().size()+1,-1);
+    neighbors_.setSize(msh.boundaries().size()+1,-1);
     neighbors_[0] = Pstream::myProcNo();
 
-    forAll(msh.partPatches(), i)
+    forAll(msh.boundaries(), i)
         if
         (
-            msh.partPatches()[i].typeNum() == parallelPartPatch::typeNumber
-         || msh.partPatches()[i].typeNum() == periodicPartPatch::typeNumber
+            msh.boundaries()[i].typeNum() == parallelBoundary::typeNumber
+         || msh.boundaries()[i].typeNum() == periodicBoundary::typeNumber
         )
-            neighbors_[i+1] = msh.partPatches()[i].neighborProcNum();
+            neighbors_[i+1] = msh.boundaries()[i].neighborProcNum();
 
     // Collect the required cells and store per neighbor processor
 
     recvCells_.clear();
-    recvCells_.setSize(msh.partPatches().size()+1);
+    recvCells_.setSize(msh.boundaries().size()+1);
 
     map_.clear();
     map_.setSize(indices.size());
@@ -112,52 +112,53 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
                     << "on unstructured meshes" << endl
                     << abort(FatalError);
 
-            // Get the patch to the other processor
+            // Get the boundary to the other processor
 
-            label patchNum = -1;
+            label bNum = -1;
 
-            forAll(msh.partPatches(), patchi)
-            if (msh.partPatches()[patchi].boundaryOffset() == bo)
+            forAll(msh.boundaries(), bi)
+            if (msh.boundaries()[bi].offset() == bo)
             {
-                patchNum = patchi;
+                bNum = bi;
                 break;
             }
 
-            const partPatch& patch = msh.partPatches()[patchNum];
+            const boundary& b = msh.boundaries()[bNum];
 
             // If no processor can be found, check if the cell can be found in
             // the ghost cells of a neighbouring processor
 
             if
-            (   patchNum == -1
-             || patch.typeNum() == emptyPartPatch::typeNumber
-             || patch.typeNum() == boundaryPartPatch::typeNumber
+            (   bNum == -1
+             || b.typeNum() == domainBoundary::typeNumber
+             || b.typeNum() == emptyBoundary::typeNumber
             )
             {
                 for (int j = 0; j < 3; j++)
                     if (Foam::mag(offset[j]) < 2)
                         bo[j] = 0;
 
-                patchNum = -1;
+                bNum = -1;
 
-                forAll(msh.partPatches(), patchi)
-                if (msh.partPatches()[patchi].boundaryOffset() == bo)
-                {
-                    patchNum = patchi;
-                    break;
-                }
+                forAll(msh.boundaries(), bi)
+                    if (msh.boundaries()[bi].offset() == bo)
+                    {
+                        bNum = bi;
+                        break;
+                    }
 
-                if (patchNum == -1)
+
+                if (bNum == -1)
                     FatalErrorInFunction
                         << "Could not find patch corresponding to boundary offset"
                         << bo << endl << abort(FatalError);
 
-                const partPatch& patch1 = msh.partPatches()[patchNum];
+                const boundary& b1 = msh.boundaries()[bNum];
 
                 if
                 (
-                    patch1.typeNum() == emptyPartPatch::typeNumber
-                 || patch1.typeNum() == boundaryPartPatch::typeNumber
+                    b1.typeNum() == domainBoundary::typeNumber
+                 || b1.typeNum() == emptyBoundary::typeNumber
                 )
                     FatalErrorInFunction
                         << "Cannot exchange cell data across a boundary part patch"
@@ -170,13 +171,13 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
                 if (bo[j] != 0)
                     index[j] = bo[j] > 0 ? index[j]-(U[j]-1) : index[j]-L[j];
 
-            recvCells_[patchNum+1].append(index);
+            recvCells_[bNum+1].append(index);
 
             map_[i] =
                 Tuple2<label,label>
                 (
-                    patchNum+1,
-                    recvCells_[patchNum+1].size()-1
+                    bNum+1,
+                    recvCells_[bNum+1].size()-1
                 );
         }
     }
@@ -238,15 +239,15 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
     forAll(sendCells_, i)
     if (i != 0 && sendCells_[i].size() > 0)
     {
-        const partPatch& patch = msh.partPatches()[i-1];
-        const labelTensor& T = patch.T();
+        const boundary& b = msh.boundaries()[i-1];
+        const labelTensor& T = b.T();
 
         faceLabel J = pTransform<faceLabel>(T,I);
 
         const labelVector L = briscola::cmptMin(J.lower(), J.upper());
         const labelVector U = briscola::cmptMax(J.lower(), J.upper());
 
-        const labelVector bo = (T & patch.boundaryOffset());
+        const labelVector bo = (T & b.offset());
 
         forAll(sendCells_[i], j)
         {

@@ -82,7 +82,7 @@ void linearProlongationScheme<Type,MeshType>::prolong
     const OpType<Type>& bop
 )
 {
-    const labelVector R(coarse.level().R());
+    const labelVector R(coarse.mshPart().R());
 
     meshDirection<vertexScalar,MeshType>& weights =
         weights_[fine.levelNum()][fine.directionNum()];

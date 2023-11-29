@@ -18,10 +18,10 @@ template<class Type, class MeshType>
 colocatedSlipBoundaryCondition<Type,MeshType>::colocatedSlipBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, patch)
+    boundaryCondition<Type,MeshType>(mshField, b)
 {}
 
 template<class Type, class MeshType>
@@ -30,7 +30,7 @@ colocatedSlipBoundaryCondition<Type,MeshType>::colocatedSlipBoundaryCondition
     const colocatedSlipBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.patch())
+    boundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>
@@ -40,7 +40,7 @@ colocatedSlipBoundaryCondition<Type,MeshType>::colocatedSlipBoundaryCondition
     const colocatedSlipBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.patch())
+    boundaryCondition<Type,MeshType>(field, bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>
@@ -52,7 +52,7 @@ void colocatedSlipBoundaryCondition<Type,MeshType>::evaluate(const label l)
 {
     meshLevel<Type,MeshType>& field = this->mshField()[l];
 
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
 
     forAll(field, d)
     {
@@ -83,7 +83,7 @@ tmp<block<Type>> colocatedSlipBoundaryCondition<Type,MeshType>::boundarySources
     const meshField<Type,MeshType>& field = this->mshField();
     const meshField<faceVector,MeshType>& fn = this->faceNormals();
 
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
     const label fb(faceNumber(bo));
 
     const labelVector S(this->S(l,d));

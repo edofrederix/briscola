@@ -3,6 +3,7 @@
 #include "fvMesh.H"
 #include "linearSystem.H"
 #include "imSchemes.H"
+#include "restrictionScheme.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -13,7 +14,7 @@ void test(const fvMesh& fvMsh)
 {
     meshField<scalar,MeshType> f
     (
-        IOobject::groupName("f", MeshType::typeName),
+        word("f-" + word(MeshType::typeName)),
         fvMsh,
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
@@ -21,20 +22,15 @@ void test(const fvMesh& fvMsh)
         true
     );
 
-    f = Zero;
-    f.correctBoundaryConditions();
+    f = 0.1;
 
-    linearSystem<stencil,scalar,MeshType> sys1(im::laplacian(f));
-    sys1.eliminateGhosts();
+    linearSystem<stencil,scalar,MeshType> sys(im::laplacian(f));
+    sys -= im::ddt(f);
+    sys.eliminateGhosts();
 
-    OFstream file1(f.name() + "_laplacian");
-    writeToFile(sys1,file1,0);
+    // Write
 
-    linearSystem<diagStencil,scalar,MeshType> sys2(im::ddt(f));
-    sys2.eliminateGhosts();
-
-    OFstream file2(f.name() + "_ddt");
-    writeToFile(sys2,file2,0);
+    writeToFile(sys, f.name(), 0);
 }
 
 int main(int argc, char *argv[])

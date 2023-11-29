@@ -213,8 +213,8 @@ public:
     // Level number
     inline label levelNum() const { return l_; }
 
-    // Part level
-    inline const partLevel& level() const { return fvMsh_[l_]; }
+    // Mesh part
+    inline const part& mshPart() const { return fvMsh_[l_]; }
 
     // Add boundary conditions only of not yet added
     inline void addBoundaryConditions()
@@ -232,7 +232,7 @@ public:
     void correctBoundaryConditions();
 
     // Correct boundary boundary conditions for this level
-    void correctBoundaryBoundaryConditions();
+    void correctDomainBoundaryConditions();
 
     // Correct parallel boundary conditions for this level
     void correctParallelBoundaryConditions();
@@ -269,11 +269,13 @@ public:
 
     void operator+=(const Type&);
     void operator+=(const List<Type>&);
+
     void operator-=(const Type&);
     void operator-=(const List<Type>&);
 
     void operator*=(const scalar&);
     void operator*=(const List<scalar>&);
+
     void operator/=(const scalar&);
     void operator/=(const List<scalar>&);
 
@@ -297,8 +299,10 @@ public:
 
     template<class Type2> void operator=(const Type2&);
     template<class Type2> void operator=(const List<Type2>&);
+
     template<class Type2> void operator+=(const Type2&);
     template<class Type2> void operator+=(const List<Type2>&);
+
     template<class Type2> void operator-=(const Type2&);
     template<class Type2> void operator-=(const List<Type2>&);
 

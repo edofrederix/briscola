@@ -18,10 +18,10 @@ template<class Type, class MeshType>
 DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, patch),
+    boundaryCondition<Type,MeshType>(mshField, b),
     boundaryValues_(this->dict().lookup("values"))
 {}
 
@@ -31,7 +31,7 @@ DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
     const DirichletBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.patch()),
+    boundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary()),
     boundaryValues_(bc.boundaryValues_)
 {}
 
@@ -42,7 +42,7 @@ DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
     const DirichletBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.patch()),
+    boundaryCondition<Type,MeshType>(field, bc.mshBoundary()),
     boundaryValues_(bc.boundaryValues_)
 {}
 
@@ -57,7 +57,7 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate(const label l)
 
     const scalar H = l == 0;
 
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
 
     forAll(field, d)
     {

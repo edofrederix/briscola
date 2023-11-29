@@ -1,5 +1,5 @@
 #include "linearSystem.H"
-#include "Tuple2.H"
+#include "Row.H"
 
 namespace Foam
 {
@@ -517,6 +517,18 @@ void linearSystem<SType,Type,MeshType>::operator+=
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator+=
 (
+    const List<Type>& v
+)
+{
+    const meshField<scalar,MeshType>& cv =
+        fvMsh_.template metrics<MeshType>().cellVolumes();
+
+    this->b() -= cv*v;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator+=
+(
     const meshField<Type,MeshType>& field
 )
 {
@@ -540,6 +552,18 @@ template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator-=
 (
     const Type& v
+)
+{
+    const meshField<scalar,MeshType>& cv =
+        fvMsh_.template metrics<MeshType>().cellVolumes();
+
+    this->b() += cv*v;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator-=
+(
+    const List<Type>& v
 )
 {
     const meshField<scalar,MeshType>& cv =
@@ -597,6 +621,16 @@ template<class SType, class Type, class MeshType>
 template<class SType2>
 void linearSystem<SType,Type,MeshType>::operator+=
 (
+    const SType2& v
+)
+{
+    this->b() -= v;
+}
+
+template<class SType, class Type, class MeshType>
+template<class SType2>
+void linearSystem<SType,Type,MeshType>::operator+=
+(
     const linearSystem<SType2,Type,MeshType>& sys
 )
 {
@@ -614,6 +648,16 @@ void linearSystem<SType,Type,MeshType>::operator+=
 {
     *this += tSys();
     tSys.clear();
+}
+
+template<class SType, class Type, class MeshType>
+template<class SType2>
+void linearSystem<SType,Type,MeshType>::operator-=
+(
+    const SType2& v
+)
+{
+    this->b() += v;
 }
 
 template<class SType, class Type, class MeshType>
@@ -643,45 +687,12 @@ template<class SType, class Type, class MeshType>
 void writeToFile
 (
     linearSystem<SType,Type,MeshType>& sys,
-    OFstream& file,
-    const label l
+    const fileName file,
+    const label l = 0
 )
 {
-    bool makeShallowAgain = false;
-
-    if (l > 0 && sys.b().shallow())
-    {
-        sys.b().makeDeep();
-
-        autoPtr<restrictionScheme<Type,MeshType>> reScheme
-        (
-            restrictionScheme<Type,MeshType>::New("linear", sys.fvMsh())
-        );
-
-        for (int m = 1; m <= l; m++)
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            reScheme->restrict(sys.b()[m][d], sys.b()[m-1][d], true);
-        }
-
-        makeShallowAgain = true;
-    }
-
     for (int d = 0; d < MeshType::numberOfDirections; d++)
     {
-        OFstream * file2Ptr;
-
-        if (d == 0)
-        {
-            file2Ptr = &file;
-        }
-        else
-        {
-            file2Ptr = new OFstream(file.name() + "_" + Foam::name(d));
-        }
-
-        OFstream& file2 = *file2Ptr;
-
         const meshDirection<SType,MeshType>& A = sys.A()[l][d];
         const meshDirection<Type,MeshType>& b = sys.b()[l][d];
 
@@ -692,22 +703,32 @@ void writeToFile
 
         Pstream::gatherList(shapes);
 
-        List<List<Tuple2<stencil,Type>>> data(Pstream::nProcs());
+        List<List<Row<SType,Type>>> data
+        (
+            Pstream::nProcs()
+        );
 
         data[Pstream::myProcNo()].setSize(cmptProduct(N));
 
+        int l = 0;
         forAllCells(A, i, j, k)
-        {
-            const label l = i*N.y()*N.z() + j*N.z() + k;
-
-            data[Pstream::myProcNo()][l].first() = A(i,j,k);
-            data[Pstream::myProcNo()][l].second() = b(i,j,k);
-        }
+            data[Pstream::myProcNo()][l++] =
+                Row<SType,Type>(A(i,j,k),b(i,j,k));
 
         Pstream::gatherList(data);
 
         if (Pstream::master())
         {
+            OFstream F
+            (
+                file
+              + fileName
+                (
+                    MeshType::numberOfDirections > 1
+                  ? ("_" + Foam::name(d)) : ""
+                )
+            );
+
             label n = 0;
             forAll(data, i)
                 n += data[i].size();
@@ -726,8 +747,8 @@ void writeToFile
 
                 forAll(data[proc], i)
                 {
-                    const stencil& Ai = data[proc][i].first();
-                    const Type& bi = data[proc][i].second();
+                    const stencil Ai(data[proc][i].stencil());
+                    const Type bi(data[proc][i].source());
 
                     const labelVector ijk
                     (
@@ -798,7 +819,7 @@ void writeToFile
                     {
                         if (offsets[proc]+i == j)
                         {
-                            file2 << Ai[0] << " ";
+                            F << Ai[0] << " ";
                         }
                         else
                         {
@@ -807,28 +828,22 @@ void writeToFile
                             {
                                 if (neigh[f] == j)
                                 {
-                                    file2 << Ai[f+1] << " ";
+                                    F << Ai[f+1] << " ";
                                     found = true;
                                     break;
                                 }
                             }
 
                             if (!found)
-                                file2 << 0.0 << " ";
+                                F << 0.0 << " ";
                         }
                     }
 
-                    file2 << bi << endl;
+                    F << bi << nl;
                 }
             }
         }
-
-        if (d > 0)
-            free(file2Ptr);
     }
-
-    if (makeShallowAgain)
-        sys.b().makeShallow();
 }
 
 }

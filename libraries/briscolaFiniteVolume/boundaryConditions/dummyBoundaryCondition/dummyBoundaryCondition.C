@@ -18,10 +18,10 @@ template<class Type, class MeshType>
 dummyBoundaryCondition<Type,MeshType>::dummyBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, patch)
+    boundaryCondition<Type,MeshType>(mshField, b)
 {}
 
 template<class Type, class MeshType>
@@ -30,7 +30,7 @@ dummyBoundaryCondition<Type,MeshType>::dummyBoundaryCondition
     const dummyBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.patch())
+    boundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>
@@ -40,7 +40,7 @@ dummyBoundaryCondition<Type,MeshType>::dummyBoundaryCondition
     const dummyBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.patch())
+    boundaryCondition<Type,MeshType>(field, bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>

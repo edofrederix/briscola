@@ -123,7 +123,7 @@ void linearRestrictionScheme<Type,MeshType>::restrict
     const bool scale
 )
 {
-    const labelVector R(coarse.level().R());
+    const labelVector R(coarse.mshPart().R());
 
     meshDirection<vertexScalar,MeshType>& weights =
         weights_[coarse.levelNum()][coarse.directionNum()];

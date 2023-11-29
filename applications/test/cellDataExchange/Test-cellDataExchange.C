@@ -7,7 +7,7 @@
 #include "fvMesh.H"
 
 #include "cellDataExchange.H"
-#include "parallelPartPatch.H"
+#include "parallelBoundary.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -71,13 +71,13 @@ void testDataExchange(const fvMesh& fvMsh)
 
             List<labelVector> cells;
 
-            forAll(fvMsh.msh().partPatches(), i)
+            forAll(fvMsh.msh().boundaries(), i)
             {
-                const partPatch& patch = fvMsh.msh().partPatches()[i];
+                const boundary& b = fvMsh.msh().boundaries()[i];
 
-                if (patch.typeNum() == parallelPartPatch::typeNumber)
+                if (b.typeNum() == parallelBoundary::typeNumber)
                 {
-                    const labelVector bo = patch.boundaryOffset();
+                    const labelVector bo = b.offset();
 
                     for (int j = 0; j < 4+Pstream::myProcNo(); j++)
                         cells.append

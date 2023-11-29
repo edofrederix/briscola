@@ -43,7 +43,7 @@ void harmonicFaceAreaWeightedRestrictionScheme<Type,MeshType>::restrict
 {
     this->errorNoScaling(scale);
 
-    const labelVector R(coarse.level().R());
+    const labelVector R(coarse.mshPart().R());
 
     coarse = Zero;
 

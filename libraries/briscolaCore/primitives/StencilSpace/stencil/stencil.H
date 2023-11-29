@@ -5,6 +5,7 @@
 #include "briscolaUtils.H"
 #include "pTransform.H"
 #include "contiguous.H"
+#include "Row.H"
 
 namespace Foam
 {
@@ -70,6 +71,15 @@ public:
 
 template<>
 inline bool contiguous<stencil>() { return true; }
+
+template<>
+inline bool contiguous<Row<stencil,scalar>>() { return true; }
+
+template<>
+inline bool contiguous<Row<stencil,vector>>() { return true; }
+
+template<>
+inline bool contiguous<Row<stencil,tensor>>() { return true; }
 
 // stencil casts
 

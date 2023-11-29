@@ -5,6 +5,7 @@
 #include "scalar.H"
 #include "word.H"
 #include "zero.H"
+#include "labelVector.H"
 
 namespace Foam
 {
@@ -69,6 +70,7 @@ public:
 
     static const char* const typeName;
     static const char* const componentNames[];
+    static const labelVector componentOffsets[];
     static const Form zero;
     static const Form one;
     static const Form max;

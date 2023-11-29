@@ -2,4 +2,4 @@
 
 rm -fr build
 wclean -silent
-rm -f f.* solution
+rm -f f-* solution

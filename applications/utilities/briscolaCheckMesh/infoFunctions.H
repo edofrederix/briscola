@@ -196,26 +196,26 @@ void parallelInfo(const fvMesh& fvMsh)
     Info<< endl;
     Info<< "Number of processors = " << Pstream::nProcs() << ":" << endl;
 
-    List<dictionary> partDicts(Pstream::nProcs(), dictionary());
-    List<List<dictionary>> patchDicts(Pstream::nProcs(), List<dictionary>(0));
+    List<dictionary> pDicts(Pstream::nProcs(), dictionary());
+    List<List<dictionary>> bDicts(Pstream::nProcs(), List<dictionary>(0));
     List<labelList> masterPatch(Pstream::nProcs(), labelList(0));
 
-    const partLevel& part = fvMsh[0];
+    const part& p = fvMsh[0];
 
-    partDicts[Pstream::myProcNo()].add("rectilinear", part.rectilinear());
-    partDicts[Pstream::myProcNo()].add("uniform", part.uniform());
+    pDicts[Pstream::myProcNo()].add("rectilinear", p.rectilinear());
+    pDicts[Pstream::myProcNo()].add("uniform", p.uniform());
 
 
-    forAll(fvMsh.partPatches(), patchi)
+    forAll(fvMsh.boundaries(), bi)
     {
-        const partPatch& patch = fvMsh.partPatches()[patchi];
+        const boundary& b = fvMsh.boundaries()[bi];
 
-        patchDicts[Pstream::myProcNo()].append(patch.dict());
-        masterPatch[Pstream::myProcNo()].append(patch.master());
+        bDicts[Pstream::myProcNo()].append(b.dict());
+        masterPatch[Pstream::myProcNo()].append(b.master());
     }
 
-    Pstream::gatherList(partDicts);
-    Pstream::gatherList(patchDicts);
+    Pstream::gatherList(pDicts);
+    Pstream::gatherList(bDicts);
     Pstream::gatherList(masterPatch);
 
     if (Pstream::master())
@@ -233,45 +233,45 @@ void parallelInfo(const fvMesh& fvMsh)
             fvMsh.msh().decomp().decompPerBrick()[brickNum]
         );
 
-        const dictionary& partDict = partDicts[proc];
+        const dictionary& pDict = pDicts[proc];
 
-        const labelVector partSize
+        const labelVector pSize
         (
             briscola::cmptDivide(fvMsh.msh().bricks()[brickNum].N(),brickDecomp)
         );
 
         Info<< "    Processor " << proc << " is in brick " << brickNum
             << " with part index = " << brickPart << endl
-            << "        Number of cells = " << partSize << " = "
-            << cmptProduct(partSize) << endl
+            << "        Number of cells = " << pSize << " = "
+            << cmptProduct(pSize) << endl
             << "        Part is rectilinear in "
-            << directionText(labelVector(partDict.lookup("rectilinear")))
+            << directionText(labelVector(pDict.lookup("rectilinear")))
             << endl
             << "        Part is uniform in "
-            << directionText(labelVector(partDict.lookup("uniform")))
+            << directionText(labelVector(pDict.lookup("uniform")))
             << endl;
 
-        Info<< "        Number of part patches = "
-            << patchDicts[proc].size();
+        Info<< "        Number of part boundaries = "
+            << bDicts[proc].size();
 
-        if (patchDicts[proc].size() > 0)
+        if (bDicts[proc].size() > 0)
         {
             Info<< ":" << endl;
 
-            forAll(patchDicts[proc], patchi)
+            forAll(bDicts[proc], bi)
             {
-                const dictionary& dict = patchDicts[proc][patchi];
+                const dictionary& dict = bDicts[proc][bi];
 
                 const word name(dict.lookup("name"));
                 const word type(dict.lookup("type"));
-                const labelVector bo(dict.lookup("boundaryOffset"));
+                const labelVector bo(dict.lookup("offset"));
                 const labelTensor T(dict.lookup("T"));
 
-                Info<< "            Part patch " << name << nl
+                Info<< "                Boundary " << name << nl
                     << "                type   = " << type << nl
                     << "                bo     = " << bo << nl
                     << "                T      = " << T << nl
-                    << "                master = " << masterPatch[proc][patchi] << endl;
+                    << "                master = " << masterPatch[proc][bi] << endl;
             }
         }
         else
@@ -285,39 +285,39 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
 {
     Info<< endl;
 
-    List<List<dictionary>> patchDicts(Pstream::nProcs());
+    List<List<dictionary>> bDicts(Pstream::nProcs());
 
-    forAll(fvMsh.partPatches(), patchi)
+    forAll(fvMsh.boundaries(), bi)
     {
-        const partPatch& patch = fvMsh.partPatches()[patchi];
+        const boundary& b = fvMsh.boundaries()[bi];
 
         if
         (
-            patch.typeNum() == parallelPartPatch::typeNumber
-         || patch.typeNum() == periodicPartPatch::typeNumber
+            b.typeNum() == parallelBoundary::typeNumber
+         || b.typeNum() == periodicBoundary::typeNumber
         )
         {
-            dictionary dict(patch.dict());
+            dictionary dict(b.dict());
 
-            dict.add("master", patch.master());
+            dict.add("master", b.master());
 
-            patchDicts[Pstream::myProcNo()].append
+            bDicts[Pstream::myProcNo()].append
             (
                 dictionary(dict)
             );
         }
     }
 
-    Pstream::gatherList(patchDicts);
+    Pstream::gatherList(bDicts);
 
     label count = 0;
 
-    forAll(patchDicts, proci)
+    forAll(bDicts, proci)
     {
-        count += patchDicts[proci].size();
+        count += bDicts[proci].size();
     }
 
-    Info<< "Found " << count << " patches that require communication,"
+    Info<< "Found " << count << " boundaries that require communication,"
         << " distributed across " << Pstream::nProcs()
         << " processors";
 
@@ -325,14 +325,14 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
     {
         Info<< ":" << endl;
 
-        forAll(patchDicts, proci)
-        forAll(patchDicts[proci], patchi)
+        forAll(bDicts, proci)
+        forAll(bDicts[proci], bi)
         {
-            const dictionary& dict0 = patchDicts[proci][patchi];
+            const dictionary& dict0 = bDicts[proci][bi];
 
-            const labelVector boundaryOffset0
+            const labelVector offset0
             (
-                dict0.lookup("boundaryOffset")
+                dict0.lookup("offset")
             );
 
             const labelVector neighborOffset0
@@ -348,17 +348,17 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
             const label tag0(readLabel(dict0.lookup("tag")));
             const label master0(readLabel(dict0.lookup("master")));
 
-            // Find the opposite of this parallel patch
+            // Find the opposite of this parallel boundary
 
             bool found = false;
 
-            forAll(patchDicts[procj], patchj)
+            forAll(bDicts[procj], bj)
             {
-                const dictionary& dict1 = patchDicts[procj][patchj];
+                const dictionary& dict1 = bDicts[procj][bj];
 
-                const labelVector boundaryOffset1
+                const labelVector offset1
                 (
-                    dict1.lookup("boundaryOffset")
+                    dict1.lookup("offset")
                 );
 
                 const labelVector neighborOffset1
@@ -373,24 +373,24 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
 
                 if
                 (
-                    boundaryOffset0 == neighborOffset1
-                 && neighborOffset0 == boundaryOffset1
+                    offset0 == neighborOffset1
+                 && neighborOffset0 == offset1
                 )
                 {
                     found = true;
 
-                    Info<< "    patch " << name0 << " of processor " << proci
-                        << " is connected with patch " << name1 << " of processor "
-                        << procj << endl;
+                    Info<< "    boundary " << name0 << " of processor " << proci
+                        << " is connected with boundary " << name1
+                        << " of processor " << procj << endl;
 
                     Info<< "        at processor " << proci << nl
-                        << "            bo     = " << boundaryOffset0 << nl
+                        << "            bo     = " << offset0 << nl
                         << "            T      = " << T0 << nl
                         << "            tag    = " << tag0 << nl
                         << "            master = " << master0 << endl;
 
                     Info<< "        at processor " << procj << nl
-                        << "            bo     = " << boundaryOffset1 << nl
+                        << "            bo     = " << offset1 << nl
                         << "            T      = " << T1 << nl
                         << "            tag    = " << tag1 << nl
                         << "            master = " << master1 << endl;
@@ -398,7 +398,7 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
                     if (master0 == master1)
                     {
                         FatalErrorInFunction
-                            << "Mismatch in master/slave. Both patches are "
+                            << "Mismatch in master/slave. Both boundaries are "
                             << ((master0 == 0) ? "slave" : "master")
                             << endl << exit(FatalError);
                     }
@@ -410,19 +410,19 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
             if (!found)
             {
                 FatalErrorInFunction
-                    << "Could not find matching processor patch for patch "
+                    << "Could not find matching processor boundary for "
                     << nl << dict0 << nl << " of processor " << proci
-                    << " in processor " << procj << ". Available patches are:"
-                    << nl;
+                    << " in processor " << procj
+                    << ". Available boundaries are:" << nl;
 
-                forAll(patchDicts[procj], patchj)
+                forAll(bDicts[procj], bj)
                 if
                 (
-                    word(patchDicts[procj][patchj].lookup("type"))
+                    word(bDicts[procj][bj].lookup("type"))
                 == "parallel"
                 )
                 {
-                    FatalErrorInFunction << patchDicts[procj][patchj] << nl;
+                    FatalErrorInFunction << bDicts[procj][bj] << nl;
                 }
 
                 FatalErrorInFunction << endl << exit(FatalError);

@@ -8,12 +8,12 @@ FoamFile
 
 laplacianSchemes
 {
-    laplacian(f.colocated)
+    laplacian(f-colocated)
     {
         type    linearGauss;
     }
 
-    laplacian(f.staggered)
+    laplacian(f-staggered)
     {
         type    linearGauss;
     }
@@ -21,12 +21,12 @@ laplacianSchemes
 
 ddtSchemes
 {
-    ddt(f.colocated)
+    ddt(f-colocated)
     {
         type    Euler;
     }
 
-    ddt(f.staggered)
+    ddt(f-staggered)
     {
         type    Euler;
     }

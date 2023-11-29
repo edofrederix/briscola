@@ -42,9 +42,9 @@ void testDirichlet(const fvMesh& fvMsh)
         const boundaryCondition<Type,MeshType>& bcd =
             field.boundaryConditions()[bci];
 
-        const labelVector bo(bcd.boundaryOffset());
+        const labelVector bo(bcd.offset());
 
-        if (bcd.boundaryOffsetDegree() > 1)
+        if (bcd.offsetDegree() > 1)
         {
             continue;
         }
@@ -131,9 +131,9 @@ void testNeumann(const fvMesh& fvMsh)
         const boundaryCondition<Type,MeshType>& bcd =
             field.boundaryConditions()[bci];
 
-        const labelVector bo(bcd.boundaryOffset());
+        const labelVector bo(bcd.offset());
 
-        if (bcd.boundaryOffsetDegree() > 1)
+        if (bcd.offsetDegree() > 1)
         {
             continue;
         }

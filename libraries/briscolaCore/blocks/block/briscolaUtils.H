@@ -6,6 +6,7 @@
 #include "tensor.H"
 #include "diagTensor.H"
 #include "vector.H"
+#include "scalarList.H"
 
 namespace Foam
 {
@@ -704,6 +705,44 @@ inline scalar triArea
 {
     return Foam::mag(triAreaVector(a,b,c));
 }
+
+// Make a list from a vector
+inline scalarList list(const vector& v)
+{
+    scalarList l(3);
+    for (int i = 0; i < 3; i++) l[i] = v[i];
+    return l;
+}
+
+// Make a vector from a list
+inline vector vec(const scalarList& l)
+{
+    vector v;
+    for (int i = 0; i < 3; i++) v[i] = l[i];
+    return v;
+}
+
+}
+
+// Return a string representation of a list (defined in the Foam namespace like
+// all other name functions)
+template<class Type>
+word name(const List<Type>& l)
+{
+    std::ostringstream buf;
+
+    buf << '(';
+
+    if (l.size() > 0)
+    {
+        buf << Foam::name(l[0]);
+        for (direction i = 1; i < l.size(); i++)
+            buf << ',' << Foam::name(l[i]);
+    }
+
+    buf << ')';
+
+    return buf.str();
 
 }
 

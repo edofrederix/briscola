@@ -19,7 +19,7 @@ void fvMesh::setInternalCells()
 {
     forAll(*this, l)
     {
-        const partLevel& level = this->operator[](l);
+        const part& p = this->operator[](l);
 
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
@@ -28,7 +28,7 @@ void fvMesh::setInternalCells()
             const labelVector& padding = MeshType::padding[d];
             const faceLabel slave = mshPtr_->facePatchSlave();
 
-            I = faceLabel(zeroXYZ, level.N()+padding);
+            I = faceLabel(zeroXYZ, p.N()+padding);
 
             for (int i = 0; i < 6; i++)
                 I[i] += (padding[i/2] && slave[i]) ? 1 - 2*(i%2) : 0;

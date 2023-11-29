@@ -18,10 +18,10 @@ template<class Type, class MeshType>
 staggeredSlipBoundaryCondition<Type,MeshType>::staggeredSlipBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, patch)
+    boundaryCondition<Type,MeshType>(mshField, b)
 {}
 
 template<class Type, class MeshType>
@@ -30,7 +30,7 @@ staggeredSlipBoundaryCondition<Type,MeshType>::staggeredSlipBoundaryCondition
     const staggeredSlipBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.patch())
+    boundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>
@@ -40,7 +40,7 @@ staggeredSlipBoundaryCondition<Type,MeshType>::staggeredSlipBoundaryCondition
     const staggeredSlipBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.patch())
+    boundaryCondition<Type,MeshType>(field, bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>
@@ -52,7 +52,7 @@ void staggeredSlipBoundaryCondition<Type,MeshType>::evaluate(const label l)
 {
     meshLevel<Type,MeshType>& field = this->mshField()[l];
 
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
 
     forAll(field, d)
     {

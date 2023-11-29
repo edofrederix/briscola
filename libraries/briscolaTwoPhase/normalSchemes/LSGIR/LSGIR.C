@@ -18,7 +18,7 @@ addToRunTimeSelectionTable(normalScheme, LSGIR, dictionary);
 void LSGIR::createBoundaryType()
 {
     const faceLabel& faceType =
-        fvMsh_.msh().facePatchType();
+        fvMsh_.msh().faceBoundaryType();
 
     for (int i = 0; i < 3; i++)
     {
@@ -33,9 +33,9 @@ void LSGIR::createBoundaryType()
                     aux =
                         i == 0
                       ? aux && faceType.left()
-                      > boundaryPartPatch::typeNumber
+                      > domainBoundary::typeNumber
                       : aux && faceType.right()
-                      > boundaryPartPatch::typeNumber;
+                      > domainBoundary::typeNumber;
                 }
 
                 if ((fvMsh_[0].m() > 1) && (j != 1))
@@ -43,9 +43,9 @@ void LSGIR::createBoundaryType()
                     aux =
                         j == 0
                       ? aux && faceType.bottom()
-                      > boundaryPartPatch::typeNumber
+                      > domainBoundary::typeNumber
                       : aux && faceType.top()
-                      > boundaryPartPatch::typeNumber;
+                      > domainBoundary::typeNumber;
                 }
 
                 if ((fvMsh_[0].n() > 1) && (k != 1))
@@ -53,9 +53,9 @@ void LSGIR::createBoundaryType()
                     aux =
                         k == 0
                       ? aux && faceType.aft()
-                      > boundaryPartPatch::typeNumber
+                      > domainBoundary::typeNumber
                       : aux && faceType.fore()
-                      > boundaryPartPatch::typeNumber;
+                      > domainBoundary::typeNumber;
                 }
 
                 boundaryType_[i][j][k] = aux;
