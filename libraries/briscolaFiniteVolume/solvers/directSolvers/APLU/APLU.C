@@ -208,7 +208,8 @@ APLU<SType,Type,MeshType>::APLU
 template<class SType, class Type, class MeshType>
 void APLU<SType,Type,MeshType>::solve
 (
-    linearSystem<SType,Type,MeshType>& xEqn
+    linearSystem<SType,Type,MeshType>& xEqn,
+    const List<bool>& singular
 )
 {
     // Prepare data, collecting all directions in a single list
@@ -285,10 +286,12 @@ void APLU<SType,Type,MeshType>::solve
 
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
-            // Create linear system
+            // Create linear system. Increase dimension by one, to allow for
+            // singular system augmentation.
 
-            scalarSquareMatrix A(n_[d], Zero);
-            List<Type> b(n_[d]);
+            scalarSquareMatrix A(n_[d]+1, Zero);
+            List<Type> b(n_[d]+1);
+            b[n_[d]] = Zero;
 
             label procOffset = 0;
             forAll(indices_[d], proc)
@@ -319,6 +322,23 @@ void APLU<SType,Type,MeshType>::solve
                 procOffset += sizes_[d][proc];
             }
 
+            if (singular[d])
+            {
+                // Singular matrix, augment the system (see "Multigrid", U.
+                // Trottenberg et al., 2001)
+
+                for (int i = 0; i < n_[d]; i++)
+                {
+                    A(i,n_[d]) = 1.0;
+                    A(n_[d],i) = 1.0;
+                }
+            }
+            else
+            {
+                // Set the auxilary variable to zero
+
+                A(n_[d],n_[d]) = 1.0;
+            }
 
             // Solve
 

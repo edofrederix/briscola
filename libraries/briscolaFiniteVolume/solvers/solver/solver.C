@@ -104,6 +104,7 @@ template<class SType, class Type, class MeshType>
 void solver<SType,Type,MeshType>::RBGS
 (
     linearSystem<SType,Type,MeshType>& sys,
+    List<Type>& xi,
     const label l,
     const label sweeps,
     const labelList& converged,
@@ -167,6 +168,7 @@ template<class SType, class Type, class MeshType>
 void solver<SType,Type,MeshType>::LEXGS
 (
     linearSystem<SType,Type,MeshType>& sys,
+    List<Type>& xi,
     const label l,
     const label sweeps,
     const labelList& converged,
@@ -205,6 +207,7 @@ template<class SType, class Type, class MeshType>
 void solver<SType,Type,MeshType>::JAC
 (
     linearSystem<SType,Type,MeshType>& sys,
+    List<Type>& xi,
     const label l,
     const label sweeps,
     const labelList& converged,

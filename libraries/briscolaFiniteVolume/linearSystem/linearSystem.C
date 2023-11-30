@@ -18,8 +18,6 @@ void linearSystem<SType,Type,MeshType>::transfer
 {
     A_.transfer(sys.A_);
     b_.transfer(sys.b_);
-
-    singular_ = sys.singular_;
 }
 
 template<class SType, class Type, class MeshType>
@@ -47,8 +45,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    singular_(false)
+    )
 {}
 
 template<class SType, class Type, class MeshType>
@@ -76,8 +73,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    singular_(sys.singular_)
+    )
 {
     *this = sys;
 }
@@ -107,8 +103,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    singular_(tSys->singular_)
+    )
 {
     if (tSys.isTmp())
     {
@@ -151,8 +146,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    singular_(sys.singular_)
+    )
 {
     *this = sys;
 }
@@ -183,8 +177,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    singular_(tSys->singular_)
+    )
 {
     if (tSys.isTmp())
     {
@@ -204,6 +197,26 @@ linearSystem<SType,Type,MeshType>::linearSystem
 template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::~linearSystem()
 {}
+
+template<class SType, class Type, class MeshType>
+List<bool> linearSystem<SType,Type,MeshType>::singular() const
+{
+    const meshLevel<SType,MeshType>& A = A_[A_.size()-1];
+
+    List<bool> s(MeshType::numberOfDirections);
+
+    forAll(A, d)
+    {
+        scalar mx = 0;
+        forAllCells(A[d], i, j, k)
+            mx = Foam::max(mx, Foam::mag(stencilSum(A(d,i,j,k))));
+
+        reduce(mx, maxOp<scalar>());
+        s[d] = mx < 1e-8;
+    }
+
+    return s;
+}
 
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::residual
@@ -400,7 +413,6 @@ void linearSystem<SType,Type,MeshType>::operator=
 {
     this->A() = sys.A();
     this->b() = sys.b();
-    singular_ = sys.singular();
 }
 
 template<class SType, class Type, class MeshType>
@@ -432,7 +444,6 @@ void linearSystem<SType,Type,MeshType>::operator+=
 {
     this->A() += sys.A();
     this->b() += sys.b();
-    singular_ = sys.singular() ? singular_ : false;
 }
 
 template<class SType, class Type, class MeshType>
@@ -453,7 +464,6 @@ void linearSystem<SType,Type,MeshType>::operator-=
 {
     this->A() -= sys.A();
     this->b() -= sys.b();
-    singular_ = sys.singular() ? singular_ : false;
 }
 
 template<class SType, class Type, class MeshType>
@@ -603,7 +613,6 @@ void linearSystem<SType,Type,MeshType>::operator=
 {
     this->A() = sys.A();
     this->b() = sys.b();
-    singular_ = sys.singular();
 }
 
 template<class SType, class Type, class MeshType>
@@ -636,7 +645,6 @@ void linearSystem<SType,Type,MeshType>::operator+=
 {
     this->A() += sys.A();
     this->b() += sys.b();
-    singular_ = sys.singular() ? singular_ : false;
 }
 
 template<class SType, class Type, class MeshType>
@@ -669,7 +677,6 @@ void linearSystem<SType,Type,MeshType>::operator-=
 {
     this->A() -= sys.A();
     this->b() -= sys.b();
-    singular_ = sys.singular() ? singular_ : false;
 }
 
 template<class SType, class Type, class MeshType>

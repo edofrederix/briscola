@@ -32,6 +32,7 @@ void MG<SType,Type,MeshType>::cycle
     meshField<Type,MeshType>& r,
     labelList& visits,
     const label l,
+    const List<bool>& singular,
     const labelList& converged,
     const label nSweepsPre,
     const label nSweepsPost
@@ -45,9 +46,28 @@ void MG<SType,Type,MeshType>::cycle
     if (l > 0)
         x[l] = Zero;
 
+    // Only apply singular system augmentation at the coarsest level and if any
+    // of the directions is actually singular. Initialize the auxiliary unknown
+    // to zero.
+
+    List<Type> xi(0);
+
+    if (l == x.size()-1 && sum(singular))
+    {
+        xi.setSize(x[l].size(), Zero);
+    }
+
     // Pre-smooth
 
-    this->smooth(xEqn, l, nSweepsPre, converged, omega_);
+    this->smooth
+    (
+        xEqn,
+        xi,
+        l,
+        nSweepsPre,
+        converged,
+        omega_
+    );
 
     // If we are not on the coarsest level, continue to traverse levels.
     // Otherwise, just smooth (could be better to use a direct solver here)
@@ -78,6 +98,7 @@ void MG<SType,Type,MeshType>::cycle
                 r,
                 visits,
                 l+1,
+                singular,
                 converged,
                 nSweepsPre,
                 nSweepsPost
@@ -97,6 +118,7 @@ void MG<SType,Type,MeshType>::cycle
             this->smooth
             (
                 xEqn,
+                xi,
                 l,
                 nSweepsPost,
                 converged,
@@ -108,13 +130,14 @@ void MG<SType,Type,MeshType>::cycle
     {
         if (coarseMode_ == DIRECT)
         {
-            directSolver_->solve(xEqn);
+            directSolver_->solve(xEqn,singular);
         }
         else
         {
             this->smooth
             (
                 xEqn,
+                xi,
                 l,
                 Foam::max(nSweepsPost,2),
                 converged,
@@ -130,6 +153,7 @@ template<class SType, class Type, class MeshType>
 void MG<SType,Type,MeshType>::solve
 (
     linearSystem<SType,Type,MeshType>& xEqn,
+    const List<bool>& singular,
     const scalar relTol,
     const scalar absTol,
     const label minIter,
@@ -207,6 +231,7 @@ void MG<SType,Type,MeshType>::solve
             r,
             visits,
             0,
+            singular,
             converged,
             nSweepsPre,
             nSweepsPost
@@ -354,9 +379,12 @@ void MG<SType,Type,MeshType>::solve
     xEqn.x().makeDeep();
     xEqn.b().makeDeep();
 
+    List<bool> singular(xEqn.singular());
+
     this->solve
     (
         xEqn,
+        singular,
         this->relTol_,
         this->tolerance_,
         this->minIter_,

@@ -45,7 +45,7 @@ void test(const fvMesh& fvMsh)
 
     // Compute the solution
 
-    solverPtr->solve(sys);
+    solverPtr->solve(sys, sys.singular());
 
     // Write the solution
 

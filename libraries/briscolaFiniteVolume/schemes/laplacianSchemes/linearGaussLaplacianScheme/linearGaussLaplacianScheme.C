@@ -48,7 +48,6 @@ linearGaussLaplacianScheme<Type,MeshType>::laplacian
     meshField<stencil,MeshType>& A = Sys.A();
 
     A = Zero;
-    Sys.singular() = true;
 
     const meshField<faceScalar,MeshType>& fa =
         field.fvMsh().template metrics<MeshType>().faceAreas();

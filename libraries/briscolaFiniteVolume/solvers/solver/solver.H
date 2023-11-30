@@ -99,31 +99,34 @@ public:
     // Red-black Gauss-Seidel smoother
     static void RBGS
     (
-        linearSystem<SType,Type,MeshType>&,
-        const label,
-        const label,
-        const labelList&,
-        const scalar = 1.0
+        linearSystem<SType,Type,MeshType>& sys,
+        List<Type>& xi,
+        const label l,
+        const label sweeps,
+        const labelList& converged,
+        const scalar omega = 1.0
     );
 
     // Lexicographic Gauss-Seidel smoother
     static void LEXGS
     (
-        linearSystem<SType,Type,MeshType>&,
-        const label,
-        const label,
-        const labelList&,
-        const scalar = 1.0
+        linearSystem<SType,Type,MeshType>& sys,
+        List<Type>& xi,
+        const label l,
+        const label sweeps,
+        const labelList& converged,
+        const scalar omega = 1.0
     );
 
     // Jacobi smoother
     static void JAC
     (
         linearSystem<SType,Type,MeshType>& sys,
-        const label,
-        const label,
-        const labelList&,
-        const scalar = 0.8
+        List<Type>& xi,
+        const label l,
+        const label sweeps,
+        const labelList& converged,
+        const scalar omega = 0.8
     );
 
     // Print the statistics of the solver outcome for given solver name, field
