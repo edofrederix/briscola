@@ -96,6 +96,11 @@ public:
         const label
     ) const;
 
+    // Smoothers with singular system augmentation, see Sec. 5.6.4 of
+    // "Multigrid", U. Trottenberg et al., 2000. If the xi list is empty, to
+    // singular system augmentation is applied. Having xi as an argument enables
+    // its reuse between different calls to the smoothers.
+
     // Red-black Gauss-Seidel smoother
     static void RBGS
     (
