@@ -73,8 +73,8 @@ public:
         return EMPTYBC;
     }
 
-    // Initialize the evaluation of the boundary condition for given level
-    virtual void initEvaluate(const label);
+    // Prepare the evaluation of the boundary condition for given level
+    virtual void prepare(const label);
 
     // Evaluate the boundary condition for given level
     virtual void evaluate(const label);

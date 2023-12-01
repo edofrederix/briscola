@@ -44,7 +44,7 @@ noSlipBoundaryCondition<Type,MeshType>::noSlipBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void noSlipBoundaryCondition<Type,MeshType>::initEvaluate(const label)
+void noSlipBoundaryCondition<Type,MeshType>::prepare(const label)
 {}
 
 template<class Type, class MeshType>

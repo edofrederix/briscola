@@ -47,7 +47,7 @@ NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void NeumannBoundaryCondition<Type,MeshType>::initEvaluate(const label)
+void NeumannBoundaryCondition<Type,MeshType>::prepare(const label)
 {}
 
 template<class Type, class MeshType>

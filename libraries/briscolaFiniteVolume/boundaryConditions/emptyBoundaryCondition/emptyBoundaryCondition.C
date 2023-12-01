@@ -56,7 +56,7 @@ emptyBoundaryCondition<Type,MeshType>::emptyBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void emptyBoundaryCondition<Type,MeshType>::initEvaluate(const label)
+void emptyBoundaryCondition<Type,MeshType>::prepare(const label)
 {}
 
 template<class Type, class MeshType>

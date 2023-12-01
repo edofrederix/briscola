@@ -44,7 +44,7 @@ colocatedSlipBoundaryCondition<Type,MeshType>::colocatedSlipBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void colocatedSlipBoundaryCondition<Type,MeshType>::initEvaluate(const label)
+void colocatedSlipBoundaryCondition<Type,MeshType>::prepare(const label)
 {}
 
 template<class Type, class MeshType>

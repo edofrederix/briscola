@@ -342,7 +342,7 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions()
 
         forAll(mshFieldPtr_->boundaryConditions(), i)
         {
-            mshFieldPtr_->boundaryConditions()[i].initEvaluate(l_);
+            mshFieldPtr_->boundaryConditions()[i].prepare(l_);
         }
 
         if (Pstream::parRun())
@@ -375,7 +375,7 @@ void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
 
             if (bc.baseType() == PARALLELBC)
             {
-                bc.initEvaluate(l_);
+                bc.prepare(l_);
             }
         }
 
@@ -415,7 +415,7 @@ void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
 
             if (bc.baseType() == PERIODICBC)
             {
-                bc.initEvaluate(l_);
+                bc.prepare(l_);
             }
         }
 
@@ -464,7 +464,7 @@ void meshLevel<Type,MeshType>::correctNonCommBoundaryConditions()
 
             if (bc.baseType() != PARALLELBC && bc.baseType() != PERIODICBC)
             {
-                bc.initEvaluate(l_);
+                bc.prepare(l_);
             }
         }
 

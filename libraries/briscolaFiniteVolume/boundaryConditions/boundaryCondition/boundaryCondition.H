@@ -219,8 +219,8 @@ public:
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const = 0;
 
-    // Initialize the evaluation of the boundary condition for given level
-    virtual void initEvaluate(const label) = 0;
+    // Prepare the evaluation of the boundary condition for given level
+    virtual void prepare(const label) = 0;
 
     // Evaluate the boundary condition for given level
     virtual void evaluate(const label) = 0;

@@ -44,7 +44,7 @@ staggeredSlipBoundaryCondition<Type,MeshType>::staggeredSlipBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void staggeredSlipBoundaryCondition<Type,MeshType>::initEvaluate(const label)
+void staggeredSlipBoundaryCondition<Type,MeshType>::prepare(const label)
 {}
 
 template<class Type, class MeshType>

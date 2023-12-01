@@ -47,7 +47,7 @@ DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void DirichletBoundaryCondition<Type,MeshType>::initEvaluate(const label)
+void DirichletBoundaryCondition<Type,MeshType>::prepare(const label)
 {}
 
 template<class Type, class MeshType>
