@@ -171,6 +171,16 @@ vector interpolationWeights
             << vertices << endl << abort(FatalError);
     }
 
+    // Round up to tol. This seems to be important to have the point belong to
+    // the correct cell when the point is very close to a face.
+
+    u = vector
+    (
+        round(u.x()/tol)*tol,
+        round(u.y()/tol)*tol,
+        round(u.z()/tol)*tol
+    );
+
     if
     (
         // At faces points belong to the upper cell
