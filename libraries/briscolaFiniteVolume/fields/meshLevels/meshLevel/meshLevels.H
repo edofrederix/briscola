@@ -4,6 +4,7 @@
 #include "labelMeshLevel.H"
 #include "scalarMeshLevel.H"
 #include "faceScalarMeshLevel.H"
+#include "lowerFaceScalarMeshLevel.H"
 #include "edgeScalarMeshLevel.H"
 #include "vertexScalarMeshLevel.H"
 #include "vectorMeshLevel.H"

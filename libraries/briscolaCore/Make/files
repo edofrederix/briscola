@@ -6,6 +6,8 @@ primitives/FaceSpace/faceVector/faceVector.C
 primitives/FaceSpace/faceLabelVector/faceLabelVector.C
 primitives/FaceSpace/faceLabelTensor/faceLabelTensor.C
 
+primitives/LowerFaceSpace/lowerFaceScalar/lowerFaceScalar.C
+
 primitives/EdgeSpace/edgeScalar/edgeScalar.C
 primitives/EdgeSpace/edgeLabel/edgeLabel.C
 primitives/EdgeSpace/edgeVector/edgeVector.C

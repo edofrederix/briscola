@@ -7,6 +7,7 @@
 #include "labelMeshField.H"
 #include "scalarMeshField.H"
 #include "faceScalarMeshField.H"
+#include "lowerFaceScalarMeshField.H"
 #include "edgeScalarMeshField.H"
 #include "vertexScalarMeshField.H"
 #include "vectorMeshField.H"

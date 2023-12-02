@@ -3,11 +3,6 @@
     for (int J = 0; J < (BLOCK).m(); J++)                                      \
     for (int K = 0; K < (BLOCK).n(); K++)
 
-#define forAllBlockReversed(BLOCK, I, J, K)                                    \
-    for (int K = 0; K < (BLOCK).n(); K++)                                      \
-    for (int J = 0; J < (BLOCK).m(); J++)                                      \
-    for (int I = 0; I < (BLOCK).l(); I++)
-
 #define forAllBlockLinear(BLOCK, L)                                            \
     for (int L = 0; L < (BLOCK).size(); L++)
 

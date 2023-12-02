@@ -4,6 +4,7 @@
 #include "label.H"
 #include "scalar.H"
 #include "faceScalar.H"
+#include "lowerFaceScalar.H"
 #include "edgeScalar.H"
 #include "vertexScalar.H"
 #include "vector.H"
@@ -34,6 +35,7 @@ class meshDirection;
 typedef meshDirection<label,staggered> staggeredLabelDirection;
 typedef meshDirection<scalar,staggered> staggeredScalarDirection;
 typedef meshDirection<faceScalar,staggered> staggeredFaceScalarDirection;
+typedef meshDirection<lowerFaceScalar,staggered> staggeredLowerFaceScalarDirection;
 typedef meshDirection<edgeScalar,staggered> staggeredEdgeScalarDirection;
 typedef meshDirection<vertexScalar,staggered> staggeredVertexScalarDirection;
 typedef meshDirection<vector,staggered> staggeredVectorDirection;

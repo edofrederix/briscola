@@ -429,6 +429,7 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 #include "undefBlockFunctionsM.H"
 #include "scalarBlock.H"
 #include "faceScalarBlock.H"
+#include "lowerFaceScalarBlock.H"
 #include "edgeScalarBlock.H"
 #include "vertexScalarBlock.H"
 #include "faceVectorBlock.H"

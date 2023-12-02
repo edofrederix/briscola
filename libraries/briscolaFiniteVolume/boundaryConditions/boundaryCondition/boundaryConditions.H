@@ -26,6 +26,7 @@
     makeBoundaryConditionBase(label,MESHTYPE)                                   \
     makeBoundaryConditionBase(scalar,MESHTYPE)                                  \
     makeBoundaryConditionBase(faceScalar,MESHTYPE)                              \
+    makeBoundaryConditionBase(lowerFaceScalar,MESHTYPE)                         \
     makeBoundaryConditionBase(edgeScalar,MESHTYPE)                              \
     makeBoundaryConditionBase(vertexScalar,MESHTYPE)                            \
     makeBoundaryConditionBase(vector,MESHTYPE)                                  \
@@ -63,6 +64,7 @@
     makeBoundaryConditionType(BC,label,MESHTYPE)                                \
     makeBoundaryConditionType(BC,scalar,MESHTYPE)                               \
     makeBoundaryConditionType(BC,faceScalar,MESHTYPE)                           \
+    makeBoundaryConditionType(BC,lowerFaceScalar,MESHTYPE)                      \
     makeBoundaryConditionType(BC,edgeScalar,MESHTYPE)                           \
     makeBoundaryConditionType(BC,vertexScalar,MESHTYPE)                         \
     makeBoundaryConditionType(BC,vector,MESHTYPE)                               \

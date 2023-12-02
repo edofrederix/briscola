@@ -12,6 +12,7 @@ namespace fv
 defineTemplateTypeNameAndDebug(staggeredLabelLevel, 0);
 defineTemplateTypeNameAndDebug(staggeredScalarLevel, 0);
 defineTemplateTypeNameAndDebug(staggeredFaceScalarLevel, 0);
+defineTemplateTypeNameAndDebug(staggeredLowerFaceScalarLevel, 0);
 defineTemplateTypeNameAndDebug(staggeredEdgeScalarLevel, 0);
 defineTemplateTypeNameAndDebug(staggeredVertexScalarLevel, 0);
 defineTemplateTypeNameAndDebug(staggeredVectorLevel, 0);

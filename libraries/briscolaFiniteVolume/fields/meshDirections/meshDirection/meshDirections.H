@@ -4,6 +4,7 @@
 #include "labelMeshDirection.H"
 #include "scalarMeshDirection.H"
 #include "faceScalarMeshDirection.H"
+#include "lowerFaceScalarMeshDirection.H"
 #include "edgeScalarMeshDirection.H"
 #include "vertexScalarMeshDirection.H"
 #include "vectorMeshDirection.H"

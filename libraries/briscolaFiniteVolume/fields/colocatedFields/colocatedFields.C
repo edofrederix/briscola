@@ -12,6 +12,7 @@ namespace fv
 defineTemplateTypeNameAndDebug(colocatedLabelField, 0);
 defineTemplateTypeNameAndDebug(colocatedScalarField, 0);
 defineTemplateTypeNameAndDebug(colocatedFaceScalarField, 0);
+defineTemplateTypeNameAndDebug(colocatedLowerFaceScalarField, 0);
 defineTemplateTypeNameAndDebug(colocatedEdgeScalarField, 0);
 defineTemplateTypeNameAndDebug(colocatedVertexScalarField, 0);
 defineTemplateTypeNameAndDebug(colocatedVectorField, 0);

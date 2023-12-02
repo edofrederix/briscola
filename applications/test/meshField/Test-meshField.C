@@ -1724,6 +1724,7 @@ int main(int argc, char *argv[])
         testConstructors<diagTensor,colocated>(fvMsh, deep);
 
         testConstructors<faceScalar,colocated>(fvMsh, deep);
+        testConstructors<lowerFaceScalar,colocated>(fvMsh, deep);
         testConstructors<edgeScalar,colocated>(fvMsh, deep);
         testConstructors<vertexScalar,colocated>(fvMsh, deep);
 
@@ -1745,6 +1746,7 @@ int main(int argc, char *argv[])
         testIndexing<diagTensor,colocated>(fvMsh, deep);
 
         testIndexing<faceScalar,colocated>(fvMsh, deep);
+        testIndexing<lowerFaceScalar,colocated>(fvMsh, deep);
         testIndexing<edgeScalar,colocated>(fvMsh, deep);
         testIndexing<vertexScalar,colocated>(fvMsh, deep);
 
@@ -1766,6 +1768,7 @@ int main(int argc, char *argv[])
         testMemberOperators<diagTensor,colocated>(fvMsh, deep);
 
         testMemberOperators<faceScalar,colocated>(fvMsh, deep);
+        testMemberOperators<lowerFaceScalar,colocated>(fvMsh, deep);
         testMemberOperators<edgeScalar,colocated>(fvMsh, deep);
         testMemberOperators<vertexScalar,colocated>(fvMsh, deep);
 
@@ -1816,6 +1819,7 @@ int main(int argc, char *argv[])
             testConstructors<diagTensor,staggered>(fvMsh, deep);
 
             testConstructors<faceScalar,staggered>(fvMsh, deep);
+            testConstructors<lowerFaceScalar,staggered>(fvMsh, deep);
             testConstructors<edgeScalar,staggered>(fvMsh, deep);
             testConstructors<vertexScalar,staggered>(fvMsh, deep);
 
@@ -1837,6 +1841,7 @@ int main(int argc, char *argv[])
             testIndexing<diagTensor,staggered>(fvMsh, deep);
 
             testIndexing<faceScalar,staggered>(fvMsh, deep);
+            testIndexing<lowerFaceScalar,staggered>(fvMsh, deep);
             testIndexing<edgeScalar,staggered>(fvMsh, deep);
             testIndexing<vertexScalar,staggered>(fvMsh, deep);
 
@@ -1858,6 +1863,7 @@ int main(int argc, char *argv[])
             testMemberOperators<diagTensor,staggered>(fvMsh, deep);
 
             testMemberOperators<faceScalar,staggered>(fvMsh, deep);
+            testMemberOperators<lowerFaceScalar,staggered>(fvMsh, deep);
             testMemberOperators<edgeScalar,staggered>(fvMsh, deep);
             testMemberOperators<vertexScalar,staggered>(fvMsh, deep);
 

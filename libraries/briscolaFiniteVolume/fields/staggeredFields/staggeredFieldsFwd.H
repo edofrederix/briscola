@@ -6,6 +6,7 @@
 #include "label.H"
 #include "scalar.H"
 #include "faceScalar.H"
+#include "lowerFaceScalar.H"
 #include "edgeScalar.H"
 #include "vertexScalar.H"
 #include "vector.H"
@@ -36,6 +37,7 @@ class meshField;
 typedef meshField<label,staggered> staggeredLabelField;
 typedef meshField<scalar,staggered> staggeredScalarField;
 typedef meshField<faceScalar,staggered> staggeredFaceScalarField;
+typedef meshField<lowerFaceScalar,staggered> staggeredLowerFaceScalarField;
 typedef meshField<edgeScalar,staggered> staggeredEdgeScalarField;
 typedef meshField<vertexScalar,staggered> staggeredVertexScalarField;
 typedef meshField<vector,staggered> staggeredVectorField;

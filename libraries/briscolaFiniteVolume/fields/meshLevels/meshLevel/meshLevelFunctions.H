@@ -527,6 +527,7 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 
 #include "scalarMeshLevel.H"
 #include "faceScalarMeshLevel.H"
+#include "lowerFaceScalarMeshLevel.H"
 #include "edgeScalarMeshLevel.H"
 #include "vertexScalarMeshLevel.H"
 #include "faceVectorMeshLevel.H"
