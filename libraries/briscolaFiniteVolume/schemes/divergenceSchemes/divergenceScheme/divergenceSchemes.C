@@ -2,6 +2,7 @@
 #include "addToRunTimeSelectionTable.H"
 
 #include "midPointGaussDivergenceScheme.H"
+#include "linearGaussDivergenceScheme.H"
 
 namespace Foam
 {
@@ -23,6 +24,12 @@ makeDivergenceSchemeType(midPointGauss,scalar,staggered)
 
 makeDivergenceSchemeType(midPointGauss,vector,colocated)
 makeDivergenceSchemeType(midPointGauss,vector,staggered)
+
+makeDivergenceSchemeType(linearGauss,scalar,colocated)
+makeDivergenceSchemeType(linearGauss,scalar,staggered)
+
+makeDivergenceSchemeType(linearGauss,vector,colocated)
+makeDivergenceSchemeType(linearGauss,vector,staggered)
 
 }
 

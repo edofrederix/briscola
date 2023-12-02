@@ -47,21 +47,13 @@ faceGradientSchemes
 {
     faceGrad(p)
     {
-        type    midPoint;
+        type    linear;
     }
 }
 
 faceFluxSchemes
 {
     flux(U)
-    {
-        type    midPoint;
-    }
-}
-
-reconstructionSchemes
-{
-    reconstruct(U)
     {
         type    midPoint;
     }

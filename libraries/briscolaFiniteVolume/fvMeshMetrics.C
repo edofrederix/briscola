@@ -570,6 +570,39 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
 }
 
 template<class MeshType>
+void fvMeshMetrics<MeshType>::calculateFaceWeights()
+{
+    meshField<faceScalar,MeshType>& fwc = faceWeightsCenter_;
+    meshField<faceScalar,MeshType>& fwn = faceWeightsNeighbor_;
+
+    const meshField<faceScalar,MeshType>& fd = faceDeltas_;
+    const meshField<vector,MeshType>& cc = cellCenters_;
+    const meshField<faceVector,MeshType>& fc = faceCenters_;
+
+    fwc = Zero;
+    fwn = Zero;
+
+    forAllLevels(cc, l, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+
+        for (int f = 0; f < 6; f++)
+        {
+            const labelVector nei(ijk + faceOffsets[f]);
+
+            fwc(l,d,ijk)[f] =
+                Foam::mag(cc(l,d,nei) - fc(l,d,ijk)[f])*fd(l,d,ijk)[f];
+
+            fwn(l,d,ijk)[f] =
+                Foam::mag(cc(l,d,ijk) - fc(l,d,ijk)[f])*fd(l,d,ijk)[f];
+        }
+    }
+
+    fwc.correctCommBoundaryConditions();
+    fwn.correctCommBoundaryConditions();
+}
+
+template<class MeshType>
 fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
 :
     fvMsh_(fvMsh),
@@ -662,6 +695,26 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         true,
         true,
         true
+    ),
+    faceWeightsCenter_
+    (
+        word(MeshType::typeName) + "FaceWeightsCenter",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        true
+    ),
+    faceWeightsNeighbor_
+    (
+        word(MeshType::typeName) + "FaceWeightsNeighbor",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        true
     )
 {
     calculateFaceCenters();
@@ -671,6 +724,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     calculateCellCenters();
     calculateCellVolumes();
     calculateFaceDeltas();
+    calculateFaceWeights();
 }
 
 template<class MeshType>

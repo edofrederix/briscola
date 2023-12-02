@@ -12,7 +12,6 @@ U
     relTol      1e-5;
     tolerance   1e-8;
     maxIter     100;
-    coarseMode  direct;
 }
 
 p
@@ -21,5 +20,4 @@ p
     relTol      1e-5;
     tolerance   1e-8;
     maxIter     100;
-    coarseMode  direct;
 }

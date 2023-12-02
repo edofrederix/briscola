@@ -2,6 +2,7 @@
 #include "addToRunTimeSelectionTable.H"
 
 #include "midPointGaussGradientScheme.H"
+#include "linearGaussGradientScheme.H"
 
 namespace Foam
 {
@@ -23,6 +24,12 @@ makeGradientSchemeType(midPointGauss,scalar,staggered)
 
 makeGradientSchemeType(midPointGauss,vector,colocated)
 makeGradientSchemeType(midPointGauss,vector,staggered)
+
+makeGradientSchemeType(linearGauss,scalar,colocated)
+makeGradientSchemeType(linearGauss,scalar,staggered)
+
+makeGradientSchemeType(linearGauss,vector,colocated)
+makeGradientSchemeType(linearGauss,vector,staggered)
 
 }
 

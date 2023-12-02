@@ -51,7 +51,6 @@ schemes/gradientSchemes/gradientScheme/gradientSchemes.C
 schemes/interpolationSchemes/interpolationScheme/interpolationSchemes.C
 schemes/laplacianSchemes/laplacianScheme/laplacianSchemes.C
 schemes/prolongationSchemes/prolongationScheme/prolongationSchemes.C
-schemes/reconstructionSchemes/reconstructionScheme/reconstructionSchemes.C
 schemes/restrictionSchemes/restrictionScheme/restrictionSchemes.C
 
 solvers/solver/solvers.C

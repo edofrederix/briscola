@@ -8,7 +8,6 @@
 #include "gradientScheme.H"
 #include "interpolationScheme.H"
 #include "laplacianScheme.H"
-#include "reconstructionScheme.H"
 
 namespace Foam
 {
@@ -176,11 +175,37 @@ reconstruct
     const meshField<Type,staggered>& field
 )
 {
-    return reconstructionScheme<Type>::New
+    typedef typename outerProduct<vector,Type>::type ReconType;
+
+    tmp<meshField<ReconType,colocated>> tRecon
     (
-        "reconstruct("+field.name()+")",
-        field.fvMsh()
-    )->reconstruct(field);
+        new meshField<ReconType,colocated>
+        (
+            "reconstruct("+field.name()+")",
+            field.fvMsh()
+        )
+    );
+
+    meshField<ReconType,colocated>& Recon = tRecon.ref();
+
+    Recon = Zero;
+
+    const meshField<faceVector,colocated>& fn =
+        field.fvMsh().template metrics<colocated>().faceNormals();
+
+    forAllCells(Recon, i, j, k)
+        Recon(i,j,k) =
+            0.5
+          * (
+              - field(0,i,  j,  k  ) * fn(i,j,k).left()
+              + field(0,i+1,j,  k  ) * fn(i,j,k).right()
+              - field(1,i,  j,  k  ) * fn(i,j,k).bottom()
+              + field(1,i,  j+1,k  ) * fn(i,j,k).top()
+              - field(2,i,  j,  k  ) * fn(i,j,k).aft()
+              + field(2,i,  j,  k+1) * fn(i,j,k).fore()
+            );
+
+    return tRecon;
 }
 
 }

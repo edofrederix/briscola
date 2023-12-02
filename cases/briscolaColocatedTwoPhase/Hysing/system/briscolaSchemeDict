@@ -60,12 +60,12 @@ faceFluxSchemes
 {
     flux(U)
     {
-        type    midPoint;
+        type    linear;
     }
 
     flux(grad(alpha))
     {
-        type    midPoint;
+        type    linear;
     }
 }
 

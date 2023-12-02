@@ -1,4 +1,4 @@
-#include "midPointFaceGradientScheme.H"
+#include "linearFaceGradientScheme.H"
 
 namespace Foam
 {
@@ -10,7 +10,7 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-midPointFaceGradientScheme<Type,MeshType>::midPointFaceGradientScheme
+linearFaceGradientScheme<Type,MeshType>::linearFaceGradientScheme
 (
     const dictionary& dict,
     const fvMesh& fvMsh
@@ -20,7 +20,7 @@ midPointFaceGradientScheme<Type,MeshType>::midPointFaceGradientScheme
 {}
 
 template<class Type, class MeshType>
-midPointFaceGradientScheme<Type,MeshType>::midPointFaceGradientScheme
+linearFaceGradientScheme<Type,MeshType>::linearFaceGradientScheme
 (
     const fvMesh& fvMsh
 )
@@ -30,7 +30,7 @@ midPointFaceGradientScheme<Type,MeshType>::midPointFaceGradientScheme
 
 template<class Type, class MeshType>
 tmp<meshField<FaceSpace<Type>,MeshType>>
-midPointFaceGradientScheme<Type,MeshType>::faceGrad
+linearFaceGradientScheme<Type,MeshType>::faceGrad
 (
     const meshField<Type,MeshType>& field
 )
@@ -52,17 +52,13 @@ midPointFaceGradientScheme<Type,MeshType>::faceGrad
         field.fvMsh().template metrics<MeshType>().faceDeltas();
 
     forAllDirections(Grad, d, i, j, k)
-        Grad(d,i,j,k) =
-            FaceSpace<Type>
-            (
-                field(d,i-1,j,  k  ) - field(d,i,j,k),
-                field(d,i+1,j,  k  ) - field(d,i,j,k),
-                field(d,i,  j-1,k  ) - field(d,i,j,k),
-                field(d,i,  j+1,k  ) - field(d,i,j,k),
-                field(d,i,  j,  k-1) - field(d,i,j,k),
-                field(d,i,  j,  k+1) - field(d,i,j,k)
-            )
-          * fd(d,i,j,k);
+        for (int f = 0; f < 6; f++)
+            Grad(d,i,j,k)[f] =
+                (
+                    field(d,labelVector(i,j,k)+faceOffsets[f])
+                  - field(d,i,j,k)
+                )
+              * fd(d,i,j,k)[f];
 
     return tGrad;
 }
