@@ -48,7 +48,7 @@ midPointInterpolationScheme<Type,MeshType>::interp
 
     Interp = Zero;
 
-    forAllDirections(Interp, d, i, j, k)
+    forAllCells(Interp, d, i, j, k)
         Interp(d,i,j,k) =
             0.5
           * FaceSpace<Type>

@@ -48,7 +48,7 @@ midPointGaussDivergenceScheme<Type,MeshType>::div
     meshField<stencil,MeshType>& A = Sys.A();
     A = Zero;
 
-    forAllLevels(A, l, d, i, j, k)
+    forAllCells(A, l, d, i, j, k)
     {
         A(l,d,i,j,k) = 0.5*phi(l,d,i,j,k);
         A(l,d,i,j,k).center() = neighborSum(A(l,d,i,j,k));

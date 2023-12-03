@@ -84,7 +84,7 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
     const staggeredFaceScalarField& fa =
         this->fvMsh().metrics<staggered>().faceAreas();
 
-    forAllDirections(Flux, d, i, j, k)
+    forAllCells(Flux, d, i, j, k)
     {
         const labelVector& padding = staggered::padding[d];
 

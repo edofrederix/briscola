@@ -84,7 +84,7 @@ tmp<meshField<Type,staggered>> stagInterp
 
     Interp = Zero;
 
-    forAllDirections(Interp, d, i, j, k)
+    forAllCells(Interp, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
         const labelVector ijkm(ijk - units[d]);
@@ -118,7 +118,7 @@ tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
 
     Interp = Zero;
 
-    forAllDirections(Interp, d, i, j, k)
+    forAllCells(Interp, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
         const labelVector ijkm(ijk - units[d]);

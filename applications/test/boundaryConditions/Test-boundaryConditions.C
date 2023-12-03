@@ -25,7 +25,7 @@ void testDirichlet(const fvMesh& fvMsh)
         IOobject::MUST_READ
     );
 
-    forAllLevels(field, l, d, i, j, k)
+    forAllCells(field, l, d, i, j, k)
     {
         field(l,d,i,j,k) = scalar(i+j+k)*pTraits<Type>::one;
     }
@@ -113,7 +113,7 @@ void testNeumann(const fvMesh& fvMsh)
         IOobject::MUST_READ
     );
 
-    forAllLevels(field, l, d, i, j, k)
+    forAllCells(field, l, d, i, j, k)
         field(l,d,i,j,k) = scalar(i+j+k)*pTraits<Type>::one;
 
     // We need to correct twice because of edges/vertices

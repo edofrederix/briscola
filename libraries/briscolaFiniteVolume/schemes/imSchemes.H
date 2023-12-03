@@ -108,7 +108,7 @@ inline tmp<linearSystem<diagStencil,Type,MeshType>> source
 
     A = Zero;
 
-    forAllLevels(A, l, d, i, j, k)
+    forAllCells(A, l, d, i, j, k)
         A(l,d,i,j,k) = cv(l,d,i,j,k)*coeff(l,d,i,j,k);
 
     Sys.b() = Zero;

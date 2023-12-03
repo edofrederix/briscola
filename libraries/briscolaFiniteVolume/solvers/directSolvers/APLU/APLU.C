@@ -220,7 +220,7 @@ void APLU<SType,Type,MeshType>::solve
     const meshLevel<Type,MeshType>& b = xEqn.b()[this->l_];
 
     int l = 0;
-    forAllDirections(A, d, i, j, k)
+    forAllCells(A, d, i, j, k)
         myData[l++] = Row<SType,Type>(A(d,i,j,k), b(d,i,j,k));
 
     List<Type> solution(myData.size());
@@ -397,7 +397,7 @@ void APLU<SType,Type,MeshType>::solve
     meshLevel<Type,MeshType>& x = xEqn.x()[this->l_];
 
     l = 0;
-    forAllDirections(x, d, i, j, k)
+    forAllCells(x, d, i, j, k)
         x(d,i,j,k) = solution[l++];
 
     x.correctBoundaryConditions();

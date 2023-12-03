@@ -54,7 +54,7 @@ linearInterpolationScheme<Type,MeshType>::interp
     const meshField<faceScalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
-    forAllDirections(Interp, d, i, j, k)
+    forAllCells(Interp, d, i, j, k)
         for (int f = 0; f < 6; f++)
             Interp(d,i,j,k)[f] =
                 fwc(d,i,j,k)[f]*field(d,i,j,k)

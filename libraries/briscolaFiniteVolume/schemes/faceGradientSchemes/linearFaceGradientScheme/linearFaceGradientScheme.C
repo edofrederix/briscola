@@ -51,7 +51,7 @@ linearFaceGradientScheme<Type,MeshType>::faceGrad
     const meshField<faceScalar,MeshType>& fd =
         field.fvMsh().template metrics<MeshType>().faceDeltas();
 
-    forAllDirections(Grad, d, i, j, k)
+    forAllCells(Grad, d, i, j, k)
         for (int f = 0; f < 6; f++)
             Grad(d,i,j,k)[f] =
                 (

@@ -54,7 +54,7 @@ linearGaussDivergenceScheme<Type,MeshType>::div
     const meshField<faceScalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
-    forAllLevels(A, l, d, i, j, k)
+    forAllCells(A, l, d, i, j, k)
     {
         for (int f = 0; f < 6; f++)
         {

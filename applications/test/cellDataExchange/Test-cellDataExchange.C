@@ -58,7 +58,7 @@ void testDataExchange(const fvMesh& fvMsh)
 
     for (int dir = 0; dir < 2; dir++)
     {
-        forAllDirections(f, d, i, j, k)
+        forAllCells(f, d, i, j, k)
         {
             f(d,i,j,k) = cc(d,i,j,k)[dir]*pTraits<Type>::one;
         }

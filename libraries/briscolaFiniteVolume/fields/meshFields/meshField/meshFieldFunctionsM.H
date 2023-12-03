@@ -1,12 +1,4 @@
-// Macros to iterative over levels, directions and internal cells
-
-#define forAllLevels(FIELD, l, d, i, j, k)                                      \
-    for (int l = 0; l < (FIELD).numberOfLevels(); l++)                          \
-        forAllDirections((FIELD).level(l), d, i, j, k)
-
-#define forAllLevelsReversed(FIELD, l, d, i, j, k)                              \
-    for (int l = (FIELD).numberOfLevels()-1; l >= 0; l--)                       \
-        forAllDirectionsReversed((FIELD).level(l), d, i, j, k)
+#include "fieldFunctionsM.H"
 
 #define UNARY_FUNCTION(ReturnType, Type1, Func)                                 \
                                                                                 \

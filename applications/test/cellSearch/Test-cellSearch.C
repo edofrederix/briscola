@@ -13,7 +13,7 @@ void testCellCenters(const fvMesh& fvMsh)
     const meshField<vector,MeshType>& cc =
         fvMsh.template metrics<MeshType>().cellCenters();
 
-    forAllLevels(cc, l, d, i, j, k)
+    forAllCells(cc, l, d, i, j, k)
     {
         // Near edges, move the point a little bit inward to avoid issues
 
@@ -47,7 +47,7 @@ void testInterpolations(const fvMesh& fvMsh)
 
     field = Zero;
 
-    forAllLevels(field, l, d, i, j, k)
+    forAllCells(field, l, d, i, j, k)
     {
         field(l,d,i,j,k) = (i+j+k+l+d)*pTraits<Type>::one;
     }

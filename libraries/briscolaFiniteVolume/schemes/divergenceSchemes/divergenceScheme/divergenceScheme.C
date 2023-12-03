@@ -84,7 +84,7 @@ tmp<meshField<Type,MeshType>> explicitDiv
     const meshField<scalar,MeshType>& cv =
         phi.fvMsh().template metrics<MeshType>().cellVolumes();
 
-    forAllDirections(Div, d, i, j, k)
+    forAllCells(Div, d, i, j, k)
         Div(d,i,j,k) = neighborSum(phi(d,i,j,k))/cv(d,i,j,k);
 
     return tDiv;

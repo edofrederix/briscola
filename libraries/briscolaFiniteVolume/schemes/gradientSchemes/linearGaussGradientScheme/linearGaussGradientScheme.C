@@ -62,7 +62,7 @@ linearGaussGradientScheme<Type,MeshType>::grad
     const meshField<scalar,MeshType>& cv =
         field.fvMsh().template metrics<MeshType>().cellVolumes();
 
-    forAllDirections(Grad, d, i, j, k)
+    forAllCells(Grad, d, i, j, k)
         for (int f = 0; f < 6; f++)
             Grad(d,i,j,k) +=
                 (
@@ -98,7 +98,7 @@ linearGaussGradientScheme<Type,MeshType>::stagGrad
     const meshField<faceScalar,colocated>& fd =
             field.fvMsh().template metrics<colocated>().faceDeltas();
 
-    forAllDirections(Grad, d, i, j, k)
+    forAllCells(Grad, d, i, j, k)
         Grad(d,i,j,k) =
             (
                 field(i,j,k)

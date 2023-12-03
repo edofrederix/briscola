@@ -52,7 +52,7 @@ bool initialCondition::read(const dictionary& dict)
 
         const scalar pi = 3.1415927;
 
-        forAllLevels(U, l, d, i, j, k)
+        forAllCells(U, l, d, i, j, k)
         {
             const scalar x = cc(l,d,i,j,k).x();
             const scalar y = cc(l,d,i,j,k).y();

@@ -38,7 +38,7 @@ void testDataExchange(const fvMesh& fvMsh)
     const meshField<vector,colocated>& cc =
         fvMsh.metrics<colocated>().cellCenters();
 
-    forAllDirections(f, d, i, j, k)
+    forAllCells(f, d, i, j, k)
     {
         f(d,i,j,k) = cc(d,i,j,k).z()*pTraits<Type>::one;
     }

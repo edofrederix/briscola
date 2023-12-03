@@ -21,7 +21,7 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 
     fc = Zero;
 
-    forAllLevels(fc, l, d, i, j, k)
+    forAllCells(fc, l, d, i, j, k)
     {
         const partPoints& points = fvMsh_[l].points();
 
@@ -96,7 +96,7 @@ void fvMeshMetrics<MeshType>::calculateEdgeCenters()
 
     ec = Zero;
 
-    forAllLevels(ec, l, d, i, j, k)
+    forAllCells(ec, l, d, i, j, k)
     {
         const partPoints& points = fvMsh_[l].points();
 
@@ -204,7 +204,7 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
 
     vc = Zero;
 
-    forAllLevels(vc, l, d, i, j, k)
+    forAllCells(vc, l, d, i, j, k)
     {
         const partPoints& points = fvMsh_[l].points();
 
@@ -235,7 +235,7 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
     fa = Zero;
     fan = Zero;
 
-    forAllLevels(fn, l, d, i, j, k)
+    forAllCells(fn, l, d, i, j, k)
     {
         const partPoints& points = fvMsh_[l].points();
 
@@ -370,7 +370,7 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
 
     // First, set internal cell centers from the point coordinates
 
-    forAllLevels(cc, l, d, i, j, k)
+    forAllCells(cc, l, d, i, j, k)
     {
         const partPoints& points = fvMsh_[l].points();
 
@@ -466,7 +466,7 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 
     cv = 1e-16;
 
-    forAllLevels(cv, l, d, i, j, k)
+    forAllCells(cv, l, d, i, j, k)
     {
         if (fvMsh_.msh()[0].rectilinear() == unitXYZ)
         {
@@ -552,7 +552,7 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
 
     fd = Zero;
 
-    forAllLevels(cc, l, d, i, j, k)
+    forAllCells(cc, l, d, i, j, k)
     {
         fd(l,d,i,j,k) =
             faceScalar
@@ -582,7 +582,7 @@ void fvMeshMetrics<MeshType>::calculateFaceWeights()
     fwc = Zero;
     fwn = Zero;
 
-    forAllLevels(cc, l, d, i, j, k)
+    forAllCells(cc, l, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
 

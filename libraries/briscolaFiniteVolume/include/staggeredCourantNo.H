@@ -7,7 +7,7 @@ scalar meanCoNum = 0.0;
 
     staggeredScalarLevel sumPhi(fvMsh,0,Zero);
 
-    forAllDirections(sumPhi, d, i, j, k)
+    forAllCells(sumPhi, d, i, j, k)
         sumPhi(d,i,j,k) = neighborSum(mag(phi(d,i,j,k)));
 
     CoNum = max(0.5*gMax(sumPhi/cvl)*runTime.deltaTValue());

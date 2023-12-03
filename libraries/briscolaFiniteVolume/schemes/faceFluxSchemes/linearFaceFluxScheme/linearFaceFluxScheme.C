@@ -94,7 +94,7 @@ tmp<staggeredFaceScalarField> linearFaceFluxScheme::faceFlux
     const meshField<faceScalar,staggered>& fwn =
         field.fvMsh().template metrics<staggered>().faceWeightsNeighbor();
 
-    forAllDirections(Flux, d, i, j, k)
+    forAllCells(Flux, d, i, j, k)
     {
         for (int f = 0; f < 6; f++)
         {

@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 
         F = Zero;
 
-        forAllLevels(A, l, d, i, j, k)
+        forAllCells(A, l, d, i, j, k)
         {
             F(l,d,i,j,k) = vector(i,j,k);
             A(l,d,i,j,k) = stencil(-6, 1, 1, 1, 1, 1, 1);

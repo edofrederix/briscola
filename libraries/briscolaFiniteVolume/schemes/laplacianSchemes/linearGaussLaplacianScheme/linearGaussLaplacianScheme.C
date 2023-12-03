@@ -55,7 +55,7 @@ linearGaussLaplacianScheme<Type,MeshType>::laplacian
     const meshField<faceScalar,MeshType>& fd =
         field.fvMsh().template metrics<MeshType>().faceDeltas();
 
-    forAllLevels(A, l, d, i, j, k)
+    forAllCells(A, l, d, i, j, k)
     {
         A(l,d,i,j,k) = lambda(l,d,i,j,k)*fa(l,d,i,j,k)*fd(l,d,i,j,k);
         A(l,d,i,j,k).center() = - neighborSum(A(l,d,i,j,k));
