@@ -76,6 +76,15 @@ public:
     }
 };
 
+// FaceSpace partial specialization of CellSpaceCast
+
+template<class Cmpt1, class Cmpt2, class Cmpt3>
+class CellSpaceCast<LowerFaceSpace<Cmpt1>, LowerFaceSpace<Cmpt2>, Cmpt3>
+{
+public:
+    typedef LowerFaceSpace<Cmpt3> type;
+};
+
 }
 
 #include "LowerFaceSpaceProducts.H"

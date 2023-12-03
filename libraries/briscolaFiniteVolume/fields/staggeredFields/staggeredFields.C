@@ -17,6 +17,7 @@ defineTemplateTypeNameAndDebug(staggeredEdgeScalarField, 0);
 defineTemplateTypeNameAndDebug(staggeredVertexScalarField, 0);
 defineTemplateTypeNameAndDebug(staggeredVectorField, 0);
 defineTemplateTypeNameAndDebug(staggeredFaceVectorField, 0);
+defineTemplateTypeNameAndDebug(staggeredLowerFaceVectorField, 0);
 defineTemplateTypeNameAndDebug(staggeredEdgeVectorField, 0);
 defineTemplateTypeNameAndDebug(staggeredVertexVectorField, 0);
 defineTemplateTypeNameAndDebug(staggeredTensorField, 0);

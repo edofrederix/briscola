@@ -1387,10 +1387,12 @@ int main(int argc, char *argv[])
     testConstructors<diagTensor>();
 
     testConstructors<faceScalar>();
+    testConstructors<lowerFaceScalar>();
     testConstructors<edgeScalar>();
     testConstructors<vertexScalar>();
 
     testConstructors<faceVector>();
+    testConstructors<lowerFaceVector>();
     testConstructors<edgeVector>();
     testConstructors<vertexVector>();
 
@@ -1408,10 +1410,12 @@ int main(int argc, char *argv[])
     testIndexing<diagTensor>();
 
     testIndexing<faceScalar>();
+    testIndexing<lowerFaceScalar>();
     testIndexing<edgeScalar>();
     testIndexing<vertexScalar>();
 
     testIndexing<faceVector>();
+    testIndexing<lowerFaceVector>();
     testIndexing<edgeVector>();
     testIndexing<vertexVector>();
 
@@ -1429,10 +1433,12 @@ int main(int argc, char *argv[])
     testTransformations<diagTensor>();
 
     testTransformations<faceScalar>();
+    testTransformations<lowerFaceScalar>();
     testTransformations<edgeScalar>();
     testTransformations<vertexScalar>();
 
     testTransformations<faceVector>();
+    testTransformations<lowerFaceVector>();
     testTransformations<edgeVector>();
     testTransformations<vertexVector>();
 
@@ -1450,10 +1456,12 @@ int main(int argc, char *argv[])
     testMemberOperators<diagTensor>();
 
     testMemberOperators<faceScalar>();
+    testMemberOperators<lowerFaceScalar>();
     testMemberOperators<edgeScalar>();
     testMemberOperators<vertexScalar>();
 
     testMemberOperators<faceVector>();
+    testMemberOperators<lowerFaceVector>();
     testMemberOperators<edgeVector>();
     testMemberOperators<vertexVector>();
 
@@ -1470,10 +1478,12 @@ int main(int argc, char *argv[])
     testPrimitiveFunctions<diagTensor>();
 
     testPrimitiveFunctions<faceScalar>();
+    testPrimitiveFunctions<lowerFaceScalar>();
     testPrimitiveFunctions<edgeScalar>();
     testPrimitiveFunctions<vertexScalar>();
 
     testPrimitiveFunctions<faceVector>();
+    testPrimitiveFunctions<lowerFaceVector>();
     testPrimitiveFunctions<edgeVector>();
     testPrimitiveFunctions<vertexVector>();
 

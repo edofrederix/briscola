@@ -433,6 +433,7 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 #include "edgeScalarBlock.H"
 #include "vertexScalarBlock.H"
 #include "faceVectorBlock.H"
+#include "lowerFaceVectorBlock.H"
 #include "edgeVectorBlock.H"
 #include "vertexVectorBlock.H"
 #include "diagStencilBlock.H"

@@ -17,6 +17,7 @@ defineTemplateTypeNameAndDebug(colocatedEdgeScalarLevel, 0);
 defineTemplateTypeNameAndDebug(colocatedVertexScalarLevel, 0);
 defineTemplateTypeNameAndDebug(colocatedVectorLevel, 0);
 defineTemplateTypeNameAndDebug(colocatedFaceVectorLevel, 0);
+defineTemplateTypeNameAndDebug(colocatedLowerFaceVectorLevel, 0);
 defineTemplateTypeNameAndDebug(colocatedEdgeVectorLevel, 0);
 defineTemplateTypeNameAndDebug(colocatedVertexVectorLevel, 0);
 defineTemplateTypeNameAndDebug(colocatedTensorLevel, 0);

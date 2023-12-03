@@ -9,6 +9,7 @@
 #include "vertexScalar.H"
 #include "vector.H"
 #include "faceVector.H"
+#include "lowerFaceVector.H"
 #include "edgeVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
@@ -40,6 +41,7 @@ typedef meshDirection<edgeScalar,colocated> colocatedEdgeScalarDirection;
 typedef meshDirection<vertexScalar,colocated> colocatedVertexScalarDirection;
 typedef meshDirection<vector,colocated> colocatedVectorDirection;
 typedef meshDirection<faceVector,colocated> colocatedFaceVectorDirection;
+typedef meshDirection<lowerFaceVector,colocated> colocatedLowerFaceVectorDirection;
 typedef meshDirection<edgeVector,colocated> colocatedEdgeVectorDirection;
 typedef meshDirection<vertexVector,colocated> colocatedVertexVectorDirection;
 typedef meshDirection<tensor,colocated> colocatedTensorDirection;

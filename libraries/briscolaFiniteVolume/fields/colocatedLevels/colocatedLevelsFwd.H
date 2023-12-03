@@ -11,6 +11,7 @@
 #include "vertexScalar.H"
 #include "vector.H"
 #include "faceVector.H"
+#include "lowerFaceVector.H"
 #include "edgeVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
@@ -42,6 +43,7 @@ typedef meshLevel<edgeScalar,colocated> colocatedEdgeScalarLevel;
 typedef meshLevel<vertexScalar,colocated> colocatedVertexScalarLevel;
 typedef meshLevel<vector,colocated> colocatedVectorLevel;
 typedef meshLevel<faceVector,colocated> colocatedFaceVectorLevel;
+typedef meshLevel<lowerFaceVector,colocated> colocatedLowerFaceVectorLevel;
 typedef meshLevel<edgeVector,colocated> colocatedEdgeVectorLevel;
 typedef meshLevel<vertexVector,colocated> colocatedVertexVectorLevel;
 typedef meshLevel<tensor,colocated> colocatedTensorLevel;

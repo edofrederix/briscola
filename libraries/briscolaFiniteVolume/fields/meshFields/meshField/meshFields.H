@@ -12,6 +12,7 @@
 #include "vertexScalarMeshField.H"
 #include "vectorMeshField.H"
 #include "faceVectorMeshField.H"
+#include "lowerFaceVectorMeshField.H"
 #include "edgeVectorMeshField.H"
 #include "vertexVectorMeshField.H"
 #include "tensorMeshField.H"

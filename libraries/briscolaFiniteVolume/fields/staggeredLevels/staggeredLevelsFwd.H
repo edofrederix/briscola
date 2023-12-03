@@ -11,6 +11,7 @@
 #include "vertexScalar.H"
 #include "vector.H"
 #include "faceVector.H"
+#include "lowerFaceVector.H"
 #include "edgeVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
@@ -42,6 +43,7 @@ typedef meshLevel<edgeScalar,staggered> staggeredEdgeScalarLevel;
 typedef meshLevel<vertexScalar,staggered> staggeredVertexScalarLevel;
 typedef meshLevel<vector,staggered> staggeredVectorLevel;
 typedef meshLevel<faceVector,staggered> staggeredFaceVectorLevel;
+typedef meshLevel<lowerFaceVector,staggered> staggeredLowerFaceVectorLevel;
 typedef meshLevel<edgeVector,staggered> staggeredEdgeVectorLevel;
 typedef meshLevel<vertexVector,staggered> staggeredVertexVectorLevel;
 typedef meshLevel<tensor,staggered> staggeredTensorLevel;

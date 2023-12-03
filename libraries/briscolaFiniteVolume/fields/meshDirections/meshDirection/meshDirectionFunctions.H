@@ -484,6 +484,7 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 #include "edgeScalarMeshDirection.H"
 #include "vertexScalarMeshDirection.H"
 #include "faceVectorMeshDirection.H"
+#include "lowerFaceVectorMeshDirection.H"
 #include "edgeVectorMeshDirection.H"
 #include "vertexVectorMeshDirection.H"
 #include "diagStencilMeshDirection.H"

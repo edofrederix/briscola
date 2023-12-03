@@ -7,6 +7,7 @@ primitives/FaceSpace/faceLabelVector/faceLabelVector.C
 primitives/FaceSpace/faceLabelTensor/faceLabelTensor.C
 
 primitives/LowerFaceSpace/lowerFaceScalar/lowerFaceScalar.C
+primitives/LowerFaceSpace/lowerFaceVector/lowerFaceVector.C
 
 primitives/EdgeSpace/edgeScalar/edgeScalar.C
 primitives/EdgeSpace/edgeLabel/edgeLabel.C
@@ -34,7 +35,9 @@ blocks/symmTensorBlock/symmTensorBlock.C
 blocks/diagTensorBlock/diagTensorBlock.C
 
 blocks/faceScalarBlock/faceScalarBlock.C
+blocks/lowerFaceScalarBlock/lowerFaceScalarBlock.C
 blocks/faceVectorBlock/faceVectorBlock.C
+blocks/lowerFaceVectorBlock/lowerFaceVectorBlock.C
 
 blocks/edgeScalarBlock/edgeScalarBlock.C
 blocks/edgeVectorBlock/edgeVectorBlock.C

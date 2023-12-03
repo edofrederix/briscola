@@ -9,6 +9,7 @@
 #include "vertexScalarMeshLevel.H"
 #include "vectorMeshLevel.H"
 #include "faceVectorMeshLevel.H"
+#include "lowerFaceVectorMeshLevel.H"
 #include "edgeVectorMeshLevel.H"
 #include "vertexVectorMeshLevel.H"
 #include "tensorMeshLevel.H"

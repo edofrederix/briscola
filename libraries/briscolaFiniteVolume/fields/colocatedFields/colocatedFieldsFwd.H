@@ -11,6 +11,7 @@
 #include "vertexScalar.H"
 #include "vector.H"
 #include "faceVector.H"
+#include "lowerFaceVector.H"
 #include "edgeVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
@@ -42,6 +43,7 @@ typedef meshField<edgeScalar,colocated> colocatedEdgeScalarField;
 typedef meshField<vertexScalar,colocated> colocatedVertexScalarField;
 typedef meshField<vector,colocated> colocatedVectorField;
 typedef meshField<faceVector,colocated> colocatedFaceVectorField;
+typedef meshField<lowerFaceVector,colocated> colocatedLowerFaceVectorField;
 typedef meshField<edgeVector,colocated> colocatedEdgeVectorField;
 typedef meshField<vertexVector,colocated> colocatedVertexVectorField;
 typedef meshField<tensor,colocated> colocatedTensorField;

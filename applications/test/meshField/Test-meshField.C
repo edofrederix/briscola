@@ -1729,6 +1729,7 @@ int main(int argc, char *argv[])
         testConstructors<vertexScalar,colocated>(fvMsh, deep);
 
         testConstructors<faceVector,colocated>(fvMsh, deep);
+        testConstructors<lowerFaceVector,colocated>(fvMsh, deep);
         testConstructors<edgeVector,colocated>(fvMsh, deep);
         testConstructors<vertexVector,colocated>(fvMsh, deep);
 
@@ -1751,6 +1752,7 @@ int main(int argc, char *argv[])
         testIndexing<vertexScalar,colocated>(fvMsh, deep);
 
         testIndexing<faceVector,colocated>(fvMsh, deep);
+        testIndexing<lowerFaceVector,colocated>(fvMsh, deep);
         testIndexing<edgeVector,colocated>(fvMsh, deep);
         testIndexing<vertexVector,colocated>(fvMsh, deep);
 
@@ -1773,6 +1775,7 @@ int main(int argc, char *argv[])
         testMemberOperators<vertexScalar,colocated>(fvMsh, deep);
 
         testMemberOperators<faceVector,colocated>(fvMsh, deep);
+        testMemberOperators<lowerFaceVector,colocated>(fvMsh, deep);
         testMemberOperators<edgeVector,colocated>(fvMsh, deep);
         testMemberOperators<vertexVector,colocated>(fvMsh, deep);
 
@@ -1824,6 +1827,7 @@ int main(int argc, char *argv[])
             testConstructors<vertexScalar,staggered>(fvMsh, deep);
 
             testConstructors<faceVector,staggered>(fvMsh, deep);
+            testConstructors<lowerFaceVector,staggered>(fvMsh, deep);
             testConstructors<edgeVector,staggered>(fvMsh, deep);
             testConstructors<vertexVector,staggered>(fvMsh, deep);
 
@@ -1846,6 +1850,7 @@ int main(int argc, char *argv[])
             testIndexing<vertexScalar,staggered>(fvMsh, deep);
 
             testIndexing<faceVector,staggered>(fvMsh, deep);
+            testIndexing<lowerFaceVector,staggered>(fvMsh, deep);
             testIndexing<edgeVector,staggered>(fvMsh, deep);
             testIndexing<vertexVector,staggered>(fvMsh, deep);
 
@@ -1868,6 +1873,7 @@ int main(int argc, char *argv[])
             testMemberOperators<vertexScalar,staggered>(fvMsh, deep);
 
             testMemberOperators<faceVector,staggered>(fvMsh, deep);
+            testMemberOperators<lowerFaceVector,staggered>(fvMsh, deep);
             testMemberOperators<edgeVector,staggered>(fvMsh, deep);
             testMemberOperators<vertexVector,staggered>(fvMsh, deep);
 

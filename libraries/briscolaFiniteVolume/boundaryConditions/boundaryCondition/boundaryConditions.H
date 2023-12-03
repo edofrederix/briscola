@@ -31,6 +31,7 @@
     makeBoundaryConditionBase(vertexScalar,MESHTYPE)                            \
     makeBoundaryConditionBase(vector,MESHTYPE)                                  \
     makeBoundaryConditionBase(faceVector,MESHTYPE)                              \
+    makeBoundaryConditionBase(lowerFaceVector,MESHTYPE)                         \
     makeBoundaryConditionBase(edgeVector,MESHTYPE)                              \
     makeBoundaryConditionBase(vertexVector,MESHTYPE)                            \
     makeBoundaryConditionBase(tensor,MESHTYPE)                                  \
@@ -69,6 +70,7 @@
     makeBoundaryConditionType(BC,vertexScalar,MESHTYPE)                         \
     makeBoundaryConditionType(BC,vector,MESHTYPE)                               \
     makeBoundaryConditionType(BC,faceVector,MESHTYPE)                           \
+    makeBoundaryConditionType(BC,lowerFaceVector,MESHTYPE)                      \
     makeBoundaryConditionType(BC,edgeVector,MESHTYPE)                           \
     makeBoundaryConditionType(BC,vertexVector,MESHTYPE)                         \
     makeBoundaryConditionType(BC,tensor,MESHTYPE)                               \

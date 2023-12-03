@@ -11,6 +11,7 @@
 #include "vertexScalar.H"
 #include "vector.H"
 #include "faceVector.H"
+#include "lowerFaceVector.H"
 #include "edgeVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
@@ -42,6 +43,7 @@ typedef meshField<edgeScalar,staggered> staggeredEdgeScalarField;
 typedef meshField<vertexScalar,staggered> staggeredVertexScalarField;
 typedef meshField<vector,staggered> staggeredVectorField;
 typedef meshField<faceVector,staggered> staggeredFaceVectorField;
+typedef meshField<lowerFaceVector,staggered> staggeredLowerFaceVectorField;
 typedef meshField<edgeVector,staggered> staggeredEdgeVectorField;
 typedef meshField<vertexVector,staggered> staggeredVertexVectorField;
 typedef meshField<tensor,staggered> staggeredTensorField;
