@@ -100,6 +100,79 @@ tmp<meshField<Type,staggered>> stagInterp
 }
 
 template<class Type>
+tmp<meshField<Type,staggered>> stagInterp
+(
+    const meshField<FaceSpace<Type>,colocated>& field
+)
+{
+    tmp<meshField<Type,staggered>> tInterp
+    (
+        new meshField<Type,staggered>
+        (
+            "stagInterp("+field.name()+")",
+            field.fvMsh()
+        )
+    );
+
+    meshField<Type,staggered>& Interp = tInterp.ref();
+
+    Interp = Zero;
+
+    forAllCells(field, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector ijk0(ijk + units[0]);
+        const labelVector ijk1(ijk + units[1]);
+        const labelVector ijk2(ijk + units[2]);
+
+        Interp(0,ijk) = field(ijk).left();
+        Interp(0,ijk0) = field(ijk).right();
+
+        Interp(1,ijk) = field(ijk).bottom();
+        Interp(1,ijk1) = field(ijk).top();
+
+        Interp(2,ijk) = field(ijk).aft();
+        Interp(2,ijk2) = field(ijk).fore();
+    }
+
+    return tInterp;
+}
+
+template<class Type>
+tmp<meshField<Type,staggered>> stagVectorInterp
+(
+    const meshField<Vector<Type>,colocated>& field
+)
+{
+    tmp<meshField<Type,staggered>> tInterp
+    (
+        new meshField<Type,staggered>
+        (
+            "stagInterp("+field.name()+")",
+            field.fvMsh()
+        )
+    );
+
+    meshField<Type,staggered>& Interp = tInterp.ref();
+
+    Interp = Zero;
+
+    forAllDirections(Interp, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector ijkm(ijk - units[d]);
+
+        // Staggered cell center is exactly in the middle of the two colocated
+        // cell centers
+
+        Interp(d,ijk) =
+            0.5*(field(ijk)[d] + field(ijkm)[d]);
+    }
+
+    return tInterp;
+}
+
+template<class Type>
 tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
 (
     const meshField<Type,colocated>& field

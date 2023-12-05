@@ -108,4 +108,11 @@ staggeredScalarField H
     false
 );
 
-H = ex::div(phi,U) - ((ex::grad(mu) & ex::grad(U)) / rho);
+H = ex::div(phi,U) - ((ex::grad(mu) & ex::grad(U)) / rho)
+  - stagVectorInterp(itpm.surfaceTension().coloForce());
+
+const staggeredScalarField minRho = tpm.minRho<staggered>().ref();
+const colocatedScalarField coloMinRho = tpm.minRho<colocated>().ref();
+
+const staggeredScalarField minRhoInv("minRhoInv", 1.0/minRho);
+const colocatedFaceScalarField coloMinRhof("coloMinRhof",ex::interp(coloMinRho));

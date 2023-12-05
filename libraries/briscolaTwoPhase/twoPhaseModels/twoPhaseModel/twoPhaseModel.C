@@ -261,6 +261,11 @@ const staggeredFaceScalarField& twoPhaseModel::mu<staggered>() const
     return musPtr_();
 }
 
+scalar twoPhaseModel::nu()
+{
+    return 0.5*((scalarMu1_/scalarRho1_) + (scalarMu2_/scalarRho2_));
+}
+
 template<>
 tmp<colocatedScalarField> twoPhaseModel::meanRho<colocated>() const
 {

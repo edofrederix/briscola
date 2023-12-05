@@ -21,7 +21,10 @@ harmonicViscosity<BaseModel>::harmonicViscosity
     BaseModel(fvMsh, dict),
     mu1_(readScalar(dict.lookup("mu1"))),
     mu2_(readScalar(dict.lookup("mu2")))
-{}
+{
+    this->scalarMu1_ = mu1_;
+    this->scalarMu2_ = mu2_;
+}
 
 template<class BaseModel>
 harmonicViscosity<BaseModel>::harmonicViscosity(const harmonicViscosity& tpm)
@@ -29,7 +32,10 @@ harmonicViscosity<BaseModel>::harmonicViscosity(const harmonicViscosity& tpm)
     BaseModel(tpm),
     mu1_(tpm.mu1_),
     mu2_(tpm.mu2_)
-{}
+{
+    this->scalarMu1_ = mu1_;
+    this->scalarMu2_ = mu2_;
+}
 
 template<class BaseModel>
 harmonicViscosity<BaseModel>::~harmonicViscosity()

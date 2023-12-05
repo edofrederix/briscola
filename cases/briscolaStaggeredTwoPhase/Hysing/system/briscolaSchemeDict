@@ -72,6 +72,11 @@ gradientSchemes
         type    midPointGauss;
     }
 
+    stagGrad(alpha)
+    {
+        type    midPointGauss;
+    }
+
     stagGrad(extrapolatedP)
     {
         type    midPointGauss;
@@ -119,6 +124,11 @@ interpolationSchemes
     interp(rhoInv)
     {
         type    midPoint;
+    }
+
+    interp(kappa)
+    {
+        type    curvature;
     }
 
     interp(min(rho1,rho2))

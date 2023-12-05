@@ -1,6 +1,7 @@
 #include "initialCondition.H"
 #include "Time.H"
 #include "addToRunTimeSelectionTable.H"
+#include "exSchemes.H"
 #include <fstream>
 
 #include "meshFields.H"
@@ -171,12 +172,14 @@ bool initialCondition::read(const dictionary& dict)
 
 bool initialCondition::execute()
 {
-    /*
+
     const colocatedScalarField& alpha =
         runTime_.lookupObjectRef<colocatedScalarField>("alpha");
 
-    const colocatedVectorField& U =
-        runTime_.lookupObjectRef<colocatedVectorField>("U");
+    const staggeredScalarField& U =
+        runTime_.lookupObjectRef<staggeredScalarField>("U");
+
+    const colocatedVectorField Uc = ex::reconstruct(U);
 
     const meshField<vector,colocated>& cc =
         alpha.fvMsh().metrics<colocated>().cellCenters();
@@ -192,7 +195,7 @@ bool initialCondition::execute()
     {
         vol += cv(i,j,k) * alpha(i,j,k);
         pos += cv(i,j,k) * alpha(i,j,k) * cc(i,j,k)[1];
-        vel += cv(i,j,k) * alpha(i,j,k) * U(i,j,k)[1];
+        vel += cv(i,j,k) * alpha(i,j,k) * Uc(i,j,k)[1];
     }
 
     reduce(vol, sumOp<scalar>());
@@ -205,20 +208,20 @@ bool initialCondition::execute()
     time.append(runTime_.time().value());
     height.append(pos);
     velocity.append(vel);
-
-    */
 
     return true;
 }
 
 bool initialCondition::end()
 {
-    /*
+
     const colocatedScalarField& alpha =
         runTime_.lookupObjectRef<colocatedScalarField>("alpha");
 
-    const colocatedVectorField& U =
-        runTime_.lookupObjectRef<colocatedVectorField>("U");
+    const staggeredScalarField& U =
+        runTime_.lookupObjectRef<staggeredScalarField>("U");
+
+    const colocatedVectorField Uc = ex::reconstruct(U);
 
     const meshField<vector,colocated>& cc =
         alpha.fvMsh().metrics<colocated>().cellCenters();
@@ -234,7 +237,7 @@ bool initialCondition::end()
     {
         vol += cv(i,j,k) * alpha(i,j,k);
         pos += cv(i,j,k) * alpha(i,j,k) * cc(i,j,k)[1];
-        vel += cv(i,j,k) * alpha(i,j,k) * U(i,j,k)[1];
+        vel += cv(i,j,k) * alpha(i,j,k) * Uc(i,j,k)[1];
     }
 
     reduce(vol, sumOp<scalar>());
@@ -247,10 +250,6 @@ bool initialCondition::end()
     time.append(runTime_.time().value());
     height.append(pos);
     velocity.append(vel);
-
-    */
-
-    /*
 
     if (Pstream::myProcNo() == 0)
     {
@@ -264,8 +263,6 @@ bool initialCondition::end()
             outfile << time[i] << " " << height[i] << " " << velocity[i] << "\n";
         }
     }
-
-    */
 
     return true;
 }

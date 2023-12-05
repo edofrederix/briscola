@@ -1,6 +1,7 @@
 #include "Brackbill.H"
 #include "twoPhaseModel.H"
 #include "exSchemes.H"
+#include "interpolationScheme.H"
 
 namespace Foam
 {
@@ -42,8 +43,12 @@ void Brackbill<SigmaModel>::correct()
       / this->tpm_.template meanRho<colocated>()
     );
 
-    // if (this->fvMsh_.structured())
-    //     this->stagForce_ = ...
+    if (this->fvMsh_.structured())
+    {
+        staggeredScalarField& stagTension = this->stagForcePtr_();
+        stagTension = stagInterp(this->sigma())*stagInterp(this->kappa())*ex::stagGrad(this->alpha())
+                    / this->tpm_.template meanRho<staggered>();
+    }
 }
 
 }

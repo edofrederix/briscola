@@ -57,6 +57,11 @@ gradientSchemes
         type    midPointGauss;
     }
 
+    stagGrad(alpha)
+    {
+        type    midPointGauss;
+    }
+
     grad(U)
     {
         type    midPointGauss;

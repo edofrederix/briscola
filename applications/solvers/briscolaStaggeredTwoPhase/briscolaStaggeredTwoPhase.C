@@ -2,6 +2,7 @@
 #include "IOdictionary.H"
 #include "Time.H"
 #include "faceFluxScheme.H"
+#include "interpolationScheme.H"
 
 #include "fv.H"
 #include "incompressibleTwoPhaseModel.H"
@@ -62,10 +63,12 @@ int main(int argc, char *argv[])
 
         phi = ex::faceFlux(U);
 
-        H = (ex::div(phi,U) - ((ex::grad(mu) & ex::grad(U)) / rho));
+        H = ex::div(phi,U) - ((ex::grad(mu) & ex::grad(U)) / rho)
+          - stagVectorInterp(itpm.surfaceTension().coloForce());
+
         USys += (1+0.5*(deltaT/deltaT0))*H;
 
-        // USys -= itpm.g();
+        USys -= list(itpm.g());
 
         // Solve predictor
 

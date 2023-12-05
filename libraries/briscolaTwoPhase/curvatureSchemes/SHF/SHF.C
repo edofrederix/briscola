@@ -854,7 +854,10 @@ void SHF::correct()
                 }
             }
 
-            kappa(i,j,k) /= scalar(count);
+            if (count > 0)
+            {
+                kappa(i,j,k) /= scalar(count);
+            }
         }
     }
 
