@@ -131,6 +131,11 @@ interpolationSchemes
         type    curvature;
     }
 
+    interp(checkCurv)
+    {
+        type    curvature;
+    }
+
     interp(min(rho1,rho2))
     {
         type    midPoint;

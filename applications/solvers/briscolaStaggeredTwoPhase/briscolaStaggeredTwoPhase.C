@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
         phi = ex::faceFlux(U);
 
         H = ex::div(phi,U) - ((ex::grad(mu) & ex::grad(U)) / rho)
-          - stagVectorInterp(itpm.surfaceTension().coloForce());
+          - itpm.surfaceTension().stagForce();
 
         USys += (1+0.5*(deltaT/deltaT0))*H;
 

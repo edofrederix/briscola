@@ -25,8 +25,14 @@ class SHF
     // for each face boundary
     List<List<scalar>> commKappa_;
 
+    // Maximum allowed value of kappa
+    scalar maxKappa_;
+
     // Initialize communication indices
     void setCommunicationIndices();
+
+    // Initialize maximum allowed value of kappa
+    void setMaxKappa();
 
 public:
 

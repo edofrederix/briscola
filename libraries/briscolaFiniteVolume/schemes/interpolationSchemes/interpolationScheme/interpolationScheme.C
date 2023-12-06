@@ -118,21 +118,28 @@ tmp<meshField<Type,staggered>> stagInterp
 
     Interp = Zero;
 
-    forAllCells(field, i, j, k)
+    forAllCells(Interp[0][0], i, j, k)
     {
-        const labelVector ijk(i,j,k);
-        const labelVector ijk0(ijk + units[0]);
-        const labelVector ijk1(ijk + units[1]);
-        const labelVector ijk2(ijk + units[2]);
+        if (i < field.I().right())
+            Interp(0,i,j,k) = field(i,j,k).left();
+        else
+            Interp(0,i,j,k) = field(i-1,j,k).right();
+    }
 
-        Interp(0,ijk) = field(ijk).left();
-        Interp(0,ijk0) = field(ijk).right();
+    forAllCells(Interp[0][1], i, j, k)
+    {
+        if (j < field.I().top())
+            Interp(1,i,j,k) = field(i,j,k).bottom();
+        else
+            Interp(1,i,j,k) = field(i,j-1,k).top();
+    }
 
-        Interp(1,ijk) = field(ijk).bottom();
-        Interp(1,ijk1) = field(ijk).top();
-
-        Interp(2,ijk) = field(ijk).aft();
-        Interp(2,ijk2) = field(ijk).fore();
+    forAllCells(Interp[0][2], i, j, k)
+    {
+        if (k < field.I().fore())
+            Interp(2,i,j,k) = field(i,j,k).aft();
+        else
+            Interp(2,i,j,k) = field(i,j,k-1).fore();
     }
 
     return tInterp;

@@ -63,6 +63,18 @@ void SHF::setCommunicationIndices()
 
 }
 
+void SHF::setMaxKappa()
+{
+    const rectilinearMesh& rMsh = fvMsh_.msh().cast<rectilinearMesh>();
+
+    const PartialList<scalar>& xSize = rMsh.localCellSizes()[0];
+    const PartialList<scalar>& ySize = rMsh.localCellSizes()[1];
+    const PartialList<scalar>& zSize = rMsh.localCellSizes()[2];
+
+    maxKappa_ = Foam::max(Foam::max(1.0/xSize[0],1.0/ySize[0]),1.0/zSize[0]);
+    reduce(maxKappa_, minOp<scalar>());
+}
+
 SHF::SHF
 (
     const fvMesh& fvMsh,
@@ -74,12 +86,14 @@ SHF::SHF
     curvatureScheme(fvMsh, dict, normal, alpha)
 {
     setCommunicationIndices();
+    setMaxKappa();
 }
 
 SHF::SHF(const SHF& s)
 :
     curvatureScheme(s),
-    communicationIndices_(s.communicationIndices_)
+    communicationIndices_(s.communicationIndices_),
+    maxKappa_(s.maxKappa_)
 {}
 
 SHF::~SHF()
@@ -806,6 +820,11 @@ void SHF::correct()
                   / (
                         Foam::pow(1 + Foam::sqr(dx) + Foam::sqr(dy), 1.5)
                     );
+
+                if (Foam::mag(kappa(i,j,k)) > maxKappa_)
+                {
+                    kappa(i,j,k) = maxKappa_ * Foam::sign(kappa(i,j,k));
+                }
 
                 marker(i,j,k) = 1;
             }

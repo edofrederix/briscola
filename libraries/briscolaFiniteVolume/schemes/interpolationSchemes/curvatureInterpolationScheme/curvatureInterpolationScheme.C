@@ -17,7 +17,7 @@ curvatureInterpolationScheme<Type,MeshType>::curvatureInterpolationScheme
 )
 :
     interpolationScheme<Type,MeshType>(dict,fvMsh),
-    threshold_(dict.lookupOrDefault<bool>("threshold", 1e-12))
+    threshold_(dict.lookupOrDefault<scalar>("threshold", 1e-12))
 {}
 
 template<class Type, class MeshType>
@@ -27,7 +27,7 @@ curvatureInterpolationScheme<Type,MeshType>::curvatureInterpolationScheme
 )
 :
     interpolationScheme<Type,MeshType>(dictionary(),fvMsh),
-    threshold_(dictionary().lookupOrDefault<bool>("threshold", 1e-12))
+    threshold_(dictionary().lookupOrDefault<scalar>("threshold", 1e-12))
 {}
 
 template<>
@@ -51,20 +51,18 @@ curvatureInterpolationScheme<scalar,colocated>::interp
     Interp = Zero;
 
     const colocatedScalarField& alpha = field.fvMsh().db().template
-            lookupObject<colocatedScalarField>("alpha");
+            lookupObjectRef<colocatedScalarField>("alpha");
 
     forAllCells(field, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        Interp(ijk) = Zero;
-
         if
         (
             alpha(ijk) > threshold_
             && alpha(ijk) < (1.0 - threshold_)
         )
         {
-            for (int dir = 0; dir < 2; dir++)
+            for (int dir = 0; dir < 3; dir++)
             {
                 const labelVector ijku(ijk + units[dir]);
                 const labelVector ijkl(ijk - units[dir]);
@@ -100,7 +98,7 @@ curvatureInterpolationScheme<scalar,colocated>::interp
         }
         else
         {
-            for (int dir = 0; dir < 2; dir++)
+            for (int dir = 0; dir < 3; dir++)
             {
                 const labelVector ijku(ijk + units[dir]);
                 const labelVector ijkl(ijk - units[dir]);

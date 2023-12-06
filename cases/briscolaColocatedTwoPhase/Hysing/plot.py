@@ -27,7 +27,7 @@ plt.rc('figure', figsize=(5, 4))
 plt.plot(data[:,0], data[:,2], color = "blue")
 
 plt.xlabel('$t$')
-plt.ylabel('$v$')
+plt.ylabel('$V$')
 plt.grid()
 
 plt.savefig('hysingVel.pdf')

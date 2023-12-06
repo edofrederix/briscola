@@ -115,4 +115,9 @@ interpolationSchemes
     {
         type    midPoint;
     }
+
+    interp(kappa)
+    {
+        type    curvature;
+    }
 }
