@@ -23,6 +23,7 @@ primitives/VertexSpace/vertexLabelTensor/vertexLabelTensor.C
 
 primitives/StencilSpace/stencil/stencil.C
 primitives/StencilSpace/diagStencil/diagStencil.C
+primitives/StencilSpace/symmStencil/symmStencil.C
 
 blocks/labelBlock/labelBlock.C
 blocks/scalarBlock/scalarBlock.C
@@ -47,6 +48,7 @@ blocks/vertexVectorBlock/vertexVectorBlock.C
 
 blocks/stencilBlock/stencilBlock.C
 blocks/diagStencilBlock/diagStencilBlock.C
+blocks/symmStencilBlock/symmStencilBlock.C
 
 functionObjects/briscolaFunctionObject/briscolaFunctionObject.C
 

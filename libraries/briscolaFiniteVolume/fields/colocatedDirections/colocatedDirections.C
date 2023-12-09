@@ -25,6 +25,7 @@ defineTemplateTypeNameAndDebug(colocatedSphericalTensorDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedSymmTensorDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedDiagTensorDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedDiagStencilDirection, 0);
+defineTemplateTypeNameAndDebug(colocatedSymmStencilDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedStencilDirection, 0);
 
 }

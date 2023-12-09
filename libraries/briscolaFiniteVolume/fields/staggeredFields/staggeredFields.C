@@ -25,6 +25,7 @@ defineTemplateTypeNameAndDebug(staggeredSphericalTensorField, 0);
 defineTemplateTypeNameAndDebug(staggeredSymmTensorField, 0);
 defineTemplateTypeNameAndDebug(staggeredDiagTensorField, 0);
 defineTemplateTypeNameAndDebug(staggeredDiagStencilField, 0);
+defineTemplateTypeNameAndDebug(staggeredSymmStencilField, 0);
 defineTemplateTypeNameAndDebug(staggeredStencilField, 0);
 
 }

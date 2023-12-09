@@ -19,6 +19,7 @@
 #include "symmTensor.H"
 #include "diagTensor.H"
 #include "diagStencil.H"
+#include "symmStencil.H"
 #include "stencil.H"
 
 namespace Foam
@@ -51,6 +52,7 @@ typedef meshField<sphericalTensor,colocated> colocatedSphericalTensorField;
 typedef meshField<symmTensor,colocated> colocatedSymmTensorField;
 typedef meshField<diagTensor,colocated> colocatedDiagTensorField;
 typedef meshField<diagStencil,colocated> colocatedDiagStencilField;
+typedef meshField<symmStencil,colocated> colocatedSymmStencilField;
 typedef meshField<stencil,colocated> colocatedStencilField;
 
 }

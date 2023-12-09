@@ -17,6 +17,7 @@
 #include "symmTensorMeshLevel.H"
 #include "diagTensorMeshLevel.H"
 #include "diagStencilMeshLevel.H"
+#include "symmStencilMeshLevel.H"
 #include "stencilMeshLevel.H"
 
 #endif

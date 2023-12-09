@@ -45,6 +45,22 @@ inline diagStencil::operator stencil() const
     return r;
 }
 
+inline diagStencil::operator symmStencil() const
+{
+    symmStencil r(Zero);
+    r[stencil::C] = this->v_[C];
+    return r;
+}
+
+template<>
+inline scalar neighborSum
+(
+    const diagStencil::ssType& ss
+)
+{
+    return 0;
+}
+
 template<>
 inline scalar neighborSkewSum
 (
@@ -57,6 +73,8 @@ inline scalar neighborSkewSum
 // Stencil operators. Arguments need to be defined in terms of cell space, to
 // avoid ambiguities. They are then cast to their actual form, where the
 // conversion is defined.
+
+// With stencil
 
 inline stencil operator+
 (
@@ -135,6 +153,91 @@ inline stencil operator/
 )
 {
     stencil::csType r(static_cast<const diagStencil&>(cs1));
+
+    r /= cs2;
+
+    return r;
+}
+
+// With symmetric stencil
+
+inline symmStencil operator+
+(
+    const symmStencil::csType& cs1,
+    const diagStencil::csType& cs2
+)
+{
+    symmStencil r(cs1);
+
+    r += static_cast<const diagStencil&>(cs2);
+
+    return r;
+}
+
+inline symmStencil operator+
+(
+    const diagStencil::csType& cs1,
+    const symmStencil::csType& cs2
+)
+{
+    return cs2 + cs1;
+}
+
+inline symmStencil operator-
+(
+    const symmStencil::csType& cs1,
+    const diagStencil::csType& cs2
+)
+{
+    symmStencil::csType r(cs1);
+
+    r -= static_cast<const diagStencil&>(cs2);
+
+    return r;
+}
+
+inline symmStencil operator-
+(
+    const diagStencil::csType& cs1,
+    const symmStencil::csType& cs2
+)
+{
+    symmStencil::csType r(-cs2);
+
+    r += static_cast<const diagStencil&>(cs1);
+
+    return r;
+}
+
+inline symmStencil operator*
+(
+    const symmStencil::csType& cs1,
+    const diagStencil::csType& cs2
+)
+{
+    symmStencil::csType r(cs1);
+
+    r *= static_cast<const diagStencil&>(cs2);
+
+    return r;
+}
+
+inline symmStencil operator*
+(
+    const diagStencil::csType& cs2,
+    const symmStencil::csType& cs1
+)
+{
+    return cs2 * cs1;
+}
+
+inline symmStencil operator/
+(
+    const diagStencil::csType& cs1,
+    const symmStencil::csType& cs2
+)
+{
+    symmStencil::csType r(static_cast<const diagStencil&>(cs1));
 
     r /= cs2;
 

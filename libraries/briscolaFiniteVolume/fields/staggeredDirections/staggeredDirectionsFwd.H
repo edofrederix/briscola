@@ -17,6 +17,7 @@
 #include "symmTensor.H"
 #include "diagTensor.H"
 #include "diagStencil.H"
+#include "symmStencil.H"
 #include "stencil.H"
 
 namespace Foam
@@ -49,6 +50,7 @@ typedef meshDirection<sphericalTensor,staggered> staggeredSphericalTensorDirecti
 typedef meshDirection<symmTensor,staggered> staggeredSymmTensorDirection;
 typedef meshDirection<diagTensor,staggered> staggeredDiagTensorDirection;
 typedef meshDirection<diagStencil,staggered> staggeredDiagStencilDirection;
+typedef meshDirection<symmStencil,staggered> staggeredSymmStencilDirection;
 typedef meshDirection<stencil,staggered> staggeredStencilDirection;
 
 }

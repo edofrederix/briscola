@@ -1,4 +1,5 @@
 #include "stencil.H"
+#include "symmStencil.H"
 #include "diagStencil.H"
 
 #include "arguments.H"
@@ -17,91 +18,91 @@ using namespace fv;
 template<class SType, class Type, class MeshType>
 void testStencilProducts(const fvMesh& fvMsh)
 {
-    meshField<SType,MeshType> stencil("stencil", fvMsh);
+    meshField<SType,MeshType> f("f", fvMsh);
     meshField<Type,MeshType> x("x", fvMsh);
 
-    stencil = pTraits<SType>::one;
+    f = pTraits<SType>::one;
     x = pTraits<Type>::one;
 
     Type s(pTraits<Type>::one);
 
     // Fields
 
-    Amul(stencil,x);
-    Amul(stencil,(x*2.0));
-    Amul((2.0*stencil),x);
-    Amul((2.0*stencil),(x*2.0));
+    Amul(f,x);
+    Amul(f,(x*2.0));
+    Amul((2.0*f),x);
+    Amul((2.0*f),(x*2.0));
 
-    Amul(x,stencil);
-    Amul((x*2.0),stencil);
-    Amul(x,(2.0*stencil));
-    Amul((x*2.0),(2.0*stencil));
+    Amul(x,f);
+    Amul((x*2.0),f);
+    Amul(x,(2.0*f));
+    Amul((x*2.0),(2.0*f));
 
-    Amul(stencil,s);
-    Amul(s,stencil);
-    Amul((2.0*stencil),s);
-    Amul(s,(2.0*stencil));
+    Amul(f,s);
+    Amul(s,f);
+    Amul((2.0*f),s);
+    Amul(s,(2.0*f));
 
-    rowSum(stencil);
-    rowSum(2.0*stencil);
+    rowSum(f);
+    rowSum(2.0*f);
 
-    matrixSum(stencil);
-    matrixSum(2.0*stencil);
+    matrixSum(f);
+    matrixSum(2.0*f);
 
-    neighborSum(stencil);
-    neighborSum(2.0*stencil);
+    neighborSum(f);
+    neighborSum(2.0*f);
 
     // Levels
 
-    Amul(stencil[0],x[0]);
-    Amul(stencil[0],(x[0]*2.0));
-    Amul((2.0*stencil[0]),x[0]);
-    Amul((2.0*stencil[0]),(x[0]*2.0));
+    Amul(f[0],x[0]);
+    Amul(f[0],(x[0]*2.0));
+    Amul((2.0*f[0]),x[0]);
+    Amul((2.0*f[0]),(x[0]*2.0));
 
-    Amul(x[0],stencil[0]);
-    Amul((x[0]*2.0),stencil[0]);
-    Amul(x[0],(2.0*stencil[0]));
-    Amul((x[0]*2.0),(2.0*stencil[0]));
+    Amul(x[0],f[0]);
+    Amul((x[0]*2.0),f[0]);
+    Amul(x[0],(2.0*f[0]));
+    Amul((x[0]*2.0),(2.0*f[0]));
 
-    Amul(stencil[0],s);
-    Amul(s,stencil[0]);
-    Amul((2.0*stencil[0]),s);
-    Amul(s,(2.0*stencil[0]));
+    Amul(f[0],s);
+    Amul(s,f[0]);
+    Amul((2.0*f[0]),s);
+    Amul(s,(2.0*f[0]));
 
-    rowSum(stencil[0]);
-    rowSum(2.0*stencil[0]);
+    rowSum(f[0]);
+    rowSum(2.0*f[0]);
 
-    matrixSum(stencil[0]);
-    matrixSum(2.0*stencil[0]);
+    matrixSum(f[0]);
+    matrixSum(2.0*f[0]);
 
-    neighborSum(stencil[0]);
-    neighborSum(2.0*stencil[0]);
+    neighborSum(f[0]);
+    neighborSum(2.0*f[0]);
 
     // Directions
 
-    Amul(stencil.direction(),x.direction());
-    Amul(stencil.direction(),(x.direction()*2.0));
-    Amul((2.0*stencil.direction()),x.direction());
-    Amul((2.0*stencil.direction()),(x.direction()*2.0));
+    Amul(f.direction(),x.direction());
+    Amul(f.direction(),(x.direction()*2.0));
+    Amul((2.0*f.direction()),x.direction());
+    Amul((2.0*f.direction()),(x.direction()*2.0));
 
-    Amul(x.direction(),stencil.direction());
-    Amul((x.direction()*2.0),stencil.direction());
-    Amul(x.direction(),(2.0*stencil.direction()));
-    Amul((x.direction()*2.0),(2.0*stencil.direction()));
+    Amul(x.direction(),f.direction());
+    Amul((x.direction()*2.0),f.direction());
+    Amul(x.direction(),(2.0*f.direction()));
+    Amul((x.direction()*2.0),(2.0*f.direction()));
 
-    Amul(stencil.direction(),s);
-    Amul(s,stencil.direction());
-    Amul((2.0*stencil.direction()),s);
-    Amul(s,(2.0*stencil.direction()));
+    Amul(f.direction(),s);
+    Amul(s,f.direction());
+    Amul((2.0*f.direction()),s);
+    Amul(s,(2.0*f.direction()));
 
-    rowSum(stencil.direction());
-    rowSum(2.0*stencil.direction());
+    rowSum(f.direction());
+    rowSum(2.0*f.direction());
 
-    matrixSum(stencil.direction());
-    matrixSum(2.0*stencil.direction());
+    matrixSum(f.direction());
+    matrixSum(2.0*f.direction());
 
-    neighborSum(stencil.direction());
-    neighborSum(2.0*stencil.direction());
+    neighborSum(f.direction());
+    neighborSum(2.0*f.direction());
 }
 
 int main(int argc, char *argv[])

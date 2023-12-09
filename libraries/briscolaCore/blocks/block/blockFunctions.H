@@ -438,3 +438,4 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 #include "vertexVectorBlock.H"
 #include "diagStencilBlock.H"
 #include "stencilBlock.H"
+#include "symmStencilBlock.H"

@@ -19,6 +19,7 @@
 #include "symmTensor.H"
 #include "diagTensor.H"
 #include "diagStencil.H"
+#include "symmStencil.H"
 #include "stencil.H"
 
 namespace Foam
@@ -51,6 +52,7 @@ typedef meshLevel<sphericalTensor,staggered> staggeredSphericalTensorLevel;
 typedef meshLevel<symmTensor,staggered> staggeredSymmTensorLevel;
 typedef meshLevel<diagTensor,staggered> staggeredDiagTensorLevel;
 typedef meshLevel<diagStencil,staggered> staggeredDiagStencilLevel;
+typedef meshLevel<symmStencil,staggered> staggeredSymmStencilLevel;
 typedef meshLevel<stencil,staggered> staggeredStencilLevel;
 
 }

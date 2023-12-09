@@ -1,8 +1,10 @@
 #include "arguments.H"
 
 #include "stencil.H"
+#include "symmStencil.H"
 #include "diagStencil.H"
 #include "faceScalar.H"
+#include "lowerFaceScalar.H"
 
 #include "fileOperation.H"
 #include "OSspecific.H"
@@ -73,12 +75,15 @@ int main(int argc, char *argv[])
     arguments args(argc, argv);
 
     testConstructors<stencil>();
+    testConstructors<symmStencil>();
     testConstructors<diagStencil>();
 
     stencil st1(1,2,3,4,5,6,7);
+    symmStencil st2(1,2,3,4);
     diagStencil st3(1);
 
     testMemberOperators<stencil>(st1);
+    testMemberOperators<symmStencil>(st2);
     testMemberOperators<diagStencil>(st3);
 
     // Stencil tests
@@ -99,20 +104,37 @@ int main(int argc, char *argv[])
     if (st1.aft()    != st1[5]) FatalErrorInFunction << "test 3f failed" << abort(FatalError);
     if (st1.fore()   != st1[6]) FatalErrorInFunction << "test 3g failed" << abort(FatalError);
 
+    st1 += st2;
+    st1 -= st2;
+    st1 = st2;
+
     st1 += st3;
     st1 -= st3;
     st1 = st3;
+
+    st2 += st3;
+    st2 -= st3;
+    st2 = st3;
 
     faceScalar hs(1,2,3,4,5,6);
 
     st1 += hs;
     st1 -= hs;
     st1 = hs;
-    // st1 *= hs;
 
     st1 + hs;
     st1 - hs;
     st1 * hs;
+
+    lowerFaceScalar ls(1,2,3);
+
+    st2 += ls;
+    st2 -= ls;
+    st2 = ls;
+
+    st2 + ls;
+    st2 - ls;
+    st2 * ls;
 
     st3 = diagStencil(2);
 
@@ -123,7 +145,19 @@ int main(int argc, char *argv[])
     if (stencilSum(st3) != 2) FatalErrorInFunction << "test 9 failed" << abort(FatalError);
     if (neighborSkewSum(st3) != 0) FatalErrorInFunction << "test 10 failed" << abort(FatalError);
 
+    st2 = symmStencil(1,2,3,4);
+
+    if (st2.center() != 1) FatalErrorInFunction << "test 6 failed" << abort(FatalError);
+    if (st2.center() != st2[0]) FatalErrorInFunction << "test 7 failed" << abort(FatalError);
+
+    if (neighborSum(st2) != 2*(2+3+4)) FatalErrorInFunction << "test 8 failed" << abort(FatalError);
+    if (stencilSum(st2) != 1+2*(2+3+4)) FatalErrorInFunction << "test 9 failed" << abort(FatalError);
+    if (neighborSkewSum(st2) != 0) FatalErrorInFunction << "test 10 failed" << abort(FatalError);
+
     st1 = stencil(1,2,3,4,5,6,7);
+
+    if (st1.center() != 1) FatalErrorInFunction << "test 6 failed" << abort(FatalError);
+    if (st1.center() != st2[0]) FatalErrorInFunction << "test 7 failed" << abort(FatalError);
 
     if (neighborSum(st1) != 2+3+4+5+6+7) FatalErrorInFunction << "test 11 failed" << abort(FatalError);
     if (stencilSum(st1) != 1+2+3+4+5+6+7) FatalErrorInFunction << "test 12 failed" << abort(FatalError);

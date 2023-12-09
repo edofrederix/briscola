@@ -4,7 +4,7 @@
 #include "CellSpace.H"
 #include "briscolaUtils.H"
 #include "pTransform.H"
-#include "stencil.H"
+#include "symmStencil.H"
 
 namespace Foam
 {
@@ -70,6 +70,9 @@ public:
     {
         return Vector<Cmpt>(left(), bottom(), aft());
     }
+
+    // Conversion to symmetric stencil (only implemented for Cmpt = scalar)
+    inline operator symmStencil() const;
 
     // Explicitly use operators from cell space
     using csType::operator=;

@@ -6,8 +6,8 @@
 #include "pTransform.H"
 #include "contiguous.H"
 #include "Row.H"
-
 #include "stencil.H"
+#include "symmStencil.H"
 
 namespace Foam
 {
@@ -49,6 +49,9 @@ public:
 
     // Conversion to stencil
     inline operator stencil() const;
+
+    // Conversion to symmetric stencil
+    inline operator symmStencil() const;
 };
 
 template<>

@@ -535,4 +535,5 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 #include "edgeVectorMeshLevel.H"
 #include "vertexVectorMeshLevel.H"
 #include "diagStencilMeshLevel.H"
+#include "symmStencilMeshLevel.H"
 #include "stencilMeshLevel.H"

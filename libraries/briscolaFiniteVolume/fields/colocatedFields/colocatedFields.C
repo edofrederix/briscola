@@ -25,6 +25,7 @@ defineTemplateTypeNameAndDebug(colocatedSphericalTensorField, 0);
 defineTemplateTypeNameAndDebug(colocatedSymmTensorField, 0);
 defineTemplateTypeNameAndDebug(colocatedDiagTensorField, 0);
 defineTemplateTypeNameAndDebug(colocatedDiagStencilField, 0);
+defineTemplateTypeNameAndDebug(colocatedSymmStencilField, 0);
 defineTemplateTypeNameAndDebug(colocatedStencilField, 0);
 
 }

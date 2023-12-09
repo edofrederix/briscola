@@ -2189,6 +2189,7 @@ int main(int argc, char *argv[])
         testConstructors<vertexVector,colocated>(fvMsh, deep);
 
         testConstructors<stencil,colocated>(fvMsh, deep);
+        testConstructors<symmStencil,colocated>(fvMsh, deep);
         testConstructors<diagStencil,colocated>(fvMsh, deep);
 
 
@@ -2212,6 +2213,7 @@ int main(int argc, char *argv[])
         testIndexing<vertexVector,colocated>(fvMsh, deep);
 
         testIndexing<stencil,colocated>(fvMsh, deep);
+        testIndexing<symmStencil,colocated>(fvMsh, deep);
         testIndexing<diagStencil,colocated>(fvMsh, deep);
 
 
@@ -2235,6 +2237,7 @@ int main(int argc, char *argv[])
         testMemberOperators<vertexVector,colocated>(fvMsh, deep);
 
         testMemberOperators<stencil,colocated>(fvMsh, deep);
+        testMemberOperators<symmStencil,colocated>(fvMsh, deep);
         testMemberOperators<diagStencil,colocated>(fvMsh, deep);
 
 
@@ -2267,6 +2270,7 @@ int main(int argc, char *argv[])
         testVectorSpaceFunctions<diagTensor,colocated>(fvMsh, deep);
 
         testStencilFunctions<stencil,colocated>(fvMsh, deep);
+        testStencilFunctions<symmStencil,colocated>(fvMsh, deep);
         testStencilFunctions<diagStencil,colocated>(fvMsh, deep);
 
         testScalarFunctions<colocated>(fvMsh, deep);
@@ -2300,6 +2304,7 @@ int main(int argc, char *argv[])
             testConstructors<vertexVector,staggered>(fvMsh, deep);
 
             testConstructors<stencil,staggered>(fvMsh, deep);
+            testConstructors<symmStencil,staggered>(fvMsh, deep);
             testConstructors<diagStencil,staggered>(fvMsh, deep);
 
 
@@ -2323,6 +2328,7 @@ int main(int argc, char *argv[])
             testIndexing<vertexVector,staggered>(fvMsh, deep);
 
             testIndexing<stencil,staggered>(fvMsh, deep);
+            testIndexing<symmStencil,staggered>(fvMsh, deep);
             testIndexing<diagStencil,staggered>(fvMsh, deep);
 
 
@@ -2346,6 +2352,7 @@ int main(int argc, char *argv[])
             testMemberOperators<vertexVector,staggered>(fvMsh, deep);
 
             testMemberOperators<stencil,staggered>(fvMsh, deep);
+            testMemberOperators<symmStencil,staggered>(fvMsh, deep);
             testMemberOperators<diagStencil,staggered>(fvMsh, deep);
 
 
@@ -2381,6 +2388,7 @@ int main(int argc, char *argv[])
 
 
             testStencilFunctions<stencil,staggered>(fvMsh, deep);
+            testStencilFunctions<symmStencil,staggered>(fvMsh, deep);
             testStencilFunctions<diagStencil,staggered>(fvMsh, deep);
 
 

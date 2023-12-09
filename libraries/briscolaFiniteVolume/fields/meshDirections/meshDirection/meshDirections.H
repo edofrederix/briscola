@@ -17,6 +17,7 @@
 #include "symmTensorMeshDirection.H"
 #include "diagTensorMeshDirection.H"
 #include "diagStencilMeshDirection.H"
+#include "symmStencilMeshDirection.H"
 #include "stencilMeshDirection.H"
 
 #endif

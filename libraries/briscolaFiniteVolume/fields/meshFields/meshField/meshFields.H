@@ -20,6 +20,7 @@
 #include "symmTensorMeshField.H"
 #include "diagTensorMeshField.H"
 #include "diagStencilMeshField.H"
+#include "symmStencilMeshField.H"
 #include "stencilMeshField.H"
 
 #endif

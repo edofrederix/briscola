@@ -18,6 +18,7 @@
 #include "diagTensor.H"
 #include "diagStencil.H"
 #include "stencil.H"
+#include "symmStencil.H"
 
 namespace Foam
 {
@@ -44,6 +45,7 @@ typedef block<sphericalTensor> sphericalTensorBlock;
 typedef block<diagTensor> diagTensorBlock;
 typedef block<diagStencil> diagStencilBlock;
 typedef block<stencil> stencilBlock;
+typedef block<symmStencil> symmStencilBlock;
 
 }
 

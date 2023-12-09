@@ -17,6 +17,7 @@
 #include "symmTensor.H"
 #include "diagTensor.H"
 #include "diagStencil.H"
+#include "symmStencil.H"
 #include "stencil.H"
 
 namespace Foam
@@ -49,6 +50,7 @@ typedef meshDirection<sphericalTensor,colocated> colocatedSphericalTensorDirecti
 typedef meshDirection<symmTensor,colocated> colocatedSymmTensorDirection;
 typedef meshDirection<diagTensor,colocated> colocatedDiagTensorDirection;
 typedef meshDirection<diagStencil,colocated> colocatedDiagStencilDirection;
+typedef meshDirection<symmStencil,colocated> colocatedSymmStencilDirection;
 typedef meshDirection<stencil,colocated> colocatedStencilDirection;
 
 }

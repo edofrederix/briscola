@@ -59,6 +59,21 @@ inline stencil::stencil(Istream& is)
 {}
 
 template<>
+inline scalar neighborSum
+(
+    const stencil::ssType& ss
+)
+{
+    return
+      + ss[stencil::L]
+      + ss[stencil::R]
+      + ss[stencil::B]
+      + ss[stencil::T]
+      + ss[stencil::A]
+      + ss[stencil::F];
+}
+
+template<>
 inline scalar neighborSkewSum
 (
     const stencil::ssType& ss
