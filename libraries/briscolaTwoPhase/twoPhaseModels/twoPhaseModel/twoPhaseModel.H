@@ -37,7 +37,7 @@ protected:
 
     // Colocated mixture mass density and dynamic viscosity
     colocatedScalarField rhoc_;
-    colocatedFaceScalarField muc_;
+    colocatedLowerFaceScalarField muc_;
 
     // Staggered phase densities
     autoPtr<staggeredScalarField> rho1Ptr_;
@@ -46,7 +46,7 @@ protected:
     // Staggered mixture mass density and dynamic viscosity, only created on
     // structured meshes
     autoPtr<staggeredScalarField> rhosPtr_;
-    autoPtr<staggeredFaceScalarField> musPtr_;
+    autoPtr<staggeredLowerFaceScalarField> musPtr_;
 
     // Normal scheme
     autoPtr<normalScheme> normalSchemePtr_;
@@ -144,7 +144,7 @@ public:
 
     // Return const access to the mixture dynamic viscosity
     template<class MeshType>
-    const meshField<faceScalar,MeshType>& mu() const;
+    const meshField<lowerFaceScalar,MeshType>& mu() const;
 
     // Return access the normal scheme
     normalScheme& normal() { return normalSchemePtr_(); }

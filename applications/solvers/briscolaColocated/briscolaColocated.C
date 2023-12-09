@@ -54,9 +54,8 @@ int main(int argc, char *argv[])
         USys -= im::source(imSourceCoeff,U);
         USys -= exSource;
 
-        LapU = im::laplacian(nu,U);
-        USys -= 0.5*LapU;
-        USys -= 0.5*LapU.evaluate();
+        USys -= 0.5*im::laplacian(nu,U);
+        USys -= 0.5*ex::laplacian(nu,U);
 
         USys -= 0.5*DivU;
         DivU = ex::div(phi,U);

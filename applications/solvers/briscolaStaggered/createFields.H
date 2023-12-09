@@ -43,7 +43,7 @@ p.correctBoundaryConditions();
 
 // Viscosity
 
-staggeredFaceScalarField nu
+staggeredLowerFaceScalarField nu
 (
     "nu",
     fvMsh,
@@ -99,7 +99,7 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
     )
 );
 
-staggeredFaceScalarField phi("phi", fvMsh);
+staggeredLowerFaceScalarField phi("phi", fvMsh);
 
 phi = ex::faceFlux(U);
 

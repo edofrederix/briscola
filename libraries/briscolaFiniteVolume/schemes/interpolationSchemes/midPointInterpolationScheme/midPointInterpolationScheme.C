@@ -29,37 +29,32 @@ midPointInterpolationScheme<Type,MeshType>::midPointInterpolationScheme
 {}
 
 template<class Type, class MeshType>
-tmp<meshField<FaceSpace<Type>,MeshType>>
+tmp<meshField<LowerFaceSpace<Type>,MeshType>>
 midPointInterpolationScheme<Type,MeshType>::interp
 (
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<FaceSpace<Type>,MeshType>> tInterp
+    tmp<meshField<LowerFaceSpace<Type>,MeshType>> tInterp
     (
-        new meshField<FaceSpace<Type>,MeshType>
+        new meshField<LowerFaceSpace<Type>,MeshType>
         (
             "interp("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    meshField<FaceSpace<Type>,MeshType>& Interp = tInterp.ref();
+    meshField<LowerFaceSpace<Type>,MeshType>& Interp = tInterp.ref();
 
     Interp = Zero;
 
-    forAllCells(Interp, d, i, j, k)
-        Interp(d,i,j,k) =
-            0.5
-          * FaceSpace<Type>
-            (
-                field(d,i-1,j,k) + field(d,i,j,k),
-                field(d,i+1,j,k) + field(d,i,j,k),
-                field(d,i,j-1,k) + field(d,i,j,k),
-                field(d,i,j+1,k) + field(d,i,j,k),
-                field(d,i,j,k-1) + field(d,i,j,k),
-                field(d,i,j,k+1) + field(d,i,j,k)
-            );
+    forAllFaces(Interp, d, fd, i, j, k)
+    {
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        Interp(d,ijk)[fd] = 0.5*(field(d,ijk) + field(d,nei));
+    }
 
     return tInterp;
 }

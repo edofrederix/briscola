@@ -47,7 +47,7 @@ inline tmp<linearSystem<diagStencil,Type,MeshType>> ddt
 template<class Type, class MeshType>
 inline tmp<linearSystem<stencil,Type,MeshType>> div
 (
-    const meshField<faceScalar,MeshType>& phi,
+    const meshField<lowerFaceScalar,MeshType>& phi,
     meshField<Type,MeshType>& field
 )
 {
@@ -55,13 +55,13 @@ inline tmp<linearSystem<stencil,Type,MeshType>> div
     (
         "div("+phi.name()+","+field.name()+")",
         field.fvMsh()
-    )->div(phi,field);
+    )->imDiv(phi,field);
 }
 
 template<class Type, class MeshType>
 inline tmp<linearSystem<stencil,Type,MeshType>> laplacian
 (
-    const meshField<faceScalar,MeshType>& lambda,
+    const meshField<lowerFaceScalar,MeshType>& lambda,
     meshField<Type,MeshType>& field
 )
 {
@@ -69,7 +69,24 @@ inline tmp<linearSystem<stencil,Type,MeshType>> laplacian
     (
         "laplacian("+lambda.name()+","+field.name()+")",
         field.fvMsh()
-    )->laplacian(lambda,field);
+    )->imLaplacian(lambda,field);
+}
+
+template<class Type, class MeshType>
+inline tmp<linearSystem<stencil,Type,MeshType>> laplacian
+(
+    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+    meshField<Type,MeshType>& field
+)
+{
+    return laplacianScheme<Type,MeshType>::New
+    (
+        "laplacian("
+      + (lambdaPtr ? lambdaPtr->name()+"," : word(""))
+      + field.name()
+      + ")",
+        field.fvMsh()
+    )->imLaplacian(lambdaPtr,field);
 }
 
 template<class Type, class MeshType>
@@ -82,7 +99,7 @@ inline tmp<linearSystem<stencil,Type,MeshType>> laplacian
     (
         "laplacian("+field.name()+")",
         field.fvMsh()
-    )->laplacian(field);
+    )->imLaplacian(field);
 }
 
 template<class Type, class MeshType>

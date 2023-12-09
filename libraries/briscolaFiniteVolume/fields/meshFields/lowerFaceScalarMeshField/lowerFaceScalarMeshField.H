@@ -15,13 +15,14 @@ namespace briscola
 namespace fv
 {
 
-BINARY_TYPE_OPERATOR(lowerFaceScalar, lowerFaceScalar, lowerFaceScalar, +, add)
-BINARY_TYPE_OPERATOR(lowerFaceScalar, lowerFaceScalar, lowerFaceScalar, -, subtract)
+BINARY_TYPE_OPERATOR(lowerFaceScalar, lowerFaceScalar, scalar, +, add)
+BINARY_TYPE_OPERATOR(lowerFaceScalar, scalar, lowerFaceScalar, +, add)
 
-BINARY_OPERATOR(lowerFaceScalar, lowerFaceScalar, lowerFaceScalar, *, multiply)
+BINARY_TYPE_OPERATOR(lowerFaceScalar, lowerFaceScalar, scalar, -, subtract)
+BINARY_TYPE_OPERATOR(lowerFaceScalar, scalar, lowerFaceScalar, -, subtract)
+
 BINARY_OPERATOR(lowerFaceScalar, lowerFaceScalar, lowerFaceScalar, /, divide)
-
-BINARY_TYPE_OPERATOR_SF(lowerFaceScalar, lowerFaceScalar, lowerFaceScalar, /, divide)
+BINARY_TYPE_OPERATOR(lowerFaceScalar, scalar, lowerFaceScalar, /, divide)
 
 }
 

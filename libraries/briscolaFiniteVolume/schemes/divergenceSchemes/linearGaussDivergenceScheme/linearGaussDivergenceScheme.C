@@ -30,13 +30,13 @@ linearGaussDivergenceScheme<Type,MeshType>::linearGaussDivergenceScheme
 
 template<class Type, class MeshType>
 tmp<linearSystem<stencil,Type,MeshType>>
-linearGaussDivergenceScheme<Type,MeshType>::div
+linearGaussDivergenceScheme<Type,MeshType>::imDiv
 (
-    const meshField<faceScalar,MeshType>& phi,
+    const meshField<lowerFaceScalar,MeshType>& phi,
     meshField<Type,MeshType>& field
 )
 {
-    const_cast<meshField<faceScalar,MeshType>&>(phi).restrict();
+    const_cast<meshField<lowerFaceScalar,MeshType>&>(phi).restrict();
 
     tmp<linearSystem<stencil,Type,MeshType>> tSys
     (
@@ -54,20 +54,72 @@ linearGaussDivergenceScheme<Type,MeshType>::div
     const meshField<faceScalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
-    forAllCells(A, l, d, i, j, k)
+    forAllFaces(A, l, d, fd, i, j, k)
     {
-        for (int f = 0; f < 6; f++)
-        {
-            A(l,d,i,j,k)[0]  += phi(l,d,i,j,k)[f] * fwc(l,d,i,j,k)[f];
-            A(l,d,i,j,k)[f+1] = phi(l,d,i,j,k)[f] * fwn(l,d,i,j,k)[f];
-        }
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        scalar a = phi(l,d,ijk)[fd]*fwc(l,d,ijk)[fd*2];
+        scalar b = phi(l,d,ijk)[fd]*fwn(l,d,ijk)[fd*2];
+
+        A(l,d,ijk).center() += a;
+        A(l,d,nei).center() -= b;
+
+        A(l,d,ijk)[1+fd*2  ] =   b;
+        A(l,d,nei)[1+fd*2+1] = - a;
     }
 
     Sys.b() = Zero;
 
-    const_cast<meshField<faceScalar,MeshType>&>(phi).makeShallow();
+    const_cast<meshField<lowerFaceScalar,MeshType>&>(phi).makeShallow();
 
     return tSys;
+}
+
+template<class Type, class MeshType>
+tmp<meshField<Type,MeshType>>
+linearGaussDivergenceScheme<Type,MeshType>::exDiv
+(
+    const meshField<lowerFaceScalar,MeshType>& phi,
+    meshField<Type,MeshType>& field
+)
+{
+    tmp<meshField<Type,MeshType>> tDiv
+    (
+        new meshField<Type,MeshType>
+        (
+            "div("+phi.name()+","+field.name()+")",
+            phi.fvMsh()
+        )
+    );
+
+    meshField<Type,MeshType>& Div = tDiv.ref();
+
+    Div = Zero;
+
+    const meshField<faceScalar,MeshType>& fwc =
+        field.fvMsh().template metrics<MeshType>().faceWeightsCenter();
+
+    const meshField<faceScalar,MeshType>& fwn =
+        field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
+
+    const meshField<scalar,MeshType>& cv =
+        phi.fvMsh().template metrics<MeshType>().cellVolumes();
+
+    forAllFaces(Div, d, fd, i, j, k)
+    {
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        Type value =
+            fwc(d,ijk)[fd*2]*field(d,ijk)
+          + fwn(d,ijk)[fd*2]*field(d,nei);
+
+        Div(d,ijk) += phi(d,ijk)[fd]*value/cv(d,ijk);
+        Div(d,nei) -= phi(d,ijk)[fd]*value/cv(d,nei);
+    }
+
+    return tDiv;
 }
 
 }

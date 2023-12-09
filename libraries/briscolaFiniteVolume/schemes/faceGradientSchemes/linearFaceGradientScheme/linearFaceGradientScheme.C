@@ -29,36 +29,38 @@ linearFaceGradientScheme<Type,MeshType>::linearFaceGradientScheme
 {}
 
 template<class Type, class MeshType>
-tmp<meshField<FaceSpace<Type>,MeshType>>
+tmp<meshField<LowerFaceSpace<Type>,MeshType>>
 linearFaceGradientScheme<Type,MeshType>::faceGrad
 (
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<FaceSpace<Type>,MeshType>> tGrad
+    tmp<meshField<LowerFaceSpace<Type>,MeshType>> tGrad
     (
-        new meshField<FaceSpace<Type>,MeshType>
+        new meshField<LowerFaceSpace<Type>,MeshType>
         (
             "faceGrad("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    meshField<FaceSpace<Type>,MeshType>& Grad = tGrad.ref();
+    meshField<LowerFaceSpace<Type>,MeshType>& Grad = tGrad.ref();
 
     Grad = Zero;
 
-    const meshField<faceScalar,MeshType>& fd =
+    const meshField<faceScalar,MeshType>& delta =
         field.fvMsh().template metrics<MeshType>().faceDeltas();
 
-    forAllCells(Grad, d, i, j, k)
-        for (int f = 0; f < 6; f++)
-            Grad(d,i,j,k)[f] =
-                (
-                    field(d,labelVector(i,j,k)+faceOffsets[f])
-                  - field(d,i,j,k)
-                )
-              * fd(d,i,j,k)[f];
+    // The face gradient is defined along the outward normal, for consistency
+    // with the flux.
+
+    forAllFaces(Grad, d, fd, i, j, k)
+    {
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        Grad(d,ijk)[fd] = (field(d,nei) - field(d,ijk)) * delta(d,ijk)[fd*2];
+    }
 
     return tGrad;
 }

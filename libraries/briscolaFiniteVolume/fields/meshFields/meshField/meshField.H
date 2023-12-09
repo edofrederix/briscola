@@ -393,20 +393,24 @@ public:
     // Templated functions are needed for types which can be cast to another
     // type
 
-    template<class Type2> void operator=(const meshField<Type2,MeshType>&);
-    template<class Type2> void operator=(const tmp<meshField<Type2,MeshType>>&);
+    #define TYPE2FIELD meshField<Type2,MeshType>
 
-    template<class Type2> void operator+=(const meshField<Type2,MeshType>&);
-    template<class Type2> void operator+=
-    (
-        const tmp<meshField<Type2,MeshType>>&
-    );
+    template<class Type2> void operator=(const TYPE2FIELD&);
+    template<class Type2> void operator=(const tmp<TYPE2FIELD>&);
 
-    template<class Type2> void operator-=(const meshField<Type2,MeshType>&);
-    template<class Type2> void operator-=
-    (
-        const tmp<meshField<Type2,MeshType>>&
-    );
+    template<class Type2> void operator+=(const TYPE2FIELD&);
+    template<class Type2> void operator+=(const tmp<TYPE2FIELD>&);
+
+    template<class Type2> void operator-=(const TYPE2FIELD&);
+    template<class Type2> void operator-=(const tmp<TYPE2FIELD>&);
+
+    template<class Type2> void operator*=(const TYPE2FIELD&);
+    template<class Type2> void operator*=(const tmp<TYPE2FIELD>&);
+
+    template<class Type2> void operator/=(const TYPE2FIELD&);
+    template<class Type2> void operator/=(const tmp<TYPE2FIELD>&);
+
+    #undef TYPE2FIELD
 
     template<class Type2> void operator=(const Type2&);
     template<class Type2> void operator=(const List<Type2>&);
@@ -416,6 +420,12 @@ public:
 
     template<class Type2> void operator-=(const Type2&);
     template<class Type2> void operator-=(const List<Type2>&);
+
+    template<class Type2> void operator*=(const Type2&);
+    template<class Type2> void operator*=(const List<Type2>&);
+
+    template<class Type2> void operator/=(const Type2&);
+    template<class Type2> void operator/=(const List<Type2>&);
 
     // Allow a parent linear system to make changes to private data
     template<class SType,class,class>

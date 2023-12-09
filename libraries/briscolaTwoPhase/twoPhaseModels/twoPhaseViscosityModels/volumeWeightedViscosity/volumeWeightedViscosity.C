@@ -41,7 +41,7 @@ volumeWeightedViscosity<BaseModel>::~volumeWeightedViscosity()
 template<class BaseModel>
 void volumeWeightedViscosity<BaseModel>::correctMixture()
 {
-    const colocatedFaceScalarField alphaf
+    const colocatedLowerFaceScalarField alphaf
     (
         ex::interp(this->alpha_)
     );
@@ -50,9 +50,9 @@ void volumeWeightedViscosity<BaseModel>::correctMixture()
 
     if (this->musPtr_.valid())
     {
-        staggeredFaceScalarField& mus = this->musPtr_();
+        staggeredLowerFaceScalarField& mus = this->musPtr_();
 
-        const staggeredFaceScalarField alphafs
+        const staggeredLowerFaceScalarField alphafs
         (
             stagFaceInterp(this->alpha_)
         );

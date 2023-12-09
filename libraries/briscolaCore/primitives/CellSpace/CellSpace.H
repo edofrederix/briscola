@@ -36,8 +36,8 @@ Ostream& operator<<
 
 // Class to cast Form1 and Form2 to their equivalent with given Cmpt as
 // component type. Cell space casts are necessary for functions that return the
-// same form, but with differen component type. Should be specialized by derived
-// types.
+// same form, but with different component type. Should be specialized by
+// derived types.
 
 template<class Form1, class Form2, class Cmpt>
 class CellSpaceCast

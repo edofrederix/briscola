@@ -29,22 +29,22 @@ linearInterpolationScheme<Type,MeshType>::linearInterpolationScheme
 {}
 
 template<class Type, class MeshType>
-tmp<meshField<FaceSpace<Type>,MeshType>>
+tmp<meshField<LowerFaceSpace<Type>,MeshType>>
 linearInterpolationScheme<Type,MeshType>::interp
 (
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<FaceSpace<Type>,MeshType>> tInterp
+    tmp<meshField<LowerFaceSpace<Type>,MeshType>> tInterp
     (
-        new meshField<FaceSpace<Type>,MeshType>
+        new meshField<LowerFaceSpace<Type>,MeshType>
         (
             "interp("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    meshField<FaceSpace<Type>,MeshType>& Interp = tInterp.ref();
+    meshField<LowerFaceSpace<Type>,MeshType>& Interp = tInterp.ref();
 
     Interp = Zero;
 
@@ -54,11 +54,15 @@ linearInterpolationScheme<Type,MeshType>::interp
     const meshField<faceScalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
-    forAllCells(Interp, d, i, j, k)
-        for (int f = 0; f < 6; f++)
-            Interp(d,i,j,k)[f] =
-                fwc(d,i,j,k)[f]*field(d,i,j,k)
-              + fwn(d,i,j,k)[f]*field(d,labelVector(i,j,k)+faceOffsets[f]);
+    forAllFaces(Interp, d, fd, i, j, k)
+    {
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        Interp(d,ijk)[fd] =
+            field(d,ijk)*fwc(d,ijk)[fd*2]
+          + field(d,nei)*fwn(d,ijk)[fd*2];
+    }
 
     return tInterp;
 }

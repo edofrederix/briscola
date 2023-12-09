@@ -74,7 +74,7 @@ public:
     (
         colocatedScalarField&,
         const colocatedScalarField*,
-        const colocatedFaceScalarField*,
+        const colocatedLowerFaceScalarField*,
         const bool = false
     );
 

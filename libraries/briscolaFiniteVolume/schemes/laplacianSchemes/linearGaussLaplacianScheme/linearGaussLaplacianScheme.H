@@ -28,10 +28,17 @@ public:
     // Construct from mesh only, with empty dictionary
     linearGaussLaplacianScheme(const fvMesh&);
 
-    // Laplacian with a scalar diffusivity defined at faces
-    virtual tmp<linearSystem<stencil,Type,MeshType>> laplacian
+    // Implicit Laplacian
+    virtual tmp<linearSystem<stencil,Type,MeshType>> imLaplacian
     (
-        const meshField<faceScalar,MeshType>&,
+        const meshField<lowerFaceScalar,MeshType>*,
+        meshField<Type,MeshType>&
+    );
+
+    // Explicit Laplacian
+    virtual tmp<meshField<Type,MeshType>> exLaplacian
+    (
+        const meshField<lowerFaceScalar,MeshType>*,
         meshField<Type,MeshType>&
     );
 };

@@ -14,7 +14,6 @@ class LowerFaceSpace
 :
     public CellSpace<LowerFaceSpace<Cmpt>, Cmpt, 3>
 {
-
 public:
 
     // Component type
@@ -37,9 +36,6 @@ public:
 
     // Construct initialised to zero
     inline LowerFaceSpace(const Foam::zero);
-
-    // Construct uniform
-    inline LowerFaceSpace(const Cmpt&);
 
     // Construct given cell space of the same size
     template<class Cmpt2>
@@ -74,6 +70,13 @@ public:
     {
         return Vector<Cmpt>(left(), bottom(), aft());
     }
+
+    // Explicitly use operators from cell space
+    using csType::operator=;
+    using csType::operator+=;
+    using csType::operator-=;
+    using csType::operator*=;
+    using csType::operator/=;
 };
 
 // FaceSpace partial specialization of CellSpaceCast

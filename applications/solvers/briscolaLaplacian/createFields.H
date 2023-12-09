@@ -15,7 +15,7 @@ T.correctBoundaryConditions();
 
 // Diffusivity
 
-meshField<faceScalar,MESHTYPE> lambda
+meshField<lowerFaceScalar,MESHTYPE> lambda
 (
     "lambda",
     fvMsh,

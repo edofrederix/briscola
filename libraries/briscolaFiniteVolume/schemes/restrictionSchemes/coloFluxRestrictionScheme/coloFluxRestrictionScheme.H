@@ -1,5 +1,5 @@
-#ifndef fluxRestrictionScheme_H
-#define fluxRestrictionScheme_H
+#ifndef coloFluxRestrictionScheme_H
+#define coloFluxRestrictionScheme_H
 
 #include "restrictionScheme.H"
 
@@ -12,10 +12,9 @@ namespace briscola
 namespace fv
 {
 
-template<class MeshType>
-class fluxRestrictionScheme
+class coloFluxRestrictionScheme
 :
-    public restrictionScheme<faceScalar,MeshType>
+    public restrictionScheme<lowerFaceScalar,colocated>
 {
 public:
 
@@ -23,17 +22,17 @@ public:
     TypeName("flux");
 
     // Construct from dictionary and mesh
-    fluxRestrictionScheme(const dictionary&, const fvMesh&);
+    coloFluxRestrictionScheme(const dictionary&, const fvMesh&);
 
     // Construct from mesh only, with empty dictionary
-    fluxRestrictionScheme(const fvMesh&);
+    coloFluxRestrictionScheme(const fvMesh&);
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
     // level
     virtual void restrict
     (
-        meshDirection<faceScalar,MeshType>&,
-        const meshDirection<faceScalar,MeshType>&,
+        meshDirection<lowerFaceScalar,colocated>&,
+        const meshDirection<lowerFaceScalar,colocated>&,
         const bool = false
     );
 };
@@ -45,7 +44,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "fluxRestrictionScheme.C"
+    #include "coloFluxRestrictionScheme.C"
 #endif
 
 #endif

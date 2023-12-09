@@ -1,5 +1,5 @@
-#ifndef faceAverageRestrictionScheme_H
-#define faceAverageRestrictionScheme_H
+#ifndef stagFaceAverageRestrictionScheme_H
+#define stagFaceAverageRestrictionScheme_H
 
 #include "restrictionScheme.H"
 
@@ -12,10 +12,10 @@ namespace briscola
 namespace fv
 {
 
-template<class Type, class MeshType>
-class faceAverageRestrictionScheme
+template<class Type>
+class stagFaceAverageRestrictionScheme
 :
-    public restrictionScheme<Type,MeshType>
+    public restrictionScheme<Type,staggered>
 {
 public:
 
@@ -23,17 +23,17 @@ public:
     TypeName("faceAverage");
 
     // Construct from dictionary and mesh
-    faceAverageRestrictionScheme(const dictionary&, const fvMesh&);
+    stagFaceAverageRestrictionScheme(const dictionary&, const fvMesh&);
 
     // Construct from mesh only, with empty dictionary
-    faceAverageRestrictionScheme(const fvMesh&);
+    stagFaceAverageRestrictionScheme(const fvMesh&);
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
     // level
     virtual void restrict
     (
-        meshDirection<Type,MeshType>&,
-        const meshDirection<Type,MeshType>&,
+        meshDirection<Type,staggered>&,
+        const meshDirection<Type,staggered>&,
         const bool = false
     );
 };
@@ -45,7 +45,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "faceAverageRestrictionScheme.C"
+    #include "stagFaceAverageRestrictionScheme.C"
 #endif
 
 #endif

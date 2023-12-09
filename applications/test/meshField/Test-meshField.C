@@ -876,6 +876,16 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
             FatalErrorInFunction
                 << "test 18a failed" << abort(FatalError);
 
+    1.0/s1;
+    1.0/(1.0*s1);
+
+    scalarList(MeshType::numberOfDirections,1.0)/s1;
+    scalarList(MeshType::numberOfDirections,1.0)/(1.0*s1);
+
+    m1/1.0;
+    (1.0*m1)/1.0;
+    s1/1.0;
+    (1.0*s1)/1.0;
 
     m3 = m1*s1;
 
@@ -990,10 +1000,455 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
                 << "test 21d failed" << abort(FatalError);
 
     m3 = (m3 + pTraits<Type>::one);
-    m3 = m3 - pTraits<Type>::one;
+    m3 = (m3 - pTraits<Type>::one);
 
-    m3 = m3 + List<Type>(MeshType::numberOfDirections, pTraits<Type>::one);
-    m3 = m3 - List<Type>(MeshType::numberOfDirections, pTraits<Type>::one);
+    m3 = (pTraits<Type>::one + m3);
+    m3 = (pTraits<Type>::one - m3);
+
+    m3 = (m3 + List<Type>(MeshType::numberOfDirections, pTraits<Type>::one));
+    m3 = (m3 - List<Type>(MeshType::numberOfDirections, pTraits<Type>::one));
+
+    m3 = (List<Type>(MeshType::numberOfDirections, pTraits<Type>::one) + m3);
+    m3 = (List<Type>(MeshType::numberOfDirections, pTraits<Type>::one) - m3);
+}
+
+template<class Type, class MeshType>
+void testCellSpacePrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
+{
+    meshField<Type,MeshType> m1
+    (
+        "m1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m1o
+    (
+        "m1o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    meshField<Type,MeshType> m2
+    (
+        "m2",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m2o
+    (
+        "m2o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    meshField<Type,MeshType> m3
+    (
+        "m3",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m3o
+    (
+        "m3",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    meshField<scalar,MeshType> s1
+    (
+        "s1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<scalar,MeshType> s1o
+    (
+        "s1o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    forAllCells(m1, l, d, i, j, k)
+        m1(l,d,i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
+
+    forAllCells(m1o, l, d, i, j, k)
+        m1o(l,d,i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
+
+    m2 = m1;
+    m2o = m1o;
+
+    s1 = scalar(1);
+    s1o = scalar(1);
+
+    mag(m1) +scalar(1);
+    mag(m1o)+scalar(1);
+
+    mag(m1*2)+scalar(1);
+    mag(m1o*2)+scalar(1);
+
+    max(m1);
+    max(2*m1);
+    gMax(m1);
+    gMax(2*m1);
+
+    min(m1);
+    min(-2*m1);
+    gMin(m1);
+    gMin(-2*m1);
+
+    sum(m1);
+    sum(2*m1);
+    gSum(m1);
+    gSum(2*m1);
+
+    average(m1);
+    average(2*m1);
+    gAverage(m1);
+    gAverage(2*m1);
+
+    sumProd(m1, m1);
+    sumProd(m1*2, m1);
+    sumProd(m1, m1*2);
+    sumProd(m1*2, m1*2);
+
+    sumProd(m1, m1o);
+    sumProd(m1*2, m1o);
+    sumProd(m1, m1o*2);
+    sumProd(m1*2, m1o*2);
+
+    max(m1,m2);
+    max(m1*2,m2);
+    max(m1,m2*2);
+    max(m1*2,m2*2);
+    max(m1,m2o);
+    max(m1*2,m2o);
+    max(m1,m2o*2);
+    max(m1*2,m2o*2);
+
+    min(m1,m2);
+    min(m1*2,m2);
+    min(m1,m2*2);
+    min(m1*2,m2*2);
+    min(m1,m2o);
+    min(m1*2,m2o);
+    min(m1,m2o*2);
+    min(m1*2,m2o*2);
+
+    max(m1,pTraits<Type>::one);
+    max(m1*2,pTraits<Type>::one);
+    max(pTraits<Type>::one,m2);
+    max(pTraits<Type>::one,m2*2);
+
+    min(m1,pTraits<Type>::one);
+    min(m1*2,pTraits<Type>::one);
+    min(pTraits<Type>::one,m2);
+    min(pTraits<Type>::one,m2*2);
+
+
+
+    m3 = -m1;
+    m3 = m1*s1;
+    m3 = (m1*2)*s1;
+    m3 = s1*m1;
+    m3 = s1*(m1*2);
+    m3o = m1*s1o;
+    m3o = (m1*2)*s1o;
+    m3o = s1*m1o;
+    m3o = s1*(m1o*2);
+    m3 = m1/s1;
+    m3 = (m1*2)/s1;
+    m3o = m1/s1o;
+    m3o = (m1*2)/s1o;
+    m3 = m1+m2;
+    m3 = m1-m2;
+    m3o = m1+m2o;
+    m3o = m1-m2o;
+
+    m3 = (m3 + pTraits<Type>::one);
+    m3 = (m3 - pTraits<Type>::one);
+    m3 = ((1.0*m3) + pTraits<Type>::one);
+    m3 = ((1.0*m3) - pTraits<Type>::one);
+
+    m3 = (pTraits<Type>::one + m3);
+    m3 = (pTraits<Type>::one - m3);
+    m3 = (pTraits<Type>::one + (1.0*m3));
+    m3 = (pTraits<Type>::one - (1.0*m3));
+
+    m3 = (m3 + List<Type>(MeshType::numberOfDirections, pTraits<Type>::one));
+    m3 = (m3 - List<Type>(MeshType::numberOfDirections, pTraits<Type>::one));
+    m3 = ((1.0*m3) + List<Type>(MeshType::numberOfDirections, pTraits<Type>::one));
+    m3 = ((1.0*m3) - List<Type>(MeshType::numberOfDirections, pTraits<Type>::one));
+
+    m3 = (List<Type>(MeshType::numberOfDirections, pTraits<Type>::one) + m3);
+    m3 = (List<Type>(MeshType::numberOfDirections, pTraits<Type>::one) - m3);
+    m3 = (List<Type>(MeshType::numberOfDirections, pTraits<Type>::one) + (1.0*m3));
+    m3 = (List<Type>(MeshType::numberOfDirections, pTraits<Type>::one) - (1.0*m3));
+}
+
+template<class Type, class MeshType>
+void testFaceSpaceFunctions(const fvMesh& fvMsh)
+{
+    meshField<FaceSpace<Type>,MeshType> fs1
+    (
+        "fs1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        false
+    );
+
+    meshField<LowerFaceSpace<Type>,MeshType> ls1
+    (
+        "ls1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        false
+    );
+
+    meshField<FaceSpace<scalar>,MeshType> sfs1
+    (
+        "sfs1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        false
+    );
+
+    meshField<LowerFaceSpace<scalar>,MeshType> sls1
+    (
+        "sls1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        false
+    );
+
+    meshField<scalar,MeshType> s1
+    (
+        "s1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        false
+    );
+
+    forAllCells(fs1, l, d, i, j, k)
+        fs1(l,d,i,j,k) = pTraits<FaceSpace<Type>>::one*(l+d+i+j+k);
+
+    forAllCells(ls1, l, d, i, j, k)
+        ls1(l,d,i,j,k) = pTraits<LowerFaceSpace<Type>>::one*(l+d+i+j+k);
+
+    sfs1 = pTraits<FaceSpace<scalar>>::one;
+    sls1 = pTraits<LowerFaceSpace<scalar>>::one;
+
+    s1 = scalar(1);
+
+    ls1 += fs1;
+    ls1 += (1.0*fs1);
+
+    fs1+ls1;
+    ls1+fs1;
+
+    (1.0*fs1)+ls1;
+    (1.0*ls1)+fs1;
+
+    (1.0*fs1)+(1.0*ls1);
+    (1.0*ls1)+(1.0*fs1);
+
+    fs1 += pTraits<Type>::one;
+    ls1 += pTraits<Type>::one;
+
+    fs1 += FaceSpace<Type>::one;
+    ls1 += FaceSpace<Type>::one;
+    ls1 += LowerFaceSpace<Type>::one;
+
+    fs1 + pTraits<Type>::one;
+    ls1 + pTraits<Type>::one;
+
+    (1.0*fs1) + pTraits<Type>::one;
+    (1.0*ls1) + pTraits<Type>::one;
+
+    fs1 + FaceSpace<Type>::one;
+    ls1 + FaceSpace<Type>::one;
+    ls1 + LowerFaceSpace<Type>::one;
+
+    (1.0*fs1) + FaceSpace<Type>::one;
+    (1.0*ls1) + FaceSpace<Type>::one;
+    (1.0*ls1) + LowerFaceSpace<Type>::one;
+
+    pTraits<Type>::one + fs1;
+    pTraits<Type>::one + ls1;
+
+    pTraits<Type>::one + (1.0*fs1);
+    pTraits<Type>::one + (1.0*ls1);
+
+    FaceSpace<Type>::one + fs1;
+    FaceSpace<Type>::one + ls1;
+    LowerFaceSpace<Type>::one + ls1;
+
+    FaceSpace<Type>::one + (1.0*fs1);
+    FaceSpace<Type>::one + (1.0*ls1);
+    LowerFaceSpace<Type>::one + (1.0*ls1);
+
+    ls1 -= fs1;
+    ls1 -= (1.0*fs1);
+
+    fs1-ls1;
+    ls1-fs1;
+
+    (1.0*fs1)-ls1;
+    (1.0*ls1)-fs1;
+
+    fs1-(1.0*ls1);
+    ls1-(1.0*fs1);
+
+    fs1 -= pTraits<Type>::one;
+    ls1 -= pTraits<Type>::one;
+
+    fs1 -= FaceSpace<Type>::one;
+    ls1 -= FaceSpace<Type>::one;
+    ls1 -= LowerFaceSpace<Type>::one;
+
+    fs1 - pTraits<Type>::one;
+    ls1 - pTraits<Type>::one;
+
+    (1.0*fs1) - pTraits<Type>::one;
+    (1.0*ls1) - pTraits<Type>::one;
+
+    fs1 - FaceSpace<Type>::one;
+    ls1 - FaceSpace<Type>::one;
+    ls1 - LowerFaceSpace<Type>::one;
+
+    (1.0*fs1) - FaceSpace<Type>::one;
+    (1.0*ls1) - FaceSpace<Type>::one;
+    (1.0*ls1) - LowerFaceSpace<Type>::one;
+
+    pTraits<Type>::one - fs1;
+    pTraits<Type>::one - ls1;
+
+    pTraits<Type>::one - (1.0*fs1);
+    pTraits<Type>::one - (1.0*ls1);
+
+    FaceSpace<Type>::one - fs1;
+    FaceSpace<Type>::one - ls1;
+    LowerFaceSpace<Type>::one - ls1;
+
+    FaceSpace<Type>::one - (1.0*fs1);
+    FaceSpace<Type>::one - (1.0*ls1);
+    LowerFaceSpace<Type>::one - (1.0*ls1);
+
+    fs1 *= (1.0*s1);
+    fs1 *= (1.0*sfs1);
+
+    fs1*s1;
+    fs1*sfs1;
+
+    (1.0*fs1)*s1;
+    (1.0*fs1)*sfs1;
+
+    fs1*(1.0*s1);
+    fs1*(1.0*sfs1);
+
+    s1/1.0;
+    sfs1/1.0;
+
+    (1.0*s1)/1.0;
+    (1.0*sfs1)/1.0;
+
+    1.0/s1;
+    1.0/sfs1;
+
+    1.0/(1.0*s1);
+    1.0/(1.0*sfs1);
+
+    fs1 /= (1.0*s1);
+    fs1 /= (1.0*sfs1);
+
+    fs1/s1;
+    fs1/sfs1;
+
+    (1.0*fs1)/s1;
+    (1.0*fs1)/sfs1;
+
+    fs1/(1.0*s1);
+    fs1/(1.0*sfs1);
+
+
+    ls1 *= (1.0*s1);
+    ls1 *= (1.0*sls1);
+
+    ls1*s1;
+    ls1*sls1;
+
+    (1.0*ls1)*s1;
+    (1.0*ls1)*sls1;
+
+    ls1*(1.0*s1);
+    ls1*(1.0*sls1);
+
+    1.0/s1;
+    1.0/sls1;
+
+    1.0/(1.0*s1);
+    1.0/(1.0*sls1);
+
+    ls1 /= (1.0*s1);
+    ls1 /= (1.0*sls1);
+
+    ls1/s1;
+    ls1/sls1;
+
+    (1.0*ls1)/s1;
+    (1.0*ls1)/sls1;
+
+    ls1/(1.0*s1);
+    ls1/(1.0*sls1);
 }
 
 template<class Type, class MeshType>
@@ -1792,6 +2247,19 @@ int main(int argc, char *argv[])
         testPrimitiveFunctions<sphericalTensor,colocated>(fvMsh, deep);
         testPrimitiveFunctions<diagTensor,colocated>(fvMsh, deep);
 
+        testCellSpacePrimitiveFunctions<faceScalar,colocated>(fvMsh, deep);
+        testCellSpacePrimitiveFunctions<lowerFaceScalar,colocated>(fvMsh, deep);
+        testCellSpacePrimitiveFunctions<edgeScalar,colocated>(fvMsh, deep);
+        testCellSpacePrimitiveFunctions<vertexScalar,colocated>(fvMsh, deep);
+
+        testCellSpacePrimitiveFunctions<faceVector,colocated>(fvMsh, deep);
+        testCellSpacePrimitiveFunctions<lowerFaceVector,colocated>(fvMsh, deep);
+        testCellSpacePrimitiveFunctions<edgeVector,colocated>(fvMsh, deep);
+        testCellSpacePrimitiveFunctions<vertexVector,colocated>(fvMsh, deep);
+
+        testFaceSpaceFunctions<scalar,colocated>(fvMsh);
+        testFaceSpaceFunctions<vector,colocated>(fvMsh);
+
         testVectorSpaceFunctions<vector,colocated>(fvMsh, deep);
         testVectorSpaceFunctions<tensor,colocated>(fvMsh, deep);
         testVectorSpaceFunctions<symmTensor,colocated>(fvMsh, deep);
@@ -1889,6 +2357,20 @@ int main(int argc, char *argv[])
             testPrimitiveFunctions<symmTensor,staggered>(fvMsh, deep);
             testPrimitiveFunctions<sphericalTensor,staggered>(fvMsh, deep);
             testPrimitiveFunctions<diagTensor,staggered>(fvMsh, deep);
+
+
+            testCellSpacePrimitiveFunctions<faceScalar,staggered>(fvMsh, deep);
+            testCellSpacePrimitiveFunctions<lowerFaceScalar,staggered>(fvMsh, deep);
+            testCellSpacePrimitiveFunctions<edgeScalar,staggered>(fvMsh, deep);
+            testCellSpacePrimitiveFunctions<vertexScalar,staggered>(fvMsh, deep);
+
+            testCellSpacePrimitiveFunctions<faceVector,staggered>(fvMsh, deep);
+            testCellSpacePrimitiveFunctions<lowerFaceVector,staggered>(fvMsh, deep);
+            testCellSpacePrimitiveFunctions<edgeVector,staggered>(fvMsh, deep);
+            testCellSpacePrimitiveFunctions<vertexVector,staggered>(fvMsh, deep);
+
+            testFaceSpaceFunctions<scalar,staggered>(fvMsh);
+            testFaceSpaceFunctions<vector,staggered>(fvMsh);
 
 
             testVectorSpaceFunctions<vector,staggered>(fvMsh, deep);

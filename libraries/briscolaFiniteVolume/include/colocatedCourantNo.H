@@ -5,10 +5,16 @@ scalar meanCoNum = 0.0;
     const colocatedScalarDirection& cvd =
         fvMsh.metrics<colocated>().cellVolumes().direction();
 
-    colocatedScalarDirection sumPhi(fvMsh,0,0);
+    colocatedScalarDirection sumPhi(fvMsh,0,0,Zero);
 
-    forAllCells(sumPhi, i, j, k)
-        sumPhi(i,j,k) = neighborSum(mag(phi(i,j,k)));
+    forAllFaces(sumPhi, fd, i, j, k)
+    {
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        sumPhi(ijk) += mag(phi(ijk)[fd]);
+        sumPhi(nei) += mag(phi(ijk)[fd]);
+    }
 
     CoNum = 0.5*gMax(sumPhi/cvd)*runTime.deltaTValue();
 

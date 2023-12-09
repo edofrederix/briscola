@@ -49,10 +49,17 @@ public:
     // Destructor
     virtual ~divergenceScheme();
 
-    // Divergence with a flux defined at faces
-    virtual tmp<linearSystem<stencil,Type,MeshType>> div
+    // Implicit divergence operator
+    virtual tmp<linearSystem<stencil,Type,MeshType>> imDiv
     (
-        const meshField<faceScalar,MeshType>&,
+        const meshField<lowerFaceScalar,MeshType>&,
+        meshField<Type,MeshType>&
+    ) = 0;
+
+    // Explicit divergence operator
+    virtual tmp<meshField<Type,MeshType>> exDiv
+    (
+        const meshField<lowerFaceScalar,MeshType>&,
         meshField<Type,MeshType>&
     ) = 0;
 };
@@ -60,7 +67,7 @@ public:
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> explicitDiv
 (
-    const meshField<FaceSpace<Type>,MeshType>&
+    const meshField<LowerFaceSpace<Type>,MeshType>&
 );
 
 template<class Type>

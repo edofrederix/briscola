@@ -53,7 +53,7 @@ public:
     virtual ~interpolationScheme();
 
     // Interpolation to the face
-    virtual tmp<meshField<FaceSpace<Type>,MeshType>> interp
+    virtual tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
     (
         const meshField<Type,MeshType>&
     ) = 0;
@@ -66,7 +66,7 @@ tmp<meshField<Type,staggered>> stagInterp
 );
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
+tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
 (
     const meshField<Type,colocated>& field
 );

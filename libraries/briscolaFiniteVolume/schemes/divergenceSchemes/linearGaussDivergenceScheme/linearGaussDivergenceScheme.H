@@ -28,10 +28,17 @@ public:
     // Construct from mesh only, with empty dictionary
     linearGaussDivergenceScheme(const fvMesh&);
 
-    // Divergence with a flux defined at faces
-    virtual tmp<linearSystem<stencil,Type,MeshType>> div
+    // Implicit divergence operator
+    virtual tmp<linearSystem<stencil,Type,MeshType>> imDiv
     (
-        const meshField<faceScalar,MeshType>&,
+        const meshField<lowerFaceScalar,MeshType>&,
+        meshField<Type,MeshType>&
+    );
+
+    // Explicit divergence operator
+    virtual tmp<meshField<Type,MeshType>> exDiv
+    (
+        const meshField<lowerFaceScalar,MeshType>&,
         meshField<Type,MeshType>&
     );
 };

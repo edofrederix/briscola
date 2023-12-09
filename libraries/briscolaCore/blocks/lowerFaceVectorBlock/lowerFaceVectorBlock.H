@@ -16,8 +16,7 @@ namespace briscola
 
 typedef block<lowerFaceVector> lowerFaceVectorBlock;
 
-BINARY_TYPE_OPERATOR(lowerFaceVector, vector, lowerFaceVector, +, add)
-BINARY_TYPE_OPERATOR(lowerFaceVector, vector, lowerFaceVector, -, subtract)
+BINARY_OPERATOR(lowerFaceVector, lowerFaceVector, lowerFaceScalar, /, divide)
 
 UNARY_FUNCTION(lowerFaceScalar, lowerFaceVector, magSqr)
 UNARY_FUNCTION(lowerFaceScalar, lowerFaceVector, mag)

@@ -30,13 +30,14 @@ linearGaussLaplacianScheme<Type,MeshType>::linearGaussLaplacianScheme
 
 template<class Type, class MeshType>
 tmp<linearSystem<stencil,Type,MeshType>>
-linearGaussLaplacianScheme<Type,MeshType>::laplacian
+linearGaussLaplacianScheme<Type,MeshType>::imLaplacian
 (
-    const meshField<faceScalar,MeshType>& lambda,
+    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
     meshField<Type,MeshType>& field
 )
 {
-    const_cast<meshField<faceScalar,MeshType>&>(lambda).restrict();
+    if (lambdaPtr)
+        const_cast<meshField<lowerFaceScalar,MeshType>&>(*lambdaPtr).restrict();
 
     tmp<linearSystem<stencil,Type,MeshType>> tSys
     (
@@ -52,20 +53,82 @@ linearGaussLaplacianScheme<Type,MeshType>::laplacian
     const meshField<faceScalar,MeshType>& fa =
         field.fvMsh().template metrics<MeshType>().faceAreas();
 
-    const meshField<faceScalar,MeshType>& fd =
+    const meshField<faceScalar,MeshType>& delta =
         field.fvMsh().template metrics<MeshType>().faceDeltas();
 
-    forAllCells(A, l, d, i, j, k)
+    forAllFaces(A, l, d, fd, i, j, k)
     {
-        A(l,d,i,j,k) = lambda(l,d,i,j,k)*fa(l,d,i,j,k)*fd(l,d,i,j,k);
-        A(l,d,i,j,k).center() = - neighborSum(A(l,d,i,j,k));
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        scalar value = fa(l,d,ijk)[fd*2]*delta(l,d,ijk)[fd*2];
+
+        if (lambdaPtr)
+            value *= lambdaPtr->operator()(l,d,ijk)[fd];
+
+        A(l,d,ijk)[fd*2+1] = value;
+        A(l,d,nei)[fd*2+2] = value;
+
+        A(l,d,ijk).center() -= value;
+        A(l,d,nei).center() -= value;
     }
 
     Sys.b() = Zero;
 
-    const_cast<meshField<faceScalar,MeshType>&>(lambda).makeShallow();
+    if (lambdaPtr)
+        const_cast<meshField<lowerFaceScalar,MeshType>&>(*lambdaPtr)
+       .makeShallow();
 
     return tSys;
+}
+
+template<class Type, class MeshType>
+tmp<meshField<Type,MeshType>>
+linearGaussLaplacianScheme<Type,MeshType>::exLaplacian
+(
+    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+    meshField<Type,MeshType>& field
+)
+{
+    tmp<meshField<Type,MeshType>> tLap
+    (
+        new meshField<Type,MeshType>
+        (
+            lambdaPtr
+          ? "laplacian("+lambdaPtr->name()+","+field.name()+")"
+          : "laplacian("+field.name()+")",
+            field.fvMsh()
+        )
+    );
+
+    meshField<Type,MeshType>& Lap = tLap.ref();
+
+    Lap = Zero;
+
+    const meshField<faceScalar,MeshType>& fa =
+        field.fvMsh().template metrics<MeshType>().faceAreas();
+
+    const meshField<faceScalar,MeshType>& delta =
+        field.fvMsh().template metrics<MeshType>().faceDeltas();
+
+    const meshField<scalar,MeshType>& cv =
+        field.fvMsh().template metrics<MeshType>().cellVolumes();
+
+    forAllFaces(Lap, d, fd, i, j, k)
+    {
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        scalar value = fa(d,ijk)[fd*2]*delta(d,ijk)[fd*2];
+
+        if (lambdaPtr)
+            value *= lambdaPtr->operator()(d,ijk)[fd];
+
+        Lap(d,ijk) += value*(field(d,nei) - field(d,ijk))/cv(d,ijk);
+        Lap(d,nei) += value*(field(d,ijk) - field(d,nei))/cv(d,nei);
+    }
+
+    return tLap;
 }
 
 }

@@ -289,7 +289,6 @@ inline void block<Type>::operator/=(const scalar& v)
     }
 }
 
-
 template<class Type>
 template<class Type2>
 inline void block<Type>::operator=(const block<Type2>& M)
@@ -335,6 +334,14 @@ inline void block<Type>::operator+=(const block<Type2>& M)
 
 template<class Type>
 template<class Type2>
+inline void block<Type>::operator+=(const tmp<block<Type2>>& tM)
+{
+    *this += tM();
+    tM.clear();
+}
+
+template<class Type>
+template<class Type2>
 inline void block<Type>::operator-=(const block<Type2>& M)
 {
     if (l_ != M.l() || m_ != M.m() || n_ != M.n())
@@ -351,6 +358,14 @@ inline void block<Type>::operator-=(const block<Type2>& M)
             v_[i] -= M.v()[i];
         }
     }
+}
+
+template<class Type>
+template<class Type2>
+inline void block<Type>::operator-=(const tmp<block<Type2>>& tM)
+{
+    *this -= tM();
+    tM.clear();
 }
 
 template<class Type>
@@ -390,6 +405,63 @@ inline void block<Type>::operator-=(const Type2& v)
             v_[i] -= v;
         }
     }
+}
+
+
+template<class Type>
+template<class Type2>
+inline void block<Type>::operator*=(const block<Type2>& M)
+{
+    if (l_ != M.l() || m_ != M.m() || n_ != M.n())
+    {
+        FatalErrorInFunction
+            << "Matrices do not have the same shape"
+            << abort(FatalError);
+    }
+
+    if (v_)
+    {
+        forAllBlockLinear(M, i)
+        {
+            v_[i] *= M.v()[i];
+        }
+    }
+}
+
+template<class Type>
+template<class Type2>
+inline void block<Type>::operator*=(const tmp<block<Type2>>& tM)
+{
+    *this *= tM();
+    tM.clear();
+}
+
+template<class Type>
+template<class Type2>
+inline void block<Type>::operator/=(const block<Type2>& M)
+{
+    if (l_ != M.l() || m_ != M.m() || n_ != M.n())
+    {
+        FatalErrorInFunction
+            << "Matrices do not have the same shape"
+            << abort(FatalError);
+    }
+
+    if (v_)
+    {
+        forAllBlockLinear(M, i)
+        {
+            v_[i] /= M.v()[i];
+        }
+    }
+}
+
+template<class Type>
+template<class Type2>
+inline void block<Type>::operator/=(const tmp<block<Type2>>& tM)
+{
+    *this /= tM();
+    tM.clear();
 }
 
 }

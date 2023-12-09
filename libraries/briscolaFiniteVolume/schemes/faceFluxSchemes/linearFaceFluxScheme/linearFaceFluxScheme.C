@@ -26,96 +26,89 @@ linearFaceFluxScheme::linearFaceFluxScheme
     faceFluxScheme(dictionary(),fvMsh)
 {}
 
-tmp<colocatedFaceScalarField> linearFaceFluxScheme::faceFlux
+tmp<colocatedLowerFaceScalarField> linearFaceFluxScheme::faceFlux
 (
     const colocatedVectorField& field
 )
 {
-    tmp<colocatedFaceScalarField> tFlux
+    tmp<colocatedLowerFaceScalarField> tFlux
     (
-        new colocatedFaceScalarField
+        new colocatedLowerFaceScalarField
         (
             "faceFlux("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    colocatedFaceScalarField& Flux = tFlux.ref();
+    colocatedLowerFaceScalarField& Flux = tFlux.ref();
 
     Flux = Zero;
 
     const colocatedFaceVectorField& fan =
         this->fvMsh().metrics<colocated>().faceAreaNormals();
 
-    const meshField<faceScalar,colocated>& fwc =
+    const colocatedFaceScalarField& fwc =
         field.fvMsh().template metrics<colocated>().faceWeightsCenter();
 
-    const meshField<faceScalar,colocated>& fwn =
+    const colocatedFaceScalarField& fwn =
         field.fvMsh().template metrics<colocated>().faceWeightsNeighbor();
 
-    forAllCells(Flux, i, j, k)
-        for (int f = 0; f < 6; f++)
-            Flux(i,j,k)[f] =
+    forAllFaces(Flux, fd, i, j, k)
+    {
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        Flux(ijk)[fd] =
+            (
                 (
-                    (
-                        fwc(i,j,k)[f]*field(i,j,k)
-                      + fwn(i,j,k)[f]*field(labelVector(i,j,k)+faceOffsets[f])
-                    )
-                  & fan(i,j,k)[f]
-                );
+                    field(ijk)*fwc(ijk)[fd*2]
+                  + field(nei)*fwn(ijk)[fd*2]
+                )
+              & fan(ijk)[fd*2]
+            );
+    }
 
     return tFlux;
 }
 
-tmp<staggeredFaceScalarField> linearFaceFluxScheme::faceFlux
+tmp<staggeredLowerFaceScalarField> linearFaceFluxScheme::faceFlux
 (
     const staggeredScalarField& field
 )
 {
-    tmp<staggeredFaceScalarField> tFlux
+    tmp<staggeredLowerFaceScalarField> tFlux
     (
-        new staggeredFaceScalarField
+        new staggeredLowerFaceScalarField
         (
             "faceFlux("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    staggeredFaceScalarField& Flux = tFlux.ref();
+    staggeredLowerFaceScalarField& Flux = tFlux.ref();
 
     Flux = Zero;
 
     const staggeredFaceScalarField& fa =
         this->fvMsh().metrics<staggered>().faceAreas();
 
-    const meshField<faceScalar,staggered>& fwc =
+    const staggeredFaceScalarField& fwc =
         field.fvMsh().template metrics<staggered>().faceWeightsCenter();
 
-    const meshField<faceScalar,staggered>& fwn =
+    const staggeredFaceScalarField& fwn =
         field.fvMsh().template metrics<staggered>().faceWeightsNeighbor();
 
-    forAllCells(Flux, d, i, j, k)
+    forAllFaces(Flux, d, fd, i, j, k)
     {
-        for (int f = 0; f < 6; f++)
-        {
-            const labelVector ijk(i,j,k);
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[d]);
 
-            const label e = f/2;
-            const label g = (e == d ? f : d*2);
-
-            const labelVector c(e == d || f%2 == 0 ? ijk : ijk+faceOffsets[f]);
-            const labelVector n(c + faceOffsets[g]);
-
-            const label sign = (f%2)*2-1;
-
-            Flux(d,ijk)[f] =
-                fa(d,ijk)[f]
-              * sign
-              * (
-                    fwc(e,c)[g]*field(e,c)
-                  + fwn(e,c)[g]*field(e,n)
-                );
-        }
+        Flux(d,ijk)[fd] =
+          - fa(d,ijk)[fd*2]
+          * (
+                field(fd,ijk)*fwc(fd,ijk)[d*2]
+              + field(fd,nei)*fwn(fd,ijk)[d*2]
+            );
     }
 
     return tFlux;

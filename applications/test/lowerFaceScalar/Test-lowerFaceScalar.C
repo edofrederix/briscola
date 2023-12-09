@@ -14,6 +14,7 @@
 #include "sphericalTensor.H"
 #include "symmTensor.H"
 #include "diagTensor.H"
+#include "faceScalar.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -152,4 +153,90 @@ int main(int argc, char *argv[])
     if (h7.left()    != v1) FatalErrorInFunction << "test 12a failed" << abort(FatalError);
     if (h7.bottom()  != v2) FatalErrorInFunction << "test 12b failed" << abort(FatalError);
     if (h7.aft()     != v3) FatalErrorInFunction << "test 12c failed" << abort(FatalError);
+
+    faceScalar f1(v1,v2,v3,v4,v5,v6);
+
+    h7 = f1;
+
+    if (h7.left()    != v1) FatalErrorInFunction << "test 13a failed" << abort(FatalError);
+    if (h7.bottom()  != v3) FatalErrorInFunction << "test 13b failed" << abort(FatalError);
+    if (h7.aft()     != v5) FatalErrorInFunction << "test 13c failed" << abort(FatalError);
+
+    h7 += f1;
+
+    if (h7.left()    != 2*v1) FatalErrorInFunction << "test 14a failed" << abort(FatalError);
+    if (h7.bottom()  != 2*v3) FatalErrorInFunction << "test 14b failed" << abort(FatalError);
+    if (h7.aft()     != 2*v5) FatalErrorInFunction << "test 14c failed" << abort(FatalError);
+
+    h7 -= f1;
+
+    if (h7.left()    != v1) FatalErrorInFunction << "test 15a failed" << abort(FatalError);
+    if (h7.bottom()  != v3) FatalErrorInFunction << "test 15b failed" << abort(FatalError);
+    if (h7.aft()     != v5) FatalErrorInFunction << "test 15c failed" << abort(FatalError);
+
+    h7 = h7*f1;
+
+    if (h7.left()    != sqr(v1)) FatalErrorInFunction << "test 16a failed" << abort(FatalError);
+    if (h7.bottom()  != sqr(v3)) FatalErrorInFunction << "test 16b failed" << abort(FatalError);
+    if (h7.aft()     != sqr(v5)) FatalErrorInFunction << "test 16c failed" << abort(FatalError);
+
+    h7 = h7/f1;
+
+    if (h7.left()    != v1) FatalErrorInFunction << "test 17a failed" << abort(FatalError);
+    if (h7.bottom()  != v3) FatalErrorInFunction << "test 17b failed" << abort(FatalError);
+    if (h7.aft()     != v5) FatalErrorInFunction << "test 17c failed" << abort(FatalError);
+
+    h7 = cmptMultiply(h7,f1);
+
+    if (h7.left()    != sqr(v1)) FatalErrorInFunction << "test 17a failed" << abort(FatalError);
+    if (h7.bottom()  != sqr(v3)) FatalErrorInFunction << "test 17b failed" << abort(FatalError);
+    if (h7.aft()     != sqr(v5)) FatalErrorInFunction << "test 17c failed" << abort(FatalError);
+
+    h7 = cmptDivide(h7,f1);
+
+    if (h7.left()    != v1) FatalErrorInFunction << "test 18a failed" << abort(FatalError);
+    if (h7.bottom()  != v3) FatalErrorInFunction << "test 18b failed" << abort(FatalError);
+    if (h7.aft()     != v5) FatalErrorInFunction << "test 18c failed" << abort(FatalError);
+
+    h7+f1;
+    f1+h7;
+
+    h7-f1;
+    f1-h7;
+
+    h7*f1;
+    f1*h7;
+
+    h7/f1;
+    f1/h7;
+
+    cmptPow(h7,f1);
+    cmptPow(f1,h7);
+
+    max(h7,f1);
+    max(f1,h7);
+
+    min(h7,f1);
+    min(f1,h7);
+
+    minMod(h7,f1);
+    minMod(f1,h7);
+
+    h7 == f1;
+    f1 == h7;
+
+    h7 != f1;
+    f1 != h7;
+
+    h7 > f1;
+    f1 > h7;
+
+    h7 < f1;
+    f1 < h7;
+
+    h7 >= f1;
+    f1 >= h7;
+
+    h7 <= f1;
+    f1 <= h7;
 }

@@ -491,6 +491,48 @@ void meshDirection<Type,MeshType>::operator-=
 
 template<class Type, class MeshType>
 template<class Type2>
+void meshDirection<Type,MeshType>::operator*=
+(
+    const meshDirection<Type2,MeshType>& D
+)
+{
+    this->B() *= D.B();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshDirection<Type,MeshType>::operator*=
+(
+    const tmp<meshDirection<Type2,MeshType>>& tD
+)
+{
+    *this *= tD();
+    tD.clear();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshDirection<Type,MeshType>::operator/=
+(
+    const meshDirection<Type2,MeshType>& D
+)
+{
+    this->B() /= D.B();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshDirection<Type,MeshType>::operator/=
+(
+    const tmp<meshDirection<Type2,MeshType>>& tD
+)
+{
+    *this /= tD();
+    tD.clear();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
 void meshDirection<Type,MeshType>::operator=(const Type2& v)
 {
     this->B() = v;
@@ -508,6 +550,20 @@ template<class Type2>
 void meshDirection<Type,MeshType>::operator-=(const Type2& v)
 {
     this->B() -= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshDirection<Type,MeshType>::operator*=(const Type2& v)
+{
+    this->B() *= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshDirection<Type,MeshType>::operator/=(const Type2& v)
+{
+    this->B() /= v;
 }
 
 }

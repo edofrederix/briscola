@@ -69,7 +69,7 @@ void FFTPoissonSolver::solve
 (
     colocatedScalarField& x,
     const colocatedScalarField* bPtr,
-    const colocatedFaceScalarField* lambdaPtr,
+    const colocatedLowerFaceScalarField* lambdaPtr,
     const bool ddt
 )
 {

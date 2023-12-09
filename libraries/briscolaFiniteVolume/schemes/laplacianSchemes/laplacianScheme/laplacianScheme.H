@@ -53,22 +53,56 @@ public:
     // Destructor
     virtual ~laplacianScheme();
 
-    // Laplacian with a scalar diffusivity defined at faces
-    virtual tmp<linearSystem<stencil,Type,MeshType>> laplacian
+    // Implicit Laplacian with pointer to coefficient
+    virtual tmp<linearSystem<stencil,Type,MeshType>> imLaplacian
     (
-        const meshField<faceScalar,MeshType>&,
+        const meshField<lowerFaceScalar,MeshType>*,
         meshField<Type,MeshType>&
     ) = 0;
 
-    // Laplacian
-    virtual tmp<linearSystem<stencil,Type,MeshType>> laplacian
+    // Explicit Laplacian with pointer to coefficient
+    virtual tmp<meshField<Type,MeshType>> exLaplacian
+    (
+        const meshField<lowerFaceScalar,MeshType>*,
+        meshField<Type,MeshType>&
+    ) = 0;
+
+    // Implicit Laplacian
+    inline tmp<linearSystem<stencil,Type,MeshType>> imLaplacian
+    (
+        const meshField<lowerFaceScalar,MeshType>& lambda,
+        meshField<Type,MeshType>& field
+    )
+    {
+        return this->imLaplacian(&lambda, field);
+    }
+
+    // Explicit Laplacian
+    inline tmp<meshField<Type,MeshType>> exLaplacian
+    (
+        const meshField<lowerFaceScalar,MeshType>& lambda,
+        meshField<Type,MeshType>& field
+    )
+    {
+        return this->exLaplacian(&lambda, field);
+    }
+
+    // Implicit Laplacian without coefficient
+    inline tmp<linearSystem<stencil,Type,MeshType>> imLaplacian
     (
         meshField<Type,MeshType>& field
     )
     {
-        meshField<faceScalar,MeshType> lambda("lambda", field.fvMsh());
-        lambda = faceScalar::one;
-        return this->laplacian(lambda, field);
+        return this->imLaplacian(nullptr, field);
+    }
+
+    // Explicit Laplacian without coefficient
+    inline tmp<meshField<Type,MeshType>> exLaplacian
+    (
+        meshField<Type,MeshType>& field
+    )
+    {
+        return this->exLaplacian(nullptr, field);
     }
 };
 

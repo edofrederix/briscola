@@ -24,7 +24,7 @@ namespace ex
 template<class Type, class MeshType>
 inline tmp<meshField<Type,MeshType>> div
 (
-    const meshField<FaceSpace<Type>,MeshType>& phi
+    const meshField<LowerFaceSpace<Type>,MeshType>& phi
 )
 {
     return explicitDiv(phi);
@@ -33,7 +33,7 @@ inline tmp<meshField<Type,MeshType>> div
 template<class Type, class MeshType>
 inline tmp<meshField<Type,MeshType>> div
 (
-    const meshField<faceScalar,MeshType>& phi,
+    const meshField<lowerFaceScalar,MeshType>& phi,
     meshField<Type,MeshType>& field
 )
 {
@@ -41,13 +41,13 @@ inline tmp<meshField<Type,MeshType>> div
     (
         "div("+phi.name()+","+field.name()+")",
         field.fvMsh()
-    )->div(phi,field)->evaluate();
+    )->exDiv(phi,field);
 }
 
 template<class Type, class MeshType>
 inline tmp<meshField<Type,MeshType>> laplacian
 (
-    const meshField<faceScalar,MeshType>& lambda,
+    const meshField<lowerFaceScalar,MeshType>& lambda,
     meshField<Type,MeshType>& field
 )
 {
@@ -55,7 +55,23 @@ inline tmp<meshField<Type,MeshType>> laplacian
     (
         "laplacian("+lambda.name()+","+field.name()+")",
         field.fvMsh()
-    )->laplacian(lambda,field)->evaluate();
+    )->exLaplacian(lambda,field);
+}
+
+template<class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> laplacian
+(
+    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+    meshField<Type,MeshType>& field
+)
+{
+    return laplacianScheme<Type,MeshType>::New
+    (
+        lambdaPtr
+      ? "laplacian("+lambdaPtr->name()+","+ field.name()+")"
+      : "laplacian("+field.name()+")",
+        field.fvMsh()
+    )->exLaplacian(lambdaPtr,field);
 }
 
 template<class Type, class MeshType>
@@ -68,7 +84,7 @@ inline tmp<meshField<Type,MeshType>> laplacian
     (
         "laplacian("+field.name()+")",
         field.fvMsh()
-    )->laplacian(field)->evaluate();
+    )->exLaplacian(field);
 }
 
 template<class Type>
@@ -80,9 +96,9 @@ inline tmp<meshField<Type,colocated>> coloDiv
     return explicitColoDiv(field);
 }
 
-inline tmp<meshField<faceScalar,colocated>> faceFlux
+inline tmp<meshField<lowerFaceScalar,colocated>> faceFlux
 (
-    const meshField<vector,colocated>& field
+    const colocatedVectorField& field
 )
 {
     return faceFluxScheme::New
@@ -92,9 +108,9 @@ inline tmp<meshField<faceScalar,colocated>> faceFlux
     )->faceFlux(field);
 }
 
-inline tmp<meshField<faceScalar,staggered>> faceFlux
+inline tmp<meshField<lowerFaceScalar,staggered>> faceFlux
 (
-    const meshField<scalar,staggered>& field
+    const staggeredScalarField& field
 )
 {
     return faceFluxScheme::New
@@ -105,7 +121,7 @@ inline tmp<meshField<faceScalar,staggered>> faceFlux
 }
 
 template<class Type, class MeshType>
-inline tmp<meshField<FaceSpace<Type>,MeshType>> faceGrad
+inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
 (
     const meshField<Type,MeshType>& field
 )
@@ -156,7 +172,7 @@ stagGrad
 }
 
 template<class Type, class MeshType>
-inline tmp<meshField<FaceSpace<Type>,MeshType>> interp
+inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
 (
     const meshField<Type,MeshType>& field
 )

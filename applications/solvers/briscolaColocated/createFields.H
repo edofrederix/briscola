@@ -30,7 +30,7 @@ p.correctBoundaryConditions();
 
 // Flux
 
-colocatedFaceScalarField phi
+colocatedLowerFaceScalarField phi
 (
     "phi",
     fvMsh,
@@ -44,7 +44,7 @@ phi = ex::faceFlux(U);
 
 // Viscosity
 
-colocatedFaceScalarField nu
+colocatedLowerFaceScalarField nu
 (
     "nu",
     fvMsh,
@@ -100,10 +100,6 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
         fvMsh
     )
 );
-
-// Stencils
-
-linearSystem<stencil,vector,colocated> LapU(U);
 
 // Adams-Bashforth source
 

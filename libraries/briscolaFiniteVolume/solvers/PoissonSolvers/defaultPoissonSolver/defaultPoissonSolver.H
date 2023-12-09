@@ -41,7 +41,7 @@ public:
     (
         meshField<Type,MeshType>&,
         const meshField<Type,MeshType>*,
-        const meshField<faceScalar,MeshType>*,
+        const meshField<lowerFaceScalar,MeshType>*,
         const bool = false
     );
 };

@@ -12,12 +12,6 @@ inline LowerFaceSpace<Cmpt>::LowerFaceSpace(const zero)
 {}
 
 template<class Cmpt>
-inline LowerFaceSpace<Cmpt>::LowerFaceSpace(const Cmpt& v)
-:
-    LowerFaceSpace::csType(v)
-{}
-
-template<class Cmpt>
 template<class Cmpt2>
 inline LowerFaceSpace<Cmpt>::LowerFaceSpace
 (

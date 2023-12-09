@@ -31,4 +31,30 @@
         forAllCellsInDirection                                                 \
     )(__VA_ARGS__)
 
+// For all faces
+
+#define forAllFacesInDirection(DIR,fd,i,j,k)                                   \
+    for (int fd = 0; fd < 3; fd++)                                             \
+    for (int i = (DIR).I().left();   i < (DIR).I().right() + (fd == 0); i++)   \
+    for (int j = (DIR).I().bottom(); j < (DIR).I().top()   + (fd == 1); j++)   \
+    for (int k = (DIR).I().aft();    k < (DIR).I().fore()  + (fd == 2); k++)
+
+#define forAllFacesInLevel(LEV,d,fd,i,j,k)                                     \
+    for (int d = 0; d < (LEV).numberOfDirections(); d++)                       \
+        forAllFacesInDirection((LEV).direction(d), fd, i, j, k)
+
+#define forAllFacesInField(FIELD,l,d,fd,i,j,k)                                 \
+    for (int l = 0; l < (FIELD).numberOfLevels(); l++)                         \
+        forAllFacesInLevel((FIELD).level(l), d, fd, i, j, k)
+
+#define GET_FACE_ITERATOR(_1,_2,_3,_4,_5,_6,_7,NAME,...) NAME
+#define forAllFaces(...)                                                       \
+    GET_FACE_ITERATOR                                                          \
+    (                                                                          \
+        __VA_ARGS__,                                                           \
+        forAllFacesInField,                                                    \
+        forAllFacesInLevel,                                                    \
+        forAllFacesInDirection                                                 \
+    )(__VA_ARGS__)
+
 #endif
