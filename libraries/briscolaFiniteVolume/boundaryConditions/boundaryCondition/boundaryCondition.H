@@ -7,6 +7,9 @@
 
 #include "faceVector.H"
 #include "faceScalar.H"
+#include "stencil.H"
+#include "symmStencil.H"
+#include "diagStencil.H"
 
 #include "boundary.H"
 
@@ -48,9 +51,6 @@ protected:
 
     // Copy of the dictionary
     dictionary dict_;
-
-    // Disallow default bitwise assignment
-    void operator=(const boundaryCondition<Type,MeshType>&);
 
 public:
 
@@ -219,47 +219,62 @@ public:
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const = 0;
 
-    // Prepare the evaluation of the boundary condition for given level
-    virtual void prepare(const label) = 0;
+    // Eliminated boundary condition
+    virtual bool eliminated() const = 0;
 
-    // Evaluate the boundary condition for given level
-    virtual void evaluate(const label) = 0;
+    // Eliminate ghosts from the linear system at given level. Cannot be
+    // templated because of virtual functions.
 
-    // Eliminate ghosts from the given linear system
-    void eliminateGhosts(linearSystem<stencil,Type,MeshType>&, const label);
-    void eliminateGhosts(linearSystem<diagStencil,Type,MeshType>&, const label);
+    virtual void eliminateGhosts
+    (
+        linearSystem<stencil,Type,MeshType>&,
+        const label
+    );
 
-    // Constrained boundary conditions
+    virtual void eliminateGhosts
+    (
+        linearSystem<symmStencil,Type,MeshType>&,
+        const label
+    );
 
-        // Bool that specifies if the internal value at a boundary is
-        // constrained by the boundary condition
-        virtual bool constrained(const bool shifted) const { return false; }
+    virtual void eliminateGhosts
+    (
+        linearSystem<diagStencil,Type,MeshType>&,
+        const label
+    );
 
-        // Return the internal value (if any) of constrained cells at given
-        // level and direction. By default a zero value is returned.
-        virtual tmp<block<Type>> internalValue(const label, const label);
+    // Eliminate ghosts from the linear system at given level and direction.
+    // Cannot be templated because of virtual functions.
 
-    // Eliminated boundary conditions
-    //
-    // Boundary coefficients and sources are defined from the relation:
-    //
-    //     ghost_cell = coefficients * internal_cells + source,
-    //
-    // which relates the ghost cell value to its internal cell values and
-    // eliminates dependence on the ghost value. The functions below can be
-    // overloaded by boundary conditions that support this mechanism.
+    virtual void eliminateGhosts
+    (
+        linearSystem<stencil,Type,MeshType>&,
+        const label,
+        const label
+    );
 
-        // Return true if the (shifted) boundary condition eliminates the ghost
-        virtual bool eliminated(const bool shifted) const { return false; }
+    virtual void eliminateGhosts
+    (
+        linearSystem<symmStencil,Type,MeshType>&,
+        const label,
+        const label
+    );
 
-        // Return the boundary coefficient for given level and direction
-        virtual stencil boundaryCoeff(const label, const label)
-        {
-            return pTraits<stencil>::zero;
-        }
+    virtual void eliminateGhosts
+    (
+        linearSystem<diagStencil,Type,MeshType>&,
+        const label,
+        const label
+    );
 
-        // Return the boundary sources for given level and direction
-        virtual tmp<block<Type>> boundarySources(const label, const label);
+    // Prepare the evaluation of the boundary condition for given level and
+    // direction
+    virtual void prepare(const label);
+    virtual void prepare(const label, const label);
+
+    // Evaluate the boundary condition for given level and direction
+    virtual void evaluate(const label);
+    virtual void evaluate(const label, const label);
 };
 
 // Helper function for global boundary condition type

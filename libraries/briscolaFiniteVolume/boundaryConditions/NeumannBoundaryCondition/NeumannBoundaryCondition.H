@@ -2,7 +2,6 @@
 #define NeumannBoundaryCondition_H
 
 #include "boundaryCondition.H"
-
 #include "block.H"
 
 namespace Foam
@@ -19,11 +18,10 @@ class NeumannBoundaryCondition
 :
     public boundaryCondition<Type,MeshType>
 {
+protected:
+
     // Boundary gradients
     List<Type> boundaryGradients_;
-
-    // Disallow default bitwise assignment
-    void operator=(const NeumannBoundaryCondition<Type,MeshType>&);
 
 public:
 
@@ -37,8 +35,19 @@ public:
         const boundary&
     );
 
+    // Construct from components and boundary gradient
+    NeumannBoundaryCondition
+    (
+        const meshField<Type,MeshType>&,
+        const boundary&,
+        const List<Type>&
+    );
+
     // Copy constructor
-    NeumannBoundaryCondition(const NeumannBoundaryCondition<Type,MeshType>&);
+    NeumannBoundaryCondition
+    (
+        const NeumannBoundaryCondition<Type,MeshType>&
+    );
 
     // Copy constructor resetting field reference
     NeumannBoundaryCondition
@@ -74,22 +83,27 @@ public:
         return NEUMANNBC;
     }
 
-    // Prepare the evaluation of the boundary condition for given level
-    virtual void prepare(const label);
+    // Eliminated boundary condition
+    virtual bool eliminated() const { return true; }
 
-    // Evaluate the boundary condition for given level
-    virtual void evaluate(const label);
+    // Eliminate ghosts from the linear system at given level and direction
 
-    // Eliminated boundary conditions
+    virtual void eliminateGhosts
+    (
+        linearSystem<stencil,Type,MeshType>&,
+        const label,
+        const label
+    );
 
-        // Eliminated ghosts for all boundaries
-        virtual bool eliminated(const bool shifted) const { return true; }
+    virtual void eliminateGhosts
+    (
+        linearSystem<symmStencil,Type,MeshType>&,
+        const label,
+        const label
+    );
 
-        // Return the boundary coefficient for given level and direction
-        virtual stencil boundaryCoeff(const label, const label);
-
-        // Return the boundary sources for given level and direction
-        virtual tmp<block<Type>> boundarySources(const label, const label);
+    // Evaluate the boundary condition for given level and direction
+    virtual void evaluate(const label, const label);
 };
 
 }

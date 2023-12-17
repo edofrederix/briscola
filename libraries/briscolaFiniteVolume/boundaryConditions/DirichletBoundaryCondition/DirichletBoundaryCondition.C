@@ -2,7 +2,6 @@
 
 #include "colocated.H"
 #include "staggered.H"
-
 #include "meshLevel.H"
 
 namespace Foam
@@ -28,6 +27,18 @@ DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
 template<class Type, class MeshType>
 DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
 (
+    const meshField<Type,MeshType>& mshField,
+    const boundary& b,
+    const List<Type>& boundaryValues
+)
+:
+    boundaryCondition<Type,MeshType>(mshField, b),
+    boundaryValues_(boundaryValues)
+{}
+
+template<class Type, class MeshType>
+DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
+(
     const DirichletBoundaryCondition<Type,MeshType>& bc
 )
 :
@@ -47,72 +58,74 @@ DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void DirichletBoundaryCondition<Type,MeshType>::prepare(const label)
-{}
-
-template<class Type, class MeshType>
-void DirichletBoundaryCondition<Type,MeshType>::evaluate(const label l)
+void DirichletBoundaryCondition<Type,MeshType>::eliminateGhosts
+(
+    linearSystem<stencil,Type,MeshType>& sys,
+    const label l,
+    const label d
+)
 {
-    meshLevel<Type,MeshType>& field = this->mshField()[l];
-
-    const scalar H = l == 0;
-
     const labelVector bo(this->offset());
+    const label faceNum(faceNumber(bo));
 
-    forAll(field, d)
+    meshField<stencil,MeshType>& A = sys.A();
+    meshField<Type,MeshType>& b = sys.b();
+
+    const labelVector S(this->S(l,d));
+    const labelVector E(this->E(l,d));
+
+    labelVector ijk;
+    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
     {
-        meshDirection<Type,MeshType>& fd = field[d];
+        const scalar ghostCoeff = A(l,d,ijk)[faceNum+1];
 
-        const labelVector S(this->S(l,d));
-        const labelVector E(this->E(l,d));
+        A(l,d,ijk)[0] -= ghostCoeff;
+        A(l,d,ijk)[faceNum+1] = Zero;
 
-        labelVector ijk;
-
-        if (MeshType::shifted(d,bo))
-        {
-            // Ghost value not needed because the internal value is constrained.
-            // Set to the internal value.
-
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                fd(ijk+bo) = H*boundaryValues_[d];
-            }
-        }
-        else
-        {
-            // Eliminated so infer value from boundary source
-
-            const block<Type> B(this->boundarySources(l,d));
-
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                fd(ijk+bo) = H*B(ijk-S) - fd(ijk);
-            }
-        }
+        if (l == 0)
+            b(l,d,ijk) -= ghostCoeff*2.0*boundaryValues_[d];
     }
 }
 
 template<class Type, class MeshType>
-tmp<block<Type>> DirichletBoundaryCondition<Type,MeshType>::internalValue
+void DirichletBoundaryCondition<Type,MeshType>::eliminateGhosts
 (
+    linearSystem<symmStencil,Type,MeshType>& sys,
     const label l,
     const label d
 )
 {
-    const scalar H = l == 0;
+    const labelVector bo(this->offset());
+    const label faceNum(faceNumber(bo));
 
-    return tmp<block<Type>>
-    (
-        new block<Type>(this->N(l,d), H*boundaryValues_[d])
-    );
+    const labelVector o(faceNum%2 ? bo : zeroXYZ);
+
+    meshField<symmStencil,MeshType>& A = sys.A();
+    meshField<Type,MeshType>& b = sys.b();
+
+    const labelVector S(this->S(l,d));
+    const labelVector E(this->E(l,d));
+
+    labelVector ijk;
+    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+    {
+        const labelVector nei(ijk+o);
+        const scalar ghostCoeff = A(l,d,nei)[faceNum/2+1];
+
+        A(l,d,ijk)[0] -= ghostCoeff;
+        A(l,d,nei)[faceNum/2+1] = Zero;
+
+        if (l == 0)
+            b(l,d,ijk) -= ghostCoeff*2.0*boundaryValues_[d];
+    }
 }
 
 template<class Type, class MeshType>
-tmp<block<Type>> DirichletBoundaryCondition<Type,MeshType>::boundarySources
+void DirichletBoundaryCondition<Type,MeshType>::evaluate
 (
     const label l,
     const label d
@@ -120,10 +133,20 @@ tmp<block<Type>> DirichletBoundaryCondition<Type,MeshType>::boundarySources
 {
     const scalar H = l == 0;
 
-    return tmp<block<Type>>
-    (
-        new block<Type>(this->N(l,d), H*2.0*boundaryValues_[d])
-    );
+    const labelVector bo(this->offset());
+
+    meshDirection<Type,MeshType>& fd = this->mshField_[l][d];
+
+    const labelVector S(this->S(l,d));
+    const labelVector E(this->E(l,d));
+
+    labelVector ijk;
+    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+    {
+        fd(ijk+bo) = H*2.0*boundaryValues_[d] - fd(ijk);
+    }
 }
 
 }

@@ -107,9 +107,6 @@ public:
     // Eliminate ghosts from the linear system where possible
     void eliminateGhosts();
 
-    // Eliminate ghosts from the linear system where possible, at given level
-    void eliminateGhosts(const label);
-
     // Member Operators
 
     void operator=(const linearSystem<SType,Type,MeshType>&);

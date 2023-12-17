@@ -1,7 +1,7 @@
-#ifndef noSlipBoundaryCondition_H
-#define noSlipBoundaryCondition_H
+#ifndef outflowBoundaryCondition_H
+#define outflowBoundaryCondition_H
 
-#include "DirichletBoundaryCondition.H"
+#include "NeumannBoundaryCondition.H"
 
 namespace Foam
 {
@@ -13,38 +13,33 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-class noSlipBoundaryCondition
+class outflowBoundaryCondition
 :
-    public DirichletBoundaryCondition<Type,MeshType>
+    public NeumannBoundaryCondition<Type,MeshType>
 {
-protected:
-
-    // Boundary values
-    List<Type> boundaryValues_;
-
 public:
 
     // Runtime type information
-    TypeName("noSlip");
+    TypeName("outflow");
 
     // Construct from components
-    noSlipBoundaryCondition
+    outflowBoundaryCondition
     (
         const meshField<Type,MeshType>&,
         const boundary&
     );
 
     // Copy constructor
-    noSlipBoundaryCondition
+    outflowBoundaryCondition
     (
-        const noSlipBoundaryCondition<Type,MeshType>&
+        const outflowBoundaryCondition<Type,MeshType>&
     );
 
     // Copy constructor resetting field reference
-    noSlipBoundaryCondition
+    outflowBoundaryCondition
     (
         const meshField<Type,MeshType>&,
-        const noSlipBoundaryCondition<Type,MeshType>&
+        const outflowBoundaryCondition<Type,MeshType>&
     );
 
     // Construct and return a clone
@@ -52,7 +47,7 @@ public:
     {
         return tmp<boundaryCondition<Type,MeshType>>
         (
-            new noSlipBoundaryCondition<Type,MeshType>(*this)
+            new outflowBoundaryCondition<Type,MeshType>(*this)
         );
     }
 
@@ -64,14 +59,8 @@ public:
     {
         return tmp<boundaryCondition<Type,MeshType>>
         (
-            new noSlipBoundaryCondition<Type,MeshType>(field,*this)
+            new outflowBoundaryCondition<Type,MeshType>(field,*this)
         );
-    }
-
-    // Boundary condition base type
-    virtual boundaryConditionBaseType baseType() const
-    {
-        return DIRICHLETBC;
     }
 };
 
@@ -82,7 +71,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "noSlipBoundaryCondition.C"
+    #include "outflowBoundaryCondition.C"
 #endif
 
 #endif

@@ -395,14 +395,8 @@ template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::eliminateGhosts()
 {
     forAll(A_, l)
-        this->eliminateGhosts(l);
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::eliminateGhosts(const label l)
-{
-    forAll(x_.boundaryConditions(), i)
-        x_.boundaryConditions()[i].eliminateGhosts(*this, l);
+        forAll(x_.boundaryConditions(), i)
+            x_.boundaryConditions()[i].eliminateGhosts(*this, l);
 }
 
 template<class SType, class Type, class MeshType>

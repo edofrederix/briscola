@@ -94,6 +94,9 @@ public:
         return PARALLELBC;
     }
 
+    // Non-eliminated boundary condition
+    virtual bool eliminated() const { return false; }
+
     // Prepare the evaluation of the boundary condition for given level
     virtual void prepare(const label);
 

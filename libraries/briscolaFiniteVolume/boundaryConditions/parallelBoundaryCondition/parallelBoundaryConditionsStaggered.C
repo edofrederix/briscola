@@ -10,7 +10,8 @@ namespace briscola
 namespace fv
 {
 
-makeBoundaryConditionTypes(parallel,staggered)
+makeBoundaryConditionTypes(parallel,parallel,staggered)
+addBoundaryConditionTypes(parallel,staggered)
 
 }
 

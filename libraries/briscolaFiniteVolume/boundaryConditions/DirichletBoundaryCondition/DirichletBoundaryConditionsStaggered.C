@@ -1,5 +1,5 @@
 #include "boundaryConditions.H"
-#include "DirichletBoundaryCondition.H"
+#include "stagDirichletBoundaryCondition.H"
 
 namespace Foam
 {
@@ -10,7 +10,12 @@ namespace briscola
 namespace fv
 {
 
-makeBoundaryConditionTypes(Dirichlet,staggered)
+// Base
+makeBoundaryConditionTypes(Dirichlet,Dirichlet,staggered)
+
+// Derived
+makeBoundaryConditionMeshedTypes(stagDirichlet,Dirichlet,staggered)
+addBoundaryConditionMeshedTypes(stagDirichlet,staggered)
 
 }
 

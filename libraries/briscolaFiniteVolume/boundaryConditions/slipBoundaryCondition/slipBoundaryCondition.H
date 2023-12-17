@@ -1,7 +1,8 @@
-#ifndef noSlipBoundaryCondition_H
-#define noSlipBoundaryCondition_H
+#ifndef slipBoundaryCondition_H
+#define slipBoundaryCondition_H
 
-#include "DirichletBoundaryCondition.H"
+#include "boundaryCondition.H"
+#include "block.H"
 
 namespace Foam
 {
@@ -13,38 +14,33 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-class noSlipBoundaryCondition
+class slipBoundaryCondition
 :
-    public DirichletBoundaryCondition<Type,MeshType>
+    public boundaryCondition<Type,MeshType>
 {
-protected:
-
-    // Boundary values
-    List<Type> boundaryValues_;
-
 public:
 
     // Runtime type information
-    TypeName("noSlip");
+    TypeName("slip");
 
     // Construct from components
-    noSlipBoundaryCondition
+    slipBoundaryCondition
     (
         const meshField<Type,MeshType>&,
         const boundary&
     );
 
     // Copy constructor
-    noSlipBoundaryCondition
+    slipBoundaryCondition
     (
-        const noSlipBoundaryCondition<Type,MeshType>&
+        const slipBoundaryCondition<Type,MeshType>&
     );
 
     // Copy constructor resetting field reference
-    noSlipBoundaryCondition
+    slipBoundaryCondition
     (
         const meshField<Type,MeshType>&,
-        const noSlipBoundaryCondition<Type,MeshType>&
+        const slipBoundaryCondition<Type,MeshType>&
     );
 
     // Construct and return a clone
@@ -52,7 +48,7 @@ public:
     {
         return tmp<boundaryCondition<Type,MeshType>>
         (
-            new noSlipBoundaryCondition<Type,MeshType>(*this)
+            new slipBoundaryCondition<Type,MeshType>(*this)
         );
     }
 
@@ -64,15 +60,21 @@ public:
     {
         return tmp<boundaryCondition<Type,MeshType>>
         (
-            new noSlipBoundaryCondition<Type,MeshType>(field,*this)
+            new slipBoundaryCondition<Type,MeshType>(field,*this)
         );
     }
 
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const
     {
-        return DIRICHLETBC;
+        return NEUMANNBC;
     }
+
+    // Eliminated boundary condition
+    virtual bool eliminated() const { return false; }
+
+    // Evaluate the boundary condition for given level and direction
+    virtual void evaluate(const label, const label);
 };
 
 }
@@ -82,7 +84,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "noSlipBoundaryCondition.C"
+    #include "slipBoundaryCondition.C"
 #endif
 
 #endif

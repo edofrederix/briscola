@@ -1,4 +1,4 @@
-#include "emptyBoundaryCondition.H"
+#include "outflowBoundaryCondition.H"
 
 #include "colocated.H"
 #include "staggered.H"
@@ -14,7 +14,7 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-emptyBoundaryCondition<Type,MeshType>::emptyBoundaryCondition
+outflowBoundaryCondition<Type,MeshType>::outflowBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
     const boundary& b
@@ -29,19 +29,19 @@ emptyBoundaryCondition<Type,MeshType>::emptyBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-emptyBoundaryCondition<Type,MeshType>::emptyBoundaryCondition
+outflowBoundaryCondition<Type,MeshType>::outflowBoundaryCondition
 (
-    const emptyBoundaryCondition<Type,MeshType>& bc
+    const outflowBoundaryCondition<Type,MeshType>& bc
 )
 :
     NeumannBoundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>
-emptyBoundaryCondition<Type,MeshType>::emptyBoundaryCondition
+outflowBoundaryCondition<Type,MeshType>::outflowBoundaryCondition
 (
     const meshField<Type,MeshType>& field,
-    const emptyBoundaryCondition<Type,MeshType>& bc
+    const outflowBoundaryCondition<Type,MeshType>& bc
 )
 :
     NeumannBoundaryCondition<Type,MeshType>(field, bc.mshBoundary())

@@ -2,11 +2,8 @@
 
 #include "colocated.H"
 #include "staggered.H"
-
-#include "stencil.H"
-#include "diagStencil.H"
-
 #include "meshField.H"
+#include "linearSystem.H"
 
 namespace Foam
 {
@@ -397,25 +394,7 @@ boundaryCondition<Type,MeshType>::faceDeltas() const
     return fvMsh_.template metrics<MeshType>().faceDeltas();
 }
 
-template<class Type, class MeshType>
-tmp<block<Type>> boundaryCondition<Type,MeshType>::internalValue
-(
-    const label l,
-    const label d
-)
-{
-    return tmp<block<Type>>(new block<Type>(this->N(l,d), Zero));
-}
-
-template<class Type, class MeshType>
-tmp<block<Type>> boundaryCondition<Type,MeshType>::boundarySources
-(
-    const label l,
-    const label d
-)
-{
-    return tmp<block<Type>>(new block<Type>(this->N(l,d), Zero));
-}
+// Level ghost eliminate
 
 template<class Type, class MeshType>
 void boundaryCondition<Type,MeshType>::eliminateGhosts
@@ -424,73 +403,21 @@ void boundaryCondition<Type,MeshType>::eliminateGhosts
     const label l
 )
 {
-    // Only face boundaries can manipulate a stencil
+    if (this->eliminated())
+        forAll(this->mshField_[l], d)
+            eliminateGhosts(sys, l, d);
+}
 
-    if (this->offsetDegree() == 1)
-    {
-        const labelVector bo(this->offset());
-        const label faceNum(faceNumber(bo));
-
-        meshField<stencil,MeshType>& A = sys.A();
-        meshField<Type,MeshType>& b = sys.b();
-
-        const meshField<scalar,MeshType>& cv = this->cellVolumes();
-
-        forAll(A[l], d)
-        {
-            // Manipulate the linear system for eliminated or constrained
-            // boundary conditions
-
-            const bool shifted = MeshType::shifted(d,bo);
-            const bool eliminated = this->eliminated(shifted);
-            const bool constrained = this->constrained(shifted);
-
-            if (eliminated || constrained)
-            {
-                const labelVector S(this->S(l,d));
-                const labelVector E(this->E(l,d));
-
-                labelVector ijk;
-
-                if (eliminated)
-                {
-                    const stencil C(this->boundaryCoeff(l,d));
-                    const block<Type> B(this->boundarySources(l,d));
-
-                    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-                    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-                    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-                    {
-                        // Eliminate dependence on the ghost
-
-                        A(l,d,ijk) += A(l,d,ijk)[faceNum+1]*C;
-
-                        if (l == 0)
-                            b(l,d,ijk) -= A(l,d,ijk)[faceNum+1]*B(ijk-S);
-
-                        A(l,d,ijk)[faceNum+1] = 0;
-                    }
-                }
-
-                if (constrained)
-                {
-                    const block<Type> V(this->internalValue(l,d));
-
-                    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-                    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-                    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-                    {
-                        // Constrain the internal value
-
-                        A(l,d,ijk) = diagStencil(cv(l,d,ijk));
-
-                        if (l == 0)
-                            b(l,d,ijk) = V(ijk-S)*cv(l,d,ijk);
-                    }
-                }
-            }
-        }
-    }
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::eliminateGhosts
+(
+    linearSystem<symmStencil,Type,MeshType>& sys,
+    const label l
+)
+{
+    if (this->eliminated())
+        forAll(this->mshField_[l], d)
+            eliminateGhosts(sys, l, d);
 }
 
 template<class Type, class MeshType>
@@ -500,8 +427,71 @@ void boundaryCondition<Type,MeshType>::eliminateGhosts
     const label l
 )
 {
-    // Nothing to be done for a diagonal stencil
+    if (this->eliminated())
+        forAll(this->mshField_[l], d)
+            eliminateGhosts(sys, l, d);
 }
+
+// Direction ghost eliminate
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::eliminateGhosts
+(
+    linearSystem<stencil,Type,MeshType>&,
+    const label,
+    const label
+)
+{
+    NotImplemented;
+}
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::eliminateGhosts
+(
+    linearSystem<symmStencil,Type,MeshType>&,
+    const label,
+    const label
+)
+{
+    NotImplemented;
+}
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::eliminateGhosts
+(
+    linearSystem<diagStencil,Type,MeshType>&,
+    const label,
+    const label
+)
+{
+    NotImplemented;
+}
+
+// Prepare
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::prepare(const label l)
+{
+    forAll(this->mshField_[l], d)
+        prepare(l,d);
+}
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::prepare(const label l, const label d)
+{}
+
+// Evaluate
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::evaluate(const label l)
+{
+    forAll(this->mshField_[l], d)
+        evaluate(l,d);
+}
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::evaluate(const label l, const label d)
+{}
 
 }
 
