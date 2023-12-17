@@ -15,7 +15,7 @@ namespace fv
 template<class Type, class MeshType>
 class linearGaussDivergenceScheme
 :
-    public divergenceScheme<Type,MeshType>
+    public divergenceScheme<stencil,Type,MeshType>
 {
 public:
 

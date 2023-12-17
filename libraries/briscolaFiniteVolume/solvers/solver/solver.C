@@ -95,7 +95,7 @@ List<Type> solver<SType,Type,MeshType>::normFactors
 
     return max
     (
-        gSum(cmptMag(Amul(A,x) - Ay) + cmptMag(b - Ay)),
+        gSum(cmptMag(rowProduct(A,x) - Ay) + cmptMag(b - Ay)),
         1e-20*pTraits<Type>::one
     );
 }
@@ -142,7 +142,7 @@ void solver<SType,Type,MeshType>::RBGS
                 if ((i+j+k) % 2 == 0)
                     xd(i,j,k) +=
                         omega
-                      * (bd(i,j,k) - Amul(Ad,xd,i,j,k) - xi[d])
+                      * (bd(i,j,k) - rowProduct(Ad,xd,i,j,k) - xi[d])
                       / Ad(i,j,k).center();
             }
         }
@@ -164,7 +164,7 @@ void solver<SType,Type,MeshType>::RBGS
                 if ((i+j+k) % 2 == 1)
                     xd(i,j,k) +=
                         omega
-                      * (bd(i,j,k) - Amul(Ad,xd,i,j,k) - xi[d])
+                      * (bd(i,j,k) - rowProduct(Ad,xd,i,j,k) - xi[d])
                       / Ad(i,j,k).center();
             }
         }
@@ -217,7 +217,7 @@ void solver<SType,Type,MeshType>::LEXGS
             {
                 xd(i,j,k) +=
                     omega
-                  * (bd(i,j,k) - Amul(Ad,xd,i,j,k) - xi[d])
+                  * (bd(i,j,k) - rowProduct(Ad,xd,i,j,k) - xi[d])
                   / Ad(i,j,k).center();
             }
         }
@@ -273,7 +273,7 @@ void solver<SType,Type,MeshType>::JAC
             {
                 yd(i,j,k) +=
                     omega
-                  * (bd(i,j,k) - Amul(Ad,xd,i,j,k) - xi[d])
+                  * (bd(i,j,k) - rowProduct(Ad,xd,i,j,k) - xi[d])
                   / Ad(i,j,k).center();
             }
         }

@@ -9,8 +9,8 @@ namespace briscola
 namespace fv
 {
 
-template<class Type, class MeshType>
-divergenceScheme<Type,MeshType>::divergenceScheme
+template<class SType, class Type, class MeshType>
+divergenceScheme<SType,Type,MeshType>::divergenceScheme
 (
     const dictionary& dict,
     const fvMesh& fvMsh
@@ -19,21 +19,22 @@ divergenceScheme<Type,MeshType>::divergenceScheme
     scheme(dict, fvMsh)
 {}
 
-template<class Type, class MeshType>
-divergenceScheme<Type,MeshType>::divergenceScheme
+template<class SType, class Type, class MeshType>
+divergenceScheme<SType,Type,MeshType>::divergenceScheme
 (
-    const divergenceScheme<Type,MeshType>& s
+    const divergenceScheme<SType,Type,MeshType>& s
 )
 :
     scheme(s)
 {}
 
-template<class Type, class MeshType>
-divergenceScheme<Type,MeshType>::~divergenceScheme()
+template<class SType, class Type, class MeshType>
+divergenceScheme<SType,Type,MeshType>::~divergenceScheme()
 {}
 
-template<class Type, class MeshType>
-autoPtr<divergenceScheme<Type,MeshType>> divergenceScheme<Type,MeshType>::New
+template<class SType, class Type, class MeshType>
+autoPtr<divergenceScheme<SType,Type,MeshType>>
+divergenceScheme<SType,Type,MeshType>::New
 (
     const word name,
     const fvMesh& fvMsh
@@ -59,7 +60,10 @@ autoPtr<divergenceScheme<Type,MeshType>> divergenceScheme<Type,MeshType>::New
             << exit(FatalError);
     }
 
-    return autoPtr<divergenceScheme<Type,MeshType>>(cstrIter()(dict, fvMsh));
+    return autoPtr<divergenceScheme<SType,Type,MeshType>>
+    (
+        cstrIter()(dict, fvMsh)
+    );
 }
 
 template<class Type, class MeshType>

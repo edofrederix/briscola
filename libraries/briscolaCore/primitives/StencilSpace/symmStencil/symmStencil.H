@@ -6,7 +6,6 @@
 #include "pTransform.H"
 #include "contiguous.H"
 #include "Row.H"
-#include "stencil.H"
 
 namespace Foam
 {
@@ -59,9 +58,6 @@ public:
     inline scalar& left()  { return this->v_[L]; }
     inline scalar& bottom()  { return this->v_[B]; }
     inline scalar& aft()  { return this->v_[A]; }
-
-    // Conversion to stencil
-    inline operator stencil() const;
 };
 
 template<>

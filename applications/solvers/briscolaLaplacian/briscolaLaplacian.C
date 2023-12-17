@@ -12,8 +12,6 @@ using namespace Foam;
 using namespace briscola;
 using namespace fv;
 
-#define MESHTYPE colocated
-
 int main(int argc, char *argv[])
 {
     #include "createParallelBriscolaCase.H"
@@ -47,7 +45,7 @@ int main(int argc, char *argv[])
 
         Poisson->solve(T, source, lambda, true);
 
-        io.write<MESHTYPE>();
+        io.write<colocated>();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"

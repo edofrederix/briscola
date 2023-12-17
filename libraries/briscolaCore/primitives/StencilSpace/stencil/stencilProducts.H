@@ -145,4 +145,96 @@ public:
     typedef stencil type;
 };
 
+// With symmetric stencil
+
+// Sum
+
+template<>
+class typeOfSum<stencil,symmStencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+template<>
+class typeOfSum<symmStencil,stencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+// Outer products
+
+template<>
+class outerProduct<stencil,symmStencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+template<>
+class outerProduct<symmStencil,stencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+// Inner product
+
+template<>
+class innerProduct<stencil,symmStencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+template<>
+class innerProduct<symmStencil,stencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+// Cross product
+
+template<>
+class crossProduct<stencil,symmStencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+template<>
+class crossProduct<symmStencil,stencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+// Scalar product
+
+template<>
+class scalarProduct<stencil,symmStencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+template<>
+class scalarProduct<symmStencil,stencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
 }

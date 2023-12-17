@@ -78,31 +78,31 @@ int main(int argc, char *argv[])
     testConstructors<symmStencil>();
     testConstructors<diagStencil>();
 
-    stencil st1(1,2,3,4,5,6,7);
-    symmStencil st2(1,2,3,4);
+    symmStencil st1(1,2,3,4);
+    stencil st2(1,2,3,4,5,6,7);
     diagStencil st3(1);
 
-    testMemberOperators<stencil>(st1);
-    testMemberOperators<symmStencil>(st2);
+    testMemberOperators<symmStencil>(st1);
+    testMemberOperators<stencil>(st2);
     testMemberOperators<diagStencil>(st3);
 
     // Stencil tests
 
-    if (st1.center() != 1) FatalErrorInFunction << "test 2a failed" << abort(FatalError);
-    if (st1.left()   != 2) FatalErrorInFunction << "test 2b failed" << abort(FatalError);
-    if (st1.right()  != 3) FatalErrorInFunction << "test 2c failed" << abort(FatalError);
-    if (st1.bottom() != 4) FatalErrorInFunction << "test 2d failed" << abort(FatalError);
-    if (st1.top()    != 5) FatalErrorInFunction << "test 2e failed" << abort(FatalError);
-    if (st1.aft()    != 6) FatalErrorInFunction << "test 2f failed" << abort(FatalError);
-    if (st1.fore()   != 7) FatalErrorInFunction << "test 2g failed" << abort(FatalError);
+    if (st2.center() != 1) FatalErrorInFunction << "test 2a failed" << abort(FatalError);
+    if (st2.left()   != 2) FatalErrorInFunction << "test 2b failed" << abort(FatalError);
+    if (st2.right()  != 3) FatalErrorInFunction << "test 2c failed" << abort(FatalError);
+    if (st2.bottom() != 4) FatalErrorInFunction << "test 2d failed" << abort(FatalError);
+    if (st2.top()    != 5) FatalErrorInFunction << "test 2e failed" << abort(FatalError);
+    if (st2.aft()    != 6) FatalErrorInFunction << "test 2f failed" << abort(FatalError);
+    if (st2.fore()   != 7) FatalErrorInFunction << "test 2g failed" << abort(FatalError);
 
-    if (st1.center() != st1[0]) FatalErrorInFunction << "test 3a failed" << abort(FatalError);
-    if (st1.left()   != st1[1]) FatalErrorInFunction << "test 3b failed" << abort(FatalError);
-    if (st1.right()  != st1[2]) FatalErrorInFunction << "test 3c failed" << abort(FatalError);
-    if (st1.bottom() != st1[3]) FatalErrorInFunction << "test 3d failed" << abort(FatalError);
-    if (st1.top()    != st1[4]) FatalErrorInFunction << "test 3e failed" << abort(FatalError);
-    if (st1.aft()    != st1[5]) FatalErrorInFunction << "test 3f failed" << abort(FatalError);
-    if (st1.fore()   != st1[6]) FatalErrorInFunction << "test 3g failed" << abort(FatalError);
+    if (st2.center() != st2[0]) FatalErrorInFunction << "test 3a failed" << abort(FatalError);
+    if (st2.left()   != st2[1]) FatalErrorInFunction << "test 3b failed" << abort(FatalError);
+    if (st2.right()  != st2[2]) FatalErrorInFunction << "test 3c failed" << abort(FatalError);
+    if (st2.bottom() != st2[3]) FatalErrorInFunction << "test 3d failed" << abort(FatalError);
+    if (st2.top()    != st2[4]) FatalErrorInFunction << "test 3e failed" << abort(FatalError);
+    if (st2.aft()    != st2[5]) FatalErrorInFunction << "test 3f failed" << abort(FatalError);
+    if (st2.fore()   != st2[6]) FatalErrorInFunction << "test 3g failed" << abort(FatalError);
 
     st1 += st2;
     st1 -= st2;
@@ -118,48 +118,36 @@ int main(int argc, char *argv[])
 
     faceScalar hs(1,2,3,4,5,6);
 
-    st1 += hs;
-    st1 -= hs;
-    st1 = hs;
+    st2 += hs;
+    st2 -= hs;
+    st2 = hs;
 
-    st1 + hs;
-    st1 - hs;
-    st1 * hs;
+    st2 + hs;
+    st2 - hs;
+    st2 * hs;
 
     lowerFaceScalar ls(1,2,3);
 
-    st2 += ls;
-    st2 -= ls;
-    st2 = ls;
+    st1 += ls;
+    st1 -= ls;
+    st1 = ls;
 
-    st2 + ls;
-    st2 - ls;
-    st2 * ls;
+    st1 + ls;
+    st1 - ls;
+    st1 * ls;
 
     st3 = diagStencil(2);
 
-    if (st3.center() != 2) FatalErrorInFunction << "test 6 failed" << abort(FatalError);
-    if (st3.center() != st3[0]) FatalErrorInFunction << "test 7 failed" << abort(FatalError);
+    if (st3.center() != 2) FatalErrorInFunction << "test 4a failed" << abort(FatalError);
+    if (st3.center() != st3[0]) FatalErrorInFunction << "test 4b failed" << abort(FatalError);
 
-    if (neighborSum(st3) != 0) FatalErrorInFunction << "test 8 failed" << abort(FatalError);
-    if (stencilSum(st3) != 2) FatalErrorInFunction << "test 9 failed" << abort(FatalError);
-    if (neighborSkewSum(st3) != 0) FatalErrorInFunction << "test 10 failed" << abort(FatalError);
+    st1 = symmStencil(1,2,3,4);
 
-    st2 = symmStencil(1,2,3,4);
+    if (st1.center() != 1) FatalErrorInFunction << "test 5a failed" << abort(FatalError);
+    if (st1.center() != st1[0]) FatalErrorInFunction << "test 5b failed" << abort(FatalError);
 
-    if (st2.center() != 1) FatalErrorInFunction << "test 6 failed" << abort(FatalError);
-    if (st2.center() != st2[0]) FatalErrorInFunction << "test 7 failed" << abort(FatalError);
+    st2 = stencil(1,2,3,4,5,6,7);
 
-    if (neighborSum(st2) != 2*(2+3+4)) FatalErrorInFunction << "test 8 failed" << abort(FatalError);
-    if (stencilSum(st2) != 1+2*(2+3+4)) FatalErrorInFunction << "test 9 failed" << abort(FatalError);
-    if (neighborSkewSum(st2) != 0) FatalErrorInFunction << "test 10 failed" << abort(FatalError);
-
-    st1 = stencil(1,2,3,4,5,6,7);
-
-    if (st1.center() != 1) FatalErrorInFunction << "test 6 failed" << abort(FatalError);
-    if (st1.center() != st2[0]) FatalErrorInFunction << "test 7 failed" << abort(FatalError);
-
-    if (neighborSum(st1) != 2+3+4+5+6+7) FatalErrorInFunction << "test 11 failed" << abort(FatalError);
-    if (stencilSum(st1) != 1+2+3+4+5+6+7) FatalErrorInFunction << "test 12 failed" << abort(FatalError);
-    if (neighborSkewSum(st1) != -2+3-4+5-6+7) FatalErrorInFunction << "test 13 failed" << abort(FatalError);
+    if (st2.center() != 1) FatalErrorInFunction << "test 6a failed" << abort(FatalError);
+    if (st2.center() != st2[0]) FatalErrorInFunction << "test 6b failed" << abort(FatalError);
 }

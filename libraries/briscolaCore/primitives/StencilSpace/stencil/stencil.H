@@ -6,6 +6,7 @@
 #include "pTransform.H"
 #include "contiguous.H"
 #include "Row.H"
+#include "symmStencil.H"
 
 namespace Foam
 {
@@ -67,6 +68,9 @@ public:
     inline scalar& top()  { return this->v_[T]; }
     inline scalar& aft()  { return this->v_[A]; }
     inline scalar& fore()  { return this->v_[F]; }
+
+    // Conversion to symmetric stencil
+    inline operator symmStencil() const;
 };
 
 template<>

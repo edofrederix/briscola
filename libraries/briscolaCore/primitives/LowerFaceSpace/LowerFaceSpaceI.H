@@ -64,37 +64,4 @@ inline LowerFaceSpace<scalar>::operator symmStencil() const
     return r;
 }
 
-// Symmetric stencil functions that behave as if LowerFaceSpace is a symmetric
-// stencil without central coefficient
-
-template<class Cmpt>
-inline Cmpt neighborSum
-(
-    const LowerFaceSpace<Cmpt>& fs
-)
-{
-    return
-        2.0*fs[LowerFaceSpace<Cmpt>::L]
-      + 2.0*fs[LowerFaceSpace<Cmpt>::B]
-      + 2.0*fs[LowerFaceSpace<Cmpt>::A];
-}
-
-template<class Cmpt>
-inline Cmpt stencilSum
-(
-    const LowerFaceSpace<Cmpt>& fs
-)
-{
-    return neighborSum(fs);
-}
-
-template<class Cmpt>
-inline Cmpt neighborSkewSum
-(
-    const LowerFaceSpace<Cmpt>& fs
-)
-{
-    return Zero;
-}
-
 }

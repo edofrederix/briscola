@@ -89,49 +89,7 @@ inline FaceSpace<scalar>::operator stencil() const
     return r;
 }
 
-// Stencil functions that behave as if FaceSpace is a stencil without central
-// coefficient
-
-template<class Cmpt>
-inline Cmpt neighborSum
-(
-    const FaceSpace<Cmpt>& fs
-)
-{
-    return
-        fs[FaceSpace<Cmpt>::L]
-      + fs[FaceSpace<Cmpt>::R]
-      + fs[FaceSpace<Cmpt>::B]
-      + fs[FaceSpace<Cmpt>::T]
-      + fs[FaceSpace<Cmpt>::A]
-      + fs[FaceSpace<Cmpt>::F];
-}
-
-template<class Cmpt>
-inline Cmpt stencilSum
-(
-    const FaceSpace<Cmpt>& fs
-)
-{
-    return neighborSum(fs);
-}
-
-template<class Cmpt>
-inline Cmpt neighborSkewSum
-(
-    const FaceSpace<Cmpt>& fs
-)
-{
-    return
-      - fs[FaceSpace<Cmpt>::L]
-      + fs[FaceSpace<Cmpt>::R]
-      - fs[FaceSpace<Cmpt>::B]
-      + fs[FaceSpace<Cmpt>::T]
-      - fs[FaceSpace<Cmpt>::A]
-      + fs[FaceSpace<Cmpt>::F];
-}
-
-// Functions with face space
+// Functions with lower face space
 
 // Free functions
 

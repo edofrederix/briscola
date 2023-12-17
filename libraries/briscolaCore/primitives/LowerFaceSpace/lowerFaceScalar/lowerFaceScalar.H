@@ -15,4 +15,6 @@ inline bool contiguous<lowerFaceScalar>() { return true; }
 
 }
 
+#include "lowerFaceScalarI.H"
+
 #endif

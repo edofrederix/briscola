@@ -16,7 +16,7 @@ midPointGaussDivergenceScheme<Type,MeshType>::midPointGaussDivergenceScheme
     const fvMesh& fvMsh
 )
 :
-    divergenceScheme<Type,MeshType>(dict,fvMsh)
+    divergenceScheme<stencil,Type,MeshType>(dict,fvMsh)
 {}
 
 template<class Type, class MeshType>
@@ -25,7 +25,7 @@ midPointGaussDivergenceScheme<Type,MeshType>::midPointGaussDivergenceScheme
     const fvMesh& fvMsh
 )
 :
-    divergenceScheme<Type,MeshType>(dictionary(),fvMsh)
+    divergenceScheme<stencil,Type,MeshType>(dictionary(),fvMsh)
 {}
 
 template<class Type, class MeshType>

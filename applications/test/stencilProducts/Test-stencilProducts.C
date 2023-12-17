@@ -28,81 +28,63 @@ void testStencilProducts(const fvMesh& fvMsh)
 
     // Fields
 
-    Amul(f,x);
-    Amul(f,(x*2.0));
-    Amul((2.0*f),x);
-    Amul((2.0*f),(x*2.0));
+    rowProduct(f,x);
+    rowProduct(f,(x*2.0));
+    rowProduct((2.0*f),x);
+    rowProduct((2.0*f),(x*2.0));
 
-    Amul(x,f);
-    Amul((x*2.0),f);
-    Amul(x,(2.0*f));
-    Amul((x*2.0),(2.0*f));
+    rowProduct(x,f);
+    rowProduct((x*2.0),f);
+    rowProduct(x,(2.0*f));
+    rowProduct((x*2.0),(2.0*f));
 
-    Amul(f,s);
-    Amul(s,f);
-    Amul((2.0*f),s);
-    Amul(s,(2.0*f));
+    rowProduct(f,s);
+    rowProduct(s,f);
+    rowProduct((2.0*f),s);
+    rowProduct(s,(2.0*f));
 
     rowSum(f);
-    rowSum(2.0*f);
-
-    matrixSum(f);
-    matrixSum(2.0*f);
-
-    neighborSum(f);
-    neighborSum(2.0*f);
+    rowSum((2.0*f));
 
     // Levels
 
-    Amul(f[0],x[0]);
-    Amul(f[0],(x[0]*2.0));
-    Amul((2.0*f[0]),x[0]);
-    Amul((2.0*f[0]),(x[0]*2.0));
+    rowProduct(f[0],x[0]);
+    rowProduct(f[0],(x[0]*2.0));
+    rowProduct((2.0*f[0]),x[0]);
+    rowProduct((2.0*f[0]),(x[0]*2.0));
 
-    Amul(x[0],f[0]);
-    Amul((x[0]*2.0),f[0]);
-    Amul(x[0],(2.0*f[0]));
-    Amul((x[0]*2.0),(2.0*f[0]));
+    rowProduct(x[0],f[0]);
+    rowProduct((x[0]*2.0),f[0]);
+    rowProduct(x[0],(2.0*f[0]));
+    rowProduct((x[0]*2.0),(2.0*f[0]));
 
-    Amul(f[0],s);
-    Amul(s,f[0]);
-    Amul((2.0*f[0]),s);
-    Amul(s,(2.0*f[0]));
+    rowProduct(f[0],s);
+    rowProduct(s,f[0]);
+    rowProduct((2.0*f[0]),s);
+    rowProduct(s,(2.0*f[0]));
 
     rowSum(f[0]);
-    rowSum(2.0*f[0]);
-
-    matrixSum(f[0]);
-    matrixSum(2.0*f[0]);
-
-    neighborSum(f[0]);
-    neighborSum(2.0*f[0]);
+    rowSum((2.0*f[0]));
 
     // Directions
 
-    Amul(f.direction(),x.direction());
-    Amul(f.direction(),(x.direction()*2.0));
-    Amul((2.0*f.direction()),x.direction());
-    Amul((2.0*f.direction()),(x.direction()*2.0));
+    rowProduct(f.direction(),x.direction());
+    rowProduct(f.direction(),(x.direction()*2.0));
+    rowProduct((2.0*f.direction()),x.direction());
+    rowProduct((2.0*f.direction()),(x.direction()*2.0));
 
-    Amul(x.direction(),f.direction());
-    Amul((x.direction()*2.0),f.direction());
-    Amul(x.direction(),(2.0*f.direction()));
-    Amul((x.direction()*2.0),(2.0*f.direction()));
+    rowProduct(x.direction(),f.direction());
+    rowProduct((x.direction()*2.0),f.direction());
+    rowProduct(x.direction(),(2.0*f.direction()));
+    rowProduct((x.direction()*2.0),(2.0*f.direction()));
 
-    Amul(f.direction(),s);
-    Amul(s,f.direction());
-    Amul((2.0*f.direction()),s);
-    Amul(s,(2.0*f.direction()));
+    rowProduct(f.direction(),s);
+    rowProduct(s,f.direction());
+    rowProduct((2.0*f.direction()),s);
+    rowProduct(s,(2.0*f.direction()));
 
     rowSum(f.direction());
-    rowSum(2.0*f.direction());
-
-    matrixSum(f.direction());
-    matrixSum(2.0*f.direction());
-
-    neighborSum(f.direction());
-    neighborSum(2.0*f.direction());
+    rowSum((2.0*f.direction()));
 }
 
 int main(int argc, char *argv[])

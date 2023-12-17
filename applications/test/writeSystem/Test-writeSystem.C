@@ -9,7 +9,7 @@ using namespace Foam;
 using namespace briscola;
 using namespace fv;
 
-template<class MeshType>
+template<class SType, class MeshType>
 void test(const fvMesh& fvMsh)
 {
     meshField<scalar,MeshType> f
@@ -24,7 +24,7 @@ void test(const fvMesh& fvMsh)
 
     f = 0.1;
 
-    linearSystem<stencil,scalar,MeshType> sys(im::laplacian(f));
+    linearSystem<SType,scalar,MeshType> sys(im::laplacian(f));
     sys -= im::ddt(f);
     sys.eliminateGhosts();
 
@@ -39,6 +39,6 @@ int main(int argc, char *argv[])
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
 
-    test<colocated>(fvMsh);
-    test<staggered>(fvMsh);
+    test<symmStencil,colocated>(fvMsh);
+    test<stencil,staggered>(fvMsh);
 }

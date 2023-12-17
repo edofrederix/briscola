@@ -30,42 +30,42 @@ inline tmp<meshField<Type,MeshType>> div
     return explicitDiv(phi);
 }
 
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
 inline tmp<meshField<Type,MeshType>> div
 (
     const meshField<lowerFaceScalar,MeshType>& phi,
     meshField<Type,MeshType>& field
 )
 {
-    return divergenceScheme<Type,MeshType>::New
+    return divergenceScheme<SType,Type,MeshType>::New
     (
         "div("+phi.name()+","+field.name()+")",
         field.fvMsh()
     )->exDiv(phi,field);
 }
 
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
 inline tmp<meshField<Type,MeshType>> laplacian
 (
     const meshField<lowerFaceScalar,MeshType>& lambda,
     meshField<Type,MeshType>& field
 )
 {
-    return laplacianScheme<Type,MeshType>::New
+    return laplacianScheme<SType,Type,MeshType>::New
     (
         "laplacian("+lambda.name()+","+field.name()+")",
         field.fvMsh()
     )->exLaplacian(lambda,field);
 }
 
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
 inline tmp<meshField<Type,MeshType>> laplacian
 (
     const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
     meshField<Type,MeshType>& field
 )
 {
-    return laplacianScheme<Type,MeshType>::New
+    return laplacianScheme<SType,Type,MeshType>::New
     (
         lambdaPtr
       ? "laplacian("+lambdaPtr->name()+","+ field.name()+")"
@@ -74,13 +74,13 @@ inline tmp<meshField<Type,MeshType>> laplacian
     )->exLaplacian(lambdaPtr,field);
 }
 
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
 inline tmp<meshField<Type,MeshType>> laplacian
 (
     meshField<Type,MeshType>& field
 )
 {
-    return laplacianScheme<Type,MeshType>::New
+    return laplacianScheme<SType,Type,MeshType>::New
     (
         "laplacian("+field.name()+")",
         field.fvMsh()
@@ -222,6 +222,65 @@ reconstruct
             );
 
     return tRecon;
+}
+
+// Default stencil type
+
+template<class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> div
+(
+    const meshField<lowerFaceScalar,MeshType>& phi,
+    meshField<Type,MeshType>& field
+)
+{
+    return divergenceScheme<stencil,Type,MeshType>::New
+    (
+        "div("+phi.name()+","+field.name()+")",
+        field.fvMsh()
+    )->exDiv(phi,field);
+}
+
+template<class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> laplacian
+(
+    const meshField<lowerFaceScalar,MeshType>& lambda,
+    meshField<Type,MeshType>& field
+)
+{
+    return laplacianScheme<symmStencil,Type,MeshType>::New
+    (
+        "laplacian("+lambda.name()+","+field.name()+")",
+        field.fvMsh()
+    )->exLaplacian(lambda,field);
+}
+
+template<class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> laplacian
+(
+    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+    meshField<Type,MeshType>& field
+)
+{
+    return laplacianScheme<symmStencil,Type,MeshType>::New
+    (
+        lambdaPtr
+      ? "laplacian("+lambdaPtr->name()+","+ field.name()+")"
+      : "laplacian("+field.name()+")",
+        field.fvMsh()
+    )->exLaplacian(lambdaPtr,field);
+}
+
+template<class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> laplacian
+(
+    meshField<Type,MeshType>& field
+)
+{
+    return laplacianScheme<symmStencil,Type,MeshType>::New
+    (
+        "laplacian("+field.name()+")",
+        field.fvMsh()
+    )->exLaplacian(field);
 }
 
 }

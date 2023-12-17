@@ -2,6 +2,8 @@
 #include "addToRunTimeSelectionTable.H"
 
 #include "linearGaussLaplacianScheme.H"
+#include "coloLinearGaussLaplacianScheme.H"
+#include "stagLinearGaussLaplacianScheme.H"
 
 namespace Foam
 {
@@ -12,17 +14,20 @@ namespace briscola
 namespace fv
 {
 
-makeLaplacianScheme(scalar,colocated)
-makeLaplacianScheme(scalar,staggered)
+makeLaplacianScheme(symmStencil,scalar,colocated)
+makeLaplacianScheme(symmStencil,vector,colocated)
+makeLaplacianScheme(stencil,scalar,staggered)
+makeLaplacianScheme(stencil,vector,staggered)
 
-makeLaplacianScheme(vector,colocated)
-makeLaplacianScheme(vector,staggered)
+makeLaplacianSchemeType(linearGauss,symmStencil,scalar,colocated)
+makeLaplacianSchemeType(linearGauss,symmStencil,vector,colocated)
+makeLaplacianSchemeType(linearGauss,stencil,scalar,staggered)
+makeLaplacianSchemeType(linearGauss,stencil,vector,staggered)
 
-makeLaplacianSchemeType(linearGauss,scalar,colocated)
-makeLaplacianSchemeType(linearGauss,scalar,staggered)
-
-makeLaplacianSchemeType(linearGauss,vector,colocated)
-makeLaplacianSchemeType(linearGauss,vector,staggered)
+addSpecificLaplacianSchemeType(coloLinearGauss,symmStencil,scalar,colocated)
+addSpecificLaplacianSchemeType(coloLinearGauss,symmStencil,vector,colocated)
+addSpecificLaplacianSchemeType(stagLinearGauss,stencil,scalar,staggered)
+addSpecificLaplacianSchemeType(stagLinearGauss,stencil,vector,staggered)
 
 }
 

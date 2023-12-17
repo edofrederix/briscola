@@ -156,6 +156,9 @@ public:
         Ostream&,
         const CellSpace<Form, Cmpt, Ncmpts>&
     );
+
+    // Conversion to Form
+    inline operator Form() { return Form(*this); }
 };
 
 // Return a string representation of a CellSpace

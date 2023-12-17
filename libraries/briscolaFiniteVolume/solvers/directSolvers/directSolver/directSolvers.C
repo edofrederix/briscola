@@ -17,6 +17,11 @@ makeDirectSolver(diagStencil,scalar,staggered);
 makeDirectSolver(diagStencil,vector,colocated);
 makeDirectSolver(diagStencil,vector,staggered);
 
+makeDirectSolver(symmStencil,scalar,colocated);
+makeDirectSolver(symmStencil,scalar,staggered);
+makeDirectSolver(symmStencil,vector,colocated);
+makeDirectSolver(symmStencil,vector,staggered);
+
 makeDirectSolver(stencil,scalar,colocated);
 makeDirectSolver(stencil,scalar,staggered);
 makeDirectSolver(stencil,vector,colocated);
@@ -27,6 +32,11 @@ makeDirectSolverType(APLU,diagStencil,scalar,colocated);
 makeDirectSolverType(APLU,diagStencil,scalar,staggered);
 makeDirectSolverType(APLU,diagStencil,vector,colocated);
 makeDirectSolverType(APLU,diagStencil,vector,staggered);
+
+makeDirectSolverType(APLU,symmStencil,scalar,colocated);
+makeDirectSolverType(APLU,symmStencil,scalar,staggered);
+makeDirectSolverType(APLU,symmStencil,vector,colocated);
+makeDirectSolverType(APLU,symmStencil,vector,staggered);
 
 makeDirectSolverType(APLU,stencil,scalar,colocated);
 makeDirectSolverType(APLU,stencil,scalar,staggered);

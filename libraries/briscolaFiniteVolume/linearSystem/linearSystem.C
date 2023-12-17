@@ -209,7 +209,7 @@ List<bool> linearSystem<SType,Type,MeshType>::singular() const
     {
         scalar mx = 0;
         forAllCells(A[d], i, j, k)
-            mx = Foam::max(mx, Foam::mag(stencilSum(A(d,i,j,k))));
+            mx = Foam::max(mx, Foam::mag(rowSum(A[d],i,j,k)));
 
         reduce(mx, maxOp<scalar>());
         s[d] = mx < 1e-8;
@@ -279,7 +279,7 @@ void linearSystem<SType,Type,MeshType>::residual
     const label l = res.levelNum();
     const label d = res.directionNum();
 
-    Amul(res, this->A()[l][d], x_[l][d]);
+    rowProduct(res, this->A()[l][d], x_[l][d]);
 
     res *= -1.0;
     res += this->b()[l][d];
@@ -367,7 +367,7 @@ void linearSystem<SType,Type,MeshType>::evaluate
     const meshDirection<scalar,MeshType>& cv =
         fvMsh_.template metrics<MeshType>().cellVolumes()[l][d];
 
-    Amul(res, this->A()[l][d], x_[l][d]);
+    rowProduct(res, this->A()[l][d], x_[l][d]);
 
     res -= this->b()[l][d];
     res /= cv;
@@ -710,7 +710,7 @@ void writeToFile
 
         Pstream::gatherList(shapes);
 
-        List<List<Row<SType,Type>>> data
+        List<List<Row<stencil,Type>>> data
         (
             Pstream::nProcs()
         );
@@ -720,7 +720,11 @@ void writeToFile
         int l = 0;
         forAllCells(A, i, j, k)
             data[Pstream::myProcNo()][l++] =
-                Row<SType,Type>(A(i,j,k),b(i,j,k));
+                Row<stencil,Type>
+                (
+                    fullStencil<MeshType>(A,i,j,k),
+                    b(i,j,k)
+                );
 
         Pstream::gatherList(data);
 

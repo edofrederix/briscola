@@ -44,42 +44,42 @@ inline tmp<linearSystem<diagStencil,Type,MeshType>> ddt
     )->ddt(coeff,field);
 }
 
-template<class Type, class MeshType>
-inline tmp<linearSystem<stencil,Type,MeshType>> div
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>> div
 (
     const meshField<lowerFaceScalar,MeshType>& phi,
     meshField<Type,MeshType>& field
 )
 {
-    return divergenceScheme<Type,MeshType>::New
+    return divergenceScheme<SType,Type,MeshType>::New
     (
         "div("+phi.name()+","+field.name()+")",
         field.fvMsh()
     )->imDiv(phi,field);
 }
 
-template<class Type, class MeshType>
-inline tmp<linearSystem<stencil,Type,MeshType>> laplacian
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>> laplacian
 (
     const meshField<lowerFaceScalar,MeshType>& lambda,
     meshField<Type,MeshType>& field
 )
 {
-    return laplacianScheme<Type,MeshType>::New
+    return laplacianScheme<SType,Type,MeshType>::New
     (
         "laplacian("+lambda.name()+","+field.name()+")",
         field.fvMsh()
     )->imLaplacian(lambda,field);
 }
 
-template<class Type, class MeshType>
-inline tmp<linearSystem<stencil,Type,MeshType>> laplacian
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>> laplacian
 (
     const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
     meshField<Type,MeshType>& field
 )
 {
-    return laplacianScheme<Type,MeshType>::New
+    return laplacianScheme<SType,Type,MeshType>::New
     (
         "laplacian("
       + (lambdaPtr ? lambdaPtr->name()+"," : word(""))
@@ -89,13 +89,13 @@ inline tmp<linearSystem<stencil,Type,MeshType>> laplacian
     )->imLaplacian(lambdaPtr,field);
 }
 
-template<class Type, class MeshType>
-inline tmp<linearSystem<stencil,Type,MeshType>> laplacian
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>> laplacian
 (
     meshField<Type,MeshType>& field
 )
 {
-    return laplacianScheme<Type,MeshType>::New
+    return laplacianScheme<SType,Type,MeshType>::New
     (
         "laplacian("+field.name()+")",
         field.fvMsh()
@@ -133,6 +133,82 @@ inline tmp<linearSystem<diagStencil,Type,MeshType>> source
     const_cast<meshField<scalar,MeshType>&>(coeff).makeShallow();
 
     return tSys;
+}
+
+// Default stencil types
+
+// Full stencil for any divergence operator
+
+template<class Type, class MeshType>
+inline tmp<linearSystem<stencil,Type,MeshType>> div
+(
+    const meshField<lowerFaceScalar,MeshType>& phi,
+    meshField<Type,MeshType>& field
+)
+{
+    return div<stencil>(phi,field);
+}
+
+// Symmetric stencil for Laplacians on colocated meshes
+
+template<class Type>
+inline tmp<linearSystem<symmStencil,Type,colocated>> laplacian
+(
+    const meshField<lowerFaceScalar,colocated>& lambda,
+    meshField<Type,colocated>& field
+)
+{
+    return laplacian<symmStencil>(lambda,field);
+}
+
+template<class Type>
+inline tmp<linearSystem<symmStencil,Type,colocated>> laplacian
+(
+    const meshField<lowerFaceScalar,colocated>* lambdaPtr,
+    meshField<Type,colocated>& field
+)
+{
+    return laplacian<symmStencil>(lambdaPtr,field);
+}
+
+template<class Type>
+inline tmp<linearSystem<symmStencil,Type,colocated>> laplacian
+(
+    meshField<Type,colocated>& field
+)
+{
+    return laplacian<symmStencil>(field);
+}
+
+// Full stencil for Laplacians on staggered meshes
+
+template<class Type>
+inline tmp<linearSystem<stencil,Type,staggered>> laplacian
+(
+    const meshField<lowerFaceScalar,staggered>& lambda,
+    meshField<Type,staggered>& field
+)
+{
+    return laplacian<stencil>(lambda,field);
+}
+
+template<class Type>
+inline tmp<linearSystem<stencil,Type,staggered>> laplacian
+(
+    const meshField<lowerFaceScalar,staggered>* lambdaPtr,
+    meshField<Type,staggered>& field
+)
+{
+    return laplacian<stencil>(lambdaPtr,field);
+}
+
+template<class Type>
+inline tmp<linearSystem<stencil,Type,staggered>> laplacian
+(
+    meshField<Type,staggered>& field
+)
+{
+    return laplacian<stencil>(field);
 }
 
 }

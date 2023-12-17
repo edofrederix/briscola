@@ -14,7 +14,7 @@ namespace briscola
 namespace fv
 {
 
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
 class divergenceScheme
 :
     public scheme
@@ -41,16 +41,20 @@ public:
     divergenceScheme(const dictionary&, const fvMesh&);
 
     // Copy constructor
-    divergenceScheme(const divergenceScheme<Type,MeshType>&);
+    divergenceScheme(const divergenceScheme<SType,Type,MeshType>&);
 
     // Selector
-    static autoPtr<divergenceScheme<Type,MeshType>> New(const word, const fvMesh&);
+    static autoPtr<divergenceScheme<SType,Type,MeshType>> New
+    (
+        const word,
+        const fvMesh&
+    );
 
     // Destructor
     virtual ~divergenceScheme();
 
     // Implicit divergence operator
-    virtual tmp<linearSystem<stencil,Type,MeshType>> imDiv
+    virtual tmp<linearSystem<SType,Type,MeshType>> imDiv
     (
         const meshField<lowerFaceScalar,MeshType>&,
         meshField<Type,MeshType>&

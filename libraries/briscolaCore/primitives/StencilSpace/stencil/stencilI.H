@@ -58,34 +58,141 @@ inline stencil::stencil(Istream& is)
     stencil::ssType(is)
 {}
 
-template<>
-inline scalar neighborSum
-(
-    const stencil::ssType& ss
-)
+inline stencil::operator symmStencil() const
 {
-    return
-      + ss[stencil::L]
-      + ss[stencil::R]
-      + ss[stencil::B]
-      + ss[stencil::T]
-      + ss[stencil::A]
-      + ss[stencil::F];
+    return symmStencil
+    (
+        this->v_[C],
+        this->v_[L],
+        this->v_[B],
+        this->v_[A]
+    );
 }
 
-template<>
-inline scalar neighborSkewSum
+// Symmetric stencil operators
+
+// With stencil
+
+inline symmStencil operator+
 (
-    const stencil::ssType& ss
+    const stencil::csType& cs1,
+    const symmStencil::csType& cs2
 )
 {
-    return
-      - ss[stencil::L]
-      + ss[stencil::R]
-      - ss[stencil::B]
-      + ss[stencil::T]
-      - ss[stencil::A]
-      + ss[stencil::F];
+    symmStencil::csType r(cs2);
+
+    r +=
+        static_cast<const symmStencil&>
+        (
+            static_cast<const stencil&>(cs1)
+        );
+
+    return r;
+}
+
+inline symmStencil operator+
+(
+    const symmStencil::csType& cs1,
+    const stencil::csType& cs2
+)
+{
+    return cs2 + cs1;
+}
+
+inline symmStencil operator-
+(
+    const stencil::csType& cs1,
+    const symmStencil::csType& cs2
+)
+{
+    symmStencil::csType r(-cs2);
+
+    r +=
+        static_cast<const symmStencil&>
+        (
+            static_cast<const stencil&>(cs1)
+        );
+
+    return r;
+}
+
+inline symmStencil operator-
+(
+    const symmStencil::csType& cs1,
+    const stencil::csType& cs2
+)
+{
+    symmStencil::csType r(cs1);
+
+    r -=
+        static_cast<const symmStencil&>
+        (
+            static_cast<const stencil&>(cs2)
+        );
+
+    return r;
+}
+
+inline symmStencil operator*
+(
+    const stencil::csType& cs1,
+    const symmStencil::csType& cs2
+)
+{
+    symmStencil::csType r(cs2);
+
+    r *=
+        static_cast<const symmStencil&>
+        (
+            static_cast<const stencil&>(cs1)
+        );
+
+    return r;
+}
+
+inline symmStencil operator*
+(
+    const symmStencil::csType& cs1,
+    const stencil::csType& cs2
+)
+{
+    return cs2 * cs1;
+}
+
+inline symmStencil operator/
+(
+    const stencil::csType& cs1,
+    const symmStencil::csType& cs2
+)
+{
+    symmStencil::csType r
+    (
+        static_cast<const symmStencil&>
+        (
+            static_cast<const stencil&>(cs1)
+        )
+    );
+
+    r /= cs2;
+
+    return r;
+}
+
+inline symmStencil operator/
+(
+    const symmStencil::csType& cs1,
+    const stencil::csType& cs2
+)
+{
+    symmStencil::csType r(cs1);
+
+    r /=
+        static_cast<const symmStencil&>
+        (
+            static_cast<const stencil&>(cs2)
+        );
+
+    return r;
 }
 
 }

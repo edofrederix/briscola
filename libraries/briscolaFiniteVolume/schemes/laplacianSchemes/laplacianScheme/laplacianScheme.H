@@ -14,7 +14,7 @@ namespace briscola
 namespace fv
 {
 
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
 class laplacianScheme
 :
     public scheme
@@ -41,10 +41,10 @@ public:
     laplacianScheme(const dictionary&, const fvMesh&);
 
     // Copy constructor
-    laplacianScheme(const laplacianScheme<Type,MeshType>&);
+    laplacianScheme(const laplacianScheme<SType,Type,MeshType>&);
 
     // Selector
-    static autoPtr<laplacianScheme<Type,MeshType>> New
+    static autoPtr<laplacianScheme<SType,Type,MeshType>> New
     (
         const word,
         const fvMesh&
@@ -54,7 +54,7 @@ public:
     virtual ~laplacianScheme();
 
     // Implicit Laplacian with pointer to coefficient
-    virtual tmp<linearSystem<stencil,Type,MeshType>> imLaplacian
+    virtual tmp<linearSystem<SType,Type,MeshType>> imLaplacian
     (
         const meshField<lowerFaceScalar,MeshType>*,
         meshField<Type,MeshType>&
@@ -68,7 +68,7 @@ public:
     ) = 0;
 
     // Implicit Laplacian
-    inline tmp<linearSystem<stencil,Type,MeshType>> imLaplacian
+    inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
     (
         const meshField<lowerFaceScalar,MeshType>& lambda,
         meshField<Type,MeshType>& field
@@ -88,7 +88,7 @@ public:
     }
 
     // Implicit Laplacian without coefficient
-    inline tmp<linearSystem<stencil,Type,MeshType>> imLaplacian
+    inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
     (
         meshField<Type,MeshType>& field
     )

@@ -90,9 +90,9 @@ autoPtr<solver<stencil,scalar,staggered>> USolve
     )
 );
 
-autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
+autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
 (
-    PoissonSolver<stencil,scalar,colocated>::New
+    PoissonSolver<symmStencil,scalar,colocated>::New
     (
         p.name(),
         fvMsh
