@@ -1,4 +1,4 @@
-#include "LEXGS.H"
+#include "symmJAC.H"
 
 namespace Foam
 {
@@ -10,17 +10,18 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-LEXGS<SType,Type,MeshType>::LEXGS
+symmJAC<SType,Type,MeshType>::symmJAC
 (
     const dictionary& dict,
     const fvMesh& fvMsh
 )
 :
-    solver<SType,Type,MeshType>::smoother(dict,fvMsh)
+    solver<SType,Type,MeshType>::smoother(dict,fvMsh),
+    omega_(0.8)
 {}
 
 template<class SType, class Type, class MeshType>
-void LEXGS<SType,Type,MeshType>::LEXGS::smooth
+void symmJAC<SType,Type,MeshType>::symmJAC::smooth
 (
     linearSystem<SType,Type,MeshType>& sys,
     List<Type>& xi,
@@ -37,32 +38,52 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
     bool singular = xi.size() > 0;
     xi = singular ? gAverage(x) : List<Type>(x.size(), Zero);
 
+    meshLevel<Type,MeshType> y(x);
+
     for (label sweep = 0; sweep < sweeps; sweep++)
     {
         forAll(x, d)
         if (!converged[d])
         {
-            meshDirection<Type,MeshType>& xd = x[d];
+            meshDirection<Type,MeshType>& yd = y[d];
 
+            const meshDirection<Type,MeshType>& xd = x[d];
             const meshDirection<SType,MeshType>& Ad = A[d];
             const meshDirection<Type,MeshType>& bd = b[d];
 
             forAllCells(xd, i, j, k)
-                xd(i,j,k) =
-                    (
+                yd(i,j,k) =
+                    yd(i,j,k)*(1.0-omega_)
+                  + omega_
+                  * (
                         bd(i,j,k)
                       - lowerRowProduct(Ad,xd,i,j,k)
                       - upperRowProduct(Ad,xd,i,j,k)
                       - xi[d]
                     )
                   / Ad(i,j,k).center();
+
+            // Reversed direction
+
+            forAllCellsReversed(xd, i, j, k)
+                yd(i,j,k) =
+                    yd(i,j,k)*(1.0-omega_)
+                  + omega_
+                  * (
+                        bd(i,j,k)
+                      - lowerRowProduct(Ad,yd,i,j,k)
+                      - upperRowProduct(Ad,yd,i,j,k)
+                      - xi[d]
+                    )
+                  / Ad(i,j,k).center();
         }
+
+        x = y;
 
         x.correctNonEliminatedBoundaryConditions();
     }
 
     x.correctEliminatedBoundaryConditions();
-    x.correctUnsetBoundaryConditions();
 
     if (!singular)
         xi.clear();

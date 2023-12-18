@@ -1,4 +1,4 @@
-#include "LEXGS.H"
+#include "symmLEXGS.H"
 
 namespace Foam
 {
@@ -10,7 +10,7 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-LEXGS<SType,Type,MeshType>::LEXGS
+symmLEXGS<SType,Type,MeshType>::symmLEXGS
 (
     const dictionary& dict,
     const fvMesh& fvMsh
@@ -20,7 +20,7 @@ LEXGS<SType,Type,MeshType>::LEXGS
 {}
 
 template<class SType, class Type, class MeshType>
-void LEXGS<SType,Type,MeshType>::LEXGS::smooth
+void symmLEXGS<SType,Type,MeshType>::symmLEXGS::smooth
 (
     linearSystem<SType,Type,MeshType>& sys,
     List<Type>& xi,
@@ -48,6 +48,18 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
             const meshDirection<Type,MeshType>& bd = b[d];
 
             forAllCells(xd, i, j, k)
+                xd(i,j,k) =
+                    (
+                        bd(i,j,k)
+                      - lowerRowProduct(Ad,xd,i,j,k)
+                      - upperRowProduct(Ad,xd,i,j,k)
+                      - xi[d]
+                    )
+                  / Ad(i,j,k).center();
+
+            // Reversed direction
+
+            forAllCellsReversed(xd, i, j, k)
                 xd(i,j,k) =
                     (
                         bd(i,j,k)

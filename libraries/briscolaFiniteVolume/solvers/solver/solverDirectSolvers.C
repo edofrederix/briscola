@@ -12,11 +12,6 @@ namespace briscola
 namespace fv
 {
 
-makeDirectSolverType(APLU,diagStencil,scalar,colocated);
-makeDirectSolverType(APLU,diagStencil,scalar,staggered);
-makeDirectSolverType(APLU,diagStencil,vector,colocated);
-makeDirectSolverType(APLU,diagStencil,vector,staggered);
-
 makeDirectSolverType(APLU,symmStencil,scalar,colocated);
 makeDirectSolverType(APLU,symmStencil,scalar,staggered);
 makeDirectSolverType(APLU,symmStencil,vector,colocated);

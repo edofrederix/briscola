@@ -1,5 +1,5 @@
-#ifndef RBGS_H
-#define RBGS_H
+#ifndef symmLEXGS_H
+#define symmLEXGS_H
 
 #include "solver.H"
 
@@ -13,17 +13,17 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-class RBGS
+class symmLEXGS
 :
     public solver<SType,Type,MeshType>::smoother
 {
 public:
 
     // Runtime type information
-    TypeName("RBGS");
+    TypeName("symmLEXGS");
 
     // Construct from dictionary and mesh
-    RBGS(const dictionary&, const fvMesh&);
+    symmLEXGS(const dictionary&, const fvMesh&);
 
     // Smooth at given level
     virtual void smooth
@@ -43,7 +43,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "RBGS.C"
+    #include "symmLEXGS.C"
 #endif
 
 #endif

@@ -20,8 +20,11 @@ class defaultPoissonSolver
 {
 protected:
 
-    //- The actual Poisson solver
+    // The actual Poisson solver
     autoPtr<solver<SType,Type,MeshType>> solverPtr_;
+
+    // Cached linear system pointer
+    autoPtr<linearSystem<SType,Type,MeshType>> sysPtr_;
 
 public:
 

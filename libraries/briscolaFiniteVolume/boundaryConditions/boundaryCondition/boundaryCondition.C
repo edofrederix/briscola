@@ -404,7 +404,7 @@ void boundaryCondition<Type,MeshType>::eliminateGhosts
 )
 {
     if (this->eliminated())
-        forAll(this->mshField_[l], d)
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
             eliminateGhosts(sys, l, d);
 }
 
@@ -416,7 +416,7 @@ void boundaryCondition<Type,MeshType>::eliminateGhosts
 )
 {
     if (this->eliminated())
-        forAll(this->mshField_[l], d)
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
             eliminateGhosts(sys, l, d);
 }
 
@@ -428,7 +428,7 @@ void boundaryCondition<Type,MeshType>::eliminateGhosts
 )
 {
     if (this->eliminated())
-        forAll(this->mshField_[l], d)
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
             eliminateGhosts(sys, l, d);
 }
 

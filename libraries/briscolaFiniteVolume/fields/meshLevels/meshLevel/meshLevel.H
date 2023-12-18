@@ -240,12 +240,11 @@ public:
     // Correct periodic boundary conditions for this level
     void correctPeriodicBoundaryConditions();
 
-    // Correct communicating (parallel and periodic) boundary conditions for
-    // this level
-    void correctCommBoundaryConditions();
+    // Correct non-eliminated boundary conditions
+    void correctNonEliminatedBoundaryConditions();
 
-    // Correct non-communicating boundary conditions for this level
-    void correctNonCommBoundaryConditions();
+    // Correct eliminated boundary conditions
+    void correctEliminatedBoundaryConditions();
 
     // Member operators
 

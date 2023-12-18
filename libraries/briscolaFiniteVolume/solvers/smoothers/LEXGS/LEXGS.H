@@ -17,9 +17,6 @@ class LEXGS
 :
     public solver<SType,Type,MeshType>::smoother
 {
-    // Relaxation factor
-    const scalar omega_;
-
 public:
 
     // Runtime type information

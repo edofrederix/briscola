@@ -309,8 +309,8 @@ MG<SType,Type,MeshType>::MG
             (
                 "smoother",
                 Pstream::parRun()
-              ? "LEXGS"
-              : "RBGS"
+              ? "symmLEXGS"
+              : "symmRBGS"
             ),
             this->dict_,
             fvMsh

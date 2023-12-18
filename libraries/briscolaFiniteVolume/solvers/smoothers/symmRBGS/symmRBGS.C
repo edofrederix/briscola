@@ -1,4 +1,4 @@
-#include "RBGS.H"
+#include "symmRBGS.H"
 
 namespace Foam
 {
@@ -10,7 +10,7 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-RBGS<SType,Type,MeshType>::RBGS
+symmRBGS<SType,Type,MeshType>::symmRBGS
 (
     const dictionary& dict,
     const fvMesh& fvMsh
@@ -20,7 +20,7 @@ RBGS<SType,Type,MeshType>::RBGS
 {}
 
 template<class SType, class Type, class MeshType>
-void RBGS<SType,Type,MeshType>::RBGS::smooth
+void symmRBGS<SType,Type,MeshType>::symmRBGS::smooth
 (
     linearSystem<SType,Type,MeshType>& sys,
     List<Type>& xi,
@@ -59,6 +59,30 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                       / Ad(i,j,k).center();
 
             forAllCells(xd, i, j, k)
+                if ((i+j+k)%2 == 1)
+                    xd(i,j,k) =
+                        (
+                            bd(i,j,k)
+                          - lowerRowProduct(Ad,xd,i,j,k)
+                          - upperRowProduct(Ad,xd,i,j,k)
+                          - xi[d]
+                        )
+                      / Ad(i,j,k).center();
+
+            // Reversed direction
+
+            forAllCellsReversed(xd, i, j, k)
+                if ((i+j+k)%2 == 0)
+                    xd(i,j,k) =
+                        (
+                            bd(i,j,k)
+                          - lowerRowProduct(Ad,xd,i,j,k)
+                          - upperRowProduct(Ad,xd,i,j,k)
+                          - xi[d]
+                        )
+                      / Ad(i,j,k).center();
+
+            forAllCellsReversed(xd, i, j, k)
                 if ((i+j+k)%2 == 1)
                     xd(i,j,k) =
                         (

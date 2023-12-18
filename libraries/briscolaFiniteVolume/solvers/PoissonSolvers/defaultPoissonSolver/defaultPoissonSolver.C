@@ -44,10 +44,17 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
     const bool ddt
 )
 {
-    linearSystem<SType,Type,MeshType> sys
-    (
-        im::laplacian<SType>(lambdaPtr,x)
-    );
+    if (sysPtr_.empty() || &sysPtr_->x() != &x)
+    {
+        sysPtr_.reset
+        (
+            new linearSystem<SType,Type,MeshType>(x)
+        );
+    }
+
+    linearSystem<SType,Type,MeshType>& sys = sysPtr_();
+
+    im::laplacian<eqOp>(sysPtr_(), lambdaPtr, x);
 
     if (bPtr)
         sys += (*bPtr);

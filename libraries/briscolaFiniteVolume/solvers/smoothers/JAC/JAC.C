@@ -58,20 +58,24 @@ void JAC<SType,Type,MeshType>::JAC::smooth
             const meshDirection<Type,MeshType>& bd = b[d];
 
             forAllCells(xd, i, j, k)
-            {
-                yd(i,j,k) +=
-                    omega_
-                  * (bd(i,j,k) - rowProduct(Ad,xd,i,j,k) - xi[d])
+                yd(i,j,k) =
+                    yd(i,j,k)*(1.0-omega_)
+                  + omega_
+                  * (
+                        bd(i,j,k)
+                      - lowerRowProduct(Ad,xd,i,j,k)
+                      - upperRowProduct(Ad,xd,i,j,k)
+                      - xi[d]
+                    )
                   / Ad(i,j,k).center();
-            }
         }
 
         x = y;
 
-        x.correctCommBoundaryConditions();
+        x.correctNonEliminatedBoundaryConditions();
     }
 
-    x.correctNonCommBoundaryConditions();
+    x.correctEliminatedBoundaryConditions();
 
     if (!singular)
         xi.clear();

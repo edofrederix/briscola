@@ -1,5 +1,5 @@
-#ifndef RBGS_H
-#define RBGS_H
+#ifndef symmJAC_H
+#define symmJAC_H
 
 #include "solver.H"
 
@@ -13,17 +13,20 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-class RBGS
+class symmJAC
 :
     public solver<SType,Type,MeshType>::smoother
 {
+    // Relaxation factor
+    const scalar omega_;
+
 public:
 
     // Runtime type information
-    TypeName("RBGS");
+    TypeName("symmJAC");
 
     // Construct from dictionary and mesh
-    RBGS(const dictionary&, const fvMesh&);
+    symmJAC(const dictionary&, const fvMesh&);
 
     // Smooth at given level
     virtual void smooth
@@ -43,7 +46,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "RBGS.C"
+    #include "symmJAC.C"
 #endif
 
 #endif

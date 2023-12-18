@@ -312,11 +312,11 @@ public:
     // Correct periodic boundary conditions
     void correctPeriodicBoundaryConditions();
 
-    // Correct communicating (parallel and periodic) boundary conditions
-    void correctCommBoundaryConditions();
+    // Correct non-eliminated boundary conditions
+    void correctNonEliminatedBoundaryConditions();
 
-    // Correct non-communicating boundary conditions
-    void correctNonCommBoundaryConditions();
+    // Correct eliminated boundary conditions
+    void correctEliminatedBoundaryConditions();
 
     // Set the old time field
     void setOldTime();
