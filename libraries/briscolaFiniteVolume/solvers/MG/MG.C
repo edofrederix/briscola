@@ -1,5 +1,4 @@
 #include "MG.H"
-#include "directSolver.H"
 
 namespace Foam
 {
@@ -128,7 +127,7 @@ void MG<SType,Type,MeshType>::cycle
     {
         if (coarseMode_ == DIRECT)
         {
-            directSolver_->solve(xEqn,singular);
+            this->directSolvePtr_->solve(xEqn,singular);
         }
         else
         {
@@ -306,14 +305,14 @@ MG<SType,Type,MeshType>::MG
     (
         solver<SType,Type,MeshType>::smoother::New
         (
-            dict.lookupOrDefault<word>
+            this->dict_.template lookupOrDefault<word>
             (
                 "smoother",
                 Pstream::parRun()
               ? "LEXGS"
               : "RBGS"
             ),
-            dict,
+            this->dict_,
             fvMsh
         ).ptr()
     );
@@ -321,30 +320,20 @@ MG<SType,Type,MeshType>::MG
     // Set the coarse level solver
 
     if (coarseMode_ == DIRECT)
-    {
-        dictionary directSolverDict;
-
-        // Use the APLU solver by default
-
-        if (!dict.found("directSolver"))
-        {
-            directSolverDict.add("type", "APLU");
-        }
-        else
-        {
-            directSolverDict = dict.subDict("directSolver");
-        }
-
-        directSolver_.reset
+        this->directSolvePtr_.reset
         (
-            directSolver<SType,Type,MeshType>::New
+            solver<SType,Type,MeshType>::directSolver::New
             (
-                directSolverDict,
+                this->dict_.template lookupOrDefault<word>
+                (
+                    "directSolverType",
+                    "APLU"
+                ),
+                this->dict_,
                 fvMsh,
                 fvMsh.msh().size()-1
             ).ptr()
         );
-    }
 }
 
 template<class SType, class Type, class MeshType>

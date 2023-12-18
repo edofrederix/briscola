@@ -3,7 +3,7 @@
 #include "fvMesh.H"
 #include "linearSystem.H"
 #include "imSchemes.H"
-#include "directSolver.H"
+#include "solver.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -27,12 +27,14 @@ void test(const fvMesh& fvMsh)
 
     f = 0.1*pTraits<Type>::one;
 
-    dictionary dict;
-    dict.add("type", "APLU");
-
-    autoPtr<directSolver<SType,Type,MeshType>> solverPtr
+    autoPtr<typename solver<SType,Type,MeshType>::directSolver> solverPtr
     (
-        directSolver<SType,Type,MeshType>::New(dict,fvMsh).ptr()
+        solver<SType,Type,MeshType>::directSolver::New
+        (
+            "APLU",
+            dictionary::null,
+            fvMsh
+        ).ptr()
     );
 
     linearSystem<SType,Type,MeshType> sys(im::laplacian(f));

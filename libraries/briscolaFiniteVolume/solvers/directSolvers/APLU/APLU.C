@@ -21,7 +21,7 @@ APLU<SType,Type,MeshType>::APLU
     const label l
 )
 :
-    directSolver<SType,Type,MeshType>(dict,fvMsh,l),
+    solver<SType,Type,MeshType>::directSolver(dict,fvMsh,l),
     shapes_(MeshType::numberOfDirections),
     sizes_(MeshType::numberOfDirections),
     commSizes_(Pstream::nProcs(),0),

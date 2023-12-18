@@ -35,6 +35,9 @@ void solve(linearSystem<SType,Type,MeshType>& sys)
     typedef solver<STYPE,TYPE,MESHTYPE>::smoother                              \
     smoother##STYPE##TYPE##MESHTYPE;                                           \
                                                                                \
+    typedef solver<STYPE,TYPE,MESHTYPE>::directSolver                          \
+    directSolver##STYPE##TYPE##MESHTYPE;                                       \
+                                                                               \
     defineTemplateTypeNameAndDebugWithName                                     \
     (                                                                          \
         solver##STYPE##TYPE##MESHTYPE,                                         \
@@ -58,6 +61,19 @@ void solve(linearSystem<SType,Type,MeshType>& sys)
     defineTemplateRunTimeSelectionTable                                        \
     (                                                                          \
         smoother##STYPE##TYPE##MESHTYPE,                                       \
+        dictionary                                                             \
+    );                                                                         \
+                                                                               \
+    defineTemplateTypeNameAndDebugWithName                                     \
+    (                                                                          \
+        directSolver##STYPE##TYPE##MESHTYPE,                                   \
+        "smoother",                                                            \
+        0                                                                      \
+    );                                                                         \
+                                                                               \
+    defineTemplateRunTimeSelectionTable                                        \
+    (                                                                          \
+        directSolver##STYPE##TYPE##MESHTYPE,                                   \
         dictionary                                                             \
     );
 
@@ -92,5 +108,21 @@ void solve(linearSystem<SType,Type,MeshType>& sys)
     solver<STYPE,TYPE,MESHTYPE>::smoother::                                    \
         adddictionaryConstructorToTable<SMOOTHER##STYPE##TYPE##MESHTYPE>       \
             add##SMOOTHER##STYPE##TYPE##MESHTYPE##ConstructorToTable_;
+
+#define makeDirectSolverType(DIRECTSOLVER,STYPE,TYPE,MESHTYPE)                 \
+                                                                               \
+    typedef DIRECTSOLVER<STYPE,TYPE,MESHTYPE>                                  \
+        DIRECTSOLVER##STYPE##TYPE##MESHTYPE;                                   \
+                                                                               \
+    defineTemplateTypeNameAndDebugWithName                                     \
+    (                                                                          \
+        DIRECTSOLVER##STYPE##TYPE##MESHTYPE,                                   \
+        #DIRECTSOLVER,                                                         \
+        0                                                                      \
+    );                                                                         \
+                                                                               \
+    solver<STYPE,TYPE,MESHTYPE>::directSolver::                                \
+        adddictionaryConstructorToTable<DIRECTSOLVER##STYPE##TYPE##MESHTYPE>   \
+            add##DIRECTSOLVER##STYPE##TYPE##MESHTYPE##ConstructorToTable_;
 
 #endif

@@ -22,13 +22,15 @@ class solver
 {
 public:
 
-    // Base Smoother class with singular system augmentation, see Sec. 5.6.4 of
+    // Base smoother class with singular system augmentation, see Sec. 5.6.4 of
     // "Multigrid", U. Trottenberg et al., 2000. If the xi list is empty, to
     // singular system augmentation is applied. Having xi as an argument enables
     // its reuse between different calls to the smoothers.
 
     class smoother
     {
+    protected:
+
         // Reference to the solver dictionary
         const dictionary& dict_;
 
@@ -84,6 +86,73 @@ public:
         ) = 0;
     };
 
+    // Base direct solver class
+
+    class directSolver
+    {
+    protected:
+
+        // Reference to the solver dictionary
+        const dictionary& dict_;
+
+        // Reference to the mesh
+        const fvMesh& fvMsh_;
+
+        // Level number
+        const label l_;
+
+    public:
+
+        // Runtime type information
+        TypeName("directSolver");
+
+        // Declare run-time constructor selection tables
+        declareRunTimeSelectionTable
+        (
+            autoPtr,
+            directSolver,
+            dictionary,
+            (
+                const dictionary& dict,
+                const fvMesh& fvMsh,
+                const label l
+            ),
+            (dict, fvMsh, l)
+        );
+
+        // Construct from dictionary and mesh
+        directSolver(const dictionary&, const fvMesh&, const label);
+
+        // Selector from name
+        static autoPtr<directSolver> New
+        (
+            const word&,
+            const dictionary&,
+            const fvMesh&,
+            const label l = 0
+        );
+
+        // Destructor
+        virtual ~directSolver();
+
+        // Access to the dictionary
+        inline const dictionary& dict() const { return dict_; }
+
+        // Access to the mesh
+        inline const fvMesh& fvMsh() const { return fvMsh_; }
+
+        // Return the mesh level number
+        inline label levelNum() const { return l_; }
+
+        // Solve the given system, indicating if singular system augmentation
+        // should be applied
+        virtual void solve
+        (
+            linearSystem<SType,Type,MeshType>&,
+            const List<bool>&
+        ) = 0;
+    };
+
 protected:
 
     // Copy of the dictionary
@@ -94,6 +163,9 @@ protected:
 
     // Smoother
     autoPtr<smoother> smoothPtr_;
+
+    // Direct solver
+    autoPtr<directSolver> directSolvePtr_;
 
     // Relative tolerance
     scalar relTol_;
@@ -212,6 +284,7 @@ public:
 #ifdef NoRepository
     #include "solver.C"
     #include "solverSmoother.C"
+    #include "solverDirectSolver.C"
 #endif
 
 #endif

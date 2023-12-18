@@ -1,5 +1,4 @@
 #include "LEXGS.H"
-#include "directSolver.H"
 
 namespace Foam
 {

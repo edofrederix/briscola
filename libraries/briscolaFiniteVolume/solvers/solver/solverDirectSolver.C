@@ -1,4 +1,4 @@
-#include "directSolver.H"
+#include "solver.H"
 
 namespace Foam
 {
@@ -10,7 +10,7 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-directSolver<SType,Type,MeshType>::directSolver
+solver<SType,Type,MeshType>::directSolver::directSolver
 (
     const dictionary& dict,
     const fvMesh& fvMsh,
@@ -23,34 +23,32 @@ directSolver<SType,Type,MeshType>::directSolver
 {}
 
 template<class SType, class Type, class MeshType>
-directSolver<SType,Type,MeshType>::~directSolver()
+solver<SType,Type,MeshType>::directSolver::~directSolver()
 {}
 
 template<class SType, class Type, class MeshType>
-autoPtr<directSolver<SType,Type,MeshType>>
-directSolver<SType,Type,MeshType>::New
+autoPtr<typename solver<SType,Type,MeshType>::directSolver>
+solver<SType,Type,MeshType>::directSolver::New
 (
+    const word& name,
     const dictionary& dict,
     const fvMesh& fvMsh,
     const label l
 )
 {
-    const word solverType(dict.lookup("type"));
-
     typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(solverType);
+        dictionaryConstructorTablePtr_->find(name);
 
     if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown direct solver "
-            << solverType << nl << nl
+            << "Unknown direct solver " << name << nl << nl
             << "Valid direct solvers are:" << nl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
-    return autoPtr<directSolver<SType,Type,MeshType>>
+    return autoPtr<solver<SType,Type,MeshType>::directSolver>
     (
         cstrIter()(dict, fvMsh, l)
     );

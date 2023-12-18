@@ -14,9 +14,6 @@ namespace briscola
 namespace fv
 {
 
-// Forward declaration of direct solver
-template<class SType, class Type, class MeshType> class directSolver;
-
 // Enumeration of cycle types
 enum MGCycleType
 {
@@ -66,9 +63,6 @@ protected:
 
     // Restriction operator. By default the average scheme is used
     autoPtr<restrictionScheme<Type,MeshType>> reScheme_;
-
-    // Optional direct solver for the coarsest level
-    autoPtr<directSolver<SType,Type,MeshType>> directSolver_;
 
     // Solve system and provide parameters
     virtual void solve

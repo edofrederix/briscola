@@ -1,5 +1,4 @@
 #include "JAC.H"
-#include "directSolver.H"
 
 namespace Foam
 {
