@@ -20,13 +20,80 @@ namespace fv
 template<class SType, class Type, class MeshType>
 class solver
 {
+public:
+
+    // Base Smoother class with singular system augmentation, see Sec. 5.6.4 of
+    // "Multigrid", U. Trottenberg et al., 2000. If the xi list is empty, to
+    // singular system augmentation is applied. Having xi as an argument enables
+    // its reuse between different calls to the smoothers.
+
+    class smoother
+    {
+        // Reference to the solver dictionary
+        const dictionary& dict_;
+
+        // Reference to the mesh
+        const fvMesh& fvMsh_;
+
+    public:
+
+        // Runtime type information
+        TypeName("smoother");
+
+        // Declare run-time constructor selection tables
+        declareRunTimeSelectionTable
+        (
+            autoPtr,
+            smoother,
+            dictionary,
+            (
+                const dictionary& dict,
+                const fvMesh& fvMsh
+            ),
+            (dict, fvMsh)
+        );
+
+        // Construct from dictionary and mesh
+        smoother(const dictionary&, const fvMesh&);
+
+        // Selector from name
+        static autoPtr<smoother> New
+        (
+            const word&,
+            const dictionary&,
+            const fvMesh&
+        );
+
+        // Destructor
+        virtual ~smoother();
+
+        // Access to the dictionary
+        inline const dictionary& dict() const { return dict_; }
+
+        // Access to the mesh
+        inline const fvMesh& fvMsh() const { return fvMsh_; }
+
+        // Smooth at given level
+        virtual void smooth
+        (
+            linearSystem<SType,Type,MeshType>& sys,
+            List<Type>& xi,
+            const label l,
+            const label sweeps,
+            const labelList& converged
+        ) = 0;
+    };
+
 protected:
 
-    // Copy of the scheme dictionary
+    // Copy of the dictionary
     dictionary dict_;
 
     // Reference to the mesh
     const fvMesh& fvMsh_;
+
+    // Smoother
+    autoPtr<smoother> smoothPtr_;
 
     // Relative tolerance
     scalar relTol_;
@@ -96,44 +163,6 @@ public:
         const label
     ) const;
 
-    // Smoothers with singular system augmentation, see Sec. 5.6.4 of
-    // "Multigrid", U. Trottenberg et al., 2000. If the xi list is empty, to
-    // singular system augmentation is applied. Having xi as an argument enables
-    // its reuse between different calls to the smoothers.
-
-    // Red-black Gauss-Seidel smoother
-    static void RBGS
-    (
-        linearSystem<SType,Type,MeshType>& sys,
-        List<Type>& xi,
-        const label l,
-        const label sweeps,
-        const labelList& converged,
-        const scalar omega = 1.0
-    );
-
-    // Lexicographic Gauss-Seidel smoother
-    static void LEXGS
-    (
-        linearSystem<SType,Type,MeshType>& sys,
-        List<Type>& xi,
-        const label l,
-        const label sweeps,
-        const labelList& converged,
-        const scalar omega = 1.0
-    );
-
-    // Jacobi smoother
-    static void JAC
-    (
-        linearSystem<SType,Type,MeshType>& sys,
-        List<Type>& xi,
-        const label l,
-        const label sweeps,
-        const labelList& converged,
-        const scalar omega = 0.8
-    );
-
     // Print the statistics of the solver outcome for given solver name, field
     // name, list of initial residual, final residuals and number of iterations
     static void printSolverStats
@@ -182,6 +211,7 @@ public:
 
 #ifdef NoRepository
     #include "solver.C"
+    #include "solverSmoother.C"
 #endif
 
 #endif

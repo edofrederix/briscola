@@ -32,6 +32,9 @@ void solve(linearSystem<SType,Type,MeshType>& sys)
                                                                                \
     typedef solver<STYPE,TYPE,MESHTYPE> solver##STYPE##TYPE##MESHTYPE;         \
                                                                                \
+    typedef solver<STYPE,TYPE,MESHTYPE>::smoother                              \
+    smoother##STYPE##TYPE##MESHTYPE;                                           \
+                                                                               \
     defineTemplateTypeNameAndDebugWithName                                     \
     (                                                                          \
         solver##STYPE##TYPE##MESHTYPE,                                         \
@@ -43,8 +46,20 @@ void solve(linearSystem<SType,Type,MeshType>& sys)
     (                                                                          \
         solver##STYPE##TYPE##MESHTYPE,                                         \
         dictionary                                                             \
+    );                                                                         \
+                                                                               \
+    defineTemplateTypeNameAndDebugWithName                                     \
+    (                                                                          \
+        smoother##STYPE##TYPE##MESHTYPE,                                       \
+        "smoother",                                                            \
+        0                                                                      \
+    );                                                                         \
+                                                                               \
+    defineTemplateRunTimeSelectionTable                                        \
+    (                                                                          \
+        smoother##STYPE##TYPE##MESHTYPE,                                       \
+        dictionary                                                             \
     );
-
 
 #define makeSolverType(SOLVER,STYPE,TYPE,MESHTYPE)                             \
                                                                                \
@@ -61,5 +76,21 @@ void solve(linearSystem<SType,Type,MeshType>& sys)
     solver<STYPE,TYPE,MESHTYPE>::                                              \
         adddictionaryConstructorToTable<SOLVER##STYPE##TYPE##MESHTYPE>         \
             add##SOLVER##STYPE##TYPE##MESHTYPE##ConstructorToTable_;
+
+#define makeSmootherType(SMOOTHER,STYPE,TYPE,MESHTYPE)                         \
+                                                                               \
+    typedef SMOOTHER<STYPE,TYPE,MESHTYPE>                                      \
+        SMOOTHER##STYPE##TYPE##MESHTYPE;                                       \
+                                                                               \
+    defineTemplateTypeNameAndDebugWithName                                     \
+    (                                                                          \
+        SMOOTHER##STYPE##TYPE##MESHTYPE,                                       \
+        #SMOOTHER,                                                             \
+        0                                                                      \
+    );                                                                         \
+                                                                               \
+    solver<STYPE,TYPE,MESHTYPE>::smoother::                                    \
+        adddictionaryConstructorToTable<SMOOTHER##STYPE##TYPE##MESHTYPE>       \
+            add##SMOOTHER##STYPE##TYPE##MESHTYPE##ConstructorToTable_;
 
 #endif

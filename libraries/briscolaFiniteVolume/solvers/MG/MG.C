@@ -59,14 +59,13 @@ void MG<SType,Type,MeshType>::cycle
 
     // Pre-smooth
 
-    this->smooth
+    this->smoothPtr_->smooth
     (
         xEqn,
         xi,
         l,
         nSweepsPre,
-        converged,
-        omega_
+        converged
     );
 
     // If we are not on the coarsest level, continue to traverse levels.
@@ -115,14 +114,13 @@ void MG<SType,Type,MeshType>::cycle
 
             // Post-smooth
 
-            this->smooth
+            this->smoothPtr_->smooth
             (
                 xEqn,
                 xi,
                 l,
                 nSweepsPost,
-                converged,
-                omega_
+                converged
             );
         }
     }
@@ -134,14 +132,13 @@ void MG<SType,Type,MeshType>::cycle
         }
         else
         {
-            this->smooth
+            this->smoothPtr_->smooth
             (
                 xEqn,
                 xi,
                 l,
                 Foam::max(nSweepsPost,2),
-                converged,
-                omega_
+                converged
             );
         }
     }
@@ -278,25 +275,6 @@ MG<SType,Type,MeshType>::MG
 )
 :
     solver<SType,Type,MeshType>(dict,fvMsh),
-    smoother_
-    (
-        smootherTypeNames
-        [
-            dict.lookupOrDefault<word>
-            (
-                "smoother",
-                Pstream::parRun()
-              ? smootherTypeNames[LEXGS]
-              : smootherTypeNames[RBGS]
-            )
-        ]
-    ),
-    omega_
-    (
-        (smoother_ == RBGS || smoother_ == LEXGS)
-      ? dict.lookupOrDefault<scalar>("omega", 1.0)
-      : dict.lookupOrDefault<scalar>("omega", 0.8)
-    ),
     nSweepsPre_(dict.lookupOrDefault<label>("nSweepsPre", 0)),
     nSweepsPost_(dict.lookupOrDefault<label>("nSweepsPost", 2)),
     cycleType_
@@ -324,20 +302,21 @@ MG<SType,Type,MeshType>::MG
         )
     )
 {
-    // Set smoother function pointer
-
-    if (smoother_ == RBGS)
-    {
-        smooth = &this->RBGS;
-    }
-    else if (smoother_ == LEXGS)
-    {
-        smooth = &this->LEXGS;
-    }
-    else
-    {
-        smooth = &this->JAC;
-    }
+    this->smoothPtr_.reset
+    (
+        solver<SType,Type,MeshType>::smoother::New
+        (
+            dict.lookupOrDefault<word>
+            (
+                "smoother",
+                Pstream::parRun()
+              ? "LEXGS"
+              : "RBGS"
+            ),
+            dict,
+            fvMsh
+        ).ptr()
+    );
 
     // Set the coarse level solver
 

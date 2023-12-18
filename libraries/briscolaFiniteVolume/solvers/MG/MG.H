@@ -45,13 +45,6 @@ class MG
 {
 protected:
 
-    // Smoother type
-    smootherType smoother_;
-
-    // Smoothing relaxation factor. When not set, it defaults to 1 for GS and
-    // 0.8 for JAC smoothers
-    scalar omega_;
-
     // Number of pre-smoother sweeps. Defaults to 0
     label nSweepsPre_;
 
@@ -101,17 +94,6 @@ protected:
         const labelList& converged,
         const label nSweepsPre,
         const label nSweepsPost
-    );
-
-    // Smoother function pointer
-    void (*smooth)
-    (
-        linearSystem<SType,Type,MeshType>& sys,
-        List<Type>& xi,
-        const label l,
-        const label sweeps,
-        const labelList& converged,
-        const scalar omega
     );
 
 public:

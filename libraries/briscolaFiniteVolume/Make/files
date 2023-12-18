@@ -55,7 +55,7 @@ schemes/prolongationSchemes/prolongationScheme/prolongationSchemes.C
 schemes/restrictionSchemes/restrictionScheme/restrictionSchemes.C
 
 solvers/solver/solvers.C
-solvers/solver/solverFwd.C
+solvers/solver/solverSmoothers.C
 
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C
 solvers/PoissonSolvers/FFTPoissonSolver/FFTPoissonSolver.C
