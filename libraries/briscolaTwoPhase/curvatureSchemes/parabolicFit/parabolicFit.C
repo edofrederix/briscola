@@ -579,7 +579,7 @@ void parabolicFit::correct()
                 double b[6] = {0};
                 vector auxBase(1,0,0);
 
-                if (Foam::mag(auxBase & normal_(i,j,k)) < 1e-2)
+                if (Foam::mag(auxBase ^ normal_(i,j,k)) < 1e-2)
                     auxBase = vector(0,1,0);
 
                 vector v1 = normal_(i,j,k) ^ auxBase;
@@ -714,7 +714,7 @@ void parabolicFit::correct()
                             if (jt > it)
                             {
                                 L[it][jt] = A[it][jt] / L[it][it];
-                                for (int kt = 0; kt < i; kt++)
+                                for (int kt = 0; kt < it; kt++)
                                 {
                                     L[it][jt] = L[it][jt] - ((L[it][kt] * L[kt][jt]) / L[it][it]);
                                 }
@@ -756,6 +756,13 @@ void parabolicFit::correct()
                                     1.5
                                 )
                             );
+
+                    if (kappa(i,j,k) != kappa(i,j,k))
+                    {
+                        FatalErrorInFunction
+                            << "Curvature (parabolicFit): kappa computation failed."
+                            << endl << abort(FatalError);
+                    }
                 }
                 else
                 {

@@ -108,8 +108,7 @@ staggeredScalarField H
     false
 );
 
-H = ex::div(phi,U) - ((ex::grad(mu) & ex::grad(U)) / rho)
-  - itpm.surfaceTension().stagForce();
+H = ex::div(phi,U) - ((ex::grad(mu) & ex::grad(U)) / rho);
 
 const staggeredScalarField minRho = tpm.minRho<staggered>().ref();
 const colocatedScalarField coloMinRho = tpm.minRho<colocated>().ref();

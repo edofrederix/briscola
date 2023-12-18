@@ -47,6 +47,11 @@ gradientSchemes
         type    midPointGauss;
     }
 
+    grad(p.oldTime)
+    {
+        type    midPointGauss;
+    }
+
     grad(extrapolatedP)
     {
         type    midPointGauss;
@@ -71,6 +76,11 @@ gradientSchemes
 faceGradientSchemes
 {
     faceGrad(p)
+    {
+        type    midPoint;
+    }
+
+    faceGrad(p.oldTime)
     {
         type    midPoint;
     }

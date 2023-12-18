@@ -45,6 +45,7 @@ surfaceTensionScheme::surfaceTensionScheme
         true,
         false
     ),
+    sigmaValue_(readScalar(dict.lookup("sigma"))),
     curvatureSchemePtr_
     (
         word(dict.lookup("type")) != "none"
@@ -84,6 +85,7 @@ surfaceTensionScheme::surfaceTensionScheme(const surfaceTensionScheme& s)
     alpha_(s.alpha_),
     stagForcePtr_(s.stagForcePtr_, false),
     sigma_(s.sigma_),
+    sigmaValue_(s.sigmaValue_),
     curvatureSchemePtr_(s.curvatureSchemePtr_, false)
 {}
 

@@ -21,11 +21,6 @@ laplacianSchemes
         type    linearGauss;
     }
 
-    laplacian(coloRhoInv,p)
-    {
-        type    linearGauss;
-    }
-
     laplacian(p)
     {
         type    linearGauss;
@@ -62,27 +57,12 @@ gradientSchemes
         type    midPointGauss;
     }
 
-    grad(U)
-    {
-        type    midPointGauss;
-    }
-
-    stagGrad(p)
-    {
-        type    midPointGauss;
-    }
-
-    stagGrad(p.oldTime)
-    {
-        type    midPointGauss;
-    }
-
     stagGrad(alpha)
     {
         type    midPointGauss;
     }
 
-    stagGrad(extrapolatedP)
+    grad(U)
     {
         type    midPointGauss;
     }
@@ -131,26 +111,13 @@ interpolationSchemes
         type    midPoint;
     }
 
-    interp(kappa)
-    {
-        type    curvature;
-    }
-
-    interp(checkCurv)
-    {
-        type    curvature;
-    }
-
     interp(min(rho1,rho2))
     {
         type    midPoint;
     }
-}
 
-reconstructionSchemes
-{
-    reconstruct(U)
+    interp(kappa)
     {
-        type    midPoint;
+        type    curvature;
     }
 }

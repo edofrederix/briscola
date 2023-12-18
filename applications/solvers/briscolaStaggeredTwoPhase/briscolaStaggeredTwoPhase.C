@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
     #include "createRefs.H"
     #include "createFields.H"
     #include "createBriscolaIO.H"
-    #include "initContinuityErrors.H"
 
     while (runTime.run())
     {
@@ -63,12 +62,12 @@ int main(int argc, char *argv[])
 
         phi = ex::faceFlux(U);
 
-        H = ex::div(phi,U) - ((ex::grad(mu) & ex::grad(U)) / rho)
-          - itpm.surfaceTension().stagForce();
+        H = ex::div(phi,U) - ((ex::grad(mu) & ex::grad(U)) / rho);
 
         USys += (1+0.5*(deltaT/deltaT0))*H;
 
         USys -= list(itpm.g());
+        USys += ex::stagGrad(p) / rho - itpm.surfaceTension().stagForce();
 
         // Solve predictor
 
@@ -86,21 +85,34 @@ int main(int argc, char *argv[])
 
             p.setOldTime();
 
-            colocatedFaceScalarField splitCorrection = fa * (1 - coloMinRhof * coloRhoInvf) * ex::faceGrad(extrapolatedP);
+            colocatedFaceScalarField splitCorrection = fa *
+                (
+                    (1 - coloMinRhof * coloRhoInvf) * ex::faceGrad(extrapolatedP)
+                  + coloMinRhof * coloRhoInvf * ex::faceGrad(p)
+                );
+
             Poisson->solve(p, coloMinRho*ex::coloDiv(U)/(-deltaT) - ex::div(splitCorrection));
 
             // Rhie-Chow correction
 
-            U -= deltaT*(ex::stagGrad(p)*minRhoInv + (rhoInv - minRhoInv)*ex::stagGrad(extrapolatedP));
+            U -= deltaT*
+                (
+                    ex::stagGrad(p)*minRhoInv
+                  + (rhoInv - minRhoInv)*ex::stagGrad(extrapolatedP)
+                  - ex::stagGrad(p.oldTime())*rhoInv
+                );
             U.correctBoundaryConditions();
         }
         else
         {
-            Poisson->solve(p, ex::coloDiv(U)/(-deltaT), coloRhoInvf);
+            colocatedFaceScalarField splitCorrection = fa * coloRhoInvf * ex::faceGrad(p);
+            p.setOldTime();
+
+            Poisson->solve(p, ex::coloDiv(U)/(-deltaT) - ex::div(splitCorrection), coloRhoInvf);
 
             // Rhie-Chow correction
 
-            U -= deltaT*ex::stagGrad(p)*rhoInv;
+            U -= deltaT*(ex::stagGrad(p)-ex::stagGrad(p.oldTime()))*rhoInv;
             U.correctBoundaryConditions();
         }
 

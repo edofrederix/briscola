@@ -72,11 +72,6 @@ gradientSchemes
         type    midPointGauss;
     }
 
-    stagGrad(p.oldTime)
-    {
-        type    midPointGauss;
-    }
-
     stagGrad(alpha)
     {
         type    midPointGauss;
