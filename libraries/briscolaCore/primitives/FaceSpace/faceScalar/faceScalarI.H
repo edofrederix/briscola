@@ -13,7 +13,11 @@ inline stencil operator+
 {
     stencil r(cs1);
 
-    r += static_cast<const faceScalar&>(cs2);
+    r +=
+        static_cast<const stencil&>
+        (
+            static_cast<const faceScalar&>(cs2)
+        );
 
     return r;
 }
@@ -35,7 +39,11 @@ inline stencil operator-
 {
     stencil::csType r(cs1);
 
-    r -= static_cast<const faceScalar&>(cs2);
+    r -=
+        static_cast<const stencil&>
+        (
+            static_cast<const faceScalar&>(cs2)
+        );
 
     return r;
 }
@@ -48,7 +56,11 @@ inline stencil operator-
 {
     stencil::csType r(-cs2);
 
-    r += static_cast<const faceScalar&>(cs1);
+    r +=
+        static_cast<const stencil&>
+        (
+            static_cast<const faceScalar&>(cs1)
+        );
 
     return r;
 }
@@ -61,7 +73,11 @@ inline stencil operator*
 {
     stencil::csType r(cs1);
 
-    r *= static_cast<const faceScalar&>(cs2);
+    r *=
+        static_cast<const stencil&>
+        (
+            static_cast<const faceScalar&>(cs2)
+        );
 
     return r;
 }
@@ -81,7 +97,13 @@ inline stencil operator/
     const stencil::csType& cs2
 )
 {
-    stencil::csType r(static_cast<const faceScalar&>(cs1));
+    stencil::csType r
+    (
+        static_cast<const stencil&>
+        (
+            static_cast<const faceScalar&>(cs1)
+        )
+    );
 
     r /= cs2;
 

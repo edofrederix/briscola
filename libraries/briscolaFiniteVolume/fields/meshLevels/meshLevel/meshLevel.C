@@ -342,7 +342,7 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions()
 
         forAll(mshFieldPtr_->boundaryConditions(), i)
         {
-            mshFieldPtr_->boundaryConditions()[i].initEvaluate(l_);
+            mshFieldPtr_->boundaryConditions()[i].prepare(l_);
         }
 
         if (Pstream::parRun())
@@ -375,7 +375,7 @@ void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
 
             if (bc.baseType() == PARALLELBC)
             {
-                bc.initEvaluate(l_);
+                bc.prepare(l_);
             }
         }
 
@@ -415,7 +415,7 @@ void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
 
             if (bc.baseType() == PERIODICBC)
             {
-                bc.initEvaluate(l_);
+                bc.prepare(l_);
             }
         }
 
@@ -464,7 +464,7 @@ void meshLevel<Type,MeshType>::correctNonCommBoundaryConditions()
 
             if (bc.baseType() != PARALLELBC && bc.baseType() != PERIODICBC)
             {
-                bc.initEvaluate(l_);
+                bc.prepare(l_);
             }
         }
 
@@ -656,7 +656,10 @@ void meshLevel<Type,MeshType>::operator/=(const List<scalar>& v)
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshLevel<Type,MeshType>::operator=(const meshLevel<Type2,MeshType>& L)
+void meshLevel<Type,MeshType>::operator=
+(
+    const meshLevel<Type2,MeshType>& L
+)
 {
     forAll(*this, d)
         listType::operator[](d) = L[d];
@@ -675,7 +678,10 @@ void meshLevel<Type,MeshType>::operator=
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshLevel<Type,MeshType>::operator+=(const meshLevel<Type2,MeshType>& L)
+void meshLevel<Type,MeshType>::operator+=
+(
+    const meshLevel<Type2,MeshType>& L
+)
 {
     forAll(*this, d)
         listType::operator[](d) += L[d];
@@ -711,6 +717,50 @@ void meshLevel<Type,MeshType>::operator-=
 )
 {
     *this -= tL();
+    tL.clear();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator*=
+(
+    const meshLevel<Type2,MeshType>& L
+)
+{
+    forAll(*this, d)
+        listType::operator[](d) *= L[d];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator*=
+(
+    const tmp<meshLevel<Type2,MeshType>>& tL
+)
+{
+    *this *= tL();
+    tL.clear();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator/=
+(
+    const meshLevel<Type2,MeshType>& L
+)
+{
+    forAll(*this, d)
+        listType::operator[](d) /= L[d];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator/=
+(
+    const tmp<meshLevel<Type2,MeshType>>& tL
+)
+{
+    *this /= tL();
     tL.clear();
 }
 
@@ -760,6 +810,38 @@ void meshLevel<Type,MeshType>::operator-=(const List<Type2>& v)
 {
     forAll(*this, d)
         listType::operator[](d) -= v[d];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator*=(const Type2& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) *= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator*=(const List<Type2>& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) *= v[d];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator/=(const Type2& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) /= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator/=(const List<Type2>& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) /= v[d];
 }
 
 }

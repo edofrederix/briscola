@@ -52,7 +52,7 @@ bool initialCondition::read(const dictionary& dict)
         const staggeredVectorField& cc =
             fvMsh.metrics<staggered>().cellCenters();
 
-        forAllLevels(U, l, d, i, j, k)
+        forAllCells(U, l, d, i, j, k)
             if (d == 0)
                 U(l,d,i,j,k) =
                     5300.0/360.0*2.0
@@ -62,7 +62,7 @@ bool initialCondition::read(const dictionary& dict)
                       + 0.1*Foam::sin(cc(l,d,i,j,k).y()*3.1415927)
                     );
 
-        forAllLevels(U, l, d, i, j, k)
+        forAllCells(U, l, d, i, j, k)
             if (d == 2)
                 U(l,d,i,j,k) =
                     5300.0/360.0/2.0

@@ -1,6 +1,65 @@
 namespace Foam
 {
 
+// With self
+
+// Sum
+
+template<class Cmpt1, class Cmpt2>
+class typeOfSum<FaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename typeOfSum<Cmpt1,Cmpt2>::type productType;
+    typedef FaceSpace<productType> type;
+};
+
+// Outer products
+
+template<class Cmpt1, class Cmpt2>
+class outerProduct<FaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename outerProduct<Cmpt1,Cmpt2>::type productType;
+    typedef FaceSpace<productType> type;
+};
+
+// Inner product
+
+template<class Cmpt1, class Cmpt2>
+class innerProduct<FaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename innerProduct<Cmpt1,Cmpt2>::type productType;
+    typedef FaceSpace<productType> type;
+};
+
+// Cross product
+
+template<class Cmpt1, class Cmpt2>
+class crossProduct<FaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename crossProduct<Cmpt1,Cmpt2>::type productType;
+    typedef FaceSpace<productType> type;
+};
+
+// Scalar product
+
+template<class Cmpt1, class Cmpt2>
+class scalarProduct<FaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename scalarProduct<Cmpt1,Cmpt2>::type productType;
+    typedef FaceSpace<productType> type;
+};
+
+// With primitives
+
 // Sum
 
 template<class Cmpt1, class Cmpt2>
@@ -14,15 +73,6 @@ public:
 
 template<class Cmpt1, class Cmpt2>
 class typeOfSum<FaceSpace<Cmpt1>,Cmpt2>
-{
-public:
-
-    typedef typename typeOfSum<Cmpt1,Cmpt2>::type productType;
-    typedef FaceSpace<productType> type;
-};
-
-template<class Cmpt1, class Cmpt2>
-class typeOfSum<FaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
 {
 public:
 
@@ -50,15 +100,6 @@ public:
     typedef FaceSpace<productType> type;
 };
 
-template<class Cmpt1, class Cmpt2>
-class outerProduct<FaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
-{
-public:
-
-    typedef typename outerProduct<Cmpt1,Cmpt2>::type productType;
-    typedef FaceSpace<productType> type;
-};
-
 // Inner product
 
 template<class Cmpt1, class Cmpt2>
@@ -72,15 +113,6 @@ public:
 
 template<class Cmpt1, class Cmpt2>
 class innerProduct<FaceSpace<Cmpt1>,Cmpt2>
-{
-public:
-
-    typedef typename innerProduct<Cmpt1,Cmpt2>::type productType;
-    typedef FaceSpace<productType> type;
-};
-
-template<class Cmpt1, class Cmpt2>
-class innerProduct<FaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
 {
 public:
 
@@ -108,15 +140,6 @@ public:
     typedef FaceSpace<productType> type;
 };
 
-template<class Cmpt1, class Cmpt2>
-class crossProduct<FaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
-{
-public:
-
-    typedef typename crossProduct<Cmpt1,Cmpt2>::type productType;
-    typedef FaceSpace<productType> type;
-};
-
 // Scalar product
 
 template<class Cmpt1, class Cmpt2>
@@ -137,13 +160,106 @@ public:
     typedef FaceSpace<productType> type;
 };
 
+// With lower face space, always reducing to lower face space
+
+// Sum
+
 template<class Cmpt1, class Cmpt2>
-class scalarProduct<FaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
+class typeOfSum<FaceSpace<Cmpt1>,LowerFaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename typeOfSum<Cmpt1,Cmpt2>::type productType;
+    typedef LowerFaceSpace<productType> type;
+};
+
+template<class Cmpt1, class Cmpt2>
+class typeOfSum<LowerFaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename typeOfSum<Cmpt1,Cmpt2>::type productType;
+    typedef LowerFaceSpace<productType> type;
+};
+
+// Outer products
+
+template<class Cmpt1, class Cmpt2>
+class outerProduct<FaceSpace<Cmpt1>,LowerFaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename outerProduct<Cmpt1,Cmpt2>::type productType;
+    typedef LowerFaceSpace<productType> type;
+};
+
+template<class Cmpt1, class Cmpt2>
+class outerProduct<LowerFaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename outerProduct<Cmpt1,Cmpt2>::type productType;
+    typedef LowerFaceSpace<productType> type;
+};
+
+// Inner product
+
+template<class Cmpt1, class Cmpt2>
+class innerProduct<FaceSpace<Cmpt1>,LowerFaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename innerProduct<Cmpt1,Cmpt2>::type productType;
+    typedef LowerFaceSpace<productType> type;
+};
+
+template<class Cmpt1, class Cmpt2>
+class innerProduct<LowerFaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename innerProduct<Cmpt1,Cmpt2>::type productType;
+    typedef LowerFaceSpace<productType> type;
+};
+
+// Cross product
+
+template<class Cmpt1, class Cmpt2>
+class crossProduct<FaceSpace<Cmpt1>,LowerFaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename crossProduct<Cmpt1,Cmpt2>::type productType;
+    typedef LowerFaceSpace<productType> type;
+};
+
+template<class Cmpt1, class Cmpt2>
+class crossProduct<LowerFaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename crossProduct<Cmpt1,Cmpt2>::type productType;
+    typedef LowerFaceSpace<productType> type;
+};
+
+// Scalar product
+
+template<class Cmpt1, class Cmpt2>
+class scalarProduct<FaceSpace<Cmpt1>,LowerFaceSpace<Cmpt2>>
 {
 public:
 
     typedef typename scalarProduct<Cmpt1,Cmpt2>::type productType;
-    typedef FaceSpace<productType> type;
+    typedef LowerFaceSpace<productType> type;
+};
+
+template<class Cmpt1, class Cmpt2>
+class scalarProduct<LowerFaceSpace<Cmpt1>,FaceSpace<Cmpt2>>
+{
+public:
+
+    typedef typename scalarProduct<Cmpt1,Cmpt2>::type productType;
+    typedef LowerFaceSpace<productType> type;
 };
 
 }

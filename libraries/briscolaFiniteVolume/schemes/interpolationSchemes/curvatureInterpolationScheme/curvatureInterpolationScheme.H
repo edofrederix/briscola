@@ -32,7 +32,7 @@ public:
     curvatureInterpolationScheme(const fvMesh&);
 
     // Interpolation to the face
-    virtual tmp<meshField<FaceSpace<Type>,MeshType>> interp
+    virtual tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
     (
         const meshField<Type,MeshType>&
     );

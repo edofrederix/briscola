@@ -2,6 +2,7 @@
 
 #include "SquareMatrix.H"
 #include "LUscalarMatrix.H"
+#include "meshDirectionStencilFunctions.H"
 
 namespace Foam
 {
@@ -51,8 +52,8 @@ APLU<SType,Type,MeshType>::APLU
         commSizes_[Pstream::myProcNo()] +=
             cmptProduct(shapes[Pstream::myProcNo()]);
 
-        // On master, determine the global indices of the stencil elements of
-        // all cells
+        // On master, determine the global indices of the full stencil elements
+        // of all cells
 
         if (Pstream::master())
         {
@@ -86,7 +87,7 @@ APLU<SType,Type,MeshType>::APLU
                 indices[proc].setSize
                 (
                     size,
-                    labelList(SType::nComponents, -1)
+                    labelList(stencil::nComponents, -1)
                 );
 
                 int l = 0;
@@ -96,9 +97,9 @@ APLU<SType,Type,MeshType>::APLU
                 {
                     const labelVector ijk(i,j,k);
 
-                    for (int s = 0; s < SType::nComponents; s++)
+                    for (int s = 0; s < stencil::nComponents; s++)
                     {
-                        const labelVector offset(SType::componentOffsets[s]);
+                        const labelVector offset(stencil::componentOffsets[s]);
                         labelVector cell(ijk + offset);
 
                         if
@@ -208,19 +209,25 @@ APLU<SType,Type,MeshType>::APLU
 template<class SType, class Type, class MeshType>
 void APLU<SType,Type,MeshType>::solve
 (
-    linearSystem<SType,Type,MeshType>& xEqn
+    linearSystem<SType,Type,MeshType>& xEqn,
+    const List<bool>& singular
 )
 {
     // Prepare data, collecting all directions in a single list
 
-    List<Row<SType,Type>> myData(commSizes_[Pstream::myProcNo()]);
+    List<Row<stencil,Type>> myData(commSizes_[Pstream::myProcNo()]);
 
     const meshLevel<SType,MeshType>& A = xEqn.A()[this->l_];
     const meshLevel<Type,MeshType>& b = xEqn.b()[this->l_];
 
     int l = 0;
-    forAllDirections(A, d, i, j, k)
-        myData[l++] = Row<SType,Type>(A(d,i,j,k), b(d,i,j,k));
+    forAllCells(A, d, i, j, k)
+        myData[l++] =
+            Row<stencil,Type>
+            (
+                fullStencil<MeshType>(A[d], labelVector(i,j,k)),
+                b(d,i,j,k)
+            );
 
     List<Type> solution(myData.size());
 
@@ -254,7 +261,7 @@ void APLU<SType,Type,MeshType>::solve
     {
         // Collect data from slaves
 
-        List<List<Row<SType,Type>>> allData(Pstream::nProcs());
+        List<List<Row<stencil,Type>>> allData(Pstream::nProcs());
 
         for (int proc = 0; proc < Pstream::nProcs(); proc++)
         {
@@ -285,15 +292,17 @@ void APLU<SType,Type,MeshType>::solve
 
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
-            // Create linear system
+            // Create linear system. Increase dimension by one, to allow for
+            // singular system augmentation.
 
-            scalarSquareMatrix A(n_[d], Zero);
-            List<Type> b(n_[d]);
+            scalarSquareMatrix A(n_[d]+1, Zero);
+            List<Type> b(n_[d]+1);
+            b[n_[d]] = Zero;
 
             label procOffset = 0;
             forAll(indices_[d], proc)
             {
-                const List<Row<SType,Type>>& data = allData[proc];
+                const List<Row<stencil,Type>>& data = allData[proc];
                 const List<labelList>& indices = indices_[d][proc];
 
                 for (int l = 0; l < sizes_[d][proc]; l++)
@@ -308,8 +317,8 @@ void APLU<SType,Type,MeshType>::solve
                     // solved directly, because the ghost value is unknown. For
                     // now, a homogeneous Neumann boundary condition is assumed.
 
-                    const SType S = data[ld].stencil();
-                    for (int s = 0; s < SType::nComponents; s++)
+                    const stencil S = data[ld].stencil();
+                    for (int s = 0; s < stencil::nComponents; s++)
                         if (indices[l][s] > -1)
                             A[procOffset+l][indices[l][s]] = S[s];
                         else if (Foam::mag(S[s]) > 1e-8)
@@ -319,6 +328,23 @@ void APLU<SType,Type,MeshType>::solve
                 procOffset += sizes_[d][proc];
             }
 
+            if (singular[d])
+            {
+                // Singular matrix, augment the system (see "Multigrid", U.
+                // Trottenberg et al., 2001)
+
+                for (int i = 0; i < n_[d]; i++)
+                {
+                    A(i,n_[d]) = 1.0;
+                    A(n_[d],i) = 1.0;
+                }
+            }
+            else
+            {
+                // Set the auxilary variable to zero
+
+                A(n_[d],n_[d]) = 1.0;
+            }
 
             // Solve
 
@@ -372,12 +398,12 @@ void APLU<SType,Type,MeshType>::solve
         }
     }
 
-    // Write the solution back to linear system
+    // Write the solution back to the linear system
 
     meshLevel<Type,MeshType>& x = xEqn.x()[this->l_];
 
     l = 0;
-    forAllDirections(x, d, i, j, k)
+    forAllCells(x, d, i, j, k)
         x(d,i,j,k) = solution[l++];
 
     x.correctBoundaryConditions();

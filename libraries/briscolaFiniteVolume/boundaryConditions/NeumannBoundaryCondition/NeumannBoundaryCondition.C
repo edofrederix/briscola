@@ -2,7 +2,6 @@
 
 #include "colocated.H"
 #include "staggered.H"
-
 #include "meshLevel.H"
 
 namespace Foam
@@ -28,6 +27,18 @@ NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
 template<class Type, class MeshType>
 NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
 (
+    const meshField<Type,MeshType>& mshField,
+    const boundary& b,
+    const List<Type>& boundaryGradients
+)
+:
+    boundaryCondition<Type,MeshType>(mshField, b),
+    boundaryGradients_(boundaryGradients)
+{}
+
+template<class Type, class MeshType>
+NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
+(
     const NeumannBoundaryCondition<Type,MeshType>& bc
 )
 :
@@ -47,126 +58,110 @@ NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void NeumannBoundaryCondition<Type,MeshType>::initEvaluate(const label)
-{}
-
-template<class Type, class MeshType>
-void NeumannBoundaryCondition<Type,MeshType>::evaluate(const label l)
-{
-    meshLevel<Type,MeshType>& field = this->mshField()[l];
-
-    const labelVector bo(this->offset());
-
-    forAll(field, d)
-    {
-        meshDirection<Type,MeshType>& fd = field[d];
-
-        const labelVector S(this->S(l,d));
-        const labelVector E(this->E(l,d));
-        const block<Type> B(this->boundarySources(l,d));
-
-        labelVector ijk;
-
-        // Eliminated so infer value from boundary source
-
-        if (MeshType::shifted(d,bo))
-        {
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                fd(ijk+bo) = fd(ijk-bo) + B(ijk-S);
-            }
-        }
-        else
-        {
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                fd(ijk+bo) = fd(ijk) + B(ijk-S);
-            }
-        }
-    }
-}
-
-template<class Type, class MeshType>
-stencil NeumannBoundaryCondition<Type,MeshType>::boundaryCoeff
+void NeumannBoundaryCondition<Type,MeshType>::eliminateGhosts
 (
+    linearSystem<stencil,Type,MeshType>& sys,
     const label l,
     const label d
 )
 {
-    // For shifted boundaries, add the boundary coefficient to the opposite
-    // coefficient. For non-shifted boundaries, add the boundary coefficient to
-    // the center coefficient.
-
     const labelVector bo(this->offset());
+    const label faceNum(faceNumber(bo));
 
-    if (MeshType::shifted(d,bo))
-    {
-        stencil S(Zero);
-        S[faceNumber(-bo)+1] = 1.0;
+    meshField<stencil,MeshType>& A = sys.A();
+    meshField<Type,MeshType>& b = sys.b();
 
-        return S;
-    }
-    else
-    {
-        return pTraits<diagStencil>::one;
-    }
-}
-
-template<class Type, class MeshType>
-tmp<block<Type>> NeumannBoundaryCondition<Type,MeshType>::boundarySources
-(
-    const label l,
-    const label d
-)
-{
-    const meshField<faceScalar,MeshType>& fd = this->faceDeltas();
-
-    const labelVector bo(this->offset());
-    const label fb(faceNumber(bo));
-    const label fi(faceNumber(-bo));
+    const meshField<faceScalar,MeshType>& delta = this->faceDeltas();
 
     const labelVector S(this->S(l,d));
     const labelVector E(this->E(l,d));
 
-    tmp<block<Type>> tR(new block<Type>(E-S));
-    block<Type>& R = tR.ref();
-
-    if (l == 0)
+    labelVector ijk;
+    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
     {
-        labelVector ijk;
+        const scalar ghostCoeff = A(l,d,ijk)[faceNum+1];
 
-        if (MeshType::shifted(d,bo))
-        {
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                const scalar twoDelta =
-                    1.0/fd(l,d,ijk)[fb] + 1.0/fd(l,d,ijk)[fi];
+        A(l,d,ijk)[0] += ghostCoeff;
+        A(l,d,ijk)[faceNum+1] = Zero;
 
-                R(ijk-S) = boundaryGradients_[d]*twoDelta;
-            }
-        }
-        else
+        if (l == 0)
         {
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                R(ijk-S) = boundaryGradients_[d]/fd(l,d,ijk)[fb];
-            }
+            const scalar dx = 1.0/delta(l,d,ijk)[faceNum];
+            b(l,d,ijk) -= ghostCoeff*dx*boundaryGradients_[d];
         }
     }
-    else
-    {
-        R = Zero;
-    }
+}
 
-    return tR;
+template<class Type, class MeshType>
+void NeumannBoundaryCondition<Type,MeshType>::eliminateGhosts
+(
+    linearSystem<symmStencil,Type,MeshType>& sys,
+    const label l,
+    const label d
+)
+{
+    const labelVector bo(this->offset());
+    const label faceNum(faceNumber(bo));
+
+    const labelVector o(faceNum%2 ? bo : zeroXYZ);
+
+    meshField<symmStencil,MeshType>& A = sys.A();
+    meshField<Type,MeshType>& b = sys.b();
+
+    const meshField<faceScalar,MeshType>& delta = this->faceDeltas();
+
+    const labelVector S(this->S(l,d));
+    const labelVector E(this->E(l,d));
+
+    labelVector ijk;
+    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+    {
+        const labelVector nei(ijk+o);
+        const scalar ghostCoeff = A(l,d,nei)[faceNum/2+1];
+
+        A(l,d,ijk)[0] += ghostCoeff;
+        A(l,d,nei)[faceNum/2+1] = Zero;
+
+        if (l == 0)
+        {
+            const scalar dx = 1.0/delta(l,d,ijk)[faceNum];
+            b(l,d,ijk) -= ghostCoeff*dx*boundaryGradients_[d];
+        }
+    }
+}
+
+template<class Type, class MeshType>
+void NeumannBoundaryCondition<Type,MeshType>::evaluate
+(
+    const label l,
+    const label d
+)
+{
+    const scalar H = l == 0;
+
+    const labelVector bo(this->offset());
+    const label faceNum(faceNumber(bo));
+
+    meshDirection<Type,MeshType>& fd = this->mshField_[l][d];
+
+    const meshDirection<faceScalar,MeshType>& delta =
+        this->faceDeltas()[l][d];
+
+    const labelVector S(this->S(l,d));
+    const labelVector E(this->E(l,d));
+
+    labelVector ijk;
+    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+    {
+        const scalar dx = 1.0/delta(ijk)[faceNum];
+        fd(ijk+bo) = fd(ijk) + H*dx*boundaryGradients_[d];
+    }
 }
 
 }

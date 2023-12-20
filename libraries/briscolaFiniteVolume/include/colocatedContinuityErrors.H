@@ -1,19 +1,23 @@
 {
-    scalarBlock contError(fvMsh[0].N());
+    colocatedScalarDirection contError(fvMsh,0,0,Zero);
 
     const meshField<scalar,colocated>& cv =
         fvMsh.metrics<colocated>().cellVolumes();
 
-    forAllBlock(contError, i, j, k)
+    forAllFaces(contError, fd, i, j, k)
     {
-        contError(i,j,k) = neighborSum(phi(i,j,k));
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        contError(ijk) += phi(ijk)[fd];
+        contError(nei) -= phi(ijk)[fd];
     }
 
     scalar sumLocalContError = 0.0;
     scalar globalContError = 0.0;
     scalar sumVolume = 0.0;
 
-    forAllBlock(contError, i, j, k)
+    forAllCells(contError, i, j, k)
     {
         sumLocalContError += Foam::mag(contError(i,j,k))*cv(i,j,k);
         globalContError += contError(i,j,k)*cv(i,j,k);

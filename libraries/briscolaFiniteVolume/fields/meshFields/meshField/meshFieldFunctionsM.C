@@ -1223,7 +1223,7 @@ operator Op                                                                     
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
-template<class Type, class Form, class MeshType>                                \
+template<class Form, class Type, class MeshType>                                \
 void OpFunc                                                                     \
 (                                                                               \
     meshField<typename product<Form,Type>::type,MeshType>& res,                 \
@@ -1235,7 +1235,7 @@ void OpFunc                                                                     
         OpFunc(res[i], v1, f2[i]);                                              \
 }                                                                               \
                                                                                 \
-template<class Type, class Form, class MeshType>                                \
+template<class Form, class Type, class MeshType>                                \
 tmp<meshField<typename product<Form,Type>::type,MeshType>>                      \
 operator Op                                                                     \
 (                                                                               \
@@ -1261,7 +1261,7 @@ operator Op                                                                     
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
-template<class Type, class Form, class MeshType>                                \
+template<class Form, class Type, class MeshType>                                \
 tmp<meshField<typename product<Form,Type>::type,MeshType>>                      \
 operator Op                                                                     \
 (                                                                               \

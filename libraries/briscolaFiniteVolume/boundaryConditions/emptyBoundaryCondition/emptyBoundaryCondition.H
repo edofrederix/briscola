@@ -1,9 +1,7 @@
 #ifndef emptyBoundaryCondition_H
 #define emptyBoundaryCondition_H
 
-#include "boundaryCondition.H"
-
-#include "block.H"
+#include "NeumannBoundaryCondition.H"
 
 namespace Foam
 {
@@ -17,13 +15,8 @@ namespace fv
 template<class Type, class MeshType>
 class emptyBoundaryCondition
 :
-    public boundaryCondition<Type,MeshType>
+    public NeumannBoundaryCondition<Type,MeshType>
 {
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const emptyBoundaryCondition<Type,MeshType>&);
-
 public:
 
     // Runtime type information
@@ -37,7 +30,10 @@ public:
     );
 
     // Copy constructor
-    emptyBoundaryCondition(const emptyBoundaryCondition<Type,MeshType>&);
+    emptyBoundaryCondition
+    (
+        const emptyBoundaryCondition<Type,MeshType>&
+    );
 
     // Copy constructor resetting field reference
     emptyBoundaryCondition
@@ -72,28 +68,6 @@ public:
     {
         return EMPTYBC;
     }
-
-    // Initialize the evaluation of the boundary condition for given level
-    virtual void initEvaluate(const label);
-
-    // Evaluate the boundary condition for given level
-    virtual void evaluate(const label);
-
-    // Constrained boundary conditions
-
-        // This boundary condition constrains values on shifted boundaries
-        virtual bool constrained(const bool shifted) const { return shifted; }
-
-    // Eliminated boundary conditions
-
-        // Eliminated ghosts for all boundaries
-        virtual bool eliminated(const bool shifted) const { return !shifted; }
-
-        // Return the boundary coefficient for given level and direction
-        virtual stencil boundaryCoeff(const label l, const label d)
-        {
-            return pTraits<diagStencil>::one;
-        }
 };
 
 }

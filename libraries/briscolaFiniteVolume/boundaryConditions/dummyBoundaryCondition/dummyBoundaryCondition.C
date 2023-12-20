@@ -43,14 +43,6 @@ dummyBoundaryCondition<Type,MeshType>::dummyBoundaryCondition
     boundaryCondition<Type,MeshType>(field, bc.mshBoundary())
 {}
 
-template<class Type, class MeshType>
-void dummyBoundaryCondition<Type,MeshType>::initEvaluate(const label)
-{}
-
-template<class Type, class MeshType>
-void dummyBoundaryCondition<Type,MeshType>::evaluate(const label)
-{}
-
 }
 
 }

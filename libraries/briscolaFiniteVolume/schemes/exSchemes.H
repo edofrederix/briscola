@@ -8,7 +8,6 @@
 #include "gradientScheme.H"
 #include "interpolationScheme.H"
 #include "laplacianScheme.H"
-#include "reconstructionScheme.H"
 
 namespace Foam
 {
@@ -25,51 +24,67 @@ namespace ex
 template<class Type, class MeshType>
 inline tmp<meshField<Type,MeshType>> div
 (
-    const meshField<FaceSpace<Type>,MeshType>& phi
+    const meshField<LowerFaceSpace<Type>,MeshType>& phi
 )
 {
     return explicitDiv(phi);
 }
 
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
 inline tmp<meshField<Type,MeshType>> div
 (
-    const meshField<faceScalar,MeshType>& phi,
+    const meshField<lowerFaceScalar,MeshType>& phi,
     meshField<Type,MeshType>& field
 )
 {
-    return divergenceScheme<Type,MeshType>::New
+    return divergenceScheme<SType,Type,MeshType>::New
     (
         "div("+phi.name()+","+field.name()+")",
         field.fvMsh()
-    )->div(phi,field)->evaluate();
+    )->exDiv(phi,field);
 }
 
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
 inline tmp<meshField<Type,MeshType>> laplacian
 (
-    const meshField<faceScalar,MeshType>& lambda,
+    const meshField<lowerFaceScalar,MeshType>& lambda,
     meshField<Type,MeshType>& field
 )
 {
-    return laplacianScheme<Type,MeshType>::New
+    return laplacianScheme<SType,Type,MeshType>::New
     (
         "laplacian("+lambda.name()+","+field.name()+")",
         field.fvMsh()
-    )->laplacian(lambda,field)->evaluate();
+    )->exLaplacian(lambda,field);
 }
 
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> laplacian
+(
+    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+    meshField<Type,MeshType>& field
+)
+{
+    return laplacianScheme<SType,Type,MeshType>::New
+    (
+        lambdaPtr
+      ? "laplacian("+lambdaPtr->name()+","+ field.name()+")"
+      : "laplacian("+field.name()+")",
+        field.fvMsh()
+    )->exLaplacian(lambdaPtr,field);
+}
+
+template<class SType, class Type, class MeshType>
 inline tmp<meshField<Type,MeshType>> laplacian
 (
     meshField<Type,MeshType>& field
 )
 {
-    return laplacianScheme<Type,MeshType>::New
+    return laplacianScheme<SType,Type,MeshType>::New
     (
         "laplacian("+field.name()+")",
         field.fvMsh()
-    )->laplacian(field)->evaluate();
+    )->exLaplacian(field);
 }
 
 template<class Type>
@@ -81,9 +96,9 @@ inline tmp<meshField<Type,colocated>> coloDiv
     return explicitColoDiv(field);
 }
 
-inline tmp<meshField<faceScalar,colocated>> faceFlux
+inline tmp<meshField<lowerFaceScalar,colocated>> faceFlux
 (
-    const meshField<vector,colocated>& field
+    const colocatedVectorField& field
 )
 {
     return faceFluxScheme::New
@@ -93,9 +108,9 @@ inline tmp<meshField<faceScalar,colocated>> faceFlux
     )->faceFlux(field);
 }
 
-inline tmp<meshField<faceScalar,staggered>> faceFlux
+inline tmp<meshField<lowerFaceScalar,staggered>> faceFlux
 (
-    const meshField<scalar,staggered>& field
+    const staggeredScalarField& field
 )
 {
     return faceFluxScheme::New
@@ -106,7 +121,7 @@ inline tmp<meshField<faceScalar,staggered>> faceFlux
 }
 
 template<class Type, class MeshType>
-inline tmp<meshField<FaceSpace<Type>,MeshType>> faceGrad
+inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
 (
     const meshField<Type,MeshType>& field
 )
@@ -157,7 +172,7 @@ stagGrad
 }
 
 template<class Type, class MeshType>
-inline tmp<meshField<FaceSpace<Type>,MeshType>> interp
+inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
 (
     const meshField<Type,MeshType>& field
 )
@@ -176,11 +191,96 @@ reconstruct
     const meshField<Type,staggered>& field
 )
 {
-    return reconstructionScheme<Type>::New
+    typedef typename outerProduct<vector,Type>::type ReconType;
+
+    tmp<meshField<ReconType,colocated>> tRecon
     (
-        "reconstruct("+field.name()+")",
+        new meshField<ReconType,colocated>
+        (
+            "reconstruct("+field.name()+")",
+            field.fvMsh()
+        )
+    );
+
+    meshField<ReconType,colocated>& Recon = tRecon.ref();
+
+    Recon = Zero;
+
+    const meshField<faceVector,colocated>& fn =
+        field.fvMsh().template metrics<colocated>().faceNormals();
+
+    forAllCells(Recon, i, j, k)
+        Recon(i,j,k) =
+            0.5
+          * (
+              - field(0,i,  j,  k  ) * fn(i,j,k).left()
+              + field(0,i+1,j,  k  ) * fn(i,j,k).right()
+              - field(1,i,  j,  k  ) * fn(i,j,k).bottom()
+              + field(1,i,  j+1,k  ) * fn(i,j,k).top()
+              - field(2,i,  j,  k  ) * fn(i,j,k).aft()
+              + field(2,i,  j,  k+1) * fn(i,j,k).fore()
+            );
+
+    return tRecon;
+}
+
+// Default stencil type
+
+template<class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> div
+(
+    const meshField<lowerFaceScalar,MeshType>& phi,
+    meshField<Type,MeshType>& field
+)
+{
+    return divergenceScheme<stencil,Type,MeshType>::New
+    (
+        "div("+phi.name()+","+field.name()+")",
         field.fvMsh()
-    )->reconstruct(field);
+    )->exDiv(phi,field);
+}
+
+template<class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> laplacian
+(
+    const meshField<lowerFaceScalar,MeshType>& lambda,
+    meshField<Type,MeshType>& field
+)
+{
+    return laplacianScheme<symmStencil,Type,MeshType>::New
+    (
+        "laplacian("+lambda.name()+","+field.name()+")",
+        field.fvMsh()
+    )->exLaplacian(lambda,field);
+}
+
+template<class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> laplacian
+(
+    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+    meshField<Type,MeshType>& field
+)
+{
+    return laplacianScheme<symmStencil,Type,MeshType>::New
+    (
+        lambdaPtr
+      ? "laplacian("+lambdaPtr->name()+","+ field.name()+")"
+      : "laplacian("+field.name()+")",
+        field.fvMsh()
+    )->exLaplacian(lambdaPtr,field);
+}
+
+template<class Type, class MeshType>
+inline tmp<meshField<Type,MeshType>> laplacian
+(
+    meshField<Type,MeshType>& field
+)
+{
+    return laplacianScheme<symmStencil,Type,MeshType>::New
+    (
+        "laplacian("+field.name()+")",
+        field.fvMsh()
+    )->exLaplacian(field);
 }
 
 }

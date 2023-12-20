@@ -44,7 +44,7 @@ harmonicViscosity<BaseModel>::~harmonicViscosity()
 template<class BaseModel>
 void harmonicViscosity<BaseModel>::correctMixture()
 {
-    const colocatedFaceScalarField alphaf
+    const colocatedLowerFaceScalarField alphaf
     (
         ex::interp(this->alpha_)
     );
@@ -53,9 +53,9 @@ void harmonicViscosity<BaseModel>::correctMixture()
 
     if (this->musPtr_.valid())
     {
-        staggeredFaceScalarField& mus = this->musPtr_();
+        staggeredLowerFaceScalarField& mus = this->musPtr_();
 
-        const staggeredFaceScalarField alphafs
+        const staggeredLowerFaceScalarField alphafs
         (
             stagFaceInterp(this->alpha_)
         );

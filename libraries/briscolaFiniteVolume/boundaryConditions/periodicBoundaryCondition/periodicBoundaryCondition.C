@@ -44,11 +44,11 @@ periodicBoundaryCondition<Type,MeshType>::periodicBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void periodicBoundaryCondition<Type,MeshType>::initEvaluate(const label l)
+void periodicBoundaryCondition<Type,MeshType>::prepare(const label l)
 {
     if (this->neighborProcNum_ != Pstream::myProcNo())
     {
-        parallelBoundaryCondition<Type,MeshType>::initEvaluate(l);
+        parallelBoundaryCondition<Type,MeshType>::prepare(l);
     }
     else
     {

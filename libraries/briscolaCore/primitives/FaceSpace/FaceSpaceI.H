@@ -12,12 +12,6 @@ inline FaceSpace<Cmpt>::FaceSpace(const zero)
 {}
 
 template<class Cmpt>
-inline FaceSpace<Cmpt>::FaceSpace(const Cmpt& v)
-:
-    FaceSpace::csType(v)
-{}
-
-template<class Cmpt>
 template<class Cmpt2>
 inline FaceSpace<Cmpt>::FaceSpace
 (
@@ -67,6 +61,18 @@ inline FaceSpace<Cmpt>::FaceSpace(Istream& is)
     FaceSpace::csType(is)
 {}
 
+template<class Cmpt>
+inline FaceSpace<Cmpt>::operator LowerFaceSpace<Cmpt>() const
+{
+    LowerFaceSpace<Cmpt> r;
+
+    r[0] = this->v_[L];
+    r[1] = this->v_[B];
+    r[2] = this->v_[A];
+
+    return r;
+}
+
 template<>
 inline FaceSpace<scalar>::operator stencil() const
 {
@@ -83,78 +89,490 @@ inline FaceSpace<scalar>::operator stencil() const
     return r;
 }
 
-template<>
-inline FaceSpace<scalar>::operator stencil::ssType() const
-{
-    stencil::ssType r;
+// Functions with lower face space
 
-    r[stencil::C] = 0;
-    r[stencil::L] = this->v_[L];
-    r[stencil::R] = this->v_[R];
-    r[stencil::B] = this->v_[B];
-    r[stencil::T] = this->v_[T];
-    r[stencil::A] = this->v_[A];
-    r[stencil::F] = this->v_[F];
+// Free functions
+
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> cmptMultiply
+(
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    LowerFaceSpace<Cmpt> r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = cmptMultiply(fs[i*2], ls.v_[i]);
 
     return r;
 }
 
-template<>
-inline FaceSpace<scalar>::operator stencil::csType() const
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> cmptMultiply
+(
+    const LowerFaceSpace<Cmpt>& ls,
+    const FaceSpace<Cmpt>& fs
+)
 {
-    stencil::csType r;
+    LowerFaceSpace<Cmpt> r;
 
-    r[stencil::C] = 0;
-    r[stencil::L] = this->v_[L];
-    r[stencil::R] = this->v_[R];
-    r[stencil::B] = this->v_[B];
-    r[stencil::T] = this->v_[T];
-    r[stencil::A] = this->v_[A];
-    r[stencil::F] = this->v_[F];
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = cmptMultiply(ls.v_[i], fs[i*2]);
 
     return r;
 }
 
-// Stencil functions that behave as if FaceSpace is a stencil without central
-// coefficient
-
 template<class Cmpt>
-inline Cmpt neighborSum
+inline LowerFaceSpace<Cmpt> cmptPow
 (
-    const FaceSpace<Cmpt>& fs
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
 )
 {
-    return
-        fs[FaceSpace<Cmpt>::L]
-      + fs[FaceSpace<Cmpt>::R]
-      + fs[FaceSpace<Cmpt>::B]
-      + fs[FaceSpace<Cmpt>::T]
-      + fs[FaceSpace<Cmpt>::A]
-      + fs[FaceSpace<Cmpt>::F];
+    LowerFaceSpace<Cmpt> r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = cmptPow(fs[i*2], ls.v_[i]);
+
+    return r;
 }
 
 template<class Cmpt>
-inline Cmpt stencilSum
+inline LowerFaceSpace<Cmpt> cmptPow
 (
+    const LowerFaceSpace<Cmpt>& ls,
     const FaceSpace<Cmpt>& fs
 )
 {
-    return neighborSum(fs);
+    LowerFaceSpace<Cmpt> r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = cmptPow(ls.v_[i], fs[i*2]);
+
+    return r;
 }
 
 template<class Cmpt>
-inline Cmpt neighborSkewSum
+inline LowerFaceSpace<Cmpt> cmptDivide
 (
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    LowerFaceSpace<Cmpt> r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = cmptDivide(fs[i*2], ls.v_[i]);
+
+    return r;
+}
+
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> cmptDivide
+(
+    const LowerFaceSpace<Cmpt>& ls,
     const FaceSpace<Cmpt>& fs
 )
 {
-    return
-      - fs[FaceSpace<Cmpt>::L]
-      + fs[FaceSpace<Cmpt>::R]
-      - fs[FaceSpace<Cmpt>::B]
-      + fs[FaceSpace<Cmpt>::T]
-      - fs[FaceSpace<Cmpt>::A]
-      + fs[FaceSpace<Cmpt>::F];
+    LowerFaceSpace<Cmpt> r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = cmptDivide(ls.v_[i], fs[i*2]);
+
+    return r;
+}
+
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> max
+(
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    LowerFaceSpace<Cmpt> r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = max(fs[i*2], ls.v_[i]);
+
+    return r;
+}
+
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> max
+(
+    const LowerFaceSpace<Cmpt>& ls,
+    const FaceSpace<Cmpt>& fs
+)
+{
+    LowerFaceSpace<Cmpt> r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = max(ls.v_[i], fs[i*2]);
+
+    return r;
+}
+
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> min
+(
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    LowerFaceSpace<Cmpt> r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = min(fs[i*2], ls.v_[i]);
+
+    return r;
+}
+
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> min
+(
+    const LowerFaceSpace<Cmpt>& ls,
+    const FaceSpace<Cmpt>& fs
+)
+{
+    LowerFaceSpace<Cmpt> r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = min(ls.v_[i], fs[i*2]);
+
+    return r;
+}
+
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> minMod
+(
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    LowerFaceSpace<Cmpt> r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = minMod(fs[i*2], ls.v_[i]);
+
+    return r;
+}
+
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> minMod
+(
+    const LowerFaceSpace<Cmpt>& ls,
+    const FaceSpace<Cmpt>& fs
+)
+{
+    LowerFaceSpace<Cmpt> r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = minMod(ls.v_[i], fs[i*2]);
+
+    return r;
+}
+
+// Operators
+
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> operator+
+(
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    LowerFaceSpace<Cmpt> r(fs);
+
+    r += ls;
+
+    return r;
+}
+
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> operator+
+(
+    const LowerFaceSpace<Cmpt>& ls,
+    const FaceSpace<Cmpt>& fs
+)
+{
+    LowerFaceSpace<Cmpt> r(fs);
+
+    r += ls;
+
+    return r;
+}
+
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> operator-
+(
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    LowerFaceSpace<Cmpt> r(fs);
+
+    r -= ls;
+
+    return r;
+}
+
+template<class Cmpt>
+inline LowerFaceSpace<Cmpt> operator-
+(
+    const LowerFaceSpace<Cmpt>& ls,
+    const FaceSpace<Cmpt>& fs
+)
+{
+    LowerFaceSpace<Cmpt> r(-fs);
+
+    r += ls;
+
+    return r;
+}
+
+template<class Cmpt1, class Cmpt2>
+inline typename CellSpaceCast
+<
+    FaceSpace<Cmpt1>,
+    LowerFaceSpace<Cmpt2>,
+    typename outerProduct<Cmpt1,Cmpt2>::type
+>::type operator*
+(
+    const FaceSpace<Cmpt1>& fs,
+    const LowerFaceSpace<Cmpt2>& ls
+)
+{
+    typename CellSpaceCast
+    <
+        FaceSpace<Cmpt1>,
+        LowerFaceSpace<Cmpt2>,
+        typename outerProduct<Cmpt1,Cmpt2>::type
+    >::type r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = fs[i*2] * ls.v_[i];
+
+    return r;
+}
+
+template<class Cmpt1, class Cmpt2>
+inline typename CellSpaceCast
+<
+    LowerFaceSpace<Cmpt2>,
+    FaceSpace<Cmpt1>,
+    typename outerProduct<Cmpt2,Cmpt1>::type
+>::type operator*
+(
+    const LowerFaceSpace<Cmpt2>& ls,
+    const FaceSpace<Cmpt1>& fs
+)
+{
+    typename CellSpaceCast
+    <
+        LowerFaceSpace<Cmpt2>,
+        FaceSpace<Cmpt1>,
+        typename outerProduct<Cmpt2,Cmpt1>::type
+    >::type r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = ls.v_[i] * fs[i*2];
+
+    return r;
+}
+
+template<class Cmpt1, class Cmpt2>
+inline typename CellSpaceCast
+<
+    FaceSpace<Cmpt1>,
+    LowerFaceSpace<Cmpt2>,
+    Cmpt1
+>::type operator/
+(
+    const FaceSpace<Cmpt1>& fs,
+    const LowerFaceSpace<Cmpt2>& ls
+)
+{
+    typename CellSpaceCast
+    <
+        FaceSpace<Cmpt1>,
+        LowerFaceSpace<Cmpt2>,
+        Cmpt1
+    >::type r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = fs[i*2]/ls.v_[i];
+
+    return r;
+}
+
+template<class Cmpt1, class Cmpt2>
+inline typename CellSpaceCast
+<
+    LowerFaceSpace<Cmpt1>,
+    FaceSpace<Cmpt2>,
+    Cmpt1
+>::type operator/
+(
+    const LowerFaceSpace<Cmpt1>& ls,
+    const FaceSpace<Cmpt2>& fs
+)
+{
+    typename CellSpaceCast
+    <
+        LowerFaceSpace<Cmpt1>,
+        FaceSpace<Cmpt2>,
+        Cmpt1
+    >::type r;
+
+    for (label i = 0; i < 3; i++)
+        r.v_[i] = ls.v_[i]/fs[i*2];
+
+    return r;
+}
+
+template<class Cmpt>
+inline bool operator==
+(
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    for (label i = 0; i < 3; i++)
+        if (fs[i*2] != ls.v_[i])
+            return false;
+
+    return true;
+}
+
+template<class Cmpt>
+inline bool operator==
+(
+    const LowerFaceSpace<Cmpt>& ls,
+    const FaceSpace<Cmpt>& fs
+)
+{
+    for (label i = 0; i < 3; i++)
+        if (fs[i*2] != ls.v_[i])
+            return false;
+
+    return true;
+}
+
+template<class Cmpt>
+inline bool operator!=
+(
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    return !(fs == ls);
+}
+
+template<class Cmpt>
+inline bool operator!=
+(
+    const LowerFaceSpace<Cmpt>& ls,
+    const FaceSpace<Cmpt>& fs
+)
+{
+    return !(fs == ls);
+}
+
+template<class Cmpt>
+inline bool operator>
+(
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    for (label i = 0; i < 3; i++)
+        if (fs[i*2] <= ls.v_[i])
+            return false;
+
+    return true;
+}
+
+template<class Cmpt>
+inline bool operator>
+(
+    const LowerFaceSpace<Cmpt>& ls,
+    const FaceSpace<Cmpt>& fs
+)
+{
+    for (label i = 0; i < 3; i++)
+        if (ls.v_[i] <= fs[i*2])
+            return false;
+
+    return true;
+}
+
+template<class Cmpt>
+inline bool operator<
+(
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    for (label i = 0; i < 3; i++)
+        if (fs[i*2] >= ls.v_[i])
+            return false;
+
+    return true;
+}
+
+template<class Cmpt>
+inline bool operator<
+(
+    const LowerFaceSpace<Cmpt>& ls,
+    const FaceSpace<Cmpt>& fs
+)
+{
+    for (label i = 0; i < 3; i++)
+        if (ls.v_[i] >= fs[i*2])
+            return false;
+
+    return true;
+}
+
+template<class Cmpt>
+inline bool operator>=
+(
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    return !(fs < ls);
+}
+
+template<class Cmpt>
+inline bool operator>=
+(
+    const LowerFaceSpace<Cmpt>& ls,
+    const FaceSpace<Cmpt>& fs
+)
+{
+    return !(ls < fs);
+}
+
+template<class Cmpt>
+inline bool operator<=
+(
+    const FaceSpace<Cmpt>& fs,
+    const LowerFaceSpace<Cmpt>& ls
+)
+{
+    return !(fs > ls);
+}
+
+template<class Cmpt>
+inline bool operator<=
+(
+    const LowerFaceSpace<Cmpt>& ls,
+    const FaceSpace<Cmpt>& fs
+)
+{
+    return !(ls > fs);
 }
 
 }

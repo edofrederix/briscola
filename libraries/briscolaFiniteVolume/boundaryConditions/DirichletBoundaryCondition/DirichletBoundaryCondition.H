@@ -2,7 +2,6 @@
 #define DirichletBoundaryCondition_H
 
 #include "boundaryCondition.H"
-
 #include "block.H"
 
 namespace Foam
@@ -19,11 +18,10 @@ class DirichletBoundaryCondition
 :
     public boundaryCondition<Type,MeshType>
 {
+protected:
+
     // Boundary values
     List<Type> boundaryValues_;
-
-    // Disallow default bitwise assignment
-    void operator=(const DirichletBoundaryCondition<Type,MeshType>&);
 
 public:
 
@@ -37,8 +35,19 @@ public:
         const boundary&
     );
 
+    // Construct from components and boundary values
+    DirichletBoundaryCondition
+    (
+        const meshField<Type,MeshType>&,
+        const boundary&,
+        const List<Type>&
+    );
+
     // Copy constructor
-    DirichletBoundaryCondition(const DirichletBoundaryCondition<Type,MeshType>&);
+    DirichletBoundaryCondition
+    (
+        const DirichletBoundaryCondition<Type,MeshType>&
+    );
 
     // Copy constructor resetting field reference
     DirichletBoundaryCondition
@@ -74,34 +83,27 @@ public:
         return DIRICHLETBC;
     }
 
-    // Initialize the evaluation of the boundary condition for given level
-    virtual void initEvaluate(const label);
+    // Eliminated boundary condition
+    virtual bool eliminated() const { return true; }
 
-    // Evaluate the boundary condition for given level
-    virtual void evaluate(const label);
+    // Eliminate ghosts from the linear system at given level and direction
 
-    // Constrained boundary conditions
+    virtual void eliminateGhosts
+    (
+        linearSystem<stencil,Type,MeshType>&,
+        const label,
+        const label
+    );
 
-        // This boundary condition constrains values on shifted boundaries
-        virtual bool constrained(const bool shifted) const { return shifted; }
+    virtual void eliminateGhosts
+    (
+        linearSystem<symmStencil,Type,MeshType>&,
+        const label,
+        const label
+    );
 
-        // Return the internal value for given level and direction
-        virtual tmp<block<Type>> internalValue(const label, const label);
-
-    // Eliminated boundary conditions
-
-        // Eliminated ghosts for non-shifted boundaries. For shifted boundaries
-        // the ghost value is not important.
-        virtual bool eliminated(const bool shifted) const { return !shifted; }
-
-        // Return the boundary coefficient for given level and direction
-        virtual stencil boundaryCoeff(const label, const label)
-        {
-            return -pTraits<diagStencil>::one;
-        }
-
-        // Return the boundary sources for given level and direction
-        virtual tmp<block<Type>> boundarySources(const label, const label);
+    // Evaluate the boundary condition for given level and direction
+    virtual void evaluate(const label, const label);
 };
 
 }

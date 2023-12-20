@@ -73,7 +73,7 @@ void checkInternalFaceCenters(const fvMesh& fvMsh)
     const meshField<faceVector,MeshType>& fc =
         fvMsh.metrics<MeshType>().faceCenters();
 
-    forAllLevels(fc, l, d, i, j, k)
+    forAllCells(fc, l, d, i, j, k)
     {
         const labelVector N(fc.N(l,d));
         const labelVector ijk0(i,j,k);
@@ -129,7 +129,7 @@ void checkInternalFaceDeltas(const fvMesh& fvMsh)
     const meshField<faceScalar,MeshType>& fd =
         fvMsh.metrics<MeshType>().faceDeltas();
 
-    forAllLevels(fd, l, d, i, j, k)
+    forAllCells(fd, l, d, i, j, k)
     {
         const labelVector N(fd.N(l,d));
 

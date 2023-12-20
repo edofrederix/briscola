@@ -51,21 +51,21 @@ public:
     virtual ~faceFluxScheme();
 
     // FaceFluxScheme of a colocated vector field
-    virtual tmp<meshField<faceScalar,colocated>> faceFlux
+    virtual tmp<colocatedLowerFaceScalarField> faceFlux
     (
-        const meshField<vector,colocated>&
+        const colocatedVectorField&
     ) = 0;
 
     // FaceFluxScheme of a staggered scalar field
-    virtual tmp<meshField<faceScalar,staggered>> faceFlux
+    virtual tmp<staggeredLowerFaceScalarField> faceFlux
     (
-        const meshField<scalar,staggered>&
+        const staggeredScalarField&
     ) = 0;
 };
 
 // Reconstruct colocated flux field from staggered velocity
 
-tmp<colocatedFaceScalarField> coloFaceFlux
+tmp<colocatedLowerFaceScalarField> coloFaceFlux
 (
     const staggeredScalarField& U
 );

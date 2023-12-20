@@ -1,6 +1,6 @@
 // Temperature
 
-meshField<scalar,MESHTYPE> T
+meshField<scalar,colocated> T
 (
     "T",
     fvMsh,
@@ -15,7 +15,7 @@ T.correctBoundaryConditions();
 
 // Diffusivity
 
-meshField<faceScalar,MESHTYPE> lambda
+meshField<lowerFaceScalar,colocated> lambda
 (
     "lambda",
     fvMsh,
@@ -28,7 +28,7 @@ lambda = readScalar(solverDict.lookup("lambda"));
 
 // Source
 
-meshField<scalar,MESHTYPE> source
+meshField<scalar,colocated> source
 (
     "source",
     fvMsh,
@@ -41,9 +41,9 @@ source = readScalar(solverDict.lookup("source"));
 
 // System and solver
 
-autoPtr<PoissonSolver<stencil,scalar,MESHTYPE>> Poisson
+autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
 (
-    PoissonSolver<stencil,scalar,MESHTYPE>::New
+    PoissonSolver<symmStencil,scalar,colocated>::New
     (
         T.name(),
         fvMsh

@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 
         F = Zero;
 
-        forAllLevels(A, l, d, i, j, k)
+        forAllCells(A, l, d, i, j, k)
         {
             F(l,d,i,j,k) = vector(i,j,k);
             A(l,d,i,j,k) = stencil(-6, 1, 1, 1, 1, 1, 1);
@@ -64,11 +64,11 @@ int main(int argc, char *argv[])
         auto t1 = high_resolution_clock::now();
 
         for (label iter = 0; iter < Niter; iter++)
-            Amul(G, A, F);
+            rowProduct(G, A, F);
 
         auto t2 = high_resolution_clock::now();
 
-        Info<< "Amul field time = "
+        Info<< "rowProduct field time = "
             << duration_cast<milliseconds>(t2 - t1).count()
             << " ms" << endl;
 
@@ -78,11 +78,11 @@ int main(int argc, char *argv[])
         t1 = high_resolution_clock::now();
 
         for (label iter = 0; iter < Niter; iter++)
-            Amul(G[0], A[0], F[0]);
+            rowProduct(G[0], A[0], F[0]);
 
         t2 = high_resolution_clock::now();
 
-        Info<< "Amul level time = "
+        Info<< "rowProduct level time = "
             << duration_cast<milliseconds>(t2 - t1).count()
             << " ms" << endl;
 
@@ -91,11 +91,11 @@ int main(int argc, char *argv[])
         t1 = high_resolution_clock::now();
 
         for (label iter = 0; iter < Niter; iter++)
-            Amul(G.direction(), A.direction(), F.direction());
+            rowProduct(G.direction(), A.direction(), F.direction());
 
         t2 = high_resolution_clock::now();
 
-        Info<< "Amul direction time = "
+        Info<< "rowProduct direction time = "
             << duration_cast<milliseconds>(t2 - t1).count()
             << " ms" << endl;
     }

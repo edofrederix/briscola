@@ -95,7 +95,7 @@ List<Type> solver<SType,Type,MeshType>::normFactors
 
     return max
     (
-        gSum(cmptMag(Amul(A,x) - Ay) + cmptMag(b - Ay)),
+        gSum(cmptMag(rowProduct(A,x) - Ay) + cmptMag(b - Ay)),
         1e-20*pTraits<Type>::one
     );
 }
@@ -104,6 +104,7 @@ template<class SType, class Type, class MeshType>
 void solver<SType,Type,MeshType>::RBGS
 (
     linearSystem<SType,Type,MeshType>& sys,
+    List<Type>& xi,
     const label l,
     const label sweeps,
     const labelList& converged,
@@ -115,8 +116,17 @@ void solver<SType,Type,MeshType>::RBGS
     const meshLevel<SType,MeshType>& A = sys.A()[l];
     const meshLevel<Type,MeshType>& b = sys.b()[l];
 
+    bool singular = xi.size() > 0;
+
+    if (!singular)
+        xi = List<Type>(x.size(), Zero);
+
     for (label sweep = 0; sweep < sweeps; sweep++)
     {
+        if (singular)
+            forAll(xi, d)
+                xi[d] = gAverage(x[d]);
+
         forAll(x, d)
         if (!converged[d])
         {
@@ -132,12 +142,12 @@ void solver<SType,Type,MeshType>::RBGS
                 if ((i+j+k) % 2 == 0)
                     xd(i,j,k) +=
                         omega
-                      * (bd(i,j,k) - Amul(Ad,xd,i,j,k))
+                      * (bd(i,j,k) - rowProduct(Ad,xd,i,j,k) - xi[d])
                       / Ad(i,j,k).center();
             }
         }
 
-        x.correctBoundaryConditions();
+        x.correctCommBoundaryConditions();
 
         forAll(x, d)
         if (!converged[d])
@@ -154,19 +164,25 @@ void solver<SType,Type,MeshType>::RBGS
                 if ((i+j+k) % 2 == 1)
                     xd(i,j,k) +=
                         omega
-                      * (bd(i,j,k) - Amul(Ad,xd,i,j,k))
+                      * (bd(i,j,k) - rowProduct(Ad,xd,i,j,k) - xi[d])
                       / Ad(i,j,k).center();
             }
         }
 
-        x.correctBoundaryConditions();
+        x.correctCommBoundaryConditions();
     }
+
+    x.correctNonCommBoundaryConditions();
+
+    if (!singular)
+        xi.clear();
 }
 
 template<class SType, class Type, class MeshType>
 void solver<SType,Type,MeshType>::LEXGS
 (
     linearSystem<SType,Type,MeshType>& sys,
+    List<Type>& xi,
     const label l,
     const label sweeps,
     const labelList& converged,
@@ -178,8 +194,17 @@ void solver<SType,Type,MeshType>::LEXGS
     const meshLevel<SType,MeshType>& A = sys.A()[l];
     const meshLevel<Type,MeshType>& b = sys.b()[l];
 
+    bool singular = xi.size() > 0;
+
+    if (!singular)
+        xi = List<Type>(x.size(), Zero);
+
     for (label sweep = 0; sweep < sweeps; sweep++)
     {
+        if (singular)
+            forAll(xi, d)
+                xi[d] = gAverage(x[d]);
+
         forAll(x, d)
         if (!converged[d])
         {
@@ -192,19 +217,25 @@ void solver<SType,Type,MeshType>::LEXGS
             {
                 xd(i,j,k) +=
                     omega
-                  * (bd(i,j,k) - Amul(Ad,xd,i,j,k))
+                  * (bd(i,j,k) - rowProduct(Ad,xd,i,j,k) - xi[d])
                   / Ad(i,j,k).center();
             }
         }
 
-        x.correctBoundaryConditions();
+        x.correctCommBoundaryConditions();
     }
+
+    x.correctNonCommBoundaryConditions();
+
+    if (!singular)
+        xi.clear();
 }
 
 template<class SType, class Type, class MeshType>
 void solver<SType,Type,MeshType>::JAC
 (
     linearSystem<SType,Type,MeshType>& sys,
+    List<Type>& xi,
     const label l,
     const label sweeps,
     const labelList& converged,
@@ -216,10 +247,19 @@ void solver<SType,Type,MeshType>::JAC
     const meshLevel<SType,MeshType>& A = sys.A()[l];
     const meshLevel<Type,MeshType>& b = sys.b()[l];
 
+    bool singular = xi.size() > 0;
+
+    if (!singular)
+        xi = List<Type>(x.size(), Zero);
+
     meshLevel<Type,MeshType> y(x);
 
     for (label sweep = 0; sweep < sweeps; sweep++)
     {
+        if (singular)
+            forAll(xi, d)
+                xi[d] = gAverage(x[d]);
+
         forAll(x, d)
         if (!converged[d])
         {
@@ -233,15 +273,20 @@ void solver<SType,Type,MeshType>::JAC
             {
                 yd(i,j,k) +=
                     omega
-                  * (bd(i,j,k) - Amul(Ad,xd,i,j,k))
+                  * (bd(i,j,k) - rowProduct(Ad,xd,i,j,k) - xi[d])
                   / Ad(i,j,k).center();
             }
         }
 
         x = y;
 
-        x.correctBoundaryConditions();
+        x.correctCommBoundaryConditions();
     }
+
+    x.correctNonCommBoundaryConditions();
+
+    if (!singular)
+        xi.clear();
 }
 
 template<class SType, class Type, class MeshType>

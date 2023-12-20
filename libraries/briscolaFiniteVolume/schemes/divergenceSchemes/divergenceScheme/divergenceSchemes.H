@@ -3,38 +3,41 @@
 
 #include "divergenceScheme.H"
 
-#define makeDivergenceScheme(TYPE,MESHTYPE)                                     \
-                                                                                \
-    typedef divergenceScheme<TYPE,MESHTYPE>                                     \
-        divergenceScheme##TYPE##MESHTYPE;                                       \
-                                                                                \
-    defineTemplateTypeNameAndDebugWithName                                      \
-    (                                                                           \
-        divergenceScheme##TYPE##MESHTYPE,                                       \
-        "divergenceScheme",                                                     \
-        0                                                                       \
-    );                                                                          \
-                                                                                \
-    defineTemplateRunTimeSelectionTable                                         \
-    (                                                                           \
-        divergenceScheme##TYPE##MESHTYPE,                                       \
-        dictionary                                                              \
+#define makeDivergenceScheme(STYPE,TYPE,MESHTYPE)                              \
+                                                                               \
+    typedef divergenceScheme<STYPE,TYPE,MESHTYPE>                              \
+        divergenceScheme##STYPE##TYPE##MESHTYPE;                               \
+                                                                               \
+    defineTemplateTypeNameAndDebugWithName                                     \
+    (                                                                          \
+        divergenceScheme##STYPE##TYPE##MESHTYPE,                               \
+        "divergenceScheme",                                                    \
+        0                                                                      \
+    );                                                                         \
+                                                                               \
+    defineTemplateRunTimeSelectionTable                                        \
+    (                                                                          \
+        divergenceScheme##STYPE##TYPE##MESHTYPE,                               \
+        dictionary                                                             \
     );
 
-#define makeDivergenceSchemeType(SCHEME,TYPE,MESHTYPE)                          \
-                                                                                \
-    typedef SCHEME##DivergenceScheme<TYPE,MESHTYPE>                             \
-        SCHEME##DivergenceScheme##TYPE##MESHTYPE;                               \
-                                                                                \
-    defineTemplateTypeNameAndDebugWithName                                      \
-    (                                                                           \
-        SCHEME##DivergenceScheme##TYPE##MESHTYPE,                               \
-        #SCHEME,                                                                \
-        0                                                                       \
-    );                                                                          \
-                                                                                \
-    divergenceScheme<TYPE,MESHTYPE>::                                           \
-    adddictionaryConstructorToTable<SCHEME##DivergenceScheme##TYPE##MESHTYPE>   \
-    add##SCHEME##DivergenceScheme##TYPE##MESHTYPE##ConstructorToTable_;
+#define makeDivergenceSchemeType(SCHEME,STYPE,TYPE,MESHTYPE)                   \
+                                                                               \
+    typedef SCHEME##DivergenceScheme<TYPE,MESHTYPE>                            \
+        SCHEME##DivergenceScheme##STYPE##TYPE##MESHTYPE;                       \
+                                                                               \
+    defineTemplateTypeNameAndDebugWithName                                     \
+    (                                                                          \
+        SCHEME##DivergenceScheme##STYPE##TYPE##MESHTYPE,                       \
+        #SCHEME,                                                               \
+        0                                                                      \
+    );                                                                         \
+                                                                               \
+    divergenceScheme<STYPE,TYPE,MESHTYPE>::                                    \
+    adddictionaryConstructorToTable                                            \
+    <                                                                          \
+        SCHEME##DivergenceScheme##STYPE##TYPE##MESHTYPE                        \
+    >                                                                          \
+    add##SCHEME##DivergenceScheme##STYPE##TYPE##MESHTYPE##ConstructorToTable_;
 
 #endif

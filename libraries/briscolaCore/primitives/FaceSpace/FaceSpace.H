@@ -5,6 +5,7 @@
 #include "briscolaUtils.H"
 #include "pTransform.H"
 #include "stencil.H"
+#include "LowerFaceSpace.H"
 
 namespace Foam
 {
@@ -37,9 +38,6 @@ public:
 
     // Construct initialised to zero
     inline FaceSpace(const Foam::zero);
-
-    // Construct uniform
-    inline FaceSpace(const Cmpt&);
 
     // Construct given cell space of the same size
     template<class Cmpt2>
@@ -90,10 +88,18 @@ public:
         return Vector<Cmpt>(right(), top(), fore());
     }
 
+    // Conversion to lower face space
+    inline operator LowerFaceSpace<Cmpt>() const;
+
     // Conversion to stencil (only implemented for Cmpt = scalar)
     inline operator stencil() const;
-    inline operator stencil::ssType() const;
-    inline operator stencil::csType() const;
+
+    // Explicitly use operators from cell space
+    using csType::operator=;
+    using csType::operator+=;
+    using csType::operator-=;
+    using csType::operator*=;
+    using csType::operator/=;
 };
 
 // FaceSpace partial specialization of CellSpaceCast
@@ -103,6 +109,20 @@ class CellSpaceCast<FaceSpace<Cmpt1>, FaceSpace<Cmpt2>, Cmpt3>
 {
 public:
     typedef FaceSpace<Cmpt3> type;
+};
+
+template<class Cmpt1, class Cmpt2, class Cmpt3>
+class CellSpaceCast<LowerFaceSpace<Cmpt1>, FaceSpace<Cmpt2>, Cmpt3>
+{
+public:
+    typedef LowerFaceSpace<Cmpt3> type;
+};
+
+template<class Cmpt1, class Cmpt2, class Cmpt3>
+class CellSpaceCast<FaceSpace<Cmpt1>, LowerFaceSpace<Cmpt2>, Cmpt3>
+{
+public:
+    typedef LowerFaceSpace<Cmpt3> type;
 };
 
 // FaceSpace partial specialization of pTransform

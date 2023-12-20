@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
         // Pressure equation
 
         const staggeredScalarField rhoInv("rhoInv", 1.0/rho);
-        const colocatedFaceScalarField coloRhoInvf("coloRhoInv",1.0/ex::interp(coloRho));
+        const colocatedLowerFaceScalarField coloRhoInvf("coloRhoInv",1.0/ex::interp(coloRho));
 
         if (split)
         {
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 
             p.setOldTime();
 
-            colocatedFaceScalarField splitCorrection = fa *
+            colocatedLowerFaceScalarField splitCorrection = fa *
                 (
                     (1 - coloMinRhof * coloRhoInvf) * ex::faceGrad(extrapolatedP)
                   + coloMinRhof * coloRhoInvf * ex::faceGrad(p)
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            colocatedFaceScalarField splitCorrection = fa * coloRhoInvf * ex::faceGrad(p);
+            colocatedLowerFaceScalarField splitCorrection = fa * coloRhoInvf * ex::faceGrad(p);
             p.setOldTime();
 
             Poisson->solve(p, ex::coloDiv(U)/(-deltaT) - ex::div(splitCorrection), coloRhoInvf);

@@ -9,64 +9,72 @@ namespace briscola
 namespace fv
 {
 
-template<class Type, class MeshType>
-linearGaussLaplacianScheme<Type,MeshType>::linearGaussLaplacianScheme
+template<class SType, class Type, class MeshType>
+linearGaussLaplacianScheme<SType,Type,MeshType>::linearGaussLaplacianScheme
 (
     const dictionary& dict,
     const fvMesh& fvMsh
 )
 :
-    laplacianScheme<Type,MeshType>(dict,fvMsh)
+    laplacianScheme<SType,Type,MeshType>(dict,fvMsh)
 {}
 
-template<class Type, class MeshType>
-linearGaussLaplacianScheme<Type,MeshType>::linearGaussLaplacianScheme
+template<class SType, class Type, class MeshType>
+linearGaussLaplacianScheme<SType,Type,MeshType>::linearGaussLaplacianScheme
 (
     const fvMesh& fvMsh
 )
 :
-    laplacianScheme<Type,MeshType>(dictionary(),fvMsh)
+    laplacianScheme<SType,Type,MeshType>(dictionary(),fvMsh)
 {}
 
-template<class Type, class MeshType>
-tmp<linearSystem<stencil,Type,MeshType>>
-linearGaussLaplacianScheme<Type,MeshType>::laplacian
+template<class SType, class Type, class MeshType>
+tmp<meshField<Type,MeshType>>
+linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
 (
-    const meshField<faceScalar,MeshType>& lambda,
+    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
     meshField<Type,MeshType>& field
 )
 {
-    const_cast<meshField<faceScalar,MeshType>&>(lambda).restrict();
-
-    tmp<linearSystem<stencil,Type,MeshType>> tSys
+    tmp<meshField<Type,MeshType>> tLap
     (
-        new linearSystem<stencil,Type,MeshType>(field)
+        new meshField<Type,MeshType>
+        (
+            lambdaPtr
+          ? "laplacian("+lambdaPtr->name()+","+field.name()+")"
+          : "laplacian("+field.name()+")",
+            field.fvMsh()
+        )
     );
 
-    linearSystem<stencil,Type,MeshType>& Sys = tSys.ref();
+    meshField<Type,MeshType>& Lap = tLap.ref();
 
-    meshField<stencil,MeshType>& A = Sys.A();
-
-    A = Zero;
-    Sys.singular() = true;
+    Lap = Zero;
 
     const meshField<faceScalar,MeshType>& fa =
         field.fvMsh().template metrics<MeshType>().faceAreas();
 
-    const meshField<faceScalar,MeshType>& fd =
+    const meshField<faceScalar,MeshType>& delta =
         field.fvMsh().template metrics<MeshType>().faceDeltas();
 
-    forAllLevels(A, l, d, i, j, k)
+    const meshField<scalar,MeshType>& cv =
+        field.fvMsh().template metrics<MeshType>().cellVolumes();
+
+    forAllFaces(Lap, d, fd, i, j, k)
     {
-        A(l,d,i,j,k) = lambda(l,d,i,j,k)*fa(l,d,i,j,k)*fd(l,d,i,j,k);
-        A(l,d,i,j,k).center() = - neighborSum(A(l,d,i,j,k));
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        scalar value = fa(d,ijk)[fd*2]*delta(d,ijk)[fd*2];
+
+        if (lambdaPtr)
+            value *= lambdaPtr->operator()(d,ijk)[fd];
+
+        Lap(d,ijk) += value*(field(d,nei) - field(d,ijk))/cv(d,ijk);
+        Lap(d,nei) += value*(field(d,ijk) - field(d,nei))/cv(d,nei);
     }
 
-    Sys.b() = Zero;
-
-    const_cast<meshField<faceScalar,MeshType>&>(lambda).makeShallow();
-
-    return tSys;
+    return tLap;
 }
 
 }

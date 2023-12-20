@@ -230,6 +230,20 @@ const labelVector faceOffsets[] =
     faceOffset5
 };
 
+const labelVector lowerFaceOffsets[] =
+{
+    faceOffset0,
+    faceOffset2,
+    faceOffset4
+};
+
+const labelVector upperFaceOffsets[] =
+{
+    faceOffset1,
+    faceOffset3,
+    faceOffset5
+};
+
 // Edge offsets
 
 //  Edges in x-direction numbering

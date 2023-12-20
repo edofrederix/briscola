@@ -127,6 +127,8 @@ manualDecomp::manualDecomp(mesh& msh)
             Ni[facei/2] = 1;
             Nj[facej/2] = 1;
 
+            Nj = cmptMag(link.T() & Nj);
+
             if (Ni != Nj && Pstream::master())
             {
                 FatalErrorInFunction

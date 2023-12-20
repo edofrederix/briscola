@@ -21,72 +21,30 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 
     fc = Zero;
 
-    forAllLevels(fc, l, d, i, j, k)
+    forAllFaces(fc, l, d, fd, i, j, k)
     {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(ijk-units[fd]);
+
         const partPoints& points = fvMsh_[l].points();
+
+        const vector shift = MeshType::shift[d];
+        const vector ijks(vector(ijk)+shift);
 
         // For each cell the face centers are calculated from the average of the
         // four face vertices (Wesseling, p. 483).
 
-        const vector shift = MeshType::shift[d];
-        const vector ijk(vector(i,j,k)+shift);
-
-        fc(l,d,i,j,k).left() =
+        fc(l,d,ijk)[fd*2] =
             0.25
           * (
-                points.interp(ijk)
-              + points.interp(ijk+vector(unitY))
-              + points.interp(ijk+vector(unitZ))
-              + points.interp(ijk+vector(unitYZ))
+                points.interp(ijks)
+              + points.interp(ijks+vector(units[(fd+1)%3]))
+              + points.interp(ijks+vector(units[(fd+2)%3]))
+              + points.interp(ijks+vector(units[(fd+1)%3]+units[(fd+2)%3]))
             );
 
-        fc(l,d,i,j,k).right() =
-            0.25
-          * (
-                points.interp(ijk+vector(unitX))
-              + points.interp(ijk+vector(unitXY))
-              + points.interp(ijk+vector(unitXZ))
-              + points.interp(ijk+vector(unitXYZ))
-            );
-
-        fc(l,d,i,j,k).bottom() =
-            0.25
-          * (
-                points.interp(ijk)
-              + points.interp(ijk+vector(unitX))
-              + points.interp(ijk+vector(unitZ))
-              + points.interp(ijk+vector(unitXZ))
-            );
-
-        fc(l,d,i,j,k).top() =
-            0.25
-          * (
-                points.interp(ijk+vector(unitY))
-              + points.interp(ijk+vector(unitXY))
-              + points.interp(ijk+vector(unitYZ))
-              + points.interp(ijk+vector(unitXYZ))
-            );
-
-        fc(l,d,i,j,k).aft() =
-            0.25
-          * (
-                points.interp(ijk)
-              + points.interp(ijk+vector(unitX))
-              + points.interp(ijk+vector(unitY))
-              + points.interp(ijk+vector(unitXY))
-            );
-
-        fc(l,d,i,j,k).fore() =
-            0.25
-          * (
-                points.interp(ijk+vector(unitZ))
-              + points.interp(ijk+vector(unitXZ))
-              + points.interp(ijk+vector(unitYZ))
-              + points.interp(ijk+vector(unitXYZ))
-            );
+        fc(l,d,nei)[fd*2+1] = fc(l,d,ijk)[fd*2];
     }
-
-    fc.correctParallelBoundaryConditions();
 }
 
 template<class MeshType>
@@ -96,7 +54,7 @@ void fvMeshMetrics<MeshType>::calculateEdgeCenters()
 
     ec = Zero;
 
-    forAllLevels(ec, l, d, i, j, k)
+    forAllCells(ec, l, d, i, j, k)
     {
         const partPoints& points = fvMsh_[l].points();
 
@@ -204,7 +162,7 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
 
     vc = Zero;
 
-    forAllLevels(vc, l, d, i, j, k)
+    forAllCells(vc, l, d, i, j, k)
     {
         const partPoints& points = fvMsh_[l].points();
 
@@ -235,126 +193,42 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
     fa = Zero;
     fan = Zero;
 
-    forAllLevels(fn, l, d, i, j, k)
+    forAllFaces(fn, l, d, fd, i, j, k)
     {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(ijk-units[fd]);
+
         const partPoints& points = fvMsh_[l].points();
 
         // For each cell the lower face normal in three directions is calculated
         // by taking half the cross product of the two vectors connecting the
-        // diagonal vertex pairs (Wessling, p. 483). The normal's magnitude
+        // diagonal vertex pairs (Wesseling, p. 483). The normal's magnitude
         // equals the face area.
 
         const vector shift = MeshType::shift[d];
 
-        const vector ijk(vector(i,j,k)+shift);
+        const vector ijks(vector(ijk)+shift);
 
-        const vector left =
-          - 0.5
-          * (
-                (
-                    points.interp(ijk+vector(unitYZ))
-                  - points.interp(ijk)
-                )
-              ^ (
-                    points.interp(ijk+vector(unitZ))
-                  - points.interp(ijk+vector(unitY))
-                )
-            );
-
-        const vector right =
+        fan(l,d,ijk)[fd*2] =
             0.5
           * (
                 (
-                    points.interp(ijk+vector(unitXYZ))
-                  - points.interp(ijk+vector(unitX))
+                    points.interp(ijks+vector(units[(fd+1)%3]+units[(fd+2)%3]))
+                  - points.interp(ijks)
                 )
               ^ (
-                    points.interp(ijk+vector(unitXZ))
-                  - points.interp(ijk+vector(unitXY))
+                    points.interp(ijks+vector(units[(fd+1)%3]))
+                  - points.interp(ijks+vector(units[(fd+2)%3]))
                 )
             );
 
-        const vector bottom =
-          - 0.5
-          * (
-                (
-                    points.interp(ijk+vector(unitZ))
-                  - points.interp(ijk+vector(unitX))
-                )
-              ^ (
-                    points.interp(ijk+vector(unitXZ))
-                  - points.interp(ijk)
-                )
-            );
+        fa(l,d,ijk)[fd*2] = Foam::mag(fan(l,d,ijk)[fd*2]);
+        fn(l,d,ijk)[fd*2] = Foam::normalised(fan(l,d,ijk)[fd*2]);
 
-        const vector top =
-            0.5
-          * (
-                (
-                    points.interp(ijk+vector(unitYZ))
-                  - points.interp(ijk+vector(unitXY))
-                )
-              ^ (
-                    points.interp(ijk+vector(unitXYZ))
-                  - points.interp(ijk+vector(unitY))
-                )
-            );
-
-        const vector aft =
-          - 0.5
-          * (
-                (
-                    points.interp(ijk+vector(unitXY))
-                  - points.interp(ijk)
-                )
-              ^ (
-                    points.interp(ijk+vector(unitY))
-                  - points.interp(ijk+vector(unitX))
-                )
-            );
-
-        const vector fore =
-            0.5
-          * (
-                (
-                    points.interp(ijk+vector(unitXYZ))
-                  - points.interp(ijk+vector(unitZ))
-                )
-              ^ (
-                    points.interp(ijk+vector(unitYZ))
-                  - points.interp(ijk+vector(unitXZ))
-                )
-            );
-
-        fn(l,d,i,j,k) =
-            faceVector
-            (
-                normalised(left),
-                normalised(right),
-                normalised(bottom),
-                normalised(top),
-                normalised(aft),
-                normalised(fore)
-            );
-
-        fa(l,d,i,j,k) =
-            faceScalar
-            (
-                mag(left),
-                mag(right),
-                mag(bottom),
-                mag(top),
-                mag(aft),
-                mag(fore)
-            );
+        fan(l,d,nei)[fd*2+1] = - fan(l,d,ijk)[fd*2];
+        fa (l,d,nei)[fd*2+1] =   fa (l,d,ijk)[fd*2];
+        fn (l,d,nei)[fd*2+1] = - fn (l,d,ijk)[fd*2];
     }
-
-    fa.correctCommBoundaryConditions();
-    fn.correctCommBoundaryConditions();
-
-    fan = fa*fn;
-
-    fan.correctCommBoundaryConditions();
 }
 
 template<class MeshType>
@@ -370,25 +244,25 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
 
     // First, set internal cell centers from the point coordinates
 
-    forAllLevels(cc, l, d, i, j, k)
+    forAllCells(cc, l, d, i, j, k)
     {
         const partPoints& points = fvMsh_[l].points();
 
         const vector shift = MeshType::shift[d];
 
-        const vector ijk(vector(i,j,k)+shift);
+        const vector ijks(vector(i,j,k)+shift);
 
         cc(l,d,i,j,k) =
             0.125
           * (
-                points.interp(ijk)
-              + points.interp(ijk+vector(unitX))
-              + points.interp(ijk+vector(unitY))
-              + points.interp(ijk+vector(unitXY))
-              + points.interp(ijk+vector(unitZ))
-              + points.interp(ijk+vector(unitXZ))
-              + points.interp(ijk+vector(unitYZ))
-              + points.interp(ijk+vector(unitXYZ))
+                points.interp(ijks)
+              + points.interp(ijks+vector(unitX))
+              + points.interp(ijks+vector(unitY))
+              + points.interp(ijks+vector(unitXY))
+              + points.interp(ijks+vector(unitZ))
+              + points.interp(ijks+vector(unitXZ))
+              + points.interp(ijks+vector(unitYZ))
+              + points.interp(ijks+vector(unitXYZ))
             );
     }
 
@@ -466,7 +340,7 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 
     cv = 1e-16;
 
-    forAllLevels(cv, l, d, i, j, k)
+    forAllCells(cv, l, d, i, j, k)
     {
         if (fvMsh_.msh()[0].rectilinear() == unitXYZ)
         {
@@ -546,27 +420,51 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 template<class MeshType>
 void fvMeshMetrics<MeshType>::calculateFaceDeltas()
 {
-    meshField<faceScalar,MeshType>& fd = faceDeltas_;
+    meshField<faceScalar,MeshType>& delta = faceDeltas_;
 
     const meshField<vector,MeshType>& cc = cellCenters_;
 
-    fd = Zero;
+    delta = Zero;
 
-    forAllLevels(cc, l, d, i, j, k)
+    forAllFaces(delta, l, d, fd, i, j, k)
     {
-        fd(l,d,i,j,k) =
-            faceScalar
-            (
-                1.0/Foam::mag(cc(l,d,i,j,k)-cc(l,d,i-1,j,k)),
-                1.0/Foam::mag(cc(l,d,i,j,k)-cc(l,d,i+1,j,k)),
-                1.0/Foam::mag(cc(l,d,i,j,k)-cc(l,d,i,j-1,k)),
-                1.0/Foam::mag(cc(l,d,i,j,k)-cc(l,d,i,j+1,k)),
-                1.0/Foam::mag(cc(l,d,i,j,k)-cc(l,d,i,j,k-1)),
-                1.0/Foam::mag(cc(l,d,i,j,k)-cc(l,d,i,j,k+1))
-            );
-    }
+        const labelVector ijk(i,j,k);
+        const labelVector nei(ijk-units[fd]);
 
-    fd.correctCommBoundaryConditions();
+        delta(l,d,ijk)[fd*2] =
+            1.0/Foam::mag(cc(l,d,ijk)-cc(l,d,nei));
+
+        delta(l,d,nei)[fd*2+1] = delta(l,d,ijk)[fd*2];
+    }
+}
+
+template<class MeshType>
+void fvMeshMetrics<MeshType>::calculateFaceWeights()
+{
+    meshField<faceScalar,MeshType>& fwc = faceWeightsCenter_;
+    meshField<faceScalar,MeshType>& fwn = faceWeightsNeighbor_;
+
+    const meshField<faceScalar,MeshType>& delta = faceDeltas_;
+    const meshField<vector,MeshType>& cc = cellCenters_;
+    const meshField<faceVector,MeshType>& fc = faceCenters_;
+
+    fwc = Zero;
+    fwn = Zero;
+
+    forAllFaces(fwc, l, d, fd, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(ijk-units[fd]);
+
+        fwc(l,d,ijk)[fd*2] =
+            Foam::mag(cc(l,d,nei) - fc(l,d,ijk)[fd*2])*delta(l,d,ijk)[fd*2];
+
+        fwn(l,d,ijk)[fd*2] =
+            Foam::mag(cc(l,d,ijk) - fc(l,d,ijk)[fd*2])*delta(l,d,ijk)[fd*2];
+
+        fwc(l,d,nei)[fd*2+1] = fwn(l,d,ijk)[fd*2];
+        fwn(l,d,nei)[fd*2+1] = fwc(l,d,ijk)[fd*2];
+    }
 }
 
 template<class MeshType>
@@ -615,7 +513,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     ),
     faceAreas_
     (
-        word(MeshType::typeName) + "FaceCenters",
+        word(MeshType::typeName) + "FaceAreas",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -662,6 +560,26 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         true,
         true,
         true
+    ),
+    faceWeightsCenter_
+    (
+        word(MeshType::typeName) + "FaceWeightsCenter",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        true
+    ),
+    faceWeightsNeighbor_
+    (
+        word(MeshType::typeName) + "FaceWeightsNeighbor",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        true
     )
 {
     calculateFaceCenters();
@@ -671,6 +589,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     calculateCellCenters();
     calculateCellVolumes();
     calculateFaceDeltas();
+    calculateFaceWeights();
 }
 
 template<class MeshType>

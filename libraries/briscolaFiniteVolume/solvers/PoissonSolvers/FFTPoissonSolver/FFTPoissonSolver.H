@@ -20,7 +20,7 @@ namespace fv
 
 class FFTPoissonSolver
 :
-    public PoissonSolver<stencil,scalar,colocated>
+    public PoissonSolver<symmStencil,scalar,colocated>
 {
     // Reference to the mesh
     const fvMesh& fvMsh_;
@@ -74,12 +74,12 @@ public:
     (
         colocatedScalarField&,
         const colocatedScalarField*,
-        const colocatedFaceScalarField*,
+        const colocatedLowerFaceScalarField*,
         const bool = false
     );
 
     // Use the base class solve support functions
-    using PoissonSolver<stencil,scalar,colocated>::solve;
+    using PoissonSolver<symmStencil,scalar,colocated>::solve;
 
     // Access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }

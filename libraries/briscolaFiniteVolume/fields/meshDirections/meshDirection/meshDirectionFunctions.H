@@ -480,10 +480,13 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 
 #include "scalarMeshDirection.H"
 #include "faceScalarMeshDirection.H"
+#include "lowerFaceScalarMeshDirection.H"
 #include "edgeScalarMeshDirection.H"
 #include "vertexScalarMeshDirection.H"
 #include "faceVectorMeshDirection.H"
+#include "lowerFaceVectorMeshDirection.H"
 #include "edgeVectorMeshDirection.H"
 #include "vertexVectorMeshDirection.H"
 #include "diagStencilMeshDirection.H"
+#include "symmStencilMeshDirection.H"
 #include "stencilMeshDirection.H"

@@ -41,12 +41,12 @@ int main(int argc, char *argv[])
     const colocatedVectorField& cc =
         fvMsh.metrics<colocated>().cellCenters();
 
-    forAllLevels(f, l, d, i, j, k)
+    forAllCells(f, l, d, i, j, k)
         f(l,d,i,j,k) = cc(l,d,i,j,k);
 
     f.correctBoundaryConditions();
 
-    forAllLevels(f, l, d, i, j, k)
+    forAllCells(f, l, d, i, j, k)
         if (f(l,d,i,j,k) != cc(l,d,i,j,k))
             FatalError << "test 1 failed" << endl;
 

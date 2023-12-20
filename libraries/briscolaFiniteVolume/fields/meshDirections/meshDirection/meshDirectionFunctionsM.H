@@ -1,14 +1,4 @@
-// Macros to iterative over internal cells
-
-#define forAllCells(DIR, i, j, k)                                               \
-    for (int i = (DIR).I().left();   i < (DIR).I().right();  i++)               \
-    for (int j = (DIR).I().bottom(); j < (DIR).I().top();    j++)               \
-    for (int k = (DIR).I().aft();    k < (DIR).I().fore();   k++)
-
-#define forAllCellsReversed(DIR, i, j, k)                                       \
-    for (int k = (DIR).I().aft();    k < (DIR).I().fore();  k++)                \
-    for (int j = (DIR).I().bottom(); j < (DIR).I().top();   j++)                \
-    for (int i = (DIR).I().left();   i < (DIR).I().right(); i++)
+#include "fieldFunctionsM.H"
 
 #define UNARY_FUNCTION(ReturnType, Type1, Func)                                 \
                                                                                 \

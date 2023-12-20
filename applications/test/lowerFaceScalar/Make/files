@@ -1,0 +1,3 @@
+Test-lowerFaceScalar.C
+
+EXE = build/Test-lowerFaceScalar

@@ -71,10 +71,12 @@ public:
     // Return the mesh level
     inline label levelNum() const { return l_; }
 
-    // Solve the given system
+    // Solve the given system, indicating of singular system augmentation should
+    // be applied
     virtual void solve
     (
-        linearSystem<SType,Type,MeshType>&
+        linearSystem<SType,Type,MeshType>&,
+        const List<bool>&
     ) = 0;
 };
 

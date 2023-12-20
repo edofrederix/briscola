@@ -58,7 +58,7 @@ extrapolatedP.correctBoundaryConditions();
 
 // Flux
 
-staggeredFaceScalarField phi
+staggeredLowerFaceScalarField phi
 (
     "phi",
     fvMsh,
@@ -114,4 +114,4 @@ const staggeredScalarField minRho = tpm.minRho<staggered>().ref();
 const colocatedScalarField coloMinRho = tpm.minRho<colocated>().ref();
 
 const staggeredScalarField minRhoInv("minRhoInv", 1.0/minRho);
-const colocatedFaceScalarField coloMinRhof("coloMinRhof",ex::interp(coloMinRho));
+const colocatedLowerFaceScalarField coloMinRhof("coloMinRhof",ex::interp(coloMinRho));

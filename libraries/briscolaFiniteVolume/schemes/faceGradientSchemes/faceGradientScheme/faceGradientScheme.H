@@ -49,8 +49,8 @@ public:
     // Destructor
     virtual ~faceGradientScheme();
 
-    // Face-normal gradient of u
-    virtual tmp<meshField<FaceSpace<Type>,MeshType>> faceGrad
+    // Face-normal gradient
+    virtual tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
     (
         const meshField<Type,MeshType>&
     ) = 0;

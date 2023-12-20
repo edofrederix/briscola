@@ -77,17 +77,17 @@ faceGradientSchemes
 {
     faceGrad(p)
     {
-        type    midPoint;
+        type    linear;
     }
 
     faceGrad(p.oldTime)
     {
-        type    midPoint;
+        type    linear;
     }
 
     faceGrad(extrapolatedP)
     {
-        type    midPoint;
+        type    linear;
     }
 }
 
@@ -95,12 +95,12 @@ faceFluxSchemes
 {
     flux(U)
     {
-        type    midPoint;
+        type    linear;
     }
 
     flux(grad(alpha))
     {
-        type    midPoint;
+        type    linear;
     }
 }
 

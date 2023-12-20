@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
         USys -= 0.5*(deltaT/deltaT0)*H;
 
-        H = (ex::div(phi,U) - itpm.surfaceTension() - ((ex::grad(mu) & ex::grad(U)) / rho));
+        H = ex::div(phi,U) - itpm.surfaceTension() - ((ex::grad(mu) & ex::grad(U)) / rho);
         USys += (1+0.5*(deltaT/deltaT0))*H;
 
         USys -= itpm.g();
@@ -73,7 +73,11 @@ int main(int argc, char *argv[])
         phi = ex::faceFlux(U);
 
         const colocatedScalarField rhoInv("rhoInv", 1.0/rho);
-        const colocatedFaceScalarField rhoInvf("rhoInv",1.0/ex::interp(rho));
+        const colocatedLowerFaceScalarField rhoInvf
+        (
+            "rhoInv",
+            1.0/ex::interp(rho)
+        );
 
         if (split)
         {
@@ -82,7 +86,7 @@ int main(int argc, char *argv[])
 
             p.setOldTime();
 
-            colocatedFaceScalarField splitCorrection = fa * (1 - minRhof * rhoInvf) * ex::faceGrad(extrapolatedP);
+            colocatedLowerFaceScalarField splitCorrection = fa * (1 - minRhof * rhoInvf) * ex::faceGrad(extrapolatedP);
             Poisson->solve(p, minRho*ex::div(phi)/(-deltaT) - ex::div(splitCorrection));
 
             // Rhie-Chow correction

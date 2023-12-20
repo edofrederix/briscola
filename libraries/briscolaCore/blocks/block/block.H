@@ -437,6 +437,10 @@ public:
     template<class Type2> inline void operator=(const Type2&);
     template<class Type2> inline void operator+=(const Type2&);
     template<class Type2> inline void operator-=(const Type2&);
+    template<class Type2> inline void operator*=(const block<Type2>&);
+    template<class Type2> inline void operator*=(const tmp<block<Type2>>&);
+    template<class Type2> inline void operator/=(const block<Type2>&);
+    template<class Type2> inline void operator/=(const tmp<block<Type2>>&);
 
     friend Istream& operator>><Type>(Istream&, block<Type>&);
     friend Ostream& operator<<<Type>(Ostream&, const block<Type>&);

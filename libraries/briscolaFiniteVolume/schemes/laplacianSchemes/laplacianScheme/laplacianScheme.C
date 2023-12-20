@@ -9,8 +9,8 @@ namespace briscola
 namespace fv
 {
 
-template<class Type, class MeshType>
-laplacianScheme<Type,MeshType>::laplacianScheme
+template<class SType, class Type, class MeshType>
+laplacianScheme<SType,Type,MeshType>::laplacianScheme
 (
     const dictionary& dict,
     const fvMesh& fvMsh
@@ -19,22 +19,22 @@ laplacianScheme<Type,MeshType>::laplacianScheme
     scheme(dict, fvMsh)
 {}
 
-template<class Type, class MeshType>
-laplacianScheme<Type,MeshType>::laplacianScheme
+template<class SType, class Type, class MeshType>
+laplacianScheme<SType,Type,MeshType>::laplacianScheme
 (
-    const laplacianScheme<Type,MeshType>& s
+    const laplacianScheme<SType,Type,MeshType>& s
 )
 :
     scheme(s)
 {}
 
-template<class Type, class MeshType>
-laplacianScheme<Type,MeshType>::~laplacianScheme()
+template<class SType, class Type, class MeshType>
+laplacianScheme<SType,Type,MeshType>::~laplacianScheme()
 {}
 
-template<class Type, class MeshType>
-autoPtr<laplacianScheme<Type,MeshType>>
-laplacianScheme<Type,MeshType>::New
+template<class SType, class Type, class MeshType>
+autoPtr<laplacianScheme<SType,Type,MeshType>>
+laplacianScheme<SType,Type,MeshType>::New
 (
     const word name,
     const fvMesh& fvMsh
@@ -60,7 +60,10 @@ laplacianScheme<Type,MeshType>::New
             << exit(FatalError);
     }
 
-    return autoPtr<laplacianScheme<Type,MeshType>>(cstrIter()(dict, fvMsh));
+    return autoPtr<laplacianScheme<SType,Type,MeshType>>
+    (
+        cstrIter()(dict, fvMsh)
+    );
 }
 
 }

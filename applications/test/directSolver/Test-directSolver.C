@@ -9,7 +9,7 @@ using namespace Foam;
 using namespace briscola;
 using namespace fv;
 
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
 void test(const fvMesh& fvMsh)
 {
     meshField<Type,MeshType> f
@@ -30,12 +30,12 @@ void test(const fvMesh& fvMsh)
     dictionary dict;
     dict.add("type", "APLU");
 
-    autoPtr<directSolver<stencil,Type,MeshType>> solverPtr
+    autoPtr<directSolver<SType,Type,MeshType>> solverPtr
     (
-        directSolver<stencil,Type,MeshType>::New(dict,fvMsh).ptr()
+        directSolver<SType,Type,MeshType>::New(dict,fvMsh).ptr()
     );
 
-    linearSystem<stencil,Type,MeshType> sys(im::laplacian(f));
+    linearSystem<SType,Type,MeshType> sys(im::laplacian(f));
     sys -= im::ddt(f);
     sys.eliminateGhosts();
 
@@ -45,7 +45,7 @@ void test(const fvMesh& fvMsh)
 
     // Compute the solution
 
-    solverPtr->solve(sys);
+    solverPtr->solve(sys, sys.singular());
 
     // Write the solution
 
@@ -87,9 +87,9 @@ int main(int argc, char *argv[])
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
 
-    test<scalar,colocated>(fvMsh);
-    test<scalar,staggered>(fvMsh);
+    test<symmStencil,scalar,colocated>(fvMsh);
+    test<stencil,scalar,staggered>(fvMsh);
 
-    test<vector,colocated>(fvMsh);
-    test<vector,staggered>(fvMsh);
+    test<symmStencil,vector,colocated>(fvMsh);
+    test<stencil,vector,staggered>(fvMsh);
 }

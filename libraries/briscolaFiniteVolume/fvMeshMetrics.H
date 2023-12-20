@@ -49,6 +49,12 @@ class fvMeshMetrics
     // face)
     meshField<faceScalar,MeshType> faceDeltas_;
 
+    // Face interpolation weights for the cell center
+    meshField<faceScalar,MeshType> faceWeightsCenter_;
+
+    // Face interpolation weights for the neighbor
+    meshField<faceScalar,MeshType> faceWeightsNeighbor_;
+
     // Calculate face centers
     void calculateFaceCenters();
 
@@ -69,6 +75,9 @@ class fvMeshMetrics
 
     // Calculate face deltas
     void calculateFaceDeltas();
+
+    // Calculate face weights
+    void calculateFaceWeights();
 
 public:
 
@@ -136,6 +145,18 @@ public:
     inline const meshField<faceScalar,MeshType>& faceDeltas() const
     {
         return faceDeltas_;
+    }
+
+    // Const access to face weights for the cell center
+    inline const meshField<faceScalar,MeshType>& faceWeightsCenter() const
+    {
+        return faceWeightsCenter_;
+    }
+
+    // Const access to face weights for the neighbor
+    inline const meshField<faceScalar,MeshType>& faceWeightsNeighbor() const
+    {
+        return faceWeightsNeighbor_;
     }
 };
 

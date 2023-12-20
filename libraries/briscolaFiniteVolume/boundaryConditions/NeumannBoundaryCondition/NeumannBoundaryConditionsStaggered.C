@@ -1,5 +1,5 @@
 #include "boundaryConditions.H"
-#include "NeumannBoundaryCondition.H"
+#include "stagNeumannBoundaryCondition.H"
 
 namespace Foam
 {
@@ -10,7 +10,12 @@ namespace briscola
 namespace fv
 {
 
-makeBoundaryConditionTypes(Neumann,staggered)
+// Base
+makeBoundaryConditionTypes(Neumann,Neumann,staggered)
+
+// Derived
+makeBoundaryConditionMeshedTypes(stagNeumann,Neumann,staggered)
+addBoundaryConditionMeshedTypes(stagNeumann,staggered)
 
 }
 

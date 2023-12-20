@@ -93,7 +93,7 @@ centerGrad
     const meshField<faceVector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
-    forAllDirections(Grad, d, i, j, k)
+    forAllCells(Grad, d, i, j, k)
         for (int f = 0; f < 6; f++)
             Grad(d,i,j,k) +=
                 field(d,i,j,k)[f]*fan(d,i,j,k)[f]/cv(d,i,j,k);

@@ -12,10 +12,12 @@ namespace fv
 defineTemplateTypeNameAndDebug(colocatedLabelDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedScalarDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedFaceScalarDirection, 0);
+defineTemplateTypeNameAndDebug(colocatedLowerFaceScalarDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedEdgeScalarDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedVertexScalarDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedVectorDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedFaceVectorDirection, 0);
+defineTemplateTypeNameAndDebug(colocatedLowerFaceVectorDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedEdgeVectorDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedVertexVectorDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedTensorDirection, 0);
@@ -23,6 +25,7 @@ defineTemplateTypeNameAndDebug(colocatedSphericalTensorDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedSymmTensorDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedDiagTensorDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedDiagStencilDirection, 0);
+defineTemplateTypeNameAndDebug(colocatedSymmStencilDirection, 0);
 defineTemplateTypeNameAndDebug(colocatedStencilDirection, 0);
 
 }

@@ -81,6 +81,7 @@ protected:
     virtual void solve
     (
         linearSystem<SType,Type,MeshType>& xEqn,
+        const List<bool>& singular,
         const scalar relTol,
         const scalar absTol,
         const label minIter,
@@ -96,6 +97,7 @@ protected:
         meshField<Type,MeshType>& r,
         labelList& visits,
         const label l,
+        const List<bool>& singular,
         const labelList& converged,
         const label nSweepsPre,
         const label nSweepsPost
@@ -104,11 +106,12 @@ protected:
     // Smoother function pointer
     void (*smooth)
     (
-        linearSystem<SType,Type,MeshType>&,
-        const label,
-        const label,
-        const labelList&,
-        const scalar
+        linearSystem<SType,Type,MeshType>& sys,
+        List<Type>& xi,
+        const label l,
+        const label sweeps,
+        const labelList& converged,
+        const scalar omega
     );
 
 public:

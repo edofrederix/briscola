@@ -31,22 +31,22 @@ curvatureInterpolationScheme<Type,MeshType>::curvatureInterpolationScheme
 {}
 
 template<>
-tmp<colocatedFaceScalarField>
+tmp<colocatedLowerFaceScalarField>
 curvatureInterpolationScheme<scalar,colocated>::interp
 (
     const colocatedScalarField& field
 )
 {
-    tmp<colocatedFaceScalarField> tInterp
+    tmp<colocatedLowerFaceScalarField> tInterp
     (
-        new colocatedFaceScalarField
+        new colocatedLowerFaceScalarField
         (
             "interp("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    colocatedFaceScalarField& Interp = tInterp.ref();
+    colocatedLowerFaceScalarField& Interp = tInterp.ref();
 
     Interp = Zero;
 
@@ -70,14 +70,14 @@ curvatureInterpolationScheme<scalar,colocated>::interp
                 if
                 (
                     alpha(ijku) > threshold_
-                    && alpha(ijku) < (1.0 - threshold_)
+                 && alpha(ijku) < (1.0 - threshold_)
                 )
                 {
-                    Interp(ijk)[2*dir+1] = 0.5 * (field(ijk) + field(ijku));
+                    Interp(ijku)[dir] = 0.5 * (field(ijk) + field(ijku));
                 }
                 else
                 {
-                    Interp(ijk)[2*dir+1] = field(ijk);
+                    Interp(ijku)[dir] = field(ijk);
                 }
 
                 if
@@ -86,11 +86,11 @@ curvatureInterpolationScheme<scalar,colocated>::interp
                     && alpha(ijkl) < (1.0 - threshold_)
                 )
                 {
-                    Interp(ijk)[2*dir] = 0.5 * (field(ijk) + field(ijkl));
+                    Interp(ijk)[dir] = 0.5 * (field(ijk) + field(ijkl));
                 }
                 else
                 {
-                    Interp(ijk)[2*dir] = field(ijk);
+                    Interp(ijk)[dir] = field(ijk);
                 }
 
             }
@@ -103,8 +103,8 @@ curvatureInterpolationScheme<scalar,colocated>::interp
                 const labelVector ijku(ijk + units[dir]);
                 const labelVector ijkl(ijk - units[dir]);
 
-                Interp(ijk)[2*dir+1] = field(ijku);
-                Interp(ijk)[2*dir] = field(ijkl);
+                Interp(ijku)[dir] = field(ijku);
+                Interp(ijk)[dir] = field(ijkl);
 
             }
         }
@@ -114,22 +114,22 @@ curvatureInterpolationScheme<scalar,colocated>::interp
 }
 
 template<>
-tmp<staggeredFaceScalarField>
+tmp<staggeredLowerFaceScalarField>
 curvatureInterpolationScheme<scalar,staggered>::interp
 (
     const staggeredScalarField& field
 )
 {
-    tmp<staggeredFaceScalarField> tInterp
+    tmp<staggeredLowerFaceScalarField> tInterp
     (
-        new staggeredFaceScalarField
+        new staggeredLowerFaceScalarField
         (
             "interp("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    staggeredFaceScalarField& Interp = tInterp.ref();
+    staggeredLowerFaceScalarField& Interp = tInterp.ref();
 
     Interp = Zero;
 
@@ -142,14 +142,14 @@ curvatureInterpolationScheme<scalar,staggered>::interp
             field.fvMsh()
         );
 
-    forAllDirections(alpha, d, i, j, k)
+    forAllCells(alpha, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
         const labelVector ijkl(ijk - units[d]);
         alpha(d,i,j,k) = 0.5 * (alphaColocated(ijk) + alphaColocated(ijkl));
     }
 
-    forAllDirections(field, d, i, j, k)
+    forAllCells(field, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
         Interp(ijk) = Zero;
@@ -160,7 +160,7 @@ curvatureInterpolationScheme<scalar,staggered>::interp
             && alpha(d, ijk) < (1.0 - threshold_)
         )
         {
-            for (int dir = 0; dir < 2; dir++)
+            for (int dir = 0; dir < 3; dir++)
             {
                 const labelVector ijku(ijk + units[dir]);
                 const labelVector ijkl(ijk - units[dir]);
@@ -171,11 +171,11 @@ curvatureInterpolationScheme<scalar,staggered>::interp
                     && alpha(d, ijku) < (1.0 - threshold_)
                 )
                 {
-                    Interp(d, ijk)[2*dir+1] = 0.5 * (field(d, ijk) + field(d, ijku));
+                    Interp(d, ijku)[dir] = 0.5 * (field(d, ijk) + field(d, ijku));
                 }
                 else
                 {
-                    Interp(d, ijk)[2*dir+1] = field(d, ijk);
+                    Interp(d, ijku)[dir] = field(d, ijk);
                 }
 
                 if
@@ -184,11 +184,11 @@ curvatureInterpolationScheme<scalar,staggered>::interp
                     && alpha(d, ijkl) < (1.0 - threshold_)
                 )
                 {
-                    Interp(d, ijk)[2*dir] = 0.5 * (field(d, ijk) + field(d, ijkl));
+                    Interp(d, ijk)[dir] = 0.5 * (field(d, ijk) + field(d, ijkl));
                 }
                 else
                 {
-                    Interp(d, ijk)[2*dir] = field(d, ijk);
+                    Interp(d, ijk)[dir] = field(d, ijk);
                 }
 
             }
@@ -196,13 +196,13 @@ curvatureInterpolationScheme<scalar,staggered>::interp
         }
         else
         {
-            for (int dir = 0; dir < 2; dir++)
+            for (int dir = 0; dir < 3; dir++)
             {
                 const labelVector ijku(ijk + units[dir]);
                 const labelVector ijkl(ijk - units[dir]);
 
-                Interp(d, ijk)[2*dir+1] = field(d, ijku);
-                Interp(d, ijk)[2*dir] = field(d, ijkl);
+                Interp(d, ijku)[dir] = field(d, ijku);
+                Interp(d, ijk)[dir] = field(d, ijkl);
 
             }
         }

@@ -6,6 +6,9 @@ primitives/FaceSpace/faceVector/faceVector.C
 primitives/FaceSpace/faceLabelVector/faceLabelVector.C
 primitives/FaceSpace/faceLabelTensor/faceLabelTensor.C
 
+primitives/LowerFaceSpace/lowerFaceScalar/lowerFaceScalar.C
+primitives/LowerFaceSpace/lowerFaceVector/lowerFaceVector.C
+
 primitives/EdgeSpace/edgeScalar/edgeScalar.C
 primitives/EdgeSpace/edgeLabel/edgeLabel.C
 primitives/EdgeSpace/edgeVector/edgeVector.C
@@ -20,6 +23,7 @@ primitives/VertexSpace/vertexLabelTensor/vertexLabelTensor.C
 
 primitives/StencilSpace/stencil/stencil.C
 primitives/StencilSpace/diagStencil/diagStencil.C
+primitives/StencilSpace/symmStencil/symmStencil.C
 
 blocks/labelBlock/labelBlock.C
 blocks/scalarBlock/scalarBlock.C
@@ -32,7 +36,9 @@ blocks/symmTensorBlock/symmTensorBlock.C
 blocks/diagTensorBlock/diagTensorBlock.C
 
 blocks/faceScalarBlock/faceScalarBlock.C
+blocks/lowerFaceScalarBlock/lowerFaceScalarBlock.C
 blocks/faceVectorBlock/faceVectorBlock.C
+blocks/lowerFaceVectorBlock/lowerFaceVectorBlock.C
 
 blocks/edgeScalarBlock/edgeScalarBlock.C
 blocks/edgeVectorBlock/edgeVectorBlock.C
@@ -42,6 +48,7 @@ blocks/vertexVectorBlock/vertexVectorBlock.C
 
 blocks/stencilBlock/stencilBlock.C
 blocks/diagStencilBlock/diagStencilBlock.C
+blocks/symmStencilBlock/symmStencilBlock.C
 
 functionObjects/briscolaFunctionObject/briscolaFunctionObject.C
 

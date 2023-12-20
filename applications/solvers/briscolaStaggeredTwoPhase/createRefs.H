@@ -3,4 +3,4 @@ const colocatedFaceScalarField& fa =
 
 const staggeredScalarField& rho = tpm.rho<staggered>();
 const colocatedScalarField& coloRho = tpm.rho<colocated>();
-const staggeredFaceScalarField& mu = tpm.mu<staggered>();
+const staggeredLowerFaceScalarField& mu = tpm.mu<staggered>();

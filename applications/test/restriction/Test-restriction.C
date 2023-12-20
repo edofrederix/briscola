@@ -34,7 +34,7 @@ void testConstantRestriction(const fvMesh& fvMsh, const word scheme)
 
     // Check if a constant value is restricted correctly
 
-    forAllLevels(f, l, d, i, j, k)
+    forAllCells(f, l, d, i, j, k)
     if (l > 0)
         if (mag(f(l,d,i,j,k) - pTraits<Type>::one*2.0) > 1e-14)
             FatalErrorInFunction
@@ -62,14 +62,14 @@ void testOneLinearRestriction(const fvMesh& fvMsh, const word scheme)
     {
         f = Zero;
 
-        forAllDirections(f, d, i, j, k)
+        forAllCells(f, d, i, j, k)
         {
             f(d,i,j,k) = cc(d,i,j,k)[dir]*pTraits<Type>::one;
         }
 
         S->restrict(f);
 
-        forAllLevels(f, l, d, i, j, k)
+        forAllCells(f, l, d, i, j, k)
         if (l > 0)
         {
             if
@@ -107,7 +107,7 @@ void testTwoLinearRestriction(const fvMesh& fvMsh, const word scheme)
     {
         f = Zero;
 
-        forAllDirections(f, d, i, j, k)
+        forAllCells(f, d, i, j, k)
         {
             f(d,i,j,k) =
                 (cc(d,i,j,k)[dir1]+cc(d,i,j,k)[dir2])
@@ -116,7 +116,7 @@ void testTwoLinearRestriction(const fvMesh& fvMsh, const word scheme)
 
         S->restrict(f);
 
-        forAllLevels(f, l, d, i, j, k)
+        forAllCells(f, l, d, i, j, k)
         if (l > 0)
         {
             if
@@ -156,7 +156,7 @@ void testThreeLinearRestriction(const fvMesh& fvMsh, const word scheme)
 
     f = Zero;
 
-    forAllDirections(f, d, i, j, k)
+    forAllCells(f, d, i, j, k)
     {
         f(d,i,j,k) =
             (
@@ -169,7 +169,7 @@ void testThreeLinearRestriction(const fvMesh& fvMsh, const word scheme)
 
     S->restrict(f);
 
-    forAllLevels(f, l, d, i, j, k)
+    forAllCells(f, l, d, i, j, k)
     if (l > 0)
     {
         if

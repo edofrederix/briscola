@@ -7,10 +7,12 @@
 #include "labelMeshField.H"
 #include "scalarMeshField.H"
 #include "faceScalarMeshField.H"
+#include "lowerFaceScalarMeshField.H"
 #include "edgeScalarMeshField.H"
 #include "vertexScalarMeshField.H"
 #include "vectorMeshField.H"
 #include "faceVectorMeshField.H"
+#include "lowerFaceVectorMeshField.H"
 #include "edgeVectorMeshField.H"
 #include "vertexVectorMeshField.H"
 #include "tensorMeshField.H"
@@ -18,6 +20,7 @@
 #include "symmTensorMeshField.H"
 #include "diagTensorMeshField.H"
 #include "diagStencilMeshField.H"
+#include "symmStencilMeshField.H"
 #include "stencilMeshField.H"
 
 #endif

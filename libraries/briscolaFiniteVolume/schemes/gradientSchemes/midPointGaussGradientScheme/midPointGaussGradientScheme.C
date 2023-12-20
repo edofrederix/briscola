@@ -56,7 +56,7 @@ midPointGaussGradientScheme<Type,MeshType>::grad
     const meshField<scalar,MeshType>& cv =
         field.fvMsh().template metrics<MeshType>().cellVolumes();
 
-    forAllDirections(Grad, d, i, j, k)
+    forAllCells(Grad, d, i, j, k)
         Grad(d,i,j,k) =
             0.5
           * (
@@ -95,7 +95,7 @@ midPointGaussGradientScheme<Type,MeshType>::stagGrad
     const meshField<faceScalar,colocated>& fd =
             field.fvMsh().template metrics<colocated>().faceDeltas();
 
-    forAllDirections(Grad, d, i, j, k)
+    forAllCells(Grad, d, i, j, k)
     {
         const labelVector& o = staggered::padding[d];
         const labelVector ijk(i,j,k);

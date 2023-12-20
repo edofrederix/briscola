@@ -90,7 +90,7 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void parallelBoundaryCondition<Type,MeshType>::initEvaluate
+void parallelBoundaryCondition<Type,MeshType>::prepare
 (
     const label l
 )

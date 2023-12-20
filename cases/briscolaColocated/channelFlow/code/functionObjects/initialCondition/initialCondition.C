@@ -50,7 +50,7 @@ bool initialCondition::read(const dictionary& dict)
         const colocatedVectorField& cc =
             U.fvMsh().metrics<colocated>().cellCenters();
 
-        forAllLevels(U, l, d, i, j, k)
+        forAllCells(U, l, d, i, j, k)
         {
             U(l,d,i,j,k).x() =
                 5300.0/360.0*2.0

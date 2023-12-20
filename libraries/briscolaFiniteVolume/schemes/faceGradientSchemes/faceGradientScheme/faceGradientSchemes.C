@@ -1,7 +1,7 @@
 #include "faceGradientSchemes.H"
 #include "addToRunTimeSelectionTable.H"
 
-#include "midPointFaceGradientScheme.H"
+#include "linearFaceGradientScheme.H"
 
 namespace Foam
 {
@@ -18,11 +18,11 @@ makeFaceGradientScheme(scalar,staggered)
 makeFaceGradientScheme(vector,colocated)
 makeFaceGradientScheme(vector,staggered)
 
-makeFaceGradientSchemeType(midPoint,scalar,colocated)
-makeFaceGradientSchemeType(midPoint,scalar,staggered)
+makeFaceGradientSchemeType(linear,scalar,colocated)
+makeFaceGradientSchemeType(linear,scalar,staggered)
 
-makeFaceGradientSchemeType(midPoint,vector,colocated)
-makeFaceGradientSchemeType(midPoint,vector,staggered)
+makeFaceGradientSchemeType(linear,vector,colocated)
+makeFaceGradientSchemeType(linear,vector,staggered)
 
 }
 
