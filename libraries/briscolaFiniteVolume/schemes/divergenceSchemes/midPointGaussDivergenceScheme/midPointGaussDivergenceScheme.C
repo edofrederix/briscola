@@ -29,44 +29,56 @@ midPointGaussDivergenceScheme<Type,MeshType>::midPointGaussDivergenceScheme
 {}
 
 template<class Type, class MeshType>
-tmp<linearSystem<stencil,Type,MeshType>>
-midPointGaussDivergenceScheme<Type,MeshType>::imDiv
+template<template<class> class OpType>
+void midPointGaussDivergenceScheme<Type,MeshType>::imDiv
 (
+    linearSystem<stencil,Type,MeshType>& sys,
     const meshField<lowerFaceScalar,MeshType>& phi,
-    meshField<Type,MeshType>& field
+    const meshField<Type,MeshType>& field,
+    const scalar factor
 )
 {
     const_cast<meshField<lowerFaceScalar,MeshType>&>(phi).restrict();
 
-    tmp<linearSystem<stencil,Type,MeshType>> tSys
-    (
-        new linearSystem<stencil,Type,MeshType>(field)
-    );
+    meshField<stencil,MeshType>& A = sys.A();
+    meshField<Type,MeshType>& b = sys.b();
 
-    linearSystem<stencil,Type,MeshType>& Sys = tSys.ref();
+    if (isEqOp<OpType>() || isEqMinusOp<OpType>())
+    {
+        A = Zero;
+        b = Zero;
+    }
 
-    meshField<stencil,MeshType>& A = Sys.A();
-    A = Zero;
+    OpType<scalar> bop;
 
     forAllFaces(A, l, d, fd, i, j, k)
     {
         labelVector ijk(i,j,k);
         labelVector nei(ijk-units[fd]);
 
-        scalar a = phi(l,d,ijk)[fd]*0.5;
+        scalar a = factor*phi(l,d,ijk)[fd]*0.5;
 
-        A(l,d,ijk).center() += a;
-        A(l,d,nei).center() -= a;
+        bop(A(l,d,ijk)[1+fd*2  ],  a);
+        bop(A(l,d,nei)[1+fd*2+1], -a);
 
-        A(l,d,ijk)[1+fd*2  ] =   a;
-        A(l,d,nei)[1+fd*2+1] = - a;
+        if (isEqOp<OpType>())
+        {
+            A(l,d,ijk)[0] += a;
+            A(l,d,nei)[0] -= a;
+        }
+        else if (isEqMinusOp<OpType>())
+        {
+            A(l,d,ijk)[0] -= a;
+            A(l,d,nei)[0] += a;
+        }
+        else
+        {
+            bop(A(l,d,ijk)[0],  a);
+            bop(A(l,d,nei)[0], -a);
+        }
     }
 
-    Sys.b() = Zero;
-
     const_cast<meshField<lowerFaceScalar,MeshType>&>(phi).makeShallow();
-
-    return tSys;
 }
 
 template<class Type, class MeshType>
@@ -74,7 +86,7 @@ tmp<meshField<Type,MeshType>>
 midPointGaussDivergenceScheme<Type,MeshType>::exDiv
 (
     const meshField<lowerFaceScalar,MeshType>& phi,
-    meshField<Type,MeshType>& field
+    const meshField<Type,MeshType>& field
 )
 {
     tmp<meshField<Type,MeshType>> tDiv

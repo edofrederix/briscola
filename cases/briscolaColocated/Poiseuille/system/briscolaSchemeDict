@@ -21,7 +21,7 @@ laplacianSchemes
         type    linearGauss;
     }
 
-    laplacian(nu,U)
+    laplacian(const,U)
     {
         type    linearGauss;
     }

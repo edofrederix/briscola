@@ -43,16 +43,7 @@ p.correctBoundaryConditions();
 
 // Viscosity
 
-staggeredLowerFaceScalarField nu
-(
-    "nu",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::NO_WRITE,
-    true
-);
-
-nu = readScalar(solverDict.lookup("nu"));
+const scalar nu = readScalar(solverDict.lookup("nu"));
 
 // Source
 
