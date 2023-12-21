@@ -1,13 +1,13 @@
 #ifndef FFTPoissonSolver_H
 #define FFTPoissonSolver_H
 
-#include "PoissonSolver.H"
 #include <fftw3.h>
+
+#include "PoissonSolver.H"
 #include "planner.H"
 #include "pencilDecomposer.H"
 #include "tridiagonalSolver.H"
 #include "FourierTransforms.H"
-#include "imSchemes.H"
 
 namespace Foam
 {

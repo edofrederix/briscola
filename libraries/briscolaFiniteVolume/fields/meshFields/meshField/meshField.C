@@ -423,19 +423,21 @@ void meshField<Type,MeshType>::correctPeriodicBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctCommBoundaryConditions()
-{
-    this->correctParallelBoundaryConditions();
-    this->correctPeriodicBoundaryConditions();
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctNonCommBoundaryConditions()
+void meshField<Type,MeshType>::correctNonEliminatedBoundaryConditions()
 {
     addBoundaryConditions();
 
     forAll(*this, l)
-        listType::operator[](l).correctNonCommBoundaryConditions();
+        listType::operator[](l).correctNonEliminatedBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctEliminatedBoundaryConditions()
+{
+    addBoundaryConditions();
+
+    forAll(*this, l)
+        listType::operator[](l).correctEliminatedBoundaryConditions();
 }
 
 template<class Type, class MeshType>

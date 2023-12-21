@@ -61,7 +61,113 @@ inline scalar rowSum
     return st(ijk).center();
 }
 
-// Matrix row multiplication
+// Lower stencil row sum
+
+template<class MeshType>
+inline scalar lowerRowSum
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return Zero;
+}
+
+template<class MeshType>
+inline scalar lowerRowSum
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const labelVector ijk
+)
+{
+    return Zero;
+}
+
+// Upper stencil row sum
+
+template<class MeshType>
+inline scalar upperRowSum
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return Zero;
+}
+
+template<class MeshType>
+inline scalar upperRowSum
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const labelVector ijk
+)
+{
+    return Zero;
+}
+
+// Boundary source
+
+template<class Type, class MeshType>
+inline Type boundarySource
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const label& faceNum,
+    const labelVector& bo,
+    const labelVector& ijk
+)
+{
+    return Zero;
+}
+
+template<class Type, class MeshType>
+inline Type boundarySource
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const label& faceNum,
+    const labelVector& bo,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return Zero;
+}
+
+template<class Type, class MeshType>
+inline Type boundarySource
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const Type& v,
+    const labelVector& bo,
+    const label& faceNum,
+    const labelVector& ijk
+)
+{
+    return Zero;
+}
+
+template<class Type, class MeshType>
+inline Type boundarySource
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const Type& v,
+    const label& faceNum,
+    const labelVector& bo,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return Zero;
+}
+
+// Row product
 
 template<class Type, class MeshType>
 inline Type rowProduct
@@ -109,6 +215,106 @@ inline Type rowProduct
 )
 {
     return st(ijk)*v;
+}
+
+// Lower row product
+
+template<class Type, class MeshType>
+inline Type lowerRowProduct
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return Zero;
+}
+
+template<class Type, class MeshType>
+inline Type lowerRowProduct
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const Type& v,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return Zero;
+}
+
+template<class Type, class MeshType>
+inline Type lowerRowProduct
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const labelVector& ijk
+)
+{
+    return Zero;
+}
+
+template<class Type, class MeshType>
+inline Type lowerRowProduct
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const Type& v,
+    const labelVector& ijk
+)
+{
+    return Zero;
+}
+
+// Upper row product
+
+template<class Type, class MeshType>
+inline Type upperRowProduct
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return Zero;
+}
+
+template<class Type, class MeshType>
+inline Type upperRowProduct
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const Type& v,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return Zero;
+}
+
+template<class Type, class MeshType>
+inline Type upperRowProduct
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const labelVector& ijk
+)
+{
+    return Zero;
+}
+
+template<class Type, class MeshType>
+inline Type upperRowProduct
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const Type& v,
+    const labelVector& ijk
+)
+{
+    return Zero;
 }
 
 #define DIAGSTENCIL_PRODUCT(Type)                                              \

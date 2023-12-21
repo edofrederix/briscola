@@ -414,7 +414,7 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
         }
     }
 
-    cv.correctCommBoundaryConditions();
+    cv.correctNonEliminatedBoundaryConditions();
 }
 
 template<class MeshType>

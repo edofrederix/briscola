@@ -1,7 +1,7 @@
 #ifndef APLU_H
 #define APLU_H
 
-#include "directSolver.H"
+#include "solver.H"
 
 namespace Foam
 {
@@ -17,7 +17,7 @@ namespace fv
 template<class SType, class Type, class MeshType>
 class APLU
 :
-    public directSolver<SType,Type,MeshType>
+    public solver<SType,Type,MeshType>::directSolver
 {
 protected:
 
@@ -43,6 +43,9 @@ public:
     // Construct from dictionary and mesh
     APLU(const dictionary&, const fvMesh&, const label = 0);
 
+    // Return the indices
+    const List<List<List<labelList>>>& indices() const { return indices_; }
+
     // Solve the given system, indicating of singular system augmentation should
     // be applied
     virtual void solve
@@ -50,9 +53,6 @@ public:
         linearSystem<SType,Type,MeshType>&,
         const List<bool>&
     );
-
-    // Return the indices
-    const List<List<List<labelList>>>& indices() const { return indices_; }
 };
 
 }

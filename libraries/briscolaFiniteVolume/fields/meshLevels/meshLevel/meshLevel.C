@@ -336,7 +336,7 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions()
 
         this->correctUnsetBoundaryConditions();
 
-        // Next, correct all boundary conditions contained by this part
+        // Correct all boundary conditions
 
         const label nReq = Pstream::nRequests();
 
@@ -438,45 +438,61 @@ void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctCommBoundaryConditions()
-{
-    this->correctParallelBoundaryConditions();
-    this->correctPeriodicBoundaryConditions();
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctNonCommBoundaryConditions()
+void meshLevel<Type,MeshType>::correctNonEliminatedBoundaryConditions()
 {
     if (mshFieldPtr_)
     {
         this->addBoundaryConditions();
 
-        // Correct unset boundary conditions first
+        // Correct all non-eliminated boundary conditions
 
-        this->correctUnsetBoundaryConditions();
-
-        // Correct all non-communicating boundary conditions
+        const label nReq = Pstream::nRequests();
 
         forAll(mshFieldPtr_->boundaryConditions(), i)
+        if (!mshFieldPtr_->boundaryConditions()[i].eliminated())
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
+            mshFieldPtr_->boundaryConditions()[i].prepare(l_);
+        }
 
-            if (bc.baseType() != PARALLELBC && bc.baseType() != PERIODICBC)
-            {
-                bc.prepare(l_);
-            }
+        if (Pstream::parRun())
+        {
+            Pstream::waitRequests(nReq);
         }
 
         forAll(mshFieldPtr_->boundaryConditions(), i)
+        if (!mshFieldPtr_->boundaryConditions()[i].eliminated())
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
+            mshFieldPtr_->boundaryConditions()[i].evaluate(l_);
+        }
+    }
+}
 
-            if (bc.baseType() != PARALLELBC && bc.baseType() != PERIODICBC)
-            {
-                bc.evaluate(l_);
-            }
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctEliminatedBoundaryConditions()
+{
+    if (mshFieldPtr_)
+    {
+        this->addBoundaryConditions();
+
+        // Correct all non-eliminated boundary conditions
+
+        const label nReq = Pstream::nRequests();
+
+        forAll(mshFieldPtr_->boundaryConditions(), i)
+        if (mshFieldPtr_->boundaryConditions()[i].eliminated())
+        {
+            mshFieldPtr_->boundaryConditions()[i].prepare(l_);
+        }
+
+        if (Pstream::parRun())
+        {
+            Pstream::waitRequests(nReq);
+        }
+
+        forAll(mshFieldPtr_->boundaryConditions(), i)
+        if (mshFieldPtr_->boundaryConditions()[i].eliminated())
+        {
+            mshFieldPtr_->boundaryConditions()[i].evaluate(l_);
         }
     }
 }

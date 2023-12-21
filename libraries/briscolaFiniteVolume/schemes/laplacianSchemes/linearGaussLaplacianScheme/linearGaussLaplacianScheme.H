@@ -28,18 +28,12 @@ public:
     // Construct from mesh only, with empty dictionary
     linearGaussLaplacianScheme(const fvMesh&);
 
-    // Implicit Laplacian
-    virtual tmp<linearSystem<SType,Type,MeshType>> imLaplacian
-    (
-        const meshField<lowerFaceScalar,MeshType>*,
-        meshField<Type,MeshType>&
-    ) = 0;
-
-    // Explicit Laplacian
+    // Explicit laplacian schemes
     virtual tmp<meshField<Type,MeshType>> exLaplacian
     (
-        const meshField<lowerFaceScalar,MeshType>*,
-        meshField<Type,MeshType>&
+        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+        const meshField<Type,MeshType>& field,
+        const scalar factor = 1.0
     );
 };
 

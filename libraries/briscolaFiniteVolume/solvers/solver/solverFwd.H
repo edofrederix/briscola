@@ -14,17 +14,6 @@ namespace briscola
 namespace fv
 {
 
-// Enumeration of smoother types
-enum smootherType
-{
-    RBGS,
-    LEXGS,
-    JAC
-};
-
-// Cycle type names
-static const NamedEnum<smootherType,3> smootherTypeNames;
-
 template<class SType, class Type, class MeshType>
 class solver;
 

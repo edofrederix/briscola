@@ -27,14 +27,23 @@ EulerDdtScheme<Type,MeshType>::EulerDdtScheme(const fvMesh& fvMsh)
 
 template<class Type, class MeshType>
 tmp<linearSystem<diagStencil,Type,MeshType>>
-EulerDdtScheme<Type,MeshType>::ddt
+EulerDdtScheme<Type,MeshType>::imDdt
 (
-    meshField<Type,MeshType>& field
+    const meshField<scalar,MeshType>* lambdaPtr,
+    const meshField<Type,MeshType>& field,
+    const scalar factor
 )
 {
+    if (lambdaPtr)
+        const_cast<meshField<scalar,MeshType>&>(*lambdaPtr)
+       .restrict();
+
     tmp<linearSystem<diagStencil,Type,MeshType>> tSys
     (
-        new linearSystem<diagStencil,Type,MeshType>(field)
+        new linearSystem<diagStencil,Type,MeshType>
+        (
+            const_cast<meshField<Type,MeshType>&>(field)
+        )
     );
 
     linearSystem<diagStencil,Type,MeshType>& Sys = tSys.ref();
@@ -42,38 +51,60 @@ EulerDdtScheme<Type,MeshType>::ddt
     const meshField<scalar,MeshType>& cv =
         this->fvMsh().template metrics<MeshType>().cellVolumes();
 
-    Sys.A() = cv/this->deltaT();
-    Sys.b() = cv*field.oldTime()/this->deltaT();
+    Sys.A() = factor*cv/this->deltaT();
+    Sys.b() = factor*cv*field.oldTime()/this->deltaT();
+
+    if (lambdaPtr)
+    {
+        Sys.A() *= (*lambdaPtr);
+        Sys.b() *= lambdaPtr->oldTime();
+    }
+
+    if (lambdaPtr)
+        const_cast<meshField<scalar,MeshType>&>(*lambdaPtr)
+       .makeShallow();
 
     return tSys;
 }
 
 template<class Type, class MeshType>
-tmp<linearSystem<diagStencil,Type,MeshType>>
-EulerDdtScheme<Type,MeshType>::ddt
+tmp<meshField<Type,MeshType>>
+EulerDdtScheme<Type,MeshType>::exDdt
 (
-    const meshField<scalar,MeshType>& coeff,
-    meshField<Type,MeshType>& field
+    const meshField<scalar,MeshType>* lambdaPtr,
+    const meshField<Type,MeshType>& field,
+    const scalar factor
 )
 {
-    const_cast<meshField<scalar,MeshType>&>(coeff).restrict();
-
-    tmp<linearSystem<diagStencil,Type,MeshType>> tSys
+    tmp<meshField<Type,MeshType>> tDdt
     (
-        new linearSystem<diagStencil,Type,MeshType>(field)
+        new meshField<Type,MeshType>
+        (
+            lambdaPtr
+          ? "ddt("+lambdaPtr->name()+","+field.name()+")"
+          : "ddt("+field.name()+")",
+            field.fvMsh()
+        )
     );
 
-    linearSystem<diagStencil,Type,MeshType>& Sys = tSys.ref();
+    meshField<Type,MeshType>& ddt = tDdt.ref();
 
-    const meshField<scalar,MeshType>& cv =
-        this->fvMsh().template metrics<MeshType>().cellVolumes();
+    if (lambdaPtr)
+    {
+        ddt =
+            factor
+          * (
+                (*lambdaPtr)*field
+              - lambdaPtr->oldTime()*field.oldTime()
+            )
+          / this->deltaT();
+    }
+    else
+    {
+        ddt = factor*(field-field.oldTime())/this->deltaT();
+    }
 
-    Sys.A() = cv*coeff/this->deltaT();
-    Sys.b() = cv*coeff.oldTime()*field.oldTime()/this->deltaT();
-
-    const_cast<meshField<scalar,MeshType>&>(coeff).makeShallow();
-
-    return tSys;
+    return tDdt;
 }
 
 }

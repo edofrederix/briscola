@@ -31,6 +31,29 @@
         forAllCellsInDirection                                                 \
     )(__VA_ARGS__)
 
+#define forAllCellsReversedInDirection(DIR,i,j,k)                              \
+    for (int i = (DIR).I().right() - 1; i >= (DIR).I().left();   i--)          \
+    for (int j = (DIR).I().top()   - 1; j >= (DIR).I().bottom(); j--)          \
+    for (int k = (DIR).I().fore()  - 1; k >= (DIR).I().aft();    k--)
+
+#define forAllCellsReversedInLevel(LEV,d,i,j,k)                                \
+    for (int d = 0; d < (LEV).numberOfDirections(); d++)                       \
+        forAllCellsReversedInDirection((LEV).direction(d), i, j, k)
+
+#define forAllCellsReversedInField(FIELD,l,d,i,j,k)                            \
+    for (int l = 0; l < (FIELD).numberOfLevels(); l++)                         \
+        forAllCellsReversedInLevel((FIELD).level(l), d, i, j, k)
+
+#define GET_CELL_REV_ITERATOR(_1,_2,_3,_4,_5,_6,NAME,...) NAME
+#define forAllCellsReversed(...)                                               \
+    GET_CELL_REV_ITERATOR                                                      \
+    (                                                                          \
+        __VA_ARGS__,                                                           \
+        forAllCellsReversedInField,                                            \
+        forAllCellsReversedInLevel,                                            \
+        forAllCellsReversedInDirection                                         \
+    )(__VA_ARGS__)
+
 // For all faces
 
 #define forAllFacesInDirection(DIR,fd,i,j,k)                                   \

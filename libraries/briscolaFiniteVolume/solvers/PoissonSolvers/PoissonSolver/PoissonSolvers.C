@@ -22,11 +22,15 @@ makePoissonSolver(symmStencil,scalar,staggered);
 makePoissonSolver(symmStencil,vector,colocated);
 makePoissonSolver(symmStencil,vector,staggered);
 
+makePoissonSolverType(default,stencil,scalar,colocated);
+makePoissonSolverType(default,stencil,vector,colocated);
 makePoissonSolverType(default,symmStencil,scalar,colocated);
 makePoissonSolverType(default,symmStencil,vector,colocated);
 
 makePoissonSolverType(default,stencil,scalar,staggered);
 makePoissonSolverType(default,stencil,vector,staggered);
+makePoissonSolverType(default,symmStencil,scalar,staggered);
+makePoissonSolverType(default,symmStencil,vector,staggered);
 
 }
 

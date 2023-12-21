@@ -49,12 +49,11 @@ int main(int argc, char *argv[])
 
         USys = im::ddt(U);
 
-        USys -= im::source(imSourceCoeff,U);
+        im::source<minusEqOp>(USys,imSourceCoeff,U);
         USys -= exSource;
 
-        LapU = im::laplacian(nu,U);
-        USys -= 0.5*LapU;
-        USys -= 0.5*LapU.evaluate();
+        im::laplacian<minusEqOp>(USys,0.5*nu,U);
+        USys -= ex::laplacian(0.5*nu,U);
 
         USys -= 0.5*DivU;
         phi = ex::faceFlux(U);

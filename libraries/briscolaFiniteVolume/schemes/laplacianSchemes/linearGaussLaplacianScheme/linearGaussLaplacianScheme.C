@@ -33,7 +33,8 @@ tmp<meshField<Type,MeshType>>
 linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
 (
     const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
-    meshField<Type,MeshType>& field
+    const meshField<Type,MeshType>& field,
+    const scalar factor
 )
 {
     tmp<meshField<Type,MeshType>> tLap
@@ -65,7 +66,7 @@ linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
         labelVector ijk(i,j,k);
         labelVector nei(ijk-units[fd]);
 
-        scalar value = fa(d,ijk)[fd*2]*delta(d,ijk)[fd*2];
+        scalar value = factor*fa(d,ijk)[fd*2]*delta(d,ijk)[fd*2];
 
         if (lambdaPtr)
             value *= lambdaPtr->operator()(d,ijk)[fd];

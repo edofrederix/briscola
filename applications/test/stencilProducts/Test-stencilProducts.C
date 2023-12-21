@@ -33,15 +33,8 @@ void testStencilProducts(const fvMesh& fvMsh)
     rowProduct((2.0*f),x);
     rowProduct((2.0*f),(x*2.0));
 
-    rowProduct(x,f);
-    rowProduct((x*2.0),f);
-    rowProduct(x,(2.0*f));
-    rowProduct((x*2.0),(2.0*f));
-
     rowProduct(f,s);
-    rowProduct(s,f);
     rowProduct((2.0*f),s);
-    rowProduct(s,(2.0*f));
 
     rowSum(f);
     rowSum((2.0*f));
@@ -53,15 +46,8 @@ void testStencilProducts(const fvMesh& fvMsh)
     rowProduct((2.0*f[0]),x[0]);
     rowProduct((2.0*f[0]),(x[0]*2.0));
 
-    rowProduct(x[0],f[0]);
-    rowProduct((x[0]*2.0),f[0]);
-    rowProduct(x[0],(2.0*f[0]));
-    rowProduct((x[0]*2.0),(2.0*f[0]));
-
     rowProduct(f[0],s);
-    rowProduct(s,f[0]);
     rowProduct((2.0*f[0]),s);
-    rowProduct(s,(2.0*f[0]));
 
     rowSum(f[0]);
     rowSum((2.0*f[0]));
@@ -73,15 +59,8 @@ void testStencilProducts(const fvMesh& fvMsh)
     rowProduct((2.0*f.direction()),x.direction());
     rowProduct((2.0*f.direction()),(x.direction()*2.0));
 
-    rowProduct(x.direction(),f.direction());
-    rowProduct((x.direction()*2.0),f.direction());
-    rowProduct(x.direction(),(2.0*f.direction()));
-    rowProduct((x.direction()*2.0),(2.0*f.direction()));
-
     rowProduct(f.direction(),s);
-    rowProduct(s,f.direction());
     rowProduct((2.0*f.direction()),s);
-    rowProduct(s,(2.0*f.direction()));
 
     rowSum(f.direction());
     rowSum((2.0*f.direction()));

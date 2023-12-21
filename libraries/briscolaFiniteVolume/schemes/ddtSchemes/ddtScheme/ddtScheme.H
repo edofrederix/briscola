@@ -52,18 +52,90 @@ public:
     // Time step size
     inline scalar deltaT() const { return this->fvMsh().time().deltaTValue(); }
 
-    // Linear system from ddt(u)
-    virtual tmp<linearSystem<diagStencil,Type,MeshType>> ddt
+    // Pure virtual functions, to be defined by derived schemes
+
+    virtual tmp<linearSystem<diagStencil,Type,MeshType>> imDdt
     (
-        meshField<Type,MeshType>&
+        const meshField<scalar,MeshType>* lambdaPtr,
+        const meshField<Type,MeshType>& field,
+        const scalar factor = 1.0
     ) = 0;
 
-    // Linear system from ddt(coeff,u)
-    virtual tmp<linearSystem<diagStencil,Type,MeshType>> ddt
+    virtual tmp<meshField<Type,MeshType>> exDdt
     (
-        const meshField<scalar,MeshType>&,
-        meshField<Type,MeshType>&
+        const meshField<scalar,MeshType>* lambdaPtr,
+        const meshField<Type,MeshType>& field,
+        const scalar factor = 1.0
     ) = 0;
+
+    // Support functions relying on the pure virtual functions above
+
+        // Implicit
+
+            // Coefficient as reference
+            inline tmp<linearSystem<diagStencil,Type,MeshType>> imDdt
+            (
+                const meshField<scalar,MeshType>& lambda,
+                const meshField<Type,MeshType>& field,
+                const scalar factor = 1.0
+            );
+
+            // Coefficient as tmp
+            inline tmp<linearSystem<diagStencil,Type,MeshType>> imDdt
+            (
+                const tmp<meshField<scalar,MeshType>>& tLambda,
+                const meshField<Type,MeshType>& field,
+                const scalar factor = 1.0
+
+            );
+
+            // Constant coefficient
+            inline tmp<linearSystem<diagStencil,Type,MeshType>> imDdt
+            (
+                const scalar lambda,
+                const meshField<Type,MeshType>& field,
+                const scalar factor = 1.0
+            );
+
+            // No coefficient
+            inline tmp<linearSystem<diagStencil,Type,MeshType>> imDdt
+            (
+                const meshField<Type,MeshType>& field,
+                const scalar factor = 1.0
+            );
+
+        // Explicit
+
+            // Coefficient as reference
+            inline tmp<meshField<Type,MeshType>> exDdt
+            (
+                const meshField<scalar,MeshType>& lambda,
+                const meshField<Type,MeshType>& field,
+                const scalar factor = 1.0
+            );
+
+            // Coefficient as tmp
+            inline tmp<meshField<Type,MeshType>> exDdt
+            (
+                const tmp<meshField<scalar,MeshType>>& tLambda,
+                const meshField<Type,MeshType>& field,
+                const scalar factor = 1.0
+            );
+
+            // Constant coefficient
+            inline tmp<meshField<Type,MeshType>> exDdt
+            (
+                const scalar lambda,
+                const meshField<Type,MeshType>& field,
+                const scalar factor = 1.0
+            );
+
+            // No coefficient
+            inline tmp<meshField<Type,MeshType>> exDdt
+            (
+                const meshField<Type,MeshType>& field,
+                const scalar factor = 1.0
+            );
 };
 
 }
@@ -71,6 +143,8 @@ public:
 }
 
 }
+
+#include "ddtSchemeI.H"
 
 #ifdef NoRepository
     #include "ddtScheme.C"

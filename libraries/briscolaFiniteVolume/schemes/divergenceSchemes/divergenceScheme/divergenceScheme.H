@@ -53,19 +53,85 @@ public:
     // Destructor
     virtual ~divergenceScheme();
 
-    // Implicit divergence operator
-    virtual tmp<linearSystem<SType,Type,MeshType>> imDiv
-    (
-        const meshField<lowerFaceScalar,MeshType>&,
-        meshField<Type,MeshType>&
-    ) = 0;
+    // Pure virtual functions, to be defined by derived schemes. Cannot use
+    // templating here because they are virtual.
 
-    // Explicit divergence operator
-    virtual tmp<meshField<Type,MeshType>> exDiv
-    (
-        const meshField<lowerFaceScalar,MeshType>&,
-        meshField<Type,MeshType>&
-    ) = 0;
+        #define DIVERGENCE(OPNAME)                                             \
+                                                                               \
+        virtual void imDiv                                                     \
+        (                                                                      \
+            linearSystem<SType,Type,MeshType>& sys,                            \
+            const meshField<lowerFaceScalar,MeshType>& phi,                    \
+            const meshField<Type,MeshType>& field,                             \
+            const OPNAME<Type>& op,                                            \
+            const scalar factor = 1.0                                          \
+        ) = 0;
+
+        DIVERGENCE(eqOp)
+        DIVERGENCE(eqMinusOp)
+        DIVERGENCE(plusEqOp)
+        DIVERGENCE(minusEqOp)
+
+        #undef DIVERGENCE
+
+        virtual tmp<meshField<Type,MeshType>> exDiv
+        (
+            const meshField<lowerFaceScalar,MeshType>& phi,
+            const meshField<Type,MeshType>& field
+        ) = 0;
+
+    // Support functions relying on the pure virtual functions above
+
+        // Implicit
+
+            // Return
+
+                // Flux as reference
+                inline tmp<linearSystem<SType,Type,MeshType>> imDiv
+                (
+                    const meshField<lowerFaceScalar,MeshType>& phi,
+                    const meshField<Type,MeshType>& field
+                );
+
+                // Flux as tmp
+                inline tmp<linearSystem<SType,Type,MeshType>> imDiv
+                (
+                    const tmp<meshField<lowerFaceScalar,MeshType>>& tPhi,
+                    const meshField<Type,MeshType>& field
+                );
+
+            // Manipulate linear system
+
+                // Flux as reference
+                template<template<class> class OpType>
+                inline void imDiv
+                (
+                    linearSystem<SType,Type,MeshType>& sys,
+                    const meshField<lowerFaceScalar,MeshType>& phi,
+                    const meshField<Type,MeshType>& field,
+                    const scalar factor = 1.0
+                );
+
+                // Flux as tmp
+                template<template<class> class OpType>
+                inline void imDiv
+                (
+                    linearSystem<SType,Type,MeshType>& sys,
+                    const tmp<meshField<lowerFaceScalar,MeshType>>& tPhi,
+                    const meshField<Type,MeshType>& field,
+                    const scalar factor = 1.0
+                );
+
+        // Explicit
+
+            // Return
+
+                // Flux as tmp
+                inline tmp<meshField<Type,MeshType>> exDiv
+                (
+                    const tmp<meshField<lowerFaceScalar,MeshType>>& tPhi,
+                    const meshField<Type,MeshType>& field
+                );
 };
 
 template<class Type, class MeshType>
@@ -85,6 +151,8 @@ tmp<meshField<Type,colocated>> explicitColoDiv
 }
 
 }
+
+#include "divergenceSchemeI.H"
 
 #ifdef NoRepository
     #include "divergenceScheme.C"

@@ -55,9 +55,9 @@ inline scalar rowSum
     const labelVector ijk
 )
 {
-    scalar r(0);
+    scalar r(st(ijk)[0]);
 
-    for (int c = 0; c < symmStencil::nComponents; c++)
+    for (int c = 1; c < symmStencil::nComponents; c++)
         r += st(ijk)[c];
 
     r += st(ijk+unitX).left();
@@ -79,7 +79,137 @@ inline scalar rowSum
     return rowSum(st,labelVector(i,j,k));
 }
 
-// Row multiplication
+// Lower stencil row sum
+
+template<class MeshType>
+inline scalar lowerRowSum
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const labelVector ijk
+)
+{
+    scalar r(st(ijk).left());
+
+    r += st(ijk).bottom();
+    r += st(ijk).aft();
+
+    return r;
+}
+
+template<class MeshType>
+inline scalar lowerRowSum
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return lowerRowSum(st,labelVector(i,j,k));
+}
+
+// Upper stencil row sum
+
+template<class MeshType>
+inline scalar upperRowSum
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const labelVector ijk
+)
+{
+    scalar r(st(ijk+unitX).left());
+
+    r += st(ijk+unitY).bottom();
+    r += st(ijk+unitZ).aft();
+
+    return r;
+}
+
+template<class MeshType>
+inline scalar upperRowSum
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return upperRowSum(st,labelVector(i,j,k));
+}
+
+// Boundary source
+
+template<class Type, class MeshType>
+inline Type boundarySource
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const label& faceNum,
+    const labelVector& bo,
+    const labelVector& ijk
+)
+{
+    if (faceNum%2 == 0)
+    {
+        return -st(ijk)[faceNum/2+1]*s(ijk+bo);
+    }
+    else
+    {
+        return -st(ijk+bo)[faceNum/2+1]*s(ijk+bo);
+    }
+}
+
+template<class Type, class MeshType>
+inline Type boundarySource
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const label& faceNum,
+    const labelVector& bo,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return boundarySource(st,s,faceNum,bo,labelVector(i,j,k));
+}
+
+template<class Type, class MeshType>
+inline Type boundarySource
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const Type& v,
+    const label& faceNum,
+    const labelVector& bo,
+    const labelVector& ijk
+)
+{
+    if (faceNum%2 == 0)
+    {
+        return -st(ijk)[faceNum/2+1]*v;
+    }
+    else
+    {
+        return -st(ijk+bo)[faceNum/2+1]*v;
+    }
+}
+
+template<class Type, class MeshType>
+inline Type boundarySource
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const Type& v,
+    const label& faceNum,
+    const labelVector& bo,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return boundarySource(st,v,faceNum,bo,labelVector(i,j,k));
+}
+
+// Row product
 
 template<class Type, class MeshType>
 inline Type rowProduct
@@ -134,6 +264,112 @@ inline Type rowProduct
 )
 {
     return rowProduct(st,v,ijk.x(),ijk.y(),ijk.z());
+}
+
+// Lower row product
+
+template<class Type, class MeshType>
+inline Type lowerRowProduct
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return
+        st(i,j,k).left()   * s(i-1,j,  k  )
+      + st(i,j,k).bottom() * s(i,  j-1,k  )
+      + st(i,j,k).aft()    * s(i,  j,  k-1);
+}
+
+template<class Type, class MeshType>
+inline Type lowerRowProduct
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const Type& v,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return lowerRowSum(st,i,j,k)*v;
+}
+
+template<class Type, class MeshType>
+inline Type lowerRowProduct
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const labelVector& ijk
+)
+{
+    return lowerRowProduct(st,s,ijk.x(),ijk.y(),ijk.z());
+}
+
+template<class Type, class MeshType>
+inline Type lowerRowProduct
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const Type& v,
+    const labelVector& ijk
+)
+{
+    return lowerRowProduct(st,v,ijk.x(),ijk.y(),ijk.z());
+}
+
+// Upper row product
+
+template<class Type, class MeshType>
+inline Type upperRowProduct
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return
+      + st(i+1,j,  k  ).left()   * s(i+1,j,  k  )
+      + st(i,  j+1,k  ).bottom() * s(i,  j+1,k  )
+      + st(i,  j,  k+1).aft()    * s(i,  j,  k+1);
+}
+
+template<class Type, class MeshType>
+inline Type upperRowProduct
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const Type& v,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return upperRowSum(st,i,j,k)*v;
+}
+
+template<class Type, class MeshType>
+inline Type upperRowProduct
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const labelVector& ijk
+)
+{
+    return upperRowProduct(st,s,ijk.x(),ijk.y(),ijk.z());
+}
+
+template<class Type, class MeshType>
+inline Type upperRowProduct
+(
+    const meshDirection<symmStencil,MeshType>& st,
+    const Type& v,
+    const labelVector& ijk
+)
+{
+    return upperRowProduct(st,v,ijk.x(),ijk.y(),ijk.z());
 }
 
 #define STENCIL_PRODUCT(Type)                                                  \

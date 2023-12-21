@@ -36,7 +36,7 @@
 
 #define addSpecificLaplacianSchemeType(SCHEME,STYPE,TYPE,MESHTYPE)             \
                                                                                \
-    typedef SCHEME##LaplacianScheme<TYPE>                                      \
+    typedef SCHEME##LaplacianScheme<TYPE,MESHTYPE>                             \
         SCHEME##LaplacianScheme##STYPE##TYPE##MESHTYPE;                        \
                                                                                \
     laplacianScheme<STYPE,TYPE,MESHTYPE>::                                     \
