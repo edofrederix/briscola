@@ -40,7 +40,19 @@ grad
     const meshField<FaceSpace<Type>,MeshType>& field
 )
 {
-    return centerGrad(field);
+    return fv::grad(field);
+}
+
+// Centered gradient from a lower face field
+
+template<class Type, class MeshType>
+inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
+grad
+(
+    const meshField<LowerFaceSpace<Type>,MeshType>& field
+)
+{
+    return fv::grad(field);
 }
 
 // Staggered gradient from a colocated field

@@ -68,7 +68,7 @@ gradientScheme<Type,MeshType>::New
 
 template<class Type, class MeshType>
 inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
-centerGrad
+grad
 (
     const meshField<FaceSpace<Type>,MeshType>& field
 )
@@ -77,7 +77,7 @@ centerGrad
     (
         new meshField<typename outerProduct<vector,Type>::type,MeshType>
         (
-            "centerGrad("+field.name()+")",
+            "grad("+field.name()+")",
             field.fvMsh()
         )
     );
@@ -93,10 +93,61 @@ centerGrad
     const meshField<faceVector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
-    forAllCells(Grad, d, i, j, k)
-        for (int f = 0; f < 6; f++)
-            Grad(d,i,j,k) +=
-                field(d,i,j,k)[f]*fan(d,i,j,k)[f]/cv(d,i,j,k);
+    typename outerProduct<vector,Type>::type value;
+
+    forAllFaces(Grad, d, fd, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(ijk-units[fd]);
+
+        value = field(d,ijk)[fd*2]*fan(d,ijk)[fd*2];
+
+        Grad(d,ijk) += value/cv(d,ijk);
+        Grad(d,nei) -= value/cv(d,nei);
+    }
+
+    return tGrad;
+}
+
+template<class Type, class MeshType>
+inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
+grad
+(
+    const meshField<LowerFaceSpace<Type>,MeshType>& field
+)
+{
+    tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>> tGrad
+    (
+        new meshField<typename outerProduct<vector,Type>::type,MeshType>
+        (
+            "grad("+field.name()+")",
+            field.fvMsh()
+        )
+    );
+
+    meshField<typename outerProduct<vector,Type>::type,MeshType>& Grad =
+        tGrad.ref();
+
+    Grad = Zero;
+
+    const meshField<scalar,MeshType>& cv =
+        field.fvMsh().template metrics<MeshType>().cellVolumes();
+
+    const meshField<faceVector,MeshType>& fan =
+        field.fvMsh().template metrics<MeshType>().faceAreaNormals();
+
+    typename outerProduct<vector,Type>::type value;
+
+    forAllFaces(Grad, d, fd, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(ijk-units[fd]);
+
+        value = field(d,ijk)[fd]*fan(d,ijk)[fd*2];
+
+        Grad(d,ijk) += value/cv(d,ijk);
+        Grad(d,nei) -= value/cv(d,nei);
+    }
 
     return tGrad;
 }
