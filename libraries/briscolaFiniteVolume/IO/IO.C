@@ -267,10 +267,12 @@ void IO::writeData(const word timeName, const label l)
         writeFields<symmTensor,MeshType>(filePtrs, l, d);
 
         writeFields<faceScalar,MeshType>(filePtrs, l, d);
+        writeFields<lowerFaceScalar,MeshType>(filePtrs, l, d);
         writeFields<edgeScalar,MeshType>(filePtrs, l, d);
         writeFields<vertexScalar,MeshType>(filePtrs, l, d);
 
         writeFields<faceVector,MeshType>(filePtrs, l, d);
+        writeFields<lowerFaceVector,MeshType>(filePtrs, l, d);
         writeFields<edgeVector,MeshType>(filePtrs, l, d);
         writeFields<vertexVector,MeshType>(filePtrs, l, d);
     }
@@ -460,10 +462,12 @@ void IO::readData(const word timeName, const label l)
         readFields<symmTensor,MeshType>(filePtr, ascii, l, d);
 
         readFields<faceScalar,MeshType>(filePtr, ascii, l, d);
+        readFields<lowerFaceScalar,MeshType>(filePtr, ascii, l, d);
         readFields<edgeScalar,MeshType>(filePtr, ascii, l, d);
         readFields<vertexScalar,MeshType>(filePtr, ascii, l, d);
 
         readFields<faceVector,MeshType>(filePtr, ascii, l, d);
+        readFields<lowerFaceVector,MeshType>(filePtr, ascii, l, d);
         readFields<edgeVector,MeshType>(filePtr, ascii, l, d);
         readFields<vertexVector,MeshType>(filePtr, ascii, l, d);
     }

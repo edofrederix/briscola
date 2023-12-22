@@ -227,22 +227,22 @@ void IO::writeArrayArrayField
 
 // Instantiate
 
-#define WRITETYPEFIELD(FUNC,TYPE,MESHTYPE)                                      \
-                                                                                \
-template<>                                                                      \
-void IO::writeField                                                             \
-(                                                                               \
-    List<autoPtr<std::ofstream>>& filePtrs,                                     \
-    const meshDirection<TYPE,MESHTYPE>& D                                       \
-) const                                                                         \
-{                                                                               \
-    FUNC(filePtrs,D);                                                           \
-}                                                                               \
-                                                                                \
-template void IO::FUNC                                                          \
-(                                                                               \
-    List<autoPtr<std::ofstream>>&,                                              \
-    const meshDirection<TYPE,MESHTYPE>&                                         \
+#define WRITETYPEFIELD(FUNC,TYPE,MESHTYPE)                                     \
+                                                                               \
+template<>                                                                     \
+void IO::writeField                                                            \
+(                                                                              \
+    List<autoPtr<std::ofstream>>& filePtrs,                                    \
+    const meshDirection<TYPE,MESHTYPE>& D                                      \
+) const                                                                        \
+{                                                                              \
+    FUNC(filePtrs,D);                                                          \
+}                                                                              \
+                                                                               \
+template void IO::FUNC                                                         \
+(                                                                              \
+    List<autoPtr<std::ofstream>>&,                                             \
+    const meshDirection<TYPE,MESHTYPE>&                                        \
 ) const;
 
 WRITETYPEFIELD(writeScalarField,scalar,colocated)
@@ -253,9 +253,11 @@ WRITETYPEFIELD(writeArrayField,diagTensor,colocated)
 WRITETYPEFIELD(writeArrayField,symmTensor,colocated)
 WRITETYPEFIELD(writeArrayField,sphericalTensor,colocated)
 WRITETYPEFIELD(writeArrayField,faceScalar,colocated)
+WRITETYPEFIELD(writeArrayField,lowerFaceScalar,colocated)
 WRITETYPEFIELD(writeArrayField,edgeScalar,colocated)
 WRITETYPEFIELD(writeArrayField,vertexScalar,colocated)
 WRITETYPEFIELD(writeArrayArrayField,faceVector,colocated)
+WRITETYPEFIELD(writeArrayArrayField,lowerFaceVector,colocated)
 WRITETYPEFIELD(writeArrayArrayField,edgeVector,colocated)
 WRITETYPEFIELD(writeArrayArrayField,vertexVector,colocated)
 
@@ -267,9 +269,11 @@ WRITETYPEFIELD(writeArrayField,diagTensor,staggered)
 WRITETYPEFIELD(writeArrayField,symmTensor,staggered)
 WRITETYPEFIELD(writeArrayField,sphericalTensor,staggered)
 WRITETYPEFIELD(writeArrayField,faceScalar,staggered)
+WRITETYPEFIELD(writeArrayField,lowerFaceScalar,staggered)
 WRITETYPEFIELD(writeArrayField,edgeScalar,staggered)
 WRITETYPEFIELD(writeArrayField,vertexScalar,staggered)
 WRITETYPEFIELD(writeArrayArrayField,faceVector,staggered)
+WRITETYPEFIELD(writeArrayArrayField,lowerFaceVector,staggered)
 WRITETYPEFIELD(writeArrayArrayField,edgeVector,staggered)
 WRITETYPEFIELD(writeArrayArrayField,vertexVector,staggered)
 

@@ -194,24 +194,24 @@ void IO::readArrayArrayField
 
 // Instantiate
 
-#define READTYPEFIELD(FUNC,TYPE,MESHTYPE)                                       \
-                                                                                \
-template<>                                                                      \
-void IO::readField                                                              \
-(                                                                               \
-    autoPtr<std::ifstream>& filePtr,                                            \
-    const bool ascii,                                                           \
-    meshDirection<TYPE,MESHTYPE>& D                                             \
-) const                                                                         \
-{                                                                               \
-    FUNC(filePtr,ascii,D);                                                      \
-}                                                                               \
-                                                                                \
-template void IO::FUNC                                                          \
-(                                                                               \
-    autoPtr<std::ifstream>&,                                                    \
-    const bool ascii,                                                           \
-    meshDirection<TYPE,MESHTYPE>&                                               \
+#define READTYPEFIELD(FUNC,TYPE,MESHTYPE)                                      \
+                                                                               \
+template<>                                                                     \
+void IO::readField                                                             \
+(                                                                              \
+    autoPtr<std::ifstream>& filePtr,                                           \
+    const bool ascii,                                                          \
+    meshDirection<TYPE,MESHTYPE>& D                                            \
+) const                                                                        \
+{                                                                              \
+    FUNC(filePtr,ascii,D);                                                     \
+}                                                                              \
+                                                                               \
+template void IO::FUNC                                                         \
+(                                                                              \
+    autoPtr<std::ifstream>&,                                                   \
+    const bool ascii,                                                          \
+    meshDirection<TYPE,MESHTYPE>&                                              \
 ) const;
 
 READTYPEFIELD(readScalarField,scalar,colocated)
@@ -222,9 +222,11 @@ READTYPEFIELD(readArrayField,diagTensor,colocated)
 READTYPEFIELD(readArrayField,symmTensor,colocated)
 READTYPEFIELD(readArrayField,sphericalTensor,colocated)
 READTYPEFIELD(readArrayField,faceScalar,colocated)
+READTYPEFIELD(readArrayField,lowerFaceScalar,colocated)
 READTYPEFIELD(readArrayField,edgeScalar,colocated)
 READTYPEFIELD(readArrayField,vertexScalar,colocated)
 READTYPEFIELD(readArrayArrayField,faceVector,colocated)
+READTYPEFIELD(readArrayArrayField,lowerFaceVector,colocated)
 READTYPEFIELD(readArrayArrayField,edgeVector,colocated)
 READTYPEFIELD(readArrayArrayField,vertexVector,colocated)
 
@@ -236,9 +238,11 @@ READTYPEFIELD(readArrayField,diagTensor,staggered)
 READTYPEFIELD(readArrayField,symmTensor,staggered)
 READTYPEFIELD(readArrayField,sphericalTensor,staggered)
 READTYPEFIELD(readArrayField,faceScalar,staggered)
+READTYPEFIELD(readArrayField,lowerFaceScalar,staggered)
 READTYPEFIELD(readArrayField,edgeScalar,staggered)
 READTYPEFIELD(readArrayField,vertexScalar,staggered)
 READTYPEFIELD(readArrayArrayField,faceVector,staggered)
+READTYPEFIELD(readArrayArrayField,lowerFaceVector,staggered)
 READTYPEFIELD(readArrayArrayField,edgeVector,staggered)
 READTYPEFIELD(readArrayArrayField,vertexVector,staggered)
 
