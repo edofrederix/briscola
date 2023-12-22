@@ -60,7 +60,7 @@ scalar LVE::fluxVolumeLVE
 
     }
 
-    scalar C = - LVE::exactCubicSolver
+    scalar C = 1 + LVE::exactCubicSolver
     (
         Vf,
         alpha0,
