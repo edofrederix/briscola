@@ -30,18 +30,16 @@ p.correctBoundaryConditions();
 
 // Extrapolated pressure (Dodd & Ferrante)
 
-colocatedScalarField extrapolatedP
+colocatedScalarField q
 (
-    "extrapolatedP",
+    "q",
     fvMsh,
     IOobject::NO_READ,
     IOobject::NO_WRITE,
-    true,
-    false
+    true
 );
 
-extrapolatedP = Zero;
-extrapolatedP.correctBoundaryConditions();
+q = Zero;
 
 // Flux
 
@@ -59,12 +57,12 @@ phi = ex::faceFlux(U);
 
 // Solvers
 
-linearSystem<symmStencil,vector,colocated> USys(U);
+linearSystem<stencil,vector,colocated> USys(U);
 linearSystem<symmStencil,scalar,colocated> pSys(p);
 
-autoPtr<solver<symmStencil,vector,colocated>> USolve
+autoPtr<solver<stencil,vector,colocated>> USolve
 (
-    solver<symmStencil,vector,colocated>::New
+    solver<stencil,vector,colocated>::New
     (
         USys.x().name(),
         fvMsh
@@ -82,7 +80,7 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
 
 // Viscous term
 
-linearSystem<symmStencil,vector,colocated> D(U);
+linearSystem<stencil,vector,colocated> D(U);
 
 // Adams-Bashforth source
 
@@ -92,9 +90,37 @@ colocatedVectorField H
     fvMsh,
     IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
-    true,
-    false
+    true
 );
 
-H = ex::div(phi,U) - itpm.surfaceTension() - ((ex::grad(mu) & ex::grad(U)) / rho);
+H =
+    ex::div(phi,U)
+  - itpm.surfaceTension()
+  - (ex::grad(mu) & ex::grad(U))/rho;
 
+// Specific volumes
+
+colocatedScalarField v
+(
+    "v",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+v.setRestrictionScheme("harmonicVolumeWeighted");
+
+colocatedLowerFaceScalarField vf
+(
+    "v",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+// It is assumed that the minimum mass density is constant
+
+const scalar minRho = gMin(itpm.minRho<colocated>())[0];
+const scalar maxv = 1.0/minRho;

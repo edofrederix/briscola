@@ -6,4 +6,4 @@ cleanCase
 
 wclean code
 
-rm -f briscola*.vtk.series *.pdf
+rm -f briscola*.vtk.series *.pdf hysingResults.txt

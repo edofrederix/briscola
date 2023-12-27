@@ -13,7 +13,7 @@ using namespace fv;
 
 int main(int argc, char *argv[])
 {
-    arguments::addBoolOption("FFT", "Use FFT for pressure equation");
+    arguments::addBoolOption("split", "Split the pressure equation");
 
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     #include "createBriscolaTwoPhase.H"
     #include "createTimeControls.H"
 
-    Switch split = args.optionFound("FFT");
+    Switch split = args.optionFound("split");
 
     // This solver works for incompressible mixtures only
 
@@ -46,15 +46,19 @@ int main(int argc, char *argv[])
 
         U.setOldTime();
 
-        // Update the volume fraction
+        // Update the two-phase model and specific volumes
 
         itpm.correct();
+
+        v = itpm.v<staggered>();
+        vc = itpm.v<colocated>();
+        vcf = ex::interp(vc);
 
         // Predictor, Eq. (A.1) of Dodd & Ferrante (2014)
 
         USys = im::ddt(U);
 
-        D = im::laplacian(mu,U)/rho;
+        D = im::laplacian<stencil>(mu,U)/rho;
         USys -= 0.5*D;
         USys -= 0.5*D.evaluate();
 
@@ -62,12 +66,12 @@ int main(int argc, char *argv[])
 
         phi = ex::faceFlux(U);
 
-        H = ex::div(phi,U) - ((ex::grad(mu) & ex::grad(U)) / rho);
+        H = ex::div(phi,U) - (ex::grad(mu) & ex::grad(U))/rho;
 
-        USys += (1+0.5*(deltaT/deltaT0))*H;
+        USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
 
         USys -= list(itpm.g());
-        USys += ex::stagGrad(p) / rho - itpm.surfaceTension().stagForce();
+        USys += ex::stagGrad(p)/rho - itpm.surfaceTension().stagForce();
 
         // Solve predictor
 
@@ -75,44 +79,44 @@ int main(int argc, char *argv[])
 
         // Pressure equation
 
-        const staggeredScalarField rhoInv("rhoInv", 1.0/rho);
-        const colocatedLowerFaceScalarField coloRhoInvf("coloRhoInv",1.0/ex::interp(coloRho));
-
         if (split)
         {
-            extrapolatedP = (1+deltaT/deltaT0)*p - (deltaT/deltaT0)*p.oldTime();
-            extrapolatedP.correctBoundaryConditions();
-
+            q = (1.0 + deltaT/deltaT0)*p - (deltaT/deltaT0)*p.oldTime();
             p.setOldTime();
 
-            colocatedLowerFaceScalarField splitCorrection = fa *
-                (
-                    (1 - coloMinRhof * coloRhoInvf) * ex::faceGrad(extrapolatedP)
-                  + coloMinRhof * coloRhoInvf * ex::faceGrad(p)
-                );
+            colocatedLowerFaceScalarField corr
+            (
+                fa
+              * (
+                    ex::faceGrad(q) * (1.0 - minRho*vcf)
+                  + ex::faceGrad(p) * minRho*vcf
+                )
+            );
 
-            Poisson->solve(p, coloMinRho*ex::coloDiv(U)/(-deltaT) - ex::div(splitCorrection));
+            Poisson->solve(p, minRho*ex::coloDiv(U)/(-deltaT) - ex::div(corr));
 
             // Rhie-Chow correction
 
-            U -= deltaT*
-                (
-                    ex::stagGrad(p)*minRhoInv
-                  + (rhoInv - minRhoInv)*ex::stagGrad(extrapolatedP)
-                  - ex::stagGrad(p.oldTime())*rhoInv
+            U -=
+                deltaT
+              * (
+                    ex::stagGrad(p)*maxv
+                  - ex::stagGrad(p.oldTime())*v
+                  + ex::stagGrad(q)*(v - maxv)
                 );
+
             U.correctBoundaryConditions();
         }
         else
         {
-            colocatedLowerFaceScalarField splitCorrection = fa * coloRhoInvf * ex::faceGrad(p);
+            colocatedLowerFaceScalarField corr(fa*vcf*ex::faceGrad(p));
             p.setOldTime();
 
-            Poisson->solve(p, ex::coloDiv(U)/(-deltaT) - ex::div(splitCorrection), coloRhoInvf);
+            Poisson->solve(p, ex::coloDiv(U)/(-deltaT) - ex::div(corr), vcf);
 
             // Rhie-Chow correction
 
-            U -= deltaT*(ex::stagGrad(p)-ex::stagGrad(p.oldTime()))*rhoInv;
+            U -= deltaT*(ex::stagGrad(p) - ex::stagGrad(p.oldTime()))*v;
             U.correctBoundaryConditions();
         }
 

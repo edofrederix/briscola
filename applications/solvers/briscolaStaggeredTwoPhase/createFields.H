@@ -43,9 +43,9 @@ p.correctBoundaryConditions();
 
 // Extrapolated pressure (Dodd & Ferrante)
 
-colocatedScalarField extrapolatedP
+colocatedScalarField q
 (
-    "extrapolatedP",
+    "q",
     fvMsh,
     IOobject::NO_READ,
     IOobject::NO_WRITE,
@@ -53,8 +53,7 @@ colocatedScalarField extrapolatedP
     false
 );
 
-extrapolatedP = Zero;
-extrapolatedP.correctBoundaryConditions();
+q = Zero;
 
 // Flux
 
@@ -108,10 +107,42 @@ staggeredScalarField H
     false
 );
 
-H = ex::div(phi,U) - ((ex::grad(mu) & ex::grad(U)) / rho);
+H = ex::div(phi,U) - (ex::grad(mu) & ex::grad(U))/rho;
 
-const staggeredScalarField minRho = tpm.minRho<staggered>().ref();
-const colocatedScalarField coloMinRho = tpm.minRho<colocated>().ref();
+// Specific volumes
 
-const staggeredScalarField minRhoInv("minRhoInv", 1.0/minRho);
-const colocatedLowerFaceScalarField coloMinRhof("coloMinRhof",ex::interp(coloMinRho));
+staggeredScalarField v
+(
+    "v",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+v.setRestrictionScheme("harmonicVolumeWeighted");
+
+colocatedScalarField vc
+(
+    "v",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+vc.setRestrictionScheme("harmonicVolumeWeighted");
+
+colocatedLowerFaceScalarField vcf
+(
+    "v",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+// It is assumed that the minimum mass density is constant
+
+const scalar minRho = gMin(itpm.minRho<colocated>())[0];
+const scalar maxv = 1.0/minRho;

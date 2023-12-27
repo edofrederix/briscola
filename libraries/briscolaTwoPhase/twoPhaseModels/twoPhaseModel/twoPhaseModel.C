@@ -214,9 +214,21 @@ autoPtr<twoPhaseModel> twoPhaseModel::New
 }
 
 template<>
+colocatedScalarField& twoPhaseModel::rho<colocated>()
+{
+    return rhoc_;
+}
+
+template<>
 const colocatedScalarField& twoPhaseModel::rho<colocated>() const
 {
     return rhoc_;
+}
+
+template<>
+staggeredScalarField& twoPhaseModel::rho<staggered>()
+{
+    return rhosPtr_();
 }
 
 template<>
@@ -250,9 +262,21 @@ const staggeredScalarField& twoPhaseModel::rho2<staggered>() const
 }
 
 template<>
+colocatedLowerFaceScalarField& twoPhaseModel::mu<colocated>()
+{
+    return muc_;
+}
+
+template<>
 const colocatedLowerFaceScalarField& twoPhaseModel::mu<colocated>() const
 {
     return muc_;
+}
+
+template<>
+staggeredLowerFaceScalarField& twoPhaseModel::mu<staggered>()
+{
+    return musPtr_();
 }
 
 template<>
@@ -261,38 +285,9 @@ const staggeredLowerFaceScalarField& twoPhaseModel::mu<staggered>() const
     return musPtr_();
 }
 
-scalar twoPhaseModel::nu()
-{
-    return 0.5*((scalarMu1_/scalarRho1_) + (scalarMu2_/scalarRho2_));
-}
-
-template<>
-tmp<colocatedScalarField> twoPhaseModel::meanRho<colocated>() const
-{
-    return (rho1_+rho2_)/2.0;
-}
-
-template<>
-tmp<staggeredScalarField> twoPhaseModel::meanRho<staggered>() const
-{
-    return (rho1Ptr_()+rho2Ptr_())/2.0;
-}
-
 void twoPhaseModel::correctMixture()
 {
     surfaceTensionSchemePtr_->correct();
-}
-
-template<>
-tmp<colocatedScalarField> twoPhaseModel::minRho<colocated>() const
-{
-    return min(rho1_, rho2_);
-}
-
-template<>
-tmp<staggeredScalarField> twoPhaseModel::minRho<staggered>() const
-{
-    return min(rho1Ptr_(), rho2Ptr_());
 }
 
 }
