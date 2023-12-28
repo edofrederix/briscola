@@ -291,11 +291,7 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
     {
         const boundary& b = fvMsh.boundaries()[bi];
 
-        if
-        (
-            b.typeNum() == parallelBoundary::typeNumber
-         || b.typeNum() == periodicBoundary::typeNumber
-        )
+        if (b.castable<parallelBoundary>())
         {
             dictionary dict(b.dict());
 

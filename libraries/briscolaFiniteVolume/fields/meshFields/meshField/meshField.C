@@ -325,7 +325,7 @@ void meshField<Type,MeshType>::addBoundaryConditions()
         {
             const boundary& b = fvMsh_.boundaries()[bi];
 
-            if (b.typeNum() == domainBoundary::typeNumber)
+            if (b.castable<domainBoundary>())
             {
                 boundaryConditions_.append
                 (
@@ -349,22 +349,22 @@ void meshField<Type,MeshType>::addBoundaryConditions()
 
             if (cmptSum(cmptMag(bo)) == order)
             {
-                if (b.typeNum() == parallelBoundary::typeNumber)
+                if (b.castable<periodicBoundary>())
                 {
                     boundaryConditions_.append
                     (
-                        boundaryCondition<Type,MeshType>::NewParallel
+                        boundaryCondition<Type,MeshType>::NewPeriodic
                         (
                             *this,
                             b
                         )
                     );
                 }
-                else if (b.typeNum() == periodicBoundary::typeNumber)
+                else if (b.castable<parallelBoundary>())
                 {
                     boundaryConditions_.append
                     (
-                        boundaryCondition<Type,MeshType>::NewPeriodic
+                        boundaryCondition<Type,MeshType>::NewParallel
                         (
                             *this,
                             b
@@ -380,7 +380,7 @@ void meshField<Type,MeshType>::addBoundaryConditions()
         {
             const boundary& b = fvMsh_.boundaries()[bi];
 
-            if (b.typeNum() == emptyBoundary::typeNumber)
+            if (b.castable<emptyBoundary>())
             {
                 boundaryConditions_.append
                 (

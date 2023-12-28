@@ -8,6 +8,10 @@
 #include "edgeLabel.H"
 #include "vertexLabel.H"
 
+// Forward declaration of MPI communicator
+struct ompi_communicator_t;
+typedef ompi_communicator_t* MPI_Comm;
+
 namespace Foam
 {
 
@@ -58,6 +62,9 @@ class mesh
     // Bounding box
     faceScalar boundingBox_;
 
+    // Distributed communication graph
+    MPI_Comm comm_;
+
     // Add a boundary to the list of boundaries
     void addBoundary
     (
@@ -96,6 +103,9 @@ class mesh
 
     // Generate the list of empty boundary offsets
     void setEmptyPatchOffsets();
+
+    // Set the distributed communication graph
+    void setDistributedCommGraph();
 
     // Generate mesh part levels
     void generateLevels();
@@ -295,6 +305,9 @@ public:
 
     // Bounding box
     inline faceScalar boundingBox() const { return boundingBox_; }
+
+    // Distributed communicator graph
+    MPI_Comm& comm() { return comm_; }
 
     // Find the cell index of the given point at given mesh level. Return
     // -unitXYZ if it is not found. Tree search, but should be overloaded by

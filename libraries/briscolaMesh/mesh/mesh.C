@@ -10,6 +10,9 @@
 #include "parallelBoundary.H"
 #include "periodicBoundary.H"
 
+#include "PstreamGlobals.H"
+#include <mpi.h>
+
 namespace Foam
 {
 
@@ -316,11 +319,7 @@ void mesh::setCommTags()
     {
         const boundary& b = boundaries_[bi];
 
-        if
-        (
-            b.typeNum() == parallelBoundary::typeNumber
-         || b.typeNum() == periodicBoundary::typeNumber
-        )
+        if (b.castable<parallelBoundary>())
         {
             bDicts[m].append
             (
@@ -446,11 +445,7 @@ void mesh::setCommTags()
     {
         boundary& b = boundaries_[bi];
 
-        if
-        (
-            b.typeNum() == parallelBoundary::typeNumber
-         || b.typeNum() == periodicBoundary::typeNumber
-        )
+        if (b.castable<parallelBoundary>())
         {
             b.dict().add("tag", myTags[c++]);
         }
@@ -624,6 +619,38 @@ void mesh::generateBoundaries()
     setEmptyPatchOffsets();
 }
 
+void mesh::setDistributedCommGraph()
+{
+    labelList neighbors, weights;
+
+    forAll(boundaries_, i)
+    if (boundaries_[i].castable<parallelBoundary>())
+    {
+        const parallelBoundary& b =
+            boundaries_[i].cast<parallelBoundary>();
+
+        const labelVector bo(b.offset());
+        const labelVector N(this->operator[](0).N());
+
+        neighbors.append(b.neighborProcNum());
+        weights.append((unitXYZ-cmptMag(bo)) & N);
+    }
+
+    MPI_Dist_graph_create_adjacent
+    (
+        MPI_COMM_WORLD,
+        neighbors.size(),
+        neighbors.begin(),
+        weights.begin(),
+        neighbors.size(),
+        neighbors.begin(),
+        weights.begin(),
+        MPI_INFO_NULL,
+        0,
+        &this->comm_
+    );
+}
+
 void mesh::generateLevels()
 {
     label l = 0;
@@ -712,6 +739,10 @@ mesh::mesh(const IOdictionary& dict)
             returnReduce(bb.aft(), minOp<scalar>()),
             returnReduce(bb.fore(), maxOp<scalar>())
         );
+
+    // Set MPI communicator graph
+
+    setDistributedCommGraph();
 }
 
 mesh::mesh(const mesh& msh)
@@ -732,8 +763,11 @@ mesh::mesh(const mesh& msh)
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
     uniform_(msh.uniform_),
-    boundingBox_(msh.boundingBox_)
-{}
+    boundingBox_(msh.boundingBox_),
+    comm_(MPI_COMM_NULL)
+{
+    setDistributedCommGraph();
+}
 
 mesh::mesh(autoPtr<mesh>& mshPtr)
 :
@@ -753,9 +787,11 @@ mesh::mesh(autoPtr<mesh>& mshPtr)
     structured_(mshPtr->structured_),
     rectilinear_(mshPtr->rectilinear_),
     uniform_(mshPtr->uniform_),
-    boundingBox_(mshPtr->boundingBox_)
+    boundingBox_(mshPtr->boundingBox_),
+    comm_(MPI_COMM_NULL)
 {
     mshPtr.clear();
+    setDistributedCommGraph();
 }
 
 mesh::mesh(mesh& msh, bool reuse)
@@ -776,8 +812,11 @@ mesh::mesh(mesh& msh, bool reuse)
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
     uniform_(msh.uniform_),
-    boundingBox_(msh.boundingBox_)
-{}
+    boundingBox_(msh.boundingBox_),
+    comm_(MPI_COMM_NULL)
+{
+    setDistributedCommGraph();
+}
 
 autoPtr<mesh> mesh::New(const IOdictionary& dict)
 {
