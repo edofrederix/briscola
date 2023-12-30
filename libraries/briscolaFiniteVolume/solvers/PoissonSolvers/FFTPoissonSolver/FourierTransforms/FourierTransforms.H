@@ -18,15 +18,17 @@ namespace briscola
 namespace fv
 {
 
+template<class SType>
 class FFTPoissonSolver;
 
 namespace FFT
 {
 
+template<class SType>
 class FourierTransforms
 {
     // Solver
-    FFTPoissonSolver& solver_;
+    FFTPoissonSolver<SType>& solver_;
 
     // Solved field
     colocatedScalarField& x_;
@@ -59,7 +61,7 @@ public:
     // Construct from solver
     FourierTransforms
     (
-        FFTPoissonSolver& solver,
+        FFTPoissonSolver<SType>& solver,
         colocatedScalarField& x
     );
 

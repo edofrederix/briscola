@@ -18,9 +18,10 @@ namespace briscola
 namespace fv
 {
 
+template<class SType>
 class FFTPoissonSolver
 :
-    public PoissonSolver<symmStencil,scalar,colocated>
+    public PoissonSolver<SType,scalar,colocated>
 {
     // Reference to the mesh
     const fvMesh& fvMsh_;
@@ -44,10 +45,10 @@ class FFTPoissonSolver
     scalarBlock zPencil_;
 
     // FFT's
-    autoPtr<FFT::FourierTransforms> fft_;
+    autoPtr<FFT::FourierTransforms<SType>> fft_;
 
     // Tridiagonal solver
-    autoPtr<FFT::tridiagonalSolver> tds_;
+    autoPtr<FFT::tridiagonalSolver<SType>> tds_;
 
     // Funtion to check if the mesh qualifies for FFTs. Will give error if not
     // all criteria are met.
@@ -79,7 +80,7 @@ public:
     );
 
     // Use the base class solve support functions
-    using PoissonSolver<symmStencil,scalar,colocated>::solve;
+    using PoissonSolver<SType,scalar,colocated>::solve;
 
     // Access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }

@@ -10,13 +10,22 @@ namespace briscola
 namespace fv
 {
 
-defineTypeNameAndDebug(FFTPoissonSolver,0);
+typedef FFTPoissonSolver<stencil> FFTPoissonSolverStencil;
+typedef FFTPoissonSolver<symmStencil> FFTPoissonSolverSymmStencil;
+
+defineTemplateTypeNameAndDebugWithName(FFTPoissonSolverStencil,"FFT",0)
+defineTemplateTypeNameAndDebugWithName(FFTPoissonSolverSymmStencil,"FFT",0)
+
+PoissonSolver<stencil,scalar,colocated>::
+adddictionaryConstructorToTable<FFTPoissonSolverStencil>
+    addFFTPoissonSolverStencilConstructorToTable_;
 
 PoissonSolver<symmStencil,scalar,colocated>::
-adddictionaryConstructorToTable<FFTPoissonSolver>
-    addFFTPoissonSolverConstructorToTable_;
+adddictionaryConstructorToTable<FFTPoissonSolverSymmStencil>
+    addFFTPoissonSolverSymmStencilConstructorToTable_;
 
-void FFTPoissonSolver::checkMesh(const fvMesh& fvMsh)
+template<class SType>
+void FFTPoissonSolver<SType>::checkMesh(const fvMesh& fvMsh)
 {
     const rectilinearMesh& mesh = fvMsh.msh().cast<rectilinearMesh>();
 
@@ -29,14 +38,15 @@ void FFTPoissonSolver::checkMesh(const fvMesh& fvMsh)
     }
 }
 
-FFTPoissonSolver::FFTPoissonSolver
+template<class SType>
+FFTPoissonSolver<SType>::FFTPoissonSolver
 (
     const word PoissonSolverName,
     const dictionary& dict,
     const fvMesh& fvMsh
 )
 :
-    PoissonSolver<symmStencil,scalar,colocated>(dict,fvMsh),
+    PoissonSolver<SType,scalar,colocated>(dict,fvMsh),
     fvMsh_(fvMsh),
     FFTPlan_(fvMsh),
     decomp_(fvMsh, FFTPlan_.decompType()),
@@ -48,12 +58,13 @@ FFTPoissonSolver::FFTPoissonSolver
     checkMesh(fvMsh);
 }
 
-FFTPoissonSolver::FFTPoissonSolver
+template<class SType>
+FFTPoissonSolver<SType>::FFTPoissonSolver
 (
     const fvMesh& fvMsh
 )
 :
-    PoissonSolver<symmStencil,scalar,colocated>(dictionary(),fvMsh),
+    PoissonSolver<SType,scalar,colocated>(dictionary(),fvMsh),
     fvMsh_(fvMsh),
     FFTPlan_(fvMsh),
     decomp_(fvMsh, FFTPlan_.decompType()),
@@ -65,7 +76,8 @@ FFTPoissonSolver::FFTPoissonSolver
     checkMesh(fvMsh);
 }
 
-void FFTPoissonSolver::solve
+template<class SType>
+void FFTPoissonSolver<SType>::solve
 (
     colocatedScalarField& x,
     const colocatedScalarField* bPtr,
@@ -83,8 +95,8 @@ void FFTPoissonSolver::solve
 
     if (fft_.empty() || &fft_->x() != &x)
     {
-        fft_.reset(new FFT::FourierTransforms(*this, x));
-        tds_.reset(new FFT::tridiagonalSolver(*this, fft_->BC()));
+        fft_.reset(new FFT::FourierTransforms<SType>(*this, x));
+        tds_.reset(new FFT::tridiagonalSolver<SType>(*this, fft_->BC()));
     }
     // Initial decomposition
     labelVector I(decomp_.I());
@@ -429,6 +441,11 @@ void FFTPoissonSolver::solve
     Info<< "FFT: Solving for colocated " << x.name()
         << ", residual = 0, nIter = 1" << endl;
 }
+
+// Instantiate
+
+template class FFTPoissonSolver<stencil>;
+template class FFTPoissonSolver<symmStencil>;
 
 }
 
