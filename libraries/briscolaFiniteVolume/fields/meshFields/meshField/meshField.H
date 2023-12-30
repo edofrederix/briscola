@@ -27,6 +27,9 @@ template<class Type, class MeshType>
 class restrictionScheme;
 
 template<class Type, class MeshType>
+class boundaryExchange;
+
+template<class Type, class MeshType>
 class meshField
 :
     public PtrList<meshLevel<Type,MeshType>>,
@@ -40,21 +43,14 @@ class meshField
     // any operation
     meshField<Type,MeshType>* oldTimePtr_;
 
-    // Boundary conditions, assigned in the order:
-    //
-    //  1) non-empty boundaries,
-    //  2) parallel/periodic faces,
-    //  3) parallel/periodic edges,
-    //  4) parallel/periodic vertices and
-    //  5) empty boundaries.
-    //
-    //  This order is important, so that parallel boundary conditions can copy
-    //  normal boundaries and empty boundaries can copy both normal and
-    //  parallel/periodic boundaries.
+    // Boundary conditions
     PtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
 
     // Restriction scheme associated with this field
-    autoPtr<restrictionScheme<Type,MeshType>> reScheme_;
+    autoPtr<restrictionScheme<Type,MeshType>> reSchemePtr_;
+
+    // Boundary exchange
+    autoPtr<boundaryExchange<Type,MeshType>> bExchangePtr_;
 
 protected:
 
@@ -306,6 +302,15 @@ public:
     // Correct boundary conditions
     void correctBoundaryConditions();
 
+    // Correct domain boundary conditions
+    void correctDomainBoundaryConditions();
+
+    // Correct empty boundary conditions
+    void correctEmptyBoundaryConditions();
+
+    // Correct communicating boundary conditions
+    void correctCommsBoundaryConditions();
+
     // Correct parallel boundary conditions
     void correctParallelBoundaryConditions();
 
@@ -427,9 +432,17 @@ public:
     template<class Type2> void operator/=(const Type2&);
     template<class Type2> void operator/=(const List<Type2>&);
 
-    // Allow a parent linear system to make changes to private data
-    template<class SType,class,class>
+    // Befriend linear system
+    template<class SType, class, class>
     friend class linearSystem;
+
+    // Befriend parallel exchange
+    template<class, class>
+    friend class boundaryExchange;
+
+    // Befriend mesh level
+    template<class, class>
+    friend class meshLevel;
 
     #include "meshLevelFirstDirectionFunctions.H"
     #include "meshLevelDirectionFunctions.H"

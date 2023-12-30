@@ -104,33 +104,37 @@ public:
         const word
     );
 
-    // Selector for a normal boundary condition
-    static autoPtr<boundaryCondition<Type,MeshType>> NewDomain
+    // Selector which determines type based on the provided boundary type
+    static autoPtr<boundaryCondition<Type,MeshType>> New
     (
         const meshField<Type,MeshType>&,
         const boundary&
     );
 
-    // Selector for a periodic boundary condition
-    static autoPtr<boundaryCondition<Type,MeshType>> NewPeriodic
-    (
-        const meshField<Type,MeshType>&,
-        const boundary&
-    );
+    // Check if cast to derived type is possible
+    template<class BoundaryType>
+    inline bool castable() const
+    {
+        return dynamic_cast<const BoundaryType*>(this);
+    }
 
-    // Selector for a parallel boundary condition
-    static autoPtr<boundaryCondition<Type,MeshType>> NewParallel
-    (
-        const meshField<Type,MeshType>&,
-        const boundary&
-    );
+    // Cast to derived type, if possible. Returns error otherwise.
+    template<class BoundaryType>
+    inline const BoundaryType& cast() const
+    {
+        const BoundaryType* bPtr = dynamic_cast<const BoundaryType*>(this);
 
-    // Selector for an empty boundary condition
-    static autoPtr<boundaryCondition<Type,MeshType>> NewEmpty
-    (
-        const meshField<Type,MeshType>&,
-        const boundary&
-    );
+        if (!bPtr)
+        {
+            FatalErrorInFunction
+                << "Boundary condition cannot be cast to "
+                << BoundaryType::typeName
+                << " because it is " << this->type()
+                << abort(FatalError);
+        }
+
+        return *bPtr;
+    }
 
     // Determine a field's boundary condition base type for a global boundary
     // offset. Works only on rectilinear meshes. Gives error for inconistent

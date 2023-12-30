@@ -22,7 +22,7 @@ public:
     const static label typeNumber;
 
     // Runtime type information
-    TypeName("boundary");
+    TypeName("domain");
 
     // Construct from components
     domainBoundary(const mesh& msh, const dictionary& dict);

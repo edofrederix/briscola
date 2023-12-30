@@ -1,4 +1,7 @@
+-include $(GENERAL_RULES)/mplibType
+
 EXE_INC = \
+    $(PFLAGS) $(PINC) \
     -I./lnInclude \
     -I../briscolaCore/lnInclude \
     -I../briscolaMesh/lnInclude \

@@ -78,5 +78,6 @@ functionObjects/lineSample/lineSample.C
 dataExchange/dataExchange/dataExchange.C
 dataExchange/cellDataExchange/cellDataExchange.C
 dataExchange/pointDataExchange/pointDataExchange.C
+dataExchange/boundaryExchange/boundaryExchange.C
 
 LIB = $(FOAM_USER_LIBBIN)/libbriscolaFiniteVolume

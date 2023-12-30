@@ -289,7 +289,7 @@ void mesh::generateDomainBoundaries()
                 (
                     p.name(),
                     patches()[patchi].type() == patch::EMPTY
-                  ? "empty" : "boundary",
+                  ? "empty" : "domain",
                     eye,
                     offset
                 );
@@ -452,7 +452,7 @@ void mesh::setCommTags()
     }
 }
 
-void mesh::setPatchExtension()
+void mesh::setBoundaryExtension()
 {
     edgePatchExtension_ = Zero;
     vertexPatchExtension_ = Zero;
@@ -497,7 +497,7 @@ void mesh::setPatchExtension()
     }
 }
 
-void mesh::setEmptyPatchOffsets()
+void mesh::setEmptyBoundaryOffsets()
 {
     emptyPatchOffsets_.clear();
 
@@ -510,7 +510,7 @@ void mesh::setEmptyPatchOffsets()
             emptyPatchOffsets_.append(vertexOffsets[i]);
 }
 
-void mesh::setPatchLabels()
+void mesh::setBoundaryLabels()
 {
     // Initialize edge and vertex master label to -1 as their corresponding
     // boundaries may not exist
@@ -613,10 +613,49 @@ void mesh::generateBoundaries()
     generateBrickExternalBoundaries();
     generateDomainBoundaries();
 
+    reorderBoundaries();
+
     setCommTags();
-    setPatchLabels();
-    setPatchExtension();
-    setEmptyPatchOffsets();
+    setBoundaryLabels();
+    setBoundaryExtension();
+    setEmptyBoundaryOffsets();
+}
+
+void mesh::reorderBoundaries()
+{
+    labelList oldToNew(boundaries_.size());
+
+    int j = 0;
+
+    // Domain boundaries
+
+    forAll(boundaries_, i)
+        if (boundaries_[i].castable<domainBoundary>())
+            oldToNew[i] = j++;
+
+    // Parallel/periodic boundaries
+
+    for (int d = 1; d <= 3; d++)
+        forAll(boundaries_, i)
+            if
+            (
+                boundaries_[i].castable<parallelBoundary>()
+             && boundaries_[i].offsetDegree() == d
+            )
+                oldToNew[i] = j++;
+
+    // Empty boundaries
+
+    forAll(boundaries_, i)
+        if (boundaries_[i].castable<emptyBoundary>())
+            oldToNew[i] = j++;
+
+    if (j != boundaries_.size())
+        FatalErrorInFunction
+            << "Could not order boundaries"
+            << endl << abort(FatalError);
+
+    boundaries_.reorder(oldToNew);
 }
 
 void mesh::setDistributedCommGraph()
@@ -646,7 +685,7 @@ void mesh::setDistributedCommGraph()
         neighbors.begin(),
         weights.begin(),
         MPI_INFO_NULL,
-        0,
+        false,
         &this->comm_
     );
 }

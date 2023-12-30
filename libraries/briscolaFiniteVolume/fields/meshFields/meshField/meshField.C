@@ -7,6 +7,7 @@
 #include "emptyBoundary.H"
 
 #include "restrictionScheme.H"
+#include "boundaryExchange.H"
 
 namespace Foam
 {
@@ -91,7 +92,7 @@ meshField<Type,MeshType>::meshField
     fvMsh_(fvMsh),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
-    reScheme_()
+    reSchemePtr_()
 {
     if (!fvMsh.structured() && MeshType::numberOfDirections > 1)
     {
@@ -148,7 +149,7 @@ meshField<Type,MeshType>::meshField
     fvMsh_(field.fvMsh()),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
-    reScheme_()
+    reSchemePtr_()
 {
     setFieldPointers();
 
@@ -190,7 +191,7 @@ meshField<Type,MeshType>::meshField
     fvMsh_(field.fvMsh()),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
-    reScheme_()
+    reSchemePtr_()
 {
     setFieldPointers();
 
@@ -235,7 +236,7 @@ meshField<Type,MeshType>::meshField
     fvMsh_(tfield->fvMsh_),
     oldTimePtr_(),
     boundaryConditions_(),
-    reScheme_()
+    reSchemePtr_()
 {
     setFieldPointers();
 
@@ -283,7 +284,7 @@ meshField<Type,MeshType>::meshField
     fvMsh_(tfield->fvMsh_),
     oldTimePtr_(),
     boundaryConditions_(),
-    reScheme_()
+    reSchemePtr_()
 {
     setFieldPointers();
 
@@ -318,81 +319,22 @@ template<class Type, class MeshType>
 void meshField<Type,MeshType>::addBoundaryConditions()
 {
     if (boundaryConditions_.size() == 0)
-    {
-        // First add domain boundaries
-
-        forAll(fvMsh_.boundaries(), bi)
-        {
-            const boundary& b = fvMsh_.boundaries()[bi];
-
-            if (b.castable<domainBoundary>())
-            {
-                boundaryConditions_.append
+        forAll(fvMsh_.boundaries(), i)
+            boundaryConditions_.append
+            (
+                boundaryCondition<Type,MeshType>::New
                 (
-                    boundaryCondition<Type,MeshType>::NewDomain
-                    (
-                        *this,
-                        b
-                    )
-                );
-            }
-        }
+                    *this,
+                    fvMsh_.boundaries()[i]
+                )
+            );
 
-        // Add parallel and periodic boundaries. First faces, then edges and
-        // finally vertices.
+    #ifdef BOUNDARYEXCHANGE
 
-        for(label order = 1; order <= 3; order++)
-        forAll(fvMsh_.boundaries(), bi)
-        {
-            const boundary& b = fvMsh_.boundaries()[bi];
-            const labelVector bo(b.offset());
+    if (bExchangePtr_.empty())
+        bExchangePtr_.reset(new boundaryExchange<Type,MeshType>(*this));
 
-            if (cmptSum(cmptMag(bo)) == order)
-            {
-                if (b.castable<periodicBoundary>())
-                {
-                    boundaryConditions_.append
-                    (
-                        boundaryCondition<Type,MeshType>::NewPeriodic
-                        (
-                            *this,
-                            b
-                        )
-                    );
-                }
-                else if (b.castable<parallelBoundary>())
-                {
-                    boundaryConditions_.append
-                    (
-                        boundaryCondition<Type,MeshType>::NewParallel
-                        (
-                            *this,
-                            b
-                        )
-                    );
-                }
-            }
-        }
-
-        // Finally add empties
-
-        forAll(fvMsh_.boundaries(), bi)
-        {
-            const boundary& b = fvMsh_.boundaries()[bi];
-
-            if (b.castable<emptyBoundary>())
-            {
-                boundaryConditions_.append
-                (
-                    boundaryCondition<Type,MeshType>::NewEmpty
-                    (
-                        *this,
-                        b
-                    )
-                );
-            }
-        }
-    }
+    #endif
 }
 
 template<class Type, class MeshType>
@@ -402,6 +344,33 @@ void meshField<Type,MeshType>::correctBoundaryConditions()
 
     forAll(*this, l)
         listType::operator[](l).correctBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctDomainBoundaryConditions()
+{
+    addBoundaryConditions();
+
+    forAll(*this, l)
+        listType::operator[](l).correctDomainBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctEmptyBoundaryConditions()
+{
+    addBoundaryConditions();
+
+    forAll(*this, l)
+        listType::operator[](l).correctEmptyBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctCommsBoundaryConditions()
+{
+    addBoundaryConditions();
+
+    forAll(*this, l)
+        listType::operator[](l).correctCommsBoundaryConditions();
 }
 
 template<class Type, class MeshType>
@@ -488,7 +457,7 @@ void meshField<Type,MeshType>::makeShallow()
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::setRestrictionScheme(const word scheme)
 {
-    reScheme_.reset
+    reSchemePtr_.reset
     (
         restrictionScheme<Type,MeshType>::New(scheme, fvMsh_).ptr()
     );
@@ -497,7 +466,7 @@ void meshField<Type,MeshType>::setRestrictionScheme(const word scheme)
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::restrict()
 {
-    if (reScheme_.empty())
+    if (reSchemePtr_.empty())
         this->setRestrictionScheme
         (
             restrictionScheme<Type,MeshType>::defaultScheme
@@ -505,7 +474,7 @@ void meshField<Type,MeshType>::restrict()
 
     makeDeep();
 
-    reScheme_->restrict(*this);
+    reSchemePtr_->restrict(*this);
 }
 
 template<class Type, class MeshType>
