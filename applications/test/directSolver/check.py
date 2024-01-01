@@ -1,17 +1,19 @@
 import numpy as np
 
 systems = [
-    'f-colocated-scalar',
-    'f-colocated-vector',
-    'f-staggered-scalar_0',
-    'f-staggered-scalar_1',
-    'f-staggered-scalar_2',
-    'f-staggered-vector_0',
-    'f-staggered-vector_1',
-    'f-staggered-vector_2',
+    'f-colocated-scalar_stencil',
+    'f-colocated-scalar_symmStencil',
+    'f-colocated-vector_stencil',
+    'f-colocated-vector_symmStencil',
+    'f-staggered-scalar_stencil_0',
+    'f-staggered-scalar_stencil_1',
+    'f-staggered-scalar_stencil_2',
+    'f-staggered-vector_stencil_0',
+    'f-staggered-vector_stencil_1',
+    'f-staggered-vector_stencil_2'
 ]
 
-typeSizes = [1, 3, 1, 1, 1, 3, 3, 3]
+typeSizes = [1, 1, 3, 3, 1, 1, 1, 3, 3, 3]
 
 def removeBrackets(fileName):
 

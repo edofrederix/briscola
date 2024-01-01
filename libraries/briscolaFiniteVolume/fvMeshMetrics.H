@@ -55,6 +55,9 @@ class fvMeshMetrics
     // Face interpolation weights for the neighbor
     meshField<faceScalar,MeshType> faceWeightsNeighbor_;
 
+    // Global cell numbers
+    meshField<label,MeshType> globalCellNumbers_;
+
     // Calculate face centers
     void calculateFaceCenters();
 
@@ -78,6 +81,9 @@ class fvMeshMetrics
 
     // Calculate face weights
     void calculateFaceWeights();
+
+    // Set the global cell numbers
+    void setGlobalCellNumbers();
 
 public:
 
@@ -157,6 +163,12 @@ public:
     inline const meshField<faceScalar,MeshType>& faceWeightsNeighbor() const
     {
         return faceWeightsNeighbor_;
+    }
+
+    // Const access to the global cell numbers
+    inline const meshField<label,MeshType>& globalCellNumbers() const
+    {
+        return globalCellNumbers_;
     }
 };
 

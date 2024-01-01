@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
         f(i,j,k) -= average;
     }
 
-    FFTPoissonSolver solver(fvMsh);
+    FFTPoissonSolver<stencil> solver(fvMsh);
 
     for (int r = 0; r < 1; r++)
     {

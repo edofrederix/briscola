@@ -660,34 +660,37 @@ void mesh::reorderBoundaries()
 
 void mesh::setDistributedCommGraph()
 {
-    labelList neighbors, weights;
-
-    forAll(boundaries_, i)
-    if (boundaries_[i].castable<parallelBoundary>())
+    if (Pstream::parRun())
     {
-        const parallelBoundary& b =
-            boundaries_[i].cast<parallelBoundary>();
+        labelList neighbors, weights;
 
-        const labelVector bo(b.offset());
-        const labelVector N(this->operator[](0).N());
+        forAll(boundaries_, i)
+        if (boundaries_[i].castable<parallelBoundary>())
+        {
+            const parallelBoundary& b =
+                boundaries_[i].cast<parallelBoundary>();
 
-        neighbors.append(b.neighborProcNum());
-        weights.append((unitXYZ-cmptMag(bo)) & N);
+            const labelVector bo(b.offset());
+            const labelVector N(this->operator[](0).N());
+
+            neighbors.append(b.neighborProcNum());
+            weights.append((unitXYZ-cmptMag(bo)) & N);
+        }
+
+        MPI_Dist_graph_create_adjacent
+        (
+            MPI_COMM_WORLD,
+            neighbors.size(),
+            neighbors.begin(),
+            weights.begin(),
+            neighbors.size(),
+            neighbors.begin(),
+            weights.begin(),
+            MPI_INFO_NULL,
+            false,
+            &this->comm_
+        );
     }
-
-    MPI_Dist_graph_create_adjacent
-    (
-        MPI_COMM_WORLD,
-        neighbors.size(),
-        neighbors.begin(),
-        weights.begin(),
-        neighbors.size(),
-        neighbors.begin(),
-        weights.begin(),
-        MPI_INFO_NULL,
-        false,
-        &this->comm_
-    );
 }
 
 void mesh::generateLevels()

@@ -37,13 +37,13 @@ void test(const fvMesh& fvMsh)
         ).ptr()
     );
 
-    linearSystem<SType,Type,MeshType> sys(im::laplacian(f));
+    linearSystem<SType,Type,MeshType> sys(im::laplacian<SType>(f));
     sys -= im::ddt(f);
     sys.eliminateGhosts();
 
     // Write the system to a file
 
-    writeToFile(sys,f.name());
+    writeToFile(sys, f.name() + "_" + SType::typeName);
 
     // Compute the solution
 
@@ -67,6 +67,8 @@ void test(const fvMesh& fvMsh)
         {
             const fileName name =
                 f.name()
+              + "_"
+              + SType::typeName
               + (
                     MeshType::numberOfDirections > 1
                   ? "_" + Foam::name(d)
@@ -90,8 +92,11 @@ int main(int argc, char *argv[])
     #include "createBriscolaMesh.H"
 
     test<symmStencil,scalar,colocated>(fvMsh);
-    test<stencil,scalar,staggered>(fvMsh);
+    test<stencil,scalar,colocated>(fvMsh);
 
     test<symmStencil,vector,colocated>(fvMsh);
+    test<stencil,vector,colocated>(fvMsh);
+
+    test<stencil,scalar,staggered>(fvMsh);
     test<stencil,vector,staggered>(fvMsh);
 }

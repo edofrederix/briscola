@@ -57,6 +57,8 @@ schemes/restrictionSchemes/restrictionScheme/restrictionSchemes.C
 solvers/solver/solvers.C
 solvers/solver/solverSmoothers.C
 solvers/solver/solverDirectSolvers.C
+solvers/solver/globalCellNumbers.C
+solvers/solver/globalRowData.C
 
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C
 solvers/PoissonSolvers/FFTPoissonSolver/FFTPoissonSolver.C

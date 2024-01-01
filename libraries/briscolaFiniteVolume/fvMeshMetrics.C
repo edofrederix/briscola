@@ -468,6 +468,39 @@ void fvMeshMetrics<MeshType>::calculateFaceWeights()
 }
 
 template<class MeshType>
+void fvMeshMetrics<MeshType>::setGlobalCellNumbers()
+{
+    globalCellNumbers_ = -1;
+
+    forAll(globalCellNumbers_, l)
+    {
+        forAll(globalCellNumbers_[l], d)
+        {
+            labelList sizes(Pstream::nProcs());
+
+            sizes[Pstream::myProcNo()] =
+                cmptProduct(fvMsh_.N<MeshType>(l,d));
+
+            Pstream::gatherList(sizes);
+            Pstream::scatterList(sizes);
+
+            label start = 0;
+
+            for (int i = 0; i < Pstream::myProcNo(); i++)
+                start += sizes[i];
+
+            int c = 0;
+            forAllCells(globalCellNumbers_[l][d], i, j, k)
+            {
+                globalCellNumbers_[l][d](i,j,k) = start + c++;
+            }
+        }
+    }
+
+    globalCellNumbers_.correctCommsBoundaryConditions();
+}
+
+template<class MeshType>
 fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
 :
     fvMsh_(fvMsh),
@@ -580,6 +613,16 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         true,
         true,
         true
+    ),
+    globalCellNumbers_
+    (
+        word(MeshType::typeName) + "GlobalCellNumbers",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        true
     )
 {
     calculateFaceCenters();
@@ -590,6 +633,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     calculateCellVolumes();
     calculateFaceDeltas();
     calculateFaceWeights();
+    setGlobalCellNumbers();
 }
 
 template<class MeshType>
