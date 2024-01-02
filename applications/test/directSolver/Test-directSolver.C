@@ -10,7 +10,7 @@ using namespace briscola;
 using namespace fv;
 
 template<class SType, class Type, class MeshType>
-void test(const fvMesh& fvMsh)
+void test(const fvMesh& fvMsh, const word solverType)
 {
     meshField<Type,MeshType> f
     (
@@ -31,7 +31,7 @@ void test(const fvMesh& fvMsh)
     (
         solver<SType,Type,MeshType>::directSolver::New
         (
-            "APLU",
+            solverType,
             dictionary::null,
             fvMsh
         ).ptr()
@@ -43,10 +43,11 @@ void test(const fvMesh& fvMsh)
 
     // Write the system to a file
 
-    writeToFile(sys, f.name() + "_" + SType::typeName);
+    writeToFile(sys, f.name() + "_" + SType::typeName + "_" + solverType);
 
-    // Compute the solution
+    // Prepare solver and compute solution
 
+    solverPtr->prepare(sys, sys.singular());
     solverPtr->solve(sys, sys.singular());
 
     // Write the solution
@@ -69,6 +70,8 @@ void test(const fvMesh& fvMsh)
                 f.name()
               + "_"
               + SType::typeName
+              + "_"
+              + solverType
               + (
                     MeshType::numberOfDirections > 1
                   ? "_" + Foam::name(d)
@@ -91,12 +94,22 @@ int main(int argc, char *argv[])
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
 
-    test<symmStencil,scalar,colocated>(fvMsh);
-    test<stencil,scalar,colocated>(fvMsh);
+    wordList types(2);
 
-    test<symmStencil,vector,colocated>(fvMsh);
-    test<stencil,vector,colocated>(fvMsh);
+    types[0] = "APLU";
+    types[1] = "Eigen";
 
-    test<stencil,scalar,staggered>(fvMsh);
-    test<stencil,vector,staggered>(fvMsh);
+    forAll(types, i)
+    {
+        const word type = types[i];
+
+        test<symmStencil,scalar,colocated>(fvMsh, type);
+        test<symmStencil,vector,colocated>(fvMsh, type);
+
+        test<stencil,scalar,colocated>(fvMsh, type);
+        test<stencil,vector,colocated>(fvMsh, type);
+
+        test<stencil,scalar,staggered>(fvMsh, type);
+        test<stencil,vector,staggered>(fvMsh, type);
+    }
 }

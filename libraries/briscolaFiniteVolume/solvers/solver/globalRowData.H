@@ -3,7 +3,6 @@
 
 #include "PtrList.H"
 #include "List.H"
-#include "Row.H"
 #include "fvMesh.H"
 #include "linearSystem.H"
 
@@ -26,7 +25,7 @@ class globalRowData
     const label l_;
 
     // Row data for each direction, processor and cell
-    PtrList<List<List<Row<SType,Type>>>> data_;
+    PtrList<List<List<SType>>> data_;
 
 public:
 

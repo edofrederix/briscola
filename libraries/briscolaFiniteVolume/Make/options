@@ -6,7 +6,9 @@ EXE_INC = \
     -I../briscolaCore/lnInclude \
     -I../briscolaMesh/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude \
-    -I$(FFTW_HOME)/include
+    -I$(FFTW_HOME)/include \
+    -I$(EIGEN_HOME)/include \
+    -Wno-old-style-cast
 
 LIB_LIBS = \
     -L$(FOAM_USER_LIBBIN) \

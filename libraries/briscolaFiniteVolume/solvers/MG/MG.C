@@ -27,18 +27,19 @@ const char* NamedEnum<MGCoarseMode,2>::names[] =
 template<class SType, class Type, class MeshType>
 void MG<SType,Type,MeshType>::cycle
 (
-    linearSystem<SType,Type,MeshType>& xEqn,
+    linearSystem<SType,Type,MeshType>& sys,
     meshField<Type,MeshType>& r,
     labelList& visits,
     const label l,
     const List<bool>& singular,
     const labelList& converged,
     const label nSweepsPre,
-    const label nSweepsPost
+    const label nSweepsPost,
+    const label coarseLevel
 )
 {
-    meshField<Type, MeshType>& x = xEqn.x();
-    meshField<Type, MeshType>& b = xEqn.b();
+    meshField<Type, MeshType>& x = sys.x();
+    meshField<Type, MeshType>& b = sys.b();
 
     // Initialize defects to zero
 
@@ -60,7 +61,7 @@ void MG<SType,Type,MeshType>::cycle
 
     this->smoothPtr_->smooth
     (
-        xEqn,
+        sys,
         xi,
         l,
         nSweepsPre,
@@ -70,7 +71,7 @@ void MG<SType,Type,MeshType>::cycle
     // If we are not on the coarsest level, continue to traverse levels.
     // Otherwise, just smooth (could be better to use a direct solver here)
 
-    if (l < x.size()-1)
+    if (l < x.size()-1-coarseLevel)
     {
         for (label rep = 0; rep < levelReps(l,visits); rep++)
         {
@@ -80,7 +81,7 @@ void MG<SType,Type,MeshType>::cycle
             if (rep > 0 || l > 0)
                 forAll(x[l], d)
                     if (!converged[d])
-                        xEqn.residual(r[l][d]);
+                        sys.residual(r[l][d]);
 
             // Restrict the current level residual to coarse level
 
@@ -92,14 +93,15 @@ void MG<SType,Type,MeshType>::cycle
 
             cycle
             (
-                xEqn,
+                sys,
                 r,
                 visits,
                 l+1,
                 singular,
                 converged,
                 nSweepsPre,
-                nSweepsPost
+                nSweepsPost,
+                coarseLevel
             );
 
             // Prolong the coarse level defect solution and add the correction
@@ -115,7 +117,7 @@ void MG<SType,Type,MeshType>::cycle
 
             this->smoothPtr_->smooth
             (
-                xEqn,
+                sys,
                 xi,
                 l,
                 nSweepsPost,
@@ -127,13 +129,13 @@ void MG<SType,Type,MeshType>::cycle
     {
         if (coarseMode_ == DIRECT)
         {
-            this->directSolvePtr_->solve(xEqn,singular);
+            this->directSolvePtr_->solve(sys,singular);
         }
         else
         {
             this->smoothPtr_->smooth
             (
-                xEqn,
+                sys,
                 xi,
                 l,
                 Foam::max(nSweepsPost,2),
@@ -148,17 +150,18 @@ void MG<SType,Type,MeshType>::cycle
 template<class SType, class Type, class MeshType>
 void MG<SType,Type,MeshType>::solve
 (
-    linearSystem<SType,Type,MeshType>& xEqn,
+    linearSystem<SType,Type,MeshType>& sys,
     const List<bool>& singular,
     const scalar relTol,
     const scalar absTol,
     const label minIter,
     const label maxIter,
     const label nSweepsPre,
-    const label nSweepsPost
+    const label nSweepsPost,
+    const label coarseLevel
 )
 {
-    meshField<Type, MeshType>& x = xEqn.x();
+    meshField<Type, MeshType>& x = sys.x();
 
     // Correct the boundary conditions
 
@@ -179,11 +182,11 @@ void MG<SType,Type,MeshType>::solve
 
     // Residual normalization factors
 
-    const List<Type> normFactors(this->normFactors(xEqn,0));
+    const List<Type> normFactors(this->normFactors(sys,0));
 
     // Initial residual
 
-    xEqn.residual(r[0]);
+    sys.residual(r[0]);
 
     const List<Type> initialResiduals =
         cmptDivide(gSum(cmptMag(r[0])), normFactors);
@@ -223,21 +226,22 @@ void MG<SType,Type,MeshType>::solve
 
         cycle
         (
-            xEqn,
+            sys,
             r,
             visits,
             0,
             singular,
             converged,
             nSweepsPre,
-            nSweepsPost
+            nSweepsPost,
+            coarseLevel
         );
 
         // Recompute the residual
 
         forAll(x[0], d)
             if (!converged[d])
-                xEqn.residual(r[0][d]);
+                sys.residual(r[0][d]);
 
         currentResiduals =
             cmptDivide(gSum(cmptMag(r[0])), normFactors);
@@ -282,8 +286,9 @@ MG<SType,Type,MeshType>::MG
     ),
     coarseMode_
     (
-        MGCoarseModeNames[dict.lookupOrDefault<word>("coarseMode", "smooth")]
+        MGCoarseModeNames[dict.lookupOrDefault<word>("coarseMode", "direct")]
     ),
+    coarseLevel_(dict.lookupOrDefault<label>("coarseLevel", 1)),
     proScheme_
     (
         prolongationScheme<Type,MeshType>::New
@@ -301,6 +306,11 @@ MG<SType,Type,MeshType>::MG
         )
     )
 {
+    if (coarseLevel_ > fvMsh.size()-2)
+        FatalErrorInFunction
+            << "Coarse level is set to high. Should be at most "
+            << fvMsh.size()-2 << endl << abort(FatalError);
+
     this->smoothPtr_.reset
     (
         solver<SType,Type,MeshType>::smoother::New
@@ -327,11 +337,11 @@ MG<SType,Type,MeshType>::MG
                 this->dict_.template lookupOrDefault<word>
                 (
                     "directSolverType",
-                    "APLU"
+                    "Eigen"
                 ),
                 this->dict_,
                 fvMsh,
-                fvMsh.msh().size()-1
+                fvMsh.msh().size()-1-coarseLevel_
             ).ptr()
         );
 }
@@ -339,30 +349,44 @@ MG<SType,Type,MeshType>::MG
 template<class SType, class Type, class MeshType>
 void MG<SType,Type,MeshType>::solve
 (
-    linearSystem<SType,Type,MeshType>& xEqn
+    linearSystem<SType,Type,MeshType>& sys,
+    const bool constMatrix
 )
 {
-    xEqn.eliminateGhosts();
+    sys.eliminateGhosts();
 
-    xEqn.x().makeDeep();
-    xEqn.b().makeDeep();
+    sys.x().makeDeep();
+    sys.b().makeDeep();
 
-    List<bool> singular(xEqn.singular());
+    List<bool> singular(sys.singular());
+
+    if
+    (
+        coarseMode_ == DIRECT
+     && (
+            !constMatrix
+         || !this->directSolvePtr_->prepared()
+        )
+    )
+    {
+        this->directSolvePtr_->prepare(sys,singular);
+    }
 
     this->solve
     (
-        xEqn,
+        sys,
         singular,
         this->relTol_,
         this->tolerance_,
         this->minIter_,
         this->maxIter_,
         this->nSweepsPre_,
-        this->nSweepsPost_
+        this->nSweepsPost_,
+        this->coarseLevel_
     );
 
-    xEqn.x().makeShallow();
-    xEqn.b().makeShallow();
+    sys.x().makeShallow();
+    sys.b().makeShallow();
 }
 
 }

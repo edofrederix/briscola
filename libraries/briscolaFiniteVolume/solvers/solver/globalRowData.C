@@ -29,22 +29,18 @@ globalRowData<SType,Type,MeshType>::globalRowData
         data_.set
         (
             d,
-            new List<List<Row<SType,Type>>>
-            (
-                Pstream::nProcs()
-            )
+            new List<List<SType>>(Pstream::nProcs())
         );
 
-        List<Row<SType,Type>>& data = data_[d][Pstream::myProcNo()];
+        List<SType>& data = data_[d][Pstream::myProcNo()];
 
         data.setSize(cmptProduct(fvMsh_.template N<MeshType>(l,d)));
 
         const meshDirection<SType,MeshType>& A = sys.A()[l][d];
-        const meshDirection<Type,MeshType>& b = sys.b()[l][d];
 
         int c = 0;
         forAllCells(A, i, j, k)
-            data[c++] = Row<SType,Type>(A(i,j,k),b(i,j,k));
+            data[c++] = A(i,j,k);
 
         Pstream::gatherList(data_[d]);
     }

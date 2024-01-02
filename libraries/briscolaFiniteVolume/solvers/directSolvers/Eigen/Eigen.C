@@ -1,4 +1,4 @@
-#include "APLU.H"
+#include "Eigen.H"
 
 #include "SquareMatrix.H"
 #include "LUscalarMatrix.H"
@@ -14,7 +14,32 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-APLU<SType,Type,MeshType>::APLU
+bool Eigen<SType,Type,MeshType>::isSymmetric(const matrixType& A) const
+{
+    bool symm = true;
+
+    // Only check non-zero elements
+
+    for (int k = 0; k < A.outerSize(); ++k)
+    for (matrixType::InnerIterator it(A,k); it; ++it)
+    {
+        const int i = it.row();
+        const int j = it.col();
+
+        if(i < j && Foam::mag(A.coeff(i,j) - A.coeff(j,i)) > 1e-8)
+        {
+            symm = false;
+            goto done;
+        }
+    }
+
+    done:;
+
+    return symm;
+}
+
+template<class SType, class Type, class MeshType>
+Eigen<SType,Type,MeshType>::Eigen
 (
     const dictionary& dict,
     const fvMesh& fvMsh,
@@ -23,12 +48,14 @@ APLU<SType,Type,MeshType>::APLU
 :
     solver<SType,Type,MeshType>::directSolver(dict,fvMsh,l),
     APtrs_(MeshType::numberOfDirections),
-    pivotPtrs_(MeshType::numberOfDirections),
+    gSolverPtrs_(MeshType::numberOfDirections),
+    sSolverPtrs_(MeshType::numberOfDirections),
+    symmetric_(MeshType::numberOfDirections),
     gCellNumbers_(fvMsh,l)
 {}
 
 template<class SType, class Type, class MeshType>
-void APLU<SType,Type,MeshType>::prepare
+void Eigen<SType,Type,MeshType>::prepare
 (
     const linearSystem<SType,Type,MeshType>& xEqn,
     const List<bool>& singular
@@ -45,15 +72,14 @@ void APLU<SType,Type,MeshType>::prepare
 
             const label n = gCellNumbers_.numberOfCells(d);
 
-            const bool symm =
+            bool symm =
                 SType::csType::typeName == symmStencil::csType::typeName;
 
             // Create linear system. Increase dimension by one, to allow for
             // singular system augmentation.
 
-            APtrs_.set(d, new scalarSquareMatrix(n+1));
-            scalarSquareMatrix& A = APtrs_[d];
-            A = Zero;
+            std::vector<tType> coeffs;
+            coeffs.reserve(n*(SType::nComponents + singular[d]*2) + 1);
 
             label offset = 0;
             forAll(cellNumbers, proc)
@@ -73,17 +99,17 @@ void APLU<SType,Type,MeshType>::prepare
 
                         if (j > -1)
                         {
-                            A[i][j] = S[s];
+                            coeffs.push_back(tType(i,j,S[s]));
 
                             if (symm && i != j)
-                                A[j][i] = S[s];
+                                coeffs.push_back(tType(j,i,S[s]));
                         }
                         else if (Foam::mag(S[s]) > 1e-8)
                         {
                             // Homogeneous Neumann in case of non-eliminated
                             // boundary coefficient
 
-                            A[i][i] += S[s];
+                            coeffs.push_back(tType(i,i,S[s]));
                         }
                     }
                 }
@@ -98,30 +124,47 @@ void APLU<SType,Type,MeshType>::prepare
 
                 for (int i = 0; i < n; i++)
                 {
-                    A(i,n) = 1.0;
-                    A(n,i) = 1.0;
+                    coeffs.push_back(tType(i,n,1));
+                    coeffs.push_back(tType(n,i,1));
                 }
             }
             else
             {
                 // Set the auxilary variable to zero
 
-                A(n,n) = 1.0;
+                coeffs.push_back(tType(n,n,1));
             }
 
-            // for(int i = 0; i < n+1; i++)
-            // {
-            //     for (int j = 0; j < n+1; j++)
-            //         Info<< A(i,j) << " ";
-            //     Info<< endl;
-            // }
+            // Set matrix and compute decomposition
 
-            // Decompose matrix
+            APtrs_.set(d, new matrixType(n+1,n+1));
+            matrixType& A = APtrs_[d];
 
-            pivotPtrs_.set(d, new labelList(n+1));
-            labelList& pivots = pivotPtrs_[d];
+            A.setFromTriplets(coeffs.begin(), coeffs.end());
+            A.makeCompressed();
 
-            LUDecompose(A, pivots);
+            // Check if the system is symmetric (which may be true even if the
+            // stencil type in non-symmetric)
+
+            if (!symm)
+                symm = this->isSymmetric(A);
+
+            symmetric_[d] = symm;
+
+            if (symm)
+            {
+                sSolverPtrs_.set(d, new sSolverType(A));
+                sSolverType& solver = sSolverPtrs_[d];
+
+                solver.compute(A);
+            }
+            else
+            {
+                gSolverPtrs_.set(d, new gSolverType(A));
+                gSolverType& solver = gSolverPtrs_[d];
+
+                solver.compute(A);
+            }
         }
     }
 
@@ -129,7 +172,7 @@ void APLU<SType,Type,MeshType>::prepare
 }
 
 template<class SType, class Type, class MeshType>
-void APLU<SType,Type,MeshType>::solve
+void Eigen<SType,Type,MeshType>::solve
 (
     linearSystem<SType,Type,MeshType>& xEqn,
     const List<bool>& singular
@@ -139,6 +182,8 @@ void APLU<SType,Type,MeshType>::solve
 
     meshLevel<Type,MeshType>& x = xEqn.x()[this->l_];
     const meshLevel<Type,MeshType>& b = xEqn.b()[this->l_];
+
+    const label m = list(pTraits<Type>::one).size();
 
     for (int d = 0; d < MeshType::numberOfDirections; d++)
     {
@@ -173,6 +218,11 @@ void APLU<SType,Type,MeshType>::solve
                         0,
                         UPstream::worldComm
                     );
+
+                    forAll(rhs, i)
+                    {
+
+                    }
                 }
 
                 offset += nums.size();
@@ -180,12 +230,42 @@ void APLU<SType,Type,MeshType>::solve
 
             rhs[n] = Zero;
 
+            // Copy to Eigen right-hand side type
+
+            rhsType B(n+1,m);
+
+            forAll(rhs, i)
+            {
+                const scalarList L(list(rhs[i]));
+
+                forAll(L, j)
+                    B(i,j) = L[j];
+            }
+
             // Solve
 
-            const scalarSquareMatrix& A = APtrs_[d];
-            const labelList& pivots = pivotPtrs_[d];
+            rhsType X;
 
-            LUBacksubstitute(A, pivots, rhs);
+            if (this->symmetric_[d])
+            {
+                X = sSolverPtrs_[d].solve(B);
+            }
+            else
+            {
+                X = gSolverPtrs_[d].solve(B);
+            }
+
+            // Copy back to rhs
+
+            forAll(rhs, i)
+            {
+                scalarList L(m);
+
+                forAll(L, j)
+                    L[j] = X(i,j);
+
+                rhs[i] = listToType<Type>(L);
+            }
 
             // Send/copy solutions
 

@@ -19,7 +19,8 @@ solver<SType,Type,MeshType>::directSolver::directSolver
 :
     dict_(dict),
     fvMsh_(fvMsh),
-    l_(l)
+    l_(l),
+    prepared_(false)
 {}
 
 template<class SType, class Type, class MeshType>

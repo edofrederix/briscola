@@ -23,6 +23,12 @@ class APLU
 {
 protected:
 
+    // Dense matrix
+    PtrList<scalarSquareMatrix> APtrs_;
+
+    // Pivot indices
+    PtrList<labelList> pivotPtrs_;
+
     // Global stencil cell numbers
     globalCellNumbers<SType,MeshType> gCellNumbers_;
 
@@ -34,8 +40,14 @@ public:
     // Construct from dictionary and mesh
     APLU(const dictionary&, const fvMesh&, const label = 0);
 
-    // Solve the given system, indicating if singular system augmentation should
-    // be applied
+    // Prepare
+    virtual void prepare
+    (
+        const linearSystem<SType,Type,MeshType>&,
+        const List<bool>&
+    );
+
+    // Solve
     virtual void solve
     (
         linearSystem<SType,Type,MeshType>&,

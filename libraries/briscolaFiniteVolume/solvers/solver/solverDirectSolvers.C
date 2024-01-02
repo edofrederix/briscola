@@ -2,6 +2,7 @@
 #include "addToRunTimeSelectionTable.H"
 
 #include "APLU.H"
+#include "Eigen.H"
 
 namespace Foam
 {
@@ -21,6 +22,16 @@ makeDirectSolverType(APLU,stencil,scalar,colocated);
 makeDirectSolverType(APLU,stencil,scalar,staggered);
 makeDirectSolverType(APLU,stencil,vector,colocated);
 makeDirectSolverType(APLU,stencil,vector,staggered);
+
+makeDirectSolverType(Eigen,symmStencil,scalar,colocated);
+makeDirectSolverType(Eigen,symmStencil,scalar,staggered);
+makeDirectSolverType(Eigen,symmStencil,vector,colocated);
+makeDirectSolverType(Eigen,symmStencil,vector,staggered);
+
+makeDirectSolverType(Eigen,stencil,scalar,colocated);
+makeDirectSolverType(Eigen,stencil,scalar,staggered);
+makeDirectSolverType(Eigen,stencil,vector,colocated);
+makeDirectSolverType(Eigen,stencil,vector,staggered);
 
 }
 
