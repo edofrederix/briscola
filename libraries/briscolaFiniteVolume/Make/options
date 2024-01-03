@@ -7,12 +7,22 @@ EXE_INC = \
     -I../briscolaMesh/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude \
     -I$(FFTW_HOME)/include \
-    -I$(EIGEN_HOME)/include \
-    -Wno-old-style-cast
+    -I$(EIGEN_HOME)/include/eigen3 \
+    $(if $(MKLROOT),-I$(MKLROOT)/include,) \
+    $(if $(MKLROOT),-DMKL -m64,) \
+    $(if $(SUITESPARSE_HOME),-I$(SUITESPARSE_HOME)/include/suitesparse,) \
+    $(if $(SUITESPARSE_HOME),-DSUITESPARSE,) \
+    $(if $(SUPERLU_HOME),-I$(SUPERLU_HOME)/include,) \
+    $(if $(SUPERLU_HOME),-DSUPERLU,) \
+    -Wno-old-style-cast \
+	-Wno-unknown-pragmas
 
 LIB_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -L$(FFTW_HOME)/lib \
+    $(if $(MKLROOT),-L${MKLROOT}/lib -lmkl_intel_lp64 -lmkl_sequential -lmkl_core,) \
+    $(if $(SUITESPARSE_HOME),-lumfpack,) \
+    $(if $(SUPERLU_HOME),-lsuperlu,) \
     -lbriscolaCore \
     -lbriscolaMesh \
     -lOpenFOAM \

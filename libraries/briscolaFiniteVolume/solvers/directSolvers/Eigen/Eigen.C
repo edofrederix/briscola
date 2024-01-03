@@ -14,31 +14,6 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-bool Eigen<SType,Type,MeshType>::isSymmetric(const matrixType& A) const
-{
-    bool symm = true;
-
-    // Only check non-zero elements
-
-    for (int k = 0; k < A.outerSize(); ++k)
-    for (matrixType::InnerIterator it(A,k); it; ++it)
-    {
-        const int i = it.row();
-        const int j = it.col();
-
-        if(i < j && Foam::mag(A.coeff(i,j) - A.coeff(j,i)) > 1e-8)
-        {
-            symm = false;
-            goto done;
-        }
-    }
-
-    done:;
-
-    return symm;
-}
-
-template<class SType, class Type, class MeshType>
 Eigen<SType,Type,MeshType>::Eigen
 (
     const dictionary& dict,
@@ -47,12 +22,21 @@ Eigen<SType,Type,MeshType>::Eigen
 )
 :
     solver<SType,Type,MeshType>::directSolver(dict,fvMsh,l),
+    gCellNumbers_(fvMsh,l),
     APtrs_(MeshType::numberOfDirections),
-    gSolverPtrs_(MeshType::numberOfDirections),
-    sSolverPtrs_(MeshType::numberOfDirections),
-    symmetric_(MeshType::numberOfDirections),
-    gCellNumbers_(fvMsh,l)
-{}
+    solverPtrs_(MeshType::numberOfDirections)
+{
+    if (Pstream::master())
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+            solverPtrs_.set
+            (
+                d,
+                EigenSolver::New
+                (
+                    dict.lookupOrDefault<word>("EigenSolver", "default")
+                ).ptr()
+            );
+}
 
 template<class SType, class Type, class MeshType>
 void Eigen<SType,Type,MeshType>::prepare
@@ -77,6 +61,8 @@ void Eigen<SType,Type,MeshType>::prepare
 
             // Create linear system. Increase dimension by one, to allow for
             // singular system augmentation.
+
+            typedef ::Eigen::Triplet<double> tType;
 
             std::vector<tType> coeffs;
             coeffs.reserve(n*(SType::nComponents + singular[d]*2) + 1);
@@ -137,34 +123,13 @@ void Eigen<SType,Type,MeshType>::prepare
 
             // Set matrix and compute decomposition
 
-            APtrs_.set(d, new matrixType(n+1,n+1));
-            matrixType& A = APtrs_[d];
+            APtrs_.set(d, new EigenSolver::matrixType(n+1,n+1));
+            EigenSolver::matrixType& A = APtrs_[d];
 
             A.setFromTriplets(coeffs.begin(), coeffs.end());
             A.makeCompressed();
 
-            // Check if the system is symmetric (which may be true even if the
-            // stencil type in non-symmetric)
-
-            if (!symm)
-                symm = this->isSymmetric(A);
-
-            symmetric_[d] = symm;
-
-            if (symm)
-            {
-                sSolverPtrs_.set(d, new sSolverType(A));
-                sSolverType& solver = sSolverPtrs_[d];
-
-                solver.compute(A);
-            }
-            else
-            {
-                gSolverPtrs_.set(d, new gSolverType(A));
-                gSolverType& solver = gSolverPtrs_[d];
-
-                solver.compute(A);
-            }
+            solverPtrs_[d].prepare(A);
         }
     }
 
@@ -218,11 +183,6 @@ void Eigen<SType,Type,MeshType>::solve
                         0,
                         UPstream::worldComm
                     );
-
-                    forAll(rhs, i)
-                    {
-
-                    }
                 }
 
                 offset += nums.size();
@@ -232,7 +192,7 @@ void Eigen<SType,Type,MeshType>::solve
 
             // Copy to Eigen right-hand side type
 
-            rhsType B(n+1,m);
+            EigenSolver::rhsType B(n+1,m);
 
             forAll(rhs, i)
             {
@@ -244,16 +204,8 @@ void Eigen<SType,Type,MeshType>::solve
 
             // Solve
 
-            rhsType X;
-
-            if (this->symmetric_[d])
-            {
-                X = sSolverPtrs_[d].solve(B);
-            }
-            else
-            {
-                X = gSolverPtrs_[d].solve(B);
-            }
+            EigenSolver::rhsType X;
+            solverPtrs_[d].solve(X,B);
 
             // Copy back to rhs
 

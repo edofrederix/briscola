@@ -42,6 +42,19 @@ Briscola depends on the following third-party packages:
 * OpenFOAM (only libOpenFOAM, libPstream and libOSspecific)
 * OpenMPI (version 3 or later)
 * FFTW3
+* Eigen3
+* Intel oneAPI MKL (optional)
+* SuiteSparse (optional)
+* SuperLU (optional)
+
+FFTW3 and Eigen3 are required, and their locations should be specified by the
+FFTW_HOME and EIGEN_HOME environment variables.
+
+The sparse direct solvers of MKL, SuiteSparse and SuperLU are used if these
+packages are available. The compiler checks for the existence of the MKLROOT,
+SUITESPARSE_HOME and SUPERLU_HOME environment variables. If they exist, the
+Pardiso, UmfPack and SuperLU solvers are compiled, respectively. They are
+interfaced via the Eigen support functions.
 
 ## Contact & Support
 

@@ -60,6 +60,9 @@ solvers/solver/solverDirectSolvers.C
 solvers/solver/globalCellNumbers.C
 solvers/solver/globalRowData.C
 
+solvers/directSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolver.C
+solvers/directSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolvers.C
+
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C
 solvers/PoissonSolvers/FFTPoissonSolver/FFTPoissonSolver.C
 solvers/PoissonSolvers/FFTPoissonSolver/planner/planner.C

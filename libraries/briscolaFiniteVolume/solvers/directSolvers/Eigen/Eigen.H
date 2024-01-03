@@ -4,8 +4,11 @@
 #include "solver.H"
 #include "globalCellNumbers.H"
 #include "globalRowData.H"
+#include "EigenSolver.H"
 
-#include <eigen3/Eigen/Sparse>
+#ifdef MKL
+#define EIGEN_USE_MKL_ALL
+#endif
 
 namespace Foam
 {
@@ -23,28 +26,14 @@ class Eigen
 {
 protected:
 
-    // Eigen types
-    typedef ::Eigen::SparseMatrix<double> matrixType;
-    typedef ::Eigen::MatrixXd rhsType;
-    typedef ::Eigen::Triplet<double> tType;
-    typedef ::Eigen::SparseLU<matrixType> gSolverType;
-    typedef ::Eigen::SimplicialLDLT<matrixType> sSolverType;
-
-    // Sparse matrix
-    PtrList<matrixType> APtrs_;
-
-    // Solver
-    PtrList<gSolverType> gSolverPtrs_;
-    PtrList<sSolverType> sSolverPtrs_;
-
-    // Symmetric system
-    List<bool> symmetric_;
-
     // Global stencil cell numbers
     globalCellNumbers<SType,MeshType> gCellNumbers_;
 
-    // Check if the given sparse matrix is symmetrc
-    bool isSymmetric(const matrixType&) const;
+    // Sparse matrices
+    PtrList<EigenSolver::matrixType> APtrs_;
+
+    // Solvers
+    PtrList<EigenSolver> solverPtrs_;
 
 public:
 
