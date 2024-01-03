@@ -43,6 +43,14 @@ void Brackbill<SigmaModel>::correct()
       / this->tpm_.template meanRho<colocated>()
     );
 
+    colocatedScalarField meanRho("meanRho",this->tpm_.template meanRho<colocated>()());
+
+    this->surfaceTensionPotential_ =
+        ex::interp(this->kappa())
+      * ex::faceGrad(this->alpha())
+      * ex::interp(this->sigma())
+      / ex::interp(meanRho);
+
     if (this->fvMsh_.structured())
     {
         staggeredScalarField& stagTension = this->stagForcePtr_();

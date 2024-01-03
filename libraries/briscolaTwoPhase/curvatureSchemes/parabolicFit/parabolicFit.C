@@ -757,6 +757,13 @@ void parabolicFit::correct()
                                 )
                             );
 
+                    scalar maxKappa = 1/Foam::pow(cv(i,j,k),1.0/3.0);
+
+                    if(Foam::mag(kappa(i,j,k)) > maxKappa)
+                    {
+                        kappa(i,j,k) = maxKappa * Foam::sign(kappa(i,j,k));
+                    }
+
                     if (kappa(i,j,k) != kappa(i,j,k))
                     {
                         FatalErrorInFunction
@@ -896,6 +903,14 @@ void parabolicFit::correct()
                           / (
                                 Foam::pow(1 + Foam::sqr(coefs[1]), 1.5)
                             );
+
+                    scalar maxKappa = 1/Foam::pow(cv(i,j,k)/0.1,1.0/2.0);
+
+                    if(Foam::mag(kappa(i,j,k)) > maxKappa)
+                    {
+                        kappa(i,j,k) = maxKappa * Foam::sign(kappa(i,j,k));
+                    }
+
 
                 }
                 else

@@ -62,14 +62,17 @@ int main(int argc, char *argv[])
 
         USys -= 0.5*(deltaT/deltaT0)*H;
 
+        colocatedLowerFaceScalarField surfTenPot = fa * itpm.surfaceTension().potential();
+        colocatedVectorField surfTen = ex::reconstruct(surfTenPot);
+
         H =
             ex::div(phi,U)
-          - itpm.surfaceTension()
-          - (ex::grad(mu) & ex::grad(U))*v;
+         - (ex::grad(mu) & ex::grad(U))*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
 
         USys -= itpm.g();
+        USys += ex::grad(p)*v - surfTen;
 
         // Solve predictor
 
@@ -86,33 +89,48 @@ int main(int argc, char *argv[])
 
             colocatedLowerFaceScalarField corr
             (
-                fa*(1.0 - minRho*vf)*ex::faceGrad(q)
+                fa
+              * (
+                    ex::faceGrad(q) * (1.0 - minRho*vf)
+                  + ex::faceGrad(p) *  minRho*vf
+                )
             );
 
             Poisson->solve(p, minRho*ex::div(phi)/(-deltaT) - ex::div(corr));
 
             // Rhie-Chow correction
 
-            U -= deltaT*(ex::grad(p)*maxv + ex::grad(q)*(v - maxv));
+            U -=
+                deltaT
+              * (
+                    ex::grad(p)*maxv
+                  - ex::grad(p.oldTime())*v
+                  + ex::grad(q)*(v - maxv)
+                );
+
             U.correctBoundaryConditions();
 
             phi -=
                 deltaT*fa
               * (
                     ex::faceGrad(p)*maxv
+                  - ex::faceGrad(p.oldTime())*vf
                   + ex::faceGrad(q)*(vf - maxv)
                 );
         }
         else
         {
-            Poisson->solve(p, ex::div(phi)/(-deltaT), vf);
+            colocatedLowerFaceScalarField corr(fa*vf*ex::faceGrad(p));
+            p.setOldTime();
+
+            Poisson->solve(p, ex::div(phi)/(-deltaT) - ex::div(corr), vf);
 
             // Rhie-Chow correction
 
-            U -= deltaT*ex::grad(p)*v;
+            U -= deltaT*(ex::grad(p) - ex::grad(p.oldTime()))*v;
             U.correctBoundaryConditions();
 
-            phi -= deltaT*ex::faceGrad(p)*fa*vf;
+            phi -= deltaT*(ex::faceGrad(p) - ex::faceGrad(p.oldTime()))*fa*vf;
         }
 
         io.write<colocated>();

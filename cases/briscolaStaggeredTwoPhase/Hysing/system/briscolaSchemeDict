@@ -99,6 +99,11 @@ faceGradientSchemes
     {
         type    linear;
     }
+
+    faceGrad(alpha)
+    {
+        type    linear;
+    }
 }
 
 faceFluxSchemes
@@ -122,6 +127,16 @@ interpolationSchemes
     }
 
     interp(rho)
+    {
+        type    midPoint;
+    }
+
+    interp(sigma)
+    {
+        type    midPoint;
+    }
+
+    interp(meanRho)
     {
         type    midPoint;
     }

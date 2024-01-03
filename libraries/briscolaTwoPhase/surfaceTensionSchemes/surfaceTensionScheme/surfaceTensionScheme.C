@@ -57,6 +57,14 @@ surfaceTensionScheme::surfaceTensionScheme
             alpha_
         ).ptr()
       : nullptr
+    ),
+    surfaceTensionPotential_
+    (
+        "surfPot",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true
     )
 {
     if (fvMsh_.structured())
@@ -86,7 +94,8 @@ surfaceTensionScheme::surfaceTensionScheme(const surfaceTensionScheme& s)
     stagForcePtr_(s.stagForcePtr_, false),
     sigma_(s.sigma_),
     sigmaValue_(s.sigmaValue_),
-    curvatureSchemePtr_(s.curvatureSchemePtr_, false)
+    curvatureSchemePtr_(s.curvatureSchemePtr_, false),
+    surfaceTensionPotential_(s.surfaceTensionPotential_)
 {}
 
 surfaceTensionScheme::~surfaceTensionScheme()

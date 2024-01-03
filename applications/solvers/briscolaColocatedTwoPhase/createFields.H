@@ -93,11 +93,6 @@ colocatedVectorField H
     true
 );
 
-H =
-    ex::div(phi,U)
-  - itpm.surfaceTension()
-  - (ex::grad(mu) & ex::grad(U))/rho;
-
 // Specific volumes
 
 colocatedScalarField v
@@ -108,6 +103,10 @@ colocatedScalarField v
     IOobject::NO_WRITE,
     true
 );
+
+H =
+    ex::div(phi,U)
+    - (ex::grad(mu) & ex::grad(U))*v;
 
 v.setRestrictionScheme("harmonicVolumeWeighted");
 

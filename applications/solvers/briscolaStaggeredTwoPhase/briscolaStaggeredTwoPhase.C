@@ -66,7 +66,10 @@ int main(int argc, char *argv[])
 
         phi = ex::faceFlux(U);
 
-        H = ex::div(phi,U) - (ex::grad(mu) & ex::grad(U))/rho;
+        gradMu = ex::grad(mu);
+        gradU = ex::grad(U);
+
+        H = ex::div(phi,U) - ex::transposeMultiplicate(gradMu,gradU)/rho;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
 

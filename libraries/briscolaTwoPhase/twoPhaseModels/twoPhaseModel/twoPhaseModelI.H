@@ -46,7 +46,11 @@ inline tmp<meshField<scalar,MeshType>> twoPhaseModel::meanRho() const
 {
     tmp<meshField<scalar,MeshType>> tMeanRho
     (
-        (this->rho1<MeshType>() + this->rho2<MeshType>())/2.0
+        new meshField<scalar,MeshType>
+        (
+            "meanRho",
+            (this->rho1<MeshType>() + this->rho2<MeshType>())/2.0
+        )
     );
     tMeanRho->setRestrictionScheme("volumeWeighted");
     return tMeanRho;

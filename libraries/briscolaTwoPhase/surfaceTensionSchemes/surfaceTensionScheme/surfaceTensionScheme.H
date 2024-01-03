@@ -50,6 +50,9 @@ protected:
     // Curvature scheme
     autoPtr<curvatureScheme> curvatureSchemePtr_;
 
+    // Surface Tension Potential
+    colocatedLowerFaceScalarField surfaceTensionPotential_;
+
 public:
 
     // Runtime type information
@@ -132,6 +135,12 @@ public:
 
     // Correct the surface tension model
     virtual void correct();
+
+    // Access to the surface tension porential
+    inline const colocatedLowerFaceScalarField& potential() const
+    {
+        return surfaceTensionPotential_;
+    }
 };
 
 }

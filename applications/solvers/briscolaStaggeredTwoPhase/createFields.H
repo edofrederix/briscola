@@ -107,7 +107,10 @@ staggeredScalarField H
     false
 );
 
-H = ex::div(phi,U) - (ex::grad(mu) & ex::grad(U))/rho;
+staggeredVectorField gradMu = ex::grad(mu);
+staggeredVectorField gradU = ex::grad(U);
+
+H = ex::div(phi,U) - ex::transposeMultiplicate(gradMu,gradU)/rho;
 
 // Specific volumes
 
