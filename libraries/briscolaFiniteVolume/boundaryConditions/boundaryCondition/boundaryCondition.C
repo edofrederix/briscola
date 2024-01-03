@@ -4,6 +4,7 @@
 #include "staggered.H"
 #include "meshField.H"
 #include "linearSystem.H"
+#include "domainBoundary.H"
 
 namespace Foam
 {
@@ -94,22 +95,29 @@ autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
 }
 
 template<class Type, class MeshType>
-autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::NewDomain
+autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
 (
     const meshField<Type,MeshType>& mshField,
     const boundary& b
 )
 {
-    const word boundaryConditionType
-    (
-        mshField.found("boundaryConditions")
-      ? word
-        (
-            mshField.subDict("boundaryConditions")
-           .subDict(b.name()).lookup("type")
-        )
-      : word("dummy")
-    );
+    word boundaryConditionType;
+
+    if (b.castable<domainBoundary>())
+    {
+        boundaryConditionType =
+            mshField.found("boundaryConditions")
+          ? word
+            (
+                mshField.subDict("boundaryConditions")
+               .subDict(b.name()).lookup("type")
+            )
+          : word("dummy");
+    }
+    else
+    {
+        boundaryConditionType = b.type();
+    }
 
     typename dictionaryConstructorTable::iterator cstrIter =
         dictionaryConstructorTablePtr_->find(boundaryConditionType);
@@ -123,57 +131,6 @@ autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::NewD
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
-
-    return autoPtr<boundaryCondition<Type,MeshType>>
-    (
-        cstrIter()(mshField, b)
-    );
-}
-
-template<class Type, class MeshType>
-autoPtr<boundaryCondition<Type,MeshType>>
-boundaryCondition<Type,MeshType>::NewPeriodic
-(
-    const meshField<Type,MeshType>& mshField,
-    const boundary& b
-)
-{
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find("periodic");
-
-    return autoPtr<boundaryCondition<Type,MeshType>>
-    (
-        cstrIter()(mshField, b)
-    );
-}
-
-template<class Type, class MeshType>
-autoPtr<boundaryCondition<Type,MeshType>>
-boundaryCondition<Type,MeshType>::NewParallel
-(
-    const meshField<Type,MeshType>& mshField,
-    const boundary& b
-)
-{
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find("parallel");
-
-    return autoPtr<boundaryCondition<Type,MeshType>>
-    (
-        cstrIter()(mshField, b)
-    );
-}
-
-template<class Type, class MeshType>
-autoPtr<boundaryCondition<Type,MeshType>>
-boundaryCondition<Type,MeshType>::NewEmpty
-(
-    const meshField<Type,MeshType>& mshField,
-    const boundary& b
-)
-{
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find("empty");
 
     return autoPtr<boundaryCondition<Type,MeshType>>
     (

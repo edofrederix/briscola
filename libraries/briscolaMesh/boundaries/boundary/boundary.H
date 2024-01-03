@@ -84,6 +84,30 @@ public:
     // Destructor
     virtual ~boundary();
 
+    // Check if cast to derived type is possible
+    template<class BoundaryType>
+    inline bool castable() const
+    {
+        return dynamic_cast<const BoundaryType*>(this);
+    }
+
+    // Cast to derived type, if possible. Returns error otherwise.
+    template<class BoundaryType>
+    inline const BoundaryType& cast() const
+    {
+        const BoundaryType* bPtr = dynamic_cast<const BoundaryType*>(this);
+
+        if (!bPtr)
+        {
+            FatalErrorInFunction
+                << "Boundary cannot be cast to " << BoundaryType::typeName
+                << " because it is " << this->type()
+                << abort(FatalError);
+        }
+
+        return *bPtr;
+    }
+
     // Access to the dictionary
     inline dictionary& dict() { return dict_; }
     inline const dictionary& dict() const { return dict_; }

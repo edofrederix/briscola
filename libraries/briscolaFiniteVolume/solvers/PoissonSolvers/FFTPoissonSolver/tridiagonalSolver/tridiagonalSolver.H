@@ -17,15 +17,17 @@ namespace briscola
 namespace fv
 {
 
+template<class SType>
 class FFTPoissonSolver;
 
 namespace FFT
 {
 
+template<class SType>
 class tridiagonalSolver
 {
     // FFT solver
-    FFTPoissonSolver& solver_;
+    FFTPoissonSolver<SType>& solver_;
 
     // FFT transformed directions
     label dir1_;
@@ -66,7 +68,7 @@ public:
     // Construct from FFT solver
     tridiagonalSolver
     (
-        FFTPoissonSolver& solver,
+        FFTPoissonSolver<SType>& solver,
         const labelVector& BC
     );
 

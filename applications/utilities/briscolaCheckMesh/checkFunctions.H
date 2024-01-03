@@ -25,11 +25,7 @@ void checkParallelPatches(const fvMesh& fvMsh)
     {
         const boundary& b = msh.boundaries()[i];
 
-        if
-        (
-            b.typeNum() == periodicBoundary::typeNumber
-         || b.typeNum() == parallelBoundary::typeNumber
-        )
+        if (b.castable<parallelBoundary>())
         {
             const labelVector bo = b.offset();
 

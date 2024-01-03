@@ -14,22 +14,26 @@ namespace FFT
 {
 
 // Constructor
-FourierTransforms::FourierTransforms
+
+template<class SType>
+FourierTransforms<SType>::FourierTransforms
 (
-    FFTPoissonSolver& solver,
+    FFTPoissonSolver<SType>& solver,
     colocatedScalarField& x
 )
 :
     solver_(solver),
     x_(x),
-    N_(solver.fvMsh().msh().cast<rectilinearMesh>().N())
+    N_(solver.fvMsh().msh().template cast<rectilinearMesh>().N())
 {
     FFTBoundaryConditions();
     FFTWplans();
 }
 
 // Destructor
-FourierTransforms::~FourierTransforms()
+
+template<class SType>
+FourierTransforms<SType>::~FourierTransforms()
 {
     fftw_destroy_plan(fwdPlanX_);
     fftw_destroy_plan(bwdPlanX_);
@@ -39,7 +43,8 @@ FourierTransforms::~FourierTransforms()
     fftw_destroy_plan(bwdPlanZ_);
 }
 
-void FourierTransforms::FFTBoundaryConditions()
+template<class SType>
+void FourierTransforms<SType>::FFTBoundaryConditions()
 {
     BC_ = labelVector(-1,-1,-1);
 
@@ -161,7 +166,8 @@ void FourierTransforms::FFTBoundaryConditions()
     }
 }
 
-void FourierTransforms::FFTWplans()
+template<class SType>
+void FourierTransforms<SType>::FFTWplans()
 {
     fftw_r2r_kind transforms[] =
     {
@@ -319,8 +325,8 @@ void FourierTransforms::FFTWplans()
     );
 }
 
-
-void FourierTransforms::fwdFFTx()
+template<class SType>
+void FourierTransforms<SType>::fwdFFTx()
 {
     if (BC_.x()!= 0)
     {
@@ -329,7 +335,8 @@ void FourierTransforms::fwdFFTx()
     }
 }
 
-void FourierTransforms::bwdFFTx()
+template<class SType>
+void FourierTransforms<SType>::bwdFFTx()
 {
     if (BC_.x() != 0)
     {
@@ -346,7 +353,8 @@ void FourierTransforms::bwdFFTx()
     }
 }
 
-void FourierTransforms::fwdFFTy()
+template<class SType>
+void FourierTransforms<SType>::fwdFFTy()
 {
     if (BC_.y() != 0)
     {
@@ -355,7 +363,8 @@ void FourierTransforms::fwdFFTy()
     }
 }
 
-void FourierTransforms::bwdFFTy()
+template<class SType>
+void FourierTransforms<SType>::bwdFFTy()
 {
     if (BC_.y() != 0)
     {
@@ -371,7 +380,8 @@ void FourierTransforms::bwdFFTy()
     }
 }
 
-void FourierTransforms::fwdFFTz()
+template<class SType>
+void FourierTransforms<SType>::fwdFFTz()
 {
     if (BC_.z() != 0)
     {
@@ -380,7 +390,8 @@ void FourierTransforms::fwdFFTz()
     }
 }
 
-void FourierTransforms::bwdFFTz()
+template<class SType>
+void FourierTransforms<SType>::bwdFFTz()
 {
     if (BC_.z() != 0)
     {
@@ -396,10 +407,16 @@ void FourierTransforms::bwdFFTz()
     }
 }
 
-void FourierTransforms::normalize(scalarBlock& transformedData) const
+template<class SType>
+void FourierTransforms<SType>::normalize(scalarBlock& transformedData) const
 {
     transformedData /= normalization_;
 }
+
+// Instantiate
+
+template class FourierTransforms<stencil>;
+template class FourierTransforms<symmStencil>;
 
 }
 

@@ -54,6 +54,9 @@ protected:
     // Coarse level mode
     MGCoarseMode coarseMode_;
 
+    // Coarsest level, counted in reversed order with zero being the coarsest
+    label coarseLevel_;
+
     // Number of level repetitions. Use 1 for a V-cycle, use 2 for a W-cycle.
     // Defaults to 2
     label levelReps_;
@@ -67,27 +70,29 @@ protected:
     // Solve system and provide parameters
     virtual void solve
     (
-        linearSystem<SType,Type,MeshType>& xEqn,
+        linearSystem<SType,Type,MeshType>& sys,
         const List<bool>& singular,
         const scalar relTol,
         const scalar absTol,
         const label minIter,
         const label maxIter,
         const label nSweepsPre,
-        const label nSweepsPost
+        const label nSweepsPost,
+        const label coarseLevel
     );
 
     // Multigrid cycle for given mesh level
     virtual void cycle
     (
-        linearSystem<SType,Type,MeshType>& xEqn,
+        linearSystem<SType,Type,MeshType>& sys,
         meshField<Type,MeshType>& r,
         labelList& visits,
         const label l,
         const List<bool>& singular,
         const labelList& converged,
         const label nSweepsPre,
-        const label nSweepsPost
+        const label nSweepsPost,
+        const label coarseLevel
     );
 
 public:
@@ -98,8 +103,12 @@ public:
     // Construct from dictionary and mesh
     MG(const dictionary&, const fvMesh&);
 
-    // Solve the given system
-    virtual void solve(linearSystem<SType,Type,MeshType>&);
+    // Solve the given system with optional constant matrix indicator
+    virtual void solve
+    (
+        linearSystem<SType,Type,MeshType>& sys,
+        const bool constMatrix = false
+    );
 
     // Number of level repetitions
     inline label levelReps

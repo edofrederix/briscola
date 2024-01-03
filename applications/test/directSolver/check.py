@@ -1,17 +1,29 @@
 import numpy as np
 
 systems = [
-    'f-colocated-scalar',
-    'f-colocated-vector',
-    'f-staggered-scalar_0',
-    'f-staggered-scalar_1',
-    'f-staggered-scalar_2',
-    'f-staggered-vector_0',
-    'f-staggered-vector_1',
-    'f-staggered-vector_2',
+    'f-colocated-scalar_stencil_APLU',
+    'f-colocated-scalar_stencil_Eigen',
+    'f-colocated-scalar_symmStencil_APLU',
+    'f-colocated-scalar_symmStencil_Eigen',
+    'f-colocated-vector_stencil_APLU',
+    'f-colocated-vector_stencil_Eigen',
+    'f-colocated-vector_symmStencil_APLU',
+    'f-colocated-vector_symmStencil_Eigen',
+    'f-staggered-scalar_stencil_APLU_0',
+    'f-staggered-scalar_stencil_APLU_1',
+    'f-staggered-scalar_stencil_APLU_2',
+    'f-staggered-scalar_stencil_Eigen_0',
+    'f-staggered-scalar_stencil_Eigen_1',
+    'f-staggered-scalar_stencil_Eigen_2',
+    'f-staggered-vector_stencil_APLU_0',
+    'f-staggered-vector_stencil_APLU_1',
+    'f-staggered-vector_stencil_APLU_2',
+    'f-staggered-vector_stencil_Eigen_0',
+    'f-staggered-vector_stencil_Eigen_1',
+    'f-staggered-vector_stencil_Eigen_2',
 ]
 
-typeSizes = [1, 3, 1, 1, 1, 3, 3, 3]
+typeSizes = [1, 1, 1, 1, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3]
 
 def removeBrackets(fileName):
 

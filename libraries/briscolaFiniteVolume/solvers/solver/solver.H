@@ -101,6 +101,9 @@ public:
         // Level number
         const label l_;
 
+        // Prepared switch
+        Switch prepared_;
+
     public:
 
         // Runtime type information
@@ -143,6 +146,20 @@ public:
 
         // Return the mesh level number
         inline label levelNum() const { return l_; }
+
+        // Return prepared switch
+        inline Switch prepared() const { return prepared_; }
+
+        // Prepare the solution of the given system, indicating if singular
+        // system augmentation should be applied
+        virtual void prepare
+        (
+            const linearSystem<SType,Type,MeshType>&,
+            const List<bool>&
+        )
+        {
+            prepared_ = true;
+        }
 
         // Solve the given system, indicating if singular system augmentation
         // should be applied
@@ -223,8 +240,12 @@ public:
     // Access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
-    // Solve the given system
-    virtual void solve(linearSystem<SType,Type,MeshType>&) = 0;
+    // Solve the given system with optional constant matrix indicator
+    virtual void solve
+    (
+        linearSystem<SType,Type,MeshType>&,
+        const bool constMatrix = false
+    ) = 0;
 
     // Compute residual normalization factors of the system Ax=b at given mesh
     // level. The normalization factor is defined as sum(|Ax-Ay|+|b-Ay|), with y

@@ -62,7 +62,9 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
     if (ddt)
         sys -= im::ddt(x);
 
-    solverPtr_->solve(sys);
+    const bool constMatrix = !ddt && !lambdaPtr;
+
+    solverPtr_->solve(sys,constMatrix);
 }
 
 }

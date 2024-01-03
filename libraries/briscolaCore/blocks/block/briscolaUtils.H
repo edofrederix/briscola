@@ -720,6 +720,12 @@ inline scalar triArea
     return Foam::mag(triAreaVector(a,b,c));
 }
 
+// Make a list from a scalar
+inline scalarList list(const scalar s)
+{
+    return scalarList(1,s);
+}
+
 // Make a list from a vector
 inline scalarList list(const vector& v)
 {
@@ -728,12 +734,27 @@ inline scalarList list(const vector& v)
     return l;
 }
 
-// Make a vector from a list
-inline vector vec(const scalarList& l)
+// Make a type from list
+
+template<class Type>
+inline Type listToType(const scalarList& l)
 {
-    vector v;
-    for (int i = 0; i < 3; i++) v[i] = l[i];
-    return v;
+    Type s;
+    forAll(l, i)
+        s[i] = l[i];
+    return s;
+}
+
+template<>
+inline scalar listToType(const scalarList& l)
+{
+    return l[0];
+}
+
+template<>
+inline label listToType(const scalarList& l)
+{
+    return l[0];
 }
 
 }

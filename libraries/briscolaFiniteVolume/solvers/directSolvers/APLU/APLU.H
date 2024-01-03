@@ -2,6 +2,8 @@
 #define APLU_H
 
 #include "solver.H"
+#include "globalCellNumbers.H"
+#include "globalRowData.H"
 
 namespace Foam
 {
@@ -21,19 +23,14 @@ class APLU
 {
 protected:
 
-    // Processor mesh shapes and sizes, per direction. Only fully set on master.
-    List<List<labelVector>> shapes_;
-    List<List<label>> sizes_;
+    // Dense matrix
+    PtrList<scalarSquareMatrix> APtrs_;
 
-    // Total data size of communication to collect all cells in all directions
-    // into one send/recv
-    labelList commSizes_;
+    // Pivot indices
+    PtrList<labelList> pivotPtrs_;
 
-    // Stencil indices, for each direction, processor and cell
-    List<List<List<labelList>>> indices_;
-
-    // Linear system sizes
-    List<label> n_;
+    // Global stencil cell numbers
+    globalCellNumbers<SType,MeshType> gCellNumbers_;
 
 public:
 
@@ -43,11 +40,14 @@ public:
     // Construct from dictionary and mesh
     APLU(const dictionary&, const fvMesh&, const label = 0);
 
-    // Return the indices
-    const List<List<List<labelList>>>& indices() const { return indices_; }
+    // Prepare
+    virtual void prepare
+    (
+        const linearSystem<SType,Type,MeshType>&,
+        const List<bool>&
+    );
 
-    // Solve the given system, indicating of singular system augmentation should
-    // be applied
+    // Solve
     virtual void solve
     (
         linearSystem<SType,Type,MeshType>&,

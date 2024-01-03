@@ -277,9 +277,9 @@ part::part(const mesh& msh, const part* l)
         N_ =
             labelVector
             (
-                P.x() < 4 ? P.x() : P.x()/2,
-                P.y() < 4 ? P.y() : P.y()/2,
-                P.z() < 4 ? P.z() : P.z()/2
+                P.x() < 2 ? P.x() : P.x()/2,
+                P.y() < 2 ? P.y() : P.y()/2,
+                P.z() < 2 ? P.z() : P.z()/2
             );
 
         R_ = cmptDivide(P,N_);

@@ -8,6 +8,10 @@
 #include "edgeLabel.H"
 #include "vertexLabel.H"
 
+// Forward declaration of MPI communicator
+struct ompi_communicator_t;
+typedef ompi_communicator_t* MPI_Comm;
+
 namespace Foam
 {
 
@@ -58,6 +62,9 @@ class mesh
     // Bounding box
     faceScalar boundingBox_;
 
+    // Distributed communication graph
+    MPI_Comm comm_;
+
     // Add a boundary to the list of boundaries
     void addBoundary
     (
@@ -84,18 +91,34 @@ class mesh
     // Generate boundaries
     void generateBoundaries();
 
+    // Reorder boundaries in the order:
+    //
+    //  1) domain boundaries,
+    //  2) parallel/periodic faces,
+    //  3) parallel/periodic edges,
+    //  4) parallel/periodic vertices and
+    //  5) empty boundaries.
+    //
+    //  This order is important, so that parallel boundary conditions can copy
+    //  domain boundaries and empty boundaries can copy both domain and
+    //  parallel/periodic boundaries.
+    void reorderBoundaries();
+
     // Set communication tags in parallel and periodic boundaries. Tags avoid
     // inconsistent communication.
     void setCommTags();
 
     // Set boundary master and type label lists
-    void setPatchLabels();
+    void setBoundaryLabels();
 
     // Set boundary extension labels
-    void setPatchExtension();
+    void setBoundaryExtension();
 
-    // Generate the list of empty boundary offsets
-    void setEmptyPatchOffsets();
+    // Set the list of empty boundary offsets
+    void setEmptyBoundaryOffsets();
+
+    // Set the distributed communication graph
+    void setDistributedCommGraph();
 
     // Generate mesh part levels
     void generateLevels();
@@ -295,6 +318,9 @@ public:
 
     // Bounding box
     inline faceScalar boundingBox() const { return boundingBox_; }
+
+    // Access to the distributed communicator graph
+    const MPI_Comm& comm() const { return comm_; }
 
     // Find the cell index of the given point at given mesh level. Return
     // -unitXYZ if it is not found. Tree search, but should be overloaded by

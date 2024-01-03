@@ -10,6 +10,9 @@
 #include "parallelBoundary.H"
 #include "periodicBoundary.H"
 
+#include "PstreamGlobals.H"
+#include <mpi.h>
+
 namespace Foam
 {
 
@@ -286,7 +289,7 @@ void mesh::generateDomainBoundaries()
                 (
                     p.name(),
                     patches()[patchi].type() == patch::EMPTY
-                  ? "empty" : "boundary",
+                  ? "empty" : "domain",
                     eye,
                     offset
                 );
@@ -316,11 +319,7 @@ void mesh::setCommTags()
     {
         const boundary& b = boundaries_[bi];
 
-        if
-        (
-            b.typeNum() == parallelBoundary::typeNumber
-         || b.typeNum() == periodicBoundary::typeNumber
-        )
+        if (b.castable<parallelBoundary>())
         {
             bDicts[m].append
             (
@@ -446,18 +445,14 @@ void mesh::setCommTags()
     {
         boundary& b = boundaries_[bi];
 
-        if
-        (
-            b.typeNum() == parallelBoundary::typeNumber
-         || b.typeNum() == periodicBoundary::typeNumber
-        )
+        if (b.castable<parallelBoundary>())
         {
             b.dict().add("tag", myTags[c++]);
         }
     }
 }
 
-void mesh::setPatchExtension()
+void mesh::setBoundaryExtension()
 {
     edgePatchExtension_ = Zero;
     vertexPatchExtension_ = Zero;
@@ -502,7 +497,7 @@ void mesh::setPatchExtension()
     }
 }
 
-void mesh::setEmptyPatchOffsets()
+void mesh::setEmptyBoundaryOffsets()
 {
     emptyPatchOffsets_.clear();
 
@@ -515,7 +510,7 @@ void mesh::setEmptyPatchOffsets()
             emptyPatchOffsets_.append(vertexOffsets[i]);
 }
 
-void mesh::setPatchLabels()
+void mesh::setBoundaryLabels()
 {
     // Initialize edge and vertex master label to -1 as their corresponding
     // boundaries may not exist
@@ -618,10 +613,84 @@ void mesh::generateBoundaries()
     generateBrickExternalBoundaries();
     generateDomainBoundaries();
 
+    reorderBoundaries();
+
     setCommTags();
-    setPatchLabels();
-    setPatchExtension();
-    setEmptyPatchOffsets();
+    setBoundaryLabels();
+    setBoundaryExtension();
+    setEmptyBoundaryOffsets();
+}
+
+void mesh::reorderBoundaries()
+{
+    labelList oldToNew(boundaries_.size());
+
+    int j = 0;
+
+    // Domain boundaries
+
+    forAll(boundaries_, i)
+        if (boundaries_[i].castable<domainBoundary>())
+            oldToNew[i] = j++;
+
+    // Parallel/periodic boundaries
+
+    for (int d = 1; d <= 3; d++)
+        forAll(boundaries_, i)
+            if
+            (
+                boundaries_[i].castable<parallelBoundary>()
+             && boundaries_[i].offsetDegree() == d
+            )
+                oldToNew[i] = j++;
+
+    // Empty boundaries
+
+    forAll(boundaries_, i)
+        if (boundaries_[i].castable<emptyBoundary>())
+            oldToNew[i] = j++;
+
+    if (j != boundaries_.size())
+        FatalErrorInFunction
+            << "Could not order boundaries"
+            << endl << abort(FatalError);
+
+    boundaries_.reorder(oldToNew);
+}
+
+void mesh::setDistributedCommGraph()
+{
+    if (Pstream::parRun())
+    {
+        labelList neighbors, weights;
+
+        forAll(boundaries_, i)
+        if (boundaries_[i].castable<parallelBoundary>())
+        {
+            const parallelBoundary& b =
+                boundaries_[i].cast<parallelBoundary>();
+
+            const labelVector bo(b.offset());
+            const labelVector N(this->operator[](0).N());
+
+            neighbors.append(b.neighborProcNum());
+            weights.append((unitXYZ-cmptMag(bo)) & N);
+        }
+
+        MPI_Dist_graph_create_adjacent
+        (
+            MPI_COMM_WORLD,
+            neighbors.size(),
+            neighbors.begin(),
+            weights.begin(),
+            neighbors.size(),
+            neighbors.begin(),
+            weights.begin(),
+            MPI_INFO_NULL,
+            false,
+            &this->comm_
+        );
+    }
 }
 
 void mesh::generateLevels()
@@ -642,9 +711,9 @@ void mesh::generateLevels()
         const labelVector P(parent->N());
         const labelVector D
         (
-            P.x() < 4 ? P.x() : P.x()/2,
-            P.y() < 4 ? P.y() : P.y()/2,
-            P.z() < 4 ? P.z() : P.z()/2
+            P.x() < 2 ? P.x() : P.x()/2,
+            P.y() < 2 ? P.y() : P.y()/2,
+            P.z() < 2 ? P.z() : P.z()/2
         );
 
         label nProcsCoarsen = (P != D);
@@ -712,6 +781,10 @@ mesh::mesh(const IOdictionary& dict)
             returnReduce(bb.aft(), minOp<scalar>()),
             returnReduce(bb.fore(), maxOp<scalar>())
         );
+
+    // Set MPI communicator graph
+
+    setDistributedCommGraph();
 }
 
 mesh::mesh(const mesh& msh)
@@ -732,8 +805,11 @@ mesh::mesh(const mesh& msh)
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
     uniform_(msh.uniform_),
-    boundingBox_(msh.boundingBox_)
-{}
+    boundingBox_(msh.boundingBox_),
+    comm_(MPI_COMM_NULL)
+{
+    setDistributedCommGraph();
+}
 
 mesh::mesh(autoPtr<mesh>& mshPtr)
 :
@@ -753,9 +829,11 @@ mesh::mesh(autoPtr<mesh>& mshPtr)
     structured_(mshPtr->structured_),
     rectilinear_(mshPtr->rectilinear_),
     uniform_(mshPtr->uniform_),
-    boundingBox_(mshPtr->boundingBox_)
+    boundingBox_(mshPtr->boundingBox_),
+    comm_(MPI_COMM_NULL)
 {
     mshPtr.clear();
+    setDistributedCommGraph();
 }
 
 mesh::mesh(mesh& msh, bool reuse)
@@ -776,8 +854,11 @@ mesh::mesh(mesh& msh, bool reuse)
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
     uniform_(msh.uniform_),
-    boundingBox_(msh.boundingBox_)
-{}
+    boundingBox_(msh.boundingBox_),
+    comm_(MPI_COMM_NULL)
+{
+    setDistributedCommGraph();
+}
 
 autoPtr<mesh> mesh::New(const IOdictionary& dict)
 {

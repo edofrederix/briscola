@@ -225,19 +225,25 @@ public:
         }
     }
 
+    // Correct boundary conditions
+    void correctBoundaryConditions();
+
     // Correct unset boundary conditions as homogeneous Neumann
     void correctUnsetBoundaryConditions();
 
-    // Correct boundary conditions for this level
-    void correctBoundaryConditions();
-
-    // Correct boundary boundary conditions for this level
+    // Correct domain boundary conditions
     void correctDomainBoundaryConditions();
 
-    // Correct parallel boundary conditions for this level
+    // Correct empty boundary conditions
+    void correctEmptyBoundaryConditions();
+
+    // Correct communicating boundary conditions
+    void correctCommsBoundaryConditions();
+
+    // Correct parallel boundary conditions
     void correctParallelBoundaryConditions();
 
-    // Correct periodic boundary conditions for this level
+    // Correct periodic boundary conditions
     void correctPeriodicBoundaryConditions();
 
     // Correct non-eliminated boundary conditions
