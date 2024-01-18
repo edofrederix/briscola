@@ -181,8 +181,11 @@ sample::sample
             dict.lookupOrDefault<scalar>("startTime", 0.0),
             runTime.startTime().value()
         )
-    )
-{}
+    ),
+    writeTime_(Foam::name(startTime_))
+{
+    init();
+}
 
 sample::~sample()
 {}
@@ -215,7 +218,12 @@ bool sample::write()
                 }
             }
 
-            const fileName path("postProcessing"/name_);
+            if (runTime_.writeTime())
+            {
+                writeTime_ = runTime_.timeName();
+            }
+
+            const fileName path("postProcessing"/name_/writeTime_);
             mkDir(path);
 
             OFstream file(path/"averagedSample.txt");

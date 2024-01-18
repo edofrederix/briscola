@@ -44,6 +44,9 @@ protected:
     // Sampling start time
     scalar startTime_;
 
+    // Name of write-time folder
+    word writeTime_;
+
     // Initialize
     void init();
 
