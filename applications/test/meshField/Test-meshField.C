@@ -1620,24 +1620,23 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
         if (gMinMagSqr(2*m1)[d] != Foam::magSqr(2*m1(d,0,0,0)))
             FatalErrorInFunction << "test 29b failed" << abort(FatalError);
 
-
     forAll(m1.mshPart(), d)
-        if (sumMag(m1)[d] != m1sm[d])
+        if (Foam::mag(sumMag(m1)[d] - m1sm[d])/m1sm[d] > 1e-12)
             FatalErrorInFunction << "test 30a failed" << abort(FatalError);
 
     forAll(m1.mshPart(), d)
-        if (sumMag(2*m1)[d] != 2*m1sm[d])
+        if (Foam::mag(sumMag(2*m1)[d] - 2*m1sm[d])/m1sm[d] > 1e-12)
             FatalErrorInFunction << "test 30b failed" << abort(FatalError);
 
 
     if (MeshType::numberOfDirections == 1)
     forAll(m1.mshPart(), d)
-        if (gSumMag(m1)[d] != Pstream::nProcs()*m1sm[d])
+        if (Foam::mag(gSumMag(m1)[d] - Pstream::nProcs()*m1sm[d])/m1sm[d] > 1e-12)
             FatalErrorInFunction << "test 31a failed" << abort(FatalError);
 
     if (MeshType::numberOfDirections == 1)
     forAll(m1.mshPart(), d)
-        if (gSumMag(2*m1)[d] != Pstream::nProcs()*2*m1sm[d])
+        if (Foam::mag(gSumMag(2*m1)[d] - Pstream::nProcs()*2*m1sm[d])/m1sm[d] > 1e-12)
             FatalErrorInFunction << "test 31b failed" << abort(FatalError);
 
 

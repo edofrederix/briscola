@@ -16,7 +16,8 @@ RBGS<SType,Type,MeshType>::RBGS
     const fvMesh& fvMsh
 )
 :
-    solver<SType,Type,MeshType>::smoother(dict,fvMsh)
+    solver<SType,Type,MeshType>::smoother(dict,fvMsh),
+    symmetric_(dict.lookupOrDefault<Switch>("symmetric", true))
 {}
 
 template<class SType, class Type, class MeshType>
@@ -48,7 +49,7 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
             const meshDirection<Type,MeshType>& bd = b[d];
 
             forAllCells(xd, i, j, k)
-                if ((i+j+k)%2 == 0)
+                if (even(i,j,k))
                     xd(i,j,k) =
                         (
                             bd(i,j,k)
@@ -59,7 +60,32 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                       / Ad(i,j,k).center();
 
             forAllCells(xd, i, j, k)
-                if ((i+j+k)%2 == 1)
+                if (odd(i,j,k))
+                    xd(i,j,k) =
+                        (
+                            bd(i,j,k)
+                          - lowerRowProduct(Ad,xd,i,j,k)
+                          - upperRowProduct(Ad,xd,i,j,k)
+                          - xi[d]
+                        )
+                      / Ad(i,j,k).center();
+
+            if (!symmetric_)
+                continue;
+
+            forAllCellsReversed(xd, i, j, k)
+                if (even(i,j,k))
+                    xd(i,j,k) =
+                        (
+                            bd(i,j,k)
+                          - lowerRowProduct(Ad,xd,i,j,k)
+                          - upperRowProduct(Ad,xd,i,j,k)
+                          - xi[d]
+                        )
+                      / Ad(i,j,k).center();
+
+            forAllCellsReversed(xd, i, j, k)
+                if (odd(i,j,k))
                     xd(i,j,k) =
                         (
                             bd(i,j,k)

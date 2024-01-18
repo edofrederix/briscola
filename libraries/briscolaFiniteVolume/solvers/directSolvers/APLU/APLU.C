@@ -109,6 +109,15 @@ void APLU<SType,Type,MeshType>::prepare
                 A(n,n) = 1.0;
             }
 
+            // Print the full matrix for debugging
+
+            // for (int i = 0; i < n+1; i++)
+            // {
+            //     for (int j = 0; j < n+1; j++)
+            //         Info<< A(i,j) << " ";
+            //     Info<< endl;
+            // }
+
             // Decompose matrix
 
             pivotPtrs_.set(d, new labelList(n+1));

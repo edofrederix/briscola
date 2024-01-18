@@ -249,10 +249,12 @@ public:
 
     // Compute residual normalization factors of the system Ax=b at given mesh
     // level. The normalization factor is defined as sum(|Ax-Ay|+|b-Ay|), with y
-    // = mean(x)
+    // = mean(x). The function reuses the residual that should be pre-computed,
+    // so that it can be re-used.
     virtual List<Type> normFactors
     (
         const linearSystem<SType,Type,MeshType>&,
+        const meshField<Type,MeshType>&,
         const label
     ) const;
 

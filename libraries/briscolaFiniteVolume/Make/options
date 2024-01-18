@@ -15,7 +15,7 @@ EXE_INC = \
     $(if $(SUPERLU_HOME),-I$(SUPERLU_HOME)/include,) \
     $(if $(SUPERLU_HOME),-DSUPERLU,) \
     -Wno-old-style-cast \
-	-Wno-unknown-pragmas
+    -Wno-unknown-pragmas
 
 LIB_LIBS = \
     -L$(FOAM_USER_LIBBIN) \

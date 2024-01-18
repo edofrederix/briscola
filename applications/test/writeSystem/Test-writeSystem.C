@@ -24,7 +24,7 @@ void test(const fvMesh& fvMsh)
 
     f = 0.1;
 
-    linearSystem<SType,scalar,MeshType> sys(im::laplacian(f));
+    linearSystem<SType,scalar,MeshType> sys(im::laplacian<SType>(f));
     sys -= im::ddt(f);
     sys.eliminateGhosts();
 

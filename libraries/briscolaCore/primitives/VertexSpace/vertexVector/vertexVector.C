@@ -63,7 +63,8 @@ vector interpolationWeights
 (
     const vector& point,
     const vertexVector& vertices,
-    const bool insideOnly
+    const bool insideOnly,
+    const bool fatal
 )
 {
     const scalar tol = 1e-14;
@@ -165,10 +166,13 @@ vector interpolationWeights
 
     if (iter == maxIter)
     {
-        FatalErrorInFunction
-            << "Could not determine if point " << point << " is in the "
-            << "the hexahedron defined by the vertices" << nl
-            << vertices << endl << abort(FatalError);
+        if (fatal)
+            FatalErrorInFunction
+                << "Could not determine the interpolation weights of point "
+                << point << " in the hexahedron " << vertices << endl
+                << abort(FatalError);
+
+        return -vector::one;
     }
 
     // Round up to tol. This seems to be important to have the point belong to

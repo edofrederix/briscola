@@ -16,7 +16,8 @@ LEXGS<SType,Type,MeshType>::LEXGS
     const fvMesh& fvMsh
 )
 :
-    solver<SType,Type,MeshType>::smoother(dict,fvMsh)
+    solver<SType,Type,MeshType>::smoother(dict,fvMsh),
+    symmetric_(dict.lookupOrDefault<Switch>("symmetric", true))
 {}
 
 template<class SType, class Type, class MeshType>
@@ -46,6 +47,19 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
 
             const meshDirection<SType,MeshType>& Ad = A[d];
             const meshDirection<Type,MeshType>& bd = b[d];
+
+            forAllCells(xd, i, j, k)
+                xd(i,j,k) =
+                    (
+                        bd(i,j,k)
+                      - lowerRowProduct(Ad,xd,i,j,k)
+                      - upperRowProduct(Ad,xd,i,j,k)
+                      - xi[d]
+                    )
+                  / Ad(i,j,k).center();
+
+            if (!symmetric_)
+                continue;
 
             forAllCells(xd, i, j, k)
                 xd(i,j,k) =

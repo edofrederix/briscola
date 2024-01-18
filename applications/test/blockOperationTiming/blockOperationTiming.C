@@ -41,15 +41,15 @@ int main(int argc, char *argv[])
 
     const label Niter = 100;
     const label P = 1;
-    const label N = 64;
 
     fvMesh fvMsh(meshDict, runTime);
 
+    const labelVector N = fvMsh.msh().bricks()[0].N();
 
-    // Normal block creation
+    // Internal block creation
 
-    vectorBlock b1(N, N*2, N*3);
-    vectorBlock b2(N, N*2, N*3);
+    vectorBlock b1(N);
+    vectorBlock b2(N);
 
     forAllBlock(b1, i, j, k)
     {
@@ -59,8 +59,7 @@ int main(int argc, char *argv[])
 
     tensorBlock b3(b2.shape());
 
-    // Normal block calculation: loop over elements in block in a structured
-    // manner
+    // Internal block indexed loop
 
     auto t1 = high_resolution_clock::now();
 
@@ -70,13 +69,14 @@ int main(int argc, char *argv[])
 
     auto t2 = high_resolution_clock::now();
 
-    Info<< "Normal block calculation time = "
-        << duration_cast<milliseconds>(t2 - t1).count()
+    const label tInternalBlockIndexed =
+        duration_cast<milliseconds>(t2 - t1).count();
+
+    Info<< "Internal block indexed loop =                       "
+        << tInternalBlockIndexed
         << " ms" << endl;
 
-    // Normal block linear calculation: loop over elements in a block in a
-    // linear manner. This should be slightly cheaper than the structured
-    // method.
+    // Internal block linear loop
 
     t1 = high_resolution_clock::now();
 
@@ -86,14 +86,20 @@ int main(int argc, char *argv[])
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Normal block linear calculation time = "
-        << duration_cast<milliseconds>(t2 - t1).count()
+    const label tInternalBlockLinear =
+        duration_cast<milliseconds>(t2 - t1).count();
+
+    Info<< "Internal block linear loop =                        "
+        << tInternalBlockLinear
         << " ms" << endl;
+
+    const scalar costOfIndexing =
+        scalar(tInternalBlockIndexed)/scalar(tInternalBlockLinear);
 
     // Padded block creation
 
-    vectorBlock p1(N+P*2, N*2+P*2, N*3+P*2);
-    vectorBlock p2(N+P*2, N*2+P*2, N*3+P*2);
+    vectorBlock p1(N+P*2*unitXYZ);
+    vectorBlock p2(N+P*2*unitXYZ);
 
     for (label i = P; i < p1.l()-P; i++)
     for (label j = P; j < p1.m()-P; j++)
@@ -105,7 +111,7 @@ int main(int argc, char *argv[])
 
     tensorBlock p3(p2.shape());
 
-    // Padded block calculation: account for padding in block
+    // Padded block indexed loop over internal cells
 
     t1 = high_resolution_clock::now();
 
@@ -117,12 +123,17 @@ int main(int argc, char *argv[])
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Padded block calculation time = "
-        << duration_cast<milliseconds>(t2 - t1).count()
+    const label tPaddedBlockIndexed =
+        duration_cast<milliseconds>(t2 - t1).count();
+
+    Info<< "Padded block indexed loop over internal cells =     "
+        << tPaddedBlockIndexed
         << " ms" << endl;
 
-    // Padded block linear calculation: don't account for padding but perform
-    // linear operation on the full block instead.
+    const scalar costOfPadding =
+        scalar(tPaddedBlockIndexed)/scalar(tInternalBlockIndexed);
+
+    // Full padded block linear loop
 
     t1 = high_resolution_clock::now();
 
@@ -132,9 +143,16 @@ int main(int argc, char *argv[])
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Padded block linear calculation time = "
-        << duration_cast<milliseconds>(t2 - t1).count()
-        << " ms" << endl;
+    {
+        const scalar t = duration_cast<milliseconds>(t2 - t1).count();
+        const label expectation =
+            scalar(p1.size())/scalar(b1.size())*tInternalBlockLinear;
+
+        Info<< "Full padded block linear loop =                     "
+            << t << " ms\t"
+            << "expectation = " << expectation << " ms\t"
+            << "relative = " << round(t/expectation*100) << " %" << endl;
+    }
 
     // Mesh field creation
 
@@ -149,8 +167,7 @@ int main(int argc, char *argv[])
 
     colocatedTensorField f3("f3", fvMsh);
 
-    // Field reference looped: use the level and direction access operators,
-    // which gives a slight overhead.
+    // Internal cell indexed loop referencing fields
 
     t1 = high_resolution_clock::now();
 
@@ -160,12 +177,17 @@ int main(int argc, char *argv[])
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Field reference looped calculation time = "
-        << duration_cast<milliseconds>(t2 - t1).count()
-        << " ms" << endl;
+    {
+        const scalar t = duration_cast<milliseconds>(t2 - t1).count();
+        const label expectation = tInternalBlockIndexed*costOfPadding;
 
-    // Level reference looped: use the direction access operator, which gives a
-    // slight overhead.
+        Info<< "Internal cell indexed loop referencing fields =     "
+            << t << " ms\t"
+            << "expectation = " << expectation << " ms\t"
+            << "relative = " << round(t/expectation*100) << " %" << endl;
+    }
+
+    // Internal cell indexed loop referencing levels
 
     const colocatedVectorLevel& lf1 = f1[0];
     const colocatedVectorLevel& lf2 = f2[0];
@@ -179,12 +201,17 @@ int main(int argc, char *argv[])
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Field level reference looped calculation time = "
-        << duration_cast<milliseconds>(t2 - t1).count()
-        << " ms" << endl;
+    {
+        const scalar t = duration_cast<milliseconds>(t2 - t1).count();
+        const label expectation = tInternalBlockIndexed*costOfPadding;
 
-    // Direction reference looped: avoid level/direction access operators and
-    // access elements in the direction directly.
+        Info<< "Internal cell indexed loop referencing levels =     "
+            << t << " ms\t"
+            << "expectation = " << expectation << " ms\t"
+            << "relative = " << round(t/expectation*100) << " %" << endl;
+    }
+
+    // Internal cell indexed loop referencing directions
 
     const colocatedVectorDirection& df1 = f1.direction();
     const colocatedVectorDirection& df2 = f2.direction();
@@ -198,13 +225,17 @@ int main(int argc, char *argv[])
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Field direction reference looped calculation time = "
-        << duration_cast<milliseconds>(t2 - t1).count()
-        << " ms" << endl;
+    {
+        const scalar t = duration_cast<milliseconds>(t2 - t1).count();
+        const label expectation = tInternalBlockIndexed*costOfPadding;
 
-    // Block reference looped: perform structured loop over block data directly.
-    // This gives a bit of overhead because the ghost cells are also taken into
-    // account.
+        Info<< "Internal cell indexed loop referencing directions = "
+            << t << " ms\t"
+            << "expectation = " << expectation << " ms\t"
+            << "relative = " << round(t/expectation*100) << " %" << endl;
+    }
+
+    // Full block indexed loop
 
     const vectorBlock& bf1 = f1.B();
     const vectorBlock& bf2 = f2.B();
@@ -213,18 +244,24 @@ int main(int argc, char *argv[])
     t1 = high_resolution_clock::now();
 
     for (label iter = 0; iter < Niter; iter++)
-        forAllBlock(bf3, i, j, k)
+        forAllBlock(bf1, i, j, k)
             bf3(i,j,k) = bf1(i,j,k) * bf2(i,j,k);
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Field block reference looped calculation time = "
-        << duration_cast<milliseconds>(t2 - t1).count()
-        << " ms" << endl;
+    {
+        const scalar t = duration_cast<milliseconds>(t2 - t1).count();
+        const label expectation =
+            scalar(p1.size())/scalar(b1.size())
+          * tInternalBlockLinear*costOfIndexing;
 
-    // Block reference linear looped: linear loop over block data directly.
-    // Gives a bit of overhead because ghost cells are also taken into account,
-    // but should also be faster because of the linear traversal.
+        Info<< "Full block indexed loop =                           "
+            << t << " ms\t"
+            << "expectation = " << expectation << " ms\t"
+            << "relative = " << round(t/expectation*100) << " %" << endl;
+    }
+
+    // Full block linear loop
 
     t1 = high_resolution_clock::now();
 
@@ -234,12 +271,18 @@ int main(int argc, char *argv[])
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Field block reference linear looped calculation time = "
-        << duration_cast<milliseconds>(t2 - t1).count()
-        << " ms" << endl;
+    {
+        const scalar t = duration_cast<milliseconds>(t2 - t1).count();
+        const label expectation =
+            scalar(p1.size())/scalar(b1.size())*tInternalBlockLinear;
 
-    // Block: this is quite expensive because at each operation a new temporary
-    // block is created. Avoid if possible.
+        Info<< "Full block linear loop =                            "
+            << t << " ms\t"
+            << "expectation = " << expectation << " ms\t"
+            << "relative = " << round(t/expectation*100) << " %" << endl;
+    }
+
+    // Full block operation with tmp
 
     t1 = high_resolution_clock::now();
 
@@ -248,12 +291,18 @@ int main(int argc, char *argv[])
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Field block operator calculation time (expensive) = "
-        << duration_cast<milliseconds>(t2 - t1).count()
-        << " ms" << endl;
+    {
+        const scalar t = duration_cast<milliseconds>(t2 - t1).count();
+        const label expectation =
+            scalar(p1.size())/scalar(b1.size())*tInternalBlockLinear;
 
-    // Block function: use the equivalent of the operator, which avoids creation
-    // of a temporary block and is thus faster.
+        Info<< "Full block operation with tmp (slow) =              "
+            << t << " ms\t"
+            << "expectation = " << expectation << " ms\t"
+            << "relative = " << round(t/expectation*100) << " %" << endl;
+    }
+
+    // Full block operation without tmp
 
     t1 = high_resolution_clock::now();
 
@@ -262,12 +311,18 @@ int main(int argc, char *argv[])
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Field block function calculation time = "
-        << duration_cast<milliseconds>(t2 - t1).count()
-        << " ms" << endl;
+    {
+        const scalar t = duration_cast<milliseconds>(t2 - t1).count();
+        const label expectation =
+            scalar(p1.size())/scalar(b1.size())*tInternalBlockLinear;
 
-    // Direct operator: perform field operator, which is expensive because
-    // temporary memory is created.
+        Info<< "Full block operation without tmp =                  "
+            << t << " ms\t"
+            << "expectation = " << expectation << " ms\t"
+            << "relative = " << round(t/expectation*100) << " %" << endl;
+    }
+
+    // Full direction operation with tmp
 
     t1 = high_resolution_clock::now();
 
@@ -276,12 +331,18 @@ int main(int argc, char *argv[])
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Field direct operator calculation time (expensive)= "
-        << duration_cast<milliseconds>(t2 - t1).count()
-        << " ms" << endl;
+    {
+        const scalar t = duration_cast<milliseconds>(t2 - t1).count();
+        const label expectation =
+            scalar(p1.size())/scalar(b1.size())*tInternalBlockLinear;
 
-    // Direct function: use the equivalent of the operator, which avoids
-    // creation of a temporary direction and is thus faster.
+        Info<< "Full direction operation with tmp (slow) =          "
+            << t << " ms\t"
+            << "expectation = " << expectation << " ms\t"
+            << "relative = " << round(t/expectation*100) << " %" << endl;
+    }
+
+    // Full direction operation without tmp
 
     t1 = high_resolution_clock::now();
 
@@ -290,7 +351,14 @@ int main(int argc, char *argv[])
 
     t2 = high_resolution_clock::now();
 
-    Info<< "Field direct function calculation time = "
-        << duration_cast<milliseconds>(t2 - t1).count()
-        << " ms" << endl;
+    {
+        const scalar t = duration_cast<milliseconds>(t2 - t1).count();
+        const label expectation =
+            scalar(p1.size())/scalar(b1.size())*tInternalBlockLinear;
+
+        Info<< "Full direction operation without tmp =              "
+            << t << " ms\t"
+            << "expectation = " << expectation << " ms\t"
+            << "relative = " << round(t/expectation*100) << " %" << endl;
+    }
 }

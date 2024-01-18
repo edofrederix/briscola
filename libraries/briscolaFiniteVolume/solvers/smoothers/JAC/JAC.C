@@ -44,10 +44,6 @@ void JAC<SType,Type,MeshType>::JAC::smooth
 
     for (label sweep = 0; sweep < sweeps; sweep++)
     {
-        if (singular)
-            forAll(xi, d)
-                xi[d] = gAverage(x[d]);
-
         forAll(x, d)
         if (!converged[d])
         {

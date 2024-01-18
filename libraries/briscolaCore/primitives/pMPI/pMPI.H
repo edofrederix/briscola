@@ -9,13 +9,33 @@
 #include <mpi.h>
 
 // Class that provides an MPI data type. When included, MPI must be included and
-// linked. By default, the MPI data type is generated from nComponents and
-// MPI_DOUBLE.
+// linked.
 
 namespace Foam
 {
 
-// Base class
+// Base class for templated types
+
+template<class Type, template<class> class TType>
+class pMPI<TType<Type>>
+{
+public:
+
+    MPI_Datatype type;
+
+    inline pMPI()
+    {
+        MPI_Type_contiguous
+        (
+            TType<Type>::nComponents*pTraits<Type>::nComponents,
+            MPI_DOUBLE,
+            &type
+        );
+        MPI_Type_commit(&type);
+    }
+};
+
+// Non-templated primitive types
 
 template<class Type>
 class pMPI
@@ -27,22 +47,6 @@ public:
     inline pMPI()
     {
         MPI_Type_contiguous(pTraits<Type>::nComponents, MPI_DOUBLE, &type);
-        MPI_Type_commit(&type);
-    }
-};
-
-// Scalar specialization
-
-template<>
-class pMPI<scalar>
-{
-public:
-
-    MPI_Datatype type;
-
-    inline pMPI()
-    {
-        MPI_Type_contiguous(1, MPI_DOUBLE, &type);
         MPI_Type_commit(&type);
     }
 };

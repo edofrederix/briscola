@@ -94,10 +94,6 @@ staggeredLowerFaceScalarField phi("phi", fvMsh);
 
 phi = ex::faceFlux(U);
 
-// Stencils
-
-linearSystem<stencil,scalar,staggered> LapU(U);
-
 // Adams-Bashforth source
 
 staggeredScalarField DivU

@@ -260,14 +260,6 @@ int main(int argc, char *argv[])
     testConstantProlongation<vector,staggered>(fvMsh, "injection");
     testConstantProlongation<tensor,staggered>(fvMsh, "injection");
 
-    testConstantProlongation<scalar,colocated>(fvMsh, "midPoint");
-    testConstantProlongation<vector,colocated>(fvMsh, "midPoint");
-    testConstantProlongation<tensor,colocated>(fvMsh, "midPoint");
-
-    testConstantProlongation<scalar,staggered>(fvMsh, "midPoint");
-    testConstantProlongation<vector,staggered>(fvMsh, "midPoint");
-    testConstantProlongation<tensor,staggered>(fvMsh, "midPoint");
-
     testConstantProlongation<scalar,colocated>(fvMsh, "linear");
     testConstantProlongation<vector,colocated>(fvMsh, "linear");
     testConstantProlongation<tensor,colocated>(fvMsh, "linear");
@@ -278,14 +270,6 @@ int main(int argc, char *argv[])
 
     // Prolongation of a linearly increasing value in one dimension. Does not
     // work for injection.
-
-    testOneLinearProlongation<scalar,colocated>(fvMsh, "midPoint");
-    testOneLinearProlongation<vector,colocated>(fvMsh, "midPoint");
-    testOneLinearProlongation<tensor,colocated>(fvMsh, "midPoint");
-
-    testOneLinearProlongation<scalar,staggered>(fvMsh, "midPoint");
-    testOneLinearProlongation<vector,staggered>(fvMsh, "midPoint");
-    testOneLinearProlongation<tensor,staggered>(fvMsh, "midPoint");
 
     testOneLinearProlongation<scalar,colocated>(fvMsh, "linear");
     testOneLinearProlongation<vector,colocated>(fvMsh, "linear");
@@ -298,14 +282,6 @@ int main(int argc, char *argv[])
     // Prolongation of a linearly increasing value in two dimensions. Does not
     // work for injection.
 
-    testTwoLinearProlongation<scalar,colocated>(fvMsh, "midPoint");
-    testTwoLinearProlongation<vector,colocated>(fvMsh, "midPoint");
-    testTwoLinearProlongation<tensor,colocated>(fvMsh, "midPoint");
-
-    testTwoLinearProlongation<scalar,staggered>(fvMsh, "midPoint");
-    testTwoLinearProlongation<vector,staggered>(fvMsh, "midPoint");
-    testTwoLinearProlongation<tensor,staggered>(fvMsh, "midPoint");
-
     testTwoLinearProlongation<scalar,colocated>(fvMsh, "linear");
     testTwoLinearProlongation<vector,colocated>(fvMsh, "linear");
     testTwoLinearProlongation<tensor,colocated>(fvMsh, "linear");
@@ -316,14 +292,6 @@ int main(int argc, char *argv[])
 
     // Prolongation of a linearly increasing value in three dimensions. Does not
     // work for injection.
-
-    testThreeLinearProlongation<scalar,colocated>(fvMsh, "midPoint");
-    testThreeLinearProlongation<vector,colocated>(fvMsh, "midPoint");
-    testThreeLinearProlongation<tensor,colocated>(fvMsh, "midPoint");
-
-    testThreeLinearProlongation<scalar,staggered>(fvMsh, "midPoint");
-    testThreeLinearProlongation<vector,staggered>(fvMsh, "midPoint");
-    testThreeLinearProlongation<tensor,staggered>(fvMsh, "midPoint");
 
     testThreeLinearProlongation<scalar,colocated>(fvMsh, "linear");
     testThreeLinearProlongation<vector,colocated>(fvMsh, "linear");

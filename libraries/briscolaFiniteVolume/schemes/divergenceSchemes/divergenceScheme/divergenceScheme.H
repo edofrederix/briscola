@@ -53,26 +53,14 @@ public:
     // Destructor
     virtual ~divergenceScheme();
 
-    // Pure virtual functions, to be defined by derived schemes. Cannot use
-    // templating here because they are virtual.
+    // Pure virtual functions, to be defined by derived schemes
 
-        #define DIVERGENCE(OPNAME)                                             \
-                                                                               \
-        virtual void imDiv                                                     \
-        (                                                                      \
-            linearSystem<SType,Type,MeshType>& sys,                            \
-            const meshField<lowerFaceScalar,MeshType>& phi,                    \
-            const meshField<Type,MeshType>& field,                             \
-            const OPNAME<Type>& op,                                            \
-            const scalar factor = 1.0                                          \
+        virtual tmp<linearSystem<SType,Type,MeshType>> imDiv
+        (
+            const meshField<lowerFaceScalar,MeshType>& phi,
+            const meshField<Type,MeshType>& field,
+            const scalar factor = 1.0
         ) = 0;
-
-        DIVERGENCE(eqOp)
-        DIVERGENCE(eqMinusOp)
-        DIVERGENCE(plusEqOp)
-        DIVERGENCE(minusEqOp)
-
-        #undef DIVERGENCE
 
         virtual tmp<meshField<Type,MeshType>> exDiv
         (
@@ -86,40 +74,11 @@ public:
 
             // Return
 
-                // Flux as reference
-                inline tmp<linearSystem<SType,Type,MeshType>> imDiv
-                (
-                    const meshField<lowerFaceScalar,MeshType>& phi,
-                    const meshField<Type,MeshType>& field
-                );
-
                 // Flux as tmp
                 inline tmp<linearSystem<SType,Type,MeshType>> imDiv
                 (
                     const tmp<meshField<lowerFaceScalar,MeshType>>& tPhi,
                     const meshField<Type,MeshType>& field
-                );
-
-            // Manipulate linear system
-
-                // Flux as reference
-                template<template<class> class OpType>
-                inline void imDiv
-                (
-                    linearSystem<SType,Type,MeshType>& sys,
-                    const meshField<lowerFaceScalar,MeshType>& phi,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
-                );
-
-                // Flux as tmp
-                template<template<class> class OpType>
-                inline void imDiv
-                (
-                    linearSystem<SType,Type,MeshType>& sys,
-                    const tmp<meshField<lowerFaceScalar,MeshType>>& tPhi,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
                 );
 
         // Explicit

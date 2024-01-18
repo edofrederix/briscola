@@ -17,6 +17,9 @@ class LEXGS
 :
     public solver<SType,Type,MeshType>::smoother
 {
+    // Symmetry bool (defaults to true)
+    Switch symmetric_;
+
 public:
 
     // Runtime type information

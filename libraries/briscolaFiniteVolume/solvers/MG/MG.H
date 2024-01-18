@@ -72,6 +72,7 @@ protected:
     (
         linearSystem<SType,Type,MeshType>& sys,
         const List<bool>& singular,
+        const bool constMatrix,
         const scalar relTol,
         const scalar absTol,
         const label minIter,
@@ -89,6 +90,7 @@ protected:
         labelList& visits,
         const label l,
         const List<bool>& singular,
+        const bool constMatrix,
         const labelList& converged,
         const label nSweepsPre,
         const label nSweepsPost,

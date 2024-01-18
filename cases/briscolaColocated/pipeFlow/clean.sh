@@ -6,4 +6,4 @@ cleanCase
 
 wclean code
 
-rm -f briscola*.vtk.series code/libcode.so
+rm -f briscola*.vtk.series code/libcode.so system/briscolaMeshDict

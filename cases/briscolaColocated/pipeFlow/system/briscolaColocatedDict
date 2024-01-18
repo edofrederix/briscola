@@ -7,4 +7,4 @@ FoamFile
 }
 
 nu      0.005555;
-source  (0 0 1);
+source  (0 0 2);

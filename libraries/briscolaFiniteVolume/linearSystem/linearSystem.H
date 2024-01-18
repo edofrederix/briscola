@@ -33,6 +33,9 @@ class linearSystem
     // Right-hand side source which is shallow by default
     meshField<Type,MeshType> b_;
 
+    // Singularity bools
+    List<bool> singular_;
+
     // Transfer data from other system
     void transfer(linearSystem<SType,Type,MeshType>&);
 
@@ -81,8 +84,8 @@ public:
 
     // A linear system is said to be singular if all matrix row sums at the
     // coarsest level  are zero. See Remark 5.6.5 in "Multigrid", U. Trottenberg
-    // et al., (2000).
-    List<bool> singular() const;
+    // et al., (2000). Result is cached.
+    List<bool> singular(const bool clearCache = false);
 
     // Compute the residual b-Ax and store in given object
     void residual(meshField<Type,MeshType>&) const;

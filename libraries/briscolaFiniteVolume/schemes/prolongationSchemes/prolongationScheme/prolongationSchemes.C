@@ -1,7 +1,6 @@
 #include "prolongationSchemes.H"
 #include "addToRunTimeSelectionTable.H"
 
-#include "midPointProlongationScheme.H"
 #include "linearProlongationScheme.H"
 #include "injectionProlongationScheme.H"
 
@@ -20,13 +19,6 @@ makeProlongationScheme(vector,colocated);
 makeProlongationScheme(vector,staggered);
 makeProlongationScheme(tensor,colocated);
 makeProlongationScheme(tensor,staggered);
-
-makeProlongationSchemeType(midPoint,scalar,colocated);
-makeProlongationSchemeType(midPoint,scalar,staggered);
-makeProlongationSchemeType(midPoint,vector,colocated);
-makeProlongationSchemeType(midPoint,vector,staggered);
-makeProlongationSchemeType(midPoint,tensor,colocated);
-makeProlongationSchemeType(midPoint,tensor,staggered);
 
 makeProlongationSchemeType(linear,scalar,colocated);
 makeProlongationSchemeType(linear,scalar,staggered);

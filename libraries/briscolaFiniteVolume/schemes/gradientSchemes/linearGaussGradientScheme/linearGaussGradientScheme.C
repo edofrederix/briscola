@@ -67,7 +67,7 @@ linearGaussGradientScheme<Type,MeshType>::grad
             Grad(d,i,j,k) +=
                 (
                     fwc(d,i,j,k)[f]*field(d,i,j,k)
-                  + fwn(d,i,j,k)[f]*field(d,labelVector(i,j,k)+faceOffsets[f])
+                  + fwn(d,i,j,k)[f]*field(d,nei(i,j,k,f))
                 )
               * fan(d,i,j,k)[f]
               / cv(d,i,j,k);
@@ -102,7 +102,7 @@ linearGaussGradientScheme<Type,MeshType>::stagGrad
         Grad(d,i,j,k) =
             (
                 field(i,j,k)
-              - field(labelVector(i,j,k)+faceOffsets[d*2])
+              - field(lowerNei(i,j,k,d))
             )
           * fd(i,j,k)[d*2];
 

@@ -54,26 +54,14 @@ public:
     // Destructor
     virtual ~laplacianScheme();
 
-    // Pure virtual functions, to be defined by derived schemes. Cannot use
-    // templating here because they are virtual.
+    // Pure virtual functions, to be defined by derived schemes
 
-        #define LAPLACIAN(OPNAME)                                              \
-                                                                               \
-        virtual void imLaplacian                                               \
-        (                                                                      \
-            linearSystem<SType,Type,MeshType>& sys,                            \
-            const meshField<lowerFaceScalar,MeshType>* lambdaPtr,              \
-            const meshField<Type,MeshType>& field,                             \
-            const OPNAME<Type>& op,                                            \
-            const scalar factor = 1.0                                          \
+        virtual tmp<linearSystem<SType,Type,MeshType>> imLaplacian
+        (
+            const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+            const meshField<Type,MeshType>& field,
+            const scalar factor = 1.0
         ) = 0;
-
-        LAPLACIAN(eqOp)
-        LAPLACIAN(eqMinusOp)
-        LAPLACIAN(plusEqOp)
-        LAPLACIAN(minusEqOp)
-
-        #undef LAPLACIAN
 
         virtual tmp<meshField<Type,MeshType>> exLaplacian
         (
@@ -88,14 +76,6 @@ public:
 
             // Return
 
-                // Coefficient as pointer
-                inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
-                (
-                    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
-                );
-
                 // Coefficient as reference
                 inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
                 (
@@ -123,57 +103,6 @@ public:
                 // No coefficient
                 inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
                 (
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
-                );
-
-            // Manipulate linear system
-
-                // Coefficient as pointer
-                template<template<class> class OpType>
-                inline void imLaplacian
-                (
-                    linearSystem<SType,Type,MeshType>& sys,
-                    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
-                );
-
-                // Coefficient as reference
-                template<template<class> class OpType>
-                inline void imLaplacian
-                (
-                    linearSystem<SType,Type,MeshType>& sys,
-                    const meshField<lowerFaceScalar,MeshType>& lambda,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
-                );
-
-                // Coefficient as tmp
-                template<template<class> class OpType>
-                inline void imLaplacian
-                (
-                    linearSystem<SType,Type,MeshType>& sys,
-                    const tmp<meshField<lowerFaceScalar,MeshType>>& tLambda,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
-                );
-
-                // Constant coefficient
-                template<template<class> class OpType>
-                inline void imLaplacian
-                (
-                    linearSystem<SType,Type,MeshType>& sys,
-                    const scalar lambda,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
-                );
-
-                // No coefficient
-                template<template<class> class OpType>
-                inline void imLaplacian
-                (
-                    linearSystem<SType,Type,MeshType>& sys,
                     const meshField<Type,MeshType>& field,
                     const scalar factor = 1.0
                 );

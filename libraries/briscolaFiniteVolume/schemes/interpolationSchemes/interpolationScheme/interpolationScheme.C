@@ -85,16 +85,8 @@ tmp<meshField<Type,staggered>> stagInterp
     Interp = Zero;
 
     forAllCells(Interp, d, i, j, k)
-    {
-        const labelVector ijk(i,j,k);
-        const labelVector ijkm(ijk - units[d]);
-
-        // Staggered cell center is exactly in the middle of the two colocated
-        // cell centers
-
-        Interp(d,ijk) =
-            0.5*(field(ijk) + field(ijkm));
-    }
+        Interp(d,i,j,k) =
+            0.5*(field(i,j,k) + field(lowerNei(i,j,k,d)));
 
     return tInterp;
 }

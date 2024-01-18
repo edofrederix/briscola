@@ -57,17 +57,15 @@ midPointGaussGradientScheme<Type,MeshType>::grad
         field.fvMsh().template metrics<MeshType>().cellVolumes();
 
     forAllCells(Grad, d, i, j, k)
-        Grad(d,i,j,k) =
-            0.5
-          * (
-                (field(d,i,j,k) + field(d,i-1,j,k)) * fan(d,i,j,k).left()
-              + (field(d,i,j,k) + field(d,i+1,j,k)) * fan(d,i,j,k).right()
-              + (field(d,i,j,k) + field(d,i,j-1,k)) * fan(d,i,j,k).bottom()
-              + (field(d,i,j,k) + field(d,i,j+1,k)) * fan(d,i,j,k).top()
-              + (field(d,i,j,k) + field(d,i,j,k-1)) * fan(d,i,j,k).aft()
-              + (field(d,i,j,k) + field(d,i,j,k+1)) * fan(d,i,j,k).fore()
-            )
-          / cv(d,i,j,k);
+        for (int f = 0; f < 6; f++)
+            Grad(d,i,j,k) +=
+                0.5
+              * (
+                    field(d,i,j,k)
+                  + field(d,nei(i,j,k,f))
+                )
+              * fan(d,i,j,k)[f]
+              / cv(d,i,j,k);
 
     return tGrad;
 }
@@ -96,13 +94,12 @@ midPointGaussGradientScheme<Type,MeshType>::stagGrad
             field.fvMsh().template metrics<colocated>().faceDeltas();
 
     forAllCells(Grad, d, i, j, k)
-    {
-        const labelVector& o = staggered::padding[d];
-        const labelVector ijk(i,j,k);
-
-        Grad(d,ijk) =
-            (field(0,ijk)-field(0,ijk-o))*fd(0,ijk)[d*2];
-    }
+        Grad(d,i,j,k) =
+            (
+                field(i,j,k)
+              - field(lowerNei(i,j,k,d))
+            )
+          * fd(i,j,k)[d*2];
 
     return tGrad;
 }

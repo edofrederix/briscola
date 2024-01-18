@@ -441,7 +441,7 @@ void meshLevel<Type,MeshType>::correctCommsBoundaryConditions()
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
 {
-    if (mshFieldPtr_)
+    if (mshFieldPtr_ && Pstream::parRun())
     {
         this->addBoundaryConditions();
 

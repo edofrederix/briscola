@@ -467,28 +467,28 @@ Type sumCmptMag(const block<Type>& f)
 TMP_UNARY_FUNCTION(Type, sumCmptMag)
 
 
-#define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                        \
-                                                                                \
-template<class Type>                                                            \
-ReturnType gFunc                                                                \
-(                                                                               \
-    const block<Type>& f,                                                       \
-    const label comm                                                            \
-)                                                                               \
-{                                                                               \
-    ReturnType res = Func(f);                                                   \
-    reduce(res, rFunc##Op<ReturnType>(), Pstream::msgType(), comm);             \
-    return res;                                                                 \
-}                                                                               \
-                                                                                \
-template<class Type>                                                            \
-ReturnType gFunc                                                                \
-(                                                                               \
-    const tmp<block<Type>>& tf,                                                 \
-    const label comm                                                            \
-)                                                                               \
-{                                                                               \
-    return gFunc(tf());                                                         \
+#define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                       \
+                                                                               \
+template<class Type>                                                           \
+ReturnType gFunc                                                               \
+(                                                                              \
+    const block<Type>& f,                                                      \
+    const label comm                                                           \
+)                                                                              \
+{                                                                              \
+    ReturnType res = Func(f);                                                  \
+    reduce(res, rFunc##Op<ReturnType>(), Pstream::msgType(), comm);            \
+    return res;                                                                \
+}                                                                              \
+                                                                               \
+template<class Type>                                                           \
+ReturnType gFunc                                                               \
+(                                                                              \
+    const tmp<block<Type>>& tf,                                                \
+    const label comm                                                           \
+)                                                                              \
+{                                                                              \
+    return gFunc(tf());                                                        \
 }
 
 G_UNARY_FUNCTION(Type, gMax, max, max)

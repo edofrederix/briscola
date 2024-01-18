@@ -62,10 +62,10 @@ void Eigen<SType,Type,MeshType>::prepare
             // Create linear system. Increase dimension by one, to allow for
             // singular system augmentation.
 
-            typedef ::Eigen::Triplet<double> tType;
+            APtrs_.set(d, new EigenSolver::matrixType(n+1,n+1));
+            EigenSolver::matrixType& A = APtrs_[d];
 
-            std::vector<tType> coeffs;
-            coeffs.reserve(n*(SType::nComponents + singular[d]*2) + 1);
+            A.reserve(n*7 + (singular[d] ? 2*n+1 : 1));
 
             label offset = 0;
             forAll(cellNumbers, proc)
@@ -85,17 +85,17 @@ void Eigen<SType,Type,MeshType>::prepare
 
                         if (j > -1)
                         {
-                            coeffs.push_back(tType(i,j,S[s]));
+                            A.coeffRef(i,j) = S[s];
 
                             if (symm && i != j)
-                                coeffs.push_back(tType(j,i,S[s]));
+                                A.coeffRef(j,i) = S[s];
                         }
                         else if (Foam::mag(S[s]) > 1e-8)
                         {
                             // Homogeneous Neumann in case of non-eliminated
                             // boundary coefficient
 
-                            coeffs.push_back(tType(i,i,S[s]));
+                            A.coeffRef(i,i) += S[s];
                         }
                     }
                 }
@@ -110,24 +110,31 @@ void Eigen<SType,Type,MeshType>::prepare
 
                 for (int i = 0; i < n; i++)
                 {
-                    coeffs.push_back(tType(i,n,1));
-                    coeffs.push_back(tType(n,i,1));
+                    A.insert(i,n) = 1.0;
+                    A.insert(n,i) = 1.0;
                 }
             }
             else
             {
                 // Set the auxilary variable to zero
 
-                coeffs.push_back(tType(n,n,1));
+                A.insert(n,n) = 1.0;
             }
 
             // Set matrix and compute decomposition
 
-            APtrs_.set(d, new EigenSolver::matrixType(n+1,n+1));
-            EigenSolver::matrixType& A = APtrs_[d];
-
-            A.setFromTriplets(coeffs.begin(), coeffs.end());
             A.makeCompressed();
+
+            // Print the full matrix for debugging
+
+            // EigenSolver::rhsType B(A);
+
+            // for (int i = 0; i < n+1; i++)
+            // {
+            //     for (int j = 0; j < n+1; j++)
+            //         Info<< B(i,j) << " ";
+            //     Info<< endl;
+            // }
 
             solverPtrs_[d].prepare(A);
         }
