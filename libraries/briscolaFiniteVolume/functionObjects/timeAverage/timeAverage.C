@@ -42,7 +42,10 @@ timeAverage::timeAverage
             dict.lookupOrDefault<scalar>("startTime", 0.0),
             runTime.startTime().value()
         )
-    )
+    ),
+    intervalAveraging_(dict.lookupOrDefault("intervalAveraging", false)),
+    intervalStart_(startTime_),
+    reset_(false)
 {
     init();
 }
@@ -134,9 +137,8 @@ bool timeAverage::execute()
 
         scalar index = 0;
 
-        scalar avgT  = runTime_.value() - startTime_;
+        scalar avgT  = runTime_.value() - intervalStart_;
         scalar avgT0 = avgT - runTime_.deltaTValue();
-
 
         forAll(fields_, f)
         {
@@ -144,6 +146,11 @@ bool timeAverage::execute()
             {
                 const colocatedScalarField& csf
                     = db.lookupObject<colocatedScalarField>(fields_[f]);
+
+                if (reset_)
+                {
+                    timeAveragedFields_[index] = Zero;
+                }
 
                 forAllLevels(csf,l,d,i,j,k)
                 {
@@ -162,6 +169,11 @@ bool timeAverage::execute()
 
                 for (int dir = 0; dir < 3; dir++)
                 {
+                    if (reset_)
+                    {
+                        timeAveragedFields_[index] = Zero;
+                    }
+
                     forAllLevels(cvf,l,d,i,j,k)
                     {
                         timeAveragedFields_[index](l,d,i,j,k) *= avgT0;
@@ -173,6 +185,14 @@ bool timeAverage::execute()
                     index++;
                 }
             }
+        }
+
+        reset_ = false;
+
+        if (runTime_.writeTime() && intervalAveraging_)
+        {
+            intervalStart_ = runTime_.value();
+            reset_ = true;
         }
     }
 

@@ -60,20 +60,11 @@ budgetPrimitives::budgetPrimitives
         IOobject::NO_READ,
         IOobject::AUTO_WRITE,
         true
-    ),
-    up_
-    (
-        "up",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
-        true
     )
 {
     u2_ = Zero;
     v2_ = Zero;
     w2_ = Zero;
-    up_ = Zero;
 
     if (!fvMsh_.db().foundObject<colocatedVectorField>(uName_))
     {
@@ -90,9 +81,6 @@ bool budgetPrimitives::execute()
 {
     const objectRegistry& db = fvMsh_.db();
 
-    const colocatedScalarField& p
-        = db.lookupObject<colocatedScalarField>("p");
-
     const colocatedVectorField& U
         = db.lookupObject<colocatedVectorField>(uName_);
 
@@ -101,7 +89,6 @@ bool budgetPrimitives::execute()
         u2_(l,d,i,j,k) = Foam::sqr(U(l,d,i,j,k)[0]);
         v2_(l,d,i,j,k) = Foam::sqr(U(l,d,i,j,k)[1]);
         w2_(l,d,i,j,k) = Foam::sqr(U(l,d,i,j,k)[2]);
-        up_(l,d,i,j,k) = U(l,d,i,j,k)[0] * p(l,d,i,j,k);
     }
 
     return true;

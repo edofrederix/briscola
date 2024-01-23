@@ -37,6 +37,15 @@ class timeAverage
     // Averaging start time
     scalar startTime_;
 
+    // Average in intervals
+    Switch intervalAveraging_;
+
+    // Start time of averaging interval
+    scalar intervalStart_;
+
+    // Switch to reset averages for interval averaging
+    Switch reset_;
+
     // Initialize
     void init();
 

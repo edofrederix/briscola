@@ -1,6 +1,7 @@
 #include "arguments.H"
 #include "IOdictionary.H"
 #include "Time.H"
+#include "timeSelector.H"
 #include "OSspecific.H"
 #include "OFstream.H"
 
@@ -19,177 +20,214 @@ int main(int argc, char *argv[])
     arguments::addBoolOption("parallel", "run in parallel");
     arguments::validArgs.append("line direction");
     arguments::validArgs.append("field to average");
+    arguments::addOption
+    (
+        "time",
+        "ranges",
+        "comma-separated time ranges - eg, ':10,20,40:70,1000:'"
+    );
 
     arguments args(argc, argv);
 
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
 
+    Foam::instantList timeDirs = runTime.times();
+    List<bool> selectTimes(timeDirs.size(), true);
+
+    selectTimes = Foam::timeSelector
+    (
+        args.optionLookup("time")()
+    ).selected(timeDirs);
+
+    Foam::instantList times(subset(selectTimes, timeDirs));
+
     // Read arguments
     const label lineDir(args.argRead<label>(1));
     const word fieldName(args.argRead<word>(2));
 
-    #include "createFields.H"
-    #include "createBriscolaIO.H"
-
-    if (lineDir < 0 || lineDir > 2)
+    forAll(times, timei)
     {
-        FatalError << "Invalid line direction (0, 1, 2)" << endl;
-        FatalError.exit();
-    }
+        runTime.setTime(times[timei], timei);
 
-    // Mesh dimensions of processor part
-    labelVector N(fvMsh.N<colocated>());
+        Info<< "Running briscolaChannelPost for time = "
+            << runTime.timeName() << endl;
 
-    // Global mesh dimensions
-    labelVector Ng(fvMsh.msh().cast<rectilinearMesh>().N());
+        #include "createFields.H"
+        #include "createBriscolaIO.H"
 
-    // Local list of averaged (summed) values
-    scalarList avgVals(N[lineDir], Zero);
-
-    // Sum up the values on each processor
-    for (int i = 0; i < N.x(); i++)
-    for (int j = 0; j < N.y(); j++)
-    for (int k = 0; k < N.z(); k++)
-    {
-        switch (lineDir)
+        if (lineDir < 0 || lineDir > 2)
         {
-            case 0:
-                avgVals[i] += field(0,0,i,j,k);
-                break;
-
-            case 1:
-                avgVals[j] += field(0,0,i,j,k);
-                break;
-
-            case 2:
-                avgVals[k] += field(0,0,i,j,k);
-                break;
-        }
-    }
-
-    // Contains all local summed lines one after the other
-    autoPtr<scalarList> globalAvgValsList;
-    // Global spatially averaged line
-    autoPtr<scalarList> globalAvgValsLine;
-
-    // Global lists only needed on master proc
-    if (Pstream::master())
-    {
-        // Set global list size
-        label globalListSize = 0;
-        for (int p = 0; p < Pstream::nProcs(); p++)
-        {
-            globalListSize +=
-                fvMsh.msh().decomp().partSizePerProc()[p][lineDir];
+            FatalError << "Invalid line direction (0, 1, 2)" << endl;
+            FatalError.exit();
         }
 
-        globalAvgValsList.reset(new scalarList(globalListSize, Zero));
-        globalAvgValsLine.reset
-        (
-            new scalarList
-            (
-                Ng[lineDir],
-                Zero
-            )
-        );
-    }
+        // Mesh dimensions of processor part
+        labelVector N(fvMsh.N<colocated>());
 
-    // Receive sizes and displacements
-    labelList rs(Pstream::nProcs(), Zero);
-    labelList rd(Pstream::nProcs(), Zero);
+        // Global mesh dimensions
+        labelVector Ng(fvMsh.msh().cast<rectilinearMesh>().N());
 
-    label displacement = 0;
-    forAll(rs, p)
-    {
-        rd[p] = displacement;
-        rs[p] = fvMsh.msh().decomp()
-            .partSizePerProc()[p][lineDir]*sizeof(scalar);
-        displacement += rs[p];
-    }
+        // Local list of averaged (summed) values
+        scalarList avgVals(N[lineDir], Zero);
 
-    // Gather averaged (summed) lists on master processor
-    UPstream::gather
-    (
-        reinterpret_cast<char*>(avgVals.begin()),
-        avgVals.size()*sizeof(scalar),
-        reinterpret_cast<char*>
-        (
-            Pstream::master()
-          ? globalAvgValsList->begin()
-          : nullptr
-        ),
-        rs,
-        rd,
-        UPstream::worldComm
-    );
-
-    if (Pstream::master())
-    {
-        // Reset rd and rs from bytes to number of elements
-        forAll(rs, p)
+        // Sum up the values on each processor
+        for (int i = 0; i < N.x(); i++)
+        for (int j = 0; j < N.y(); j++)
+        for (int k = 0; k < N.z(); k++)
         {
-            rd[p] /= sizeof(scalar);
-            rs[p] /= sizeof(scalar);
-        }
-
-        for (int p = 0; p < Pstream::nProcs(); p++)
-        {
-            // processor p starting index
-            label startIndex =
-                fvMsh.msh().decomp().globalStartPerProc()[p][lineDir];
-
-            for (int i = 0; i < rs[p]; i++)
+            switch (lineDir)
             {
-                globalAvgValsLine()[startIndex+i]
-                    += globalAvgValsList()[rd[p]+i];
+                case 0:
+                    avgVals[i] += field(0,0,i,j,k);
+                    break;
+
+                case 1:
+                    avgVals[j] += field(0,0,i,j,k);
+                    break;
+
+                case 2:
+                    avgVals[k] += field(0,0,i,j,k);
+                    break;
             }
         }
 
-        label avgN = cmptProduct(Ng);
-        avgN /= Ng[lineDir];
+        // Contains all local summed lines one after the other
+        autoPtr<scalarList> globalAvgValsList;
+        // Global spatially averaged line
+        autoPtr<scalarList> globalAvgValsLine;
 
-        forAll(globalAvgValsLine(), i)
+        // Global lists only needed on master proc
+        if (Pstream::master())
         {
-            globalAvgValsLine()[i] /= avgN;
+            // Set global list size
+            label globalListSize = 0;
+            for (int p = 0; p < Pstream::nProcs(); p++)
+            {
+                globalListSize +=
+                    fvMsh.msh().decomp().partSizePerProc()[p][lineDir];
+            }
+
+            globalAvgValsList.reset(new scalarList(globalListSize, Zero));
+            globalAvgValsLine.reset
+            (
+                new scalarList
+                (
+                    Ng[lineDir],
+                    Zero
+                )
+            );
         }
 
-        // Line point coordinates
-        scalarList coordinates(Ng[lineDir], Zero);
-        forAll(coordinates, i)
+        // Receive sizes and displacements
+        labelList rs(Pstream::nProcs(), Zero);
+        labelList rd(Pstream::nProcs(), Zero);
+
+        label displacement = 0;
+        forAll(rs, p)
         {
-            coordinates[i] =
-                fvMsh.msh().cast<rectilinearMesh>().globalPoints()[lineDir][i];
+            rd[p] = displacement;
+            rs[p] = fvMsh.msh().decomp()
+                .partSizePerProc()[p][lineDir]*sizeof(scalar);
+            displacement += rs[p];
         }
 
-        // Write line to file
-        const fileName path("postProcessing/briscolaChannelPost"/fieldName);
-        mkDir(path);
+        // Gather averaged (summed) lists on master processor
+        UPstream::gather
+        (
+            reinterpret_cast<char*>(avgVals.begin()),
+            avgVals.size()*sizeof(scalar),
+            reinterpret_cast<char*>
+            (
+                Pstream::master()
+            ? globalAvgValsList->begin()
+            : nullptr
+            ),
+            rs,
+            rd,
+            UPstream::worldComm
+        );
 
-        OFstream file(path/"averagedLine.txt");
-
-        word dir(" ");
-        switch (lineDir)
+        if (Pstream::master())
         {
-            case 0:
-                dir = "x";
-                break;
+            // Reset rd and rs from bytes to number of elements
+            forAll(rs, p)
+            {
+                rd[p] /= sizeof(scalar);
+                rs[p] /= sizeof(scalar);
+            }
 
-            case 1:
-                dir = "y";
-                break;
+            for (int p = 0; p < Pstream::nProcs(); p++)
+            {
+                // processor p starting index
+                label startIndex =
+                    fvMsh.msh().decomp().globalStartPerProc()[p][lineDir];
 
-            case 2:
-                dir = "z";
-                break;
-        }
+                for (int i = 0; i < rs[p]; i++)
+                {
+                    globalAvgValsLine()[startIndex+i]
+                        += globalAvgValsList()[rd[p]+i];
+                }
+            }
 
-        file << dir << "    " << fieldName << nl;
+            label avgN = cmptProduct(Ng);
+            avgN /= Ng[lineDir];
 
-        forAll(globalAvgValsLine(), i)
-        {
-            file << coordinates[i] << "   ";
-            file << globalAvgValsLine()[i] << nl;
+            forAll(globalAvgValsLine(), i)
+            {
+                globalAvgValsLine()[i] /= avgN;
+            }
+
+            // Line point coordinates
+            scalarList coordinates(Ng[lineDir], Zero);
+            const PartialList<scalar>& globalPoints =
+                fvMsh.msh().cast<rectilinearMesh>().globalPoints()[lineDir];
+
+            forAll(coordinates, i)
+            {
+                coordinates[i] =
+                    (
+                        globalPoints[i]
+                        + globalPoints[i+1]
+                    )
+                    /
+                    2.0;
+            }
+
+            // Write line to file
+            const fileName path
+            (
+                "postProcessing/briscolaChannelPost"
+                /runTime.timeName()
+                /fieldName
+            );
+            mkDir(path);
+
+            OFstream file(path/"averagedLine.txt");
+
+            word dir(" ");
+            switch (lineDir)
+            {
+                case 0:
+                    dir = "x";
+                    break;
+
+                case 1:
+                    dir = "y";
+                    break;
+
+                case 2:
+                    dir = "z";
+                    break;
+            }
+
+            file << dir << "    " << fieldName << nl;
+
+            forAll(globalAvgValsLine(), i)
+            {
+                file << coordinates[i] << "   ";
+                file << globalAvgValsLine()[i] << nl;
+            }
         }
     }
 }
