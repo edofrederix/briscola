@@ -129,14 +129,39 @@ transposeMultiplicate
     );
 
     staggeredScalarField& Recon = tRecon.ref();
+    Recon = Zero;
+
+    scalarList values(3);
 
     forAllCells(Recon, d, i, j, k)
     {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(ijk-units[d]);
+
+        for (int valuei = 0; valuei < 3; valuei++)
+        {
+            if (valuei == d)
+            {
+                values[valuei] = field2(valuei,i,j,k)[d];
+            }
+            else
+            {
+                values[valuei] = 0.25
+                               * (
+                                    field2(valuei, ijk)[d]
+                                  + field2(valuei, nei)[d]
+                                  + field2(valuei, ijk + units[valuei])[d]
+                                  + field2(valuei, ijk + units[valuei])[d]
+                                 );
+            }
+        }
+
         Recon(d,i,j,k) =
-                field1(d,i,j,k)[0] * field2(0,i,j,k)[d]
-              + field1(d,i,j,k)[1] * field2(1,i,j,k)[d]
-              + field1(d,i,j,k)[2] * field2(2,i,j,k)[d];
+                field1(d,i,j,k)[0] * values[0]
+              + field1(d,i,j,k)[1] * values[1]
+              + field1(d,i,j,k)[2] * values[2];
     }
+
 
     return tRecon;
 }
