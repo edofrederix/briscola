@@ -59,13 +59,12 @@ void Eigen<SType,Type,MeshType>::prepare
             bool symm =
                 SType::csType::typeName == symmStencil::csType::typeName;
 
-            // Create linear system. Increase dimension by one, to allow for
-            // singular system augmentation.
+            // Create linear system
 
-            APtrs_.set(d, new EigenSolver::matrixType(n+1,n+1));
+            APtrs_.set(d, new EigenSolver::matrixType(n,n));
             EigenSolver::matrixType& A = APtrs_[d];
 
-            A.reserve(n*7 + (singular[d] ? 2*n+1 : 1));
+            A.reserve(n*7);
 
             label offset = 0;
             forAll(cellNumbers, proc)
@@ -103,24 +102,6 @@ void Eigen<SType,Type,MeshType>::prepare
                 offset += nums.size();
             }
 
-            if (singular[d])
-            {
-                // Singular matrix, augment the system (see "Multigrid", U.
-                // Trottenberg et al., 2001)
-
-                for (int i = 0; i < n; i++)
-                {
-                    A.insert(i,n) = 1.0;
-                    A.insert(n,i) = 1.0;
-                }
-            }
-            else
-            {
-                // Set the auxilary variable to zero
-
-                A.insert(n,n) = 1.0;
-            }
-
             // Set matrix and compute decomposition
 
             A.makeCompressed();
@@ -129,9 +110,9 @@ void Eigen<SType,Type,MeshType>::prepare
 
             // EigenSolver::rhsType B(A);
 
-            // for (int i = 0; i < n+1; i++)
+            // for (int i = 0; i < n; i++)
             // {
-            //     for (int j = 0; j < n+1; j++)
+            //     for (int j = 0; j < n; j++)
             //         Info<< B(i,j) << " ";
             //     Info<< endl;
             // }
@@ -166,7 +147,7 @@ void Eigen<SType,Type,MeshType>::solve
 
             // Get the right-hand side
 
-            List<Type> rhs(n+1);
+            List<Type> rhs(n);
 
             label offset = 0;
             forAll(cellNumbers, proc)
@@ -195,11 +176,9 @@ void Eigen<SType,Type,MeshType>::solve
                 offset += nums.size();
             }
 
-            rhs[n] = Zero;
-
             // Copy to Eigen right-hand side type
 
-            EigenSolver::rhsType B(n+1,m);
+            EigenSolver::rhsType B(n,m);
 
             forAll(rhs, i)
             {
@@ -224,6 +203,16 @@ void Eigen<SType,Type,MeshType>::solve
                     L[j] = X(i,j);
 
                 rhs[i] = listToType<Type>(L);
+            }
+
+            // Set mean to zero
+
+            if (singular[d])
+            {
+                Type avg = average(rhs);
+
+                forAll(rhs, i)
+                    rhs[i] -= avg;
             }
 
             // Send/copy solutions

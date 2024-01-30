@@ -28,6 +28,9 @@ protected:
     // Check if the given sparse matrix is symmetric
     bool isSymmetric(const matrixType&) const;
 
+    // Check if the given sparse matrix is positive definite
+    bool isPositiveDefinite(const matrixType&) const;
+
 public:
 
     // Runtime type information

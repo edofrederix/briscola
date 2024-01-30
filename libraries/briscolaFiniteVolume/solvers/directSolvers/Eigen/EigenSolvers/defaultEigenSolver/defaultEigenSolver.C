@@ -28,9 +28,7 @@ defaultEigenSolver::~defaultEigenSolver()
 
 void defaultEigenSolver::prepare(const matrixType& A)
 {
-    const bool symm = isSymmetric(A);
-
-    if (symm)
+    if (isPositiveDefinite(A))
     {
         gSolverPtr_.clear();
         sSolverPtr_.reset(new sSolverType(A));

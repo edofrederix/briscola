@@ -23,7 +23,7 @@ class solver
 public:
 
     // Base smoother class with singular system augmentation, see Sec. 5.6.4 of
-    // "Multigrid", U. Trottenberg et al., 2000. If the xi list is empty, to
+    // "Multigrid", U. Trottenberg et al., 2000. If the xi list is empty, no
     // singular system augmentation is applied. Having xi as an argument enables
     // its reuse between different calls to the smoothers.
 
