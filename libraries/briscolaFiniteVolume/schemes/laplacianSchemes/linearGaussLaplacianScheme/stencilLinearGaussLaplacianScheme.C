@@ -31,10 +31,9 @@ stencilLinearGaussLaplacianScheme
 {}
 
 template<class Type, class MeshType>
-template<template<class> class OpType>
-void stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
+tmp<linearSystem<stencil,Type,MeshType>>
+stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
 (
-    linearSystem<stencil,Type,MeshType>& sys,
     const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
     const meshField<Type,MeshType>& field,
     const scalar factor
@@ -43,6 +42,16 @@ void stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
     if (lambdaPtr)
         const_cast<meshField<lowerFaceScalar,MeshType>&>(*lambdaPtr)
        .restrict();
+
+    tmp<linearSystem<stencil,Type,MeshType>> tSys
+    (
+        new linearSystem<stencil,Type,MeshType>
+        (
+            const_cast<meshField<Type,MeshType>&>(field)
+        )
+    );
+
+    linearSystem<stencil,Type,MeshType>& sys = tSys.ref();
 
     meshField<stencil,MeshType>& A = sys.A();
     meshField<Type,MeshType>& b = sys.b();
@@ -53,47 +62,38 @@ void stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
     const meshField<faceScalar,MeshType>& delta =
         field.fvMsh().template metrics<MeshType>().faceDeltas();
 
-    if (isEqOp<OpType>() || isEqMinusOp<OpType>())
-    {
-        A = Zero;
-        b = Zero;
-    }
+    A = Zero;
+    b = Zero;
 
-    const OpType<scalar> bop;
-
-    forAllFaces(A, l, d, fd, i, j, k)
+    forAllCells(A, l, d, i, j, k)
     {
         labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
 
-        scalar value = factor*fa(l,d,ijk)[fd*2]*delta(l,d,ijk)[fd*2];
-
-        if (lambdaPtr)
-            value *= lambdaPtr->operator()(l,d,ijk)[fd];
-
-        bop(A(l,d,ijk)[fd*2+1], value);
-        bop(A(l,d,nei)[fd*2+2], value);
-
-        if (isEqOp<OpType>())
+        for (int fd = 0; fd < 3; fd++)
         {
-            A(l,d,ijk)[0] -= value;
-            A(l,d,nei)[0] -= value;
-        }
-        else if (isEqMinusOp<OpType>())
-        {
-            A(l,d,ijk)[0] += value;
-            A(l,d,nei)[0] += value;
-        }
-        else
-        {
-            bop(A(l,d,ijk)[0], -value);
-            bop(A(l,d,nei)[0], -value);
+            labelVector nei(upperNei(ijk,fd));
+
+            scalar lower = factor*fa(l,d,ijk)[fd*2  ]*delta(l,d,ijk)[fd*2  ];
+            scalar upper = factor*fa(l,d,ijk)[fd*2+1]*delta(l,d,ijk)[fd*2+1];
+
+            if (lambdaPtr)
+            {
+                lower *= lambdaPtr->operator()(l,d,ijk)[fd];
+                upper *= lambdaPtr->operator()(l,d,nei)[fd];
+            }
+
+            A(l,d,ijk)[2*fd+1] = lower;
+            A(l,d,ijk)[2*fd+2] = upper;
+
+            A(l,d,ijk)[0] -= lower + upper;
         }
     }
 
     if (lambdaPtr)
         const_cast<meshField<lowerFaceScalar,MeshType>&>(*lambdaPtr)
        .makeShallow();
+
+    return tSys;
 }
 
 }

@@ -48,10 +48,9 @@ void APLU<SType,Type,MeshType>::prepare
             const bool symm =
                 SType::csType::typeName == symmStencil::csType::typeName;
 
-            // Create linear system. Increase dimension by one, to allow for
-            // singular system augmentation.
+            // Create linear system
 
-            APtrs_.set(d, new scalarSquareMatrix(n+1));
+            APtrs_.set(d, new scalarSquareMatrix(n));
             scalarSquareMatrix& A = APtrs_[d];
             A = Zero;
 
@@ -91,27 +90,18 @@ void APLU<SType,Type,MeshType>::prepare
                 offset += nums.size();
             }
 
-            if (singular[d])
-            {
-                // Singular matrix, augment the system (see "Multigrid", U.
-                // Trottenberg et al., 2001)
+            // Print the full matrix for debugging
 
-                for (int i = 0; i < n; i++)
-                {
-                    A(i,n) = 1.0;
-                    A(n,i) = 1.0;
-                }
-            }
-            else
-            {
-                // Set the auxilary variable to zero
-
-                A(n,n) = 1.0;
-            }
+            // for (int i = 0; i < n; i++)
+            // {
+            //     for (int j = 0; j < n; j++)
+            //         Info<< A(i,j) << " ";
+            //     Info<< endl;
+            // }
 
             // Decompose matrix
 
-            pivotPtrs_.set(d, new labelList(n+1));
+            pivotPtrs_.set(d, new labelList(n));
             labelList& pivots = pivotPtrs_[d];
 
             LUDecompose(A, pivots);
@@ -142,7 +132,7 @@ void APLU<SType,Type,MeshType>::solve
 
             // Get the right-hand side
 
-            List<Type> rhs(n+1);
+            List<Type> rhs(n);
 
             label offset = 0;
             forAll(cellNumbers, proc)
@@ -171,14 +161,22 @@ void APLU<SType,Type,MeshType>::solve
                 offset += nums.size();
             }
 
-            rhs[n] = Zero;
-
             // Solve
 
             const scalarSquareMatrix& A = APtrs_[d];
             const labelList& pivots = pivotPtrs_[d];
 
             LUBacksubstitute(A, pivots, rhs);
+
+            // Set mean to zero
+
+            if (singular[d])
+            {
+                Type avg = average(rhs);
+
+                forAll(rhs, i)
+                    rhs[i] -= avg;
+            }
 
             // Send/copy solutions
 

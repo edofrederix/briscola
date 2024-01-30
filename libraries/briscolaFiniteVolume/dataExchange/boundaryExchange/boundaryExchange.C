@@ -117,18 +117,48 @@ void boundaryExchange<Type,MeshType>::correct
         {
             const faceLabel extension(bc.extension());
             const labelVector bo(bc.offset());
+            const labelTensor T(bc.T());
 
-            for (int d = 0; d < MeshType::numberOfDirections; d++)
+            if (T == eye)
             {
-                const labelVector S(bc.S(l,d) - extension.lower());
-                const labelVector E(bc.E(l,d) + extension.upper());
-
-                labelVector ijk;
-                for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-                for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-                for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                for (int d = 0; d < MeshType::numberOfDirections; d++)
                 {
-                    field(ijk+bo) = recvBuffer[c++];
+                    const labelVector S(bc.S(l,d) - extension.lower());
+                    const labelVector E(bc.E(l,d) + extension.upper());
+
+                    labelVector ijk;
+                    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                    {
+                        field(ijk+bo) = recvBuffer[c++];
+                    }
+                }
+            }
+            else
+            {
+                // Store in intermediate block to transform the data
+
+                for (int d = 0; d < MeshType::numberOfDirections; d++)
+                {
+                    const labelVector S(bc.S(l,d) - extension.lower());
+                    const labelVector E(bc.E(l,d) + extension.upper());
+                    const labelVector N(cmptMag(T.T() & (E-S)));
+
+                    block<Type> B(N);
+
+                    forAllBlockLinear(B, i)
+                        B(i) = recvBuffer[c++];
+
+                    B.transform(T);
+
+                    labelVector ijk;
+                    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                    {
+                        field(ijk+bo) = B(ijk-S);
+                    }
                 }
             }
         }

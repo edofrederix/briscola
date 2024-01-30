@@ -51,10 +51,10 @@ int main(int argc, char *argv[])
 
         USys = im::ddt(U);
 
-        im::source<minusEqOp>(USys,imSourceCoeff,U);
+        USys -= im::source(imSourceCoeff,U);
         USys -= exSource;
 
-        im::laplacian<minusEqOp>(USys,0.5*nu,U);
+        USys -= im::laplacian(0.5*nu,U);
         USys -= ex::laplacian(0.5*nu,U);
 
         USys -= 0.5*DivU;

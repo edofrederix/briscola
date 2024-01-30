@@ -709,14 +709,9 @@ void mesh::generateLevels()
         parent = this->operator()(l);
 
         const labelVector P(parent->N());
-        const labelVector D
-        (
-            P.x() < 2 ? P.x() : P.x()/2,
-            P.y() < 2 ? P.y() : P.y()/2,
-            P.z() < 2 ? P.z() : P.z()/2
-        );
+        const labelVector C(this->coarsen(P));
 
-        label nProcsCoarsen = (P != D);
+        label nProcsCoarsen = (P != C);
 
         reduce(nProcsCoarsen, sumOp<label>());
 
@@ -941,7 +936,7 @@ labelVector mesh::findCell(const vector& point, const label l) const
         if (coarse == -unitXYZ)
         {
             // In bounding box, but not found on the coarse level. Try linear
-            // search if the mesh is not rectlinear. In this case it may be on
+            // search if the mesh is not rectilinear. In this case it may be on
             // an edge.
 
             if (cmptProduct(p.rectilinear()) == 0)
@@ -1000,6 +995,33 @@ List<labelVector> mesh::findCells(const vectorList& points, const label l) const
     }
 
     return res;
+}
+
+labelVector mesh::coarsen(const labelVector P) const
+{
+    if (!topology().structured())
+    {
+        // Keep at least two cells in each direction on unstructured meshes, to
+        // avoid heavy distortion
+
+        return labelVector
+        (
+            P.x() <= 3 ? P.x() : P.x()/2,
+            P.y() <= 3 ? P.y() : P.y()/2,
+            P.z() <= 3 ? P.z() : P.z()/2
+        );
+    }
+    else
+    {
+        // Refine until one or three cells in each direction
+
+        return labelVector
+        (
+            (P.x() == 1 || P.x() == 3) ? P.x() : P.x()/2,
+            (P.y() == 1 || P.y() == 3) ? P.y() : P.y()/2,
+            (P.z() == 1 || P.z() == 3) ? P.z() : P.z()/2
+        );
+    }
 }
 
 }

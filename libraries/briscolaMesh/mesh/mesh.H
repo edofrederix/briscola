@@ -330,6 +330,10 @@ public:
     // Find the cell indices of the given list of points at given mesh level
     virtual List<labelVector> findCells(const vectorList&, const label) const;
 
+    // Given a part size, compute its coarsened child size subject to this
+    // mesh's properties
+    labelVector coarsen(const labelVector) const;
+
     // Disallow default bitwise assignment
     void operator=(const mesh&);
 };

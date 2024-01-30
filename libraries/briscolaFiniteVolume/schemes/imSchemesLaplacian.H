@@ -98,138 +98,20 @@ namespace im
         )->imLaplacian(field,factor);
     }
 
-// Manipulate linear system
-
-    // Coefficient as pointer
-    template
-    <
-        template<class> class OpType,
-        class SType,
-        class Type,
-        class MeshType
-    >
-    inline void laplacian
-    (
-        linearSystem<SType,Type,MeshType>& sys,
-        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
-    )
-    {
-        return laplacianScheme<SType,Type,MeshType>::New
-        (
-            lambdaPtr
-          ? "laplacian("+lambdaPtr->name()+","+field.name()+")"
-          : "laplacian("+field.name()+")",
-            field.fvMsh()
-        )->template imLaplacian<OpType>(sys,lambdaPtr,field,factor);
-    }
-
-    // Coefficient as reference
-    template
-    <
-        template<class> class OpType,
-        class SType,
-        class Type,
-        class MeshType
-    >
-    inline void laplacian
-    (
-        linearSystem<SType,Type,MeshType>& sys,
-        const meshField<lowerFaceScalar,MeshType>& lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
-    )
-    {
-        laplacianScheme<SType,Type,MeshType>::New
-        (
-            "laplacian("+lambda.name()+","+field.name()+")",
-            field.fvMsh()
-        )->template imLaplacian<OpType>(sys,lambda,field,factor);
-    }
-
-    // Coefficient as tmp
-    template
-    <
-        template<class> class OpType,
-        class SType,
-        class Type,
-        class MeshType
-    >
-    inline void laplacian
-    (
-        linearSystem<SType,Type,MeshType>& sys,
-        const tmp<meshField<lowerFaceScalar,MeshType>>& tLambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
-    )
-    {
-        laplacianScheme<SType,Type,MeshType>::New
-        (
-            "laplacian("+tLambda->name()+","+field.name()+")",
-            field.fvMsh()
-        )->template imLaplacian<OpType>(sys,tLambda,field,factor);
-    }
-
-    // Constant coefficient
-    template
-    <
-        template<class> class OpType,
-        class SType,
-        class Type,
-        class MeshType
-    >
-    inline void laplacian
-    (
-        linearSystem<SType,Type,MeshType>& sys,
-        const scalar lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
-    )
-    {
-        laplacianScheme<SType,Type,MeshType>::New
-        (
-            "laplacian(const,"+field.name()+")",
-            field.fvMsh()
-        )->template imLaplacian<OpType>(sys,lambda,field,factor);
-    }
-
-    // No coefficient
-    template
-    <
-        template<class> class OpType,
-        class SType,
-        class Type,
-        class MeshType
-    >
-    inline void laplacian
-    (
-        linearSystem<SType,Type,MeshType>& sys,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
-    )
-    {
-        return laplacianScheme<SType,Type,MeshType>::New
-        (
-            "laplacian("+field.name()+")",
-            field.fvMsh()
-        )->template imLaplacian<OpType>(sys,field,factor);
-    }
-
-// Default symmetric stencil type on colocated meshes
+// Default stencil type on colocated meshes
 
     // Return
 
         // Coefficient as pointer
         template<class Type>
-        inline tmp<linearSystem<symmStencil,Type,colocated>> laplacian
+        inline tmp<linearSystem<stencil,Type,colocated>> laplacian
         (
             const meshField<lowerFaceScalar,colocated>* lambdaPtr,
             const meshField<Type,colocated>& field,
             const scalar factor = 1.0
         )
         {
-            return laplacian<symmStencil,Type,colocated>
+            return laplacian<stencil,Type,colocated>
             (
                 lambdaPtr,
                 field,
@@ -239,14 +121,14 @@ namespace im
 
         // Coefficient as reference
         template<class Type>
-        inline tmp<linearSystem<symmStencil,Type,colocated>> laplacian
+        inline tmp<linearSystem<stencil,Type,colocated>> laplacian
         (
             const meshField<lowerFaceScalar,colocated>& lambda,
             const meshField<Type,colocated>& field,
             const scalar factor = 1.0
         )
         {
-            return laplacian<symmStencil,Type,colocated>
+            return laplacian<stencil,Type,colocated>
             (
                 lambda,
                 field,
@@ -256,14 +138,14 @@ namespace im
 
         // Coefficient as tmp
         template<class Type>
-        inline tmp<linearSystem<symmStencil,Type,colocated>> laplacian
+        inline tmp<linearSystem<stencil,Type,colocated>> laplacian
         (
             const tmp<meshField<lowerFaceScalar,colocated>>& tLambda,
             const meshField<Type,colocated>& field,
             const scalar factor = 1.0
         )
         {
-            return laplacian<symmStencil,Type,colocated>
+            return laplacian<stencil,Type,colocated>
             (
                 tLambda,
                 field,
@@ -273,14 +155,14 @@ namespace im
 
         // Constant coefficient
         template<class Type>
-        inline tmp<linearSystem<symmStencil,Type,colocated>> laplacian
+        inline tmp<linearSystem<stencil,Type,colocated>> laplacian
         (
             const scalar lambda,
             const meshField<Type,colocated>& field,
             const scalar factor = 1.0
         )
         {
-            return laplacian<symmStencil,Type,colocated>
+            return laplacian<stencil,Type,colocated>
             (
                 lambda,
                 field,
@@ -290,13 +172,13 @@ namespace im
 
         // No coefficient
         template<class Type>
-        inline tmp<linearSystem<symmStencil,Type,colocated>> laplacian
+        inline tmp<linearSystem<stencil,Type,colocated>> laplacian
         (
             const meshField<Type,colocated>& field,
             const scalar factor = 1.0
         )
         {
-            return laplacian<symmStencil,Type,colocated>(field,factor);
+            return laplacian<stencil,Type,colocated>(field,factor);
         }
 
 // Default stencil type on staggered meshes

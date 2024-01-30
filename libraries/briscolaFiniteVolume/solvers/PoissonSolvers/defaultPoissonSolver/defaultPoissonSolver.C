@@ -54,7 +54,7 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
 
     linearSystem<SType,Type,MeshType>& sys = sysPtr_();
 
-    im::laplacian<eqOp>(sysPtr_(), lambdaPtr, x);
+    sys = im::laplacian<SType>(lambdaPtr,x);
 
     if (bPtr)
         sys += (*bPtr);

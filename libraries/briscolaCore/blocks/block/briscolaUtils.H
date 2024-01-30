@@ -469,6 +469,152 @@ const label faceTriangleDecompCC[12][3] =
     {6,5,7}
 };
 
+// Calculate the linear index from indices and block size
+
+inline label lin
+(
+    const label& i,
+    const label& j,
+    const label& k,
+    const label& l,
+    const label& m,
+    const label& n
+)
+{
+    return i*m*n + j*n + k;
+}
+
+inline label lin
+(
+    const label& i,
+    const label& j,
+    const label& k,
+    const labelVector& N
+)
+{
+    return lin(i,j,k,N.x(),N.y(),N.z());
+}
+
+inline label lin
+(
+    const labelVector& ijk,
+    const label& l,
+    const label& m,
+    const label& n
+)
+{
+    return lin(ijk.x(),ijk.y(),ijk.z(),l,m,n);
+}
+
+inline label lin
+(
+    const labelVector& ijk,
+    const labelVector& N
+)
+{
+    return lin(ijk.x(), ijk.y(), ijk.z(), N.x(), N.y(), N.z());
+}
+
+// Calculate the indices from a linear index and block size
+
+inline labelVector ind
+(
+    const label& l,
+    const label&,
+    const label& m,
+    const label& n
+)
+{
+    return labelVector
+    (
+        (l)/(m*n),
+        (l/n)%m,
+        (l%n)
+    );
+}
+
+inline labelVector ind
+(
+    const label& l,
+    const labelVector& N
+)
+{
+    return ind(l, N.x(), N.y(), N.z());
+}
+
+// Flip the components of a vector
+template<class Type>
+Vector<Type> flip(const Vector<Type>& v)
+{
+    return Vector<Type>(v[2],v[1],v[0]);
+}
+
+// Return index of the neighbor across given face
+
+inline labelVector nei
+(
+    const label& i,
+    const label& j,
+    const label& k,
+    const label& f
+)
+{
+    return labelVector(i,j,k) + faceOffsets[f];
+}
+
+inline labelVector nei(const labelVector& ijk, const label& f)
+{
+    return nei(ijk.x(), ijk.y(), ijk.z(), f);
+}
+
+// Return index of lower neighbor across given face direction
+
+inline labelVector lowerNei
+(
+    const label& i,
+    const label& j,
+    const label& k,
+    const label& fd
+)
+{
+    return labelVector(i,j,k) - units[fd];
+}
+
+inline labelVector lowerNei(const labelVector& ijk, const label& fd)
+{
+    return lowerNei(ijk.x(), ijk.y(), ijk.z(), fd);
+}
+
+// Return index of upper neighbor across given face
+
+inline labelVector upperNei
+(
+    const label& i,
+    const label& j,
+    const label& k,
+    const label& fd
+)
+{
+    return labelVector(i,j,k) + units[fd];
+}
+
+inline labelVector upperNei(const labelVector& ijk, const label& fd)
+{
+    return upperNei(ijk.x(), ijk.y(), ijk.z(), fd);
+}
+
+// Check if the given index is odd
+inline bool odd(const label i, const label j, const label k)
+{
+    return (i+j+k) % 2;
+}
+
+// Check if the given index is even
+inline bool even(const label i, const label j, const label k)
+{
+    return !odd(i,j,k);
+}
+
 // Return the shift tensor given a rotation tensor
 inline labelTensor shift(const labelTensor& R)
 {
@@ -778,7 +924,6 @@ word name(const List<Type>& l)
     buf << ')';
 
     return buf.str();
-
 }
 
 }

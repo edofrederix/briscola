@@ -239,8 +239,8 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
                   > 1e-12
                 )
                 {
-                    Info
-                        << "Found mismatch in face centers at "
+                    FatalErrorInFunction
+                        << "Found mismatch in face centers at parallel "
                         << "boundary offset = " << bo << nl
                         << "mesh type = " << MeshType::typeName << nl
                         << "mesh direction = " << d << nl
@@ -332,7 +332,7 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
                 )
                 {
                     FatalErrorInFunction
-                        << "Found mismatch in face deltas at "
+                        << "Found mismatch in face deltas at parallel "
                         << "boundary offset = " << bo << nl
                         << "mesh direction = " << d << nl
                         << "internal cell delta = " << fd(l,d,ijk)[dir1] << nl

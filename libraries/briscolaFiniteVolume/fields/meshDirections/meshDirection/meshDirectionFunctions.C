@@ -532,30 +532,30 @@ Type sumCmptMag(const tmp<meshDirection<Type,MeshType>>& tD)
 }
 
 
-#define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                        \
-                                                                                \
-template<class Type, class MeshType>                                            \
-ReturnType gFunc                                                                \
-(                                                                               \
-    const meshDirection<Type,MeshType>& D,                                      \
-    const label comm                                                            \
-)                                                                               \
-{                                                                               \
-    ReturnType res(Func(D));                                                    \
-    reduce(res, rFunc##Op<ReturnType>(), Pstream::msgType(), comm);             \
-    return res;                                                                 \
-}                                                                               \
-                                                                                \
-template<class Type, class MeshType>                                            \
-ReturnType gFunc                                                                \
-(                                                                               \
-    const tmp<meshDirection<Type,MeshType>>& tD,                                \
-    const label comm                                                            \
-)                                                                               \
-{                                                                               \
-    ReturnType ret(gFunc(tD()));                                                \
-    tD.clear();                                                                 \
-    return ret;                                                                 \
+#define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                       \
+                                                                               \
+template<class Type, class MeshType>                                           \
+ReturnType gFunc                                                               \
+(                                                                              \
+    const meshDirection<Type,MeshType>& D,                                     \
+    const label comm                                                           \
+)                                                                              \
+{                                                                              \
+    ReturnType res(Func(D));                                                   \
+    reduce(res, rFunc##Op<ReturnType>(), Pstream::msgType(), comm);            \
+    return res;                                                                \
+}                                                                              \
+                                                                               \
+template<class Type, class MeshType>                                           \
+ReturnType gFunc                                                               \
+(                                                                              \
+    const tmp<meshDirection<Type,MeshType>>& tD,                               \
+    const label comm                                                           \
+)                                                                              \
+{                                                                              \
+    ReturnType ret(gFunc(tD()));                                               \
+    tD.clear();                                                                \
+    return ret;                                                                \
 }
 
 G_UNARY_FUNCTION(Type, gMax, max, max)

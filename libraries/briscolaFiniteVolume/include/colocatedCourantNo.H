@@ -7,14 +7,11 @@ scalar meanCoNum = 0.0;
 
     colocatedScalarDirection sumPhi(fvMsh,0,0,Zero);
 
-    forAllFaces(sumPhi, fd, i, j, k)
-    {
-        labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
-
-        sumPhi(ijk) += mag(phi(ijk)[fd]);
-        sumPhi(nei) += mag(phi(ijk)[fd]);
-    }
+    forAllCells(sumPhi, i, j, k)
+        for (int fd = 0; fd < 3; fd++)
+            sumPhi(i,j,k) +=
+                mag(phi(i,j,k)[fd])
+              + mag(phi(upperNei(i,j,k,fd))[fd]);
 
     CoNum = 0.5*gMax(sumPhi/cvd)*runTime.deltaTValue();
 

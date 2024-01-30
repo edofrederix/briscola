@@ -71,7 +71,7 @@ bool initialCondition::read(const dictionary& dict)
 
             U(l,d,i,j,k).z() =
                 5300.0/360.0
-              * (2.0*(1.0-Foam::sqr(r)) + Foam::sin(r*4.0*pi)/4.0);
+              * (3.0*(1.0-Foam::sqr(r)) + Foam::sin(r*8.0*pi)/4.0);
         }
 
         U.correctBoundaryConditions();

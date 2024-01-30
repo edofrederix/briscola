@@ -140,7 +140,7 @@ void parabolicFit::correct()
         if
         (
             alpha_(i,j,k) > vof::threshold
-            && alpha_(i,j,k) < (1.0 - vof::threshold)
+         && alpha_(i,j,k) < (1.0 - vof::threshold)
         )
         {
 

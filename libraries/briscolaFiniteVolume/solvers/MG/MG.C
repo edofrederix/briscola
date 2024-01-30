@@ -32,19 +32,23 @@ void MG<SType,Type,MeshType>::cycle
     labelList& visits,
     const label l,
     const List<bool>& singular,
+    const bool constMatrix,
     const labelList& converged,
     const label nSweepsPre,
     const label nSweepsPost,
     const label coarseLevel
 )
 {
-    meshField<Type, MeshType>& x = sys.x();
-    meshField<Type, MeshType>& b = sys.b();
+    meshLevel<Type, MeshType>& xl = sys.x()[l];
+    meshLevel<Type, MeshType>& rl = r[l];
+
+    const label nLevels = this->fvMsh_.size();
+    const label nDirs = xl.size();
 
     // Initialize defects to zero
 
     if (l > 0)
-        x[l] = Zero;
+        xl = Zero;
 
     // Only apply singular system augmentation at the coarsest level and if any
     // of the directions is actually singular. Initialize the auxiliary unknown
@@ -52,42 +56,44 @@ void MG<SType,Type,MeshType>::cycle
 
     List<Type> xi(0);
 
-    if (l == x.size()-1 && sum(singular))
-    {
-        xi.setSize(x[l].size(), Zero);
-    }
+    if (l == nLevels-1 && sum(singular))
+        xi.setSize(nDirs, Zero);
 
     // Pre-smooth
 
-    this->smoothPtr_->smooth
-    (
-        sys,
-        xi,
-        l,
-        nSweepsPre,
-        converged
-    );
+    if (nSweepsPre > 0)
+        this->smoothPtr_->smooth
+        (
+            sys,
+            xi,
+            l,
+            nSweepsPre,
+            converged
+        );
 
     // If we are not on the coarsest level, continue to traverse levels.
     // Otherwise, just smooth (could be better to use a direct solver here)
 
-    if (l < x.size()-1-coarseLevel)
+    if (l < nLevels-1-coarseLevel)
     {
+        meshLevel<Type, MeshType>& xlCoarse = sys.x()[l+1];
+        meshLevel<Type, MeshType>& blCoarse = sys.b()[l+1];
+
         for (label rep = 0; rep < levelReps(l,visits); rep++)
         {
             // Don't compute the residual for the finest level during the first
             // repetition
 
             if (rep > 0 || l > 0)
-                forAll(x[l], d)
+                forAll(xl, d)
                     if (!converged[d])
-                        sys.residual(r[l][d]);
+                        sys.residual(rl[d]);
 
             // Restrict the current level residual to coarse level
 
-            forAll(x[l], d)
+            forAll(xl, d)
                 if (!converged[d])
-                    reScheme_->restrict(b[l+1][d], r[l][d], true);
+                    reScheme_->restrict(blCoarse[d], rl[d], true);
 
             // Solve the coarse level defect equation
 
@@ -98,6 +104,7 @@ void MG<SType,Type,MeshType>::cycle
                 visits,
                 l+1,
                 singular,
+                constMatrix,
                 converged,
                 nSweepsPre,
                 nSweepsPost,
@@ -107,22 +114,23 @@ void MG<SType,Type,MeshType>::cycle
             // Prolong the coarse level defect solution and add the correction
             // directly to the current level
 
-            forAll(x[l], d)
+            forAll(xl, d)
                 if (!converged[d])
-                    proScheme_->prolong(x[l][d], x[l+1][d], plusEqOp<Type>());
+                    proScheme_->prolong(xl[d], xlCoarse[d], plusEqOp<Type>());
 
-            x[l].correctBoundaryConditions();
+            xl.correctBoundaryConditions();
 
             // Post-smooth
 
-            this->smoothPtr_->smooth
-            (
-                sys,
-                xi,
-                l,
-                nSweepsPost,
-                converged
-            );
+            if (nSweepsPost > 0)
+                this->smoothPtr_->smooth
+                (
+                    sys,
+                    xi,
+                    l,
+                    nSweepsPost,
+                    converged
+                );
         }
     }
     else
@@ -152,6 +160,7 @@ void MG<SType,Type,MeshType>::solve
 (
     linearSystem<SType,Type,MeshType>& sys,
     const List<bool>& singular,
+    const bool constMatrix,
     const scalar relTol,
     const scalar absTol,
     const label minIter,
@@ -180,13 +189,13 @@ void MG<SType,Type,MeshType>::solve
         true
     );
 
-    // Residual normalization factors
-
-    const List<Type> normFactors(this->normFactors(sys,0));
-
     // Initial residual
 
     sys.residual(r[0]);
+
+    // Residual normalization factors
+
+    const List<Type> normFactors(this->normFactors(sys,r,0));
 
     const List<Type> initialResiduals =
         cmptDivide(gSum(cmptMag(r[0])), normFactors);
@@ -231,6 +240,7 @@ void MG<SType,Type,MeshType>::solve
             visits,
             0,
             singular,
+            constMatrix,
             converged,
             nSweepsPre,
             nSweepsPost,
@@ -288,7 +298,7 @@ MG<SType,Type,MeshType>::MG
     (
         MGCoarseModeNames[dict.lookupOrDefault<word>("coarseMode", "direct")]
     ),
-    coarseLevel_(dict.lookupOrDefault<label>("coarseLevel", 1)),
+    coarseLevel_(dict.lookupOrDefault<label>("coarseLevel", 0)),
     proScheme_
     (
         prolongationScheme<Type,MeshType>::New
@@ -308,7 +318,7 @@ MG<SType,Type,MeshType>::MG
 {
     if (coarseLevel_ > fvMsh.size()-2)
         FatalErrorInFunction
-            << "Coarse level is set to high. Should be at most "
+            << "Coarse level is set too high. Should be at most "
             << fvMsh.size()-2 << endl << abort(FatalError);
 
     this->smoothPtr_.reset
@@ -318,9 +328,7 @@ MG<SType,Type,MeshType>::MG
             this->dict_.template lookupOrDefault<word>
             (
                 "smoother",
-                Pstream::parRun()
-              ? "symmLEXGS"
-              : "symmRBGS"
+                "RBGS"
             ),
             this->dict_,
             fvMsh
@@ -336,7 +344,7 @@ MG<SType,Type,MeshType>::MG
             (
                 this->dict_.template lookupOrDefault<word>
                 (
-                    "directSolverType",
+                    "directSolver",
                     "Eigen"
                 ),
                 this->dict_,
@@ -376,6 +384,7 @@ void MG<SType,Type,MeshType>::solve
     (
         sys,
         singular,
+        constMatrix,
         this->relTol_,
         this->tolerance_,
         this->minIter_,

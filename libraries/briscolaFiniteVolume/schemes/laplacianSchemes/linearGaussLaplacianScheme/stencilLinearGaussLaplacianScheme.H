@@ -17,18 +17,6 @@ class stencilLinearGaussLaplacianScheme
 :
     public linearGaussLaplacianScheme<stencil,Type,MeshType>
 {
-protected:
-
-    // Implicit laplacian scheme
-    template<template<class> class OpType>
-    void imLaplacian
-    (
-        linearSystem<stencil,Type,MeshType>& sys,
-        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
-    );
-
 public:
 
     // Construct from dictionary and mesh
@@ -37,26 +25,13 @@ public:
     // Construct from mesh only, with empty dictionary
     stencilLinearGaussLaplacianScheme(const fvMesh&);
 
-    #define LAPLACIAN(OPNAME)                                                  \
-                                                                               \
-    virtual void imLaplacian                                                   \
-    (                                                                          \
-        linearSystem<stencil,Type,MeshType>& sys,                              \
-        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,                  \
-        const meshField<Type,MeshType>& field,                                 \
-        const OPNAME<Type>& op,                                                \
-        const scalar factor = 1.0                                              \
-    )                                                                          \
-    {                                                                          \
-        this->imLaplacian<OPNAME>(sys,lambdaPtr,field,factor);                 \
-    }
-
-    LAPLACIAN(eqOp)
-    LAPLACIAN(eqMinusOp)
-    LAPLACIAN(plusEqOp)
-    LAPLACIAN(minusEqOp)
-
-    #undef LAPLACIAN
+    // Implicit laplacian scheme
+    virtual tmp<linearSystem<stencil,Type,MeshType>> imLaplacian
+    (
+        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+        const meshField<Type,MeshType>& field,
+        const scalar factor = 1.0
+    );
 };
 
 }

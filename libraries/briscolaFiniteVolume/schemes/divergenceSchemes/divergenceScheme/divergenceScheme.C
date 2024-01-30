@@ -88,14 +88,14 @@ tmp<meshField<Type,MeshType>> explicitDiv
     const meshField<scalar,MeshType>& cv =
         phi.fvMsh().template metrics<MeshType>().cellVolumes();
 
-    forAllFaces(phi, d, fd, i, j, k)
-    {
-        labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
-
-        Div(d,ijk) += phi(d,ijk)[fd]/cv(d,ijk);
-        Div(d,nei) -= phi(d,ijk)[fd]/cv(d,nei);
-    }
+    forAllCells(phi, d, i, j, k)
+        for (int fd = 0; fd < 3; fd++)
+            Div(d,i,j,k) +=
+                (
+                    phi(d,i,j,k)[fd]
+                  - phi(d,upperNei(i,j,k,fd))[fd]
+                )
+              / cv(d,i,j,k);
 
     return tDiv;
 }
@@ -125,14 +125,14 @@ tmp<meshField<Type,colocated>> explicitColoDiv
     const meshField<faceScalar,colocated>& fa =
         field.fvMsh().template metrics<colocated>().faceAreas();
 
-    forAllFaces(Div, fd, i, j, k)
-    {
-        labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
-
-        Div(ijk) -= field(fd,ijk)*fa(ijk)[fd*2]/cv(ijk);
-        Div(nei) += field(fd,ijk)*fa(ijk)[fd*2]/cv(nei);
-    }
+    forAllCells(Div, i, j, k)
+        for (int fd = 0; fd < 3; fd++)
+            Div(i,j,k) -=
+                (
+                    field(fd,i,j,k)*fa(i,j,k)[fd*2]
+                  - field(fd,upperNei(i,j,k,fd))*fa(i,j,k)[fd*2+1]
+                )
+              / cv(i,j,k);
 
     return tDiv;
 }

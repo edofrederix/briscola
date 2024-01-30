@@ -274,14 +274,7 @@ part::part(const mesh& msh, const part* l)
     {
         const labelVector P(l->N());
 
-        N_ =
-            labelVector
-            (
-                P.x() < 2 ? P.x() : P.x()/2,
-                P.y() < 2 ? P.y() : P.y()/2,
-                P.z() < 2 ? P.z() : P.z()/2
-            );
-
+        N_ = msh.coarsen(P);
         R_ = cmptDivide(P,N_);
     }
 

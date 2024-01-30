@@ -199,23 +199,29 @@ linearSystem<SType,Type,MeshType>::~linearSystem()
 {}
 
 template<class SType, class Type, class MeshType>
-List<bool> linearSystem<SType,Type,MeshType>::singular() const
+List<bool> linearSystem<SType,Type,MeshType>::singular(const bool clearCache)
 {
-    const meshLevel<SType,MeshType>& A = A_[A_.size()-1];
-
-    List<bool> s(MeshType::numberOfDirections);
-
-    forAll(A, d)
+    if (singular_.size() == 0 || clearCache)
     {
-        scalar mx = 0;
-        forAllCells(A[d], i, j, k)
-            mx = Foam::max(mx, Foam::mag(rowSum(A[d],i,j,k)));
+        singular_.setSize(MeshType::numberOfDirections);
+        singular_ = true;
 
-        reduce(mx, maxOp<scalar>());
-        s[d] = mx < 1e-8;
+        forAll(singular_, d)
+        {
+            const meshDirection<SType,MeshType>& A = A_[A_.size()-1][d];
+
+            forAllCells(A, i, j, k)
+                if (Foam::mag(rowSum(A,i,j,k)) > 1e-8)
+                    goto nope;
+
+            continue;
+            nope: singular_[d] = false;
+        }
+
+        reduce(singular_, andOp<List<bool>>());
     }
 
-    return s;
+    return singular_;
 }
 
 template<class SType, class Type, class MeshType>
@@ -279,10 +285,12 @@ void linearSystem<SType,Type,MeshType>::residual
     const label l = res.levelNum();
     const label d = res.directionNum();
 
-    rowProduct(res, this->A()[l][d], x_[l][d]);
+    const meshDirection<SType,MeshType>& A = this->A()[l][d];
+    const meshDirection<Type,MeshType>& x = this->x()[l][d];
+    const meshDirection<Type,MeshType>& b = this->b()[l][d];
 
-    res *= -1.0;
-    res += this->b()[l][d];
+    forAllCells(res, i, j, k)
+        res(i,j,k) = b(i,j,k) - rowProduct(A,x,i,j,k);
 }
 
 template<class SType, class Type, class MeshType>
@@ -306,18 +314,18 @@ linearSystem<SType,Type,MeshType>::residual
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
-    meshField<Type, MeshType>& res
+    meshField<Type, MeshType>& eval
 ) const
 {
-    forAll(res, l)
-        this->evaluate(res[l]);
+    forAll(eval, l)
+        this->evaluate(eval[l]);
 }
 
 template<class SType, class Type, class MeshType>
 tmp<meshField<Type, MeshType>>
 linearSystem<SType,Type,MeshType>::evaluate() const
 {
-    tmp<meshField<Type,MeshType>> tRes
+    tmp<meshField<Type,MeshType>> tEval
     (
         new meshField<Type,MeshType>
         (
@@ -326,51 +334,53 @@ linearSystem<SType,Type,MeshType>::evaluate() const
         )
     );
 
-    this->evaluate(tRes.ref());
+    this->evaluate(tEval.ref());
 
-    return tRes;
+    return tEval;
 }
 
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
-    meshLevel<Type,MeshType>& res
+    meshLevel<Type,MeshType>& eval
 ) const
 {
-    forAll(res, d)
-        this->evaluate(res[d]);
+    forAll(eval, d)
+        this->evaluate(eval[d]);
 }
 
 template<class SType, class Type, class MeshType>
 tmp<meshLevel<Type,MeshType>>
 linearSystem<SType,Type,MeshType>::evaluate(const label l) const
 {
-    tmp<meshLevel<Type,MeshType>> tRes
+    tmp<meshLevel<Type,MeshType>> tEval
     (
         new meshLevel<Type,MeshType>(fvMsh_,l)
     );
 
-    this->evaluate(tRes.ref());
+    this->evaluate(tEval.ref());
 
-    return tRes;
+    return tEval;
 }
 
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
-    meshDirection<Type,MeshType>& res
+    meshDirection<Type,MeshType>& eval
 ) const
 {
-    const label l = res.levelNum();
-    const label d = res.directionNum();
+    const label l = eval.levelNum();
+    const label d = eval.directionNum();
 
     const meshDirection<scalar,MeshType>& cv =
         fvMsh_.template metrics<MeshType>().cellVolumes()[l][d];
 
-    rowProduct(res, this->A()[l][d], x_[l][d]);
+    const meshDirection<SType,MeshType>& A = this->A()[l][d];
+    const meshDirection<Type,MeshType>& x = this->x()[l][d];
+    const meshDirection<Type,MeshType>& b = this->b()[l][d];
 
-    res -= this->b()[l][d];
-    res /= cv;
+    forAllCells(eval, i, j, k)
+        eval(i,j,k) = (rowProduct(A,x,i,j,k) - b(i,j,k))/cv(i,j,k);
 }
 
 template<class SType, class Type, class MeshType>

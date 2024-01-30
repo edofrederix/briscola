@@ -23,7 +23,7 @@ class solver
 public:
 
     // Base smoother class with singular system augmentation, see Sec. 5.6.4 of
-    // "Multigrid", U. Trottenberg et al., 2000. If the xi list is empty, to
+    // "Multigrid", U. Trottenberg et al., 2000. If the xi list is empty, no
     // singular system augmentation is applied. Having xi as an argument enables
     // its reuse between different calls to the smoothers.
 
@@ -249,10 +249,12 @@ public:
 
     // Compute residual normalization factors of the system Ax=b at given mesh
     // level. The normalization factor is defined as sum(|Ax-Ay|+|b-Ay|), with y
-    // = mean(x)
+    // = mean(x). The function reuses the residual that should be pre-computed,
+    // so that it can be re-used.
     virtual List<Type> normFactors
     (
         const linearSystem<SType,Type,MeshType>&,
+        const meshField<Type,MeshType>&,
         const label
     ) const;
 

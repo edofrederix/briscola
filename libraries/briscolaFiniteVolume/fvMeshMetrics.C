@@ -291,13 +291,13 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
 
         forAll(cc[l], d)
         {
-            labelVector bo;
-
-            for (bo.x() = -1; bo.x() <= 1; bo.x()++)
-            for (bo.y() = -1; bo.y() <= 1; bo.y()++)
-            for (bo.z() = -1; bo.z() <= 1; bo.z()++)
-            if (cmptSum(cmptMag(bo)) > 0)
+            for (label i = -1; i <= 1; i++)
+            for (label j = -1; j <= 1; j++)
+            for (label k = -1; k <= 1; k++)
+            if (cmptSum(cmptMag(labelVector(i,j,k))) > 0)
             {
+                const labelVector bo(i,j,k);
+
                 const labelVector S(cc.fvMsh().template S<MeshType>(l,d,bo));
                 const labelVector E(cc.fvMsh().template E<MeshType>(l,d,bo));
 
@@ -414,7 +414,7 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
         }
     }
 
-    cv.correctNonEliminatedBoundaryConditions();
+    cv.correctCommsBoundaryConditions();
 }
 
 template<class MeshType>

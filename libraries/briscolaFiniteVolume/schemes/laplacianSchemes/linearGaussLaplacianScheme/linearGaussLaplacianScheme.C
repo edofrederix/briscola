@@ -61,18 +61,31 @@ linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
     const meshField<scalar,MeshType>& cv =
         field.fvMsh().template metrics<MeshType>().cellVolumes();
 
-    forAllFaces(Lap, d, fd, i, j, k)
+    forAllCells(Lap, d, i, j, k)
     {
         labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
 
-        scalar value = factor*fa(d,ijk)[fd*2]*delta(d,ijk)[fd*2];
+        for (int fd = 0; fd < 3; fd++)
+        {
+            labelVector low(lowerNei(ijk,fd));
+            labelVector upp(upperNei(ijk,fd));
 
-        if (lambdaPtr)
-            value *= lambdaPtr->operator()(d,ijk)[fd];
+            scalar lower = factor*fa(d,ijk)[fd*2  ]*delta(d,ijk)[fd*2  ];
+            scalar upper = factor*fa(d,ijk)[fd*2+1]*delta(d,ijk)[fd*2+1];
 
-        Lap(d,ijk) += value*(field(d,nei) - field(d,ijk))/cv(d,ijk);
-        Lap(d,nei) += value*(field(d,ijk) - field(d,nei))/cv(d,nei);
+            if (lambdaPtr)
+            {
+                lower *= lambdaPtr->operator()(d,ijk)[fd];
+                upper *= lambdaPtr->operator()(d,upp)[fd];
+            }
+
+            Lap(d,ijk) +=
+                (
+                    lower*(field(d,low) - field(d,ijk))
+                  + upper*(field(d,upp) - field(d,ijk))
+                )
+              / cv(d,ijk);
+        }
     }
 
     return tLap;

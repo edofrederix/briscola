@@ -93,18 +93,14 @@ grad
     const meshField<faceVector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
-    typename outerProduct<vector,Type>::type value;
-
-    forAllFaces(Grad, d, fd, i, j, k)
-    {
-        const labelVector ijk(i,j,k);
-        const labelVector nei(ijk-units[fd]);
-
-        value = field(d,ijk)[fd*2]*fan(d,ijk)[fd*2];
-
-        Grad(d,ijk) += value/cv(d,ijk);
-        Grad(d,nei) -= value/cv(d,nei);
-    }
+    forAllCells(Grad, d, i, j, k)
+        for (int fd = 0; fd < 3; fd++)
+            Grad(d,i,j,k) +=
+                (
+                    field(d,i,j,k)[fd*2  ]*fan(d,i,j,k)[fd*2  ]
+                  + field(d,i,j,k)[fd*2+1]*fan(d,i,j,k)[fd*2+1]
+                )
+              / cv(d,i,j,k);
 
     return tGrad;
 }
@@ -136,18 +132,14 @@ grad
     const meshField<faceVector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
-    typename outerProduct<vector,Type>::type value;
-
-    forAllFaces(Grad, d, fd, i, j, k)
-    {
-        const labelVector ijk(i,j,k);
-        const labelVector nei(ijk-units[fd]);
-
-        value = field(d,ijk)[fd]*fan(d,ijk)[fd*2];
-
-        Grad(d,ijk) += value/cv(d,ijk);
-        Grad(d,nei) -= value/cv(d,nei);
-    }
+    forAllCells(Grad, d, i, j, k)
+        for (int fd = 0; fd < 3; fd++)
+            Grad(d,i,j,k) +=
+                (
+                    fan(d,i,j,k)[fd*2  ]*field(d,i,j,k)[fd]
+                  + fan(d,i,j,k)[fd*2+1]*field(d,upperNei(i,j,k,fd))[fd]
+                )
+              / cv(d,i,j,k);
 
     return tGrad;
 }

@@ -71,12 +71,11 @@ imSourceCoeff = scalar(solverDict.lookupOrDefault("sourceCoeff", 0.0));
 
 // Solvers
 
-linearSystem<symmStencil,vector,colocated> USys(U);
-linearSystem<symmStencil,scalar,colocated> pSys(p);
+linearSystem<stencil,vector,colocated> USys(U);
 
-autoPtr<solver<symmStencil,vector,colocated>> USolve
+autoPtr<solver<stencil,vector,colocated>> USolve
 (
-    solver<symmStencil,vector,colocated>::New
+    solver<stencil,vector,colocated>::New
     (
         USys.x().name(),
         fvMsh
@@ -87,7 +86,7 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
 (
     PoissonSolver<symmStencil,scalar,colocated>::New
     (
-        pSys.x().name(),
+        p.name(),
         fvMsh
     )
 );
