@@ -999,7 +999,7 @@ List<labelVector> mesh::findCells(const vectorList& points, const label l) const
 
 labelVector mesh::coarsen(const labelVector P) const
 {
-    if (!topology().structured())
+    if (!topology().structured() || !Pstream::parRun())
     {
         // Keep at least two cells in each direction on unstructured meshes, to
         // avoid heavy distortion
