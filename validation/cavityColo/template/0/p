@@ -1,0 +1,22 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      p;
+}
+
+boundaryConditions
+{
+    walls
+    {
+        type        Neumann;
+        gradients   (0);
+    }
+
+    movingWall
+    {
+        type        Neumann;
+        gradients   (0);
+    }
+}

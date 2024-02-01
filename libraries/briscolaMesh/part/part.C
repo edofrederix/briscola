@@ -50,6 +50,24 @@ void part::calcPoints(const mesh& msh, const part* l)
             points_(i,j,k) = l->points()(i*R_.x(), j*R_.y(), k*R_.z());
         }
     }
+
+    // Remove round-off errors. This is important on parallel boundaries so that
+    // points coincide exactly. As a scale we use the float exponent.
+
+    forAllBlock(points_, i, j, k)
+    {
+        for (int d = 0; d < 3; d++)
+        {
+            scalar p = points_(i,j,k)[d];
+
+            if (p != 0)
+            {
+                scalar S = Foam::pow(10, label(Foam::log10(Foam::mag(p))));
+
+                points_(i,j,k)[d] = round(p/S*1e14)*S/1e14;
+            }
+        }
+    }
 }
 
 void part::calcGhostPoints(const mesh& msh)
