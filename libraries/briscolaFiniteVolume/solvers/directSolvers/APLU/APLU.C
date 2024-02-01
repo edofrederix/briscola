@@ -90,6 +90,16 @@ void APLU<SType,Type,MeshType>::prepare
                 offset += nums.size();
             }
 
+            // For a singular matrix force the first value to zero
+
+            if (singular[d])
+            {
+                for (int i = 0; i < n; i++)
+                    A[i][0] = A[0][i] = 0.0;
+
+                A[0][0] = 1.0;
+            }
+
             // Print the full matrix for debugging
 
             // for (int i = 0; i < n; i++)
@@ -160,6 +170,11 @@ void APLU<SType,Type,MeshType>::solve
 
                 offset += nums.size();
             }
+
+            // For a singular matrix the first value is forced to zero
+
+            if (singular[d])
+                rhs[0] = Zero;
 
             // Solve
 

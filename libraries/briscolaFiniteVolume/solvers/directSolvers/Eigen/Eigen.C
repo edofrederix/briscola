@@ -102,6 +102,18 @@ void Eigen<SType,Type,MeshType>::prepare
                 offset += nums.size();
             }
 
+            // For a singular matrix force the first value to zero
+
+            if (singular[d])
+            {
+                for (int k = 0; k < A.outerSize(); ++k)
+                    for (EigenSolver::matrixType::InnerIterator I(A,k); I; ++I)
+                        if (I.row() == 0 || I.col() == 0)
+                            A.coeffRef(I.row(), I.col()) = 0.0;
+
+                A.coeffRef(0,0) = 1.0;
+            }
+
             // Set matrix and compute decomposition
 
             A.makeCompressed();
@@ -175,6 +187,11 @@ void Eigen<SType,Type,MeshType>::solve
 
                 offset += nums.size();
             }
+
+            // For a singular matrix the first value is forced to zero
+
+            if (singular[d])
+                rhs[0] = Zero;
 
             // Copy to Eigen right-hand side type
 
