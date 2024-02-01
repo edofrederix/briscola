@@ -60,9 +60,14 @@ int main(int argc, char *argv[])
         DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
+        USys += ex::stagGrad(p);
+
         // Solve predictor
 
         USolve->solve(USys);
+
+        U += deltaT*ex::stagGrad(p);
+        U.correctBoundaryConditions();
 
         // Pressure equation
 
