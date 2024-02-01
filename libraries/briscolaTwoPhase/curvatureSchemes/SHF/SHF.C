@@ -100,6 +100,12 @@ void SHF::correct()
     const PartialList<scalar>& ySize = rMsh.localCellSizes()[1];
     const PartialList<scalar>& zSize = rMsh.localCellSizes()[2];
 
+    const PartialList<scalar>& gxSize = rMsh.globalCellSizes()[0];
+    const PartialList<scalar>& gySize = rMsh.globalCellSizes()[1];
+    const PartialList<scalar>& gzSize = rMsh.globalCellSizes()[2];
+
+    const labelVector& globalStart = globalStarts[Pstream::myProcNo()];
+
     const scalar angleTol = Foam::cos(0.8);
 
     commKappa_.clear();
@@ -206,7 +212,7 @@ void SHF::correct()
                     {
                         tup++;
                         prevSum = newSum;
-                        maxH += xSize[i + aux3];
+                        maxH += gxSize[i + aux3 + globalStart[0]];
                     }
                     else
                     {
@@ -254,7 +260,7 @@ void SHF::correct()
                     {
                         tdown++;
                         prevSum = newSum;
-                        minH += xSize[i - aux3];
+                        minH += gxSize[i - aux3 + globalStart[0]];
                     }
                     else
                     {
@@ -265,7 +271,7 @@ void SHF::correct()
                 if (nsign > 0)
                     minH = maxH;
 
-                maxH  = minH + xSize[i];
+                maxH  = minH + gxSize[i + globalStart[0]];
 
                 for (int aux1 = -1; aux1 <= 1; aux1++)
                 {
@@ -274,7 +280,7 @@ void SHF::correct()
                         scalar value = 0;
                         scalar valuePrev = alpha_(i, j + aux1, k + aux2);
                         H[aux1 + 1][aux2 + 1] =
-                            xSize[i] * valuePrev;
+                            gxSize[i + globalStart[0]] * valuePrev;
 
                         for (int aux3 = 1; aux3 <= tup; aux3++)
                         {
@@ -298,8 +304,8 @@ void SHF::correct()
                                     value
                                   - valuePrev
                                 ) > 0
-                              ? xSize[i+aux3]*value
-                              : nsign > 0 ? xSize[i+aux3] : 0;
+                              ? gxSize[i+aux3 + globalStart[0]]*value
+                              : nsign > 0 ? gxSize[i+aux3 + globalStart[0]] : 0;
 
                             valuePrev = value;
                         }
@@ -328,8 +334,8 @@ void SHF::correct()
                                     value
                                   - valuePrev
                                 ) < 0
-                              ? xSize[i-aux3]*value
-                              : nsign < 0 ? xSize[i-aux3] : 0;
+                              ? gxSize[i-aux3 + globalStart[0]]*value
+                              : nsign < 0 ? gxSize[i-aux3 + globalStart[0]] : 0;
 
                             valuePrev = value;
                         }
@@ -382,7 +388,7 @@ void SHF::correct()
                     {
                         tup++;
                         prevSum = newSum;
-                        maxH += ySize[j+aux3];
+                        maxH += gySize[j+aux3+globalStart[1]];
                     }
                     else
                     {
@@ -430,7 +436,7 @@ void SHF::correct()
                     {
                         tdown++;
                         prevSum = newSum;
-                        minH += ySize[j-aux3];
+                        minH += gySize[j-aux3+globalStart[1]];
                     }
                     else
                     {
@@ -441,7 +447,7 @@ void SHF::correct()
                 if (nsign > 0)
                     minH = maxH;
 
-                maxH  = minH + ySize[j];
+                maxH  = minH + gySize[j+globalStart[1]];
 
                 for (int aux1 = -1; aux1 <= 1; aux1++)
                 {
@@ -451,7 +457,7 @@ void SHF::correct()
                         scalar valuePrev = alpha_(i + aux1, j, k + aux2);
 
                         H[aux1 + 1][aux2 + 1] =
-                            ySize[j] * valuePrev;
+                            gySize[j+globalStart[1]] * valuePrev;
 
                         for (int aux3 = 1; aux3 <= tup; aux3++)
                         {
@@ -476,8 +482,8 @@ void SHF::correct()
                                     value
                                   - valuePrev
                                 ) > 0
-                              ? ySize[j+aux3]*value
-                              : nsign > 0 ? ySize[j+aux3] : 0;
+                              ? gySize[j+aux3+globalStart[1]]*value
+                              : nsign > 0 ? gySize[j+aux3+globalStart[1]] : 0;
 
                             valuePrev = value;
                         }
@@ -506,8 +512,8 @@ void SHF::correct()
                                     value
                                   - valuePrev
                                 ) < 0
-                              ? ySize[j-aux3]*value
-                              : nsign < 0 ? ySize[j-aux3] : 0;
+                              ? gySize[j-aux3+globalStart[1]]*value
+                              : nsign < 0 ? gySize[j-aux3+globalStart[1]] : 0;
 
                             valuePrev = value;
                         }
@@ -559,7 +565,7 @@ void SHF::correct()
                     {
                         tup++;
                         prevSum = newSum;
-                        maxH += zSize[k+aux3];
+                        maxH += gzSize[k+aux3+globalStart[2]];
                     }
                     else
                     {
@@ -606,7 +612,7 @@ void SHF::correct()
                     {
                         tdown++;
                         prevSum = newSum;
-                        minH += zSize[k-aux3];
+                        minH += gzSize[k-aux3+globalStart[2]];
                     }
                     else
                     {
@@ -617,7 +623,7 @@ void SHF::correct()
                 if (nsign > 0)
                     minH = maxH;
 
-                maxH  = minH + zSize[k];
+                maxH  = minH + gzSize[k+globalStart[2]];
 
                 for (int aux1 = -1; aux1 <= 1; aux1++)
                 {
@@ -627,7 +633,7 @@ void SHF::correct()
                         scalar valuePrev = alpha_(i + aux1, j + aux2, k);
 
                         H[aux1 + 1][aux2 + 1] =
-                            zSize[k] * valuePrev;
+                            gzSize[k+globalStart[2]] * valuePrev;
 
                         for (int aux3 = 1; aux3 <= tup; aux3++)
                         {
@@ -650,8 +656,8 @@ void SHF::correct()
                                     value
                                   - valuePrev
                                 ) > 0
-                              ? zSize[k+aux3]*value
-                              : nsign > 0 ? zSize[k+aux3] : 0;
+                              ? gzSize[k+aux3+globalStart[2]]*value
+                              : nsign > 0 ? gzSize[k+aux3+globalStart[2]] : 0;
 
                             valuePrev = value;
                         }
@@ -679,8 +685,8 @@ void SHF::correct()
                                     value
                                   - valuePrev
                                 ) < 0
-                              ? zSize[k-aux3]*value
-                              : nsign < 0 ? zSize[k-aux3] : 0;
+                              ? gzSize[k-aux3+globalStart[2]]*value
+                              : nsign < 0 ? gzSize[k-aux3+globalStart[2]] : 0;
 
                             valuePrev = value;
                         }
