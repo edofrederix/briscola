@@ -104,7 +104,7 @@ void SHF::correct()
     const PartialList<scalar>& gySize = rMsh.globalCellSizes()[1];
     const PartialList<scalar>& gzSize = rMsh.globalCellSizes()[2];
 
-    const labelVector& globalStart = globalStarts[Pstream::myProcNo()];
+    const labelVector& globalStart = rMsh.globalStarts()[Pstream::myProcNo()];
 
     const scalar angleTol = Foam::cos(0.8);
 
