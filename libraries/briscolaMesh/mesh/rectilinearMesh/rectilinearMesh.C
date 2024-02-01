@@ -283,7 +283,7 @@ void rectilinearMesh::setMetrics()
         globalStarts_[proc] = Zero;
 
         for (int d = 0; d < 3; d++)
-            globalStarts_[proc][d] = starts[d][l];
+            globalStarts_[proc][d] = starts[d][ijk[d]];
     }
 }
 
