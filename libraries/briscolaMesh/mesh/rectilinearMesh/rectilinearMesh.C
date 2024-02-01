@@ -160,6 +160,7 @@ void rectilinearMesh::setMetrics()
                         globalPoints[cursor+j] = localPointsData[j];
                     }
 
+                    starts[d][i] = cursor;
                     cursor += localCellSizesData.size()-2;
                 }
                 else
@@ -282,10 +283,7 @@ void rectilinearMesh::setMetrics()
         globalStarts_[proc] = Zero;
 
         for (int d = 0; d < 3; d++)
-            for (int l = 0; l <= ijk[d]; l++)
-            {
-                globalStarts_[proc][d] = l == 0? 0 : starts[d][l];
-            }
+            globalStarts_[proc][d] = starts[d][l];
     }
 }
 
