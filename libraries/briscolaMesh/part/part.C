@@ -62,7 +62,7 @@ void part::calcPoints(const mesh& msh, const part* l)
 
             if (p != 0)
             {
-                scalar S = Foam::pow(10, label(Foam::log10(Foam::mag(p))));
+                scalar S = Foam::pow(10.0, label(Foam::log10(Foam::mag(p))));
 
                 points_(i,j,k)[d] = round(p/S*1e14)*S/1e14;
             }

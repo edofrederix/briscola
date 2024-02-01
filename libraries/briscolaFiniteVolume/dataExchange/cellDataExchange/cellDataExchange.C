@@ -119,15 +119,14 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
                 break;
             }
 
-            const boundary& b = msh.boundaries()[bNum];
-
             // If no processor can be found, check if the cell can be found in
             // the ghost cells of a neighbouring processor
 
             if
-            (   bNum == -1
-             || b.castable<domainBoundary>()
-             || b.castable<emptyBoundary>()
+            (
+                bNum == -1
+             || msh.boundaries()[bNum].castable<domainBoundary>()
+             || msh.boundaries()[bNum].castable<emptyBoundary>()
             )
             {
                 for (int j = 0; j < 3; j++)
