@@ -151,7 +151,7 @@ transposeMultiplicate
                                     field2(valuei, ijk)[d]
                                   + field2(valuei, nei)[d]
                                   + field2(valuei, ijk + units[valuei])[d]
-                                  + field2(valuei, ijk + units[valuei])[d]
+                                  + field2(valuei, nei + units[valuei])[d]
                                  );
             }
         }
