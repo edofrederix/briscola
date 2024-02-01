@@ -38,26 +38,26 @@ void SHF::setCommunicationIndices()
                     communicationIndices_[1].append(labelVector(i,j,k));
 
     if (faceType.bottom() > 1)
-        for (int i = I.left() - 1; i < I.right(); i++)
+        for (int i = I.left() - 1; i < I.right()+ 1; i++)
             for (int j = I.bottom() - 3; j < I.bottom() - 1; j++)
                 for (int k = I.aft() - 1; k < I.fore() + 1; k++)
                     communicationIndices_[2].append(labelVector(i,j,k));
 
     if (faceType.top() > 1)
-        for (int i = I.left() - 1; i < I.right(); i++)
+        for (int i = I.left() - 1; i < I.right()+ 1; i++)
             for (int j = I.top() + 1; j < I.top() + 3; j++)
                 for (int k = I.aft() - 1; k < I.fore() + 1; k++)
                     communicationIndices_[3].append(labelVector(i,j,k));
 
     if (faceType.aft() > 1)
-        for (int i = I.left() - 1; i < I.right(); i++)
-            for (int j = I.bottom() - 1; j < I.top(); j++)
+        for (int i = I.left() - 1; i < I.right()+ 1; i++)
+            for (int j = I.bottom() - 1; j < I.top()+ 1; j++)
                 for (int k = I.aft() - 3; k < I.aft() - 1; k++)
                     communicationIndices_[4].append(labelVector(i,j,k));
 
     if (faceType.fore() > 1)
-        for (int i = I.left() - 1; i < I.right(); i++)
-            for (int j = I.bottom() - 1; j < I.top(); j++)
+        for (int i = I.left() - 1; i < I.right()+ 1; i++)
+            for (int j = I.bottom() - 1; j < I.top()+ 1; j++)
                 for (int k = I.fore() + 1; k < I.fore() + 3; k++)
                     communicationIndices_[5].append(labelVector(i,j,k));
 
