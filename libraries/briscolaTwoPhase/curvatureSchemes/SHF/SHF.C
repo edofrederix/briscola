@@ -191,7 +191,9 @@ void SHF::correct()
                             {
                                 int index = (i + aux3 - kappa.I().right() - 1)
                                           * (N[1] + 2) * (N[2] + 2)
-                                          + (j + aux1) * (N[2] + 2) + k + aux2;
+                                          + (j + aux1 - kappa.I().bottom() + 1)
+                                          * (N[2] + 2) + k + aux2
+                                          - kappa.I().aft() + 1;
                                 newSum += commKappa_[1][index];
                             }
 
@@ -237,7 +239,9 @@ void SHF::correct()
                             {
                                 int index = (i - aux3 - kappa.I().left() + 3)
                                           * (N[1] + 2) * (N[2] + 2)
-                                          + (j + aux1) * (N[2] + 2) + k + aux2;
+                                          + (j + aux1 - kappa.I().bottom() + 1)
+                                          * (N[2] + 2) + k + aux2
+                                          - kappa.I().aft() + 1;
                                 newSum += commKappa_[0][index];
                             }
 
@@ -282,7 +286,9 @@ void SHF::correct()
                             {
                                 int index = (i + aux3 - kappa.I().right() - 1)
                                           * (N[1] + 2) * (N[2] + 2)
-                                          + (j + aux1) * (N[2] + 2) + k + aux2;
+                                          + (j + aux1 - kappa.I().bottom() + 1)
+                                          * (N[2] + 2) + k + aux2
+                                          - kappa.I().aft() + 1;
                                 value = commKappa_[1][index];
                             }
 
@@ -310,7 +316,9 @@ void SHF::correct()
                             {
                                 int index = (i - aux3 - kappa.I().left() + 3)
                                           * (N[1] + 2) * (N[2] + 2)
-                                          + (j + aux1) * (N[2] + 2) + k + aux2;
+                                          + (j + aux1 - kappa.I().bottom() + 1)
+                                          * (N[2] + 2) + k + aux2
+                                          - kappa.I().aft() + 1;
                                 value = commKappa_[0][index];
                             }
 
@@ -357,9 +365,11 @@ void SHF::correct()
                             }
                             else
                             {
-                                int index = (i + aux1) * 2 * (N[2] + 2)
+                                int index = (i + aux1 - kappa.I().left() + 1)
+                                          * 2 * (N[2] + 2)
                                           + (j + aux3 - kappa.I().top() - 1)
-                                          * (N[2] + 2) + k + aux2;
+                                          * (N[2] + 2) + k + aux2
+                                          - kappa.I().aft() + 1;
                                 newSum += commKappa_[3][index];
                             }
 
@@ -403,9 +413,11 @@ void SHF::correct()
                             }
                             else
                             {
-                                int index = (i + aux1) * 2 * (N[2] + 2)
+                                int index = (i + aux1 - kappa.I().left() + 1)
+                                          * 2 * (N[2] + 2)
                                           + (j - aux3 - kappa.I().bottom() + 3)
-                                          * (N[2] + 2) + k + aux2;
+                                          * (N[2] + 2) + k + aux2
+                                          - kappa.I().aft() + 1;
                                 newSum += commKappa_[2][index];
                             }
 
@@ -450,9 +462,11 @@ void SHF::correct()
                             else
                             {
 
-                                int index = (i + aux1) * 2 * (N[2] + 2)
+                                int index = (i + aux1 - kappa.I().left() + 1)
+                                          * 2 * (N[2] + 2)
                                           + (j + aux3 - kappa.I().top() - 1)
-                                          * (N[2] + 2) + k + aux2;
+                                          * (N[2] + 2) + k + aux2
+                                          - kappa.I().aft() + 1;
                                 value = commKappa_[3][index];
                             }
 
@@ -479,9 +493,11 @@ void SHF::correct()
                             else
                             {
 
-                                int index = (i + aux1) * 2 * (N[2] + 2)
+                                int index = (i + aux1 - kappa.I().left() + 1)
+                                          * 2 * (N[2] + 2)
                                           + (j - aux3 - kappa.I().bottom() + 3)
-                                          * (N[2] + 2) + k + aux2;
+                                          * (N[2] + 2) + k + aux2
+                                          - kappa.I().aft() + 1;
                                 value = commKappa_[2][index];
                             }
                             H[aux1 + 1][aux2 + 1] +=
@@ -527,8 +543,9 @@ void SHF::correct()
                             }
                             else
                             {
-                                int index = (i + aux1) * 2 * (N[1] + 2)
-                                          + (j + aux2) * 2
+                                int index = (i + aux1 - kappa.I().left() + 1)
+                                          * 2 * (N[1] + 2)
+                                          + (j + aux2 - kappa.I().bottom() + 1) * 2
                                           + k + aux3 - kappa.I().fore() - 1;
                                 newSum += commKappa_[5][index];
                             }
@@ -573,8 +590,9 @@ void SHF::correct()
                             }
                             else
                             {
-                                int index = (i + aux1) * 2 * (N[1] + 2)
-                                          + (j + aux2) * 2
+                                int index = (i + aux1 - kappa.I().left() + 1)
+                                          * 2 * (N[1] + 2)
+                                          + (j + aux2 - kappa.I().bottom() + 1) * 2
                                           + k - aux3 - kappa.I().aft() + 3;
                                 newSum += commKappa_[4][index];
                             }
@@ -619,8 +637,9 @@ void SHF::correct()
                             }
                             else
                             {
-                                int index = (i + aux1) * 2 * (N[1] + 2)
-                                          + (j + aux2) * 2
+                                int index = (i + aux1 - kappa.I().left() + 1)
+                                          * 2 * (N[1] + 2)
+                                          + (j + aux2 - kappa.I().bottom() + 1) * 2
                                           + k + aux3 - kappa.I().fore() - 1;
                                 value = commKappa_[5][index];
                             }
@@ -647,8 +666,9 @@ void SHF::correct()
                             }
                             else
                             {
-                                int index = (i + aux1) * 2 * (N[1] + 2)
-                                          + (j + aux2) * 2
+                                int index = (i + aux1 - kappa.I().left() + 1)
+                                          * 2 * (N[1] + 2)
+                                          + (j + aux2 - kappa.I().bottom() + 1) * 2
                                           + k - aux3 - kappa.I().aft() + 3;
                                 value = commKappa_[4][index];
                             }
