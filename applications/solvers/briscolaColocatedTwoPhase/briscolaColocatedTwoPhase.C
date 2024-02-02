@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
 
     // This solver works for incompressible mixtures only
 
-    incompressibleTwoPhaseModel& itpm =
-        tpm.cast<incompressibleTwoPhaseModel>();
+    incompressibleTwoPhaseModel& icoTwoPhase =
+        twoPhase.cast<incompressibleTwoPhaseModel>();
 
     #include "createRefs.H"
     #include "createFields.H"
@@ -47,31 +47,30 @@ int main(int argc, char *argv[])
 
         // Update the two-phase model and specific volumes
 
-        itpm.correct();
+        icoTwoPhase.correct();
 
-        v = itpm.v<colocated>();
+        v = icoTwoPhase.v<colocated>();
         vf = ex::interp(v);
 
         // Predictor, Eq. (A.1) of Dodd & Ferrante (2014)
 
         USys = im::ddt(U);
 
-        D = im::laplacian<stencil>(mu,U)*v;
-        USys -= 0.5*D;
-        USys -= 0.5*D.evaluate();
+        USys -= im::laplacian(mu,U,0.5)*v;
+        USys -= ex::laplacian(mu,U,0.5)*v;
 
         USys -= 0.5*(deltaT/deltaT0)*H;
 
-        colocatedLowerFaceScalarField surfTenPot = fa * itpm.surfaceTension().potential();
-        colocatedVectorField surfTen = ex::reconstruct(surfTenPot);
+        colocatedVectorField surfTen
+        (
+            ex::reconstruct(fa*icoTwoPhase.surfaceTension().potential())
+        );
 
-        H =
-            ex::div(phi,U)
-         - (ex::grad(mu) & ex::grad(U))*v;
+        H = ex::div(phi,U) - (ex::grad(mu) & ex::grad(U))*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
 
-        USys -= itpm.g();
+        USys -= icoTwoPhase.g();
         USys += ex::grad(p)*v - surfTen;
 
         // Solve predictor
@@ -91,8 +90,8 @@ int main(int argc, char *argv[])
             (
                 fa
               * (
-                    ex::faceGrad(q) * (1.0 - minRho*vf)
-                  + ex::faceGrad(p) *  minRho*vf
+                    ex::faceGrad(q)*(1.0 - minRho*vf)
+                  + ex::faceGrad(p)*minRho*vf
                 )
             );
 

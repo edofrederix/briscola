@@ -78,10 +78,6 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
     )
 );
 
-// Viscous term
-
-linearSystem<stencil,vector,colocated> D(U);
-
 // Adams-Bashforth source
 
 colocatedVectorField H

@@ -91,10 +91,6 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
     )
 );
 
-// Viscous term
-
-linearSystem<stencil,scalar,staggered> D(U);
-
 // Adams-Bashforth source
 
 staggeredScalarField H
@@ -110,7 +106,9 @@ staggeredScalarField H
 staggeredVectorField gradMu = ex::grad(mu);
 staggeredVectorField gradU = ex::grad(U);
 
-H = ex::div(phi,U) - ex::transposeMultiplicate(gradMu,gradU)/rho;
+H =
+    ex::div(phi,U)
+  - ex::transposeMultiplicate(gradMu,gradU)*icoTwoPhase.v<staggered>();
 
 // Specific volumes
 
@@ -147,5 +145,5 @@ colocatedLowerFaceScalarField vcf
 
 // It is assumed that the minimum mass density is constant
 
-const scalar minRho = gMin(itpm.minRho<colocated>())[0];
+const scalar minRho = gMin(icoTwoPhase.minRho<colocated>())[0];
 const scalar maxv = 1.0/minRho;

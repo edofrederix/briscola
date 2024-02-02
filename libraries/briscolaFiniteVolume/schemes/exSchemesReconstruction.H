@@ -57,6 +57,25 @@ reconstruct
     return tRecon;
 }
 
+template<class Type>
+inline tmp<meshField<typename outerProduct<vector,Type>::type,colocated>>
+reconstruct
+(
+    const tmp<meshField<Type,staggered>>& tfield
+)
+{
+    typedef typename outerProduct<vector,Type>::type ReconType;
+
+    tmp<meshField<ReconType,colocated>> tRecon
+    (
+        reconstruct(tfield())
+    );
+
+    tfield.clear();
+
+    return tRecon;
+}
+
 // inline tmp<colocatedVectorField>
 // reconstruct
 // (
@@ -214,6 +233,25 @@ reconstruct
         Recon(i,j,k).y() = totalSum.y() / totalWeight.y();
         Recon(i,j,k).z() = totalSum.z() / totalWeight.z();
     }
+
+    return tRecon;
+}
+
+template<class Type>
+inline tmp<meshField<typename outerProduct<vector,Type>::type,colocated>>
+reconstruct
+(
+    const tmp<meshField<LowerFaceSpace<Type>,colocated>>& tfield
+)
+{
+    typedef typename outerProduct<vector,Type>::type ReconType;
+
+    tmp<meshField<ReconType,colocated>> tRecon
+    (
+        reconstruct(tfield())
+    );
+
+    tfield.clear();
 
     return tRecon;
 }
