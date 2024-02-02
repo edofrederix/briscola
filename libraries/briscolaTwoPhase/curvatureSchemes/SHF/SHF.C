@@ -3,7 +3,6 @@
 #include "vof.H"
 #include "exSchemes.H"
 #include "rectilinearMesh.H"
-#include "cellDataExchange.H"
 
 namespace Foam
 {
@@ -17,50 +16,57 @@ namespace fv
 defineTypeNameAndDebug(SHF, 0);
 addToRunTimeSelectionTable(curvatureScheme, SHF, dictionary);
 
-void SHF::setCommunicationIndices()
+void SHF::setCommunication()
 {
     const faceLabel& faceType = fvMsh_.msh().faceBoundaryType();
-    const faceLabel I = fvMsh_.template I<colocated>(0, 0);
+    const faceLabel I = fvMsh_.template I<colocated>();
 
-    communicationIndices_.clear();
-    communicationIndices_.setSize(6);
+    List<labelVector> indices(0);
 
-    if (faceType.left() > 1)
-        for (int i = I.left() - 3; i < I.left() - 1; i++)
-            for (int j = I.bottom() - 1; j < I.top() + 1; j++)
-                for (int k = I.aft() - 1; k < I.fore() + 1; k++)
-                    communicationIndices_[0].append(labelVector(i,j,k));
+    exchangeSizes_.setSize(6, Zero);
 
-    if (faceType.right() > 1)
-        for (int i = I.right() + 1; i < I.right() + 3; i++)
-            for (int j = I.bottom() - 1; j < I.top() + 1; j++)
-                for (int k = I.aft() - 1; k < I.fore() + 1; k++)
-                    communicationIndices_[1].append(labelVector(i,j,k));
+    label cursor = 0;
 
-    if (faceType.bottom() > 1)
-        for (int i = I.left() - 1; i < I.right()+ 1; i++)
-            for (int j = I.bottom() - 3; j < I.bottom() - 1; j++)
-                for (int k = I.aft() - 1; k < I.fore() + 1; k++)
-                    communicationIndices_[2].append(labelVector(i,j,k));
+    for (int f = 0; f < 6; f++)
+    {
+        const label d = f/2;
 
-    if (faceType.top() > 1)
-        for (int i = I.left() - 1; i < I.right()+ 1; i++)
-            for (int j = I.top() + 1; j < I.top() + 3; j++)
-                for (int k = I.aft() - 1; k < I.fore() + 1; k++)
-                    communicationIndices_[3].append(labelVector(i,j,k));
+        // On parallel/periodic boundaries only
 
-    if (faceType.aft() > 1)
-        for (int i = I.left() - 1; i < I.right()+ 1; i++)
-            for (int j = I.bottom() - 1; j < I.top()+ 1; j++)
-                for (int k = I.aft() - 3; k < I.aft() - 1; k++)
-                    communicationIndices_[4].append(labelVector(i,j,k));
+        if (faceType[f] > 1)
+        {
+            faceLabel J(I.lower()-unitXYZ, I.upper()+unitXYZ);
 
-    if (faceType.fore() > 1)
-        for (int i = I.left() - 1; i < I.right()+ 1; i++)
-            for (int j = I.bottom() - 1; j < I.top()+ 1; j++)
-                for (int k = I.fore() + 1; k < I.fore() + 3; k++)
-                    communicationIndices_[5].append(labelVector(i,j,k));
+            if (f%2 == 0)
+            {
+                J[d*2  ] = I[f] - 3;
+                J[d*2+1] = I[f] - 1;
+            }
+            else
+            {
+                J[d*2  ] = I[f] + 1;
+                J[d*2+1] = I[f] + 3;
+            }
 
+            exchangeSizes_[f] = cmptProduct(J.upper()-J.lower());
+
+            indices.setSize
+            (
+                indices.size()
+              + exchangeSizes_[f]
+            );
+
+            for (int i = J.left(); i < J.right(); i++)
+                for (int j = J.bottom(); j < J.top(); j++)
+                    for (int k = J.aft(); k < J.fore(); k++)
+                        indices[cursor++] = labelVector(i,j,k);
+        }
+    }
+
+    exchangePtr_.reset
+    (
+        new cellDataExchange<colocated>(indices, fvMsh_)
+    );
 }
 
 SHF::SHF
@@ -73,14 +79,15 @@ SHF::SHF
 :
     curvatureScheme(fvMsh, dict, normal, alpha)
 {
-    setCommunicationIndices();
+    setCommunication();
 }
 
 SHF::SHF(const SHF& s)
 :
-    curvatureScheme(s),
-    communicationIndices_(s.communicationIndices_)
-{}
+    curvatureScheme(s)
+{
+    setCommunication();
+}
 
 SHF::~SHF()
 {}
@@ -108,13 +115,20 @@ void SHF::correct()
 
     const scalar angleTol = Foam::cos(0.8);
 
-    commKappa_.clear();
+    List<scalarList> commKappa(6);
 
-    for (int i = 0; i < 6; i++)
+    if (exchangePtr_.valid())
     {
-        cellDataExchange<colocated> exchange(communicationIndices_[i], fvMsh_, 0, 0);
-        List<scalar> data(move(exchange(kappa)));
-        commKappa_.append(data);
+        forAll(commKappa, f)
+            commKappa[f].setSize(exchangeSizes_[f]);
+
+        scalarList data(move(exchangePtr_()(kappa)));
+
+        label cursor = 0;
+
+        for (int f = 0; f < 6; f++)
+            for (int i = 0; i < exchangeSizes_[f]; i++)
+                commKappa[f][i] = data[cursor++];
     }
 
     forAllCells(kappa, i, j, k)
@@ -200,7 +214,7 @@ void SHF::correct()
                                           + (j + aux1 - kappa.I().bottom() + 1)
                                           * (N[2] + 2) + k + aux2
                                           - kappa.I().aft() + 1;
-                                newSum += commKappa_[1][index];
+                                newSum += commKappa[1][index];
                             }
 
                     if
@@ -248,7 +262,7 @@ void SHF::correct()
                                           + (j + aux1 - kappa.I().bottom() + 1)
                                           * (N[2] + 2) + k + aux2
                                           - kappa.I().aft() + 1;
-                                newSum += commKappa_[0][index];
+                                newSum += commKappa[0][index];
                             }
 
                     if
@@ -295,7 +309,7 @@ void SHF::correct()
                                           + (j + aux1 - kappa.I().bottom() + 1)
                                           * (N[2] + 2) + k + aux2
                                           - kappa.I().aft() + 1;
-                                value = commKappa_[1][index];
+                                value = commKappa[1][index];
                             }
 
                             H[aux1 + 1][aux2 + 1] +=
@@ -325,7 +339,7 @@ void SHF::correct()
                                           + (j + aux1 - kappa.I().bottom() + 1)
                                           * (N[2] + 2) + k + aux2
                                           - kappa.I().aft() + 1;
-                                value = commKappa_[0][index];
+                                value = commKappa[0][index];
                             }
 
                             H[aux1 + 1][aux2 + 1] +=
@@ -376,7 +390,7 @@ void SHF::correct()
                                           + (j + aux3 - kappa.I().top() - 1)
                                           * (N[2] + 2) + k + aux2
                                           - kappa.I().aft() + 1;
-                                newSum += commKappa_[3][index];
+                                newSum += commKappa[3][index];
                             }
 
                     if
@@ -424,7 +438,7 @@ void SHF::correct()
                                           + (j - aux3 - kappa.I().bottom() + 3)
                                           * (N[2] + 2) + k + aux2
                                           - kappa.I().aft() + 1;
-                                newSum += commKappa_[2][index];
+                                newSum += commKappa[2][index];
                             }
 
                     if
@@ -473,7 +487,7 @@ void SHF::correct()
                                           + (j + aux3 - kappa.I().top() - 1)
                                           * (N[2] + 2) + k + aux2
                                           - kappa.I().aft() + 1;
-                                value = commKappa_[3][index];
+                                value = commKappa[3][index];
                             }
 
                             H[aux1 + 1][aux2 + 1] +=
@@ -504,7 +518,7 @@ void SHF::correct()
                                           + (j - aux3 - kappa.I().bottom() + 3)
                                           * (N[2] + 2) + k + aux2
                                           - kappa.I().aft() + 1;
-                                value = commKappa_[2][index];
+                                value = commKappa[2][index];
                             }
                             H[aux1 + 1][aux2 + 1] +=
                                 nsign
@@ -553,7 +567,7 @@ void SHF::correct()
                                           * 2 * (N[1] + 2)
                                           + (j + aux2 - kappa.I().bottom() + 1) * 2
                                           + k + aux3 - kappa.I().fore() - 1;
-                                newSum += commKappa_[5][index];
+                                newSum += commKappa[5][index];
                             }
 
                     if
@@ -600,7 +614,7 @@ void SHF::correct()
                                           * 2 * (N[1] + 2)
                                           + (j + aux2 - kappa.I().bottom() + 1) * 2
                                           + k - aux3 - kappa.I().aft() + 3;
-                                newSum += commKappa_[4][index];
+                                newSum += commKappa[4][index];
                             }
 
                     if
@@ -647,7 +661,7 @@ void SHF::correct()
                                           * 2 * (N[1] + 2)
                                           + (j + aux2 - kappa.I().bottom() + 1) * 2
                                           + k + aux3 - kappa.I().fore() - 1;
-                                value = commKappa_[5][index];
+                                value = commKappa[5][index];
                             }
 
                             H[aux1 + 1][aux2 + 1] +=
@@ -676,7 +690,7 @@ void SHF::correct()
                                           * 2 * (N[1] + 2)
                                           + (j + aux2 - kappa.I().bottom() + 1) * 2
                                           + k - aux3 - kappa.I().aft() + 3;
-                                value = commKappa_[4][index];
+                                value = commKappa[4][index];
                             }
 
                             H[aux1 + 1][aux2 + 1] +=

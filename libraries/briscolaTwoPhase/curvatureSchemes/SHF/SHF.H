@@ -2,6 +2,7 @@
 #define SHF_H
 
 #include "curvatureScheme.H"
+#include "cellDataExchange.H"
 
 namespace Foam
 {
@@ -17,16 +18,14 @@ class SHF
     public curvatureScheme
 {
 
-    // List of the indices outside the processor for
-    // each face boundary
-    List<List<labelVector>> communicationIndices_;
+    // Cell data exchange object
+    autoPtr<cellDataExchange<colocated>> exchangePtr_;
 
-    // List of the kappa values outside the processor
-    // for each face boundary
-    List<List<scalar>> commKappa_;
+    // Exchange data sizes per face
+    labelList exchangeSizes_;
 
-    // Initialize communication indices
-    void setCommunicationIndices();
+    // Initialize communication
+    void setCommunication();
 
 public:
 
