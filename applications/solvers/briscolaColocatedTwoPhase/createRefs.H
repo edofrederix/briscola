@@ -1,4 +1,4 @@
 const colocatedFaceScalarField& fa =
     fvMsh.metrics<colocated>().faceAreas();
 
-const colocatedLowerFaceScalarField& mu = tpm.mu<colocated>();
+const colocatedLowerFaceScalarField& mu = twoPhase.mu<colocated>();

@@ -65,10 +65,7 @@ int main(int argc, char *argv[])
 
         phi = ex::faceFlux(U);
 
-        gradMu = ex::grad(mu);
-        gradU = ex::grad(U);
-
-        H = ex::div(phi,U) - ex::transposeMultiplicate(gradMu,gradU)*v;
+        H = ex::div(phi,U) - stagDotProduct(ex::grad(mu),ex::grad(U))*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
 

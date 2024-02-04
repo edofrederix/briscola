@@ -117,5 +117,5 @@ colocatedLowerFaceScalarField vf
 
 // It is assumed that the minimum mass density is constant
 
-const scalar minRho = gMin(itpm.minRho<colocated>())[0];
+const scalar minRho = gMin(twoPhase.minRho<colocated>())[0];
 const scalar maxv = 1.0/minRho;

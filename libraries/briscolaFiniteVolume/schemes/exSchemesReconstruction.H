@@ -39,20 +39,19 @@ reconstruct
 
     meshField<ReconType,colocated>& Recon = tRecon.ref();
 
+    Recon = Zero;
+
     const meshField<faceVector,colocated>& fn =
         field.fvMsh().template metrics<colocated>().faceNormals();
 
     forAllCells(Recon, i, j, k)
-        Recon(i,j,k) =
-            0.5
-          * (
-              - field(0,i,  j,  k  ) * fn(i,j,k).left()
-              + field(0,i+1,j,  k  ) * fn(i,j,k).right()
-              - field(1,i,  j,  k  ) * fn(i,j,k).bottom()
-              + field(1,i,  j+1,k  ) * fn(i,j,k).top()
-              - field(2,i,  j,  k  ) * fn(i,j,k).aft()
-              + field(2,i,  j,  k+1) * fn(i,j,k).fore()
-            );
+        for (int d = 0; d < 3; d++)
+            Recon(i,j,k) +=
+                0.5
+              * (
+                  - fn(i,j,k)[d*2  ]*field(d,i,j,k)
+                  + fn(i,j,k)[d*2+1]*field(d,upperNei(i,j,k,d))
+                );
 
     return tRecon;
 }
@@ -76,114 +75,7 @@ reconstruct
     return tRecon;
 }
 
-// inline tmp<colocatedVectorField>
-// reconstruct
-// (
-//     const colocatedLowerFaceScalarField& field
-// )
-// {
-
-//     tmp<colocatedVectorField> tRecon
-//     (
-//         new colocatedVectorField
-//         (
-//             "reconstruct("+field.name()+")",
-//             field.fvMsh()
-//         )
-//     );
-
-//     colocatedVectorField& Recon = tRecon.ref();
-
-//     const meshField<faceVector,colocated>& fn =
-//         field.fvMsh().template metrics<colocated>().faceNormals();
-
-//     const meshField<faceScalar,colocated>& fa =
-//         field.fvMsh().template metrics<colocated>().faceAreas();
-
-//     forAllCells(Recon, i, j, k)
-//     {
-//         vector totalWeight =
-//                   - fa(i,j,k).left()   * fn(i,j,k).left()
-//                   + fa(i,j,k).right()  * fn(i,j,k).right()
-//                   - fa(i,j,k).bottom() * fn(i,j,k).bottom()
-//                   + fa(i,j,k).top()    * fn(i,j,k).top()
-//                   - fa(i,j,k).aft()    * fn(i,j,k).aft()
-//                   + fa(i,j,k).fore()   * fn(i,j,k).fore();
-
-//         vector totalSum =
-//                   - field(i,  j,  k  ).left()   * fn(i,j,k).left()
-//                   + field(i+1,j,  k  ).left()   * fn(i,j,k).right()
-//                   - field(i,  j,  k  ).bottom() * fn(i,j,k).bottom()
-//                   + field(i,  j+1,k  ).bottom() * fn(i,j,k).top()
-//                   - field(i,  j,  k  ).aft()    * fn(i,j,k).aft()
-//                   + field(i,  j,  k+1).aft()    * fn(i,j,k).fore();
-
-//         Recon(i,j,k) =
-//             vector
-//             (
-//                 totalSum[0] / totalWeight[0],
-//                 totalSum[1] / totalWeight[1],
-//                 totalSum[2] / totalWeight[2]
-//             );
-//     }
-
-//     return tRecon;
-// }
-
-inline tmp<staggeredScalarField>
-transposeMultiplicate
-(
-    const staggeredVectorField& field1,
-    const staggeredVectorField& field2
-)
-{
-
-    tmp<staggeredScalarField> tRecon
-    (
-        new staggeredScalarField
-        (
-            "("+field1.name()+")",
-            field1.fvMsh()
-        )
-    );
-
-    staggeredScalarField& Recon = tRecon.ref();
-    Recon = Zero;
-
-    scalarList values(3);
-
-    forAllCells(Recon, d, i, j, k)
-    {
-        const labelVector ijk(i,j,k);
-        const labelVector nei(ijk-units[d]);
-
-        for (int valuei = 0; valuei < 3; valuei++)
-        {
-            if (valuei == d)
-            {
-                values[valuei] = field2(valuei,i,j,k)[d];
-            }
-            else
-            {
-                values[valuei] = 0.25
-                               * (
-                                    field2(valuei, ijk)[d]
-                                  + field2(valuei, nei)[d]
-                                  + field2(valuei, ijk + units[valuei])[d]
-                                  + field2(valuei, nei + units[valuei])[d]
-                                 );
-            }
-        }
-
-        Recon(d,i,j,k) =
-                field1(d,i,j,k)[0] * values[0]
-              + field1(d,i,j,k)[1] * values[1]
-              + field1(d,i,j,k)[2] * values[2];
-    }
-
-
-    return tRecon;
-}
+// Reconstruct a colocated field from a face field
 
 template<class Type>
 inline tmp<meshField<typename outerProduct<vector,Type>::type,colocated>>
@@ -208,30 +100,24 @@ reconstruct
     const meshField<faceVector,colocated>& fn =
         field.fvMsh().template metrics<colocated>().faceNormals();
 
-    const meshField<faceScalar,colocated>& fa =
-        field.fvMsh().template metrics<colocated>().faceAreas();
+    const meshField<faceVector,colocated>& fan =
+        field.fvMsh().template metrics<colocated>().faceAreaNormals();
 
     forAllCells(Recon, i, j, k)
     {
-        vector totalWeight =
-                  - fa(i,j,k).left()   * fn(i,j,k).left()
-                  + fa(i,j,k).right()  * fn(i,j,k).right()
-                  - fa(i,j,k).bottom() * fn(i,j,k).bottom()
-                  + fa(i,j,k).top()    * fn(i,j,k).top()
-                  - fa(i,j,k).aft()    * fn(i,j,k).aft()
-                  + fa(i,j,k).fore()   * fn(i,j,k).fore();
+        tensor weight = Zero;
 
-        ReconType totalSum =
-                + field(i,  j,  k  ).left()   * fn(i,j,k).left()
-                - field(i+1,j,  k  ).left()   * fn(i,j,k).right()
-                + field(i,  j,  k  ).bottom() * fn(i,j,k).bottom()
-                - field(i,  j+1,k  ).bottom() * fn(i,j,k).top()
-                + field(i,  j,  k  ).aft()    * fn(i,j,k).aft()
-                - field(i,  j,  k+1).aft()    * fn(i,j,k).fore();
+        for (int f = 0; f < 6; f++)
+            weight += fn(i,j,k)[f]*fan(i,j,k)[f];
 
-        Recon(i,j,k).x() = totalSum.x() / totalWeight.x();
-        Recon(i,j,k).y() = totalSum.y() / totalWeight.y();
-        Recon(i,j,k).z() = totalSum.z() / totalWeight.z();
+        ReconType sum = Zero;
+
+        for (int d = 0; d < 3; d++)
+            sum +=
+                fn(i,j,k)[d*2  ]*field(i,j,k)[d]
+              - fn(i,j,k)[d*2+1]*field(upperNei(i,j,k,d))[d];
+
+        Recon(i,j,k) = inv(weight) & sum;
     }
 
     return tRecon;

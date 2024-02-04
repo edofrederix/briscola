@@ -91,25 +91,6 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
     )
 );
 
-// Adams-Bashforth source
-
-staggeredScalarField H
-(
-    "H",
-    fvMsh,
-    IOobject::READ_IF_PRESENT,
-    IOobject::AUTO_WRITE,
-    true,
-    false
-);
-
-staggeredVectorField gradMu = ex::grad(mu);
-staggeredVectorField gradU = ex::grad(U);
-
-H =
-    ex::div(phi,U)
-  - ex::transposeMultiplicate(gradMu,gradU)*icoTwoPhase.v<staggered>();
-
 // Specific volumes
 
 staggeredScalarField v
@@ -142,6 +123,25 @@ colocatedLowerFaceScalarField vcf
     IOobject::NO_WRITE,
     true
 );
+
+v = icoTwoPhase.v<staggered>();
+vc = icoTwoPhase.v<colocated>();
+vcf = ex::interp(vc);
+
+// Adams-Bashforth source
+
+staggeredScalarField H
+(
+    "H",
+    fvMsh,
+    IOobject::READ_IF_PRESENT,
+    IOobject::AUTO_WRITE,
+    true,
+    false
+);
+
+H = ex::div(phi,U)
+  - stagDotProduct(ex::grad(mu),ex::grad(U))*v;
 
 // It is assumed that the minimum mass density is constant
 
