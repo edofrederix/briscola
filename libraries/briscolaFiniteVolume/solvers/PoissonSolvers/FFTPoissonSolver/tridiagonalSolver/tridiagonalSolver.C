@@ -157,7 +157,7 @@ void tridiagonalSolver::computeDiagonals()
                     // If coefficient matrix is singular
                     if (lambda1_[i] == 0 && lambda2_[j] == 0)
                     {
-                        D_(cursor) -= 1e-10;
+                        D_(cursor) = -3.0/d3sqr[0];
                     }
                     break;
 
@@ -186,7 +186,7 @@ void tridiagonalSolver::computeDiagonals()
                     // If coefficient matrix is singular
                     if (lambda1_[i] == 0 && lambda2_[j] == 0)
                     {
-                        D_(cursor) -= 1e-10;
+                        D_(cursor) = -3.0/d3sqr[0];
                     }
                     break;
 

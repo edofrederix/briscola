@@ -26,6 +26,18 @@ colocatedVectorField Uc
 
 Uc = Zero;
 
+// Reconstruct Uc at every time-step,
+// needed for some function objects
+
+Switch colocatedReconstruction
+(
+    solverDict.lookupOrDefault
+    (
+        "colocatedReconstruction",
+        false
+    )
+);
+
 // Pressure
 
 colocatedScalarField p

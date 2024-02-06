@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         U -= deltaT*ex::stagGrad(p);
         U.correctBoundaryConditions();
 
-        if (fvMsh.time().writeTime())
+        if (fvMsh.time().writeTime() || colocatedReconstruction)
             Uc = ex::reconstruct(U);
 
         io.write<colocated>();
