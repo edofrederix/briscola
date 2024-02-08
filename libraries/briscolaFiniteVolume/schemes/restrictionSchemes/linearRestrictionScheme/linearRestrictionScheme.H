@@ -19,7 +19,7 @@ class linearRestrictionScheme
     public restrictionScheme<Type,MeshType>
 {
     // Cached weights
-    meshField<tensor,MeshType> weights_;
+    meshField<vertexScalar,MeshType> weights_;
 
     // Set weights
     void setWeights();

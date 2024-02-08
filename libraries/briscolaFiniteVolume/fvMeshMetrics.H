@@ -1,8 +1,7 @@
 #ifndef fvMeshMetrics_H
 #define fvMeshMetrics_H
 
-#include "colocatedFieldsFwd.H"
-#include "staggeredFieldsFwd.H"
+#include "immersedBoundaryFwd.H"
 
 namespace Foam
 {
@@ -49,6 +48,18 @@ class fvMeshMetrics
     // face)
     meshField<faceScalar,MeshType> faceDeltas_;
 
+    // Face interpolation weights for the cell center
+    meshField<faceScalar,MeshType> faceWeightsCenter_;
+
+    // Face interpolation weights for the neighbor
+    meshField<faceScalar,MeshType> faceWeightsNeighbor_;
+
+    // Global cell numbers
+    meshField<label,MeshType> globalCellNumbers_;
+
+    // Pointer to immersed boundary (if any)
+    autoPtr<immersedBoundary<MeshType>> immersedBoundary_;
+
     // Calculate face centers
     void calculateFaceCenters();
 
@@ -70,6 +81,12 @@ class fvMeshMetrics
     // Calculate face deltas
     void calculateFaceDeltas();
 
+    // Calculate face weights
+    void calculateFaceWeights();
+
+    // Set the global cell numbers
+    void setGlobalCellNumbers();
+
 public:
 
     // Declare name of the class and its debug switch
@@ -80,6 +97,12 @@ public:
 
     // Destructor
     ~fvMeshMetrics();
+
+    // Set immersed boundary pointer
+    void setImmersedBoundary();
+
+    // Return const reference to immersed boundary
+    const immersedBoundary<MeshType>& IB() const;
 
     // Disallow default bitwise assignment
     void operator=(const fvMeshMetrics&);
@@ -136,6 +159,24 @@ public:
     inline const meshField<faceScalar,MeshType>& faceDeltas() const
     {
         return faceDeltas_;
+    }
+
+    // Const access to face weights for the cell center
+    inline const meshField<faceScalar,MeshType>& faceWeightsCenter() const
+    {
+        return faceWeightsCenter_;
+    }
+
+    // Const access to face weights for the neighbor
+    inline const meshField<faceScalar,MeshType>& faceWeightsNeighbor() const
+    {
+        return faceWeightsNeighbor_;
+    }
+
+    // Const access to the global cell numbers
+    inline const meshField<label,MeshType>& globalCellNumbers() const
+    {
+        return globalCellNumbers_;
     }
 };
 

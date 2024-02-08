@@ -167,8 +167,8 @@ public:
     // Direction number
     inline label directionNum() const { return d_; }
 
-    // Part level
-    inline const partLevel& level() const { return fvMsh_[l_]; }
+    // Mesh part
+    inline const part& mshPart() const { return fvMsh_[l_]; }
 
     // Access to base block
     inline block<Type>& B() { return *this; }
@@ -261,18 +261,30 @@ public:
     // Templated functions are needed for types which can be cast to another
     // type
 
-    template<class Type2> void operator=(const meshDirection<Type2,MeshType>&);
-    template<class Type2> void operator=(const tmp<meshDirection<Type2,MeshType>>&);
+    #define TYPE2DIR meshDirection<Type2,MeshType>
 
-    template<class Type2> void operator+=(const meshDirection<Type2,MeshType>&);
-    template<class Type2> void operator+=(const tmp<meshDirection<Type2,MeshType>>&);
+    template<class Type2> void operator=(const TYPE2DIR&);
+    template<class Type2> void operator=(const tmp<TYPE2DIR>&);
 
-    template<class Type2> void operator-=(const meshDirection<Type2,MeshType>&);
-    template<class Type2> void operator-=(const tmp<meshDirection<Type2,MeshType>>&);
+    template<class Type2> void operator+=(const TYPE2DIR&);
+    template<class Type2> void operator+=(const tmp<TYPE2DIR>&);
+
+    template<class Type2> void operator-=(const TYPE2DIR&);
+    template<class Type2> void operator-=(const tmp<TYPE2DIR>&);
+
+    template<class Type2> void operator*=(const TYPE2DIR&);
+    template<class Type2> void operator*=(const tmp<TYPE2DIR>&);
+
+    template<class Type2> void operator/=(const TYPE2DIR&);
+    template<class Type2> void operator/=(const tmp<TYPE2DIR>&);
+
+    #undef TYPE2DIR
 
     template<class Type2> void operator=(const Type2&);
     template<class Type2> void operator+=(const Type2&);
     template<class Type2> void operator-=(const Type2&);
+    template<class Type2> void operator*=(const Type2&);
+    template<class Type2> void operator/=(const Type2&);
 
     // Allow the parent level to make changes to private data
     friend class meshLevel<Type,MeshType>;

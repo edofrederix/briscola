@@ -5,6 +5,8 @@
 #include "briscolaUtils.H"
 #include "pTransform.H"
 #include "contiguous.H"
+#include "Row.H"
+#include "symmStencil.H"
 
 namespace Foam
 {
@@ -66,10 +68,22 @@ public:
     inline scalar& top()  { return this->v_[T]; }
     inline scalar& aft()  { return this->v_[A]; }
     inline scalar& fore()  { return this->v_[F]; }
+
+    // Conversion to symmetric stencil
+    inline operator symmStencil() const;
 };
 
 template<>
 inline bool contiguous<stencil>() { return true; }
+
+template<>
+inline bool contiguous<Row<stencil,scalar>>() { return true; }
+
+template<>
+inline bool contiguous<Row<stencil,vector>>() { return true; }
+
+template<>
+inline bool contiguous<Row<stencil,tensor>>() { return true; }
 
 // stencil casts
 

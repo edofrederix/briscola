@@ -7,13 +7,69 @@ namespace briscola
 namespace fv
 {
 
+void checkParallelPatches(const fvMesh& fvMsh)
+{
+    const mesh& msh = fvMsh.msh();
+    const decomposition& decomp = msh.decomp();
+
+    const faceLabel& faceNeighbors =
+        decomp.faceNeighborsPerProc()[Pstream::myProcNo()];
+
+    const edgeLabel& edgeNeighbors =
+        decomp.edgeNeighborsPerProc()[Pstream::myProcNo()];
+
+    const vertexLabel& vertexNeighbors =
+        decomp.vertexNeighborsPerProc()[Pstream::myProcNo()];
+
+    forAll(msh.boundaries(), i)
+    {
+        const boundary& b = msh.boundaries()[i];
+
+        if (b.castable<parallelBoundary>())
+        {
+            const labelVector bo = b.offset();
+
+            if (b.offsetDegree() == 1)
+            {
+                const label faceNum = faceNumber(bo);
+
+                if (faceNeighbors[faceNum] != b.neighborProcNum())
+                    FatalErrorInFunction
+                        << "Mismatch in face boundary neighbor "
+                        << "processor number."
+                        << endl << exit(FatalError);
+            }
+            else if (b.offsetDegree() == 2)
+            {
+                const label edgeNum = edgeNumber(bo);
+
+                if (edgeNeighbors[edgeNum] != b.neighborProcNum())
+                    FatalErrorInFunction
+                        << "Mismatch in edge boundary neighbor "
+                        << "processor number."
+                        << endl << exit(FatalError);
+            }
+            else
+            {
+                const label vertexNum = vertexNumber(bo);
+
+                if (vertexNeighbors[vertexNum] != b.neighborProcNum())
+                    FatalErrorInFunction
+                        << "Mismatch in vertex boundary neighbor "
+                        << "processor number."
+                        << endl << exit(FatalError);
+            }
+        }
+    }
+}
+
 template<class MeshType>
 void checkInternalFaceCenters(const fvMesh& fvMsh)
 {
     const meshField<faceVector,MeshType>& fc =
         fvMsh.metrics<MeshType>().faceCenters();
 
-    forAllLevels(fc, l, d, i, j, k)
+    forAllCells(fc, l, d, i, j, k)
     {
         const labelVector N(fc.N(l,d));
         const labelVector ijk0(i,j,k);
@@ -69,7 +125,7 @@ void checkInternalFaceDeltas(const fvMesh& fvMsh)
     const meshField<faceScalar,MeshType>& fd =
         fvMsh.metrics<MeshType>().faceDeltas();
 
-    forAllLevels(fd, l, d, i, j, k)
+    forAllCells(fd, l, d, i, j, k)
     {
         const labelVector N(fd.N(l,d));
 
@@ -147,10 +203,10 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
             const boundaryCondition<faceVector,MeshType>& bc =
                 fc.boundaryConditions()[bci];
 
-            if (bc.boundaryOffset() == bo && bc.baseType() == PARALLELBC)
+            if (bc.offset() == bo && bc.baseType() == PARALLELBC)
             {
                 found = true;
-                slave = bc.patch().slave();
+                slave = bc.mshBoundary().slave();
                 break;
             }
         }
@@ -183,8 +239,8 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
                   > 1e-12
                 )
                 {
-                    Info
-                        << "Found mismatch in face centers at "
+                    FatalErrorInFunction
+                        << "Found mismatch in face centers at parallel "
                         << "boundary offset = " << bo << nl
                         << "mesh type = " << MeshType::typeName << nl
                         << "mesh direction = " << d << nl
@@ -234,7 +290,7 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
 
             if
             (
-                bc.boundaryOffset() == bo
+                bc.offset() == bo
              && (
                     bc.baseType() == PERIODICBC
                  || bc.baseType() == PARALLELBC
@@ -242,7 +298,7 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
             )
             {
                 found = true;
-                slave = bc.patch().slave();
+                slave = bc.mshBoundary().slave();
                 break;
             }
         }
@@ -276,7 +332,7 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
                 )
                 {
                     FatalErrorInFunction
-                        << "Found mismatch in face deltas at "
+                        << "Found mismatch in face deltas at parallel "
                         << "boundary offset = " << bo << nl
                         << "mesh direction = " << d << nl
                         << "internal cell delta = " << fd(l,d,ijk)[dir1] << nl

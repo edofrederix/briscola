@@ -1,10 +1,7 @@
 namespace Foam
 {
 
-// Unfortunately, there is no way to generalize product type specializations
-// based on StencilSpace, because the general product type class definition
-// (products.H) will then take presedence. So we must specialize product types
-// explicitly for each derived type.
+// With scalar
 
 // Sum
 
@@ -18,14 +15,6 @@ public:
 
 template<>
 class typeOfSum<stencil,scalar>
-{
-public:
-
-    typedef stencil type;
-};
-
-template<>
-class typeOfSum<stencil,stencil>
 {
 public:
 
@@ -50,14 +39,6 @@ public:
     typedef stencil type;
 };
 
-template<>
-class outerProduct<stencil,stencil>
-{
-public:
-
-    typedef stencil type;
-};
-
 // Inner product
 
 template<>
@@ -70,14 +51,6 @@ public:
 
 template<>
 class innerProduct<stencil,scalar>
-{
-public:
-
-    typedef stencil type;
-};
-
-template<>
-class innerProduct<stencil,stencil>
 {
 public:
 
@@ -102,14 +75,6 @@ public:
     typedef stencil type;
 };
 
-template<>
-class crossProduct<stencil,stencil>
-{
-public:
-
-    typedef stencil type;
-};
-
 // Scalar product
 
 template<>
@@ -128,12 +93,148 @@ public:
     typedef stencil type;
 };
 
+// With self
+
+// Sum
+
+template<>
+class typeOfSum<stencil,stencil>
+{
+public:
+
+    typedef stencil type;
+};
+
+// Outer products
+
+template<>
+class outerProduct<stencil,stencil>
+{
+public:
+
+    typedef stencil type;
+};
+
+// Inner product
+
+template<>
+class innerProduct<stencil,stencil>
+{
+public:
+
+    typedef stencil type;
+};
+
+// Cross product
+
+template<>
+class crossProduct<stencil,stencil>
+{
+public:
+
+    typedef stencil type;
+};
+
+// Scalar product
+
 template<>
 class scalarProduct<stencil,stencil>
 {
 public:
 
     typedef stencil type;
+};
+
+// With symmetric stencil
+
+// Sum
+
+template<>
+class typeOfSum<stencil,symmStencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+template<>
+class typeOfSum<symmStencil,stencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+// Outer products
+
+template<>
+class outerProduct<stencil,symmStencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+template<>
+class outerProduct<symmStencil,stencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+// Inner product
+
+template<>
+class innerProduct<stencil,symmStencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+template<>
+class innerProduct<symmStencil,stencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+// Cross product
+
+template<>
+class crossProduct<stencil,symmStencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+template<>
+class crossProduct<symmStencil,stencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+// Scalar product
+
+template<>
+class scalarProduct<stencil,symmStencil>
+{
+public:
+
+    typedef symmStencil type;
+};
+
+template<>
+class scalarProduct<symmStencil,stencil>
+{
+public:
+
+    typedef symmStencil type;
 };
 
 }

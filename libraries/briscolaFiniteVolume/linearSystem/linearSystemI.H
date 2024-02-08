@@ -8,7 +8,7 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-tmp<linearSystem<SType,Type,MeshType>>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator*
 (
     const scalar s,
@@ -27,7 +27,7 @@ operator*
 }
 
 template<class SType, class Type, class MeshType>
-tmp<linearSystem<SType,Type,MeshType>>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator*
 (
     const scalar s,
@@ -44,7 +44,7 @@ operator*
 }
 
 template<class SType, class Type, class MeshType>
-tmp<linearSystem<SType,Type,MeshType>>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator*
 (
     const linearSystem<SType,Type,MeshType>& sys,
@@ -63,7 +63,7 @@ operator*
 }
 
 template<class SType, class Type, class MeshType>
-tmp<linearSystem<SType,Type,MeshType>>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator*
 (
     const tmp<linearSystem<SType,Type,MeshType>>& tSys,
@@ -80,7 +80,7 @@ operator*
 }
 
 template<class SType, class Type, class MeshType>
-tmp<linearSystem<SType,Type,MeshType>>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator/
 (
     const linearSystem<SType,Type,MeshType>& sys,
@@ -99,7 +99,7 @@ operator/
 }
 
 template<class SType, class Type, class MeshType>
-tmp<linearSystem<SType,Type,MeshType>>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator/
 (
     const tmp<linearSystem<SType,Type,MeshType>>& tSys,
@@ -116,7 +116,7 @@ operator/
 }
 
 template<class SType, class Type, class MeshType>
-tmp<linearSystem<SType,Type,MeshType>>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator*
 (
     const meshField<scalar,MeshType>& s,
@@ -139,7 +139,7 @@ operator*
 }
 
 template<class SType, class Type, class MeshType>
-tmp<linearSystem<SType,Type,MeshType>>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator*
 (
     const meshField<scalar,MeshType>& s,
@@ -160,7 +160,7 @@ operator*
 }
 
 template<class SType, class Type, class MeshType>
-tmp<linearSystem<SType,Type,MeshType>>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator*
 (
     const linearSystem<SType,Type,MeshType>& sys,
@@ -183,7 +183,7 @@ operator*
 }
 
 template<class SType, class Type, class MeshType>
-tmp<linearSystem<SType,Type,MeshType>>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator*
 (
     const tmp<linearSystem<SType,Type,MeshType>>& tSys,
@@ -204,7 +204,7 @@ operator*
 }
 
 template<class SType, class Type, class MeshType>
-tmp<linearSystem<SType,Type,MeshType>>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator/
 (
     const linearSystem<SType,Type,MeshType>& sys,
@@ -227,7 +227,7 @@ operator/
 }
 
 template<class SType, class Type, class MeshType>
-tmp<linearSystem<SType,Type,MeshType>>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator/
 (
     const tmp<linearSystem<SType,Type,MeshType>>& tSys,

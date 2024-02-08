@@ -428,6 +428,9 @@ void testMemberOperators()
         if (b1(i,j,k) != b0(i,j,k)*s1(i,j,k)*s1(i,j,k)*2)
             FatalErrorInFunction << "test 3b failed" << abort(FatalError);
 
+    1.0/s1;
+    1.0/(1.0*s1);
+
     b1 /= s1;
 
     forAllBlock(b1, i, j, k)
@@ -794,6 +797,9 @@ void testPrimitiveFunctions()
     forAllBlock(b2, i, j, k)
         if (b3(i,j,k) != pTraits<Type>::one - 2*b1(i,j,k))
             FatalErrorInFunction << "test 13h failed" << abort(FatalError);
+
+    if (b1.find(pTraits<Type>::one*9) != labelVector(0,0,2))
+            FatalErrorInFunction << "test 14 failed" << abort(FatalError);
 }
 
 template<class Type>
@@ -922,17 +928,16 @@ void testVectorSpaceFunctions()
     if (gMinMagSqr(2.0*b1) != Foam::magSqr(2.0*b1(0)))
         FatalErrorInFunction << "test 7d failed" << abort(FatalError);
 
-
-    if (sumMag(b1) != b1sm)
+    if (Foam::mag(sumMag(b1) - b1sm) > 1e-12)
         FatalErrorInFunction << "test 8a failed" << abort(FatalError);
 
-    if (sumMag(1.0*b1) != b1sm)
+    if (Foam::mag(sumMag(1.0*b1) - b1sm) > 1e-12)
         FatalErrorInFunction << "test 8b failed" << abort(FatalError);
 
-    if (gSumMag(b1) != b1sm)
+    if (Foam::mag(gSumMag(b1) - b1sm) > 1e-12)
         FatalErrorInFunction << "test 8c failed" << abort(FatalError);
 
-    if (gSumMag(1.0*b1) != b1sm)
+    if (Foam::mag(gSumMag(1.0*b1) - b1sm) > 1e-12)
         FatalErrorInFunction << "test 8d failed" << abort(FatalError);
 
 
@@ -1060,6 +1065,9 @@ void testVectorSpaceFunctions()
     forAllBlock(b2, i, j, k)
         if (b2(i,j,k) != cmptDivide(pTraits<Type>::one, b1(i,j,k)+pTraits<Type>::one))
             FatalErrorInFunction << "test 14d failed" << abort(FatalError);
+
+    b2/1.0;
+    (1.0*b2)/1.0;
 }
 
 template<class Type>
@@ -1114,6 +1122,186 @@ void testStencilFunctions()
 
     b1/(2.0*s1);
     (2.0*b1)/(2.0*s1);
+}
+
+template<class Type>
+void testFaceSpaceFunctions()
+{
+    const labelVector shape(2,3,4);
+
+    block<FaceSpace<Type>> fs1(shape);
+    block<LowerFaceSpace<Type>> ls1(shape);
+
+    block<FaceSpace<scalar>> sfs1(shape);
+    block<LowerFaceSpace<scalar>> sls1(shape);
+
+    block<scalar> s1(shape);
+
+    label l = 0;
+
+    forAllBlock(fs1, i, j, k)
+    {
+        fs1(i,j,k) = pTraits<Type>::one*l++;
+        ls1(i,j,k) = pTraits<Type>::one*(l+++1);
+        s1(i,j,k) = (l+++1);
+        sfs1(i,j,k) = (l+++1);
+        sls1(i,j,k) = (l+++1);
+    }
+
+    ls1 += fs1;
+    ls1 += (1.0*fs1);
+
+    fs1+ls1;
+    ls1+fs1;
+
+    (1.0*fs1)+ls1;
+    (1.0*ls1)+fs1;
+
+    (1.0*fs1)+(1.0*ls1);
+    (1.0*ls1)+(1.0*fs1);
+
+    fs1 += pTraits<Type>::one;
+    ls1 += pTraits<Type>::one;
+
+    fs1 += FaceSpace<Type>::one;
+    ls1 += FaceSpace<Type>::one;
+    ls1 += LowerFaceSpace<Type>::one;
+
+    fs1 + pTraits<Type>::one;
+    ls1 + pTraits<Type>::one;
+
+    (1.0*fs1) + pTraits<Type>::one;
+    (1.0*ls1) + pTraits<Type>::one;
+
+    fs1 + FaceSpace<Type>::one;
+    ls1 + FaceSpace<Type>::one;
+    ls1 + LowerFaceSpace<Type>::one;
+
+    (1.0*fs1) + FaceSpace<Type>::one;
+    (1.0*ls1) + FaceSpace<Type>::one;
+    (1.0*ls1) + LowerFaceSpace<Type>::one;
+
+    pTraits<Type>::one + fs1;
+    pTraits<Type>::one + ls1;
+
+    pTraits<Type>::one + (1.0*fs1);
+    pTraits<Type>::one + (1.0*ls1);
+
+    FaceSpace<Type>::one + fs1;
+    FaceSpace<Type>::one + ls1;
+    LowerFaceSpace<Type>::one + ls1;
+
+    FaceSpace<Type>::one + (1.0*fs1);
+    FaceSpace<Type>::one + (1.0*ls1);
+    LowerFaceSpace<Type>::one + (1.0*ls1);
+
+    ls1 -= fs1;
+    ls1 -= (1.0*fs1);
+
+    fs1-ls1;
+    ls1-fs1;
+
+    (1.0*fs1)-ls1;
+    (1.0*ls1)-fs1;
+
+    fs1-(1.0*ls1);
+    ls1-(1.0*fs1);
+
+    fs1 -= pTraits<Type>::one;
+    ls1 -= pTraits<Type>::one;
+
+    fs1 -= FaceSpace<Type>::one;
+    ls1 -= FaceSpace<Type>::one;
+    ls1 -= LowerFaceSpace<Type>::one;
+
+    fs1 - pTraits<Type>::one;
+    ls1 - pTraits<Type>::one;
+
+    (1.0*fs1) - pTraits<Type>::one;
+    (1.0*ls1) - pTraits<Type>::one;
+
+    fs1 - FaceSpace<Type>::one;
+    ls1 - FaceSpace<Type>::one;
+    ls1 - LowerFaceSpace<Type>::one;
+
+    (1.0*fs1) - FaceSpace<Type>::one;
+    (1.0*ls1) - FaceSpace<Type>::one;
+    (1.0*ls1) - LowerFaceSpace<Type>::one;
+
+    pTraits<Type>::one - fs1;
+    pTraits<Type>::one - ls1;
+
+    pTraits<Type>::one - (1.0*fs1);
+    pTraits<Type>::one - (1.0*ls1);
+
+    FaceSpace<Type>::one - fs1;
+    FaceSpace<Type>::one - ls1;
+    LowerFaceSpace<Type>::one - ls1;
+
+    FaceSpace<Type>::one - (1.0*fs1);
+    FaceSpace<Type>::one - (1.0*ls1);
+    LowerFaceSpace<Type>::one - (1.0*ls1);
+
+    fs1 *= (1.0*s1);
+    fs1 *= (1.0*sfs1);
+
+    fs1*s1;
+    fs1*sfs1;
+
+    (1.0*fs1)*s1;
+    (1.0*fs1)*sfs1;
+
+    fs1*(1.0*s1);
+    fs1*(1.0*sfs1);
+
+    1.0/s1;
+    1.0/sfs1;
+
+    1.0/(1.0*s1);
+    1.0/(1.0*sfs1);
+
+    fs1 /= (1.0*s1);
+    fs1 /= (1.0*sfs1);
+
+    fs1/s1;
+    fs1/sfs1;
+
+    (1.0*fs1)/s1;
+    (1.0*fs1)/sfs1;
+
+    fs1/(1.0*s1);
+    fs1/(1.0*sfs1);
+
+
+    ls1 *= (1.0*s1);
+    ls1 *= (1.0*sls1);
+
+    ls1*s1;
+    ls1*sls1;
+
+    (1.0*ls1)*s1;
+    (1.0*ls1)*sls1;
+
+    ls1*(1.0*s1);
+    ls1*(1.0*sls1);
+
+    1.0/s1;
+    1.0/sls1;
+
+    1.0/(1.0*s1);
+    1.0/(1.0*sls1);
+
+    ls1 /= (1.0*s1);
+    ls1 /= (1.0*sls1);
+
+    ls1/s1;
+    ls1/sls1;
+
+    (1.0*ls1)/s1;
+    (1.0*ls1)/sls1;
+
+    ls1/(1.0*s1);
+    ls1/(1.0*sls1);
 }
 
 void testScalarFunctions()
@@ -1288,39 +1476,39 @@ void testTensorFunctions()
     // Macro function to check if collective operator results in the same as the
     // operator applied to individual entries
 
-    #define TEST(RET, B1, B2, OP, NAME)                                         \
-    {                                                                           \
-        block<RET> r = B1 OP B2;                                                \
-                                                                                \
-        forAllBlock(r, i, j, k)                                                 \
-            if (r(i,j,k) != (B1(i,j,k) OP B2(i,j,k)))                           \
-                FatalErrorInFunction                                            \
-                    << "test " NAME "a failed"                                  \
-                    << abort(FatalError);                                       \
-                                                                                \
-        r = (B1*2.0) OP B2;                                                     \
-                                                                                \
-        forAllBlock(r, i, j, k)                                                 \
-            if (r(i,j,k) != (2.0*B1(i,j,k) OP B2(i,j,k)))                       \
-                FatalErrorInFunction                                            \
-                    << "test " NAME "b failed"                                  \
-                    << abort(FatalError);                                       \
-                                                                                \
-        r = B1 OP (B2*2.0);                                                     \
-                                                                                \
-        forAllBlock(r, i, j, k)                                                 \
-            if (r(i,j,k) != 2.0*(B1(i,j,k) OP B2(i,j,k)))                       \
-                FatalErrorInFunction                                            \
-                    << "test " NAME "c failed"                                  \
-                    << abort(FatalError);                                       \
-                                                                                \
-        r = (B1*2.0) OP (B2*2.0);                                               \
-                                                                                \
-        forAllBlock(r, i, j, k)                                                 \
-            if (r(i,j,k) != 4.0*(B1(i,j,k) OP B2(i,j,k)))                       \
-                FatalErrorInFunction                                            \
-                    << "test " NAME "d failed"                                  \
-                    << abort(FatalError);                                       \
+    #define TEST(RET, B1, B2, OP, NAME)                                        \
+    {                                                                          \
+        block<RET> r = B1 OP B2;                                               \
+                                                                               \
+        forAllBlock(r, i, j, k)                                                \
+            if (r(i,j,k) != (B1(i,j,k) OP B2(i,j,k)))                          \
+                FatalErrorInFunction                                           \
+                    << "test " NAME "a failed"                                 \
+                    << abort(FatalError);                                      \
+                                                                               \
+        r = (B1*2.0) OP B2;                                                    \
+                                                                               \
+        forAllBlock(r, i, j, k)                                                \
+            if (r(i,j,k) != (2.0*B1(i,j,k) OP B2(i,j,k)))                      \
+                FatalErrorInFunction                                           \
+                    << "test " NAME "b failed"                                 \
+                    << abort(FatalError);                                      \
+                                                                               \
+        r = B1 OP (B2*2.0);                                                    \
+                                                                               \
+        forAllBlock(r, i, j, k)                                                \
+            if (r(i,j,k) != 2.0*(B1(i,j,k) OP B2(i,j,k)))                      \
+                FatalErrorInFunction                                           \
+                    << "test " NAME "c failed"                                 \
+                    << abort(FatalError);                                      \
+                                                                               \
+        r = (B1*2.0) OP (B2*2.0);                                              \
+                                                                               \
+        forAllBlock(r, i, j, k)                                                \
+            if (r(i,j,k) != 4.0*(B1(i,j,k) OP B2(i,j,k)))                      \
+                FatalErrorInFunction                                           \
+                    << "test " NAME "d failed"                                 \
+                    << abort(FatalError);                                      \
     }
 
     // Commented lines don't work because of OpenFOAM bugs or lack of
@@ -1387,10 +1575,12 @@ int main(int argc, char *argv[])
     testConstructors<diagTensor>();
 
     testConstructors<faceScalar>();
+    testConstructors<lowerFaceScalar>();
     testConstructors<edgeScalar>();
     testConstructors<vertexScalar>();
 
     testConstructors<faceVector>();
+    testConstructors<lowerFaceVector>();
     testConstructors<edgeVector>();
     testConstructors<vertexVector>();
 
@@ -1408,10 +1598,12 @@ int main(int argc, char *argv[])
     testIndexing<diagTensor>();
 
     testIndexing<faceScalar>();
+    testIndexing<lowerFaceScalar>();
     testIndexing<edgeScalar>();
     testIndexing<vertexScalar>();
 
     testIndexing<faceVector>();
+    testIndexing<lowerFaceVector>();
     testIndexing<edgeVector>();
     testIndexing<vertexVector>();
 
@@ -1429,10 +1621,12 @@ int main(int argc, char *argv[])
     testTransformations<diagTensor>();
 
     testTransformations<faceScalar>();
+    testTransformations<lowerFaceScalar>();
     testTransformations<edgeScalar>();
     testTransformations<vertexScalar>();
 
     testTransformations<faceVector>();
+    testTransformations<lowerFaceVector>();
     testTransformations<edgeVector>();
     testTransformations<vertexVector>();
 
@@ -1450,10 +1644,12 @@ int main(int argc, char *argv[])
     testMemberOperators<diagTensor>();
 
     testMemberOperators<faceScalar>();
+    testMemberOperators<lowerFaceScalar>();
     testMemberOperators<edgeScalar>();
     testMemberOperators<vertexScalar>();
 
     testMemberOperators<faceVector>();
+    testMemberOperators<lowerFaceVector>();
     testMemberOperators<edgeVector>();
     testMemberOperators<vertexVector>();
 
@@ -1470,10 +1666,12 @@ int main(int argc, char *argv[])
     testPrimitiveFunctions<diagTensor>();
 
     testPrimitiveFunctions<faceScalar>();
+    testPrimitiveFunctions<lowerFaceScalar>();
     testPrimitiveFunctions<edgeScalar>();
     testPrimitiveFunctions<vertexScalar>();
 
     testPrimitiveFunctions<faceVector>();
+    testPrimitiveFunctions<lowerFaceVector>();
     testPrimitiveFunctions<edgeVector>();
     testPrimitiveFunctions<vertexVector>();
 
@@ -1488,6 +1686,9 @@ int main(int argc, char *argv[])
     testStencilFunctions<stencil>();
     testStencilFunctions<diagStencil>();
 
+
+    testFaceSpaceFunctions<scalar>();
+    testFaceSpaceFunctions<vector>();
 
     testScalarFunctions();
     testVectorFunctions();

@@ -17,12 +17,14 @@ inline bool contiguous<vertexVector>() { return true; }
 // vertices, compute the interpolation weights to that point. Optionally, only
 // calculate the local coordinates if the point is inside the hexahedron,
 // allowing for early rejection returning -(1,1,1) if the point is not in the
-// hexahedron.
+// hexahedron. If convergence fails and fatal is switched off, the function
+// returns -(1,1,1) without error.
 vector interpolationWeights
 (
     const vector& point,
     const vertexVector& vertices,
-    const bool insideOnly = false
+    const bool insideOnly = false,
+    const bool fatal = true
 );
 
 }

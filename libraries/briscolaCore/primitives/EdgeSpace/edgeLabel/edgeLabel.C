@@ -8,7 +8,24 @@ const char* const edgeLabel::csType::typeName = "edgeLabel";
 
 template<>
 const char* const edgeLabel::csType::componentNames[] =
-    {"x0", "x1", "x2", "x3", "y0", "y1", "y2", "y3", "z0", "z1", "z2", "z3"};
+    {"ba", "ta", "bf", "tf", "la", "ra", "lf", "rf", "lb", "rb", "lt", "rt"};
+
+template<>
+const labelVector edgeLabel::csType::componentOffsets[] =
+    {
+        briscola::edgeOffset0,
+        briscola::edgeOffset1,
+        briscola::edgeOffset2,
+        briscola::edgeOffset3,
+        briscola::edgeOffset4,
+        briscola::edgeOffset5,
+        briscola::edgeOffset6,
+        briscola::edgeOffset7,
+        briscola::edgeOffset8,
+        briscola::edgeOffset9,
+        briscola::edgeOffset10,
+        briscola::edgeOffset11
+    };
 
 template<>
 const edgeLabel edgeLabel::csType::zero(edgeLabel::uniform(0));

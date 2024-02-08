@@ -13,8 +13,7 @@ template<class SType, class Type, class MeshType>
 solver<SType,Type,MeshType>::solver
 (
     const dictionary& dict,
-    const fvMesh& fvMsh,
-    immersedBoundaryMethod<Type,MeshType>* IB
+    const fvMesh& fvMsh
 )
 :
     dict_(dict),
@@ -22,8 +21,7 @@ solver<SType,Type,MeshType>::solver
     relTol_(readScalar(dict.lookup("relTol"))),
     tolerance_(readScalar(dict.lookup("tolerance"))),
     minIter_(dict.lookupOrDefault<label>("minIter", 0)),
-    maxIter_(dict.lookupOrDefault<label>("maxIter", 999)),
-    IB_(IB)
+    maxIter_(dict.lookupOrDefault<label>("maxIter", 999))
 {}
 
 template<class SType, class Type, class MeshType>
@@ -34,8 +32,7 @@ template<class SType, class Type, class MeshType>
 autoPtr<solver<SType,Type,MeshType>> solver<SType,Type,MeshType>::New
 (
     const word solverName,
-    const fvMesh& fvMsh,
-    immersedBoundaryMethod<Type,MeshType>* IB
+    const fvMesh& fvMsh
 )
 {
     const dictionary dict
@@ -58,15 +55,14 @@ autoPtr<solver<SType,Type,MeshType>> solver<SType,Type,MeshType>::New
             << exit(FatalError);
     }
 
-    return autoPtr<solver<SType,Type,MeshType>>(cstrIter()(dict, fvMsh, IB));
+    return autoPtr<solver<SType,Type,MeshType>>(cstrIter()(dict, fvMsh));
 }
 
 template<class SType, class Type, class MeshType>
 autoPtr<solver<SType,Type,MeshType>> solver<SType,Type,MeshType>::New
 (
     const dictionary& dict,
-    const fvMesh& fvMsh,
-    immersedBoundaryMethod<Type,MeshType>* IB
+    const fvMesh& fvMsh
 )
 {
     const word solverType(dict.lookup("type"));
@@ -84,231 +80,39 @@ autoPtr<solver<SType,Type,MeshType>> solver<SType,Type,MeshType>::New
             << exit(FatalError);
     }
 
-    return autoPtr<solver<SType,Type,MeshType>>(cstrIter()(dict, fvMsh, IB));
+    return autoPtr<solver<SType,Type,MeshType>>(cstrIter()(dict, fvMsh));
 }
 
 template<class SType, class Type, class MeshType>
 List<Type> solver<SType,Type,MeshType>::normFactors
 (
-    const linearSystem<SType,Type,MeshType>& Eqn,
+    const linearSystem<SType,Type,MeshType>& sys,
+    const meshField<Type,MeshType>& res,
     const label l
 ) const
 {
-    const meshLevel<SType,MeshType>& A = Eqn.A()[l];
+    List<Type> y(gAverage(sys.x()[l]));
+    List<Type> f(MeshType::numberOfDirections, Zero);
 
-    const meshLevel<Type,MeshType>& x = Eqn.x()[l];
-    const meshLevel<Type,MeshType>& b = Eqn.b()[l];
-
-    const meshLevel<Type,MeshType> Ay(rowSum(A)*gAverage(x));
-
-    return max
-    (
-        gSum(cmptMag(Amul(A,x) - Ay) + cmptMag(b - Ay)),
-        1e-20*pTraits<Type>::one
-    );
-}
-
-template<class SType, class Type, class MeshType>
-void solver<SType,Type,MeshType>::RBGS
-(
-    linearSystem<SType,Type,MeshType>& sys,
-    const label l,
-    const label sweeps,
-    const labelList& converged,
-    const scalar omega,
-    immersedBoundaryMethod<Type,MeshType>* IB
-)
-{
-    meshLevel<Type,MeshType>& x = sys.x()[l];
-
-    const meshLevel<SType,MeshType>& A = sys.A()[l];
-    const meshLevel<Type,MeshType>& b = sys.b()[l];
-
-    for (label sweep = 0; sweep < sweeps; sweep++)
+    forAll(f, d)
     {
-        forAll(x, d)
-        if (!converged[d])
+        const meshDirection<SType,MeshType>& A = sys.A()[l][d];
+        const meshDirection<Type,MeshType>& b = sys.b()[l][d];
+        const meshDirection<Type,MeshType>& r = res[l][d];
+
+        forAllCells(A, i, j, k)
         {
-            // Even points
+            Type Ay = rowSum(A,i,j,k)*y[d];
 
-            meshDirection<Type,MeshType>& xd = x[d];
-
-            const meshDirection<SType,MeshType>& Ad = A[d];
-            const meshDirection<Type,MeshType>& bd = b[d];
-
-            forAllCells(xd, i, j, k)
-            {
-                if
-                (
-                    ((i+j+k) % 2 == 0)
-                    &&
-                    (
-                        (IB == nullptr || !IB->Jac()) ? true
-                        : IB->ghostMask()(l,d,i,j,k) != 1
-                    )
-                )
-                {
-                    xd(i,j,k) +=
-                        omega
-                      * (bd(i,j,k) - Amul(Ad,xd,i,j,k))
-                      / Ad(i,j,k).center();
-                }
-            }
-        }
-
-        x.correctCommBoundaryConditions();
-        if (IB != nullptr)
-        {
-            IB->correctJacobiPoints(x);
-        }
-
-        forAll(x, d)
-        if (!converged[d])
-        {
-            // Odd points
-
-            meshDirection<Type,MeshType>& xd = x[d];
-
-            const meshDirection<SType,MeshType>& Ad = A[d];
-            const meshDirection<Type,MeshType>& bd = b[d];
-
-            forAllCells(xd, i, j, k)
-            {
-                if
-                (
-                    ((i+j+k) % 2 == 1)
-                    &&
-                    (
-                        (IB == nullptr || !IB->Jac()) ? true
-                        : IB->ghostMask()(l,d,i,j,k) != 1
-                    )
-                )
-                {
-                    xd(i,j,k) +=
-                        omega
-                      * (bd(i,j,k) - Amul(Ad,xd,i,j,k))
-                      / Ad(i,j,k).center();
-                }
-            }
-        }
-
-        x.correctCommBoundaryConditions();
-        if (IB != nullptr)
-        {
-            IB->correctJacobiPoints(x);
+            f[d] +=
+                Foam::cmptMag(r(i,j,k) - b(i,j,k) + Ay)
+              + Foam::cmptMag(b(i,j,k) - Ay);
         }
     }
 
-    x.correctNonCommBoundaryConditions();
-}
+    reduce(f, sumOp<List<Type>>());
 
-template<class SType, class Type, class MeshType>
-void solver<SType,Type,MeshType>::LEXGS
-(
-    linearSystem<SType,Type,MeshType>& sys,
-    const label l,
-    const label sweeps,
-    const labelList& converged,
-    const scalar omega,
-    immersedBoundaryMethod<Type,MeshType>* IB
-)
-{
-    meshLevel<Type,MeshType>& x = sys.x()[l];
-
-    const meshLevel<SType,MeshType>& A = sys.A()[l];
-    const meshLevel<Type,MeshType>& b = sys.b()[l];
-
-    for (label sweep = 0; sweep < sweeps; sweep++)
-    {
-        forAll(x, d)
-        if (!converged[d])
-        {
-            meshDirection<Type,MeshType>& xd = x[d];
-
-            const meshDirection<SType,MeshType>& Ad = A[d];
-            const meshDirection<Type,MeshType>& bd = b[d];
-
-            forAllCells(xd, i, j, k)
-            {
-                if
-                (
-                    (IB == nullptr || !IB->Jac()) ? true
-                    : IB->ghostMask()(l,d,i,j,k) != 1
-                )
-                {
-                    xd(i,j,k) +=
-                      omega
-                    * (bd(i,j,k) - Amul(Ad,xd,i,j,k))
-                    / Ad(i,j,k).center();
-                }
-            }
-        }
-
-        x.correctCommBoundaryConditions();
-        if (IB != nullptr)
-        {
-            IB->correctJacobiPoints(x);
-        }
-    }
-
-    x.correctNonCommBoundaryConditions();
-}
-
-template<class SType, class Type, class MeshType>
-void solver<SType,Type,MeshType>::JAC
-(
-    linearSystem<SType,Type,MeshType>& sys,
-    const label l,
-    const label sweeps,
-    const labelList& converged,
-    const scalar omega,
-    immersedBoundaryMethod<Type,MeshType>* IB
-)
-{
-    meshLevel<Type,MeshType>& x = sys.x()[l];
-
-    const meshLevel<SType,MeshType>& A = sys.A()[l];
-    const meshLevel<Type,MeshType>& b = sys.b()[l];
-
-    meshLevel<Type,MeshType> y(x);
-
-    for (label sweep = 0; sweep < sweeps; sweep++)
-    {
-        forAll(x, d)
-        if (!converged[d])
-        {
-            meshDirection<Type,MeshType>& yd = y[d];
-
-            const meshDirection<Type,MeshType>& xd = x[d];
-            const meshDirection<SType,MeshType>& Ad = A[d];
-            const meshDirection<Type,MeshType>& bd = b[d];
-
-            forAllCells(xd, i, j, k)
-            {
-                if
-                (
-                    (IB == nullptr || !IB->Jac()) ? true
-                    : IB->ghostMask()(l,d,i,j,k) != 1
-                )
-                {
-                    yd(i,j,k) +=
-                      omega
-                    * (bd(i,j,k) - Amul(Ad,xd,i,j,k))
-                    / Ad(i,j,k).center();
-                }
-            }
-        }
-
-        x = y;
-
-        x.correctCommBoundaryConditions();
-        if (IB != nullptr)
-        {
-            IB->correctJacobiPoints(x);
-        }
-    }
-
-    x.correctNonCommBoundaryConditions();
+    return max(f, 1e-20*pTraits<Type>::one);
 }
 
 template<class SType, class Type, class MeshType>

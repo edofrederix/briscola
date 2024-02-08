@@ -53,12 +53,12 @@ void twoPhaseVof<BaseModel>::correct()
     if
     (
         this->fvMsh_.db().template
-        foundObject<colocatedFaceScalarField>(fluxName_)
+        foundObject<colocatedLowerFaceScalarField>(fluxName_)
     )
     {
-        const colocatedFaceScalarField& phi =
+        const colocatedLowerFaceScalarField& phi =
             this->fvMsh_.db().template
-            lookupObject<colocatedFaceScalarField>(fluxName_);
+            lookupObject<colocatedLowerFaceScalarField>(fluxName_);
 
         vfPtr_->solve(phi);
     }

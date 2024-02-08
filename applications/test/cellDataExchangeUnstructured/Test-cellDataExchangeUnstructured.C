@@ -7,7 +7,7 @@
 #include "fvMesh.H"
 
 #include "cellDataExchange.H"
-#include "parallelPartPatch.H"
+#include "parallelBoundary.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -38,7 +38,7 @@ void testDataExchange(const fvMesh& fvMsh)
     const meshField<vector,colocated>& cc =
         fvMsh.metrics<colocated>().cellCenters();
 
-    forAllDirections(f, d, i, j, k)
+    forAllCells(f, d, i, j, k)
     {
         f(d,i,j,k) = cc(d,i,j,k).z()*pTraits<Type>::one;
     }
@@ -57,7 +57,7 @@ void testDataExchange(const fvMesh& fvMsh)
             const labelVector S(bc.S(0,0));
             const labelVector E(bc.E(0,0));
 
-            const labelVector bo = bc.boundaryOffset();
+            const labelVector bo = bc.offset();
 
             labelVector ijk;
 

@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
     x.setOldTime();
 
-    FFTPoissonSolver solver(fvMsh);
+    FFTPoissonSolver<stencil> solver(fvMsh);
 
     solver.solve(x, b, true);
 

@@ -4,6 +4,11 @@
 
 #include "boundaryCondition.H"
 
+#include "domainBoundary.H"
+#include "parallelBoundary.H"
+#include "periodicBoundary.H"
+#include "emptyBoundary.H"
+
 namespace Foam
 {
 
@@ -300,6 +305,20 @@ meshLevel<Type,MeshType>::~meshLevel()
 {}
 
 template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctBoundaryConditions()
+{
+    if (mshFieldPtr_)
+    {
+        this->addBoundaryConditions();
+
+        this->correctUnsetBoundaryConditions();
+        this->correctDomainBoundaryConditions();
+        this->correctCommsBoundaryConditions();
+        this->correctEmptyBoundaryConditions();
+    }
+}
+
+template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctUnsetBoundaryConditions()
 {
     forAll(*this, d)
@@ -326,23 +345,75 @@ void meshLevel<Type,MeshType>::correctUnsetBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctBoundaryConditions()
+void meshLevel<Type,MeshType>::correctDomainBoundaryConditions()
 {
     if (mshFieldPtr_)
     {
         this->addBoundaryConditions();
 
-        // Correct unset boundary conditions first
+        forAll(mshFieldPtr_->boundaryConditions(), i)
+        {
+            boundaryCondition<Type,MeshType>& bc =
+                mshFieldPtr_->boundaryConditions()[i];
 
-        this->correctUnsetBoundaryConditions();
+            const boundary& b = bc.mshBoundary();
 
-        // Next, correct all boundary conditions contained by this part
+            if (b.castable<domainBoundary>())
+            {
+                bc.evaluate(l_);
+            }
+        }
+    }
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctEmptyBoundaryConditions()
+{
+    if (mshFieldPtr_)
+    {
+        this->addBoundaryConditions();
+
+        forAll(mshFieldPtr_->boundaryConditions(), i)
+        {
+            boundaryCondition<Type,MeshType>& bc =
+                mshFieldPtr_->boundaryConditions()[i];
+
+            const boundary& b = bc.mshBoundary();
+
+            if (b.castable<emptyBoundary>())
+            {
+                bc.evaluate(l_);
+            }
+        }
+    }
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctCommsBoundaryConditions()
+{
+    if (mshFieldPtr_)
+    {
+        this->addBoundaryConditions();
+
+        #ifdef BOUNDARYEXCHANGE
+
+        this->mshFieldPtr_->bExchangePtr_->correct(l_);
+
+        #else
 
         const label nReq = Pstream::nRequests();
 
         forAll(mshFieldPtr_->boundaryConditions(), i)
         {
-            mshFieldPtr_->boundaryConditions()[i].initEvaluate(l_);
+            boundaryCondition<Type,MeshType>& bc =
+                mshFieldPtr_->boundaryConditions()[i];
+
+            const boundary& b = bc.mshBoundary();
+
+            if (b.castable<parallelBoundary>())
+            {
+                bc.prepare(l_);
+            }
         }
 
         if (Pstream::parRun())
@@ -352,19 +423,33 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions()
 
         forAll(mshFieldPtr_->boundaryConditions(), i)
         {
-            mshFieldPtr_->boundaryConditions()[i].evaluate(l_);
+            boundaryCondition<Type,MeshType>& bc =
+                mshFieldPtr_->boundaryConditions()[i];
+
+            const boundary& b = bc.mshBoundary();
+
+            if (b.castable<parallelBoundary>())
+            {
+                bc.evaluate(l_);
+            }
         }
+
+        #endif
     }
 }
 
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
 {
-    if (mshFieldPtr_)
+    if (mshFieldPtr_ && Pstream::parRun())
     {
         this->addBoundaryConditions();
 
-        // Correct all parallel boundary conditions
+        #ifdef BOUNDARYEXCHANGE
+
+        this->mshFieldPtr_->bExchangePtr_->correctParallel(l_);
+
+        #else
 
         const label nReq = Pstream::nRequests();
 
@@ -373,9 +458,15 @@ void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
             boundaryCondition<Type,MeshType>& bc =
                 mshFieldPtr_->boundaryConditions()[i];
 
-            if (bc.baseType() == PARALLELBC)
+            const boundary& b = bc.mshBoundary();
+
+            if
+            (
+                b.castable<parallelBoundary>()
+            && !b.castable<periodicBoundary>()
+            )
             {
-                bc.initEvaluate(l_);
+                bc.prepare(l_);
             }
         }
 
@@ -389,11 +480,19 @@ void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
             boundaryCondition<Type,MeshType>& bc =
                 mshFieldPtr_->boundaryConditions()[i];
 
-            if (bc.baseType() == PARALLELBC)
+            const boundary& b = bc.mshBoundary();
+
+            if
+            (
+                b.castable<parallelBoundary>()
+            && !b.castable<periodicBoundary>()
+            )
             {
                 bc.evaluate(l_);
             }
         }
+
+        #endif
     }
 }
 
@@ -404,7 +503,11 @@ void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
     {
         this->addBoundaryConditions();
 
-        // Correct all periodic boundary conditions
+        #ifdef BOUNDARYEXCHANGE
+
+        this->mshFieldPtr_->bExchangePtr_->correctPeriodic(l_);
+
+        #else
 
         const label nReq = Pstream::nRequests();
 
@@ -413,9 +516,11 @@ void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
             boundaryCondition<Type,MeshType>& bc =
                 mshFieldPtr_->boundaryConditions()[i];
 
-            if (bc.baseType() == PERIODICBC)
+            const boundary& b = bc.mshBoundary();
+
+            if (b.castable<periodicBoundary>())
             {
-                bc.initEvaluate(l_);
+                bc.prepare(l_);
             }
         }
 
@@ -429,7 +534,59 @@ void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
             boundaryCondition<Type,MeshType>& bc =
                 mshFieldPtr_->boundaryConditions()[i];
 
-            if (bc.baseType() == PERIODICBC)
+            const boundary& b = bc.mshBoundary();
+
+            if (b.castable<periodicBoundary>())
+            {
+                bc.evaluate(l_);
+            }
+        }
+
+        #endif
+    }
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctNonEliminatedBoundaryConditions()
+{
+    if (mshFieldPtr_)
+    {
+        this->addBoundaryConditions();
+
+        // First non-eliminated domain boundaries
+
+        forAll(mshFieldPtr_->boundaryConditions(), i)
+        {
+            boundaryCondition<Type,MeshType>& bc =
+                mshFieldPtr_->boundaryConditions()[i];
+
+            const boundary& b = bc.mshBoundary();
+
+            if (!bc.eliminated() && b.castable<domainBoundary>())
+            {
+                bc.evaluate(l_);
+            }
+        }
+
+        // Next the parallel/periodic boundaries which are non-eliminated
+
+        this->correctCommsBoundaryConditions();
+
+        // Finally the other non-eliminated boundaries
+
+        forAll(mshFieldPtr_->boundaryConditions(), i)
+        {
+            boundaryCondition<Type,MeshType>& bc =
+                mshFieldPtr_->boundaryConditions()[i];
+
+            const boundary& b = bc.mshBoundary();
+
+            if
+            (
+                !bc.eliminated()
+             && !b.castable<domainBoundary>()
+             && !b.castable<parallelBoundary>()
+            )
             {
                 bc.evaluate(l_);
             }
@@ -438,42 +595,18 @@ void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctCommBoundaryConditions()
-{
-    this->correctParallelBoundaryConditions();
-    this->correctPeriodicBoundaryConditions();
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctNonCommBoundaryConditions()
+void meshLevel<Type,MeshType>::correctEliminatedBoundaryConditions()
 {
     if (mshFieldPtr_)
     {
         this->addBoundaryConditions();
 
-        // Correct unset boundary conditions first
-
-        this->correctUnsetBoundaryConditions();
-
-        // Correct all non-communicating boundary conditions
-
         forAll(mshFieldPtr_->boundaryConditions(), i)
         {
             boundaryCondition<Type,MeshType>& bc =
                 mshFieldPtr_->boundaryConditions()[i];
 
-            if (bc.baseType() != PARALLELBC && bc.baseType() != PERIODICBC)
-            {
-                bc.initEvaluate(l_);
-            }
-        }
-
-        forAll(mshFieldPtr_->boundaryConditions(), i)
-        {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
-
-            if (bc.baseType() != PARALLELBC && bc.baseType() != PERIODICBC)
+            if (bc.eliminated())
             {
                 bc.evaluate(l_);
             }
@@ -489,7 +622,10 @@ void meshLevel<Type,MeshType>::operator=(const meshLevel<Type,MeshType>& L)
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator=(const tmp<meshLevel<Type,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator=
+(
+    const tmp<meshLevel<Type,MeshType>>& tL
+)
 {
     if (tL.isTmp())
     {
@@ -535,7 +671,10 @@ void meshLevel<Type,MeshType>::operator+=(const meshLevel<Type,MeshType>& L)
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator+=(const tmp<meshLevel<Type,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator+=
+(
+    const tmp<meshLevel<Type,MeshType>>& tL
+)
 {
     *this += tL();
     tL.clear();
@@ -549,7 +688,10 @@ void meshLevel<Type,MeshType>::operator-=(const meshLevel<Type,MeshType>& L)
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator-=(const tmp<meshLevel<Type,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator-=
+(
+    const tmp<meshLevel<Type,MeshType>>& tL
+)
 {
     *this -= tL();
     tL.clear();
@@ -563,7 +705,10 @@ void meshLevel<Type,MeshType>::operator*=(const meshLevel<scalar,MeshType>& L)
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator*=(const tmp<meshLevel<scalar,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator*=
+(
+    const tmp<meshLevel<scalar,MeshType>>& tL
+)
 {
     *this *= tL();
     tL.clear();
@@ -577,7 +722,10 @@ void meshLevel<Type,MeshType>::operator/=(const meshLevel<scalar,MeshType>& L)
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator/=(const tmp<meshLevel<scalar,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator/=
+(
+    const tmp<meshLevel<scalar,MeshType>>& tL
+)
 {
     *this /= tL();
     tL.clear();
@@ -641,7 +789,10 @@ void meshLevel<Type,MeshType>::operator/=(const List<scalar>& v)
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshLevel<Type,MeshType>::operator=(const meshLevel<Type2,MeshType>& L)
+void meshLevel<Type,MeshType>::operator=
+(
+    const meshLevel<Type2,MeshType>& L
+)
 {
     forAll(*this, d)
         listType::operator[](d) = L[d];
@@ -649,7 +800,10 @@ void meshLevel<Type,MeshType>::operator=(const meshLevel<Type2,MeshType>& L)
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshLevel<Type,MeshType>::operator=(const tmp<meshLevel<Type2,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator=
+(
+    const tmp<meshLevel<Type2,MeshType>>& tL
+)
 {
     *this = tL();
     tL.clear();
@@ -657,7 +811,10 @@ void meshLevel<Type,MeshType>::operator=(const tmp<meshLevel<Type2,MeshType>>& t
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshLevel<Type,MeshType>::operator+=(const meshLevel<Type2,MeshType>& L)
+void meshLevel<Type,MeshType>::operator+=
+(
+    const meshLevel<Type2,MeshType>& L
+)
 {
     forAll(*this, d)
         listType::operator[](d) += L[d];
@@ -665,7 +822,10 @@ void meshLevel<Type,MeshType>::operator+=(const meshLevel<Type2,MeshType>& L)
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshLevel<Type,MeshType>::operator+=(const tmp<meshLevel<Type2,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator+=
+(
+    const tmp<meshLevel<Type2,MeshType>>& tL
+)
 {
     *this += tL();
     tL.clear();
@@ -673,7 +833,10 @@ void meshLevel<Type,MeshType>::operator+=(const tmp<meshLevel<Type2,MeshType>>& 
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshLevel<Type,MeshType>::operator-=(const meshLevel<Type2,MeshType>& L)
+void meshLevel<Type,MeshType>::operator-=
+(
+    const meshLevel<Type2,MeshType>& L
+)
 {
     forAll(*this, d)
         listType::operator[](d) -= L[d];
@@ -681,9 +844,56 @@ void meshLevel<Type,MeshType>::operator-=(const meshLevel<Type2,MeshType>& L)
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshLevel<Type,MeshType>::operator-=(const tmp<meshLevel<Type2,MeshType>>& tL)
+void meshLevel<Type,MeshType>::operator-=
+(
+    const tmp<meshLevel<Type2,MeshType>>& tL
+)
 {
     *this -= tL();
+    tL.clear();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator*=
+(
+    const meshLevel<Type2,MeshType>& L
+)
+{
+    forAll(*this, d)
+        listType::operator[](d) *= L[d];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator*=
+(
+    const tmp<meshLevel<Type2,MeshType>>& tL
+)
+{
+    *this *= tL();
+    tL.clear();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator/=
+(
+    const meshLevel<Type2,MeshType>& L
+)
+{
+    forAll(*this, d)
+        listType::operator[](d) /= L[d];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator/=
+(
+    const tmp<meshLevel<Type2,MeshType>>& tL
+)
+{
+    *this /= tL();
     tL.clear();
 }
 
@@ -733,6 +943,38 @@ void meshLevel<Type,MeshType>::operator-=(const List<Type2>& v)
 {
     forAll(*this, d)
         listType::operator[](d) -= v[d];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator*=(const Type2& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) *= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator*=(const List<Type2>& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) *= v[d];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator/=(const Type2& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) /= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator/=(const List<Type2>& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) /= v[d];
 }
 
 }

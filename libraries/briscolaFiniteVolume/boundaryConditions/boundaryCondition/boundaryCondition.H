@@ -7,8 +7,11 @@
 
 #include "faceVector.H"
 #include "faceScalar.H"
+#include "stencil.H"
+#include "symmStencil.H"
+#include "diagStencil.H"
 
-#include "partPatch.H"
+#include "boundary.H"
 
 #include "PtrList.H"
 #include "NamedEnum.H"
@@ -43,14 +46,11 @@ protected:
     // Reference to the mesh field
     meshField<Type,MeshType>& mshField_;
 
-    // Reference to the part patch
-    const partPatch& patch_;
+    // Reference to the base boundary
+    const boundary& b_;
 
     // Copy of the dictionary
     dictionary dict_;
-
-    // Disallow default bitwise assignment
-    void operator=(const boundaryCondition<Type,MeshType>&);
 
 public:
 
@@ -65,16 +65,16 @@ public:
         dictionary,
         (
             const meshField<Type,MeshType>& mshField,
-            const partPatch& patch
+            const boundary& b
         ),
-        (mshField, patch)
+        (mshField, b)
     );
 
     // Construct from components
     boundaryCondition
     (
         const meshField<Type,MeshType>&,
-        const partPatch&
+        const boundary&
     );
 
     // Copy constructor
@@ -100,37 +100,41 @@ public:
     static autoPtr<boundaryCondition<Type,MeshType>> New
     (
         const meshField<Type,MeshType>&,
-        const partPatch&,
+        const boundary&,
         const word
     );
 
-    // Selector for a normal boundary condition
-    static autoPtr<boundaryCondition<Type,MeshType>> NewBoundary
+    // Selector which determines type based on the provided boundary type
+    static autoPtr<boundaryCondition<Type,MeshType>> New
     (
         const meshField<Type,MeshType>&,
-        const partPatch&
+        const boundary&
     );
 
-    // Selector for a periodic boundary condition
-    static autoPtr<boundaryCondition<Type,MeshType>> NewPeriodic
-    (
-        const meshField<Type,MeshType>&,
-        const partPatch& p
-    );
+    // Check if cast to derived type is possible
+    template<class BoundaryType>
+    inline bool castable() const
+    {
+        return dynamic_cast<const BoundaryType*>(this);
+    }
 
-    // Selector for a parallel boundary condition
-    static autoPtr<boundaryCondition<Type,MeshType>> NewParallel
-    (
-        const meshField<Type,MeshType>&,
-        const partPatch& p
-    );
+    // Cast to derived type, if possible. Returns error otherwise.
+    template<class BoundaryType>
+    inline const BoundaryType& cast() const
+    {
+        const BoundaryType* bPtr = dynamic_cast<const BoundaryType*>(this);
 
-    // Selector for an empty boundary condition
-    static autoPtr<boundaryCondition<Type,MeshType>> NewEmpty
-    (
-        const meshField<Type,MeshType>&,
-        const partPatch& p
-    );
+        if (!bPtr)
+        {
+            FatalErrorInFunction
+                << "Boundary condition cannot be cast to "
+                << BoundaryType::typeName
+                << " because it is " << this->type()
+                << abort(FatalError);
+        }
+
+        return *bPtr;
+    }
 
     // Determine a field's boundary condition base type for a global boundary
     // offset. Works only on rectilinear meshes. Gives error for inconistent
@@ -159,34 +163,34 @@ public:
         return mshField_;
     }
 
-    // Access to the part patch
-    inline const partPatch& patch() const { return patch_; }
+    // Access to the base boundary
+    inline const boundary& mshBoundary() const { return b_; }
 
     // Access to the dictionary
     inline const dictionary& dict() const { return dict_; }
 
     // Return the boundary offset
-    inline labelVector boundaryOffset() const
+    inline labelVector offset() const
     {
-        return patch_.boundaryOffset();
+        return b_.offset();
     }
 
     // Boundary offset degree
-    inline label boundaryOffsetDegree() const
+    inline label offsetDegree() const
     {
-        return patch_.boundaryOffsetDegree();
+        return b_.offsetDegree();
     }
 
     // Boundary extension
     inline const faceLabel& extension() const
     {
-        return patch_.extension();
+        return b_.extension();
     }
 
     // Return the transformation tensor
     inline labelTensor T() const
     {
-        return patch_.T();
+        return b_.T();
     }
 
     // Return the start point of the internal cell boundary
@@ -219,47 +223,62 @@ public:
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const = 0;
 
-    // Initialize the evaluation of the boundary condition for given level
-    virtual void initEvaluate(const label) = 0;
+    // Eliminated boundary condition
+    virtual bool eliminated() const = 0;
 
-    // Evaluate the boundary condition for given level
-    virtual void evaluate(const label) = 0;
+    // Eliminate ghosts from the linear system at given level. Cannot be
+    // templated because of virtual functions.
 
-    // Eliminate ghosts from the given linear system
-    void eliminateGhosts(linearSystem<stencil,Type,MeshType>&, const label);
-    void eliminateGhosts(linearSystem<diagStencil,Type,MeshType>&, const label);
+    virtual void eliminateGhosts
+    (
+        linearSystem<stencil,Type,MeshType>&,
+        const label
+    );
 
-    // Constrained boundary conditions
+    virtual void eliminateGhosts
+    (
+        linearSystem<symmStencil,Type,MeshType>&,
+        const label
+    );
 
-        // Bool that specifies if the internal value at a boundary is
-        // constrained by the boundary condition
-        virtual bool constrained(const bool shifted) const { return false; }
+    virtual void eliminateGhosts
+    (
+        linearSystem<diagStencil,Type,MeshType>&,
+        const label
+    );
 
-        // Return the internal value (if any) of constrained cells at given
-        // level and direction. By default a zero value is returned.
-        virtual tmp<block<Type>> internalValue(const label, const label);
+    // Eliminate ghosts from the linear system at given level and direction.
+    // Cannot be templated because of virtual functions.
 
-    // Eliminated boundary conditions
-    //
-    // Boundary coefficients and sources are defined from the relation:
-    //
-    //     ghost_cell = coefficients * internal_cells + source,
-    //
-    // which relates the ghost cell value to its internal cell values and
-    // eliminates dependence on the ghost value. The functions below can be
-    // overloaded by boundary conditions that support this mechanism.
+    virtual void eliminateGhosts
+    (
+        linearSystem<stencil,Type,MeshType>&,
+        const label,
+        const label
+    );
 
-        // Return true if the (shifted) boundary condition eliminates the ghost
-        virtual bool eliminated(const bool shifted) const { return false; }
+    virtual void eliminateGhosts
+    (
+        linearSystem<symmStencil,Type,MeshType>&,
+        const label,
+        const label
+    );
 
-        // Return the boundary coefficient for given level and direction
-        virtual stencil boundaryCoeff(const label, const label)
-        {
-            return pTraits<stencil>::zero;
-        }
+    virtual void eliminateGhosts
+    (
+        linearSystem<diagStencil,Type,MeshType>&,
+        const label,
+        const label
+    );
 
-        // Return the boundary sources for given level and direction
-        virtual tmp<block<Type>> boundarySources(const label, const label);
+    // Prepare the evaluation of the boundary condition for given level and
+    // direction
+    virtual void prepare(const label);
+    virtual void prepare(const label, const label);
+
+    // Evaluate the boundary condition for given level and direction
+    virtual void evaluate(const label);
+    virtual void evaluate(const label, const label);
 };
 
 // Helper function for global boundary condition type

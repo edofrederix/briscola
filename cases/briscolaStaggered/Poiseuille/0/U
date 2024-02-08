@@ -23,9 +23,4 @@ boundaryConditions
     {
         type        outflow;
     }
-
-    empties
-    {
-        type        empty;
-    }
 }

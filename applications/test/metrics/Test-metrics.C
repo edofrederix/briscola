@@ -64,7 +64,7 @@ void testCellVolumes(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAllLevels(v, l, d, i, j, k)
+    forAllCells(v, l, d, i, j, k)
     {
         const scalar V
         (
@@ -90,7 +90,7 @@ void testFaceCenters(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAllLevels(c, l, d, i, j, k)
+    forAllCells(c, l, d, i, j, k)
     for (label o = 0; o < 6; o++)
     {
         const vector cc
@@ -126,7 +126,7 @@ void testEdgeCenters(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAllLevels(c, l, d, i, j, k)
+    forAllCells(c, l, d, i, j, k)
     for (label o = 0; o < 12; o++)
     {
         const vector cc
@@ -162,7 +162,7 @@ void testVertexCenters(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAllLevels(c, l, d, i, j, k)
+    forAllCells(c, l, d, i, j, k)
     for (label o = 0; o < 8; o++)
     {
         const vector cc
@@ -198,7 +198,7 @@ void testFaceAreas(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAllLevels(a, l, d, i, j, k)
+    forAllCells(a, l, d, i, j, k)
     {
         const vector A
         (
@@ -220,7 +220,7 @@ void testFaceNormals(const fvMesh& fvMsh)
     const meshField<faceVector,MeshType>& fn =
         fvMsh.metrics<MeshType>().faceNormals();
 
-    forAllLevels(fn, l, d, i, j, k)
+    forAllCells(fn, l, d, i, j, k)
     for (label o = 0; o < 6; o++)
     {
         label lr = 2*(o%2)-1;
@@ -238,7 +238,7 @@ void testFaceNormals(const fvMesh& fvMsh)
     const meshField<faceVector,MeshType>& fc =
         fvMsh.metrics<MeshType>().faceCenters();
 
-    forAllLevels(fn, l, d, i, j, k)
+    forAllCells(fn, l, d, i, j, k)
     for (label o = 0; o < 6; o++)
     {
         vector f = fc(l,d,i,j,k)[o] - cc(l,d,i,j,k);
@@ -261,7 +261,7 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAllLevels(fan, l, d, i, j, k)
+    forAllCells(fan, l, d, i, j, k)
     {
         const vector A
         (
@@ -290,7 +290,7 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
     const meshField<faceVector,MeshType>& fc =
         fvMsh.metrics<MeshType>().faceCenters();
 
-    forAllLevels(fan, l, d, i, j, k)
+    forAllCells(fan, l, d, i, j, k)
     for (label o = 0; o < 6; o++)
     {
         vector f = fc(l,d,i,j,k)[o] - cc(l,d,i,j,k);
@@ -313,7 +313,7 @@ void testFaceDeltas(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAllLevels(fd, l, d, i, j, k)
+    forAllCells(fd, l, d, i, j, k)
     {
         const vector D
         (

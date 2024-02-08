@@ -35,11 +35,11 @@ word name
 {
     std::ostringstream buf;
 
-    buf << '(' << cs.v_[0];
+    buf << '(' << Foam::name(cs.v_[0]);
 
     for (direction i=1; i<Ncmpts; i++)
     {
-        buf << ',' << cs.v_[i];
+        buf << ',' << Foam::name(cs.v_[i]);
     }
 
     buf << ')';

@@ -51,7 +51,7 @@ Vreman<Type,MeshType>::Vreman
         fvMsh.metrics<MeshType>().cellCenters();
 
     // Set IB mask fields
-    forAllLevels(wallDist_,l,d,i,j,k)
+    forAllCells(wallDist_,l,d,i,j,k)
     {
         const labelVector ijk(i,j,k);
 

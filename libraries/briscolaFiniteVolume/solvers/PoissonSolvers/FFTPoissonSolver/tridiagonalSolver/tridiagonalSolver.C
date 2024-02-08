@@ -17,7 +17,8 @@ namespace FFT
 using Foam::sin;
 using Foam::sqr;
 
-void tridiagonalSolver::computeEigenvalues()
+template<class SType>
+void tridiagonalSolver<SType>::computeEigenvalues()
 {
     const scalar pi(constant::mathematical::pi);
 
@@ -119,7 +120,8 @@ void tridiagonalSolver::computeEigenvalues()
     }
 }
 
-void tridiagonalSolver::computeDiagonals()
+template<class SType>
+void tridiagonalSolver<SType>::computeDiagonals()
 {
     // Square of cell sizes in each direction
     scalar d1sqr = sqr(cellSizes_[dir1_][0]);
@@ -210,18 +212,23 @@ void tridiagonalSolver::computeDiagonals()
     }
 }
 
-tridiagonalSolver::tridiagonalSolver
+template<class SType>
+tridiagonalSolver<SType>::tridiagonalSolver
 (
-    FFTPoissonSolver& solver,
+    FFTPoissonSolver<SType>& solver,
     const labelVector& BC
 )
 :
     solver_(solver),
-    N_(solver.fvMsh().msh().cast<rectilinearMesh>().N()),
+    N_(solver.fvMsh().msh().template cast<rectilinearMesh>().N()),
     Nd_(solver.decomp().Nd(solver_.FFTPlan().solveDir())[Pstream::myProcNo()]),
     Sd_(solver.decomp().Sd(solver_.FFTPlan().solveDir())[Pstream::myProcNo()]),
     BC_(BC),
-    cellSizes_(solver.fvMsh().msh().cast<rectilinearMesh>().globalCellSizes()),
+    cellSizes_
+    (
+        solver.fvMsh().msh().template
+        cast<rectilinearMesh>().globalCellSizes()
+    ),
     D_(Nd_, Zero),
     DU_(1.0 / sqr(cellSizes_[solver_.FFTPlan().solveDir()])),
     DL_(1.0 / sqr(cellSizes_[solver_.FFTPlan().solveDir()]))
@@ -254,10 +261,12 @@ tridiagonalSolver::tridiagonalSolver
     computeDiagonals();
 }
 
-tridiagonalSolver::~tridiagonalSolver()
+template<class SType>
+tridiagonalSolver<SType>::~tridiagonalSolver()
 {}
 
-void tridiagonalSolver::solve
+template<class SType>
+void tridiagonalSolver<SType>::solve
 (
     scalarBlock& p,
     const scalarBlock& f,
@@ -309,7 +318,8 @@ void tridiagonalSolver::solve
     }
 }
 
-void tridiagonalSolver::solveCyclic
+template<class SType>
+void tridiagonalSolver<SType>::solveCyclic
 (
     scalarBlock& p,
     const scalarBlock& f,
@@ -374,7 +384,8 @@ void tridiagonalSolver::solveCyclic
     }
 }
 
-void tridiagonalSolver::solve(scalarBlock& xyzPencil, const bool ddt)
+template<class SType>
+void tridiagonalSolver<SType>::solve(scalarBlock& xyzPencil, const bool ddt)
 {
     // Copy RHS of tridiagonal system
     scalarBlock f(xyzPencil);
@@ -388,6 +399,11 @@ void tridiagonalSolver::solve(scalarBlock& xyzPencil, const bool ddt)
         solveCyclic(xyzPencil, f, ddt);
     }
 }
+
+// Instantiate
+
+template class tridiagonalSolver<stencil>;
+template class tridiagonalSolver<symmStencil>;
 
 }
 

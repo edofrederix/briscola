@@ -41,12 +41,12 @@ int main(int argc, char *argv[])
     const colocatedVectorField& cc =
         fvMsh.metrics<colocated>().cellCenters();
 
-    forAllLevels(f, l, d, i, j, k)
+    forAllCells(f, l, d, i, j, k)
         f(l,d,i,j,k) = cc(l,d,i,j,k);
 
     f.correctBoundaryConditions();
 
-    forAllLevels(f, l, d, i, j, k)
+    forAllCells(f, l, d, i, j, k)
         if (f(l,d,i,j,k) != cc(l,d,i,j,k))
             FatalError << "test 1 failed" << endl;
 
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
         if (bc.type() == "parallel")
         {
-            const labelVector bo(bc.boundaryOffset());
+            const labelVector bo(bc.offset());
 
             forAll(f, l)
             {
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
                                         << "cell = " << cell << nl
                                         << "ghost = " << ghost << nl
                                         << "target = " << target << nl
-                                        << "boundaryOffset = " << bo << nl
+                                        << "offset = " << bo << nl
                                         << "test 2 failed" << endl;
 
                             FatalError.exit();

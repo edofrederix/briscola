@@ -33,7 +33,7 @@ void penalization<Type,MeshType>::correctLinearSystem
     linearSystem<stencil,Type,MeshType>& ls
 )
 {
-    forAllLevels(ls.b(),l,d,i,j,k)
+    forAllCells(ls.b(),l,d,i,j,k)
     {
         if (this->mask_(l,d,i,j,k) == 1)
         {
@@ -42,7 +42,7 @@ void penalization<Type,MeshType>::correctLinearSystem
         }
     }
 
-    forAllLevels(ls.A(),l,d,i,j,k)
+    forAllCells(ls.A(),l,d,i,j,k)
     {
         if (this->mask_(l,d,i,j,k) == 1)
         {

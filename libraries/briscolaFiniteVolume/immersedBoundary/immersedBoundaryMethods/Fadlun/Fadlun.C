@@ -45,7 +45,7 @@ Fadlun<Type,MeshType>::Fadlun
         fvMsh.metrics<MeshType>().cellCenters();
 
     // Set IB mask fields
-    forAllLevels(wallAdjMask_,l,d,i,j,k)
+    forAllCells(wallAdjMask_,l,d,i,j,k)
     {
         const labelVector ijk(i,j,k);
 
@@ -90,7 +90,7 @@ void Fadlun<Type,MeshType>::correctLinearSystem
     linearSystem<stencil,Type,MeshType>& ls
 )
 {
-    forAllLevels(ls.b(),l,d,i,j,k)
+    forAllCells(ls.b(),l,d,i,j,k)
     {
         if (wallAdjMask_(l,d,i,j,k) == 1)
         {
@@ -98,7 +98,7 @@ void Fadlun<Type,MeshType>::correctLinearSystem
         }
     }
 
-    forAllLevels(ls.A(),l,d,i,j,k)
+    forAllCells(ls.A(),l,d,i,j,k)
     {
         // Modify stencils in IB-adjacent cells
         if (wallAdjMask_(l,d,i,j,k) == 1)

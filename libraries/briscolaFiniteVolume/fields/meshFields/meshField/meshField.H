@@ -8,6 +8,7 @@
 
 #include "meshLevel.H"
 #include "boundaryCondition.H"
+#include "immersedBoundaryConditionFwd.H"
 
 namespace Foam
 {
@@ -27,6 +28,9 @@ template<class Type, class MeshType>
 class restrictionScheme;
 
 template<class Type, class MeshType>
+class boundaryExchange;
+
+template<class Type, class MeshType>
 class meshField
 :
     public PtrList<meshLevel<Type,MeshType>>,
@@ -40,21 +44,17 @@ class meshField
     // any operation
     meshField<Type,MeshType>* oldTimePtr_;
 
-    // Boundary conditions, assigned in the order:
-    //
-    //  1) non-empty boundaries,
-    //  2) parallel/periodic faces,
-    //  3) parallel/periodic edges,
-    //  4) parallel/periodic vertices and
-    //  5) empty boundaries.
-    //
-    //  This order is important, so that parallel boundary conditions can copy
-    //  normal boundaries and empty boundaries can copy both normal and
-    //  parallel/periodic boundaries.
+    // Boundary conditions
     PtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
 
+    // Immersed boundary condition
+    autoPtr<immersedBoundaryCondition<Type,MeshType>> immersedBoundaryCondition_;
+
     // Restriction scheme associated with this field
-    autoPtr<restrictionScheme<Type,MeshType>> reScheme_;
+    autoPtr<restrictionScheme<Type,MeshType>> reSchemePtr_;
+
+    // Boundary exchange
+    autoPtr<boundaryExchange<Type,MeshType>> bExchangePtr_;
 
 protected:
 
@@ -198,13 +198,13 @@ public:
     }
 
     // Access to the first level
-    inline meshLevel<Type,MeshType>& level()
+    inline meshLevel<Type,MeshType>& mshPart()
     {
         return this->operator[](0);
     }
 
     // Const access to the first level
-    inline const meshLevel<Type,MeshType>& level() const
+    inline const meshLevel<Type,MeshType>& mshPart() const
     {
         return this->operator[](0);
     }
@@ -303,8 +303,20 @@ public:
     // Add boundary conditions
     void addBoundaryConditions();
 
+    // Add immersed boundary conditions
+    void addImmersedBoundaryConditions();
+
     // Correct boundary conditions
     void correctBoundaryConditions();
+
+    // Correct domain boundary conditions
+    void correctDomainBoundaryConditions();
+
+    // Correct empty boundary conditions
+    void correctEmptyBoundaryConditions();
+
+    // Correct communicating boundary conditions
+    void correctCommsBoundaryConditions();
 
     // Correct parallel boundary conditions
     void correctParallelBoundaryConditions();
@@ -312,11 +324,18 @@ public:
     // Correct periodic boundary conditions
     void correctPeriodicBoundaryConditions();
 
-    // Correct communicating (parallel and periodic) boundary conditions
-    void correctCommBoundaryConditions();
+    // Correct non-eliminated boundary conditions
+    void correctNonEliminatedBoundaryConditions();
 
-    // Correct non-communicating boundary conditions
-    void correctNonCommBoundaryConditions();
+    // Correct eliminated boundary conditions
+    void correctEliminatedBoundaryConditions();
+
+    // Correct immersed boundary conditions
+    void correctImmersedBoundaryConditions();
+    void correctImmersedBoundaryConditions
+    (
+        linearSystem<stencil,Type,MeshType>&
+    );
 
     // Set the old time field
     void setOldTime();
@@ -363,6 +382,7 @@ public:
     void operator=(const meshField<Type,MeshType>&);
     void operator=(const tmp<meshField<Type,MeshType>>&);
     void operator=(const Type&);
+    void operator=(const List<Type>&);
     void operator=(const zero);
 
     void operator+=(const meshField<Type,MeshType>&);
@@ -378,36 +398,65 @@ public:
     void operator/=(const tmp<meshField<scalar,MeshType>>&);
 
     void operator+=(const Type&);
+    void operator+=(const List<Type>&);
+
     void operator-=(const Type&);
+    void operator-=(const List<Type>&);
 
     void operator*=(const scalar&);
+    void operator*=(const scalarList&);
+
     void operator/=(const scalar&);
+    void operator/=(const scalarList&);
 
     // Templated functions are needed for types which can be cast to another
     // type
 
-    template<class Type2> void operator=(const meshField<Type2,MeshType>&);
-    template<class Type2> void operator=(const tmp<meshField<Type2,MeshType>>&);
+    #define TYPE2FIELD meshField<Type2,MeshType>
 
-    template<class Type2> void operator+=(const meshField<Type2,MeshType>&);
-    template<class Type2> void operator+=
-    (
-        const tmp<meshField<Type2,MeshType>>&
-    );
+    template<class Type2> void operator=(const TYPE2FIELD&);
+    template<class Type2> void operator=(const tmp<TYPE2FIELD>&);
 
-    template<class Type2> void operator-=(const meshField<Type2,MeshType>&);
-    template<class Type2> void operator-=
-    (
-        const tmp<meshField<Type2,MeshType>>&
-    );
+    template<class Type2> void operator+=(const TYPE2FIELD&);
+    template<class Type2> void operator+=(const tmp<TYPE2FIELD>&);
+
+    template<class Type2> void operator-=(const TYPE2FIELD&);
+    template<class Type2> void operator-=(const tmp<TYPE2FIELD>&);
+
+    template<class Type2> void operator*=(const TYPE2FIELD&);
+    template<class Type2> void operator*=(const tmp<TYPE2FIELD>&);
+
+    template<class Type2> void operator/=(const TYPE2FIELD&);
+    template<class Type2> void operator/=(const tmp<TYPE2FIELD>&);
+
+    #undef TYPE2FIELD
 
     template<class Type2> void operator=(const Type2&);
-    template<class Type2> void operator+=(const Type2&);
-    template<class Type2> void operator-=(const Type2&);
+    template<class Type2> void operator=(const List<Type2>&);
 
-    // Allow a parent linear system to make changes to private data
-    template<class SType,class,class>
+    template<class Type2> void operator+=(const Type2&);
+    template<class Type2> void operator+=(const List<Type2>&);
+
+    template<class Type2> void operator-=(const Type2&);
+    template<class Type2> void operator-=(const List<Type2>&);
+
+    template<class Type2> void operator*=(const Type2&);
+    template<class Type2> void operator*=(const List<Type2>&);
+
+    template<class Type2> void operator/=(const Type2&);
+    template<class Type2> void operator/=(const List<Type2>&);
+
+    // Befriend linear system
+    template<class SType, class, class>
     friend class linearSystem;
+
+    // Befriend parallel exchange
+    template<class, class>
+    friend class boundaryExchange;
+
+    // Befriend mesh level
+    template<class, class>
+    friend class meshLevel;
 
     #include "meshLevelFirstDirectionFunctions.H"
     #include "meshLevelDirectionFunctions.H"

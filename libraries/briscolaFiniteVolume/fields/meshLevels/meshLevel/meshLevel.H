@@ -9,6 +9,8 @@
 
 #include "meshDirection.H"
 
+// #define BOUNDARYEXCHANGE 1
+
 namespace Foam
 {
 
@@ -213,8 +215,8 @@ public:
     // Level number
     inline label levelNum() const { return l_; }
 
-    // Part level
-    inline const partLevel& level() const { return fvMsh_[l_]; }
+    // Mesh part
+    inline const part& mshPart() const { return fvMsh_[l_]; }
 
     // Add boundary conditions only of not yet added
     inline void addBoundaryConditions()
@@ -225,27 +227,32 @@ public:
         }
     }
 
+    // Correct boundary conditions
+    void correctBoundaryConditions();
+
     // Correct unset boundary conditions as homogeneous Neumann
     void correctUnsetBoundaryConditions();
 
-    // Correct boundary conditions for this level
-    void correctBoundaryConditions();
+    // Correct domain boundary conditions
+    void correctDomainBoundaryConditions();
 
-    // Correct boundary boundary conditions for this level
-    void correctBoundaryBoundaryConditions();
+    // Correct empty boundary conditions
+    void correctEmptyBoundaryConditions();
 
-    // Correct parallel boundary conditions for this level
+    // Correct communicating boundary conditions
+    void correctCommsBoundaryConditions();
+
+    // Correct parallel boundary conditions
     void correctParallelBoundaryConditions();
 
-    // Correct periodic boundary conditions for this level
+    // Correct periodic boundary conditions
     void correctPeriodicBoundaryConditions();
 
-    // Correct communicating (parallel and periodic) boundary conditions for
-    // this level
-    void correctCommBoundaryConditions();
+    // Correct non-eliminated boundary conditions
+    void correctNonEliminatedBoundaryConditions();
 
-    // Correct non-communicating boundary conditions for this level
-    void correctNonCommBoundaryConditions();
+    // Correct eliminated boundary conditions
+    void correctEliminatedBoundaryConditions();
 
     // Member operators
 
@@ -269,38 +276,52 @@ public:
 
     void operator+=(const Type&);
     void operator+=(const List<Type>&);
+
     void operator-=(const Type&);
     void operator-=(const List<Type>&);
 
     void operator*=(const scalar&);
     void operator*=(const List<scalar>&);
+
     void operator/=(const scalar&);
     void operator/=(const List<scalar>&);
 
     // Templated functions are needed for types which can be cast to another
     // type
 
-    template<class Type2> void operator=(const meshLevel<Type2,MeshType>&);
-    template<class Type2> void operator=(const tmp<meshLevel<Type2,MeshType>>&);
+    #define TYPE2LEVEL meshLevel<Type2,MeshType>
 
-    template<class Type2> void operator+=(const meshLevel<Type2,MeshType>&);
-    template<class Type2> void operator+=
-    (
-        const tmp<meshLevel<Type2,MeshType>>&
-    );
+    template<class Type2> void operator=(const TYPE2LEVEL&);
+    template<class Type2> void operator=(const tmp<TYPE2LEVEL>&);
 
-    template<class Type2> void operator-=(const meshLevel<Type2,MeshType>&);
-    template<class Type2> void operator-=
-    (
-        const tmp<meshLevel<Type2,MeshType>>&
-    );
+    template<class Type2> void operator+=(const TYPE2LEVEL&);
+    template<class Type2> void operator+=(const tmp<TYPE2LEVEL>&);
+
+    template<class Type2> void operator-=(const TYPE2LEVEL&);
+    template<class Type2> void operator-=(const tmp<TYPE2LEVEL>&);
+
+    template<class Type2> void operator*=(const TYPE2LEVEL&);
+    template<class Type2> void operator*=(const tmp<TYPE2LEVEL>&);
+
+    template<class Type2> void operator/=(const TYPE2LEVEL&);
+    template<class Type2> void operator/=(const tmp<TYPE2LEVEL>&);
+
+    #undef TYPE2LEVEL
 
     template<class Type2> void operator=(const Type2&);
     template<class Type2> void operator=(const List<Type2>&);
+
     template<class Type2> void operator+=(const Type2&);
     template<class Type2> void operator+=(const List<Type2>&);
+
     template<class Type2> void operator-=(const Type2&);
     template<class Type2> void operator-=(const List<Type2>&);
+
+    template<class Type2> void operator*=(const Type2&);
+    template<class Type2> void operator*=(const List<Type2>&);
+
+    template<class Type2> void operator/=(const Type2&);
+    template<class Type2> void operator/=(const List<Type2>&);
 
     // Allow the parent field to make changes to private data
     friend class meshField<Type,MeshType>;

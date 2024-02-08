@@ -54,17 +54,21 @@ int main(int argc, char *argv[])
         USys -= im::source(imSourceCoeff,U);
         USys -= exSource;
 
-        LapU = im::laplacian(nu,U);
-        USys -= 0.5*LapU;
-        USys -= 0.5*LapU.evaluate();
+        USys -= im::laplacian(0.5*nu,U);
+        USys -= ex::laplacian(0.5*nu,U);
 
         USys -= 0.5*DivU;
         DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
+        USys += ex::grad(p);
+
         // Solve predictor
 
         USolve->solve(USys);
+
+        U += deltaT*ex::grad(p);
+        U.correctBoundaryConditions();
 
         // Pressure equation
 

@@ -152,7 +152,7 @@ bool timeAverage::execute()
                     timeAveragedFields_[index] = Zero;
                 }
 
-                forAllLevels(csf,l,d,i,j,k)
+                forAllCells(csf,l,d,i,j,k)
                 {
                     timeAveragedFields_[index](l,d,i,j,k) *= avgT0;
                     timeAveragedFields_[index](l,d,i,j,k) += csf(l,d,i,j,k)
@@ -174,7 +174,7 @@ bool timeAverage::execute()
                         timeAveragedFields_[index] = Zero;
                     }
 
-                    forAllLevels(cvf,l,d,i,j,k)
+                    forAllCells(cvf,l,d,i,j,k)
                     {
                         timeAveragedFields_[index](l,d,i,j,k) *= avgT0;
                         timeAveragedFields_[index](l,d,i,j,k)

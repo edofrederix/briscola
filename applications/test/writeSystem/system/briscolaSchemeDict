@@ -1,0 +1,33 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      briscolaSchemesDict;
+}
+
+laplacianSchemes
+{
+    laplacian(f-colocated)
+    {
+        type    linearGauss;
+    }
+
+    laplacian(f-staggered)
+    {
+        type    linearGauss;
+    }
+}
+
+ddtSchemes
+{
+    ddt(f-colocated)
+    {
+        type    Euler;
+    }
+
+    ddt(f-staggered)
+    {
+        type    Euler;
+    }
+}

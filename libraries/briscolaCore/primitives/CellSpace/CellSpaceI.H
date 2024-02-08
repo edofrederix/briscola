@@ -793,7 +793,7 @@ template<class Form, class Cmpt, direction Ncmpts>
 inline Form operator/
 (
     const CellSpace<Form, Cmpt, Ncmpts>& cs,
-    scalar s
+    const scalar s
 )
 {
     CellSpace<Form, Cmpt, Ncmpts> r(cs);
@@ -803,18 +803,33 @@ inline Form operator/
     return r;
 }
 
+template<class Form, direction Ncmpts>
+inline Form operator/
+(
+    const scalar s,
+    const CellSpace<Form, scalar, Ncmpts>& cs
+)
+{
+    CellSpace<Form, scalar, Ncmpts> r(s);
+
+    r /= cs;
+
+    return r;
+}
+
 template
 <
     class Form1,
     class Form2,
-    class Cmpt,
+    class Cmpt1,
+    class Cmpt2,
     direction Ncmpts1,
     direction Ncmpts2
 >
 inline typename CellSpaceCast<Form2, Form2, Form1>::type operator/
 (
-    const VectorSpace<Form1, Cmpt, Ncmpts1>& v,
-    const CellSpace<Form2, scalar, Ncmpts2>& cs
+    const VectorSpace<Form1, Cmpt1, Ncmpts1>& v,
+    const CellSpace<Form2, Cmpt2, Ncmpts2>& cs
 )
 {
     typename CellSpaceCast<Form2, Form2, Form1>::type r;
@@ -829,16 +844,17 @@ template
 <
     class Form1,
     class Form2,
-    class Cmpt,
+    class Cmpt1,
+    class Cmpt2,
     direction Ncmpts
 >
-inline typename CellSpaceCast<Form1, Form2, Cmpt>::type operator/
+inline typename CellSpaceCast<Form1, Form2, Cmpt1>::type operator/
 (
-    const CellSpace<Form1, Cmpt, Ncmpts>& cs1,
-    const CellSpace<Form2, scalar, Ncmpts>& cs2
+    const CellSpace<Form1, Cmpt1, Ncmpts>& cs1,
+    const CellSpace<Form2, Cmpt2, Ncmpts>& cs2
 )
 {
-    typename CellSpaceCast<Form1, Form2, Cmpt>::type r;
+    typename CellSpaceCast<Form1, Form2, Cmpt1>::type r;
 
     for (label i = 0; i < Ncmpts; i++)
         r.v_[i] = cs1.v_[i]/cs2.v_[i];

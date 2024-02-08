@@ -5,6 +5,7 @@
 
 #include "fvMesh.H"
 #include "meshFields.H"
+#include "OFstream.H"
 
 namespace Foam
 {
@@ -32,8 +33,8 @@ class linearSystem
     // Right-hand side source which is shallow by default
     meshField<Type,MeshType> b_;
 
-    // Bool that keeps track of system singularity
-    bool singular_;
+    // Singularity bools
+    List<bool> singular_;
 
     // Transfer data from other system
     void transfer(linearSystem<SType,Type,MeshType>&);
@@ -67,7 +68,7 @@ public:
     virtual ~linearSystem();
 
     // Return the mesh
-    inline const fvMesh& fvMsh() { return fvMsh_; }
+    inline const fvMesh& fvMsh() const { return fvMsh_; }
 
     // Return the unknown
     inline meshField<Type,MeshType>& x() { return x_; }
@@ -81,9 +82,10 @@ public:
     inline meshField<Type,MeshType>& b() { return b_; }
     inline const meshField<Type,MeshType>& b() const { return b_; }
 
-    // Return the singularity bool
-    inline bool& singular() { return singular_; }
-    inline const bool& singular() const { return singular_; }
+    // A linear system is said to be singular if all matrix row sums at the
+    // coarsest level  are zero. See Remark 5.6.5 in "Multigrid", U. Trottenberg
+    // et al., (2000). Result is cached.
+    List<bool> singular(const bool clearCache = false);
 
     // Compute the residual b-Ax and store in given object
     void residual(meshField<Type,MeshType>&) const;
@@ -108,9 +110,6 @@ public:
     // Eliminate ghosts from the linear system where possible
     void eliminateGhosts();
 
-    // Eliminate ghosts from the linear system where possible, at given level
-    void eliminateGhosts(const label);
-
     // Member Operators
 
     void operator=(const linearSystem<SType,Type,MeshType>&);
@@ -127,10 +126,12 @@ public:
     void operator=(const tmp<meshField<Type,MeshType>>&);
 
     void operator+=(const Type&);
+    void operator+=(const List<Type>&);
     void operator+=(const meshField<Type,MeshType>&);
     void operator+=(const tmp<meshField<Type,MeshType>>&);
 
     void operator-=(const Type&);
+    void operator-=(const List<Type>&);
     void operator-=(const meshField<Type,MeshType>&);
     void operator-=(const tmp<meshField<Type,MeshType>>&);
 
@@ -140,15 +141,30 @@ public:
     void operator=(const tmp<linearSystem<SType2,Type,MeshType>>&);
 
     template<class SType2>
+    void operator+=(const SType2&);
+    template<class SType2>
     void operator+=(const linearSystem<SType2,Type,MeshType>&);
     template<class SType2>
     void operator+=(const tmp<linearSystem<SType2,Type,MeshType>>&);
 
     template<class SType2>
+    void operator-=(const SType2&);
+    template<class SType2>
     void operator-=(const linearSystem<SType2,Type,MeshType>&);
     template<class SType2>
     void operator-=(const tmp<linearSystem<SType2,Type,MeshType>>&);
 };
+
+// Write a stencil system at given level to a file. The last column is the
+// right-hand side source. Full matrix is written, so use only on very coarse
+// meshes.
+template<class SType, class Type, class MeshType>
+void writeToFile
+(
+    const linearSystem<SType,Type,MeshType>&,
+    const fileName file,
+    const label = 0
+);
 
 }
 

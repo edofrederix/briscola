@@ -82,7 +82,7 @@ immersedBoundaryMethod<Type,MeshType>::immersedBoundaryMethod
         fvMsh_.metrics<MeshType>().cellCenters();
 
     // Set IB mask fields
-    forAllLevels(mask_,l,d,i,j,k)
+    forAllCells(mask_,l,d,i,j,k)
     {
         const labelVector ijk(i,j,k);
 

@@ -552,8 +552,8 @@ void SHF::correct()
         }
     }
 
-    marker.correctCommBoundaryConditions();
-    kappa.correctCommBoundaryConditions();
+    marker.correctNonEliminatedBoundaryConditions();
+    kappa.correctNonEliminatedBoundaryConditions();
 
     forAllCells(kappa, i, j, k)
     {

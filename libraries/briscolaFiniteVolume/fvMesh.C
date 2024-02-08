@@ -2,6 +2,7 @@
 
 #include "colocatedFields.H"
 #include "staggeredFields.H"
+#include "immersedBoundary.H"
 
 namespace Foam
 {
@@ -19,7 +20,7 @@ void fvMesh::setInternalCells()
 {
     forAll(*this, l)
     {
-        const partLevel& level = this->operator[](l);
+        const part& p = this->operator[](l);
 
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
@@ -28,7 +29,7 @@ void fvMesh::setInternalCells()
             const labelVector& padding = MeshType::padding[d];
             const faceLabel slave = mshPtr_->facePatchSlave();
 
-            I = faceLabel(zeroXYZ, level.N()+padding);
+            I = faceLabel(zeroXYZ, p.N()+padding);
 
             for (int i = 0; i < 6; i++)
                 I[i] += (padding[i/2] && slave[i]) ? 1 - 2*(i%2) : 0;
@@ -52,6 +53,7 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
 :
     regIOobject(dict, true),
     mshPtr_(mesh::New(dict)),
+    meshDict_(dict),
     schemeDict_
     (
         IOobject
@@ -77,36 +79,59 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
     Ic_(mshPtr_->size(), List<faceLabel>(colocated::numberOfDirections)),
     Is_(mshPtr_->size(), List<faceLabel>(staggered::numberOfDirections)),
     colocatedMetrics_(),
-    staggeredMetrics_()
+    staggeredMetrics_(),
+    immersedBoundaryPresent_(dict.found("ImmersedBoundary"))
 {
     setInternalCells<colocated>();
     setInternalCells<staggered>();
 
     colocatedMetrics_ = new fvMeshMetrics<colocated>(*this);
+    if (immersedBoundaryPresent_)
+    {
+        colocatedMetrics_->setImmersedBoundary();
+    }
 
     // Only generate staggered metrics when the brick topology is structured
 
     if (mshPtr_->structured())
+    {
         staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
+        if (immersedBoundaryPresent_)
+        {
+            staggeredMetrics_->setImmersedBoundary();
+        }
+    }
 }
 
 fvMesh::fvMesh(const fvMesh& fvMsh)
 :
     regIOobject(fvMsh, true),
     mshPtr_(fvMsh.mshPtr_, false),
+    meshDict_(fvMsh.meshDict_),
     schemeDict_(fvMsh.schemeDict_),
     solverDict_(fvMsh.solverDict_),
     Ic_(fvMsh.Ic_),
     Is_(fvMsh.Is_),
     colocatedMetrics_(),
-    staggeredMetrics_()
+    staggeredMetrics_(),
+    immersedBoundaryPresent_(fvMsh.immersedBoundaryPresent_)
 {
     colocatedMetrics_ = new fvMeshMetrics<colocated>(*this);
+    if (immersedBoundaryPresent_)
+    {
+        colocatedMetrics_->setImmersedBoundary();
+    }
 
     // Only generate staggered metrics when the brick topology is structured
 
     if (mshPtr_->structured())
+    {
         staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
+        if (immersedBoundaryPresent_)
+        {
+            staggeredMetrics_->setImmersedBoundary();
+        }
+    }
 }
 
 fvMesh::~fvMesh()
@@ -241,12 +266,30 @@ List<labelVector> fvMesh::findCells
     return res;
 }
 
+template<class MeshType>
+const immersedBoundary<MeshType>& fvMesh::IB() const
+{
+    if (!immersedBoundaryPresent_)
+    {
+        FatalErrorInFunction
+            << "No immersed boundary found."
+            << endl << abort(FatalError);
+    }
+
+    return metrics<MeshType>().IB();
+}
+
 // Instantiate
 
 template List<labelVector>
 fvMesh::findCells<colocated>(const vectorList&, const label, const label) const;
 template List<labelVector>
 fvMesh::findCells<staggered>(const vectorList&, const label, const label) const;
+
+template const immersedBoundary<staggered>&
+fvMesh::IB<staggered>() const;
+template const immersedBoundary<colocated>&
+fvMesh::IB<colocated>() const;
 
 }
 

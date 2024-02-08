@@ -18,17 +18,17 @@ template<class Type, class MeshType>
 parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, patch),
+    boundaryCondition<Type,MeshType>(mshField, b),
     neighborProcNum_
     (
-        readLabel(patch.dict().lookup("neighborProcNum"))
+        readLabel(b.dict().lookup("neighborProcNum"))
     ),
     tag_
     (
-        readLabel(patch.dict().lookup("tag"))
+        readLabel(b.dict().lookup("tag"))
     ),
     sendBuffers_(),
     recvBuffers_(),
@@ -64,7 +64,7 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     const parallelBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.patch()),
+    boundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary()),
     neighborProcNum_(bc.neighborProcNum_),
     tag_(bc.tag_),
     sendBuffers_(bc.sendBuffers_),
@@ -80,7 +80,7 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     const parallelBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.patch()),
+    boundaryCondition<Type,MeshType>(field, bc.mshBoundary()),
     neighborProcNum_(bc.neighborProcNum_),
     tag_(bc.tag_),
     sendBuffers_(bc.sendBuffers_),
@@ -90,14 +90,14 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void parallelBoundaryCondition<Type,MeshType>::initEvaluate
+void parallelBoundaryCondition<Type,MeshType>::prepare
 (
     const label l
 )
 {
     const meshLevel<Type,MeshType>& field = this->mshField()[l];
 
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
     const faceLabel extension(this->extension());
 
     forAll(field, d)
@@ -167,7 +167,7 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate(const label l)
     meshLevel<Type,MeshType>& field = this->mshField()[l];
 
     const labelTensor T(this->T());
-    const labelVector bo(this->boundaryOffset());
+    const labelVector bo(this->offset());
     const faceLabel extension(this->extension());
 
     forAll(field, d)
@@ -179,7 +179,7 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate(const label l)
 
         block<Type>& recvBuffer = recvBuffers_[l*field.size()+d];
 
-        // Transform the receive buffer back to the orientation of the patch
+        // Transform the receive buffer back to the orientation of the boundary
 
         block<Type> data(recvBuffer);
         data.transform(T);

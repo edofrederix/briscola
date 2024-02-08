@@ -3,10 +3,14 @@
 
 #include "decomposition.H"
 #include "geometry.H"
-#include "partLevel.H"
+#include "part.H"
 #include "faceLabel.H"
 #include "edgeLabel.H"
 #include "vertexLabel.H"
+
+// Forward declaration of MPI communicator
+struct ompi_communicator_t;
+typedef ompi_communicator_t* MPI_Comm;
 
 namespace Foam
 {
@@ -17,32 +21,32 @@ namespace briscola
 class mesh
 :
     public geometry,
-    public PtrList<partLevel>
+    public PtrList<part>
 {
     // Mesh decomposition
     autoPtr<decomposition> decomp_;
 
-    // This processor's part patches
-    PtrList<partPatch> partPatches_;
+    // This processor's boundaries
+    PtrList<boundary> boundaries_;
 
-    // Patch master face labels, indicating for each processor which face part
-    // patches are master. Orientation is processor-specific.
-    List<faceLabel> facePatchMasterPerProc_;
-    List<edgeLabel> edgePatchMasterPerProc_;
-    List<vertexLabel> vertexPatchMasterPerProc_;
+    // Boundary master face labels, indicating for each processor which face
+    // boundaries are master. Orientation is processor-specific.
+    List<faceLabel> faceBoundaryMasterPerProc_;
+    List<edgeLabel> edgeBoundaryMasterPerProc_;
+    List<vertexLabel> vertexBoundaryMasterPerProc_;
 
-    // Patch type face labels, indicating for each processor the type of the
-    // face part patches. Orientation is processor-specific.
-    List<faceLabel> facePatchTypePerProc_;
-    List<edgeLabel> edgePatchTypePerProc_;
-    List<vertexLabel> vertexPatchTypePerProc_;
+    // Boundary type face labels, indicating for each processor the type of the
+    // face boundaries. Orientation is processor-specific.
+    List<faceLabel> faceBoundaryTypePerProc_;
+    List<edgeLabel> edgeBoundaryTypePerProc_;
+    List<vertexLabel> vertexBoundaryTypePerProc_;
 
     // Patch extension labels
     edgeLabel edgePatchExtension_;
     vertexLabel vertexPatchExtension_;
 
-    // List of empty patch offsets, which are boundary offsets in which no patch
-    // is present
+    // List of empty boundary offsets, which are boundary offsets in which no
+    // boundary is present
     List<labelVector> emptyPatchOffsets_;
 
     // Bool to check if mesh is structured or unstructured. If the brick
@@ -58,47 +62,66 @@ class mesh
     // Bounding box
     faceScalar boundingBox_;
 
-    // Add a part patch to the list of part patches
-    void addPartPatch
+    // Distributed communication graph
+    MPI_Comm comm_;
+
+    // Add a boundary to the list of boundaries
+    void addBoundary
     (
         const word name,
         const word type,
         const labelTensor T,
-        const labelVector boundaryOffset,
+        const labelVector offset,
         const labelVector neighborOffset = zeroXYZ,
         const label neighborProcNum = -1
     );
 
-    // Generate brick-internal part patches
-    void generateBrickInternalPartPatches();
+    // Generate brick-internal boundaries
+    void generateBrickInternalBoundaries();
 
-    // Generate brick-external part patches
-    void generateBrickExternalPartPatches();
+    // Generate brick-external boundary
+    void generateBrickExternalBoundaries();
 
-    // Generate link patches from brick link
-    void generateLinkPartPatches(const brickLink&);
+    // Generate link boundaries from brick link
+    void generateLinkBoundaries(const brickLink&);
 
-    // Generate boundary patches
-    void generateBoundaryPartPatches();
+    // Generate domain boundaries
+    void generateDomainBoundaries();
 
-    // Generate part patches
-    void generatePartPatches();
+    // Generate boundaries
+    void generateBoundaries();
 
-    // Set communication tags in parallel and periodic patches. Tags avoid
+    // Reorder boundaries in the order:
+    //
+    //  1) domain boundaries,
+    //  2) parallel/periodic faces,
+    //  3) parallel/periodic edges,
+    //  4) parallel/periodic vertices and
+    //  5) empty boundaries.
+    //
+    //  This order is important, so that parallel boundary conditions can copy
+    //  domain boundaries and empty boundaries can copy both domain and
+    //  parallel/periodic boundaries.
+    void reorderBoundaries();
+
+    // Set communication tags in parallel and periodic boundaries. Tags avoid
     // inconsistent communication.
     void setCommTags();
 
-    // Set patch master and type label lists
-    void setPatchLabels();
+    // Set boundary master and type label lists
+    void setBoundaryLabels();
 
-    // Set patch extension labels
-    void setPatchExtension();
+    // Set boundary extension labels
+    void setBoundaryExtension();
 
-    // Generate the list of empty patch offsets
-    void setEmptyPatchOffsets();
+    // Set the list of empty boundary offsets
+    void setEmptyBoundaryOffsets();
 
-    // Generate part levels
-    void generatePartLevels();
+    // Set the distributed communication graph
+    void setDistributedCommGraph();
+
+    // Generate mesh part levels
+    void generateLevels();
 
 public:
 
@@ -169,104 +192,104 @@ public:
         return decomp_;
     }
 
-    // Access to the part patches
-    inline const PtrList<partPatch>& partPatches() const
+    // Access to the boundaries
+    inline const PtrList<boundary>& boundaries() const
     {
-        return partPatches_;
+        return boundaries_;
     }
 
-    // Const access to the patch master label lists
+    // Const access to the boundary master label lists
 
-    inline const List<faceLabel>& facePatchMasterPerProc() const
+    inline const List<faceLabel>& faceBoundaryMasterPerProc() const
     {
-        return facePatchMasterPerProc_;
+        return faceBoundaryMasterPerProc_;
     }
 
-    inline const List<edgeLabel>& edgePatchMasterPerProc() const
+    inline const List<edgeLabel>& edgeBoundaryMasterPerProc() const
     {
-        return edgePatchMasterPerProc_;
+        return edgeBoundaryMasterPerProc_;
     }
 
-    inline const List<vertexLabel>& vertexPatchMasterPerProc() const
+    inline const List<vertexLabel>& vertexBoundaryMasterPerProc() const
     {
-        return vertexPatchMasterPerProc_;
+        return vertexBoundaryMasterPerProc_;
     }
 
-    // Const access to the patch type label list
+    // Const access to the boundary type label list
 
-    inline const List<faceLabel>& facePatchTypePerProc() const
+    inline const List<faceLabel>& faceBoundaryTypePerProc() const
     {
-        return facePatchTypePerProc_;
+        return faceBoundaryTypePerProc_;
     }
 
-    inline const List<edgeLabel>& edgePatchTypePerProc() const
+    inline const List<edgeLabel>& edgeBoundaryTypePerProc() const
     {
-        return edgePatchTypePerProc_;
+        return edgeBoundaryTypePerProc_;
     }
 
-    inline const List<vertexLabel>& vertexPatchTypePerProc() const
+    inline const List<vertexLabel>& vertexBoundaryTypePerProc() const
     {
-        return vertexPatchTypePerProc_;
+        return vertexBoundaryTypePerProc_;
     }
 
-    // Return this processor's patch master labels
+    // Return this processor's boundary master labels
 
-    inline const faceLabel& facePatchMaster() const
+    inline const faceLabel& faceBoundaryMaster() const
     {
-        return facePatchMasterPerProc_[Pstream::myProcNo()];
+        return faceBoundaryMasterPerProc_[Pstream::myProcNo()];
     }
 
-    inline const edgeLabel& edgePatchMaster() const
+    inline const edgeLabel& edgeBoundaryMaster() const
     {
-        return edgePatchMasterPerProc_[Pstream::myProcNo()];
+        return edgeBoundaryMasterPerProc_[Pstream::myProcNo()];
     }
 
-    inline const vertexLabel& vertexPatchMaster() const
+    inline const vertexLabel& vertexBoundaryMaster() const
     {
-        return vertexPatchMasterPerProc_[Pstream::myProcNo()];
+        return vertexBoundaryMasterPerProc_[Pstream::myProcNo()];
     }
 
-    // Return this processor's patch slave face label
+    // Return this processor's boundary slave face label
 
     inline faceLabel facePatchSlave() const
     {
         return
             pTraits<faceLabel>::one
-          - facePatchMasterPerProc_[Pstream::myProcNo()];
+          - faceBoundaryMasterPerProc_[Pstream::myProcNo()];
     }
 
     inline edgeLabel edgePatchSlave() const
     {
         return
             pTraits<edgeLabel>::one
-          - edgePatchMasterPerProc_[Pstream::myProcNo()];
+          - edgeBoundaryMasterPerProc_[Pstream::myProcNo()];
     }
 
     inline vertexLabel vertexPatchSlave() const
     {
         return
             pTraits<vertexLabel>::one
-          - vertexPatchMasterPerProc_[Pstream::myProcNo()];
+          - vertexBoundaryMasterPerProc_[Pstream::myProcNo()];
     }
 
-    // Return this processor's patch type face label
+    // Return this processor's boundary type face label
 
-    inline const faceLabel& facePatchType() const
+    inline const faceLabel& faceBoundaryType() const
     {
-        return facePatchTypePerProc_[Pstream::myProcNo()];
+        return faceBoundaryTypePerProc_[Pstream::myProcNo()];
     }
 
-    inline const edgeLabel& edgePatchType() const
+    inline const edgeLabel& edgeBoundaryType() const
     {
-        return edgePatchTypePerProc_[Pstream::myProcNo()];
+        return edgeBoundaryTypePerProc_[Pstream::myProcNo()];
     }
 
-    inline const vertexLabel& vertexPatchType() const
+    inline const vertexLabel& vertexBoundaryType() const
     {
-        return vertexPatchTypePerProc_[Pstream::myProcNo()];
+        return vertexBoundaryTypePerProc_[Pstream::myProcNo()];
     }
 
-    // Return patch extension
+    // Return boundary extension
 
     inline const edgeLabel& edgePatchExtension() const
     {
@@ -278,7 +301,7 @@ public:
         return vertexPatchExtension_;
     }
 
-    // Return the list of empty patch offsets
+    // Return the list of empty boundary offsets
     inline const List<labelVector>& emptyPatchOffsets() const
     {
         return emptyPatchOffsets_;
@@ -296,6 +319,9 @@ public:
     // Bounding box
     inline faceScalar boundingBox() const { return boundingBox_; }
 
+    // Access to the distributed communicator graph
+    const MPI_Comm& comm() const { return comm_; }
+
     // Find the cell index of the given point at given mesh level. Return
     // -unitXYZ if it is not found. Tree search, but should be overloaded by
     // mesh specializations for better performance.
@@ -303,6 +329,10 @@ public:
 
     // Find the cell indices of the given list of points at given mesh level
     virtual List<labelVector> findCells(const vectorList&, const label) const;
+
+    // Given a part size, compute its coarsened child size subject to this
+    // mesh's properties
+    labelVector coarsen(const labelVector) const;
 
     // Disallow default bitwise assignment
     void operator=(const mesh&);

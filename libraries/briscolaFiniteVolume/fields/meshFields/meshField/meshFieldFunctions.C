@@ -54,7 +54,11 @@ tmp<meshField<SCALARPRODTYPE,MeshType>>
 mag(const tmp<meshField<Type,MeshType>>& tf)
 {
     tmp<meshField<SCALARPRODTYPE,MeshType>> tRes =
-        reuseFieTmp<SCALARPRODTYPE,Type,MeshType>::New(tf,"mag("+tf->name()+")");
+        reuseFieTmp<SCALARPRODTYPE,Type,MeshType>::New
+        (
+            tf,
+            "mag("+tf->name()+")"
+        );
 
     mag(tRes.ref(), tf());
 

@@ -21,7 +21,10 @@ namespace briscola
 namespace fv
 {
 
+BINARY_TYPE_OPERATOR(edgeVector, edgeVector, edgeVector, +, add)
 BINARY_TYPE_OPERATOR(edgeVector, vector, edgeVector, +, add)
+
+BINARY_TYPE_OPERATOR(edgeVector, edgeVector, edgeVector, -, subtract)
 BINARY_TYPE_OPERATOR(edgeVector, vector, edgeVector, -, subtract)
 
 UNARY_FUNCTION(edgeScalar, edgeVector, magSqr)

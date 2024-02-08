@@ -67,7 +67,11 @@ int main(int argc, char *argv[])
         phi = ex::faceFlux(U);
 
         const colocatedScalarField rhoInv("rhoInv", 1.0/rho);
-        const colocatedFaceScalarField rhoInvf("rhoInv",1.0/ex::interp(rho));
+        const colocatedLowerFaceScalarField rhoInvf
+        (
+            "rhoInv",
+            1.0/ex::interp(rho)
+        );
 
         Poisson->solve(p, ex::div(phi)/(-deltaT), rhoInvf);
 

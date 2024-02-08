@@ -28,17 +28,20 @@ public:
     // Construct from mesh only, with empty dictionary
     EulerDdtScheme(const fvMesh&);
 
-    // Linear system from ddt(u)
-    virtual tmp<linearSystem<diagStencil,Type,MeshType>> ddt
+    // Pure virtual functions, to be defined by derived schemes
+
+    virtual tmp<linearSystem<diagStencil,Type,MeshType>> imDdt
     (
-        meshField<Type,MeshType>&
+        const meshField<scalar,MeshType>* lambdaPtr,
+        const meshField<Type,MeshType>& field,
+        const scalar factor = 1.0
     );
 
-    // Linear system from ddt(coeff,u)
-    virtual tmp<linearSystem<diagStencil,Type,MeshType>> ddt
+    virtual tmp<meshField<Type,MeshType>> exDdt
     (
-        const meshField<scalar,MeshType>&,
-        meshField<Type,MeshType>&
+        const meshField<scalar,MeshType>* lambdaPtr,
+        const meshField<Type,MeshType>& field,
+        const scalar factor = 1.0
     );
 };
 

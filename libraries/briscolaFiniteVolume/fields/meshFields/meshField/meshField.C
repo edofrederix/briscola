@@ -1,12 +1,15 @@
 #include "meshField.H"
 #include "fvMesh.H"
 
-#include "boundaryPartPatch.H"
-#include "parallelPartPatch.H"
-#include "periodicPartPatch.H"
-#include "emptyPartPatch.H"
+#include "domainBoundary.H"
+#include "parallelBoundary.H"
+#include "periodicBoundary.H"
+#include "emptyBoundary.H"
 
 #include "restrictionScheme.H"
+#include "boundaryExchange.H"
+
+#include "immersedBoundaryCondition.H"
 
 namespace Foam
 {
@@ -91,7 +94,7 @@ meshField<Type,MeshType>::meshField
     fvMsh_(fvMsh),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
-    reScheme_()
+    reSchemePtr_()
 {
     if (!fvMsh.structured() && MeshType::numberOfDirections > 1)
     {
@@ -118,7 +121,10 @@ meshField<Type,MeshType>::meshField
     this->allocate(deep);
 
     if (initBCs)
+    {
         addBoundaryConditions();
+        // addImmersedBoundaryConditions();
+    }
 }
 
 // Copy constructors
@@ -148,7 +154,7 @@ meshField<Type,MeshType>::meshField
     fvMsh_(field.fvMsh()),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
-    reScheme_()
+    reSchemePtr_()
 {
     setFieldPointers();
 
@@ -190,7 +196,7 @@ meshField<Type,MeshType>::meshField
     fvMsh_(field.fvMsh()),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
-    reScheme_()
+    reSchemePtr_()
 {
     setFieldPointers();
 
@@ -235,7 +241,7 @@ meshField<Type,MeshType>::meshField
     fvMsh_(tfield->fvMsh_),
     oldTimePtr_(),
     boundaryConditions_(),
-    reScheme_()
+    reSchemePtr_()
 {
     setFieldPointers();
 
@@ -283,7 +289,7 @@ meshField<Type,MeshType>::meshField
     fvMsh_(tfield->fvMsh_),
     oldTimePtr_(),
     boundaryConditions_(),
-    reScheme_()
+    reSchemePtr_()
 {
     setFieldPointers();
 
@@ -318,80 +324,39 @@ template<class Type, class MeshType>
 void meshField<Type,MeshType>::addBoundaryConditions()
 {
     if (boundaryConditions_.size() == 0)
+        forAll(fvMsh_.boundaries(), i)
+            boundaryConditions_.append
+            (
+                boundaryCondition<Type,MeshType>::New
+                (
+                    *this,
+                    fvMsh_.boundaries()[i]
+                )
+            );
+
+    #ifdef BOUNDARYEXCHANGE
+
+    if (bExchangePtr_.empty())
+        bExchangePtr_.reset(new boundaryExchange<Type,MeshType>(*this));
+
+    #endif
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::addImmersedBoundaryConditions()
+{
+    if
+    (
+        fvMsh_.immersedBoundaryPresent()
+        && immersedBoundaryCondition_.empty()
+    )
     {
-        // First add boundary patches
-
-        forAll(fvMsh_.partPatches(), patchi)
-        {
-            const partPatch& patch = fvMsh_.partPatches()[patchi];
-
-            if (patch.typeNum() == boundaryPartPatch::typeNumber)
-            {
-                boundaryConditions_.append
-                (
-                    boundaryCondition<Type,MeshType>::NewBoundary
-                    (
-                        *this,
-                        patch
-                    )
-                );
-            }
-        }
-
-        // Add parallel and periodic patches. First faces, then edges and
-        // finally vertices.
-
-        for(label order = 1; order <= 3; order++)
-        forAll(fvMsh_.partPatches(), patchi)
-        {
-            const partPatch& patch = fvMsh_.partPatches()[patchi];
-            const labelVector bo(patch.boundaryOffset());
-
-            if (cmptSum(cmptMag(bo)) == order)
-            {
-                if (patch.typeNum() == parallelPartPatch::typeNumber)
-                {
-                    boundaryConditions_.append
-                    (
-                        boundaryCondition<Type,MeshType>::NewParallel
-                        (
-                            *this,
-                            patch
-                        )
-                    );
-                }
-                else if (patch.typeNum() == periodicPartPatch::typeNumber)
-                {
-                    boundaryConditions_.append
-                    (
-                        boundaryCondition<Type,MeshType>::NewPeriodic
-                        (
-                            *this,
-                            patch
-                        )
-                    );
-                }
-            }
-        }
-
-        // Finally add empties
-
-        forAll(fvMsh_.partPatches(), patchi)
-        {
-            const partPatch& patch = fvMsh_.partPatches()[patchi];
-
-            if (patch.typeNum() == emptyPartPatch::typeNumber)
-            {
-                boundaryConditions_.append
-                (
-                    boundaryCondition<Type,MeshType>::NewEmpty
-                    (
-                        *this,
-                        patch
-                    )
-                );
-            }
-        }
+        immersedBoundaryCondition_ =
+            immersedBoundaryCondition<Type,MeshType>::New
+            (
+                *this,
+                fvMsh_.IB<MeshType>()
+            );
     }
 }
 
@@ -402,6 +367,33 @@ void meshField<Type,MeshType>::correctBoundaryConditions()
 
     forAll(*this, l)
         listType::operator[](l).correctBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctDomainBoundaryConditions()
+{
+    addBoundaryConditions();
+
+    forAll(*this, l)
+        listType::operator[](l).correctDomainBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctEmptyBoundaryConditions()
+{
+    addBoundaryConditions();
+
+    forAll(*this, l)
+        listType::operator[](l).correctEmptyBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctCommsBoundaryConditions()
+{
+    addBoundaryConditions();
+
+    forAll(*this, l)
+        listType::operator[](l).correctCommsBoundaryConditions();
 }
 
 template<class Type, class MeshType>
@@ -423,19 +415,41 @@ void meshField<Type,MeshType>::correctPeriodicBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctCommBoundaryConditions()
-{
-    this->correctParallelBoundaryConditions();
-    this->correctPeriodicBoundaryConditions();
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctNonCommBoundaryConditions()
+void meshField<Type,MeshType>::correctNonEliminatedBoundaryConditions()
 {
     addBoundaryConditions();
 
     forAll(*this, l)
-        listType::operator[](l).correctNonCommBoundaryConditions();
+        listType::operator[](l).correctNonEliminatedBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctEliminatedBoundaryConditions()
+{
+    addBoundaryConditions();
+
+    forAll(*this, l)
+        listType::operator[](l).correctEliminatedBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctImmersedBoundaryConditions()
+{
+    addImmersedBoundaryConditions();
+
+    // forAll(*this, l)
+    //     listType::operator[](l).correctImmersedBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctImmersedBoundaryConditions
+(
+    linearSystem<stencil,Type,MeshType>& ls
+)
+{
+    addImmersedBoundaryConditions();
+
+    immersedBoundaryCondition_->correctLinearSystem(ls);
 }
 
 template<class Type, class MeshType>
@@ -486,7 +500,7 @@ void meshField<Type,MeshType>::makeShallow()
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::setRestrictionScheme(const word scheme)
 {
-    reScheme_.reset
+    reSchemePtr_.reset
     (
         restrictionScheme<Type,MeshType>::New(scheme, fvMsh_).ptr()
     );
@@ -495,7 +509,7 @@ void meshField<Type,MeshType>::setRestrictionScheme(const word scheme)
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::restrict()
 {
-    if (reScheme_.empty())
+    if (reSchemePtr_.empty())
         this->setRestrictionScheme
         (
             restrictionScheme<Type,MeshType>::defaultScheme
@@ -503,7 +517,7 @@ void meshField<Type,MeshType>::restrict()
 
     makeDeep();
 
-    reScheme_->restrict(*this);
+    reSchemePtr_->restrict(*this);
 }
 
 template<class Type, class MeshType>
@@ -538,6 +552,13 @@ void meshField<Type,MeshType>::operator=
 
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator=(const Type& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) = v;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator=(const List<Type>& v)
 {
     forAll(*this, l)
         listType::operator[](l) = v;
@@ -634,7 +655,21 @@ void meshField<Type,MeshType>::operator+=(const Type& v)
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator+=(const List<Type>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) += v;
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator-=(const Type& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) -= v;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator-=(const List<Type>& v)
 {
     forAll(*this, l)
         listType::operator[](l) -= v;
@@ -648,6 +683,13 @@ void meshField<Type,MeshType>::operator*=(const scalar& v)
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator*=(const scalarList& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) *= v;
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator/=(const scalar& v)
 {
     forAll(*this, l)
@@ -655,8 +697,18 @@ void meshField<Type,MeshType>::operator/=(const scalar& v)
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::operator/=(const scalarList& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) /= v;
+}
+
+template<class Type, class MeshType>
 template<class Type2>
-void meshField<Type,MeshType>::operator=(const meshField<Type2,MeshType>& F)
+void meshField<Type,MeshType>::operator=
+(
+    const meshField<Type2,MeshType>& F
+)
 {
     this->make(F.deep());
     forAll(*this, l)
@@ -677,7 +729,10 @@ void meshField<Type,MeshType>::operator=
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshField<Type,MeshType>::operator+=(const meshField<Type2,MeshType>& F)
+void meshField<Type,MeshType>::operator+=
+(
+    const meshField<Type2,MeshType>& F
+)
 {
     checkMemberOperatorArgDepth(F);
     forAll(*this, l)
@@ -698,7 +753,10 @@ void meshField<Type,MeshType>::operator+=
 
 template<class Type, class MeshType>
 template<class Type2>
-void meshField<Type,MeshType>::operator-=(const meshField<Type2,MeshType>& F)
+void meshField<Type,MeshType>::operator-=
+(
+    const meshField<Type2,MeshType>& F
+)
 {
     checkMemberOperatorArgDepth(F);
     forAll(*this, l)
@@ -719,7 +777,63 @@ void meshField<Type,MeshType>::operator-=
 
 template<class Type, class MeshType>
 template<class Type2>
+void meshField<Type,MeshType>::operator*=
+(
+    const meshField<Type2,MeshType>& F
+)
+{
+    checkMemberOperatorArgDepth(F);
+    forAll(*this, l)
+        listType::operator[](l) *= F[l];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator*=
+(
+    const tmp<meshField<Type2,MeshType>>& tF
+)
+{
+    checkMemberOperatorArgDepth(tF());
+    *this *= tF();
+    tF.clear();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator/=
+(
+    const meshField<Type2,MeshType>& F
+)
+{
+    checkMemberOperatorArgDepth(F);
+    forAll(*this, l)
+        listType::operator[](l) /= F[l];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator/=
+(
+    const tmp<meshField<Type2,MeshType>>& tF
+)
+{
+    checkMemberOperatorArgDepth(tF());
+    *this /= tF();
+    tF.clear();
+}
+
+template<class Type, class MeshType>
+template<class Type2>
 void meshField<Type,MeshType>::operator=(const Type2& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) = v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator=(const List<Type2>& v)
 {
     forAll(*this, l)
         listType::operator[](l) = v;
@@ -735,10 +849,58 @@ void meshField<Type,MeshType>::operator+=(const Type2& v)
 
 template<class Type, class MeshType>
 template<class Type2>
+void meshField<Type,MeshType>::operator+=(const List<Type2>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) += v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
 void meshField<Type,MeshType>::operator-=(const Type2& v)
 {
     forAll(*this, l)
         listType::operator[](l) -= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator-=(const List<Type2>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) -= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator*=(const Type2& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) *= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator*=(const List<Type2>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) *= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator/=(const Type2& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) /= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshField<Type,MeshType>::operator/=(const List<Type2>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) /= v;
 }
 
 }

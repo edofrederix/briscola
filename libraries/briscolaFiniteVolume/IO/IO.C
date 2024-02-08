@@ -28,7 +28,7 @@ void IO::writeData(const word timeName, const label l)
     const meshLevel<vector,MeshType>& ccl =
         fvMsh_.template metrics<MeshType>().cellCenters()[l];
 
-    const partLevelPoints& points = fvMsh_[l].points();
+    const partPoints& points = fvMsh_[l].points();
 
     const bool ascii = (fvMsh_.time().writeFormat() == IOstream::ASCII);
 

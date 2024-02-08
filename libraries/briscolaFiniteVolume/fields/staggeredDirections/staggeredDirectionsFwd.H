@@ -4,10 +4,12 @@
 #include "label.H"
 #include "scalar.H"
 #include "faceScalar.H"
+#include "lowerFaceScalar.H"
 #include "edgeScalar.H"
 #include "vertexScalar.H"
 #include "vector.H"
 #include "faceVector.H"
+#include "lowerFaceVector.H"
 #include "edgeVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
@@ -15,6 +17,7 @@
 #include "symmTensor.H"
 #include "diagTensor.H"
 #include "diagStencil.H"
+#include "symmStencil.H"
 #include "stencil.H"
 
 namespace Foam
@@ -34,10 +37,12 @@ class meshDirection;
 typedef meshDirection<label,staggered> staggeredLabelDirection;
 typedef meshDirection<scalar,staggered> staggeredScalarDirection;
 typedef meshDirection<faceScalar,staggered> staggeredFaceScalarDirection;
+typedef meshDirection<lowerFaceScalar,staggered> staggeredLowerFaceScalarDirection;
 typedef meshDirection<edgeScalar,staggered> staggeredEdgeScalarDirection;
 typedef meshDirection<vertexScalar,staggered> staggeredVertexScalarDirection;
 typedef meshDirection<vector,staggered> staggeredVectorDirection;
 typedef meshDirection<faceVector,staggered> staggeredFaceVectorDirection;
+typedef meshDirection<lowerFaceVector,staggered> staggeredLowerFaceVectorDirection;
 typedef meshDirection<edgeVector,staggered> staggeredEdgeVectorDirection;
 typedef meshDirection<vertexVector,staggered> staggeredVertexVectorDirection;
 typedef meshDirection<tensor,staggered> staggeredTensorDirection;
@@ -45,6 +50,7 @@ typedef meshDirection<sphericalTensor,staggered> staggeredSphericalTensorDirecti
 typedef meshDirection<symmTensor,staggered> staggeredSymmTensorDirection;
 typedef meshDirection<diagTensor,staggered> staggeredDiagTensorDirection;
 typedef meshDirection<diagStencil,staggered> staggeredDiagStencilDirection;
+typedef meshDirection<symmStencil,staggered> staggeredSymmStencilDirection;
 typedef meshDirection<stencil,staggered> staggeredStencilDirection;
 
 }

@@ -4,10 +4,12 @@
 #include "labelMeshDirection.H"
 #include "scalarMeshDirection.H"
 #include "faceScalarMeshDirection.H"
+#include "lowerFaceScalarMeshDirection.H"
 #include "edgeScalarMeshDirection.H"
 #include "vertexScalarMeshDirection.H"
 #include "vectorMeshDirection.H"
 #include "faceVectorMeshDirection.H"
+#include "lowerFaceVectorMeshDirection.H"
 #include "edgeVectorMeshDirection.H"
 #include "vertexVectorMeshDirection.H"
 #include "tensorMeshDirection.H"
@@ -15,6 +17,7 @@
 #include "symmTensorMeshDirection.H"
 #include "diagTensorMeshDirection.H"
 #include "diagStencilMeshDirection.H"
+#include "symmStencilMeshDirection.H"
 #include "stencilMeshDirection.H"
 
 #endif

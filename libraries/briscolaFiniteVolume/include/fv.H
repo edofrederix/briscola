@@ -2,7 +2,7 @@
 #include "IO.H"
 #include "meshFields.H"
 #include "linearSystem.H"
-#include "immersedBoundaryMethods.H"
+#include "immersedBoundary.H"
 #include "solvers.H"
 #include "PoissonSolvers.H"
 #include "schemes.H"

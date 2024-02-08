@@ -40,32 +40,31 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
 (
     meshField<Type,MeshType>& x,
     const meshField<Type,MeshType>* bPtr,
-    const meshField<faceScalar,MeshType>* lambdaPtr,
+    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
     const bool ddt
 )
 {
-    linearSystem<SType,Type,MeshType> sys(x);
+    if (sysPtr_.empty() || &sysPtr_->x() != &x)
+    {
+        sysPtr_.reset
+        (
+            new linearSystem<SType,Type,MeshType>(x)
+        );
+    }
 
-    if (lambdaPtr)
-    {
-        sys = im::laplacian(*lambdaPtr,x);
-    }
-    else
-    {
-        sys = im::laplacian(x);
-    }
+    linearSystem<SType,Type,MeshType>& sys = sysPtr_();
+
+    sys = im::laplacian<SType>(lambdaPtr,x);
 
     if (bPtr)
-    {
         sys += (*bPtr);
-    }
 
     if (ddt)
-    {
         sys -= im::ddt(x);
-    }
 
-    solverPtr_->solve(sys);
+    const bool constMatrix = !ddt && !lambdaPtr;
+
+    solverPtr_->solve(sys,constMatrix);
 }
 
 }

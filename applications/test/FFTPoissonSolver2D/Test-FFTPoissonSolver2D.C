@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
         f(i,j,k) -= average;
     }
 
-    FFTPoissonSolver solver(fvMsh);
+    FFTPoissonSolver<stencil> solver(fvMsh);
 
     solver.solve(p,f);
 

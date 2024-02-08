@@ -1,0 +1,28 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      f.colocated;
+}
+
+boundaryConditions
+{
+    walls
+    {
+        type        Neumann;
+        gradients   (0 0 0);
+    }
+
+    inlet
+    {
+        type        Dirichlet;
+        values      (1 1 1);
+    }
+
+    outlet
+    {
+        type        Dirichlet;
+        values      (0 0 0);
+    }
+}

@@ -26,86 +26,66 @@ midPointFaceFluxScheme::midPointFaceFluxScheme
     faceFluxScheme(dictionary(),fvMsh)
 {}
 
-tmp<colocatedFaceScalarField> midPointFaceFluxScheme::faceFlux
+tmp<colocatedLowerFaceScalarField> midPointFaceFluxScheme::faceFlux
 (
     const colocatedVectorField& field
 )
 {
-    tmp<colocatedFaceScalarField> tFlux
+    tmp<colocatedLowerFaceScalarField> tFlux
     (
-        new colocatedFaceScalarField
+        new colocatedLowerFaceScalarField
         (
             "faceFlux("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    colocatedFaceScalarField& Flux = tFlux.ref();
+    colocatedLowerFaceScalarField& Flux = tFlux.ref();
 
     Flux = Zero;
 
     const colocatedFaceVectorField& fan =
         this->fvMsh().metrics<colocated>().faceAreaNormals();
 
-    forAllCells(Flux, i, j, k)
-        Flux(i,j,k) =
-            0.5
-          * faceScalar
-            (
-                (field(i,j,k) + field(i-1,j,k)) & fan(i,j,k).left(),
-                (field(i,j,k) + field(i+1,j,k)) & fan(i,j,k).right(),
-                (field(i,j,k) + field(i,j-1,k)) & fan(i,j,k).bottom(),
-                (field(i,j,k) + field(i,j+1,k)) & fan(i,j,k).top(),
-                (field(i,j,k) + field(i,j,k-1)) & fan(i,j,k).aft(),
-                (field(i,j,k) + field(i,j,k+1)) & fan(i,j,k).fore()
-            );
+    forAllFaces(Flux, fd, i, j, k)
+    {
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        Flux(ijk)[fd] = (0.5*(field(ijk) + field(nei)) & fan(ijk)[fd*2]);
+    }
 
     return tFlux;
 }
 
-tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
+tmp<staggeredLowerFaceScalarField> midPointFaceFluxScheme::faceFlux
 (
     const staggeredScalarField& field
 )
 {
-    tmp<staggeredFaceScalarField> tFlux
+    tmp<staggeredLowerFaceScalarField> tFlux
     (
-        new staggeredFaceScalarField
+        new staggeredLowerFaceScalarField
         (
             "faceFlux("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    staggeredFaceScalarField& Flux = tFlux.ref();
+    staggeredLowerFaceScalarField& Flux = tFlux.ref();
 
     Flux = Zero;
 
     const staggeredFaceScalarField& fa =
         this->fvMsh().metrics<staggered>().faceAreas();
 
-    forAllDirections(Flux, d, i, j, k)
+    forAllFaces(Flux, d, fd, i, j, k)
     {
-        const labelVector& o = staggered::padding[d];
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[d]);
 
-        const labelVector ijk(i,j,k);
-
-        // Left/right flux always come from the x mesh direction, bottom/top
-        // flux from the y mesh direction and aft/fore flux from the z mesh
-        // direction. If the flux direction does not match the mesh direction,
-        // we must average in the direction of mesh padding
-
-        Flux(d,ijk) =
-            0.5*fa(d,ijk)
-          * faceScalar
-            (
-              - field(0,ijk)       - field(0,-o+ijk),
-                field(0,ijk+unitX) + field(0,-o+ijk+unitX),
-              - field(1,ijk)       - field(1,-o+ijk),
-                field(1,ijk+unitY) + field(1,-o+ijk+unitY),
-              - field(2,ijk)       - field(2,-o+ijk),
-                field(2,ijk+unitZ) + field(2,-o+ijk+unitZ)
-            );
+        Flux(d,ijk)[fd] =
+          - 0.5*fa(d,ijk)[fd*2] * (field(fd,ijk) + field(fd,nei));
     }
 
     return tFlux;

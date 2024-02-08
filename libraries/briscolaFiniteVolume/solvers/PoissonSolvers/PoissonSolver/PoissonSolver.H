@@ -77,7 +77,7 @@ public:
     (
         meshField<Type,MeshType>&,
         const meshField<Type,MeshType>*,
-        const meshField<faceScalar,MeshType>*,
+        const meshField<lowerFaceScalar,MeshType>*,
         const bool = false
     ) = 0;
 
@@ -127,7 +127,7 @@ public:
     virtual void solve
     (
         meshField<Type,MeshType>& x,
-        const meshField<faceScalar,MeshType>* lambdaPtr,
+        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
         const bool ddt = false
     )
     {
@@ -137,7 +137,7 @@ public:
     virtual void solve
     (
         meshField<Type,MeshType>& x,
-        const meshField<faceScalar,MeshType>& lambda,
+        const meshField<lowerFaceScalar,MeshType>& lambda,
         const bool ddt = false
     )
     {
@@ -147,7 +147,7 @@ public:
     virtual void solve
     (
         meshField<Type,MeshType>& x,
-        const tmp<meshField<faceScalar,MeshType>>& tlambda,
+        const tmp<meshField<lowerFaceScalar,MeshType>>& tlambda,
         const bool ddt = false
     )
     {
@@ -160,7 +160,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>& b,
-        const meshField<faceScalar,MeshType>* lambdaPtr,
+        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
         const bool ddt = false
     )
     {
@@ -171,7 +171,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const tmp<meshField<Type,MeshType>>& tb,
-        const meshField<faceScalar,MeshType>* lambdaPtr,
+        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
         const bool ddt = false
     )
     {
@@ -182,7 +182,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>* bPtr,
-        const meshField<faceScalar,MeshType>& lambda,
+        const meshField<lowerFaceScalar,MeshType>& lambda,
         const bool ddt = false
     )
     {
@@ -193,7 +193,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>& b,
-        const meshField<faceScalar,MeshType>& lambda,
+        const meshField<lowerFaceScalar,MeshType>& lambda,
         const bool ddt = false
     )
     {
@@ -204,7 +204,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const tmp<meshField<Type,MeshType>>& tb,
-        const meshField<faceScalar,MeshType>& lambda,
+        const meshField<lowerFaceScalar,MeshType>& lambda,
         const bool ddt = false
     )
     {
@@ -215,7 +215,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>* bPtr,
-        const tmp<meshField<faceScalar,MeshType>>& tlambda,
+        const tmp<meshField<lowerFaceScalar,MeshType>>& tlambda,
         const bool ddt = false
     )
     {
@@ -226,7 +226,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>& b,
-        const tmp<meshField<faceScalar,MeshType>>& tlambda,
+        const tmp<meshField<lowerFaceScalar,MeshType>>& tlambda,
         const bool ddt = false
     )
     {
@@ -237,7 +237,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const tmp<meshField<Type,MeshType>>& tb,
-        const tmp<meshField<faceScalar,MeshType>>& tlambda,
+        const tmp<meshField<lowerFaceScalar,MeshType>>& tlambda,
         const bool ddt = false
     )
     {

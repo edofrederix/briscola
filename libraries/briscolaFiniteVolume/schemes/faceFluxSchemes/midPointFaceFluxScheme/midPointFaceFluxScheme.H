@@ -28,15 +28,15 @@ public:
     midPointFaceFluxScheme(const fvMesh&);
 
     // Face flux of a colocated scalar field
-    virtual tmp<meshField<faceScalar,colocated>> faceFlux
+    virtual tmp<colocatedLowerFaceScalarField> faceFlux
     (
-        const meshField<vector,colocated>&
+        const colocatedVectorField&
     );
 
     // Face flux of a staggered scalar field
-    virtual tmp<meshField<faceScalar,staggered>> faceFlux
+    virtual tmp<staggeredLowerFaceScalarField> faceFlux
     (
-        const meshField<scalar,staggered>&
+        const staggeredScalarField&
     );
 };
 

@@ -11,7 +11,7 @@ namespace fv
 {
 
 template<class Type1, class Type2, class MeshType>
-void Amul
+void rowProduct
 (
     meshLevel<typename stencilProduct<Type1,Type2>::type,MeshType>& res,
     const meshLevel<Type1,MeshType>& f1,
@@ -19,12 +19,12 @@ void Amul
 )
 {
     forAll(res, d)
-        Amul(res[d], f1[d], f2[d]);
+        rowProduct(res[d], f1[d], f2[d]);
 }
 
 template<class Type1, class Type2, class MeshType>
 tmp<meshLevel<typename stencilProduct<Type1,Type2>::type,MeshType>>
-Amul
+rowProduct
 (
     const meshLevel<Type1,MeshType>& f1,
     const meshLevel<Type2,MeshType>& f2
@@ -41,14 +41,14 @@ Amul
         )
     );
 
-    Amul(tRes.ref(), f1, f2);
+    rowProduct(tRes.ref(), f1, f2);
 
     return tRes;
 }
 
 template<class Type1, class Type2, class MeshType>
 tmp<meshLevel<typename stencilProduct<Type1,Type2>::type,MeshType>>
-Amul
+rowProduct
 (
     const tmp<meshLevel<Type1,MeshType>>& tf1,
     const meshLevel<Type2,MeshType>& f2
@@ -59,7 +59,7 @@ Amul
     tmp<meshLevel<productType,MeshType>> tRes =
         reuseLevTmp<productType,Type1,MeshType>::New(tf1);
 
-    Amul(tRes.ref(),tf1(),f2);
+    rowProduct(tRes.ref(),tf1(),f2);
 
     tf1.clear();
 
@@ -68,7 +68,7 @@ Amul
 
 template<class Type1, class Type2, class MeshType>
 tmp<meshLevel<typename stencilProduct<Type1,Type2>::type,MeshType>>
-Amul
+rowProduct
 (
     const meshLevel<Type1,MeshType>& f1,
     const tmp<meshLevel<Type2,MeshType>>& tf2
@@ -79,7 +79,7 @@ Amul
     tmp<meshLevel<productType,MeshType>> tRes =
         reuseLevTmp<productType,Type2,MeshType>::New(tf2);
 
-    Amul(tRes.ref(),f1,tf2());
+    rowProduct(tRes.ref(),f1,tf2());
 
     tf2.clear();
 
@@ -88,7 +88,7 @@ Amul
 
 template<class Type1, class Type2, class MeshType>
 tmp<meshLevel<typename stencilProduct<Type1,Type2>::type,MeshType>>
-Amul
+rowProduct
 (
     const tmp<meshLevel<Type1,MeshType>>& tf1,
     const tmp<meshLevel<Type2,MeshType>>& tf2
@@ -99,7 +99,7 @@ Amul
     tmp<meshLevel<productType,MeshType>> tRes =
         reuseLevTmpTmp<productType,Type1,Type1,Type2,MeshType>::New(tf1,tf2);
 
-    Amul(tRes.ref(),tf1(),tf2());
+    rowProduct(tRes.ref(),tf1(),tf2());
 
     tf1.clear();
     tf2.clear();
@@ -108,7 +108,7 @@ Amul
 }
 
 template<class Type, class Form, class MeshType>
-void Amul
+void rowProduct
 (
     meshLevel<typename stencilProduct<Type,Form>::type,MeshType>& res,
     const meshLevel<Type,MeshType>& f1,
@@ -116,12 +116,12 @@ void Amul
 )
 {
     forAll(res, d)
-        Amul(res[d], f1[d], s);
+        rowProduct(res[d], f1[d], s);
 }
 
 template<class Type, class Form, class MeshType>
 tmp<meshLevel<typename stencilProduct<Type,Form>::type,MeshType>>
-Amul(const meshLevel<Type,MeshType>& f1, const Form& s)
+rowProduct(const meshLevel<Type,MeshType>& f1, const Form& s)
 {
     typedef typename stencilProduct<Type,Form>::type productType;
 
@@ -134,52 +134,52 @@ Amul(const meshLevel<Type,MeshType>& f1, const Form& s)
         )
     );
 
-    Amul(tRes.ref(), f1, s);
+    rowProduct(tRes.ref(), f1, s);
 
     return tRes;
 }
 
 template<class Type, class Form, class MeshType>
 tmp<meshLevel<typename stencilProduct<Type,Form>::type,MeshType>>
-Amul(const tmp<meshLevel<Type,MeshType>>& tf1, const Form& s)
+rowProduct(const tmp<meshLevel<Type,MeshType>>& tf1, const Form& s)
 {
     typedef typename stencilProduct<Type,Form>::type productType;
 
     tmp<meshLevel<productType,MeshType>> tRes =
         reuseLevTmp<productType,Type,MeshType>::New(tf1);
 
-    Amul(tRes.ref(),tf1(),s);
+    rowProduct(tRes.ref(),tf1(),s);
 
     tf1.clear();
 
     return tRes;
 }
 
-// Use Amul(s,A) = Amul(A,s)
+// Use rowProduct(s,A) = rowProduct(A,s)
 
 template<class Type, class Form, class MeshType>
-void Amul
+void rowProduct
 (
     meshLevel<typename stencilProduct<Form,Type>::type,MeshType>& res,
     const Form& s,
     const meshLevel<Type,MeshType>& f2
 )
 {
-    Amul(res,f2,s);
+    rowProduct(res,f2,s);
 }
 
 template<class Type, class Form, class MeshType>
 tmp<meshLevel<typename stencilProduct<Form,Type>::type,MeshType>>
-Amul(const Form& s, const meshLevel<Type,MeshType>& f2)
+rowProduct(const Form& s, const meshLevel<Type,MeshType>& f2)
 {
-    return Amul(f2,s);
+    return rowProduct(f2,s);
 }
 
 template<class Type, class Form, class MeshType>
 tmp<meshLevel<typename stencilProduct<Form,Type>::type,MeshType>>
-Amul(const Form& s, const tmp<meshLevel<Type,MeshType>>& tf2)
+rowProduct(const Form& s, const tmp<meshLevel<Type,MeshType>>& tf2)
 {
-    return Amul(tf2,s);
+    return rowProduct(tf2,s);
 }
 
 template<class Type, class MeshType>
@@ -225,69 +225,6 @@ rowSum(const tmp<meshLevel<Type,MeshType>>& tf)
     );
 
     rowSum(tRes.ref(), tf());
-
-    tf.clear();
-
-    return tRes;
-}
-
-template<class Type, class MeshType>
-scalarList matrixSum(const meshLevel<Type,MeshType>& f)
-{
-    return gSum(rowSum(f));
-}
-
-template<class Type, class MeshType>
-scalarList matrixSum(const tmp<meshLevel<Type,MeshType>>& tf)
-{
-    scalarList ret(matrixSum(tf()));
-    tf.clear();
-    return ret;
-}
-
-template<class Type, class MeshType>
-void neighborSum
-(
-    meshLevel<scalar,MeshType>& res,
-    const meshLevel<Type,MeshType>& f
-)
-{
-    forAll(res, d)
-        neighborSum(res[d], f[d]);
-}
-
-template<class Type, class MeshType>
-tmp<meshLevel<scalar,MeshType>>
-neighborSum(const meshLevel<Type,MeshType>& f)
-{
-    tmp<meshLevel<scalar,MeshType>> tRes
-    (
-        new meshLevel<scalar,MeshType>
-        (
-            f.fvMsh(),
-            f.levelNum()
-        )
-    );
-
-    neighborSum(tRes.ref(), f);
-
-    return tRes;
-}
-
-template<class Type, class MeshType>
-tmp<meshLevel<scalar,MeshType>>
-neighborSum(const tmp<meshLevel<Type,MeshType>>& tf)
-{
-    tmp<meshLevel<scalar,MeshType>> tRes
-    (
-        new meshLevel<scalar,MeshType>
-        (
-            tf->fvMsh(),
-            tf->levelNum()
-        )
-    );
-
-    neighborSum(tRes.ref(), tf());
 
     tf.clear();
 

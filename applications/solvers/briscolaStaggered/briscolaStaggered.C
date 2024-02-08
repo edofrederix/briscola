@@ -52,42 +52,31 @@ int main(int argc, char *argv[])
         USys -= im::source(imSourceCoeff,U);
         USys -= exSource;
 
-        LapU = im::laplacian(nu,U);
-        USys -= 0.5*LapU;
-        USys -= 0.5*LapU.evaluate();
+        USys -= im::laplacian(0.5*nu,U);
+        USys -= ex::laplacian(0.5*nu,U);
 
         USys -= 0.5*DivU;
         phi = ex::faceFlux(U);
         DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
+        USys += ex::stagGrad(p);
+
         // Solve predictor
 
-        if (!IBs.empty())
+        if (fvMsh.immersedBoundaryPresent())
         {
-            IBs->correctLinearSystem(USys);
+            U.correctImmersedBoundaryConditions(USys);
         }
 
         USolve->solve(USys);
 
+        U += deltaT*ex::stagGrad(p);
+        U.correctBoundaryConditions();
+
         // Pressure equation
 
-        if
-        (
-            !IBs.empty()
-            && IBs->massSourceActive()
-        )
-        {
-            Poisson->solve
-            (
-                p,
-                (ex::coloDiv(U)-IBs->IBMSource(U))/(-deltaT)
-            );
-        }
-        else
-        {
-            Poisson->solve(p, ex::coloDiv(U)/(-deltaT));
-        }
+        Poisson->solve(p, ex::coloDiv(U)/(-deltaT));
 
         // Correction
 

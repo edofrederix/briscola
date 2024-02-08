@@ -18,10 +18,10 @@ template<class Type, class MeshType>
 periodicBoundaryCondition<Type,MeshType>::periodicBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 :
-    parallelBoundaryCondition<Type,MeshType>(mshField, patch)
+    parallelBoundaryCondition<Type,MeshType>(mshField, b)
 {}
 
 template<class Type, class MeshType>
@@ -30,7 +30,7 @@ periodicBoundaryCondition<Type,MeshType>::periodicBoundaryCondition
     const periodicBoundaryCondition<Type,MeshType>& bc
 )
 :
-    parallelBoundaryCondition<Type,MeshType>(bc.mshField(), bc.patch())
+    parallelBoundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>
@@ -40,15 +40,15 @@ periodicBoundaryCondition<Type,MeshType>::periodicBoundaryCondition
     const periodicBoundaryCondition<Type,MeshType>& bc
 )
 :
-    parallelBoundaryCondition<Type,MeshType>(field, bc.patch())
+    parallelBoundaryCondition<Type,MeshType>(field, bc.mshBoundary())
 {}
 
 template<class Type, class MeshType>
-void periodicBoundaryCondition<Type,MeshType>::initEvaluate(const label l)
+void periodicBoundaryCondition<Type,MeshType>::prepare(const label l)
 {
     if (this->neighborProcNum_ != Pstream::myProcNo())
     {
-        parallelBoundaryCondition<Type,MeshType>::initEvaluate(l);
+        parallelBoundaryCondition<Type,MeshType>::prepare(l);
     }
     else
     {
@@ -58,7 +58,7 @@ void periodicBoundaryCondition<Type,MeshType>::initEvaluate(const label l)
 
         meshLevel<Type,MeshType>& field = this->mshField()[l];
 
-        const labelVector bo(this->boundaryOffset());
+        const labelVector bo(this->offset());
         const faceLabel extension(this->extension());
 
         forAll(field, d)

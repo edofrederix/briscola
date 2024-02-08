@@ -172,7 +172,8 @@ public:
         if (i < 0 || i >= l_*m_*n_)
         {
             FatalErrorInFunction
-                << "Linear index i = " << i << " out of range 0 ... " << l_*m_*n_-1
+                << "Linear index i = " << i << " out of range 0 ... "
+                << l_*m_*n_-1
                 << abort(FatalError);
         }
     }
@@ -295,17 +296,6 @@ public:
     // good idea to use on large blocks
     labelVector find(const Type&) const;
 
-    // Compute linear index from components
-    inline int lin
-    (
-        const label& i,
-        const label& j,
-        const label& k
-    ) const
-    {
-        return i*m_*n_ + j*n_ + k;
-    }
-
     // Linear index element access operator
     inline Type& operator()(const int i)
     {
@@ -346,7 +336,7 @@ public:
 
         #endif
 
-        return v_[lin(i,j,k)];
+        return v_[lin(i,j,k,l_,m_,n_)];
     }
 
     // (i,j,k) const element access operator
@@ -365,7 +355,7 @@ public:
 
         #endif
 
-        return v_[lin(i,j,k)];
+        return v_[lin(i,j,k,l_,m_,n_)];
     }
 
     // (i,j,k) element access operator
@@ -379,7 +369,7 @@ public:
 
         #endif
 
-        return v_[lin(ijk.x(),ijk.y(),ijk.z())];
+        return v_[lin(ijk,l_,m_,n_)];
     }
 
     // (i,j,k) const element access operator
@@ -393,7 +383,7 @@ public:
 
         #endif
 
-        return v_[lin(ijk.x(),ijk.y(),ijk.z())];
+        return v_[lin(ijk,l_,m_,n_)];
     }
 
     // Interpolate data to a scalar index
@@ -437,6 +427,10 @@ public:
     template<class Type2> inline void operator=(const Type2&);
     template<class Type2> inline void operator+=(const Type2&);
     template<class Type2> inline void operator-=(const Type2&);
+    template<class Type2> inline void operator*=(const block<Type2>&);
+    template<class Type2> inline void operator*=(const tmp<block<Type2>>&);
+    template<class Type2> inline void operator/=(const block<Type2>&);
+    template<class Type2> inline void operator/=(const tmp<block<Type2>>&);
 
     friend Istream& operator>><Type>(Istream&, block<Type>&);
     friend Ostream& operator<<<Type>(Ostream&, const block<Type>&);

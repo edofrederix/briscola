@@ -19,9 +19,6 @@ class dummyBoundaryCondition
 :
     public boundaryCondition<Type,MeshType>
 {
-    // Disallow default bitwise assignment
-    void operator=(const dummyBoundaryCondition<Type,MeshType>&);
-
 public:
 
     // Runtime type information
@@ -31,7 +28,7 @@ public:
     dummyBoundaryCondition
     (
         const meshField<Type,MeshType>&,
-        const partPatch&
+        const boundary&
     );
 
     // Copy constructor
@@ -71,11 +68,8 @@ public:
         return DUMMYBC;
     }
 
-    // Initialize the evaluation of the boundary condition for given level
-    virtual void initEvaluate(const label);
-
-    // Evaluate the boundary condition for given level
-    virtual void evaluate(const label);
+    // Non-eliminated boundary conditione
+    virtual bool eliminated() const { return false; }
 };
 
 }

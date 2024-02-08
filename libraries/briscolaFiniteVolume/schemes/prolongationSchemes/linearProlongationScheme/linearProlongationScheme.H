@@ -18,7 +18,7 @@ class linearProlongationScheme
     public prolongationScheme<Type,MeshType>
 {
     // Cached weights
-    meshField<tensor,MeshType> weights_;
+    meshField<vertexScalar,MeshType> weights_;
 
     // Set weights
     void setWeights();
@@ -45,8 +45,8 @@ public:
     // Construct from mesh only, with empty dictionary
     linearProlongationScheme(const fvMesh&);
 
-    // In-place prolongation from a coarse cell level to the adjacent fine cell level,
-    // using the = operation
+    // In-place prolongation from a coarse cell level to the adjacent fine cell
+    // level, using the = operation
     virtual void prolong
     (
         meshDirection<Type,MeshType>&,
@@ -54,8 +54,8 @@ public:
         const eqOp<Type>&
     );
 
-    // In-place prolongation from a coarse cell level to the adjacent fine cell level,
-    // using the += operation
+    // In-place prolongation from a coarse cell level to the adjacent fine cell
+    // level, using the += operation
     virtual void prolong
     (
         meshDirection<Type,MeshType>&,
@@ -63,8 +63,8 @@ public:
         const plusEqOp<Type>&
     );
 
-    // In-place prolongation from a coarse cell level to the adjacent fine cell level,
-    // using the -= operation
+    // In-place prolongation from a coarse cell level to the adjacent fine cell
+    // level, using the -= operation
     virtual void prolong
     (
         meshDirection<Type,MeshType>&,

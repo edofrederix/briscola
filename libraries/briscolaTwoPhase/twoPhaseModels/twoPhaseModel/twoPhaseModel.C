@@ -150,7 +150,7 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
 
         musPtr_.reset
         (
-            new staggeredFaceScalarField
+            new staggeredLowerFaceScalarField
             (
                 "mu",
                 fvMsh_,
@@ -226,13 +226,13 @@ const staggeredScalarField& twoPhaseModel::rho<staggered>() const
 }
 
 template<>
-const colocatedFaceScalarField& twoPhaseModel::mu<colocated>() const
+const colocatedLowerFaceScalarField& twoPhaseModel::mu<colocated>() const
 {
     return muc_;
 }
 
 template<>
-const staggeredFaceScalarField& twoPhaseModel::mu<staggered>() const
+const staggeredLowerFaceScalarField& twoPhaseModel::mu<staggered>() const
 {
     return musPtr_();
 }

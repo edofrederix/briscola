@@ -12,8 +12,7 @@ namespace briscola
 namespace fv
 {
 
-BINARY_TYPE_OPERATOR(faceVector, vector, faceVector, +, add)
-BINARY_TYPE_OPERATOR(faceVector, vector, faceVector, -, subtract)
+BINARY_OPERATOR(faceVector, faceVector, faceScalar, /, divide)
 
 UNARY_FUNCTION(faceScalar, faceVector, magSqr)
 UNARY_FUNCTION(faceScalar, faceVector, mag)

@@ -1,4 +1,5 @@
 #include "linearSystem.H"
+#include "Row.H"
 
 namespace Foam
 {
@@ -17,8 +18,6 @@ void linearSystem<SType,Type,MeshType>::transfer
 {
     A_.transfer(sys.A_);
     b_.transfer(sys.b_);
-
-    singular_ = sys.singular_;
 }
 
 template<class SType, class Type, class MeshType>
@@ -46,8 +45,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    singular_(false)
+    )
 {}
 
 template<class SType, class Type, class MeshType>
@@ -75,8 +73,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    singular_(sys.singular_)
+    )
 {
     *this = sys;
 }
@@ -106,8 +103,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    singular_(tSys->singular_)
+    )
 {
     if (tSys.isTmp())
     {
@@ -150,8 +146,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    singular_(sys.singular_)
+    )
 {
     *this = sys;
 }
@@ -182,8 +177,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    singular_(tSys->singular_)
+    )
 {
     if (tSys.isTmp())
     {
@@ -203,6 +197,32 @@ linearSystem<SType,Type,MeshType>::linearSystem
 template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::~linearSystem()
 {}
+
+template<class SType, class Type, class MeshType>
+List<bool> linearSystem<SType,Type,MeshType>::singular(const bool clearCache)
+{
+    if (singular_.size() == 0 || clearCache)
+    {
+        singular_.setSize(MeshType::numberOfDirections);
+        singular_ = true;
+
+        forAll(singular_, d)
+        {
+            const meshDirection<SType,MeshType>& A = A_[A_.size()-1][d];
+
+            forAllCells(A, i, j, k)
+                if (Foam::mag(rowSum(A,i,j,k)) > 1e-8)
+                    goto nope;
+
+            continue;
+            nope: singular_[d] = false;
+        }
+
+        reduce(singular_, andOp<List<bool>>());
+    }
+
+    return singular_;
+}
 
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::residual
@@ -265,10 +285,12 @@ void linearSystem<SType,Type,MeshType>::residual
     const label l = res.levelNum();
     const label d = res.directionNum();
 
-    Amul(res, this->A()[l][d], x_[l][d]);
+    const meshDirection<SType,MeshType>& A = this->A()[l][d];
+    const meshDirection<Type,MeshType>& x = this->x()[l][d];
+    const meshDirection<Type,MeshType>& b = this->b()[l][d];
 
-    res *= -1.0;
-    res += this->b()[l][d];
+    forAllCells(res, i, j, k)
+        res(i,j,k) = b(i,j,k) - rowProduct(A,x,i,j,k);
 }
 
 template<class SType, class Type, class MeshType>
@@ -292,18 +314,18 @@ linearSystem<SType,Type,MeshType>::residual
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
-    meshField<Type, MeshType>& res
+    meshField<Type, MeshType>& eval
 ) const
 {
-    forAll(res, l)
-        this->evaluate(res[l]);
+    forAll(eval, l)
+        this->evaluate(eval[l]);
 }
 
 template<class SType, class Type, class MeshType>
 tmp<meshField<Type, MeshType>>
 linearSystem<SType,Type,MeshType>::evaluate() const
 {
-    tmp<meshField<Type,MeshType>> tRes
+    tmp<meshField<Type,MeshType>> tEval
     (
         new meshField<Type,MeshType>
         (
@@ -312,51 +334,53 @@ linearSystem<SType,Type,MeshType>::evaluate() const
         )
     );
 
-    this->evaluate(tRes.ref());
+    this->evaluate(tEval.ref());
 
-    return tRes;
+    return tEval;
 }
 
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
-    meshLevel<Type,MeshType>& res
+    meshLevel<Type,MeshType>& eval
 ) const
 {
-    forAll(res, d)
-        this->evaluate(res[d]);
+    forAll(eval, d)
+        this->evaluate(eval[d]);
 }
 
 template<class SType, class Type, class MeshType>
 tmp<meshLevel<Type,MeshType>>
 linearSystem<SType,Type,MeshType>::evaluate(const label l) const
 {
-    tmp<meshLevel<Type,MeshType>> tRes
+    tmp<meshLevel<Type,MeshType>> tEval
     (
         new meshLevel<Type,MeshType>(fvMsh_,l)
     );
 
-    this->evaluate(tRes.ref());
+    this->evaluate(tEval.ref());
 
-    return tRes;
+    return tEval;
 }
 
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
-    meshDirection<Type,MeshType>& res
+    meshDirection<Type,MeshType>& eval
 ) const
 {
-    const label l = res.levelNum();
-    const label d = res.directionNum();
+    const label l = eval.levelNum();
+    const label d = eval.directionNum();
 
     const meshDirection<scalar,MeshType>& cv =
         fvMsh_.template metrics<MeshType>().cellVolumes()[l][d];
 
-    Amul(res, this->A()[l][d], x_[l][d]);
+    const meshDirection<SType,MeshType>& A = this->A()[l][d];
+    const meshDirection<Type,MeshType>& x = this->x()[l][d];
+    const meshDirection<Type,MeshType>& b = this->b()[l][d];
 
-    res -= this->b()[l][d];
-    res /= cv;
+    forAllCells(eval, i, j, k)
+        eval(i,j,k) = (rowProduct(A,x,i,j,k) - b(i,j,k))/cv(i,j,k);
 }
 
 template<class SType, class Type, class MeshType>
@@ -381,14 +405,8 @@ template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::eliminateGhosts()
 {
     forAll(A_, l)
-        this->eliminateGhosts(l);
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::eliminateGhosts(const label l)
-{
-    forAll(x_.boundaryConditions(), i)
-        x_.boundaryConditions()[i].eliminateGhosts(*this, l);
+        forAll(x_.boundaryConditions(), i)
+            x_.boundaryConditions()[i].eliminateGhosts(*this, l);
 }
 
 template<class SType, class Type, class MeshType>
@@ -399,7 +417,6 @@ void linearSystem<SType,Type,MeshType>::operator=
 {
     this->A() = sys.A();
     this->b() = sys.b();
-    singular_ = sys.singular();
 }
 
 template<class SType, class Type, class MeshType>
@@ -431,7 +448,6 @@ void linearSystem<SType,Type,MeshType>::operator+=
 {
     this->A() += sys.A();
     this->b() += sys.b();
-    singular_ = sys.singular() ? singular_ : false;
 }
 
 template<class SType, class Type, class MeshType>
@@ -452,7 +468,6 @@ void linearSystem<SType,Type,MeshType>::operator-=
 {
     this->A() -= sys.A();
     this->b() -= sys.b();
-    singular_ = sys.singular() ? singular_ : false;
 }
 
 template<class SType, class Type, class MeshType>
@@ -516,6 +531,18 @@ void linearSystem<SType,Type,MeshType>::operator+=
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator+=
 (
+    const List<Type>& v
+)
+{
+    const meshField<scalar,MeshType>& cv =
+        fvMsh_.template metrics<MeshType>().cellVolumes();
+
+    this->b() -= cv*v;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator+=
+(
     const meshField<Type,MeshType>& field
 )
 {
@@ -539,6 +566,18 @@ template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator-=
 (
     const Type& v
+)
+{
+    const meshField<scalar,MeshType>& cv =
+        fvMsh_.template metrics<MeshType>().cellVolumes();
+
+    this->b() += cv*v;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator-=
+(
+    const List<Type>& v
 )
 {
     const meshField<scalar,MeshType>& cv =
@@ -578,7 +617,6 @@ void linearSystem<SType,Type,MeshType>::operator=
 {
     this->A() = sys.A();
     this->b() = sys.b();
-    singular_ = sys.singular();
 }
 
 template<class SType, class Type, class MeshType>
@@ -596,12 +634,21 @@ template<class SType, class Type, class MeshType>
 template<class SType2>
 void linearSystem<SType,Type,MeshType>::operator+=
 (
+    const SType2& v
+)
+{
+    this->b() -= v;
+}
+
+template<class SType, class Type, class MeshType>
+template<class SType2>
+void linearSystem<SType,Type,MeshType>::operator+=
+(
     const linearSystem<SType2,Type,MeshType>& sys
 )
 {
     this->A() += sys.A();
     this->b() += sys.b();
-    singular_ = sys.singular() ? singular_ : false;
 }
 
 template<class SType, class Type, class MeshType>
@@ -619,12 +666,21 @@ template<class SType, class Type, class MeshType>
 template<class SType2>
 void linearSystem<SType,Type,MeshType>::operator-=
 (
+    const SType2& v
+)
+{
+    this->b() += v;
+}
+
+template<class SType, class Type, class MeshType>
+template<class SType2>
+void linearSystem<SType,Type,MeshType>::operator-=
+(
     const linearSystem<SType2,Type,MeshType>& sys
 )
 {
     this->A() -= sys.A();
     this->b() -= sys.b();
-    singular_ = sys.singular() ? singular_ : false;
 }
 
 template<class SType, class Type, class MeshType>
@@ -636,6 +692,173 @@ void linearSystem<SType,Type,MeshType>::operator-=
 {
     *this -= tSys();
     tSys.clear();
+}
+
+template<class SType, class Type, class MeshType>
+void writeToFile
+(
+    linearSystem<SType,Type,MeshType>& sys,
+    const fileName file,
+    const label l = 0
+)
+{
+    for (int d = 0; d < MeshType::numberOfDirections; d++)
+    {
+        const meshDirection<SType,MeshType>& A = sys.A()[l][d];
+        const meshDirection<Type,MeshType>& b = sys.b()[l][d];
+
+        const labelVector N = A.N();
+
+        List<labelVector> shapes(Pstream::nProcs());
+        shapes[Pstream::myProcNo()] = N;
+
+        Pstream::gatherList(shapes);
+
+        List<List<Row<stencil,Type>>> data
+        (
+            Pstream::nProcs()
+        );
+
+        data[Pstream::myProcNo()].setSize(cmptProduct(N));
+
+        int l = 0;
+        forAllCells(A, i, j, k)
+            data[Pstream::myProcNo()][l++] =
+                Row<stencil,Type>
+                (
+                    fullStencil<MeshType>(A,i,j,k),
+                    b(i,j,k)
+                );
+
+        Pstream::gatherList(data);
+
+        if (Pstream::master())
+        {
+            OFstream F
+            (
+                file
+              + fileName
+                (
+                    MeshType::numberOfDirections > 1
+                  ? ("_" + Foam::name(d)) : ""
+                )
+            );
+
+            label n = 0;
+            forAll(data, i)
+                n += data[i].size();
+
+            labelList offsets(Pstream::nProcs());
+
+            offsets[0] = 0;
+            for (int proc = 1; proc < Pstream::nProcs(); proc++)
+                offsets[proc] = offsets[proc-1] + cmptProduct(shapes[proc-1]);
+
+            const decomposition& decomp = sys.fvMsh().msh().decomp();
+
+            forAll(data, proc)
+            {
+                const labelVector N = shapes[proc];
+
+                forAll(data[proc], i)
+                {
+                    const stencil Ai(data[proc][i].stencil());
+                    const Type bi(data[proc][i].source());
+
+                    const labelVector ijk
+                    (
+                        (i/N.y()/N.z()) % N.x(),
+                        (i/N.z()) % N.y(),
+                        i % N.z()
+                    );
+
+                    faceLabel neigh(-faceLabel::one);
+
+                    for (int f = 0; f < 6; f++)
+                    if (Ai[f+1] != 0.0)
+                    {
+                        labelVector ijkn(ijk + faceOffsets[f]);
+
+                        if
+                        (
+                            briscola::cmptMax
+                            (
+                                briscola::cmptMin(ijkn, N-unitXYZ),
+                                zeroXYZ
+                            )
+                          == ijkn
+                        )
+                        {
+                            // Local cell
+
+                            neigh[f] =
+                                offsets[proc]
+                              + ijkn.x()*N.y()*N.z()
+                              + ijkn.y()*N.z()
+                              + ijkn.z();
+                        }
+                        else
+                        {
+                            // Neighbor cell
+
+                            const label neighProc =
+                                decomp.faceNeighborsPerProc()[proc][f];
+
+                            if (neighProc > -1)
+                            {
+                                const labelTensor T =
+                                    decomp.faceTsPerProc()[proc][f];
+
+                                const labelVector Nn = shapes[neighProc];
+                                const labelVector TNn = cmptMag(T & Nn);
+
+                                ijkn[f/2] = ijkn[f/2] < 0 ? TNn[f/2]-1 : 0;
+
+                                ijkn = (T.T() & ijkn) + Nn;
+
+                                for (int j = 0; j < 3; j++)
+                                    ijkn[j] = (ijkn[j] % Nn[j]);
+
+                                neigh[f] =
+                                    offsets[neighProc]
+                                  + ijkn.x()*Nn.y()*Nn.z()
+                                  + ijkn.y()*Nn.z()
+                                  + ijkn.z();
+                            }
+                        }
+                    }
+
+                    // Write
+
+                    for (int j = 0; j < n; j++)
+                    {
+                        if (offsets[proc]+i == j)
+                        {
+                            F << Ai[0] << " ";
+                        }
+                        else
+                        {
+                            bool found = false;
+                            for (int f = 0; f < 6; f++)
+                            {
+                                if (neigh[f] == j)
+                                {
+                                    F << Ai[f+1] << " ";
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found)
+                                F << 0.0 << " ";
+                        }
+                    }
+
+                    F << bi << nl;
+                }
+            }
+        }
+    }
 }
 
 }

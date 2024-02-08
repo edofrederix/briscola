@@ -20,7 +20,7 @@ addToRunTimeSelectionTable(vof, splitAdvection, dictionary);
 
 void splitAdvection::updateFlux
 (
-    const colocatedFaceScalarField& phi,
+    const colocatedLowerFaceScalarField& phi,
     const label d
 )
 {
@@ -33,145 +33,88 @@ void splitAdvection::updateFlux
 
     const scalar dt = fvMsh_.time().deltaT().value();
 
-    forAllCells(alpha_, i, j, k)
+    forAllFaces(phi, fd, i, j, k)
+    if (d == fd)
     {
-        const labelVector ijk(i,j,k);
-
-        const labelVector ijku(ijk + units[d]);
-        const labelVector ijkl(ijk - units[d]);
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk+units[d]);
 
         // For donating cells only
 
         if
         (
-            (phi(ijk)[d*2] > 0 || phi(ijk)[d*2+1] > 0)
-         && alpha_(ijk) > vof::threshold
+            (phi(ijk)[d] > 0 && alpha_(ijk) > vof::threshold)
+         || (phi(ijk)[d] < 0 && alpha_(nei) > vof::threshold)
         )
         {
-            const scalar magn = Foam::mag(n(ijk));
+            labelVector don = phi(ijk)[d] > 0 ? ijk : nei;
 
-            const scalar C =
-                magn > 0 ? lve_(alpha_(ijk),v(ijk),cv(ijk),n(ijk)) : 0;
+            const scalar frac = phi(ijk)[d]*dt/cv(don);
 
-            for (int fi = 0; fi < 2; fi++)
-            if (phi(ijk)[d*2+fi] > 0)
+            if (alpha_(don) > 1-vof::threshold)
             {
-                const label l = d*2 + fi;
-                const label u = d*2 + (fi == 0);
-
-                const scalar frac = phi(ijk)[l]*dt/cv(ijk);
-
-                scalar flux = 0;
-
-                if (alpha_(ijk) > 1-vof::threshold)
-                {
-                    flux = cv(ijk)*frac/dt;
-                }
-                else if (magn)
-                {
-                    // Truncate the hexahedron in face-normal direction. This is
-                    // not necessarily volume conserving on general hexahedrons
-                    // and should be improved.
-
-                    vertexVector vertices(v(ijk));
-
-                    if (rectilinear_)
-                    {
-                        for (int iv = 0; iv < 4; iv++)
-                        {
-                            vertices[vertexNumsInFace[u][iv]] =
-                                vertices[vertexNumsInFace[l][iv]]
-                            + frac
-                            * (
-                                    vertices[vertexNumsInFace[u][iv]]
-                                - vertices[vertexNumsInFace[l][iv]]
-                                );
-                        }
-                    }
-                    else
-                    {
-                        scalar cutC = lve_.fluxVolumeLVE
-                        (
-                            v(ijk),
-                            cv(ijk),
-                            frac * cv(ijk),
-                            u,
-                            l
-                        );
-
-                        for (int iv = 0; iv < 4; iv++)
-                        {
-                            vertices[vertexNumsInFace[u][iv]] =
-                                vertices[vertexNumsInFace[u][iv]]
-                            + cutC
-                            * (
-                                    vertices[vertexNumsInFace[l][iv]]
-                                - vertices[vertexNumsInFace[u][iv]]
-                                );
-                        }
-
-                    }
-
-                    scalar fluxVolume =
-                        rectilinear_
-                      ? truncatedPiped(vertices,n(ijk),C).volume()
-                      : truncatedHex(vertices,n(ijk),C).volume();
-
-                    flux = fluxVolume/dt;
-                }
-
-                if (flux != 0)
-                {
-                    flux_(ijk)[l] = flux;
-
-                    // Also set the flux on the receiving end
-
-                    if (fi == 0)
-                    {
-                        flux_(ijkl)[u] = -flux;
-                    }
-                    else
-                    {
-                        flux_(ijku)[u] = -flux;
-                    }
-                }
+                flux_(ijk)[d] = cv(don)*frac/dt;
             }
-        }
-    }
-
-    // Add the ghost boundary fluxes to receiving boundary cells
-
-    flux_.correctCommBoundaryConditions();
-
-    forAll(flux_.boundaryConditions(), bci)
-    {
-        const auto& bc = flux_.boundaryConditions()[bci];
-
-        if
-        (
-            bc.boundaryOffsetDegree() == 1
-         && (
-                bc.baseType() == PARALLELBC
-             || bc.baseType() == PERIODICBC
-            )
-        )
-        {
-            const labelVector bo = bc.boundaryOffset();
-
-            const label l = faceNumber( bo);
-            const label u = faceNumber(-bo);
-
-            const labelVector S(fvMsh_.S<colocated>(bo));
-            const labelVector E(fvMsh_.E<colocated>(bo));
-
-            labelVector ijk;
-
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+            else if (Foam::mag(n(don)))
             {
-                if (flux_(ijk+bo)[u] > 0)
-                    flux_(ijk)[l] = -flux_(ijk+bo)[u];
+                // Truncate the hexahedron in face-normal direction. This is not
+                // necessarily volume conserving on general hexahedrons and
+                // should be improved.
+
+                const scalar C = lve_(alpha_(don),v(don),cv(don),n(don));
+
+                const label l = phi(ijk)[d] > 0 ? d*2 : d*2+1;
+                const label u = phi(ijk)[d] < 0 ? d*2 : d*2+1;
+
+                vertexVector vertices(v(don));
+
+                if (rectilinear_)
+                {
+                    for (int iv = 0; iv < 4; iv++)
+                    {
+                        vertices[vertexNumsInFace[u][iv]] =
+                            vertices[vertexNumsInFace[l][iv]]
+                          + frac
+                          * (
+                                vertices[vertexNumsInFace[u][iv]]
+                              - vertices[vertexNumsInFace[l][iv]]
+                            );
+                    }
+                }
+                else
+                {
+                    scalar cutC = lve_.fluxVolumeLVE
+                    (
+                        v(don),
+                        cv(don),
+                        cv(don)*frac,
+                        l,
+                        u
+                    );
+
+                    for (int iv = 0; iv < 4; iv++)
+                    {
+                        vertices[vertexNumsInFace[u][iv]] =
+                            vertices[vertexNumsInFace[u][iv]]
+                          + cutC
+                          * (
+                                vertices[vertexNumsInFace[l][iv]]
+                              - vertices[vertexNumsInFace[u][iv]]
+                            );
+                    }
+
+                }
+
+                scalar fluxVolume =
+                    rectilinear_
+                    ? truncatedPiped(vertices,n(don),C).volume()
+                    : truncatedHex(vertices,n(don),C).volume();
+
+                flux_(ijk)[d] = fluxVolume/dt;
+            }
+            else
+            {
+                flux_(ijk)[d] = 0.0;
             }
         }
     }
@@ -216,7 +159,7 @@ splitAdvection::splitAdvection(const splitAdvection& vf)
 splitAdvection::~splitAdvection()
 {}
 
-void splitAdvection::solve(const colocatedFaceScalarField& phi)
+void splitAdvection::solve(const colocatedLowerFaceScalarField& phi)
 {
     alpha_.setOldTime();
 
@@ -246,19 +189,20 @@ void splitAdvection::solve(const colocatedFaceScalarField& phi)
     for (int d = 0; d < 3; d++)
     {
         const label dir = (ti+d)%3;
-        const label l = dir*2;
-        const label u = dir*2+1;
 
         this->updateFlux(phi,dir);
 
         forAllCells(alpha_, i, j, k)
         {
-            alpha_(i,j,k) +=
-                dt/cv(i,j,k)
+            labelVector ijk(i,j,k);
+            labelVector nei(ijk+units[dir]);
+
+            alpha_(ijk) +=
+                dt/cv(ijk)
               * (
-                    scalar(alphac(i,j,k))*(phi(i,j,k)[l] + phi(i,j,k)[u])
-                  - flux_(i,j,k)[l]
-                  - flux_(i,j,k)[u]
+                    scalar(alphac(ijk))*(phi(ijk)[dir] + phi(nei)[dir])
+                  - flux_(ijk)[dir]
+                  - flux_(nei)[dir]
                 );
         }
 

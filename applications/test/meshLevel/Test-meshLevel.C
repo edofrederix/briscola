@@ -38,12 +38,12 @@ void testIndexing(const fvMesh& fvMsh)
 
     label l = 0;
 
-    forAllDirections(m1, d, i, j, k)
+    forAllCells(m1, d, i, j, k)
     {
         m1[d](i,j,k) = pTraits<Type>::one*l++;
     }
 
-    forAllDirections(m1, d, i, j, k)
+    forAllCells(m1, d, i, j, k)
     {
         if (m1[d](i,j,k) != m1[d](labelVector(i,j,k)))
             FatalErrorInFunction << "test 2a failed" << abort(FatalError);
@@ -51,13 +51,13 @@ void testIndexing(const fvMesh& fvMsh)
 
     // Direct access on level
 
-    forAllDirections(m1, d, i, j, k)
+    forAllCells(m1, d, i, j, k)
     {
         if (m1[d](i,j,k) != m1(d,i,j,k))
             FatalErrorInFunction << "test 2b failed" << abort(FatalError);
     }
 
-    forAllDirections(m1, d, i, j, k)
+    forAllCells(m1, d, i, j, k)
     {
         if (m1[d](i,j,k) != m1(d,labelVector(i,j,k)))
             FatalErrorInFunction << "test 2c failed" << abort(FatalError);
@@ -576,10 +576,12 @@ int main(int argc, char *argv[])
     testConstructors<diagTensor,colocated>(fvMsh);
 
     testConstructors<faceScalar,colocated>(fvMsh);
+    testConstructors<lowerFaceScalar,colocated>(fvMsh);
     testConstructors<edgeScalar,colocated>(fvMsh);
     testConstructors<vertexScalar,colocated>(fvMsh);
 
     testConstructors<faceVector,colocated>(fvMsh);
+    testConstructors<lowerFaceVector,colocated>(fvMsh);
     testConstructors<edgeVector,colocated>(fvMsh);
     testConstructors<vertexVector,colocated>(fvMsh);
 
@@ -597,10 +599,12 @@ int main(int argc, char *argv[])
     testIndexing<diagTensor,colocated>(fvMsh);
 
     testIndexing<faceScalar,colocated>(fvMsh);
+    testIndexing<lowerFaceScalar,colocated>(fvMsh);
     testIndexing<edgeScalar,colocated>(fvMsh);
     testIndexing<vertexScalar,colocated>(fvMsh);
 
     testIndexing<faceVector,colocated>(fvMsh);
+    testIndexing<lowerFaceVector,colocated>(fvMsh);
     testIndexing<edgeVector,colocated>(fvMsh);
     testIndexing<vertexVector,colocated>(fvMsh);
 
@@ -618,10 +622,12 @@ int main(int argc, char *argv[])
     testMemberOperators<diagTensor,colocated>(fvMsh);
 
     testMemberOperators<faceScalar,colocated>(fvMsh);
+    testMemberOperators<lowerFaceScalar,colocated>(fvMsh);
     testMemberOperators<edgeScalar,colocated>(fvMsh);
     testMemberOperators<vertexScalar,colocated>(fvMsh);
 
     testMemberOperators<faceVector,colocated>(fvMsh);
+    testMemberOperators<lowerFaceVector,colocated>(fvMsh);
     testMemberOperators<edgeVector,colocated>(fvMsh);
     testMemberOperators<vertexVector,colocated>(fvMsh);
 
@@ -665,10 +671,12 @@ int main(int argc, char *argv[])
         testConstructors<diagTensor,staggered>(fvMsh);
 
         testConstructors<faceScalar,staggered>(fvMsh);
+        testConstructors<lowerFaceScalar,staggered>(fvMsh);
         testConstructors<edgeScalar,staggered>(fvMsh);
         testConstructors<vertexScalar,staggered>(fvMsh);
 
         testConstructors<faceVector,staggered>(fvMsh);
+        testConstructors<lowerFaceVector,staggered>(fvMsh);
         testConstructors<edgeVector,staggered>(fvMsh);
         testConstructors<vertexVector,staggered>(fvMsh);
 
@@ -686,10 +694,12 @@ int main(int argc, char *argv[])
         testIndexing<diagTensor,staggered>(fvMsh);
 
         testIndexing<faceScalar,staggered>(fvMsh);
+        testIndexing<lowerFaceScalar,staggered>(fvMsh);
         testIndexing<edgeScalar,staggered>(fvMsh);
         testIndexing<vertexScalar,staggered>(fvMsh);
 
         testIndexing<faceVector,staggered>(fvMsh);
+        testIndexing<lowerFaceVector,staggered>(fvMsh);
         testIndexing<edgeVector,staggered>(fvMsh);
         testIndexing<vertexVector,staggered>(fvMsh);
 
@@ -707,6 +717,7 @@ int main(int argc, char *argv[])
         // testMemberOperators<diagTensor,staggered>(fvMsh);
 
         // testMemberOperators<faceScalar,staggered>(fvMsh);
+        // testMemberOperators<lowerFaceScalar,staggered>(fvMsh);
         // testMemberOperators<edgeScalar,staggered>(fvMsh);
         // testMemberOperators<vertexScalar,staggered>(fvMsh);
 

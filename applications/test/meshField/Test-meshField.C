@@ -77,12 +77,12 @@ void testIndexing(const fvMesh& fvMsh, const bool deep)
 
     label c = 0;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
     {
         m1(l,d,i,j,k) = pTraits<Type>::one*c++;
     }
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
     {
         if (m1(l,d,i,j,k) != m1(l,d,labelVector(i,j,k)))
             FatalErrorInFunction << "test 1a failed" << abort(FatalError);
@@ -90,13 +90,13 @@ void testIndexing(const fvMesh& fvMsh, const bool deep)
 
     // Direct access on field
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
     {
         if (m1(l,d,i,j,k) != m1(l,d,i,j,k))
             FatalErrorInFunction << "test 1b failed" << abort(FatalError);
     }
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
     {
         if (m1(l,d,i,j,k) != m1(l,d,labelVector(i,j,k)))
             FatalErrorInFunction << "test 1c failed" << abort(FatalError);
@@ -104,13 +104,13 @@ void testIndexing(const fvMesh& fvMsh, const bool deep)
 
     // Direct access to first level
 
-    forAllDirections(m1, d, i, j, k)
+    forAllCells(m1, d, i, j, k)
     {
         if (m1(d,i,j,k) != m1(d,i,j,k))
             FatalErrorInFunction << "test 1d failed" << abort(FatalError);
     }
 
-    forAllDirections(m1, d, i, j, k)
+    forAllCells(m1, d, i, j, k)
     {
         if (m1(d,i,j,k) != m1(d,labelVector(i,j,k)))
             FatalErrorInFunction << "test 1e failed" << abort(FatalError);
@@ -200,13 +200,15 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
         !deep
     );
 
-    forAllLevels(m1, l, d, i, j, k)
+    List<Type> list(MeshType::numberOfDirections, pTraits<Type>::one*2);
+
+    forAllCells(m1, l, d, i, j, k)
     {
         m1(l,d,i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
         s1(l,d,i,j,k) = scalar(l+d+i+j+k+1);
     }
 
-    forAllLevels(m1o, l, d, i, j, k)
+    forAllCells(m1o, l, d, i, j, k)
     {
         m1o(l,d,i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
         s1o(l,d,i,j,k) = scalar(l+d+i+j+k+1);
@@ -215,14 +217,14 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
 
     m2 = m1;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m2(l,d,i,j,k) != m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 1a failed" << abort(FatalError);
 
     m2 = 1.0*m1;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m2(l,d,i,j,k) != m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 1b failed" << abort(FatalError);
@@ -230,7 +232,7 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
     m2 = m1o;
     m2o = m1o;
 
-    forAllLevels(m1o, l, d, i, j, k)
+    forAllCells(m1o, l, d, i, j, k)
         if (m2(l,d,i,j,k) != m1o(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 1c failed" << abort(FatalError);
@@ -238,7 +240,7 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
     m2 = 1.0*m1o;
     m2o = 1.0*m1o;
 
-    forAllLevels(m1o, l, d, i, j, k)
+    forAllCells(m1o, l, d, i, j, k)
         if (m2(l,d,i,j,k) != m1o(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 1d failed" << abort(FatalError);
@@ -249,29 +251,36 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
 
     m1 = Zero;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != Type(Zero))
             FatalErrorInFunction
                 << "test 2a failed" << abort(FatalError);
 
     m1 = pTraits<Type>::one*2;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != pTraits<Type>::one*2)
             FatalErrorInFunction
                 << "test 2b failed" << abort(FatalError);
 
+    m1 = list;
+
+    forAllCells(m1, l, d, i, j, k)
+        if (m1(l,d,i,j,k) != list[d])
+            FatalErrorInFunction
+                << "test 2c failed" << abort(FatalError);
+
     m1 = m2;
     m1 += m2;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != 2*m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 3a failed" << abort(FatalError);
 
     m1 += (2*m2);
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != 4.0*m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 3b failed" << abort(FatalError);
@@ -281,14 +290,14 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
         m1o = m2o;
         m1o += m2;
 
-        forAllLevels(m1o, l, d, i, j, k)
+        forAllCells(m1o, l, d, i, j, k)
             if (m1o(l,d,i,j,k) != 2*m2(l,d,i,j,k))
                 FatalErrorInFunction
                     << "test 3c failed" << abort(FatalError);
 
         m1o += (2*m2);
 
-        forAllLevels(m1o, l, d, i, j, k)
+        forAllCells(m1o, l, d, i, j, k)
             if (m1o(l,d,i,j,k) != 4.0*m2(l,d,i,j,k))
                 FatalErrorInFunction
                     << "test 3d failed" << abort(FatalError);
@@ -296,14 +305,14 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
 
     m1 -= m2;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != 3.0*m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 4a failed" << abort(FatalError);
 
     m1 -= (2*m2);
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 4b failed" << abort(FatalError);
@@ -312,14 +321,14 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
     {
         m1o -= m2;
 
-        forAllLevels(m1o, l, d, i, j, k)
+        forAllCells(m1o, l, d, i, j, k)
             if (m1o(l,d,i,j,k) != 3.0*m2(l,d,i,j,k))
                 FatalErrorInFunction
                     << "test 4c failed" << abort(FatalError);
 
         m1o -= (2*m2);
 
-        forAllLevels(m1o, l, d, i, j, k)
+        forAllCells(m1o, l, d, i, j, k)
             if (m1o(l,d,i,j,k) != m2(l,d,i,j,k))
                 FatalErrorInFunction
                     << "test 4d failed" << abort(FatalError);
@@ -327,14 +336,14 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
 
     m1 *= s1;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != m2(l,d,i,j,k)*s1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 5a failed" << abort(FatalError);
 
     m1 *= (2*s1);
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != 2*m2(l,d,i,j,k)*Foam::sqr(s1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 5b failed" << abort(FatalError);
@@ -343,14 +352,14 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
     {
         m1o *= s1;
 
-        forAllLevels(m1o, l, d, i, j, k)
+        forAllCells(m1o, l, d, i, j, k)
             if (m1o(l,d,i,j,k) != m2(l,d,i,j,k)*s1(l,d,i,j,k))
                 FatalErrorInFunction
                     << "test 5c failed" << abort(FatalError);
 
         m1o *= (2*s1);
 
-        forAllLevels(m1o, l, d, i, j, k)
+        forAllCells(m1o, l, d, i, j, k)
             if (m1o(l,d,i,j,k) != 2*m2(l,d,i,j,k)*Foam::sqr(s1(l,d,i,j,k)))
                 FatalErrorInFunction
                     << "test 5d failed" << abort(FatalError);
@@ -358,14 +367,14 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
 
     m1 /= s1;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != 2*m2(l,d,i,j,k)*s1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 6a failed" << abort(FatalError);
 
     m1 /= (2*s1);
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 6b failed" << abort(FatalError);
@@ -374,14 +383,14 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
     {
         m1o /= s1;
 
-        forAllLevels(m1o, l, d, i, j, k)
+        forAllCells(m1o, l, d, i, j, k)
             if (m1o(l,d,i,j,k) != 2*m2(l,d,i,j,k)*s1(l,d,i,j,k))
                 FatalErrorInFunction
                     << "test 6c failed" << abort(FatalError);
 
         m1o /= (2*s1);
 
-        forAllLevels(m1o, l, d, i, j, k)
+        forAllCells(m1o, l, d, i, j, k)
             if (m1o(l,d,i,j,k) != m2(l,d,i,j,k))
                 FatalErrorInFunction
                     << "test 6d failed" << abort(FatalError);
@@ -389,31 +398,59 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
 
     m1 += pTraits<Type>::one;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != m2(l,d,i,j,k)+pTraits<Type>::one)
             FatalErrorInFunction
                 << "test 7a failed" << abort(FatalError);
 
-    m1 -= pTraits<Type>::one;
+    m1 += list;
 
-    forAllLevels(m1, l, d, i, j, k)
-        if (m1(l,d,i,j,k) != m2(l,d,i,j,k))
+    forAllCells(m1, l, d, i, j, k)
+        if (m1(l,d,i,j,k) != m2(l,d,i,j,k)+pTraits<Type>::one+list[d])
             FatalErrorInFunction
                 << "test 7b failed" << abort(FatalError);
 
+    m1 -= pTraits<Type>::one;
+
+    forAllCells(m1, l, d, i, j, k)
+        if (m1(l,d,i,j,k) != m2(l,d,i,j,k)+list[d])
+            FatalErrorInFunction
+                << "test 7c failed" << abort(FatalError);
+
+    m1 -= list;
+
+    forAllCells(m1, l, d, i, j, k)
+        if (m1(l,d,i,j,k) != m2(l,d,i,j,k))
+            FatalErrorInFunction
+                << "test 7d failed" << abort(FatalError);
+
     m1 *= scalar(2);
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         if (m1(l,d,i,j,k) != 2*m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 8a failed" << abort(FatalError);
 
-    m1 /= scalar(2);
+    m1 *= scalarList(MeshType::numberOfDirections, 2.0);
 
-    forAllLevels(m1, l, d, i, j, k)
-        if (m1(l,d,i,j,k) != m2(l,d,i,j,k))
+    forAllCells(m1, l, d, i, j, k)
+        if (m1(l,d,i,j,k) != 4*m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 8b failed" << abort(FatalError);
+
+    m1 /= scalar(2);
+
+    forAllCells(m1, l, d, i, j, k)
+        if (m1(l,d,i,j,k) != 2*m2(l,d,i,j,k))
+            FatalErrorInFunction
+                << "test 8c failed" << abort(FatalError);
+
+    m1 /= scalarList(MeshType::numberOfDirections, 2.0);
+
+    forAllCells(m1, l, d, i, j, k)
+        if (m1(l,d,i,j,k) != m2(l,d,i,j,k))
+            FatalErrorInFunction
+                << "test 8d failed" << abort(FatalError);
 }
 
 template<class Type, class MeshType>
@@ -487,7 +524,7 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
 
     List<Type> sm(m1.numberOfDirections(), pTraits<Type>::zero);
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
     {
         m1(l,d,i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
 
@@ -497,14 +534,14 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
         }
     }
 
-    forAllLevels(m1o, l, d, i, j, k)
+    forAllCells(m1o, l, d, i, j, k)
     {
         m1o(l,d,i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
     }
 
     List<Type> av(sm);
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         av[d] /= cmptProduct(m1.N(d));
 
     m2 = m1;
@@ -513,7 +550,7 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
     s1 = mag(m1)+scalar(1);
     s1o = mag(m1o)+scalar(1);
 
-    forAllLevels(s1, l, d, i, j, k)
+    forAllCells(s1, l, d, i, j, k)
         if
         (
             s1(l,d,i,j,k)
@@ -528,7 +565,7 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
     s1 = mag(m1*2)+scalar(1);
     s1o = mag(m1o*2)+scalar(1);
 
-    forAllLevels(s1, l, d, i, j, k)
+    forAllCells(s1, l, d, i, j, k)
         if
         (
             s1(l,d,i,j,k)
@@ -543,13 +580,13 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
 
     List<Type> mx(s1.numberOfDirections());
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         mx[d] =
             pTraits<Type>::one*(d + cmptSum(m1.N(d)) - 3);
 
     List<Type> gmx(mx);
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         reduce(gmx[d], maxOp<Type>());
 
     if (max(m1) != mx)
@@ -571,13 +608,13 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
 
     List<Type> mn(s1.numberOfDirections());
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         mn[d] =
             pTraits<Type>::one*d;
 
     List<Type> gmn(mn);
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         reduce(gmn[d], maxOp<Type>());
 
     if (min(m1) != mn)
@@ -662,56 +699,56 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
 
     meshField<Type,MeshType> m3(max(m1,m2));
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 14a failed" << abort(FatalError);
 
     m3 = max(m1*2,m2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != 2*m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 14b failed" << abort(FatalError);
 
     m3 = max(m1,m2*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != 2*m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 14c failed" << abort(FatalError);
 
     m3 = max(m1*2,m2*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != 2*m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 14d failed" << abort(FatalError);
 
     meshField<Type,MeshType> m3o(max(m1,m2o));
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 14e failed" << abort(FatalError);
 
     m3o = max(m1*2,m2o);
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != 2*m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 14f failed" << abort(FatalError);
 
     m3o = max(m1,m2o*2);
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != 2*m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 14g failed" << abort(FatalError);
 
     m3o = max(m1*2,m2o*2);
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != 2*m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 14h failed" << abort(FatalError);
@@ -719,56 +756,56 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
 
     m3 = min(m1,m2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 15a failed" << abort(FatalError);
 
     m3 = min(m1*2,m2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 15b failed" << abort(FatalError);
 
     m3 = min(m1,m2*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 15c failed" << abort(FatalError);
 
     m3 = min(m1*2,m2*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != 2*m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 15d failed" << abort(FatalError);
 
     m3o = min(m1,m2o);
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 15e failed" << abort(FatalError);
 
     m3o = min(m1*2,m2o);
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 15f failed" << abort(FatalError);
 
     m3o = min(m1,m2o*2);
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 15g failed" << abort(FatalError);
 
     m3o = min(m1*2,m2o*2);
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != 2*m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 15h failed" << abort(FatalError);
@@ -776,28 +813,28 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
 
     m3 = max(m1,pTraits<Type>::one);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != max(m1(l,d,i,j,k),pTraits<Type>::one))
             FatalErrorInFunction
                 << "test 16a failed" << abort(FatalError);
 
     m3 = max(m1*2,pTraits<Type>::one);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != max(m1(l,d,i,j,k)*2,pTraits<Type>::one))
             FatalErrorInFunction
                 << "test 16b failed" << abort(FatalError);
 
     m3 = max(pTraits<Type>::one,m2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != max(m2(l,d,i,j,k),pTraits<Type>::one))
             FatalErrorInFunction
                 << "test 16c failed" << abort(FatalError);
 
     m3 = max(pTraits<Type>::one,m2*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != max(m2(l,d,i,j,k)*2,pTraits<Type>::one))
             FatalErrorInFunction
                 << "test 16d failed" << abort(FatalError);
@@ -805,28 +842,28 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
 
     m3 = min(m1,pTraits<Type>::one);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != min(m1(l,d,i,j,k),pTraits<Type>::one))
             FatalErrorInFunction
                 << "test 17a failed" << abort(FatalError);
 
     m3 = min(m1*2,pTraits<Type>::one);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != min(2*m1(l,d,i,j,k),pTraits<Type>::one))
             FatalErrorInFunction
                 << "test 17a failed" << abort(FatalError);
 
     m3 = min(pTraits<Type>::one,m2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != min(m1(l,d,i,j,k),pTraits<Type>::one))
             FatalErrorInFunction
                 << "test 17a failed" << abort(FatalError);
 
     m3 = min(pTraits<Type>::one,m2*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != min(2*m1(l,d,i,j,k),pTraits<Type>::one))
             FatalErrorInFunction
                 << "test 17a failed" << abort(FatalError);
@@ -834,123 +871,584 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
 
     m3 = -m2;
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != -m1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 18a failed" << abort(FatalError);
 
+    1.0/s1;
+    1.0/(1.0*s1);
+
+    scalarList(MeshType::numberOfDirections,1.0)/s1;
+    scalarList(MeshType::numberOfDirections,1.0)/(1.0*s1);
+
+    m1/1.0;
+    (1.0*m1)/1.0;
+    s1/1.0;
+    (1.0*s1)/1.0;
 
     m3 = m1*s1;
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != m1(l,d,i,j,k)*s1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 19a failed" << abort(FatalError);
 
     m3 = (m1*2)*s1;
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != m1(l,d,i,j,k)*s1(l,d,i,j,k)*2)
             FatalErrorInFunction
                 << "test 19b failed" << abort(FatalError);
 
     m3 = s1*m1;
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != m1(l,d,i,j,k)*s1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 19c failed" << abort(FatalError);
 
     m3 = s1*(m1*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != m1(l,d,i,j,k)*s1(l,d,i,j,k)*2)
             FatalErrorInFunction
                 << "test 19d failed" << abort(FatalError);
 
     m3o = m1*s1o;
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != m1(l,d,i,j,k)*s1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 19e failed" << abort(FatalError);
 
     m3o = (m1*2)*s1o;
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != m1(l,d,i,j,k)*s1(l,d,i,j,k)*2)
             FatalErrorInFunction
                 << "test 19f failed" << abort(FatalError);
 
     m3o = s1*m1o;
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != m1(l,d,i,j,k)*s1(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 19g failed" << abort(FatalError);
 
     m3o = s1*(m1o*2);
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != m1(l,d,i,j,k)*s1(l,d,i,j,k)*2)
             FatalErrorInFunction
                 << "test 19h failed" << abort(FatalError);
 
     m3 = m1/s1;
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3(l,d,i,j,k) != Type(m1(l,d,i,j,k)/s1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 20a failed" << abort(FatalError);
 
     m3 = (m1*2)/s1;
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3(l,d,i,j,k) != Type((2*m1(l,d,i,j,k))/s1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 20b failed" << abort(FatalError);
 
     m3o = m1/s1o;
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != Type(m1(l,d,i,j,k)/s1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 20c failed" << abort(FatalError);
 
     m3o = (m1*2)/s1o;
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != Type((2*m1(l,d,i,j,k))/s1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 20d failed" << abort(FatalError);
 
     m3 = m1+m2;
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != m1(l,d,i,j,k)+m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 21a failed" << abort(FatalError);
 
     m3 = m1-m2;
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != m1(l,d,i,j,k)-m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 21b failed" << abort(FatalError);
 
     m3o = m1+m2o;
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != m1(l,d,i,j,k)+m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 21c failed" << abort(FatalError);
 
     m3o = m1-m2o;
 
-    forAllLevels(m3o, l, d, i, j, k)
+    forAllCells(m3o, l, d, i, j, k)
         if (m3o(l,d,i,j,k) != m1(l,d,i,j,k)-m2(l,d,i,j,k))
             FatalErrorInFunction
                 << "test 21d failed" << abort(FatalError);
+
+    m3 = (m3 + pTraits<Type>::one);
+    m3 = (m3 - pTraits<Type>::one);
+
+    m3 = (pTraits<Type>::one + m3);
+    m3 = (pTraits<Type>::one - m3);
+
+    m3 = (m3 + List<Type>(MeshType::numberOfDirections, pTraits<Type>::one));
+    m3 = (m3 - List<Type>(MeshType::numberOfDirections, pTraits<Type>::one));
+
+    m3 = (List<Type>(MeshType::numberOfDirections, pTraits<Type>::one) + m3);
+    m3 = (List<Type>(MeshType::numberOfDirections, pTraits<Type>::one) - m3);
+}
+
+template<class Type, class MeshType>
+void testCellSpacePrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
+{
+    meshField<Type,MeshType> m1
+    (
+        "m1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m1o
+    (
+        "m1o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    meshField<Type,MeshType> m2
+    (
+        "m2",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m2o
+    (
+        "m2o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    meshField<Type,MeshType> m3
+    (
+        "m3",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<Type,MeshType> m3o
+    (
+        "m3",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    meshField<scalar,MeshType> s1
+    (
+        "s1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        deep
+    );
+
+    meshField<scalar,MeshType> s1o
+    (
+        "s1o",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        !deep
+    );
+
+    forAllCells(m1, l, d, i, j, k)
+        m1(l,d,i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
+
+    forAllCells(m1o, l, d, i, j, k)
+        m1o(l,d,i,j,k) = pTraits<Type>::one*(l+d+i+j+k);
+
+    m2 = m1;
+    m2o = m1o;
+
+    s1 = scalar(1);
+    s1o = scalar(1);
+
+    mag(m1) +scalar(1);
+    mag(m1o)+scalar(1);
+
+    mag(m1*2)+scalar(1);
+    mag(m1o*2)+scalar(1);
+
+    max(m1);
+    max(2*m1);
+    gMax(m1);
+    gMax(2*m1);
+
+    min(m1);
+    min(-2*m1);
+    gMin(m1);
+    gMin(-2*m1);
+
+    sum(m1);
+    sum(2*m1);
+    gSum(m1);
+    gSum(2*m1);
+
+    average(m1);
+    average(2*m1);
+    gAverage(m1);
+    gAverage(2*m1);
+
+    sumProd(m1, m1);
+    sumProd(m1*2, m1);
+    sumProd(m1, m1*2);
+    sumProd(m1*2, m1*2);
+
+    sumProd(m1, m1o);
+    sumProd(m1*2, m1o);
+    sumProd(m1, m1o*2);
+    sumProd(m1*2, m1o*2);
+
+    max(m1,m2);
+    max(m1*2,m2);
+    max(m1,m2*2);
+    max(m1*2,m2*2);
+    max(m1,m2o);
+    max(m1*2,m2o);
+    max(m1,m2o*2);
+    max(m1*2,m2o*2);
+
+    min(m1,m2);
+    min(m1*2,m2);
+    min(m1,m2*2);
+    min(m1*2,m2*2);
+    min(m1,m2o);
+    min(m1*2,m2o);
+    min(m1,m2o*2);
+    min(m1*2,m2o*2);
+
+    max(m1,pTraits<Type>::one);
+    max(m1*2,pTraits<Type>::one);
+    max(pTraits<Type>::one,m2);
+    max(pTraits<Type>::one,m2*2);
+
+    min(m1,pTraits<Type>::one);
+    min(m1*2,pTraits<Type>::one);
+    min(pTraits<Type>::one,m2);
+    min(pTraits<Type>::one,m2*2);
+
+
+
+    m3 = -m1;
+    m3 = m1*s1;
+    m3 = (m1*2)*s1;
+    m3 = s1*m1;
+    m3 = s1*(m1*2);
+    m3o = m1*s1o;
+    m3o = (m1*2)*s1o;
+    m3o = s1*m1o;
+    m3o = s1*(m1o*2);
+    m3 = m1/s1;
+    m3 = (m1*2)/s1;
+    m3o = m1/s1o;
+    m3o = (m1*2)/s1o;
+    m3 = m1+m2;
+    m3 = m1-m2;
+    m3o = m1+m2o;
+    m3o = m1-m2o;
+
+    m3 = (m3 + pTraits<Type>::one);
+    m3 = (m3 - pTraits<Type>::one);
+    m3 = ((1.0*m3) + pTraits<Type>::one);
+    m3 = ((1.0*m3) - pTraits<Type>::one);
+
+    m3 = (pTraits<Type>::one + m3);
+    m3 = (pTraits<Type>::one - m3);
+    m3 = (pTraits<Type>::one + (1.0*m3));
+    m3 = (pTraits<Type>::one - (1.0*m3));
+
+    m3 = (m3 + List<Type>(MeshType::numberOfDirections, pTraits<Type>::one));
+    m3 = (m3 - List<Type>(MeshType::numberOfDirections, pTraits<Type>::one));
+    m3 = ((1.0*m3) + List<Type>(MeshType::numberOfDirections, pTraits<Type>::one));
+    m3 = ((1.0*m3) - List<Type>(MeshType::numberOfDirections, pTraits<Type>::one));
+
+    m3 = (List<Type>(MeshType::numberOfDirections, pTraits<Type>::one) + m3);
+    m3 = (List<Type>(MeshType::numberOfDirections, pTraits<Type>::one) - m3);
+    m3 = (List<Type>(MeshType::numberOfDirections, pTraits<Type>::one) + (1.0*m3));
+    m3 = (List<Type>(MeshType::numberOfDirections, pTraits<Type>::one) - (1.0*m3));
+}
+
+template<class Type, class MeshType>
+void testFaceSpaceFunctions(const fvMesh& fvMsh)
+{
+    meshField<FaceSpace<Type>,MeshType> fs1
+    (
+        "fs1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        false
+    );
+
+    meshField<LowerFaceSpace<Type>,MeshType> ls1
+    (
+        "ls1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        false
+    );
+
+    meshField<FaceSpace<scalar>,MeshType> sfs1
+    (
+        "sfs1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        false
+    );
+
+    meshField<LowerFaceSpace<scalar>,MeshType> sls1
+    (
+        "sls1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        false
+    );
+
+    meshField<scalar,MeshType> s1
+    (
+        "s1",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        false
+    );
+
+    forAllCells(fs1, l, d, i, j, k)
+        fs1(l,d,i,j,k) = pTraits<FaceSpace<Type>>::one*(l+d+i+j+k);
+
+    forAllCells(ls1, l, d, i, j, k)
+        ls1(l,d,i,j,k) = pTraits<LowerFaceSpace<Type>>::one*(l+d+i+j+k);
+
+    sfs1 = pTraits<FaceSpace<scalar>>::one;
+    sls1 = pTraits<LowerFaceSpace<scalar>>::one;
+
+    s1 = scalar(1);
+
+    ls1 += fs1;
+    ls1 += (1.0*fs1);
+
+    fs1+ls1;
+    ls1+fs1;
+
+    (1.0*fs1)+ls1;
+    (1.0*ls1)+fs1;
+
+    (1.0*fs1)+(1.0*ls1);
+    (1.0*ls1)+(1.0*fs1);
+
+    fs1 += pTraits<Type>::one;
+    ls1 += pTraits<Type>::one;
+
+    fs1 += FaceSpace<Type>::one;
+    ls1 += FaceSpace<Type>::one;
+    ls1 += LowerFaceSpace<Type>::one;
+
+    fs1 + pTraits<Type>::one;
+    ls1 + pTraits<Type>::one;
+
+    (1.0*fs1) + pTraits<Type>::one;
+    (1.0*ls1) + pTraits<Type>::one;
+
+    fs1 + FaceSpace<Type>::one;
+    ls1 + FaceSpace<Type>::one;
+    ls1 + LowerFaceSpace<Type>::one;
+
+    (1.0*fs1) + FaceSpace<Type>::one;
+    (1.0*ls1) + FaceSpace<Type>::one;
+    (1.0*ls1) + LowerFaceSpace<Type>::one;
+
+    pTraits<Type>::one + fs1;
+    pTraits<Type>::one + ls1;
+
+    pTraits<Type>::one + (1.0*fs1);
+    pTraits<Type>::one + (1.0*ls1);
+
+    FaceSpace<Type>::one + fs1;
+    FaceSpace<Type>::one + ls1;
+    LowerFaceSpace<Type>::one + ls1;
+
+    FaceSpace<Type>::one + (1.0*fs1);
+    FaceSpace<Type>::one + (1.0*ls1);
+    LowerFaceSpace<Type>::one + (1.0*ls1);
+
+    ls1 -= fs1;
+    ls1 -= (1.0*fs1);
+
+    fs1-ls1;
+    ls1-fs1;
+
+    (1.0*fs1)-ls1;
+    (1.0*ls1)-fs1;
+
+    fs1-(1.0*ls1);
+    ls1-(1.0*fs1);
+
+    fs1 -= pTraits<Type>::one;
+    ls1 -= pTraits<Type>::one;
+
+    fs1 -= FaceSpace<Type>::one;
+    ls1 -= FaceSpace<Type>::one;
+    ls1 -= LowerFaceSpace<Type>::one;
+
+    fs1 - pTraits<Type>::one;
+    ls1 - pTraits<Type>::one;
+
+    (1.0*fs1) - pTraits<Type>::one;
+    (1.0*ls1) - pTraits<Type>::one;
+
+    fs1 - FaceSpace<Type>::one;
+    ls1 - FaceSpace<Type>::one;
+    ls1 - LowerFaceSpace<Type>::one;
+
+    (1.0*fs1) - FaceSpace<Type>::one;
+    (1.0*ls1) - FaceSpace<Type>::one;
+    (1.0*ls1) - LowerFaceSpace<Type>::one;
+
+    pTraits<Type>::one - fs1;
+    pTraits<Type>::one - ls1;
+
+    pTraits<Type>::one - (1.0*fs1);
+    pTraits<Type>::one - (1.0*ls1);
+
+    FaceSpace<Type>::one - fs1;
+    FaceSpace<Type>::one - ls1;
+    LowerFaceSpace<Type>::one - ls1;
+
+    FaceSpace<Type>::one - (1.0*fs1);
+    FaceSpace<Type>::one - (1.0*ls1);
+    LowerFaceSpace<Type>::one - (1.0*ls1);
+
+    fs1 *= (1.0*s1);
+    fs1 *= (1.0*sfs1);
+
+    fs1*s1;
+    fs1*sfs1;
+
+    (1.0*fs1)*s1;
+    (1.0*fs1)*sfs1;
+
+    fs1*(1.0*s1);
+    fs1*(1.0*sfs1);
+
+    s1/1.0;
+    sfs1/1.0;
+
+    (1.0*s1)/1.0;
+    (1.0*sfs1)/1.0;
+
+    1.0/s1;
+    1.0/sfs1;
+
+    1.0/(1.0*s1);
+    1.0/(1.0*sfs1);
+
+    fs1 /= (1.0*s1);
+    fs1 /= (1.0*sfs1);
+
+    fs1/s1;
+    fs1/sfs1;
+
+    (1.0*fs1)/s1;
+    (1.0*fs1)/sfs1;
+
+    fs1/(1.0*s1);
+    fs1/(1.0*sfs1);
+
+
+    ls1 *= (1.0*s1);
+    ls1 *= (1.0*sls1);
+
+    ls1*s1;
+    ls1*sls1;
+
+    (1.0*ls1)*s1;
+    (1.0*ls1)*sls1;
+
+    ls1*(1.0*s1);
+    ls1*(1.0*sls1);
+
+    1.0/s1;
+    1.0/sls1;
+
+    1.0/(1.0*s1);
+    1.0/(1.0*sls1);
+
+    ls1 /= (1.0*s1);
+    ls1 /= (1.0*sls1);
+
+    ls1/s1;
+    ls1/sls1;
+
+    (1.0*ls1)/s1;
+    (1.0*ls1)/sls1;
+
+    ls1/(1.0*s1);
+    ls1/(1.0*sls1);
 }
 
 template<class Type, class MeshType>
@@ -1006,7 +1504,7 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
     List<Type> m1m1scp(m1.numberOfDirections(), Zero);
     List<Type> m1scm(m1.numberOfDirections(), Zero);
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
     {
         m1(l,d,i,j,k) = pTraits<Type>::one*c++;
         m2(l,d,i,j,k) = pTraits<Type>::one*c++;
@@ -1021,14 +1519,14 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
 
     s1 = cmptMax(m1);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (s1(l,d,i,j,k) != cmptMax(m1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 22a failed" << abort(FatalError);
 
     s1 = cmptMax(m1*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (s1(l,d,i,j,k) != cmptMax(2*m1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 22a failed" << abort(FatalError);
@@ -1036,14 +1534,14 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
 
     s1 = cmptMin(m1);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (s1(l,d,i,j,k) != cmptMin(m1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 23a failed" << abort(FatalError);
 
     s1 = cmptMin(m1*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (s1(l,d,i,j,k) != cmptMin(2*m1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 23b failed" << abort(FatalError);
@@ -1051,14 +1549,14 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
 
     s1 = cmptAv(m1);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (s1(l,d,i,j,k) != cmptAv(m1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 24a failed" << abort(FatalError);
 
     s1 = cmptAv(m1*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (s1(l,d,i,j,k) != cmptAv(2*m1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 24b failed" << abort(FatalError);
@@ -1066,24 +1564,24 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
 
     m3 = cmptMag(m1);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptMag(m1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 25a failed" << abort(FatalError);
 
     m3 = cmptMag(m1*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptMag(2*m1(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 25b failed" << abort(FatalError);
 
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (maxMagSqr(m1)[d] != Foam::magSqr(m1(d,m1.N(d)-unitXYZ)))
             FatalErrorInFunction << "test 26a failed" << abort(FatalError);
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (maxMagSqr(2*m1)[d] != Foam::magSqr(2*m1(d,m1.N(d)-unitXYZ)))
             FatalErrorInFunction << "test 26b failed" << abort(FatalError);
 
@@ -1093,119 +1591,118 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
     // should also work on other meshes...
 
     if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (gMaxMagSqr(m1)[d] != Foam::magSqr(m1(d,m1.N(d)-unitXYZ)))
             FatalErrorInFunction << "test 27a failed" << abort(FatalError);
 
     if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (gMaxMagSqr(2*m1)[d] != Foam::magSqr(2*m1(d,m1.N(d)-unitXYZ)))
             FatalErrorInFunction << "test 27b failed" << abort(FatalError);
 
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (minMagSqr(m1)[d] != Foam::magSqr(m1(d,0,0,0)))
             FatalErrorInFunction << "test 28a failed" << abort(FatalError);
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (minMagSqr(2*m1)[d] != Foam::magSqr(2*m1(d,0,0,0)))
             FatalErrorInFunction << "test 28b failed" << abort(FatalError);
 
 
     if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (gMinMagSqr(m1)[d] != Foam::magSqr(m1(d,0,0,0)))
             FatalErrorInFunction << "test 29a failed" << abort(FatalError);
 
     if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (gMinMagSqr(2*m1)[d] != Foam::magSqr(2*m1(d,0,0,0)))
             FatalErrorInFunction << "test 29b failed" << abort(FatalError);
 
-
-    forAll(m1.level(), d)
-        if (sumMag(m1)[d] != m1sm[d])
+    forAll(m1.mshPart(), d)
+        if (Foam::mag(sumMag(m1)[d] - m1sm[d])/m1sm[d] > 1e-12)
             FatalErrorInFunction << "test 30a failed" << abort(FatalError);
 
-    forAll(m1.level(), d)
-        if (sumMag(2*m1)[d] != 2*m1sm[d])
+    forAll(m1.mshPart(), d)
+        if (Foam::mag(sumMag(2*m1)[d] - 2*m1sm[d])/m1sm[d] > 1e-12)
             FatalErrorInFunction << "test 30b failed" << abort(FatalError);
 
 
     if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
-        if (gSumMag(m1)[d] != Pstream::nProcs()*m1sm[d])
+    forAll(m1.mshPart(), d)
+        if (Foam::mag(gSumMag(m1)[d] - Pstream::nProcs()*m1sm[d])/m1sm[d] > 1e-12)
             FatalErrorInFunction << "test 31a failed" << abort(FatalError);
 
     if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
-        if (gSumMag(2*m1)[d] != Pstream::nProcs()*2*m1sm[d])
+    forAll(m1.mshPart(), d)
+        if (Foam::mag(gSumMag(2*m1)[d] - Pstream::nProcs()*2*m1sm[d])/m1sm[d] > 1e-12)
             FatalErrorInFunction << "test 31b failed" << abort(FatalError);
 
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (sumCmptProd(m1, m1)[d] != m1m1scp[d])
         {
             Pout<< sumCmptProd(m1, m1)[d] << " " << m1m1scp[d] << endl;
             FatalErrorInFunction << "test 32a failed" << abort(FatalError);
         }
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (sumCmptProd(2*m1, m1)[d] != 2*m1m1scp[d])
             FatalErrorInFunction << "test 32b failed" << abort(FatalError);
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (sumCmptProd(m1, 2*m1)[d] != 2*m1m1scp[d])
             FatalErrorInFunction << "test 32c failed" << abort(FatalError);
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (sumCmptProd(2*m1, 2*m1)[d] != 4*m1m1scp[d])
             FatalErrorInFunction << "test 32d failed" << abort(FatalError);
 
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (sumCmptMag(m1)[d] != m1scm[d])
             FatalErrorInFunction << "test 33a failed" << abort(FatalError);
 
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (sumCmptMag(2*m1)[d] != 2*m1scm[d])
             FatalErrorInFunction << "test 33b failed" << abort(FatalError);
 
     if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (gSumCmptMag(m1)[d] != Pstream::nProcs()*m1scm[d])
             FatalErrorInFunction << "test 33c failed" << abort(FatalError);
 
     if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
+    forAll(m1.mshPart(), d)
         if (gSumCmptMag(2*m1)[d] != Pstream::nProcs()*2*m1scm[d])
             FatalErrorInFunction << "test 33d failed" << abort(FatalError);
 
 
     m3 = cmptMultiply(m1,m2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptMultiply(m1(l,d,i,j,k),m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 34a failed" << abort(FatalError);
 
     m3 = cmptMultiply(m1*2,m2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptMultiply(2*m1(l,d,i,j,k),m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 34b failed" << abort(FatalError);
 
     m3 = cmptMultiply(m1,m2*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptMultiply(m1(l,d,i,j,k),2*m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 34c failed" << abort(FatalError);
 
     m3 = cmptMultiply(m1*2,m2*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptMultiply(2*m1(l,d,i,j,k),2*m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 34d failed" << abort(FatalError);
@@ -1213,28 +1710,28 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
 
     m3 = cmptDivide(m1,m2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptDivide(m1(l,d,i,j,k),m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 35a failed" << abort(FatalError);
 
     m3 = cmptDivide(m1*2,m2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptDivide(2*m1(l,d,i,j,k),m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 35b failed" << abort(FatalError);
 
     m3 = cmptDivide(m1,m2*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptDivide(m1(l,d,i,j,k),2*m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 35c failed" << abort(FatalError);
 
     m3 = cmptDivide(m1*2,m2*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptDivide(2*m1(l,d,i,j,k),2*m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 35d failed" << abort(FatalError);
@@ -1242,56 +1739,56 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
 
     m3 = cmptMultiply(m1,pTraits<Type>::one);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptMultiply(m1(l,d,i,j,k),pTraits<Type>::one))
             FatalErrorInFunction
                 << "test 36a failed" << abort(FatalError);
 
     m3 = cmptMultiply(m1*2,pTraits<Type>::one);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptMultiply(2*m1(l,d,i,j,k),pTraits<Type>::one))
             FatalErrorInFunction
                 << "test 36b failed" << abort(FatalError);
 
     m3 = cmptMultiply(pTraits<Type>::one,m2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptMultiply(pTraits<Type>::one,m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 36c failed" << abort(FatalError);
 
     m3 = cmptMultiply(pTraits<Type>::one,m2*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptMultiply(pTraits<Type>::one,2*m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 36d failed" << abort(FatalError);
 
     m3 = cmptDivide(m1,pTraits<Type>::one);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptDivide(m1(l,d,i,j,k),pTraits<Type>::one))
             FatalErrorInFunction
                 << "test 37a failed" << abort(FatalError);
 
     m3 = cmptDivide(m1*2,pTraits<Type>::one);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptDivide(2*m1(l,d,i,j,k),pTraits<Type>::one))
             FatalErrorInFunction
                 << "test 37b failed" << abort(FatalError);
 
     m3 = cmptDivide(pTraits<Type>::one,m2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptDivide(pTraits<Type>::one,m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 37c failed" << abort(FatalError);
 
     m3 = cmptDivide(pTraits<Type>::one,m2*2);
 
-    forAllLevels(m3, l, d, i, j, k)
+    forAllCells(m3, l, d, i, j, k)
         if (m3(l,d,i,j,k) != cmptDivide(pTraits<Type>::one,2*m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 37d failed" << abort(FatalError);
@@ -1368,14 +1865,14 @@ void testStencilFunctions(const fvMesh& fvMsh, const bool deep)
 
     label c = 0;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
     {
         m1(l,d,i,j,k) = pTraits<Type>::one*c++;
         m2(l,d,i,j,k) = pTraits<Type>::one*c++;
         s1(l,d,i,j,k) = c++;
     }
 
-    forAllLevels(m1o, l, d, i, j, k)
+    forAllCells(m1o, l, d, i, j, k)
     {
         m1o(l,d,i,j,k) = pTraits<Type>::one*c++;
         m2o(l,d,i,j,k) = pTraits<Type>::one*c++;
@@ -1474,10 +1971,10 @@ void testScalarFunctions(const fvMesh& fvMsh, const bool deep)
 
     label c = 0;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
         m1(l,d,i,j,k) = scalar(c+++1);
 
-    forAllLevels(m1o, l, d, i, j, k)
+    forAllCells(m1o, l, d, i, j, k)
         m1o(l,d,i,j,k) = scalar(c+++1);
 
     m1/m1;
@@ -1516,7 +2013,7 @@ void testVectorFunctions(const fvMesh& fvMsh, const bool deep)
 
     label c = 0;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
     {
         m1(l,d,i,j,k) = pTraits<vector>::one*c++;
         m2(l,d,i,j,k) = pTraits<vector>::one*c++;
@@ -1598,7 +2095,7 @@ void testTensorFunctions(const fvMesh& fvMsh, const bool deep)
 
     label c = 0;
 
-    forAllLevels(m1, l, d, i, j, k)
+    forAllCells(m1, l, d, i, j, k)
     {
         m1(l,d,i,j,k) = pTraits<tensor>::one*c++;
         m2(l,d,i,j,k) = pTraits<symmTensor>::one*c++;
@@ -1681,14 +2178,17 @@ int main(int argc, char *argv[])
         testConstructors<diagTensor,colocated>(fvMsh, deep);
 
         testConstructors<faceScalar,colocated>(fvMsh, deep);
+        testConstructors<lowerFaceScalar,colocated>(fvMsh, deep);
         testConstructors<edgeScalar,colocated>(fvMsh, deep);
         testConstructors<vertexScalar,colocated>(fvMsh, deep);
 
         testConstructors<faceVector,colocated>(fvMsh, deep);
+        testConstructors<lowerFaceVector,colocated>(fvMsh, deep);
         testConstructors<edgeVector,colocated>(fvMsh, deep);
         testConstructors<vertexVector,colocated>(fvMsh, deep);
 
         testConstructors<stencil,colocated>(fvMsh, deep);
+        testConstructors<symmStencil,colocated>(fvMsh, deep);
         testConstructors<diagStencil,colocated>(fvMsh, deep);
 
 
@@ -1702,14 +2202,17 @@ int main(int argc, char *argv[])
         testIndexing<diagTensor,colocated>(fvMsh, deep);
 
         testIndexing<faceScalar,colocated>(fvMsh, deep);
+        testIndexing<lowerFaceScalar,colocated>(fvMsh, deep);
         testIndexing<edgeScalar,colocated>(fvMsh, deep);
         testIndexing<vertexScalar,colocated>(fvMsh, deep);
 
         testIndexing<faceVector,colocated>(fvMsh, deep);
+        testIndexing<lowerFaceVector,colocated>(fvMsh, deep);
         testIndexing<edgeVector,colocated>(fvMsh, deep);
         testIndexing<vertexVector,colocated>(fvMsh, deep);
 
         testIndexing<stencil,colocated>(fvMsh, deep);
+        testIndexing<symmStencil,colocated>(fvMsh, deep);
         testIndexing<diagStencil,colocated>(fvMsh, deep);
 
 
@@ -1723,14 +2226,17 @@ int main(int argc, char *argv[])
         testMemberOperators<diagTensor,colocated>(fvMsh, deep);
 
         testMemberOperators<faceScalar,colocated>(fvMsh, deep);
+        testMemberOperators<lowerFaceScalar,colocated>(fvMsh, deep);
         testMemberOperators<edgeScalar,colocated>(fvMsh, deep);
         testMemberOperators<vertexScalar,colocated>(fvMsh, deep);
 
         testMemberOperators<faceVector,colocated>(fvMsh, deep);
+        testMemberOperators<lowerFaceVector,colocated>(fvMsh, deep);
         testMemberOperators<edgeVector,colocated>(fvMsh, deep);
         testMemberOperators<vertexVector,colocated>(fvMsh, deep);
 
         testMemberOperators<stencil,colocated>(fvMsh, deep);
+        testMemberOperators<symmStencil,colocated>(fvMsh, deep);
         testMemberOperators<diagStencil,colocated>(fvMsh, deep);
 
 
@@ -1743,6 +2249,19 @@ int main(int argc, char *argv[])
         testPrimitiveFunctions<sphericalTensor,colocated>(fvMsh, deep);
         testPrimitiveFunctions<diagTensor,colocated>(fvMsh, deep);
 
+        testCellSpacePrimitiveFunctions<faceScalar,colocated>(fvMsh, deep);
+        testCellSpacePrimitiveFunctions<lowerFaceScalar,colocated>(fvMsh, deep);
+        testCellSpacePrimitiveFunctions<edgeScalar,colocated>(fvMsh, deep);
+        testCellSpacePrimitiveFunctions<vertexScalar,colocated>(fvMsh, deep);
+
+        testCellSpacePrimitiveFunctions<faceVector,colocated>(fvMsh, deep);
+        testCellSpacePrimitiveFunctions<lowerFaceVector,colocated>(fvMsh, deep);
+        testCellSpacePrimitiveFunctions<edgeVector,colocated>(fvMsh, deep);
+        testCellSpacePrimitiveFunctions<vertexVector,colocated>(fvMsh, deep);
+
+        testFaceSpaceFunctions<scalar,colocated>(fvMsh);
+        testFaceSpaceFunctions<vector,colocated>(fvMsh);
+
         testVectorSpaceFunctions<vector,colocated>(fvMsh, deep);
         testVectorSpaceFunctions<tensor,colocated>(fvMsh, deep);
         testVectorSpaceFunctions<symmTensor,colocated>(fvMsh, deep);
@@ -1750,6 +2269,7 @@ int main(int argc, char *argv[])
         testVectorSpaceFunctions<diagTensor,colocated>(fvMsh, deep);
 
         testStencilFunctions<stencil,colocated>(fvMsh, deep);
+        testStencilFunctions<symmStencil,colocated>(fvMsh, deep);
         testStencilFunctions<diagStencil,colocated>(fvMsh, deep);
 
         testScalarFunctions<colocated>(fvMsh, deep);
@@ -1773,14 +2293,17 @@ int main(int argc, char *argv[])
             testConstructors<diagTensor,staggered>(fvMsh, deep);
 
             testConstructors<faceScalar,staggered>(fvMsh, deep);
+            testConstructors<lowerFaceScalar,staggered>(fvMsh, deep);
             testConstructors<edgeScalar,staggered>(fvMsh, deep);
             testConstructors<vertexScalar,staggered>(fvMsh, deep);
 
             testConstructors<faceVector,staggered>(fvMsh, deep);
+            testConstructors<lowerFaceVector,staggered>(fvMsh, deep);
             testConstructors<edgeVector,staggered>(fvMsh, deep);
             testConstructors<vertexVector,staggered>(fvMsh, deep);
 
             testConstructors<stencil,staggered>(fvMsh, deep);
+            testConstructors<symmStencil,staggered>(fvMsh, deep);
             testConstructors<diagStencil,staggered>(fvMsh, deep);
 
 
@@ -1794,14 +2317,17 @@ int main(int argc, char *argv[])
             testIndexing<diagTensor,staggered>(fvMsh, deep);
 
             testIndexing<faceScalar,staggered>(fvMsh, deep);
+            testIndexing<lowerFaceScalar,staggered>(fvMsh, deep);
             testIndexing<edgeScalar,staggered>(fvMsh, deep);
             testIndexing<vertexScalar,staggered>(fvMsh, deep);
 
             testIndexing<faceVector,staggered>(fvMsh, deep);
+            testIndexing<lowerFaceVector,staggered>(fvMsh, deep);
             testIndexing<edgeVector,staggered>(fvMsh, deep);
             testIndexing<vertexVector,staggered>(fvMsh, deep);
 
             testIndexing<stencil,staggered>(fvMsh, deep);
+            testIndexing<symmStencil,staggered>(fvMsh, deep);
             testIndexing<diagStencil,staggered>(fvMsh, deep);
 
 
@@ -1815,14 +2341,17 @@ int main(int argc, char *argv[])
             testMemberOperators<diagTensor,staggered>(fvMsh, deep);
 
             testMemberOperators<faceScalar,staggered>(fvMsh, deep);
+            testMemberOperators<lowerFaceScalar,staggered>(fvMsh, deep);
             testMemberOperators<edgeScalar,staggered>(fvMsh, deep);
             testMemberOperators<vertexScalar,staggered>(fvMsh, deep);
 
             testMemberOperators<faceVector,staggered>(fvMsh, deep);
+            testMemberOperators<lowerFaceVector,staggered>(fvMsh, deep);
             testMemberOperators<edgeVector,staggered>(fvMsh, deep);
             testMemberOperators<vertexVector,staggered>(fvMsh, deep);
 
             testMemberOperators<stencil,staggered>(fvMsh, deep);
+            testMemberOperators<symmStencil,staggered>(fvMsh, deep);
             testMemberOperators<diagStencil,staggered>(fvMsh, deep);
 
 
@@ -1836,6 +2365,20 @@ int main(int argc, char *argv[])
             testPrimitiveFunctions<diagTensor,staggered>(fvMsh, deep);
 
 
+            testCellSpacePrimitiveFunctions<faceScalar,staggered>(fvMsh, deep);
+            testCellSpacePrimitiveFunctions<lowerFaceScalar,staggered>(fvMsh, deep);
+            testCellSpacePrimitiveFunctions<edgeScalar,staggered>(fvMsh, deep);
+            testCellSpacePrimitiveFunctions<vertexScalar,staggered>(fvMsh, deep);
+
+            testCellSpacePrimitiveFunctions<faceVector,staggered>(fvMsh, deep);
+            testCellSpacePrimitiveFunctions<lowerFaceVector,staggered>(fvMsh, deep);
+            testCellSpacePrimitiveFunctions<edgeVector,staggered>(fvMsh, deep);
+            testCellSpacePrimitiveFunctions<vertexVector,staggered>(fvMsh, deep);
+
+            testFaceSpaceFunctions<scalar,staggered>(fvMsh);
+            testFaceSpaceFunctions<vector,staggered>(fvMsh);
+
+
             testVectorSpaceFunctions<vector,staggered>(fvMsh, deep);
             testVectorSpaceFunctions<tensor,staggered>(fvMsh, deep);
             testVectorSpaceFunctions<symmTensor,staggered>(fvMsh, deep);
@@ -1844,6 +2387,7 @@ int main(int argc, char *argv[])
 
 
             testStencilFunctions<stencil,staggered>(fvMsh, deep);
+            testStencilFunctions<symmStencil,staggered>(fvMsh, deep);
             testStencilFunctions<diagStencil,staggered>(fvMsh, deep);
 
 

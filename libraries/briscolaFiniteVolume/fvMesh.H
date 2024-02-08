@@ -26,6 +26,9 @@ class fvMesh
     // runtime selectable.
     autoPtr<mesh> mshPtr_;
 
+    // Mesh dictionary
+    const IOdictionary& meshDict_;
+
     // Scheme dictionary
     IOdictionary schemeDict_;
 
@@ -43,6 +46,9 @@ class fvMesh
 
     // Staggered mesh metrics
     autoPtr<fvMeshMetrics<staggered>> staggeredMetrics_;
+
+    // Switch for immersed boundary presence
+    Switch immersedBoundaryPresent_;
 
     // Set the internal cell start and end indices
     template<class MeshType>
@@ -233,6 +239,13 @@ public:
         const label d = 0
     ) const;
 
+    // Return reference to immersed boundary
+    template<class MeshType>
+    const immersedBoundary<MeshType>& IB() const;
+
+    // Mesh dictionary
+    inline const dictionary& meshDict() const { return meshDict_; }
+
     // Scheme dictionary
     inline const dictionary& schemeDict() const { return schemeDict_; }
 
@@ -242,16 +255,19 @@ public:
     // Needed by regIOobject
     virtual bool writeData(Ostream&) const { return true; }
 
+    // Switch for immersed boundary presence
+    inline const Switch immersedBoundaryPresent() const { return immersedBoundaryPresent_; }
+
     // Member functions that pass directly to the mesh object
 
-        // Access to the part level
-        inline partLevel& operator[](const label i)
+        // Access to the mesh part
+        inline part& operator[](const label i)
         {
             return mshPtr_->operator[](i);
         }
 
-        // Const access to the part level
-        inline const partLevel& operator[](const label i) const
+        // Const access to the mesh part
+        inline const part& operator[](const label i) const
         {
             return mshPtr_->operator[](i);
         }
@@ -262,10 +278,10 @@ public:
             return mshPtr_->size();
         }
 
-        // Const access to part patched
-        inline const PtrList<partPatch>& partPatches() const
+        // Const access to boundaries
+        inline const PtrList<boundary>& boundaries() const
         {
-            return mshPtr_->partPatches();
+            return mshPtr_->boundaries();
         }
 
         // Structured mesh bool

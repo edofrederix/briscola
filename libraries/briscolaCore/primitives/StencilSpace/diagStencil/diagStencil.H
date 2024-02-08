@@ -5,8 +5,9 @@
 #include "briscolaUtils.H"
 #include "pTransform.H"
 #include "contiguous.H"
-
+#include "Row.H"
 #include "stencil.H"
+#include "symmStencil.H"
 
 namespace Foam
 {
@@ -48,10 +49,22 @@ public:
 
     // Conversion to stencil
     inline operator stencil() const;
+
+    // Conversion to symmetric stencil
+    inline operator symmStencil() const;
 };
 
 template<>
 inline bool contiguous<diagStencil>() { return true; }
+
+template<>
+inline bool contiguous<Row<diagStencil,scalar>>() { return true; }
+
+template<>
+inline bool contiguous<Row<diagStencil,vector>>() { return true; }
+
+template<>
+inline bool contiguous<Row<diagStencil,tensor>>() { return true; }
 
 // diagStencil casts
 

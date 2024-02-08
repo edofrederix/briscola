@@ -30,7 +30,7 @@ p.correctBoundaryConditions();
 
 // Flux
 
-colocatedFaceScalarField phi
+colocatedLowerFaceScalarField phi
 (
     "phi",
     fvMsh,
@@ -44,16 +44,7 @@ phi = ex::faceFlux(U);
 
 // Viscosity
 
-colocatedFaceScalarField nu
-(
-    "nu",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::NO_WRITE,
-    true
-);
-
-nu = readScalar(solverDict.lookup("nu"));
+const scalar nu = readScalar(solverDict.lookup("nu"));
 
 // Source
 
@@ -81,7 +72,6 @@ imSourceCoeff = scalar(solverDict.lookupOrDefault("sourceCoeff", 0.0));
 // Solvers
 
 linearSystem<stencil,vector,colocated> USys(U);
-linearSystem<stencil,scalar,colocated> pSys(p);
 
 autoPtr<solver<stencil,vector,colocated>> USolve
 (
@@ -92,18 +82,14 @@ autoPtr<solver<stencil,vector,colocated>> USolve
     )
 );
 
-autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
+autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
 (
-    PoissonSolver<stencil,scalar,colocated>::New
+    PoissonSolver<symmStencil,scalar,colocated>::New
     (
-        pSys.x().name(),
+        p.name(),
         fvMsh
     )
 );
-
-// Stencils
-
-linearSystem<stencil,vector,colocated> LapU(U);
 
 // Adams-Bashforth source
 

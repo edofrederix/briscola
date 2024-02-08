@@ -55,16 +55,7 @@ p.correctBoundaryConditions();
 
 // Viscosity
 
-staggeredFaceScalarField nu
-(
-    "nu",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::NO_WRITE,
-    true
-);
-
-nu = readScalar(solverDict.lookup("nu"));
+const scalar nu = readScalar(solverDict.lookup("nu"));
 
 // Source
 
@@ -91,22 +82,15 @@ imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
 
 // Immersed boundary
 
-autoPtr<immersedBoundaryMethod<scalar,staggered>> IBs;
-if (solverDict.found("ImmersedBoundary"))
+if (fvMsh.immersedBoundaryPresent())
 {
-    IBs = immersedBoundaryMethod<scalar,staggered>::New
-    (
-        solverDict.subDict("ImmersedBoundary"),
-        fvMsh
-    );
-
     // Set source terms to zero inside IB
-    forAllLevels(exSource,l,d,i,j,k)
+    forAllCells(exSource,l,d,i,j,k)
     {
-        if (IBs->mask()(l,d,i,j,k) == 1)
+        if (fvMsh.IB<staggered>().mask()(l,d,i,j,k))
         {
-            exSource = Zero;
-            imSourceCoeff = Zero;
+            exSource(l,d,i,j,k) = Zero;
+            imSourceCoeff(l,d,i,j,k) = Zero;
         }
     }
 }
@@ -120,27 +104,22 @@ autoPtr<solver<stencil,scalar,staggered>> USolve
     solver<stencil,scalar,staggered>::New
     (
         USys.x().name(),
-        fvMsh,
-        (IBs.empty() ? nullptr : &IBs())
+        fvMsh
     )
 );
 
-autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
+autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
 (
-    PoissonSolver<stencil,scalar,colocated>::New
+    PoissonSolver<symmStencil,scalar,colocated>::New
     (
         p.name(),
         fvMsh
     )
 );
 
-staggeredFaceScalarField phi("phi", fvMsh);
+staggeredLowerFaceScalarField phi("phi", fvMsh);
 
 phi = ex::faceFlux(U);
-
-// Stencils
-
-linearSystem<stencil,scalar,staggered> LapU(U);
 
 // Adams-Bashforth source
 

@@ -14,7 +14,7 @@ namespace briscola
 namespace fv
 {
 
-template<class Type, class MeshType>
+template<class SType, class Type, class MeshType>
 class divergenceScheme
 :
     public scheme
@@ -41,26 +41,62 @@ public:
     divergenceScheme(const dictionary&, const fvMesh&);
 
     // Copy constructor
-    divergenceScheme(const divergenceScheme<Type,MeshType>&);
+    divergenceScheme(const divergenceScheme<SType,Type,MeshType>&);
 
     // Selector
-    static autoPtr<divergenceScheme<Type,MeshType>> New(const word, const fvMesh&);
+    static autoPtr<divergenceScheme<SType,Type,MeshType>> New
+    (
+        const word,
+        const fvMesh&
+    );
 
     // Destructor
     virtual ~divergenceScheme();
 
-    // Divergence with a flux defined at faces
-    virtual tmp<linearSystem<stencil,Type,MeshType>> div
-    (
-        const meshField<faceScalar,MeshType>&,
-        meshField<Type,MeshType>&
-    ) = 0;
+    // Pure virtual functions, to be defined by derived schemes
+
+        virtual tmp<linearSystem<SType,Type,MeshType>> imDiv
+        (
+            const meshField<lowerFaceScalar,MeshType>& phi,
+            const meshField<Type,MeshType>& field,
+            const scalar factor = 1.0
+        ) = 0;
+
+        virtual tmp<meshField<Type,MeshType>> exDiv
+        (
+            const meshField<lowerFaceScalar,MeshType>& phi,
+            const meshField<Type,MeshType>& field
+        ) = 0;
+
+    // Support functions relying on the pure virtual functions above
+
+        // Implicit
+
+            // Return
+
+                // Flux as tmp
+                inline tmp<linearSystem<SType,Type,MeshType>> imDiv
+                (
+                    const tmp<meshField<lowerFaceScalar,MeshType>>& tPhi,
+                    const meshField<Type,MeshType>& field
+                );
+
+        // Explicit
+
+            // Return
+
+                // Flux as tmp
+                inline tmp<meshField<Type,MeshType>> exDiv
+                (
+                    const tmp<meshField<lowerFaceScalar,MeshType>>& tPhi,
+                    const meshField<Type,MeshType>& field
+                );
 };
 
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> explicitDiv
 (
-    const meshField<FaceSpace<Type>,MeshType>&
+    const meshField<LowerFaceSpace<Type>,MeshType>&
 );
 
 template<class Type>
@@ -74,6 +110,8 @@ tmp<meshField<Type,colocated>> explicitColoDiv
 }
 
 }
+
+#include "divergenceSchemeI.H"
 
 #ifdef NoRepository
     #include "divergenceScheme.C"

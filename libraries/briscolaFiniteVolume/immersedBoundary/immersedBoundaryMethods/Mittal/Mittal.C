@@ -45,7 +45,7 @@ Mittal<Type,MeshType>::Mittal
 
     scalar tol = 1e-5;
 
-    forAllLevels(mirrorPoints_,l,d,i,j,k)
+    forAllCells(mirrorPoints_,l,d,i,j,k)
     {
         if (this->ghostMask_(l,d,i,j,k) == 1)
         {

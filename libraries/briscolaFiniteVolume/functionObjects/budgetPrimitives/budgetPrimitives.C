@@ -84,7 +84,7 @@ bool budgetPrimitives::execute()
     const colocatedVectorField& U
         = db.lookupObject<colocatedVectorField>(uName_);
 
-    forAllLevels(u2_,l,d,i,j,k)
+    forAllCells(u2_,l,d,i,j,k)
     {
         u2_(l,d,i,j,k) = Foam::sqr(U(l,d,i,j,k)[0]);
         v2_(l,d,i,j,k) = Foam::sqr(U(l,d,i,j,k)[1]);

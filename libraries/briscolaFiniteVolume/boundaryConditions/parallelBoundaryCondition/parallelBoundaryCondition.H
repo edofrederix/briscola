@@ -54,7 +54,7 @@ public:
     parallelBoundaryCondition
     (
         const meshField<Type,MeshType>&,
-        const partPatch&
+        const boundary&
     );
 
     // Copy constructor
@@ -94,8 +94,11 @@ public:
         return PARALLELBC;
     }
 
-    // Initialize the evaluation of the boundary condition for given level
-    virtual void initEvaluate(const label);
+    // Non-eliminated boundary condition
+    virtual bool eliminated() const { return false; }
+
+    // Prepare the evaluation of the boundary condition for given level
+    virtual void prepare(const label);
 
     // Evaluate the boundary condition for given level
     virtual void evaluate(const label);

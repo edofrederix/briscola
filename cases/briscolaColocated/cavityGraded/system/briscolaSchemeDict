@@ -21,7 +21,7 @@ laplacianSchemes
         type    linearGauss;
     }
 
-    laplacian(nu,U)
+    laplacian(const,U)
     {
         type    linearGauss;
     }
@@ -31,7 +31,7 @@ divergenceSchemes
 {
     div(phi,U)
     {
-        type    midPointGauss;
+        type    linearGauss;
     }
 }
 
@@ -39,7 +39,7 @@ gradientSchemes
 {
     grad(p)
     {
-        type    midPointGauss;
+        type    linearGauss;
     }
 }
 
@@ -47,7 +47,7 @@ faceGradientSchemes
 {
     faceGrad(p)
     {
-        type    midPoint;
+        type    linear;
     }
 }
 
@@ -55,6 +55,6 @@ faceFluxSchemes
 {
     flux(U)
     {
-        type    midPoint;
+        type    linear;
     }
 }

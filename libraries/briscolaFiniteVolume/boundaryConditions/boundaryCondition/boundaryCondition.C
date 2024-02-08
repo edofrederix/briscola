@@ -2,11 +2,9 @@
 
 #include "colocated.H"
 #include "staggered.H"
-
-#include "stencil.H"
-#include "diagStencil.H"
-
 #include "meshField.H"
+#include "linearSystem.H"
+#include "domainBoundary.H"
 
 namespace Foam
 {
@@ -21,18 +19,18 @@ template<class Type, class MeshType>
 boundaryCondition<Type,MeshType>::boundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 :
     refCount(),
     fvMsh_(mshField.fvMsh()),
     mshField_(const_cast<meshField<Type,MeshType>&>(mshField)),
-    patch_(patch),
+    b_(b),
     dict_
     (
         mshField_.found("boundaryConditions")
-     && mshField_.subDict("boundaryConditions").found(patch_.name())
-      ? mshField_.subDict("boundaryConditions").subDict(patch_.name())
+     && mshField_.subDict("boundaryConditions").found(b_.name())
+      ? mshField_.subDict("boundaryConditions").subDict(b_.name())
       : dictionary::null
     )
 {}
@@ -47,7 +45,7 @@ boundaryCondition<Type,MeshType>::boundaryCondition
     refCount(),
     fvMsh_(bc.fvMsh_),
     mshField_(bc.mshField_),
-    patch_(bc.patch_),
+    b_(bc.b_),
     dict_(bc.dict_)
 {}
 
@@ -61,7 +59,7 @@ boundaryCondition<Type,MeshType>::boundaryCondition
     refCount(),
     fvMsh_(bc.fvMsh_),
     mshField_(const_cast<meshField<Type,MeshType>&>(field)),
-    patch_(bc.patch_),
+    b_(bc.b_),
     dict_(bc.dict_)
 {}
 
@@ -73,7 +71,7 @@ template<class Type, class MeshType>
 autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch,
+    const boundary& b,
     const word boundaryConditionType
 )
 {
@@ -92,27 +90,34 @@ autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
 
     return autoPtr<boundaryCondition<Type,MeshType>>
     (
-        cstrIter()(mshField, patch)
+        cstrIter()(mshField, b)
     );
 }
 
 template<class Type, class MeshType>
-autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::NewBoundary
+autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
 (
     const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
+    const boundary& b
 )
 {
-    const word boundaryConditionType
-    (
-        mshField.found("boundaryConditions")
-      ? word
-        (
-            mshField.subDict("boundaryConditions")
-           .subDict(patch.name()).lookup("type")
-        )
-      : word("dummy")
-    );
+    word boundaryConditionType;
+
+    if (b.castable<domainBoundary>())
+    {
+        boundaryConditionType =
+            mshField.found("boundaryConditions")
+          ? word
+            (
+                mshField.subDict("boundaryConditions")
+               .subDict(b.name()).lookup("type")
+            )
+          : word("dummy");
+    }
+    else
+    {
+        boundaryConditionType = b.type();
+    }
 
     typename dictionaryConstructorTable::iterator cstrIter =
         dictionaryConstructorTablePtr_->find(boundaryConditionType);
@@ -129,58 +134,7 @@ autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::NewB
 
     return autoPtr<boundaryCondition<Type,MeshType>>
     (
-        cstrIter()(mshField, patch)
-    );
-}
-
-template<class Type, class MeshType>
-autoPtr<boundaryCondition<Type,MeshType>>
-boundaryCondition<Type,MeshType>::NewPeriodic
-(
-    const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
-)
-{
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find("periodic");
-
-    return autoPtr<boundaryCondition<Type,MeshType>>
-    (
-        cstrIter()(mshField, patch)
-    );
-}
-
-template<class Type, class MeshType>
-autoPtr<boundaryCondition<Type,MeshType>>
-boundaryCondition<Type,MeshType>::NewParallel
-(
-    const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
-)
-{
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find("parallel");
-
-    return autoPtr<boundaryCondition<Type,MeshType>>
-    (
-        cstrIter()(mshField, patch)
-    );
-}
-
-template<class Type, class MeshType>
-autoPtr<boundaryCondition<Type,MeshType>>
-boundaryCondition<Type,MeshType>::NewEmpty
-(
-    const meshField<Type,MeshType>& mshField,
-    const partPatch& patch
-)
-{
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find("empty");
-
-    return autoPtr<boundaryCondition<Type,MeshType>>
-    (
-        cstrIter()(mshField, patch)
+        cstrIter()(mshField, b)
     );
 }
 
@@ -230,7 +184,7 @@ boundaryCondition<Type,MeshType>::globalBaseType
 
             forAll(bcs, bci)
             {
-                if (bcs[bci].boundaryOffset() == bo)
+                if (bcs[bci].offset() == bo)
                 {
                     type = static_cast<label>(bcs[bci].baseType());
                     break;
@@ -332,7 +286,7 @@ inline labelVector boundaryCondition<Type,MeshType>::S
     const label d
 ) const
 {
-    return this->fvMsh_.template S<MeshType>(l,d,this->boundaryOffset());
+    return this->fvMsh_.template S<MeshType>(l,d,this->offset());
 }
 
 template<class Type, class MeshType>
@@ -342,7 +296,7 @@ inline labelVector boundaryCondition<Type,MeshType>::E
     const label d
 ) const
 {
-    return this->fvMsh_.template E<MeshType>(l,d,this->boundaryOffset());
+    return this->fvMsh_.template E<MeshType>(l,d,this->offset());
 }
 
 template<class Type, class MeshType>
@@ -352,7 +306,7 @@ inline labelVector boundaryCondition<Type,MeshType>::N
     const label d
 ) const
 {
-    return this->fvMsh_.template N<MeshType>(l,d,this->boundaryOffset());
+    return this->fvMsh_.template N<MeshType>(l,d,this->offset());
 }
 
 template<class Type, class MeshType>
@@ -397,25 +351,7 @@ boundaryCondition<Type,MeshType>::faceDeltas() const
     return fvMsh_.template metrics<MeshType>().faceDeltas();
 }
 
-template<class Type, class MeshType>
-tmp<block<Type>> boundaryCondition<Type,MeshType>::internalValue
-(
-    const label l,
-    const label d
-)
-{
-    return tmp<block<Type>>(new block<Type>(this->N(l,d), Zero));
-}
-
-template<class Type, class MeshType>
-tmp<block<Type>> boundaryCondition<Type,MeshType>::boundarySources
-(
-    const label l,
-    const label d
-)
-{
-    return tmp<block<Type>>(new block<Type>(this->N(l,d), Zero));
-}
+// Level ghost eliminate
 
 template<class Type, class MeshType>
 void boundaryCondition<Type,MeshType>::eliminateGhosts
@@ -424,73 +360,21 @@ void boundaryCondition<Type,MeshType>::eliminateGhosts
     const label l
 )
 {
-    // Only face boundaries can manipulate a stencil
+    if (this->eliminated())
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+            eliminateGhosts(sys, l, d);
+}
 
-    if (this->boundaryOffsetDegree() == 1)
-    {
-        const labelVector bo(this->boundaryOffset());
-        const label faceNum(faceNumber(bo));
-
-        meshField<stencil,MeshType>& A = sys.A();
-        meshField<Type,MeshType>& b = sys.b();
-
-        const meshField<scalar,MeshType>& cv = this->cellVolumes();
-
-        forAll(A[l], d)
-        {
-            // Manipulate the linear system for eliminated or constrained
-            // boundary conditions
-
-            const bool shifted = MeshType::shifted(d,bo);
-            const bool eliminated = this->eliminated(shifted);
-            const bool constrained = this->constrained(shifted);
-
-            if (eliminated || constrained)
-            {
-                const labelVector S(this->S(l,d));
-                const labelVector E(this->E(l,d));
-
-                labelVector ijk;
-
-                if (eliminated)
-                {
-                    const stencil C(this->boundaryCoeff(l,d));
-                    const block<Type> B(this->boundarySources(l,d));
-
-                    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-                    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-                    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-                    {
-                        // Eliminate dependence on the ghost
-
-                        A(l,d,ijk) += A(l,d,ijk)[faceNum+1]*C;
-
-                        if (l == 0)
-                            b(l,d,ijk) -= A(l,d,ijk)[faceNum+1]*B(ijk-S);
-
-                        A(l,d,ijk)[faceNum+1] = 0;
-                    }
-                }
-
-                if (constrained)
-                {
-                    const block<Type> V(this->internalValue(l,d));
-
-                    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-                    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-                    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-                    {
-                        // Constrain the internal value
-
-                        A(l,d,ijk) = diagStencil(cv(l,d,ijk));
-
-                        if (l == 0)
-                            b(l,d,ijk) = V(ijk-S)*cv(l,d,ijk);
-                    }
-                }
-            }
-        }
-    }
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::eliminateGhosts
+(
+    linearSystem<symmStencil,Type,MeshType>& sys,
+    const label l
+)
+{
+    if (this->eliminated())
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+            eliminateGhosts(sys, l, d);
 }
 
 template<class Type, class MeshType>
@@ -500,8 +384,71 @@ void boundaryCondition<Type,MeshType>::eliminateGhosts
     const label l
 )
 {
-    // Nothing to be done for a diagonal stencil
+    if (this->eliminated())
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+            eliminateGhosts(sys, l, d);
 }
+
+// Direction ghost eliminate
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::eliminateGhosts
+(
+    linearSystem<stencil,Type,MeshType>&,
+    const label,
+    const label
+)
+{
+    NotImplemented;
+}
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::eliminateGhosts
+(
+    linearSystem<symmStencil,Type,MeshType>&,
+    const label,
+    const label
+)
+{
+    NotImplemented;
+}
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::eliminateGhosts
+(
+    linearSystem<diagStencil,Type,MeshType>&,
+    const label,
+    const label
+)
+{
+    NotImplemented;
+}
+
+// Prepare
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::prepare(const label l)
+{
+    forAll(this->mshField_[l], d)
+        prepare(l,d);
+}
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::prepare(const label l, const label d)
+{}
+
+// Evaluate
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::evaluate(const label l)
+{
+    forAll(this->mshField_[l], d)
+        evaluate(l,d);
+}
+
+template<class Type, class MeshType>
+void boundaryCondition<Type,MeshType>::evaluate(const label l, const label d)
+{}
 
 }
 

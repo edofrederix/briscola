@@ -9,8 +9,8 @@ namespace briscola
 namespace fv
 {
 
-template<class Type, class MeshType>
-divergenceScheme<Type,MeshType>::divergenceScheme
+template<class SType, class Type, class MeshType>
+divergenceScheme<SType,Type,MeshType>::divergenceScheme
 (
     const dictionary& dict,
     const fvMesh& fvMsh
@@ -19,21 +19,22 @@ divergenceScheme<Type,MeshType>::divergenceScheme
     scheme(dict, fvMsh)
 {}
 
-template<class Type, class MeshType>
-divergenceScheme<Type,MeshType>::divergenceScheme
+template<class SType, class Type, class MeshType>
+divergenceScheme<SType,Type,MeshType>::divergenceScheme
 (
-    const divergenceScheme<Type,MeshType>& s
+    const divergenceScheme<SType,Type,MeshType>& s
 )
 :
     scheme(s)
 {}
 
-template<class Type, class MeshType>
-divergenceScheme<Type,MeshType>::~divergenceScheme()
+template<class SType, class Type, class MeshType>
+divergenceScheme<SType,Type,MeshType>::~divergenceScheme()
 {}
 
-template<class Type, class MeshType>
-autoPtr<divergenceScheme<Type,MeshType>> divergenceScheme<Type,MeshType>::New
+template<class SType, class Type, class MeshType>
+autoPtr<divergenceScheme<SType,Type,MeshType>>
+divergenceScheme<SType,Type,MeshType>::New
 (
     const word name,
     const fvMesh& fvMsh
@@ -59,13 +60,16 @@ autoPtr<divergenceScheme<Type,MeshType>> divergenceScheme<Type,MeshType>::New
             << exit(FatalError);
     }
 
-    return autoPtr<divergenceScheme<Type,MeshType>>(cstrIter()(dict, fvMsh));
+    return autoPtr<divergenceScheme<SType,Type,MeshType>>
+    (
+        cstrIter()(dict, fvMsh)
+    );
 }
 
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> explicitDiv
 (
-    const meshField<FaceSpace<Type>,MeshType>& phi
+    const meshField<LowerFaceSpace<Type>,MeshType>& phi
 )
 {
     tmp<meshField<Type,MeshType>> tDiv
@@ -84,8 +88,14 @@ tmp<meshField<Type,MeshType>> explicitDiv
     const meshField<scalar,MeshType>& cv =
         phi.fvMsh().template metrics<MeshType>().cellVolumes();
 
-    forAllDirections(Div, d, i, j, k)
-        Div(d,i,j,k) = neighborSum(phi(d,i,j,k))/cv(d,i,j,k);
+    forAllCells(phi, d, i, j, k)
+        for (int fd = 0; fd < 3; fd++)
+            Div(d,i,j,k) +=
+                (
+                    phi(d,i,j,k)[fd]
+                  - phi(d,upperNei(i,j,k,fd))[fd]
+                )
+              / cv(d,i,j,k);
 
     return tDiv;
 }
@@ -116,16 +126,13 @@ tmp<meshField<Type,colocated>> explicitColoDiv
         field.fvMsh().template metrics<colocated>().faceAreas();
 
     forAllCells(Div, i, j, k)
-        Div(i,j,k) =
-            (
-              - field(0,i,  j,  k  ) * fa(i,j,k).left()
-              + field(0,i+1,j,  k  ) * fa(i,j,k).right()
-              - field(1,i,  j,  k  ) * fa(i,j,k).bottom()
-              + field(1,i,  j+1,k  ) * fa(i,j,k).top()
-              - field(2,i,  j,  k  ) * fa(i,j,k).aft()
-              + field(2,i,  j,  k+1) * fa(i,j,k).fore()
-            )
-          / cv(i,j,k);
+        for (int fd = 0; fd < 3; fd++)
+            Div(i,j,k) -=
+                (
+                    field(fd,i,j,k)*fa(i,j,k)[fd*2]
+                  - field(fd,upperNei(i,j,k,fd))*fa(i,j,k)[fd*2+1]
+                )
+              / cv(i,j,k);
 
     return tDiv;
 }

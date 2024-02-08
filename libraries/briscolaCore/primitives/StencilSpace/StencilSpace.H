@@ -41,6 +41,9 @@ public:
 
     // Construct from Istream
     inline StencilSpace(Istream&);
+
+    // Upcast to Form
+    inline operator Form() const { return Form(*this); }
 };
 
 // Stencil space should always reduce to self

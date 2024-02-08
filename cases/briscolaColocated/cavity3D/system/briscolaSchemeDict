@@ -21,7 +21,7 @@ laplacianSchemes
         type    linearGauss;
     }
 
-    laplacian(nu,U)
+    laplacian(const,U)
     {
         type    linearGauss;
     }
@@ -47,7 +47,7 @@ faceGradientSchemes
 {
     faceGrad(p)
     {
-        type    midPoint;
+        type    linear;
     }
 }
 

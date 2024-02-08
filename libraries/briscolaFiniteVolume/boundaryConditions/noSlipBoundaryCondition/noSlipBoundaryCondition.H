@@ -1,9 +1,7 @@
 #ifndef noSlipBoundaryCondition_H
 #define noSlipBoundaryCondition_H
 
-#include "boundaryCondition.H"
-
-#include "block.H"
+#include "DirichletBoundaryCondition.H"
 
 namespace Foam
 {
@@ -17,10 +15,12 @@ namespace fv
 template<class Type, class MeshType>
 class noSlipBoundaryCondition
 :
-    public boundaryCondition<Type,MeshType>
+    public DirichletBoundaryCondition<Type,MeshType>
 {
-    // Disallow default bitwise assignment
-    void operator=(const noSlipBoundaryCondition<Type,MeshType>&);
+protected:
+
+    // Boundary values
+    List<Type> boundaryValues_;
 
 public:
 
@@ -31,11 +31,14 @@ public:
     noSlipBoundaryCondition
     (
         const meshField<Type,MeshType>&,
-        const partPatch&
+        const boundary&
     );
 
     // Copy constructor
-    noSlipBoundaryCondition(const noSlipBoundaryCondition<Type,MeshType>&);
+    noSlipBoundaryCondition
+    (
+        const noSlipBoundaryCondition<Type,MeshType>&
+    );
 
     // Copy constructor resetting field reference
     noSlipBoundaryCondition
@@ -70,35 +73,6 @@ public:
     {
         return DIRICHLETBC;
     }
-
-    // Initialize the evaluation of the boundary condition for given level
-    virtual void initEvaluate(const label);
-
-    // Evaluate the boundary condition for given level
-    virtual void evaluate(const label);
-
-    // Constrained boundary conditions
-
-        // This boundary condition constrains values on shifted boundaries
-        virtual bool constrained(const bool shifted) const { return shifted; }
-
-        // Return the internal value for given level and direction
-        virtual tmp<block<Type>> internalValue(const label, const label);
-
-    // Eliminated boundary conditions
-
-        // Eliminated ghosts for non-shifted boundaries. For shifted boundaries
-        // the ghost value is not important.
-        virtual bool eliminated(const bool shifted) const { return !shifted; }
-
-        // Return the boundary coefficient for given level and direction
-        virtual stencil boundaryCoeff(const label, const label)
-        {
-            return -pTraits<diagStencil>::one;
-        }
-
-        // Return the boundary sources for given level and direction
-        virtual tmp<block<Type>> boundarySources(const label, const label);
 };
 
 }

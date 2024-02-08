@@ -19,7 +19,7 @@ addToRunTimeSelectionTable(curvatureScheme, parabolicFit, dictionary);
 
 void parabolicFit::createBoundaryTypes()
 {
-    const faceLabel& faceType = fvMsh_.msh().facePatchType();
+    const faceLabel& faceType = fvMsh_.msh().faceBoundaryType();
 
     for (int i = 0; i < 3; i++)
     {
@@ -34,9 +34,9 @@ void parabolicFit::createBoundaryTypes()
                     aux2 =
                         i == 0
                       ? aux2 && faceType.left()
-                      > boundaryPartPatch::typeNumber
+                      > domainBoundary::typeNumber
                       : aux2 && faceType.right()
-                      > boundaryPartPatch::typeNumber;
+                      > domainBoundary::typeNumber;
                 }
 
                 if (j != 1)
@@ -44,9 +44,9 @@ void parabolicFit::createBoundaryTypes()
                     aux2 =
                         j == 0
                       ? aux2 && faceType.bottom()
-                      > boundaryPartPatch::typeNumber
+                      > domainBoundary::typeNumber
                       : aux2 && faceType.top()
-                      > boundaryPartPatch::typeNumber;
+                      > domainBoundary::typeNumber;
                 }
 
                 if (k != 1)
@@ -54,9 +54,9 @@ void parabolicFit::createBoundaryTypes()
                     aux2 =
                         k == 0
                       ? aux2 && faceType.aft()
-                      > boundaryPartPatch::typeNumber
+                      > domainBoundary::typeNumber
                       : aux2 && faceType.fore()
-                      > boundaryPartPatch::typeNumber;
+                      > domainBoundary::typeNumber;
                 }
 
                 boundaryType_[i][j][k] = aux2;
@@ -140,7 +140,7 @@ void parabolicFit::correct()
         if
         (
             alpha_(i,j,k) > vof::threshold
-            && alpha_(i,j,k) < (1.0 - vof::threshold)
+         && alpha_(i,j,k) < (1.0 - vof::threshold)
         )
         {
 

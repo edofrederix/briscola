@@ -65,6 +65,22 @@ public:
     ) = 0;
 };
 
+// Gradient of a face field
+
+template<class Type, class MeshType>
+inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
+grad
+(
+    const meshField<FaceSpace<Type>,MeshType>& field
+);
+
+template<class Type, class MeshType>
+inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
+grad
+(
+    const meshField<LowerFaceSpace<Type>,MeshType>& field
+);
+
 }
 
 }

@@ -7,7 +7,7 @@
    viewBox="0 0 56.368324 56.768291"
    version="1.1"
    id="svg5"
-   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
    sodipodi:docname="coarseAndFine.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -23,15 +23,15 @@
      inkscape:pagecheckerboard="0"
      inkscape:document-units="mm"
      showgrid="true"
-     inkscape:zoom="1.4093294"
-     inkscape:cx="80.534756"
-     inkscape:cy="203.28817"
-     inkscape:window-width="1842"
-     inkscape:window-height="1057"
+     inkscape:zoom="1.9930928"
+     inkscape:cx="49.671547"
+     inkscape:cy="107.87255"
+     inkscape:window-width="1458"
+     inkscape:window-height="841"
      inkscape:window-x="70"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer11"
+     inkscape:current-layer="layer3"
      inkscape:snap-grids="true"
      inkscape:snap-intersection-paths="true"
      showguides="false"
@@ -39,7 +39,9 @@
      inkscape:snap-nodes="true"
      inkscape:snap-others="false"
      inkscape:snap-bbox="true"
-     inkscape:bbox-nodes="true">
+     inkscape:bbox-nodes="true"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1">
     <inkscape:grid
        type="xygrid"
        id="grid846"
@@ -401,6 +403,41 @@
        apply_with_weight="true"
        only_selected="false" />
   </defs>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="IBM"
+     style="display:inline"
+     sodipodi:insensitive="true">
+    <rect
+       style="fill:#000000;stroke:none;stroke-width:0.705556;stop-color:#000000"
+       id="rect769"
+       width="31.75"
+       height="15.875"
+       x="19.194366"
+       y="5.4239535" />
+    <rect
+       style="fill:#000000;stroke:none;stroke-width:0.705556;stop-color:#000000"
+       id="rect771"
+       width="26.458332"
+       height="5.2916665"
+       x="24.486032"
+       y="21.298954" />
+    <rect
+       style="fill:#000000;stroke:none;stroke-width:0.705556;stop-color:#000000"
+       id="rect773"
+       width="21.166666"
+       height="5.2916665"
+       x="29.7777"
+       y="26.590618" />
+    <rect
+       style="fill:#000000;stroke:none;stroke-width:0.705556;stop-color:#000000"
+       id="rect775"
+       width="15.875"
+       height="5.2916665"
+       x="35.069366"
+       y="31.882286" />
+  </g>
   <g
      inkscape:groupmode="layer"
      id="layer8"

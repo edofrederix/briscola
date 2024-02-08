@@ -5,6 +5,7 @@
 #include "scalar.H"
 #include "word.H"
 #include "zero.H"
+#include "labelVector.H"
 
 namespace Foam
 {
@@ -35,8 +36,8 @@ Ostream& operator<<
 
 // Class to cast Form1 and Form2 to their equivalent with given Cmpt as
 // component type. Cell space casts are necessary for functions that return the
-// same form, but with differen component type. Should be specialized by derived
-// types.
+// same form, but with different component type. Should be specialized by
+// derived types.
 
 template<class Form1, class Form2, class Cmpt>
 class CellSpaceCast
@@ -69,6 +70,7 @@ public:
 
     static const char* const typeName;
     static const char* const componentNames[];
+    static const labelVector componentOffsets[];
     static const Form zero;
     static const Form one;
     static const Form max;
@@ -154,6 +156,9 @@ public:
         Ostream&,
         const CellSpace<Form, Cmpt, Ncmpts>&
     );
+
+    // Conversion to Form
+    inline operator Form() { return Form(*this); }
 };
 
 // Return a string representation of a CellSpace
