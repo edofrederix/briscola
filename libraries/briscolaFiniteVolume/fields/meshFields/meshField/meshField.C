@@ -421,10 +421,6 @@ void meshField<Type,MeshType>::correctNonEliminatedBoundaryConditions()
 
     forAll(*this, l)
         listType::operator[](l).correctNonEliminatedBoundaryConditions();
-    addBoundaryConditions();
-
-    forAll(*this, l)
-        listType::operator[](l).correctNonEliminatedBoundaryConditions();
 }
 
 template<class Type, class MeshType>

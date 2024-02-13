@@ -502,6 +502,21 @@ void fvMeshMetrics<MeshType>::setGlobalCellNumbers()
 }
 
 template<class MeshType>
+void fvMeshMetrics<MeshType>::setImmersedBoundary()
+{
+    if (fvMsh_.immersedBoundaryPresent())
+    {
+        immersedBoundary_ = new immersedBoundary<MeshType>(fvMsh_);
+    }
+}
+
+template<class MeshType>
+const immersedBoundary<MeshType>& fvMeshMetrics<MeshType>::IB() const
+{
+    return immersedBoundary_();
+}
+
+template<class MeshType>
 fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
 :
     fvMsh_(fvMsh),
