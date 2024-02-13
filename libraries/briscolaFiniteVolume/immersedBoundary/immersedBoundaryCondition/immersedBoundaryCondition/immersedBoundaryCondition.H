@@ -5,7 +5,7 @@
 #include "immersedBoundaryFwd.H"
 
 #include "List.H"
-#include "shape.H"
+#include "Switch.H"
 #include "dictionary.H"
 
 namespace Foam
@@ -39,6 +39,12 @@ protected:
     // Copy of the dictionary
     dictionary dict_;
 
+    // True for ghost-cell methods updating values as Jacobi points
+    const Switch JacobiGhostMethod_;
+
+    // Convergence relaxation parameter
+    scalar omega_;
+
 public:
 
     // Declare name of the class and its debug switch
@@ -57,11 +63,12 @@ public:
         (mshField, ib)
     );
 
-    // Construct from solverDict and fvMesh
+    // Construct from meshField and immersedBoundary
     immersedBoundaryCondition
     (
         const meshField<Type,MeshType>& mshField,
-        const immersedBoundary<MeshType>& ib
+        const immersedBoundary<MeshType>& ib,
+        bool jac = false
     );
 
     // Selector from dictionary
@@ -87,17 +94,11 @@ public:
     virtual void correctJacobiPoints
     (
         meshLevel<Type,MeshType>&
-    );
+    ) const;
 
-    // Return colocated volume source term for a staggered velocity field.
-    // Only defined for staggeredScalarImmersedBoundary
-    // tmp<meshField<scalar,colocated>> IBMSource
-    // (
-    //     const meshField<scalar,staggered>&
-    // );
-
-    // Access to the dictionary
+    // Inline access functions
     inline const dictionary& dict() const { return dict_; }
+    inline const Switch Jac() const { return JacobiGhostMethod_; }
 
 };
 

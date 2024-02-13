@@ -254,6 +254,9 @@ public:
     // Correct eliminated boundary conditions
     void correctEliminatedBoundaryConditions();
 
+    // Correct immersed boundary conditions
+    void correctImmersedBoundaryConditions();
+
     // Member operators
 
     void operator=(const meshLevel<Type,MeshType>&);

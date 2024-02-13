@@ -7,6 +7,7 @@
 #include "colocatedFields.H"
 #include "staggeredFields.H"
 #include "dictionary.H"
+#include "immersedBoundary.H"
 
 namespace Foam
 {

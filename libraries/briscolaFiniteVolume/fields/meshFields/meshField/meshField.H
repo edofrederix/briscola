@@ -377,6 +377,9 @@ public:
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }
 
+    // Return const reference to IB condition
+    const immersedBoundaryCondition<Type,MeshType>& IBC() const;
+
     // Member operators
 
     void operator=(const meshField<Type,MeshType>&);

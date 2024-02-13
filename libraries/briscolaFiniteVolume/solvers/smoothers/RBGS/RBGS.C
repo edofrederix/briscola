@@ -32,6 +32,8 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 {
     meshLevel<Type,MeshType>& x = sys.x()[l];
 
+    const fvMesh& fvMsh = this->fvMsh_;
+
     const meshLevel<SType,MeshType>& A = sys.A()[l];
     const meshLevel<Type,MeshType>& b = sys.b()[l];
 
@@ -49,7 +51,18 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
             const meshDirection<Type,MeshType>& bd = b[d];
 
             forAllCells(xd, i, j, k)
-                if (even(i,j,k))
+                if
+                (
+                    even(i,j,k)
+                    &&
+                    (
+                        (!fvMsh.immersedBoundaryPresent() || !sys.x().IBC().Jac())
+                        ?
+                        true
+                        :
+                        !fvMsh.IB<MeshType>().ghostMask()(l,d,i,j,k)
+                    )
+                )
                     xd(i,j,k) =
                         (
                             bd(i,j,k)
@@ -60,7 +73,18 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                       / Ad(i,j,k).center();
 
             forAllCells(xd, i, j, k)
-                if (odd(i,j,k))
+                if
+                (
+                    odd(i,j,k)
+                    &&
+                    (
+                        (!fvMsh.immersedBoundaryPresent() || !sys.x().IBC().Jac())
+                        ?
+                        true
+                        :
+                        !fvMsh.IB<MeshType>().ghostMask()(l,d,i,j,k)
+                    )
+                )
                     xd(i,j,k) =
                         (
                             bd(i,j,k)
@@ -74,7 +98,18 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                 continue;
 
             forAllCellsReversed(xd, i, j, k)
-                if (even(i,j,k))
+                if
+                (
+                    even(i,j,k)
+                    &&
+                    (
+                        (!fvMsh.immersedBoundaryPresent() || !sys.x().IBC().Jac())
+                        ?
+                        true
+                        :
+                        !fvMsh.IB<MeshType>().ghostMask()(l,d,i,j,k)
+                    )
+                )
                     xd(i,j,k) =
                         (
                             bd(i,j,k)
@@ -85,7 +120,18 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                       / Ad(i,j,k).center();
 
             forAllCellsReversed(xd, i, j, k)
-                if (odd(i,j,k))
+                if
+                (
+                    odd(i,j,k)
+                    &&
+                    (
+                        (!fvMsh.immersedBoundaryPresent() || !sys.x().IBC().Jac())
+                        ?
+                        true
+                        :
+                        !fvMsh.IB<MeshType>().ghostMask()(l,d,i,j,k)
+                    )
+                )
                     xd(i,j,k) =
                         (
                             bd(i,j,k)
@@ -97,6 +143,7 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
         }
 
         x.correctNonEliminatedBoundaryConditions();
+        x.correctImmersedBoundaryConditions();
     }
 
     x.correctEliminatedBoundaryConditions();

@@ -42,6 +42,8 @@ void MG<SType,Type,MeshType>::cycle
     meshLevel<Type, MeshType>& xl = sys.x()[l];
     meshLevel<Type, MeshType>& rl = r[l];
 
+    const fvMesh& fvMsh = this->fvMsh_;
+
     const label nLevels = this->fvMsh_.size();
     const label nDirs = xl.size();
 
@@ -85,9 +87,34 @@ void MG<SType,Type,MeshType>::cycle
             // repetition
 
             if (rep > 0 || l > 0)
+            {
                 forAll(xl, d)
+                {
                     if (!converged[d])
+                    {
                         sys.residual(rl[d]);
+
+                        if
+                        (
+                               (fvMsh.immersedBoundaryPresent())
+                            && (sys.x().IBC().Jac())
+                        )
+                        {
+                            forAllCells(r[l][d],i,j,k)
+                            {
+                                if
+                                (
+                                    fvMsh.IB<MeshType>()
+                                        .ghostMask()[l][d](i,j,k)
+                                )
+                                {
+                                    r[l][d](i,j,k) = Zero;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             // Restrict the current level residual to coarse level
 
@@ -119,6 +146,7 @@ void MG<SType,Type,MeshType>::cycle
                     proScheme_->prolong(xl[d], xlCoarse[d], plusEqOp<Type>());
 
             xl.correctBoundaryConditions();
+            xl.correctImmersedBoundaryConditions();
 
             // Post-smooth
 
@@ -172,9 +200,12 @@ void MG<SType,Type,MeshType>::solve
 {
     meshField<Type, MeshType>& x = sys.x();
 
+    const fvMesh& fvMsh = this->fvMsh_;
+
     // Correct the boundary conditions
 
     x[0].correctBoundaryConditions();
+    x[0].correctImmersedBoundaryConditions();
 
     // Residual field
 
@@ -192,6 +223,22 @@ void MG<SType,Type,MeshType>::solve
     // Initial residual
 
     sys.residual(r[0]);
+
+    if
+    (
+           (fvMsh.immersedBoundaryPresent())
+        && (sys.x().IBC().Jac())
+    )
+    {
+        forAllCells(r[0],d,i,j,k)
+        {
+            if (fvMsh.IB<MeshType>().ghostMask()[0][d](i,j,k))
+            {
+                r[0][d](i,j,k) = Zero;
+            }
+        }
+    }
+
 
     // Residual normalization factors
 
@@ -250,8 +297,27 @@ void MG<SType,Type,MeshType>::solve
         // Recompute the residual
 
         forAll(x[0], d)
+        {
             if (!converged[d])
+            {
                 sys.residual(r[0][d]);
+
+                if
+                (
+                       (fvMsh.immersedBoundaryPresent())
+                    && (sys.x().IBC().Jac())
+                )
+                {
+                    forAllCells(r[0][d],i,j,k)
+                    {
+                        if (fvMsh.IB<MeshType>().ghostMask()[0][d](i,j,k))
+                        {
+                            r[0][d](i,j,k) = Zero;
+                        }
+                    }
+                }
+            }
+        }
 
         currentResiduals =
             cmptDivide(gSum(cmptMag(r[0])), normFactors);

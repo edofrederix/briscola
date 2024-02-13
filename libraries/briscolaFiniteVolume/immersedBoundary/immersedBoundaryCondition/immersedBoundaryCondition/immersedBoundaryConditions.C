@@ -3,6 +3,9 @@
 
 #include "emptyImmersedBoundaryCondition.H"
 #include "penalizationDirichletImmersedBoundaryCondition.H"
+#include "FadlunDirichletImmersedBoundaryCondition.H"
+#include "MittalDirichletImmersedBoundaryCondition.H"
+#include "VremanDirichletImmersedBoundaryCondition.H"
 
 namespace Foam
 {
@@ -51,15 +54,30 @@ makeIBC(stencil,staggered);
 makeIBC(symmStencil,staggered);
 makeIBC(diagStencil,staggered);
 
+makeIBCType(empty,scalar,colocated);
+makeIBCType(empty,scalar,staggered);
+makeIBCType(empty,vector,colocated);
+makeIBCType(empty,vector,staggered);
+
 makeIBCType(penalizationDirichlet,scalar,colocated);
 makeIBCType(penalizationDirichlet,scalar,staggered);
 makeIBCType(penalizationDirichlet,vector,colocated);
 makeIBCType(penalizationDirichlet,vector,staggered);
 
-makeIBCType(empty,scalar,colocated);
-makeIBCType(empty,scalar,staggered);
-makeIBCType(empty,vector,colocated);
-makeIBCType(empty,vector,staggered);
+makeIBCType(FadlunDirichlet,scalar,colocated);
+makeIBCType(FadlunDirichlet,scalar,staggered);
+makeIBCType(FadlunDirichlet,vector,colocated);
+makeIBCType(FadlunDirichlet,vector,staggered);
+
+makeIBCType(MittalDirichlet,scalar,colocated);
+makeIBCType(MittalDirichlet,scalar,staggered);
+makeIBCType(MittalDirichlet,vector,colocated);
+makeIBCType(MittalDirichlet,vector,staggered);
+
+makeIBCType(VremanDirichlet,scalar,colocated);
+makeIBCType(VremanDirichlet,scalar,staggered);
+makeIBCType(VremanDirichlet,vector,colocated);
+makeIBCType(VremanDirichlet,vector,staggered);
 
 }
 

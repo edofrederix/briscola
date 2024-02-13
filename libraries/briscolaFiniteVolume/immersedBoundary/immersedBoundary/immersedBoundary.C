@@ -14,6 +14,207 @@ using Foam::min;
 using Foam::sqr;
 using Foam::mag;
 
+template<class MeshType>
+void immersedBoundary<MeshType>::setMasks()
+{
+    // Cell centers
+    const meshField<vector,MeshType>& CC =
+        fvMsh_.metrics<MeshType>().cellCenters();
+
+    // Set IB mask fields
+    forAllCells(mask_,l,d,i,j,k)
+    {
+        const labelVector ijk(i,j,k);
+
+        mask_(l,d,i,j,k) = Zero;
+        ghostMask_(l,d,i,j,k) = Zero;
+        wallAdjMask_(l,d,i,j,k) = Zero;
+
+        if (this->isInside(CC(l,d,i,j,k)))
+        {
+            mask_(l,d,i,j,k) = 1;
+
+            for (int dir = 0; dir < 6; dir++)
+            {
+                const labelVector fo = faceOffsets[dir];
+
+                if (!this->isInside(CC[l][d](ijk+fo)))
+                {
+                    ghostMask_(l,d,i,j,k) = 1;
+                }
+            }
+        }
+        else
+        {
+            for (int dir = 0; dir < 6; dir++)
+            {
+                const labelVector fo = faceOffsets[dir];
+
+                if (this->isInside(CC[l][d](ijk+fo)))
+                {
+                    wallAdjMask_(l,d,i,j,k) = 1;
+                }
+            }
+        }
+    }
+
+    mask_.correctParallelBoundaryConditions();
+    ghostMask_.correctParallelBoundaryConditions();
+    wallAdjMask_.correctParallelBoundaryConditions();
+}
+
+template<class MeshType>
+void immersedBoundary<MeshType>::calculateWallDistances()
+{
+    // Cell centers
+    const meshField<vector,MeshType>& CC =
+        fvMsh_.metrics<MeshType>().cellCenters();
+
+    // Set wall distance fields
+    forAllCells(mask_,l,d,i,j,k)
+    {
+        const labelVector ijk(i,j,k);
+
+        wallDistAdj_(l,d,i,j,k) = Zero;
+        wallDistGhost_(l,d,i,j,k) = Zero;
+
+        if (!this->isInside(CC(l,d,i,j,k)))
+        {
+            const vector c(CC(l,d,i,j,k));
+
+            for (int dir = 0; dir < 6; dir++)
+            {
+                const labelVector fo = faceOffsets[dir];
+
+                if (this->isInside(CC[l][d](ijk+fo)))
+                {
+                    // Neighbor cell in the IB
+                    const vector nb(CC[l][d](ijk+fo));
+                    const scalar wd = this->wallDistance(c,nb);
+                    const scalar xi = (mag(c-nb)-wd)/mag(c-nb);
+
+                    wallDistAdj_(l,d,i,j,k)[dir] = xi;
+                }
+            }
+        }
+
+        if (this->isInside(CC(l,d,i,j,k)))
+        {
+            const vector gc(CC(l,d,i,j,k));
+
+            for (int dir = 0; dir < 6; dir++)
+            {
+                const labelVector fo = faceOffsets[dir];
+
+                if (!this->isInside(CC[l][d](ijk+fo)))
+                {
+                    // Wall-adjacent cell
+                    const vector wa(CC[l][d](ijk+fo));
+                    const scalar wd = this->wallDistance(wa,gc);
+                    const scalar xi = (mag(gc-wa)-wd)/mag(gc-wa);
+
+                    wallDistGhost_(l,d,i,j,k)[dir] = xi;
+
+                    // Second neighbor
+                    const vector sn(CC[l][d](ijk+2.0*fo));
+                    const scalar xi2 = mag(gc-sn)/mag(gc-wa);
+
+                    neighborDist_(l,d,i,j,k)[dir] = xi2;
+
+                    break;
+                }
+            }
+        }
+    }
+
+    wallDistAdj_.correctParallelBoundaryConditions();
+    wallDistGhost_.correctParallelBoundaryConditions();
+    neighborDist_.correctParallelBoundaryConditions();
+}
+
+template<class MeshType>
+void immersedBoundary<MeshType>::setMirrorPoints()
+{
+    // Cell centers
+    const meshField<vector,MeshType>& CC =
+        fvMsh_.metrics<MeshType>().cellCenters();
+
+    // Mesh
+    const mesh& msh = fvMsh_.msh();
+
+    scalar tol = 1e-5;
+
+    forAllCells(mirrorPoints_,l,d,i,j,k)
+    {
+        if (ghostMask_(l,d,i,j,k))
+        {
+            vector mp = mirrorPoint(CC(l,d,i,j,k));
+
+            // Fix situations where the mirror point is just outside of the mesh
+            // bounding box due to rounding errors
+            if
+            (
+                (mp.x() <= msh[l].boundingBox().left() + tol)
+                && (mp.x() >= msh[l].boundingBox().left() - tol)
+            )
+            {
+                mp.x() += tol;
+            }
+            if
+            (
+                (mp.x() >= msh[l].boundingBox().right() - tol)
+                && (mp.x() <= msh[l].boundingBox().right() + tol)
+            )
+            {
+                mp.x() -= tol;
+            }
+            if
+            (
+                (mp.y() <= msh[l].boundingBox().bottom() + tol)
+                && (mp.y() >= msh[l].boundingBox().bottom() - tol)
+            )
+            {
+                mp.y() += tol;
+            }
+            if
+            (
+                (mp.y() >= msh[l].boundingBox().top() - tol)
+                && (mp.y() <= msh[l].boundingBox().top() + tol)
+            )
+            {
+                mp.y() -= tol;
+            }
+            if
+            (
+                (mp.z() <= msh[l].boundingBox().aft() + tol)
+                && (mp.z() >= msh[l].boundingBox().aft() - tol)
+            )
+            {
+                mp.z() += tol;
+            }
+            if
+            (
+                (mp.z() >= msh[l].boundingBox().fore() - tol)
+                && (mp.z() <= msh[l].boundingBox().fore() + tol)
+            )
+            {
+                mp.z() -= tol;
+            }
+
+            mirrorPoints_(l,d,i,j,k) = mp;
+        }
+        else
+        {
+            // The vector (0,0,0) is still a valid coordinate
+            // so the mirrorPoints_ field should only be evaluated
+            // at ghost cells
+            mirrorPoints_(l,d,i,j,k) = Zero;
+        }
+    }
+
+    mirrorPoints_.correctParallelBoundaryConditions();
+}
+
 // Constructor
 
 template<class MeshType>
@@ -52,6 +253,46 @@ immersedBoundary<MeshType>::immersedBoundary
         true,
         true,
         true
+    ),
+    wallDistAdj_
+    (
+        "wallDistAdj",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        true
+    ),
+    wallDistGhost_
+    (
+        "wallDistGhost",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        true
+    ),
+    neighborDist_
+    (
+        "neighborDist",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        false,
+        true
+    ),
+    mirrorPoints_
+    (
+        "mirrorPoints",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        false,
+        true
     )
 {
     const dictionary& IBMdict = fvMsh.meshDict().subDict("ImmersedBoundary");
@@ -78,56 +319,9 @@ immersedBoundary<MeshType>::immersedBoundary
         }
     }
 
-    // Cell centers
-    const meshField<vector,MeshType>& CC =
-        fvMsh_.metrics<MeshType>().cellCenters();
-
-    // Set IB mask fields
-    forAllCells(mask_,l,d,i,j,k)
-    {
-        const labelVector ijk(i,j,k);
-
-        mask_(l,d,i,j,k) = 0;
-        ghostMask_(l,d,i,j,k) = 0;
-        wallAdjMask_(l,d,i,j,k) = 0;
-
-        if (this->isInside(CC(l,d,i,j,k)))
-        {
-            mask_(l,d,i,j,k) = 1;
-
-            for (int dir = 0; dir < 6; dir++)
-            {
-                const labelVector fo = faceOffsets[dir];
-
-                if
-                (
-                    !this->isInside(CC[l][d](ijk+fo))
-                )
-                {
-                    ghostMask_(l,d,i,j,k) = 1;
-                }
-            }
-        }
-        else
-        {
-            for (int dir = 0; dir < 6; dir++)
-            {
-                const labelVector fo = faceOffsets[dir];
-
-                if
-                (
-                    this->isInside(CC[l][d](ijk+fo))
-                )
-                {
-                    wallAdjMask_(l,d,i,j,k) = 1;
-                }
-            }
-        }
-    }
-
-    mask_.correctParallelBoundaryConditions();
-    ghostMask_.correctParallelBoundaryConditions();
-    wallAdjMask_.correctParallelBoundaryConditions();
+    setMasks();
+    calculateWallDistances();
+    setMirrorPoints();
 }
 
 template<class MeshType>
@@ -163,7 +357,7 @@ scalar immersedBoundary<MeshType>::wallDistance(vector c, vector nb)
     if (!this->isInside(nb))
     {
         FatalError
-            << "Neighbor point should be inside the immersed boundary."
+            << "Neighbor point should be inside the immersed boundary." << c << nb
             << endl;
         FatalError.exit();
     }

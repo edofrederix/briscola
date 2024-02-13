@@ -1,6 +1,7 @@
 #include "arguments.H"
 #include "IOdictionary.H"
 #include "Time.H"
+#include "immersedBoundaryConditionStaggeredMassSource.C"
 
 #include "fv.H"
 
@@ -60,8 +61,6 @@ int main(int argc, char *argv[])
         DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
-        USys += ex::stagGrad(p);
-
         // Solve predictor
 
         if (fvMsh.immersedBoundaryPresent())
@@ -71,12 +70,30 @@ int main(int argc, char *argv[])
 
         USolve->solve(USys);
 
-        U += deltaT*ex::stagGrad(p);
-        U.correctBoundaryConditions();
-
         // Pressure equation
 
-        Poisson->solve(p, ex::coloDiv(U)/(-deltaT));
+        if
+        (
+               fvMsh.immersedBoundaryPresent()
+            && U.IBC().Jac()
+            && U.IBC().dict().lookupOrDefault<Switch>
+               (
+                   "massSource",
+                   true
+               )
+        )
+        {
+            Poisson->solve
+            (
+                p,
+                (ex::coloDiv(U)-IBMMassSource(U))/(-deltaT)
+            );
+
+        }
+        else
+        {
+            Poisson->solve(p, ex::coloDiv(U)/(-deltaT));
+        }
 
         // Correction
 

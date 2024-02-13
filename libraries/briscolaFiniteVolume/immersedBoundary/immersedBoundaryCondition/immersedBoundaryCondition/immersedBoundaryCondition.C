@@ -1,5 +1,5 @@
 #include "immersedBoundaryCondition.H"
-#include "fvMesh.H"
+#include "immersedBoundary.H"
 #include "meshField.H"
 #include "colocatedFieldsFwd.H"
 #include "staggeredFieldsFwd.H"
@@ -25,7 +25,8 @@ template<class Type, class MeshType>
 immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
-    const immersedBoundary<MeshType>& ib
+    const immersedBoundary<MeshType>& ib,
+    bool jac
 )
 :
     fvMsh_(mshField.fvMsh()),
@@ -36,6 +37,11 @@ immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
      && mshField.subDict("boundaryConditions").found("ImmersedBoundary")
       ? mshField.subDict("boundaryConditions").subDict("ImmersedBoundary")
       : dictionary::null
+    ),
+    JacobiGhostMethod_(jac),
+    omega_
+    (
+        dict_.lookupOrDefault<scalar>("omega", 0.8)
     )
 {}
 
@@ -87,64 +93,10 @@ template<class Type, class MeshType>
 void immersedBoundaryCondition<Type,MeshType>::correctJacobiPoints
 (
     meshLevel<Type,MeshType>&
-)
+) const
 {
     // Do nothing by default
 }
-
-// template<>
-// tmp<colocatedScalarField> immersedBoundaryCondition<scalar,staggered>::IBMSource
-// (
-//     const staggeredScalarField& field
-// )
-// {
-//     tmp<colocatedScalarField> tSource
-//     (
-//         new colocatedScalarField
-//         (
-//             "IBMSource",
-//             field.fvMsh()
-//         )
-//     );
-
-//     colocatedScalarField& source = tSource.ref();
-
-//     source = Zero;
-
-//     if (JacobiGhostMethod_)
-//     {
-//         const colocatedFaceScalarField& fa =
-//             fvMsh_.metrics<colocated>().faceAreas();
-
-//         const colocatedScalarField& cv =
-//             fvMsh_.metrics<colocated>().cellVolumes();
-
-//         forAllCells(source[0][0],i,j,k)
-//         {
-//             source(0,0,i,j,k) -=
-//                 ghostMask_(0,0,i,j,k) * field(0,0,i,j,k) * fa(0,0,i,j,k).left();
-
-//             source(0,0,i,j,k) +=
-//                 ghostMask_(0,0,i+1,j,k) * field(0,0,i+1,j,k) * fa(0,0,i,j,k).right();
-
-//             source(0,0,i,j,k) -=
-//                 ghostMask_(0,1,i,j,k) * field(0,1,i,j,k) * fa(0,0,i,j,k).bottom();
-
-//             source(0,0,i,j,k) +=
-//                 ghostMask_(0,1,i,j+1,k) * field(0,1,i,j+1,k) * fa(0,0,i,j,k).top();
-
-//             source(0,0,i,j,k) -=
-//                 ghostMask_(0,2,i,j,k) * field(0,2,i,j,k) * fa(0,0,i,j,k).aft();
-
-//             source(0,0,i,j,k) +=
-//                 ghostMask_(0,2,i,j,k+1) * field(0,2,i,j,k+1) * fa(0,0,i,j,k).fore();
-
-//             source(0,0,i,j,k) /= cv(0,0,i,j,k);
-//         }
-//     }
-
-//     return tSource;
-// }
 
 }
 

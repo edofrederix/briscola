@@ -615,6 +615,17 @@ void meshLevel<Type,MeshType>::correctEliminatedBoundaryConditions()
 }
 
 template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctImmersedBoundaryConditions()
+{
+    if (mshFieldPtr_ && fvMsh_.immersedBoundaryPresent())
+    {
+        mshFieldPtr_->addImmersedBoundaryConditions();
+
+        mshFieldPtr_->IBC().correctJacobiPoints(*this);
+    }
+}
+
+template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::operator=(const meshLevel<Type,MeshType>& L)
 {
     forAll(*this, d)

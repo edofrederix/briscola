@@ -32,6 +32,8 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
 {
     meshLevel<Type,MeshType>& x = sys.x()[l];
 
+    const fvMesh& fvMsh = this->fvMsh_;
+
     const meshLevel<SType,MeshType>& A = sys.A()[l];
     const meshLevel<Type,MeshType>& b = sys.b()[l];
 
@@ -49,30 +51,55 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
             const meshDirection<Type,MeshType>& bd = b[d];
 
             forAllCells(xd, i, j, k)
-                xd(i,j,k) =
-                    (
-                        bd(i,j,k)
-                      - lowerRowProduct(Ad,xd,i,j,k)
-                      - upperRowProduct(Ad,xd,i,j,k)
-                      - xi[d]
-                    )
-                  / Ad(i,j,k).center();
+            {
+                if
+                (
+                    (!fvMsh.immersedBoundaryPresent() || !sys.x().IBC().Jac())
+                    ?
+                    true
+                    :
+                    !fvMsh.IB<MeshType>().ghostMask()(l,d,i,j,k)
+                )
+                {
+                    xd(i,j,k) =
+                        (
+                          bd(i,j,k)
+                        - lowerRowProduct(Ad,xd,i,j,k)
+                        - upperRowProduct(Ad,xd,i,j,k)
+                        - xi[d]
+                        )
+                    / Ad(i,j,k).center();
+                }
+            }
 
             if (!symmetric_)
                 continue;
 
             forAllCells(xd, i, j, k)
-                xd(i,j,k) =
-                    (
-                        bd(i,j,k)
-                      - lowerRowProduct(Ad,xd,i,j,k)
-                      - upperRowProduct(Ad,xd,i,j,k)
-                      - xi[d]
-                    )
-                  / Ad(i,j,k).center();
+            {
+                if
+                (
+                    (!fvMsh.immersedBoundaryPresent() || !sys.x().IBC().Jac())
+                    ?
+                    true
+                    :
+                    !fvMsh.IB<MeshType>().ghostMask()(l,d,i,j,k)
+                )
+                {
+                    xd(i,j,k) =
+                        (
+                          bd(i,j,k)
+                        - lowerRowProduct(Ad,xd,i,j,k)
+                        - upperRowProduct(Ad,xd,i,j,k)
+                        - xi[d]
+                        )
+                    / Ad(i,j,k).center();
+                }
+            }
         }
 
         x.correctNonEliminatedBoundaryConditions();
+        x.correctImmersedBoundaryConditions();
     }
 
     x.correctEliminatedBoundaryConditions();

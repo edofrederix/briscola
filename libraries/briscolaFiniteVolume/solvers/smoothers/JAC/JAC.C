@@ -32,6 +32,8 @@ void JAC<SType,Type,MeshType>::JAC::smooth
 {
     meshLevel<Type,MeshType>& x = sys.x()[l];
 
+    const fvMesh& fvMsh = this->fvMsh_;
+
     const meshLevel<SType,MeshType>& A = sys.A()[l];
     const meshLevel<Type,MeshType>& b = sys.b()[l];
 
@@ -54,21 +56,34 @@ void JAC<SType,Type,MeshType>::JAC::smooth
             const meshDirection<Type,MeshType>& bd = b[d];
 
             forAllCells(xd, i, j, k)
-                yd(i,j,k) =
-                    yd(i,j,k)*(1.0-omega_)
-                  + omega_
-                  * (
-                        bd(i,j,k)
-                      - lowerRowProduct(Ad,xd,i,j,k)
-                      - upperRowProduct(Ad,xd,i,j,k)
-                      - xi[d]
-                    )
-                  / Ad(i,j,k).center();
+            {
+                if
+                (
+                    (!fvMsh.immersedBoundaryPresent() || !sys.x().IBC().Jac())
+                    ?
+                    true
+                    :
+                    !fvMsh.IB<MeshType>().ghostMask()(l,d,i,j,k)
+                )
+                {
+                    yd(i,j,k) =
+                        yd(i,j,k)*(1.0-omega_)
+                    + omega_
+                    * (
+                          bd(i,j,k)
+                        - lowerRowProduct(Ad,xd,i,j,k)
+                        - upperRowProduct(Ad,xd,i,j,k)
+                        - xi[d]
+                        )
+                    / Ad(i,j,k).center();
+                }
+            }
         }
 
         x = y;
 
         x.correctNonEliminatedBoundaryConditions();
+        x.correctImmersedBoundaryConditions();
     }
 
     x.correctEliminatedBoundaryConditions();

@@ -1,4 +1,4 @@
-#include "Mittal.H"
+#include "MittalDirichletImmersedBoundaryCondition.H"
 
 namespace Foam
 {
@@ -12,97 +12,29 @@ namespace fv
 // Constructor
 
 template<class Type, class MeshType>
-Mittal<Type,MeshType>::Mittal
+MittalDirichletImmersedBoundaryCondition<Type,MeshType>
+::MittalDirichletImmersedBoundaryCondition
 (
-    dictionary& dict,
-    const fvMesh& fvMsh
+    const meshField<Type,MeshType>& mshField,
+    const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryMethod<Type,MeshType>(dict,fvMsh,true),
-    exchangePoints_(this->mask_.numberOfLevels()),
-    mirrorPoints_
-    (
-        "mirrorPoints",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        false,
-        true
-    )
+    immersedBoundaryCondition<Type,MeshType>(mshField,ib,true),
+    exchangePoints_(this->IB_.mask().numberOfLevels())
 {
     forAll(exchangePoints_, l)
     {
         exchangePoints_[l].setSize(MeshType::numberOfDirections);
     }
 
-    // Cell centers
-    const meshField<vector,MeshType>& CC =
-        fvMsh.metrics<MeshType>().cellCenters();
-
     // Mesh
-    const mesh& msh = fvMsh.msh();
+    const mesh& msh = this->fvMsh_.msh();
 
-    scalar tol = 1e-5;
-
-    forAllCells(mirrorPoints_,l,d,i,j,k)
+    forAllCells(this->IB_.mirrorPoints(),l,d,i,j,k)
     {
-        if (this->ghostMask_(l,d,i,j,k) == 1)
+        if (this->IB_.ghostMask()(l,d,i,j,k))
         {
-            vector mp = this->mirrorPoint(CC(l,d,i,j,k));
-
-            // Fix situations where the mirror point is just outside of the mesh
-            // bounding box due to rounding errors
-            if
-            (
-                (mp.x() <= msh[l].boundingBox().left() + tol)
-                && (mp.x() >= msh[l].boundingBox().left() - tol)
-            )
-            {
-                mp.x() += tol;
-            }
-            if
-            (
-                (mp.x() >= msh[l].boundingBox().right() - tol)
-                && (mp.x() <= msh[l].boundingBox().right() + tol)
-            )
-            {
-                mp.x() -= tol;
-            }
-            if
-            (
-                (mp.y() <= msh[l].boundingBox().bottom() + tol)
-                && (mp.y() >= msh[l].boundingBox().bottom() - tol)
-            )
-            {
-                mp.y() += tol;
-            }
-            if
-            (
-                (mp.y() >= msh[l].boundingBox().top() - tol)
-                && (mp.y() <= msh[l].boundingBox().top() + tol)
-            )
-            {
-                mp.y() -= tol;
-            }
-            if
-            (
-                (mp.z() <= msh[l].boundingBox().aft() + tol)
-                && (mp.z() >= msh[l].boundingBox().aft() - tol)
-            )
-            {
-                mp.z() += tol;
-            }
-            if
-            (
-                (mp.z() >= msh[l].boundingBox().fore() - tol)
-                && (mp.z() <= msh[l].boundingBox().fore() + tol)
-            )
-            {
-                mp.z() -= tol;
-            }
-
-            mirrorPoints_(l,d,i,j,k) = mp;
+            vector mp = this->IB_.mirrorPoints()(l,d,i,j,k);
 
             // Colocated cell index of mp
             labelVector mpIndex = msh.findCell(mp, l);
@@ -112,27 +44,22 @@ Mittal<Type,MeshType>::Mittal
                 exchangePoints_[l][d].append(mp);
             }
         }
-        else
-        {
-            // The vector (0,0,0) is still a valid coordinate
-            // so the mirrorPoints_ field should only be evaluated
-            // at ghost cells
-            mirrorPoints_(l,d,i,j,k) = Zero;
-        }
     }
 }
 
 // Destructor
 
 template<class Type, class MeshType>
-Mittal<Type,MeshType>::~Mittal()
+MittalDirichletImmersedBoundaryCondition<Type,MeshType>
+::~MittalDirichletImmersedBoundaryCondition()
 {}
 
 template<class Type, class MeshType>
-void Mittal<Type,MeshType>::correctJacobiPoints
+void MittalDirichletImmersedBoundaryCondition<Type,MeshType>
+::correctJacobiPoints
 (
     meshLevel<Type,MeshType>& x
-)
+) const
 {
     scalar omega = this->omega_;
 
@@ -156,10 +83,10 @@ void Mittal<Type,MeshType>::correctJacobiPoints
 
         forAllCells(x[d],i,j,k)
         {
-            if (this->ghostMask_(l,d,i,j,k) == 1)
+            if (this->IB_.ghostMask()(l,d,i,j,k))
             {
-                // mirror point - make this a field in IB
-                vector mp = mirrorPoints_(l,d,i,j,k);
+                // mirror point
+                vector mp = this->IB_.mirrorPoints()(l,d,i,j,k);
 
                 // Colocated cell index of mp
                 labelVector mpIndex = msh.findCell(mp, l);

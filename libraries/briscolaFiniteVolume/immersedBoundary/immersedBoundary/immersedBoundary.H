@@ -41,8 +41,33 @@ protected:
     // least one neighboring cell in the IB, and 0 in other cells
     meshField<label,MeshType> wallAdjMask_;
 
+    // This wall distance field stores the wall distances from
+    // IB-adjacent cells to the IB as faceScalars
+    meshField<faceScalar,MeshType> wallDistAdj_;
+
+    // This wall distance field stores the wall distances from
+    // ghost cells to the IB as faceScalars
+    meshField<faceScalar,MeshType> wallDistGhost_;
+
+    // The neighbor distance field stores the distances to the second
+    // neighbor fluid cell for the quadratic fit on non-uniform grids
+    meshField<faceScalar,MeshType> neighborDist_;
+
+    // Field containing the coordinates of the ghost mirror points
+    // stored in the ghost cells
+    meshField<vector,MeshType> mirrorPoints_;
+
     // List of shapes making up the immersed boundary
     PtrList<shape> shapes_;
+
+    // Set mask fields
+    void setMasks();
+
+    // Calculate wall distance fields
+    void calculateWallDistances();
+
+    // Set mirror points
+    void setMirrorPoints();
 
 public:
 
@@ -72,9 +97,20 @@ public:
     vector mirrorPoint(vector);
 
     // Inline access functions
-    inline const meshField<label,MeshType>& mask() const { return mask_; }
-    inline const meshField<label,MeshType>& ghostMask() const { return ghostMask_; }
-    inline const meshField<label,MeshType>& wallAdjMask() const { return wallAdjMask_; }
+    inline const meshField<label,MeshType>& mask() const
+    { return mask_; }
+    inline const meshField<label,MeshType>& ghostMask() const
+    { return ghostMask_; }
+    inline const meshField<label,MeshType>& wallAdjMask() const
+    { return wallAdjMask_; }
+    inline const meshField<faceScalar,MeshType>& wallDistAdj() const
+    { return wallDistAdj_; }
+    inline const meshField<faceScalar,MeshType>& wallDistGhost() const
+    { return wallDistGhost_; }
+    inline const meshField<faceScalar,MeshType>& neighborDist() const
+    { return neighborDist_; }
+    inline const meshField<vector,MeshType>& mirrorPoints() const
+    { return mirrorPoints_; }
 
 };
 

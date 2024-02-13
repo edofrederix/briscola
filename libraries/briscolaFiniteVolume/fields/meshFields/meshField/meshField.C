@@ -437,8 +437,8 @@ void meshField<Type,MeshType>::correctImmersedBoundaryConditions()
 {
     addImmersedBoundaryConditions();
 
-    // forAll(*this, l)
-    //     listType::operator[](l).correctImmersedBoundaryConditions();
+    forAll(*this, l)
+        listType::operator[](l).correctImmersedBoundaryConditions();
 }
 
 template<class Type, class MeshType>
@@ -518,6 +518,13 @@ void meshField<Type,MeshType>::restrict()
     makeDeep();
 
     reSchemePtr_->restrict(*this);
+}
+
+template<class Type, class MeshType>
+const immersedBoundaryCondition<Type,MeshType>&
+meshField<Type,MeshType>::IBC() const
+{
+    return immersedBoundaryCondition_();
 }
 
 template<class Type, class MeshType>

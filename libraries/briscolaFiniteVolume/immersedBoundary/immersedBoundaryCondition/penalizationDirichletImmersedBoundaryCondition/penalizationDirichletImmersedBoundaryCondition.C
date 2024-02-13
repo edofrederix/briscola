@@ -13,7 +13,8 @@ namespace fv
 // Constructor
 
 template<class Type, class MeshType>
-penalizationDirichletImmersedBoundaryCondition<Type,MeshType>::penalizationDirichletImmersedBoundaryCondition
+penalizationDirichletImmersedBoundaryCondition<Type,MeshType>
+::penalizationDirichletImmersedBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
     const immersedBoundary<MeshType>& ib
@@ -25,11 +26,13 @@ penalizationDirichletImmersedBoundaryCondition<Type,MeshType>::penalizationDiric
 // Destructor
 
 template<class Type, class MeshType>
-penalizationDirichletImmersedBoundaryCondition<Type,MeshType>::~penalizationDirichletImmersedBoundaryCondition()
+penalizationDirichletImmersedBoundaryCondition<Type,MeshType>
+::~penalizationDirichletImmersedBoundaryCondition()
 {}
 
 template<class Type, class MeshType>
-void penalizationDirichletImmersedBoundaryCondition<Type,MeshType>::correctLinearSystem
+void penalizationDirichletImmersedBoundaryCondition<Type,MeshType>
+::correctLinearSystem
 (
     linearSystem<stencil,Type,MeshType>& ls
 )
