@@ -11,6 +11,8 @@
 
 // #define BOUNDARYEXCHANGE 1
 
+// #define BOUNDARYEXCHANGE 1
+
 namespace Foam
 {
 
