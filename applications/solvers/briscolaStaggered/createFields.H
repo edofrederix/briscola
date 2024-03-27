@@ -19,8 +19,9 @@ colocatedVectorField Uc
 (
     "Uc",
     fvMsh,
-    IOobject::NO_READ,
+    IOobject::MUST_READ,
     IOobject::AUTO_WRITE,
+    true,
     true
 );
 

@@ -35,6 +35,9 @@ class budgetPrimitives
     // w*w
     colocatedScalarField w2_;
 
+    // p*p
+    colocatedScalarField p2_;
+
 public:
 
     // Runtime type information

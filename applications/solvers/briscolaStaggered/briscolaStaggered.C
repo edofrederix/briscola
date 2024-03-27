@@ -101,7 +101,10 @@ int main(int argc, char *argv[])
         U.correctBoundaryConditions();
 
         if (fvMsh.time().writeTime() || colocatedReconstruction)
+        {
             Uc = ex::reconstruct(U);
+            Uc.correctBoundaryConditions();
+        }
 
         io.write<colocated>();
         io.write<staggered>();

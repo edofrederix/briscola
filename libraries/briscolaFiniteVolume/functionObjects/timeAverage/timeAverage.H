@@ -31,8 +31,11 @@ class timeAverage
     // Name of the function object
     word name_;
 
-    // Time averaged data
-    PtrList<meshField<scalar,colocated>> timeAveragedFields_;
+    // Time averaged colocated fields
+    PtrList<meshField<scalar,colocated>> timeAveragedColFields_;
+
+    // Time averaged staggered fields
+    PtrList<meshField<scalar,staggered>> timeAveragedStagFields_;
 
     // Averaging start time
     scalar startTime_;

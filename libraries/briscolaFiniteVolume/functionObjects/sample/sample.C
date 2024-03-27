@@ -184,7 +184,7 @@ sample::sample
     ),
     writeTime_(Foam::name(startTime_))
 {
-    init();
+    // init();
 }
 
 sample::~sample()

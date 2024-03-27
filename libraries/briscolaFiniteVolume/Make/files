@@ -87,6 +87,7 @@ functionObjects/lineSample/lineSample.C
 functionObjects/averagedLineSample/averagedLineSample.C
 functionObjects/timeAverage/timeAverage.C
 functionObjects/budgetPrimitives/budgetPrimitives.C
+functionObjects/budgetPrimitivesStaggered/budgetPrimitivesStaggered.C
 
 dataExchange/dataExchange/dataExchange.C
 dataExchange/cellDataExchange/cellDataExchange.C
