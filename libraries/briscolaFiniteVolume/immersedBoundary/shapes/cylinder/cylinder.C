@@ -194,7 +194,7 @@ scalar cylinder::wallNormalDistance(vector gc)
     vector g = (gc-start_);
 
     // Return radius minus distance from axis to ghost cell
-    return (radius_ - mag(axis ^ g));
+    return (inverted_ ? mag(axis ^ g) - radius_ : radius_ - mag(axis ^ g));
 }
 
 vector cylinder::mirrorPoint(vector gc)
@@ -217,10 +217,12 @@ vector cylinder::mirrorPoint(vector gc)
     vector p = start_ + axis * (axis & g);
 
     // Wall-normal unit vector
-    vector n = (gc-p)/mag(gc-p);
+    vector n = inverted_ ?
+        (p-gc)/mag(p-gc) :
+        (gc-p)/mag(gc-p);
 
     // Return gc plus twice the normal vector
-    return (gc + 2.0*n*(radius_-mag(gc-p)));
+    return (gc + 2.0*n*dist);
 }
 
 }

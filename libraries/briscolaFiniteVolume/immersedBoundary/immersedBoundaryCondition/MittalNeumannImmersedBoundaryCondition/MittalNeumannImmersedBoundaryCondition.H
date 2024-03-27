@@ -1,5 +1,5 @@
-#ifndef MittalDirichletImmersedBoundaryCondition_H
-#define MittalDirichletImmersedBoundaryCondition_H
+#ifndef MittalNeumannImmersedBoundaryCondition_H
+#define MittalNeumannImmersedBoundaryCondition_H
 
 #include "immersedBoundaryCondition.H"
 #include "pointDataExchange.H"
@@ -14,7 +14,7 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-class MittalDirichletImmersedBoundaryCondition
+class MittalNeumannImmersedBoundaryCondition
 :
     public immersedBoundaryCondition<Type,MeshType>
 {
@@ -23,23 +23,23 @@ class MittalDirichletImmersedBoundaryCondition
     // defined for each level and direction
     List<List<vectorList>> exchangePoints_;
 
-    // Boundary values
-    List<Type> boundaryValues_;
+    // Boundary gradients
+    List<Type> boundaryGradients_;
 
 public:
 
     // Runtime type information
-    TypeName("MittalDirichlet");
+    TypeName("MittalNeumann");
 
     // Construct
-    MittalDirichletImmersedBoundaryCondition
+    MittalNeumannImmersedBoundaryCondition
     (
         const meshField<Type,MeshType>& mshField,
         const immersedBoundary<MeshType>& ib
     );
 
     // Destructor
-    virtual ~MittalDirichletImmersedBoundaryCondition();
+    virtual ~MittalNeumannImmersedBoundaryCondition();
 
     // Correct Jacobi points
     void correctJacobiPoints
@@ -56,7 +56,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "MittalDirichletImmersedBoundaryCondition.C"
+    #include "MittalNeumannImmersedBoundaryCondition.C"
 #endif
 
 #endif

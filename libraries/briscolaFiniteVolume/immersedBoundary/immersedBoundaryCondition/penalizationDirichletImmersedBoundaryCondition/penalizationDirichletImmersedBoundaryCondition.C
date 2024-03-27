@@ -20,7 +20,8 @@ penalizationDirichletImmersedBoundaryCondition<Type,MeshType>
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField,ib)
+    immersedBoundaryCondition<Type,MeshType>(mshField,ib),
+    boundaryValues_(this->dict().lookup("values"))
 {}
 
 // Destructor
@@ -42,7 +43,7 @@ void penalizationDirichletImmersedBoundaryCondition<Type,MeshType>
         if (this->IB_.mask()(l,d,i,j,k))
         {
             // Set sources to 0 in IB
-            ls.b()(l,d,i,j,k) = Zero;
+            ls.b()(l,d,i,j,k) = boundaryValues_[d];
         }
     }
 

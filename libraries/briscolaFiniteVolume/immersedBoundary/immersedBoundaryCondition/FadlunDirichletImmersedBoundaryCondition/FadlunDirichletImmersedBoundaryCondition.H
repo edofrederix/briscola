@@ -17,6 +17,10 @@ class FadlunDirichletImmersedBoundaryCondition
 :
     public immersedBoundaryCondition<Type,MeshType>
 {
+
+    // Boundary values
+    List<Type> boundaryValues_;
+
 public:
 
     // Runtime type information

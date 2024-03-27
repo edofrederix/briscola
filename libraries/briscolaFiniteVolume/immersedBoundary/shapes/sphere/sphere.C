@@ -108,7 +108,7 @@ scalar sphere::wallNormalDistance(vector gc)
     }
 
     // Return radius minus distance from center to ghost cell
-    return (radius_ - mag(gc-center_));
+    return (inverted_ ? mag(gc-center_) - radius_ : radius_ - mag(gc-center_));
 }
 
 vector sphere::mirrorPoint(vector gc)
@@ -122,10 +122,12 @@ vector sphere::mirrorPoint(vector gc)
     }
 
     // Wall-normal unit vector
-    vector n = (gc-center_)/mag(gc-center_);
+    vector n = inverted_ ?
+        (center_-gc)/mag(center_-gc) :
+        (gc-center_)/mag(gc-center_);
 
-    // Return gc plus twice the normal vector
-    return (gc + 2.0*n);
+    // Return gc plus twice the normal vector times the distance
+    return (gc + 2.0*n*dist);
 }
 
 }

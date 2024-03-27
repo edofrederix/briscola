@@ -20,7 +20,8 @@ VremanDirichletImmersedBoundaryCondition<Type,MeshType>
 )
 :
     immersedBoundaryCondition<Type,MeshType>(mshField,ib,true),
-    exchangePoints_(this->IB_.mask().numberOfLevels())
+    exchangePoints_(this->IB_.mask().numberOfLevels()),
+    boundaryValues_(this->dict().lookup("values"))
 {
     forAll(exchangePoints_, l)
     {
@@ -127,7 +128,9 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>
                         x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
                             + omega *
                             (
-                                w1*x[d](ijk+fo) + w2*secondNeighborValue
+                                boundaryValues_[d]
+                                + w1*x[d](ijk+fo)
+                                + w2*secondNeighborValue
                             );
 
                         break;

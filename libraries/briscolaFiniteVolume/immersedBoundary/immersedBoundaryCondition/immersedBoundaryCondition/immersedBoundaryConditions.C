@@ -5,6 +5,7 @@
 #include "penalizationDirichletImmersedBoundaryCondition.H"
 #include "FadlunDirichletImmersedBoundaryCondition.H"
 #include "MittalDirichletImmersedBoundaryCondition.H"
+#include "MittalNeumannImmersedBoundaryCondition.H"
 #include "VremanDirichletImmersedBoundaryCondition.H"
 
 namespace Foam
@@ -73,6 +74,11 @@ makeIBCType(MittalDirichlet,scalar,colocated);
 makeIBCType(MittalDirichlet,scalar,staggered);
 makeIBCType(MittalDirichlet,vector,colocated);
 makeIBCType(MittalDirichlet,vector,staggered);
+
+makeIBCType(MittalNeumann,scalar,colocated);
+makeIBCType(MittalNeumann,scalar,staggered);
+makeIBCType(MittalNeumann,vector,colocated);
+makeIBCType(MittalNeumann,vector,staggered);
 
 makeIBCType(VremanDirichlet,scalar,colocated);
 makeIBCType(VremanDirichlet,scalar,staggered);

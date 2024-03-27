@@ -23,6 +23,9 @@ class VremanDirichletImmersedBoundaryCondition
     // defined for each level and direction
     List<List<List<labelVector>>> exchangePoints_;
 
+    // Boundary values
+    List<Type> boundaryValues_;
+
 public:
 
     // Runtime type information

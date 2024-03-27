@@ -1,4 +1,4 @@
-#include "MittalDirichletImmersedBoundaryCondition.H"
+#include "MittalNeumannImmersedBoundaryCondition.H"
 
 namespace Foam
 {
@@ -12,8 +12,8 @@ namespace fv
 // Constructor
 
 template<class Type, class MeshType>
-MittalDirichletImmersedBoundaryCondition<Type,MeshType>
-::MittalDirichletImmersedBoundaryCondition
+MittalNeumannImmersedBoundaryCondition<Type,MeshType>
+::MittalNeumannImmersedBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
     const immersedBoundary<MeshType>& ib
@@ -21,7 +21,7 @@ MittalDirichletImmersedBoundaryCondition<Type,MeshType>
 :
     immersedBoundaryCondition<Type,MeshType>(mshField,ib,true),
     exchangePoints_(this->IB_.mask().numberOfLevels()),
-    boundaryValues_(this->dict().lookup("values"))
+    boundaryGradients_(this->dict().lookup("gradients"))
 {
     forAll(exchangePoints_, l)
     {
@@ -51,12 +51,12 @@ MittalDirichletImmersedBoundaryCondition<Type,MeshType>
 // Destructor
 
 template<class Type, class MeshType>
-MittalDirichletImmersedBoundaryCondition<Type,MeshType>
-::~MittalDirichletImmersedBoundaryCondition()
+MittalNeumannImmersedBoundaryCondition<Type,MeshType>
+::~MittalNeumannImmersedBoundaryCondition()
 {}
 
 template<class Type, class MeshType>
-void MittalDirichletImmersedBoundaryCondition<Type,MeshType>
+void MittalNeumannImmersedBoundaryCondition<Type,MeshType>
 ::correctJacobiPoints
 (
     meshLevel<Type,MeshType>& x
@@ -200,8 +200,11 @@ void MittalDirichletImmersedBoundaryCondition<Type,MeshType>
                     }
                 }
 
+                // GC to MP distance
+                scalar dist = mag(mp-CC(l,d,i,j,k));
+
                 x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
-                    + omega * (2.0 * boundaryValues_[d] - mpValue);
+                    + omega * (dist * boundaryGradients_[d] + mpValue);
             }
         }
     }

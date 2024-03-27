@@ -20,7 +20,8 @@ FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField,ib)
+    immersedBoundaryCondition<Type,MeshType>(mshField,ib),
+    boundaryValues_(this->dict().lookup("values"))
 {}
 
 // Destructor
@@ -68,6 +69,11 @@ void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
                     ls.A()(l,d,i,j,k) = Zero;
                     ls.A()(l,d,i,j,k).center() = 1.0;
                     ls.A()(l,d,i,j,k)[oppositeDir+1] = -w;
+
+                    if (l==0)
+                    {
+                        ls.b()(l,d,i,j,k) = boundaryValues_[d]/xinb;
+                    }
                 }
             }
         }
