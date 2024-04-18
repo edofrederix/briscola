@@ -7,7 +7,7 @@ FoamFile
     object      controlDict;
 }
 
-application     icoFoam;
+application     colocatedFoam;
 
 startFrom       latestTime;
 
