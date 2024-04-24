@@ -29,6 +29,9 @@ protected:
     // Reference to mesh
     const fvMesh& fvMsh_;
 
+    // Name of the immersed boundary
+    const word name_;
+
     // The IB mask is equal to 0 in cell centers outside the IB,
     // and equal to 1 in cell centers inside the IB.
     meshField<label,MeshType> mask_;
@@ -75,7 +78,7 @@ public:
     TypeName("immersedBoundary");
 
     // Construct from solverDict and fvMesh
-    immersedBoundary(const fvMesh&);
+    immersedBoundary(const fvMesh&, const dictionary&);
 
     // Destructor
     virtual ~immersedBoundary();
@@ -97,6 +100,8 @@ public:
     vector mirrorPoint(vector);
 
     // Inline access functions
+    inline const word name() const { return name_; }
+
     inline const meshField<label,MeshType>& mask() const
     { return mask_; }
     inline const meshField<label,MeshType>& ghostMask() const

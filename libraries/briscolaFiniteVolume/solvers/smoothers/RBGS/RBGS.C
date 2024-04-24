@@ -51,18 +51,22 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
             const meshDirection<Type,MeshType>& bd = b[d];
 
             forAllCells(xd, i, j, k)
-                if
-                (
-                    even(i,j,k)
-                    &&
+            {
+                Switch Jac = false;
+
+                forAll(sys.x().IBC(), ib)
+                {
+                    if
                     (
-                        (!fvMsh.immersedBoundaryPresent() || !sys.x().IBC().Jac())
-                        ?
-                        true
-                        :
-                        !fvMsh.IB<MeshType>().ghostMask()(l,d,i,j,k)
+                        sys.x().IBC()[ib].Jac()
+                        && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
                     )
-                )
+                    {
+                        Jac = true;
+                    }
+                }
+
+                if (even(i,j,k) && !Jac)
                     xd(i,j,k) =
                         (
                             bd(i,j,k)
@@ -71,20 +75,25 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                           - xi[d]
                         )
                       / Ad(i,j,k).center();
+            }
 
             forAllCells(xd, i, j, k)
-                if
-                (
-                    odd(i,j,k)
-                    &&
+            {
+                Switch Jac = false;
+
+                forAll(sys.x().IBC(), ib)
+                {
+                    if
                     (
-                        (!fvMsh.immersedBoundaryPresent() || !sys.x().IBC().Jac())
-                        ?
-                        true
-                        :
-                        !fvMsh.IB<MeshType>().ghostMask()(l,d,i,j,k)
+                        sys.x().IBC()[ib].Jac()
+                        && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
                     )
-                )
+                    {
+                        Jac = true;
+                    }
+                }
+
+                if (odd(i,j,k) && !Jac)
                     xd(i,j,k) =
                         (
                             bd(i,j,k)
@@ -93,23 +102,28 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                           - xi[d]
                         )
                       / Ad(i,j,k).center();
+            }
 
             if (!symmetric_)
                 continue;
 
             forAllCellsReversed(xd, i, j, k)
-                if
-                (
-                    even(i,j,k)
-                    &&
+            {
+                Switch Jac = false;
+
+                forAll(sys.x().IBC(), ib)
+                {
+                    if
                     (
-                        (!fvMsh.immersedBoundaryPresent() || !sys.x().IBC().Jac())
-                        ?
-                        true
-                        :
-                        !fvMsh.IB<MeshType>().ghostMask()(l,d,i,j,k)
+                        sys.x().IBC()[ib].Jac()
+                        && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
                     )
-                )
+                    {
+                        Jac = true;
+                    }
+                }
+
+                if (even(i,j,k) && !Jac)
                     xd(i,j,k) =
                         (
                             bd(i,j,k)
@@ -118,20 +132,25 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                           - xi[d]
                         )
                       / Ad(i,j,k).center();
+            }
 
             forAllCellsReversed(xd, i, j, k)
-                if
-                (
-                    odd(i,j,k)
-                    &&
+            {
+                Switch Jac = false;
+
+                forAll(sys.x().IBC(), ib)
+                {
+                    if
                     (
-                        (!fvMsh.immersedBoundaryPresent() || !sys.x().IBC().Jac())
-                        ?
-                        true
-                        :
-                        !fvMsh.IB<MeshType>().ghostMask()(l,d,i,j,k)
+                        sys.x().IBC()[ib].Jac()
+                        && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
                     )
-                )
+                    {
+                        Jac = true;
+                    }
+                }
+
+                if (odd(i,j,k) && !Jac)
                     xd(i,j,k) =
                         (
                             bd(i,j,k)
@@ -140,6 +159,7 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                           - xi[d]
                         )
                       / Ad(i,j,k).center();
+            }
         }
 
         x.correctNonEliminatedBoundaryConditions();

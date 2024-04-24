@@ -57,14 +57,21 @@ void JAC<SType,Type,MeshType>::JAC::smooth
 
             forAllCells(xd, i, j, k)
             {
-                if
-                (
-                    (!fvMsh.immersedBoundaryPresent() || !sys.x().IBC().Jac())
-                    ?
-                    true
-                    :
-                    !fvMsh.IB<MeshType>().ghostMask()(l,d,i,j,k)
-                )
+                Switch Jac = false;
+
+                forAll(sys.x().IBC(), ib)
+                {
+                    if
+                    (
+                        sys.x().IBC()[ib].Jac()
+                        && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
+                    )
+                    {
+                        Jac = true;
+                    }
+                }
+
+                if (!Jac)
                 {
                     yd(i,j,k) =
                         yd(i,j,k)*(1.0-omega_)

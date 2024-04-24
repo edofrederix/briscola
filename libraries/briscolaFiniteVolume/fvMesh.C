@@ -80,7 +80,7 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
     Is_(mshPtr_->size(), List<faceLabel>(staggered::numberOfDirections)),
     colocatedMetrics_(),
     staggeredMetrics_(),
-    immersedBoundaryPresent_(dict.found("ImmersedBoundary"))
+    immersedBoundaryPresent_(dict.found("ImmersedBoundaries"))
 {
     setInternalCells<colocated>();
     setInternalCells<staggered>();
@@ -88,7 +88,7 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
     colocatedMetrics_ = new fvMeshMetrics<colocated>(*this);
     if (immersedBoundaryPresent_)
     {
-        colocatedMetrics_->setImmersedBoundary();
+        colocatedMetrics_->setImmersedBoundaries();
     }
 
     // Only generate staggered metrics when the brick topology is structured
@@ -98,7 +98,7 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
         staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
         if (immersedBoundaryPresent_)
         {
-            staggeredMetrics_->setImmersedBoundary();
+            staggeredMetrics_->setImmersedBoundaries();
         }
     }
 }
@@ -119,7 +119,7 @@ fvMesh::fvMesh(const fvMesh& fvMsh)
     colocatedMetrics_ = new fvMeshMetrics<colocated>(*this);
     if (immersedBoundaryPresent_)
     {
-        colocatedMetrics_->setImmersedBoundary();
+        colocatedMetrics_->setImmersedBoundaries();
     }
 
     // Only generate staggered metrics when the brick topology is structured
@@ -129,7 +129,7 @@ fvMesh::fvMesh(const fvMesh& fvMsh)
         staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
         if (immersedBoundaryPresent_)
         {
-            staggeredMetrics_->setImmersedBoundary();
+            staggeredMetrics_->setImmersedBoundaries();
         }
     }
 }
@@ -267,7 +267,7 @@ List<labelVector> fvMesh::findCells
 }
 
 template<class MeshType>
-const immersedBoundary<MeshType>& fvMesh::IB() const
+const PtrList<immersedBoundary<MeshType>>& fvMesh::IB() const
 {
     if (!immersedBoundaryPresent_)
     {
@@ -286,9 +286,9 @@ fvMesh::findCells<colocated>(const vectorList&, const label, const label) const;
 template List<labelVector>
 fvMesh::findCells<staggered>(const vectorList&, const label, const label) const;
 
-template const immersedBoundary<staggered>&
+template const PtrList<immersedBoundary<staggered>>&
 fvMesh::IB<staggered>() const;
-template const immersedBoundary<colocated>&
+template const PtrList<immersedBoundary<colocated>>&
 fvMesh::IB<colocated>() const;
 
 }

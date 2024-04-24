@@ -253,10 +253,12 @@ void immersedBoundary<MeshType>::setMirrorPoints()
 template<class MeshType>
 immersedBoundary<MeshType>::immersedBoundary
 (
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const dictionary& dict
 )
 :
     fvMsh_(fvMsh),
+    name_(dict.dictName()),
     mask_
     (
         "mask",
@@ -328,18 +330,16 @@ immersedBoundary<MeshType>::immersedBoundary
         true
     )
 {
-    const dictionary& IBMdict = fvMsh.meshDict().subDict("ImmersedBoundary");
-
-    int nEntries = IBMdict.size();
+    int nShapes = dict.size();
 
     // Add shapes to IB according to dictionary entries
-    for (int e = 0; e < nEntries; e++)
+    for (int e = 0; e < nShapes; e++)
     {
-        word entry = IBMdict.toc()[e];
+        word entry = dict.toc()[e];
 
-        if (IBMdict.isDict(entry))
+        if (dict.isDict(entry))
         {
-            const dictionary& entryDict = IBMdict.subDict(entry);
+            const dictionary& entryDict = dict.subDict(entry);
 
             shapes_.append
             (

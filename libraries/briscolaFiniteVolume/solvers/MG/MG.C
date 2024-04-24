@@ -94,21 +94,20 @@ void MG<SType,Type,MeshType>::cycle
                     {
                         sys.residual(rl[d]);
 
-                        if
-                        (
-                               (fvMsh.immersedBoundaryPresent())
-                            && (sys.x().IBC().Jac())
-                        )
+                        forAll(sys.x().IBC(), ib)
                         {
-                            forAllCells(r[l][d],i,j,k)
+                            if (sys.x().IBC()[ib].Jac())
                             {
-                                if
-                                (
-                                    fvMsh.IB<MeshType>()
-                                        .ghostMask()[l][d](i,j,k)
-                                )
+                                forAllCells(r[l][d],i,j,k)
                                 {
-                                    r[l][d](i,j,k) = Zero;
+                                    if
+                                    (
+                                        fvMsh.IB<MeshType>()[ib]
+                                            .ghostMask()[l][d](i,j,k)
+                                    )
+                                    {
+                                        r[l][d](i,j,k) = Zero;
+                                    }
                                 }
                             }
                         }
@@ -224,21 +223,23 @@ void MG<SType,Type,MeshType>::solve
 
     sys.residual(r[0]);
 
-    if
-    (
-           (fvMsh.immersedBoundaryPresent())
-        && (sys.x().IBC().Jac())
-    )
+    forAll(sys.x().IBC(), ib)
     {
-        forAllCells(r[0],d,i,j,k)
+        if (sys.x().IBC()[ib].Jac())
         {
-            if (fvMsh.IB<MeshType>().ghostMask()[0][d](i,j,k))
+            forAllCells(r[0],d,i,j,k)
             {
-                r[0][d](i,j,k) = Zero;
+                if
+                (
+                    fvMsh.IB<MeshType>()[ib]
+                        .ghostMask()[0][d](i,j,k)
+                )
+                {
+                    r[0][d](i,j,k) = Zero;
+                }
             }
         }
     }
-
 
     // Residual normalization factors
 
@@ -302,17 +303,20 @@ void MG<SType,Type,MeshType>::solve
             {
                 sys.residual(r[0][d]);
 
-                if
-                (
-                       (fvMsh.immersedBoundaryPresent())
-                    && (sys.x().IBC().Jac())
-                )
+                forAll(sys.x().IBC(), ib)
                 {
-                    forAllCells(r[0][d],i,j,k)
+                    if (sys.x().IBC()[ib].Jac())
                     {
-                        if (fvMsh.IB<MeshType>().ghostMask()[0][d](i,j,k))
+                        forAllCells(r[0][d],i,j,k)
                         {
-                            r[0][d](i,j,k) = Zero;
+                            if
+                            (
+                                fvMsh.IB<MeshType>()[ib]
+                                    .ghostMask()[0][d](i,j,k)
+                            )
+                            {
+                                r[0][d](i,j,k) = Zero;
+                            }
                         }
                     }
                 }

@@ -21,8 +21,27 @@ tmp<colocatedScalarField> IBMMassSource
 {
     const fvMesh& fvMsh = field.fvMsh();
 
-    const meshField<label,staggered> ghostMask
-        = fvMsh.IB<staggered>().ghostMask();
+    meshField<label,staggered> ghostMask
+    (
+        "JacGhostMask",
+        fvMsh
+    );
+
+    ghostMask = Zero;
+
+    forAll(fvMsh.IB<staggered>(), ib)
+    {
+        if (field.IBC()[ib].Jac())
+        {
+            forAllCells(ghostMask,l,d,i,j,k)
+            {
+                if (fvMsh.IB<staggered>()[ib].ghostMask()(l,d,i,j,k))
+                {
+                    ghostMask(l,d,i,j,k) = 1;
+                }
+            }
+        }
+    }
 
     tmp<colocatedScalarField> tSource
     (

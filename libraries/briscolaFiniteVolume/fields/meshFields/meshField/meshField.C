@@ -348,15 +348,22 @@ void meshField<Type,MeshType>::addImmersedBoundaryConditions()
     if
     (
         fvMsh_.immersedBoundaryPresent()
-        && immersedBoundaryCondition_.empty()
+        && !immersedBoundaryConditions_.size()
     )
     {
-        immersedBoundaryCondition_ =
-            immersedBoundaryCondition<Type,MeshType>::New
+        label nIB = fvMsh_.IB<MeshType>().size();
+
+        for (int i = 0; i < nIB; i++)
+        {
+            immersedBoundaryConditions_.append
             (
-                *this,
-                fvMsh_.IB<MeshType>()
+                immersedBoundaryCondition<Type,MeshType>::New
+                (
+                    *this,
+                    fvMsh_.IB<MeshType>()[i]
+                )
             );
+        }
     }
 }
 
@@ -449,7 +456,10 @@ void meshField<Type,MeshType>::correctImmersedBoundaryConditions
 {
     addImmersedBoundaryConditions();
 
-    immersedBoundaryCondition_->correctLinearSystem(ls);
+    forAll(immersedBoundaryConditions_, i)
+    {
+        immersedBoundaryConditions_[i].correctLinearSystem(ls);
+    }
 }
 
 template<class Type, class MeshType>
@@ -521,10 +531,10 @@ void meshField<Type,MeshType>::restrict()
 }
 
 template<class Type, class MeshType>
-const immersedBoundaryCondition<Type,MeshType>&
+const PtrList<immersedBoundaryCondition<Type,MeshType>>&
 meshField<Type,MeshType>::IBC() const
 {
-    return immersedBoundaryCondition_();
+    return immersedBoundaryConditions_;
 }
 
 template<class Type, class MeshType>

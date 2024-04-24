@@ -621,7 +621,10 @@ void meshLevel<Type,MeshType>::correctImmersedBoundaryConditions()
     {
         mshFieldPtr_->addImmersedBoundaryConditions();
 
-        mshFieldPtr_->IBC().correctJacobiPoints(*this);
+        forAll(mshFieldPtr_->IBC(), i)
+        {
+            mshFieldPtr_->IBC()[i].correctJacobiPoints(*this);
+        }
     }
 }
 

@@ -88,11 +88,31 @@ if (fvMsh.immersedBoundaryPresent())
     // Set source terms to zero inside IB
     forAllCells(exSource,l,d,i,j,k)
     {
-        if (fvMsh.IB<staggered>().mask()(l,d,i,j,k))
+        forAll(fvMsh.IB<staggered>(), ib)
         {
-            exSource(l,d,i,j,k) = Zero;
-            imSourceCoeff(l,d,i,j,k) = Zero;
+            if (fvMsh.IB<staggered>()[ib].mask()(l,d,i,j,k))
+            {
+                exSource(l,d,i,j,k) = Zero;
+                imSourceCoeff(l,d,i,j,k) = Zero;
+            }
         }
+    }
+}
+
+Switch massSource = false;
+
+forAll(U.IBC(), ib)
+{
+    const word IBname = fvMsh.IB<staggered>()[ib].name();
+
+    if
+    (
+        U.IBC()[ib].Jac()
+        && U.subDict("boundaryConditions").subDict(IBname)
+            .lookupOrDefault<Switch>("massSource", true)
+    )
+    {
+        massSource = true;
     }
 }
 

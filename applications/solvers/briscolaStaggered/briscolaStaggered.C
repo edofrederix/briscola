@@ -77,16 +77,7 @@ int main(int argc, char *argv[])
 
         // Pressure equation
 
-        if
-        (
-               fvMsh.immersedBoundaryPresent()
-            && U.IBC().Jac()
-            && U.IBC().dict().lookupOrDefault<Switch>
-               (
-                   "massSource",
-                   true
-               )
-        )
+        if (massSource)
         {
             Poisson->solve
             (

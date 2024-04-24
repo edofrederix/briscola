@@ -48,7 +48,7 @@ class meshField
     PtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
 
     // Immersed boundary condition
-    autoPtr<immersedBoundaryCondition<Type,MeshType>> immersedBoundaryCondition_;
+    PtrList<immersedBoundaryCondition<Type,MeshType>> immersedBoundaryConditions_;
 
     // Restriction scheme associated with this field
     autoPtr<restrictionScheme<Type,MeshType>> reSchemePtr_;
@@ -378,7 +378,7 @@ public:
     bool writeData(Ostream& os) const { return os; }
 
     // Return const reference to IB condition
-    const immersedBoundaryCondition<Type,MeshType>& IBC() const;
+    const PtrList<immersedBoundaryCondition<Type,MeshType>>& IBC() const;
 
     // Member operators
 

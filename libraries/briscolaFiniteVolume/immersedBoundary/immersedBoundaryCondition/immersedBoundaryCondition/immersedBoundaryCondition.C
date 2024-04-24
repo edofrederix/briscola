@@ -34,8 +34,8 @@ immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
     dict_
     (
         mshField.found("boundaryConditions")
-     && mshField.subDict("boundaryConditions").found("ImmersedBoundary")
-      ? mshField.subDict("boundaryConditions").subDict("ImmersedBoundary")
+     && mshField.subDict("boundaryConditions").found(IB_.name())
+      ? mshField.subDict("boundaryConditions").subDict(IB_.name())
       : dictionary::null
     ),
     JacobiGhostMethod_(jac),
@@ -59,7 +59,7 @@ immersedBoundaryCondition<Type,MeshType>::New
 {
     dictionary IBCDict
     (
-        mshField.subDict("boundaryConditions").subDict("ImmersedBoundary")
+        mshField.subDict("boundaryConditions").subDict(ib.name())
     );
 
     const word IBCType(IBCDict.lookup("type"));

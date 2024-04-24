@@ -239,9 +239,9 @@ public:
         const label d = 0
     ) const;
 
-    // Return reference to immersed boundary
+    // Return reference to immersed boundaries
     template<class MeshType>
-    const immersedBoundary<MeshType>& IB() const;
+    const PtrList<immersedBoundary<MeshType>>& IB() const;
 
     // Mesh dictionary
     inline const dictionary& meshDict() const { return meshDict_; }
