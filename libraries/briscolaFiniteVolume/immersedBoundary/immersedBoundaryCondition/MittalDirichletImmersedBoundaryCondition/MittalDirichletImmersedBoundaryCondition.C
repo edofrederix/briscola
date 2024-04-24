@@ -74,6 +74,8 @@ void MittalDirichletImmersedBoundaryCondition<Type,MeshType>
 
     label l = x.levelNum();
 
+    const scalar H = l == 0;
+
     forAll(x, d)
     {
         pointDataExchange<MeshType> exchange(exchangePoints_[l][d], fvMsh, l, d);
@@ -201,7 +203,7 @@ void MittalDirichletImmersedBoundaryCondition<Type,MeshType>
                 }
 
                 x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
-                    + omega * (2.0 * boundaryValues_[d] - mpValue);
+                    + omega * (H*2.0*boundaryValues_[d] - mpValue);
             }
         }
     }

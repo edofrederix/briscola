@@ -58,9 +58,42 @@ void immersedBoundary<MeshType>::setMasks()
         }
     }
 
-    mask_.correctParallelBoundaryConditions();
-    ghostMask_.correctParallelBoundaryConditions();
-    wallAdjMask_.correctParallelBoundaryConditions();
+    // Ghost cells
+
+    forAll(mask_, l)
+    {
+        const labelVector N(fvMsh_[l].N());
+
+        forAll(mask_[l], d)
+        {
+            labelVector bo;
+
+            for (bo.x() = -1; bo.x() <= 1; bo.x()++)
+            for (bo.y() = -1; bo.y() <= 1; bo.y()++)
+            for (bo.z() = -1; bo.z() <= 1; bo.z()++)
+            if (cmptSum(cmptMag(bo)) > 0)
+            {
+                const labelVector S(mask_.fvMsh().template S<MeshType>(l,d,bo));
+                const labelVector E(mask_.fvMsh().template E<MeshType>(l,d,bo));
+
+                labelVector ijk;
+
+                for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                {
+                    if (this->isInside(CC(l,d,ijk+bo)))
+                    {
+                        mask_(l,d,ijk+bo) = 1;
+                    }
+                }
+            }
+        }
+    }
+
+    mask_.correctCommsBoundaryConditions();
+    ghostMask_.correctCommsBoundaryConditions();
+    wallAdjMask_.correctCommsBoundaryConditions();
 }
 
 template<class MeshType>
@@ -127,9 +160,9 @@ void immersedBoundary<MeshType>::calculateWallDistances()
         }
     }
 
-    wallDistAdj_.correctParallelBoundaryConditions();
-    wallDistGhost_.correctParallelBoundaryConditions();
-    neighborDist_.correctParallelBoundaryConditions();
+    wallDistAdj_.correctCommsBoundaryConditions();
+    wallDistGhost_.correctCommsBoundaryConditions();
+    neighborDist_.correctCommsBoundaryConditions();
 }
 
 template<class MeshType>
@@ -212,7 +245,7 @@ void immersedBoundary<MeshType>::setMirrorPoints()
         }
     }
 
-    mirrorPoints_.correctParallelBoundaryConditions();
+    mirrorPoints_.correctCommsBoundaryConditions();
 }
 
 // Constructor

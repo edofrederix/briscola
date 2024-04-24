@@ -74,6 +74,8 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>
 
     label l = x.levelNum();
 
+    const scalar H = l == 0;
+
     forAll(x, d)
     {
         pointDataExchange<MeshType> exchange(exchangePoints_[l][d], fvMsh, l, d);
@@ -204,7 +206,7 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>
                 scalar dist = mag(mp-CC(l,d,i,j,k));
 
                 x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
-                    + omega * (dist * boundaryGradients_[d] + mpValue);
+                    + omega * (H*dist*boundaryGradients_[d] + mpValue);
             }
         }
     }

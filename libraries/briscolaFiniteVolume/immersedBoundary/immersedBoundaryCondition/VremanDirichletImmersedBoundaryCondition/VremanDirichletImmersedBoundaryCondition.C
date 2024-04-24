@@ -39,7 +39,7 @@ VremanDirichletImmersedBoundaryCondition<Type,MeshType>
             {
                 const labelVector fo = faceOffsets[dir];
 
-                if (!this->IB_.ghostMask()[l][d](ijk+fo))
+                if (!this->IB_.mask()[l][d](ijk+fo))
                 {
                     if
                     (
@@ -80,6 +80,8 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>
     const fvMesh& fvMsh = x.fvMsh();
 
     label l = x.levelNum();
+
+    const scalar H = l == 0;
 
     forAll(x, d)
     {
@@ -128,7 +130,7 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>
                         x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
                             + omega *
                             (
-                                boundaryValues_[d]
+                                H*boundaryValues_[d]
                                 + w1*x[d](ijk+fo)
                                 + w2*secondNeighborValue
                             );

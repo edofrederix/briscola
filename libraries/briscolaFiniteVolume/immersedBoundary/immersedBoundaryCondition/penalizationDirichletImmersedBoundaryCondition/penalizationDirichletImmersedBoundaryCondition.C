@@ -42,8 +42,10 @@ void penalizationDirichletImmersedBoundaryCondition<Type,MeshType>
     {
         if (this->IB_.mask()(l,d,i,j,k))
         {
+            const scalar H = l == 0;
+
             // Set sources to 0 in IB
-            ls.b()(l,d,i,j,k) = boundaryValues_[d];
+            ls.b()(l,d,i,j,k) = H*boundaryValues_[d];
         }
     }
 
