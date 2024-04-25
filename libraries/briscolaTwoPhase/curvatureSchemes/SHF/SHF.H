@@ -21,8 +21,8 @@ class SHF
     // Cell data exchange object
     autoPtr<cellDataExchange<colocated>> exchangePtr_;
 
-    // Exchange data sizes per face
-    labelList exchangeSizes_;
+    // Exchange data shapes per face
+    List<labelVector> exchangeShapes_;
 
     // Initialize communication
     void setCommunication();
