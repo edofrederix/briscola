@@ -26,6 +26,15 @@ colocatedVectorField Uc
 
 Uc = Zero;
 
+Switch colocatedReconstruction
+(
+    solverDict.lookupOrDefault
+    (
+        "colocatedReconstruction",
+        false
+    )
+);
+
 // Pressure
 
 colocatedScalarField p
@@ -67,6 +76,27 @@ staggeredLowerFaceScalarField phi
 );
 
 phi = ex::faceFlux(U);
+
+staggeredScalarField exSource
+(
+    "source",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+staggeredScalarField imSourceCoeff
+(
+    "sourceCoeff",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+exSource = scalarList(solverDict.lookup("source"));
+imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
 
 // Solvers
 

@@ -21,6 +21,21 @@ int main(int argc, char *argv[])
     #include "createBriscolaTwoPhase.H"
     #include "createTimeControls.H"
 
+    // Solver dictionary
+
+    IOdictionary solverDict
+    (
+        IOobject
+        (
+            "briscolaStaggeredDict",
+            fvMsh.time().system(),
+            fvMsh.time(),
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    );
+
+
     Switch split = args.optionFound("split");
 
     // This solver works for incompressible mixtures only
@@ -57,6 +72,9 @@ int main(int argc, char *argv[])
         // Predictor, Eq. (A.1) of Dodd & Ferrante (2014)
 
         USys = im::ddt(U);
+
+        USys -= im::source(imSourceCoeff,U);
+        USys -= v*exSource;
 
         USys -= im::laplacian(mu,U,0.5)*v;
         USys -= ex::laplacian(mu,U,0.5)*v;
@@ -119,8 +137,11 @@ int main(int argc, char *argv[])
             U.correctBoundaryConditions();
         }
 
-        if (fvMsh.time().writeTime())
+        if (fvMsh.time().writeTime() || colocatedReconstruction)
+        {
             Uc = ex::reconstruct(U);
+            Uc.correctBoundaryConditions();
+        }
 
         io.write<colocated>();
         io.write<staggered>();
