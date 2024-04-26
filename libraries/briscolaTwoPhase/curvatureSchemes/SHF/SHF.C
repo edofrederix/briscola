@@ -18,7 +18,7 @@ addToRunTimeSelectionTable(curvatureScheme, SHF, dictionary);
 
 void SHF::setCommunication()
 {
-    const faceLabel& faceType = fvMsh_.msh().faceBoundaryType();
+    const faceLabel& boundaryType = fvMsh_.msh().faceBoundaryType();
     const faceLabel I = fvMsh_.template I<colocated>();
 
     List<labelVector> indices(0);
@@ -33,7 +33,7 @@ void SHF::setCommunication()
 
         // On parallel/periodic boundaries only
 
-        if (faceType[f] > 1)
+        if (boundaryType[f] > domainBoundary::typeNumber)
         {
             faceLabel J(I.lower() - unitXYZ, I.upper() + unitXYZ);
 
@@ -97,7 +97,7 @@ void SHF::correct()
     colocatedScalarField& kappa = *this;
     kappa = Zero;
 
-    const faceLabel& faceType = fvMsh_.msh().faceBoundaryType();
+    const faceLabel& boundaryType = fvMsh_.msh().faceBoundaryType();
     const labelVector& N = fvMsh_.template N<colocated>();
     const faceLabel& I = fvMsh_.template I<colocated>();
 
@@ -224,7 +224,11 @@ void SHF::correct()
 
                 // Do not go beyond domain boundary ghost cells
 
-                if (ii + a > I[f.right()] && faceType[f.right()] < 2)
+                if
+                (
+                    ii + a > I[f.right()]
+                 && boundaryType[f.right()] < parallelBoundary::typeNumber
+                )
                 {
                     break;
                 }
@@ -261,7 +265,11 @@ void SHF::correct()
 
                 // Do not go beyond domain boundary ghost cells
 
-                if (ii - a < (I[f.left()] - 1) && faceType[f.left()] < 2)
+                if
+                (
+                    ii - a < (I[f.left()] - 1)
+                 && boundaryType[f.left()] < parallelBoundary::typeNumber
+                )
                 {
                     break;
                 }

@@ -183,18 +183,18 @@ void splitAdvection::solve(const colocatedLowerFaceScalarField& phi)
 
     for (int d = 0; d < 3; d++)
     {
-        const label dir = (ti+d)%3;
+        const label dir = (ti + d) % 3;
 
         // Skip empty directions
 
         if (boundaryType[dir*2] != emptyBoundary::typeNumber)
         {
-            this->updateFlux(phi,dir);
+            this->updateFlux(phi, dir);
 
             forAllCells(alpha_, i, j, k)
             {
                 labelVector ijk(i,j,k);
-                labelVector nei(ijk+units[dir]);
+                labelVector nei(ijk + units[dir]);
 
                 alpha_(ijk) +=
                     dt/cv(ijk)
