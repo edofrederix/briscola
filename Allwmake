@@ -6,6 +6,7 @@ wmake libso libraries/briscolaFiniteVolume
 wmake libso libraries/briscolaTwoPhase
 
 wmake applications/utilities/briscolaCheckMesh
+wmake applications/utilities/briscolaWriteMesh
 
 wmake applications/solvers/briscolaLaplacian
 wmake applications/solvers/briscolaColocated
