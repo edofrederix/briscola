@@ -78,17 +78,6 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
     )
 );
 
-// Adams-Bashforth source
-
-colocatedVectorField H
-(
-    "H",
-    fvMsh,
-    IOobject::READ_IF_PRESENT,
-    IOobject::AUTO_WRITE,
-    true
-);
-
 // Specific volumes
 
 colocatedScalarField v
@@ -100,10 +89,6 @@ colocatedScalarField v
     true
 );
 
-H =
-    ex::div(phi,U)
-    - (ex::grad(mu) & ex::grad(U))*v;
-
 v.setRestrictionScheme("harmonicVolumeWeighted");
 
 colocatedLowerFaceScalarField vf
@@ -114,6 +99,19 @@ colocatedLowerFaceScalarField vf
     IOobject::NO_WRITE,
     true
 );
+
+// Adams-Bashforth source
+
+colocatedVectorField H
+(
+    "H",
+    fvMsh,
+    IOobject::READ_IF_PRESENT,
+    IOobject::AUTO_WRITE,
+    true
+);
+
+H = Zero;
 
 // It is assumed that the minimum mass density is constant
 

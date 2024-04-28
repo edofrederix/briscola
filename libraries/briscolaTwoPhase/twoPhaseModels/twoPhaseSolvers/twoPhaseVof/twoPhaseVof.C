@@ -24,10 +24,7 @@ twoPhaseVof<BaseModel>::twoPhaseVof
     vfPtr_(vof::New(*this, dict.subDict("vof"))),
     fluxName_(dict.lookupOrDefault<word>("flux", "phi")),
     velocityName_(dict.lookupOrDefault<word>("velocity", "U"))
-{
-    this->normalSchemePtr_->correct();
-    BaseModel::correctMixture();
-}
+{}
 
 template<class BaseModel>
 twoPhaseVof<BaseModel>::twoPhaseVof(const twoPhaseVof& tpm)

@@ -164,6 +164,10 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
     }
 
     setRestrictionSchemes();
+
+    // Initialize alpha as zero everywhere
+
+    alpha_ = Zero;
 }
 
 twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)

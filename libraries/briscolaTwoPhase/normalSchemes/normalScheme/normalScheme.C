@@ -25,8 +25,8 @@ normalScheme::normalScheme
     (
         "normal",
         fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE,
         true,
         true,
         false
@@ -34,7 +34,11 @@ normalScheme::normalScheme
     fvMsh_(fvMsh),
     dict_(dict),
     alpha_(alpha)
-{}
+{
+    // Initialize the normal as zero
+
+    static_cast<colocatedVectorField&>(*this) = Zero;
+}
 
 normalScheme::normalScheme(const normalScheme& s)
 :

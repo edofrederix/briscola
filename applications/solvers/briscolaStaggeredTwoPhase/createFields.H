@@ -154,10 +154,6 @@ colocatedLowerFaceScalarField vcf
     true
 );
 
-v = icoTwoPhase.v<staggered>();
-vc = icoTwoPhase.v<colocated>();
-vcf = ex::interp(vc);
-
 // Adams-Bashforth source
 
 staggeredScalarField H
@@ -170,8 +166,7 @@ staggeredScalarField H
     false
 );
 
-H = ex::div(phi,U)
-  - stagDotProduct(ex::grad(mu),ex::grad(U))*v;
+H = Zero;
 
 // It is assumed that the minimum mass density is constant
 
