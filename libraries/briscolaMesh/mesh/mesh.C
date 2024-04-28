@@ -727,14 +727,17 @@ mesh::mesh(const IOdictionary& dict)
 :
     geometry(dict),
     PtrList<part>(0),
-    decomp_(decomposition::New(*this))
+    decomp_(decomposition::New(*this)),
+    structured_(topology().structured()),
+    rectilinear_(Zero),
+    uniform_(Zero)
 {
+    // Add boundaries and levels
+
     generateBoundaries();
     generateLevels();
 
-    // Mesh is structured if the brick topology is too
-
-    structured_ = topology().structured();
+    // Set structured mesh properties
 
     if (structured_)
     {
@@ -754,11 +757,6 @@ mesh::mesh(const IOdictionary& dict)
             uniform_[d] =
                 returnReduce(p.uniform()[d], minOp<label>());
         }
-    }
-    else
-    {
-        rectilinear_ = zeroXYZ;
-        uniform_ = zeroXYZ;
     }
 
     // Determine bounding box

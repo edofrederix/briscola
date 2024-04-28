@@ -55,18 +55,37 @@ tmp<meshField<Type,MeshType>> createField
     return tf;
 }
 
+inline bool structured
+(
+    const label i,
+    const label j,
+    const label k,
+    const labelVector N
+)
+{
+    return
+        (i > 0 && i < N.x()-1 && j > 0 && j < N.y()-1)
+     || (i > 0 && i < N.x()-1 && k > 0 && k < N.z()-1)
+     || (j > 0 && j < N.y()-1 && k > 0 && k < N.z()-1);
+}
+
 template<class Type, class MeshType>
 void testField(const meshField<Type,MeshType>& f, bool ghosts)
 {
     forAll(f, l)
     forAll(f[l], d)
     {
-        const labelVector S = f.I(l,d).lower()-unitXYZ*label(ghosts);
-        const labelVector E = f.I(l,d).upper()+unitXYZ*label(ghosts);
+        const labelVector S = f.I(l,d).lower() - unitXYZ*label(ghosts);
+        const labelVector E = f.I(l,d).upper() + unitXYZ*label(ghosts);
+        const labelVector N(E-S);
+
+        // In the case of an unstructured mesh with ghosts, don't check edge and
+        // vertex cells
 
         for (int i = S.x(); i < E.x(); i++)
         for (int j = S.y(); j < E.y(); j++)
         for (int k = S.z(); k < E.z(); k++)
+        if (!ghosts || f.fvMsh().structured() || structured(i,j,k,N))
         {
             if
             (

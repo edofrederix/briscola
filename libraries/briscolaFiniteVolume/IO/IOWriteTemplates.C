@@ -123,12 +123,14 @@ void IO::writeScalarField
 
     const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
     const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+    const labelVector N = E - S;
 
-    List<floatScalar> data(cmptProduct(E-S));
+    List<floatScalar> data(nStructured(N));
 
     for (int i = S.x(); i < E.x(); i++)
     for (int j = S.y(); j < E.y(); j++)
     for (int k = S.z(); k < E.z(); k++)
+    if (structured(i,j,k,N))
     {
         data[c++] = D(i,j,k);
     }
@@ -160,12 +162,14 @@ void IO::writeArrayField
 
     const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
     const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+    const labelVector N = E - S;
 
-    List<floatScalar> data(cmptProduct(E-S)*n);
+    List<floatScalar> data(nStructured(N)*n);
 
     for (int i = S.x(); i < E.x(); i++)
     for (int j = S.y(); j < E.y(); j++)
     for (int k = S.z(); k < E.z(); k++)
+    if (structured(i,j,k,N))
     {
         for (label ii = 0; ii < n; ii++)
             data[c++] = D(i,j,k)[ii];
@@ -199,12 +203,14 @@ void IO::writeArrayArrayField
 
     const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
     const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+    const labelVector N = E - S;
 
-    List<floatScalar> data(cmptProduct(E-S)*m*n);
+    List<floatScalar> data(nStructured(N)*m*n);
 
     for (int i = S.x(); i < E.x(); i++)
     for (int j = S.y(); j < E.y(); j++)
     for (int k = S.z(); k < E.z(); k++)
+    if (structured(i,j,k,N))
     {
         for (label ii = 0; ii < n; ii++)
             for (label jj = 0; jj < m; jj++)

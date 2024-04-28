@@ -42,9 +42,6 @@ class part
     // Calculate the mesh points
     void calcPoints(const mesh&, const part*);
 
-    // Calculate ghost points of the mesh
-    void calcGhostPoints(const mesh&);
-
 public:
 
     // Construct from mesh and part at parent level (if any)
@@ -94,62 +91,6 @@ public:
 
     // Return the bounding box
     inline faceScalar boundingBox() const { return boundingBox_; }
-
-    // Return the start cell of the internal cell boundary at given offset
-    inline labelVector S(const labelVector& bo) const
-    {
-        return labelVector
-        (
-            bo.x() == 0 ? 0 : (bo.x()+1)/2*(l()-1),
-            bo.y() == 0 ? 0 : (bo.y()+1)/2*(m()-1),
-            bo.z() == 0 ? 0 : (bo.z()+1)/2*(n()-1)
-        );
-    }
-
-    // Return the shape of the internal cell boundary at given offset
-    inline labelVector N(const labelVector& bo) const
-    {
-        return labelVector
-        (
-            bo.x() == 0 ? l() : 1,
-            bo.y() == 0 ? m() : 1,
-            bo.z() == 0 ? n() : 1
-        );
-    }
-
-    // Return the end of the internal cell boundary at given offset
-    inline labelVector E(const labelVector& bo) const
-    {
-        return S(bo) + N(bo);
-    }
-
-    // Return the start point of the point boundary at given offset
-    inline labelVector pS(const labelVector& bo) const
-    {
-        return labelVector
-        (
-            bo.x() == 0 ? 0 : (bo.x()+1)/2*l(),
-            bo.y() == 0 ? 0 : (bo.y()+1)/2*m(),
-            bo.z() == 0 ? 0 : (bo.z()+1)/2*n()
-        );
-    }
-
-    // Return the shape of the point boundary at given offset
-    inline labelVector pN(const labelVector& bo) const
-    {
-        return labelVector
-        (
-            bo.x() == 0 ? l()+1 : 1,
-            bo.y() == 0 ? m()+1 : 1,
-            bo.z() == 0 ? n()+1 : 1
-        );
-    }
-
-    // Return the end of the point boundary at given offset
-    inline labelVector pE(const labelVector& bo) const
-    {
-        return pS(bo) + pN(bo);
-    }
 };
 
 }

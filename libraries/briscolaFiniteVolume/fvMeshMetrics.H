@@ -58,14 +58,14 @@ class fvMeshMetrics
     // Global cell numbers
     meshField<label,MeshType> globalCellNumbers_;
 
+    // Calculate vertex centers
+    void calculateVertexCenters();
+
     // Calculate face centers
     void calculateFaceCenters();
 
     // Calculate edge centers
     void calculateEdgeCenters();
-
-    // Calculate vertex centers
-    void calculateVertexCenters();
 
     // Calculate face areas and normals
     void calculateFaceAreasAndNormals();

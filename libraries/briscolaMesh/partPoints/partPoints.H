@@ -13,14 +13,54 @@ namespace Foam
 namespace briscola
 {
 
+class mesh;
+
 class partPoints
 :
     private vectorBlock
 {
+    // Reference to the mesh
+    const mesh& msh_;
+
+    // Boundary point start given offset and shape
+    inline labelVector start
+    (
+        const labelVector& bo,
+        const labelVector& N
+    ) const
+    {
+        return
+            labelVector
+            (
+                bo.x() == 0 ? 1 : bo.x() == -1 ? 1 : N.x() - 2,
+                bo.y() == 0 ? 1 : bo.y() == -1 ? 1 : N.y() - 2,
+                bo.z() == 0 ? 1 : bo.z() == -1 ? 1 : N.z() - 2
+            );
+    }
+
+    // Boundary point end given offset and shape
+    inline labelVector end
+    (
+        const labelVector& bo,
+        const labelVector& N
+    ) const
+    {
+        return
+            labelVector
+            (
+                bo.x() == 0 ? N.x() - 1 : bo.x() == -1 ? 2 : N.x() - 1,
+                bo.y() == 0 ? N.y() - 1 : bo.y() == -1 ? 2 : N.y() - 1,
+                bo.z() == 0 ? N.z() - 1 : bo.z() == -1 ? 2 : N.z() - 1
+            );
+    }
+
 public:
 
-    // Null constructor
-    partPoints();
+    // Constructor
+    partPoints(const mesh&);
+
+    // Copy concustrctor
+    partPoints(const partPoints&);
 
     // Destructor
     ~partPoints();
@@ -31,6 +71,12 @@ public:
     // Set the size of the level point block from the number of cells, i.e.,
     // excluding ghost cells
     void setSizeFromCells(const labelVector&);
+
+    // Calculate ghost points
+    void calcGhostPoints();
+
+    // Clean-up round-off errors
+    void clean();
 
     // Access to the points, padded by the ghost point layer so that (0,0,0)
     // corresponds to the left-bottom-aft point of the first cell
