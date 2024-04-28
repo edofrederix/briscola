@@ -296,6 +296,7 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
             dictionary dict(b.dict());
 
             dict.add("master", b.master());
+            dict.add("tag", b.cast<parallelBoundary>().tag());
 
             bDicts[Pstream::myProcNo()].append
             (

@@ -446,9 +446,8 @@ void mesh::setCommTags()
         boundary& b = boundaries_[bi];
 
         if (b.castable<parallelBoundary>())
-        {
-            b.dict().add("tag", myTags[c++]);
-        }
+            const_cast<parallelBoundary&>(b.cast<parallelBoundary>())
+           .setTag(myTags[c++]);
     }
 }
 

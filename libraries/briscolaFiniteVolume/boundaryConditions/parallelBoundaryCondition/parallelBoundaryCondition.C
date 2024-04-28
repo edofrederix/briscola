@@ -24,11 +24,11 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     boundaryCondition<Type,MeshType>(mshField, b),
     neighborProcNum_
     (
-        readLabel(b.dict().lookup("neighborProcNum"))
+        b.cast<parallelBoundary>().neighborProcNum()
     ),
     tag_
     (
-        readLabel(b.dict().lookup("tag"))
+        b.cast<parallelBoundary>().tag()
     ),
     sendBuffers_(),
     recvBuffers_(),
