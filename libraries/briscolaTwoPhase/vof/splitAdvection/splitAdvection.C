@@ -50,7 +50,7 @@ void splitAdvection::updateFlux
 
             scalar fluxAlpha = 0;
 
-            if (alpha_(don) > 1-vof::threshold)
+            if (alpha_(don) >= 1 - vof::threshold)
             {
                 fluxAlpha = cv(don)*frac/dt;
             }
@@ -203,6 +203,10 @@ void splitAdvection::solve(const colocatedLowerFaceScalarField& phi)
                       - flux_(ijk)[dir]
                       + flux_(nei)[dir]
                     );
+
+                // Remove tiny errors in alpha
+
+                alpha_(ijk) = Foam::min(Foam::max(alpha_(ijk), 0.0), 1.0);
             }
 
             alpha_[0].correctBoundaryConditions();

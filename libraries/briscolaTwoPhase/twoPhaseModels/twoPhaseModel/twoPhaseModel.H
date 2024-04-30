@@ -43,13 +43,6 @@ protected:
     autoPtr<staggeredScalarField> rho1Ptr_;
     autoPtr<staggeredScalarField> rho2Ptr_;
 
-    // Scalar densities and viscosities
-    scalar scalarRho1_;
-    scalar scalarRho2_;
-
-    scalar scalarMu1_;
-    scalar scalarMu2_;
-
     // Staggered mixture mass density and dynamic viscosity, only created on
     // structured meshes
     autoPtr<staggeredScalarField> rhosPtr_;
