@@ -130,8 +130,17 @@ operator*
         new linearSystem<SType,Type,MeshType>(sys)
     );
 
-    tRet->A() *= s;
-    tRet->b() *= s;
+    // The restricted field has undefined ghosts. Manually implement operation
+    // to avoid segmentation errors.
+
+    meshField<SType,MeshType>& A = tRet->A();
+    meshField<Type,MeshType>& b = tRet->b();
+
+    forAllCells(A, l, d, i, j, k)
+        A(l,d,i,j,k) *= s(l,d,i,j,k);
+
+    forAllCells(b, l, d, i, j, k)
+        b(l,d,i,j,k) *= s(l,d,i,j,k);
 
     const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
 
@@ -151,8 +160,17 @@ operator*
     tmp<linearSystem<SType,Type,MeshType>>& tRet =
         const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys);
 
-    tRet->A() *= s;
-    tRet->b() *= s;
+    // The restricted field has undefined ghosts. Manually implement operation
+    // to avoid segmentation errors.
+
+    meshField<SType,MeshType>& A = tRet->A();
+    meshField<Type,MeshType>& b = tRet->b();
+
+    forAllCells(A, l, d, i, j, k)
+        A(l,d,i,j,k) *= s(l,d,i,j,k);
+
+    forAllCells(b, l, d, i, j, k)
+        b(l,d,i,j,k) *= s(l,d,i,j,k);
 
     const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
 
@@ -174,8 +192,17 @@ operator*
         new linearSystem<SType,Type,MeshType>(sys)
     );
 
-    tRet->A() *= s;
-    tRet->b() *= s;
+    // The restricted field has undefined ghosts. Manually implement operation
+    // to avoid segmentation errors.
+
+    meshField<SType,MeshType>& A = tRet->A();
+    meshField<Type,MeshType>& b = tRet->b();
+
+    forAllCells(A, l, d, i, j, k)
+        A(l,d,i,j,k) *= s(l,d,i,j,k);
+
+    forAllCells(b, l, d, i, j, k)
+        b(l,d,i,j,k) *= s(l,d,i,j,k);
 
     const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
 
@@ -195,8 +222,17 @@ operator*
     tmp<linearSystem<SType,Type,MeshType>>& tRet =
         const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys);
 
-    tRet->A() *= s;
-    tRet->b() *= s;
+    // The restricted field has undefined ghosts. Manually implement operation
+    // to avoid segmentation errors.
+
+    meshField<SType,MeshType>& A = tRet->A();
+    meshField<Type,MeshType>& b = tRet->b();
+
+    forAllCells(A, l, d, i, j, k)
+        A(l,d,i,j,k) *= s(l,d,i,j,k);
+
+    forAllCells(b, l, d, i, j, k)
+        b(l,d,i,j,k) *= s(l,d,i,j,k);
 
     const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
 
@@ -218,8 +254,17 @@ operator/
         new linearSystem<SType,Type,MeshType>(sys)
     );
 
-    tRet->A() /= s;
-    tRet->b() /= s;
+    // The restricted field has undefined ghosts. Manually implement operation
+    // to avoid segmentation errors.
+
+    meshField<SType,MeshType>& A = tRet->A();
+    meshField<Type,MeshType>& b = tRet->b();
+
+    forAllCells(A, l, d, i, j, k)
+        A(l,d,i,j,k) /= s(l,d,i,j,k);
+
+    forAllCells(b, l, d, i, j, k)
+        b(l,d,i,j,k) /= s(l,d,i,j,k);
 
     const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
 
@@ -239,8 +284,17 @@ operator/
     tmp<linearSystem<SType,Type,MeshType>>& tRet =
         const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys);
 
-    tRet->A() /= s;
-    tRet->b() /= s;
+    // The restricted field has undefined ghosts. Manually implement operation
+    // to avoid segmentation errors.
+
+    meshField<SType,MeshType>& A = tRet->A();
+    meshField<Type,MeshType>& b = tRet->b();
+
+    forAllCells(A, l, d, i, j, k)
+        A(l,d,i,j,k) /= s(l,d,i,j,k);
+
+    forAllCells(b, l, d, i, j, k)
+        b(l,d,i,j,k) /= s(l,d,i,j,k);
 
     const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
 

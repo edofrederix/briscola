@@ -41,13 +41,16 @@ namespace im
         const meshField<scalar,MeshType>& cv =
             field.fvMsh().template metrics<MeshType>().cellVolumes();
 
+        sys.A() = factor*cv;
+
         if (lambdaPtr)
         {
-            sys.A() = factor*cv*(*lambdaPtr);
-        }
-        else
-        {
-            sys.A() = factor*cv;
+            // The restricted lambda field has undefined ghosts. Manually
+            // implement operation to avoid segmentation errors.
+
+            forAllCells(sys.A(), l, d, i, j, k)
+                sys.A()[l][d](i,j,k) *=
+                    (*lambdaPtr)[l][d](i,j,k);
         }
 
         sys.b() = Zero;
