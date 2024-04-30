@@ -40,6 +40,8 @@ void JAC<SType,Type,MeshType>::JAC::smooth
     if (!singular)
         xi = List<Type>(x.size(), Zero);
 
+    const List<bool> diagonal(sys.diagonal());
+
     meshLevel<Type,MeshType> y(x);
 
     for (label sweep = 0; sweep < sweeps; sweep++)
@@ -47,23 +49,30 @@ void JAC<SType,Type,MeshType>::JAC::smooth
         forAll(x, d)
         if (!converged[d])
         {
-            meshDirection<Type,MeshType>& yd = y[d];
+            if (diagonal[d])
+            {
+                this->smoothDiag(sys, l, d);
+            }
+            else
+            {
+                meshDirection<Type,MeshType>& yd = y[d];
 
-            const meshDirection<Type,MeshType>& xd = x[d];
-            const meshDirection<SType,MeshType>& Ad = A[d];
-            const meshDirection<Type,MeshType>& bd = b[d];
+                const meshDirection<Type,MeshType>& xd = x[d];
+                const meshDirection<SType,MeshType>& Ad = A[d];
+                const meshDirection<Type,MeshType>& bd = b[d];
 
-            forAllCells(xd, i, j, k)
-                yd(i,j,k) =
-                    yd(i,j,k)*(1.0-omega_)
-                  + omega_
-                  * (
-                        bd(i,j,k)
-                      - lowerRowProduct(Ad,xd,i,j,k)
-                      - upperRowProduct(Ad,xd,i,j,k)
-                      - xi[d]
-                    )
-                  / Ad(i,j,k).center();
+                forAllCells(xd, i, j, k)
+                    yd(i,j,k) =
+                        yd(i,j,k)*(1.0-omega_)
+                      + omega_
+                      * (
+                            bd(i,j,k)
+                          - lowerRowProduct(Ad,xd,i,j,k)
+                          - upperRowProduct(Ad,xd,i,j,k)
+                          - xi[d]
+                        )
+                      / Ad(i,j,k).center();
+            }
         }
 
         x = y;

@@ -44,18 +44,10 @@ public:
     Eigen(const dictionary&, const fvMesh&, const label = 0);
 
     // Prepare
-    virtual void prepare
-    (
-        const linearSystem<SType,Type,MeshType>&,
-        const List<bool>&
-    );
+    virtual void prepare(linearSystem<SType,Type,MeshType>&);
 
     // Solve
-    virtual void solve
-    (
-        linearSystem<SType,Type,MeshType>&,
-        const List<bool>&
-    );
+    virtual void solve(linearSystem<SType,Type,MeshType>&);
 };
 
 }

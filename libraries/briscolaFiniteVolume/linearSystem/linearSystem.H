@@ -36,6 +36,9 @@ class linearSystem
     // Singularity bools
     List<bool> singular_;
 
+    // Diagonal bools
+    List<bool> diagonal_;
+
     // Transfer data from other system
     void transfer(linearSystem<SType,Type,MeshType>&);
 
@@ -86,6 +89,9 @@ public:
     // coarsest level  are zero. See Remark 5.6.5 in "Multigrid", U. Trottenberg
     // et al., (2000). Result is cached.
     List<bool> singular(const bool clearCache = false);
+
+    // Check if the linear system is diagonal. Result is cached.
+    List<bool> diagonal(const bool clearCache = false);
 
     // Compute the residual b-Ax and store in given object
     void residual(meshField<Type,MeshType>&) const;

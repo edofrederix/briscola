@@ -37,6 +37,23 @@ public:
         // Reference to the mesh
         const fvMesh& fvMsh_;
 
+        // Diagonal smooth at given level and direction
+        inline void smoothDiag
+        (
+            linearSystem<SType,Type,MeshType>& sys,
+            const label l,
+            const label d
+        ) const
+        {
+            meshDirection<Type,MeshType>& x = sys.x()[l][d];
+
+            const meshDirection<SType,MeshType>& A = sys.A()[l][d];
+            const meshDirection<Type,MeshType>& b = sys.b()[l][d];
+
+            forAllCells(x, i, j, k)
+                x(i,j,k) = b(i,j,k)/A(i,j,k).center();
+        }
+
     public:
 
         // Runtime type information
@@ -150,24 +167,14 @@ public:
         // Return prepared switch
         inline Switch prepared() const { return prepared_; }
 
-        // Prepare the solution of the given system, indicating if singular
-        // system augmentation should be applied
-        virtual void prepare
-        (
-            const linearSystem<SType,Type,MeshType>&,
-            const List<bool>&
-        )
+        // Prepare the solution of the given system
+        virtual void prepare(linearSystem<SType,Type,MeshType>&)
         {
             prepared_ = true;
         }
 
-        // Solve the given system, indicating if singular system augmentation
-        // should be applied
-        virtual void solve
-        (
-            linearSystem<SType,Type,MeshType>&,
-            const List<bool>&
-        ) = 0;
+        // Solve the given system
+        virtual void solve(linearSystem<SType,Type,MeshType>&) = 0;
     };
 
 protected:
@@ -249,11 +256,10 @@ public:
 
     // Compute residual normalization factors of the system Ax=b at given mesh
     // level. The normalization factor is defined as sum(|Ax-Ay|+|b-Ay|), with y
-    // = mean(x). The function reuses the residual that should be pre-computed,
-    // so that it can be re-used.
+    // = mean(x). The function reuses the pre-computed residual.
     virtual List<Type> normFactors
     (
-        const linearSystem<SType,Type,MeshType>&,
+        linearSystem<SType,Type,MeshType>&,
         const meshField<Type,MeshType>&,
         const label
     ) const;

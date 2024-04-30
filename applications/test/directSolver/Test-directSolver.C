@@ -39,7 +39,10 @@ void test(const fvMesh& fvMsh, const word solverType)
 
     linearSystem<SType,Type,MeshType> sys(im::laplacian<SType>(f));
     sys -= im::ddt(f);
+
     sys.eliminateGhosts();
+    sys.singular();
+    sys.diagonal();
 
     // Write the system to a file
 
@@ -47,8 +50,8 @@ void test(const fvMesh& fvMsh, const word solverType)
 
     // Prepare solver and compute solution
 
-    solverPtr->prepare(sys, sys.singular());
-    solverPtr->solve(sys, sys.singular());
+    solverPtr->prepare(sys);
+    solverPtr->solve(sys);
 
     // Write the solution
 

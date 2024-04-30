@@ -38,62 +38,71 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
     bool singular = xi.size() > 0;
     xi = singular ? gAverage(x) : List<Type>(x.size(), Zero);
 
+    const List<bool> diagonal(sys.diagonal());
+
     for (label sweep = 0; sweep < sweeps; sweep++)
     {
         forAll(x, d)
         if (!converged[d])
         {
-            meshDirection<Type,MeshType>& xd = x[d];
+            if (diagonal[d])
+            {
+                this->smoothDiag(sys, l, d);
+            }
+            else
+            {
+                meshDirection<Type,MeshType>& xd = x[d];
 
-            const meshDirection<SType,MeshType>& Ad = A[d];
-            const meshDirection<Type,MeshType>& bd = b[d];
+                const meshDirection<SType,MeshType>& Ad = A[d];
+                const meshDirection<Type,MeshType>& bd = b[d];
 
-            forAllCells(xd, i, j, k)
-                if (even(i,j,k))
-                    xd(i,j,k) =
-                        (
-                            bd(i,j,k)
-                          - lowerRowProduct(Ad,xd,i,j,k)
-                          - upperRowProduct(Ad,xd,i,j,k)
-                          - xi[d]
-                        )
-                      / Ad(i,j,k).center();
+                forAllCells(xd, i, j, k)
+                    if (even(i,j,k))
+                        xd(i,j,k) =
+                            (
+                                bd(i,j,k)
+                              - lowerRowProduct(Ad,xd,i,j,k)
+                              - upperRowProduct(Ad,xd,i,j,k)
+                              - xi[d]
+                            )
+                          / Ad(i,j,k).center();
 
-            forAllCells(xd, i, j, k)
-                if (odd(i,j,k))
-                    xd(i,j,k) =
-                        (
-                            bd(i,j,k)
-                          - lowerRowProduct(Ad,xd,i,j,k)
-                          - upperRowProduct(Ad,xd,i,j,k)
-                          - xi[d]
-                        )
-                      / Ad(i,j,k).center();
+                forAllCells(xd, i, j, k)
+                    if (odd(i,j,k))
+                        xd(i,j,k) =
+                            (
+                                bd(i,j,k)
+                              - lowerRowProduct(Ad,xd,i,j,k)
+                              - upperRowProduct(Ad,xd,i,j,k)
+                              - xi[d]
+                            )
+                          / Ad(i,j,k).center();
 
-            if (!symmetric_)
-                continue;
+                if (!symmetric_)
+                    continue;
 
-            forAllCellsReversed(xd, i, j, k)
-                if (even(i,j,k))
-                    xd(i,j,k) =
-                        (
-                            bd(i,j,k)
-                          - lowerRowProduct(Ad,xd,i,j,k)
-                          - upperRowProduct(Ad,xd,i,j,k)
-                          - xi[d]
-                        )
-                      / Ad(i,j,k).center();
+                forAllCellsReversed(xd, i, j, k)
+                    if (even(i,j,k))
+                        xd(i,j,k) =
+                            (
+                                bd(i,j,k)
+                              - lowerRowProduct(Ad,xd,i,j,k)
+                              - upperRowProduct(Ad,xd,i,j,k)
+                              - xi[d]
+                            )
+                          / Ad(i,j,k).center();
 
-            forAllCellsReversed(xd, i, j, k)
-                if (odd(i,j,k))
-                    xd(i,j,k) =
-                        (
-                            bd(i,j,k)
-                          - lowerRowProduct(Ad,xd,i,j,k)
-                          - upperRowProduct(Ad,xd,i,j,k)
-                          - xi[d]
-                        )
-                      / Ad(i,j,k).center();
+                forAllCellsReversed(xd, i, j, k)
+                    if (odd(i,j,k))
+                        xd(i,j,k) =
+                            (
+                                bd(i,j,k)
+                              - lowerRowProduct(Ad,xd,i,j,k)
+                              - upperRowProduct(Ad,xd,i,j,k)
+                              - xi[d]
+                            )
+                          / Ad(i,j,k).center();
+            }
         }
 
         x.correctNonEliminatedBoundaryConditions();

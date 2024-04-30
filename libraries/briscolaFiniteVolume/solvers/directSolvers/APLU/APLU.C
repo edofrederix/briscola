@@ -30,16 +30,23 @@ APLU<SType,Type,MeshType>::APLU
 template<class SType, class Type, class MeshType>
 void APLU<SType,Type,MeshType>::prepare
 (
-    const linearSystem<SType,Type,MeshType>& xEqn,
-    const List<bool>& singular
+    linearSystem<SType,Type,MeshType>& xEqn
 )
 {
     const globalRowData<SType,Type,MeshType> gRowData(xEqn, this->l_);
+
+    const List<bool> singular(xEqn.singular());
+    const List<bool> diagonal(xEqn.diagonal());
 
     if (Pstream::master())
     {
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
+            // Nothing to be done for diagonal systems
+
+            if (diagonal[d])
+                continue;
+
             const auto& cellNumbers = gCellNumbers_.data(d);
             const auto& rowData = gRowData.data(d);
 
@@ -118,24 +125,32 @@ void APLU<SType,Type,MeshType>::prepare
         }
     }
 
-    solver<SType,Type,MeshType>::directSolver::prepare(xEqn, singular);
+    solver<SType,Type,MeshType>::directSolver::prepare(xEqn);
 }
 
 template<class SType, class Type, class MeshType>
 void APLU<SType,Type,MeshType>::solve
 (
-    linearSystem<SType,Type,MeshType>& xEqn,
-    const List<bool>& singular
+    linearSystem<SType,Type,MeshType>& xEqn
 )
 {
     const globalRowData<SType,Type,MeshType> gRowData(xEqn, this->l_);
 
     meshLevel<Type,MeshType>& x = xEqn.x()[this->l_];
     const meshLevel<Type,MeshType>& b = xEqn.b()[this->l_];
+    const meshLevel<SType,MeshType>& A = xEqn.A()[this->l_];
+
+    const List<bool> singular(xEqn.singular());
+    const List<bool> diagonal(xEqn.diagonal());
 
     for (int d = 0; d < MeshType::numberOfDirections; d++)
     {
-        if (Pstream::master())
+        if (diagonal[d])
+        {
+            forAllCells(x[d], i, j, k)
+                x[d](i,j,k) = b[d](i,j,k)/A[d](i,j,k).center();
+        }
+        else if (Pstream::master())
         {
             const auto& cellNumbers = gCellNumbers_.data(d);
             const label n = gCellNumbers_.numberOfCells(d);
