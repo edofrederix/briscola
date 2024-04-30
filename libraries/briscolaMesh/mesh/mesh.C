@@ -1012,12 +1012,29 @@ labelVector mesh::coarsen(const labelVector P) const
     {
         // Refine until one or three cells in each direction
 
-        return labelVector
+        labelVector Q
         (
             (P.x() == 1 || P.x() == 3) ? P.x() : P.x()/2,
             (P.y() == 1 || P.y() == 3) ? P.y() : P.y()/2,
             (P.z() == 1 || P.z() == 3) ? P.z() : P.z()/2
         );
+
+        // Avoid having one cell in a periodic direction
+
+        for (int d = 0; d < 3; d++)
+        {
+            if
+            (
+                Q[d] < 2
+             && faceBoundaryType()[2*d  ] == periodicBoundary::typeNumber
+             && faceBoundaryType()[2*d+1] == periodicBoundary::typeNumber
+            )
+            {
+                Q[d] = 2;
+            }
+        }
+
+        return Q;
     }
 }
 
