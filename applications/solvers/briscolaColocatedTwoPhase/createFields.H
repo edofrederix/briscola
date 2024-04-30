@@ -55,6 +55,29 @@ colocatedLowerFaceScalarField phi
 phi.setRestrictionScheme("flux");
 phi = ex::faceFlux(U);
 
+// Source
+
+colocatedVectorField exSource
+(
+    "source",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+colocatedScalarField imSourceCoeff
+(
+    "sourceCoeff",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+exSource = vector(twoPhaseDict.lookupOrDefault("source", vector::zero));
+imSourceCoeff = scalar(twoPhaseDict.lookupOrDefault("sourceCoeff", 0.0));
+
 // Solvers
 
 linearSystem<stencil,vector,colocated> USys(U);
