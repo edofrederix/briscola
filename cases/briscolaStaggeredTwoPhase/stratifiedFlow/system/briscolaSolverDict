@@ -17,8 +17,8 @@ U
 
 p
 {
-    type        FFT;
-    relTol      1e-5;
-    tolerance   1e-8;
+    type        MG;
+    relTol      0.01;
+    tolerance   1e-6;
     maxIter     100;
 }

@@ -36,3 +36,5 @@ vof
 {
     type    splitAdvection;
 }
+
+source      (0.5 0 0);

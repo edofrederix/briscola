@@ -53,39 +53,29 @@ bool initialCondition::read(const dictionary& dict)
             runTime_.lookupObjectRef<staggeredScalarField>("U");
 
         alpha = Zero;
+        U = Zero;
 
-        const meshField<vector,colocated>& cc =
+        const meshField<vector,colocated>& ccc =
             alpha.fvMsh().metrics<colocated>().cellCenters();
 
         const meshField<vector,staggered>& scc =
-            U.fvMsh().metrics<staggered>().cellCenters();
+            alpha.fvMsh().metrics<staggered>().cellCenters();
 
-        forAllCells(alpha, i, j, k)
+        forAllCells(alpha, l, d, i, j, k)
+            alpha(l,d,i,j,k) = ccc(l,d,i,j,k).y() < 0.0 ? 0.0 : 1.0;
+
+        forAllCells(U, l, d, i, j, k)
         {
-            // if (Foam::mag(cc(i,j,k)[1]) < 1e-3)
-            // {
-            //     alpha(i,j,k) = 0.5;
-            // }
-            // else
-            if (cc(i,j,k)[1] < 0)
-            {
-                alpha(i,j,k) = 0;
-            }
-            else
-            {
-                alpha(i,j,k) = 1;
-            }
-        }
+            if (d == 0)
+                U(l,d,i,j,k) =
+                    1.5
+                  * (
+                        1.5*(1.0 - Foam::sqr(scc(l,d,i,j,k).y()/0.05))
+                      + 0.25*Foam::sin(4.0*3.14*scc(i,j,k).z())
+                    );
 
-        forAllCells(U[0][0], i, j, k)
-        {
-            U(0,i,j,k) = 1.5 *
-                        (
-                            1.5 * (1 - Foam::sqr(scc(i,j,k)[1]/0.05))
-                          + 0.25 * Foam::sin(4 * 3.14 * scc(i,j,k)[2])
-                        );
-
-            U(2,i,j,k) = 1.5 * 0.25 * Foam::sin(2 * 3.14 * scc(i,j,k)[0]);
+            if (d == 2)
+                U(l,d,i,j,k) = 1.5*0.25*Foam::sin(2.0*3.14*scc(l,d,i,j,k).x());
         }
 
         alpha.correctBoundaryConditions();

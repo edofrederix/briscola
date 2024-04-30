@@ -6,3 +6,4 @@ cleanCase
 
 wclean code
 
+rm -f briscola*.vtk.series code/libcode.so
