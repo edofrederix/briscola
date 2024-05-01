@@ -60,14 +60,14 @@ class fvMeshMetrics
     // Pointer to immersed boundaries (if any)
     PtrList<immersedBoundary<MeshType>> immersedBoundaries_;
 
+    // Calculate vertex centers
+    void calculateVertexCenters();
+
     // Calculate face centers
     void calculateFaceCenters();
 
     // Calculate edge centers
     void calculateEdgeCenters();
-
-    // Calculate vertex centers
-    void calculateVertexCenters();
 
     // Calculate face areas and normals
     void calculateFaceAreasAndNormals();

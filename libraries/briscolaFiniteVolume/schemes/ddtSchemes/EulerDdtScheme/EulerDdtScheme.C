@@ -56,8 +56,17 @@ EulerDdtScheme<Type,MeshType>::imDdt
 
     if (lambdaPtr)
     {
-        Sys.A() *= (*lambdaPtr);
-        Sys.b() *= lambdaPtr->oldTime();
+        // The restricted lambda field has undefined ghosts. Manually implement
+        // operation to avoid segmentation errors.
+
+        forAllCells(Sys.A(), l, d, i, j, k)
+            Sys.A()[l][d](i,j,k) *=
+                (*lambdaPtr)[l][d](i,j,k);
+
+        const meshField<scalar,MeshType>& lambdaOld = lambdaPtr->oldTime();
+
+        forAllCells(Sys.b(), l, d, i, j, k)
+            Sys.b()[l][d](i,j,k) *= lambdaOld[l][d](i,j,k);
     }
 
     if (lambdaPtr)

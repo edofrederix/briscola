@@ -28,7 +28,8 @@ void IO::writeData(const word timeName, const label l)
     const meshLevel<vector,MeshType>& ccl =
         fvMsh_.template metrics<MeshType>().cellCenters()[l];
 
-    const partPoints& points = fvMsh_[l].points();
+    const meshLevel<vertexVector,MeshType>& vcl =
+        fvMsh_.template metrics<MeshType>().vertexCenters()[l];
 
     const bool ascii = (fvMsh_.time().writeFormat() == IOstream::ASCII);
 
@@ -89,23 +90,24 @@ void IO::writeData(const word timeName, const label l)
 
         List<floatScalar> myPoints(cmptProduct(E-S+unitXYZ)*3);
 
-        const vector shift(MeshType::shift[d]);
-
-        const labelVector Sp(-unitXYZ);
-        const labelVector Ep(points.shape()+unitXYZ);
-
         label c = 0;
-        for (int i = S.x(); i < E.x()+1; i++)
-        for (int j = S.y(); j < E.y()+1; j++)
-        for (int k = S.z(); k < E.z()+1; k++)
+        for (int i = S.x(); i < E.x() + 1; i++)
+        for (int j = S.y(); j < E.y() + 1; j++)
+        for (int k = S.z(); k < E.z() + 1; k++)
         {
-            vector ijk(vector(i,j,k)+shift);
+            const labelVector ijk
+            (
+                i - (i == E.x()),
+                j - (j == E.y()),
+                k - (k == E.z())
+            );
 
-            ijk.x() = Foam::min(Foam::max(Sp.x(), ijk.x()), Ep.x()-1);
-            ijk.y() = Foam::min(Foam::max(Sp.y(), ijk.y()), Ep.y()-1);
-            ijk.z() = Foam::min(Foam::max(Sp.z(), ijk.z()), Ep.z()-1);
+            const label v =
+                (k == E.z())*4
+              + (j == E.y())*2
+              + (i == E.x());
 
-            const floatVector p = floatVector(points.interp(ijk));
+            const floatVector p = floatVector(vcl[d](ijk)[v]);
 
             myPoints[c++] = p.x();
             myPoints[c++] = p.y();
@@ -154,8 +156,12 @@ void IO::writeData(const word timeName, const label l)
                 label nCells = 0;
 
                 forAll(shapes, p)
+                {
                     if (!partitioned_ || p == proc)
-                        nCells += cmptProduct(shapes[p]);
+                    {
+                        nCells += nStructured(shapes[p]);
+                    }
+                }
 
                 std::ofstream& file = filePtrs[proc]();
 
@@ -174,13 +180,14 @@ void IO::writeData(const word timeName, const label l)
                     const label M = m+1;
                     const label N = n+1;
 
-                    labelList buffer(l*m*n*9);
+                    labelList buffer(nStructured(shapes[p])*9);
 
                     label c = 0;
 
                     for(int i = 0; i < l; i++)
                     for(int j = 0; j < m; j++)
                     for(int k = 0; k < n; k++)
+                    if (structured(i,j,k,shapes[p]))
                     {
                         buffer[c++] = 8;
                         buffer[c++] = (cursor + (i  )*M*N + (j  )*N+k);
@@ -267,10 +274,12 @@ void IO::writeData(const word timeName, const label l)
         writeFields<symmTensor,MeshType>(filePtrs, l, d);
 
         writeFields<faceScalar,MeshType>(filePtrs, l, d);
+        writeFields<lowerFaceScalar,MeshType>(filePtrs, l, d);
         writeFields<edgeScalar,MeshType>(filePtrs, l, d);
         writeFields<vertexScalar,MeshType>(filePtrs, l, d);
 
         writeFields<faceVector,MeshType>(filePtrs, l, d);
+        writeFields<lowerFaceVector,MeshType>(filePtrs, l, d);
         writeFields<edgeVector,MeshType>(filePtrs, l, d);
         writeFields<vertexVector,MeshType>(filePtrs, l, d);
     }
@@ -281,6 +290,8 @@ void IO::readData(const word timeName, const label l)
 {
     const meshLevel<vector,MeshType>& ccl =
         fvMsh_.template metrics<MeshType>().cellCenters()[l];
+
+    wordList fieldNames;
 
     for (label d = 0; d < MeshType::numberOfDirections; d++)
     {
@@ -435,7 +446,7 @@ void IO::readData(const word timeName, const label l)
         const labelVector E(ccl[d].I().upper()+unitXYZ*label(ghosts_));
 
         labelList sizes(Pstream::nProcs());
-        sizes[Pstream::myProcNo()] = cmptProduct(E-S);
+        sizes[Pstream::myProcNo()] = nStructured(E-S);
         Pstream::gatherList(sizes);
         Pstream::scatterList(sizes);
 
@@ -450,23 +461,33 @@ void IO::readData(const word timeName, const label l)
 
         // Read fields from cell data. Order is important.
 
-        readFields<label,MeshType>(filePtr, ascii, l, d);
-        readFields<scalar,MeshType>(filePtr, ascii, l, d);
+        wordList fieldNames2;
 
-        readFields<vector,MeshType>(filePtr, ascii, l, d);
-        readFields<tensor,MeshType>(filePtr, ascii, l, d);
-        readFields<diagTensor,MeshType>(filePtr, ascii, l, d);
-        readFields<sphericalTensor,MeshType>(filePtr, ascii, l, d);
-        readFields<symmTensor,MeshType>(filePtr, ascii, l, d);
+        readFields<label,MeshType>(filePtr, ascii, l, d, fieldNames2);
+        readFields<scalar,MeshType>(filePtr, ascii, l, d, fieldNames2);
 
-        readFields<faceScalar,MeshType>(filePtr, ascii, l, d);
-        readFields<edgeScalar,MeshType>(filePtr, ascii, l, d);
-        readFields<vertexScalar,MeshType>(filePtr, ascii, l, d);
+        readFields<vector,MeshType>(filePtr, ascii, l, d, fieldNames2);
+        readFields<tensor,MeshType>(filePtr, ascii, l, d, fieldNames2);
+        readFields<diagTensor,MeshType>(filePtr, ascii, l, d, fieldNames2);
+        readFields<sphericalTensor,MeshType>(filePtr, ascii, l, d, fieldNames2);
+        readFields<symmTensor,MeshType>(filePtr, ascii, l, d, fieldNames2);
 
-        readFields<faceVector,MeshType>(filePtr, ascii, l, d);
-        readFields<edgeVector,MeshType>(filePtr, ascii, l, d);
-        readFields<vertexVector,MeshType>(filePtr, ascii, l, d);
+        readFields<faceScalar,MeshType>(filePtr, ascii, l, d, fieldNames2);
+        readFields<lowerFaceScalar,MeshType>(filePtr, ascii, l, d, fieldNames2);
+        readFields<edgeScalar,MeshType>(filePtr, ascii, l, d, fieldNames2);
+        readFields<vertexScalar,MeshType>(filePtr, ascii, l, d, fieldNames2);
+
+        readFields<faceVector,MeshType>(filePtr, ascii, l, d, fieldNames2);
+        readFields<lowerFaceVector,MeshType>(filePtr, ascii, l, d, fieldNames2);
+        readFields<edgeVector,MeshType>(filePtr, ascii, l, d, fieldNames2);
+        readFields<vertexVector,MeshType>(filePtr, ascii, l, d, fieldNames2);
+
+        if (d == 0)
+            fieldNames = fieldNames2;
     }
+
+    if (!ghosts_)
+        this->correctBoundaryConditions<MeshType>(fieldNames, l);
 }
 
 template<class Type, class MeshType>
@@ -534,7 +555,8 @@ void IO::readFields
     autoPtr<std::ifstream>& filePtr,
     const bool ascii,
     const label l,
-    const label d
+    const label d,
+    wordList& fields
 ) const
 {
     typedef meshField<Type, MeshType> FieldType;
@@ -581,6 +603,7 @@ void IO::readFields
                 )
                 {
                     readField(filePtr, ascii, field[l][d]);
+                    fields.append(field.name());
                 }
                 else
                 {
@@ -609,6 +632,43 @@ void IO::readFields
                 }
             }
         }
+    }
+}
+
+template<class Type, class MeshType>
+void IO::correctBoundaryConditions(const word& fieldName, const label l)
+{
+    if (fvMsh_.time().foundObject<meshField<Type,MeshType>>(fieldName))
+    {
+        auto& field =
+            fvMsh_.time().lookupObjectRef<meshField<Type,MeshType>>(fieldName);
+
+        field[l].correctBoundaryConditions();
+    }
+}
+
+template<class MeshType>
+void IO::correctBoundaryConditions(const wordList& fieldNames, const label l)
+{
+    forAll(fieldNames, i)
+    {
+        const word fieldName = fieldNames[i];
+
+        correctBoundaryConditions<label,MeshType>(fieldName, l);
+        correctBoundaryConditions<scalar,MeshType>(fieldName, l);
+        correctBoundaryConditions<vector,MeshType>(fieldName, l);
+        correctBoundaryConditions<tensor,MeshType>(fieldName, l);
+        correctBoundaryConditions<diagTensor,MeshType>(fieldName, l);
+        correctBoundaryConditions<sphericalTensor,MeshType>(fieldName, l);
+        correctBoundaryConditions<symmTensor,MeshType>(fieldName, l);
+        correctBoundaryConditions<faceScalar,MeshType>(fieldName, l);
+        correctBoundaryConditions<lowerFaceScalar,MeshType>(fieldName, l);
+        correctBoundaryConditions<edgeScalar,MeshType>(fieldName, l);
+        correctBoundaryConditions<vertexScalar,MeshType>(fieldName, l);
+        correctBoundaryConditions<faceVector,MeshType>(fieldName, l);
+        correctBoundaryConditions<lowerFaceVector,MeshType>(fieldName, l);
+        correctBoundaryConditions<edgeVector,MeshType>(fieldName, l);
+        correctBoundaryConditions<vertexVector,MeshType>(fieldName, l);
     }
 }
 

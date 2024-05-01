@@ -15,8 +15,6 @@ defineRunTimeSelectionTable(EigenSolver, dictionary);
 
 bool EigenSolver::isSymmetric(const matrixType& A) const
 {
-    bool symm = true;
-
     for (int k = 0; k < A.outerSize(); ++k)
     for (matrixType::InnerIterator it(A,k); it; ++it)
     {
@@ -25,14 +23,11 @@ bool EigenSolver::isSymmetric(const matrixType& A) const
 
         if(i < j && Foam::mag(A.coeff(i,j) - A.coeff(j,i)) > 1e-8)
         {
-            symm = false;
-            goto done;
+            return false;
         }
     }
 
-    done:;
-
-    return symm;
+    return true;
 }
 
 bool EigenSolver::isPositiveDefinite(const matrixType& A) const
@@ -61,7 +56,7 @@ bool EigenSolver::isPositiveDefinite(const matrixType& A) const
             }
         }
 
-        if (C < -1e-12)
+        if (C < -1e-8)
             return false;
     }
 

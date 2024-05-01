@@ -123,12 +123,14 @@ void IO::writeScalarField
 
     const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
     const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+    const labelVector N = E - S;
 
-    List<floatScalar> data(cmptProduct(E-S));
+    List<floatScalar> data(nStructured(N));
 
     for (int i = S.x(); i < E.x(); i++)
     for (int j = S.y(); j < E.y(); j++)
     for (int k = S.z(); k < E.z(); k++)
+    if (structured(i,j,k,N))
     {
         data[c++] = D(i,j,k);
     }
@@ -160,12 +162,14 @@ void IO::writeArrayField
 
     const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
     const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+    const labelVector N = E - S;
 
-    List<floatScalar> data(cmptProduct(E-S)*n);
+    List<floatScalar> data(nStructured(N)*n);
 
     for (int i = S.x(); i < E.x(); i++)
     for (int j = S.y(); j < E.y(); j++)
     for (int k = S.z(); k < E.z(); k++)
+    if (structured(i,j,k,N))
     {
         for (label ii = 0; ii < n; ii++)
             data[c++] = D(i,j,k)[ii];
@@ -199,12 +203,14 @@ void IO::writeArrayArrayField
 
     const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
     const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+    const labelVector N = E - S;
 
-    List<floatScalar> data(cmptProduct(E-S)*m*n);
+    List<floatScalar> data(nStructured(N)*m*n);
 
     for (int i = S.x(); i < E.x(); i++)
     for (int j = S.y(); j < E.y(); j++)
     for (int k = S.z(); k < E.z(); k++)
+    if (structured(i,j,k,N))
     {
         for (label ii = 0; ii < n; ii++)
             for (label jj = 0; jj < m; jj++)
@@ -227,22 +233,22 @@ void IO::writeArrayArrayField
 
 // Instantiate
 
-#define WRITETYPEFIELD(FUNC,TYPE,MESHTYPE)                                      \
-                                                                                \
-template<>                                                                      \
-void IO::writeField                                                             \
-(                                                                               \
-    List<autoPtr<std::ofstream>>& filePtrs,                                     \
-    const meshDirection<TYPE,MESHTYPE>& D                                       \
-) const                                                                         \
-{                                                                               \
-    FUNC(filePtrs,D);                                                           \
-}                                                                               \
-                                                                                \
-template void IO::FUNC                                                          \
-(                                                                               \
-    List<autoPtr<std::ofstream>>&,                                              \
-    const meshDirection<TYPE,MESHTYPE>&                                         \
+#define WRITETYPEFIELD(FUNC,TYPE,MESHTYPE)                                     \
+                                                                               \
+template<>                                                                     \
+void IO::writeField                                                            \
+(                                                                              \
+    List<autoPtr<std::ofstream>>& filePtrs,                                    \
+    const meshDirection<TYPE,MESHTYPE>& D                                      \
+) const                                                                        \
+{                                                                              \
+    FUNC(filePtrs,D);                                                          \
+}                                                                              \
+                                                                               \
+template void IO::FUNC                                                         \
+(                                                                              \
+    List<autoPtr<std::ofstream>>&,                                             \
+    const meshDirection<TYPE,MESHTYPE>&                                        \
 ) const;
 
 WRITETYPEFIELD(writeScalarField,scalar,colocated)
@@ -253,9 +259,11 @@ WRITETYPEFIELD(writeArrayField,diagTensor,colocated)
 WRITETYPEFIELD(writeArrayField,symmTensor,colocated)
 WRITETYPEFIELD(writeArrayField,sphericalTensor,colocated)
 WRITETYPEFIELD(writeArrayField,faceScalar,colocated)
+WRITETYPEFIELD(writeArrayField,lowerFaceScalar,colocated)
 WRITETYPEFIELD(writeArrayField,edgeScalar,colocated)
 WRITETYPEFIELD(writeArrayField,vertexScalar,colocated)
 WRITETYPEFIELD(writeArrayArrayField,faceVector,colocated)
+WRITETYPEFIELD(writeArrayArrayField,lowerFaceVector,colocated)
 WRITETYPEFIELD(writeArrayArrayField,edgeVector,colocated)
 WRITETYPEFIELD(writeArrayArrayField,vertexVector,colocated)
 
@@ -267,9 +275,11 @@ WRITETYPEFIELD(writeArrayField,diagTensor,staggered)
 WRITETYPEFIELD(writeArrayField,symmTensor,staggered)
 WRITETYPEFIELD(writeArrayField,sphericalTensor,staggered)
 WRITETYPEFIELD(writeArrayField,faceScalar,staggered)
+WRITETYPEFIELD(writeArrayField,lowerFaceScalar,staggered)
 WRITETYPEFIELD(writeArrayField,edgeScalar,staggered)
 WRITETYPEFIELD(writeArrayField,vertexScalar,staggered)
 WRITETYPEFIELD(writeArrayArrayField,faceVector,staggered)
+WRITETYPEFIELD(writeArrayArrayField,lowerFaceVector,staggered)
 WRITETYPEFIELD(writeArrayArrayField,edgeVector,staggered)
 WRITETYPEFIELD(writeArrayArrayField,vertexVector,staggered)
 

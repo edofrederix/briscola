@@ -28,6 +28,19 @@ colocatedScalarField p
 p = Zero;
 p.correctBoundaryConditions();
 
+// Extrapolated pressure (Dodd & Ferrante)
+
+colocatedScalarField q
+(
+    "q",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+q = Zero;
+
 // Flux
 
 colocatedLowerFaceScalarField phi
@@ -42,14 +55,37 @@ colocatedLowerFaceScalarField phi
 phi.setRestrictionScheme("flux");
 phi = ex::faceFlux(U);
 
+// Source
+
+colocatedVectorField exSource
+(
+    "source",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+colocatedScalarField imSourceCoeff
+(
+    "sourceCoeff",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+exSource = vector(twoPhaseDict.lookupOrDefault("source", vector::zero));
+imSourceCoeff = scalar(twoPhaseDict.lookupOrDefault("sourceCoeff", 0.0));
+
 // Solvers
 
-linearSystem<symmStencil,vector,colocated> USys(U);
+linearSystem<stencil,vector,colocated> USys(U);
 linearSystem<symmStencil,scalar,colocated> pSys(p);
 
-autoPtr<solver<symmStencil,vector,colocated>> USolve
+autoPtr<solver<stencil,vector,colocated>> USolve
 (
-    solver<symmStencil,vector,colocated>::New
+    solver<stencil,vector,colocated>::New
     (
         USys.x().name(),
         fvMsh
@@ -65,9 +101,27 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
     )
 );
 
-// Viscous term
+// Specific volumes
 
-linearSystem<symmStencil,vector,colocated> D(U);
+colocatedScalarField v
+(
+    "v",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+v.setRestrictionScheme("harmonicVolumeWeighted");
+
+colocatedLowerFaceScalarField vf
+(
+    "v",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
 
 // Adams-Bashforth source
 
@@ -77,8 +131,12 @@ colocatedVectorField H
     fvMsh,
     IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
-    true,
-    false
+    true
 );
 
-H = ex::div(phi,U) - itpm.surfaceTension();
+H = Zero;
+
+// It is assumed that the minimum mass density is constant
+
+const scalar minRho = gMin(twoPhase.minRho<colocated>())[0];
+const scalar maxv = 1.0/minRho;

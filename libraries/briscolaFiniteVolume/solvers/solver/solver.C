@@ -10,11 +10,7 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-solver<SType,Type,MeshType>::solver
-(
-    const dictionary& dict,
-    const fvMesh& fvMsh
-)
+solver<SType,Type,MeshType>::solver(const dictionary& dict, const fvMesh& fvMsh)
 :
     dict_(dict),
     fvMsh_(fvMsh),
@@ -86,13 +82,15 @@ autoPtr<solver<SType,Type,MeshType>> solver<SType,Type,MeshType>::New
 template<class SType, class Type, class MeshType>
 List<Type> solver<SType,Type,MeshType>::normFactors
 (
-    const linearSystem<SType,Type,MeshType>& sys,
+    linearSystem<SType,Type,MeshType>& sys,
     const meshField<Type,MeshType>& res,
     const label l
 ) const
 {
     List<Type> y(gAverage(sys.x()[l]));
     List<Type> f(MeshType::numberOfDirections, Zero);
+
+    const List<bool> diagonal(sys.diagonal());
 
     forAll(f, d)
     {
@@ -102,7 +100,10 @@ List<Type> solver<SType,Type,MeshType>::normFactors
 
         forAllCells(A, i, j, k)
         {
-            Type Ay = rowSum(A,i,j,k)*y[d];
+            Type Ay =
+                diagonal[d]
+              ? A(i,j,k).center()*y[d]
+              : rowSum(A,i,j,k)*y[d];
 
             f[d] +=
                 Foam::cmptMag(r(i,j,k) - b(i,j,k) + Ay)

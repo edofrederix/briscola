@@ -16,7 +16,8 @@ const label parallelBoundary::typeNumber = 2;
 parallelBoundary::parallelBoundary(const mesh& msh, const dictionary& dict)
 :
     boundary(msh, dict),
-    neighborProcNum_(readLabel(dict.lookup("neighborProcNum")))
+    neighborProcNum_(readLabel(dict.lookup("neighborProcNum"))),
+    tag_(0)
 {
     // Set master bool. This boundary is master if its face, edge or vertex
     // number is even and the neighboring one is odd. If they are both odd or

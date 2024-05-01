@@ -11,19 +11,23 @@ using namespace fv;
 
 int main(int argc, char *argv[])
 {
+    arguments::addBoolOption("split", "Split the pressure equation");
+
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
     #include "createBriscolaTwoPhase.H"
     #include "createTimeControls.H"
 
+    Switch split = args.optionFound("split");
+
     // This solver works for incompressible mixtures only
 
-    incompressibleTwoPhaseModel& itpm =
-        tpm.cast<incompressibleTwoPhaseModel>();
+    incompressibleTwoPhaseModel& icoTwoPhase =
+        twoPhase.cast<incompressibleTwoPhaseModel>();
 
-    #include "createFields.H"
     #include "createRefs.H"
+    #include "createFields.H"
     #include "createBriscolaIO.H"
     #include "initContinuityErrors.H"
 
@@ -35,28 +39,42 @@ int main(int argc, char *argv[])
         runTime++;
 
         const scalar deltaT = runTime.deltaTValue();
+        const scalar deltaT0 = runTime.deltaT0Value();
 
         Info << "Time = " << runTime.timeName() << endl;
 
         U.setOldTime();
 
-        // Update the volume fraction
+        // Update the two-phase model and specific volumes
 
-        itpm.correct();
+        icoTwoPhase.correct();
+
+        v = icoTwoPhase.v<colocated>();
+        vf = ex::interp(v);
 
         // Predictor, Eq. (A.1) of Dodd & Ferrante (2014)
 
         USys = im::ddt(U);
 
-        D = im::laplacian(mu,U)/rho;
-        USys -= 0.5*D;
-        USys -= 0.5*D.evaluate();
+        USys -= im::source(imSourceCoeff,U);
+        USys -= exSource;
 
-        USys -= 0.5*H;
-        H = (ex::div(phi,U) - itpm.surfaceTension());
-        USys += 1.5*H;
+        USys -= im::laplacian(mu,U,0.5)*v;
+        USys -= ex::laplacian(mu,U,0.5)*v;
 
-        USys -= itpm.g();
+        USys -= 0.5*(deltaT/deltaT0)*H;
+
+        colocatedVectorField surfTen
+        (
+            ex::reconstruct(fa*icoTwoPhase.surfaceTension().potential())
+        );
+
+        H = ex::div(phi,U) - (ex::grad(mu) & ex::grad(U))*v;
+
+        USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
+
+        USys -= icoTwoPhase.g();
+        USys += ex::grad(p)*v - surfTen;
 
         // Solve predictor
 
@@ -66,21 +84,56 @@ int main(int argc, char *argv[])
 
         phi = ex::faceFlux(U);
 
-        const colocatedScalarField rhoInv("rhoInv", 1.0/rho);
-        const colocatedLowerFaceScalarField rhoInvf
-        (
-            "rhoInv",
-            1.0/ex::interp(rho)
-        );
+        if (split)
+        {
+            q = (1.0 + deltaT/deltaT0)*p - deltaT/deltaT0*p.oldTime();
+            p.setOldTime();
 
-        Poisson->solve(p, ex::div(phi)/(-deltaT), rhoInvf);
+            colocatedLowerFaceScalarField corr
+            (
+                fa
+              * (
+                    ex::faceGrad(q)*(1.0 - minRho*vf)
+                  + ex::faceGrad(p)*minRho*vf
+                )
+            );
 
-        // Rhie-Chow correction
+            Poisson->solve(p, minRho*ex::div(phi)/(-deltaT) - ex::div(corr));
 
-        U -= deltaT*ex::grad(p)*rhoInv;
-        U.correctBoundaryConditions();
+            // Rhie-Chow correction
 
-        phi -= deltaT*ex::faceGrad(p)*fa*rhoInvf;
+            U -=
+                deltaT
+              * (
+                    ex::grad(p)*maxv
+                  - ex::grad(p.oldTime())*v
+                  + ex::grad(q)*(v - maxv)
+                );
+
+            U.correctBoundaryConditions();
+
+            phi -=
+                deltaT*fa
+              * (
+                    ex::faceGrad(p)*maxv
+                  - ex::faceGrad(p.oldTime())*vf
+                  + ex::faceGrad(q)*(vf - maxv)
+                );
+        }
+        else
+        {
+            colocatedLowerFaceScalarField corr(fa*vf*ex::faceGrad(p));
+            p.setOldTime();
+
+            Poisson->solve(p, ex::div(phi)/(-deltaT) - ex::div(corr), vf);
+
+            // Rhie-Chow correction
+
+            U -= deltaT*(ex::grad(p) - ex::grad(p.oldTime()))*v;
+            U.correctBoundaryConditions();
+
+            phi -= deltaT*(ex::faceGrad(p) - ex::faceGrad(p.oldTime()))*fa*vf;
+        }
 
         io.write<colocated>();
 

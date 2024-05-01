@@ -2,6 +2,7 @@
 #define SHF_H
 
 #include "curvatureScheme.H"
+#include "cellDataExchange.H"
 
 namespace Foam
 {
@@ -16,6 +17,15 @@ class SHF
 :
     public curvatureScheme
 {
+
+    // Cell data exchange object
+    autoPtr<cellDataExchange<colocated>> exchangePtr_;
+
+    // Exchange data shapes per face
+    List<labelVector> exchangeShapes_;
+
+    // Initialize communication
+    void setCommunication();
 
 public:
 

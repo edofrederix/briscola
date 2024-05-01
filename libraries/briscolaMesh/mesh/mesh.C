@@ -446,9 +446,8 @@ void mesh::setCommTags()
         boundary& b = boundaries_[bi];
 
         if (b.castable<parallelBoundary>())
-        {
-            b.dict().add("tag", myTags[c++]);
-        }
+            const_cast<parallelBoundary&>(b.cast<parallelBoundary>())
+           .setTag(myTags[c++]);
     }
 }
 
@@ -728,14 +727,17 @@ mesh::mesh(const IOdictionary& dict)
 :
     geometry(dict),
     PtrList<part>(0),
-    decomp_(decomposition::New(*this))
+    decomp_(decomposition::New(*this)),
+    structured_(topology().structured()),
+    rectilinear_(Zero),
+    uniform_(Zero)
 {
+    // Add boundaries and levels
+
     generateBoundaries();
     generateLevels();
 
-    // Mesh is structured if the brick topology is too
-
-    structured_ = topology().structured();
+    // Set structured mesh properties
 
     if (structured_)
     {
@@ -755,11 +757,6 @@ mesh::mesh(const IOdictionary& dict)
             uniform_[d] =
                 returnReduce(p.uniform()[d], minOp<label>());
         }
-    }
-    else
-    {
-        rectilinear_ = zeroXYZ;
-        uniform_ = zeroXYZ;
     }
 
     // Determine bounding box
@@ -1015,12 +1012,29 @@ labelVector mesh::coarsen(const labelVector P) const
     {
         // Refine until one or three cells in each direction
 
-        return labelVector
+        labelVector Q
         (
             (P.x() == 1 || P.x() == 3) ? P.x() : P.x()/2,
             (P.y() == 1 || P.y() == 3) ? P.y() : P.y()/2,
             (P.z() == 1 || P.z() == 3) ? P.z() : P.z()/2
         );
+
+        // Avoid having one cell in a periodic direction
+
+        for (int d = 0; d < 3; d++)
+        {
+            if
+            (
+                Q[d] < 2
+             && faceBoundaryType()[2*d  ] == periodicBoundary::typeNumber
+             && faceBoundaryType()[2*d+1] == periodicBoundary::typeNumber
+            )
+            {
+                Q[d] = 2;
+            }
+        }
+
+        return Q;
     }
 }
 

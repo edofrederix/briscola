@@ -71,7 +71,6 @@ protected:
     virtual void solve
     (
         linearSystem<SType,Type,MeshType>& sys,
-        const List<bool>& singular,
         const bool constMatrix,
         const scalar relTol,
         const scalar absTol,
@@ -89,7 +88,6 @@ protected:
         meshField<Type,MeshType>& r,
         labelList& visits,
         const label l,
-        const List<bool>& singular,
         const bool constMatrix,
         const labelList& converged,
         const label nSweepsPre,

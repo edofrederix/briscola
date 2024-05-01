@@ -10,6 +10,6 @@ IOdictionary twoPhaseDict
     )
 );
 
-autoPtr<twoPhaseModel> tpmPtr(twoPhaseModel::New(fvMsh, twoPhaseDict));
+autoPtr<twoPhaseModel> twoPhasePtr(twoPhaseModel::New(fvMsh, twoPhaseDict));
 
-twoPhaseModel& tpm = tpmPtr();
+twoPhaseModel& twoPhase = twoPhasePtr();

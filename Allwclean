@@ -6,6 +6,7 @@ wclean libraries/briscolaFiniteVolume
 wclean libraries/briscolaTwoPhase
 
 wclean applications/utilities/briscolaCheckMesh
+wclean applications/utilities/briscolaWriteMesh
 
 wclean applications/solvers/briscolaLaplacian
 wclean applications/solvers/briscolaColocated

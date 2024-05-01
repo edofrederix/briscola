@@ -96,8 +96,9 @@ void IO::readScalarField
 {
     const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
     const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+    const labelVector N = E - S;
 
-    List<floatScalar> data(cmptProduct(E-S));
+    List<floatScalar> data(nStructured(N));
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
@@ -115,6 +116,7 @@ void IO::readScalarField
     for (int i = S.x(); i < E.x(); i++)
     for (int j = S.y(); j < E.y(); j++)
     for (int k = S.z(); k < E.z(); k++)
+    if (structured(i,j,k,N))
     {
         D(i,j,k) = data[c++];
     }
@@ -132,8 +134,9 @@ void IO::readArrayField
 
     const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
     const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+    const labelVector N = E - S;
 
-    List<floatScalar> data(cmptProduct(E-S)*n);
+    List<floatScalar> data(nStructured(N)*n);
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
@@ -151,6 +154,7 @@ void IO::readArrayField
     for (int i = S.x(); i < E.x(); i++)
     for (int j = S.y(); j < E.y(); j++)
     for (int k = S.z(); k < E.z(); k++)
+    if (structured(i,j,k,N))
         for (int ii = 0; ii < n; ii++)
             D(i,j,k)[ii] = data[c++];
 }
@@ -168,8 +172,9 @@ void IO::readArrayArrayField
 
     const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
     const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+    const labelVector N = E - S;
 
-    List<floatScalar> data(cmptProduct(E-S)*m*n);
+    List<floatScalar> data(nStructured(N)*m*n);
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
@@ -187,6 +192,7 @@ void IO::readArrayArrayField
     for (int i = S.x(); i < E.x(); i++)
     for (int j = S.y(); j < E.y(); j++)
     for (int k = S.z(); k < E.z(); k++)
+    if (structured(i,j,k,N))
         for (int ii = 0; ii < n; ii++)
             for (int jj = 0; jj < m; jj++)
                 D(i,j,k)[ii][jj] = data[c++];
@@ -194,24 +200,24 @@ void IO::readArrayArrayField
 
 // Instantiate
 
-#define READTYPEFIELD(FUNC,TYPE,MESHTYPE)                                       \
-                                                                                \
-template<>                                                                      \
-void IO::readField                                                              \
-(                                                                               \
-    autoPtr<std::ifstream>& filePtr,                                            \
-    const bool ascii,                                                           \
-    meshDirection<TYPE,MESHTYPE>& D                                             \
-) const                                                                         \
-{                                                                               \
-    FUNC(filePtr,ascii,D);                                                      \
-}                                                                               \
-                                                                                \
-template void IO::FUNC                                                          \
-(                                                                               \
-    autoPtr<std::ifstream>&,                                                    \
-    const bool ascii,                                                           \
-    meshDirection<TYPE,MESHTYPE>&                                               \
+#define READTYPEFIELD(FUNC,TYPE,MESHTYPE)                                      \
+                                                                               \
+template<>                                                                     \
+void IO::readField                                                             \
+(                                                                              \
+    autoPtr<std::ifstream>& filePtr,                                           \
+    const bool ascii,                                                          \
+    meshDirection<TYPE,MESHTYPE>& D                                            \
+) const                                                                        \
+{                                                                              \
+    FUNC(filePtr,ascii,D);                                                     \
+}                                                                              \
+                                                                               \
+template void IO::FUNC                                                         \
+(                                                                              \
+    autoPtr<std::ifstream>&,                                                   \
+    const bool ascii,                                                          \
+    meshDirection<TYPE,MESHTYPE>&                                              \
 ) const;
 
 READTYPEFIELD(readScalarField,scalar,colocated)
@@ -222,9 +228,11 @@ READTYPEFIELD(readArrayField,diagTensor,colocated)
 READTYPEFIELD(readArrayField,symmTensor,colocated)
 READTYPEFIELD(readArrayField,sphericalTensor,colocated)
 READTYPEFIELD(readArrayField,faceScalar,colocated)
+READTYPEFIELD(readArrayField,lowerFaceScalar,colocated)
 READTYPEFIELD(readArrayField,edgeScalar,colocated)
 READTYPEFIELD(readArrayField,vertexScalar,colocated)
 READTYPEFIELD(readArrayArrayField,faceVector,colocated)
+READTYPEFIELD(readArrayArrayField,lowerFaceVector,colocated)
 READTYPEFIELD(readArrayArrayField,edgeVector,colocated)
 READTYPEFIELD(readArrayArrayField,vertexVector,colocated)
 
@@ -236,9 +244,11 @@ READTYPEFIELD(readArrayField,diagTensor,staggered)
 READTYPEFIELD(readArrayField,symmTensor,staggered)
 READTYPEFIELD(readArrayField,sphericalTensor,staggered)
 READTYPEFIELD(readArrayField,faceScalar,staggered)
+READTYPEFIELD(readArrayField,lowerFaceScalar,staggered)
 READTYPEFIELD(readArrayField,edgeScalar,staggered)
 READTYPEFIELD(readArrayField,vertexScalar,staggered)
 READTYPEFIELD(readArrayArrayField,faceVector,staggered)
+READTYPEFIELD(readArrayArrayField,lowerFaceVector,staggered)
 READTYPEFIELD(readArrayArrayField,edgeVector,staggered)
 READTYPEFIELD(readArrayArrayField,vertexVector,staggered)
 

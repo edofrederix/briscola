@@ -66,6 +66,24 @@ tmp<meshField<Type,staggered>> stagInterp
 );
 
 template<class Type>
+tmp<meshField<Type,staggered>> stagInterp
+(
+    const meshField<FaceSpace<Type>,colocated>& field
+);
+
+template<class Type>
+tmp<meshField<Type,staggered>> stagInterp
+(
+    const meshField<LowerFaceSpace<Type>,colocated>& field
+);
+
+template<class Type>
+tmp<meshField<Type,staggered>> stagVectorInterp
+(
+    const meshField<Vector<Type>,colocated>& field
+);
+
+template<class Type>
 tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
 (
     const meshField<Type,colocated>& field

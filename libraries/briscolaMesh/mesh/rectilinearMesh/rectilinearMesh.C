@@ -118,6 +118,8 @@ void rectilinearMesh::setMetrics()
     globalCellSizesData_.setSize(3);
     globalPointsData_.setSize(3);
 
+    PtrList<labelList> starts(3);
+
     for (int d = 0; d < 3; d++)
     {
         globalCellSizesData_.set(d, new scalarList(this->N()[d]+2));
@@ -127,7 +129,10 @@ void rectilinearMesh::setMetrics()
         scalarList& globalPoints = globalPointsData_[d];
 
         const labelVector base = units[d];
+
         label cursor = 0;
+
+        starts.set(d, new labelList(map.shape()[d]));
 
         for (int i = 0; i < map.shape()[d]; i++)
         {
@@ -155,6 +160,7 @@ void rectilinearMesh::setMetrics()
                         globalPoints[cursor+j] = localPointsData[j];
                     }
 
+                    starts[d][i] = cursor;
                     cursor += localCellSizesData.size()-2;
                 }
                 else
@@ -197,6 +203,7 @@ void rectilinearMesh::setMetrics()
                     globalPoints[cursor+j] = localPointsData[j];
                 }
 
+                starts[d][i] = cursor;
                 cursor += localCellSizesData.size()-2;
             }
         }
@@ -205,6 +212,31 @@ void rectilinearMesh::setMetrics()
 
         Pstream::scatter(globalCellSizes);
         Pstream::scatter(globalPoints);
+
+        if (Pstream::master())
+        {
+            for (int proc = 0; proc < Pstream::nProcs(); proc++)
+            if (proc != Pstream::myProcNo())
+            {
+                OPstream send
+                (
+                    Pstream::commsTypes::blocking,
+                    proc
+                );
+
+                send << starts[d];
+            }
+        }
+        else
+        {
+            IPstream recv
+            (
+                Pstream::commsTypes::blocking,
+                Pstream::masterNo()
+            );
+
+            recv >> starts[d];
+        }
     }
 
     // Create global lists without ghosts as sub-lists
@@ -237,6 +269,21 @@ void rectilinearMesh::setMetrics()
                 1
             )
         );
+    }
+
+    // Set global starts
+
+    globalStarts_.setSize(Pstream::nProcs());
+
+    forAllBlock(map, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const label proc = map(ijk);
+
+        globalStarts_[proc] = Zero;
+
+        for (int d = 0; d < 3; d++)
+            globalStarts_[proc][d] = starts[d][ijk[d]];
     }
 }
 

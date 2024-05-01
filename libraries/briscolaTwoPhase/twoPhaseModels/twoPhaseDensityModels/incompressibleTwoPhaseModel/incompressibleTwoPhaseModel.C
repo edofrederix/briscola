@@ -24,6 +24,9 @@ incompressibleTwoPhaseModel::incompressibleTwoPhaseModel
 {
     this->rho1_ = Rho1_;
     this->rho2_ = Rho2_;
+
+    this->rho1Ptr_() = Rho1_;
+    this->rho2Ptr_() = Rho2_;
 }
 
 incompressibleTwoPhaseModel::incompressibleTwoPhaseModel
@@ -37,6 +40,9 @@ incompressibleTwoPhaseModel::incompressibleTwoPhaseModel
 {
     this->rho1_ = Rho1_;
     this->rho2_ = Rho2_;
+
+    this->rho1Ptr_() = Rho1_;
+    this->rho2Ptr_() = Rho2_;
 }
 
 incompressibleTwoPhaseModel::~incompressibleTwoPhaseModel()

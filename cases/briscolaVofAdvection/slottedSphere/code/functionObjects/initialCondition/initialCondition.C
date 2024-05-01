@@ -106,8 +106,8 @@ bool initialCondition::read(const dictionary& dict)
 
         alpha.correctBoundaryConditions();
 
-        colocatedFaceScalarField& phi =
-            runTime_.lookupObjectRef<colocatedFaceScalarField>("phi");
+        colocatedLowerFaceScalarField& phi =
+            runTime_.lookupObjectRef<colocatedLowerFaceScalarField>("phi");
 
         U.correctBoundaryConditions();
 

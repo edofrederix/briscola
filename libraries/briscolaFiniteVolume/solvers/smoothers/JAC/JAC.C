@@ -42,6 +42,8 @@ void JAC<SType,Type,MeshType>::JAC::smooth
     if (!singular)
         xi = List<Type>(x.size(), Zero);
 
+    const List<bool> diagonal(sys.diagonal());
+
     meshLevel<Type,MeshType> y(x);
 
     for (label sweep = 0; sweep < sweeps; sweep++)
@@ -49,40 +51,47 @@ void JAC<SType,Type,MeshType>::JAC::smooth
         forAll(x, d)
         if (!converged[d])
         {
-            meshDirection<Type,MeshType>& yd = y[d];
-
-            const meshDirection<Type,MeshType>& xd = x[d];
-            const meshDirection<SType,MeshType>& Ad = A[d];
-            const meshDirection<Type,MeshType>& bd = b[d];
-
-            forAllCells(xd, i, j, k)
+            if (diagonal[d])
             {
-                Switch Jac = false;
+                this->smoothDiag(sys, l, d);
+            }
+            else
+            {
+                meshDirection<Type,MeshType>& yd = y[d];
 
-                forAll(sys.x().IBC(), ib)
+                const meshDirection<Type,MeshType>& xd = x[d];
+                const meshDirection<SType,MeshType>& Ad = A[d];
+                const meshDirection<Type,MeshType>& bd = b[d];
+
+                forAllCells(xd, i, j, k)
                 {
-                    if
-                    (
-                        sys.x().IBC()[ib].Jac()
-                        && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
-                    )
+                    Switch Jac = false;
+
+                    forAll(sys.x().IBC(), ib)
                     {
-                        Jac = true;
-                    }
-                }
-
-                if (!Jac)
-                {
-                    yd(i,j,k) =
-                        yd(i,j,k)*(1.0-omega_)
-                    + omega_
-                    * (
-                          bd(i,j,k)
-                        - lowerRowProduct(Ad,xd,i,j,k)
-                        - upperRowProduct(Ad,xd,i,j,k)
-                        - xi[d]
+                        if
+                        (
+                            sys.x().IBC()[ib].Jac()
+                            && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
                         )
-                    / Ad(i,j,k).center();
+                        {
+                            Jac = true;
+                        }
+                    }
+
+                    if (!Jac)
+                    {
+                        yd(i,j,k) =
+                            yd(i,j,k)*(1.0-omega_)
+                        + omega_
+                        * (
+                            bd(i,j,k)
+                            - lowerRowProduct(Ad,xd,i,j,k)
+                            - upperRowProduct(Ad,xd,i,j,k)
+                            - xi[d]
+                            )
+                        / Ad(i,j,k).center();
+                    }
                 }
             }
         }

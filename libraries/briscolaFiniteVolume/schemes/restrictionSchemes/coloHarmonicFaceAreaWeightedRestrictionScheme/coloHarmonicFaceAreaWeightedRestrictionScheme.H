@@ -23,7 +23,11 @@ public:
     TypeName("harmonicFaceAreaWeighted");
 
     // Construct from dictionary and mesh
-    coloHarmonicFaceAreaWeightedRestrictionScheme(const dictionary&, const fvMesh&);
+    coloHarmonicFaceAreaWeightedRestrictionScheme
+    (
+        const dictionary&,
+        const fvMesh&
+    );
 
     // Construct from mesh only, with empty dictionary
     coloHarmonicFaceAreaWeightedRestrictionScheme(const fvMesh&);

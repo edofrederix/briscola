@@ -23,7 +23,7 @@ void twoPhaseModel::setRestrictionSchemes()
     rho2_.setRestrictionScheme("volumeWeighted");
     rhoc_.setRestrictionScheme("volumeWeighted");
 
-    muc_.setRestrictionScheme("harmonicFaceAreaWeighted");
+    muc_.setRestrictionScheme("faceAverage");
 
     if (fvMsh_.structured())
     {
@@ -31,7 +31,7 @@ void twoPhaseModel::setRestrictionSchemes()
         rho2Ptr_->setRestrictionScheme("volumeWeighted");
         rhosPtr_->setRestrictionScheme("volumeWeighted");
 
-        musPtr_->setRestrictionScheme("harmonicFaceAreaWeighted");
+        musPtr_->setRestrictionScheme("faceAverage");
     }
 }
 
@@ -164,6 +164,10 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
     }
 
     setRestrictionSchemes();
+
+    // Initialize alpha as zero everywhere
+
+    alpha_ = Zero;
 }
 
 twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
@@ -214,9 +218,21 @@ autoPtr<twoPhaseModel> twoPhaseModel::New
 }
 
 template<>
+colocatedScalarField& twoPhaseModel::rho<colocated>()
+{
+    return rhoc_;
+}
+
+template<>
 const colocatedScalarField& twoPhaseModel::rho<colocated>() const
 {
     return rhoc_;
+}
+
+template<>
+staggeredScalarField& twoPhaseModel::rho<staggered>()
+{
+    return rhosPtr_();
 }
 
 template<>
@@ -226,27 +242,51 @@ const staggeredScalarField& twoPhaseModel::rho<staggered>() const
 }
 
 template<>
+const colocatedScalarField& twoPhaseModel::rho1<colocated>() const
+{
+    return rho1_;
+}
+
+template<>
+const staggeredScalarField& twoPhaseModel::rho1<staggered>() const
+{
+    return rho1Ptr_();
+}
+
+template<>
+const colocatedScalarField& twoPhaseModel::rho2<colocated>() const
+{
+    return rho2_;
+}
+
+template<>
+const staggeredScalarField& twoPhaseModel::rho2<staggered>() const
+{
+    return rho2Ptr_();
+}
+
+template<>
+colocatedLowerFaceScalarField& twoPhaseModel::mu<colocated>()
+{
+    return muc_;
+}
+
+template<>
 const colocatedLowerFaceScalarField& twoPhaseModel::mu<colocated>() const
 {
     return muc_;
 }
 
 template<>
-const staggeredLowerFaceScalarField& twoPhaseModel::mu<staggered>() const
+staggeredLowerFaceScalarField& twoPhaseModel::mu<staggered>()
 {
     return musPtr_();
 }
 
 template<>
-tmp<colocatedScalarField> twoPhaseModel::meanRho<colocated>() const
+const staggeredLowerFaceScalarField& twoPhaseModel::mu<staggered>() const
 {
-    return (rho1_+rho2_)/2.0;
-}
-
-template<>
-tmp<staggeredScalarField> twoPhaseModel::meanRho<staggered>() const
-{
-    return (rho1Ptr_()+rho2Ptr_())/2.0;
+    return musPtr_();
 }
 
 void twoPhaseModel::correctMixture()

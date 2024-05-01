@@ -36,7 +36,11 @@ curvatureScheme::curvatureScheme
     dict_(dict),
     normal_(normal),
     alpha_(alpha)
-{}
+{
+    // Initialize the curvature to zero
+
+    static_cast<colocatedScalarField&>(*this) = Zero;
+}
 
 curvatureScheme::curvatureScheme(const curvatureScheme& s)
 :

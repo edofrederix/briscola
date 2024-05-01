@@ -74,7 +74,7 @@ tmp<colocatedLowerFaceScalarField> coloFaceFlux
         )
     );
 
-    colocatedLowerFaceScalarField phi = tphi.ref();
+    colocatedLowerFaceScalarField& phi = tphi.ref();
 
     phi = Zero;
 

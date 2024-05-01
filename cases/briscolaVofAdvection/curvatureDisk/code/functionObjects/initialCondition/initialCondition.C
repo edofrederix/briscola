@@ -169,8 +169,8 @@ bool initialCondition::read(const dictionary& dict)
 
         alpha.correctBoundaryConditions();
 
-        colocatedFaceScalarField& phi =
-            runTime_.lookupObjectRef<colocatedFaceScalarField>("phi");
+        colocatedLowerFaceScalarField& phi =
+            runTime_.lookupObjectRef<colocatedLowerFaceScalarField>("phi");
 
         U.correctBoundaryConditions();
 
@@ -206,6 +206,8 @@ bool initialCondition::end()
         }
     }
 
+    reduce(error, sumOp<scalar>());
+    reduce(count, sumOp<int>());
     error = R_ * Foam::sqrt(error/double(count));
     Info << "Real curvature: " << 1/R_ << endl
          << "Curvature error: " << error << endl;

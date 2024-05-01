@@ -45,6 +45,9 @@ class rectilinearMesh
         // Global rectilinear points
         PtrList<PartialList<scalar>> globalPoints_;
 
+    // Global cell starts for each processor part
+    List<labelVector> globalStarts_;
+
     // Set rectiliner metrics
     void setMetrics();
 
@@ -102,6 +105,12 @@ public:
     inline const PtrList<PartialList<scalar>>& globalPoints() const
     {
         return globalPoints_;
+    }
+
+    // Return the list of global cell starts for each processor part
+    inline const List<labelVector>& globalStarts() const
+    {
+        return globalStarts_;
     }
 
     // Find cells efficiently using the local point data

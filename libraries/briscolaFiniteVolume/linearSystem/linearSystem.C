@@ -208,7 +208,13 @@ List<bool> linearSystem<SType,Type,MeshType>::singular(const bool clearCache)
 
         forAll(singular_, d)
         {
-            const meshDirection<SType,MeshType>& A = A_[A_.size()-1][d];
+            // We need at least three cells in one direction to avoid looking at
+            // only constrained cells
+
+            label l = A_.size() - 1;
+            while (cmptMax(A_[l][d].N()) < 3) l--;
+
+            const meshDirection<SType,MeshType>& A = A_[l][d];
 
             forAllCells(A, i, j, k)
                 if (Foam::mag(rowSum(A,i,j,k)) > 1e-8)
@@ -222,6 +228,38 @@ List<bool> linearSystem<SType,Type,MeshType>::singular(const bool clearCache)
     }
 
     return singular_;
+}
+
+template<class SType, class Type, class MeshType>
+List<bool> linearSystem<SType,Type,MeshType>::diagonal(const bool clearCache)
+{
+    if (diagonal_.size() == 0 || clearCache)
+    {
+        diagonal_.setSize(MeshType::numberOfDirections);
+        diagonal_ = true;
+
+        forAll(diagonal_, d)
+        {
+            // We need at least three cells in one direction to avoid looking at
+            // only constrained cells
+
+            label l = A_.size() - 1;
+            while (cmptMax(A_[l][d].N()) < 3) l--;
+
+            const meshDirection<SType,MeshType>& A = A_[l][d];
+
+            forAllCells(A, i, j, k)
+                if (A(i,j,k) != SType(diagStencil(A(i,j,k).center())))
+                    goto nope;
+
+            continue;
+            nope: diagonal_[d] = false;
+        }
+
+        reduce(diagonal_, andOp<List<bool>>());
+    }
+
+    return diagonal_;
 }
 
 template<class SType, class Type, class MeshType>
@@ -289,8 +327,16 @@ void linearSystem<SType,Type,MeshType>::residual
     const meshDirection<Type,MeshType>& x = this->x()[l][d];
     const meshDirection<Type,MeshType>& b = this->b()[l][d];
 
-    forAllCells(res, i, j, k)
-        res(i,j,k) = b(i,j,k) - rowProduct(A,x,i,j,k);
+    if (diagonal_.size() && diagonal_[d])
+    {
+        forAllCells(res, i, j, k)
+            res(i,j,k) = b(i,j,k) - A(i,j,k).center()*x(i,j,k);
+    }
+    else
+    {
+        forAllCells(res, i, j, k)
+            res(i,j,k) = b(i,j,k) - rowProduct(A,x,i,j,k);
+    }
 }
 
 template<class SType, class Type, class MeshType>
@@ -379,8 +425,16 @@ void linearSystem<SType,Type,MeshType>::evaluate
     const meshDirection<Type,MeshType>& x = this->x()[l][d];
     const meshDirection<Type,MeshType>& b = this->b()[l][d];
 
-    forAllCells(eval, i, j, k)
-        eval(i,j,k) = (rowProduct(A,x,i,j,k) - b(i,j,k))/cv(i,j,k);
+    if (diagonal_.size() && diagonal_[d])
+    {
+        forAllCells(eval, i, j, k)
+            eval(i,j,k) = (A(i,j,k).center()*x(i,j,k) - b(i,j,k))/cv(i,j,k);
+    }
+    else
+    {
+        forAllCells(eval, i, j, k)
+            eval(i,j,k) = (rowProduct(A,x,i,j,k) - b(i,j,k))/cv(i,j,k);
+    }
 }
 
 template<class SType, class Type, class MeshType>

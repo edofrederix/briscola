@@ -31,7 +31,6 @@ void MG<SType,Type,MeshType>::cycle
     meshField<Type,MeshType>& r,
     labelList& visits,
     const label l,
-    const List<bool>& singular,
     const bool constMatrix,
     const labelList& converged,
     const label nSweepsPre,
@@ -56,6 +55,7 @@ void MG<SType,Type,MeshType>::cycle
     // of the directions is actually singular. Initialize the auxiliary unknown
     // to zero.
 
+    List<bool> singular(sys.singular());
     List<Type> xi(0);
 
     if (l == nLevels-1 && sum(singular))
@@ -129,7 +129,6 @@ void MG<SType,Type,MeshType>::cycle
                 r,
                 visits,
                 l+1,
-                singular,
                 constMatrix,
                 converged,
                 nSweepsPre,
@@ -164,7 +163,7 @@ void MG<SType,Type,MeshType>::cycle
     {
         if (coarseMode_ == DIRECT)
         {
-            this->directSolvePtr_->solve(sys,singular);
+            this->directSolvePtr_->solve(sys);
         }
         else
         {
@@ -186,7 +185,6 @@ template<class SType, class Type, class MeshType>
 void MG<SType,Type,MeshType>::solve
 (
     linearSystem<SType,Type,MeshType>& sys,
-    const List<bool>& singular,
     const bool constMatrix,
     const scalar relTol,
     const scalar absTol,
@@ -287,7 +285,6 @@ void MG<SType,Type,MeshType>::solve
             r,
             visits,
             0,
-            singular,
             constMatrix,
             converged,
             nSweepsPre,
@@ -436,7 +433,10 @@ void MG<SType,Type,MeshType>::solve
     sys.x().makeDeep();
     sys.b().makeDeep();
 
-    List<bool> singular(sys.singular());
+    // Set singular and diagonal bools
+
+    sys.singular();
+    sys.diagonal();
 
     if
     (
@@ -447,13 +447,12 @@ void MG<SType,Type,MeshType>::solve
         )
     )
     {
-        this->directSolvePtr_->prepare(sys,singular);
+        this->directSolvePtr_->prepare(sys);
     }
 
     this->solve
     (
         sys,
-        singular,
         constMatrix,
         this->relTol_,
         this->tolerance_,

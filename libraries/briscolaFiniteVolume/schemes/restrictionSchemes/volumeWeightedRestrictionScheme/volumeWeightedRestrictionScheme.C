@@ -63,23 +63,14 @@ void volumeWeightedRestrictionScheme<Type,MeshType>::restrict
 
     forAllCells(coarse, i, j, k)
     {
-        const label il = i*R.x();
-        const label jl = j*R.y();
-        const label kl = k*R.z();
+        coarse(i,j,k) = Zero;
 
-        const label iu = i*R.x() + (R2.x() == 2);
-        const label ju = j*R.y() + (R2.y() == 2);
-        const label ku = k*R.z() + (R2.z() == 2);
-
-        coarse(i,j,k) =
-            fine(il,jl,kl)*cvf(il,jl,kl)
-          + fine(il,jl,ku)*cvf(il,jl,ku)
-          + fine(il,ju,kl)*cvf(il,ju,kl)
-          + fine(il,ju,ku)*cvf(il,ju,ku)
-          + fine(iu,jl,kl)*cvf(iu,jl,kl)
-          + fine(iu,jl,ku)*cvf(iu,jl,ku)
-          + fine(iu,ju,kl)*cvf(iu,ju,kl)
-          + fine(iu,ju,ku)*cvf(iu,ju,ku);
+        for (int ii = i*R.x(); ii < i*R.x()+R2.x(); ii++)
+        for (int jj = j*R.y(); jj < j*R.y()+R2.y(); jj++)
+        for (int kk = k*R.z(); kk < k*R.z()+R2.z(); kk++)
+        {
+            coarse(i,j,k) += fine(ii,jj,kk)*cvf(ii,jj,kk);
+        }
 
         coarse(i,j,k) /= cvc(i,j,k);
     }

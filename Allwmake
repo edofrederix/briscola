@@ -7,9 +7,11 @@ wmake libso libraries/briscolaTwoPhase
 
 wmake applications/utilities/briscolaCheckMesh
 wmake applications/utilities/briscolaChannelPost
+wmake applications/utilities/briscolaWriteMesh
 
 wmake applications/solvers/briscolaLaplacian
 wmake applications/solvers/briscolaColocated
 wmake applications/solvers/briscolaStaggered
 wmake applications/solvers/briscolaVofAdvection
 wmake applications/solvers/briscolaColocatedTwoPhase
+wmake applications/solvers/briscolaStaggeredTwoPhase

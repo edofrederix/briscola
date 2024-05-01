@@ -132,20 +132,6 @@ public:
     // Return const access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
-    // Return access to the volume fraction
-    inline colocatedScalarField& alpha() { return alpha_; }
-
-    // Return const access to the volume fraction
-    inline const colocatedScalarField& alpha() const { return alpha_; }
-
-    // Return const access to the mixture mass density
-    template<class MeshType>
-    const meshField<scalar,MeshType>& rho() const;
-
-    // Return const access to the mixture dynamic viscosity
-    template<class MeshType>
-    const meshField<lowerFaceScalar,MeshType>& mu() const;
-
     // Return access the normal scheme
     normalScheme& normal() { return normalSchemePtr_(); }
 
@@ -164,12 +150,62 @@ public:
         return surfaceTensionSchemePtr_();
     }
 
-    // Return the mean mixture mass density defined as <rho> = (rho1+rho2)/2
-    template<class MeshType>
-    tmp<meshField<scalar,MeshType>> meanRho() const;
-
     // Gravitational acceleration
     const vector& g() const { return g_; }
+
+    // Access to fields
+
+        // Return access to the volume fraction
+        inline colocatedScalarField& alpha();
+
+        // Return const access to the volume fraction
+        inline const colocatedScalarField& alpha() const;
+
+        // Return access to the mixture mass density
+        template<class MeshType>
+        meshField<scalar,MeshType>& rho();
+
+        // Return const access to the mixture mass density
+        template<class MeshType>
+        const meshField<scalar,MeshType>& rho() const;
+
+        // Return const access to the mass density of the first phase
+        template<class MeshType>
+        const meshField<scalar,MeshType>& rho1() const;
+
+        // Return const access to the mass density of the second phase
+        template<class MeshType>
+        const meshField<scalar,MeshType>& rho2() const;
+
+        // Return access to the mixture dynamic viscosity
+        template<class MeshType>
+        meshField<lowerFaceScalar,MeshType>& mu();
+
+        // Return const access to the mixture dynamic viscosity
+        template<class MeshType>
+        const meshField<lowerFaceScalar,MeshType>& mu() const;
+
+    // Derived fields
+
+        // Return field with the minimun of either phase's mass density
+        template<class MeshType>
+        inline tmp<meshField<scalar,MeshType>> minRho() const;
+
+        // Return field with the maximum of either phase's mass density
+        template<class MeshType>
+        inline tmp<meshField<scalar,MeshType>> maxRho() const;
+
+        // Return the mean mixture mass density defined as <rho> = (rho1+rho2)/2
+        template<class MeshType>
+        inline tmp<meshField<scalar,MeshType>> meanRho() const;
+
+        // Return the mixture kinematic viscosity
+        template<class MeshType>
+        inline tmp<meshField<lowerFaceScalar,MeshType>> nu() const;
+
+        // Specific volume (inverse of the mixture mass density)
+        template<class MeshType>
+        inline tmp<meshField<scalar,MeshType>> v() const;
 
     // Correct the two-phase mixture
     virtual void correctMixture();
@@ -183,5 +219,7 @@ public:
 }
 
 }
+
+#include "twoPhaseModelI.H"
 
 #endif

@@ -44,8 +44,14 @@ protected:
     // Surface tension field
     colocatedScalarField sigma_;
 
+    // Temporal fix
+    scalar sigmaValue_;
+
     // Curvature scheme
     autoPtr<curvatureScheme> curvatureSchemePtr_;
+
+    // Surface Tension Potential
+    colocatedLowerFaceScalarField surfaceTensionPotential_;
 
 public:
 
@@ -124,8 +130,17 @@ public:
     // Access to the sigma field
     inline const colocatedScalarField& sigma() const { return sigma_; }
 
+    // Access sigma value
+    inline scalar sigmaValue() {return sigmaValue_; }
+
     // Correct the surface tension model
     virtual void correct();
+
+    // Access to the surface tension porential
+    inline const colocatedLowerFaceScalarField& potential() const
+    {
+        return surfaceTensionPotential_;
+    }
 };
 
 }

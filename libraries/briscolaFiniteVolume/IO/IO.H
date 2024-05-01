@@ -66,15 +66,26 @@ class IO
         const label
     ) const;
 
-    // Read fields of given type, level and direction
+    // Read fields of given type, level and direction. Append the read field
+    // names to a word list.
     template<class Type, class MeshType>
     void readFields
     (
         autoPtr<std::ifstream>&,
         const bool,
         const label,
-        const label
+        const label,
+        wordList& fields
     ) const;
+
+    // Correct the boundary conditions of the given field and at given level
+    template<class Type, class MeshType>
+    void correctBoundaryConditions(const word&, const label);
+
+    // Correct the boundary conditions of the given list of fields and at given
+    // level
+    template<class MeshType>
+    void correctBoundaryConditions(const wordList&, const label);
 
     // Write
 
@@ -182,6 +193,54 @@ class IO
     // Write the series file for given mesh level
     template<class MeshType>
     void writeSeries(const label) const;
+
+    // Return the number of unstructured cells being ghost edge and ghost vertex
+    // cells on unstructured meshes
+    inline label nUnstructured(const labelVector& shape) const
+    {
+        return
+            ghosts_ && !fvMsh_.structured()
+          ? (
+                (shape.x() - 2)*4
+              + (shape.y() - 2)*4
+              + (shape.z() - 2)*4
+              + 8
+            )
+          : 0;
+    }
+
+    // Return the number of structured cells, excluding ghost edge and ghost
+    // vertex cells on unstructured meshes
+    inline label nStructured(const labelVector& shape) const
+    {
+        return cmptProduct(shape) - nUnstructured(shape);
+    }
+
+    // Check if cell in given mesh shape is a structured cell
+    inline bool structured
+    (
+        const label i,
+        const label j,
+        const label k,
+        const labelVector& shape
+    ) const
+    {
+        return
+            !ghosts_
+         || fvMsh_.structured()
+         || (i > 0 && i < shape.x()-1 && j > 0 && j < shape.y()-1)
+         || (i > 0 && i < shape.x()-1 && k > 0 && k < shape.z()-1)
+         || (j > 0 && j < shape.y()-1 && k > 0 && k < shape.z()-1);
+    }
+
+    inline bool structured
+    (
+        const labelVector& ijk,
+        const labelVector& shape
+    ) const
+    {
+        return structured(ijk.x(), ijk.y(), ijk.z(), shape);
+    }
 
     // Swap halves of word (copied from vtkWriteOps.H)
     void swapWord(label& word32) const;

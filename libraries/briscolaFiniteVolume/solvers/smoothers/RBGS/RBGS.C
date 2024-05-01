@@ -40,125 +40,134 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
     bool singular = xi.size() > 0;
     xi = singular ? gAverage(x) : List<Type>(x.size(), Zero);
 
+    const List<bool> diagonal(sys.diagonal());
+
     for (label sweep = 0; sweep < sweeps; sweep++)
     {
         forAll(x, d)
         if (!converged[d])
         {
-            meshDirection<Type,MeshType>& xd = x[d];
-
-            const meshDirection<SType,MeshType>& Ad = A[d];
-            const meshDirection<Type,MeshType>& bd = b[d];
-
-            forAllCells(xd, i, j, k)
+            if (diagonal[d])
             {
-                Switch Jac = false;
-
-                forAll(sys.x().IBC(), ib)
-                {
-                    if
-                    (
-                        sys.x().IBC()[ib].Jac()
-                        && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
-                    )
-                    {
-                        Jac = true;
-                    }
-                }
-
-                if (even(i,j,k) && !Jac)
-                    xd(i,j,k) =
-                        (
-                            bd(i,j,k)
-                          - lowerRowProduct(Ad,xd,i,j,k)
-                          - upperRowProduct(Ad,xd,i,j,k)
-                          - xi[d]
-                        )
-                      / Ad(i,j,k).center();
+                this->smoothDiag(sys, l, d);
             }
-
-            forAllCells(xd, i, j, k)
+            else
             {
-                Switch Jac = false;
+                meshDirection<Type,MeshType>& xd = x[d];
 
-                forAll(sys.x().IBC(), ib)
+                const meshDirection<SType,MeshType>& Ad = A[d];
+                const meshDirection<Type,MeshType>& bd = b[d];
+
+                forAllCells(xd, i, j, k)
                 {
-                    if
-                    (
-                        sys.x().IBC()[ib].Jac()
-                        && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
-                    )
+                    Switch Jac = false;
+
+                    forAll(sys.x().IBC(), ib)
                     {
-                        Jac = true;
+                        if
+                        (
+                            sys.x().IBC()[ib].Jac()
+                            && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
+                        )
+                        {
+                            Jac = true;
+                        }
                     }
+
+                    if (even(i,j,k) && !Jac)
+                        xd(i,j,k) =
+                            (
+                                bd(i,j,k)
+                            - lowerRowProduct(Ad,xd,i,j,k)
+                            - upperRowProduct(Ad,xd,i,j,k)
+                            - xi[d]
+                            )
+                        / Ad(i,j,k).center();
                 }
 
-                if (odd(i,j,k) && !Jac)
-                    xd(i,j,k) =
-                        (
-                            bd(i,j,k)
-                          - lowerRowProduct(Ad,xd,i,j,k)
-                          - upperRowProduct(Ad,xd,i,j,k)
-                          - xi[d]
-                        )
-                      / Ad(i,j,k).center();
-            }
-
-            if (!symmetric_)
-                continue;
-
-            forAllCellsReversed(xd, i, j, k)
-            {
-                Switch Jac = false;
-
-                forAll(sys.x().IBC(), ib)
+                forAllCells(xd, i, j, k)
                 {
-                    if
-                    (
-                        sys.x().IBC()[ib].Jac()
-                        && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
-                    )
+                    Switch Jac = false;
+
+                    forAll(sys.x().IBC(), ib)
                     {
-                        Jac = true;
+                        if
+                        (
+                            sys.x().IBC()[ib].Jac()
+                            && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
+                        )
+                        {
+                            Jac = true;
+                        }
                     }
+
+                    if (odd(i,j,k) && !Jac)
+                        xd(i,j,k) =
+                            (
+                                bd(i,j,k)
+                            - lowerRowProduct(Ad,xd,i,j,k)
+                            - upperRowProduct(Ad,xd,i,j,k)
+                            - xi[d]
+                            )
+                        / Ad(i,j,k).center();
                 }
 
-                if (even(i,j,k) && !Jac)
-                    xd(i,j,k) =
-                        (
-                            bd(i,j,k)
-                          - lowerRowProduct(Ad,xd,i,j,k)
-                          - upperRowProduct(Ad,xd,i,j,k)
-                          - xi[d]
-                        )
-                      / Ad(i,j,k).center();
-            }
+                if (!symmetric_)
+                    continue;
 
-            forAllCellsReversed(xd, i, j, k)
-            {
-                Switch Jac = false;
-
-                forAll(sys.x().IBC(), ib)
+                forAllCellsReversed(xd, i, j, k)
                 {
-                    if
-                    (
-                        sys.x().IBC()[ib].Jac()
-                        && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
-                    )
+                    Switch Jac = false;
+
+                    forAll(sys.x().IBC(), ib)
                     {
-                        Jac = true;
+                        if
+                        (
+                            sys.x().IBC()[ib].Jac()
+                            && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
+                        )
+                        {
+                            Jac = true;
+                        }
                     }
+
+                    if (even(i,j,k) && !Jac)
+                        xd(i,j,k) =
+                            (
+                                bd(i,j,k)
+                            - lowerRowProduct(Ad,xd,i,j,k)
+                            - upperRowProduct(Ad,xd,i,j,k)
+                            - xi[d]
+                            )
+                        / Ad(i,j,k).center();
                 }
 
-                if (odd(i,j,k) && !Jac)
-                    xd(i,j,k) =
+                forAllCellsReversed(xd, i, j, k)
+                {
+                    Switch Jac = false;
+
+                    forAll(sys.x().IBC(), ib)
+                    {
+                        if
                         (
-                            bd(i,j,k)
-                          - lowerRowProduct(Ad,xd,i,j,k)
-                          - upperRowProduct(Ad,xd,i,j,k)
-                          - xi[d]
+                            sys.x().IBC()[ib].Jac()
+                            && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
                         )
-                      / Ad(i,j,k).center();
+                        {
+                            Jac = true;
+                        }
+                    }
+
+                    if (odd(i,j,k) && !Jac)
+                        xd(i,j,k) =
+                            (
+                                bd(i,j,k)
+                            - lowerRowProduct(Ad,xd,i,j,k)
+                            - upperRowProduct(Ad,xd,i,j,k)
+                            - xi[d]
+                            )
+                        / Ad(i,j,k).center();
+                }
             }
         }
 

@@ -16,6 +16,59 @@ namespace fv
 defineTypeNameAndDebug(SHF, 0);
 addToRunTimeSelectionTable(curvatureScheme, SHF, dictionary);
 
+void SHF::setCommunication()
+{
+    const faceLabel& boundaryType = fvMsh_.msh().faceBoundaryType();
+    const faceLabel I = fvMsh_.template I<colocated>();
+
+    List<labelVector> indices(0);
+
+    exchangeShapes_.setSize(6, Zero);
+
+    label cursor = 0;
+
+    for (int f = 0; f < 6; f++)
+    {
+        const label d = f/2;
+
+        // On parallel/periodic boundaries only
+
+        if (boundaryType[f] > domainBoundary::typeNumber)
+        {
+            faceLabel J(I.lower() - unitXYZ, I.upper() + unitXYZ);
+
+            if (f%2 == 0)
+            {
+                J[d*2  ] = I[f] - 3;
+                J[d*2+1] = I[f] - 1;
+            }
+            else
+            {
+                J[d*2  ] = I[f] + 1;
+                J[d*2+1] = I[f] + 3;
+            }
+
+            exchangeShapes_[f] = J.upper() - J.lower();
+
+            indices.setSize
+            (
+                indices.size()
+              + cmptProduct(exchangeShapes_[f])
+            );
+
+            for (int i = J.left(); i < J.right(); i++)
+                for (int j = J.bottom(); j < J.top(); j++)
+                    for (int k = J.aft(); k < J.fore(); k++)
+                        indices[cursor++] = labelVector(i,j,k);
+        }
+    }
+
+    exchangePtr_.reset
+    (
+        new cellDataExchange<colocated>(indices, fvMsh_)
+    );
+}
+
 SHF::SHF
 (
     const fvMesh& fvMsh,
@@ -25,12 +78,16 @@ SHF::SHF
 )
 :
     curvatureScheme(fvMsh, dict, normal, alpha)
-{}
+{
+    setCommunication();
+}
 
 SHF::SHF(const SHF& s)
 :
     curvatureScheme(s)
-{}
+{
+    setCommunication();
+}
 
 SHF::~SHF()
 {}
@@ -38,8 +95,14 @@ SHF::~SHF()
 void SHF::correct()
 {
     colocatedScalarField& kappa = *this;
+    kappa = Zero;
 
-    colocatedScalarField marker("marker", fvMsh_);
+    const faceLabel& boundaryType = fvMsh_.msh().faceBoundaryType();
+    const labelVector& N = fvMsh_.template N<colocated>();
+    const faceLabel& I = fvMsh_.template I<colocated>();
+
+    colocatedLabelField marker("marker", fvMsh_);
+    marker = Zero;
 
     const rectilinearMesh& rMsh = fvMsh_.msh().cast<rectilinearMesh>();
 
@@ -47,545 +110,368 @@ void SHF::correct()
     const PartialList<scalar>& ySize = rMsh.localCellSizes()[1];
     const PartialList<scalar>& zSize = rMsh.localCellSizes()[2];
 
-    const scalar angleTol = Foam::cos(0.8);
+    const labelVector& globalStart = rMsh.globalStarts()[Pstream::myProcNo()];
 
-    forAllCells(kappa, i, j, k)
+    // Make a padded block for alpha. The default block contains the ghost
+    // cells. This block is then padded to contain boundary exchange cells.
+
+    labelVector M(N + 2*unitXYZ);
+    labelVector off(unitXYZ);
+
+    for (int f = 0; f < 6; f++)
+        if (exchangeShapes_[f][f/2] > 1)
+            M[f/2] += exchangeShapes_[f][f/2];
+
+    for (int d = 0; d < 3; d++)
+        if (exchangeShapes_[d*2][d] > 1)
+            off[d] += exchangeShapes_[d*2][d];
+
+    scalarBlock alpha(M, Zero);
+
+    // Copy data including ghost cells
+
+    for (int i = -1; i < N.x() + 1; i++)
+        for (int j = -1; j < N.y() + 1; j++)
+            for (int k = -1; k < N.z() + 1; k++)
+                alpha(labelVector(i,j,k) + off) = alpha_(i,j,k);
+
+    // Fill with neighbor exchange data
+
+    if (exchangePtr_.valid())
     {
+        scalarList data(move(exchangePtr_()(alpha_)));
+
+        for (int i = 0; i < data.size(); i++)
+            alpha(exchangePtr_->indices()[i] + off) = data[i];
+    }
+
+    // Compute the curvature
+
+    forAllCells(alpha_, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+
         if
         (
-            (alpha_(i,j,k) >     vof::threshold)
-         && (alpha_(i,j,k) < 1 - vof::threshold)
+            (alpha_(ijk) >     vof::threshold)
+         && (alpha_(ijk) < 1 - vof::threshold)
         )
         {
+            const vector m(cmptMag(normal_(ijk)));
 
-            int d1 = 0;
-            int d2 = 1;
-            int d3 = 2;
-            scalar value;
-            value = Foam::mag(normal_(i,j,k)[0]);
-            int index1 = j;
-            int index2 = k;
+            // Determine the primary interfacial orientation
 
-            scalar minH = 0;
-            scalar maxH = 0;
+            const label p =
+                m.x() == cmptMax(m) ? 0
+              : m.y() == cmptMax(m) ? 1
+              :                       2;
 
-            if (Foam::mag(normal_(i,j,k)[1]) > value)
+            // Rotated indices based on primary direction
+
+            labelVector d;
+
+            for (int ii = 0; ii < 3; ii++)
+                d[ii] = (ii + p) % 3;
+
+            // Rotated base
+
+            const labelTensor D(units[d[0]], units[d[1]], units[d[2]]);
+
+            // Rotated face labels
+
+            faceLabel f;
+
+            for (int ii = 0; ii < 3; ii++)
             {
-                d1 = 1;
-                d2 = 0;
-                value = Foam::mag(normal_(i,j,k)[1]);
-                index1 = i;
+                f[ii*2    ] = d[ii]*2;
+                f[ii*2 + 1] = d[ii]*2 + 1;
             }
 
-            if (Foam::mag(normal_(i,j,k)[2]) > value)
+            const PartialList<scalar>& gSizes = rMsh.globalCellSizes()[p];
+
+            scalar minH = 0.0;
+            scalar maxH = 0.0;
+
+            List<scalarList> H(3, scalarList(3, 0.0));
+
+            label upper = 0.0;
+            label lower = 0.0;
+
+            label s = Foam::sign(normal_(ijk)[p]);
+
+            const scalar gamma = m[p] > Foam::cos(0.8) ? 0.0 : 0.2;
+
+            scalar sum = 0;
+
+            for (int b = -1; b <= 1; b++)
+                for (int c = -1; c <= 1; c++)
+                    sum += alpha(ijk + b*D.y() + c*D.z() + off);
+
+            scalar sumPrev = sum;
+            scalar sumNew;
+
+            // Rotated cell indices
+
+            const label ii = ijk[d.x()];
+            const label jj = ijk[d.y()];
+            const label kk = ijk[d.z()];
+
+            // Look in positive primary direction
+
+            for (int a = 1; a <= 3; a++)
             {
-                d1 = 2;
-                d2 = 0;
-                d3 = 1;
-                value = Foam::mag(normal_(i,j,k)[2]);
-                index1 = i;
-                index2 = j;
+                sumNew = 0.0;
+
+                // Do not go beyond domain boundary ghost cells
+
+                if
+                (
+                    ii + a > I[f.right()]
+                 && boundaryType[f.right()] < parallelBoundary::typeNumber
+                )
+                {
+                    break;
+                }
+
+                for (int b = -1; b <= 1; b++)
+                    for (int c = -1; c <= 1; c++)
+                        sumNew +=
+                            alpha(ijk + a*D.x() + b*D.y() + c*D.z() + off);
+
+                if
+                (
+                    s*(sumNew - sumPrev) >= 0.0
+                 && sumNew >       1.0e-12
+                 && sumNew < 9.0 - 1.0e-12
+                )
+                {
+                    upper++;
+                    sumPrev = sumNew;
+                    maxH += gSizes[globalStart[p] + ii + a];
+                }
+                else
+                {
+                    break;
+                }
             }
 
-            scalar H[3][3] = {0};
-            label tup = 0;
-            label tdown = 0;
-            label nsign = normal_(i,j,k)[d1] > 0 ? 1 : -1;
+            sumPrev = sum;
 
-            scalar zeroSum = 0;
-            scalar prevSum = 0;
-            scalar newSum = 0;
+            // Look in negative primary direction
 
-            const scalar gamma = value > angleTol ? 0.0 : 0.2;
-
-            if (d1 == 0)
+            for (int a = 1; a <= 3; a++)
             {
-                for (int aux1 = -1; aux1 <= 1; aux1++)
-                    for (int aux2 = -1; aux2 <= 1; aux2++)
-                        zeroSum += alpha_(i,j + aux1,k + aux2);
+                sumNew = 0.0;
 
-                prevSum = zeroSum;
+                // Do not go beyond domain boundary ghost cells
 
-                for (int aux3 = 1; aux3 <=3; aux3++)
+                if
+                (
+                    ii - a < (I[f.left()] - 1)
+                 && boundaryType[f.left()] < parallelBoundary::typeNumber
+                )
                 {
-                    newSum = 0;
-
-                    for (int aux1 = -1; aux1 <= 1; aux1++)
-                        for (int aux2 = -1; aux2 <= 1; aux2++)
-                            newSum += alpha_(i + aux3,j + aux1,k + aux2);
-
-                    if
-                    (
-                        nsign * (newSum - prevSum) >= 0
-                     && newSum != 0
-                     && newSum != 9
-                     && (i + aux3) <= kappa.I().right()
-                    )
-                    {
-                        tup++;
-                        prevSum = newSum;
-                        maxH += xSize[i + aux3];
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    break;
                 }
 
-                prevSum = zeroSum;
+                for (int b = -1; b <= 1; b++)
+                    for (int c = -1; c <= 1; c++)
+                        sumNew +=
+                            alpha(ijk - a*D.x() + b*D.y() + c*D.z() + off);
 
-                for (int aux3 = 1; aux3 <=3; aux3++)
+                if
+                (
+                    s*(sumNew - sumPrev) <= 0.0
+                 && sumNew >       1.0e-12
+                 && sumNew < 9.0 - 1.0e-12
+                )
                 {
-                    newSum = 0;
-
-                    for (int aux1 = -1; aux1 <= 1; aux1++)
-                        for (int aux2 = -1; aux2 <= 1; aux2++)
-                            newSum += alpha_(i - aux3,j + aux1,k + aux2);
-
-                    if
-                    (
-                        nsign * (newSum - prevSum) <= 0
-                     && newSum != 0
-                     && newSum != 9
-                     && (i - aux3) >= (kappa.I().left() - 1)
-                    )
-                    {
-                        tdown++;
-                        prevSum = newSum;
-                        minH += xSize[i - aux3];
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    lower++;
+                    sumPrev = sumNew;
+                    minH += gSizes[globalStart[p] + ii - a];
                 }
-
-                if (nsign > 0)
-                    minH = maxH;
-
-                maxH  = minH + xSize[i];
-
-                for (int aux1 = -1; aux1 <= 1; aux1++)
+                else
                 {
-                    for (int aux2 = -1; aux2 <= 1; aux2++)
-                    {
-                        H[aux1 + 1][aux2 + 1] =
-                            xSize[i] * alpha_(i, j + aux1, k + aux2);
-
-                        for (int aux3 = 1; aux3 <= tup; aux3++)
-                        {
-                            H[aux1 + 1][aux2 + 1] +=
-                                nsign
-                              * (
-                                    alpha_(i+aux3,j+aux1,k+aux2)
-                                  - alpha_(i+aux3-1,j+aux1,k+aux2)
-                                ) > 0
-                              ? xSize[i+aux3]*alpha_(i+aux3,j+aux1,k+aux2)
-                              : nsign > 0 ? xSize[i+aux3] : 0;
-                        }
-
-                        for (int aux3 = 1; aux3 <= tdown; aux3++)
-                        {
-                            H[aux1 + 1][aux2 + 1] +=
-                                nsign
-                              * (
-                                    alpha_(i-aux3,j+aux1,k+aux2)
-                                  - alpha_(i-aux3+1,j+aux1,k+aux2)
-                                ) < 0
-                              ? xSize[i-aux3]*alpha_(i-aux3,j+aux1,k+aux2)
-                              : nsign < 0 ? xSize[i-aux3] : 0;
-                        }
-                    }
+                    break;
                 }
             }
-            else if (d1 == 1)
+
+            if (s > 0)
+                minH = maxH;
+
+            maxH  = minH + gSizes[globalStart[p] + ii];
+
+            for (int b = -1; b <= 1; b++)
             {
-                for (int aux1 = -1; aux1 <= 1; aux1++)
-                    for (int aux2 = -1; aux2 <= 1; aux2++)
-                        zeroSum += alpha_(i + aux1, j, k + aux2);
-
-                prevSum = zeroSum;
-
-                for (int aux3 = 1; aux3 <=3; aux3++)
+                for (int c = -1; c <= 1; c++)
                 {
-                    newSum = 0;
+                    scalar value = 0;
+                    scalar valuePrev = alpha(ijk + b*D.y() + c*D.z() + off);
 
-                    for (int aux1 = -1; aux1 <= 1; aux1++)
-                        for (int aux2 = -1; aux2 <= 1; aux2++)
-                            newSum += alpha_(i + aux1,j + aux3,k + aux2);
+                    H[b+1][c+1] = gSizes[globalStart[p] + ii]*valuePrev;
 
-                    if
-                    (
-                        nsign * (newSum - prevSum) >= 0
-                      && newSum != 0
-                      && newSum != 9
-                      && (j + aux3) <= kappa.I().top()
-                    )
+                    // Upper
+
+                    for (int a = 1; a <= upper; a++)
                     {
-                        tup++;
-                        prevSum = newSum;
-                        maxH += ySize[j+aux3];
+                        value = alpha(ijk + a*D.x() + b*D.y() + c*D.z() + off);
+
+                        H[b+1][c+1] +=
+                            s*(value - valuePrev) > 0.0
+                          ? gSizes[globalStart[p] + ii + a]*value
+                          : s > 0.0
+                          ? gSizes[globalStart[p] + ii + a]
+                          : 0.0;
+
+                        valuePrev = value;
                     }
-                    else
+
+                    valuePrev = alpha(ijk + b*D.y() + c*D.z() + off);
+
+                    // Lower
+
+                    for (int a = 1; a <= lower; a++)
                     {
-                        break;
-                    }
-                }
+                        value = alpha(ijk - a*D.x() + b*D.y() + c*D.z() + off);
 
-                prevSum = zeroSum;
+                        H[b+1][c+1] +=
+                            s*(value - valuePrev) < 0.0
+                          ? gSizes[globalStart[p] + ii - a]*value
+                          : s < 0.0
+                          ? gSizes[globalStart[p] + ii - a]
+                          : 0.0;
 
-                for (int aux3 = 1; aux3 <=3; aux3++)
-                {
-                    newSum = 0;
-
-                    for (int aux1 = -1; aux1 <= 1; aux1++)
-                        for (int aux2 = -1; aux2 <= 1; aux2++)
-                            newSum += alpha_(i + aux1,j - aux3,k + aux2);
-
-                    if
-                    (
-                        nsign * (newSum - prevSum) <= 0
-                      && newSum != 0
-                      && newSum != 9
-                      && (j - aux3) >= (kappa.I().bottom() - 1)
-                    )
-                    {
-                        tdown++;
-                        prevSum = newSum;
-                        minH += ySize[j-aux3];
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                if (nsign > 0)
-                    minH = maxH;
-
-                maxH  = minH + ySize[j];
-
-                for (int aux1 = -1; aux1 <= 1; aux1++)
-                {
-                    for (int aux2 = -1; aux2 <= 1; aux2++)
-                    {
-                        H[aux1 + 1][aux2 + 1] =
-                            ySize[j] * alpha_(i + aux1, j, k + aux2);
-
-                        for (int aux3 = 1; aux3 <= tup; aux3++)
-                        {
-                            H[aux1 + 1][aux2 + 1] +=
-                                nsign
-                              * (
-                                    alpha_(i+aux1,j+aux3,k+aux2)
-                                  - alpha_(i+aux1,j+aux3-1,k+aux2)
-                                ) > 0
-                              ? ySize[j+aux3]*alpha_(i+aux1,j+aux3,k+aux2)
-                              : nsign > 0 ? ySize[j+aux3] : 0;
-                        }
-
-                        for (int aux3 = 1; aux3 <= tdown; aux3++)
-                        {
-                            H[aux1 + 1][aux2 + 1] +=
-                                nsign
-                              * (
-                                    alpha_(i+aux1,j-aux3,k+aux2)
-                                  - alpha_(i+aux1,j-aux3+1,k+aux2)
-                                ) < 0
-                              ? ySize[j-aux3]*alpha_(i+aux1,j-aux3,k+aux2)
-                              : nsign < 0 ? ySize[j-aux3] : 0;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                for (int aux1 = -1; aux1 <= 1; aux1++)
-                    for (int aux2 = -1; aux2 <= 1; aux2++)
-                        zeroSum += alpha_(i + aux1,j + aux2,k);
-
-                prevSum = zeroSum;
-
-                for (int aux3 = 1; aux3 <=3; aux3++)
-                {
-                    newSum = 0;
-
-                    for (int aux1 = -1; aux1 <= 1; aux1++)
-                        for (int aux2 = -1; aux2 <= 1; aux2++)
-                            newSum += alpha_(i + aux1,j + aux2,k + aux3);
-
-                    if
-                    (
-                        nsign * (newSum - prevSum) >= 0
-                      && newSum != 0
-                      && newSum != 9
-                      && (k + aux3) <= kappa.I().fore()
-                    )
-                    {
-                        tup++;
-                        prevSum = newSum;
-                        maxH += zSize[k+aux3];
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                prevSum = zeroSum;
-
-                for (int aux3 = 1; aux3 <=3; aux3++)
-                {
-                    newSum = 0;
-
-                    for (int aux1 = -1; aux1 <= 1; aux1++)
-                        for (int aux2 = -1; aux2 <= 1; aux2++)
-                            newSum += alpha_(i + aux1,j + aux2,k - aux3);
-
-                    if
-                    (
-                        nsign * (newSum - prevSum) <= 0
-                     && newSum != 0
-                     && newSum != 9
-                     && (k - aux3) >= (kappa.I().aft() - 1)
-                    )
-                    {
-                        tdown++;
-                        prevSum = newSum;
-                        minH += zSize[k-aux3];
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                if (nsign > 0)
-                    minH = maxH;
-
-                maxH  = minH + zSize[k];
-
-                for (int aux1 = -1; aux1 <= 1; aux1++)
-                {
-                    for (int aux2 = -1; aux2 <= 1; aux2++)
-                    {
-                        H[aux1 + 1][aux2 + 1] =
-                            zSize[k] * alpha_(i + aux1, j + aux2, k);
-
-                        for (int aux3 = 1; aux3 <= tup; aux3++)
-                        {
-                            H[aux1 + 1][aux2 + 1] +=
-                                nsign
-                              * (
-                                    alpha_(i+aux1,j+aux2,k+aux3)
-                                  - alpha_(i+aux1,j+aux2,k+aux3-1)
-                                ) > 0
-                              ? zSize[k+aux3]*alpha_(i+aux1,j+aux2,k+aux3)
-                              : nsign > 0 ? zSize[k+aux3] : 0;
-                        }
-
-                        for (int aux3 = 1; aux3 <= tdown; aux3++)
-                        {
-                            H[aux1 + 1][aux2 + 1] +=
-                                nsign
-                              * (
-                                    alpha_(i+aux1,j+aux2,k-aux3)
-                                  - alpha_(i+aux1,j+aux2,k-aux3+1)
-                                ) < 0
-                              ? zSize[k-aux3]*alpha_(i+aux1,j+aux2,k-aux3)
-                              : nsign < 0 ? zSize[k-aux3] : 0;
-                        }
+                        valuePrev = value;
                     }
                 }
             }
 
-            const PartialList<scalar>& xSizes = rMsh.localCellSizes()[d2];
-            const PartialList<scalar>& ySizes = rMsh.localCellSizes()[d3];
+            const PartialList<scalar>& dy = rMsh.localCellSizes()[d.y()];
+            const PartialList<scalar>& dz = rMsh.localCellSizes()[d.z()];
 
-            scalarList Hxx(3);
             scalarList Hyy(3);
-            scalarList Hx(3);
+            scalarList Hzz(3);
             scalarList Hy(3);
+            scalarList Hz(3);
 
-            for (int aux1 = 0; aux1 < 3; aux1++)
+            for (int b = 0; b < 3; b++)
             {
-                Hxx[aux1] =
-                    (1/xSizes[index1]) *
-                    (
-                        (H[2][aux1] - H[1][aux1])
-                      / (0.5 * (xSizes[index1+1] + xSizes[index1]))
-                      - (H[1][aux1] - H[0][aux1])
-                      / (0.5 * (xSizes[index1] + xSizes[index1-1]))
+                Hyy[b] =
+                    1.0/dy[jj]
+                  * (
+                        (H[2][b] - H[1][b])/(0.5*(dy[jj+1] + dy[jj  ]))
+                      - (H[1][b] - H[0][b])/(0.5*(dy[jj  ] + dy[jj-1]))
                     );
 
-                Hyy[aux1] =
-                    (1/ySizes[index2]) *
-                    (
-                        (H[aux1][2] - H[aux1][1])
-                      / (0.5 * (ySizes[index2+1] + ySizes[index2]))
-                      - (H[aux1][1] - H[aux1][0])
-                      / (0.5 * (ySizes[index2] + ySizes[index2-1]))
+                Hzz[b] =
+                    1.0/dz[kk]
+                  * (
+                        (H[b][2] - H[b][1])/(0.5*(dz[kk+1] + dz[kk  ]))
+                      - (H[b][1] - H[b][0])/(0.5*(dz[kk  ] + dz[kk-1]))
                     );
 
-                Hx[aux1] =
-                    H[0][aux1] *
-                    (
-                        (-xSizes[index1]-xSizes[index1+1])
-                      / (
-                            (xSizes[index1]+xSizes[index1-1])
-                          * (
-                                0.5*(xSizes[index1-1]+xSizes[index1+1])
-                              + xSizes[index1]
-                            )
-                        )
-                    )
-                  + H[1][aux1] *
-                    (
-                        2*(xSizes[index1+1]-xSizes[index1-1])
-                      / (
-                            (xSizes[index1]+xSizes[index1+1])
-                          * (xSizes[index1]+xSizes[index1-1])
-                        )
-                    )
-                  + H[2][aux1] *
-                    (
-                        (xSizes[index1]+xSizes[index1-1])
-                      / (
-                            (xSizes[index1]+xSizes[index1+1])
-                          * (
-                                0.5*(xSizes[index1+1]+xSizes[index1-1])
-                              + xSizes[index1]
-                            )
-                        )
-                    );
+                Hy[b] =
+                  - H[0][b]*(dy[jj] + dy[jj+1])
+                  / ((dy[jj] + dy[jj-1])*(0.5*(dy[jj-1] + dy[jj+1]) + dy[jj]))
+                  + H[1][b]*2.0*(dy[jj+1] - dy[jj-1])
+                  / ((dy[jj] + dy[jj+1])*(dy[jj] + dy[jj-1]))
+                  + H[2][b]*(dy[jj] + dy[jj-1])
+                  / ((dy[jj] + dy[jj+1])*(0.5*(dy[jj+1] + dy[jj-1]) + dy[jj]));
 
-                Hy[aux1] =
-                    H[aux1][0] *
-                    (
-                        (-ySizes[index2]-ySizes[index2+1])
-                      / (
-                            (ySizes[index2]+ySizes[index2-1])
-                          * (
-                                0.5*(ySizes[index2-1]+ySizes[index2+1])
-                              + ySizes[index2]
-                            )
-                        )
-                    )
-                  + H[aux1][1] *
-                    (
-                        2*(ySizes[index2+1]-ySizes[index2-1])
-                      / (
-                            (ySizes[index2]+ySizes[index2+1])
-                          * (ySizes[index2]+ySizes[index2-1])
-                        )
-                    )
-                    + H[aux1][2] *
-                    (
-                        (ySizes[index2]+ySizes[index2-1])
-                      / (
-                            (ySizes[index2]+ySizes[index2+1])
-                          * (
-                                0.5*(ySizes[index2+1]+ySizes[index2-1])
-                              + ySizes[index2]
-                            )
-                        )
-                    );
+                Hz[b] =
+                  - H[b][0]*(dz[kk] + dz[kk+1])
+                  / ((dz[kk] + dz[kk-1])*(0.5*(dz[kk-1] + dz[kk+1]) + dz[kk]))
+                  + H[b][1]*2.0*(dz[kk+1] - dz[kk-1])
+                  / ((dz[kk] + dz[kk+1])*(dz[kk] + dz[kk-1]))
+                  + H[b][2]*(dz[kk] + dz[kk-1])
+                  / ((dz[kk] + dz[kk+1])*(0.5*(dz[kk+1] + dz[kk-1]) + dz[kk]));
             }
 
-            scalar Hxy =
-                Hx[0] *
-                (
-                    (-ySizes[index2]-ySizes[index2+1])
-                  / (
-                        (ySizes[index2]+ySizes[index2-1])
-                      * (0.5*(ySizes[index2-1]+ySizes[index2+1])+ySizes[index2])
-                    )
-                )
-              + Hx[1] *
-                (
-                    2*(ySizes[index2+1]-ySizes[index2-1])
-                  / (
-                        (ySizes[index2]+ySizes[index2+1])
-                      * (ySizes[index2]+ySizes[index2-1])
-                    )
-                )
-              + Hx[2] *
-                (
-                    (ySizes[index2]+ySizes[index2-1])
-                  / (
-                        (ySizes[index2]+ySizes[index2+1])
-                      * (0.5*(ySizes[index2+1]+ySizes[index2-1])+ySizes[index2])
-                    )
-                );
+            const scalar Hyz =
+              - Hy[0]*(dz[kk] + dz[kk+1])
+              / ((dz[kk] + dz[kk-1])*(0.5*(dz[kk-1] + dz[kk+1]) + dz[kk]))
 
-            if ((minH <= H[1][1]) && (maxH >= H[1][1]))
+              + Hy[1]*2.0*(dz[kk+1] - dz[kk-1])
+              / ((dz[kk] + dz[kk+1])*(dz[kk] + dz[kk-1]))
+
+              + Hy[2]*(dz[kk] + dz[kk-1])
+              / ((dz[kk] + dz[kk+1])*(0.5*(dz[kk+1] + dz[kk-1]) + dz[kk]));
+
+            if (minH <= H[1][1] && maxH >= H[1][1])
             {
-                scalar dx = (gamma * (Hx[0] + Hx[2]) + Hx[1]) / (1 + 2 * gamma);
-                scalar dy = (gamma * (Hy[0] + Hy[2]) + Hy[1]) / (1 + 2 * gamma);
+                const scalar Dy =
+                    (gamma*(Hy[0] + Hy[2]) + Hy[1])/(1.0 + 2.0*gamma);
+                const scalar Dz =
+                    (gamma*(Hz[0] + Hz[2]) + Hz[1])/(1.0 + 2.0*gamma);
 
-                scalar dxx =
-                    (gamma * (Hxx[0] + Hxx[2]) + Hxx[1]) / (1 + 2 * gamma);
-                scalar dyy =
-                    (gamma * (Hyy[0] + Hyy[2]) + Hyy[1]) / (1 + 2 * gamma);
+                const scalar Dyy =
+                     (gamma*(Hyy[0] + Hyy[2]) + Hyy[1])/(1.0 + 2.0*gamma);
+                const scalar Dzz =
+                     (gamma*(Hzz[0] + Hzz[2]) + Hzz[1])/(1.0 + 2.0*gamma);
 
-                kappa(i,j,k) = -
-                    (
-                        dxx * (1 + Foam::sqr(dy))
-                      + dyy * (1 + Foam::sqr(dx))
-                      - 2 * Hxy * dx * dy
+                kappa(ijk) =
+                  - (
+                        Dyy*(1.0 + Foam::sqr(Dz))
+                      + Dzz*(1.0 + Foam::sqr(Dy))
+                      - 2.0*Hyz*Dy*Dz
                     )
-                  / (
-                        Foam::pow(1 + Foam::sqr(dx) + Foam::sqr(dy), 1.5)
-                    );
+                  / Foam::pow(1.0 + Foam::sqr(Dy) + Foam::sqr(Dz), 1.5);
 
-                marker(i,j,k) = 1;
+                // Limit kappa
+
+                const scalar kappaMax =
+                    1.0/cmptMin(vector(xSize[i], ySize[j], zSize[k]));
+
+                if (Foam::mag(kappa(ijk)) > kappaMax)
+                    kappa(ijk) = kappaMax * Foam::sign(kappa(ijk));
+
+                // Set marker
+
+                marker(ijk) = 1;
             }
-            else
-            {
-                marker(i,j,k) = 0;
-            }
-        }
-        else
-        {
-            kappa(i,j,k) = 0;
-            marker(i,j,k) = 0;
         }
     }
 
-    marker.correctNonEliminatedBoundaryConditions();
-    kappa.correctNonEliminatedBoundaryConditions();
+    marker.correctCommsBoundaryConditions();
+    kappa.correctCommsBoundaryConditions();
 
-    forAllCells(kappa, i, j, k)
+    // Set kappa in unmarked interfacial cells to be the average of its marked
+    // neighbors
+
+    forAllCells(alpha_, i, j, k)
     {
+        const labelVector ijk(i,j,k);
+
         if
         (
-            (alpha_(i,j,k) >     vof::threshold)
-         && (alpha_(i,j,k) < 1 - vof::threshold)
-         && (Foam::mag(marker(i,j,k)) < 1e-12)
+            (alpha_(ijk) >     vof::threshold)
+         && (alpha_(ijk) < 1 - vof::threshold)
+         && !marker(ijk)
         )
         {
             int count = 0;
-            kappa(i,j,k) = 0;
 
-            for (int aux1 = -1; aux1 <= 1; aux1++)
+            kappa(ijk) = 0.0;
+
+            for (int b = -1; b <= 1; b++)
             {
-                for (int aux2 = -1; aux2 <= 1; aux2++)
+                for (int c = -1; c <= 1; c++)
                 {
-                    for (int aux3 = -1; aux3 <= 1; aux3++)
+                    for (int a = -1; a <= 1; a++)
                     {
-                        if
-                        (
-                            Foam::mag(marker(i+aux1,j+aux2,k+aux3) - 1) < 1e-12
-                        )
+                        const labelVector abc(a,b,c);
+
+                        if (marker(ijk + abc))
                         {
+                            kappa(ijk) += kappa(ijk + abc);
                             count++;
-                            kappa(i,j,k) += kappa(i+aux1,j+aux2,k+aux3);
                         }
                     }
                 }
             }
 
-            kappa(i,j,k) /= scalar(count);
+            if (count > 0)
+                kappa(ijk) /= scalar(count);
         }
     }
 

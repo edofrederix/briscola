@@ -51,237 +51,19 @@ void part::calcPoints(const mesh& msh, const part* l)
         }
     }
 
-    // Remove round-off errors. This is important on parallel boundaries so that
-    // points coincide exactly. As a scale we use the float exponent.
+    // Set ghost points
 
-    forAllBlock(points_, i, j, k)
-    {
-        for (int d = 0; d < 3; d++)
-        {
-            scalar p = points_(i,j,k)[d];
+    points_.calcGhostPoints();
 
-            if (p != 0)
-            {
-                scalar S = Foam::pow(10, label(Foam::log10(Foam::mag(p))));
+    // Remove round-off errors
 
-                points_(i,j,k)[d] = round(p/S*1e14)*S/1e14;
-            }
-        }
-    }
-}
-
-void part::calcGhostPoints(const mesh& msh)
-{
-    // First, project all inner points along the point-to-point vector
-
-    const labelVector N = points_.shape();
-
-    labelVector bo;
-
-    for (bo.x() = -1; bo.x() <= 1; bo.x()++)
-    for (bo.y() = -1; bo.y() <= 1; bo.y()++)
-    for (bo.z() = -1; bo.z() <= 1; bo.z()++)
-    if (cmptSum(cmptMag(bo)) > 0)
-    {
-        const labelVector s
-        (
-            bo.x() == 0 ? 0 : (bo.x()+1)/2*(N.x()-1),
-            bo.y() == 0 ? 0 : (bo.y()+1)/2*(N.y()-1),
-            bo.z() == 0 ? 0 : (bo.z()+1)/2*(N.z()-1)
-        );
-
-        const labelVector e
-        (
-            s.x() + (bo.x() == 0 ? N.x()-1 : 0),
-            s.y() + (bo.y() == 0 ? N.y()-1 : 0),
-            s.z() + (bo.z() == 0 ? N.z()-1 : 0)
-        );
-
-        for (label i = s.x(); i <= e.x(); i++)
-        for (label j = s.y(); j <= e.y(); j++)
-        for (label k = s.z(); k <= e.z(); k++)
-        {
-            const labelVector ijk(i,j,k);
-
-            points_(ijk+bo) = 2*points_(ijk) - points_(ijk-bo);
-        }
-    }
-
-    // Next, at parallel and periodic boundaries, set the ghost points equal to
-    // the neighboring points
-
-    List<const boundary*> boundaryPtrs(0);
-
-    forAll(msh.boundaries(), bi)
-    {
-        const word type = msh.boundaries()[bi].type();
-
-        if (type == "parallel" || type == "periodic")
-            boundaryPtrs.append(&msh.boundaries()[bi]);
-    }
-
-    const label Np = boundaryPtrs.size();
-
-    labelList neighborProcNums(Np);
-
-    PtrList<vectorBlock> sendBuffers(Np);
-    PtrList<vectorBlock> recvBuffers(Np);
-
-    forAll(boundaryPtrs, bi)
-    {
-        const boundary& b = *boundaryPtrs[bi];
-
-        const labelVector bo(b.offset());
-        const labelTensor T(b.T());
-
-        const labelVector S(pS(bo));
-        const labelVector E(pE(bo));
-        const labelVector N(pN(bo));
-
-        neighborProcNums[bi] =
-            readLabel(b.dict().lookup("neighborProcNum"));
-
-        sendBuffers.set
-        (
-            bi,
-            new vectorBlock(N, Zero)
-        );
-
-        recvBuffers.set
-        (
-            bi,
-            new vectorBlock(cmptMag(T.T() & N))
-        );
-
-        // For parallel boundaries, send the point coordinate. For periodic
-        // boundaries, send the point-to-point distance vector.
-
-        labelVector ijk;
-
-        if (b.type() == "parallel")
-        {
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                sendBuffers[bi](ijk-S) = points_(ijk-bo);
-            }
-        }
-        else
-        {
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                sendBuffers[bi](ijk-S) = points_(ijk-bo)-points_(ijk);
-            }
-        }
-    }
-
-    // Send/receive
-
-    forAll(boundaryPtrs, bi)
-    {
-        const label neighborProcNum = neighborProcNums[bi];
-
-        const label tag =
-            readLabel(boundaryPtrs[bi]->dict().lookup("tag"));
-
-        // Send/receive
-
-        if (neighborProcNum != Pstream::myProcNo())
-        {
-            UIPstream::read
-            (
-                Pstream::commsTypes::nonBlocking,
-                neighborProcNum,
-                reinterpret_cast<char*>(recvBuffers[bi].begin()),
-                recvBuffers[bi].byteSize(),
-                tag,
-                UPstream::worldComm
-            );
-
-            UOPstream::write
-            (
-                Pstream::commsTypes::nonBlocking,
-                neighborProcNum,
-                reinterpret_cast<char*>(sendBuffers[bi].begin()),
-                sendBuffers[bi].byteSize(),
-                tag,
-                UPstream::worldComm
-            );
-        }
-        else
-        {
-            // On the same processor the boundary must be periodic, and its
-            // neighbor is assumed to be on the opposing face/edge/vertex. Copy
-            // buffers directly.
-
-            const boundary& b = *boundaryPtrs[bi];
-
-            const labelVector bo(b.offset());
-
-            forAll(boundaryPtrs, bj)
-            if (boundaryPtrs[bj]->offset() == -bo)
-            {
-                recvBuffers[bi] = sendBuffers[bj];
-                break;
-            }
-        }
-    }
-
-    UPstream::waitRequests();
-
-    // Unpack
-
-    forAll(boundaryPtrs, bi)
-    {
-        const boundary& b = *boundaryPtrs[bi];
-
-        const labelVector bo(b.offset());
-        const labelTensor T(b.T());
-
-        const labelVector S(pS(bo));
-        const labelVector E(pE(bo));
-
-        vectorBlock& recv = recvBuffers[bi];
-
-        recv.transform(T);
-
-        // Set points
-
-        labelVector ijk;
-
-        if (b.type() == "parallel")
-        {
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                points_(ijk+bo) = recv(ijk-S);
-            }
-        }
-        else
-        {
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                // For periodic points we project the neighbor's point-to-point
-                // distance along the current cell's point-to-point vector. This
-                // is only correct for orthogonal periodicity.
-
-                const vector n = normalised(points_(ijk) - points_(ijk-bo));
-
-                points_(ijk+bo) = points_(ijk) + n*mag(recv(ijk-S));
-            }
-        }
-    }
+    points_.clean();
 }
 
 part::part(const mesh& msh, const part* l)
 :
-    l_(l == nullptr ? 0 : l->partNum()+1)
+    l_(l == nullptr ? 0 : l->partNum()+1),
+    points_(msh)
 {
     if (l == nullptr)
     {
@@ -297,7 +79,6 @@ part::part(const mesh& msh, const part* l)
     }
 
     calcPoints(msh, l);
-    calcGhostPoints(msh);
 
     // Check if part directions are rectilinear, which is true if all left,
     // bottom and aft face vectors are aligned

@@ -9,7 +9,7 @@ namespace briscola
 namespace fv
 {
 
-const scalar LVE::tol_ = 1e-8;
+const scalar LVE::tol_ = 1e-12;
 const label LVE::maxIter_ = 100;
 
 scalar LVE::fluxVolumeLVE
@@ -60,7 +60,7 @@ scalar LVE::fluxVolumeLVE
 
     }
 
-    scalar C = - LVE::exactCubicSolver
+    scalar C = 1 + LVE::exactCubicSolver
     (
         Vf,
         alpha0,

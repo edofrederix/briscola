@@ -3,6 +3,7 @@
 
 #include "midPointInterpolationScheme.H"
 #include "linearInterpolationScheme.H"
+#include "curvatureInterpolationScheme.H"
 
 namespace Foam
 {
@@ -24,12 +25,14 @@ makeInterpolationSchemeType(midPoint,scalar,staggered)
 
 makeInterpolationSchemeType(midPoint,vector,colocated)
 makeInterpolationSchemeType(midPoint,vector,staggered)
-
 makeInterpolationSchemeType(linear,scalar,colocated)
 makeInterpolationSchemeType(linear,scalar,staggered)
 
 makeInterpolationSchemeType(linear,vector,colocated)
 makeInterpolationSchemeType(linear,vector,staggered)
+
+makeInterpolationSchemeType(curvature,scalar,colocated)
+makeInterpolationSchemeType(curvature,scalar,staggered)
 
 }
 

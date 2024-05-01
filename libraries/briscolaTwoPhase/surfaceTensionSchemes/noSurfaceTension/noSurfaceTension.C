@@ -33,6 +33,8 @@ noSurfaceTension<SigmaModel>::noSurfaceTension(const noSurfaceTension& sts)
 {
     colocatedVectorField::operator=(Zero);
 
+    this->surfaceTensionPotential_ = Zero;
+
     if (this->fvMsh_.structured())
         this->stagForcePtr_() = Zero;
 }
