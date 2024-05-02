@@ -36,7 +36,7 @@ autoPtr<shape> shape::New
         FatalErrorInFunction
             << "Unknown shape "
             << shapeType << nl << nl
-            << "Valid solvers are:" << nl
+            << "Valid shape types are:" << nl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

@@ -78,7 +78,10 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>
 
     forAll(x, d)
     {
-        pointDataExchange<MeshType> exchange(exchangePoints_[l][d], fvMsh, l, d);
+        pointDataExchange<MeshType> exchange
+        (
+            exchangePoints_[l][d], fvMsh, l, d
+        );
 
         List<Type> exchangeData(move(exchange(x.mshField())));
 
@@ -103,7 +106,8 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>
                 else
                 {
                     // Local coordinates of mp in colocated cell
-                    vector mpLocalCoords = msh[l].points().cellCoordinates(mp, mpIndex, true);
+                    vector mpLocalCoords = msh[l].points()
+                        .cellCoordinates(mp, mpIndex, true);
 
                     if (mpLocalCoords == -vector::one)
                     {
@@ -122,7 +126,12 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>
 
                     if
                     (
-                        (word(MeshType::typeName) == "colocated" ? true : (d != 0))
+                        (
+                            word(MeshType::typeName) == "colocated" ?
+                            true
+                            :
+                            (d != 0)
+                        )
                         && (mpLocalCoords.x() < 0.5)
                     )
                     {
@@ -130,7 +139,12 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>
                     }
                     if
                     (
-                        (word(MeshType::typeName) == "colocated" ? true : (d != 1))
+                        (
+                            word(MeshType::typeName) == "colocated" ?
+                            true
+                            :
+                            (d != 1)
+                        )
                         && (mpLocalCoords.y() < 0.5)
                     )
                     {
@@ -138,7 +152,12 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>
                     }
                     if
                     (
-                        (word(MeshType::typeName) == "colocated" ? true : (d != 2))
+                        (
+                            word(MeshType::typeName) == "colocated" ?
+                            true
+                            :
+                            (d != 2)
+                        )
                         && (mpLocalCoords.z() < 0.5)
                     )
                     {

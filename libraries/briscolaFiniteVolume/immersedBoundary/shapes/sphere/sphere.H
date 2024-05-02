@@ -38,13 +38,13 @@ public:
     // Destructor
     virtual ~sphere();
 
-    bool isInside(vector);
+    bool isInside(vector) const;
 
-    scalar wallDistance(vector, vector);
+    scalar wallDistance(vector, vector) const;
 
-    scalar wallNormalDistance(vector);
+    scalar wallNormalDistance(vector) const;
 
-    vector mirrorPoint(vector);
+    vector mirrorPoint(vector) const;
 
 };
 

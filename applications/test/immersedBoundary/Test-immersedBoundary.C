@@ -1,33 +1,16 @@
 #include "arguments.H"
 #include "fv.H"
 #include "immersedBoundary.H"
-#include "cylinder.H"
 
 using namespace Foam;
 using namespace briscola;
 using namespace fv;
-using namespace ibm;
-
 
 int main(int argc, char *argv[])
 {
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
-
-    IOdictionary solverDict
-    (
-        IOobject
-        (
-            "briscolaStaggeredDict",
-            fvMsh.time().system(),
-            fvMsh.time(),
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
-        )
-    );
-
-    immersedBoundary<colocated> IB(solverDict, fvMsh);
 
     // Test point 1 is outside of the IB
     vector testPoint1(0,0,0);
@@ -38,52 +21,55 @@ int main(int argc, char *argv[])
     // Test point 3 is inside sphere1
     vector testPoint4(1,1,1);
 
-    if (IB.isInside(testPoint1))
+    forAll(fvMsh.IB<colocated>(), ib)
     {
-        FatalError
-            << "IB test 1 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB test 1 successful!" << endl;
-    }
+        if (fvMsh.IB<colocated>()[ib].isInside(testPoint1))
+        {
+            FatalError
+                << "IB test 1 failed."
+                << endl;
+            FatalError.exit();
+        }
+        else
+        {
+            Info << "IB test 1 successful!" << endl;
+        }
 
-    if (!IB.isInside(testPoint2))
-    {
-        FatalError
-            << "IB test 2 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB test 2 successful!" << endl;
-    }
+        if (!fvMsh.IB<colocated>()[ib].isInside(testPoint2))
+        {
+            FatalError
+                << "IB test 2 failed."
+                << endl;
+            FatalError.exit();
+        }
+        else
+        {
+            Info << "IB test 2 successful!" << endl;
+        }
 
-    if (!IB.isInside(testPoint3))
-    {
-        FatalError
-            << "IB test 3 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB test 3 successful!" << endl;
-    }
+        if (!fvMsh.IB<colocated>()[ib].isInside(testPoint3))
+        {
+            FatalError
+                << "IB test 3 failed."
+                << endl;
+            FatalError.exit();
+        }
+        else
+        {
+            Info << "IB test 3 successful!" << endl;
+        }
 
-    if (!IB.isInside(testPoint4))
-    {
-        FatalError
-            << "IB test 4 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB test 4 successful!" << endl;
+        if (!fvMsh.IB<colocated>()[ib].isInside(testPoint4))
+        {
+            FatalError
+                << "IB test 4 failed."
+                << endl;
+            FatalError.exit();
+        }
+        else
+        {
+            Info << "IB test 4 successful!" << endl;
+        }
     }
 
     // Test point 5 is defined by its cell indices
@@ -101,162 +87,147 @@ int main(int argc, char *argv[])
         fvMsh.metrics<colocated>().cellCenters();
 
 
-    if (IB.isInside(cc[0][0](testPoint5)))
+    forAll(fvMsh.IB<colocated>(), ib)
     {
-        FatalError
-            << "IB test 5 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB test 5 successful!" << endl;
-    }
+        if (fvMsh.IB<colocated>()[ib].isInside(cc[0][0](testPoint5)))
+        {
+            FatalError
+                << "IB test 5 failed."
+                << endl;
+            FatalError.exit();
+        }
+        else
+        {
+            Info << "IB test 5 successful!" << endl;
+        }
 
-    if (!IB.isInside(cc[0][0](testPoint6)))
-    {
-        FatalError
-            << "IB test 6 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB test 6 successful!" << endl;
+        if (!fvMsh.IB<colocated>()[ib].isInside(cc[0][0](testPoint6)))
+        {
+            FatalError
+                << "IB test 6 failed."
+                << endl;
+            FatalError.exit();
+        }
+        else
+        {
+            Info << "IB test 6 successful!" << endl;
+        }
     }
 
 
     // Test wall distance functions
 
-    sphere sphere2(vector(10,10,10), 1, false);
-
-    // Line passes through sphere center
+    // Line passes through sphere2 center
     vector c(10,10,11.12345);
     vector nb(10,10,10);
 
-    if (mag(sphere2.wallDistance(c,nb) - 0.12345) > 1e-5)
+    forAll(fvMsh.IB<colocated>(), ib)
     {
-        FatalError
-            << "IB wall distance test 1 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB wall distance test 1 successful!" << endl;
+        if (mag(fvMsh.IB<colocated>()[ib].wallDistance(c,nb) - 0.12345) > 1e-5)
+        {
+            FatalError
+                << "IB wall distance test 1 failed."
+                << endl;
+            FatalError.exit();
+        }
+        else
+        {
+            Info << "IB wall distance test 1 successful!" << endl;
+        }
     }
 
-    // Line is tangent to the sphere
+    // Line is tangent to the sphere2
     c = vector(10,11,11);
     nb = vector(10,10,11);
 
-    if (mag(sphere2.wallDistance(c,nb) - 1.0) > 1e-5)
+    forAll(fvMsh.IB<colocated>(), ib)
     {
-        FatalError
-            << "IB wall distance test 2 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB wall distance test 2 successful!" << endl;
+        if (mag(fvMsh.IB<colocated>()[ib].wallDistance(c,nb) - 1.0) > 1e-5)
+        {
+            FatalError
+                << "IB wall distance test 2 failed."
+                << endl;
+            FatalError.exit();
+        }
+        else
+        {
+            Info << "IB wall distance test 2 successful!" << endl;
+        }
     }
 
-    // Line arbitrarily crosses sphere
+    // Line arbitrarily crosses sphere2
     c = vector(10,12,10.5);
     nb = vector(10,10,10.5);
 
-    if (mag(sphere2.wallDistance(c,nb) - (2.0 - Foam::sqrt(0.75))) > 1e-5)
+    forAll(fvMsh.IB<colocated>(), ib)
     {
-        FatalError
-            << "IB wall distance test 3 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB wall distance test 3 successful!" << endl;
-    }
-
-    cylinder cylinder3(vector(0,0,0), vector(0,0,1), 1.0, false);
-
-    // Line passes through cylinder axis
-    c = vector(1.12345,0,0.5);
-    nb = vector(0,0,0.5);
-
-    if (mag(cylinder3.wallDistance(c,nb) - 0.12345) > 1e-5)
-    {
-        FatalError
-            << "IB wall distance test 4 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB wall distance test 4 successful!" << endl;
+        if (mag(fvMsh.IB<colocated>()[ib].wallDistance(c,nb) - (2.0 - Foam::sqrt(0.75))) > 1e-5)
+        {
+            FatalError
+                << "IB wall distance test 3 failed."
+                << endl;
+            FatalError.exit();
+        }
+        else
+        {
+            Info << "IB wall distance test 3 successful!" << endl;
+        }
     }
 
-    // Line is tangent to the cylinder
-    c = vector(1,1,0.5);
-    nb = vector(0,1,0.5);
+    // Line passes through cylinder3 axis
+    c = vector(11.12345,-1,0.5);
+    nb = vector(10,-1,0.5);
 
-    if (mag(cylinder3.wallDistance(c,nb) - 1) > 1e-5)
+    forAll(fvMsh.IB<colocated>(), ib)
     {
-        FatalError
-            << "IB wall distance test 5 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB wall distance test 5 successful!" << endl;
-    }
-
-    // Line arbitrarily crosses cylinder
-    c = vector(2,0.5,0.5);
-    nb = vector(0,0.5,0.5);
-
-    if (mag(cylinder3.wallDistance(c,nb) - (2.0 - Foam::sqrt(0.75))) > 1e-5)
-    {
-        FatalError
-            << "IB wall distance test 6 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB wall distance test 6 successful!" << endl;
+        if (mag(fvMsh.IB<colocated>()[ib].wallDistance(c,nb) - 0.12345) > 1e-5)
+        {
+            FatalError
+                << "IB wall distance test 4 failed."
+                << endl;
+            FatalError.exit();
+        }
+        else
+        {
+            Info << "IB wall distance test 4 successful!" << endl;
+        }
     }
 
-    // Line is parallel to cylinder axis and intersects end caps
-    c = vector(0.5,0.5,2);
-    nb = vector(0.5,0.5,0.5);
+    // Line is tangent to cylinder3
+    c = vector(11,-2,0.5);
+    nb = vector(10,-2,0.5);
 
-    if (mag(cylinder3.wallDistance(c,nb) - 1) > 1e-5)
+    forAll(fvMsh.IB<colocated>(), ib)
     {
-        FatalError
-            << "IB wall distance test 7 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB wall distance test 7 successful!" << endl;
+        if (mag(fvMsh.IB<colocated>()[ib].wallDistance(c,nb) - 1) > 1e-5)
+        {
+            FatalError
+                << "IB wall distance test 5 failed."
+                << endl;
+            FatalError.exit();
+        }
+        else
+        {
+            Info << "IB wall distance test 5 successful!" << endl;
+        }
     }
 
-    // Line intersects cylinder end cap
-    c = vector(0,1,2);
-    nb = vector(0,0,1);
+    // Line arbitrarily crosses cylinder3
+    c = vector(12,-0.5,0.5);
+    nb = vector(10,-0.5,0.5);
 
-    if (mag(cylinder3.wallDistance(c,nb) - Foam::sqrt(2.0)) > 1e-5)
+    forAll(fvMsh.IB<colocated>(), ib)
     {
-        FatalError
-            << "IB wall distance test 8 failed."
-            << endl;
-        FatalError.exit();
-    }
-    else
-    {
-        Info << "IB wall distance test 8 successful!" << endl;
+        if (mag(fvMsh.IB<colocated>()[ib].wallDistance(c,nb) - (2.0 - Foam::sqrt(0.75))) > 1e-5)
+        {
+            FatalError
+                << "IB wall distance test 6 failed."
+                << endl;
+            FatalError.exit();
+        }
+        else
+        {
+            Info << "IB wall distance test 6 successful!" << endl;
+        }
     }
 }

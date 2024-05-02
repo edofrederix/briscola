@@ -35,7 +35,7 @@ sphere::sphere
 sphere::~sphere()
 {}
 
-bool sphere::isInside(vector point)
+bool sphere::isInside(vector point) const
 {
     // Check if distance from point to sphere center
     // is smaller than the sphere's radius
@@ -60,7 +60,7 @@ bool sphere::isInside(vector point)
     }
 }
 
-scalar sphere::wallDistance(vector c, vector nb)
+scalar sphere::wallDistance(vector c, vector nb) const
 {
     // Return -1 if the center point is not a fluid point
     // or if the neighboring point is not inside the sphere
@@ -99,7 +99,7 @@ scalar sphere::wallDistance(vector c, vector nb)
     return (tc - t1c);
 }
 
-scalar sphere::wallNormalDistance(vector gc)
+scalar sphere::wallNormalDistance(vector gc) const
 {
     // Return -1 if the point is outside of the sphere
     if (!this->isInside(gc))
@@ -111,7 +111,7 @@ scalar sphere::wallNormalDistance(vector gc)
     return (inverted_ ? mag(gc-center_) - radius_ : radius_ - mag(gc-center_));
 }
 
-vector sphere::mirrorPoint(vector gc)
+vector sphere::mirrorPoint(vector gc) const
 {
     scalar dist = this->wallNormalDistance(gc);
 

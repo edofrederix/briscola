@@ -50,19 +50,19 @@ public:
     virtual ~shape();
 
     // Check if point is inside shape
-    virtual bool isInside(vector) = 0;
+    virtual bool isInside(vector) const = 0;
 
     // Returns dimensionless wall distance given two points
     // The first point is a fluid cell and the second point is an IB cell
-    virtual scalar wallDistance(vector, vector) = 0;
+    virtual scalar wallDistance(vector, vector) const = 0;
 
     // Returns the distance from a ghost cell to the immersed boundary in
     // the wall-normal direction
-    virtual scalar wallNormalDistance(vector) = 0;
+    virtual scalar wallNormalDistance(vector) const = 0;
 
     // Returns the coordinates of the mirror point of a ghost cell
     // in the wall-normal direction of a shape
-    virtual vector mirrorPoint(vector) = 0;
+    virtual vector mirrorPoint(vector) const = 0;
 
 };
 

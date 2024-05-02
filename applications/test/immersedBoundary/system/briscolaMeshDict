@@ -108,3 +108,47 @@ decomposition
         (1 1 1)
     );
 }
+
+ImmersedBoundaries
+{
+    ImmersedBoundary
+    {
+        cylinder1
+        {
+            type    cylinder;
+            start   (0.5 0.5 0);
+            end     (0.5 0.5 1);
+            radius  0.5;
+        }
+
+        cylinder2
+        {
+            type    cylinder;
+            start   (0 0.5 0.5);
+            end     (1 0.5 0.5);
+            radius  0.5;
+        }
+
+        sphere1
+        {
+            type    sphere;
+            center  (1 1 1);
+            radius  0.01;
+        }
+
+        sphere2
+        {
+            type    sphere;
+            center  (10 10 10);
+            radius  1;
+        }
+
+        cylinder3
+        {
+            type    cylinder;
+            start   (10 -1 0);
+            end     (10 -1 1);
+            radius  1;
+        }
+    }
+}

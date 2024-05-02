@@ -183,8 +183,8 @@ void immersedBoundary<MeshType>::setMirrorPoints()
         {
             vector mp = mirrorPoint(CC(l,d,i,j,k));
 
-            // Fix situations where the mirror point is just outside of the mesh
-            // bounding box due to rounding errors
+            // Fix situations where the mirror point is just outside of
+            // the mesh bounding box due to rounding errors
             if
             (
                 (mp.x() <= msh[l].boundingBox().left() + tol)
@@ -362,7 +362,7 @@ immersedBoundary<MeshType>::~immersedBoundary()
 {}
 
 template<class MeshType>
-bool immersedBoundary<MeshType>::isInside(vector xyz)
+bool immersedBoundary<MeshType>::isInside(vector xyz) const
 {
     // Check if xyz is inside any of the IB shapes
     for (int s = 0; s < shapes_.size(); s++)
@@ -377,7 +377,7 @@ bool immersedBoundary<MeshType>::isInside(vector xyz)
 }
 
 template<class MeshType>
-scalar immersedBoundary<MeshType>::wallDistance(vector c, vector nb)
+scalar immersedBoundary<MeshType>::wallDistance(vector c, vector nb) const
 {
     if (this->isInside(c))
     {
@@ -390,7 +390,7 @@ scalar immersedBoundary<MeshType>::wallDistance(vector c, vector nb)
     if (!this->isInside(nb))
     {
         FatalError
-            << "Neighbor point should be inside the immersed boundary." << c << nb
+            << "Neighbor point should be inside the immersed boundary."
             << endl;
         FatalError.exit();
     }
@@ -434,7 +434,7 @@ template<class MeshType>
 scalar immersedBoundary<MeshType>::wallNormalDistance
 (
     vector gc
-)
+) const
 {
     if (!this->isInside(gc))
     {
@@ -480,7 +480,7 @@ template<class MeshType>
 vector immersedBoundary<MeshType>::mirrorPoint
 (
     vector gc
-)
+) const
 {
     if (!this->isInside(gc))
     {

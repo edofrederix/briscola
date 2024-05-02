@@ -44,19 +44,14 @@ cylinder::cylinder
 cylinder::~cylinder()
 {}
 
-bool cylinder::isInside(vector point)
+bool cylinder::isInside(vector point) const
 {
-    // Check if point is between the two planes defined by the two
-    // cylinder ends, then check if the distance to the cylinder
+    // Check if the distance to the cylinder
     // axis is smaller than the radius
     if
     (
-        (((point - start_) & (end_ - start_)) >= 0.0)
-        && (((point - end_)   & (end_ - start_)) <= 0.0)
-        && (
-            (mag((point - start_) ^ (end_ - start_))
-            / mag(end_ - start_)) <= radius_
-        )
+        (mag((point - start_) ^ (end_ - start_))
+        / mag(end_ - start_)) <= radius_
     )
     {
         if(!this->inverted_)
@@ -68,8 +63,7 @@ bool cylinder::isInside(vector point)
             return false;
         }
     }
-
-    if(!this->inverted_)
+    else if(!this->inverted_)
     {
         return false;
     }
@@ -79,7 +73,7 @@ bool cylinder::isInside(vector point)
     }
 }
 
-scalar cylinder::wallDistance(vector c, vector nb)
+scalar cylinder::wallDistance(vector c, vector nb) const
 {
     // Return -1 if the center point is not a fluid point
     // or if the neighboring point is not inside the cylinder
@@ -101,28 +95,6 @@ scalar cylinder::wallDistance(vector c, vector nb)
 
     // Normalized direction vector of the cylinder axis
     vector C = axis/mag(axis);
-
-    // Project c onto the cylinder axis
-    vector cProj = start_ + ((c-start_) & axis) * axis
-        / (axis & axis);
-
-    // Project nb onto the cylinder axis
-    vector nbProj = start_ + ((nb-start_) & axis) * axis
-        / (axis & axis);
-
-    // First check if the line is aligned with the axis and
-    // only intersects at the end caps of the cylinder
-    if
-    (
-        (mag(c - cProj) == mag(nb - nbProj))
-        && (mag(c-cProj) < radius_)
-    )
-    {
-        scalar t1 = (c-start_) & C;
-        scalar t2 = (c-end_) & C;
-
-        return min(mag(t1), mag(t2));
-    }
 
     // Vector from line origin to cylinder origin
     vector w = (c - start_);
@@ -155,31 +127,19 @@ scalar cylinder::wallDistance(vector c, vector nb)
         vector i1 = c + t1 * D;
         vector i2 = c + t2 * D;
 
-        // Check whether intersection points are before cylinder start
-        if(((i1 - start_) & C) < 0)
+        // Select intersection point between c and nb
+        if (mag(c-i1)+mag(nb-i1) < mag(c-i2)+mag(nb-i2))
         {
-            t1 = ((start_-c) & C) / (D & C);
+            return mag(t1);
         }
-        if(((i2 - start_) & C) < 0)
+        else
         {
-            t2 = ((start_-c) & C) / (D & C);
+            return mag(t2);
         }
-
-        // Check whether intersection points are after cylinder end
-        if(((i1 - start_) & C) > mag(axis))
-        {
-            t1 = ((end_-c) & C) / (D & C);
-        }
-        if(((i2 - start_) & C) > mag(axis))
-        {
-            t2 = ((end_-c) & C) / (D & C);
-        }
-
-        return min(mag(t1), mag(t2));
     }
 }
 
-scalar cylinder::wallNormalDistance(vector gc)
+scalar cylinder::wallNormalDistance(vector gc) const
 {
     // Return -1 if the point is outside of the cylinder
     if (!this->isInside(gc))
@@ -197,7 +157,7 @@ scalar cylinder::wallNormalDistance(vector gc)
     return (inverted_ ? mag(axis ^ g) - radius_ : radius_ - mag(axis ^ g));
 }
 
-vector cylinder::mirrorPoint(vector gc)
+vector cylinder::mirrorPoint(vector gc) const
 {
     scalar dist = this->wallNormalDistance(gc);
 

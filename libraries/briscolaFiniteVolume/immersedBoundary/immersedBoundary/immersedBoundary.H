@@ -85,19 +85,19 @@ public:
 
     // Returns true if the position vector (x,y,z)
     // is inside the immersed boundary
-    bool isInside(vector);
+    bool isInside(vector) const;
 
     // Returns dimensionless wall distance given two points
     // The first point is a fluid cell and the second point is an IB cell
-    scalar wallDistance(vector, vector);
+    scalar wallDistance(vector, vector) const;
 
     // Returns the distance from a ghost cell to the immersed boundary in
     // the wall-normal direction
-    scalar wallNormalDistance(vector);
+    scalar wallNormalDistance(vector) const;
 
     // Returns the coordinates of the mirror point in the wall-normal direction
     // of a point located inside of the immersed boundary
-    vector mirrorPoint(vector);
+    vector mirrorPoint(vector) const;
 
     // Inline access functions
     inline const word name() const { return name_; }
