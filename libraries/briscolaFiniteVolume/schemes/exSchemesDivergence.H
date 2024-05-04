@@ -19,25 +19,11 @@ namespace ex
 
     // Divergence term from flux
 
-    template<class Type, class MeshType>
-    inline tmp<meshField<Type,MeshType>> div
-    (
-        const meshField<LowerFaceSpace<Type>,MeshType>& phi
-    )
-    {
-        return explicitDiv(phi);
-    }
+    using ::Foam::briscola::fv::div;
 
     // Colocated divergence from staggered field
 
-    template<class Type>
-    inline tmp<meshField<Type,colocated>> coloDiv
-    (
-        const meshField<Type,staggered>& field
-    )
-    {
-        return explicitColoDiv(field);
-    }
+    using ::Foam::briscola::fv::coloDiv;
 
 // General functions
 

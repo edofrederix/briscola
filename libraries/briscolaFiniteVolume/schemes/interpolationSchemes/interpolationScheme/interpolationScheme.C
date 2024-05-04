@@ -94,106 +94,15 @@ tmp<meshField<Type,staggered>> stagInterp
 template<class Type>
 tmp<meshField<Type,staggered>> stagInterp
 (
-    const meshField<FaceSpace<Type>,colocated>& field
+    const tmp<meshField<Type,colocated>>& tField
 )
 {
     tmp<meshField<Type,staggered>> tInterp
     (
-        new meshField<Type,staggered>
-        (
-            "stagInterp("+field.name()+")",
-            field.fvMsh()
-        )
+        stagInterp(tField())
     );
 
-    meshField<Type,staggered>& Interp = tInterp.ref();
-
-    Interp = Zero;
-
-    forAllCells(Interp[0][0], i, j, k)
-    {
-        if (i < field.I().right())
-            Interp(0,i,j,k) = field(i,j,k).left();
-        else
-            Interp(0,i,j,k) = field(i-1,j,k).right();
-    }
-
-    forAllCells(Interp[0][1], i, j, k)
-    {
-        if (j < field.I().top())
-            Interp(1,i,j,k) = field(i,j,k).bottom();
-        else
-            Interp(1,i,j,k) = field(i,j-1,k).top();
-    }
-
-    forAllCells(Interp[0][2], i, j, k)
-    {
-        if (k < field.I().fore())
-            Interp(2,i,j,k) = field(i,j,k).aft();
-        else
-            Interp(2,i,j,k) = field(i,j,k-1).fore();
-    }
-
-    return tInterp;
-}
-
-template<class Type>
-tmp<meshField<Type,staggered>> stagInterp
-(
-    const meshField<LowerFaceSpace<Type>,colocated>& field
-)
-{
-    tmp<meshField<Type,staggered>> tInterp
-    (
-        new meshField<Type,staggered>
-        (
-            "stagInterp("+field.name()+")",
-            field.fvMsh()
-        )
-    );
-
-    meshField<Type,staggered>& Interp = tInterp.ref();
-
-    Interp = Zero;
-
-    forAllCells(Interp[0], d, i, j, k)
-    {
-            Interp(0,d,i,j,k) = field(i,j,k)[d];
-    }
-
-    return tInterp;
-}
-
-template<class Type>
-tmp<meshField<Type,staggered>> stagVectorInterp
-(
-    const meshField<Vector<Type>,colocated>& field
-)
-{
-    tmp<meshField<Type,staggered>> tInterp
-    (
-        new meshField<Type,staggered>
-        (
-            "stagInterp("+field.name()+")",
-            field.fvMsh()
-        )
-    );
-
-    meshField<Type,staggered>& Interp = tInterp.ref();
-
-    Interp = Zero;
-
-    forAllCells(Interp, d, i, j, k)
-    {
-        const labelVector ijk(i,j,k);
-        const labelVector ijkm(ijk - units[d]);
-
-        // Staggered cell center is exactly in the middle of the two colocated
-        // cell centers
-
-        Interp(d,ijk) =
-            0.5*(field(ijk)[d] + field(ijkm)[d]);
-    }
+    tField.clear();
 
     return tInterp;
 }
@@ -219,8 +128,8 @@ tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
 
     forAllFaces(Interp, d, fd, i, j, k)
     {
-        labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[d]);
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNei(ijk,d));
 
         if (d == fd)
         {
@@ -232,12 +141,28 @@ tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
                 0.25
               * (
                     field(ijk)
-                  + field(ijk-units[fd])
+                  + field(lowerNei(ijk,fd))
                   + field(nei)
-                  + field(nei-units[fd])
+                  + field(lowerNei(nei,fd))
                 );
         }
     }
+
+    return tInterp;
+}
+
+template<class Type>
+tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
+(
+    const tmp<meshField<Type,colocated>>& tField
+)
+{
+    tmp<meshField<LowerFaceSpace<Type>,staggered>> tInterp
+    (
+        stagFaceInterp(tField())
+    );
+
+    tField.clear();
 
     return tInterp;
 }

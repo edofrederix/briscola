@@ -30,6 +30,22 @@ inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
     )->faceGrad(field);
 }
 
+template<class Type, class MeshType>
+inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
+(
+    const tmp<meshField<Type,MeshType>>& tField
+)
+{
+    tmp<meshField<LowerFaceSpace<Type>,MeshType>> tFaceGrad
+    (
+        faceGrad(tField())
+    );
+
+    tField.clear();
+
+    return tFaceGrad;
+}
+
 }
 
 }

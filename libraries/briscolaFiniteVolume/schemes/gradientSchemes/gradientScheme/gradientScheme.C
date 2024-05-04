@@ -106,7 +106,24 @@ grad
 }
 
 template<class Type, class MeshType>
-inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
+tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
+grad
+(
+    const tmp<meshField<FaceSpace<Type>,MeshType>>& tField
+)
+{
+    tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>> tGrad
+    (
+        grad(tField())
+    );
+
+    tField.clear();
+
+    return tGrad;
+}
+
+template<class Type, class MeshType>
+tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
 grad
 (
     const meshField<LowerFaceSpace<Type>,MeshType>& field
@@ -140,6 +157,23 @@ grad
                   + fan(d,i,j,k)[fd*2+1]*field(d,upperNei(i,j,k,fd))[fd]
                 )
               / cv(d,i,j,k);
+
+    return tGrad;
+}
+
+template<class Type, class MeshType>
+tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
+grad
+(
+    const tmp<meshField<LowerFaceSpace<Type>,MeshType>>& tField
+)
+{
+    tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>> tGrad
+    (
+        grad(tField())
+    );
+
+    tField.clear();
 
     return tGrad;
 }

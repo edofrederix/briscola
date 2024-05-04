@@ -74,6 +74,26 @@ namespace im
         return source(&lambda, field, factor);
     }
 
+    // Coefficient as tmp
+
+    template<class Type, class MeshType>
+    inline tmp<linearSystem<diagStencil,Type,MeshType>> source
+    (
+        const tmp<meshField<scalar,MeshType>>& tLambda,
+        const meshField<Type,MeshType>& field,
+        const scalar factor = 1.0
+    )
+    {
+        tmp<linearSystem<diagStencil,Type,MeshType>> tSource
+        (
+            source(tLambda(), field, factor)
+        );
+
+        tLambda.clear();
+
+        return tSource;
+    }
+
     // Constant coefficient
 
     template<class Type, class MeshType>

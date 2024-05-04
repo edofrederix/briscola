@@ -57,36 +57,45 @@ public:
     (
         const meshField<Type,MeshType>&
     ) = 0;
+
+    virtual tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
+    (
+        const tmp<meshField<Type,MeshType>>& tField
+    )
+    {
+        tmp<meshField<LowerFaceSpace<Type>,MeshType>> tInterp
+        (
+            interp(tField())
+        );
+        tField.clear();
+        return tInterp;
+    }
 };
 
+// Interpolation functions from colocated to staggered
+
 template<class Type>
 tmp<meshField<Type,staggered>> stagInterp
 (
-    const meshField<Type,colocated>& field
+    const meshField<Type,colocated>&
 );
 
 template<class Type>
 tmp<meshField<Type,staggered>> stagInterp
 (
-    const meshField<FaceSpace<Type>,colocated>& field
-);
-
-template<class Type>
-tmp<meshField<Type,staggered>> stagInterp
-(
-    const meshField<LowerFaceSpace<Type>,colocated>& field
-);
-
-template<class Type>
-tmp<meshField<Type,staggered>> stagVectorInterp
-(
-    const meshField<Vector<Type>,colocated>& field
+    const tmp<meshField<Type,colocated>>&
 );
 
 template<class Type>
 tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
 (
-    const meshField<Type,colocated>& field
+    const meshField<Type,colocated>&
+);
+
+template<class Type>
+tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
+(
+    const tmp<meshField<Type,colocated>>&
 );
 
 }

@@ -67,7 +67,12 @@ public:
 
 tmp<colocatedLowerFaceScalarField> coloFaceFlux
 (
-    const staggeredScalarField& U
+    const staggeredScalarField&
+);
+
+tmp<colocatedLowerFaceScalarField> coloFaceFlux
+(
+    const tmp<staggeredScalarField>&
 );
 
 }
