@@ -21,6 +21,8 @@ BINARY_TYPE_OPERATOR(lowerFaceScalar, lowerFaceScalar, scalar, -, subtract)
 BINARY_TYPE_OPERATOR(lowerFaceScalar, scalar, lowerFaceScalar, -, subtract)
 
 BINARY_OPERATOR(lowerFaceScalar, lowerFaceScalar, lowerFaceScalar, /, divide)
+BINARY_OPERATOR(lowerFaceScalar, faceScalar, lowerFaceScalar, /, divide)
+BINARY_OPERATOR(lowerFaceScalar, lowerFaceScalar, faceScalar, /, divide)
 BINARY_TYPE_OPERATOR(lowerFaceScalar, scalar, lowerFaceScalar, /, divide)
 
 }

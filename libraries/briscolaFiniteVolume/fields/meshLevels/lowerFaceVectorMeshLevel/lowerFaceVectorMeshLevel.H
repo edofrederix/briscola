@@ -22,6 +22,8 @@ namespace fv
 {
 
 BINARY_OPERATOR(lowerFaceVector, lowerFaceVector, lowerFaceScalar, /, divide)
+BINARY_OPERATOR(lowerFaceVector, faceVector, lowerFaceScalar, /, divide)
+BINARY_OPERATOR(lowerFaceVector, lowerFaceVector, faceScalar, /, divide)
 
 UNARY_FUNCTION(lowerFaceScalar, lowerFaceVector, magSqr)
 UNARY_FUNCTION(lowerFaceScalar, lowerFaceVector, mag)

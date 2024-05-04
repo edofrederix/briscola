@@ -1302,6 +1302,32 @@ void testFaceSpaceFunctions()
 
     ls1/(1.0*s1);
     ls1/(1.0*sls1);
+
+
+    ls1*sfs1;
+    fs1*sls1;
+
+    (1.0*ls1)*sfs1;
+    (1.0*fs1)*sls1;
+
+    ls1*(sfs1*1.0);
+    fs1*(sls1*1.0);
+
+    (1.0*ls1)*(sfs1*1.0);
+    (1.0*fs1)*(sls1*1.0);
+
+
+    ls1/sfs1;
+    fs1/sls1;
+
+    (1.0*ls1)/sfs1;
+    (1.0*fs1)/sls1;
+
+    ls1/(sfs1*1.0);
+    fs1/(sls1*1.0);
+
+    (1.0*ls1)/(sfs1*1.0);
+    (1.0*fs1)/(sls1*1.0);
 }
 
 void testScalarFunctions()

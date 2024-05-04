@@ -25,6 +25,8 @@ BINARY_TYPE_OPERATOR(lowerFaceVector, lowerFaceVector, vector, -, subtract)
 BINARY_TYPE_OPERATOR(lowerFaceVector, vector, lowerFaceVector, -, subtract)
 
 BINARY_OPERATOR(lowerFaceVector, lowerFaceVector, lowerFaceScalar, /, divide)
+BINARY_OPERATOR(lowerFaceVector, faceVector, lowerFaceScalar, /, divide)
+BINARY_OPERATOR(lowerFaceVector, lowerFaceVector, faceScalar, /, divide)
 
 UNARY_FUNCTION(lowerFaceScalar, lowerFaceVector, magSqr)
 UNARY_FUNCTION(lowerFaceScalar, lowerFaceVector, mag)
