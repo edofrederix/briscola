@@ -749,6 +749,86 @@ void linearSystem<SType,Type,MeshType>::operator-=
 }
 
 template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator*=
+(
+    const scalar s
+)
+{
+    this->A() *= s;
+    this->b() *= s;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator*=
+(
+    const scalarList& s
+)
+{
+    this->A() *= s;
+    this->b() *= s;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator*=
+(
+    const meshField<scalar,MeshType>& field
+)
+{
+    this->A() *= field;
+    this->b() *= field;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator*=
+(
+    const tmp<meshField<scalar,MeshType>>& tField
+)
+{
+    *this *= tField();
+    tField.clear();
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator/=
+(
+    const scalar s
+)
+{
+    this->A() /= s;
+    this->b() /= s;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator/=
+(
+    const scalarList& s
+)
+{
+    this->A() /= s;
+    this->b() /= s;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator/=
+(
+    const meshField<scalar,MeshType>& field
+)
+{
+    this->A() /= field;
+    this->b() /= field;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator/=
+(
+    const tmp<meshField<scalar,MeshType>>& tField
+)
+{
+    *this /= tField();
+    tField.clear();
+}
+
+template<class SType, class Type, class MeshType>
 void writeToFile
 (
     linearSystem<SType,Type,MeshType>& sys,

@@ -112,6 +112,51 @@ void testMemberOperators(const fvMesh& fvMsh)
 
     sys1 += List<Type>(MeshType::numberOfDirections,pTraits<Type>::one);
     sys1 -= List<Type>(MeshType::numberOfDirections,pTraits<Type>::one);
+
+    sys1 + sys2;
+    (2*sys1) + sys2;
+    sys1 + (2*sys2);
+    (2*sys1) + (2*sys2);
+
+    sys1 - sys2;
+    (2*sys1) - sys2;
+    // sys1 - (2*sys2);
+    (2*sys1) - (2*sys2);
+
+    sys1 == sys2;
+    (2*sys1) == sys2;
+    sys1 == (2*sys2);
+    (2*sys1) == (2*sys2);
+
+    sys1 + g;
+    (2*sys1) + g;
+    sys1 + (2*g);
+    (2*sys1) + (2*g);
+
+    sys1 - g;
+    (2*sys1) - g;
+    sys1 - (2*g);
+    (2*sys1) - (2*g);
+
+    sys1 == g;
+    (2*sys1) == g;
+    sys1 == (2*g);
+    (2*sys1) == (2*g);
+
+    g + sys2;
+    (2*g) + sys2;
+    g + (2*sys2);
+    (2*g) + (2*sys2);
+
+    // g - sys2;
+    (2*g) - sys2;
+    g - (2*sys2);
+    (2*g) - (2*sys2);
+
+    g == sys2;
+    (2*g) == sys2;
+    g == (2*sys2);
+    (2*g) == (2*sys2);
 }
 
 int main(int argc, char *argv[])

@@ -159,6 +159,16 @@ public:
     void operator-=(const linearSystem<SType2,Type,MeshType>&);
     template<class SType2>
     void operator-=(const tmp<linearSystem<SType2,Type,MeshType>>&);
+
+    void operator*=(const scalar);
+    void operator*=(const scalarList&);
+    void operator*=(const meshField<scalar,MeshType>&);
+    void operator*=(const tmp<meshField<scalar,MeshType>>&);
+
+    void operator/=(const scalar);
+    void operator/=(const scalarList&);
+    void operator/=(const meshField<scalar,MeshType>&);
+    void operator/=(const tmp<meshField<scalar,MeshType>>&);
 };
 
 // Write a stencil system at given level to a file. The last column is the
