@@ -9,7 +9,7 @@ scalar meanCoNum = 0.0;
 
     forAllCells(sumPhi, d, i, j, k)
         for (int fd = 0; fd < 3; fd++)
-            sumPhi(i,j,k) +=
+            sumPhi(d,i,j,k) +=
                 mag(phi(d,i,j,k)[fd])
               + mag(phi(d,upperNei(i,j,k,fd))[fd]);
 
