@@ -181,6 +181,18 @@ public:
         return *listType::operator()(l);
     }
 
+    // Access to the first level
+    inline meshLevel<Type,MeshType>& level()
+    {
+        return this->operator[](0);
+    }
+
+    // Const access to the first level
+    inline const meshLevel<Type,MeshType>& level() const
+    {
+        return this->operator[](0);
+    }
+
     // Alias access function
     inline meshLevel<Type,MeshType>& level(const int l)
     {
@@ -191,18 +203,6 @@ public:
     inline const meshLevel<Type,MeshType>& level(const int l) const
     {
         return this->operator[](l);
-    }
-
-    // Access to the first level
-    inline meshLevel<Type,MeshType>& mshPart()
-    {
-        return this->operator[](0);
-    }
-
-    // Const access to the first level
-    inline const meshLevel<Type,MeshType>& mshPart() const
-    {
-        return this->operator[](0);
     }
 
     // Access to the first direction of the first level

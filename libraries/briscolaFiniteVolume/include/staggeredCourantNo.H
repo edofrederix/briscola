@@ -3,7 +3,7 @@ scalar meanCoNum = 0.0;
 
 {
     const staggeredScalarLevel& cvl =
-        fvMsh.metrics<staggered>().cellVolumes().mshPart();
+        fvMsh.metrics<staggered>().cellVolumes().level();
 
     staggeredScalarLevel sumPhi(fvMsh,0,Zero);
 
