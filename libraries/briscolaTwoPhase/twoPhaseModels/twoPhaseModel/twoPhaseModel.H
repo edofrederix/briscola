@@ -57,6 +57,9 @@ protected:
     // Gravitational acceleration
     vector g_;
 
+    // Field dot(g,h)
+    colocatedLowerFaceScalarField gh_;
+
     // Function to set the density and viscosity restriction schemes. Can be
     // overloaded by derived types.
     virtual void setRestrictionSchemes();
@@ -206,6 +209,9 @@ public:
         // Specific volume (inverse of the mixture mass density)
         template<class MeshType>
         inline tmp<meshField<scalar,MeshType>> v() const;
+
+    // Buoyancy flux
+    tmp<colocatedLowerFaceScalarField> buoyancy() const;
 
     // Correct the two-phase mixture
     virtual void correctMixture();

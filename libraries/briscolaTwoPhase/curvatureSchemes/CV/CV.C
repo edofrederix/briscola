@@ -41,31 +41,16 @@ void CV::correct()
     colocatedScalarField& kappa = *this;
 
     colocatedScalarField cAlpha("alpha", fvMsh_);
-
-    scalar kernel[3] =
-    {
-        0.25, 0.5, 0.25
-    };
-
     cAlpha = Zero;
 
     forAllCells(alpha_, i, j, k)
-    {
-        for (int aux1 = -1; aux1 <= 1; aux1++)
-        {
-            for (int aux2 = -1; aux2 <= 1; aux2++)
-            {
-                for (int aux3 = -1; aux3 <= 1; aux3++)
-                {
-                    cAlpha(i,j,k) +=
-                        kernel[aux1 + 1]
-                      * kernel[aux2 + 1]
-                      * kernel[aux3 + 1]
-                      * alpha_(i+aux1,j+aux2,k+aux3);
-                }
-            }
-        }
-    }
+        for (int d = 0; d < 3; d++)
+            cAlpha(i,j,k) +=
+                0.5 /3.0*alpha_(i,j,k)
+              + 0.25/3.0*alpha_(lowerNei(i,j,k,d))
+              + 0.25/3.0*alpha_(upperNei(i,j,k,d));
+
+    cAlpha.correctBoundaryConditions();
 
     colocatedVectorField normal(ex::grad(cAlpha));
 
@@ -82,6 +67,8 @@ void CV::correct()
             normal(i,j,k) = Zero;
         }
     }
+
+    normal.correctBoundaryConditions();
 
     kappa = - ex::div(ex::faceFlux(normal)());
 

@@ -102,8 +102,20 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
             dict.subDict("surfaceTensionScheme")
         ).ptr()
     ),
-    g_(dict.lookup("g"))
+    g_(dict.lookup("g")),
+    gh_
+    (
+        "mu",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true,
+        false
+    )
 {
+    gh_ = (g_ & fvMsh.template metrics<colocated>().faceCenters());
+
     if (fvMsh.structured())
     {
         rho1Ptr_.reset
@@ -186,7 +198,8 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
     musPtr_(tpm.musPtr_, false),
     normalSchemePtr_(tpm.normalSchemePtr_, false),
     surfaceTensionSchemePtr_(tpm.surfaceTensionSchemePtr_, false),
-    g_(tpm.g_)
+    g_(tpm.g_),
+    gh_(tpm.gh_)
 {
     setRestrictionSchemes();
 }
@@ -287,6 +300,14 @@ template<>
 const staggeredLowerFaceScalarField& twoPhaseModel::mu<staggered>() const
 {
     return musPtr_();
+}
+
+tmp<colocatedLowerFaceScalarField> twoPhaseModel::buoyancy() const
+{
+    return
+      - gh_
+      * ex::faceGrad(this->rhoc_)
+      * fvMsh_.template metrics<colocated>().faceAreas();
 }
 
 void twoPhaseModel::correctMixture()

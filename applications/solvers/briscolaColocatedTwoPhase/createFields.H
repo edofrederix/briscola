@@ -140,3 +140,8 @@ H = Zero;
 
 const scalar minRho = gMin(twoPhase.minRho<colocated>())[0];
 const scalar maxv = 1.0/minRho;
+
+// Solver parameters
+
+const Switch split = twoPhaseDict.lookupOrDefault<Switch>("split", false);
+const label nCorr = twoPhaseDict.lookupOrDefault<label>("nCorrectors", 1);

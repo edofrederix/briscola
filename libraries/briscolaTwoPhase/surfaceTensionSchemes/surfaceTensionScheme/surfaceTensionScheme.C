@@ -20,7 +20,7 @@ surfaceTensionScheme::surfaceTensionScheme
     const dictionary& dict
 )
 :
-    colocatedVectorField
+    colocatedLowerFaceScalarField
     (
         "surfaceTension",
         tpm.fvMsh(),
@@ -45,7 +45,6 @@ surfaceTensionScheme::surfaceTensionScheme
         true,
         false
     ),
-    sigmaValue_(readScalar(dict.lookup("sigma"))),
     curvatureSchemePtr_
     (
         word(dict.lookup("type")) != "none"
@@ -57,45 +56,19 @@ surfaceTensionScheme::surfaceTensionScheme
             alpha_
         ).ptr()
       : nullptr
-    ),
-    surfaceTensionPotential_
-    (
-        "surfPot",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true
     )
-{
-    if (fvMsh_.structured())
-        stagForcePtr_.reset
-        (
-            new staggeredScalarField
-            (
-                "surfaceTension",
-                fvMsh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE,
-                true,
-                true,
-                false
-            )
-        );
-}
+{}
 
 surfaceTensionScheme::surfaceTensionScheme(const surfaceTensionScheme& s)
 :
-    colocatedVectorField(s),
+    colocatedLowerFaceScalarField(s),
     tpm_(s.tpm_),
     fvMsh_(s.fvMsh_),
     dict_(s.dict_),
     normal_(s.normal_),
     alpha_(s.alpha_),
-    stagForcePtr_(s.stagForcePtr_, false),
     sigma_(s.sigma_),
-    sigmaValue_(s.sigmaValue_),
-    curvatureSchemePtr_(s.curvatureSchemePtr_, false),
-    surfaceTensionPotential_(s.surfaceTensionPotential_)
+    curvatureSchemePtr_(s.curvatureSchemePtr_, false)
 {}
 
 surfaceTensionScheme::~surfaceTensionScheme()

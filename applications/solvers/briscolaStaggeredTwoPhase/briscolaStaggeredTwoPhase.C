@@ -13,15 +13,11 @@ using namespace fv;
 
 int main(int argc, char *argv[])
 {
-    arguments::addBoolOption("split", "Split the pressure equation");
-
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
     #include "createBriscolaTwoPhase.H"
     #include "createTimeControls.H"
-
-    Switch split = args.optionFound("split");
 
     // This solver works for incompressible mixtures only
 
@@ -71,55 +67,72 @@ int main(int argc, char *argv[])
         H = ex::div(phi,U) - stagDotProduct(ex::grad(mu),ex::grad(U))*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
-
-        USys -= list(icoTwoPhase.g());
-        USys += ex::stagGrad(p)*v - icoTwoPhase.surfaceTension().stagForce();
-
-        // Solve predictor
-
-        USolve->solve(USys);
-
-        // Pressure equation
-
-        if (split)
-        {
-            q = (1.0 + deltaT/deltaT0)*p - (deltaT/deltaT0)*p.oldTime();
-            p.setOldTime();
-
-            colocatedLowerFaceScalarField corr
+        USys -=
             (
-                fa
-              * (
-                    ex::faceGrad(q)*(1.0 - minRho*vcf)
-                  + ex::faceGrad(p)*minRho*vcf
+                ex::stagReconstruct
+                (
+                    icoTwoPhase.surfaceTension()
+                  + icoTwoPhase.buoyancy()
                 )
-            );
+            )*v;
 
-            Poisson->solve(p, minRho*ex::coloDiv(U)/(-deltaT) - ex::div(corr));
+        for (int corr = 0; corr < nCorr; corr++)
+        {
+            // Solve predictor with latest pressure
 
-            // Rhie-Chow correction
+            USolve->solve(USys + ex::stagGrad(p)*v);
 
-            U -=
-                deltaT
-              * (
-                    ex::stagGrad(p)*maxv
-                  - ex::stagGrad(p.oldTime())*v
-                  + ex::stagGrad(q)*(v - maxv)
+            // Pressure equation
+
+            if (split)
+            {
+                q = (1.0 + deltaT/deltaT0)*p - (deltaT/deltaT0)*p.oldTime();
+                p.setOldTime();
+
+                colocatedLowerFaceScalarField corr
+                (
+                    fa
+                  * (
+                        ex::faceGrad(q)*(1.0 - minRho*vcf)
+                      + ex::faceGrad(p)*minRho*vcf
+                    )
                 );
 
-            U.correctBoundaryConditions();
-        }
-        else
-        {
-            colocatedLowerFaceScalarField corr(fa*vcf*ex::faceGrad(p));
-            p.setOldTime();
+                Poisson->solve
+                (
+                    p,
+                    minRho*ex::coloDiv(U)/(-deltaT) - ex::div(corr)
+                );
 
-            Poisson->solve(p, ex::coloDiv(U)/(-deltaT) - ex::div(corr), vcf);
+                // Correct velocity
 
-            // Rhie-Chow correction
+                U -=
+                    deltaT
+                  * (
+                        ex::stagGrad(p)*maxv
+                      - ex::stagGrad(p.oldTime())*v
+                      + ex::stagGrad(q)*(v - maxv)
+                    );
 
-            U -= deltaT*(ex::stagGrad(p) - ex::stagGrad(p.oldTime()))*v;
-            U.correctBoundaryConditions();
+                U.correctBoundaryConditions();
+            }
+            else
+            {
+                colocatedLowerFaceScalarField corr(fa*vcf*ex::faceGrad(p));
+                p.setOldTime();
+
+                Poisson->solve
+                (
+                    p,
+                    ex::coloDiv(U)/(-deltaT) - ex::div(corr),
+                    vcf
+                );
+
+                // Correct velocity
+
+                U -= deltaT*(ex::stagGrad(p) - ex::stagGrad(p.oldTime()))*v;
+                U.correctBoundaryConditions();
+            }
         }
 
         if (fvMsh.time().writeTime())

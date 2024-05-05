@@ -37,28 +37,15 @@ void Brackbill<SigmaModel>::correct()
 {
     SigmaModel::correct();
 
-    colocatedVectorField::operator=
+    colocatedLowerFaceScalarField::operator=
     (
-        this->sigma()*this->kappa()*ex::grad(this->alpha())
-      / this->tpm_.template meanRho<colocated>()
+        this->fvMsh_.template metrics<colocated>().faceAreas()
+      * this->kappa().interp()
+      * ex::interp(this->sigma_)
+      * ex::faceGrad(this->alpha_)
     );
 
-    this->surfaceTensionPotential_ =
-        ex::interp(this->kappa())
-      * ex::faceGrad(this->alpha())
-      * ex::interp(this->sigma())
-      / this->tpm_.template meanRho<colocated>();
-
-    if (this->fvMsh_.structured())
-    {
-        staggeredScalarField& stagTension = this->stagForcePtr_();
-        colocatedLowerFaceScalarField kappaf = ex::interp(this->kappa());
-        stagTension =
-            stagInterp(kappaf)
-          * ex::stagGrad(this->alpha())
-          * stagInterp(this->sigma())
-          / this->tpm_.template meanRho<staggered>();
-    }
+    this->correctBoundaryConditions();
 }
 
 }

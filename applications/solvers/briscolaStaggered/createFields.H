@@ -107,3 +107,7 @@ staggeredScalarField DivU
 );
 
 DivU = ex::div(phi,U);
+
+// Parameters
+
+const label nCorr = solverDict.lookupOrDefault<label>("nCorrectors", 1);

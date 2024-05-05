@@ -20,10 +20,7 @@ noSurfaceTension<SigmaModel>::noSurfaceTension
 :
     SigmaModel(tpm, dict)
 {
-    colocatedVectorField::operator=(Zero);
-
-    if (this->fvMsh_.structured())
-        this->stagForcePtr_() = Zero;
+    colocatedLowerFaceScalarField::operator=(Zero);
 }
 
 template<class SigmaModel>
@@ -31,12 +28,7 @@ noSurfaceTension<SigmaModel>::noSurfaceTension(const noSurfaceTension& sts)
 :
     SigmaModel(sts)
 {
-    colocatedVectorField::operator=(Zero);
-
-    this->surfaceTensionPotential_ = Zero;
-
-    if (this->fvMsh_.structured())
-        this->stagForcePtr_() = Zero;
+    colocatedLowerFaceScalarField::operator=(Zero);
 }
 
 template<class SigmaModel>

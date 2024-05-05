@@ -80,6 +80,11 @@ faceGradientSchemes
         type    linear;
     }
 
+    faceGrad(rho)
+    {
+        type    linear;
+    }
+
     faceGrad(p.oldTime)
     {
         type    linear;
@@ -139,10 +144,5 @@ interpolationSchemes
     interp(min(rho1,rho2))
     {
         type    midPoint;
-    }
-
-    interp(kappa)
-    {
-        type    curvature;
     }
 }

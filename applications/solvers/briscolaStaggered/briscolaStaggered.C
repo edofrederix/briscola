@@ -60,23 +60,24 @@ int main(int argc, char *argv[])
         DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
-        USys += ex::stagGrad(p);
+        for (int corr = 0; corr < nCorr; corr++)
+        {
+            // Solve predictor with latest pressure
 
-        // Solve predictor
+            USolve->solve(USys + ex::stagGrad(p));
 
-        USolve->solve(USys);
+            U += deltaT*ex::stagGrad(p);
+            U.correctBoundaryConditions();
 
-        U += deltaT*ex::stagGrad(p);
-        U.correctBoundaryConditions();
+            // Pressure equation
 
-        // Pressure equation
+            Poisson->solve(p, ex::coloDiv(U)/(-deltaT));
 
-        Poisson->solve(p, ex::coloDiv(U)/(-deltaT));
+            // Correction
 
-        // Correction
-
-        U -= deltaT*ex::stagGrad(p);
-        U.correctBoundaryConditions();
+            U -= deltaT*ex::stagGrad(p);
+            U.correctBoundaryConditions();
+        }
 
         if (fvMsh.time().writeTime())
             Uc = ex::reconstruct(U);

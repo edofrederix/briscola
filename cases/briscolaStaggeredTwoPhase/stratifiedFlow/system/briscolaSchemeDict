@@ -95,6 +95,11 @@ gradientSchemes
 
 faceGradientSchemes
 {
+    faceGrad(rho)
+    {
+        type    linear;
+    }
+
     faceGrad(p)
     {
         type    linear;
@@ -147,21 +152,6 @@ interpolationSchemes
     }
 
     interp(v)
-    {
-        type    midPoint;
-    }
-
-    interp(kappa)
-    {
-        type    curvature;
-    }
-
-    interp(checkCurv)
-    {
-        type    curvature;
-    }
-
-    interp(min(rho1,rho2))
     {
         type    midPoint;
     }
