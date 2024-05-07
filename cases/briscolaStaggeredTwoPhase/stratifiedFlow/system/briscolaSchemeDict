@@ -57,6 +57,12 @@ gradientSchemes
     {
         type    midPointGauss;
     }
+
+    // For CV
+    grad(alpha)
+    {
+        type    midPointGauss;
+    }
 }
 
 faceGradientSchemes
@@ -82,6 +88,12 @@ faceGradientSchemes
 faceFluxSchemes
 {
     flux(U)
+    {
+        type    midPoint;
+    }
+
+    // For CV
+    flux(grad(alpha))
     {
         type    midPoint;
     }
