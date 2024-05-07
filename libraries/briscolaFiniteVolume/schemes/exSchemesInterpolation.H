@@ -51,6 +51,11 @@ inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
 using ::Foam::briscola::fv::stagInterp;
 using ::Foam::briscola::fv::stagFaceInterp;
 
+// Interpolation from staggered to colocated
+
+using ::Foam::briscola::fv::coloInterp;
+using ::Foam::briscola::fv::coloFaceInterp;
+
 }
 
 }

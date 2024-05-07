@@ -86,6 +86,8 @@ tmp<meshField<Type,staggered>> stagInterp
     const tmp<meshField<Type,colocated>>&
 );
 
+// Interpolation functions from colocated to staggered faces
+
 template<class Type>
 tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
 (
@@ -96,6 +98,34 @@ template<class Type>
 tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
 (
     const tmp<meshField<Type,colocated>>&
+);
+
+// Interpolation functions from staggered to colocated
+
+template<class Type>
+tmp<meshField<Type,colocated>> coloInterp
+(
+    const meshField<Type,staggered>&
+);
+
+template<class Type>
+tmp<meshField<Type,colocated>> coloInterp
+(
+    const tmp<meshField<Type,staggered>>&
+);
+
+// Interpolation function from staggered to colocated faces
+
+template<class Type>
+tmp<meshField<LowerFaceSpace<Type>,colocated>> colorFaceInterp
+(
+    const meshField<Type,staggered>&
+);
+
+template<class Type>
+tmp<meshField<LowerFaceSpace<Type>,colocated>> colorFaceInterp
+(
+    const tmp<meshField<Type,staggered>>&
 );
 
 }
