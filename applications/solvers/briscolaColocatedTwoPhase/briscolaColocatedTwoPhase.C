@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
         icoTwoPhase.correct();
 
-        v = icoTwoPhase.v<colocated>();
+        v = 1.0/rho;
         vf = ex::interp(v);
 
         // Predictor, Eq. (A.1) of Dodd & Ferrante (2014)
@@ -62,21 +62,26 @@ int main(int argc, char *argv[])
 
         USys -= 0.5*(deltaT/deltaT0)*H;
 
-        H = ex::div(phi,U) - (ex::grad(mu) & ex::grad(U))*v;
+        H = ex::div(phi,U)
+          - (ex::grad(mu) & ex::grad(U))*v
+          - ex::reconstruct(icoTwoPhase.surfaceTension())*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
-        USys -=
-            ex::reconstruct
-            (
-                icoTwoPhase.surfaceTension()
-              + icoTwoPhase.buoyancy()
-            )*v;
+
+        if (reduced)
+        {
+            USys -= ex::reconstruct(icoTwoPhase.buoyancy())*v;
+        }
+        else
+        {
+            USys -= icoTwoPhase.g();
+        }
 
         for (int corr = 0; corr < nCorr; corr++)
         {
             // Solve predictor
 
-            USolve->solve(USys + ex::reconstruct(ex::faceGrad(p)*fa)*v);
+            USolve->solve(USys + ex::grad(p)*v);
 
             // Pressure equation
 

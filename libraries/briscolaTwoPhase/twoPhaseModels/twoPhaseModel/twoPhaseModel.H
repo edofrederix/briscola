@@ -206,10 +206,6 @@ public:
         template<class MeshType>
         inline tmp<meshField<lowerFaceScalar,MeshType>> nu() const;
 
-        // Specific volume (inverse of the mixture mass density)
-        template<class MeshType>
-        inline tmp<meshField<scalar,MeshType>> v() const;
-
     // Buoyancy flux
     tmp<colocatedLowerFaceScalarField> buoyancy() const;
 

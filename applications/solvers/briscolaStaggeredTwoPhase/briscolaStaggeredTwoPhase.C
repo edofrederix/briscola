@@ -46,9 +46,8 @@ int main(int argc, char *argv[])
 
         icoTwoPhase.correct();
 
-        v = icoTwoPhase.v<staggered>();
-        vc = icoTwoPhase.v<colocated>();
-        vcf = ex::interp(vc);
+        v = 1.0/rho;
+        vcf = ex::coloFaceInterp(v);
 
         // Predictor, Eq. (A.1) of Dodd & Ferrante (2014)
 
@@ -64,17 +63,20 @@ int main(int argc, char *argv[])
 
         phi = ex::faceFlux(U);
 
-        H = ex::div(phi,U) - stagDotProduct(ex::grad(mu),ex::grad(U))*v;
+        H = ex::div(phi,U)
+          - stagDotProduct(ex::grad(mu),ex::grad(U))*v
+          - ex::stagReconstruct(icoTwoPhase.surfaceTension())*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
-        USys -=
-            (
-                ex::stagReconstruct
-                (
-                    icoTwoPhase.surfaceTension()
-                  + icoTwoPhase.buoyancy()
-                )
-            )*v;
+
+        if (reduced)
+        {
+            USys -= ex::stagReconstruct(icoTwoPhase.buoyancy())*v;
+        }
+        else
+        {
+            USys -= list(icoTwoPhase.g());
+        }
 
         for (int corr = 0; corr < nCorr; corr++)
         {

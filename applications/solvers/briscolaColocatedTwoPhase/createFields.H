@@ -116,12 +116,14 @@ v.setRestrictionScheme("harmonicVolumeWeighted");
 
 colocatedLowerFaceScalarField vf
 (
-    "v",
+    "vf",
     fvMsh,
     IOobject::NO_READ,
     IOobject::NO_WRITE,
     true
 );
+
+vf.setRestrictionScheme("faceAreaWeighted");
 
 // Adams-Bashforth source
 
@@ -144,4 +146,5 @@ const scalar maxv = 1.0/minRho;
 // Solver parameters
 
 const Switch split = twoPhaseDict.lookupOrDefault<Switch>("split", false);
+const Switch reduced = twoPhaseDict.lookupOrDefault<Switch>("reduced", false);
 const label nCorr = twoPhaseDict.lookupOrDefault<label>("nCorrectors", 1);
