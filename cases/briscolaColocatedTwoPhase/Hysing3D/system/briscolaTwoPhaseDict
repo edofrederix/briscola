@@ -36,5 +36,3 @@ vof
 {
     type    splitAdvection;
 }
-
-nCorrectors 2;
