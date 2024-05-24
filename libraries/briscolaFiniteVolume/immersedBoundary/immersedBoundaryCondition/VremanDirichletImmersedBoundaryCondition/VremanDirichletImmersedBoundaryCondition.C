@@ -23,12 +23,24 @@ VremanDirichletImmersedBoundaryCondition<Type,MeshType>
     exchangePoints_(this->IB_.mask().numberOfLevels()),
     boundaryValues_(this->dict().lookup("values"))
 {
+    // Check shape overlap
+    if (this->IB_.shapeOverlap())
+    {
+        WarningInFunction
+            << "Overlapping shapes identified."
+            << " This may cause issues with Vreman IBM." << endl;
+    }
+
     forAll(exchangePoints_, l)
     {
         exchangePoints_[l].setSize(MeshType::numberOfDirections);
     }
 
-    // Set IB mask fields
+    // Cell centers
+    const meshField<vector,MeshType>& CC =
+        this->fvMsh_.template metrics<MeshType>().cellCenters();
+
+    // Set exchange points list
     forAllCells(this->IB_.ghostMask(),l,d,i,j,k)
     {
         const labelVector ijk(i,j,k);
@@ -52,6 +64,16 @@ VremanDirichletImmersedBoundaryCondition<Type,MeshType>
                     )
                     {
                         exchangePoints_[l][d].append(ijk+2.0*fo);
+                    }
+
+                    if (this->IB_.isInside(CC[l][d](ijk+2.0*fo)))
+                    {
+                        WarningInFunction
+                            << "Second neighbor point of ghost cell "
+                            << vector(i,j,k) << " at (l,d) = "<< l << ", "
+                            << d << " located inside immersed boundary."
+                            << " This may cause issues with Vreman IBM."
+                            << endl;
                     }
 
                     break;

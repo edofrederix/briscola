@@ -23,6 +23,14 @@ MittalNeumannImmersedBoundaryCondition<Type,MeshType>
     exchangePoints_(this->IB_.mask().numberOfLevels()),
     boundaryGradients_(this->dict().lookup("gradients"))
 {
+    // Check shape overlap
+    if (this->IB_.shapeOverlap())
+    {
+        WarningInFunction
+            << "Overlapping shapes identified."
+            << " This may cause issues with Mittal IBM." << endl;
+    }
+
     forAll(exchangePoints_, l)
     {
         exchangePoints_[l].setSize(MeshType::numberOfDirections);
@@ -36,6 +44,15 @@ MittalNeumannImmersedBoundaryCondition<Type,MeshType>
         if (this->IB_.ghostMask()(l,d,i,j,k))
         {
             vector mp = this->IB_.mirrorPoints()(l,d,i,j,k);
+
+            if (this->IB_.isInside(mp))
+            {
+                WarningInFunction
+                    << "Mirror point of ghost cell " << vector(i,j,k)
+                    << " at (l,d) = "<< l << ", " << d << " located inside "
+                    << "immersed boundary."
+                    << " This may cause issues with Mittal IBM." << endl;
+            }
 
             // Colocated cell index of mp
             labelVector mpIndex = msh.findCell(mp, l);
@@ -124,44 +141,21 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>
                     // Index of <MeshType> left-bottom-aft cell w.r.t. mp
                     labelVector mpLBA = mpIndex;
 
-                    if
-                    (
-                        (
-                            word(MeshType::typeName) == "colocated" ?
-                            true
-                            :
-                            (d != 0)
-                        )
-                        && (mpLocalCoords.x() < 0.5)
-                    )
+                    for (int dir = 0; dir < 3; dir++)
                     {
-                        mpLBA.x() -= 1;
-                    }
-                    if
-                    (
+                        if
                         (
-                            word(MeshType::typeName) == "colocated" ?
-                            true
-                            :
-                            (d != 1)
+                            (
+                                word(MeshType::typeName) == "colocated" ?
+                                true
+                                :
+                                (d != dir)
+                            )
+                            && (mpLocalCoords[dir] < 0.5)
                         )
-                        && (mpLocalCoords.y() < 0.5)
-                    )
-                    {
-                        mpLBA.y() -= 1;
-                    }
-                    if
-                    (
-                        (
-                            word(MeshType::typeName) == "colocated" ?
-                            true
-                            :
-                            (d != 2)
-                        )
-                        && (mpLocalCoords.z() < 0.5)
-                    )
-                    {
-                        mpLBA.z() -= 1;
+                        {
+                            mpLBA[dir] -= 1;
+                        }
                     }
 
                     // Interpolation box

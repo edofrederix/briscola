@@ -22,7 +22,45 @@ FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
 :
     immersedBoundaryCondition<Type,MeshType>(mshField,ib),
     boundaryValues_(this->dict().lookup("values"))
-{}
+{
+    // Check shape overlap
+    if (this->IB_.shapeOverlap())
+    {
+        WarningInFunction
+            << "Overlapping shapes identified."
+            << " This may cause issues with Fadlun IBM." << endl;
+    }
+
+    // Check for closely packed shapes
+    forAllCells(this->IB_.wallAdjMask(),l,d,i,j,k)
+    {
+        const labelVector ijk(i,j,k);
+
+        if (this->IB_.wallAdjMask()(l,d,i,j,k))
+        {
+            for (int dir = 0; dir < 3; dir++)
+            {
+                const labelVector fo = faceOffsets[2*dir];
+
+                if
+                (
+                       this->IB_.mask()[l][d](ijk+fo)
+                    && this->IB_.mask()[l][d](ijk-fo)
+                )
+                {
+                    WarningInFunction
+                        << "Wall adjacent cell "
+                        << vector(i,j,k) << " at (l,d) = "<< l << ", "
+                        << d << " has immersed boundary on both sides."
+                        << " This may cause issues with Fadlun IBM."
+                        << endl;
+
+                    break;
+                }
+            }
+        }
+    }
+}
 
 // Destructor
 

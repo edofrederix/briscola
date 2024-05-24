@@ -161,7 +161,7 @@ vector cylinder::mirrorPoint(vector gc) const
 {
     scalar dist = this->wallNormalDistance(gc);
 
-    if (dist < 0)
+    if (dist <= 0 || dist == radius_)
     {
         // This could be a problem if gc is exactly on the IB
         return gc;
@@ -178,8 +178,8 @@ vector cylinder::mirrorPoint(vector gc) const
 
     // Wall-normal unit vector
     vector n = inverted_ ?
-        (p-gc)/mag(p-gc) :
-        (gc-p)/mag(gc-p);
+        (p-gc)/max(mag(p-gc),1e-10) :
+        (gc-p)/max(mag(gc-p),1e-10);
 
     // Return gc plus twice the normal vector
     return (gc + 2.0*n*dist);

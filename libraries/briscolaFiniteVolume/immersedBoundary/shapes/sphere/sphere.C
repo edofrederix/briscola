@@ -115,7 +115,7 @@ vector sphere::mirrorPoint(vector gc) const
 {
     scalar dist = this->wallNormalDistance(gc);
 
-    if (dist < 0)
+    if (dist <= 0 || gc == center_)
     {
         // This could be a problem if gc is exactly on the IB
         return gc;
@@ -123,8 +123,8 @@ vector sphere::mirrorPoint(vector gc) const
 
     // Wall-normal unit vector
     vector n = inverted_ ?
-        (center_-gc)/mag(center_-gc) :
-        (gc-center_)/mag(gc-center_);
+        (center_-gc)/max(mag(center_-gc),1e-10) :
+        (gc-center_)/max(mag(gc-center_),1e-10);
 
     // Return gc plus twice the normal vector times the distance
     return (gc + 2.0*n*dist);

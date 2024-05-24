@@ -185,53 +185,26 @@ void immersedBoundary<MeshType>::setMirrorPoints()
 
             // Fix situations where the mirror point is just outside of
             // the mesh bounding box due to rounding errors
-            if
-            (
-                (mp.x() <= msh[l].boundingBox().left() + tol)
-                && (mp.x() >= msh[l].boundingBox().left() - tol)
-            )
+
+            for (int dir = 0; dir < 3; dir++)
             {
-                mp.x() += tol;
-            }
-            if
-            (
-                (mp.x() >= msh[l].boundingBox().right() - tol)
-                && (mp.x() <= msh[l].boundingBox().right() + tol)
-            )
-            {
-                mp.x() -= tol;
-            }
-            if
-            (
-                (mp.y() <= msh[l].boundingBox().bottom() + tol)
-                && (mp.y() >= msh[l].boundingBox().bottom() - tol)
-            )
-            {
-                mp.y() += tol;
-            }
-            if
-            (
-                (mp.y() >= msh[l].boundingBox().top() - tol)
-                && (mp.y() <= msh[l].boundingBox().top() + tol)
-            )
-            {
-                mp.y() -= tol;
-            }
-            if
-            (
-                (mp.z() <= msh[l].boundingBox().aft() + tol)
-                && (mp.z() >= msh[l].boundingBox().aft() - tol)
-            )
-            {
-                mp.z() += tol;
-            }
-            if
-            (
-                (mp.z() >= msh[l].boundingBox().fore() - tol)
-                && (mp.z() <= msh[l].boundingBox().fore() + tol)
-            )
-            {
-                mp.z() -= tol;
+                if
+                (
+                       (mp[dir] <= msh[l].boundingBox()[dir*2] + tol)
+                    && (mp[dir] >= msh[l].boundingBox()[dir*2] - tol)
+                )
+                {
+                    mp[dir] += tol;
+                }
+
+                if
+                (
+                       (mp[dir] >= msh[l].boundingBox()[dir*2+1] - tol)
+                    && (mp[dir] <= msh[l].boundingBox()[dir*2+1] + tol)
+                )
+                {
+                    mp[dir] -= tol;
+                }
             }
 
             mirrorPoints_(l,d,i,j,k) = mp;
@@ -259,6 +232,7 @@ immersedBoundary<MeshType>::immersedBoundary
 :
     fvMsh_(fvMsh),
     name_(dict.dictName()),
+    shapeOverlap_(false),
     mask_
     (
         "mask",
@@ -355,6 +329,7 @@ immersedBoundary<MeshType>::immersedBoundary
     setMasks();
     calculateWallDistances();
     setMirrorPoints();
+    checkOverlap();
 }
 
 template<class MeshType>
@@ -417,7 +392,7 @@ scalar immersedBoundary<MeshType>::wallDistance(vector c, vector nb) const
     if
     (
            (dist < 0)
-        || (dist > mag(c-nb))
+        || (dist > mag(c-nb)*1.01)
     )
     {
         FatalError
@@ -523,6 +498,35 @@ vector immersedBoundary<MeshType>::mirrorPoint
     }
 
     return mirror;
+}
+
+template<class MeshType>
+void immersedBoundary<MeshType>::checkOverlap()
+{
+    // Cell centers
+    const meshField<vector,MeshType>& CC =
+        fvMsh_.metrics<MeshType>().cellCenters();
+
+    forAllCells(CC,l,d,i,j,k)
+    {
+        Switch inside = false;
+
+        // Check if xyz is inside any of the IB shapes
+        for (int s = 0; s < shapes_.size(); s++)
+        {
+            if(shapes_[s].isInside(CC(l,d,i,j,k)))
+            {
+                if(inside == true)
+                {
+                    shapeOverlap_ = true;
+                }
+                else
+                {
+                    inside = true;
+                }
+            }
+        }
+    }
 }
 
 defineTemplateTypeNameAndDebug(colocatedImmersedBoundary, 0);

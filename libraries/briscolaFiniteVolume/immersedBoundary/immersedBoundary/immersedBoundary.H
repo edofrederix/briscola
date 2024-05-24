@@ -32,6 +32,10 @@ protected:
     // Name of the immersed boundary
     const word name_;
 
+    // Switch for whether there are overlapping shapes
+    // within the mesh
+    Switch shapeOverlap_;
+
     // The IB mask is equal to 0 in cell centers outside the IB,
     // and equal to 1 in cell centers inside the IB.
     meshField<label,MeshType> mask_;
@@ -99,8 +103,12 @@ public:
     // of a point located inside of the immersed boundary
     vector mirrorPoint(vector) const;
 
+    // Check if any of the IB shapes overlap within the mesh
+    void checkOverlap();
+
     // Inline access functions
     inline const word name() const { return name_; }
+    inline Switch shapeOverlap() const { return shapeOverlap_; }
 
     inline const meshField<label,MeshType>& mask() const
     { return mask_; }
