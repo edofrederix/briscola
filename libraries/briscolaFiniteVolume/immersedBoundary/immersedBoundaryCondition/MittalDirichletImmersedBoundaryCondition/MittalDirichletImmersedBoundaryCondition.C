@@ -20,7 +20,7 @@ MittalDirichletImmersedBoundaryCondition<Type,MeshType>
 )
 :
     immersedBoundaryCondition<Type,MeshType>(mshField,ib,true),
-    exchangePoints_(this->IB_.mask().numberOfLevels()),
+    exchangePoints_(MeshType::numberOfDirections),
     boundaryValues_(this->dict().lookup("values"))
 {
     // Check shape overlap
@@ -31,35 +31,30 @@ MittalDirichletImmersedBoundaryCondition<Type,MeshType>
             << " This may cause issues with Mittal IBM." << endl;
     }
 
-    forAll(exchangePoints_, l)
-    {
-        exchangePoints_[l].setSize(MeshType::numberOfDirections);
-    }
-
     // Mesh
     const mesh& msh = this->fvMsh_.msh();
 
-    forAllCells(this->IB_.mirrorPoints(),l,d,i,j,k)
+    forAllCells(this->IB_.mirrorPoints()[0],d,i,j,k)
     {
-        if (this->IB_.ghostMask()(l,d,i,j,k))
+        if (this->IB_.ghostMask()(0,d,i,j,k))
         {
-            vector mp = this->IB_.mirrorPoints()(l,d,i,j,k);
+            vector mp = this->IB_.mirrorPoints()(0,d,i,j,k);
 
             if (this->IB_.isInside(mp))
             {
                 WarningInFunction
                     << "Mirror point of ghost cell " << vector(i,j,k)
-                    << " at (l,d) = "<< l << ", " << d << " located inside "
+                    << " at d = "<< d << " located inside of "
                     << "immersed boundary."
                     << " This may cause issues with Mittal IBM." << endl;
             }
 
             // Colocated cell index of mp
-            labelVector mpIndex = msh.findCell(mp, l);
+            labelVector mpIndex = msh.findCell(mp, 0);
 
             if (mpIndex == -unitXYZ)
             {
-                exchangePoints_[l][d].append(mp);
+                exchangePoints_[d].append(mp);
             }
         }
     }
@@ -91,139 +86,140 @@ void MittalDirichletImmersedBoundaryCondition<Type,MeshType>
 
     label l = x.levelNum();
 
-    const scalar H = l == 0;
-
-    forAll(x, d)
+    if (l == 0)
     {
-        pointDataExchange<MeshType> exchange
-        (
-            exchangePoints_[l][d], fvMsh, l, d
-        );
-
-        List<Type> exchangeData(move(exchange(x.mshField())));
-
-        scalar cursor = 0;
-
-        forAllCells(x[d],i,j,k)
+        forAll(x, d)
         {
-            if (this->IB_.ghostMask()(l,d,i,j,k))
+            pointDataExchange<MeshType> exchange
+            (
+                exchangePoints_[d], fvMsh, l, d
+            );
+
+            List<Type> exchangeData(move(exchange(x.mshField())));
+
+            scalar cursor = 0;
+
+            forAllCells(x[d],i,j,k)
             {
-                // mirror point
-                vector mp = this->IB_.mirrorPoints()(l,d,i,j,k);
-
-                // Colocated cell index of mp
-                labelVector mpIndex = msh.findCell(mp, l);
-
-                Type mpValue = Zero;
-
-                if (mpIndex == -unitXYZ)
+                if (this->IB_.ghostMask()(l,d,i,j,k))
                 {
-                    mpValue = exchangeData[cursor++];
-                }
-                else
-                {
-                    // Local coordinates of mp in colocated cell
-                    vector mpLocalCoords = msh[l].points()
-                        .cellCoordinates(mp, mpIndex, true);
+                    // mirror point
+                    vector mp = this->IB_.mirrorPoints()(l,d,i,j,k);
 
-                    if (mpLocalCoords == -vector::one)
+                    // Colocated cell index of mp
+                    labelVector mpIndex = msh.findCell(mp, l);
+
+                    Type mpValue = Zero;
+
+                    if (mpIndex == -unitXYZ)
                     {
-                        FatalError
-                            << "Interpolation error at level " << l
-                            << " and direction " << d
-                            << ". Mirror point: " << mp
-                            << " and colocated cell index: "
-                            << mpIndex
-                            << endl;
-                        FatalError.exit();
-                    }
-
-                    // Index of <MeshType> left-bottom-aft cell w.r.t. mp
-                    labelVector mpLBA = mpIndex;
-
-                    for (int dir = 0; dir < 3; dir++)
-                    {
-                        if
-                        (
-                            (
-                                word(MeshType::typeName) == "colocated" ?
-                                true
-                                :
-                                (d != dir)
-                            )
-                            && (mpLocalCoords[dir] < 0.5)
-                        )
-                        {
-                            mpLBA[dir] -= 1;
-                        }
-                    }
-
-                    // Interpolation box
-                    vertexVector interpPoints
-                    (
-                        CC[l][d](mpLBA),
-                        CC[l][d](mpLBA+unitX),
-                        CC[l][d](mpLBA+unitY),
-                        CC[l][d](mpLBA+unitXY),
-                        CC[l][d](mpLBA+unitZ),
-                        CC[l][d](mpLBA+unitXZ),
-                        CC[l][d](mpLBA+unitYZ),
-                        CC[l][d](mpLBA+unitXYZ)
-                    );
-
-                    // Interpolation weights
-                    const vector v(interpolationWeights(mp,interpPoints,true));
-
-                    vertexScalar weights
-                    (
-                        (1-v.x())*(1-v.y())*(1-v.z()),
-                        (  v.x())*(1-v.y())*(1-v.z()),
-                        (1-v.x())*(  v.y())*(1-v.z()),
-                        (  v.x())*(  v.y())*(1-v.z()),
-                        (1-v.x())*(1-v.y())*(  v.z()),
-                        (  v.x())*(1-v.y())*(  v.z()),
-                        (1-v.x())*(  v.y())*(  v.z()),
-                        (  v.x())*(  v.y())*(  v.z())
-                    );
-
-                    if (v != -vector::one)
-                    {
-                        mpValue =
-                              weights.lba()*x[d](mpLBA)
-                            + weights.rba()*x[d](mpLBA+unitX)
-                            + weights.lta()*x[d](mpLBA+unitY)
-                            + weights.rta()*x[d](mpLBA+unitXY)
-                            + weights.lbf()*x[d](mpLBA+unitZ)
-                            + weights.rbf()*x[d](mpLBA+unitXZ)
-                            + weights.ltf()*x[d](mpLBA+unitYZ)
-                            + weights.rtf()*x[d](mpLBA+unitXYZ);
+                        mpValue = exchangeData[cursor++];
                     }
                     else
                     {
-                        FatalError
-                            << "Interpolation error at level " << l
-                            << " and direction " << d
-                            << ". Mirror point: " << mp << nl
-                            << "and interpolation points: "
-                            << interpPoints << nl
-                            << "Local colocated coordinates: "
-                            << mpLocalCoords << nl
-                            << "LBA cell index: " << mpLBA << nl
-                            << "Colocated cell index" << mpIndex
-                            << endl;
-                        FatalError.exit();
+                        // Local coordinates of mp in colocated cell
+                        vector mpLocalCoords = msh[l].points()
+                            .cellCoordinates(mp, mpIndex, true);
+
+                        if (mpLocalCoords == -vector::one)
+                        {
+                            FatalError
+                                << "Interpolation error"
+                                << " at direction " << d
+                                << ". Mirror point: " << mp
+                                << " and colocated cell index: "
+                                << mpIndex
+                                << endl;
+                            FatalError.exit();
+                        }
+
+                        // Index of <MeshType> left-bottom-aft cell w.r.t. mp
+                        labelVector mpLBA = mpIndex;
+
+                        for (int dir = 0; dir < 3; dir++)
+                        {
+                            if
+                            (
+                                (
+                                    word(MeshType::typeName) == "colocated" ?
+                                    true
+                                    :
+                                    (d != dir)
+                                )
+                                && (mpLocalCoords[dir] < 0.5)
+                            )
+                            {
+                                mpLBA[dir] -= 1;
+                            }
+                        }
+
+                        // Interpolation box
+                        vertexVector interpPoints
+                        (
+                            CC[l][d](mpLBA),
+                            CC[l][d](mpLBA+unitX),
+                            CC[l][d](mpLBA+unitY),
+                            CC[l][d](mpLBA+unitXY),
+                            CC[l][d](mpLBA+unitZ),
+                            CC[l][d](mpLBA+unitXZ),
+                            CC[l][d](mpLBA+unitYZ),
+                            CC[l][d](mpLBA+unitXYZ)
+                        );
+
+                        // Interpolation weights
+                        const vector v(interpolationWeights(mp,interpPoints,true));
+
+                        vertexScalar weights
+                        (
+                            (1-v.x())*(1-v.y())*(1-v.z()),
+                            (  v.x())*(1-v.y())*(1-v.z()),
+                            (1-v.x())*(  v.y())*(1-v.z()),
+                            (  v.x())*(  v.y())*(1-v.z()),
+                            (1-v.x())*(1-v.y())*(  v.z()),
+                            (  v.x())*(1-v.y())*(  v.z()),
+                            (1-v.x())*(  v.y())*(  v.z()),
+                            (  v.x())*(  v.y())*(  v.z())
+                        );
+
+                        if (v != -vector::one)
+                        {
+                            mpValue =
+                                weights.lba()*x[d](mpLBA)
+                                + weights.rba()*x[d](mpLBA+unitX)
+                                + weights.lta()*x[d](mpLBA+unitY)
+                                + weights.rta()*x[d](mpLBA+unitXY)
+                                + weights.lbf()*x[d](mpLBA+unitZ)
+                                + weights.rbf()*x[d](mpLBA+unitXZ)
+                                + weights.ltf()*x[d](mpLBA+unitYZ)
+                                + weights.rtf()*x[d](mpLBA+unitXYZ);
+                        }
+                        else
+                        {
+                            FatalError
+                                << "Interpolation error"
+                                << " at direction " << d
+                                << ". Mirror point: " << mp << nl
+                                << "and interpolation points: "
+                                << interpPoints << nl
+                                << "Local colocated coordinates: "
+                                << mpLocalCoords << nl
+                                << "LBA cell index: " << mpLBA << nl
+                                << "Colocated cell index" << mpIndex
+                                << endl;
+                            FatalError.exit();
+                        }
                     }
-                }
 
-                // If the ghost cell is on the boundary or at the center
-                // of a sphere or cylinder, set value to boundary value
-                if (mp == CC(l,d,i,j,k))
-                {
-                    mpValue = boundaryValues_[d]*(H*2.0 - 1.0);
-                }
+                    // If the ghost cell is on the boundary or at the center
+                    // of a sphere or cylinder, set value to boundary value
+                    if (mp == CC(l,d,i,j,k))
+                    {
+                        mpValue = boundaryValues_[d];
+                    }
 
-                x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
-                    + omega * (H*2.0*boundaryValues_[d] - mpValue);
+                    x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
+                        + omega * (2.0*boundaryValues_[d] - mpValue);
+                }
             }
         }
     }

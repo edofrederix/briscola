@@ -20,7 +20,7 @@ VremanDirichletImmersedBoundaryCondition<Type,MeshType>
 )
 :
     immersedBoundaryCondition<Type,MeshType>(mshField,ib,true),
-    exchangePoints_(this->IB_.mask().numberOfLevels()),
+    exchangePoints_(MeshType::numberOfDirections),
     boundaryValues_(this->dict().lookup("values"))
 {
     // Check shape overlap
@@ -31,46 +31,41 @@ VremanDirichletImmersedBoundaryCondition<Type,MeshType>
             << " This may cause issues with Vreman IBM." << endl;
     }
 
-    forAll(exchangePoints_, l)
-    {
-        exchangePoints_[l].setSize(MeshType::numberOfDirections);
-    }
-
     // Cell centers
     const meshField<vector,MeshType>& CC =
         this->fvMsh_.template metrics<MeshType>().cellCenters();
 
     // Set exchange points list
-    forAllCells(this->IB_.ghostMask(),l,d,i,j,k)
+    forAllCells(this->IB_.ghostMask()[0],d,i,j,k)
     {
         const labelVector ijk(i,j,k);
 
-        if (this->IB_.ghostMask()(l,d,i,j,k))
+        if (this->IB_.ghostMask()(0,d,i,j,k))
         {
             for (int dir = 0; dir < 6; dir++)
             {
                 const labelVector fo = faceOffsets[dir];
 
-                if (!this->IB_.mask()[l][d](ijk+fo))
+                if (!this->IB_.mask()[0][d](ijk+fo))
                 {
                     if
                     (
                            (i+2.0*fo.x() < 0)
-                        || (i+2.0*fo.x() > this->IB_.neighborDist()[l][d].I().right())
+                        || (i+2.0*fo.x() > this->IB_.mask()[0][d].I().right())
                         || (j+2.0*fo.y() < 0)
-                        || (j+2.0*fo.y() > this->IB_.neighborDist()[l][d].I().top())
+                        || (j+2.0*fo.y() > this->IB_.mask()[0][d].I().top())
                         || (k+2.0*fo.z() < 0)
-                        || (k+2.0*fo.z() > this->IB_.neighborDist()[l][d].I().fore())
+                        || (k+2.0*fo.z() > this->IB_.mask()[0][d].I().fore())
                     )
                     {
-                        exchangePoints_[l][d].append(ijk+2.0*fo);
+                        exchangePoints_[d].append(ijk+2.0*fo);
                     }
 
-                    if (this->IB_.isInside(CC[l][d](ijk+2.0*fo)))
+                    if (this->IB_.isInside(CC[0][d](ijk+2.0*fo)))
                     {
                         WarningInFunction
                             << "Second neighbor point of ghost cell "
-                            << vector(i,j,k) << " at (l,d) = "<< l << ", "
+                            << vector(i,j,k) << " at d = "
                             << d << " located inside immersed boundary."
                             << " This may cause issues with Vreman IBM."
                             << endl;
@@ -103,61 +98,62 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>
 
     label l = x.levelNum();
 
-    const scalar H = l == 0;
-
-    forAll(x, d)
+    if (l == 0)
     {
-        cellDataExchange<MeshType> exchange(exchangePoints_[l][d], fvMsh, l, d);
-
-        List<Type> exchangeData(move(exchange(x.mshField())));
-
-        scalar cursor = 0;
-
-        forAllCells(x[d],i,j,k)
+        forAll(x, d)
         {
-            if (this->IB_.ghostMask()(l,d,i,j,k))
+            cellDataExchange<MeshType> exchange(exchangePoints_[d], fvMsh, l, d);
+
+            List<Type> exchangeData(move(exchange(x.mshField())));
+
+            scalar cursor = 0;
+
+            forAllCells(x[d],i,j,k)
             {
-                const labelVector ijk(i,j,k);
-                for (int dir = 0; dir < 6; dir++)
+                if (this->IB_.ghostMask()(l,d,i,j,k))
                 {
-                    const labelVector fo = faceOffsets[dir];
-
-                    if (this->IB_.wallDistGhost()(l,d,i,j,k)[dir] > 0)
+                    const labelVector ijk(i,j,k);
+                    for (int dir = 0; dir < 6; dir++)
                     {
-                        const scalar xi
-                            = this->IB_.wallDistGhost()(l,d,i,j,k)[dir];
+                        const labelVector fo = faceOffsets[dir];
 
-                        scalar w1 = 2.0 - (2.0 - xi);
-                        scalar w2 = -1.0 + (1.0 - xi);
-
-                        Type secondNeighborValue;
-
-                        if
-                        (
-                               (i+2.0*fo.x() < 0)
-                            || (i+2.0*fo.x() > this->IB_.neighborDist()[l][d].I().right())
-                            || (j+2.0*fo.y() < 0)
-                            || (j+2.0*fo.y() > this->IB_.neighborDist()[l][d].I().top())
-                            || (k+2.0*fo.z() < 0)
-                            || (k+2.0*fo.z() > this->IB_.neighborDist()[l][d].I().fore())
-                        )
+                        if (this->IB_.wallDistGhost()(l,d,i,j,k)[dir] > 0)
                         {
-                            secondNeighborValue = exchangeData[cursor++];
-                        }
-                        else
-                        {
-                            secondNeighborValue = x[d](ijk+2.0*fo);
-                        }
+                            const scalar xi
+                                = this->IB_.wallDistGhost()(l,d,i,j,k)[dir];
 
-                        x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
-                            + omega *
+                            scalar w1 = 2.0 - (2.0 - xi);
+                            scalar w2 = -1.0 + (1.0 - xi);
+
+                            Type secondNeighborValue;
+
+                            if
                             (
-                                H*boundaryValues_[d]
-                                + w1*x[d](ijk+fo)
-                                + w2*secondNeighborValue
-                            );
+                                   (i+2.0*fo.x() < 0)
+                                || (i+2.0*fo.x() > this->IB_.neighborDist()[l][d].I().right())
+                                || (j+2.0*fo.y() < 0)
+                                || (j+2.0*fo.y() > this->IB_.neighborDist()[l][d].I().top())
+                                || (k+2.0*fo.z() < 0)
+                                || (k+2.0*fo.z() > this->IB_.neighborDist()[l][d].I().fore())
+                            )
+                            {
+                                secondNeighborValue = exchangeData[cursor++];
+                            }
+                            else
+                            {
+                                secondNeighborValue = x[d](ijk+2.0*fo);
+                            }
 
-                        break;
+                            x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
+                                + omega *
+                                (
+                                    boundaryValues_[d]
+                                    + w1*x[d](ijk+fo)
+                                    + w2*secondNeighborValue
+                                );
+
+                            break;
+                        }
                     }
                 }
             }

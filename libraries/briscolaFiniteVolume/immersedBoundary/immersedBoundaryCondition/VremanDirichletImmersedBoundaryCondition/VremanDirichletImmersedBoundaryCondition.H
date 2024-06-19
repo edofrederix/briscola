@@ -20,8 +20,8 @@ class VremanDirichletImmersedBoundaryCondition
 {
 
     // List of out of bounds indices needed to correct ghost cell values
-    // defined for each level and direction
-    List<List<List<labelVector>>> exchangePoints_;
+    // defined for each direction of the finest mesh level
+    List<List<labelVector>> exchangePoints_;
 
     // Boundary values
     List<Type> boundaryValues_;
