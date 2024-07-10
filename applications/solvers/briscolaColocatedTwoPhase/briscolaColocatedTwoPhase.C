@@ -19,8 +19,6 @@ int main(int argc, char *argv[])
     #include "createBriscolaTwoPhase.H"
     #include "createTimeControls.H"
 
-    Switch split = args.optionFound("split");
-
     // This solver works for incompressible mixtures only
 
     incompressibleTwoPhaseModel& icoTwoPhase =
@@ -49,7 +47,7 @@ int main(int argc, char *argv[])
 
         icoTwoPhase.correct();
 
-        v = icoTwoPhase.v<colocated>();
+        v = 1.0/rho;
         vf = ex::interp(v);
 
         // Predictor, Eq. (A.1) of Dodd & Ferrante (2014)
@@ -64,75 +62,86 @@ int main(int argc, char *argv[])
 
         USys -= 0.5*(deltaT/deltaT0)*H;
 
-        colocatedVectorField surfTen
-        (
-            ex::reconstruct(fa*icoTwoPhase.surfaceTension().potential())
-        );
-
-        H = ex::div(phi,U) - (ex::grad(mu) & ex::grad(U))*v;
+        H = ex::div(phi,U)
+          - (ex::grad(mu) & ex::grad(U))*v
+          - ex::reconstruct(icoTwoPhase.surfaceTension())*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
 
-        USys -= icoTwoPhase.g();
-        USys += ex::grad(p)*v - surfTen;
-
-        // Solve predictor
-
-        USolve->solve(USys);
-
-        // Pressure equation
-
-        phi = ex::faceFlux(U);
-
-        if (split)
+        if (reduced)
         {
-            q = (1.0 + deltaT/deltaT0)*p - deltaT/deltaT0*p.oldTime();
-            p.setOldTime();
-
-            colocatedLowerFaceScalarField corr
-            (
-                fa
-              * (
-                    ex::faceGrad(q)*(1.0 - minRho*vf)
-                  + ex::faceGrad(p)*minRho*vf
-                )
-            );
-
-            Poisson->solve(p, minRho*ex::div(phi)/(-deltaT) - ex::div(corr));
-
-            // Rhie-Chow correction
-
-            U -=
-                deltaT
-              * (
-                    ex::grad(p)*maxv
-                  - ex::grad(p.oldTime())*v
-                  + ex::grad(q)*(v - maxv)
-                );
-
-            U.correctBoundaryConditions();
-
-            phi -=
-                deltaT*fa
-              * (
-                    ex::faceGrad(p)*maxv
-                  - ex::faceGrad(p.oldTime())*vf
-                  + ex::faceGrad(q)*(vf - maxv)
-                );
+            USys -= ex::reconstruct(icoTwoPhase.buoyancy())*v;
         }
         else
         {
-            colocatedLowerFaceScalarField corr(fa*vf*ex::faceGrad(p));
-            p.setOldTime();
+            USys -= icoTwoPhase.g();
+        }
 
-            Poisson->solve(p, ex::div(phi)/(-deltaT) - ex::div(corr), vf);
+        for (int corr = 0; corr < nCorr; corr++)
+        {
+            // Solve predictor
 
-            // Rhie-Chow correction
+            USolve->solve(USys + ex::grad(p)*v);
 
-            U -= deltaT*(ex::grad(p) - ex::grad(p.oldTime()))*v;
-            U.correctBoundaryConditions();
+            // Pressure equation
 
-            phi -= deltaT*(ex::faceGrad(p) - ex::faceGrad(p.oldTime()))*fa*vf;
+            phi = ex::faceFlux(U);
+
+            if (split)
+            {
+                q = (1.0 + deltaT/deltaT0)*p - deltaT/deltaT0*p.oldTime();
+                p.setOldTime();
+
+                colocatedLowerFaceScalarField corr
+                (
+                    fa
+                  * (
+                        ex::faceGrad(q)*(1.0 - minRho*vf)
+                      + ex::faceGrad(p)*minRho*vf
+                    )
+                );
+
+                Poisson->solve
+                (
+                    p,
+                    minRho*ex::div(phi)/(-deltaT) - ex::div(corr)
+                );
+
+                // Rhie-Chow correction
+
+                U -=
+                    deltaT
+                  * (
+                        ex::grad(p)*maxv
+                      - ex::grad(p.oldTime())*v
+                      + ex::grad(q)*(v - maxv)
+                    );
+
+                U.correctBoundaryConditions();
+
+                phi -=
+                    deltaT*fa
+                  * (
+                        ex::faceGrad(p)*maxv
+                      - ex::faceGrad(p.oldTime())*vf
+                      + ex::faceGrad(q)*(vf - maxv)
+                    );
+            }
+            else
+            {
+                colocatedLowerFaceScalarField corr(fa*vf*ex::faceGrad(p));
+                p.setOldTime();
+
+                Poisson->solve(p, ex::div(phi)/(-deltaT) - ex::div(corr), vf);
+
+                // Rhie-Chow correction
+
+                U -= deltaT*(ex::grad(p) - ex::grad(p.oldTime()))*v;
+                U.correctBoundaryConditions();
+
+                phi -=
+                    deltaT*(ex::faceGrad(p) - ex::faceGrad(p.oldTime()))*fa*vf;
+            }
         }
 
         io.write<colocated>();

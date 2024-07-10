@@ -94,15 +94,27 @@ public:
 };
 
 template<class Type, class MeshType>
-tmp<meshField<Type,MeshType>> explicitDiv
+tmp<meshField<Type,MeshType>> div
 (
     const meshField<LowerFaceSpace<Type>,MeshType>&
 );
 
+template<class Type, class MeshType>
+tmp<meshField<Type,MeshType>> div
+(
+    const tmp<meshField<LowerFaceSpace<Type>,MeshType>>&
+);
+
 template<class Type>
-tmp<meshField<Type,colocated>> explicitColoDiv
+tmp<meshField<Type,colocated>> coloDiv
 (
     const meshField<Type,staggered>&
+);
+
+template<class Type>
+tmp<meshField<Type,colocated>> coloDiv
+(
+    const tmp<meshField<Type,staggered>>&
 );
 
 }

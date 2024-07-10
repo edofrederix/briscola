@@ -56,12 +56,18 @@ void incompressibleTwoPhaseModel::correctMixture()
     {
         staggeredScalarField& rhos = rhosPtr_();
 
-        const staggeredScalarField alphas
+        staggeredScalarField alphas
         (
             stagInterp(alpha_)
         );
 
-        rhos = Rho2_*alphas + Rho1_*(1.0-alphas);
+        // Only the internal cells of alphas are set. Correct the boundary
+        // conditions so that parallel/periodic ghosts are set too. This is
+        // important if rhos is interpolated to a colocated field.
+
+        alphas.correctBoundaryConditions();
+
+        rhos = Rho2_*alphas + Rho1_*(1.0 - alphas);
     }
 
     twoPhaseModel::correctMixture();

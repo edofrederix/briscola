@@ -61,27 +61,28 @@ int main(int argc, char *argv[])
         DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
-        USys += ex::grad(p);
+        for (int corr = 0; corr < nCorr; corr++)
+        {
+            // Solve predictor with latest pressure
 
-        // Solve predictor
+            USolve->solve(USys + ex::grad(p));
 
-        USolve->solve(USys);
+            U += deltaT*ex::grad(p);
+            U.correctBoundaryConditions();
 
-        U += deltaT*ex::grad(p);
-        U.correctBoundaryConditions();
+            // Pressure equation
 
-        // Pressure equation
+            phi = ex::faceFlux(U);
 
-        phi = ex::faceFlux(U);
+            Poisson->solve(p, ex::div(phi)/(-deltaT));
 
-        Poisson->solve(p, ex::div(phi)/(-deltaT));
+            // Rhie-Chow correction
 
-        // Rhie-Chow correction
+            U -= deltaT*ex::grad(p);
+            U.correctBoundaryConditions();
 
-        U -= deltaT*ex::grad(p);
-        U.correctBoundaryConditions();
-
-        phi -= deltaT*ex::faceGrad(p)*fa;
+            phi -= deltaT*ex::faceGrad(p)*fa;
+        }
 
         io.write<colocated>();
 

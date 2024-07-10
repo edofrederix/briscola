@@ -16,17 +16,15 @@ ddtSchemes
 
 laplacianSchemes
 {
-    laplacian(rhoInv,p)
-    {
-        type    linearGauss;
-    }
-
-    laplacian(p)
-    {
-        type    linearGauss;
-    }
-
     laplacian(mu,U)
+    {
+        type    linearGauss;
+    }
+    laplacian(vf,p)
+    {
+        type    linearGauss;
+    }
+    laplacian(p)
     {
         type    linearGauss;
     }
@@ -42,27 +40,19 @@ divergenceSchemes
 
 gradientSchemes
 {
+    grad(U)
+    {
+        type    midPointGauss;
+    }
     grad(p)
     {
         type    midPointGauss;
     }
-
-    grad(extrapolatedP)
+    grad(p.oldTime)
     {
         type    midPointGauss;
     }
-
-    grad(alpha)
-    {
-        type    midPointGauss;
-    }
-
-    stagGrad(alpha)
-    {
-        type    midPointGauss;
-    }
-
-    grad(U)
+    grad(q)
     {
         type    midPointGauss;
     }
@@ -70,14 +60,25 @@ gradientSchemes
 
 faceGradientSchemes
 {
+    faceGrad(alpha)
+    {
+        type    linear;
+    }
     faceGrad(p)
     {
-        type    midPoint;
+        type    linear;
     }
-
-    faceGrad(extrapolatedP)
+    faceGrad(p.oldTime)
     {
-        type    midPoint;
+        type    linear;
+    }
+    faceGrad(q)
+    {
+        type    linear;
+    }
+    faceGrad(rho)
+    {
+        type    linear;
     }
 }
 
@@ -85,12 +86,7 @@ faceFluxSchemes
 {
     flux(U)
     {
-        type    midPoint;
-    }
-
-    flux(grad(alpha))
-    {
-        type    midPoint;
+        type    linear;
     }
 }
 
@@ -100,24 +96,12 @@ interpolationSchemes
     {
         type    midPoint;
     }
-
-    interp(rho)
+    interp(sigma)
     {
         type    midPoint;
     }
-
-    interp(rhoInv)
+    interp(v)
     {
         type    midPoint;
-    }
-
-    interp(min(rho1,rho2))
-    {
-        type    midPoint;
-    }
-
-    interp(kappa)
-    {
-        type    curvature;
     }
 }

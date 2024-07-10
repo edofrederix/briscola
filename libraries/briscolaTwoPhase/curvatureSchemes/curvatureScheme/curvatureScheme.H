@@ -106,6 +106,9 @@ public:
     // Return const access to the curvature field
     inline const colocatedScalarField& kappa() const { return *this; }
 
+    // Compute and return the interpolated kappa field
+    tmp<colocatedLowerFaceScalarField> interp() const;
+
     // Correct the curvature
     virtual void correct() = 0;
 };

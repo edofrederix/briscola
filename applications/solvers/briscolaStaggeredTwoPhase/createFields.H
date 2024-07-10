@@ -144,25 +144,16 @@ staggeredScalarField v
 
 v.setRestrictionScheme("harmonicVolumeWeighted");
 
-colocatedScalarField vc
-(
-    "v",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::NO_WRITE,
-    true
-);
-
-vc.setRestrictionScheme("harmonicVolumeWeighted");
-
 colocatedLowerFaceScalarField vcf
 (
-    "v",
+    "vcf",
     fvMsh,
     IOobject::NO_READ,
     IOobject::NO_WRITE,
     true
 );
+
+vcf.setRestrictionScheme("faceAreaWeighted");
 
 // Adams-Bashforth source
 
@@ -182,3 +173,9 @@ H = Zero;
 
 const scalar minRho = gMin(icoTwoPhase.minRho<colocated>())[0];
 const scalar maxv = 1.0/minRho;
+
+// Solver parameters
+
+const Switch split = twoPhaseDict.lookupOrDefault<Switch>("split", false);
+const Switch reduced = twoPhaseDict.lookupOrDefault<Switch>("reduced", false);
+const label nCorr = twoPhaseDict.lookupOrDefault<label>("nCorrectors", 1);

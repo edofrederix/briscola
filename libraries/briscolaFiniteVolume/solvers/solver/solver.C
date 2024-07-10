@@ -80,6 +80,22 @@ autoPtr<solver<SType,Type,MeshType>> solver<SType,Type,MeshType>::New
 }
 
 template<class SType, class Type, class MeshType>
+void solver<SType,Type,MeshType>::solve
+(
+    const tmp<linearSystem<SType,Type,MeshType>>& tSys,
+    const bool constMatrix
+)
+{
+    this->solve
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref(),
+        constMatrix
+    );
+
+    tSys.clear();
+}
+
+template<class SType, class Type, class MeshType>
 List<Type> solver<SType,Type,MeshType>::normFactors
 (
     linearSystem<SType,Type,MeshType>& sys,

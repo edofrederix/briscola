@@ -254,6 +254,13 @@ public:
         const bool constMatrix = false
     ) = 0;
 
+    // Solve the given tmp system
+    virtual void solve
+    (
+        const tmp<linearSystem<SType,Type,MeshType>>&,
+        const bool constMatrix = false
+    );
+
     // Compute residual normalization factors of the system Ax=b at given mesh
     // level. The normalization factor is defined as sum(|Ax-Ay|+|b-Ay|), with y
     // = mean(x). The function reuses the pre-computed residual.

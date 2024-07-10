@@ -5,6 +5,10 @@
 #include "colocatedFields.H"
 #include "normalScheme.H"
 #include "curvatureScheme.H"
+#include "interpolationScheme.H"
+
+// The surface tension scheme computes the surface tension potential, defined as
+// a flux in the form phi = A_f*(kappa*sigma)_f*grad_f(alpha).
 
 namespace Foam
 {
@@ -19,7 +23,7 @@ class twoPhaseModel;
 
 class surfaceTensionScheme
 :
-    public colocatedVectorField
+    public colocatedLowerFaceScalarField
 {
 protected:
 
@@ -38,20 +42,11 @@ protected:
     // Reference to the void fraction
     const colocatedScalarField& alpha_;
 
-    // Staggered surface tension force field, only created on structured meshes
-    autoPtr<staggeredScalarField> stagForcePtr_;
-
     // Surface tension field
     colocatedScalarField sigma_;
 
-    // Temporal fix
-    scalar sigmaValue_;
-
     // Curvature scheme
     autoPtr<curvatureScheme> curvatureSchemePtr_;
-
-    // Surface Tension Potential
-    colocatedLowerFaceScalarField surfaceTensionPotential_;
 
 public:
 
@@ -109,18 +104,6 @@ public:
     // Access to the volume fraction field
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
-    // Access to the colocated surface tension force
-    inline const colocatedVectorField& coloForce() const
-    {
-        return *this;
-    }
-
-    // Access to the staggered surface tension force
-    inline const staggeredScalarField& stagForce() const
-    {
-        return stagForcePtr_();
-    }
-
     // Access to the curvature scheme
     inline const curvatureScheme& kappa() const
     {
@@ -130,17 +113,8 @@ public:
     // Access to the sigma field
     inline const colocatedScalarField& sigma() const { return sigma_; }
 
-    // Access sigma value
-    inline scalar sigmaValue() {return sigmaValue_; }
-
     // Correct the surface tension model
     virtual void correct();
-
-    // Access to the surface tension porential
-    inline const colocatedLowerFaceScalarField& potential() const
-    {
-        return surfaceTensionPotential_;
-    }
 };
 
 }

@@ -1,6 +1,7 @@
 #include "curvatureScheme.H"
 #include "addToRunTimeSelectionTable.H"
 #include "twoPhaseModel.H"
+#include "vof.H"
 
 namespace Foam
 {
@@ -89,6 +90,51 @@ autoPtr<curvatureScheme> curvatureScheme::New
     (
         cstrIter()(fvMsh, dict, normal, alpha)
     );
+}
+
+tmp<colocatedLowerFaceScalarField> curvatureScheme::interp() const
+{
+    const colocatedScalarField& kappa = *this;
+
+    tmp<colocatedLowerFaceScalarField> tInterp
+    (
+        new colocatedLowerFaceScalarField
+        (
+            this->name(),
+            fvMsh_
+        )
+    );
+
+    colocatedLowerFaceScalarField& Interp = tInterp.ref();
+
+    Interp = Zero;
+
+    forAllFaces(Interp, fd, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNei(ijk,fd));
+
+        const bool lowerHasInterface =
+            alpha_(nei) > vof::threshold && alpha_(nei) < 1 - vof::threshold;
+
+        const bool upperHasInterface =
+            alpha_(ijk) > vof::threshold && alpha_(ijk) < 1 - vof::threshold;
+
+        if (lowerHasInterface && upperHasInterface)
+        {
+            Interp(ijk)[fd] = 0.5*(kappa(ijk) + kappa(nei));
+        }
+        else if (lowerHasInterface)
+        {
+            Interp(ijk)[fd] = kappa(nei);
+        }
+        else if (upperHasInterface)
+        {
+            Interp(ijk)[fd] = kappa(ijk);
+        }
+    }
+
+    return tInterp;
 }
 
 }

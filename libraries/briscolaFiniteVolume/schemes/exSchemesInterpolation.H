@@ -30,6 +30,32 @@ inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
     )->interp(field);
 }
 
+template<class Type, class MeshType>
+inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
+(
+    const tmp<meshField<Type,MeshType>>& tField
+)
+{
+    tmp<meshField<LowerFaceSpace<Type>,MeshType>> tInterp
+    (
+        interp(tField())
+    );
+
+    tField.clear();
+
+    return tInterp;
+}
+
+// Interpolation from colocated to staggered
+
+using ::Foam::briscola::fv::stagInterp;
+using ::Foam::briscola::fv::stagFaceInterp;
+
+// Interpolation from staggered to colocated
+
+using ::Foam::briscola::fv::coloInterp;
+using ::Foam::briscola::fv::coloFaceInterp;
+
 }
 
 }

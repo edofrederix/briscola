@@ -31,29 +31,26 @@ grad
     )->grad(field);
 }
 
+template<class Type, class MeshType>
+inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
+grad
+(
+    const tmp<meshField<Type,MeshType>>& tField
+)
+{
+    tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>> tGrad
+    (
+        grad(tField())
+    );
+
+    tField.clear();
+
+    return tGrad;
+}
+
 // Centered gradient from a face field
 
-template<class Type, class MeshType>
-inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
-grad
-(
-    const meshField<FaceSpace<Type>,MeshType>& field
-)
-{
-    return fv::grad(field);
-}
-
-// Centered gradient from a lower face field
-
-template<class Type, class MeshType>
-inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
-grad
-(
-    const meshField<LowerFaceSpace<Type>,MeshType>& field
-)
-{
-    return fv::grad(field);
-}
+using ::Foam::briscola::fv::grad;
 
 // Staggered gradient from a colocated field
 
@@ -71,6 +68,22 @@ stagGrad
     )->stagGrad(field);
 }
 
+template<class Type>
+inline tmp<meshField<Type,staggered>>
+stagGrad
+(
+    const tmp<meshField<Type,colocated>>& tField
+)
+{
+    tmp<meshField<Type,staggered>> tStagGrad
+    (
+        stagGrad(tField())
+    );
+
+    tField.clear();
+
+    return tStagGrad;
+}
 
 }
 

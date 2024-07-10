@@ -67,7 +67,7 @@ divergenceScheme<SType,Type,MeshType>::New
 }
 
 template<class Type, class MeshType>
-tmp<meshField<Type,MeshType>> explicitDiv
+tmp<meshField<Type,MeshType>> div
 (
     const meshField<LowerFaceSpace<Type>,MeshType>& phi
 )
@@ -100,8 +100,24 @@ tmp<meshField<Type,MeshType>> explicitDiv
     return tDiv;
 }
 
+template<class Type, class MeshType>
+tmp<meshField<Type,MeshType>> div
+(
+    const tmp<meshField<LowerFaceSpace<Type>,MeshType>>& tPhi
+)
+{
+    tmp<meshField<Type,MeshType>> tDiv
+    (
+        div(tPhi())
+    );
+
+    tPhi.clear();
+
+    return tDiv;
+}
+
 template<class Type>
-tmp<meshField<Type,colocated>> explicitColoDiv
+tmp<meshField<Type,colocated>> coloDiv
 (
     const meshField<Type,staggered>& field
 )
@@ -135,6 +151,22 @@ tmp<meshField<Type,colocated>> explicitColoDiv
               / cv(i,j,k);
 
     return tDiv;
+}
+
+template<class Type>
+tmp<meshField<Type,colocated>> coloDiv
+(
+    const tmp<meshField<Type,staggered>>& tField
+)
+{
+    tmp<meshField<Type,colocated>> tColoDiv
+    (
+        coloDiv(tField())
+    );
+
+    tField.clear();
+
+    return tColoDiv;
 }
 
 }

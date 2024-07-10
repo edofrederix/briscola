@@ -68,14 +68,6 @@ inline tmp<meshField<lowerFaceScalar,MeshType>> twoPhaseModel::nu() const
     return tNu;
 }
 
-template<class MeshType>
-inline tmp<meshField<scalar,MeshType>> twoPhaseModel::v() const
-{
-    tmp<meshField<scalar,MeshType>> tV(1.0/this->rho<MeshType>());
-    tV->setRestrictionScheme("harmonicVolumeWeighted");
-    return tV;
-}
-
 }
 
 }

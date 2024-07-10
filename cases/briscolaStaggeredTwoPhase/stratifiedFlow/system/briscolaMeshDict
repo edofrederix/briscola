@@ -36,25 +36,25 @@ bricks
     0
     {
         vertices    (((0 10)(2 12))((1 11)(3 13)));
-        N           (32 32 16);
+        N           (32 16 16);
         grading     geometric (1 1 1);
     }
     1
     {
         vertices    (((2 12)(4 14))((3 13)(5 15)));
-        N           (32 32 16);
+        N           (32 16 16);
         grading     geometric (1 1 1);
     }
     2
     {
         vertices    (((4 14)(6 16))((5 15)(7 17)));
-        N           (32 32 16);
+        N           (32 16 16);
         grading     geometric (1 1 1);
     }
     3
     {
         vertices    (((6 16)(8 18))((7 17)(9 19)));
-        N           (32 32 16);
+        N           (32 16 16);
         grading     geometric (1 1 1);
     }
 );

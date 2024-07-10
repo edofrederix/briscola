@@ -22,11 +22,11 @@ normalScheme
 
 surfaceTensionScheme
 {
-    type    none;
+    type    Brackbill;
 
     curvatureScheme
     {
-        type    SHF;
+        type    CV;
     }
 
     sigma   0.07;

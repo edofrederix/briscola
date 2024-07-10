@@ -64,7 +64,6 @@ tmp<colocatedLowerFaceScalarField> coloFaceFlux
     const staggeredScalarField& field
 )
 {
-{
     tmp<colocatedLowerFaceScalarField> tphi
     (
         new colocatedLowerFaceScalarField
@@ -86,6 +85,20 @@ tmp<colocatedLowerFaceScalarField> coloFaceFlux
 
     return tphi;
 }
+
+tmp<colocatedLowerFaceScalarField> coloFaceFlux
+(
+    const tmp<staggeredScalarField>& tField
+)
+{
+    tmp<colocatedLowerFaceScalarField> tColoFaceFlux
+    (
+        coloFaceFlux(tField())
+    );
+
+    tField.clear();
+
+    return tColoFaceFlux;
 }
 
 }

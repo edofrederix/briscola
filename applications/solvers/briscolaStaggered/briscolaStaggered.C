@@ -61,8 +61,6 @@ int main(int argc, char *argv[])
         DivU = ex::div(phi,U);
         USys += 1.5*DivU;
 
-        USys += ex::stagGrad(p);
-
         // Solve predictor
 
         if (fvMsh.immersedBoundaryPresent())
@@ -84,7 +82,6 @@ int main(int argc, char *argv[])
                 p,
                 (ex::coloDiv(U)-IBMMassSource(U))/(-deltaT)
             );
-
         }
         else
         {
