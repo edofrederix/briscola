@@ -76,15 +76,6 @@ void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
     linearSystem<stencil,Type,MeshType>& ls
 )
 {
-    forAllCells(ls.b(),l,d,i,j,k)
-    {
-        if (this->IB_.wallAdjMask()(l,d,i,j,k))
-        {
-            // Set sources to 0 in IB
-            ls.b()(l,d,i,j,k) = Zero;
-        }
-    }
-
     forAllCells(ls.A(),l,d,i,j,k)
     {
         if (this->IB_.wallAdjMask()(l,d,i,j,k))
@@ -108,7 +99,7 @@ void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
                     ls.A()(l,d,i,j,k).center() = 1.0;
                     ls.A()(l,d,i,j,k)[oppositeDir+1] = -w;
 
-                    if (l==0)
+                    if (l == 0)
                     {
                         ls.b()(l,d,i,j,k) = boundaryValues_[d]/xinb;
                     }

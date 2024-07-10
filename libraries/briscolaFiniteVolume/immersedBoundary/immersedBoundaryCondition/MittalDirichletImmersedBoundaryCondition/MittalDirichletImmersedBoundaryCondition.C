@@ -184,7 +184,7 @@ void MittalDirichletImmersedBoundaryCondition<Type,MeshType>
                         if (v != -vector::one)
                         {
                             mpValue =
-                                weights.lba()*x[d](mpLBA)
+                                  weights.lba()*x[d](mpLBA)
                                 + weights.rba()*x[d](mpLBA+unitX)
                                 + weights.lta()*x[d](mpLBA+unitY)
                                 + weights.rta()*x[d](mpLBA+unitXY)

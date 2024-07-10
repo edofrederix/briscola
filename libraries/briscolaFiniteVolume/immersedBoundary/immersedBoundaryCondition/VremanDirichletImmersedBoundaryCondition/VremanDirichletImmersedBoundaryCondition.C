@@ -42,6 +42,8 @@ VremanDirichletImmersedBoundaryCondition<Type,MeshType>
 
         if (this->IB_.ghostMask()(0,d,i,j,k))
         {
+            faceLabel I = this->fvMsh_.template I<MeshType>(0,d);
+
             for (int dir = 0; dir < 6; dir++)
             {
                 const labelVector fo = faceOffsets[dir];
@@ -50,12 +52,12 @@ VremanDirichletImmersedBoundaryCondition<Type,MeshType>
                 {
                     if
                     (
-                           (i+2.0*fo.x() < 0)
-                        || (i+2.0*fo.x() > this->IB_.mask()[0][d].I().right())
-                        || (j+2.0*fo.y() < 0)
-                        || (j+2.0*fo.y() > this->IB_.mask()[0][d].I().top())
-                        || (k+2.0*fo.z() < 0)
-                        || (k+2.0*fo.z() > this->IB_.mask()[0][d].I().fore())
+                           (i+2.0*fo.x() < I.left())
+                        || (i+2.0*fo.x() > I.right())
+                        || (j+2.0*fo.y() < I.bottom())
+                        || (j+2.0*fo.y() > I.top())
+                        || (k+2.0*fo.z() < I.aft())
+                        || (k+2.0*fo.z() > I.fore())
                     )
                     {
                         exchangePoints_[d].append(ijk+2.0*fo);
@@ -102,7 +104,12 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>
     {
         forAll(x, d)
         {
-            cellDataExchange<MeshType> exchange(exchangePoints_[d], fvMsh, l, d);
+            faceLabel I = fvMsh.template I<MeshType>(0,d);
+
+            cellDataExchange<MeshType> exchange
+            (
+                exchangePoints_[d], fvMsh, l, d
+            );
 
             List<Type> exchangeData(move(exchange(x.mshField())));
 
@@ -113,6 +120,7 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>
                 if (this->IB_.ghostMask()(l,d,i,j,k))
                 {
                     const labelVector ijk(i,j,k);
+
                     for (int dir = 0; dir < 6; dir++)
                     {
                         const labelVector fo = faceOffsets[dir];
@@ -129,12 +137,12 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>
 
                             if
                             (
-                                   (i+2.0*fo.x() < 0)
-                                || (i+2.0*fo.x() > this->IB_.neighborDist()[l][d].I().right())
-                                || (j+2.0*fo.y() < 0)
-                                || (j+2.0*fo.y() > this->IB_.neighborDist()[l][d].I().top())
-                                || (k+2.0*fo.z() < 0)
-                                || (k+2.0*fo.z() > this->IB_.neighborDist()[l][d].I().fore())
+                                   (i+2.0*fo.x() < I.left())
+                                || (i+2.0*fo.x() > I.right())
+                                || (j+2.0*fo.y() < I.bottom())
+                                || (j+2.0*fo.y() > I.top())
+                                || (k+2.0*fo.z() < I.aft())
+                                || (k+2.0*fo.z() > I.fore())
                             )
                             {
                                 secondNeighborValue = exchangeData[cursor++];
