@@ -89,6 +89,7 @@ functionObjects/timeAverage/timeAverage.C
 functionObjects/budgetPrimitives/budgetPrimitives.C
 functionObjects/budgetPrimitivesStaggered/budgetPrimitivesStaggered.C
 functionObjects/immersedBoundaryForceStaggered/immersedBoundaryForceStaggered.C
+functionObjects/immersedBoundaryForceTwoPhaseStaggered/immersedBoundaryForceTwoPhaseStaggered.C
 
 dataExchange/dataExchange/dataExchange.C
 dataExchange/cellDataExchange/cellDataExchange.C

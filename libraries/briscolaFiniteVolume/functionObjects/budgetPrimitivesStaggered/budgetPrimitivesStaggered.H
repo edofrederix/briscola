@@ -24,10 +24,13 @@ class budgetPrimitivesStaggered
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
-    // velocity squared
+    // Velocity squared
     staggeredScalarField U2_;
 
-    // p*p
+    // Velocity cubed
+    staggeredScalarField U3_;
+
+    // Pressure squared
     colocatedScalarField p2_;
 
     // Reynolds stress tensor
@@ -35,14 +38,28 @@ class budgetPrimitivesStaggered
     // so turn on colocatedReconstruction switch.
     colocatedSymmTensorField Rij_;
 
+    // Reconstructed velocity squared
+    colocatedVectorField Rii_;
+
     // u_i*u_i*u_k
     colocatedTensorField uiuiuk_;
+
+    // Reconstructed velocity cubed
+    colocatedVectorField uiuiui_;
 
     // p*ui
     colocatedVectorField pui_;
 
+    // p*djui
+    colocatedTensorField pdjui_;
+
     // Gradient of velocity
+    staggeredVectorField stagdjui_;
     colocatedTensorField djui_;
+
+    // Squared velocity gradient (diagonal elements only)
+    staggeredScalarField stagdjui2_;
+    colocatedVectorField djui2_;
 
     // Strain rate tensor
     colocatedTensorField Sij_;

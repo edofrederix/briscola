@@ -40,6 +40,14 @@ budgetPrimitivesStaggered::budgetPrimitivesStaggered
         IOobject::AUTO_WRITE,
         true
     ),
+    U3_
+    (
+        "U3",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE,
+        true
+    ),
     p2_
     (
         "p2",
@@ -56,9 +64,25 @@ budgetPrimitivesStaggered::budgetPrimitivesStaggered
         IOobject::AUTO_WRITE,
         true
     ),
+    Rii_
+    (
+        "Rii",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE,
+        true
+    ),
     uiuiuk_
     (
         "uiuiuk",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE,
+        true
+    ),
+    uiuiui_
+    (
+        "uiuiui",
         fvMsh_,
         IOobject::NO_READ,
         IOobject::AUTO_WRITE,
@@ -72,9 +96,41 @@ budgetPrimitivesStaggered::budgetPrimitivesStaggered
         IOobject::AUTO_WRITE,
         true
     ),
+    pdjui_
+    (
+        "pdjui",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE,
+        true
+    ),
+    stagdjui_
+    (
+        "stagdjui",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE,
+        true
+    ),
     djui_
     (
         "djui",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE,
+        true
+    ),
+    stagdjui2_
+    (
+        "stagdjui2",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE,
+        true
+    ),
+    djui2_
+    (
+        "djui2",
         fvMsh_,
         IOobject::NO_READ,
         IOobject::AUTO_WRITE,
@@ -97,14 +153,21 @@ budgetPrimitivesStaggered::budgetPrimitivesStaggered
         true
     )
 {
-    U2_     = Zero;
-    p2_     = Zero;
-    Rij_    = Zero;
-    uiuiuk_ = Zero;
-    pui_    = Zero;
-    djui_   = Zero;
-    Sij_    = Zero;
-    eij_    = Zero;
+    U2_        = Zero;
+    U3_        = Zero;
+    p2_        = Zero;
+    Rij_       = Zero;
+    Rii_       = Zero;
+    uiuiuk_    = Zero;
+    uiuiui_    = Zero;
+    pui_       = Zero;
+    pdjui_     = Zero;
+    djui_      = Zero;
+    stagdjui_  = Zero;
+    djui2_     = Zero;
+    stagdjui2_ = Zero;
+    Sij_       = Zero;
+    eij_       = Zero;
 }
 
 budgetPrimitivesStaggered::~budgetPrimitivesStaggered()
@@ -128,6 +191,11 @@ bool budgetPrimitivesStaggered::execute()
         U2_(l,d,i,j,k) = Foam::sqr(U(l,d,i,j,k));
     }
 
+    forAllCells(U3_,l,d,i,j,k)
+    {
+        U3_(l,d,i,j,k) = Foam::pow3(U(l,d,i,j,k));
+    }
+
     forAllCells(p2_,l,d,i,j,k)
     {
         p2_(l,d,i,j,k) = Foam::sqr(p(l,d,i,j,k));
@@ -145,6 +213,9 @@ bool budgetPrimitivesStaggered::execute()
         Rij_(l,d,i,j,k).zz() = Uc(l,d,i,j,k)[2]*Uc(l,d,i,j,k)[2];
     }
 
+    U2_.correctCommsBoundaryConditions();
+    Rii_ = ex::reconstruct(U2_);
+
     forAllCells(uiuiuk_,l,d,i,j,k)
     {
         uiuiuk_(l,d,i,j,k).xx() = Rij_(l,d,i,j,k).xx()*Uc(l,d,i,j,k)[0];
@@ -160,6 +231,9 @@ bool budgetPrimitivesStaggered::execute()
         uiuiuk_(l,d,i,j,k).zz() = Rij_(l,d,i,j,k).zz()*Uc(l,d,i,j,k)[2];
     }
 
+    U3_.correctCommsBoundaryConditions();
+    uiuiui_ = ex::reconstruct(U3_);
+
     forAllCells(pui_,l,d,i,j,k)
     {
         pui_(l,d,i,j,k)[0] = p(l,d,i,j,k)*Uc(l,d,i,j,k)[0];
@@ -167,7 +241,22 @@ bool budgetPrimitivesStaggered::execute()
         pui_(l,d,i,j,k)[2] = p(l,d,i,j,k)*Uc(l,d,i,j,k)[2];
     }
 
-    djui_ = ex::grad(Uc);
+    stagdjui_ = ex::grad(U);
+    stagdjui_.correctCommsBoundaryConditions();
+    djui_ = ex::reconstruct(stagdjui_);
+
+    forAllCells(pdjui_,l,d,i,j,k)
+    {
+        pdjui_(l,d,i,j,k) = p(l,d,i,j,k)*djui_(l,d,i,j,k);
+    }
+
+    forAllCells(stagdjui2_, l, d, i, j, k)
+    {
+        stagdjui2_(l,d,i,j,k) = Foam::sqr(stagdjui_(l,d,i,j,k)[d]);
+    }
+
+    stagdjui2_.correctCommsBoundaryConditions();
+    djui2_ = ex::reconstruct(stagdjui2_);
 
     forAllCells(Sij_,l,d,i,j,k)
     {

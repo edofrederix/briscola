@@ -7,6 +7,7 @@ wmake libso libraries/briscolaTwoPhase
 
 wmake applications/utilities/briscolaCheckMesh
 wmake applications/utilities/briscolaChannelPost
+wmake applications/utilities/vkPost
 wmake applications/utilities/briscolaWriteMesh
 
 wmake applications/solvers/briscolaLaplacian
