@@ -36,13 +36,13 @@ protected:
     // Reference to immersed boundary
     const immersedBoundary<MeshType>& IB_;
 
+    // Reference to the forcing points mask
+    const meshField<label,MeshType>& forcingPoints_;
+
     // Copy of the dictionary
     dictionary dict_;
 
-    // True for ghost-cell methods updating values as Jacobi points
-    const Switch JacobiGhostMethod_;
-
-    // Convergence relaxation parameter
+    // Relaxation factor
     scalar omega_;
 
 public:
@@ -68,7 +68,7 @@ public:
     (
         const meshField<Type,MeshType>& mshField,
         const immersedBoundary<MeshType>& ib,
-        bool jac = false
+        const meshField<label,MeshType>& fp
     );
 
     // Selector from dictionary
@@ -81,24 +81,17 @@ public:
     // Destructor
     virtual ~immersedBoundaryCondition();
 
-    // Correct the stencils of a linear system to apply the IBM correction.
-    // This function is overwritten by fully implicit IBM types and does
-    // nothing otherwise.
-    virtual void correctLinearSystem
-    (
-        linearSystem<stencil,Type,MeshType>&
-    );
-
-    // Correct the forcing points as Jacobi points. This function is
-    // overwritten by IBM types with large stencils (> 7 points in 3D).
+    // Correct the forcing points as Jacobi points.
     virtual void correctJacobiPoints
     (
         meshLevel<Type,MeshType>&
-    ) const;
+    ) const = 0;
 
     // Inline access functions
     inline const dictionary& dict() const { return dict_; }
-    inline const Switch Jac() const { return JacobiGhostMethod_; }
+
+    inline const meshField<label,MeshType>& forcingPoints() const
+    { return forcingPoints_; }
 
 };
 

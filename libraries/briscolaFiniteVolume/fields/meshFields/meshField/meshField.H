@@ -332,10 +332,6 @@ public:
 
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();
-    void correctImmersedBoundaryConditions
-    (
-        linearSystem<stencil,Type,MeshType>&
-    );
 
     // Set the old time field
     void setOldTime();
@@ -377,7 +373,7 @@ public:
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }
 
-    // Return const reference to IB condition
+    // Return const reference to immersed boundary conditions
     const PtrList<immersedBoundaryCondition<Type,MeshType>>& IBC() const;
 
     // Member operators

@@ -107,9 +107,8 @@ forAll(U.IBC(), ib)
 
     if
     (
-        U.IBC()[ib].Jac()
-        && U.subDict("boundaryConditions").subDict(IBname)
-            .lookupOrDefault<Switch>("massSource", true)
+        U.subDict("boundaryConditions").subDict(IBname)
+            .lookupOrDefault<Switch>("massSource", false)
     )
     {
         massSource = true;

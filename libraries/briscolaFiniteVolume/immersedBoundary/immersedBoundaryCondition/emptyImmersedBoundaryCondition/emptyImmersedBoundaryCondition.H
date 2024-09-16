@@ -32,6 +32,12 @@ public:
     // Destructor
     virtual ~emptyImmersedBoundaryCondition();
 
+    // Correct Jacobi points
+    void correctJacobiPoints
+    (
+        meshLevel<Type,MeshType>&
+    ) const;
+
 };
 
 }

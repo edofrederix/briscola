@@ -19,7 +19,12 @@ MittalNeumannImmersedBoundaryCondition<Type,MeshType>
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField,ib,true),
+    immersedBoundaryCondition<Type,MeshType>
+    (
+        mshField,
+        ib,
+        ib.wallAdjMask()
+    ),
     exchangePoints_(MeshType::numberOfDirections),
     boundaryGradients_(this->dict().lookup("gradients"))
 {
@@ -36,7 +41,7 @@ MittalNeumannImmersedBoundaryCondition<Type,MeshType>
 
     forAllCells(this->IB_.mirrorPoints()[0],d,i,j,k)
     {
-        if (this->IB_.ghostMask()(0,d,i,j,k))
+        if (this->forcingPoints_(0,d,i,j,k))
         {
             vector mp = this->IB_.mirrorPoints()(0,d,i,j,k);
 
@@ -101,7 +106,7 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>
 
             forAllCells(x[d],i,j,k)
             {
-                if (this->IB_.ghostMask()(l,d,i,j,k))
+                if (this->forcingPoints_(l,d,i,j,k))
                 {
                     // mirror point
                     vector mp = this->IB_.mirrorPoints()(l,d,i,j,k);

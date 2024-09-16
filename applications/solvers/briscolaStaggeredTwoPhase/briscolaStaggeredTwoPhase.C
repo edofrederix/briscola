@@ -78,11 +78,6 @@ int main(int argc, char *argv[])
             USys -= list(icoTwoPhase.g());
         }
 
-        if (fvMsh.immersedBoundaryPresent())
-        {
-            U.correctImmersedBoundaryConditions(USys);
-        }
-
         for (int corr = 0; corr < nCorr; corr++)
         {
             // Solve predictor with latest pressure

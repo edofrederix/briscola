@@ -20,7 +20,12 @@ FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField,ib),
+    immersedBoundaryCondition<Type,MeshType>
+    (
+        mshField,
+        ib,
+        ib.wallAdjMask()
+    ),
     boundaryValues_(this->dict().lookup("values"))
 {
     // Check shape overlap
@@ -71,37 +76,40 @@ FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
 
 template<class Type, class MeshType>
 void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
-::correctLinearSystem
+::correctJacobiPoints
 (
-    linearSystem<stencil,Type,MeshType>& ls
-)
+    meshLevel<Type,MeshType>& x
+) const
 {
-    forAllCells(ls.A(),l,d,i,j,k)
+    scalar omega = this->omega_;
+
+    label l = x.levelNum();
+
+    if (l == 0)
     {
-        if (this->IB_.wallAdjMask()(l,d,i,j,k))
+        forAllCells(x,d,i,j,k)
         {
-            scalar ximax = 0;
-            // Loop over face number directions
-            for (int dir = 0; dir < 6; dir++)
+            if (this->forcingPoints_(l,d,i,j,k))
             {
-                const label oppositeDir =
-                    faceNumber(-faceOffsets[dir]);
-
-                if (this->IB_.wallDistAdj()(l,d,i,j,k)[dir] > ximax)
+                scalar ximax = 0;
+                // Loop over face number directions
+                for (int dir = 0; dir < 6; dir++)
                 {
-                    ximax = this->IB_.wallDistAdj()(l,d,i,j,k)[dir];
-                    const scalar xic = 1.0
-                        - this->IB_.wallDistAdj()(l,d,i,j,k)[dir];
-                    const scalar xinb = 1.0 + xic;
-                    const scalar w = xic/xinb;
-
-                    ls.A()(l,d,i,j,k) = Zero;
-                    ls.A()(l,d,i,j,k).center() = 1.0;
-                    ls.A()(l,d,i,j,k)[oppositeDir+1] = -w;
-
-                    if (l == 0)
+                    if (this->IB_.wallDistAdj()(l,d,i,j,k)[dir] > ximax)
                     {
-                        ls.b()(l,d,i,j,k) = boundaryValues_[d]/xinb;
+                        ximax = this->IB_.wallDistAdj()(l,d,i,j,k)[dir];
+                        const scalar xic = 1.0
+                            - this->IB_.wallDistAdj()(l,d,i,j,k)[dir];
+                        const scalar xinb = 1.0 + xic;
+                        const scalar w = xic/xinb;
+
+                        labelVector ijk(i,j,k);
+
+                        Type forcingValue = boundaryValues_[d]/xinb
+                            + w*x[d](ijk-faceOffsets[dir]);
+
+                        x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
+                            + omega * forcingValue;
                     }
                 }
             }

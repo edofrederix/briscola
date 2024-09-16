@@ -23,7 +23,7 @@ tmp<colocatedScalarField> IBMMassSource
 
     meshField<label,staggered> ghostMask
     (
-        "JacGhostMask",
+        "massSourceGhostMask",
         fvMsh
     );
 
@@ -31,14 +31,11 @@ tmp<colocatedScalarField> IBMMassSource
 
     forAll(fvMsh.IB<staggered>(), ib)
     {
-        if (field.IBC()[ib].Jac())
+        forAllCells(ghostMask,l,d,i,j,k)
         {
-            forAllCells(ghostMask,l,d,i,j,k)
+            if (fvMsh.IB<staggered>()[ib].ghostMask()(l,d,i,j,k))
             {
-                if (fvMsh.IB<staggered>()[ib].ghostMask()(l,d,i,j,k))
-                {
-                    ghostMask(l,d,i,j,k) = 1;
-                }
+                ghostMask(l,d,i,j,k) = 1;
             }
         }
     }

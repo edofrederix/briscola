@@ -36,8 +36,11 @@ public:
     // Destructor
     virtual ~FadlunDirichletImmersedBoundaryCondition();
 
-    // Correct linear system
-    void correctLinearSystem(linearSystem<stencil,Type,MeshType>&);
+    // Correct Jacobi points
+    void correctJacobiPoints
+    (
+        meshLevel<Type,MeshType>&
+    ) const;
 
 };
 

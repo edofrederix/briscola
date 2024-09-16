@@ -26,11 +26,12 @@ immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
     const immersedBoundary<MeshType>& ib,
-    bool jac
+    const meshField<label,MeshType>& fp
 )
 :
     fvMsh_(mshField.fvMsh()),
     IB_(ib),
+    forcingPoints_(fp),
     dict_
     (
         mshField.found("boundaryConditions")
@@ -38,7 +39,6 @@ immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
       ? mshField.subDict("boundaryConditions").subDict(IB_.name())
       : dictionary::null
     ),
-    JacobiGhostMethod_(jac),
     omega_
     (
         dict_.lookupOrDefault<scalar>("omega", 0.8)
@@ -78,24 +78,6 @@ immersedBoundaryCondition<Type,MeshType>::New
     }
 
     return autoPtr<immersedBoundaryCondition<Type,MeshType>>(cstrIter()(mshField, ib));
-}
-
-template<class Type, class MeshType>
-void immersedBoundaryCondition<Type,MeshType>::correctLinearSystem
-(
-    linearSystem<stencil,Type,MeshType>&
-)
-{
-    // Do nothing by default
-}
-
-template<class Type, class MeshType>
-void immersedBoundaryCondition<Type,MeshType>::correctJacobiPoints
-(
-    meshLevel<Type,MeshType>&
-) const
-{
-    // Do nothing by default
 }
 
 }

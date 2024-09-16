@@ -32,8 +32,6 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 {
     meshLevel<Type,MeshType>& x = sys.x()[l];
 
-    const fvMesh& fvMsh = this->fvMsh_;
-
     const meshLevel<SType,MeshType>& A = sys.A()[l];
     const meshLevel<Type,MeshType>& b = sys.b()[l];
 
@@ -60,21 +58,17 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
                 forAllCells(xd, i, j, k)
                 {
-                    Switch Jac = false;
+                    Switch forcing = false;
 
                     forAll(sys.x().IBC(), ib)
                     {
-                        if
-                        (
-                            sys.x().IBC()[ib].Jac()
-                            && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
-                        )
+                        if (sys.x().IBC()[ib].forcingPoints()(l,d,i,j,k))
                         {
-                            Jac = true;
+                            forcing = true;
                         }
                     }
 
-                    if (even(i,j,k) && !Jac)
+                    if (even(i,j,k) && !forcing)
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
@@ -87,21 +81,17 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
                 forAllCells(xd, i, j, k)
                 {
-                    Switch Jac = false;
+                    Switch forcing = false;
 
                     forAll(sys.x().IBC(), ib)
                     {
-                        if
-                        (
-                            sys.x().IBC()[ib].Jac()
-                            && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
-                        )
+                        if (sys.x().IBC()[ib].forcingPoints()(l,d,i,j,k))
                         {
-                            Jac = true;
+                            forcing = true;
                         }
                     }
 
-                    if (odd(i,j,k) && !Jac)
+                    if (odd(i,j,k) && !forcing)
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
@@ -117,21 +107,17 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
                 forAllCellsReversed(xd, i, j, k)
                 {
-                    Switch Jac = false;
+                    Switch forcing = false;
 
                     forAll(sys.x().IBC(), ib)
                     {
-                        if
-                        (
-                            sys.x().IBC()[ib].Jac()
-                            && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
-                        )
+                        if (sys.x().IBC()[ib].forcingPoints()(l,d,i,j,k))
                         {
-                            Jac = true;
+                            forcing = true;
                         }
                     }
 
-                    if (even(i,j,k) && !Jac)
+                    if (even(i,j,k) && !forcing)
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
@@ -144,21 +130,17 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
                 forAllCellsReversed(xd, i, j, k)
                 {
-                    Switch Jac = false;
+                    Switch forcing = false;
 
                     forAll(sys.x().IBC(), ib)
                     {
-                        if
-                        (
-                            sys.x().IBC()[ib].Jac()
-                            && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
-                        )
+                        if (sys.x().IBC()[ib].forcingPoints()(l,d,i,j,k))
                         {
-                            Jac = true;
+                            forcing = true;
                         }
                     }
 
-                    if (odd(i,j,k) && !Jac)
+                    if (odd(i,j,k) && !forcing)
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)

@@ -63,15 +63,7 @@ int main(int argc, char *argv[])
 
         // Solve predictor
 
-        if (fvMsh.immersedBoundaryPresent())
-        {
-            U.correctImmersedBoundaryConditions(USys);
-        }
-
         USolve->solve(USys);
-
-        U += deltaT*ex::stagGrad(p);
-        U.correctBoundaryConditions();
 
         // Pressure equation
 

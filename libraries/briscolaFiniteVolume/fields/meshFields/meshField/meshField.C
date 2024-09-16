@@ -449,20 +449,6 @@ void meshField<Type,MeshType>::correctImmersedBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctImmersedBoundaryConditions
-(
-    linearSystem<stencil,Type,MeshType>& ls
-)
-{
-    addImmersedBoundaryConditions();
-
-    forAll(immersedBoundaryConditions_, i)
-    {
-        immersedBoundaryConditions_[i].correctLinearSystem(ls);
-    }
-}
-
-template<class Type, class MeshType>
 void meshField<Type,MeshType>::setOldTime()
 {
     if (oldTimePtr_ == nullptr)

@@ -96,18 +96,15 @@ void MG<SType,Type,MeshType>::cycle
 
                         forAll(sys.x().IBC(), ib)
                         {
-                            if (sys.x().IBC()[ib].Jac())
+                            forAllCells(r[l][d],i,j,k)
                             {
-                                forAllCells(r[l][d],i,j,k)
+                                if
+                                (
+                                    sys.x().IBC()[ib]
+                                        .forcingPoints()(l,d,i,j,k)
+                                )
                                 {
-                                    if
-                                    (
-                                        fvMsh.IB<MeshType>()[ib]
-                                            .ghostMask()[l][d](i,j,k)
-                                    )
-                                    {
-                                        r[l][d](i,j,k) = Zero;
-                                    }
+                                    r[l][d](i,j,k) = Zero;
                                 }
                             }
                         }
@@ -223,18 +220,11 @@ void MG<SType,Type,MeshType>::solve
 
     forAll(sys.x().IBC(), ib)
     {
-        if (sys.x().IBC()[ib].Jac())
+        forAllCells(r[0],d,i,j,k)
         {
-            forAllCells(r[0],d,i,j,k)
+            if (sys.x().IBC()[ib].forcingPoints()(0,d,i,j,k))
             {
-                if
-                (
-                    fvMsh.IB<MeshType>()[ib]
-                        .ghostMask()[0][d](i,j,k)
-                )
-                {
-                    r[0][d](i,j,k) = Zero;
-                }
+                r[0][d](i,j,k) = Zero;
             }
         }
     }
@@ -302,18 +292,11 @@ void MG<SType,Type,MeshType>::solve
 
                 forAll(sys.x().IBC(), ib)
                 {
-                    if (sys.x().IBC()[ib].Jac())
+                    forAllCells(r[0][d],i,j,k)
                     {
-                        forAllCells(r[0][d],i,j,k)
+                        if (sys.x().IBC()[ib].forcingPoints()(0,d,i,j,k))
                         {
-                            if
-                            (
-                                fvMsh.IB<MeshType>()[ib]
-                                    .ghostMask()[0][d](i,j,k)
-                            )
-                            {
-                                r[0][d](i,j,k) = Zero;
-                            }
+                            r[0][d](i,j,k) = Zero;
                         }
                     }
                 }

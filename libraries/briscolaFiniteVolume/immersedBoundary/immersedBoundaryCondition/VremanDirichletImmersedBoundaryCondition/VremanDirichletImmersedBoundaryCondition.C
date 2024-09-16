@@ -19,7 +19,12 @@ VremanDirichletImmersedBoundaryCondition<Type,MeshType>
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField,ib,true),
+    immersedBoundaryCondition<Type,MeshType>
+    (
+        mshField,
+        ib,
+        ib.ghostMask()
+    ),
     exchangePoints_(MeshType::numberOfDirections),
     boundaryValues_(this->dict().lookup("values"))
 {
@@ -36,11 +41,11 @@ VremanDirichletImmersedBoundaryCondition<Type,MeshType>
         this->fvMsh_.template metrics<MeshType>().cellCenters();
 
     // Set exchange points list
-    forAllCells(this->IB_.ghostMask()[0],d,i,j,k)
+    forAllCells(this->forcingPoints_[0],d,i,j,k)
     {
         const labelVector ijk(i,j,k);
 
-        if (this->IB_.ghostMask()(0,d,i,j,k))
+        if (this->forcingPoints_(0,d,i,j,k))
         {
             faceLabel I = this->fvMsh_.template I<MeshType>(0,d);
 
@@ -117,7 +122,7 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>
 
             forAllCells(x[d],i,j,k)
             {
-                if (this->IB_.ghostMask()(l,d,i,j,k))
+                if (this->forcingPoints_(l,d,i,j,k))
                 {
                     const labelVector ijk(i,j,k);
 

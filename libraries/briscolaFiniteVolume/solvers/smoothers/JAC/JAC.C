@@ -32,8 +32,6 @@ void JAC<SType,Type,MeshType>::JAC::smooth
 {
     meshLevel<Type,MeshType>& x = sys.x()[l];
 
-    const fvMesh& fvMsh = this->fvMsh_;
-
     const meshLevel<SType,MeshType>& A = sys.A()[l];
     const meshLevel<Type,MeshType>& b = sys.b()[l];
 
@@ -65,21 +63,17 @@ void JAC<SType,Type,MeshType>::JAC::smooth
 
                 forAllCells(xd, i, j, k)
                 {
-                    Switch Jac = false;
+                    Switch forcing = false;
 
                     forAll(sys.x().IBC(), ib)
                     {
-                        if
-                        (
-                            sys.x().IBC()[ib].Jac()
-                            && fvMsh.IB<MeshType>()[ib].ghostMask()(l,d,i,j,k)
-                        )
+                        if (sys.x().IBC()[ib].forcingPoints()(l,d,i,j,k))
                         {
-                            Jac = true;
+                            forcing = true;
                         }
                     }
 
-                    if (!Jac)
+                    if (!forcing)
                     {
                         yd(i,j,k) =
                             yd(i,j,k)*(1.0-omega_)

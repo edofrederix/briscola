@@ -29,6 +29,7 @@ void immersedBoundary<MeshType>::setMasks()
         mask_(l,d,i,j,k) = Zero;
         ghostMask_(l,d,i,j,k) = Zero;
         wallAdjMask_(l,d,i,j,k) = Zero;
+        emptyField_(l,d,i,j,k) = Zero;
 
         if (this->isInside(CC(l,d,i,j,k)))
         {
@@ -94,6 +95,7 @@ void immersedBoundary<MeshType>::setMasks()
     mask_.correctCommsBoundaryConditions();
     ghostMask_.correctCommsBoundaryConditions();
     wallAdjMask_.correctCommsBoundaryConditions();
+    emptyField_.correctCommsBoundaryConditions();
 }
 
 template<class MeshType>
@@ -296,6 +298,16 @@ immersedBoundary<MeshType>::immersedBoundary
     mirrorPoints_
     (
         "mirrorPoints",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        false,
+        true
+    ),
+    emptyField_
+    (
+        "emptyField",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,

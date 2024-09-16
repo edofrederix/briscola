@@ -94,8 +94,8 @@ bool immersedBoundaryForceTwoPhaseStaggered::execute()
     const staggeredScalarField& residual
         = db.lookupObject<staggeredScalarField>("residual");
 
-    const staggeredScalarField& cv
-        = fvMsh_.metrics<staggered>().cellVolumes();
+    // const staggeredScalarField& cv
+    //     = fvMsh_.metrics<staggered>().cellVolumes();
 
     volForce_ = residual;
 

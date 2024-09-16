@@ -20,7 +20,12 @@ penalizationDirichletImmersedBoundaryCondition<Type,MeshType>
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField,ib),
+    immersedBoundaryCondition<Type,MeshType>
+    (
+        mshField,
+        ib,
+        ib.mask()
+    ),
     boundaryValues_(this->dict().lookup("values"))
 {}
 
@@ -33,31 +38,24 @@ penalizationDirichletImmersedBoundaryCondition<Type,MeshType>
 
 template<class Type, class MeshType>
 void penalizationDirichletImmersedBoundaryCondition<Type,MeshType>
-::correctLinearSystem
+::correctJacobiPoints
 (
-    linearSystem<stencil,Type,MeshType>& ls
-)
+    meshLevel<Type,MeshType>& x
+) const
 {
-    forAllCells(ls.b(),l,d,i,j,k)
+    scalar omega = this->omega_;
+
+    label l = x.levelNum();
+
+    if (l == 0)
     {
-        if (this->IB_.mask()(l,d,i,j,k))
+        forAllCells(x,d,i,j,k)
         {
-            const scalar H = l == 0;
-
-            // Set source terms in IB
-            ls.b()(l,d,i,j,k) = H*boundaryValues_[d];
-        }
-    }
-
-    forAllCells(ls.A(),l,d,i,j,k)
-    {
-        if (this->IB_.mask()(l,d,i,j,k))
-        {
-            // Set coefficients to 0 in IB
-            ls.A()(l,d,i,j,k) = Zero;
-
-            // Set central coefficients to 1 in IB
-            ls.A()(l,d,i,j,k).center() = 1.0;
+            if (this->forcingPoints_(l,d,i,j,k))
+            {
+                x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
+                    + omega * boundaryValues_[d];
+            }
         }
     }
 }
