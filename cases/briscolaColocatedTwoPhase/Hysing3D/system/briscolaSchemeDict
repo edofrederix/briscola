@@ -88,6 +88,11 @@ faceFluxSchemes
     {
         type    linear;
     }
+
+    flux(dev2(grad(U)))
+    {
+        type    linear;
+    }
 }
 
 interpolationSchemes

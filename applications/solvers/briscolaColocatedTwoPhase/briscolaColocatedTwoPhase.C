@@ -63,86 +63,31 @@ int main(int argc, char *argv[])
         USys -= 0.5*(deltaT/deltaT0)*H;
 
         H = ex::div(phi,U)
-          - (ex::grad(mu) & ex::grad(U))*v
+          - ex::div(mu*ex::faceFlux(dev2(T(ex::grad(U)))))*v
           - ex::reconstruct(icoTwoPhase.surfaceTension())*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
+        USys -= icoTwoPhase.g();
 
-        if (reduced)
-        {
-            USys -= ex::reconstruct(icoTwoPhase.buoyancy())*v;
-        }
-        else
-        {
-            USys -= icoTwoPhase.g();
-        }
+        // Solve predictor
 
-        for (int corr = 0; corr < nCorr; corr++)
-        {
-            // Solve predictor
+        USolve->solve(USys + ex::grad(p)*v);
 
-            USolve->solve(USys + ex::grad(p)*v);
+        U += deltaT*ex::grad(p)*v;
+        U.correctBoundaryConditions();
 
-            // Pressure equation
+        // Pressure equation
 
-            phi = ex::faceFlux(U);
+        phi = ex::faceFlux(U);
 
-            if (split)
-            {
-                q = (1.0 + deltaT/deltaT0)*p - deltaT/deltaT0*p.oldTime();
-                p.setOldTime();
+        Poisson->solve(p, ex::div(phi)/(-deltaT), vf);
 
-                colocatedLowerFaceScalarField corr
-                (
-                    fa
-                  * (
-                        ex::faceGrad(q)*(1.0 - minRho*vf)
-                      + ex::faceGrad(p)*minRho*vf
-                    )
-                );
+        // Rhie-Chow correction
 
-                Poisson->solve
-                (
-                    p,
-                    minRho*ex::div(phi)/(-deltaT) - ex::div(corr)
-                );
+        U -= deltaT*ex::grad(p)*v;
+        U.correctBoundaryConditions();
 
-                // Rhie-Chow correction
-
-                U -=
-                    deltaT
-                  * (
-                        ex::grad(p)*maxv
-                      - ex::grad(p.oldTime())*v
-                      + ex::grad(q)*(v - maxv)
-                    );
-
-                U.correctBoundaryConditions();
-
-                phi -=
-                    deltaT*fa
-                  * (
-                        ex::faceGrad(p)*maxv
-                      - ex::faceGrad(p.oldTime())*vf
-                      + ex::faceGrad(q)*(vf - maxv)
-                    );
-            }
-            else
-            {
-                colocatedLowerFaceScalarField corr(fa*vf*ex::faceGrad(p));
-                p.setOldTime();
-
-                Poisson->solve(p, ex::div(phi)/(-deltaT) - ex::div(corr), vf);
-
-                // Rhie-Chow correction
-
-                U -= deltaT*(ex::grad(p) - ex::grad(p.oldTime()))*v;
-                U.correctBoundaryConditions();
-
-                phi -=
-                    deltaT*(ex::faceGrad(p) - ex::faceGrad(p.oldTime()))*fa*vf;
-            }
-        }
+        phi -= deltaT*ex::faceGrad(p)*fa*vf;
 
         io.write<colocated>();
 

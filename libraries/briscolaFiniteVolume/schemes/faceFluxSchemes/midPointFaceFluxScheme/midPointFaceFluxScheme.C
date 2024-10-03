@@ -9,6 +9,53 @@ namespace briscola
 namespace fv
 {
 
+template<class Type>
+tmp
+<
+    meshField
+    <
+        LowerFaceSpace<typename innerProduct<Type,vector>::type>,
+        colocated
+    >
+> midPointFaceFluxScheme::coloFaceFlux
+(
+    const meshField<Type,colocated>& field
+)
+{
+    typedef
+        meshField
+        <
+            LowerFaceSpace<typename innerProduct<Type,vector>::type>,
+            colocated
+        > returnType;
+
+    tmp<returnType> tFlux
+    (
+        new returnType
+        (
+            "faceFlux("+field.name()+")",
+            field.fvMsh()
+        )
+    );
+
+    returnType& Flux = tFlux.ref();
+
+    Flux = Zero;
+
+    const colocatedFaceVectorField& fan =
+        this->fvMsh().metrics<colocated>().faceAreaNormals();
+
+    forAllFaces(Flux, fd, i, j, k)
+    {
+        labelVector ijk(i,j,k);
+        labelVector nei(ijk-units[fd]);
+
+        Flux(ijk)[fd] = (0.5*(field(ijk) + field(nei)) & fan(ijk)[fd*2]);
+    }
+
+    return tFlux;
+}
+
 midPointFaceFluxScheme::midPointFaceFluxScheme
 (
     const dictionary& dict,
@@ -31,31 +78,15 @@ tmp<colocatedLowerFaceScalarField> midPointFaceFluxScheme::faceFlux
     const colocatedVectorField& field
 )
 {
-    tmp<colocatedLowerFaceScalarField> tFlux
-    (
-        new colocatedLowerFaceScalarField
-        (
-            "faceFlux("+field.name()+")",
-            field.fvMsh()
-        )
-    );
+    return this->coloFaceFlux(field);
+}
 
-    colocatedLowerFaceScalarField& Flux = tFlux.ref();
-
-    Flux = Zero;
-
-    const colocatedFaceVectorField& fan =
-        this->fvMsh().metrics<colocated>().faceAreaNormals();
-
-    forAllFaces(Flux, fd, i, j, k)
-    {
-        labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
-
-        Flux(ijk)[fd] = (0.5*(field(ijk) + field(nei)) & fan(ijk)[fd*2]);
-    }
-
-    return tFlux;
+tmp<colocatedLowerFaceVectorField> midPointFaceFluxScheme::faceFlux
+(
+    const colocatedTensorField& field
+)
+{
+    return this->coloFaceFlux(field);
 }
 
 tmp<staggeredLowerFaceScalarField> midPointFaceFluxScheme::faceFlux

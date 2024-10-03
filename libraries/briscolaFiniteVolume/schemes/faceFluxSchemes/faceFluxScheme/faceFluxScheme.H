@@ -56,6 +56,12 @@ public:
         const colocatedVectorField&
     ) = 0;
 
+    // FaceFluxScheme of a colocated tensor field
+    virtual tmp<colocatedLowerFaceVectorField> faceFlux
+    (
+        const colocatedTensorField&
+    ) = 0;
+
     // FaceFluxScheme of a staggered scalar field
     virtual tmp<staggeredLowerFaceScalarField> faceFlux
     (

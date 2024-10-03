@@ -96,9 +96,9 @@ phi = ex::faceFlux(U);
 
 // Adams-Bashforth source
 
-staggeredScalarField DivU
+staggeredScalarField H
 (
-    "DivU",
+    "H",
     fvMsh,
     IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
@@ -106,8 +106,4 @@ staggeredScalarField DivU
     false
 );
 
-DivU = ex::div(phi,U);
-
-// Parameters
-
-const label nCorr = solverDict.lookupOrDefault<label>("nCorrectors", 1);
+H = ex::div(phi,U);

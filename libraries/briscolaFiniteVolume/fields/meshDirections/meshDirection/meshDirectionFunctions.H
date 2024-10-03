@@ -479,6 +479,12 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 #include "undefBlockFunctionsM.H"
 
 #include "scalarMeshDirection.H"
+#include "labelMeshDirection.H"
+#include "vectorMeshDirection.H"
+#include "tensorMeshDirection.H"
+#include "symmTensorMeshDirection.H"
+#include "sphericalTensorMeshDirection.H"
+#include "diagTensorMeshDirection.H"
 #include "faceScalarMeshDirection.H"
 #include "lowerFaceScalarMeshDirection.H"
 #include "edgeScalarMeshDirection.H"

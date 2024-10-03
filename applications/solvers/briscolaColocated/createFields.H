@@ -93,9 +93,9 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
 
 // Adams-Bashforth source
 
-colocatedVectorField DivU
+colocatedVectorField H
 (
-    "DivU",
+    "H",
     fvMsh,
     IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
@@ -103,8 +103,4 @@ colocatedVectorField DivU
     false
 );
 
-DivU = ex::div(phi,U);
-
-// Parameters
-
-const label nCorr = solverDict.lookupOrDefault<label>("nCorrectors", 1);
+H = ex::div(phi,U);

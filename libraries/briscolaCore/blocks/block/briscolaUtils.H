@@ -667,35 +667,61 @@ inline labelVector cmptMax(const labelVector& a, const labelVector& b)
     );
 }
 
-// Return the face number given a face offset
+// Return the face number given a face offset (no checks)
 inline label faceNumber(const labelVector& o)
 {
+    #ifdef FULLDEBUG
+
+    if (cmptMax(cmptMag(o)) != 1 || cmptSum(cmptMag(o)) != 1)
+    {
+        FatalErrorInFunction
+            << "Invalid face offset " << o
+            << endl << abort(FatalError);
+    }
+
+    #endif
+
     return
-        cmptMax(cmptMag(o)) != 1 ? -1
-      : cmptSum(cmptMag(o)) != 1 ? -1
-      : o.x() != 0 ? (o.x()+1)/2
+        o.x() != 0 ? (o.x()+1)/2
       : o.y() != 0 ? (o.y()+1)/2 + 2
       :              (o.z()+1)/2 + 4;
 }
 
-// Return the edge number given an edge offset
+// Return the edge number given an edge offset (no checks)
 inline label edgeNumber(const labelVector& o)
 {
+    #ifdef FULLDEBUG
+
+    if (cmptMax(cmptMag(o)) != 1 || cmptSum(cmptMag(o)) != 2)
+    {
+        FatalErrorInFunction
+            << "Invalid edge offset " << o
+            << endl << abort(FatalError);
+    }
+
+    #endif
+
     return
-        cmptMax(cmptMag(o)) != 1 ? -1
-      : cmptSum(cmptMag(o)) != 2 ? -1
-      : o.x() == 0 ? (o.y()+1)/2 + (o.z()+1)
+        o.x() == 0 ? (o.y()+1)/2 + (o.z()+1)
       : o.y() == 0 ? (o.x()+1)/2 + (o.z()+1) + 4
       :              (o.x()+1)/2 + (o.y()+1) + 8;
 }
 
-// Return the vertex number given vertex offset
+// Return the vertex number given vertex offset (no checks)
 inline label vertexNumber(const labelVector& o)
 {
-    return
-        cmptMax(cmptMag(o)) != 1 ? -1
-      : cmptSum(cmptMag(o)) != 3 ? -1
-      : (o.x()+1)/2 + (o.y()+1) + (o.z()+1)*2;
+    #ifdef FULLDEBUG
+
+    if (cmptMax(cmptMag(o)) != 1 || cmptSum(cmptMag(o)) != 3)
+    {
+        FatalErrorInFunction
+            << "Invalid vertex offset " << o
+            << endl << abort(FatalError);
+    }
+
+    #endif
+
+    return (o.x()+1)/2 + (o.y()+1) + (o.z()+1)*2;
 }
 
 // Calculate the rotation tensor of one face offset vector to another

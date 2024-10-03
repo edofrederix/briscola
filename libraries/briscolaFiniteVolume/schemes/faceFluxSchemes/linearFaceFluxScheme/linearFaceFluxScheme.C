@@ -9,38 +9,36 @@ namespace briscola
 namespace fv
 {
 
-linearFaceFluxScheme::linearFaceFluxScheme
+template<class Type>
+tmp
+<
+    meshField
+    <
+        LowerFaceSpace<typename innerProduct<Type,vector>::type>,
+        colocated
+    >
+> linearFaceFluxScheme::coloFaceFlux
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
-)
-:
-    faceFluxScheme(dict,fvMsh)
-{}
-
-linearFaceFluxScheme::linearFaceFluxScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    faceFluxScheme(dictionary(),fvMsh)
-{}
-
-tmp<colocatedLowerFaceScalarField> linearFaceFluxScheme::faceFlux
-(
-    const colocatedVectorField& field
+    const meshField<Type,colocated>& field
 )
 {
-    tmp<colocatedLowerFaceScalarField> tFlux
+    typedef
+        meshField
+        <
+            LowerFaceSpace<typename innerProduct<Type,vector>::type>,
+            colocated
+        > returnType;
+
+    tmp<returnType> tFlux
     (
-        new colocatedLowerFaceScalarField
+        new returnType
         (
             "faceFlux("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    colocatedLowerFaceScalarField& Flux = tFlux.ref();
+    returnType& Flux = tFlux.ref();
 
     Flux = Zero;
 
@@ -69,6 +67,39 @@ tmp<colocatedLowerFaceScalarField> linearFaceFluxScheme::faceFlux
     }
 
     return tFlux;
+}
+
+linearFaceFluxScheme::linearFaceFluxScheme
+(
+    const dictionary& dict,
+    const fvMesh& fvMsh
+)
+:
+    faceFluxScheme(dict,fvMsh)
+{}
+
+linearFaceFluxScheme::linearFaceFluxScheme
+(
+    const fvMesh& fvMsh
+)
+:
+    faceFluxScheme(dictionary(),fvMsh)
+{}
+
+tmp<colocatedLowerFaceScalarField> linearFaceFluxScheme::faceFlux
+(
+    const colocatedVectorField& field
+)
+{
+    return this->coloFaceFlux(field);
+}
+
+tmp<colocatedLowerFaceVectorField> linearFaceFluxScheme::faceFlux
+(
+    const colocatedTensorField& field
+)
+{
+    return this->coloFaceFlux(field);
 }
 
 tmp<staggeredLowerFaceScalarField> linearFaceFluxScheme::faceFlux

@@ -40,6 +40,9 @@ void CV::correct()
 {
     colocatedScalarField& kappa = *this;
 
+    const colocatedFaceScalarField& fa =
+        fvMsh_.metrics<colocated>().faceAreas();
+
     colocatedScalarField cAlpha("alpha", fvMsh_);
     cAlpha = Zero;
 
@@ -52,7 +55,11 @@ void CV::correct()
 
     cAlpha.correctBoundaryConditions();
 
-    colocatedVectorField normal(ex::grad(cAlpha));
+    colocatedVectorField normal
+    (
+        "grad(alpha)",
+        ex::reconstruct(ex::faceGrad(cAlpha)*fa)
+    );
 
     forAllCells(alpha_, i, j, k)
     {

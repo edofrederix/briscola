@@ -428,6 +428,13 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 
 #include "undefBlockFunctionsM.H"
 #include "scalarBlock.H"
+#include "labelBlock.H"
+#include "labelVectorBlock.H"
+#include "vectorBlock.H"
+#include "tensorBlock.H"
+#include "symmTensorBlock.H"
+#include "sphericalTensorBlock.H"
+#include "diagTensorBlock.H"
 #include "faceScalarBlock.H"
 #include "lowerFaceScalarBlock.H"
 #include "edgeScalarBlock.H"

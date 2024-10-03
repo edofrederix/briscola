@@ -48,6 +48,35 @@ inline tmp<meshField<lowerFaceScalar,colocated>> faceFlux
     return tFaceFlux;
 }
 
+// Colocated face flux from tensor
+
+inline tmp<meshField<lowerFaceVector,colocated>> faceFlux
+(
+    const colocatedTensorField& field
+)
+{
+    return faceFluxScheme::New
+    (
+        "flux("+field.name()+")",
+        field.fvMsh()
+    )->faceFlux(field);
+}
+
+inline tmp<meshField<lowerFaceVector,colocated>> faceFlux
+(
+    const tmp<colocatedTensorField>& tField
+)
+{
+    tmp<meshField<lowerFaceVector,colocated>> tFaceFlux
+    (
+        faceFlux(tField())
+    );
+
+    tField.clear();
+
+    return tFaceFlux;
+}
+
 // Staggered face flux from scalar
 
 inline tmp<meshField<lowerFaceScalar,staggered>> faceFlux

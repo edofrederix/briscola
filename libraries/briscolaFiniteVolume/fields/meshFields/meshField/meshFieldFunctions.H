@@ -578,3 +578,22 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 #undef SCALARPRODTYPE
 
 #include "undefBlockFunctionsM.H"
+
+#include "scalarMeshField.H"
+#include "labelMeshField.H"
+#include "vectorMeshField.H"
+#include "tensorMeshField.H"
+#include "symmTensorMeshField.H"
+#include "sphericalTensorMeshField.H"
+#include "diagTensorMeshField.H"
+#include "faceScalarMeshField.H"
+#include "lowerFaceScalarMeshField.H"
+#include "edgeScalarMeshField.H"
+#include "vertexScalarMeshField.H"
+#include "faceVectorMeshField.H"
+#include "lowerFaceVectorMeshField.H"
+#include "edgeVectorMeshField.H"
+#include "vertexVectorMeshField.H"
+#include "diagStencilMeshField.H"
+#include "symmStencilMeshField.H"
+#include "stencilMeshField.H"

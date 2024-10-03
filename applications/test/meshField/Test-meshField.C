@@ -2086,9 +2086,9 @@ void testTensorFunctions(const fvMesh& fvMsh, const bool deep)
         deep
     );
 
-    meshField<sphericalTensor,MeshType> b3
+    meshField<sphericalTensor,MeshType> m3
     (
-        "b3",
+        "m3",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -2097,9 +2097,9 @@ void testTensorFunctions(const fvMesh& fvMsh, const bool deep)
         deep
     );
 
-    meshField<diagTensor,MeshType> b4
+    meshField<diagTensor,MeshType> m4
     (
-        "b4",
+        "m4",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -2125,8 +2125,8 @@ void testTensorFunctions(const fvMesh& fvMsh, const bool deep)
     {
         m1(l,d,i,j,k) = pTraits<tensor>::one*c++;
         m2(l,d,i,j,k) = pTraits<symmTensor>::one*c++;
-        b3(l,d,i,j,k) = pTraits<sphericalTensor>::one*c++;
-        b4(l,d,i,j,k) = pTraits<diagTensor>::one*c++;
+        m3(l,d,i,j,k) = pTraits<sphericalTensor>::one*c++;
+        m4(l,d,i,j,k) = pTraits<diagTensor>::one*c++;
         v1(l,d,i,j,k) = vector(l,l+1,l+2); c++;
     }
 
@@ -2160,15 +2160,64 @@ void testTensorFunctions(const fvMesh& fvMsh, const bool deep)
     v1 & (m2*2);
     (v1*2) & (m2*2);
 
-    b3 & v1;
-    (b3*2) & v1;
-    v1 & (b3*2);
-    (v1*2) & (b3*2);
+    m3 & v1;
+    (m3*2) & v1;
+    v1 & (m3*2);
+    (v1*2) & (m3*2);
 
-    b4 & v1;
-    (b4*2) & v1;
-    v1 & (b4*2);
-    (v1*2) & (b4*2);
+    m4 & v1;
+    (m4*2) & v1;
+    v1 & (m4*2);
+    (v1*2) & (m4*2);
+
+    tr(m1);
+    sph(m1);
+    T(m1);
+    symm(m1);
+    twoSymm(m1);
+    skew(m1);
+    dev(m1);
+    dev2(m1);
+    det(m1);
+    cof(m1);
+    // eigenValues(m1);
+    // eigenVectors(m1);
+
+    tr(m2);
+    sph(m2);
+    symm(m2);
+    twoSymm(m2);
+    // skew(m2);
+    dev(m2);
+    dev2(m2);
+    det(m2);
+    cof(m2);
+    // eigenValues(m2);
+    // eigenVectors(m2);
+
+    tr(m3);
+    sph(m3);
+    // symm(m3);
+    // twoSymm(m3);
+    // skew(m3);
+    // dev(m3);
+    // dev2(m3);
+    det(m3);
+    // cof(m3);
+    // eigenValues(m3);
+    // eigenVectors(m3);
+
+    tr(m4);
+    sph(m4);
+    // symm(m4);
+    // twoSymm(m4);
+    // skew(m4);
+    // dev(m4);
+    // dev2(m4);
+    det(m4);
+    // cof(m4);
+    // eigenValues(m4);
+    // eigenVectors(m4);
 }
 
 int main(int argc, char *argv[])

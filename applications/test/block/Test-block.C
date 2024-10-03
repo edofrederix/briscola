@@ -1584,6 +1584,55 @@ void testTensorFunctions()
     TEST(vector, v1, b4, &, "40")
 
     #undef TEST
+
+    tr(b1);
+    sph(b1);
+    T(b1);
+    symm(b1);
+    twoSymm(b1);
+    skew(b1);
+    dev(b1);
+    dev2(b1);
+    det(b1);
+    cof(b1);
+    eigenValues(b1);
+    eigenVectors(b1);
+
+    tr(b2);
+    sph(b2);
+    symm(b2);
+    twoSymm(b2);
+    // skew(b2);
+    dev(b2);
+    dev2(b2);
+    det(b2);
+    cof(b2);
+    eigenValues(b2);
+    eigenVectors(b2);
+
+    tr(b3);
+    sph(b3);
+    // symm(b3);
+    // twoSymm(b3);
+    // skew(b3);
+    // dev(b3);
+    // dev2(b3);
+    det(b3);
+    // cof(b3);
+    // eigenValues(b3);
+    // eigenVectors(b3);
+
+    tr(b4);
+    sph(b4);
+    // symm(b4);
+    // twoSymm(b4);
+    // skew(b4);
+    // dev(b4);
+    // dev2(b4);
+    det(b4);
+    // cof(b4);
+    // eigenValues(b4);
+    // eigenVectors(b4);
 }
 
 int main(int argc, char *argv[])

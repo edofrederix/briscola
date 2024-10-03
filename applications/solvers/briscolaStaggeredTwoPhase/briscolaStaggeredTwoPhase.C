@@ -68,74 +68,23 @@ int main(int argc, char *argv[])
           - ex::stagReconstruct(icoTwoPhase.surfaceTension())*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
+        USys -= list(icoTwoPhase.g());
 
-        if (reduced)
-        {
-            USys -= ex::stagReconstruct(icoTwoPhase.buoyancy())*v;
-        }
-        else
-        {
-            USys -= list(icoTwoPhase.g());
-        }
+        // Solve predictor with latest pressure
 
-        for (int corr = 0; corr < nCorr; corr++)
-        {
-            // Solve predictor with latest pressure
+        USolve->solve(USys + ex::stagGrad(p)*v);
 
-            USolve->solve(USys + ex::stagGrad(p)*v);
+        U += deltaT*ex::stagGrad(p)*v;
+        U.correctBoundaryConditions();
 
-            // Pressure equation
+        // Pressure equation
 
-            if (split)
-            {
-                q = (1.0 + deltaT/deltaT0)*p - (deltaT/deltaT0)*p.oldTime();
-                p.setOldTime();
+        Poisson->solve(p, ex::coloDiv(U)/(-deltaT), vcf);
 
-                colocatedLowerFaceScalarField corr
-                (
-                    fa
-                  * (
-                        ex::faceGrad(q)*(1.0 - minRho*vcf)
-                      + ex::faceGrad(p)*minRho*vcf
-                    )
-                );
+        // Correct velocity
 
-                Poisson->solve
-                (
-                    p,
-                    minRho*ex::coloDiv(U)/(-deltaT) - ex::div(corr)
-                );
-
-                // Correct velocity
-
-                U -=
-                    deltaT
-                  * (
-                        ex::stagGrad(p)*maxv
-                      - ex::stagGrad(p.oldTime())*v
-                      + ex::stagGrad(q)*(v - maxv)
-                    );
-
-                U.correctBoundaryConditions();
-            }
-            else
-            {
-                colocatedLowerFaceScalarField corr(fa*vcf*ex::faceGrad(p));
-                p.setOldTime();
-
-                Poisson->solve
-                (
-                    p,
-                    ex::coloDiv(U)/(-deltaT) - ex::div(corr),
-                    vcf
-                );
-
-                // Correct velocity
-
-                U -= deltaT*(ex::stagGrad(p) - ex::stagGrad(p.oldTime()))*v;
-                U.correctBoundaryConditions();
-            }
-        }
+        U -= deltaT*ex::stagGrad(p)*v;
+        U.correctBoundaryConditions();
 
         if (fvMsh.time().writeTime())
             Uc = ex::reconstruct(U);

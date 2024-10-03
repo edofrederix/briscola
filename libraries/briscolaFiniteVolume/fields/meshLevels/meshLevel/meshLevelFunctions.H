@@ -526,6 +526,12 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 #include "undefBlockFunctionsM.H"
 
 #include "scalarMeshLevel.H"
+#include "labelMeshLevel.H"
+#include "vectorMeshLevel.H"
+#include "tensorMeshLevel.H"
+#include "symmTensorMeshLevel.H"
+#include "sphericalTensorMeshLevel.H"
+#include "diagTensorMeshLevel.H"
 #include "faceScalarMeshLevel.H"
 #include "lowerFaceScalarMeshLevel.H"
 #include "edgeScalarMeshLevel.H"
