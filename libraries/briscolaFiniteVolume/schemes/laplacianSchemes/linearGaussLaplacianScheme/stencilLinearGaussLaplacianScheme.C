@@ -13,21 +13,11 @@ template<class Type, class MeshType>
 stencilLinearGaussLaplacianScheme<Type,MeshType>::
 stencilLinearGaussLaplacianScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    linearGaussLaplacianScheme<stencil,Type,MeshType>(dict,fvMsh)
-{}
-
-template<class Type, class MeshType>
-stencilLinearGaussLaplacianScheme<Type,MeshType>::
-stencilLinearGaussLaplacianScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    linearGaussLaplacianScheme<stencil,Type,MeshType>(dictionary(),fvMsh)
+    linearGaussLaplacianScheme<stencil,Type,MeshType>(fvMsh, is)
 {}
 
 template<class Type, class MeshType>

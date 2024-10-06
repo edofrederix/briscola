@@ -12,17 +12,11 @@ namespace fv
 template<class Type, class MeshType>
 EulerDdtScheme<Type,MeshType>::EulerDdtScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    ddtScheme<Type,MeshType>(dict,fvMsh)
-{}
-
-template<class Type, class MeshType>
-EulerDdtScheme<Type,MeshType>::EulerDdtScheme(const fvMesh& fvMsh)
-:
-    ddtScheme<Type,MeshType>(dictionary(),fvMsh)
+    ddtScheme<Type,MeshType>(fvMsh, is)
 {}
 
 template<class Type, class MeshType>

@@ -15,20 +15,11 @@ namespace fv
 template<class Type>
 stagFaceAverageRestrictionScheme<Type>::stagFaceAverageRestrictionScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    restrictionScheme<Type,staggered>(dict,fvMsh)
-{}
-
-template<class Type>
-stagFaceAverageRestrictionScheme<Type>::stagFaceAverageRestrictionScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    restrictionScheme<Type,staggered>(dictionary(),fvMsh)
+    restrictionScheme<Type,staggered>(fvMsh, is)
 {}
 
 template<class Type>

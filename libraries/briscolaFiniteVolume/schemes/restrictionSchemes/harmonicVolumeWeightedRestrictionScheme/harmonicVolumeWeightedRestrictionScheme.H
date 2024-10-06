@@ -22,11 +22,12 @@ public:
     // Runtime type information
     TypeName("harmonicVolumeWeighted");
 
-    // Construct from dictionary and mesh
-    harmonicVolumeWeightedRestrictionScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    harmonicVolumeWeightedRestrictionScheme(const fvMesh&);
+    // Construct from stream and mesh
+    harmonicVolumeWeightedRestrictionScheme
+    (
+        const fvMesh&,
+        Istream& = scheme::nullStream
+    );
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
     // level, with option to scale by cell volume

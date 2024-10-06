@@ -12,11 +12,11 @@ namespace fv
 template<class Type, class MeshType>
 faceGradientScheme<Type,MeshType>::faceGradientScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    scheme(dict, fvMsh)
+    scheme(fvMsh)
 {}
 
 template<class Type, class MeshType>
@@ -36,31 +36,29 @@ template<class Type, class MeshType>
 autoPtr<faceGradientScheme<Type,MeshType>>
 faceGradientScheme<Type,MeshType>::New
 (
-    const word name,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const word schemeName
 )
 {
-    const dictionary dict
-    (
-        fvMsh.schemeDict().subDict("faceGradientSchemes").subDict(name)
-    );
+    Istream& is = getStream(fvMsh, "faceGradientSchemes", schemeName);
 
-    const word faceGradientSchemeType(dict.lookup("type"));
+    word faceGradientSchemeType;
+    is >> faceGradientSchemeType;
 
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(faceGradientSchemeType);
+    typename IstreamConstructorTable::iterator cstrIter =
+        IstreamConstructorTablePtr_->find(faceGradientSchemeType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (cstrIter == IstreamConstructorTablePtr_->end())
     {
         FatalErrorInFunction
             << "Unknown face gradient scheme "
             << faceGradientSchemeType << nl << nl
             << "Valid face gradient schemes are:" << nl
-            << dictionaryConstructorTablePtr_->sortedToc()
+            << IstreamConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
-    return autoPtr<faceGradientScheme<Type,MeshType>>(cstrIter()(dict, fvMsh));
+    return autoPtr<faceGradientScheme<Type,MeshType>>(cstrIter()(fvMsh, is));
 }
 
 }

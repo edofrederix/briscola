@@ -71,19 +71,11 @@ tmp
 
 linearFaceFluxScheme::linearFaceFluxScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    faceFluxScheme(dict,fvMsh)
-{}
-
-linearFaceFluxScheme::linearFaceFluxScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    faceFluxScheme(dictionary(),fvMsh)
+    faceFluxScheme(fvMsh, is)
 {}
 
 tmp<colocatedLowerFaceScalarField> linearFaceFluxScheme::faceFlux

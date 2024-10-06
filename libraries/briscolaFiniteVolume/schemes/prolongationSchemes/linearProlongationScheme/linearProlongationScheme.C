@@ -121,32 +121,11 @@ void linearProlongationScheme<Type,MeshType>::prolong
 template<class Type, class MeshType>
 linearProlongationScheme<Type,MeshType>::linearProlongationScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    prolongationScheme<Type,MeshType>(dict,fvMsh),
-    weights_
-    (
-        "weights",
-        this->fvMsh(),
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false,
-        false,
-        true
-    )
-{
-    setWeights();
-}
-
-template<class Type, class MeshType>
-linearProlongationScheme<Type,MeshType>::linearProlongationScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    prolongationScheme<Type,MeshType>(dictionary(),fvMsh),
+    prolongationScheme<Type,MeshType>(fvMsh, is),
     weights_
     (
         "weights",

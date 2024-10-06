@@ -12,20 +12,11 @@ namespace fv
 template<class Type, class MeshType>
 midPointInterpolationScheme<Type,MeshType>::midPointInterpolationScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    interpolationScheme<Type,MeshType>(dict,fvMsh)
-{}
-
-template<class Type, class MeshType>
-midPointInterpolationScheme<Type,MeshType>::midPointInterpolationScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    interpolationScheme<Type,MeshType>(dictionary(),fvMsh)
+    interpolationScheme<Type,MeshType>(fvMsh, is)
 {}
 
 template<class Type, class MeshType>

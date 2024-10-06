@@ -22,11 +22,8 @@ public:
     // Runtime type information
     TypeName("linear");
 
-    // Construct from dictionary and mesh
-    linearFaceGradientScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    linearFaceGradientScheme(const fvMesh&);
+    // Construct from stream and mesh
+    linearFaceGradientScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Face-normal gradient
     virtual tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad

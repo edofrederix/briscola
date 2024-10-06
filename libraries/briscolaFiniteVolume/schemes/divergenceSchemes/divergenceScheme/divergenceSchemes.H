@@ -18,7 +18,7 @@
     defineTemplateRunTimeSelectionTable                                        \
     (                                                                          \
         divergenceScheme##STYPE##TYPE##MESHTYPE,                               \
-        dictionary                                                             \
+        Istream                                                                \
     );
 
 #define makeDivergenceSchemeType(SCHEME,STYPE,TYPE,MESHTYPE)                   \
@@ -34,7 +34,7 @@
     );                                                                         \
                                                                                \
     divergenceScheme<STYPE,TYPE,MESHTYPE>::                                    \
-    adddictionaryConstructorToTable                                            \
+    addIstreamConstructorToTable                                               \
     <                                                                          \
         SCHEME##DivergenceScheme##STYPE##TYPE##MESHTYPE                        \
     >                                                                          \

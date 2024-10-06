@@ -18,7 +18,7 @@
     defineTemplateRunTimeSelectionTable                                         \
     (                                                                           \
         gradientScheme##TYPE##MESHTYPE,                                         \
-        dictionary                                                              \
+        Istream                                                                 \
     );
 
 
@@ -35,7 +35,7 @@
     );                                                                          \
                                                                                 \
     gradientScheme<TYPE,MESHTYPE>::                                             \
-    adddictionaryConstructorToTable<SCHEME##GradientScheme##TYPE##MESHTYPE>     \
+    addIstreamConstructorToTable<SCHEME##GradientScheme##TYPE##MESHTYPE>        \
     add##SCHEME##GradientScheme##TYPE##MESHTYPE##ConstructorToTable_;
 
 #endif

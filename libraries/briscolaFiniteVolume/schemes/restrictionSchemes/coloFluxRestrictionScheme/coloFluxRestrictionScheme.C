@@ -14,16 +14,11 @@ namespace fv
 
 coloFluxRestrictionScheme::coloFluxRestrictionScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    restrictionScheme<lowerFaceScalar,colocated>(dict,fvMsh)
-{}
-
-coloFluxRestrictionScheme::coloFluxRestrictionScheme(const fvMesh& fvMsh)
-:
-    restrictionScheme<lowerFaceScalar,colocated>(dictionary(),fvMsh)
+    restrictionScheme<lowerFaceScalar,colocated>(fvMsh, is)
 {}
 
 void coloFluxRestrictionScheme::restrict

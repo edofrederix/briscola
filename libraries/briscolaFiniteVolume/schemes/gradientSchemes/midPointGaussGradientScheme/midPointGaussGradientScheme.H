@@ -22,11 +22,8 @@ public:
     // Runtime type information
     TypeName("midPointGauss");
 
-    // Construct from dictionary and mesh
-    midPointGaussGradientScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    midPointGaussGradientScheme(const fvMesh&);
+    // Construct from stream and mesh
+    midPointGaussGradientScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Gradient of u from same mesh type
     virtual tmp

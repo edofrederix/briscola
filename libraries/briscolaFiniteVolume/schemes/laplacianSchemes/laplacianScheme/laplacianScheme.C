@@ -12,11 +12,11 @@ namespace fv
 template<class SType, class Type, class MeshType>
 laplacianScheme<SType,Type,MeshType>::laplacianScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    scheme(dict, fvMsh)
+    scheme(fvMsh)
 {}
 
 template<class SType, class Type, class MeshType>
@@ -36,33 +36,31 @@ template<class SType, class Type, class MeshType>
 autoPtr<laplacianScheme<SType,Type,MeshType>>
 laplacianScheme<SType,Type,MeshType>::New
 (
-    const word name,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const word schemeName
 )
 {
-    const dictionary dict
-    (
-        fvMsh.schemeDict().subDict("laplacianSchemes").subDict(name)
-    );
+    Istream& is = getStream(fvMsh, "laplacianSchemes", schemeName);
 
-    const word laplacianSchemeType(dict.lookup("type"));
+    word laplacianSchemeType;
+    is >> laplacianSchemeType;
 
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(laplacianSchemeType);
+    typename IstreamConstructorTable::iterator cstrIter =
+        IstreamConstructorTablePtr_->find(laplacianSchemeType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (cstrIter == IstreamConstructorTablePtr_->end())
     {
         FatalErrorInFunction
             << "Unknown laplacian scheme "
             << laplacianSchemeType << nl << nl
             << "Valid laplacian schemes are:" << nl
-            << dictionaryConstructorTablePtr_->sortedToc()
+            << IstreamConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
     return autoPtr<laplacianScheme<SType,Type,MeshType>>
     (
-        cstrIter()(dict, fvMsh)
+        cstrIter()(fvMsh, is)
     );
 }
 

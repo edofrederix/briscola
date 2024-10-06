@@ -19,8 +19,8 @@ void testConstantRestriction(const fvMesh& fvMsh, const word scheme)
     (
         restrictionScheme<Type,MeshType>::New
         (
-            scheme,
-            fvMsh
+            fvMsh,
+            scheme
         )
     );
 
@@ -48,8 +48,8 @@ void testOneLinearRestriction(const fvMesh& fvMsh, const word scheme)
     (
         restrictionScheme<Type,MeshType>::New
         (
-            scheme,
-            fvMsh
+            fvMsh,
+            scheme
         )
     );
 
@@ -92,8 +92,8 @@ void testTwoLinearRestriction(const fvMesh& fvMsh, const word scheme)
     (
         restrictionScheme<Type,MeshType>::New
         (
-            scheme,
-            fvMsh
+            fvMsh,
+            scheme
         )
     );
 
@@ -144,8 +144,8 @@ void testThreeLinearRestriction(const fvMesh& fvMsh, const word scheme)
     (
         restrictionScheme<Type,MeshType>::New
         (
-            scheme,
-            fvMsh
+            fvMsh,
+            scheme
         )
     );
 

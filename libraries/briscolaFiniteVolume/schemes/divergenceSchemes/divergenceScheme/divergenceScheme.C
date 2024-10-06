@@ -12,11 +12,11 @@ namespace fv
 template<class SType, class Type, class MeshType>
 divergenceScheme<SType,Type,MeshType>::divergenceScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    scheme(dict, fvMsh)
+    scheme(fvMsh)
 {}
 
 template<class SType, class Type, class MeshType>
@@ -36,33 +36,31 @@ template<class SType, class Type, class MeshType>
 autoPtr<divergenceScheme<SType,Type,MeshType>>
 divergenceScheme<SType,Type,MeshType>::New
 (
-    const word name,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const word schemeName
 )
 {
-    const dictionary dict
-    (
-        fvMsh.schemeDict().subDict("divergenceSchemes").subDict(name)
-    );
+    Istream& is = getStream(fvMsh, "divergenceSchemes", schemeName);
 
-    const word divergenceSchemeType(dict.lookup("type"));
+    word divergenceSchemeType;
+    is >> divergenceSchemeType;
 
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(divergenceSchemeType);
+    typename IstreamConstructorTable::iterator cstrIter =
+        IstreamConstructorTablePtr_->find(divergenceSchemeType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (cstrIter == IstreamConstructorTablePtr_->end())
     {
         FatalErrorInFunction
             << "Unknown divergence scheme "
             << divergenceSchemeType << nl << nl
             << "Valid divergence schemes are:" << nl
-            << dictionaryConstructorTablePtr_->sortedToc()
+            << IstreamConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
     return autoPtr<divergenceScheme<SType,Type,MeshType>>
     (
-        cstrIter()(dict, fvMsh)
+        cstrIter()(fvMsh, is)
     );
 }
 

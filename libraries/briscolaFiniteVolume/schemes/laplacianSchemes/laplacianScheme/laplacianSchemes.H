@@ -18,7 +18,7 @@
     defineTemplateRunTimeSelectionTable                                        \
     (                                                                          \
         laplacianScheme##STYPE##TYPE##MESHTYPE,                                \
-        dictionary                                                             \
+        Istream                                                                \
     );
 
 
@@ -40,7 +40,7 @@
         SCHEME##LaplacianScheme##STYPE##TYPE##MESHTYPE;                        \
                                                                                \
     laplacianScheme<STYPE,TYPE,MESHTYPE>::                                     \
-    adddictionaryConstructorToTable                                            \
+    addIstreamConstructorToTable                                               \
     <                                                                          \
         SCHEME##LaplacianScheme##STYPE##TYPE##MESHTYPE                         \
     >                                                                          \

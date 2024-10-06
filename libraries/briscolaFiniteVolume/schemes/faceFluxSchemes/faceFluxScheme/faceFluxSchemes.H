@@ -3,15 +3,15 @@
 
 #include "faceFluxScheme.H"
 
-#define makeFaceFluxSchemeType(SCHEME)                                          \
-                                                                                \
-    defineTypeNameAndDebug                                                      \
-    (                                                                           \
-        SCHEME##FaceFluxScheme,                                                 \
-        0                                                                       \
-    );                                                                          \
-                                                                                \
-    faceFluxScheme::adddictionaryConstructorToTable<SCHEME##FaceFluxScheme>     \
+#define makeFaceFluxSchemeType(SCHEME)                                         \
+                                                                               \
+    defineTypeNameAndDebug                                                     \
+    (                                                                          \
+        SCHEME##FaceFluxScheme,                                                \
+        0                                                                      \
+    );                                                                         \
+                                                                               \
+    faceFluxScheme::addIstreamConstructorToTable<SCHEME##FaceFluxScheme>       \
     add##SCHEME##FaceFluxScheme##ConstructorToTable_;
 
 #endif

@@ -51,7 +51,6 @@ public:
     // Transform the grading given a transformation tensor
     virtual void transform(const labelTensor T)
     {
-        Info<< "nice"  << endl;
         f_ = pTransform<edgeScalar>(tensor(T), f_);
 
         for (label cmpt = 0; cmpt < 12; cmpt++)

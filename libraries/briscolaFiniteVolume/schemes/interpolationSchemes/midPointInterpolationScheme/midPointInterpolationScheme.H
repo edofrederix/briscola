@@ -22,11 +22,8 @@ public:
     // Runtime type information
     TypeName("midPoint");
 
-    // Construct from dictionary and mesh
-    midPointInterpolationScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    midPointInterpolationScheme(const fvMesh&);
+    // Construct from stream and mesh
+    midPointInterpolationScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Interpolation to the face
     virtual tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp

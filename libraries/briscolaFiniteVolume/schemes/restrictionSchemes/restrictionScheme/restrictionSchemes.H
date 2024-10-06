@@ -23,7 +23,7 @@
     defineTemplateRunTimeSelectionTable                                        \
     (                                                                          \
         restrictionScheme##TYPE##MESHTYPE,                                     \
-        dictionary                                                             \
+        Istream                                                                \
     );
 
 // Make a restriction scheme templated for a type and mesh type
@@ -41,7 +41,7 @@
     );                                                                         \
                                                                                \
     restrictionScheme<TYPE,MESHTYPE>::                                         \
-    adddictionaryConstructorToTable<SCHEME##RestrictionScheme##TYPE##MESHTYPE> \
+    addIstreamConstructorToTable<SCHEME##RestrictionScheme##TYPE##MESHTYPE>    \
     add##SCHEME##RestrictionScheme##TYPE##MESHTYPE##ConstructorToTable_;
 
 // Make a restriction scheme templated for a mesh type
@@ -59,7 +59,7 @@
     );                                                                         \
                                                                                \
     restrictionScheme<TYPE,MESHTYPE>::                                         \
-    adddictionaryConstructorToTable<SCHEME##RestrictionScheme##MESHTYPE>       \
+    addIstreamConstructorToTable<SCHEME##RestrictionScheme##MESHTYPE>          \
     add##SCHEME##RestrictionScheme##MESHTYPE##ConstructorToTable_;
 
 // Make a restriction scheme templated for a type
@@ -77,7 +77,7 @@
     );                                                                         \
                                                                                \
     restrictionScheme<TYPE,MESHTYPE>::                                         \
-    adddictionaryConstructorToTable<SCHEME##RestrictionScheme##TYPE>           \
+    addIstreamConstructorToTable<SCHEME##RestrictionScheme##TYPE>              \
     add##SCHEME##RestrictionScheme##TYPE##ConstructorToTable_;
 
 // Make an non-templated restriction scheme
@@ -91,7 +91,7 @@
     );                                                                         \
                                                                                \
     restrictionScheme<TYPE,MESHTYPE>::                                         \
-    adddictionaryConstructorToTable<SCHEME##RestrictionScheme>                 \
+    addIstreamConstructorToTable<SCHEME##RestrictionScheme>                    \
     add##SCHEME##RestrictionScheme##ConstructorToTable_;
 
 #endif

@@ -18,7 +18,7 @@
     defineTemplateRunTimeSelectionTable                                        \
     (                                                                          \
         prolongationScheme##TYPE##MESHTYPE,                                    \
-        dictionary                                                             \
+        Istream                                                                \
     );
 
 #define makeProlongationSchemeType(SCHEME,TYPE,MESHTYPE)                       \
@@ -34,7 +34,7 @@
     );                                                                         \
                                                                                \
     prolongationScheme<TYPE,MESHTYPE>::                                        \
-    adddictionaryConstructorToTable                                            \
+    addIstreamConstructorToTable                                               \
     <                                                                          \
         SCHEME##ProlongationScheme##TYPE##MESHTYPE                             \
     >                                                                          \

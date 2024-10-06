@@ -25,8 +25,8 @@ inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
 {
     return faceGradientScheme<Type,MeshType>::New
     (
-        "faceGrad("+field.name()+")",
-        field.fvMsh()
+        field.fvMsh(),
+        "faceGrad("+field.name()+")"
     )->faceGrad(field);
 }
 

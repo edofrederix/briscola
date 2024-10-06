@@ -29,22 +29,22 @@ public:
     (
         autoPtr,
         ddtScheme,
-        dictionary,
+        Istream,
         (
-            const dictionary& dict,
-            const fvMesh& fvMsh
+            const fvMesh& fvMsh,
+            Istream& is
         ),
-        (dict, fvMsh)
+        (fvMsh, is)
     );
 
-    // Construct from dictionary and mesh
-    ddtScheme(const dictionary&, const fvMesh&);
+    // Construct from stream and mesh
+    ddtScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Copy constructor
     ddtScheme(const ddtScheme<Type,MeshType>&);
 
     // Selector
-    static autoPtr<ddtScheme<Type,MeshType>> New(const word, const fvMesh&);
+    static autoPtr<ddtScheme<Type,MeshType>> New(const fvMesh&, const word);
 
     // Destructor
     virtual ~ddtScheme();

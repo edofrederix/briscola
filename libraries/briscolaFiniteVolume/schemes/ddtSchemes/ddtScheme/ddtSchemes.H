@@ -17,7 +17,7 @@
     defineTemplateRunTimeSelectionTable                                         \
     (                                                                           \
         ddtScheme##TYPE##MESHTYPE,                                              \
-        dictionary                                                              \
+        Istream                                                                 \
     );
 
 
@@ -34,7 +34,7 @@
     );                                                                          \
                                                                                 \
     ddtScheme<TYPE,MESHTYPE>::                                                  \
-    adddictionaryConstructorToTable<SCHEME##DdtScheme##TYPE##MESHTYPE>          \
+    addIstreamConstructorToTable<SCHEME##DdtScheme##TYPE##MESHTYPE>             \
     add##SCHEME##DdtScheme##TYPE##MESHTYPE##ConstructorToTable_;
 
 #endif

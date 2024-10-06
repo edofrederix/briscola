@@ -22,11 +22,8 @@ public:
     // Runtime type information
     TypeName("Euler");
 
-    // Construct from dictionary and mesh
-    EulerDdtScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    EulerDdtScheme(const fvMesh&);
+    // Construct from stream and mesh
+    EulerDdtScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Pure virtual functions, to be defined by derived schemes
 

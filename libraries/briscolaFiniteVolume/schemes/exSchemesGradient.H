@@ -26,8 +26,8 @@ grad
 {
     return gradientScheme<Type,MeshType>::New
     (
-        "grad("+field.name()+")",
-        field.fvMsh()
+        field.fvMsh(),
+        "grad("+field.name()+")"
     )->grad(field);
 }
 
@@ -63,8 +63,8 @@ stagGrad
 {
     return gradientScheme<Type,colocated>::New
     (
-        "stagGrad("+field.name()+")",
-        field.fvMsh()
+        field.fvMsh(),
+        "stagGrad("+field.name()+")"
     )->stagGrad(field);
 }
 

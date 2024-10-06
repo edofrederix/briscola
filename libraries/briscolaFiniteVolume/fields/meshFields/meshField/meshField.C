@@ -459,7 +459,7 @@ void meshField<Type,MeshType>::setRestrictionScheme(const word scheme)
 {
     reSchemePtr_.reset
     (
-        restrictionScheme<Type,MeshType>::New(scheme, fvMsh_).ptr()
+        restrictionScheme<Type,MeshType>::New(fvMsh_, scheme).ptr()
     );
 }
 

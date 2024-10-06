@@ -22,11 +22,8 @@ public:
     // Runtime type information
     TypeName("linearGauss");
 
-    // Construct from dictionary and mesh
-    linearGaussDivergenceScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    linearGaussDivergenceScheme(const fvMesh&);
+    // Construct from stream and mesh
+    linearGaussDivergenceScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Implicit divergence scheme
     virtual tmp<linearSystem<stencil,Type,MeshType>> imDiv

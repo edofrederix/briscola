@@ -27,8 +27,8 @@ namespace im
     {
         return divergenceScheme<SType,Type,MeshType>::New
         (
-            "div("+phi.name()+","+field.name()+")",
-            field.fvMsh()
+            field.fvMsh(),
+            "div("+phi.name()+","+field.name()+")"
         )->imDiv(phi,field);
     }
 
@@ -42,8 +42,8 @@ namespace im
     {
         return divergenceScheme<SType,Type,MeshType>::New
         (
-            "div("+tPhi->name()+","+field.name()+")",
-            field.fvMsh()
+            field.fvMsh(),
+            "div("+tPhi->name()+","+field.name()+")"
         )->imDiv(tPhi,field);
     }
 

@@ -16,21 +16,11 @@ template<class Type, class MeshType>
 harmonicVolumeWeightedRestrictionScheme<Type,MeshType>::
 harmonicVolumeWeightedRestrictionScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    restrictionScheme<Type,MeshType>(dict,fvMsh)
-{}
-
-template<class Type, class MeshType>
-harmonicVolumeWeightedRestrictionScheme<Type,MeshType>::
-harmonicVolumeWeightedRestrictionScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    restrictionScheme<Type,MeshType>(dictionary(),fvMsh)
+    restrictionScheme<Type,MeshType>(fvMsh, is)
 {}
 
 template<class Type, class MeshType>

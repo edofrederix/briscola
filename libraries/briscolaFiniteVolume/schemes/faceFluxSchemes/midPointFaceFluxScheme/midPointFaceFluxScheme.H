@@ -35,11 +35,8 @@ public:
     // Runtime type information
     TypeName("midPoint");
 
-    // Construct from dictionary and mesh
-    midPointFaceFluxScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    midPointFaceFluxScheme(const fvMesh&);
+    // Construct from stream and mesh
+    midPointFaceFluxScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Face flux of a colocated scalar field
     virtual tmp<colocatedLowerFaceScalarField> faceFlux

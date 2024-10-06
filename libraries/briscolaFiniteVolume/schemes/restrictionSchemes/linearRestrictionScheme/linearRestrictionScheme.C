@@ -75,32 +75,11 @@ void linearRestrictionScheme<Type,MeshType>::setWeights()
 template<class Type, class MeshType>
 linearRestrictionScheme<Type,MeshType>::linearRestrictionScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    restrictionScheme<Type,MeshType>(dict,fvMsh),
-    weights_
-    (
-        "weights",
-        this->fvMsh(),
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false,
-        false,
-        true
-    )
-{
-    setWeights();
-}
-
-template<class Type, class MeshType>
-linearRestrictionScheme<Type,MeshType>::linearRestrictionScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    restrictionScheme<Type,MeshType>(dictionary(),fvMsh),
+    restrictionScheme<Type,MeshType>(fvMsh, is),
     weights_
     (
         "weights",

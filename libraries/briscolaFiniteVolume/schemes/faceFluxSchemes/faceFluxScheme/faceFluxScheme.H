@@ -30,22 +30,22 @@ public:
     (
         autoPtr,
         faceFluxScheme,
-        dictionary,
+        Istream,
         (
-            const dictionary& dict,
-            const fvMesh& fvMsh
+            const fvMesh& fvMsh,
+            Istream& is
         ),
-        (dict, fvMsh)
+        (fvMsh, is)
     );
 
-    // Construct from dictionary and mesh
-    faceFluxScheme(const dictionary&, const fvMesh&);
+    // Construct from stream and mesh
+    faceFluxScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Copy constructor
     faceFluxScheme(const faceFluxScheme&);
 
     // Selector
-    static autoPtr<faceFluxScheme> New(const word, const fvMesh&);
+    static autoPtr<faceFluxScheme> New(const fvMesh&, const word);
 
     // Destructor
     virtual ~faceFluxScheme();

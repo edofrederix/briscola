@@ -9,13 +9,5 @@ FoamFile
 
 laplacianSchemes
 {
-    laplacian(p)
-    {
-        type    linearGauss;
-    }
-
-    laplacian(f)
-    {
-        type    linearGauss;
-    }
+    default linearGauss;
 }

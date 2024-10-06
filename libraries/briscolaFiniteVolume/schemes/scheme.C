@@ -11,20 +11,48 @@ namespace fv
 
 defineTypeNameAndDebug(scheme, 0);
 
-scheme::scheme(const dictionary& dict, const fvMesh& fvMsh)
+dummyIstream scheme::nullStream = dummyIstream();
+
+scheme::scheme(const fvMesh& fvMsh)
 :
-    dict_(dict),
     fvMsh_(fvMsh)
 {}
 
 scheme::scheme(const scheme& s)
 :
-    dict_(s.dict_),
     fvMsh_(s.fvMsh_)
 {}
 
 scheme::~scheme()
 {}
+
+Istream& scheme::getStream
+(
+    const fvMesh& fvMsh,
+    const word& dictName,
+    const word& schemeName
+)
+{
+    const dictionary& dict = fvMsh.schemeDict().subDict(dictName);
+
+    if (dict.found(schemeName))
+    {
+        return dict.lookup(schemeName);
+    }
+    else if (dict.found("default"))
+    {
+        return dict.lookup("default");
+    }
+    else
+    {
+        FatalErrorInFunction
+            << "Scheme " << schemeName << " or default scheme not found in "
+            << "dictionary " << dictName
+            << endl << abort(FatalError);
+
+        return dict.lookup("none");
+    }
+}
 
 }
 

@@ -22,11 +22,12 @@ public:
     // Runtime type information
     TypeName("faceAverage");
 
-    // Construct from dictionary and mesh
-    coloFaceAverageRestrictionScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    coloFaceAverageRestrictionScheme(const fvMesh&);
+    // Construct from stream and mesh
+    coloFaceAverageRestrictionScheme
+    (
+        const fvMesh&,
+        Istream& = scheme::nullStream
+    );
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
     // level

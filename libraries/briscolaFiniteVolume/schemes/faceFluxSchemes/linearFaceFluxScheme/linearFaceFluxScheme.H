@@ -35,11 +35,8 @@ public:
     // Runtime type information
     TypeName("linear");
 
-    // Construct from dictionary and mesh
-    linearFaceFluxScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    linearFaceFluxScheme(const fvMesh&);
+    // Construct from stream and mesh
+    linearFaceFluxScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Face flux of a colocated scalar field
     virtual tmp<colocatedLowerFaceScalarField> faceFlux

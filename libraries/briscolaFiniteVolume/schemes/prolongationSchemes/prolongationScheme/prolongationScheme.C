@@ -12,11 +12,11 @@ namespace fv
 template<class Type, class MeshType>
 prolongationScheme<Type,MeshType>::prolongationScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    scheme(dict, fvMsh)
+    scheme(fvMsh)
 {}
 
 template<class Type, class MeshType>
@@ -33,28 +33,29 @@ prolongationScheme<Type,MeshType>::~prolongationScheme()
 {}
 
 template<class Type, class MeshType>
-autoPtr<prolongationScheme<Type,MeshType>> prolongationScheme<Type,MeshType>::New
+autoPtr<prolongationScheme<Type,MeshType>>
+prolongationScheme<Type,MeshType>::New
 (
-    const word prolongationSchemeType,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const word prolongationSchemeType
 )
 {
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(prolongationSchemeType);
+    typename IstreamConstructorTable::iterator cstrIter =
+        IstreamConstructorTablePtr_->find(prolongationSchemeType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (cstrIter == IstreamConstructorTablePtr_->end())
     {
         FatalErrorInFunction
             << "Unknown prolongation scheme "
             << prolongationSchemeType << nl << nl
             << "Valid prolongation schemes are:" << nl
-            << dictionaryConstructorTablePtr_->sortedToc()
+            << IstreamConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
     return autoPtr<prolongationScheme<Type,MeshType>>
     (
-        cstrIter()(dictionary(), fvMsh)
+        cstrIter()(fvMsh, scheme::nullStream)
     );
 }
 

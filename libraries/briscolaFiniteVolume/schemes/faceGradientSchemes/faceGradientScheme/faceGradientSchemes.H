@@ -18,7 +18,7 @@
     defineTemplateRunTimeSelectionTable                                         \
     (                                                                           \
         faceGradientScheme##TYPE##MESHTYPE,                                     \
-        dictionary                                                              \
+        Istream                                                                 \
     );
 
 
@@ -35,7 +35,7 @@
     );                                                                          \
                                                                                 \
     faceGradientScheme<TYPE,MESHTYPE>::                                         \
-    adddictionaryConstructorToTable<SCHEME##FaceGradientScheme##TYPE##MESHTYPE> \
+    addIstreamConstructorToTable<SCHEME##FaceGradientScheme##TYPE##MESHTYPE>    \
     add##SCHEME##FaceGradientScheme##TYPE##MESHTYPE##ConstructorToTable_;
 
 #endif

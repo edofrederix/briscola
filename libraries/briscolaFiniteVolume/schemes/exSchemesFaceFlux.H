@@ -28,8 +28,8 @@ inline tmp<meshField<lowerFaceScalar,colocated>> faceFlux
 {
     return faceFluxScheme::New
     (
-        "flux("+field.name()+")",
-        field.fvMsh()
+        field.fvMsh(),
+        "flux("+field.name()+")"
     )->faceFlux(field);
 }
 
@@ -57,8 +57,8 @@ inline tmp<meshField<lowerFaceVector,colocated>> faceFlux
 {
     return faceFluxScheme::New
     (
-        "flux("+field.name()+")",
-        field.fvMsh()
+        field.fvMsh(),
+        "flux("+field.name()+")"
     )->faceFlux(field);
 }
 
@@ -86,8 +86,8 @@ inline tmp<meshField<lowerFaceScalar,staggered>> faceFlux
 {
     return faceFluxScheme::New
     (
-        "flux("+field.name()+")",
-        field.fvMsh()
+        field.fvMsh(),
+        "flux("+field.name()+")"
     )->faceFlux(field);
 }
 

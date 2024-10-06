@@ -17,7 +17,7 @@ namespace fv
 {
 
 defineTypeNameAndDebug(faceFluxScheme, 0);
-defineRunTimeSelectionTable(faceFluxScheme, dictionary);
+defineRunTimeSelectionTable(faceFluxScheme, Istream);
 
 makeFaceFluxSchemeType(midPoint)
 makeFaceFluxSchemeType(linear)

@@ -22,11 +22,8 @@ public:
     // Runtime type information
     TypeName("midPointGauss");
 
-    // Construct from dictionary and mesh
-    midPointGaussDivergenceScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    midPointGaussDivergenceScheme(const fvMesh&);
+    // Construct from stream and mesh
+    midPointGaussDivergenceScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Implicit divergence scheme
     virtual tmp<linearSystem<stencil,Type,MeshType>> imDiv

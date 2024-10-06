@@ -300,16 +300,16 @@ MG<SType,Type,MeshType>::MG
     (
         prolongationScheme<Type,MeshType>::New
         (
-            dict.lookupOrDefault<word>("prolong", "linear"),
-            fvMsh
+            fvMsh,
+            dict.lookupOrDefault<word>("prolong", "linear")
         )
     ),
     reScheme_
     (
         restrictionScheme<Type,MeshType>::New
         (
-            dict.lookupOrDefault<word>("restrict", "linear"),
-            fvMsh
+            fvMsh,
+            dict.lookupOrDefault<word>("restrict", "linear")
         )
     )
 {

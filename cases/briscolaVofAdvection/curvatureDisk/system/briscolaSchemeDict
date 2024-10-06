@@ -8,21 +8,10 @@ FoamFile
 
 gradientSchemes
 {
-    grad(alpha)
-    {
-        type    midPointGauss;
-    }
+    default midPointGauss;
 }
 
 faceFluxSchemes
 {
-    flux(U)
-    {
-        type    midPoint;
-    }
-
-    flux(grad(alpha))
-    {
-        type    midPoint;
-    }
+    default midPoint;
 }

@@ -12,20 +12,11 @@ namespace fv
 template<class SType, class Type, class MeshType>
 linearGaussLaplacianScheme<SType,Type,MeshType>::linearGaussLaplacianScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    laplacianScheme<SType,Type,MeshType>(dict,fvMsh)
-{}
-
-template<class SType, class Type, class MeshType>
-linearGaussLaplacianScheme<SType,Type,MeshType>::linearGaussLaplacianScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    laplacianScheme<SType,Type,MeshType>(dictionary(),fvMsh)
+    laplacianScheme<SType,Type,MeshType>(fvMsh, is)
 {}
 
 template<class SType, class Type, class MeshType>

@@ -40,16 +40,16 @@ public:
     (
         autoPtr,
         restrictionScheme,
-        dictionary,
+        Istream,
         (
-            const dictionary& dict,
-            const fvMesh& fvMsh
+            const fvMesh& fvMsh,
+            Istream& is
         ),
-        (dict, fvMsh)
+        (fvMsh, is)
     );
 
-    // Construct from dictionary and mesh
-    restrictionScheme(const dictionary&, const fvMesh&);
+    // Construct from stream and mesh
+    restrictionScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Copy constructor
     restrictionScheme(const restrictionScheme<Type,MeshType>&);
@@ -57,8 +57,8 @@ public:
     // Selector
     static autoPtr<restrictionScheme<Type,MeshType>> New
     (
-        const word,
-        const fvMesh&
+        const fvMesh&,
+        const word
     );
 
     // Destructor

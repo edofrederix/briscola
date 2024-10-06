@@ -12,11 +12,11 @@ namespace fv
 template<class Type, class MeshType>
 interpolationScheme<Type,MeshType>::interpolationScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    scheme(dict, fvMsh)
+    scheme(fvMsh)
 {}
 
 template<class Type, class MeshType>
@@ -36,32 +36,30 @@ template<class Type, class MeshType>
 autoPtr<interpolationScheme<Type,MeshType>>
 interpolationScheme<Type,MeshType>::New
 (
-    const word name,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const word schemeName
 )
 {
-    const dictionary dict
-    (
-        fvMsh.schemeDict().subDict("interpolationSchemes").subDict(name)
-    );
+    Istream& is = getStream(fvMsh, "interpolationSchemes", schemeName);
 
-    const word interpolationSchemeType(dict.lookup("type"));
+    word interpolationSchemeType;
+    is >> interpolationSchemeType;
 
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(interpolationSchemeType);
+    typename IstreamConstructorTable::iterator cstrIter =
+        IstreamConstructorTablePtr_->find(interpolationSchemeType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (cstrIter == IstreamConstructorTablePtr_->end())
     {
         FatalErrorInFunction
             << "Unknown interpolation scheme " << interpolationSchemeType
             << nl << nl << "Valid interpolation schemes are:" << nl
-            << dictionaryConstructorTablePtr_->sortedToc()
+            << IstreamConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
     return autoPtr<interpolationScheme<Type,MeshType>>
     (
-        cstrIter()(dict, fvMsh)
+        cstrIter()(fvMsh, is)
     );
 }
 
