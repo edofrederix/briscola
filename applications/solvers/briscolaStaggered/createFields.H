@@ -90,6 +90,8 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
     )
 );
 
+Poisson->enableFlux();
+
 staggeredLowerFaceScalarField phi("phi", fvMsh);
 
 phi = ex::faceFlux(U);

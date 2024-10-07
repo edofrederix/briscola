@@ -86,7 +86,6 @@ public:
                 const tmp<meshField<scalar,MeshType>>& tLambda,
                 const meshField<Type,MeshType>& field,
                 const scalar factor = 1.0
-
             );
 
             // Constant coefficient

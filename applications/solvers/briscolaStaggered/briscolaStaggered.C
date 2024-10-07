@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
         Info << "Time = " << runTime.timeName() << endl;
 
         U.setOldTime();
+        p.setOldTime();
 
         // Predictor
 
@@ -73,7 +74,7 @@ int main(int argc, char *argv[])
 
         // Correction
 
-        U -= deltaT*ex::stagGrad(p);
+        U -= deltaT*ex::stagReconstruct(Poisson->flux());
         U.correctBoundaryConditions();
 
         if (fvMsh.time().writeTime())

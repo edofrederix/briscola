@@ -88,6 +88,8 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
     )
 );
 
+Poisson->enableFlux();
+
 // Specific volumes
 
 colocatedScalarField v

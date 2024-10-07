@@ -234,7 +234,7 @@ meshField<Type,MeshType>::meshField
     ),
     refCount(),
     fvMsh_(tfield->fvMsh_),
-    oldTimePtr_(),
+    oldTimePtr_(nullptr),
     boundaryConditions_(),
     reSchemePtr_()
 {
@@ -282,7 +282,7 @@ meshField<Type,MeshType>::meshField
     ),
     refCount(),
     fvMsh_(tfield->fvMsh_),
-    oldTimePtr_(),
+    oldTimePtr_(nullptr),
     boundaryConditions_(),
     reSchemePtr_()
 {
@@ -419,6 +419,11 @@ void meshField<Type,MeshType>::setOldTime()
             IOobject::groupName(name(), "oldTime"),
             fvMsh_
         );
+    }
+
+    if (oldTimePtr_->oldTimePtr_ != nullptr)
+    {
+        oldTimePtr_->setOldTime();
     }
 
     *oldTimePtr_ = *this;

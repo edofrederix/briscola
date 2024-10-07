@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
         Info << "Time = " << runTime.timeName() << endl;
 
         U.setOldTime();
+        p.setOldTime();
 
         // Update the two-phase model and specific volumes
 
@@ -50,7 +51,7 @@ int main(int argc, char *argv[])
         v = 1.0/rho;
         vf = ex::interp(v);
 
-        // Predictor, Eq. (A.1) of Dodd & Ferrante (2014)
+        // Predictor
 
         USys = im::ddt(U);
 
@@ -84,10 +85,10 @@ int main(int argc, char *argv[])
 
         // Rhie-Chow correction
 
-        U -= deltaT*ex::grad(p)*v;
+        U -= deltaT*ex::reconstruct(Poisson->flux()/vf)*v;
         U.correctBoundaryConditions();
 
-        phi -= deltaT*ex::faceGrad(p)*fa*vf;
+        phi -= deltaT*Poisson->flux();
 
         io.write<colocated>();
 

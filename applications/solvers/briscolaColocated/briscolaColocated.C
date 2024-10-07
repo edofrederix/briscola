@@ -30,7 +30,6 @@ int main(int argc, char *argv[])
     );
 
     #include "createFields.H"
-    #include "createRefs.H"
     #include "createBriscolaIO.H"
     #include "initContinuityErrors.H"
 
@@ -46,6 +45,7 @@ int main(int argc, char *argv[])
         Info << "Time = " << runTime.timeName() << endl;
 
         U.setOldTime();
+        p.setOldTime();
 
         // Predictor
 
@@ -76,10 +76,10 @@ int main(int argc, char *argv[])
 
         // Rhie-Chow correction
 
-        U -= deltaT*ex::grad(p);
+        U -= deltaT*ex::reconstruct(Poisson->flux());
         U.correctBoundaryConditions();
 
-        phi -= deltaT*ex::faceGrad(p)*fa;
+        phi -= deltaT*Poisson->flux();
 
         io.write<colocated>();
 

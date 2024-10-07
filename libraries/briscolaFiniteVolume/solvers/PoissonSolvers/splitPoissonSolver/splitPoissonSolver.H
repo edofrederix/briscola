@@ -1,5 +1,5 @@
-#ifndef defaultPoissonSolver_H
-#define defaultPoissonSolver_H
+#ifndef splitPoissonSolver_H
+#define splitPoissonSolver_H
 
 #include "PoissonSolver.H"
 #include "solver.H"
@@ -14,29 +14,43 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-class defaultPoissonSolver
+class splitPoissonSolver
 :
     public PoissonSolver<SType,Type,MeshType>
 {
 protected:
 
     // The actual Poisson solver
-    autoPtr<solver<SType,Type,MeshType>> solverPtr_;
+    autoPtr<PoissonSolver<SType,Type,MeshType>> solverPtr_;
 
-    // Cached linear system pointer
-    autoPtr<linearSystem<SType,Type,MeshType>> sysPtr_;
+    // Cached modified right-hand side
+    autoPtr<meshField<Type,MeshType>> bHatPtr_;
 
 public:
 
     // Runtime type information
-    TypeName("default");
+    TypeName("split");
 
     // Construct from dictionary and mesh
-    defaultPoissonSolver
+    splitPoissonSolver
     (
         const dictionary&,
         const fvMesh&
     );
+
+    // Enable the computation of the flux
+    virtual void enableFlux()
+    {
+        solverPtr_->enableFlux();
+        PoissonSolver<SType,Type,MeshType>::enableFlux();
+    }
+
+    // Disable the computation of the flux
+    virtual void disableFlux()
+    {
+        solverPtr_->disableFlux();
+        PoissonSolver<SType,Type,MeshType>::disableFlux();
+    }
 
     // Solve function
     virtual void solve
@@ -56,7 +70,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "defaultPoissonSolver.C"
+    #include "splitPoissonSolver.C"
 #endif
 
 #endif

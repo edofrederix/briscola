@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
         Info << "Time = " << runTime.timeName() << endl;
 
         U.setOldTime();
+        p.setOldTime();
 
         // Update the two-phase model and specific volumes
 
@@ -49,7 +50,7 @@ int main(int argc, char *argv[])
         v = 1.0/rho;
         vcf = ex::coloFaceInterp(v);
 
-        // Predictor, Eq. (A.1) of Dodd & Ferrante (2014)
+        // Predictor
 
         USys = im::ddt(U);
 
@@ -83,7 +84,7 @@ int main(int argc, char *argv[])
 
         // Correct velocity
 
-        U -= deltaT*ex::stagGrad(p)*v;
+        U -= deltaT*ex::stagReconstruct(Poisson->flux()/vcf)*v;
         U.correctBoundaryConditions();
 
         if (fvMsh.time().writeTime())

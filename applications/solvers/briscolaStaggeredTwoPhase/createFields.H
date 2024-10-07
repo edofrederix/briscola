@@ -117,6 +117,8 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
     )
 );
 
+Poisson->enableFlux();
+
 // Specific volumes
 
 staggeredScalarField v
