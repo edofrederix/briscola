@@ -55,7 +55,7 @@ p = re.compile("Solving for colocated p.*([0-9]+)$")
 
 for line in log:
 
-    if re.search('Time =', line):
+    if re.search('^Time =', line):
         timeStepCount += 1
 
     r = p.search(line)
