@@ -65,13 +65,13 @@ int main(int argc, char *argv[])
         phi = ex::faceFlux(U);
 
         H = ex::div(phi,U)
-          - stagDotProduct(ex::grad(mu),ex::grad(U))*v
-          - ex::stagReconstruct(icoTwoPhase.surfaceTension())*v;
+          - stagDotProduct(ex::grad(mu),ex::grad(U))*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
         USys -= list(icoTwoPhase.g());
+        USys -= ex::stagReconstruct(icoTwoPhase.surfaceTension())*v;
 
-        // Solve predictor with latest pressure
+        // Solve predictor
 
         USolve->solve(USys + G*v);
 

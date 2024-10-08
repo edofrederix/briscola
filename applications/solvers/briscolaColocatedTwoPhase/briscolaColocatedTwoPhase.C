@@ -64,8 +64,7 @@ int main(int argc, char *argv[])
         USys -= 0.5*(deltaT/deltaT0)*H;
 
         H = ex::div(phi,U)
-          - ex::div(mu*ex::faceFlux(dev2(T(ex::grad(U)))))*v
-          - ex::reconstruct(icoTwoPhase.surfaceTension())*v;
+          - ex::div(mu*ex::faceFlux(dev2(T(ex::grad(U)))))*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
         USys -= icoTwoPhase.g();
@@ -80,10 +79,16 @@ int main(int argc, char *argv[])
         // Pressure equation
 
         phi = ex::faceFlux(U);
+        phi += deltaT*icoTwoPhase.surfaceTension()*vf;
 
         Poisson->solve(p, ex::div(phi)/(-deltaT), vf);
 
-        G = ex::reconstruct(Poisson->flux()/vf);
+        G =
+            ex::reconstruct
+            (
+                Poisson->flux()/vf
+              - icoTwoPhase.surfaceTension()
+            );
 
         // Rhie-Chow correction
 
