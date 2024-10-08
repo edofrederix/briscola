@@ -26,6 +26,8 @@ void splitAdvection::updateFlux
 {
     const colocatedVectorField& n = normal_;
 
+    const colocatedFaceVectorField& fn =
+        fvMsh_.template metrics<colocated>().faceNormals();
     const colocatedScalarField& cv =
         fvMsh_.template metrics<colocated>().cellVolumes();
     const colocatedVertexVectorField& v =
@@ -106,6 +108,17 @@ void splitAdvection::updateFlux
                     : truncatedHex(vertices,n(don),C).volume();
 
                 fluxAlpha = fluxVolume/dt;
+            }
+            else
+            {
+                // We have an interfacial cell without normal
+
+                #ifdef FULLDEBUG
+
+                WarningInFunction
+                    << "Donating cell has interface but no normal" << nl;
+
+                #endif
             }
 
             flux_(ijk)[d] = Foam::sign(flux)*fluxAlpha;

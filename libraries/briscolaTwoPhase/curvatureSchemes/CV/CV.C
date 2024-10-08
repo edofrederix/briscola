@@ -25,12 +25,14 @@ CV::CV
     const colocatedScalarField& alpha
 )
 :
-    curvatureScheme(fvMsh, dict, normal, alpha)
+    curvatureScheme(fvMsh, dict, normal, alpha),
+    YoungsNormal_(fvMsh, alpha)
 {}
 
 CV::CV(const CV& s)
 :
-    curvatureScheme(s)
+    curvatureScheme(s),
+    YoungsNormal_(s.YoungsNormal_)
 {}
 
 CV::~CV()
@@ -40,44 +42,13 @@ void CV::correct()
 {
     colocatedScalarField& kappa = *this;
 
-    const colocatedFaceScalarField& fa =
-        fvMsh_.metrics<colocated>().faceAreas();
+    YoungsNormal_.correct();
 
-    colocatedScalarField cAlpha("alpha", fvMsh_);
-    cAlpha = Zero;
+    // Curvature
 
-    forAllCells(alpha_, i, j, k)
-        for (int d = 0; d < 3; d++)
-            cAlpha(i,j,k) +=
-                0.5 /3.0*alpha_(i,j,k)
-              + 0.25/3.0*alpha_(lowerNei(i,j,k,d))
-              + 0.25/3.0*alpha_(upperNei(i,j,k,d));
+    kappa = - ex::div(ex::faceFlux(YoungsNormal_)());
 
-    cAlpha.correctBoundaryConditions();
-
-    colocatedVectorField normal
-    (
-        "grad(alpha)",
-        ex::reconstruct(ex::faceGrad(cAlpha)*fa)
-    );
-
-    forAllCells(alpha_, i, j, k)
-    {
-        scalar S = Foam::mag(normal(i,j,k));
-
-        if (S > 1e-8)
-        {
-            normal(i,j,k) /= S;
-        }
-        else
-        {
-            normal(i,j,k) = Zero;
-        }
-    }
-
-    normal.correctBoundaryConditions();
-
-    kappa = - ex::div(ex::faceFlux(normal)());
+    // Clip for non-interfacial cells
 
     forAllCells(alpha_, i, j, k)
     {

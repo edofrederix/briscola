@@ -16,8 +16,8 @@ class Youngs
 :
     public normalScheme
 {
-    // Volume fraction gradient threshold (defaults to 1e-8)
-    scalar gradThreshold_;
+    // Number of alpha smoothing cycles (defaults to 1)
+    label nSmooth_;
 
 public:
 
@@ -26,6 +26,9 @@ public:
 
     // Construct from components
     Youngs(const fvMesh&, const dictionary&, const colocatedScalarField&);
+
+    // Construct with default parameters
+    Youngs(const fvMesh&, const colocatedScalarField&);
 
     // Copy constructor
     Youngs(const Youngs&);

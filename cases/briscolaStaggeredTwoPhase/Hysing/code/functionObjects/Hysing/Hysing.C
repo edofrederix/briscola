@@ -101,7 +101,7 @@ bool Hysing::execute()
     if (Pstream::master())
         filePtr_()
             << runTime_.time().value()
-            << " " << h.y() << " " << u.y() << nl;
+            << " " << h.y() << " " << u.y() << " " << v << nl;
 
     return true;
 }
