@@ -72,9 +72,9 @@ int main(int argc, char *argv[])
 
         // Solve predictor
 
-        USolve->solve(USys + ex::grad(p)*v);
+        USolve->solve(USys + G*v);
 
-        U += deltaT*ex::grad(p)*v;
+        U += deltaT*G*v;
         U.correctBoundaryConditions();
 
         // Pressure equation
@@ -83,9 +83,11 @@ int main(int argc, char *argv[])
 
         Poisson->solve(p, ex::div(phi)/(-deltaT), vf);
 
+        G = ex::reconstruct(Poisson->flux()/vf);
+
         // Rhie-Chow correction
 
-        U -= deltaT*ex::reconstruct(Poisson->flux()/vf)*v;
+        U -= deltaT*G*v;
         U.correctBoundaryConditions();
 
         phi -= deltaT*Poisson->flux();

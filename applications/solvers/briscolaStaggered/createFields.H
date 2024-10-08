@@ -41,6 +41,19 @@ colocatedScalarField p
 p = Zero;
 p.correctBoundaryConditions();
 
+// Pressure gradient
+
+staggeredScalarField G
+(
+    "grad(p)",
+    fvMsh,
+    IOobject::READ_IF_PRESENT,
+    IOobject::AUTO_WRITE,
+    true
+);
+
+G = Zero;
+
 // Viscosity
 
 const scalar nu = readScalar(solverDict.lookup("nu"));

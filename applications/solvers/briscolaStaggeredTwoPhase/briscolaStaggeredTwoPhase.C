@@ -73,18 +73,20 @@ int main(int argc, char *argv[])
 
         // Solve predictor with latest pressure
 
-        USolve->solve(USys + ex::stagGrad(p)*v);
+        USolve->solve(USys + G*v);
 
-        U += deltaT*ex::stagGrad(p)*v;
+        U += deltaT*G*v;
         U.correctBoundaryConditions();
 
         // Pressure equation
 
         Poisson->solve(p, ex::coloDiv(U)/(-deltaT), vcf);
 
+        G = ex::stagReconstruct(Poisson->flux()/vcf);
+
         // Correct velocity
 
-        U -= deltaT*ex::stagReconstruct(Poisson->flux()/vcf)*v;
+        U -= deltaT*G*v;
         U.correctBoundaryConditions();
 
         if (fvMsh.time().writeTime())
