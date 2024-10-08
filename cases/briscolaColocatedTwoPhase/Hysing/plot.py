@@ -5,29 +5,39 @@ import os, sys
 sys.path.append('../../../scripts')
 import figStyle as fs
 
-
-data = np.loadtxt('hysingResults.txt')
-
-fig = plt.figure()
 fs.prep(plt)
-plt.rc('figure', figsize=(5, 4))
 
-plt.plot(data[:,0], data[:,1], color = "blue")
+data = np.loadtxt('data.txt')
+
+y = np.loadtxt('../../../data/Hysing/Y.txt')
+u = np.loadtxt('../../../data/Hysing/U.txt')
+
+fig = plt.figure('y')
+plt.plot(data[:,0], data[:,1], label='Briscola')
+plt.plot(y[:,0], y[:,1], 'ok', ms=5, mew=0.5, mec='w', label='Hysing et al.')
+
+fig = plt.figure('u')
+plt.plot(data[:,0], data[:,2], label='Briscola')
+plt.plot(u[:,0], u[:,1], 'ok', ms=5, mew=0.5, mec='w', label='Hysing et al.')
+
+#
+
+fig = plt.figure('y')
 
 plt.xlabel('$t$')
 plt.ylabel('$y$')
-plt.grid()
 
-plt.savefig('hysingPos.pdf')
+fs.post(fig, plt.legend(loc='best'))
 
-fig = plt.figure()
-fs.prep(plt)
-plt.rc('figure', figsize=(5, 4))
+plt.savefig('y.pdf')
 
-plt.plot(data[:,0], data[:,2], color = "blue")
+#
+
+fig = plt.figure('u')
 
 plt.xlabel('$t$')
-plt.ylabel('$V$')
-plt.grid()
+plt.ylabel('$u$')
 
-plt.savefig('hysingVel.pdf')
+fs.post(fig, plt.legend(loc='best'))
+
+plt.savefig('u.pdf')

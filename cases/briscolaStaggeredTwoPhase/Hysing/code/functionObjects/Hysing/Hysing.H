@@ -1,7 +1,8 @@
-#ifndef functionObjects_initialCondition_H
-#define functionObjects_initialCondition_H
+#ifndef functionObjects_Hysing_H
+#define functionObjects_Hysing_H
 
 #include "briscolaFunctionObject.H"
+#include "OFstream.H"
 
 namespace Foam
 {
@@ -15,17 +16,20 @@ namespace fv
 namespace functionObjects
 {
 
-class initialCondition
+class Hysing
 :
     public briscolaFunctionObject
 {
+    // Output file stream
+    autoPtr<OFstream> filePtr_;
+
 public:
 
     // Runtime type information
-    TypeName("initialCondition");
+    TypeName("Hysing");
 
     // Construct from time and dictionary
-    initialCondition
+    Hysing
     (
         const word& name,
         const Time& runTime,
@@ -33,10 +37,10 @@ public:
     );
 
     // Disallow default bitwise copy construction
-    initialCondition(const initialCondition&) = delete;
+    Hysing(const Hysing&) = delete;
 
     // Destructor
-    virtual ~initialCondition();
+    virtual ~Hysing();
 
     // Read the dictionary. Called at construction.
     virtual bool read(const dictionary&);
@@ -48,10 +52,10 @@ public:
     virtual bool write() { return true; }
 
     // Code executed at the end of the simulation
-    virtual bool end();
+    virtual bool end() { return true; }
 
     // Disallow default bitwise assignment
-    void operator=(const initialCondition&) = delete;
+    void operator=(const Hysing&) = delete;
 };
 
 }

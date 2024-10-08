@@ -42,8 +42,8 @@ libs
 
 functions
 {
-    init
+    Hysing
     {
-        type    initialCondition;
+        type    Hysing;
     }
 }
