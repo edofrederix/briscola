@@ -34,3 +34,26 @@ runTimeModifiable true;
 adjustTimeStep  false;
 
 maxCo           0.5;
+
+functions
+{
+    x
+    {
+        type            lineSample;
+        writeControl    writeTime;
+        start           (0 0.5 0.05);
+        end             (1 0.5 0.05);
+        N               100;
+        fields          (p Uc);
+    }
+
+    y
+    {
+        type            lineSample;
+        writeControl    writeTime;
+        start           (0.5 0 0.05);
+        end             (0.5 1 0.05);
+        N               100;
+        fields          (p Uc);
+    }
+}
