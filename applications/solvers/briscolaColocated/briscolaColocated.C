@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
         Poisson->solve(p, ex::div(phi)/(-deltaT));
 
-        G = ex::reconstruct(Poisson->flux());
+        G = ex::grad(p);
 
         // Rhie-Chow correction
 

@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 
         Poisson->solve(p, ex::coloDiv(U)/(-deltaT));
 
-        G = ex::stagReconstruct(Poisson->flux());
+        G = ex::stagGrad(p);
 
         // Correction
 
