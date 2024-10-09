@@ -26,8 +26,6 @@ void splitAdvection::updateFlux
 {
     const colocatedVectorField& n = normal_;
 
-    const colocatedFaceVectorField& fn =
-        fvMsh_.template metrics<colocated>().faceNormals();
     const colocatedScalarField& cv =
         fvMsh_.template metrics<colocated>().cellVolumes();
     const colocatedVertexVectorField& v =

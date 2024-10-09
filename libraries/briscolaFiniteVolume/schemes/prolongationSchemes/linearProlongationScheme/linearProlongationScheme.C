@@ -74,6 +74,13 @@ void linearProlongationScheme<Type,MeshType>::setWeights()
                         (1.0-w.x()) * (    w.y()) * (    w.z()),
                         (    w.x()) * (    w.y()) * (    w.z())
                     );
+
+                // Important to remove small weights to avoid using
+                // uninitialized memory!
+
+                for (int vi = 0; vi < 8; vi++)
+                    if (weights(i,j,k)[vi] <= 1e-12)
+                        weights(i,j,k)[vi] = 0.0;
             }
         }
     }

@@ -67,6 +67,13 @@ void linearRestrictionScheme<Type,MeshType>::setWeights()
                         (1.0-w.x()) * (    w.y()) * (    w.z()),
                         (    w.x()) * (    w.y()) * (    w.z())
                     );
+
+                // Important to remove small weights to avoid using
+                // uninitialized memory!
+
+                for (int vi = 0; vi < 8; vi++)
+                    if (weights(i,j,k)[vi] <= 1e-12)
+                        weights(i,j,k)[vi] = 0.0;
             }
         }
     }
@@ -131,27 +138,20 @@ void linearRestrictionScheme<Type,MeshType>::restrict
             for (int c = 0; c < 2; c++)
                 for (int b = 0; b < 2; b++)
                     for (int a = 0; a < 2; a++)
-                    {
-                        scalar weight = weights(i,j,k)[q++];
-
-                        if (Foam::mag(weight) > 1e-20)
-                        {
-                            coarse(i,j,k) +=
-                                weight
-                              * fine
-                                (
-                                    i*R.x() + a*ox,
-                                    j*R.y() + b*oy,
-                                    k*R.z() + c*oz
-                                )
-                              / cvf
-                                (
-                                    i*R.x() + a*ox,
-                                    j*R.y() + b*oy,
-                                    k*R.z() + c*oz
-                                );
-                        }
-                    }
+                        coarse(i,j,k) +=
+                            weights(i,j,k)[q++]
+                          * fine
+                            (
+                                i*R.x() + a*ox,
+                                j*R.y() + b*oy,
+                                k*R.z() + c*oz
+                            )
+                          / cvf
+                            (
+                                i*R.x() + a*ox,
+                                j*R.y() + b*oy,
+                                k*R.z() + c*oz
+                            );
 
             coarse(i,j,k) *= cvc(i,j,k);
         }
@@ -170,21 +170,14 @@ void linearRestrictionScheme<Type,MeshType>::restrict
             for (int c = 0; c < 2; c++)
                 for (int b = 0; b < 2; b++)
                     for (int a = 0; a < 2; a++)
-                    {
-                        scalar weight = weights(i,j,k)[q++];
-
-                        if (Foam::mag(weight) > 1e-20)
-                        {
-                            coarse(i,j,k) +=
-                                weight
-                              * fine
-                                (
-                                    i*R.x() + a*ox,
-                                    j*R.y() + b*oy,
-                                    k*R.z() + c*oz
-                                );
-                        }
-                    }
+                        coarse(i,j,k) +=
+                            weights(i,j,k)[q++]
+                          * fine
+                            (
+                                i*R.x() + a*ox,
+                                j*R.y() + b*oy,
+                                k*R.z() + c*oz
+                            );
         }
     }
 }
