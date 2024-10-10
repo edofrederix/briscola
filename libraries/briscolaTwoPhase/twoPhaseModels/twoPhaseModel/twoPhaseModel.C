@@ -23,15 +23,11 @@ void twoPhaseModel::setRestrictionSchemes()
     rho2_.setRestrictionScheme("volumeWeighted");
     rhoc_.setRestrictionScheme("volumeWeighted");
 
-    muc_.setRestrictionScheme("faceAverage");
-
     if (fvMsh_.structured())
     {
         rho1Ptr_->setRestrictionScheme("volumeWeighted");
         rho2Ptr_->setRestrictionScheme("volumeWeighted");
         rhosPtr_->setRestrictionScheme("volumeWeighted");
-
-        musPtr_->setRestrictionScheme("faceAverage");
     }
 }
 

@@ -37,11 +37,6 @@ void coloHarmonicFaceAreaWeightedRestrictionScheme<Type>::restrict
 
     coarse = Zero;
 
-    const meshDirection<faceScalar,colocated>& fac =
-        this->fvMsh().template
-        metrics<colocated>().faceAreas()
-        [coarse.levelNum()][coarse.directionNum()];
-
     const meshDirection<faceScalar,colocated>& faf =
         this->fvMsh().template
         metrics<colocated>().faceAreas()
@@ -52,10 +47,9 @@ void coloHarmonicFaceAreaWeightedRestrictionScheme<Type>::restrict
     forAllFaces(coarse, fd, i, j, k)
     {
         labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
-
         labelVector fijk(i*R.x(), j*R.y(), k*R.z());
-        labelVector fnei(fijk-units[fd]);
+
+        scalar area = 0.0;
 
         labelVector o;
         for (o.x() = 0; o.x() < (fd == 0 ? 1 : R.x()); o.x()++)
@@ -64,9 +58,11 @@ void coloHarmonicFaceAreaWeightedRestrictionScheme<Type>::restrict
         {
             coarse(ijk)[fd] +=
                 faf(fijk+o)[fd*2]/fine(fijk+o)[fd];
+
+            area += faf(fijk+o)[fd*2];
         }
 
-        coarse(ijk)[fd] = fac(ijk)[fd*2]/coarse(ijk)[fd];
+        coarse(ijk)[fd] = area/coarse(ijk)[fd];
     }
 }
 

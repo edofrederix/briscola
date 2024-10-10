@@ -26,7 +26,7 @@ inline tmp<meshField<scalar,MeshType>> twoPhaseModel::minRho() const
     (
         min(this->rho1<MeshType>(), this->rho2<MeshType>())
     );
-    tMinRho->setRestrictionScheme("volumeWeighted");
+
     return tMinRho;
 }
 
@@ -37,7 +37,7 @@ inline tmp<meshField<scalar,MeshType>> twoPhaseModel::maxRho() const
     (
         max(this->rho1<MeshType>(), this->rho2<MeshType>())
     );
-    tMaxRho->setRestrictionScheme("volumeWeighted");
+
     return tMaxRho;
 }
 
@@ -52,7 +52,7 @@ inline tmp<meshField<scalar,MeshType>> twoPhaseModel::meanRho() const
             (this->rho1<MeshType>() + this->rho2<MeshType>())/2.0
         )
     );
-    tMeanRho->setRestrictionScheme("volumeWeighted");
+
     return tMeanRho;
 }
 
@@ -64,7 +64,7 @@ inline tmp<meshField<lowerFaceScalar,MeshType>> twoPhaseModel::nu() const
         this->mu<MeshType>()
       / ex::interp(this->rho<MeshType>())
     );
-    tNu->setRestrictionScheme("faceAverage");
+
     return tNu;
 }
 

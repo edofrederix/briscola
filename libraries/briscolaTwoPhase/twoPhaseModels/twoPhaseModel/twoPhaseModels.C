@@ -3,6 +3,7 @@
 
 #include "incompressibleTwoPhaseModel.H"
 #include "harmonicViscosity.H"
+#include "blendedViscosity.H"
 #include "volumeWeightedViscosity.H"
 #include "twoPhaseVof.H"
 
@@ -15,11 +16,21 @@ namespace briscola
 namespace fv
 {
 
-// Incompressible, harmonic mixing of viscosity and a basic vof solver
+// Incompressible, blended mixing of viscosity and a basic vof solver
 
 makeTwoPhaseModel
 (
     twoPhaseVof,
+    twoPhaseVof,
+    blendedViscosity,
+    incompressibleTwoPhaseModel
+)
+
+// Incompressible, harmonic mixing of viscosity and a basic vof solver
+
+makeTwoPhaseModel
+(
+    twoPhaseVofH,
     twoPhaseVof,
     harmonicViscosity,
     incompressibleTwoPhaseModel
