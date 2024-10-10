@@ -7,10 +7,16 @@ import figStyle as fs
 
 fs.prep(plt)
 
+case = int(np.loadtxt('case.txt'))
+
+if case < 1 or case > 2:
+
+    raise ValueError('Invalid case')
+
 data = np.loadtxt('data.txt')
 
-y = np.loadtxt('../../../data/Hysing/Y.txt')
-u = np.loadtxt('../../../data/Hysing/U.txt')
+y = np.loadtxt('../../../data/Hysing/' + str(case) + '/Y.txt')
+u = np.loadtxt('../../../data/Hysing/' + str(case) + '/U.txt')
 
 fig = plt.figure('y')
 plt.plot(data[:,0], data[:,1], label='Briscola')

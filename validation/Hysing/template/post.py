@@ -27,8 +27,8 @@ logFile = str(sys.argv[1])
 
 data = np.loadtxt('data.txt')
 
-y = np.loadtxt(BRISCOLA + '/data/Hysing/Y.txt')
-u = np.loadtxt(BRISCOLA + '/data/Hysing/U.txt')
+y = np.loadtxt(BRISCOLA + '/data/Hysing/1/Y.txt')
+u = np.loadtxt(BRISCOLA + '/data/Hysing/1/U.txt')
 
 y_sim = np.interp(y[:,0], data[:,0], data[:,1])
 u_sim = np.interp(u[:,0], data[:,1], data[:,2])
