@@ -31,4 +31,6 @@ public:
 
 }
 
+#include "edgeScalarI.H"
+
 #endif

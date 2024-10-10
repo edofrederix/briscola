@@ -2010,6 +2010,43 @@ void testScalarFunctions(const fvMesh& fvMsh, const bool deep)
     m1/m1o;
     (m1*2)/m1o;
     m1/(m1o*2);
+
+    pow3(m1);
+    pow4(m1);
+    pow5(m1);
+    pow6(m1);
+    pow025(m1);
+    sqrt(m1);
+    cbrt(m1);
+    sign(m1);
+    pos(m1);
+    pos0(m1);
+    neg(m1);
+    neg0(m1);
+    posPart(m1);
+    negPart(m1);
+    exp(m1);
+    log(m1);
+    log10(m1);
+    sin(m1);
+    cos(m1);
+    tan(m1);
+    asin(m1);
+    acos(m1);
+    atan(m1);
+    sinh(m1);
+    cosh(m1);
+    tanh(m1);
+    asinh(m1);
+    acosh(m1);
+    atanh(m1);
+    erf(m1);
+    erfc(m1);
+    lgamma(m1);
+    j0(m1);
+    j1(m1);
+    y0(m1);
+    y1(m1);
 }
 
 template<class MeshType>

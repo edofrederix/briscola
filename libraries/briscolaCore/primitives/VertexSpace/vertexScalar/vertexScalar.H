@@ -31,4 +31,6 @@ public:
 
 }
 
+#include "vertexScalarI.H"
+
 #endif
