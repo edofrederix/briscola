@@ -22,11 +22,12 @@ public:
     // Runtime type information
     TypeName("faceAreaWeighted");
 
-    // Construct from dictionary and mesh
-    coloFaceAreaWeightedRestrictionScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    coloFaceAreaWeightedRestrictionScheme(const fvMesh&);
+    // Construct from stream and mesh
+    coloFaceAreaWeightedRestrictionScheme
+    (
+        const fvMesh&,
+        Istream& = scheme::nullStream
+    );
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
     // level

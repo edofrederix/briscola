@@ -39,11 +39,8 @@ public:
     // Runtime type information
     TypeName("linear");
 
-    // Construct from dictionary and mesh
-    linearProlongationScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    linearProlongationScheme(const fvMesh&);
+    // Construct from stream and mesh
+    linearProlongationScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // In-place prolongation from a coarse cell level to the adjacent fine cell
     // level, using the = operation

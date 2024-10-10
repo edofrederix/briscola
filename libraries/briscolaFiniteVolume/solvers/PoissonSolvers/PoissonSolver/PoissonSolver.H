@@ -29,6 +29,15 @@ protected:
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
+    // Flux field
+    autoPtr<meshField<LowerFaceSpace<Type>,MeshType>> fluxPtr_;
+
+    // Switch to compute the flux (defaults to false)
+    Switch computeFlux_;
+
+    // Function to initialize the flux field
+    virtual void initFlux();
+
 public:
 
     // Runtime type information
@@ -41,17 +50,23 @@ public:
         PoissonSolver,
         dictionary,
         (
-            const word PoissonSolverName,
             const dictionary& dict,
             const fvMesh& fvMsh
         ),
-        (PoissonSolverName, dict, fvMsh)
+        (dict, fvMsh)
     );
 
     // Construct from dictionary and mesh
     PoissonSolver(const dictionary&, const fvMesh&);
 
-    // Selector
+    // Selector from dictionary
+    static autoPtr<PoissonSolver<SType,Type,MeshType>> New
+    (
+        const dictionary&,
+        const fvMesh&
+    );
+
+    // Selector from solver name
     static autoPtr<PoissonSolver<SType,Type,MeshType>> New
     (
         const word,
@@ -67,18 +82,54 @@ public:
     // Access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
+    // Access to the flux
+    inline const meshField<LowerFaceSpace<Type>,MeshType>& flux() const
+    {
+        #ifdef FULLDEBUG
+
+        if (fluxPtr_.empty())
+        {
+            FatalErrorInFunction
+                << "Flux not set" << endl << abort(FatalError);
+        }
+
+        #endif
+
+        return fluxPtr_();
+    }
+
+    // Computation of the flux switch
+    inline Switch computeFlux() const
+    {
+        return computeFlux_;
+    }
+
+    // Enable the computation of the flux
+    virtual void enableFlux()
+    {
+        computeFlux_ = true;
+    }
+
+    // Disable the computation of the flux
+    virtual void disableFlux()
+    {
+        computeFlux_ = false;
+        fluxPtr_.clear();
+    }
+
     // Solve for the given unknown x, right-hand side source b and scalar
     // coefficient lambda the equation dx/dt = div(lambda*grad(x)) + b. Provide
     // lambda and b as pointers, so that they can be left empty which implies b
-    // = 0 and lambda = 1. The final argument specifies whether or not to
-    // include the d/dt term.
+    // = 0 and lambda = 1. The ddt argument specifies whether or not to include
+    // the d/dt term and the frac factor multiples the time step size.
 
     virtual void solve
     (
-        meshField<Type,MeshType>&,
-        const meshField<Type,MeshType>*,
-        const meshField<lowerFaceScalar,MeshType>*,
-        const bool = false
+        meshField<Type,MeshType>& x,
+        const meshField<Type,MeshType>* bPtr,
+        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+        const bool ddt = false,
+        const scalar dtFrac = 1
     ) = 0;
 
     // Single-argument support function
@@ -86,10 +137,11 @@ public:
     virtual void solve
     (
         meshField<Type,MeshType>& x,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, nullptr, nullptr, ddt);
+        this->solve(x, nullptr, nullptr, ddt, dtFrac);
     }
 
     // Two-argument support function
@@ -98,60 +150,66 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>* bPtr,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, bPtr, nullptr, ddt);
+        this->solve(x, bPtr, nullptr, ddt, dtFrac);
     }
 
     virtual void solve
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>& b,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, &b, nullptr, ddt);
+        this->solve(x, &b, nullptr, ddt, dtFrac);
     }
 
     virtual void solve
     (
         meshField<Type,MeshType>& x,
         const tmp<meshField<Type,MeshType>>& tb,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, &tb(), nullptr, ddt);
+        this->solve(x, &tb(), nullptr, ddt, dtFrac);
     }
 
     virtual void solve
     (
         meshField<Type,MeshType>& x,
         const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, nullptr, lambdaPtr, ddt);
+        this->solve(x, nullptr, lambdaPtr, ddt, dtFrac);
     }
 
     virtual void solve
     (
         meshField<Type,MeshType>& x,
         const meshField<lowerFaceScalar,MeshType>& lambda,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, nullptr, &lambda, ddt);
+        this->solve(x, nullptr, &lambda, ddt, dtFrac);
     }
 
     virtual void solve
     (
         meshField<Type,MeshType>& x,
         const tmp<meshField<lowerFaceScalar,MeshType>>& tlambda,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, nullptr, &tlambda(), ddt);
+        this->solve(x, nullptr, &tlambda(), ddt, dtFrac);
     }
 
     // Three-argument support function
@@ -161,10 +219,11 @@ public:
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>& b,
         const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, &b, lambdaPtr, ddt);
+        this->solve(x, &b, lambdaPtr, ddt, dtFrac);
     }
 
     virtual void solve
@@ -172,10 +231,11 @@ public:
         meshField<Type,MeshType>& x,
         const tmp<meshField<Type,MeshType>>& tb,
         const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, &tb(), lambdaPtr, ddt);
+        this->solve(x, &tb(), lambdaPtr, ddt, dtFrac);
     }
 
     virtual void solve
@@ -183,10 +243,11 @@ public:
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>* bPtr,
         const meshField<lowerFaceScalar,MeshType>& lambda,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, bPtr, &lambda, ddt);
+        this->solve(x, bPtr, &lambda, ddt, dtFrac);
     }
 
     virtual void solve
@@ -194,10 +255,11 @@ public:
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>& b,
         const meshField<lowerFaceScalar,MeshType>& lambda,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, &b, &lambda, ddt);
+        this->solve(x, &b, &lambda, ddt, dtFrac);
     }
 
     virtual void solve
@@ -205,10 +267,11 @@ public:
         meshField<Type,MeshType>& x,
         const tmp<meshField<Type,MeshType>>& tb,
         const meshField<lowerFaceScalar,MeshType>& lambda,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, &tb(), &lambda, ddt);
+        this->solve(x, &tb(), &lambda, ddt, dtFrac);
     }
 
     virtual void solve
@@ -216,10 +279,11 @@ public:
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>* bPtr,
         const tmp<meshField<lowerFaceScalar,MeshType>>& tlambda,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, bPtr, &tlambda(), ddt);
+        this->solve(x, bPtr, &tlambda(), ddt, dtFrac);
     }
 
     virtual void solve
@@ -227,10 +291,11 @@ public:
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>& b,
         const tmp<meshField<lowerFaceScalar,MeshType>>& tlambda,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, &b, &tlambda(), ddt);
+        this->solve(x, &b, &tlambda(), ddt, dtFrac);
     }
 
     virtual void solve
@@ -238,10 +303,11 @@ public:
         meshField<Type,MeshType>& x,
         const tmp<meshField<Type,MeshType>>& tb,
         const tmp<meshField<lowerFaceScalar,MeshType>>& tlambda,
-        const bool ddt = false
+        const bool ddt = false,
+        const scalar dtFrac = 1
     )
     {
-        this->solve(x, &tb(), &tlambda(), ddt);
+        this->solve(x, &tb(), &tlambda(), ddt, dtFrac);
     }
 };
 

@@ -42,13 +42,13 @@ public:
     virtual bool read(const dictionary&);
 
     // Code executed at the end of each time step loop
-    virtual bool execute();
+    virtual bool execute() { return true; }
 
     // Code executed at the end of each time step loop, after execute()
     virtual bool write() { return true; }
 
     // Code executed at the end of the simulation
-    virtual bool end();
+    virtual bool end() { return true; }
 
     // Disallow default bitwise assignment
     void operator=(const initialCondition&) = delete;

@@ -12,11 +12,11 @@ namespace fv
 template<class Type, class MeshType>
 restrictionScheme<Type,MeshType>::restrictionScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    scheme(dict, fvMsh)
+    scheme(fvMsh)
 {}
 
 template<class Type, class MeshType>
@@ -36,26 +36,26 @@ template<class Type, class MeshType>
 autoPtr<restrictionScheme<Type,MeshType>>
 restrictionScheme<Type,MeshType>::New
 (
-    const word restrictionSchemeType,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const word restrictionSchemeType
 )
 {
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(restrictionSchemeType);
+    typename IstreamConstructorTable::iterator cstrIter =
+        IstreamConstructorTablePtr_->find(restrictionSchemeType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (cstrIter == IstreamConstructorTablePtr_->end())
     {
         FatalErrorInFunction
             << "Unknown restriction scheme "
             << restrictionSchemeType << nl << nl
             << "Valid restriction schemes are:" << nl
-            << dictionaryConstructorTablePtr_->sortedToc()
+            << IstreamConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
     return autoPtr<restrictionScheme<Type,MeshType>>
     (
-        cstrIter()(dictionary(), fvMsh)
+        cstrIter()(fvMsh, scheme::nullStream)
     );
 }
 

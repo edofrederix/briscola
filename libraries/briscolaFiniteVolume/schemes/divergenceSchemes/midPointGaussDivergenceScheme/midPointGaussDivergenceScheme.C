@@ -12,20 +12,11 @@ namespace fv
 template<class Type, class MeshType>
 midPointGaussDivergenceScheme<Type,MeshType>::midPointGaussDivergenceScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    divergenceScheme<stencil,Type,MeshType>(dict,fvMsh)
-{}
-
-template<class Type, class MeshType>
-midPointGaussDivergenceScheme<Type,MeshType>::midPointGaussDivergenceScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    divergenceScheme<stencil,Type,MeshType>(dictionary(),fvMsh)
+    divergenceScheme<stencil,Type,MeshType>(fvMsh, is)
 {}
 
 template<class Type, class MeshType>

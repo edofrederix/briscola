@@ -1,6 +1,7 @@
 #include "PoissonSolvers.H"
 #include "addToRunTimeSelectionTable.H"
 
+#include "splitPoissonSolver.H"
 #include "defaultPoissonSolver.H"
 
 namespace Foam
@@ -31,6 +32,16 @@ makePoissonSolverType(default,stencil,scalar,staggered);
 makePoissonSolverType(default,stencil,vector,staggered);
 makePoissonSolverType(default,symmStencil,scalar,staggered);
 makePoissonSolverType(default,symmStencil,vector,staggered);
+
+makePoissonSolverType(split,stencil,scalar,colocated);
+makePoissonSolverType(split,stencil,vector,colocated);
+makePoissonSolverType(split,symmStencil,scalar,colocated);
+makePoissonSolverType(split,symmStencil,vector,colocated);
+
+makePoissonSolverType(split,stencil,scalar,staggered);
+makePoissonSolverType(split,stencil,vector,staggered);
+makePoissonSolverType(split,symmStencil,scalar,staggered);
+makePoissonSolverType(split,symmStencil,vector,staggered);
 
 }
 

@@ -22,11 +22,8 @@ public:
     // Runtime type information
     TypeName("linearGauss");
 
-    // Construct from dictionary and mesh
-    linearGaussGradientScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    linearGaussGradientScheme(const fvMesh&);
+    // Construct from stream and mesh
+    linearGaussGradientScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Gradient of u from same mesh type
     virtual tmp

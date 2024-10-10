@@ -8,16 +8,10 @@ FoamFile
 
 ddtSchemes
 {
-    ddt(x)
-    {
-        type    Euler;
-    }
+    default Euler;
 }
 
 laplacianSchemes
 {
-    laplacian(x)
-    {
-        type    linearGauss;
-    }
+    default linearGauss;
 }

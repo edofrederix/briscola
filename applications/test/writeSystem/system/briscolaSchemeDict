@@ -8,26 +8,10 @@ FoamFile
 
 laplacianSchemes
 {
-    laplacian(f-colocated)
-    {
-        type    linearGauss;
-    }
-
-    laplacian(f-staggered)
-    {
-        type    linearGauss;
-    }
+    default linearGauss;
 }
 
 ddtSchemes
 {
-    ddt(f-colocated)
-    {
-        type    Euler;
-    }
-
-    ddt(f-staggered)
-    {
-        type    Euler;
-    }
+    default Euler;
 }

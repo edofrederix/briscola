@@ -37,20 +37,11 @@ void injectionProlongationScheme<Type,MeshType>::prolong
 template<class Type, class MeshType>
 injectionProlongationScheme<Type,MeshType>::injectionProlongationScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    prolongationScheme<Type,MeshType>(dict,fvMsh)
-{}
-
-template<class Type, class MeshType>
-injectionProlongationScheme<Type,MeshType>::injectionProlongationScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    prolongationScheme<Type,MeshType>(dictionary(),fvMsh)
+    prolongationScheme<Type,MeshType>(fvMsh, is)
 {}
 
 template<class Type, class MeshType>

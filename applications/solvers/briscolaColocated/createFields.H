@@ -28,6 +28,19 @@ colocatedScalarField p
 p = Zero;
 p.correctBoundaryConditions();
 
+// Pressure gradient
+
+colocatedVectorField G
+(
+    "grad(p)",
+    fvMsh,
+    IOobject::READ_IF_PRESENT,
+    IOobject::AUTO_WRITE,
+    true
+);
+
+G = Zero;
+
 // Flux
 
 colocatedLowerFaceScalarField phi
@@ -91,11 +104,13 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
     )
 );
 
+Poisson->enableFlux();
+
 // Adams-Bashforth source
 
-colocatedVectorField DivU
+colocatedVectorField H
 (
-    "DivU",
+    "H",
     fvMsh,
     IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
@@ -103,8 +118,4 @@ colocatedVectorField DivU
     false
 );
 
-DivU = ex::div(phi,U);
-
-// Parameters
-
-const label nCorr = solverDict.lookupOrDefault<label>("nCorrectors", 1);
+H = ex::div(phi,U);

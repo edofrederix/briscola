@@ -137,15 +137,17 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
     )
 );
 
+Poisson->enableFlux();
+
 staggeredLowerFaceScalarField phi("phi", fvMsh);
 
 phi = ex::faceFlux(U);
 
 // Adams-Bashforth source
 
-staggeredScalarField DivU
+staggeredScalarField H
 (
-    "DivU",
+    "H",
     fvMsh,
     IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
@@ -153,4 +155,4 @@ staggeredScalarField DivU
     false
 );
 
-DivU = ex::div(phi,U);
+H = ex::div(phi,U);

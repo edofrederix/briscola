@@ -22,11 +22,8 @@ public:
     // Runtime type information
     TypeName("linearGauss");
 
-    // Construct from dictionary and mesh
-    linearGaussLaplacianScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    linearGaussLaplacianScheme(const fvMesh&);
+    // Construct from stream and mesh
+    linearGaussLaplacianScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Explicit laplacian schemes
     virtual tmp<meshField<Type,MeshType>> exLaplacian

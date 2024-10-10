@@ -16,8 +16,10 @@ U
 
 p
 {
-    type        MG;
-    relTol      1e-5;
-    tolerance   1e-8;
-    maxIter     100;
+    type        split;
+
+    solver
+    {
+        type    FFT;
+    }
 }

@@ -4,6 +4,7 @@
 #include "fvMesh.H"
 #include "dictionary.H"
 #include "ops.H"
+#include "dummyIstream.H"
 
 namespace Foam
 {
@@ -69,19 +70,19 @@ public:
 
 class scheme
 {
-    // Copy of the scheme dictionary
-    dictionary dict_;
-
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
 public:
 
+    // Empty stream
+    static dummyIstream nullStream;
+
     // Runtime type information
     TypeName("scheme");
 
-    // Construct from dictionary
-    scheme(const dictionary&, const fvMesh& fvMsh);
+    // Construct from mesh
+    scheme(const fvMesh& fvMsh);
 
     // Copy constructor
     scheme(const scheme&);
@@ -89,8 +90,8 @@ public:
     // Destructor
     virtual ~scheme();
 
-    // Access to the dictionary
-    inline const dictionary& dict() const { return dict_; }
+    // Get the input stream from dictionary name, scheme name and mesh
+    static Istream& getStream(const fvMesh&, const word&, const word&);
 
     // Access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }

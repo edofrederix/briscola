@@ -1,0 +1,178 @@
+#!/bin/bash
+
+# By default 16 cores are used. Simulations are sequentially started only when
+# resources are available. Output is written to results.csv.
+
+NTASKS="${SLURM_NTASKS:-16}"
+
+# Some parameters
+
+RUNDIR="runs"
+CSV="results.csv"
+TEMPLATE="template"
+PYTHON="python3"
+
+# Simulation parameters
+
+SOLVERS=(briscolaColocatedTwoPhase briscolaStaggeredTwoPhase)
+MESHES=(32 64 128)
+NPROCSPERBRICKSIDE=(2 4)
+PSOLVERS=(MG split)
+NORMALSCHEMES=(Youngs MYC LSGIR)
+CURVATURESCHEMES=(SHF CV)
+
+##
+
+if [ -z "$BRISCOLA" ]; then
+
+    echo "BRISCOLA environment variable not set"
+    exit
+
+fi
+
+##
+
+CURR=$(pwd)
+
+for I in "${!SOLVERS[@]}"; do
+
+    SOLVER=${SOLVERS[$I]}
+
+    cd $TEMPLATE
+    wmake -silent code.$SOLVER
+
+    cd $CURR
+
+done
+
+##
+
+if [ -d "$RUNDIR" ]; then
+    rm -fr $RUNDIR
+fi
+
+mkdir -p $RUNDIR
+
+echo \
+    "solver," \
+    "mesh," \
+    "Nprocs," \
+    "pressure solver," \
+    "normal scheme," \
+    "curvature scheme," \
+    "error 1 [%]," \
+    "error 2 [%]," \
+    "test 1," \
+    "test 2," \
+    "number of time steps," \
+    "mean number of pressure iters" > $CURR/$CSV
+
+for I in "${!SOLVERS[@]}"; do
+for J in "${!MESHES[@]}"; do
+for K in "${!NPROCSPERBRICKSIDE[@]}"; do
+for L in "${!PSOLVERS[@]}"; do
+for M in "${!NORMALSCHEMES[@]}"; do
+for N in "${!CURVATURESCHEMES[@]}"; do
+
+    sleep 2
+
+    SOLVER=${SOLVERS[$I]}
+    MESH=${MESHES[$J]}
+    NPROCPERBRICKSIDE=${NPROCSPERBRICKSIDE[$K]}
+    PSOLVER=${PSOLVERS[$L]}
+    NORMALSCHEME=${NORMALSCHEMES[$M]}
+    CURVATURESCHEME=${CURVATURESCHEMES[$N]}
+
+    NPROCX=$NPROCPERBRICKSIDE
+    NPROCY=$NPROCPERBRICKSIDE
+
+    NPROC=$(echo "print(int($NPROCX*$NPROCY))" | python)
+
+    MESHX=$MESH
+    MESHY=$(echo "print(int(2*$MESH))" | python)
+
+    CASE="$SOLVER-$MESH-$NPROC-$PSOLVER-$NORMALSCHEME-$CURVATURESCHEME"
+
+    while [ "$(($(ps aux | grep briscola | grep -v oversubscribe | grep -v grep | wc -l) + $NPROC))" \
+        -gt $NTASKS ]; do
+
+        sleep 1
+
+    done
+
+    (
+        echo "Starting $CASE"
+
+        cp -r $TEMPLATE $RUNDIR/$CASE
+
+        cd $RUNDIR/$CASE
+
+        ./prep.sh \
+            $SOLVER \
+            $MESHX \
+            $MESHY \
+            $NPROCX \
+            $NPROCY \
+            $PSOLVER \
+            $NORMALSCHEME \
+            $CURVATURESCHEME
+
+        if [ "$NPROC" == "1" ]; then
+
+            $SOLVER > log.$SOLVER
+
+        else
+
+            mpirun \
+                --bind-to none \
+                --oversubscribe \
+                -n $NPROC \
+                $SOLVER -parallel > log.$SOLVER
+
+        fi
+
+        ##
+
+        $PYTHON post.py log.$SOLVER
+
+        if [ -f "result.txt" ]; then
+
+            E1=$(sed -n '1p' < result.txt)
+            E2=$(sed -n '2p' < result.txt)
+
+            P1=$(sed -n '3p' < result.txt)
+            P2=$(sed -n '4p' < result.txt)
+
+            NDT=$(sed -n '5p' < result.txt)
+            NITER=$(sed -n '6p' < result.txt)
+
+        fi
+
+        echo \
+            "$SOLVER," \
+            "$MESH," \
+            "$NPROC," \
+            "$PSOLVER," \
+            "$NORMALSCHEME," \
+            "$CURVATURESCHEME," \
+            "$E1," \
+            "$E2," \
+            "$P1," \
+            "$P2," \
+            "$NDT," \
+            "$NITER" \ >> $CURR/$CSV
+
+        ##
+
+        echo "Finished $CASE"
+
+    ) &
+
+done
+done
+done
+done
+done
+done
+
+wait

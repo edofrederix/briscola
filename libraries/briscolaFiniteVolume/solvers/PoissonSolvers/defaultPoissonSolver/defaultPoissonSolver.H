@@ -34,7 +34,6 @@ public:
     // Construct from dictionary and mesh
     defaultPoissonSolver
     (
-        const word,
         const dictionary&,
         const fvMesh&
     );
@@ -42,10 +41,11 @@ public:
     // Solve function
     virtual void solve
     (
-        meshField<Type,MeshType>&,
-        const meshField<Type,MeshType>*,
-        const meshField<lowerFaceScalar,MeshType>*,
-        const bool = false
+        meshField<Type,MeshType>& x,
+        const meshField<Type,MeshType>* bPtr,
+        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+        const bool ddt = false,
+        const scalar dtFrac = 1
     );
 };
 

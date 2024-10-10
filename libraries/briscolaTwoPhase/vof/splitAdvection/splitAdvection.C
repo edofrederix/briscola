@@ -107,6 +107,17 @@ void splitAdvection::updateFlux
 
                 fluxAlpha = fluxVolume/dt;
             }
+            else
+            {
+                // We have an interfacial cell without normal
+
+                #ifdef FULLDEBUG
+
+                WarningInFunction
+                    << "Donating cell has interface but no normal" << nl;
+
+                #endif
+            }
 
             flux_(ijk)[d] = Foam::sign(flux)*fluxAlpha;
         }

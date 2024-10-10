@@ -12,20 +12,11 @@ namespace fv
 template<class Type, class MeshType>
 linearGaussGradientScheme<Type,MeshType>::linearGaussGradientScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    gradientScheme<Type,MeshType>(dict,fvMsh)
-{}
-
-template<class Type, class MeshType>
-linearGaussGradientScheme<Type,MeshType>::linearGaussGradientScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    gradientScheme<Type,MeshType>(dictionary(),fvMsh)
+    gradientScheme<Type,MeshType>(fvMsh, is)
 {}
 
 template<class Type, class MeshType>

@@ -1,0 +1,95 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      briscolaMeshDict;
+}
+
+vertices
+(
+    (0  -1.05 -1.05) //0
+    (15 -1.05 -1.05) //1
+    (0   1.05 -1.05) //2
+    (15  1.05 -1.05) //3
+
+    (0  -1.05  1.05) //4
+    (15 -1.05  1.05) //5
+    (0   1.05  1.05) //6
+    (15  1.05  1.05) //7
+);
+
+bricks
+(
+    0
+    {
+        vertices    (((0 4)(2 6))((1 5)(3 7)));
+        N           (192 96 96);
+    }
+);
+
+edges
+();
+
+patches
+(
+    walls
+    {
+        type    patch;
+
+        faces
+        (
+            (2 7 3 6)
+            (0 1 5 4)
+            (0 1 2 3)
+            (4 5 6 7)
+        );
+    }
+
+    inlet
+    {
+        type    periodic;
+        neighbor outlet;
+
+        faces
+        (
+            (0 4 2 6)
+        );
+    }
+
+    outlet
+    {
+        type    periodic;
+        neighbor inlet;
+
+        faces
+        (
+            (1 5 3 7)
+        );
+    }
+);
+
+decomposition
+{
+    type    manual;
+
+    brickDecompositions
+    (
+        (4 4 4)
+    );
+}
+
+ImmersedBoundaries
+{
+    pipeWall
+    {
+        cylinder1
+        {
+            type    cylinder;
+            start   (0 0 0);
+            end     (15 0 0);
+            radius  1.0;
+            inverted true;
+        }
+    }
+}

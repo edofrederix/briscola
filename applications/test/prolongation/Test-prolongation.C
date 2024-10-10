@@ -19,8 +19,8 @@ void testConstantProlongation(const fvMesh& fvMsh, const word scheme)
     (
         prolongationScheme<Type,MeshType>::New
         (
-            scheme,
-            fvMsh
+            fvMsh,
+            scheme
         )
     );
 
@@ -53,8 +53,8 @@ void testOneLinearProlongation(const fvMesh& fvMsh, const word scheme)
     (
         prolongationScheme<Type,MeshType>::New
         (
-            scheme,
-            fvMsh
+            fvMsh,
+            scheme
         )
     );
 
@@ -110,8 +110,8 @@ void testTwoLinearProlongation(const fvMesh& fvMsh, const word scheme)\
     (
         prolongationScheme<Type,MeshType>::New
         (
-            scheme,
-            fvMsh
+            fvMsh,
+            scheme
         )
     );
 
@@ -172,8 +172,8 @@ void testThreeLinearProlongation(const fvMesh& fvMsh, const word scheme)
     (
         prolongationScheme<Type,MeshType>::New
         (
-            scheme,
-            fvMsh
+            fvMsh,
+            scheme
         )
     );
 

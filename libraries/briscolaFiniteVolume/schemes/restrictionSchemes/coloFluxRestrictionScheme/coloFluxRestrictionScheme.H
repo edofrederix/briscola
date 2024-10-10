@@ -21,11 +21,8 @@ public:
     // Runtime type information
     TypeName("flux");
 
-    // Construct from dictionary and mesh
-    coloFluxRestrictionScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    coloFluxRestrictionScheme(const fvMesh&);
+    // Construct from stream and mesh
+    coloFluxRestrictionScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
     // level

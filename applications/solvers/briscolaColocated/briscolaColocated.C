@@ -30,7 +30,6 @@ int main(int argc, char *argv[])
     );
 
     #include "createFields.H"
-    #include "createRefs.H"
     #include "createBriscolaIO.H"
     #include "initContinuityErrors.H"
 
@@ -46,6 +45,7 @@ int main(int argc, char *argv[])
         Info << "Time = " << runTime.timeName() << endl;
 
         U.setOldTime();
+        p.setOldTime();
 
         // Predictor
 
@@ -57,32 +57,31 @@ int main(int argc, char *argv[])
         USys -= im::laplacian(0.5*nu,U);
         USys -= ex::laplacian(0.5*nu,U);
 
-        USys -= 0.5*DivU;
-        DivU = ex::div(phi,U);
-        USys += 1.5*DivU;
+        USys -= 0.5*H;
+        H = ex::div(phi,U);
+        USys += 1.5*H;
 
-        for (int corr = 0; corr < nCorr; corr++)
-        {
-            // Solve predictor with latest pressure
+        // Solve predictor
 
-            USolve->solve(USys + ex::grad(p));
+        USolve->solve(USys + G);
 
-            U += deltaT*ex::grad(p);
-            U.correctBoundaryConditions();
+        U += deltaT*G;
+        U.correctBoundaryConditions();
 
-            // Pressure equation
+        // Pressure equation
 
-            phi = ex::faceFlux(U);
+        phi = ex::faceFlux(U);
 
-            Poisson->solve(p, ex::div(phi)/(-deltaT));
+        Poisson->solve(p, ex::div(phi)/(-deltaT));
 
-            // Rhie-Chow correction
+        G = ex::grad(p);
 
-            U -= deltaT*ex::grad(p);
-            U.correctBoundaryConditions();
+        // Rhie-Chow correction
 
-            phi -= deltaT*ex::faceGrad(p)*fa;
-        }
+        U -= deltaT*G;
+        U.correctBoundaryConditions();
+
+        phi -= deltaT*Poisson->flux();
 
         io.write<colocated>();
 

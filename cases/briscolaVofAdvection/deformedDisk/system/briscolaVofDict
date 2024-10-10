@@ -12,3 +12,8 @@ normalScheme
 {
     type    MYC;
 }
+
+curvatureScheme
+{
+    type    SHF;
+}

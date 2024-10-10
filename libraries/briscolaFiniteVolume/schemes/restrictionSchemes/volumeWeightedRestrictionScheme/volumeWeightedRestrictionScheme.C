@@ -15,20 +15,11 @@ namespace fv
 template<class Type, class MeshType>
 volumeWeightedRestrictionScheme<Type,MeshType>::volumeWeightedRestrictionScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    restrictionScheme<Type,MeshType>(dict,fvMsh)
-{}
-
-template<class Type, class MeshType>
-volumeWeightedRestrictionScheme<Type,MeshType>::volumeWeightedRestrictionScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    restrictionScheme<Type,MeshType>(dictionary(),fvMsh)
+    restrictionScheme<Type,MeshType>(fvMsh, is)
 {}
 
 template<class Type, class MeshType>

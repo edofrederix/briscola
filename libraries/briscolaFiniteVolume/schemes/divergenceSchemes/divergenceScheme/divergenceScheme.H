@@ -29,16 +29,16 @@ public:
     (
         autoPtr,
         divergenceScheme,
-        dictionary,
+        Istream,
         (
-            const dictionary& dict,
-            const fvMesh& fvMsh
+            const fvMesh& fvMsh,
+            Istream& is
         ),
-        (dict, fvMsh)
+        (fvMsh, is)
     );
 
-    // Construct from dictionary and mesh
-    divergenceScheme(const dictionary&, const fvMesh&);
+    // Construct from stream and mesh
+    divergenceScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Copy constructor
     divergenceScheme(const divergenceScheme<SType,Type,MeshType>&);
@@ -46,8 +46,8 @@ public:
     // Selector
     static autoPtr<divergenceScheme<SType,Type,MeshType>> New
     (
-        const word,
-        const fvMesh&
+        const fvMesh&,
+        const word
     );
 
     // Destructor

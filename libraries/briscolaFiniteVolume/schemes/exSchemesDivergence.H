@@ -40,8 +40,8 @@ namespace ex
         {
             return divergenceScheme<SType,Type,MeshType>::New
             (
-                "div("+phi.name()+","+field.name()+")",
-                field.fvMsh()
+                field.fvMsh(),
+                "div("+phi.name()+","+field.name()+")"
             )->exDiv(phi,field);
         }
 
@@ -56,8 +56,8 @@ namespace ex
         {
             return divergenceScheme<SType,Type,MeshType>::New
             (
-                "div("+tPhi->name()+","+field.name()+")",
-                field.fvMsh()
+                field.fvMsh(),
+                "div("+tPhi->name()+","+field.name()+")"
             )->exDiv(tPhi,field);
         }
 

@@ -25,8 +25,8 @@ inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
 {
     return interpolationScheme<Type,MeshType>::New
     (
-        "interp("+field.name()+")",
-        field.fvMsh()
+        field.fvMsh(),
+        "interp("+field.name()+")"
     )->interp(field);
 }
 

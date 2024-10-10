@@ -667,7 +667,7 @@ inline labelVector cmptMax(const labelVector& a, const labelVector& b)
     );
 }
 
-// Return the face number given a face offset
+// Return the face number given a face offset (no checks)
 inline label faceNumber(const labelVector& o)
 {
     return
@@ -678,7 +678,7 @@ inline label faceNumber(const labelVector& o)
       :              (o.z()+1)/2 + 4;
 }
 
-// Return the edge number given an edge offset
+// Return the edge number given an edge offset (no checks)
 inline label edgeNumber(const labelVector& o)
 {
     return
@@ -689,7 +689,7 @@ inline label edgeNumber(const labelVector& o)
       :              (o.x()+1)/2 + (o.y()+1) + 8;
 }
 
-// Return the vertex number given vertex offset
+// Return the vertex number given vertex offset (no checks)
 inline label vertexNumber(const labelVector& o)
 {
     return

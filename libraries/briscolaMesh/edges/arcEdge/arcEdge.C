@@ -200,7 +200,10 @@ tmp<vectorField> arcEdge::operator()(const scalarField& f) const
         -axis_.y(), axis_.x(), 0
     );
 
-    R2 = I + Foam::sin(theta)*W2 + 2.0*sqr(Foam::sin(theta/2.0))*(W2 & W2);
+    R2 =
+        I
+      + Foam::sin(theta)*W2
+      + 2.0*Foam::sqr(Foam::sin(theta/2.0))*(W2 & W2);
 
     p = (R2 & (R1 & p)) + center_;
 

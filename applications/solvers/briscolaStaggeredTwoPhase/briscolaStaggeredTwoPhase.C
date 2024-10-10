@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
         Info << "Time = " << runTime.timeName() << endl;
 
         U.setOldTime();
+        p.setOldTime();
 
         // Update the two-phase model and specific volumes
 
@@ -49,7 +50,7 @@ int main(int argc, char *argv[])
         v = 1.0/rho;
         vcf = ex::coloFaceInterp(v);
 
-        // Predictor, Eq. (A.1) of Dodd & Ferrante (2014)
+        // Predictor
 
         USys = im::ddt(U);
 
@@ -64,85 +65,35 @@ int main(int argc, char *argv[])
         phi = ex::faceFlux(U);
 
         H = ex::div(phi,U)
-          - stagDotProduct(ex::grad(mu),ex::grad(U))*v
-          - ex::stagReconstruct(icoTwoPhase.surfaceTension())*v;
+          - stagDotProduct(ex::grad(mu),ex::grad(U))*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
+        USys -= list(icoTwoPhase.g());
+        USys -= ex::stagReconstruct(icoTwoPhase.surfaceTension())*v;
 
-        if (reduced)
-        {
-            USys -= ex::stagReconstruct(icoTwoPhase.buoyancy())*v;
-        }
-        else
-        {
-            USys -= list(icoTwoPhase.g());
-        }
+        // Solve predictor
 
-        for (int corr = 0; corr < nCorr; corr++)
-        {
-            // Solve predictor with latest pressure
+        USolve->solve(USys + G*v);
 
-            USolve->solve(USys + ex::stagGrad(p)*v);
+        U += deltaT*G*v;
+        U.correctBoundaryConditions();
 
-            USysAux = USys + ex::stagGrad(p)*v;
+        // Pressure equation
 
-            residual = USysAux.residual();
+        Poisson->solve(p, ex::coloDiv(U)/(-deltaT), vcf);
 
-            // Pressure equation
+        G = ex::stagReconstruct(Poisson->flux()/vcf);
 
-            if (split)
-            {
-                q = (1.0 + deltaT/deltaT0)*p - (deltaT/deltaT0)*p.oldTime();
-                p.setOldTime();
+        // Correct velocity
 
-                colocatedLowerFaceScalarField corr
-                (
-                    fa
-                  * (
-                        ex::faceGrad(q)*(1.0 - minRho*vcf)
-                      + ex::faceGrad(p)*minRho*vcf
-                    )
-                );
-
-                Poisson->solve
-                (
-                    p,
-                    minRho*ex::coloDiv(U)/(-deltaT) - ex::div(corr)
-                );
-
-                // Correct velocity
-
-                U -=
-                    deltaT
-                  * (
-                        ex::stagGrad(p)*maxv
-                      - ex::stagGrad(p.oldTime())*v
-                      + ex::stagGrad(q)*(v - maxv)
-                    );
-
-                U.correctBoundaryConditions();
-            }
-            else
-            {
-                colocatedLowerFaceScalarField corr(fa*vcf*ex::faceGrad(p));
-                p.setOldTime();
-
-                Poisson->solve
-                (
-                    p,
-                    ex::coloDiv(U)/(-deltaT) - ex::div(corr),
-                    vcf
-                );
-
-                // Correct velocity
-
-                U -= deltaT*(ex::stagGrad(p) - ex::stagGrad(p.oldTime()))*v;
-                U.correctBoundaryConditions();
-            }
-        }
+        U -= deltaT*G*v;
+        U.correctBoundaryConditions();
 
         if (fvMsh.time().writeTime())
+        {
             Uc = ex::reconstruct(U);
+            Uc.correctBoundaryConditions();
+        }
 
         io.write<colocated>();
         io.write<staggered>();

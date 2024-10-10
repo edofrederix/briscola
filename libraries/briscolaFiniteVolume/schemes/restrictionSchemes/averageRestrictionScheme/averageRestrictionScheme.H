@@ -22,11 +22,8 @@ public:
     // Runtime type information
     TypeName("average");
 
-    // Construct from dictionary and mesh
-    averageRestrictionScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    averageRestrictionScheme(const fvMesh&);
+    // Construct from stream and mesh
+    averageRestrictionScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
     // level, with option to scale by cell volume

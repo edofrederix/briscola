@@ -31,10 +31,10 @@ namespace ex
         {
             return laplacianScheme<SType,Type,MeshType>::New
             (
+                field.fvMsh(),
                 lambdaPtr
               ? "laplacian("+lambdaPtr->name()+","+field.name()+")"
-              : "laplacian("+field.name()+")",
-                field.fvMsh()
+              : "laplacian("+field.name()+")"
             )->exLaplacian(lambdaPtr,field,factor);
         }
 
@@ -50,8 +50,8 @@ namespace ex
         {
             return laplacianScheme<SType,Type,MeshType>::New
             (
-                "laplacian("+lambda.name()+","+field.name()+")",
-                field.fvMsh()
+                field.fvMsh(),
+                "laplacian("+lambda.name()+","+field.name()+")"
             )->exLaplacian(lambda,field,factor);
         }
 
@@ -67,8 +67,8 @@ namespace ex
         {
             return laplacianScheme<SType,Type,MeshType>::New
             (
-                "laplacian("+tLambda->name()+","+field.name()+")",
-                field.fvMsh()
+                field.fvMsh(),
+                "laplacian("+tLambda->name()+","+field.name()+")"
             )->exLaplacian(tLambda,field,factor);
         }
 
@@ -84,8 +84,8 @@ namespace ex
         {
             return laplacianScheme<SType,Type,MeshType>::New
             (
-                "laplacian(const,"+field.name()+")",
-                field.fvMsh()
+                field.fvMsh(),
+                "laplacian(const,"+field.name()+")"
             )->exLaplacian(lambda,field,factor);
         }
 
@@ -100,8 +100,8 @@ namespace ex
         {
             return laplacianScheme<SType,Type,MeshType>::New
             (
-                "laplacian("+field.name()+")",
-                field.fvMsh()
+                field.fvMsh(),
+                "laplacian("+field.name()+")"
             )->exLaplacian(field,factor);
         }
 

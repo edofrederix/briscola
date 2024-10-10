@@ -271,19 +271,27 @@ public:
     // Old time field pointer
     inline meshField<Type,MeshType>* oldTimePtr() const
     {
+        if (oldTimePtr_ == nullptr)
+            this->setOldTime();
+
         return oldTimePtr_;
     }
 
-    // Access to the old time field. Return the current time if no old time
-    // field is set
+    // Access to the old time field
     inline meshField<Type,MeshType>& oldTime()
     {
-        return oldTimePtr_ == nullptr ? *this : *oldTimePtr_;
+        if (oldTimePtr_ == nullptr)
+            this->setOldTime();
+
+        return *oldTimePtr_;
     }
 
     inline const meshField<Type,MeshType>& oldTime() const
     {
-        return oldTimePtr_ == nullptr ? *this : *oldTimePtr_;
+        if (oldTimePtr_ == nullptr)
+            const_cast<meshField<Type,MeshType>&>(*this).setOldTime();
+
+        return *oldTimePtr_;
     }
 
     // Access to the boundary conditions
@@ -333,7 +341,8 @@ public:
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();
 
-    // Set the old time field
+    // Set the old time field. Works recursively, so if the old time field has
+    // an old time field too, it will be set as well.
     void setOldTime();
 
     // Make the field deep

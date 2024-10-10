@@ -30,16 +30,16 @@ public:
     (
         autoPtr,
         laplacianScheme,
-        dictionary,
+        Istream,
         (
-            const dictionary& dict,
-            const fvMesh& fvMsh
+            const fvMesh& fvMsh,
+            Istream& is
         ),
-        (dict, fvMsh)
+        (fvMsh, is)
     );
 
-    // Construct from dictionary and mesh
-    laplacianScheme(const dictionary&, const fvMesh&);
+    // Construct from stream and mesh
+    laplacianScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Copy constructor
     laplacianScheme(const laplacianScheme<SType,Type,MeshType>&);
@@ -47,8 +47,8 @@ public:
     // Selector
     static autoPtr<laplacianScheme<SType,Type,MeshType>> New
     (
-        const word,
-        const fvMesh&
+        const fvMesh&,
+        const word
     );
 
     // Destructor

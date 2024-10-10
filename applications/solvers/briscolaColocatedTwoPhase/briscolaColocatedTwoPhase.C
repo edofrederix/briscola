@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
         Info << "Time = " << runTime.timeName() << endl;
 
         U.setOldTime();
+        p.setOldTime();
 
         // Update the two-phase model and specific volumes
 
@@ -50,7 +51,7 @@ int main(int argc, char *argv[])
         v = 1.0/rho;
         vf = ex::interp(v);
 
-        // Predictor, Eq. (A.1) of Dodd & Ferrante (2014)
+        // Predictor
 
         USys = im::ddt(U);
 
@@ -63,86 +64,38 @@ int main(int argc, char *argv[])
         USys -= 0.5*(deltaT/deltaT0)*H;
 
         H = ex::div(phi,U)
-          - (ex::grad(mu) & ex::grad(U))*v
-          - ex::reconstruct(icoTwoPhase.surfaceTension())*v;
+          - ex::div(mu*ex::faceFlux(dev2(T(ex::grad(U)))))*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
+        USys -= icoTwoPhase.g();
 
-        if (reduced)
-        {
-            USys -= ex::reconstruct(icoTwoPhase.buoyancy())*v;
-        }
-        else
-        {
-            USys -= icoTwoPhase.g();
-        }
+        // Solve predictor
 
-        for (int corr = 0; corr < nCorr; corr++)
-        {
-            // Solve predictor
+        USolve->solve(USys + G*v);
 
-            USolve->solve(USys + ex::grad(p)*v);
+        U += deltaT*G*v;
+        U.correctBoundaryConditions();
 
-            // Pressure equation
+        // Pressure equation
 
-            phi = ex::faceFlux(U);
+        phi = ex::faceFlux(U);
+        phi += deltaT*icoTwoPhase.surfaceTension()*vf;
 
-            if (split)
-            {
-                q = (1.0 + deltaT/deltaT0)*p - deltaT/deltaT0*p.oldTime();
-                p.setOldTime();
+        Poisson->solve(p, ex::div(phi)/(-deltaT), vf);
 
-                colocatedLowerFaceScalarField corr
-                (
-                    fa
-                  * (
-                        ex::faceGrad(q)*(1.0 - minRho*vf)
-                      + ex::faceGrad(p)*minRho*vf
-                    )
-                );
+        G =
+            ex::reconstruct
+            (
+                Poisson->flux()/vf
+              - icoTwoPhase.surfaceTension()
+            );
 
-                Poisson->solve
-                (
-                    p,
-                    minRho*ex::div(phi)/(-deltaT) - ex::div(corr)
-                );
+        // Rhie-Chow correction
 
-                // Rhie-Chow correction
+        U -= deltaT*G*v;
+        U.correctBoundaryConditions();
 
-                U -=
-                    deltaT
-                  * (
-                        ex::grad(p)*maxv
-                      - ex::grad(p.oldTime())*v
-                      + ex::grad(q)*(v - maxv)
-                    );
-
-                U.correctBoundaryConditions();
-
-                phi -=
-                    deltaT*fa
-                  * (
-                        ex::faceGrad(p)*maxv
-                      - ex::faceGrad(p.oldTime())*vf
-                      + ex::faceGrad(q)*(vf - maxv)
-                    );
-            }
-            else
-            {
-                colocatedLowerFaceScalarField corr(fa*vf*ex::faceGrad(p));
-                p.setOldTime();
-
-                Poisson->solve(p, ex::div(phi)/(-deltaT) - ex::div(corr), vf);
-
-                // Rhie-Chow correction
-
-                U -= deltaT*(ex::grad(p) - ex::grad(p.oldTime()))*v;
-                U.correctBoundaryConditions();
-
-                phi -=
-                    deltaT*(ex::faceGrad(p) - ex::faceGrad(p.oldTime()))*fa*vf;
-            }
-        }
+        phi -= deltaT*Poisson->flux();
 
         io.write<colocated>();
 

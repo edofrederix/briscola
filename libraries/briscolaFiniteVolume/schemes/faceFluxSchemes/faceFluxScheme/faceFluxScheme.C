@@ -12,11 +12,11 @@ namespace fv
 
 faceFluxScheme::faceFluxScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    scheme(dict, fvMsh)
+    scheme(fvMsh)
 {}
 
 faceFluxScheme::faceFluxScheme
@@ -32,31 +32,29 @@ faceFluxScheme::~faceFluxScheme()
 
 autoPtr<faceFluxScheme> faceFluxScheme::New
 (
-    const word name,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const word schemeName
 )
 {
-    const dictionary dict
-    (
-        fvMsh.schemeDict().subDict("faceFluxSchemes").subDict(name)
-    );
+    Istream& is = getStream(fvMsh, "faceFluxSchemes", schemeName);
 
-    const word faceFluxSchemeType(dict.lookup("type"));
+    word faceFluxSchemeType;
+    is >> faceFluxSchemeType;
 
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(faceFluxSchemeType);
+    typename IstreamConstructorTable::iterator cstrIter =
+        IstreamConstructorTablePtr_->find(faceFluxSchemeType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (cstrIter == IstreamConstructorTablePtr_->end())
     {
         FatalErrorInFunction
             << "Unknown face flux scheme "
             << faceFluxSchemeType << nl << nl
             << "Valid face flux schemes are:" << nl
-            << dictionaryConstructorTablePtr_->sortedToc()
+            << IstreamConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
-    return autoPtr<faceFluxScheme>(cstrIter()(dict, fvMsh));
+    return autoPtr<faceFluxScheme>(cstrIter()(fvMsh, is));
 }
 
 tmp<colocatedLowerFaceScalarField> coloFaceFlux

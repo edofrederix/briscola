@@ -7,4 +7,4 @@ if [ -z "$BRISCOLA" ]; then
 
 fi
 
-wmake code
+wmake -silent code

@@ -27,21 +27,20 @@ phi = Zero;
 
 // Curvature scheme
 
-autoPtr<curvatureScheme> curvatureSchemePtr;
+autoPtr<curvatureScheme> curvatureSchemePtr
+(
+    curvatureScheme::New
+    (
+        fvMsh,
+        vofDict.subDict("curvatureScheme"),
+        normal,
+        alpha
+    ).ptr()
+);
 
-if (curvature)
-    curvatureSchemePtr =
-        curvatureScheme::New
-        (
-            fvMsh,
-            vofDict.subDict("curvatureScheme"),
-            normal,
-            alpha
-        ).ptr();
+curvatureScheme& curvature = curvatureSchemePtr();
 
 // Write normal and kappa
 
 normal.writeOpt() = IOobject::AUTO_WRITE;
-
-if (curvature)
-    curvatureSchemePtr->writeOpt() = IOobject::AUTO_WRITE;
+curvature.writeOpt() = IOobject::AUTO_WRITE;

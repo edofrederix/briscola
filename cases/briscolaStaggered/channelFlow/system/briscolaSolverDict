@@ -12,12 +12,10 @@ U
     relTol      0.01;
     tolerance   1e-8;
     maxIter     100;
+    coarseMode  smooth;
 }
 
 p
 {
-    type        MG;
-    relTol      0.01;
-    tolerance   1e-8;
-    maxIter     100;
+    type        FFT;
 }

@@ -33,11 +33,8 @@ public:
     // Runtime type information
     TypeName("injection");
 
-    // Construct from dictionary and mesh
-    injectionProlongationScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    injectionProlongationScheme(const fvMesh&);
+    // Construct from stream and mesh
+    injectionProlongationScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // In-place prolongation from a coarse cell level to the adjacent fine cell
     // level, using the = operation

@@ -422,6 +422,55 @@ void testTensorFunctions(const fvMesh& fvMsh)
     // (v1*2.0) && m1;
     // v1 && (m1*2.0);
     // (v1*2.0) && (m1*2.0);
+
+    tr(m1);
+    sph(m1);
+    T(m1);
+    symm(m1);
+    twoSymm(m1);
+    skew(m1);
+    dev(m1);
+    dev2(m1);
+    det(m1);
+    cof(m1);
+    eigenValues(m1);
+    eigenVectors(m1);
+
+    tr(m2);
+    sph(m2);
+    symm(m2);
+    twoSymm(m2);
+    // skew(m2);
+    dev(m2);
+    dev2(m2);
+    det(m2);
+    cof(m2);
+    eigenValues(m2);
+    eigenVectors(m2);
+
+    tr(m3);
+    sph(m3);
+    // symm(m3);
+    // twoSymm(m3);
+    // skew(m3);
+    // dev(m3);
+    // dev2(m3);
+    det(m3);
+    // cof(m3);
+    // eigenValues(m3);
+    // eigenVectors(m3);
+
+    tr(m4);
+    sph(m4);
+    // symm(m4);
+    // twoSymm(m4);
+    // skew(m4);
+    // dev(m4);
+    // dev2(m4);
+    det(m4);
+    // cof(m4);
+    // eigenValues(m4);
+    // eigenVectors(m4);
 }
 
 int main(int argc, char *argv[])

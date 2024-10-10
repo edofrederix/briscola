@@ -12,11 +12,11 @@ namespace fv
 template<class Type, class MeshType>
 ddtScheme<Type,MeshType>::ddtScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    scheme(dict, fvMsh)
+    scheme(fvMsh)
 {}
 
 template<class Type, class MeshType>
@@ -35,31 +35,29 @@ ddtScheme<Type,MeshType>::~ddtScheme()
 template<class Type, class MeshType>
 autoPtr<ddtScheme<Type,MeshType>> ddtScheme<Type,MeshType>::New
 (
-    const word schemeName,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    const word schemeName
 )
 {
-    const dictionary dict
-    (
-        fvMsh.schemeDict().subDict("ddtSchemes").subDict(schemeName)
-    );
+    Istream& is = getStream(fvMsh, "ddtSchemes", schemeName);
 
-    const word ddtSchemeType(dict.lookup("type"));
+    word ddtSchemeType;
+    is >> ddtSchemeType;
 
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(ddtSchemeType);
+    typename IstreamConstructorTable::iterator cstrIter =
+        IstreamConstructorTablePtr_->find(ddtSchemeType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (cstrIter == IstreamConstructorTablePtr_->end())
     {
         FatalErrorInFunction
             << "Unknown ddt scheme scheme "
             << ddtSchemeType << nl << nl
             << "Valid ddt schemes are:" << nl
-            << dictionaryConstructorTablePtr_->sortedToc()
+            << IstreamConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
-    return autoPtr<ddtScheme<Type,MeshType>>(cstrIter()(dict, fvMsh));
+    return autoPtr<ddtScheme<Type,MeshType>>(cstrIter()(fvMsh, is));
 }
 
 }

@@ -1,5 +1,6 @@
 #include "FFTPoissonSolver.H"
 #include "rectilinearMesh.H"
+#include "exSchemes.H"
 
 namespace Foam
 {
@@ -41,7 +42,6 @@ void FFTPoissonSolver<SType>::checkMesh(const fvMesh& fvMsh)
 template<class SType>
 FFTPoissonSolver<SType>::FFTPoissonSolver
 (
-    const word PoissonSolverName,
     const dictionary& dict,
     const fvMesh& fvMsh
 )
@@ -82,7 +82,8 @@ void FFTPoissonSolver<SType>::solve
     colocatedScalarField& x,
     const colocatedScalarField* bPtr,
     const colocatedLowerFaceScalarField* lambdaPtr,
-    const bool ddt
+    const bool ddt,
+    const scalar dtFrac
 )
 {
     if (lambdaPtr != nullptr)
@@ -106,7 +107,7 @@ void FFTPoissonSolver<SType>::solve
     labelVector Y(decomp_.Y());
     labelVector Z(decomp_.Z());
 
-    const scalar deltaT = x.fvMsh().time().deltaTValue();
+    const scalar deltaT = x.fvMsh().time().deltaTValue()*dtFrac;
 
     // Copy the data from bPtr to a scalarBlock
     // minus sign since bPtr = - RHS of the Poisson equation
@@ -201,7 +202,7 @@ void FFTPoissonSolver<SType>::solve
                     decomp_.transpose(zPencil_, xPencil_, Z, X, "z", "x");
                 }
 
-                tds_->solve(xPencil_, ddt);
+                tds_->solve(xPencil_, ddt, dtFrac);
 
                 if (N.y() > 1)
                 {
@@ -239,7 +240,7 @@ void FFTPoissonSolver<SType>::solve
                     decomp_.transpose(yPencil_, xPencil_, Y, X, "y", "x");
                 }
 
-                tds_->solve(xPencil_, ddt);
+                tds_->solve(xPencil_, ddt, dtFrac);
 
                 if (N.z() > 1)
                 {
@@ -280,7 +281,7 @@ void FFTPoissonSolver<SType>::solve
                     decomp_.transpose(zPencil_, yPencil_, Z, Y, "z", "y");
                 }
 
-                tds_->solve(yPencil_, ddt);
+                tds_->solve(yPencil_, ddt, dtFrac);
 
                 if (N.x() > 1)
                 {
@@ -318,7 +319,7 @@ void FFTPoissonSolver<SType>::solve
                     decomp_.transpose(xPencil_, yPencil_, X, Y, "x", "y");
                 }
 
-                tds_->solve(yPencil_, ddt);
+                tds_->solve(yPencil_, ddt, dtFrac);
 
                 if (N.z() > 1)
                 {
@@ -359,7 +360,7 @@ void FFTPoissonSolver<SType>::solve
                     decomp_.transpose(yPencil_, zPencil_, Y, Z, "y", "z");
                 }
 
-                tds_->solve(zPencil_, ddt);
+                tds_->solve(zPencil_, ddt, dtFrac);
 
                 if (N.x() > 1)
                 {
@@ -397,8 +398,7 @@ void FFTPoissonSolver<SType>::solve
                     decomp_.transpose(xPencil_, zPencil_, X, Z, "x", "z");
                 }
 
-                tds_->solve(zPencil_, ddt);
-
+                tds_->solve(zPencil_, ddt, dtFrac);
 
                 if (N.y() > 1)
                 {
@@ -440,6 +440,23 @@ void FFTPoissonSolver<SType>::solve
 
     Info<< "FFT: Solving for colocated " << x.name()
         << ", residual = 0, nIter = 1" << endl;
+
+    // Compute the flux if needed
+
+    if (this->computeFlux())
+    {
+        this->initFlux();
+
+        const meshField<faceScalar,colocated>& fa =
+            x.fvMsh().metrics<colocated>().faceAreas();
+
+        this->fluxPtr_() = ex::faceGrad(x)*fa;
+        this->fluxPtr_->rename
+        (
+            "*faceGrad(" + x.name() + ")"
+          + "*" + fa.name()
+        );
+    }
 }
 
 // Instantiate

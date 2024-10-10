@@ -2,6 +2,7 @@
 #define CV_H
 
 #include "curvatureScheme.H"
+#include "Youngs.H"
 
 namespace Foam
 {
@@ -16,6 +17,8 @@ class CV
 :
     public curvatureScheme
 {
+    // Force the use of the Youngs normal
+    Youngs YoungsNormal_;
 
 public:
 

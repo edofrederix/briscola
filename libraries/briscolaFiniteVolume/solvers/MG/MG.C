@@ -41,8 +41,6 @@ void MG<SType,Type,MeshType>::cycle
     meshLevel<Type, MeshType>& xl = sys.x()[l];
     meshLevel<Type, MeshType>& rl = r[l];
 
-    const fvMesh& fvMsh = this->fvMsh_;
-
     const label nLevels = this->fvMsh_.size();
     const label nDirs = xl.size();
 
@@ -193,8 +191,6 @@ void MG<SType,Type,MeshType>::solve
 )
 {
     meshField<Type, MeshType>& x = sys.x();
-
-    const fvMesh& fvMsh = this->fvMsh_;
 
     // Correct the boundary conditions
 
@@ -353,16 +349,16 @@ MG<SType,Type,MeshType>::MG
     (
         prolongationScheme<Type,MeshType>::New
         (
-            dict.lookupOrDefault<word>("prolong", "linear"),
-            fvMsh
+            fvMsh,
+            dict.lookupOrDefault<word>("prolong", "linear")
         )
     ),
     reScheme_
     (
         restrictionScheme<Type,MeshType>::New
         (
-            dict.lookupOrDefault<word>("restrict", "linear"),
-            fvMsh
+            fvMsh,
+            dict.lookupOrDefault<word>("restrict", "linear")
         )
     )
 {

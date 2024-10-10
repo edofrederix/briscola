@@ -28,18 +28,18 @@ colocatedScalarField p
 p = Zero;
 p.correctBoundaryConditions();
 
-// Extrapolated pressure (Dodd & Ferrante)
+// Pressure gradient
 
-colocatedScalarField q
+colocatedVectorField G
 (
-    "q",
+    "grad(p)",
     fvMsh,
-    IOobject::NO_READ,
-    IOobject::NO_WRITE,
+    IOobject::READ_IF_PRESENT,
+    IOobject::AUTO_WRITE,
     true
 );
 
-q = Zero;
+G = Zero;
 
 // Flux
 
@@ -101,6 +101,8 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
     )
 );
 
+Poisson->enableFlux();
+
 // Specific volumes
 
 colocatedScalarField v
@@ -137,14 +139,3 @@ colocatedVectorField H
 );
 
 H = Zero;
-
-// It is assumed that the minimum mass density is constant
-
-const scalar minRho = gMin(twoPhase.minRho<colocated>())[0];
-const scalar maxv = 1.0/minRho;
-
-// Solver parameters
-
-const Switch split = twoPhaseDict.lookupOrDefault<Switch>("split", false);
-const Switch reduced = twoPhaseDict.lookupOrDefault<Switch>("reduced", false);
-const label nCorr = twoPhaseDict.lookupOrDefault<label>("nCorrectors", 1);

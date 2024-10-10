@@ -23,13 +23,23 @@ Youngs::Youngs
 )
 :
     normalScheme(fvMsh, dict, alpha),
-    gradThreshold_(dict.lookupOrDefault<scalar>("threshold", 1e-3))
+    nSmooth_(dict.lookupOrDefault<scalar>("nSmooth", 1))
+{}
+
+Youngs::Youngs
+(
+    const fvMesh& fvMsh,
+    const colocatedScalarField& alpha
+)
+:
+    normalScheme(fvMsh, dictionary::null, alpha),
+    nSmooth_(1)
 {}
 
 Youngs::Youngs(const Youngs& s)
 :
     normalScheme(s),
-    gradThreshold_(s.gradThreshold_)
+    nSmooth_(s.nSmooth_)
 {}
 
 Youngs::~Youngs()
@@ -39,23 +49,39 @@ void Youngs::correct()
 {
     colocatedVectorField& n = *this;
 
-    n = ex::grad(alpha_);
+    colocatedScalarField alpha(alpha_);
 
-    forAllCells(n, i, j, k)
+    for (int i = 0; i < nSmooth_; i++)
     {
-        const scalar S = Foam::mag(n(i,j,k));
+        // Gauss-Seidel-like sweep
 
-        if (S > gradThreshold_)
-        {
-            n(i,j,k) /= S;
-        }
-        else
-        {
-            n(i,j,k) = Zero;
-        }
+        forAllCells(alpha, i, j, k)
+            for (int d = 0; d < 3; d++)
+                alpha(i,j,k) =
+                    0.5 *alpha(i,j,k)
+                  + 0.25*alpha(lowerNei(i,j,k,d))
+                  + 0.25*alpha(upperNei(i,j,k,d));
+
+        forAllCellsReversed(alpha, i, j, k)
+            for (int d = 0; d < 3; d++)
+                alpha(i,j,k) =
+                    0.5 *alpha(i,j,k)
+                  + 0.25*alpha(lowerNei(i,j,k,d))
+                  + 0.25*alpha(upperNei(i,j,k,d));
     }
 
-    n[0].correctBoundaryConditions();
+    alpha.correctBoundaryConditions();
+
+    const colocatedFaceScalarField& fa =
+        fvMsh_.metrics<colocated>().faceAreas();
+
+    n = ex::reconstruct(ex::faceGrad(alpha)*fa);
+
+    forAllCells(n, i, j, k)
+        if (Foam::mag(n(i,j,k)))
+            n(i,j,k) /= Foam::mag(n(i,j,k));
+
+    n.correctBoundaryConditions();
 }
 
 }

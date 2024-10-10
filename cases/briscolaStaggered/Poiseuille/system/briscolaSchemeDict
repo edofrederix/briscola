@@ -8,53 +8,30 @@ FoamFile
 
 ddtSchemes
 {
-    ddt(U)
-    {
-        type    Euler;
-    }
+    default Euler;
 }
 
 laplacianSchemes
 {
-    laplacian(p)
-    {
-        type    linearGauss;
-    }
-
-    laplacian(const,U)
-    {
-        type    linearGauss;
-    }
+    default linearGauss;
 }
 
 divergenceSchemes
 {
-    div(phi,U)
-    {
-        type    midPointGauss;
-    }
+    default midPointGauss;
 }
 
 gradientSchemes
 {
-    stagGrad(p)
-    {
-        type    midPointGauss;
-    }
+    default midPointGauss;
 }
 
 faceGradientSchemes
 {
-    faceGrad(p)
-    {
-        type    linear;
-    }
+    default linear;
 }
 
 faceFluxSchemes
 {
-    flux(U)
-    {
-        type    midPoint;
-    }
+    default midPoint;
 }

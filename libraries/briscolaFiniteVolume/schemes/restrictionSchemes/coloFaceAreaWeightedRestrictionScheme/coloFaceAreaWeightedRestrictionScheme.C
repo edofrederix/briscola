@@ -16,21 +16,11 @@ template<class Type>
 coloFaceAreaWeightedRestrictionScheme<Type>::
 coloFaceAreaWeightedRestrictionScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    restrictionScheme<Type,colocated>(dict,fvMsh)
-{}
-
-template<class Type>
-coloFaceAreaWeightedRestrictionScheme<Type>::
-coloFaceAreaWeightedRestrictionScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    restrictionScheme<Type,colocated>(dictionary(),fvMsh)
+    restrictionScheme<Type,colocated>(fvMsh, is)
 {}
 
 template<class Type>

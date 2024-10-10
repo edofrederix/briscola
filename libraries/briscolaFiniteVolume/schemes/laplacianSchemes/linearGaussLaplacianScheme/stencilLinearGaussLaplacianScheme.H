@@ -19,11 +19,8 @@ class stencilLinearGaussLaplacianScheme
 {
 public:
 
-    // Construct from dictionary and mesh
-    stencilLinearGaussLaplacianScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    stencilLinearGaussLaplacianScheme(const fvMesh&);
+    // Construct from stream and mesh
+    stencilLinearGaussLaplacianScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Implicit laplacian scheme
     virtual tmp<linearSystem<stencil,Type,MeshType>> imLaplacian

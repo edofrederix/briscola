@@ -81,6 +81,7 @@ public:
         scalarBlock& p,
         const scalarBlock& f,
         const bool ddt,
+        const scalar dtFrac,
         const label start = 0
     );
 
@@ -89,11 +90,12 @@ public:
     (
         scalarBlock& p,
         const scalarBlock& f,
-        const bool ddt
+        const bool ddt,
+        const scalar dtFrac
     );
 
     // Solve x, y or z-direction of a scalarBlock
-    void solve(scalarBlock& xyzPencil, const bool ddt);
+    void solve(scalarBlock& xyzPencil, const bool ddt, const scalar dtFrac);
 
 };
 

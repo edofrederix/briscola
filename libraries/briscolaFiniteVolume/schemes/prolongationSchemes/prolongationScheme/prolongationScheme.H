@@ -29,22 +29,26 @@ public:
     (
         autoPtr,
         prolongationScheme,
-        dictionary,
+        Istream,
         (
-            const dictionary& dict,
-            const fvMesh& fvMsh
+            const fvMesh& fvMsh,
+            Istream& is
         ),
-        (dict, fvMsh)
+        (fvMsh, is)
     );
 
-    // Construct from dictionary and mesh
-    prolongationScheme(const dictionary&, const fvMesh&);
+    // Construct from stream and mesh
+    prolongationScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Copy constructor
     prolongationScheme(const prolongationScheme<Type,MeshType>&);
 
     // Selector
-    static autoPtr<prolongationScheme<Type,MeshType>> New(const word, const fvMesh&);
+    static autoPtr<prolongationScheme<Type,MeshType>> New
+    (
+        const fvMesh&,
+        const word
+    );
 
     // Destructor
     virtual ~prolongationScheme();

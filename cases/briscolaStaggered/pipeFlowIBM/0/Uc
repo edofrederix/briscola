@@ -1,0 +1,37 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      Uc;
+}
+
+initialCondition
+{
+
+}
+
+boundaryConditions
+{
+    walls
+    {
+        type        Dirichlet;
+        values      ((0 0 0));
+    }
+
+    inlet
+    {
+        type        periodic;
+    }
+
+    outlet
+    {
+        type        periodic;
+    }
+
+    pipeWall
+    {
+        type        Dirichlet;
+        values      ((0 0 0));
+    }
+}

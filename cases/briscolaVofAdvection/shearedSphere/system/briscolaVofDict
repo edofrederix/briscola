@@ -12,3 +12,8 @@ normalScheme
 {
     type    LSGIR;
 }
+
+curvatureScheme
+{
+    type    SHF;
+}

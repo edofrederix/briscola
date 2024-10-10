@@ -22,15 +22,12 @@ public:
     // Runtime type information
     TypeName("harmonicFaceAreaWeighted");
 
-    // Construct from dictionary and mesh
+    // Construct from stream and mesh
     coloHarmonicFaceAreaWeightedRestrictionScheme
     (
-        const dictionary&,
-        const fvMesh&
+        const fvMesh&,
+        Istream&
     );
-
-    // Construct from mesh only, with empty dictionary
-    coloHarmonicFaceAreaWeightedRestrictionScheme(const fvMesh&);
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
     // level

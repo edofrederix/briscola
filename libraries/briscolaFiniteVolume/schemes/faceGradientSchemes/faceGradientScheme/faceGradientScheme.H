@@ -29,22 +29,26 @@ public:
     (
         autoPtr,
         faceGradientScheme,
-        dictionary,
+        Istream,
         (
-            const dictionary& dict,
-            const fvMesh& fvMsh
+            const fvMesh& fvMsh,
+            Istream& is
         ),
-        (dict, fvMsh)
+        (fvMsh, is)
     );
 
-    // Construct from dictionary and mesh
-    faceGradientScheme(const dictionary&, const fvMesh&);
+    // Construct from stream and mesh
+    faceGradientScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Copy constructor
     faceGradientScheme(const faceGradientScheme<Type,MeshType>&);
 
     // Selector
-    static autoPtr<faceGradientScheme<Type,MeshType>> New(const word, const fvMesh&);
+    static autoPtr<faceGradientScheme<Type,MeshType>> New
+    (
+        const fvMesh&,
+        const word
+    );
 
     // Destructor
     virtual ~faceGradientScheme();

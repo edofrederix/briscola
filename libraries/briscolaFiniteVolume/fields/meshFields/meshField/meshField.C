@@ -239,7 +239,7 @@ meshField<Type,MeshType>::meshField
     ),
     refCount(),
     fvMsh_(tfield->fvMsh_),
-    oldTimePtr_(),
+    oldTimePtr_(nullptr),
     boundaryConditions_(),
     reSchemePtr_()
 {
@@ -287,7 +287,7 @@ meshField<Type,MeshType>::meshField
     ),
     refCount(),
     fvMsh_(tfield->fvMsh_),
-    oldTimePtr_(),
+    oldTimePtr_(nullptr),
     boundaryConditions_(),
     reSchemePtr_()
 {
@@ -460,6 +460,11 @@ void meshField<Type,MeshType>::setOldTime()
         );
     }
 
+    if (oldTimePtr_->oldTimePtr_ != nullptr)
+    {
+        oldTimePtr_->setOldTime();
+    }
+
     *oldTimePtr_ = *this;
 }
 
@@ -498,7 +503,7 @@ void meshField<Type,MeshType>::setRestrictionScheme(const word scheme)
 {
     reSchemePtr_.reset
     (
-        restrictionScheme<Type,MeshType>::New(scheme, fvMsh_).ptr()
+        restrictionScheme<Type,MeshType>::New(fvMsh_, scheme).ptr()
     );
 }
 

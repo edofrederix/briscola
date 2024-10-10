@@ -327,10 +327,11 @@ void tridiagonalSolver<SType>::solve
     scalarBlock& p,
     const scalarBlock& f,
     const bool ddt,
+    const scalar dtFrac,
     const label start
 )
 {
-    const scalar deltaT = solver_.fvMsh().time().deltaTValue();
+    const scalar deltaT = solver_.fvMsh().time().deltaTValue()*dtFrac;
 
     labelVector N(p.shape());
 
@@ -379,15 +380,16 @@ void tridiagonalSolver<SType>::solveCyclic
 (
     scalarBlock& p,
     const scalarBlock& f,
-    const bool ddt
+    const bool ddt,
+    const scalar dtFrac
 )
 {
-    const scalar deltaT = solver_.fvMsh().time().deltaTValue();
+    const scalar deltaT = solver_.fvMsh().time().deltaTValue()*dtFrac;
 
     // Solve first auxiliary system
     scalarBlock u(Nd_, Zero);
 
-    solve(u, f, ddt, 1);
+    solve(u, f, ddt, dtFrac, 1);
 
     // Solve second auxiliary system
     scalarBlock v(Nd_, Zero);
@@ -408,7 +410,7 @@ void tridiagonalSolver<SType>::solveCyclic
         }
     }
 
-    solve(v, vf, 1);
+    solve(v, vf, ddt, dtFrac, 1);
 
     cursor = 0;
 
@@ -441,18 +443,23 @@ void tridiagonalSolver<SType>::solveCyclic
 }
 
 template<class SType>
-void tridiagonalSolver<SType>::solve(scalarBlock& xyzPencil, const bool ddt)
+void tridiagonalSolver<SType>::solve
+(
+    scalarBlock& xyzPencil,
+    const bool ddt,
+    const scalar dtFrac
+)
 {
     // Copy RHS of tridiagonal system
     scalarBlock f(xyzPencil);
 
     if (BC_[solver_.FFTPlan().solveDir()] != 5)
     {
-        solve(xyzPencil, f, ddt);
+        solve(xyzPencil, f, ddt, dtFrac);
     }
     else
     {
-        solveCyclic(xyzPencil, f, ddt);
+        solveCyclic(xyzPencil, f, ddt, dtFrac);
     }
 }
 

@@ -12,20 +12,11 @@ namespace fv
 template<class Type, class MeshType>
 linearFaceGradientScheme<Type,MeshType>::linearFaceGradientScheme
 (
-    const dictionary& dict,
-    const fvMesh& fvMsh
+    const fvMesh& fvMsh,
+    Istream& is
 )
 :
-    faceGradientScheme<Type,MeshType>(dict,fvMsh)
-{}
-
-template<class Type, class MeshType>
-linearFaceGradientScheme<Type,MeshType>::linearFaceGradientScheme
-(
-    const fvMesh& fvMsh
-)
-:
-    faceGradientScheme<Type,MeshType>(dictionary(),fvMsh)
+    faceGradientScheme<Type,MeshType>(fvMsh, is)
 {}
 
 template<class Type, class MeshType>

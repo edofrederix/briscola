@@ -28,16 +28,16 @@ public:
     (
         autoPtr,
         interpolationScheme,
-        dictionary,
+        Istream,
         (
-            const dictionary& dict,
-            const fvMesh& fvMsh
+            const fvMesh& fvMsh,
+            Istream& is
         ),
-        (dict, fvMsh)
+        (fvMsh, is)
     );
 
-    // Construct from dictionary and mesh
-    interpolationScheme(const dictionary&, const fvMesh&);
+    // Construct from stream and mesh
+    interpolationScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Copy constructor
     interpolationScheme(const interpolationScheme<Type,MeshType>&);
@@ -45,8 +45,8 @@ public:
     // Selector
     static autoPtr<interpolationScheme<Type,MeshType>> New
     (
-        const word,
-        const fvMesh&
+        const fvMesh&,
+        const word
     );
 
     // Destructor

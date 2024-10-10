@@ -18,7 +18,7 @@
     defineTemplateRunTimeSelectionTable                                         \
     (                                                                           \
         interpolationScheme##TYPE##MESHTYPE,                                    \
-        dictionary                                                              \
+        Istream                                                                 \
     );
 
 
@@ -35,7 +35,7 @@
     );                                                                          \
                                                                                 \
     interpolationScheme<TYPE,MESHTYPE>::                                        \
-    adddictionaryConstructorToTable                                             \
+    addIstreamConstructorToTable                                                \
     <                                                                           \
         SCHEME##InterpolationScheme##TYPE##MESHTYPE                             \
     >                                                                           \

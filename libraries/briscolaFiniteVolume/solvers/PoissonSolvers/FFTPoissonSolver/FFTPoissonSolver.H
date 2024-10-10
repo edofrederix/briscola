@@ -62,7 +62,6 @@ public:
     // Construct from dictionary and mesh
     FFTPoissonSolver
     (
-        const word,
         const dictionary&,
         const fvMesh&
     );
@@ -73,10 +72,11 @@ public:
     // Solve function
     virtual void solve
     (
-        colocatedScalarField&,
-        const colocatedScalarField*,
-        const colocatedLowerFaceScalarField*,
-        const bool = false
+        colocatedScalarField& x,
+        const colocatedScalarField* bPtr,
+        const colocatedLowerFaceScalarField* lambdaPtr,
+        const bool ddt = false,
+        const scalar dtFrac = 1
     );
 
     // Use the base class solve support functions

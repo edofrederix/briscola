@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
         Info << "Time = " << runTime.timeName() << endl;
 
         U.setOldTime();
+        p.setOldTime();
 
         // Predictor
 
@@ -56,10 +57,10 @@ int main(int argc, char *argv[])
         USys -= im::laplacian(0.5*nu,U);
         USys -= ex::laplacian(0.5*nu,U);
 
-        USys -= 0.5*DivU;
+        USys -= 0.5*H;
         phi = ex::faceFlux(U);
-        DivU = ex::div(phi,U);
-        USys += 1.5*DivU;
+        H = ex::div(phi,U);
+        USys += 1.5*H;
 
         // Solve predictor
 

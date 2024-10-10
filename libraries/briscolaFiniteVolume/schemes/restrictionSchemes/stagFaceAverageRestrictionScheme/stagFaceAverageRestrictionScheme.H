@@ -22,11 +22,12 @@ public:
     // Runtime type information
     TypeName("faceAverage");
 
-    // Construct from dictionary and mesh
-    stagFaceAverageRestrictionScheme(const dictionary&, const fvMesh&);
-
-    // Construct from mesh only, with empty dictionary
-    stagFaceAverageRestrictionScheme(const fvMesh&);
+    // Construct from stream and mesh
+    stagFaceAverageRestrictionScheme
+    (
+        const fvMesh&,
+        Istream& = scheme::nullStream
+    );
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
     // level
