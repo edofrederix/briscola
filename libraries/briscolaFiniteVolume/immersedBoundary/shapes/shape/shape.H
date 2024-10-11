@@ -17,7 +17,8 @@ class shape
 {
 protected:
 
-bool inverted_;
+    // Inverted bool
+    bool inverted_;
 
 public:
     // Runtime type information
@@ -40,11 +41,7 @@ public:
     shape(const dictionary&, bool);
 
     // Selector from dictionary
-    static autoPtr<shape> New
-    (
-        const dictionary&,
-        bool inverted = false
-    );
+    static autoPtr<shape> New(const dictionary&, bool inverted = false);
 
     // Destructor
     virtual ~shape();
@@ -52,18 +49,20 @@ public:
     // Check if point is inside shape
     virtual bool isInside(vector) const = 0;
 
-    // Returns dimensionless wall distance given two points
-    // The first point is a fluid cell and the second point is an IB cell
+    // Returns dimensionless wall distance given two points The first point is a
+    // fluid cell and the second point is an IB cell
     virtual scalar wallDistance(vector, vector) const = 0;
 
-    // Returns the distance from a ghost cell to the immersed boundary in
-    // the wall-normal direction
+    // Returns the distance from a ghost cell to the immersed boundary in the
+    // wall-normal direction
     virtual scalar wallNormalDistance(vector) const = 0;
 
-    // Returns the coordinates of the mirror point of a ghost cell
-    // in the wall-normal direction of a shape
+    // Returns the coordinates of the mirror point of a ghost cell in the
+    // wall-normal direction of a shape
     virtual vector mirrorPoint(vector) const = 0;
 
+    // Inverted shape
+    virtual bool inverted() const { return inverted_; }
 };
 
 }

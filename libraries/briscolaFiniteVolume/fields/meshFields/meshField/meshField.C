@@ -347,20 +347,18 @@ void meshField<Type,MeshType>::addImmersedBoundaryConditions()
 {
     if
     (
-        fvMsh_.immersedBoundaryPresent()
-        && !immersedBoundaryConditions_.size()
+        !immersedBoundaryConditions_.size()
+     && fvMsh_.IBs<MeshType>().size()
     )
     {
-        label nIB = fvMsh_.IB<MeshType>().size();
-
-        for (int i = 0; i < nIB; i++)
+        forAll(fvMsh_.IBs<MeshType>(), i)
         {
             immersedBoundaryConditions_.append
             (
                 immersedBoundaryCondition<Type,MeshType>::New
                 (
                     *this,
-                    fvMsh_.IB<MeshType>()[i]
+                    fvMsh_.IBs<MeshType>()[i]
                 )
             );
         }
@@ -519,13 +517,6 @@ void meshField<Type,MeshType>::restrict()
     makeDeep();
 
     reSchemePtr_->restrict(*this);
-}
-
-template<class Type, class MeshType>
-const PtrList<immersedBoundaryCondition<Type,MeshType>>&
-meshField<Type,MeshType>::IBC() const
-{
-    return immersedBoundaryConditions_;
 }
 
 template<class Type, class MeshType>

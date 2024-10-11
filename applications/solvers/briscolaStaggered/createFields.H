@@ -83,14 +83,14 @@ imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
 
 // Immersed boundary
 
-if (fvMsh.immersedBoundaryPresent())
+if (fvMsh.IBs<staggered>().size())
 {
     // Set source terms to zero inside IB
     forAllCells(exSource,l,d,i,j,k)
     {
-        forAll(fvMsh.IB<staggered>(), ib)
+        forAll(fvMsh.IBs<staggered>(), ib)
         {
-            if (fvMsh.IB<staggered>()[ib].mask()(l,d,i,j,k))
+            if (fvMsh.IBs<staggered>()[ib].mask()(l,d,i,j,k))
             {
                 exSource(l,d,i,j,k) = Zero;
                 imSourceCoeff(l,d,i,j,k) = Zero;
@@ -101,9 +101,9 @@ if (fvMsh.immersedBoundaryPresent())
 
 Switch massSource = false;
 
-forAll(U.IBC(), ib)
+forAll(U.immersedBoundaryConditions(), ib)
 {
-    const word IBname = fvMsh.IB<staggered>()[ib].name();
+    const word IBname = fvMsh.IBs<staggered>()[ib].name();
 
     if
     (

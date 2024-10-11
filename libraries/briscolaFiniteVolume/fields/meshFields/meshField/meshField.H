@@ -308,6 +308,20 @@ public:
         return boundaryConditions_;
     }
 
+    // Access to the boundary conditions
+    inline PtrList<immersedBoundaryCondition<Type,MeshType>>&
+    immersedBoundaryConditions()
+    {
+        return immersedBoundaryConditions_;
+    }
+
+    // Const access to the boundary conditions
+    inline const PtrList<immersedBoundaryCondition<Type,MeshType>>&
+    immersedBoundaryConditions() const
+    {
+        return immersedBoundaryConditions_;
+    }
+
     // Add boundary conditions
     void addBoundaryConditions();
 
@@ -381,9 +395,6 @@ public:
 
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }
-
-    // Return const reference to immersed boundary conditions
-    const PtrList<immersedBoundaryCondition<Type,MeshType>>& IBC() const;
 
     // Member operators
 

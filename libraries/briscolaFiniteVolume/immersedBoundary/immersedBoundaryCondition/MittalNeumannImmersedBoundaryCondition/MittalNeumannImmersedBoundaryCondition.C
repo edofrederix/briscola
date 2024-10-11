@@ -97,7 +97,10 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>
         {
             pointDataExchange<MeshType> exchange
             (
-                exchangePoints_[d], fvMsh, l, d
+                exchangePoints_[d],
+                fvMsh,
+                l,
+                d
             );
 
             List<Type> exchangeData(move(exchange(x.mshField())));
@@ -146,12 +149,10 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>
                             if
                             (
                                 (
-                                    word(MeshType::typeName) == "colocated" ?
-                                    true
-                                    :
-                                    (d != dir)
+                                    word(MeshType::typeName) == "colocated"
+                                 || (d != dir)
                                 )
-                                && (mpLocalCoords[dir] < 0.5)
+                             && (mpLocalCoords[dir] < 0.5)
                             )
                             {
                                 mpLBA[dir] -= 1;

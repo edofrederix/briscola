@@ -81,17 +81,17 @@ public:
     // Destructor
     virtual ~immersedBoundaryCondition();
 
-    // Correct the forcing points as Jacobi points.
-    virtual void correctJacobiPoints
-    (
-        meshLevel<Type,MeshType>&
-    ) const = 0;
+    // Correct Jacobi points
+    virtual void correctJacobiPoints(meshLevel<Type,MeshType>&) const = 0;
 
     // Inline access functions
     inline const dictionary& dict() const { return dict_; }
 
+    // Const access to the forcing points
     inline const meshField<label,MeshType>& forcingPoints() const
-    { return forcingPoints_; }
+    {
+        return forcingPoints_;
+    }
 
 };
 

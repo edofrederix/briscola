@@ -9,10 +9,10 @@ namespace briscola
 namespace fv
 {
 
-// Return colocated mass source term to be added to the Poisson equation
-// given a staggered velocity field. The source term corrects for unphysical
-// fluxes across the immersed boundary that can occur in methods that use
-// velocity forcing.
+// Return colocated mass source term to be added to the Poisson equation given a
+// staggered velocity field. The source term corrects for unphysical fluxes
+// across the immersed boundary that can occur in methods that use velocity
+// forcing.
 
 tmp<colocatedScalarField> IBMMassSource
 (
@@ -29,11 +29,11 @@ tmp<colocatedScalarField> IBMMassSource
 
     ghostMask = Zero;
 
-    forAll(fvMsh.IB<staggered>(), ib)
+    forAll(fvMsh.IBs<staggered>(), ib)
     {
         forAllCells(ghostMask,l,d,i,j,k)
         {
-            if (fvMsh.IB<staggered>()[ib].ghostMask()(l,d,i,j,k))
+            if (fvMsh.IBs<staggered>()[ib].ghostMask()(l,d,i,j,k))
             {
                 ghostMask(l,d,i,j,k) = 1;
             }
@@ -59,27 +59,20 @@ tmp<colocatedScalarField> IBMMassSource
     const colocatedScalarField& cv =
         fvMsh.metrics<colocated>().cellVolumes();
 
-    forAllCells(source[0][0],i,j,k)
+    forAllCells(source, i, j, k)
     {
-        source(0,0,i,j,k) -=
-            ghostMask(0,0,i,j,k) * field(0,0,i,j,k) * fa(0,0,i,j,k).left();
+        const labelVector ijk(i,j,k);
 
-        source(0,0,i,j,k) +=
-            ghostMask(0,0,i+1,j,k) * field(0,0,i+1,j,k) * fa(0,0,i,j,k).right();
+        for (int d = 0; d < 3; d++)
+        {
+            const labelVector nei(upperNei(ijk,d));
 
-        source(0,0,i,j,k) -=
-            ghostMask(0,1,i,j,k) * field(0,1,i,j,k) * fa(0,0,i,j,k).bottom();
+            source(ijk) -=
+                ghostMask(ijk)*field(ijk)*fa(ijk)[d*2]
+              - ghostMask(nei)*field(nei)*fa(ijk)[d*2+1];
+        }
 
-        source(0,0,i,j,k) +=
-            ghostMask(0,1,i,j+1,k) * field(0,1,i,j+1,k) * fa(0,0,i,j,k).top();
-
-        source(0,0,i,j,k) -=
-            ghostMask(0,2,i,j,k) * field(0,2,i,j,k) * fa(0,0,i,j,k).aft();
-
-        source(0,0,i,j,k) +=
-            ghostMask(0,2,i,j,k+1) * field(0,2,i,j,k+1) * fa(0,0,i,j,k).fore();
-
-        source(0,0,i,j,k) /= cv(0,0,i,j,k);
+        source(ijk) /= cv(ijk);
     }
 
     return tSource;

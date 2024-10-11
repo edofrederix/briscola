@@ -92,13 +92,13 @@ void MG<SType,Type,MeshType>::cycle
                     {
                         sys.residual(rl[d]);
 
-                        forAll(sys.x().IBC(), ib)
+                        forAll(sys.x().immersedBoundaryConditions(), ib)
                         {
                             forAllCells(r[l][d],i,j,k)
                             {
                                 if
                                 (
-                                    sys.x().IBC()[ib]
+                                    sys.x().immersedBoundaryConditions()[ib]
                                         .forcingPoints()(l,d,i,j,k)
                                 )
                                 {
@@ -214,13 +214,19 @@ void MG<SType,Type,MeshType>::solve
 
     sys.residual(r[0]);
 
-    forAll(sys.x().IBC(), ib)
+    // Set residual to zero for IBM ghost points
+
+    forAll(sys.x().immersedBoundaryConditions(), ib)
     {
-        forAllCells(r[0],d,i,j,k)
+        forAllCells(r,d,i,j,k)
         {
-            if (sys.x().IBC()[ib].forcingPoints()(0,d,i,j,k))
+            if
+            (
+                sys.x().immersedBoundaryConditions()[ib]
+                    .forcingPoints()(d,i,j,k)
+            )
             {
-                r[0][d](i,j,k) = Zero;
+                r(d,i,j,k) = Zero;
             }
         }
     }
@@ -286,13 +292,17 @@ void MG<SType,Type,MeshType>::solve
             {
                 sys.residual(r[0][d]);
 
-                forAll(sys.x().IBC(), ib)
+                forAll(sys.x().immersedBoundaryConditions(), ib)
                 {
-                    forAllCells(r[0][d],i,j,k)
+                    forAllCells(r,d,i,j,k)
                     {
-                        if (sys.x().IBC()[ib].forcingPoints()(0,d,i,j,k))
+                        if
+                        (
+                            sys.x().immersedBoundaryConditions()[ib]
+                                .forcingPoints()(d,i,j,k)
+                        )
                         {
-                            r[0][d](i,j,k) = Zero;
+                            r(d,i,j,k) = Zero;
                         }
                     }
                 }

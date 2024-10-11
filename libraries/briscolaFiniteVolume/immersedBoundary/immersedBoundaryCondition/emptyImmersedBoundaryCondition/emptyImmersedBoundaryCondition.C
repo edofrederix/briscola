@@ -28,8 +28,8 @@ emptyImmersedBoundaryCondition<Type,MeshType>::~emptyImmersedBoundaryCondition()
 {}
 
 template<class Type, class MeshType>
-void emptyImmersedBoundaryCondition<Type,MeshType>
-::correctJacobiPoints
+void emptyImmersedBoundaryCondition<Type,MeshType>::
+correctJacobiPoints
 (
     meshLevel<Type,MeshType>& x
 ) const

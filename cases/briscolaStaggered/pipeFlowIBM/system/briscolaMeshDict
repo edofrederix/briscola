@@ -79,7 +79,7 @@ decomposition
     );
 }
 
-ImmersedBoundaries
+immersedBoundaries
 {
     pipeWall
     {

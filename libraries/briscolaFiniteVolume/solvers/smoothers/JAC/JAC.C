@@ -65,9 +65,13 @@ void JAC<SType,Type,MeshType>::JAC::smooth
                 {
                     Switch forcing = false;
 
-                    forAll(sys.x().IBC(), ib)
+                    forAll(sys.x().immersedBoundaryConditions(), ib)
                     {
-                        if (sys.x().IBC()[ib].forcingPoints()(l,d,i,j,k))
+                        if
+                        (
+                            sys.x().immersedBoundaryConditions()[ib]
+                                .forcingPoints()(l,d,i,j,k)
+                        )
                         {
                             forcing = true;
                         }

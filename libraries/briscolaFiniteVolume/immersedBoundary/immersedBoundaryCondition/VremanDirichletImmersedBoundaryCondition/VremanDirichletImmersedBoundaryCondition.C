@@ -12,8 +12,8 @@ namespace fv
 // Constructor
 
 template<class Type, class MeshType>
-VremanDirichletImmersedBoundaryCondition<Type,MeshType>
-::VremanDirichletImmersedBoundaryCondition
+VremanDirichletImmersedBoundaryCondition<Type,MeshType>::
+VremanDirichletImmersedBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
     const immersedBoundary<MeshType>& ib
@@ -88,13 +88,13 @@ VremanDirichletImmersedBoundaryCondition<Type,MeshType>
 // Destructor
 
 template<class Type, class MeshType>
-VremanDirichletImmersedBoundaryCondition<Type,MeshType>
-::~VremanDirichletImmersedBoundaryCondition()
+VremanDirichletImmersedBoundaryCondition<Type,MeshType>::
+~VremanDirichletImmersedBoundaryCondition()
 {}
 
 template<class Type, class MeshType>
-void VremanDirichletImmersedBoundaryCondition<Type,MeshType>
-::correctJacobiPoints
+void VremanDirichletImmersedBoundaryCondition<Type,MeshType>::
+correctJacobiPoints
 (
     meshLevel<Type,MeshType>& x
 ) const
@@ -113,7 +113,10 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>
 
             cellDataExchange<MeshType> exchange
             (
-                exchangePoints_[d], fvMsh, l, d
+                exchangePoints_[d],
+                fvMsh,
+                l,
+                d
             );
 
             List<Type> exchangeData(move(exchange(x.mshField())));

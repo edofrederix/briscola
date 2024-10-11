@@ -47,9 +47,6 @@ class fvMesh
     // Staggered mesh metrics
     autoPtr<fvMeshMetrics<staggered>> staggeredMetrics_;
 
-    // Switch for immersed boundary presence
-    Switch immersedBoundaryPresent_;
-
     // Set the internal cell start and end indices
     template<class MeshType>
     void setInternalCells();
@@ -220,6 +217,13 @@ public:
     template<class MeshType>
     const fvMeshMetrics<MeshType>& metrics() const;
 
+    // Const access to immersed boundaries
+    template<class MeshType>
+    const PtrList<immersedBoundary<MeshType>>& IBs() const
+    {
+        return metrics<MeshType>().IBs();
+    }
+
     // Cell find function templated for the mesh type. Uses the cell find
     // function of the base mesh and always acts on the first level.
     template<class MeshType>
@@ -239,10 +243,6 @@ public:
         const label d = 0
     ) const;
 
-    // Return reference to immersed boundaries
-    template<class MeshType>
-    const PtrList<immersedBoundary<MeshType>>& IB() const;
-
     // Mesh dictionary
     inline const dictionary& meshDict() const { return meshDict_; }
 
@@ -254,9 +254,6 @@ public:
 
     // Needed by regIOobject
     virtual bool writeData(Ostream&) const { return true; }
-
-    // Switch for immersed boundary presence
-    inline const Switch immersedBoundaryPresent() const { return immersedBoundaryPresent_; }
 
     // Member functions that pass directly to the mesh object
 

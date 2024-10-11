@@ -12,8 +12,8 @@ namespace fv
 // Constructor
 
 template<class Type, class MeshType>
-MittalDirichletImmersedBoundaryCondition<Type,MeshType>
-::MittalDirichletImmersedBoundaryCondition
+MittalDirichletImmersedBoundaryCondition<Type,MeshType>::
+MittalDirichletImmersedBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
     const immersedBoundary<MeshType>& ib
@@ -68,8 +68,8 @@ MittalDirichletImmersedBoundaryCondition<Type,MeshType>
 // Destructor
 
 template<class Type, class MeshType>
-MittalDirichletImmersedBoundaryCondition<Type,MeshType>
-::~MittalDirichletImmersedBoundaryCondition()
+MittalDirichletImmersedBoundaryCondition<Type,MeshType>::
+~MittalDirichletImmersedBoundaryCondition()
 {}
 
 template<class Type, class MeshType>
@@ -97,7 +97,10 @@ void MittalDirichletImmersedBoundaryCondition<Type,MeshType>
         {
             pointDataExchange<MeshType> exchange
             (
-                exchangePoints_[d], fvMsh, l, d
+                exchangePoints_[d],
+                fvMsh,
+                l,
+                d
             );
 
             List<Type> exchangeData(move(exchange(x.mshField())));
@@ -146,10 +149,8 @@ void MittalDirichletImmersedBoundaryCondition<Type,MeshType>
                             if
                             (
                                 (
-                                    word(MeshType::typeName) == "colocated" ?
-                                    true
-                                    :
-                                    (d != dir)
+                                    word(MeshType::typeName) == "colocated"
+                                 || (d != dir)
                                 )
                                 && (mpLocalCoords[dir] < 0.5)
                             )
@@ -172,7 +173,10 @@ void MittalDirichletImmersedBoundaryCondition<Type,MeshType>
                         );
 
                         // Interpolation weights
-                        const vector v(interpolationWeights(mp,interpPoints,true));
+                        const vector v
+                        (
+                            interpolationWeights(mp,interpPoints,true)
+                        );
 
                         vertexScalar weights
                         (
@@ -215,8 +219,9 @@ void MittalDirichletImmersedBoundaryCondition<Type,MeshType>
                         }
                     }
 
-                    // If the ghost cell is on the boundary or at the center
-                    // of a sphere or cylinder, set value to boundary value
+                    // If the ghost cell is on the boundary or at the center of
+                    // a sphere or cylinder, set value to boundary value
+
                     if (mp == CC(l,d,i,j,k))
                     {
                         mpValue = boundaryValues_[d];

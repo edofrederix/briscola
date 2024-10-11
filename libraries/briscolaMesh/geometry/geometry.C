@@ -267,7 +267,6 @@ void geometry::alignBricks()
 geometry::geometry(const IOdictionary& dict)
 :
     meshData(dict),
-    dict_(dict),
     bricks_(),
     topology_(),
     patches_(),
@@ -286,7 +285,6 @@ geometry::geometry(const IOdictionary& dict)
 geometry::geometry(const geometry& geo)
 :
     meshData(geo),
-    dict_(geo.dict_),
     bricks_(geo.bricks_, *this),
     topology_(geo.topology_),
     patches_(geo.patches_),
@@ -296,7 +294,6 @@ geometry::geometry(const geometry& geo)
 geometry::geometry(geometry& geo, bool reuse)
 :
     meshData(geo),
-    dict_(geo.dict_),
     bricks_(geo.bricks_, *this),
     topology_(geo.topology_, reuse),
     patches_(geo.patches_, reuse),

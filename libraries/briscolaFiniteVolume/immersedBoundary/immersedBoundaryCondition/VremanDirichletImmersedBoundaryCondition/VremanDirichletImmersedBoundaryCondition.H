@@ -42,11 +42,7 @@ public:
     virtual ~VremanDirichletImmersedBoundaryCondition();
 
     // Correct Jacobi points
-    void correctJacobiPoints
-    (
-        meshLevel<Type,MeshType>&
-    ) const;
-
+    void correctJacobiPoints(meshLevel<Type,MeshType>&) const;
 };
 
 }

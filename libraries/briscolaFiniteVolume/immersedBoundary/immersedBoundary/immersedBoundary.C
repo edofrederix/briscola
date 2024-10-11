@@ -185,8 +185,8 @@ void immersedBoundary<MeshType>::setMirrorPoints()
         {
             vector mp = mirrorPoint(CC(l,d,i,j,k));
 
-            // Fix situations where the mirror point is just outside of
-            // the mesh bounding box due to rounding errors
+            // Fix situations where the mirror point is just outside of the mesh
+            // bounding box due to rounding errors
 
             for (int dir = 0; dir < 3; dir++)
             {
@@ -213,9 +213,9 @@ void immersedBoundary<MeshType>::setMirrorPoints()
         }
         else
         {
-            // The vector (0,0,0) is still a valid coordinate
-            // so the mirrorPoints_ field should only be evaluated
-            // at ghost cells
+            // The vector (0,0,0) is still a valid coordinate so the
+            // mirrorPoints_ field should only be evaluated at ghost cells
+
             mirrorPoints_(l,d,i,j,k) = Zero;
         }
     }

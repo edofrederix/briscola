@@ -13,8 +13,8 @@ namespace fv
 // Constructor
 
 template<class Type, class MeshType>
-FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
-::FadlunDirichletImmersedBoundaryCondition
+FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::
+FadlunDirichletImmersedBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
     const immersedBoundary<MeshType>& ib
@@ -70,13 +70,13 @@ FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
 // Destructor
 
 template<class Type, class MeshType>
-FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
-::~FadlunDirichletImmersedBoundaryCondition()
+FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::
+~FadlunDirichletImmersedBoundaryCondition()
 {}
 
 template<class Type, class MeshType>
-void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
-::correctJacobiPoints
+void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::
+correctJacobiPoints
 (
     meshLevel<Type,MeshType>& x
 ) const
@@ -92,6 +92,7 @@ void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>
             if (this->forcingPoints_(l,d,i,j,k))
             {
                 scalar ximax = 0;
+
                 // Loop over face number directions
                 for (int dir = 0; dir < 6; dir++)
                 {

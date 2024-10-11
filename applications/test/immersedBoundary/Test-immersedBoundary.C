@@ -21,9 +21,9 @@ int main(int argc, char *argv[])
     // Test point 3 is inside sphere1
     vector testPoint4(1,1,1);
 
-    forAll(fvMsh.IB<colocated>(), ib)
+    forAll(fvMsh.IBs<colocated>(), ib)
     {
-        if (fvMsh.IB<colocated>()[ib].isInside(testPoint1))
+        if (fvMsh.IBs<colocated>()[ib].isInside(testPoint1))
         {
             FatalError
                 << "IB test 1 failed."
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
             Info << "IB test 1 successful!" << endl;
         }
 
-        if (!fvMsh.IB<colocated>()[ib].isInside(testPoint2))
+        if (!fvMsh.IBs<colocated>()[ib].isInside(testPoint2))
         {
             FatalError
                 << "IB test 2 failed."
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
             Info << "IB test 2 successful!" << endl;
         }
 
-        if (!fvMsh.IB<colocated>()[ib].isInside(testPoint3))
+        if (!fvMsh.IBs<colocated>()[ib].isInside(testPoint3))
         {
             FatalError
                 << "IB test 3 failed."
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
             Info << "IB test 3 successful!" << endl;
         }
 
-        if (!fvMsh.IB<colocated>()[ib].isInside(testPoint4))
+        if (!fvMsh.IBs<colocated>()[ib].isInside(testPoint4))
         {
             FatalError
                 << "IB test 4 failed."
@@ -87,9 +87,9 @@ int main(int argc, char *argv[])
         fvMsh.metrics<colocated>().cellCenters();
 
 
-    forAll(fvMsh.IB<colocated>(), ib)
+    forAll(fvMsh.IBs<colocated>(), ib)
     {
-        if (fvMsh.IB<colocated>()[ib].isInside(cc[0][0](testPoint5)))
+        if (fvMsh.IBs<colocated>()[ib].isInside(cc[0][0](testPoint5)))
         {
             FatalError
                 << "IB test 5 failed."
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
             Info << "IB test 5 successful!" << endl;
         }
 
-        if (!fvMsh.IB<colocated>()[ib].isInside(cc[0][0](testPoint6)))
+        if (!fvMsh.IBs<colocated>()[ib].isInside(cc[0][0](testPoint6)))
         {
             FatalError
                 << "IB test 6 failed."
@@ -121,9 +121,9 @@ int main(int argc, char *argv[])
     vector c(10,10,11.12345);
     vector nb(10,10,10);
 
-    forAll(fvMsh.IB<colocated>(), ib)
+    forAll(fvMsh.IBs<colocated>(), ib)
     {
-        if (mag(fvMsh.IB<colocated>()[ib].wallDistance(c,nb) - 0.12345) > 1e-5)
+        if (mag(fvMsh.IBs<colocated>()[ib].wallDistance(c,nb) - 0.12345) > 1e-5)
         {
             FatalError
                 << "IB wall distance test 1 failed."
@@ -140,9 +140,9 @@ int main(int argc, char *argv[])
     c = vector(10,11,11);
     nb = vector(10,10,11);
 
-    forAll(fvMsh.IB<colocated>(), ib)
+    forAll(fvMsh.IBs<colocated>(), ib)
     {
-        if (mag(fvMsh.IB<colocated>()[ib].wallDistance(c,nb) - 1.0) > 1e-5)
+        if (mag(fvMsh.IBs<colocated>()[ib].wallDistance(c,nb) - 1.0) > 1e-5)
         {
             FatalError
                 << "IB wall distance test 2 failed."
@@ -159,9 +159,9 @@ int main(int argc, char *argv[])
     c = vector(10,12,10.5);
     nb = vector(10,10,10.5);
 
-    forAll(fvMsh.IB<colocated>(), ib)
+    forAll(fvMsh.IBs<colocated>(), ib)
     {
-        if (mag(fvMsh.IB<colocated>()[ib].wallDistance(c,nb) - (2.0 - Foam::sqrt(0.75))) > 1e-5)
+        if (mag(fvMsh.IBs<colocated>()[ib].wallDistance(c,nb) - (2.0 - Foam::sqrt(0.75))) > 1e-5)
         {
             FatalError
                 << "IB wall distance test 3 failed."
@@ -178,9 +178,9 @@ int main(int argc, char *argv[])
     c = vector(11.12345,-1,0.5);
     nb = vector(10,-1,0.5);
 
-    forAll(fvMsh.IB<colocated>(), ib)
+    forAll(fvMsh.IBs<colocated>(), ib)
     {
-        if (mag(fvMsh.IB<colocated>()[ib].wallDistance(c,nb) - 0.12345) > 1e-5)
+        if (mag(fvMsh.IBs<colocated>()[ib].wallDistance(c,nb) - 0.12345) > 1e-5)
         {
             FatalError
                 << "IB wall distance test 4 failed."
@@ -197,9 +197,9 @@ int main(int argc, char *argv[])
     c = vector(11,-2,0.5);
     nb = vector(10,-2,0.5);
 
-    forAll(fvMsh.IB<colocated>(), ib)
+    forAll(fvMsh.IBs<colocated>(), ib)
     {
-        if (mag(fvMsh.IB<colocated>()[ib].wallDistance(c,nb) - 1) > 1e-5)
+        if (mag(fvMsh.IBs<colocated>()[ib].wallDistance(c,nb) - 1) > 1e-5)
         {
             FatalError
                 << "IB wall distance test 5 failed."
@@ -216,9 +216,9 @@ int main(int argc, char *argv[])
     c = vector(12,-0.5,0.5);
     nb = vector(10,-0.5,0.5);
 
-    forAll(fvMsh.IB<colocated>(), ib)
+    forAll(fvMsh.IBs<colocated>(), ib)
     {
-        if (mag(fvMsh.IB<colocated>()[ib].wallDistance(c,nb) - (2.0 - Foam::sqrt(0.75))) > 1e-5)
+        if (mag(fvMsh.IBs<colocated>()[ib].wallDistance(c,nb) - (2.0 - Foam::sqrt(0.75))) > 1e-5)
         {
             FatalError
                 << "IB wall distance test 6 failed."

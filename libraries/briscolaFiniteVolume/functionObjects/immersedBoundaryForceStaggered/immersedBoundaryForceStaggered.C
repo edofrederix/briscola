@@ -48,9 +48,9 @@ immersedBoundaryForceStaggered::immersedBoundaryForceStaggered
 {
     bool found = false;
 
-    forAll(fvMsh_.IB<staggered>(), ib)
+    forAll(fvMsh_.IBs<staggered>(), ib)
     {
-        if (fvMsh_.IB<staggered>()[ib].name() == name_)
+        if (fvMsh_.IBs<staggered>()[ib].name() == name_)
         {
             number_ = ib;
             found = true;
@@ -118,15 +118,15 @@ bool immersedBoundaryForceStaggered::execute()
 
     if (method_ == "Mittal" || method_ == "Vreman")
     {
-        volForce_ *= fvMsh_.IB<staggered>()[number_].ghostMask();
+        volForce_ *= fvMsh_.IBs<staggered>()[number_].ghostMask();
     }
     else if (method_ == "penalization")
     {
-        volForce_ *= fvMsh_.IB<staggered>()[number_].mask();
+        volForce_ *= fvMsh_.IBs<staggered>()[number_].mask();
     }
     else if (method_ == "Fadlun")
     {
-        volForce_ *= fvMsh_.IB<staggered>()[number_].wallAdjMask();
+        volForce_ *= fvMsh_.IBs<staggered>()[number_].wallAdjMask();
     }
     else
     {
@@ -215,20 +215,20 @@ void immersedBoundaryForceStaggered::computeExplicitSourceForce()
 
     if (mag(exSource) > 1e-10)
     {
-        forAllCells(fvMsh_.IB<staggered>()[number_].mask()[0],d,i,j,k)
+        forAllCells(fvMsh_.IBs<staggered>()[number_].mask()[0],d,i,j,k)
         {
             exSourceForce_[d] += exSource[d]
                 * cv(0,d,i,j,k)
-                * fvMsh_.IB<staggered>()[number_].mask()(0,d,i,j,k);
+                * fvMsh_.IBs<staggered>()[number_].mask()(0,d,i,j,k);
 
         }
         if (method_ == "Fadlun")
         {
-            forAllCells(fvMsh_.IB<staggered>()[number_].wallAdjMask()[0],d,i,j,k)
+            forAllCells(fvMsh_.IBs<staggered>()[number_].wallAdjMask()[0],d,i,j,k)
             {
                 exSourceForce_[d] += exSource[d]
                     * cv(0,d,i,j,k)
-                    * fvMsh_.IB<staggered>()[number_].wallAdjMask()(0,d,i,j,k);
+                    * fvMsh_.IBs<staggered>()[number_].wallAdjMask()(0,d,i,j,k);
 
             }
         }

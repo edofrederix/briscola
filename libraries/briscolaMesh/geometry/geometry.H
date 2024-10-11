@@ -17,9 +17,6 @@ class geometry
 :
     public meshData
 {
-    // Reference to the geometry dictionary
-    const IOdictionary& dict_;
-
     // List of bricks
     PtrList<brick> bricks_;
 

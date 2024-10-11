@@ -60,9 +60,13 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
                 {
                     Switch forcing = false;
 
-                    forAll(sys.x().IBC(), ib)
+                    forAll(sys.x().immersedBoundaryConditions(), ib)
                     {
-                        if (sys.x().IBC()[ib].forcingPoints()(l,d,i,j,k))
+                        if
+                        (
+                            sys.x().immersedBoundaryConditions()[ib]
+                                .forcingPoints()(l,d,i,j,k)
+                        )
                         {
                             forcing = true;
                         }
@@ -88,9 +92,13 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
                 {
                     Switch forcing = false;
 
-                    forAll(sys.x().IBC(), ib)
+                    forAll(sys.x().immersedBoundaryConditions(), ib)
                     {
-                        if (sys.x().IBC()[ib].forcingPoints()(l,d,i,j,k))
+                        if
+                        (
+                            sys.x().immersedBoundaryConditions()[ib]
+                                .forcingPoints()(l,d,i,j,k)
+                        )
                         {
                             forcing = true;
                         }

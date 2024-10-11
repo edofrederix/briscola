@@ -16,11 +16,8 @@ class sphere
 :
     public shape
 {
-
     // A sphere is defined by a center point and a radius
-
     vector center_;
-
     scalar radius_;
 
 public:
@@ -29,23 +26,22 @@ public:
     TypeName("sphere");
 
     // Construct
-    sphere
-    (
-        const dictionary&,
-        bool
-    );
+    sphere(const dictionary&, bool);
 
     // Destructor
     virtual ~sphere();
 
+    // Return true of the vector is inside the shape
     bool isInside(vector) const;
 
+    // Give the wall distance to the shape
     scalar wallDistance(vector, vector) const;
 
+    // Give the distance normal to the shape
     scalar wallNormalDistance(vector) const;
 
+    // Mirror the given point in the shape surface
     vector mirrorPoint(vector) const;
-
 };
 
 }

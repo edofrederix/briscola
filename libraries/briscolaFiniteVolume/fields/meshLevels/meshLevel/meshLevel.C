@@ -617,13 +617,14 @@ void meshLevel<Type,MeshType>::correctEliminatedBoundaryConditions()
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctImmersedBoundaryConditions()
 {
-    if (mshFieldPtr_ && fvMsh_.immersedBoundaryPresent())
+    if (mshFieldPtr_ && fvMsh_.IBs<MeshType>().size())
     {
         mshFieldPtr_->addImmersedBoundaryConditions();
 
-        forAll(mshFieldPtr_->IBC(), i)
+        forAll(mshFieldPtr_->immersedBoundaryConditions(), i)
         {
-            mshFieldPtr_->IBC()[i].correctJacobiPoints(*this);
+            mshFieldPtr_->immersedBoundaryConditions()[i]
+                .correctJacobiPoints(*this);
         }
     }
 }

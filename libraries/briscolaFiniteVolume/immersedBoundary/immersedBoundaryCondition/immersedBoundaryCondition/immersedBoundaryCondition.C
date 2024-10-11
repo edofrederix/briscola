@@ -77,7 +77,10 @@ immersedBoundaryCondition<Type,MeshType>::New
             << exit(FatalError);
     }
 
-    return autoPtr<immersedBoundaryCondition<Type,MeshType>>(cstrIter()(mshField, ib));
+    return autoPtr<immersedBoundaryCondition<Type,MeshType>>
+    (
+        cstrIter()(mshField, ib)
+    );
 }
 
 }

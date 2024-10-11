@@ -109,7 +109,7 @@ decomposition
     );
 }
 
-ImmersedBoundaries
+immersedBoundaries
 {
     ImmersedBoundary
     {
