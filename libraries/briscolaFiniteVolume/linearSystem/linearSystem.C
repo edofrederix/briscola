@@ -327,6 +327,8 @@ void linearSystem<SType,Type,MeshType>::residual
     const meshDirection<Type,MeshType>& x = this->x()[l][d];
     const meshDirection<Type,MeshType>& b = this->b()[l][d];
 
+    res = Zero;
+
     if (diagonal_.size() && diagonal_[d])
     {
         forAllCells(res, i, j, k)
@@ -424,6 +426,8 @@ void linearSystem<SType,Type,MeshType>::evaluate
     const meshDirection<SType,MeshType>& A = this->A()[l][d];
     const meshDirection<Type,MeshType>& x = this->x()[l][d];
     const meshDirection<Type,MeshType>& b = this->b()[l][d];
+
+    eval = Zero;
 
     if (diagonal_.size() && diagonal_[d])
     {

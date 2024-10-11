@@ -12,6 +12,7 @@ CSV="results.csv"
 TEMPLATE="template"
 SOLVER="briscolaColocated"
 PYTHON="python3"
+TASKFILE="/tmp/tasks.$$"
 
 # Simulation parameters
 
@@ -54,6 +55,27 @@ echo \
     "number of time steps," \
     "mean number of pressure iters" > $CURR/$CSV
 
+rm -f $TASKFILE.[0-9]+
+
+getNumTasks () {
+
+    COUNT=0
+
+    for PID in $(jobs -p -r); do
+
+        while [ ! -f "$TASKFILE.$PID" ]; do
+
+            sleep 1
+
+        done
+
+        COUNT=$(($COUNT + $(cat $TASKFILE.$PID)))
+
+    done
+
+    echo $COUNT
+}
+
 for I in "${!MESHES[@]}"; do
 for J in "${!NPROCSPERBRICKSIDE[@]}"; do
 for K in "${!LSCHEMES[@]}"; do
@@ -80,8 +102,11 @@ for N in "${!COARSEMODES[@]}"; do
 
     CASE="$MESH-$NPROC-$LSCHEME-$DSCHEME-$RE-$COARSEMODE"
 
-    while [ "$(($(ps aux | grep $SOLVER | grep -v mpirun | grep -v grep | wc -l) + $NPROC))" \
-        -gt $NTASKS ]; do
+    while [ "$(($(getNumTasks) + $NPROC))" -gt $NTASKS ]; do
+
+        echo \
+            Procs running = $(getNumTasks), \
+            Procs needed = $NPROC
 
         sleep 1
 
@@ -89,6 +114,8 @@ for N in "${!COARSEMODES[@]}"; do
 
     (
         echo "Starting $CASE"
+
+        echo $NPROC > $TASKFILE.$BASHPID
 
         cp -r $TEMPLATE $RUNDIR/$CASE
 
@@ -139,6 +166,8 @@ for N in "${!COARSEMODES[@]}"; do
 
         ##
 
+        cd $CURR
+
         echo "Finished $CASE"
 
     ) &
@@ -151,3 +180,5 @@ done
 done
 
 wait
+
+rm -f $TASKFILE.[0-9]+

@@ -42,8 +42,6 @@ void stagFaceAverageRestrictionScheme<Type>::restrict
     forAllFaces(coarse, fd, i, j, k)
     {
         labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
-
         labelVector fijk(i*R.x(), j*R.y(), k*R.z());
 
         labelVector o(Zero);
@@ -56,7 +54,10 @@ void stagFaceAverageRestrictionScheme<Type>::restrict
         for (o.y(); o.y() < (fd == 1 || d == 1 ? 1 : R.y()); o.y()++)
         for (o.z(); o.z() < (fd == 2 || d == 2 ? 1 : R.z()); o.z()++)
         {
-            coarse(ijk)[fd] += fine(fijk+o)[fd];
+            // Don't use cells with negative indices
+            const labelVector fijko(briscola::cmptMax(fijk+o,zeroXYZ));
+
+            coarse(ijk)[fd] += fine(fijko)[fd];
             nFaces++;
         }
 

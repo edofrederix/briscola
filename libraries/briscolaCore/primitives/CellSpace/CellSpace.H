@@ -167,6 +167,23 @@ word name(const CellSpace<Form, Cmpt, Ncmpts>&);
 
 }
 
+// Unary function macro
+
+#define CS_UNARY_FUNCTION(ReturnType, Type, Func)                              \
+                                                                               \
+inline void Func(ReturnType& r, const Type& t)                                 \
+{                                                                              \
+    for (label i = 0; i < t.nComponents; i++)                                  \
+        r.v_[i] = Func(t.v_[i]);                                               \
+}                                                                              \
+                                                                               \
+inline ReturnType Func(const Type& t)                                          \
+{                                                                              \
+    ReturnType r;                                                              \
+    Func(r,t);                                                                 \
+    return r;                                                                  \
+}
+
 #include "CellSpaceI.H"
 
 #ifdef NoRepository

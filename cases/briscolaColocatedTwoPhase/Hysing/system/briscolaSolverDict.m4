@@ -16,10 +16,14 @@ U
 
 p
 {
-    type        split;
+    type        VARPSOLVER;
 
     solver
     {
         type    FFT;
     }
+
+    relTol      1e-5;
+    tolerance   1e-8;
+    maxIter     100;
 }

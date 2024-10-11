@@ -11,9 +11,9 @@ type    twoPhaseVof;
 g       (0 -0.98 0);
 
 rho1    1000.0;
-rho2    100.0;
+rho2    VARRHO2;
 mu1     10.0;
-mu2     1.0;
+mu2     VARMU2;
 
 normalScheme
 {
@@ -29,7 +29,7 @@ surfaceTensionScheme
         type    SHF;
     }
 
-    sigma   24.5;
+    sigma   VARSIGMA;
 }
 
 vof

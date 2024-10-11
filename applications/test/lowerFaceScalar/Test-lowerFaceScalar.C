@@ -239,4 +239,41 @@ int main(int argc, char *argv[])
 
     h7 <= f1;
     f1 <= h7;
+
+    pow3(h3);
+    pow4(h3);
+    pow5(h3);
+    pow6(h3);
+    pow025(h3);
+    sqrt(h3);
+    cbrt(h3);
+    sign(h3);
+    pos(h3);
+    pos0(h3);
+    neg(h3);
+    neg0(h3);
+    posPart(h3);
+    negPart(h3);
+    exp(h3);
+    log(h3);
+    log10(h3);
+    sin(h3);
+    cos(h3);
+    tan(h3);
+    asin(h3);
+    acos(h3);
+    atan(h3);
+    sinh(h3);
+    cosh(h3);
+    tanh(h3);
+    asinh(h3);
+    acosh(h3);
+    atanh(h3);
+    erf(h3);
+    erfc(h3);
+    lgamma(h3);
+    j0(h3);
+    j1(h3);
+    y0(h3);
+    y1(h3);
 }

@@ -15,23 +15,24 @@ namespace briscola
 namespace fv
 {
 
-// Special function to perform a dot product between a staggered dimension and
-// vector dimension. When the staggered dimension index is not equal to the
-// vector dimension index, interpolation is required.
+// Special function to perform a dot product between a vector dimension (first
+// argument) and a staggered dimension (second argument). The vector must be
+// given at staggered locations. When the staggered dimension index is not equal
+// to the vector dimension index, interpolation is required.
 
 inline tmp<staggeredScalarField>
 stagDotProduct
 (
-    const staggeredVectorField& f1,
-    const staggeredVectorField& f2
+    const staggeredVectorField& f,
+    const staggeredVectorField& g
 )
 {
     tmp<staggeredScalarField> tProd
     (
         new staggeredScalarField
         (
-            "("+f1.name()+"&"+f2.name()+")",
-            f1.fvMsh()
+            "("+f.name()+"&"+g.name()+")",
+            f.fvMsh()
         )
     );
 
@@ -39,19 +40,19 @@ stagDotProduct
 
     Prod = Zero;
 
-    forAllCells(Prod, d1, i, j, k)
-        for (int d2 = 0; d2 < 3; d2++)
-            Prod(d1,i,j,k) +=
-                f1(d1,i,j,k)[d2]
+    forAllCells(Prod, di, i, j, k)
+        for (int dj = 0; dj < 3; dj++)
+            Prod(di,i,j,k) +=
+                f(di,i,j,k)[dj]
               * (
-                    d1 == d2
-                  ? f2(d2,i,j,k)[d1]
+                    di == dj
+                  ? g(dj,i,j,k)[di]
                   : 0.25
                   * (
-                        f2(d2,i,j,k)[d1]
-                      + f2(d2,lowerNei(i,j,k,d1))[d1]
-                      + f2(d2,upperNei(i,j,k,d2))[d1]
-                      + f2(d2,lowerNei(upperNei(i,j,k,d2),d1))[d1]
+                        g(dj,i,j,k)[di]
+                      + g(dj,lowerNei(i,j,k,di))[di]
+                      + g(dj,upperNei(i,j,k,dj))[di]
+                      + g(dj,lowerNei(upperNei(i,j,k,dj),di))[di]
                     )
                 );
 
@@ -61,37 +62,37 @@ stagDotProduct
 inline tmp<staggeredScalarField>
 stagDotProduct
 (
-    const tmp<staggeredVectorField>& tf1,
-    const staggeredVectorField& f2
+    const tmp<staggeredVectorField>& tf,
+    const staggeredVectorField& g
 )
 {
-    tmp<staggeredScalarField> tProd(stagDotProduct(tf1(),f2));
-    tf1.clear();
+    tmp<staggeredScalarField> tProd(stagDotProduct(tf(),g));
+    tf.clear();
     return tProd;
 }
 
 inline tmp<staggeredScalarField>
 stagDotProduct
 (
-    const staggeredVectorField& f1,
-    const tmp<staggeredVectorField>& tf2
+    const staggeredVectorField& f,
+    const tmp<staggeredVectorField>& tg
 )
 {
-    tmp<staggeredScalarField> tProd(stagDotProduct(f1,tf2()));
-    tf2.clear();
+    tmp<staggeredScalarField> tProd(stagDotProduct(f,tg()));
+    tg.clear();
     return tProd;
 }
 
 inline tmp<staggeredScalarField>
 stagDotProduct
 (
-    const tmp<staggeredVectorField>& tf1,
-    const tmp<staggeredVectorField>& tf2
+    const tmp<staggeredVectorField>& tf,
+    const tmp<staggeredVectorField>& tg
 )
 {
-    tmp<staggeredScalarField> tProd(stagDotProduct(tf1(),tf2()));
-    tf1.clear();
-    tf2.clear();
+    tmp<staggeredScalarField> tProd(stagDotProduct(tf(),tg()));
+    tf.clear();
+    tg.clear();
     return tProd;
 }
 

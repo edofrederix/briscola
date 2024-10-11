@@ -41,10 +41,7 @@ void coloFaceAverageRestrictionScheme<Type>::restrict
     forAllFaces(coarse, fd, i, j, k)
     {
         labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
-
         labelVector fijk(i*R.x(), j*R.y(), k*R.z());
-        labelVector fnei(fijk-units[fd]);
 
         label nFaces = R[(fd+1)%3]*R[(fd+2)%3];
 
