@@ -97,7 +97,6 @@ public:
         const IOobject::readOption r = NO_READ,
         const IOobject::writeOption w = NO_WRITE,
         const bool registerObject = false,
-        const bool initBCs = false,
         const bool deep = false
     );
 

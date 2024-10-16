@@ -6,7 +6,6 @@ meshField<scalar,colocated> T
     fvMsh,
     IOobject::MUST_READ,
     IOobject::AUTO_WRITE,
-    true,
     true
 );
 

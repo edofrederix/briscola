@@ -6,7 +6,6 @@ colocatedVectorField U
     fvMsh,
     IOobject::MUST_READ,
     IOobject::AUTO_WRITE,
-    true,
     true
 );
 
@@ -21,7 +20,6 @@ colocatedScalarField p
     fvMsh,
     IOobject::MUST_READ,
     IOobject::AUTO_WRITE,
-    true,
     true
 );
 

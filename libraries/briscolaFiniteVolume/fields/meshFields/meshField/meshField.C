@@ -71,7 +71,6 @@ meshField<Type,MeshType>::meshField
     const IOobject::readOption r,
     const IOobject::writeOption w,
     const bool registerObject,
-    const bool initBCs,
     const bool deep
 )
 :
@@ -117,9 +116,6 @@ meshField<Type,MeshType>::meshField
     }
 
     this->allocate(deep);
-
-    if (initBCs)
-        addBoundaryConditions();
 }
 
 // Copy constructors

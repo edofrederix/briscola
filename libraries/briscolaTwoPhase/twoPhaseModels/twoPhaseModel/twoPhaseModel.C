@@ -43,7 +43,6 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
         true,
-        true,
         false
     ),
     rho1_
@@ -52,7 +51,6 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        true,
         true,
         false
     ),
@@ -63,7 +61,6 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        true,
         false
     ),
     rhoc_
@@ -73,7 +70,6 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        true,
         false
     ),
     muc_
@@ -82,7 +78,6 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        true,
         true,
         false
     ),
@@ -106,7 +101,6 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        true,
         false
     )
 {
@@ -123,7 +117,6 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
                 IOobject::NO_READ,
                 IOobject::NO_WRITE,
                 true,
-                true,
                 false
             )
         );
@@ -136,7 +129,6 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
                 fvMsh_,
                 IOobject::NO_READ,
                 IOobject::NO_WRITE,
-                true,
                 true,
                 false
             )
@@ -151,7 +143,6 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
                 IOobject::NO_READ,
                 IOobject::NO_WRITE,
                 true,
-                true,
                 false
             )
         );
@@ -164,7 +155,6 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
                 fvMsh_,
                 IOobject::NO_READ,
                 IOobject::NO_WRITE,
-                true,
                 true,
                 false
             )

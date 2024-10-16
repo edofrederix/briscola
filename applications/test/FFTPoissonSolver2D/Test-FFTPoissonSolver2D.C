@@ -87,7 +87,6 @@ int main(int argc, char *argv[])
         fvMsh,
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
-        true,
         true
     );
 
@@ -97,7 +96,6 @@ int main(int argc, char *argv[])
         fvMsh,
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
-        true,
         true
     );
 

@@ -41,7 +41,7 @@ stagNeumannBoundaryCondition<Type>::stagNeumannBoundaryCondition
     const stagNeumannBoundaryCondition<Type>& bc
 )
 :
-    NeumannBoundaryCondition<Type,staggered>(bc.mshField(), bc.mshBoundary())
+    NeumannBoundaryCondition<Type,staggered>(bc)
 {}
 
 template<class Type>
@@ -51,7 +51,7 @@ stagNeumannBoundaryCondition<Type>::stagNeumannBoundaryCondition
     const stagNeumannBoundaryCondition<Type>& bc
 )
 :
-    NeumannBoundaryCondition<Type,staggered>(field, bc.mshBoundary())
+    NeumannBoundaryCondition<Type,staggered>(field, bc)
 {}
 
 template<class Type>

@@ -5,7 +5,6 @@ colocatedScalarField alpha
     IOobject::MUST_READ,
     IOobject::AUTO_WRITE,
     true,
-    true,
     false
 );
 

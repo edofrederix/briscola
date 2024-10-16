@@ -34,7 +34,7 @@ noSlipBoundaryCondition<Type,MeshType>::noSlipBoundaryCondition
     const noSlipBoundaryCondition<Type,MeshType>& bc
 )
 :
-    DirichletBoundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary())
+    DirichletBoundaryCondition<Type,MeshType>(bc)
 {}
 
 template<class Type, class MeshType>
@@ -44,7 +44,7 @@ noSlipBoundaryCondition<Type,MeshType>::noSlipBoundaryCondition
     const noSlipBoundaryCondition<Type,MeshType>& bc
 )
 :
-    DirichletBoundaryCondition<Type,MeshType>(field, bc.mshBoundary())
+    DirichletBoundaryCondition<Type,MeshType>(field, bc)
 {}
 
 }

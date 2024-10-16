@@ -94,7 +94,6 @@ linearRestrictionScheme<Type,MeshType>::linearRestrictionScheme
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         false,
-        false,
         true
     )
 {

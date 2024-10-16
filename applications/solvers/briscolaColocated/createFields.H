@@ -6,7 +6,6 @@ colocatedVectorField U
     fvMsh,
     IOobject::MUST_READ,
     IOobject::AUTO_WRITE,
-    true,
     true
 );
 
@@ -21,7 +20,6 @@ colocatedScalarField p
     fvMsh,
     IOobject::MUST_READ,
     IOobject::AUTO_WRITE,
-    true,
     true
 );
 
@@ -114,8 +112,7 @@ colocatedVectorField H
     fvMsh,
     IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
-    true,
-    false
+    true
 );
 
 H = ex::div(phi,U);

@@ -42,7 +42,7 @@ NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
     const NeumannBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary()),
+    boundaryCondition<Type,MeshType>(bc),
     boundaryGradients_(bc.boundaryGradients_)
 {}
 
@@ -53,7 +53,7 @@ NeumannBoundaryCondition<Type,MeshType>::NeumannBoundaryCondition
     const NeumannBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.mshBoundary()),
+    boundaryCondition<Type,MeshType>(field, bc),
     boundaryGradients_(bc.boundaryGradients_)
 {}
 
