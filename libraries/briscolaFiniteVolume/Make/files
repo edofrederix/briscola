@@ -88,6 +88,7 @@ functionObjects/averagedLineSample/averagedLineSample.C
 functionObjects/timeAverage/timeAverage.C
 functionObjects/budgetPrimitivesStaggered/budgetPrimitivesStaggered.C
 functionObjects/immersedBoundaryForceStaggered/immersedBoundaryForceStaggered.C
+functionObjects/colocatedReconstruction/colocatedReconstruction.C
 
 dataExchange/dataExchange/dataExchange.C
 dataExchange/cellDataExchange/cellDataExchange.C

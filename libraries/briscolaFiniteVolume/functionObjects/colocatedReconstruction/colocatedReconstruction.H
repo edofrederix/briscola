@@ -1,9 +1,9 @@
-#ifndef functionObjects_timeAverage_H
-#define functionObjects_timeAverage_H
+#ifndef functionObjects_colocatedReconstruction_H
+#define functionObjects_colocatedReconstruction_H
 
 #include "briscolaFunctionObject.H"
-#include "fvMesh.H"
-#include "meshField.H"
+#include "meshFields.H"
+#include "exSchemes.H"
 
 namespace Foam
 {
@@ -17,34 +17,21 @@ namespace fv
 namespace functionObjects
 {
 
-class timeAverage
+class colocatedReconstruction
 :
     public briscolaFunctionObject
 {
-
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
-    // Fields to be time averaged
+    // Fields to be reconstructed
     wordList fields_;
 
-    // Time averaged colocated fields
-    PtrList<meshField<scalar,colocated>> timeAveragedColFields_;
+    // Colocated reconstructed fields
+    PtrList<colocatedVectorField> reconstructedFields_;
 
-    // Time averaged staggered fields
-    PtrList<meshField<scalar,staggered>> timeAveragedStagFields_;
-
-    // Averaging start time
-    scalar startTime_;
-
-    // Average in intervals
-    Switch intervalAveraging_;
-
-    // Start time of averaging interval
-    scalar intervalStart_;
-
-    // Switch to reset averages for interval averaging
-    Switch reset_;
+    // Are boundary conditions required?
+    Switch requireBC_;
 
     // Initialize
     void init();
@@ -52,10 +39,10 @@ class timeAverage
 public:
 
     // Runtime type information
-    TypeName("timeAverage");
+    TypeName("colocatedReconstruction");
 
     // Construct from time and dictionary
-    timeAverage
+    colocatedReconstruction
     (
         const word& name,
         const Time& runTime,
@@ -63,10 +50,10 @@ public:
     );
 
     // Disallow default bitwise copy construction
-    timeAverage(const timeAverage&) = delete;
+    colocatedReconstruction(const colocatedReconstruction&) = delete;
 
     // Destructor
-    virtual ~timeAverage();
+    virtual ~colocatedReconstruction();
 
     // Code executed at the end of each time step loop
     virtual bool execute();
@@ -78,7 +65,7 @@ public:
     virtual bool end();
 
     // Disallow default bitwise assignment
-    void operator=(const timeAverage&) = delete;
+    void operator=(const colocatedReconstruction&) = delete;
 };
 
 }

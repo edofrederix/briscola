@@ -68,29 +68,12 @@ int main(int argc, char *argv[])
 
         // Pressure equation
 
-        if (massSource)
-        {
-            Poisson->solve
-            (
-                p,
-                (ex::coloDiv(U)-IBMMassSource(U))/(-deltaT)
-            );
-        }
-        else
-        {
-            Poisson->solve(p, ex::coloDiv(U)/(-deltaT));
-        }
+        Poisson->solve(p, IBMCorr(ex::coloDiv(U),U)/(-deltaT));
 
         // Correction
 
         U -= deltaT*ex::stagGrad(p);
         U.correctBoundaryConditions();
-
-        if (fvMsh.time().writeTime() || colocatedReconstruction)
-        {
-            Uc = ex::reconstruct(U);
-            Uc.correctBoundaryConditions();
-        }
 
         io.write<colocated>();
         io.write<staggered>();

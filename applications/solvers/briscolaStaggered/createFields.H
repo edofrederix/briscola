@@ -13,32 +13,6 @@ staggeredScalarField U
 U = Zero;
 U.correctBoundaryConditions();
 
-// Reconstructed colocated velocity
-
-colocatedVectorField Uc
-(
-    "Uc",
-    fvMsh,
-    IOobject::MUST_READ,
-    IOobject::AUTO_WRITE,
-    true,
-    true
-);
-
-Uc = Zero;
-
-// Reconstruct Uc at every time-step,
-// needed for some function objects
-
-Switch colocatedReconstruction
-(
-    solverDict.lookupOrDefault
-    (
-        "colocatedReconstruction",
-        false
-    )
-);
-
 // Pressure
 
 colocatedScalarField p
@@ -86,9 +60,9 @@ imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
 if (fvMsh.IBs<staggered>().size())
 {
     // Set source terms to zero inside IB
-    forAllCells(exSource,l,d,i,j,k)
+    forAll(fvMsh.IBs<staggered>(), ib)
     {
-        forAll(fvMsh.IBs<staggered>(), ib)
+        forAllCells(exSource,l,d,i,j,k)
         {
             if (fvMsh.IBs<staggered>()[ib].mask()(l,d,i,j,k))
             {
@@ -96,22 +70,6 @@ if (fvMsh.IBs<staggered>().size())
                 imSourceCoeff(l,d,i,j,k) = Zero;
             }
         }
-    }
-}
-
-Switch massSource = false;
-
-forAll(U.immersedBoundaryConditions(), ib)
-{
-    const word IBname = fvMsh.IBs<staggered>()[ib].name();
-
-    if
-    (
-        U.subDict("boundaryConditions").subDict(IBname)
-            .lookupOrDefault<Switch>("massSource", false)
-    )
-    {
-        massSource = true;
     }
 }
 

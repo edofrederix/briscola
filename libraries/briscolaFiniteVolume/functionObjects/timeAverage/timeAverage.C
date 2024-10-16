@@ -33,7 +33,6 @@ timeAverage::timeAverage
     briscolaFunctionObject(name, runTime, dict),
     fvMsh_(runTime.lookupObject<fvMesh>("briscolaMeshDict")),
     fields_(dict.lookup("fields")),
-    name_(name),
     timeAveragedColFields_(),
     timeAveragedStagFields_(),
     startTime_
@@ -89,7 +88,7 @@ void timeAverage::init()
         {
             WarningInFunction
                 << "Field " << fields_[i] << " requested for sampling by "
-                << name_ << " but not found in registry." << endl;
+                << this->name() << " but not found in registry." << endl;
         }
     }
 

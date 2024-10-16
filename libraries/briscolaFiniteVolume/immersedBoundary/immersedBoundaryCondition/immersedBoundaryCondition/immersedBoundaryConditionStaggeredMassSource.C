@@ -14,68 +14,77 @@ namespace fv
 // across the immersed boundary that can occur in methods that use velocity
 // forcing.
 
-tmp<colocatedScalarField> IBMMassSource
+tmp<colocatedScalarField> IBMCorr
 (
+    tmp<colocatedScalarField> tColoDivU,
     const staggeredScalarField& field
 )
 {
     const fvMesh& fvMsh = field.fvMsh();
 
-    meshField<label,staggered> ghostMask
-    (
-        "massSourceGhostMask",
-        fvMsh
-    );
+    Switch massSource = false;
 
-    ghostMask = Zero;
-
-    forAll(fvMsh.IBs<staggered>(), ib)
+    forAll(field.immersedBoundaryConditions(), ib)
     {
-        forAllCells(ghostMask,l,d,i,j,k)
+        const word IBname = fvMsh.IBs<staggered>()[ib].name();
+
+        if
+        (
+            field.subDict("boundaryConditions").subDict(IBname)
+                .lookupOrDefault<Switch>("massSource", false)
+        )
         {
-            if (fvMsh.IBs<staggered>()[ib].ghostMask()(l,d,i,j,k))
+            massSource = true;
+        }
+    }
+
+    colocatedScalarField& coloDivU = tColoDivU.ref();
+
+    if (massSource)
+    {
+        meshField<label,staggered> ghostMask
+        (
+            "massSourceGhostMask",
+            fvMsh
+        );
+
+        ghostMask = Zero;
+
+        forAll(fvMsh.IBs<staggered>(), ib)
+        {
+            forAllCells(ghostMask,l,d,i,j,k)
             {
-                ghostMask(l,d,i,j,k) = 1;
+                if (fvMsh.IBs<staggered>()[ib].ghostMask()(l,d,i,j,k))
+                {
+                    ghostMask(l,d,i,j,k) = 1;
+                }
+            }
+        }
+
+        const colocatedFaceScalarField& fa =
+            fvMsh.metrics<colocated>().faceAreas();
+
+        const colocatedScalarField& cv =
+            fvMsh.metrics<colocated>().cellVolumes();
+
+        forAllCells(coloDivU, i, j, k)
+        {
+            const labelVector ijk(i,j,k);
+
+            for (int d = 0; d < 3; d++)
+            {
+                const labelVector nei(upperNei(ijk,d));
+
+                coloDivU(ijk) +=
+                    (
+                        ghostMask(ijk)*field(ijk)*fa(ijk)[d*2]
+                      - ghostMask(nei)*field(nei)*fa(ijk)[d*2+1]
+                    ) / cv(ijk);
             }
         }
     }
 
-    tmp<colocatedScalarField> tSource
-    (
-        new colocatedScalarField
-        (
-            "IBMSource",
-            field.fvMsh()
-        )
-    );
-
-    colocatedScalarField& source = tSource.ref();
-
-    source = Zero;
-
-    const colocatedFaceScalarField& fa =
-        fvMsh.metrics<colocated>().faceAreas();
-
-    const colocatedScalarField& cv =
-        fvMsh.metrics<colocated>().cellVolumes();
-
-    forAllCells(source, i, j, k)
-    {
-        const labelVector ijk(i,j,k);
-
-        for (int d = 0; d < 3; d++)
-        {
-            const labelVector nei(upperNei(ijk,d));
-
-            source(ijk) -=
-                ghostMask(ijk)*field(ijk)*fa(ijk)[d*2]
-              - ghostMask(nei)*field(nei)*fa(ijk)[d*2+1];
-        }
-
-        source(ijk) /= cv(ijk);
-    }
-
-    return tSource;
+    return tColoDivU;
 }
 
 }

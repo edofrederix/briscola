@@ -26,19 +26,6 @@ colocatedVectorField Uc
 
 Uc = Zero;
 
-// Velocity equation residual
-
-staggeredScalarField residual
-(
-    "residual",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::AUTO_WRITE,
-    true
-);
-
-residual = Zero;
-
 // Pressure
 
 colocatedScalarField p
@@ -123,7 +110,6 @@ imSourceCoeff =
 // Solvers
 
 linearSystem<stencil,scalar,staggered> USys(U);
-linearSystem<stencil,scalar,staggered> USysAux(U);
 linearSystem<stencil,scalar,colocated> pSys(p);
 
 autoPtr<solver<stencil,scalar,staggered>> USolve
