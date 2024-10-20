@@ -93,6 +93,9 @@ public:
 
 // VertexSpace partial specialization of pTransform
 
+using briscola::vertexNumber;
+using briscola::vertexOffsets;
+
 template<class Cmpt>
 class pTransform<VertexSpace<Cmpt>>
 {
@@ -108,23 +111,8 @@ public:
         }
         else
         {
-            const labelVector lba(T & briscola::vertexOffset0);
-            const labelVector rba(T & briscola::vertexOffset1);
-            const labelVector lta(T & briscola::vertexOffset2);
-            const labelVector rta(T & briscola::vertexOffset3);
-            const labelVector lbf(T & briscola::vertexOffset4);
-            const labelVector rbf(T & briscola::vertexOffset5);
-            const labelVector ltf(T & briscola::vertexOffset6);
-            const labelVector rtf(T & briscola::vertexOffset7);
-
-            p_[briscola::vertexNumber(lba)] = h.lba();
-            p_[briscola::vertexNumber(rba)] = h.rba();
-            p_[briscola::vertexNumber(lta)] = h.lta();
-            p_[briscola::vertexNumber(rta)] = h.rta();
-            p_[briscola::vertexNumber(lbf)] = h.lbf();
-            p_[briscola::vertexNumber(rbf)] = h.rbf();
-            p_[briscola::vertexNumber(ltf)] = h.ltf();
-            p_[briscola::vertexNumber(rtf)] = h.rtf();
+            for (int i = 0; i < 8; i++)
+                p_[max(vertexNumber(T & vertexOffsets[i]), 0)] = h[i];
         }
     }
 

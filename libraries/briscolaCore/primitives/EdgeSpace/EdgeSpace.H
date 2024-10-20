@@ -105,6 +105,9 @@ public:
 
 // EdgeSpace partial specialization of pTransform
 
+using briscola::edgeNumber;
+using briscola::edgeOffsets;
+
 template<class Cmpt>
 class pTransform<EdgeSpace<Cmpt>>
 {
@@ -120,31 +123,8 @@ public:
         }
         else
         {
-            const labelVector ba(T & briscola::edgeOffset0);
-            const labelVector ta(T & briscola::edgeOffset1);
-            const labelVector bf(T & briscola::edgeOffset2);
-            const labelVector tf(T & briscola::edgeOffset3);
-            const labelVector la(T & briscola::edgeOffset4);
-            const labelVector ra(T & briscola::edgeOffset5);
-            const labelVector lf(T & briscola::edgeOffset6);
-            const labelVector rf(T & briscola::edgeOffset7);
-            const labelVector lb(T & briscola::edgeOffset8);
-            const labelVector rb(T & briscola::edgeOffset9);
-            const labelVector lt(T & briscola::edgeOffset10);
-            const labelVector rt(T & briscola::edgeOffset11);
-
-            p_[briscola::edgeNumber(ba)] = h.ba();
-            p_[briscola::edgeNumber(ta)] = h.ta();
-            p_[briscola::edgeNumber(bf)] = h.bf();
-            p_[briscola::edgeNumber(tf)] = h.tf();
-            p_[briscola::edgeNumber(la)] = h.la();
-            p_[briscola::edgeNumber(ra)] = h.ra();
-            p_[briscola::edgeNumber(lf)] = h.lf();
-            p_[briscola::edgeNumber(rf)] = h.rf();
-            p_[briscola::edgeNumber(lb)] = h.lb();
-            p_[briscola::edgeNumber(rb)] = h.rb();
-            p_[briscola::edgeNumber(lt)] = h.lt();
-            p_[briscola::edgeNumber(rt)] = h.rt();
+            for (int i = 0; i < 12; i++)
+                p_[max(edgeNumber(T & edgeOffsets[i]), 0)] = h[i];
         }
     }
 
