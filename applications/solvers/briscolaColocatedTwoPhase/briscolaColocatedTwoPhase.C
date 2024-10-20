@@ -71,10 +71,7 @@ int main(int argc, char *argv[])
 
         // Solve predictor
 
-        USolve->solve(USys + G*v);
-
-        U += deltaT*G*v;
-        U.correctBoundaryConditions();
+        USolve->solve(USys);
 
         // Pressure equation
 
@@ -83,16 +80,16 @@ int main(int argc, char *argv[])
 
         Poisson->solve(p, ex::div(phi)/(-deltaT), vf);
 
-        G =
-            ex::reconstruct
+        // Rhie-Chow correction
+
+        U -=
+            deltaT
+          * ex::reconstruct
             (
                 Poisson->flux()/vf
               - icoTwoPhase.surfaceTension()
-            );
+            )*v;
 
-        // Rhie-Chow correction
-
-        U -= deltaT*G*v;
         U.correctBoundaryConditions();
 
         phi -= deltaT*Poisson->flux();

@@ -26,19 +26,6 @@ colocatedScalarField p
 p = Zero;
 p.correctBoundaryConditions();
 
-// Pressure gradient
-
-colocatedVectorField G
-(
-    "grad(p)",
-    fvMsh,
-    IOobject::READ_IF_PRESENT,
-    IOobject::AUTO_WRITE,
-    true
-);
-
-G = Zero;
-
 // Flux
 
 colocatedLowerFaceScalarField phi
