@@ -50,7 +50,9 @@ void blendedViscosity<BaseModel>::correctMixture()
     );
 
     this->mu_ =
-        (mu2_ - mu1_)/2.0*(tanh(C_*atanh(2.0*alpha - 1.0)) - 1.0) + mu2_;
+        (mu2_ - mu1_)/2.0
+      * (tanh(C_*atanh((2.0*alpha - 1.0)*(1-1e-12))) - 1.0)
+      + mu2_;
 
     BaseModel::correctMixture();
 }
