@@ -22,13 +22,6 @@ protected:
     // The Vof model
     autoPtr<vof> vfPtr_;
 
-    // Name of the colocated volumetric mixture flux field (defaults to phi)
-    const word fluxName_;
-
-    // Name of the staggered velocity field, only needed when the colocated
-    // volumetric mixture flux field is not found (defaults to U)
-    const word velocityName_;
-
 private:
 
     // Disallow default bitwise assignment

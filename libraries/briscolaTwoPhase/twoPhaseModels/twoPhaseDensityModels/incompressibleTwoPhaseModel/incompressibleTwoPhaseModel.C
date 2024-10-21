@@ -1,6 +1,9 @@
 #include "incompressibleTwoPhaseModel.H"
 #include "interpolationScheme.H"
 
+#include "colocated.H"
+#include "staggered.H"
+
 namespace Foam
 {
 
@@ -10,67 +13,48 @@ namespace briscola
 namespace fv
 {
 
-defineTypeNameAndDebug(incompressibleTwoPhaseModel, 0);
-
-incompressibleTwoPhaseModel::incompressibleTwoPhaseModel
+template<class MeshType>
+incompressibleTwoPhaseModel<MeshType>::incompressibleTwoPhaseModel
 (
     const fvMesh& fvMsh,
     const IOdictionary& dict
 )
 :
-    twoPhaseModel(fvMsh, dict),
-    Rho1_(readScalar(dict.lookup("rho1"))),
-    Rho2_(readScalar(dict.lookup("rho2")))
+    TwoPhaseModel<MeshType>(fvMsh, dict),
+    rho1_(readScalar(dict.lookup("rho1"))),
+    rho2_(readScalar(dict.lookup("rho2")))
 {
-    this->rho1_ = Rho1_;
-    this->rho2_ = Rho2_;
-
-    this->rho1Ptr_() = Rho1_;
-    this->rho2Ptr_() = Rho2_;
+    this->rho_.setRestrictionScheme("volumeWeighted");
 }
 
-incompressibleTwoPhaseModel::incompressibleTwoPhaseModel
+template<class MeshType>
+incompressibleTwoPhaseModel<MeshType>::incompressibleTwoPhaseModel
 (
     const incompressibleTwoPhaseModel& tpm
 )
 :
-    twoPhaseModel(tpm),
-    Rho1_(tpm.Rho1_),
-    Rho2_(tpm.Rho2_)
+    TwoPhaseModel<MeshType>(tpm),
+    rho1_(tpm.rho1_),
+    rho2_(tpm.rho2_)
 {
-    this->rho1_ = Rho1_;
-    this->rho2_ = Rho2_;
-
-    this->rho1Ptr_() = Rho1_;
-    this->rho2Ptr_() = Rho2_;
+    this->rho_.setRestrictionScheme("volumeWeighted");
 }
 
-incompressibleTwoPhaseModel::~incompressibleTwoPhaseModel()
+template<class MeshType>
+incompressibleTwoPhaseModel<MeshType>::~incompressibleTwoPhaseModel()
 {}
 
-void incompressibleTwoPhaseModel::correctMixture()
+template<class MeshType>
+void incompressibleTwoPhaseModel<MeshType>::correctMixture()
 {
-    rhoc_ = Rho2_*alpha_ + Rho1_*(1.0-alpha_);
+    const meshField<scalar,MeshType> alpha
+    (
+        this->meshAlpha()
+    );
 
-    if (rhosPtr_.valid())
-    {
-        staggeredScalarField& rhos = rhosPtr_();
+    this->rho_ = rho2_*alpha + rho1_*(1.0 - alpha);
 
-        staggeredScalarField alphas
-        (
-            stagInterp(alpha_)
-        );
-
-        // Only the internal cells of alphas are set. Correct the boundary
-        // conditions so that parallel/periodic ghosts are set too. This is
-        // important if rhos is interpolated to a colocated field.
-
-        alphas.correctBoundaryConditions();
-
-        rhos = Rho2_*alphas + Rho1_*(1.0 - alphas);
-    }
-
-    twoPhaseModel::correctMixture();
+    TwoPhaseModel<MeshType>::correctMixture();
 }
 
 }

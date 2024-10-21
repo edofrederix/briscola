@@ -1,2 +1,2 @@
-const colocatedLowerFaceScalarField& mu = twoPhase.mu<colocated>();
-const colocatedScalarField& rho = twoPhase.rho<colocated>();
+const colocatedLowerFaceScalarField& mu = twoPhase.mu();
+const colocatedScalarField& rho = twoPhase.rho();

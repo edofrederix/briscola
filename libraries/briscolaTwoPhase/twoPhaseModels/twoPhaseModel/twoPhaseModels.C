@@ -1,6 +1,7 @@
 #include "twoPhaseModels.H"
 #include "addToRunTimeSelectionTable.H"
 
+#include "TwoPhaseModel.H"
 #include "incompressibleTwoPhaseModel.H"
 #include "harmonicViscosity.H"
 #include "blendedViscosity.H"
@@ -23,7 +24,17 @@ makeTwoPhaseModel
     twoPhaseVof,
     twoPhaseVof,
     blendedViscosity,
-    incompressibleTwoPhaseModel
+    incompressibleTwoPhaseModel,
+    colocated
+)
+
+makeTwoPhaseModel
+(
+    twoPhaseVof,
+    twoPhaseVof,
+    blendedViscosity,
+    incompressibleTwoPhaseModel,
+    staggered
 )
 
 // Incompressible, harmonic mixing of viscosity and a basic vof solver
@@ -33,7 +44,17 @@ makeTwoPhaseModel
     twoPhaseVofH,
     twoPhaseVof,
     harmonicViscosity,
-    incompressibleTwoPhaseModel
+    incompressibleTwoPhaseModel,
+    colocated
+)
+
+makeTwoPhaseModel
+(
+    twoPhaseVofH,
+    twoPhaseVof,
+    harmonicViscosity,
+    incompressibleTwoPhaseModel,
+    staggered
 )
 
 // Like the paper of Dodd & Ferrante (2014) with a basic vof solver
@@ -43,7 +64,17 @@ makeTwoPhaseModel
     twoPhaseVofDF,
     twoPhaseVof,
     volumeWeightedViscosity,
-    incompressibleTwoPhaseModel
+    incompressibleTwoPhaseModel,
+    colocated
+)
+
+makeTwoPhaseModel
+(
+    twoPhaseVofDF,
+    twoPhaseVof,
+    volumeWeightedViscosity,
+    incompressibleTwoPhaseModel,
+    staggered
 )
 
 }
