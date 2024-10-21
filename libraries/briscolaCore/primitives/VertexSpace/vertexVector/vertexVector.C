@@ -67,7 +67,7 @@ vector interpolationWeights
     const bool fatal
 )
 {
-    const scalar tol = 1e-9;
+    const scalar tol = 1e-14;
 
     if (insideOnly)
     {
@@ -191,9 +191,9 @@ vector interpolationWeights
 
         insideOnly
      && (
-            u.x() < 0-tol || u.x() > 1+tol
-         || u.y() < 0-tol || u.y() > 1+tol
-         || u.z() < 0-tol || u.z() > 1+tol
+            u.x() < 0 || u.x() >= 1
+         || u.y() < 0 || u.y() >= 1
+         || u.z() < 0 || u.z() >= 1
         )
     )
     {

@@ -9,14 +9,15 @@ namespace briscola
 namespace fv
 {
 
-using Foam::max;
-using Foam::min;
-using Foam::sqr;
-using Foam::mag;
-
 template<class MeshType>
 void immersedBoundary<MeshType>::setMasks()
 {
+    // Initialize masks to zero
+    mask_ = Zero;
+    ghostMask_ = Zero;
+    wallAdjMask_ = Zero;
+    emptyField_ = Zero;
+
     // Cell centers
     const meshField<vector,MeshType>& CC =
         fvMsh_.metrics<MeshType>().cellCenters();
@@ -25,11 +26,6 @@ void immersedBoundary<MeshType>::setMasks()
     forAllCells(mask_,l,d,i,j,k)
     {
         const labelVector ijk(i,j,k);
-
-        mask_(l,d,i,j,k) = Zero;
-        ghostMask_(l,d,i,j,k) = Zero;
-        wallAdjMask_(l,d,i,j,k) = Zero;
-        emptyField_(l,d,i,j,k) = Zero;
 
         if (this->isInside(CC(l,d,i,j,k)))
         {
@@ -101,6 +97,10 @@ void immersedBoundary<MeshType>::setMasks()
 template<class MeshType>
 void immersedBoundary<MeshType>::calculateWallDistances()
 {
+    // Initialize wall distances to zero
+    wallDistAdj_ = Zero;
+    wallDistGhost_ = Zero;
+
     // Cell centers
     const meshField<vector,MeshType>& CC =
         fvMsh_.metrics<MeshType>().cellCenters();
@@ -109,9 +109,6 @@ void immersedBoundary<MeshType>::calculateWallDistances()
     forAllCells(mask_,l,d,i,j,k)
     {
         const labelVector ijk(i,j,k);
-
-        wallDistAdj_(l,d,i,j,k) = Zero;
-        wallDistGhost_(l,d,i,j,k) = Zero;
 
         if (!this->isInside(CC(l,d,i,j,k)))
         {
@@ -177,7 +174,7 @@ void immersedBoundary<MeshType>::setMirrorPoints()
     // Mesh
     const mesh& msh = fvMsh_.msh();
 
-    scalar tol = 1e-5;
+    scalar tol = 1e-10;
 
     forAllCells(mirrorPoints_,l,d,i,j,k)
     {
@@ -329,7 +326,7 @@ immersedBoundary<MeshType>::immersedBoundary
 
             shapes_.append
             (
-                shape::New
+                immersedBoundaryShape::New
                 (
                     entryDict,
                     bool(entryDict.lookupOrDefault("inverted", false))

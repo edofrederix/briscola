@@ -4,7 +4,7 @@
 #include "immersedBoundaryFwd.H"
 
 #include "List.H"
-#include "shape.H"
+#include "immersedBoundaryShape.H"
 #include "dictionary.H"
 #include "fvMesh.H"
 #include "fvMeshMetrics.H"
@@ -67,7 +67,7 @@ protected:
     meshField<label,MeshType> emptyField_;
 
     // List of shapes making up the immersed boundary
-    PtrList<shape> shapes_;
+    PtrList<immersedBoundaryShape> shapes_;
 
     // Set mask fields
     void setMasks();

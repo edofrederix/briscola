@@ -42,10 +42,16 @@ libs
 
 functions
 {
-
     init
     {
         type    initialCondition;
+    }
+
+    reconstruct
+    {
+        type    colocatedReconstruction;
+        fields  (U);
+        requireBC true;
     }
 
     timeAverage

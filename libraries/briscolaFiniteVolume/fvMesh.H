@@ -26,9 +26,6 @@ class fvMesh
     // runtime selectable.
     autoPtr<mesh> mshPtr_;
 
-    // Mesh dictionary
-    const IOdictionary& meshDict_;
-
     // Scheme dictionary
     IOdictionary schemeDict_;
 
@@ -242,9 +239,6 @@ public:
         const label l = 0,
         const label d = 0
     ) const;
-
-    // Mesh dictionary
-    inline const dictionary& meshDict() const { return meshDict_; }
 
     // Scheme dictionary
     inline const dictionary& schemeDict() const { return schemeDict_; }

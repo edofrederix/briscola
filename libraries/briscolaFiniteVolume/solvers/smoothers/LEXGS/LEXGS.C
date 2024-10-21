@@ -120,7 +120,8 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
         }
 
         x.correctNonEliminatedBoundaryConditions();
-        x.correctImmersedBoundaryConditions();
+        if (l == 0)
+            x.correctImmersedBoundaryConditions();
     }
 
     x.correctEliminatedBoundaryConditions();

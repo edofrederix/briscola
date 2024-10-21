@@ -267,7 +267,7 @@ template<class Type>
 List<Type> cellDataExchange<MeshType>::dataFunc
 (
     const meshField<Type,MeshType>& field
-)
+) const
 {
     List<List<Type>> data(recvCells_.size());
 
@@ -321,7 +321,7 @@ template class cellDataExchange<staggered>;
 template List<TYPE> cellDataExchange<MESHTYPE>::dataFunc                       \
 (                                                                              \
     const meshField<TYPE,MESHTYPE>&                                            \
-);
+) const;
 
 INSTANTIATE(scalar,colocated)
 INSTANTIATE(vector,colocated)

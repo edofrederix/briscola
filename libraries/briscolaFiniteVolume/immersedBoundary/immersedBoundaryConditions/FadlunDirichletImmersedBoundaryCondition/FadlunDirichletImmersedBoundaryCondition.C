@@ -85,33 +85,30 @@ correctJacobiPoints
 
     label l = x.levelNum();
 
-    if (l == 0)
+    forAllCells(x,d,i,j,k)
     {
-        forAllCells(x,d,i,j,k)
+        if (this->forcingPoints_(l,d,i,j,k))
         {
-            if (this->forcingPoints_(l,d,i,j,k))
+            scalar ximax = 0;
+
+            // Loop over face number directions
+            for (int dir = 0; dir < 6; dir++)
             {
-                scalar ximax = 0;
-
-                // Loop over face number directions
-                for (int dir = 0; dir < 6; dir++)
+                if (this->IB_.wallDistAdj()(l,d,i,j,k)[dir] > ximax)
                 {
-                    if (this->IB_.wallDistAdj()(l,d,i,j,k)[dir] > ximax)
-                    {
-                        ximax = this->IB_.wallDistAdj()(l,d,i,j,k)[dir];
-                        const scalar xic = 1.0
-                            - this->IB_.wallDistAdj()(l,d,i,j,k)[dir];
-                        const scalar xinb = 1.0 + xic;
-                        const scalar w = xic/xinb;
+                    ximax = this->IB_.wallDistAdj()(l,d,i,j,k)[dir];
+                    const scalar xic = 1.0
+                        - this->IB_.wallDistAdj()(l,d,i,j,k)[dir];
+                    const scalar xinb = 1.0 + xic;
+                    const scalar w = xic/xinb;
 
-                        labelVector ijk(i,j,k);
+                    labelVector ijk(i,j,k);
 
-                        Type forcingValue = boundaryValues_[d]/xinb
-                            + w*x[d](ijk-faceOffsets[dir]);
+                    Type forcingValue = boundaryValues_[d]/xinb
+                        + w*x[d](ijk-faceOffsets[dir]);
 
-                        x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
-                            + omega * forcingValue;
-                    }
+                    x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
+                        + omega * forcingValue;
                 }
             }
         }

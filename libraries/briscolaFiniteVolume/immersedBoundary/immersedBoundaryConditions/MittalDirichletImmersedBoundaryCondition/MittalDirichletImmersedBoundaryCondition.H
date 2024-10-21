@@ -20,8 +20,12 @@ class MittalDirichletImmersedBoundaryCondition
 {
 
     // List of coordinates of points that need to be exchanged
-    // defined for each direction of the finest mesh level
-    List<vectorList> exchangePoints_;
+    // defined for each level and direction
+    List<List<vectorList>> exchangePoints_;
+
+    // List of point data exchanges
+    // defined for each level and direction
+    List<PtrList<pointDataExchange<MeshType>>> exchanges_;
 
     // Boundary values
     List<Type> boundaryValues_;

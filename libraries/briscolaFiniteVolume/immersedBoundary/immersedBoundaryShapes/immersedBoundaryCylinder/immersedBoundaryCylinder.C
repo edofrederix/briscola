@@ -1,4 +1,4 @@
-#include "cylinder.H"
+#include "immersedBoundaryCylinder.H"
 
 namespace Foam
 {
@@ -11,13 +11,13 @@ namespace fv
 
 // Constructor
 
-cylinder::cylinder
+immersedBoundaryCylinder::immersedBoundaryCylinder
 (
     const dictionary& dict,
     bool inverted
 )
 :
-    shape(dict,inverted),
+    immersedBoundaryShape(dict,inverted),
     start_(vector(dict.lookup("start"))),
     end_(vector(dict.lookup("end"))),
     radius_(readScalar(dict.lookup("radius")))
@@ -41,10 +41,10 @@ cylinder::cylinder
 
 // Destructor
 
-cylinder::~cylinder()
+immersedBoundaryCylinder::~immersedBoundaryCylinder()
 {}
 
-bool cylinder::isInside(vector point) const
+bool immersedBoundaryCylinder::isInside(vector point) const
 {
     // Check if the distance to the cylinder
     // axis is smaller than the radius
@@ -73,7 +73,7 @@ bool cylinder::isInside(vector point) const
     }
 }
 
-scalar cylinder::wallDistance(vector c, vector nb) const
+scalar immersedBoundaryCylinder::wallDistance(vector c, vector nb) const
 {
     // Return -1 if the center point is not a fluid point
     // or if the neighboring point is not inside the cylinder
@@ -139,7 +139,7 @@ scalar cylinder::wallDistance(vector c, vector nb) const
     }
 }
 
-scalar cylinder::wallNormalDistance(vector gc) const
+scalar immersedBoundaryCylinder::wallNormalDistance(vector gc) const
 {
     // Return -1 if the point is outside of the cylinder
     if (!this->isInside(gc))
@@ -157,7 +157,7 @@ scalar cylinder::wallNormalDistance(vector gc) const
     return (inverted_ ? mag(axis ^ g) - radius_ : radius_ - mag(axis ^ g));
 }
 
-vector cylinder::mirrorPoint(vector gc) const
+vector immersedBoundaryCylinder::mirrorPoint(vector gc) const
 {
     scalar dist = this->wallNormalDistance(gc);
 

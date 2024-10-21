@@ -1,4 +1,4 @@
-#include "sphere.H"
+#include "immersedBoundarySphere.H"
 
 namespace Foam
 {
@@ -11,13 +11,13 @@ namespace fv
 
 // Constructor
 
-sphere::sphere
+immersedBoundarySphere::immersedBoundarySphere
 (
     const dictionary& dict,
     bool inverted
 )
 :
-    shape(dict,inverted),
+    immersedBoundaryShape(dict,inverted),
     center_(vector(dict.lookup("center"))),
     radius_(readScalar(dict.lookup("radius")))
 {
@@ -32,10 +32,10 @@ sphere::sphere
 
 // Destructor
 
-sphere::~sphere()
+immersedBoundarySphere::~immersedBoundarySphere()
 {}
 
-bool sphere::isInside(vector point) const
+bool immersedBoundarySphere::isInside(vector point) const
 {
     // Check if distance from point to sphere center
     // is smaller than the sphere's radius
@@ -60,7 +60,7 @@ bool sphere::isInside(vector point) const
     }
 }
 
-scalar sphere::wallDistance(vector c, vector nb) const
+scalar immersedBoundarySphere::wallDistance(vector c, vector nb) const
 {
     // Return -1 if the center point is not a fluid point
     // or if the neighboring point is not inside the sphere
@@ -99,7 +99,7 @@ scalar sphere::wallDistance(vector c, vector nb) const
     return (tc - t1c);
 }
 
-scalar sphere::wallNormalDistance(vector gc) const
+scalar immersedBoundarySphere::wallNormalDistance(vector gc) const
 {
     // Return -1 if the point is outside of the sphere
     if (!this->isInside(gc))
@@ -111,7 +111,7 @@ scalar sphere::wallNormalDistance(vector gc) const
     return (inverted_ ? mag(gc-center_) - radius_ : radius_ - mag(gc-center_));
 }
 
-vector sphere::mirrorPoint(vector gc) const
+vector immersedBoundarySphere::mirrorPoint(vector gc) const
 {
     scalar dist = this->wallNormalDistance(gc);
 

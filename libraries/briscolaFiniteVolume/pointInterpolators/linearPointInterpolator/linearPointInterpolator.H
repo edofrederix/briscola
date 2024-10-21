@@ -60,7 +60,7 @@ public:
     // Interpolators
 
     #define INTERPFUNC(TYPE) \
-        virtual List<TYPE> operator() (const meshField<TYPE,MeshType>&);
+        virtual List<TYPE> operator() (const meshField<TYPE,MeshType>&) const;
 
     INTERPFUNC(scalar);
     INTERPFUNC(vector);
@@ -75,7 +75,7 @@ public:
 
     // Colocated interpolator
     template<class Type>
-    List<Type> interp(const meshField<Type,MeshType>&);
+    List<Type> interp(const meshField<Type,MeshType>&) const;
 };
 
 }

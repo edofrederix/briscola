@@ -53,7 +53,6 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
 :
     regIOobject(dict, true),
     mshPtr_(mesh::New(dict)),
-    meshDict_(dict),
     schemeDict_
     (
         IOobject
@@ -100,7 +99,6 @@ fvMesh::fvMesh(const fvMesh& fvMsh)
 :
     regIOobject(fvMsh, true),
     mshPtr_(fvMsh.mshPtr_, false),
-    meshDict_(fvMsh.meshDict_),
     schemeDict_(fvMsh.schemeDict_),
     solverDict_(fvMsh.solverDict_),
     Ic_(fvMsh.Ic_),

@@ -1,7 +1,7 @@
-#ifndef shapes_H
-#define shapes_H
+#ifndef immersedBoundaryShapes_H
+#define immersedBoundaryShapes_H
 
-#include "shape.H"
+#include "immersedBoundaryShape.H"
 
 #define makeShapeType(SHAPE)                                                    \
                                                                                 \
@@ -11,7 +11,7 @@
         0                                                                       \
     );                                                                          \
                                                                                 \
-    shape::adddictionaryConstructorToTable<SHAPE>                               \
+    immersedBoundaryShape::adddictionaryConstructorToTable<SHAPE>               \
     add##SHAPE##ConstructorToTable_;
 
 #endif

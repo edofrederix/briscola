@@ -1,7 +1,7 @@
-#ifndef sphere_H
-#define sphere_H
+#ifndef immersedBoundaryCylinder_H
+#define immersedBoundaryCylinder_H
 
-#include "shape.H"
+#include "immersedBoundaryShape.H"
 
 namespace Foam
 {
@@ -12,24 +12,26 @@ namespace briscola
 namespace fv
 {
 
-class sphere
+class immersedBoundaryCylinder
 :
-    public shape
+    public immersedBoundaryShape
 {
-    // A sphere is defined by a center point and a radius
-    vector center_;
+    // A cylinder is defined by a center line (start, end) and a radius around
+    // the center line
+    vector start_;
+    vector end_;
     scalar radius_;
 
 public:
 
     // Runtime type information
-    TypeName("sphere");
+    TypeName("cylinder");
 
     // Construct
-    sphere(const dictionary&, bool);
+    immersedBoundaryCylinder(const dictionary&, bool);
 
     // Destructor
-    virtual ~sphere();
+    virtual ~immersedBoundaryCylinder();
 
     // Return true of the vector is inside the shape
     bool isInside(vector) const;
@@ -51,7 +53,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "sphere.C"
+    #include "immersedBoundaryCylinder.C"
 #endif
 
 #endif

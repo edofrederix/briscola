@@ -47,17 +47,15 @@ void penalizationDirichletImmersedBoundaryCondition<Type,MeshType>
 
     label l = x.levelNum();
 
-    if (l == 0)
+    forAllCells(x,d,i,j,k)
     {
-        forAllCells(x,d,i,j,k)
+        if (this->forcingPoints_(l,d,i,j,k))
         {
-            if (this->forcingPoints_(l,d,i,j,k))
-            {
-                x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
-                    + omega * boundaryValues_[d];
-            }
+            x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
+                + omega * boundaryValues_[d];
         }
     }
+
 }
 
 }

@@ -1,4 +1,4 @@
-#include "shape.H"
+#include "immersedBoundaryShape.H"
 
 namespace Foam
 {
@@ -11,7 +11,7 @@ namespace fv
 
 // Constructor
 
-shape::shape
+immersedBoundaryShape::immersedBoundaryShape
 (
     const dictionary& dict,
     bool inverted
@@ -20,33 +20,33 @@ shape::shape
     inverted_(inverted)
 {}
 
-autoPtr<shape> shape::New
+autoPtr<immersedBoundaryShape> immersedBoundaryShape::New
 (
     const dictionary& dict,
     bool inverted
 )
 {
-    const word shapeType(dict.lookup("type"));
+    const word immersedBoundaryShapeType(dict.lookup("type"));
 
     typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(shapeType);
+        dictionaryConstructorTablePtr_->find(immersedBoundaryShapeType);
 
     if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown shape "
-            << shapeType << nl << nl
+            << "Unknown immersed boundary shape "
+            << immersedBoundaryShapeType << nl << nl
             << "Valid shape types are:" << nl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
-    return autoPtr<shape>(cstrIter()(dict, inverted));
+    return autoPtr<immersedBoundaryShape>(cstrIter()(dict, inverted));
 }
 
 // Destructor
 
-shape::~shape()
+immersedBoundaryShape::~immersedBoundaryShape()
 {}
 
 }

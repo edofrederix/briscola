@@ -1,5 +1,5 @@
-#ifndef shape_H
-#define shape_H
+#ifndef immersedBoundaryShape_H
+#define immersedBoundaryShape_H
 
 #include "vector.H"
 #include "dictionary.H"
@@ -13,7 +13,7 @@ namespace briscola
 namespace fv
 {
 
-class shape
+class immersedBoundaryShape
 {
 protected:
 
@@ -22,13 +22,13 @@ protected:
 
 public:
     // Runtime type information
-    TypeName("shape");
+    TypeName("immersedBoundaryShape");
 
     // Declare run-time constructor selection tables
     declareRunTimeSelectionTable
     (
         autoPtr,
-        shape,
+        immersedBoundaryShape,
         dictionary,
         (
             const dictionary& dict,
@@ -38,13 +38,13 @@ public:
     );
 
     // Base constructor
-    shape(const dictionary&, bool);
+    immersedBoundaryShape(const dictionary&, bool);
 
     // Selector from dictionary
-    static autoPtr<shape> New(const dictionary&, bool inverted = false);
+    static autoPtr<immersedBoundaryShape> New(const dictionary&, bool inverted = false);
 
     // Destructor
-    virtual ~shape();
+    virtual ~immersedBoundaryShape();
 
     // Check if point is inside shape
     virtual bool isInside(vector) const = 0;

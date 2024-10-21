@@ -63,7 +63,7 @@ template<class Type>
 List<Type> pointDataExchange<MeshType>::dataFunc
 (
     const meshField<Type,MeshType>& field
-)
+) const
 {
     return interpPtr_->operator()(field);
 }
@@ -77,7 +77,7 @@ template class pointDataExchange<staggered>;
 template List<TYPE> pointDataExchange<MESHTYPE>::dataFunc                      \
 (                                                                              \
     const meshField<TYPE,MESHTYPE>&                                            \
-);
+) const;
 
 INSTANTIATE(scalar,colocated)
 INSTANTIATE(vector,colocated)

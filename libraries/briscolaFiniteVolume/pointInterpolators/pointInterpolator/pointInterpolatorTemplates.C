@@ -25,7 +25,7 @@ class nonZeroOp
 
 template<class MeshType>
 template<class Type>
-List<Type> pointInterpolator<MeshType>::combine(List<Type>& values)
+List<Type> pointInterpolator<MeshType>::combine(List<Type>& values) const
 {
     Pstream::listCombineGather(values, nonZeroOp<Type>());
     Pstream::listCombineScatter(values);

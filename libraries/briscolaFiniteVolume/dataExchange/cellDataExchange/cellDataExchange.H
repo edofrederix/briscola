@@ -70,7 +70,7 @@ public:
     // Obtain the data
 
     template<class Type>
-    List<Type> dataFunc(const meshField<Type,MeshType>& field);
+    List<Type> dataFunc(const meshField<Type,MeshType>& field) const;
 
     #define DATAFUNC(TYPE)                                                     \
     virtual List<TYPE> operator() (const meshField<TYPE,MeshType>& field)      \

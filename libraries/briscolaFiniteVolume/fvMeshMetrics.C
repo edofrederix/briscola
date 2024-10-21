@@ -340,10 +340,10 @@ void fvMeshMetrics<MeshType>::setGlobalCellNumbers()
 template<class MeshType>
 void fvMeshMetrics<MeshType>::setIBs()
 {
-    if (fvMsh_.meshDict().found("immersedBoundaries"))
+    if (fvMsh_.msh().dict().found("immersedBoundaries"))
     {
         const dictionary& IBMdict =
-            fvMsh_.meshDict().subDict("immersedBoundaries");
+            fvMsh_.msh().dict().subDict("immersedBoundaries");
 
         label size = IBMdict.size();
 
