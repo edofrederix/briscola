@@ -16,7 +16,9 @@ namespace fv
 {
 
 defineTypeNameAndDebug(twoPhaseModel, 0);
-defineRunTimeSelectionTable(twoPhaseModel, dictionary);
+
+defineRunTimeSelectionTable(twoPhaseModel, colocated);
+defineRunTimeSelectionTable(twoPhaseModel, staggered);
 
 twoPhaseModel::twoPhaseModel
 (
@@ -70,28 +72,48 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
 twoPhaseModel::~twoPhaseModel()
 {}
 
-template<class MeshType>
-autoPtr<twoPhaseModel> twoPhaseModel::New
+template<>
+autoPtr<twoPhaseModel> twoPhaseModel::New<colocated>
 (
     const fvMesh& fvMsh,
     const IOdictionary& dict
 )
 {
-    const word twoPhaseModelType
-    (
-        MeshType::typeName
-      + word(dict.lookup("type"))
-    );
+    const word twoPhaseModelType(dict.lookup("type"));
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(twoPhaseModelType);
+    colocatedConstructorTable::iterator cstrIter =
+        colocatedConstructorTablePtr_->find(twoPhaseModelType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (cstrIter == colocatedConstructorTablePtr_->end())
     {
         FatalErrorInFunction
             << "Unknown two-phase model " << twoPhaseModelType
             << ". Valid two-phase models are" << endl
-            << dictionaryConstructorTablePtr_->sortedToc()
+            << colocatedConstructorTablePtr_->sortedToc()
+            << exit(FatalError);
+    }
+
+    return autoPtr<twoPhaseModel>(cstrIter()(fvMsh, dict));
+}
+
+template<>
+autoPtr<twoPhaseModel> twoPhaseModel::New<staggered>
+(
+    const fvMesh& fvMsh,
+    const IOdictionary& dict
+)
+{
+    const word twoPhaseModelType(dict.lookup("type"));
+
+    staggeredConstructorTable::iterator cstrIter =
+        staggeredConstructorTablePtr_->find(twoPhaseModelType);
+
+    if (cstrIter == staggeredConstructorTablePtr_->end())
+    {
+        FatalErrorInFunction
+            << "Unknown two-phase model " << twoPhaseModelType
+            << ". Valid two-phase models are" << endl
+            << staggeredConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
@@ -102,20 +124,6 @@ void twoPhaseModel::correctMixture()
 {
     surfaceTensionSchemePtr_->correct();
 }
-
-// Instantiate
-
-template autoPtr<twoPhaseModel> twoPhaseModel::New<colocated>
-(
-    const fvMesh&,
-    const IOdictionary&
-);
-
-template autoPtr<twoPhaseModel> twoPhaseModel::New<staggered>
-(
-    const fvMesh&,
-    const IOdictionary&
-);
 
 }
 

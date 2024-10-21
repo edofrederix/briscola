@@ -50,12 +50,25 @@ public:
     // Runtime type information
     TypeName("twoPhaseModel");
 
-    // Declare run-time constructor selection tables
+    // Colocated run-time constructor selection tables
     declareRunTimeSelectionTable
     (
         autoPtr,
         twoPhaseModel,
-        dictionary,
+        colocated,
+        (
+            const fvMesh& fvMsh,
+            const IOdictionary& dict
+        ),
+        (fvMsh, dict)
+    );
+
+    // Staggered run-time constructor selection tables
+    declareRunTimeSelectionTable
+    (
+        autoPtr,
+        twoPhaseModel,
+        staggered,
         (
             const fvMesh& fvMsh,
             const IOdictionary& dict

@@ -11,11 +11,11 @@
     defineTemplateTypeNameAndDebugWithName                                     \
     (                                                                          \
         SOLVER##VISCOSITY##DENSITY##MESHTYPE,                                  \
-        #MESHTYPE #SHORTNAME,                                                  \
+        #SHORTNAME,                                                            \
         0                                                                      \
     );                                                                         \
                                                                                \
-    twoPhaseModel::adddictionaryConstructorToTable                             \
+    twoPhaseModel::add##MESHTYPE##ConstructorToTable                           \
     <                                                                          \
         SOLVER##VISCOSITY##DENSITY##MESHTYPE                                   \
     >                                                                          \
