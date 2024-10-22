@@ -5,7 +5,7 @@ EXE_INC = \
     -I./lnInclude \
     -I../briscolaCore/lnInclude \
     -I../briscolaMesh/lnInclude \
-	-I../briscolaImmersedBoundary/lnInclude \
+	-I../briscolaFiniteVolume/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude \
     -I$(FFTW_HOME)/include \
     -I$(EIGEN_HOME)/include/eigen3 \
@@ -26,5 +26,6 @@ LIB_LIBS = \
     $(if $(SUPERLU_HOME),-lsuperlu,) \
     -lbriscolaCore \
     -lbriscolaMesh \
+	-lbriscolaFiniteVolume \
     -lOpenFOAM \
     -lfftw3

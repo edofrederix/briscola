@@ -3,6 +3,7 @@ EXE_INC = \
     -I../briscolaCore/lnInclude \
     -I../briscolaMesh/lnInclude \
     -I../briscolaFiniteVolume/lnInclude \
+    -I../briscolaImmersedBoundary/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude
 
 LIB_LIBS = \
@@ -10,4 +11,5 @@ LIB_LIBS = \
     -lbriscolaCore \
     -lbriscolaMesh \
     -lbriscolaFiniteVolume \
+    -lbriscolaImmersedBoundary \
     -lOpenFOAM

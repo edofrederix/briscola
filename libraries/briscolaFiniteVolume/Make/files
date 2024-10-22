@@ -36,11 +36,6 @@ fields/staggeredLevels/staggeredLevels.C
 fields/colocatedFields/colocatedFields.C
 fields/staggeredFields/staggeredFields.C
 
-immersedBoundary/immersedBoundary/immersedBoundary.C
-immersedBoundary/immersedBoundaryConditions/immersedBoundaryCondition/immersedBoundaryConditions.C
-immersedBoundary/immersedBoundaryShapes/immersedBoundaryShape/immersedBoundaryShapes.C
-immersedBoundary/immersedBoundaryConditions/immersedBoundaryCondition/immersedBoundaryConditionStaggeredMassSource.C
-
 IO/IO.C
 IO/IOReadTemplates.C
 IO/IOWriteTemplates.C
