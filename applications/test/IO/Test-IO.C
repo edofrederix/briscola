@@ -29,7 +29,6 @@ tmp<meshField<Type,MeshType>> createField
             IOobject::NO_READ,
             IOobject::AUTO_WRITE,
             true,
-            true,
             deep
         )
     );

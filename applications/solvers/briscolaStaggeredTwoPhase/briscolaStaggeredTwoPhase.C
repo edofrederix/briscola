@@ -1,11 +1,9 @@
 #include "arguments.H"
 #include "IOdictionary.H"
 #include "Time.H"
-#include "faceFluxScheme.H"
-#include "interpolationScheme.H"
 
 #include "fv.H"
-#include "incompressibleTwoPhaseModel.H"
+#include "TwoPhaseModel.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -16,13 +14,8 @@ int main(int argc, char *argv[])
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
-    #include "createBriscolaTwoPhase.H"
+    #include "createBriscolaStaggeredTwoPhase.H"
     #include "createTimeControls.H"
-
-    // This solver works for incompressible mixtures only
-
-    incompressibleTwoPhaseModel& icoTwoPhase =
-        twoPhase.cast<incompressibleTwoPhaseModel>();
 
     #include "createRefs.H"
     #include "createFields.H"
@@ -45,7 +38,7 @@ int main(int argc, char *argv[])
 
         // Update the two-phase model and specific volumes
 
-        icoTwoPhase.correct();
+        twoPhase.correct();
 
         v = 1.0/rho;
         vcf = ex::coloFaceInterp(v);
@@ -68,25 +61,20 @@ int main(int argc, char *argv[])
           - stagDotProduct(ex::grad(mu),ex::grad(U))*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
-        USys -= list(icoTwoPhase.g());
-        USys -= ex::stagReconstruct(icoTwoPhase.surfaceTension())*v;
+        USys -= list(twoPhase.g());
+        USys -= ex::stagReconstruct(twoPhase.surfaceTension())*v;
 
         // Solve predictor
 
-        USolve->solve(USys + G*v);
-
-        U += deltaT*G*v;
-        U.correctBoundaryConditions();
+        USolve->solve(USys);
 
         // Pressure equation
 
         Poisson->solve(p, ex::coloDiv(U)/(-deltaT), vcf);
 
-        G = ex::stagReconstruct(Poisson->flux()/vcf);
-
         // Correct velocity
 
-        U -= deltaT*G*v;
+        U -= deltaT*ex::stagReconstruct(Poisson->flux()/vcf)*v;
         U.correctBoundaryConditions();
 
         if (fvMsh.time().writeTime())

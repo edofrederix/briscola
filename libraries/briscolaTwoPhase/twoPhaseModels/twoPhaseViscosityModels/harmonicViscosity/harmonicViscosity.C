@@ -21,7 +21,9 @@ harmonicViscosity<BaseModel>::harmonicViscosity
     BaseModel(fvMsh, dict),
     mu1_(readScalar(dict.lookup("mu1"))),
     mu2_(readScalar(dict.lookup("mu2")))
-{}
+{
+    this->mu_.setRestrictionScheme("harmonicFaceAreaWeighted");
+}
 
 template<class BaseModel>
 harmonicViscosity<BaseModel>::harmonicViscosity(const harmonicViscosity& tpm)
@@ -29,7 +31,9 @@ harmonicViscosity<BaseModel>::harmonicViscosity(const harmonicViscosity& tpm)
     BaseModel(tpm),
     mu1_(tpm.mu1_),
     mu2_(tpm.mu2_)
-{}
+{
+    this->mu_.setRestrictionScheme("harmonicFaceAreaWeighted");
+}
 
 template<class BaseModel>
 harmonicViscosity<BaseModel>::~harmonicViscosity()
@@ -38,24 +42,12 @@ harmonicViscosity<BaseModel>::~harmonicViscosity()
 template<class BaseModel>
 void harmonicViscosity<BaseModel>::correctMixture()
 {
-    const colocatedLowerFaceScalarField alphaf
+    const meshField<lowerFaceScalar,typename BaseModel::meshType> alpha
     (
-        ex::interp(this->alpha_)
+        this->faceAlpha()
     );
 
-    this->muc_ = 1.0/(alphaf/mu2_ + (1.0-alphaf)/mu1_);
-
-    if (this->musPtr_.valid())
-    {
-        staggeredLowerFaceScalarField& mus = this->musPtr_();
-
-        const staggeredLowerFaceScalarField alphafs
-        (
-            stagFaceInterp(this->alpha_)
-        );
-
-        mus = 1.0/(alphafs/mu2_ + (1.0-alphafs)/mu1_);
-    }
+    this->mu_ = 1.0/(alpha/mu2_ + (1.0 - alpha)/mu1_);
 
     BaseModel::correctMixture();
 }

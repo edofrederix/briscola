@@ -1,7 +1,7 @@
 #ifndef incompressibleTwoPhaseModel_H
 #define incompressibleTwoPhaseModel_H
 
-#include "twoPhaseModel.H"
+#include "TwoPhaseModel.H"
 #include "vof.H"
 
 namespace Foam
@@ -13,15 +13,16 @@ namespace briscola
 namespace fv
 {
 
+template<class MeshType>
 class incompressibleTwoPhaseModel
 :
-    public twoPhaseModel
+    public TwoPhaseModel<MeshType>
 {
 protected:
 
     // The mass densities of the two phases
-    const scalar Rho1_;
-    const scalar Rho2_;
+    const scalar rho1_;
+    const scalar rho2_;
 
 private:
 
@@ -29,9 +30,6 @@ private:
     void operator=(const incompressibleTwoPhaseModel&);
 
 public:
-
-    // Runtime type information
-    TypeName("incompressibleTwoPhaseModel");
 
     // Construct from IOdictionary
     incompressibleTwoPhaseModel(const fvMesh&, const IOdictionary&);
@@ -43,10 +41,10 @@ public:
     virtual ~incompressibleTwoPhaseModel();
 
     // Mass density of the first phase
-    virtual scalar Rho1() { return Rho1_; }
+    virtual scalar rho1() { return rho1_; }
 
     // Mass density of the second phase
-    virtual scalar Rho2() { return Rho2_; }
+    virtual scalar rho2() { return rho2_; }
 
     // Correct the two-phase mixture
     virtual void correctMixture();
@@ -57,5 +55,9 @@ public:
 }
 
 }
+
+#ifdef NoRepository
+    #include "incompressibleTwoPhaseModel.C"
+#endif
 
 #endif

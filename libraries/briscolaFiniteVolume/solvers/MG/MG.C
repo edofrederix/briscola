@@ -207,7 +207,6 @@ void MG<SType,Type,MeshType>::solve
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         false,
-        false,
         true
     );
 

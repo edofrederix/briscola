@@ -27,7 +27,6 @@ surfaceTensionScheme::surfaceTensionScheme
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        true,
         false
     ),
     tpm_(tpm),
@@ -41,7 +40,6 @@ surfaceTensionScheme::surfaceTensionScheme
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        true,
         true,
         false
     ),

@@ -34,11 +34,7 @@ stagSlipBoundaryCondition<Type>::stagSlipBoundaryCondition
     const stagSlipBoundaryCondition<Type>& bc
 )
 :
-    stagNeumannBoundaryCondition<Type>
-    (
-        bc.mshField(),
-        bc.mshBoundary()
-    )
+    stagNeumannBoundaryCondition<Type>(bc)
 {}
 
 template<class Type>
@@ -48,11 +44,7 @@ stagSlipBoundaryCondition<Type>::stagSlipBoundaryCondition
     const stagSlipBoundaryCondition<Type>& bc
 )
 :
-    stagNeumannBoundaryCondition<Type>
-    (
-        field,
-        bc.mshBoundary()
-    )
+    stagNeumannBoundaryCondition<Type>(field, bc)
 {}
 
 template<class Type>

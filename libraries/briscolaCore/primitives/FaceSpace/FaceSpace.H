@@ -127,6 +127,9 @@ public:
 
 // FaceSpace partial specialization of pTransform
 
+using briscola::faceNumber;
+using briscola::faceOffsets;
+
 template<class Cmpt>
 class pTransform<FaceSpace<Cmpt>>
 {
@@ -142,18 +145,8 @@ public:
         }
         else
         {
-            const labelVector x(T & briscola::unitX);
-            const labelVector y(T & briscola::unitY);
-            const labelVector z(T & briscola::unitZ);
-
-            p_[briscola::faceNumber(-x)] = h.left();
-            p_[briscola::faceNumber( x)] = h.right();
-
-            p_[briscola::faceNumber(-y)] = h.bottom();
-            p_[briscola::faceNumber( y)] = h.top();
-
-            p_[briscola::faceNumber(-z)] = h.aft();
-            p_[briscola::faceNumber( z)] = h.fore();
+            for (int i = 0; i < 6; i++)
+                p_[max(faceNumber(T & faceOffsets[i]), 0)] = h[i];
         }
     }
 

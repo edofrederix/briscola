@@ -12,9 +12,6 @@ namespace briscola
 namespace fv
 {
 
-template<class MeshType>
-class blendedViscosityRestrictionScheme;
-
 template<class BaseModel>
 class blendedViscosity
 :
@@ -52,16 +49,16 @@ public:
     virtual ~blendedViscosity();
 
     // Dynamic viscosity of the first phase
-    virtual scalar mu1() { return mu1_; }
+    virtual scalar mu1() const { return mu1_; }
 
     // Dynamic viscosity of the second phase
-    virtual scalar mu2() { return mu2_; }
+    virtual scalar mu2() const { return mu2_; }
+
+    // Blending factor
+    virtual scalar C() const { return C_; }
 
     // Correct the two-phase mixture
     virtual void correctMixture();
-
-    // Befriend the corresponding restriction schemes
-    template<class MeshType> friend class blendedViscosityRestrictionScheme;
 };
 
 }

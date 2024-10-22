@@ -29,7 +29,7 @@ slipBoundaryCondition<Type,MeshType>::slipBoundaryCondition
     const slipBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary())
+    boundaryCondition<Type,MeshType>(bc)
 {}
 
 template<class Type, class MeshType>
@@ -39,7 +39,7 @@ slipBoundaryCondition<Type,MeshType>::slipBoundaryCondition
     const slipBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.mshBoundary())
+    boundaryCondition<Type,MeshType>(field, bc)
 {}
 
 template<class Type, class MeshType>

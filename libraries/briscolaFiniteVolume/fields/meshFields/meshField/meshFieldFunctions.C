@@ -39,7 +39,6 @@ mag(const meshField<Type,MeshType>& f)
             IOobject::NO_READ,
             IOobject::NO_WRITE,
             false,
-            false,
             f.deep()
         )
     );
@@ -91,7 +90,6 @@ cmptMax(const meshField<Type,MeshType>& f)
             IOobject::NO_READ,
             IOobject::NO_WRITE,
             false,
-            false,
             f.deep()
         )
     );
@@ -139,7 +137,6 @@ cmptMin(const meshField<Type,MeshType>& f)
             f.fvMsh(),
             IOobject::NO_READ,
             IOobject::NO_WRITE,
-            false,
             false,
             f.deep()
         )
@@ -189,7 +186,6 @@ cmptAv(const meshField<Type,MeshType>& f)
             IOobject::NO_READ,
             IOobject::NO_WRITE,
             false,
-            false,
             f.deep()
         )
     );
@@ -237,7 +233,6 @@ cmptMag(const meshField<Type,MeshType>& f)
             f.fvMsh(),
             IOobject::NO_READ,
             IOobject::NO_WRITE,
-            false,
             false,
             f.deep()
         )

@@ -17,11 +17,6 @@ class noSlipBoundaryCondition
 :
     public DirichletBoundaryCondition<Type,MeshType>
 {
-protected:
-
-    // Boundary values
-    List<Type> boundaryValues_;
-
 public:
 
     // Runtime type information

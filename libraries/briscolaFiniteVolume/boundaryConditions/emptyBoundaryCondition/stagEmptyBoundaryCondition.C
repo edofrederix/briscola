@@ -29,7 +29,7 @@ stagEmptyBoundaryCondition<Type>::stagEmptyBoundaryCondition
     const stagEmptyBoundaryCondition<Type>& bc
 )
 :
-    emptyBoundaryCondition<Type,staggered>(bc.mshField(), bc.mshBoundary())
+    emptyBoundaryCondition<Type,staggered>(bc)
 {}
 
 template<class Type>
@@ -39,7 +39,7 @@ stagEmptyBoundaryCondition<Type>::stagEmptyBoundaryCondition
     const stagEmptyBoundaryCondition<Type>& bc
 )
 :
-    emptyBoundaryCondition<Type,staggered>(field, bc.mshBoundary())
+    emptyBoundaryCondition<Type,staggered>(field, bc)
 {}
 
 template<class Type>

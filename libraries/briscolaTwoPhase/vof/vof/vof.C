@@ -88,11 +88,6 @@ autoPtr<vof> vof::New
     return autoPtr<vof>(cstrIter()(fvMsh, dict, normal, alpha));
 }
 
-void vof::solve(const staggeredScalarField& U)
-{
-    solve(coloFaceFlux(U)());
-}
-
 }
 
 }

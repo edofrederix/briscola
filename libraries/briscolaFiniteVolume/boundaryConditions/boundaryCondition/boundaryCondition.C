@@ -166,6 +166,12 @@ boundaryCondition<Type,MeshType>::globalBaseType
         const label dir = facei/2;
         const label i = -(facei%2);
 
+        // Make sure that the boundary conditions are set
+
+        if (!field.boundaryConditions().size())
+            const_cast<meshField<Type,MeshType>&>(field)
+                .addBoundaryConditions();
+
         const PtrList<boundaryCondition<Type,MeshType>>& bcs =
             field.boundaryConditions();
 

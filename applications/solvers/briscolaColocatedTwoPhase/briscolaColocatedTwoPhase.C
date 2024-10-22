@@ -3,7 +3,7 @@
 #include "Time.H"
 
 #include "fv.H"
-#include "incompressibleTwoPhaseModel.H"
+#include "TwoPhaseModel.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -11,18 +11,11 @@ using namespace fv;
 
 int main(int argc, char *argv[])
 {
-    arguments::addBoolOption("split", "Split the pressure equation");
-
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
-    #include "createBriscolaTwoPhase.H"
+    #include "createBriscolaColocatedTwoPhase.H"
     #include "createTimeControls.H"
-
-    // This solver works for incompressible mixtures only
-
-    incompressibleTwoPhaseModel& icoTwoPhase =
-        twoPhase.cast<incompressibleTwoPhaseModel>();
 
     #include "createRefs.H"
     #include "createFields.H"
@@ -46,7 +39,7 @@ int main(int argc, char *argv[])
 
         // Update the two-phase model and specific volumes
 
-        icoTwoPhase.correct();
+        twoPhase.correct();
 
         v = 1.0/rho;
         vf = ex::interp(v);
@@ -67,32 +60,29 @@ int main(int argc, char *argv[])
           - ex::div(mu*ex::faceFlux(dev2(T(ex::grad(U)))))*v;
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
-        USys -= icoTwoPhase.g();
+        USys -= twoPhase.g();
 
         // Solve predictor
 
-        USolve->solve(USys + G*v);
-
-        U += deltaT*G*v;
-        U.correctBoundaryConditions();
+        USolve->solve(USys);
 
         // Pressure equation
 
         phi = ex::faceFlux(U);
-        phi += deltaT*icoTwoPhase.surfaceTension()*vf;
+        phi += deltaT*twoPhase.surfaceTension()*vf;
 
         Poisson->solve(p, ex::div(phi)/(-deltaT), vf);
 
-        G =
-            ex::reconstruct
-            (
-                Poisson->flux()/vf
-              - icoTwoPhase.surfaceTension()
-            );
-
         // Rhie-Chow correction
 
-        U -= deltaT*G*v;
+        U -=
+            deltaT
+          * ex::reconstruct
+            (
+                Poisson->flux()/vf
+              - twoPhase.surfaceTension()
+            )*v;
+
         U.correctBoundaryConditions();
 
         phi -= deltaT*Poisson->flux();

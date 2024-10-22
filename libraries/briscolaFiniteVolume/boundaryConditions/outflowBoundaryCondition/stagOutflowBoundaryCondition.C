@@ -29,7 +29,7 @@ stagOutflowBoundaryCondition<Type>::stagOutflowBoundaryCondition
     const stagOutflowBoundaryCondition<Type>& bc
 )
 :
-    outflowBoundaryCondition<Type,staggered>(bc.mshField(), bc.mshBoundary())
+    outflowBoundaryCondition<Type,staggered>(bc)
 {}
 
 template<class Type>
@@ -39,7 +39,7 @@ stagOutflowBoundaryCondition<Type>::stagOutflowBoundaryCondition
     const stagOutflowBoundaryCondition<Type>& bc
 )
 :
-    outflowBoundaryCondition<Type,staggered>(field, bc.mshBoundary())
+    outflowBoundaryCondition<Type,staggered>(field, bc)
 {}
 
 template<class Type>

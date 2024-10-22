@@ -34,7 +34,7 @@ outflowBoundaryCondition<Type,MeshType>::outflowBoundaryCondition
     const outflowBoundaryCondition<Type,MeshType>& bc
 )
 :
-    NeumannBoundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary())
+    NeumannBoundaryCondition<Type,MeshType>(bc)
 {}
 
 template<class Type, class MeshType>
@@ -44,7 +44,7 @@ outflowBoundaryCondition<Type,MeshType>::outflowBoundaryCondition
     const outflowBoundaryCondition<Type,MeshType>& bc
 )
 :
-    NeumannBoundaryCondition<Type,MeshType>(field, bc.mshBoundary())
+    NeumannBoundaryCondition<Type,MeshType>(field, bc)
 {}
 
 }

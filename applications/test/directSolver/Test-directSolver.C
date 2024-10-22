@@ -21,7 +21,6 @@ void test(const fvMesh& fvMsh, const word solverType)
         fvMsh,
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
-        true,
         true
     );
 

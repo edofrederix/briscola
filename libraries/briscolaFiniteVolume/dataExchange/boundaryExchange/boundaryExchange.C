@@ -179,6 +179,9 @@ boundaryExchange<Type,MeshType>::boundaryExchange
 {
     typedef parallelBoundaryCondition<Type,MeshType> pbcType;
 
+    if (!field_.boundaryConditions().size())
+        field_.addBoundaryConditions();
+
     forAll(field_.boundaryConditions(), i)
         if (field_.boundaryConditions()[i].template castable<pbcType>())
             boundaryPtrs_.append

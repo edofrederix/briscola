@@ -3,6 +3,9 @@
 #include "normalScheme.H"
 #include "surfaceTensionScheme.H"
 
+#include "colocated.H"
+#include "staggered.H"
+
 namespace Foam
 {
 
@@ -13,25 +16,15 @@ namespace fv
 {
 
 defineTypeNameAndDebug(twoPhaseModel, 0);
-defineRunTimeSelectionTable(twoPhaseModel, dictionary);
 
-void twoPhaseModel::setRestrictionSchemes()
-{
-    alpha_.setRestrictionScheme("volumeWeighted");
+defineRunTimeSelectionTable(twoPhaseModel, colocated);
+defineRunTimeSelectionTable(twoPhaseModel, staggered);
 
-    rho1_.setRestrictionScheme("volumeWeighted");
-    rho2_.setRestrictionScheme("volumeWeighted");
-    rhoc_.setRestrictionScheme("volumeWeighted");
-
-    if (fvMsh_.structured())
-    {
-        rho1Ptr_->setRestrictionScheme("volumeWeighted");
-        rho2Ptr_->setRestrictionScheme("volumeWeighted");
-        rhosPtr_->setRestrictionScheme("volumeWeighted");
-    }
-}
-
-twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
+twoPhaseModel::twoPhaseModel
+(
+    const fvMesh& fvMsh,
+    const IOdictionary& dict
+)
 :
     regIOobject(dict, true),
     fvMsh_(fvMsh),
@@ -42,47 +35,6 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
         fvMsh,
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
-        true,
-        true,
-        false
-    ),
-    rho1_
-    (
-        "rho1",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true,
-        false
-    ),
-    rho2_
-    (
-        "rho2",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true,
-        false
-    ),
-    rhoc_
-    (
-        "rho",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true,
-        false
-    ),
-    muc_
-    (
-        "mu",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
         true,
         false
     ),
@@ -98,83 +50,9 @@ twoPhaseModel::twoPhaseModel(const fvMesh& fvMsh, const IOdictionary& dict)
             dict.subDict("surfaceTensionScheme")
         ).ptr()
     ),
-    g_(dict.lookup("g")),
-    gh_
-    (
-        "mu",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true,
-        false
-    )
+    g_(dict.lookup("g"))
 {
-    gh_ = (g_ & fvMsh.template metrics<colocated>().faceCenters());
-
-    if (fvMsh.structured())
-    {
-        rho1Ptr_.reset
-        (
-            new staggeredScalarField
-            (
-                "rho1",
-                fvMsh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE,
-                true,
-                true,
-                false
-            )
-        );
-
-        rho2Ptr_.reset
-        (
-            new staggeredScalarField
-            (
-                "rho2",
-                fvMsh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE,
-                true,
-                true,
-                false
-            )
-        );
-
-        rhosPtr_.reset
-        (
-            new staggeredScalarField
-            (
-                "rho",
-                fvMsh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE,
-                true,
-                true,
-                false
-            )
-        );
-
-        musPtr_.reset
-        (
-            new staggeredLowerFaceScalarField
-            (
-                "mu",
-                fvMsh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE,
-                true,
-                true,
-                false
-            )
-        );
-    }
-
-    setRestrictionSchemes();
-
-    // Initialize alpha as zero everywhere
-
+    alpha_.setRestrictionScheme("volumeWeighted");
     alpha_ = Zero;
 }
 
@@ -184,26 +62,18 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
     fvMsh_(tpm.fvMsh_),
     dict_(tpm.dict_),
     alpha_(tpm.alpha_),
-    rho1_(tpm.rho1_),
-    rho2_(tpm.rho2_),
-    rhoc_(tpm.rhoc_),
-    muc_(tpm.muc_),
-    rho1Ptr_(tpm.rho1Ptr_, false),
-    rho2Ptr_(tpm.rho2Ptr_, false),
-    rhosPtr_(tpm.rhosPtr_, false),
-    musPtr_(tpm.musPtr_, false),
     normalSchemePtr_(tpm.normalSchemePtr_, false),
     surfaceTensionSchemePtr_(tpm.surfaceTensionSchemePtr_, false),
-    g_(tpm.g_),
-    gh_(tpm.gh_)
+    g_(tpm.g_)
 {
-    setRestrictionSchemes();
+    alpha_.setRestrictionScheme("volumeWeighted");
 }
 
 twoPhaseModel::~twoPhaseModel()
 {}
 
-autoPtr<twoPhaseModel> twoPhaseModel::New
+template<>
+autoPtr<twoPhaseModel> twoPhaseModel::New<colocated>
 (
     const fvMesh& fvMsh,
     const IOdictionary& dict
@@ -211,15 +81,15 @@ autoPtr<twoPhaseModel> twoPhaseModel::New
 {
     const word twoPhaseModelType(dict.lookup("type"));
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(twoPhaseModelType);
+    colocatedConstructorTable::iterator cstrIter =
+        colocatedConstructorTablePtr_->find(twoPhaseModelType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (cstrIter == colocatedConstructorTablePtr_->end())
     {
         FatalErrorInFunction
             << "Unknown two-phase model " << twoPhaseModelType
             << ". Valid two-phase models are" << endl
-            << dictionaryConstructorTablePtr_->sortedToc()
+            << colocatedConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
@@ -227,83 +97,27 @@ autoPtr<twoPhaseModel> twoPhaseModel::New
 }
 
 template<>
-colocatedScalarField& twoPhaseModel::rho<colocated>()
+autoPtr<twoPhaseModel> twoPhaseModel::New<staggered>
+(
+    const fvMesh& fvMsh,
+    const IOdictionary& dict
+)
 {
-    return rhoc_;
-}
+    const word twoPhaseModelType(dict.lookup("type"));
 
-template<>
-const colocatedScalarField& twoPhaseModel::rho<colocated>() const
-{
-    return rhoc_;
-}
+    staggeredConstructorTable::iterator cstrIter =
+        staggeredConstructorTablePtr_->find(twoPhaseModelType);
 
-template<>
-staggeredScalarField& twoPhaseModel::rho<staggered>()
-{
-    return rhosPtr_();
-}
+    if (cstrIter == staggeredConstructorTablePtr_->end())
+    {
+        FatalErrorInFunction
+            << "Unknown two-phase model " << twoPhaseModelType
+            << ". Valid two-phase models are" << endl
+            << staggeredConstructorTablePtr_->sortedToc()
+            << exit(FatalError);
+    }
 
-template<>
-const staggeredScalarField& twoPhaseModel::rho<staggered>() const
-{
-    return rhosPtr_();
-}
-
-template<>
-const colocatedScalarField& twoPhaseModel::rho1<colocated>() const
-{
-    return rho1_;
-}
-
-template<>
-const staggeredScalarField& twoPhaseModel::rho1<staggered>() const
-{
-    return rho1Ptr_();
-}
-
-template<>
-const colocatedScalarField& twoPhaseModel::rho2<colocated>() const
-{
-    return rho2_;
-}
-
-template<>
-const staggeredScalarField& twoPhaseModel::rho2<staggered>() const
-{
-    return rho2Ptr_();
-}
-
-template<>
-colocatedLowerFaceScalarField& twoPhaseModel::mu<colocated>()
-{
-    return muc_;
-}
-
-template<>
-const colocatedLowerFaceScalarField& twoPhaseModel::mu<colocated>() const
-{
-    return muc_;
-}
-
-template<>
-staggeredLowerFaceScalarField& twoPhaseModel::mu<staggered>()
-{
-    return musPtr_();
-}
-
-template<>
-const staggeredLowerFaceScalarField& twoPhaseModel::mu<staggered>() const
-{
-    return musPtr_();
-}
-
-tmp<colocatedLowerFaceScalarField> twoPhaseModel::buoyancy() const
-{
-    return
-      - gh_
-      * ex::faceGrad(this->rhoc_)
-      * fvMsh_.template metrics<colocated>().faceAreas();
+    return autoPtr<twoPhaseModel>(cstrIter()(fvMsh, dict));
 }
 
 void twoPhaseModel::correctMixture()

@@ -3,22 +3,22 @@
 
 #include "twoPhaseModel.H"
 
-#define makeTwoPhaseModel(SHORTNAME,SOLVER,VISCOSITY,DENSITY)                  \
+#define makeTwoPhaseModel(SHORTNAME,SOLVER,VISCOSITY,DENSITY,MESHTYPE)         \
                                                                                \
-    typedef SOLVER<VISCOSITY<DENSITY>>                                         \
-        SOLVER##VISCOSITY##DENSITY;                                            \
+    typedef SOLVER<VISCOSITY<DENSITY<MESHTYPE>>>                               \
+        SOLVER##VISCOSITY##DENSITY##MESHTYPE;                                  \
                                                                                \
     defineTemplateTypeNameAndDebugWithName                                     \
     (                                                                          \
-        SOLVER##VISCOSITY##DENSITY,                                            \
+        SOLVER##VISCOSITY##DENSITY##MESHTYPE,                                  \
         #SHORTNAME,                                                            \
         0                                                                      \
     );                                                                         \
                                                                                \
-    twoPhaseModel::adddictionaryConstructorToTable                             \
+    twoPhaseModel::add##MESHTYPE##ConstructorToTable                           \
     <                                                                          \
-        SOLVER##VISCOSITY##DENSITY                                             \
+        SOLVER##VISCOSITY##DENSITY##MESHTYPE                                   \
     >                                                                          \
-    SOLVER##VISCOSITY##DENSITY##ConstructorToTable_;
+    SOLVER##VISCOSITY##DENSITY##MESHTYPE##ConstructorToTable_;
 
 #endif

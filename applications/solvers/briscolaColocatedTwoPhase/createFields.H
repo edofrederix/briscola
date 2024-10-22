@@ -6,7 +6,6 @@ colocatedVectorField U
     fvMsh,
     IOobject::MUST_READ,
     IOobject::AUTO_WRITE,
-    true,
     true
 );
 
@@ -21,25 +20,11 @@ colocatedScalarField p
     fvMsh,
     IOobject::MUST_READ,
     IOobject::AUTO_WRITE,
-    true,
     true
 );
 
 p = Zero;
 p.correctBoundaryConditions();
-
-// Pressure gradient
-
-colocatedVectorField G
-(
-    "grad(p)",
-    fvMsh,
-    IOobject::READ_IF_PRESENT,
-    IOobject::AUTO_WRITE,
-    true
-);
-
-G = Zero;
 
 // Flux
 

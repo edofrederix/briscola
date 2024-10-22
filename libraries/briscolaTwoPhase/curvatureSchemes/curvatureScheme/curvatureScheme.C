@@ -30,7 +30,6 @@ curvatureScheme::curvatureScheme
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        true,
         false
     ),
     fvMsh_(fvMsh),

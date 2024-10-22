@@ -239,7 +239,6 @@ immersedBoundary<MeshType>::immersedBoundary
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        true,
         true
     ),
     ghostMask_
@@ -248,7 +247,6 @@ immersedBoundary<MeshType>::immersedBoundary
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        true,
         true,
         true
     ),
@@ -259,7 +257,6 @@ immersedBoundary<MeshType>::immersedBoundary
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        true,
         true
     ),
     wallDistAdj_
@@ -268,7 +265,6 @@ immersedBoundary<MeshType>::immersedBoundary
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        true,
         true,
         true
     ),
@@ -279,7 +275,6 @@ immersedBoundary<MeshType>::immersedBoundary
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        true,
         true
     ),
     neighborDist_
@@ -288,8 +283,7 @@ immersedBoundary<MeshType>::immersedBoundary
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        false,
-        false,
+        true,
         true
     ),
     mirrorPoints_
@@ -299,7 +293,6 @@ immersedBoundary<MeshType>::immersedBoundary
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        false,
         true
     ),
     emptyField_
@@ -309,7 +302,6 @@ immersedBoundary<MeshType>::immersedBoundary
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        false,
         true
     )
 {

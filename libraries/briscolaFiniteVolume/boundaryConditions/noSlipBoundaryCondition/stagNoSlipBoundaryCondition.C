@@ -34,11 +34,7 @@ stagNoSlipBoundaryCondition<Type>::stagNoSlipBoundaryCondition
     const stagNoSlipBoundaryCondition<Type>& bc
 )
 :
-    stagDirichletBoundaryCondition<Type>
-    (
-        bc.mshField(),
-        bc.mshBoundary()
-    )
+    stagDirichletBoundaryCondition<Type>(bc)
 {}
 
 template<class Type>
@@ -48,11 +44,7 @@ stagNoSlipBoundaryCondition<Type>::stagNoSlipBoundaryCondition
     const stagNoSlipBoundaryCondition<Type>& bc
 )
 :
-    stagDirichletBoundaryCondition<Type>
-    (
-        field,
-        bc.mshBoundary()
-    )
+    stagDirichletBoundaryCondition<Type>(field, bc)
 {}
 
 }

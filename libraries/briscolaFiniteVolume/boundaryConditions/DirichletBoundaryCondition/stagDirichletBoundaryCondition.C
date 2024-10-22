@@ -40,7 +40,7 @@ stagDirichletBoundaryCondition<Type>::stagDirichletBoundaryCondition
     const stagDirichletBoundaryCondition<Type>& bc
 )
 :
-    DirichletBoundaryCondition<Type,staggered>(bc.mshField(), bc.mshBoundary())
+    DirichletBoundaryCondition<Type,staggered>(bc)
 {}
 
 template<class Type>
@@ -50,7 +50,7 @@ stagDirichletBoundaryCondition<Type>::stagDirichletBoundaryCondition
     const stagDirichletBoundaryCondition<Type>& bc
 )
 :
-    DirichletBoundaryCondition<Type,staggered>(field, bc.mshBoundary())
+    DirichletBoundaryCondition<Type,staggered>(field, bc)
 {}
 
 template<class Type>

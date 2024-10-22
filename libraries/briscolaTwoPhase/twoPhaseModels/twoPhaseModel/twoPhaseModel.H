@@ -31,23 +31,6 @@ protected:
     // Volume fraction field
     colocatedScalarField alpha_;
 
-    // Colocated phase densities
-    colocatedScalarField rho1_;
-    colocatedScalarField rho2_;
-
-    // Colocated mixture mass density and dynamic viscosity
-    colocatedScalarField rhoc_;
-    colocatedLowerFaceScalarField muc_;
-
-    // Staggered phase densities
-    autoPtr<staggeredScalarField> rho1Ptr_;
-    autoPtr<staggeredScalarField> rho2Ptr_;
-
-    // Staggered mixture mass density and dynamic viscosity, only created on
-    // structured meshes
-    autoPtr<staggeredScalarField> rhosPtr_;
-    autoPtr<staggeredLowerFaceScalarField> musPtr_;
-
     // Normal scheme
     autoPtr<normalScheme> normalSchemePtr_;
 
@@ -57,13 +40,6 @@ protected:
     // Gravitational acceleration
     vector g_;
 
-    // Field dot(g,h)
-    colocatedLowerFaceScalarField gh_;
-
-    // Function to set the density and viscosity restriction schemes. Can be
-    // overloaded by derived types.
-    virtual void setRestrictionSchemes();
-
 private:
 
     // Disallow default bitwise assignment
@@ -71,18 +47,28 @@ private:
 
 public:
 
-    // Void fraction threshold
-    static const scalar threshold;
-
     // Runtime type information
     TypeName("twoPhaseModel");
 
-    // Declare run-time constructor selection tables
+    // Colocated run-time constructor selection tables
     declareRunTimeSelectionTable
     (
         autoPtr,
         twoPhaseModel,
-        dictionary,
+        colocated,
+        (
+            const fvMesh& fvMsh,
+            const IOdictionary& dict
+        ),
+        (fvMsh, dict)
+    );
+
+    // Staggered run-time constructor selection tables
+    declareRunTimeSelectionTable
+    (
+        autoPtr,
+        twoPhaseModel,
+        staggered,
         (
             const fvMesh& fvMsh,
             const IOdictionary& dict
@@ -100,6 +86,7 @@ public:
     virtual autoPtr<twoPhaseModel> clone() const = 0;
 
     // Selector
+    template<class MeshType>
     static autoPtr<twoPhaseModel> New(const fvMesh&, const IOdictionary&);
 
     // Destructor
@@ -129,11 +116,14 @@ public:
         return *tpmPtr;
     }
 
-    // Needed by regIOobject
-    virtual bool writeData(Ostream&) const { return true; }
-
     // Return const access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
+
+    // Return access to the volume fraction
+    inline colocatedScalarField& alpha() { return alpha_; }
+
+    // Return const access to the volume fraction
+    inline const colocatedScalarField& alpha() const { return alpha_; }
 
     // Return access the normal scheme
     normalScheme& normal() { return normalSchemePtr_(); }
@@ -156,64 +146,14 @@ public:
     // Gravitational acceleration
     const vector& g() const { return g_; }
 
-    // Access to fields
-
-        // Return access to the volume fraction
-        inline colocatedScalarField& alpha();
-
-        // Return const access to the volume fraction
-        inline const colocatedScalarField& alpha() const;
-
-        // Return access to the mixture mass density
-        template<class MeshType>
-        meshField<scalar,MeshType>& rho();
-
-        // Return const access to the mixture mass density
-        template<class MeshType>
-        const meshField<scalar,MeshType>& rho() const;
-
-        // Return const access to the mass density of the first phase
-        template<class MeshType>
-        const meshField<scalar,MeshType>& rho1() const;
-
-        // Return const access to the mass density of the second phase
-        template<class MeshType>
-        const meshField<scalar,MeshType>& rho2() const;
-
-        // Return access to the mixture dynamic viscosity
-        template<class MeshType>
-        meshField<lowerFaceScalar,MeshType>& mu();
-
-        // Return const access to the mixture dynamic viscosity
-        template<class MeshType>
-        const meshField<lowerFaceScalar,MeshType>& mu() const;
-
-    // Derived fields
-
-        // Return field with the minimun of either phase's mass density
-        template<class MeshType>
-        inline tmp<meshField<scalar,MeshType>> minRho() const;
-
-        // Return field with the maximum of either phase's mass density
-        template<class MeshType>
-        inline tmp<meshField<scalar,MeshType>> maxRho() const;
-
-        // Return the mean mixture mass density defined as <rho> = (rho1+rho2)/2
-        template<class MeshType>
-        inline tmp<meshField<scalar,MeshType>> meanRho() const;
-
-        // Return the mixture kinematic viscosity
-        template<class MeshType>
-        inline tmp<meshField<lowerFaceScalar,MeshType>> nu() const;
-
-    // Buoyancy flux
-    tmp<colocatedLowerFaceScalarField> buoyancy() const;
-
     // Correct the two-phase mixture
-    virtual void correctMixture();
+    virtual void correctMixture() = 0;
 
     // Correct the two-phase model
     virtual void correct() = 0;
+
+    // Needed by regIOobject
+    virtual bool writeData(Ostream&) const { return true; }
 };
 
 }
@@ -221,7 +161,5 @@ public:
 }
 
 }
-
-#include "twoPhaseModelI.H"
 
 #endif

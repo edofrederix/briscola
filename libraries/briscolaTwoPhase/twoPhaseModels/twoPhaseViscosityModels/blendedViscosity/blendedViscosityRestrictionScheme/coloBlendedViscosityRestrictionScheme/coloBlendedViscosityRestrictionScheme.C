@@ -1,8 +1,16 @@
 #include "coloBlendedViscosityRestrictionScheme.H"
 
-#include "colocated.H"
 #include "restrictionSchemes.H"
 #include "addToRunTimeSelectionTable.H"
+
+#ifdef NoRepository
+#undef NoRepository
+#endif
+
+#include "colocated.H"
+#include "twoPhaseModel.H"
+#include "blendedViscosity.H"
+#include "incompressibleTwoPhaseModel.H"
 
 namespace Foam
 {
@@ -29,7 +37,25 @@ coloBlendedViscosityRestrictionScheme::coloBlendedViscosityRestrictionScheme
 )
 :
     blendedViscosityRestrictionScheme<colocated>(fvMsh, is)
-{}
+{
+    const twoPhaseModel* modelPtr =
+        &fvMsh.db().lookupObject<twoPhaseModel>("briscolaTwoPhaseDict");
+
+    typedef blendedViscosity<incompressibleTwoPhaseModel<colocated>> modelType;
+
+    if (dynamic_cast<const modelType*>(modelPtr))
+    {
+        this->C_ = dynamic_cast<const modelType*>(modelPtr)->C();
+        this->mu1_ = dynamic_cast<const modelType*>(modelPtr)->mu1();
+        this->mu2_ = dynamic_cast<const modelType*>(modelPtr)->mu2();
+    }
+    else
+    {
+        FatalErrorInFunction
+            << "Two-phase model is of incompatible type"
+            << endl << abort(FatalError);
+    }
+}
 
 void coloBlendedViscosityRestrictionScheme::restrict
 (

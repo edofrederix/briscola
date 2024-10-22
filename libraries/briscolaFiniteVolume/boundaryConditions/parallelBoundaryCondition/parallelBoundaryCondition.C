@@ -64,7 +64,7 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     const parallelBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc.mshField(), bc.mshBoundary()),
+    boundaryCondition<Type,MeshType>(bc),
     neighborProcNum_(bc.neighborProcNum_),
     tag_(bc.tag_),
     sendBuffers_(bc.sendBuffers_),
@@ -80,7 +80,7 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     const parallelBoundaryCondition<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc.mshBoundary()),
+    boundaryCondition<Type,MeshType>(field, bc),
     neighborProcNum_(bc.neighborProcNum_),
     tag_(bc.tag_),
     sendBuffers_(bc.sendBuffers_),

@@ -140,7 +140,6 @@ linearProlongationScheme<Type,MeshType>::linearProlongationScheme
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         false,
-        false,
         true
     )
 {

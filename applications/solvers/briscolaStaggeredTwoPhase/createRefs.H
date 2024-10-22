@@ -1,2 +1,2 @@
-const staggeredLowerFaceScalarField& mu = twoPhase.mu<staggered>();
-const staggeredScalarField& rho = twoPhase.rho<staggered>();
+const staggeredLowerFaceScalarField& mu = twoPhase.mu();
+const staggeredScalarField& rho = twoPhase.rho();

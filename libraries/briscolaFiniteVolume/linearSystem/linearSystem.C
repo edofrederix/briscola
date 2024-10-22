@@ -36,7 +36,6 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         false,
-        false,
         true
     ),
     b_
@@ -63,7 +62,6 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        false,
         false,
         true
     ),
@@ -93,7 +91,6 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        false,
         false,
         true
     ),
@@ -137,7 +134,6 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         false,
-        false,
         true
     ),
     b_
@@ -167,7 +163,6 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
-        false,
         false,
         true
     ),
@@ -462,6 +457,9 @@ linearSystem<SType,Type,MeshType>::evaluate
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::eliminateGhosts()
 {
+    if (!x_.boundaryConditions().size())
+        x_.addBoundaryConditions();
+
     forAll(A_, l)
         forAll(x_.boundaryConditions(), i)
             x_.boundaryConditions()[i].eliminateGhosts(*this, l);

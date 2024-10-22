@@ -21,7 +21,9 @@ volumeWeightedViscosity<BaseModel>::volumeWeightedViscosity
     BaseModel(fvMsh, dict),
     mu1_(readScalar(dict.lookup("mu1"))),
     mu2_(readScalar(dict.lookup("mu2")))
-{}
+{
+    this->mu_.setRestrictionScheme("faceAreaWeighted");
+}
 
 template<class BaseModel>
 volumeWeightedViscosity<BaseModel>::volumeWeightedViscosity
@@ -32,7 +34,9 @@ volumeWeightedViscosity<BaseModel>::volumeWeightedViscosity
     BaseModel(tpm),
     mu1_(tpm.mu1_),
     mu2_(tpm.mu2_)
-{}
+{
+    this->mu_.setRestrictionScheme("faceAreaWeighted");
+}
 
 template<class BaseModel>
 volumeWeightedViscosity<BaseModel>::~volumeWeightedViscosity()
@@ -41,24 +45,12 @@ volumeWeightedViscosity<BaseModel>::~volumeWeightedViscosity()
 template<class BaseModel>
 void volumeWeightedViscosity<BaseModel>::correctMixture()
 {
-    const colocatedLowerFaceScalarField alphaf
+    const meshField<lowerFaceScalar,typename BaseModel::meshType> alpha
     (
-        ex::interp(this->alpha_)
+        this->faceAlpha()
     );
 
-    this->muc_ = alphaf*mu2_ + (1.0-alphaf)*mu1_;
-
-    if (this->musPtr_.valid())
-    {
-        staggeredLowerFaceScalarField& mus = this->musPtr_();
-
-        const staggeredLowerFaceScalarField alphafs
-        (
-            stagFaceInterp(this->alpha_)
-        );
-
-        mus = alphafs*mu2_ + (1.0-alphafs)*mu1_;
-    }
+    this->mu_ = alpha*mu2_ + (1.0-alpha)*mu1_;
 
     BaseModel::correctMixture();
 }

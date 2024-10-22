@@ -28,7 +28,6 @@ normalScheme::normalScheme
         IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE,
         true,
-        true,
         false
     ),
     fvMsh_(fvMsh),
