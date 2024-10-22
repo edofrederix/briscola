@@ -1,16 +1,8 @@
-#include "stagBlendedViscosityRestrictionScheme.H"
+#include "stagBlendedViscosityMixtureRestrictionScheme.H"
 
 #include "restrictionSchemes.H"
 #include "addToRunTimeSelectionTable.H"
-
-#ifdef NoRepository
-#undef NoRepository
-#endif
-
 #include "staggered.H"
-#include "twoPhaseModel.H"
-#include "blendedViscosity.H"
-#include "incompressibleTwoPhaseModel.H"
 
 namespace Foam
 {
@@ -21,43 +13,31 @@ namespace briscola
 namespace fv
 {
 
-makeRestrictionSchemeNoTemplate(stagBlendedViscosity,lowerFaceScalar,staggered);
+makeRestrictionSchemeNoTemplate
+(
+    stagBlendedViscosityMixture,
+    lowerFaceScalar,
+    staggered
+);
 
 defineTemplateTypeNameAndDebugWithName
 (
-    blendedViscosityRestrictionScheme<staggered>,
-    "blendedViscosity",
+    blendedViscosityMixtureRestrictionScheme<staggered>,
+    "blendedViscosityMixture",
     0
 );
 
-stagBlendedViscosityRestrictionScheme::stagBlendedViscosityRestrictionScheme
+stagBlendedViscosityMixtureRestrictionScheme::
+stagBlendedViscosityMixtureRestrictionScheme
 (
     const fvMesh& fvMsh,
     Istream& is
 )
 :
-    blendedViscosityRestrictionScheme<staggered>(fvMsh, is)
-{
-    const twoPhaseModel* modelPtr =
-        &fvMsh.db().lookupObject<twoPhaseModel>("briscolaTwoPhaseDict");
+    blendedViscosityMixtureRestrictionScheme<staggered>(fvMsh, is)
+{}
 
-    typedef blendedViscosity<incompressibleTwoPhaseModel<staggered>> modelType;
-
-    if (dynamic_cast<const modelType*>(modelPtr))
-    {
-        this->C_ = dynamic_cast<const modelType*>(modelPtr)->C();
-        this->mu1_ = dynamic_cast<const modelType*>(modelPtr)->mu1();
-        this->mu2_ = dynamic_cast<const modelType*>(modelPtr)->mu2();
-    }
-    else
-    {
-        FatalErrorInFunction
-            << "Two-phase model is of incompatible type"
-            << endl << abort(FatalError);
-    }
-}
-
-void stagBlendedViscosityRestrictionScheme::restrict
+void stagBlendedViscosityMixtureRestrictionScheme::restrict
 (
     meshDirection<lowerFaceScalar,staggered>& coarse,
     const meshDirection<lowerFaceScalar,staggered>& fine,

@@ -3,9 +3,10 @@
 
 #include "TwoPhaseModel.H"
 #include "incompressibleTwoPhaseModel.H"
-#include "harmonicViscosity.H"
-#include "blendedViscosity.H"
-#include "volumeWeightedViscosity.H"
+#include "harmonicViscosityMixture.H"
+#include "blendedViscosityMixture.H"
+#include "volumeWeightedViscosityMixture.H"
+#include "NewtonianViscosity.H"
 #include "twoPhaseVof.H"
 
 namespace Foam
@@ -23,7 +24,8 @@ makeTwoPhaseModel
 (
     twoPhaseVof,
     twoPhaseVof,
-    blendedViscosity,
+    blendedViscosityMixture,
+    NewtonianViscosity,
     incompressibleTwoPhaseModel,
     colocated
 )
@@ -32,7 +34,8 @@ makeTwoPhaseModel
 (
     twoPhaseVof,
     twoPhaseVof,
-    blendedViscosity,
+    blendedViscosityMixture,
+    NewtonianViscosity,
     incompressibleTwoPhaseModel,
     staggered
 )
@@ -43,7 +46,8 @@ makeTwoPhaseModel
 (
     twoPhaseVofH,
     twoPhaseVof,
-    harmonicViscosity,
+    harmonicViscosityMixture,
+    NewtonianViscosity,
     incompressibleTwoPhaseModel,
     colocated
 )
@@ -52,7 +56,8 @@ makeTwoPhaseModel
 (
     twoPhaseVofH,
     twoPhaseVof,
-    harmonicViscosity,
+    harmonicViscosityMixture,
+    NewtonianViscosity,
     incompressibleTwoPhaseModel,
     staggered
 )
@@ -63,7 +68,8 @@ makeTwoPhaseModel
 (
     twoPhaseVofDF,
     twoPhaseVof,
-    volumeWeightedViscosity,
+    volumeWeightedViscosityMixture,
+    NewtonianViscosity,
     incompressibleTwoPhaseModel,
     colocated
 )
@@ -72,7 +78,8 @@ makeTwoPhaseModel
 (
     twoPhaseVofDF,
     twoPhaseVof,
-    volumeWeightedViscosity,
+    volumeWeightedViscosityMixture,
+    NewtonianViscosity,
     incompressibleTwoPhaseModel,
     staggered
 )

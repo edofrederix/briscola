@@ -56,11 +56,11 @@ int main(int argc, char *argv[])
 
         USys -= 0.5*(deltaT/deltaT0)*H;
 
-        H = ex::div(phi,U)
-          - ex::div(mu*ex::faceFlux(dev2(T(ex::grad(U)))))*v;
+        H = ex::div(phi,U);
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
-        USys -= twoPhase.g();
+        USys -= twoPhase.gravity();
+        USys -= ex::div(mu*ex::faceFlux(T(ex::grad(U))))*v;
 
         // Solve predictor
 

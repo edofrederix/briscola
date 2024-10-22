@@ -47,12 +47,15 @@ incompressibleTwoPhaseModel<MeshType>::~incompressibleTwoPhaseModel()
 template<class MeshType>
 void incompressibleTwoPhaseModel<MeshType>::correctMixture()
 {
-    const meshField<scalar,MeshType> alpha
+    tmp<meshField<scalar,MeshType>> talpha
     (
         this->meshAlpha()
     );
 
-    this->rho_ = rho2_*alpha + rho1_*(1.0 - alpha);
+    if (talpha.isTmp())
+        talpha->correctBoundaryConditions();
+
+    this->rho_ = rho2_*talpha() + rho1_*(1.0 - talpha());
 
     TwoPhaseModel<MeshType>::correctMixture();
 }

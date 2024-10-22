@@ -72,17 +72,13 @@ autoPtr<TwoPhaseModel<MeshType>> TwoPhaseModel<MeshType>::New
 template<>
 tmp<colocatedLowerFaceScalarField> TwoPhaseModel<colocated>::faceAlpha() const
 {
-    tmp<colocatedLowerFaceScalarField> tAlpha(ex::interp(alpha_));
-    tAlpha->correctBoundaryConditions();
-    return tAlpha;
+    return ex::interp(alpha_);
 }
 
 template<>
 tmp<staggeredLowerFaceScalarField> TwoPhaseModel<staggered>::faceAlpha() const
 {
-    tmp<staggeredLowerFaceScalarField> tAlpha(ex::stagFaceInterp(alpha_));
-    tAlpha->correctBoundaryConditions();
-    return tAlpha;
+    return ex::stagFaceInterp(alpha_);
 }
 
 template<>
@@ -94,9 +90,7 @@ tmp<colocatedScalarField> TwoPhaseModel<colocated>::meshAlpha() const
 template<>
 tmp<staggeredScalarField> TwoPhaseModel<staggered>::meshAlpha() const
 {
-    tmp<staggeredScalarField> tAlpha(stagInterp(alpha_));
-    tAlpha->correctBoundaryConditions();
-    return tAlpha;
+    return stagInterp(alpha_);
 }
 
 template<>
@@ -118,6 +112,18 @@ TwoPhaseModel<staggered>::coloFaceFlux() const
             fvMsh_.db().template
                 lookupObject<staggeredScalarField>("U")
         );
+}
+
+template<>
+List<typename colocated::vectorType> TwoPhaseModel<colocated>::gravity() const
+{
+    return vectorList(1, this->g());
+}
+
+template<>
+List<typename staggered::vectorType> TwoPhaseModel<staggered>::gravity() const
+{
+    return list(this->g());
 }
 
 }

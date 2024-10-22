@@ -1,5 +1,5 @@
-#ifndef harmonicViscosity_H
-#define harmonicViscosity_H
+#ifndef NewtonianViscosity_H
+#define NewtonianViscosity_H
 
 #include "twoPhaseModel.H"
 
@@ -13,7 +13,7 @@ namespace fv
 {
 
 template<class BaseModel>
-class harmonicViscosity
+class NewtonianViscosity
 :
     public BaseModel
 {
@@ -26,30 +26,30 @@ protected:
 private:
 
     // Disallow default bitwise assignment
-    void operator=(const harmonicViscosity&);
+    void operator=(const NewtonianViscosity&);
 
 public:
 
     // Return the instantiated type name
     static word typeName()
     {
-        return "harmonicViscosity<" + word(BaseModel::typeName) + '>';
+        return "NewtonianViscosity<" + word(BaseModel::typeName) + '>';
     }
 
     // Construct from IOdictionary
-    harmonicViscosity(const fvMesh&, const IOdictionary&);
+    NewtonianViscosity(const fvMesh&, const IOdictionary&);
 
     // Copy constructor
-    harmonicViscosity(const harmonicViscosity&);
+    NewtonianViscosity(const NewtonianViscosity&);
 
     // Destructor
-    virtual ~harmonicViscosity();
+    virtual ~NewtonianViscosity();
 
     // Dynamic viscosity of the first phase
-    virtual scalar mu1() { return mu1_; }
+    virtual scalar mu1() const { return mu1_; }
 
     // Dynamic viscosity of the second phase
-    virtual scalar mu2() { return mu2_; }
+    virtual scalar mu2() const { return mu2_; }
 
     // Correct the two-phase mixture
     virtual void correctMixture();
@@ -62,7 +62,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "harmonicViscosity.C"
+    #include "NewtonianViscosity.C"
 #endif
 
 #endif
