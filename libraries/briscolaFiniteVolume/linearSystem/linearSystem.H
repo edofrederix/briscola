@@ -43,7 +43,7 @@ class linearSystem
     meshField<label,MeshType> IBMForcingMask_;
 
     // Can this linear system be modified by an IBM
-    const bool IBM_;
+    bool IBM_;
 
     // Transfer data from other system
     void transfer(linearSystem<SType,Type,MeshType>&);

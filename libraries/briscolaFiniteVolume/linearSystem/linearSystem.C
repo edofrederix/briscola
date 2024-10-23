@@ -27,17 +27,24 @@ void linearSystem<SType,Type,MeshType>::setIBMForcingMask()
     {
         IBMForcingMask_ = Zero;
 
-        forAll(x_.immersedBoundaryConditions(), ib)
+        if (x_.immersedBoundaryConditions().empty())
         {
-            forAllCells(IBMForcingMask_,l,d,i,j,k)
+            IBM_ = false;
+        }
+        else
+        {
+            forAll(x_.immersedBoundaryConditions(), ib)
             {
-                if
-                (
-                    x_.immersedBoundaryConditions()[ib]
-                        .forcingPoints()(l,d,i,j,k)
-                )
+                forAllCells(IBMForcingMask_,l,d,i,j,k)
                 {
-                    IBMForcingMask_(l,d,i,j,k) = 1;
+                    if
+                    (
+                        x_.immersedBoundaryConditions()[ib]
+                            .forcingPoints()(l,d,i,j,k)
+                    )
+                    {
+                        IBMForcingMask_(l,d,i,j,k) = 1;
+                    }
                 }
             }
         }
