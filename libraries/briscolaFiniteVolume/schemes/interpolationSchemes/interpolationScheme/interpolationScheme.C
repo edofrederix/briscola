@@ -95,6 +95,9 @@ tmp<meshField<Type,staggered>> stagInterp
     const tmp<meshField<Type,colocated>>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<Type,staggered>> tInterp
     (
         stagInterp(tField())
@@ -156,6 +159,9 @@ tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
     const tmp<meshField<Type,colocated>>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<LowerFaceSpace<Type>,staggered>> tInterp
     (
         stagFaceInterp(tField())
@@ -200,6 +206,9 @@ tmp<meshField<Type,colocated>> coloInterp
     const tmp<meshField<Type,staggered>>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<Type,colocated>> tInterp
     (
         stagInterp(tField())
@@ -243,6 +252,9 @@ tmp<meshField<LowerFaceSpace<Type>,colocated>> coloFaceInterp
     const tmp<meshField<Type,staggered>>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<LowerFaceSpace<Type>,colocated>> tInterp
     (
         coloFaceInterp(tField())

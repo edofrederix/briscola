@@ -63,6 +63,9 @@ reconstruct
     const tmp<meshField<Type,staggered>>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<typename outerProduct<vector,Type>::type,colocated>> tRecon
     (
         reconstruct(tField())

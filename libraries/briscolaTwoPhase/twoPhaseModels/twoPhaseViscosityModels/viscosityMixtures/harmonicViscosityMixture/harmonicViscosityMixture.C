@@ -38,12 +38,12 @@ harmonicViscosityMixture<BaseModel>::~harmonicViscosityMixture()
 template<class BaseModel>
 void harmonicViscosityMixture<BaseModel>::correctMixture()
 {
-    const tmp<meshField<lowerFaceScalar,typename BaseModel::meshType>> talpha
+    const meshField<lowerFaceScalar,typename BaseModel::meshType> alpha
     (
         this->faceAlpha()
     );
 
-    this->mu_ = 1.0/(talpha()/this->mu2_ + (1.0 - talpha())/this->mu1_);
+    this->mu_ = 1.0/(alpha/this->mu2_ + (1.0 - alpha)/this->mu1_);
 
     BaseModel::correctMixture();
 }

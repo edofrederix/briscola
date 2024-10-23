@@ -36,6 +36,9 @@ inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
     const tmp<meshField<Type,MeshType>>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<LowerFaceSpace<Type>,MeshType>> tInterp
     (
         interp(tField())

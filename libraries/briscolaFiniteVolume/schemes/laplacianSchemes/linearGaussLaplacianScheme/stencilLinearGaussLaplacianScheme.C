@@ -30,8 +30,7 @@ stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
 )
 {
     if (lambdaPtr)
-        const_cast<meshField<lowerFaceScalar,MeshType>&>(*lambdaPtr)
-       .restrict();
+        lambdaPtr->restrict();
 
     tmp<linearSystem<stencil,Type,MeshType>> tSys
     (
@@ -80,8 +79,7 @@ stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
     }
 
     if (lambdaPtr)
-        const_cast<meshField<lowerFaceScalar,MeshType>&>(*lambdaPtr)
-       .makeShallow();
+        lambdaPtr->makeShallow();
 
     return tSys;
 }

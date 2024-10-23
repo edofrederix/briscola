@@ -230,6 +230,13 @@ public:
     // Correct boundary conditions
     void correctBoundaryConditions();
 
+    // Allow boundary conditions to be corrected on a const level
+    void correctBoundaryConditions() const
+    {
+        const_cast<meshLevel<Type,MeshType>*>(this)
+            ->correctBoundaryConditions();
+    }
+
     // Correct unset boundary conditions as homogeneous Neumann
     void correctUnsetBoundaryConditions();
 

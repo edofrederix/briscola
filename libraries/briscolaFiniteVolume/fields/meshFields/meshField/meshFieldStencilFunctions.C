@@ -54,6 +54,9 @@ rowProduct
     const meshField<Type2,MeshType>& f2
 )
 {
+    if (tf1.isTmp())
+        tf1->correctBoundaryConditions();
+
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshField<productType,MeshType>> tRes =
@@ -79,6 +82,9 @@ rowProduct
     const tmp<meshField<Type2,MeshType>>& tf2
 )
 {
+    if (tf2.isTmp())
+        tf2->correctBoundaryConditions();
+
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshField<productType,MeshType>> tRes =
@@ -104,6 +110,12 @@ rowProduct
     const tmp<meshField<Type2,MeshType>>& tf2
 )
 {
+    if (tf1.isTmp())
+        tf1->correctBoundaryConditions();
+
+    if (tf2.isTmp())
+        tf2->correctBoundaryConditions();
+
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshField<productType,MeshType>> tRes =
@@ -160,6 +172,9 @@ template<class Type, class Form, class MeshType>
 tmp<meshField<typename stencilProduct<Type,Form>::type,MeshType>>
 rowProduct(const tmp<meshField<Type,MeshType>>& tf1, const Form& s)
 {
+    if (tf1.isTmp())
+        tf1->correctBoundaryConditions();
+
     typedef typename stencilProduct<Type,Form>::type productType;
 
     tmp<meshField<productType,MeshType>> tRes =
@@ -237,6 +252,9 @@ template<class Type, class MeshType>
 tmp<meshField<scalar,MeshType>>
 rowSum(const tmp<meshField<Type,MeshType>>& tf)
 {
+    if (tf.isTmp())
+        tf->correctBoundaryConditions();
+
     tmp<meshField<scalar,MeshType>> tRes
     (
         new meshField<scalar,MeshType>

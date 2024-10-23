@@ -93,6 +93,9 @@ void restrictionScheme<Type,MeshType>::restrict
     const bool scale
 )
 {
+    if (tf.isTmp())
+        tf->correctBoundaryConditions();
+
     restrict(res,tf(),scale);
 
     if (tf.isTmp())
@@ -119,6 +122,9 @@ void restrictionScheme<Type,MeshType>::restrict
     const bool scale
 )
 {
+    if (tf.isTmp())
+        tf->correctBoundaryConditions();
+
     restrict(res,tf(),scale);
 
     if (tf.isTmp())

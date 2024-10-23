@@ -309,6 +309,13 @@ public:
     // Correct boundary conditions
     void correctBoundaryConditions();
 
+    // Allow boundary conditions to be corrected on a const field
+    void correctBoundaryConditions() const
+    {
+        const_cast<meshField<Type,MeshType>*>(this)
+            ->correctBoundaryConditions();
+    }
+
     // Correct domain boundary conditions
     void correctDomainBoundaryConditions();
 
@@ -337,8 +344,20 @@ public:
     // Make the field deep
     void makeDeep();
 
+    // Allow a const field to be made deep
+    void makeDeep() const
+    {
+        const_cast<meshField<Type,MeshType>*>(this)->makeDeep();
+    }
+
     // Make the field shallow
     void makeShallow();
+
+    // Allow a const field to be made shallow
+    void makeShallow() const
+    {
+        const_cast<meshField<Type,MeshType>*>(this)->makeShallow();
+    }
 
     // Make the field deep or shallow
     inline void make(const bool deep)
@@ -347,6 +366,12 @@ public:
             makeDeep();
         else
             makeShallow();
+    }
+
+    // Allow a const field to be made deep or shallow
+    inline void make(const bool deep) const
+    {
+        const_cast<meshField<Type,MeshType>*>(this)->make(deep);
     }
 
     // The field is deep if it contains more than one level
@@ -367,6 +392,12 @@ public:
     // Restrict the field to lower levels. If no restriction scheme is set, set
     // the default restriction scheme first. A shallow field will be made deep.
     void restrict();
+
+    // Allow restriction on a const field
+    void restrict() const
+    {
+        const_cast<meshField<Type,MeshType>*>(this)->restrict();
+    }
 
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }

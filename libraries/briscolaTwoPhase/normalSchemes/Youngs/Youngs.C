@@ -70,8 +70,6 @@ void Youngs::correct()
                   + 0.25*alpha(upperNei(i,j,k,d));
     }
 
-    alpha.correctBoundaryConditions();
-
     const colocatedFaceScalarField& fa =
         fvMsh_.metrics<colocated>().faceAreas();
 

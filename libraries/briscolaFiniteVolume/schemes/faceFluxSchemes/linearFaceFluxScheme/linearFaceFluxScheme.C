@@ -54,7 +54,7 @@ tmp
     forAllFaces(Flux, fd, i, j, k)
     {
         labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
+        labelVector nei(lowerNei(i,j,k,fd));
 
         Flux(ijk)[fd] =
             (
@@ -124,7 +124,7 @@ tmp<staggeredLowerFaceScalarField> linearFaceFluxScheme::faceFlux
     forAllFaces(Flux, d, fd, i, j, k)
     {
         labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[d]);
+        labelVector nei(lowerNei(i,j,k,d));
 
         Flux(d,ijk)[fd] =
           - fa(d,ijk)[fd*2]

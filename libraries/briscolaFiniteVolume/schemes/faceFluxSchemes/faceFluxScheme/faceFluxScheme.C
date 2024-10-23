@@ -89,6 +89,9 @@ tmp<colocatedLowerFaceScalarField> coloFaceFlux
     const tmp<staggeredScalarField>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<colocatedLowerFaceScalarField> tColoFaceFlux
     (
         coloFaceFlux(tField())

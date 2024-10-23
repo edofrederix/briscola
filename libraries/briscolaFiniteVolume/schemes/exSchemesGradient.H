@@ -38,6 +38,9 @@ grad
     const tmp<meshField<Type,MeshType>>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>> tGrad
     (
         grad(tField())
@@ -76,6 +79,9 @@ stagGrad
     const tmp<meshField<Type,colocated>>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<Type,staggered>> tStagGrad
     (
         stagGrad(tField())
