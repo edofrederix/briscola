@@ -8,7 +8,7 @@ for DIR in $(find . -mindepth 1 -maxdepth 1 -type d); do
 
     cd $DIR
 
-    rm -fr slurm* run results.csv
+    rm -fr slurm* runs results.csv
 
     cd $CURDIR
 

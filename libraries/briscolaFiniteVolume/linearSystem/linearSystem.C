@@ -483,7 +483,7 @@ void linearSystem<SType,Type,MeshType>::eliminateGhosts()
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::setIBMForcingMask()
 {
-    if ( IBMForcingMask_.empty())
+    if (IBMForcingMask_.empty())
     {
         IBMForcingMask_.set
         (
@@ -517,7 +517,6 @@ void linearSystem<SType,Type,MeshType>::setIBMForcingMask()
                 }
             }
         }
-
     }
 }
 
