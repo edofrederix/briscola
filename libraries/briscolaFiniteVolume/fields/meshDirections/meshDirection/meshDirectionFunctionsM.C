@@ -36,7 +36,7 @@ Func(const tmp<meshDirection<Type,MeshType>>& tD)                               
     tmp<meshDirection<ReturnType,MeshType>> tRes =                              \
         reuseDirTmp<ReturnType,Type,MeshType>::New(tD);                         \
     Func(tRes.ref(), tD());                                                     \
-    tD.clear();                                                                 \
+    if (tD.isTmp()) tD.clear();                                                 \
     return tRes;                                                                \
 }
 
@@ -76,7 +76,7 @@ operator Op(const tmp<meshDirection<Type,MeshType>>& tD)                        
     tmp<meshDirection<ReturnType,MeshType>> tRes =                              \
         reuseDirTmp<ReturnType,Type,MeshType>::New(tD);                         \
     OpFunc(tRes.ref(), tD());                                                   \
-    tD.clear();                                                                 \
+    if (tD.isTmp()) tD.clear();                                                 \
     return tRes;                                                                \
 }
 
@@ -123,7 +123,7 @@ tmp<meshDirection<ReturnType,MeshType>> Func                                    
     tmp<meshDirection<ReturnType,MeshType>> tRes =                              \
         reuseDirTmp<ReturnType,Type2,MeshType>::New(tD2);                       \
     Func(tRes.ref(), D1, tD2());                                                \
-    tD2.clear();                                                                \
+    if (tD2.isTmp()) tD2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -137,7 +137,7 @@ tmp<meshDirection<ReturnType,MeshType>> Func                                    
     tmp<meshDirection<ReturnType,MeshType>> tRes =                              \
         reuseDirTmp<ReturnType,Type1,MeshType>::New(tD1);                       \
     Func(tRes.ref(), tD1(), D2);                                                \
-    tD1.clear();                                                                \
+    if (tD1.isTmp()) tD1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -151,8 +151,8 @@ tmp<meshDirection<ReturnType,MeshType>> Func                                    
     tmp<meshDirection<ReturnType,MeshType>> tRes =                              \
         reuseDirTmpTmp<ReturnType,Type1,Type1,Type2,MeshType>::New(tD1,tD2);    \
     Func(tRes.ref(), tD1(), tD2());                                             \
-    tD1.clear();                                                                \
-    tD2.clear();                                                                \
+    if (tD1.isTmp()) tD1.clear();                                               \
+    if (tD2.isTmp()) tD2.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -199,7 +199,7 @@ tmp<meshDirection<ReturnType,MeshType>> Func                                    
     tmp<meshDirection<ReturnType,MeshType>> tRes =                              \
         reuseDirTmp<ReturnType,Type2,MeshType>::New(tD2);                       \
     Func(tRes.ref(), s1, tD2());                                                \
-    tD2.clear();                                                                \
+    if (tD2.isTmp()) tD2.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -247,7 +247,7 @@ tmp<meshDirection<ReturnType,MeshType>> Func                                    
     tmp<meshDirection<ReturnType,MeshType>> tRes =                              \
         reuseDirTmp<ReturnType,Type1,MeshType>::New(tD1);                       \
     Func(tRes.ref(), tD1(), s2);                                                \
-    tD1.clear();                                                                \
+    if (tD1.isTmp()) tD1.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -298,7 +298,7 @@ tmp<meshDirection<ReturnType,MeshType>> operator Op                             
     tmp<meshDirection<ReturnType,MeshType>> tRes =                              \
         reuseDirTmp<ReturnType,Type2,MeshType>::New(tD2);                       \
     OpFunc(tRes.ref(), D1, tD2());                                              \
-    tD2.clear();                                                                \
+    if (tD2.isTmp()) tD2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -312,7 +312,7 @@ tmp<meshDirection<ReturnType,MeshType>> operator Op                             
     tmp<meshDirection<ReturnType,MeshType>> tRes =                              \
         reuseDirTmp<ReturnType,Type1,MeshType>::New(tD1);                       \
     OpFunc(tRes.ref(), tD1(), D2);                                              \
-    tD1.clear();                                                                \
+    if (tD1.isTmp()) tD1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -326,8 +326,8 @@ tmp<meshDirection<ReturnType,MeshType>> operator Op                             
     tmp<meshDirection<ReturnType,MeshType>> tRes =                              \
         reuseDirTmpTmp<ReturnType,Type1,Type1,Type2,MeshType>::New(tD1, tD2);   \
     OpFunc(tRes.ref(), tD1(), tD2());                                           \
-    tD1.clear();                                                                \
-    tD2.clear();                                                                \
+    if (tD1.isTmp()) tD1.clear();                                               \
+    if (tD2.isTmp()) tD2.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -374,7 +374,7 @@ tmp<meshDirection<ReturnType,MeshType>> operator Op                             
     tmp<meshDirection<ReturnType,MeshType>> tRes =                              \
         reuseDirTmp<ReturnType,Type2,MeshType>::New(tD2);                       \
     OpFunc(tRes.ref(), s1, tD2());                                              \
-    tD2.clear();                                                                \
+    if (tD2.isTmp()) tD2.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -421,7 +421,7 @@ tmp<meshDirection<ReturnType,MeshType>> operator Op                             
     tmp<meshDirection<ReturnType,MeshType>> tRes =                              \
         reuseDirTmp<ReturnType,Type1,MeshType>::New(tD1);                       \
     OpFunc(tRes.ref(), tD1(), s2);                                              \
-    tD1.clear();                                                                \
+    if (tD1.isTmp()) tD1.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -476,7 +476,7 @@ operator Op                                                                     
     tmp<meshDirection<productType,MeshType>> tRes =                             \
         reuseDirTmp<productType,Type2,MeshType>::New(tD2);                      \
     OpFunc(tRes.ref(), D1, tD2());                                              \
-    tD2.clear();                                                                \
+    if (tD2.isTmp()) tD2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -492,7 +492,7 @@ operator Op                                                                     
     tmp<meshDirection<productType,MeshType>> tRes =                             \
         reuseDirTmp<productType,Type1,MeshType>::New(tD1);                      \
     OpFunc(tRes.ref(), tD1(), D2);                                              \
-    tD1.clear();                                                                \
+    if (tD1.isTmp()) tD1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -508,8 +508,8 @@ operator Op                                                                     
     tmp<meshDirection<productType,MeshType>> tRes =                             \
         reuseDirTmpTmp<productType,Type1,Type1,Type2,MeshType>::New(tD1, tD2);  \
     OpFunc(tRes.ref(), tD1(), tD2());                                           \
-    tD1.clear();                                                                \
-    tD2.clear();                                                                \
+    if (tD1.isTmp()) tD1.clear();                                               \
+    if (tD2.isTmp()) tD2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -581,7 +581,7 @@ operator Op                                                                     
     tmp<meshDirection<productType,MeshType>> tRes =                             \
         reuseDirTmp<productType,Type,MeshType>::New(tD1);                       \
     OpFunc(tRes.ref(), tD1(), static_cast<const Form&>(vs));                    \
-    tD1.clear();                                                                \
+    if (tD1.isTmp()) tD1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -651,7 +651,7 @@ operator Op                                                                     
     tmp<meshDirection<productType,MeshType>> tRes =                             \
         reuseDirTmp<productType,Type,MeshType>::New(tD1);                       \
     OpFunc(tRes.ref(), static_cast<const Form&>(vs), tD1());                    \
-    tD1.clear();                                                                \
+    if (tD1.isTmp()) tD1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -723,7 +723,7 @@ operator Op                                                                     
     tmp<meshDirection<productType,MeshType>> tRes =                             \
         reuseDirTmp<productType,Type,MeshType>::New(tD1);                       \
     OpFunc(tRes.ref(), tD1(), static_cast<const Form&>(vs));                    \
-    tD1.clear();                                                                \
+    if (tD1.isTmp()) tD1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -793,6 +793,6 @@ operator Op                                                                     
     tmp<meshDirection<productType,MeshType>> tRes =                             \
         reuseDirTmp<productType,Type,MeshType>::New(tD1);                       \
     OpFunc(tRes.ref(), static_cast<const Form&>(vs), tD1());                    \
-    tD1.clear();                                                                \
+    if (tD1.isTmp()) tD1.clear();                                               \
     return tRes;                                                                \
 }

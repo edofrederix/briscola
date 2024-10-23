@@ -68,7 +68,9 @@ void restrictionScheme<Type,MeshType>::restrict
 )
 {
     restrict(res,tf(),scale);
-    tf.clear();
+
+    if (tf.isTmp())
+        tf.clear();
 }
 
 template<class Type, class MeshType>
@@ -92,7 +94,9 @@ void restrictionScheme<Type,MeshType>::restrict
 )
 {
     restrict(res,tf(),scale);
-    tf.clear();
+
+    if (tf.isTmp())
+        tf.clear();
 }
 
 template<class Type, class MeshType>
@@ -116,7 +120,9 @@ void restrictionScheme<Type,MeshType>::restrict
 )
 {
     restrict(res,tf(),scale);
-    tf.clear();
+
+    if (tf.isTmp())
+        tf.clear();
 }
 
 template<class Type, class MeshType>

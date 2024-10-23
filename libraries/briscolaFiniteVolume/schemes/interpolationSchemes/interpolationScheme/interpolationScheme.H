@@ -67,7 +67,10 @@ public:
         (
             interp(tField())
         );
-        tField.clear();
+
+        if (tField.isTmp())
+            tField.clear();
+
         return tInterp;
     }
 };

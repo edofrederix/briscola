@@ -43,7 +43,8 @@ inline tmp<meshField<lowerFaceScalar,colocated>> faceFlux
         faceFlux(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tFaceFlux;
 }
@@ -72,7 +73,8 @@ inline tmp<meshField<lowerFaceVector,colocated>> faceFlux
         faceFlux(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tFaceFlux;
 }
@@ -101,7 +103,8 @@ inline tmp<meshField<lowerFaceScalar,staggered>> faceFlux
         faceFlux(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tFaceFlux;
 }

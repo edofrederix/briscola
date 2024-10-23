@@ -110,7 +110,8 @@ inline void block<Type>::operator=(const tmp<block<Type>>& tM)
         *this = tM();
     }
 
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 template<class Type>
@@ -141,7 +142,8 @@ template<class Type>
 inline void block<Type>::operator+=(const tmp<block<Type>>& tM)
 {
     *this += tM();
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 template<class Type>
@@ -186,7 +188,8 @@ template<class Type>
 inline void block<Type>::operator-=(const tmp<block<Type>>& tM)
 {
     *this -= tM();
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 template<class Type>
@@ -212,7 +215,8 @@ template<class Type>
 inline void block<Type>::operator*=(const tmp<block<scalar>>& tM)
 {
     *this *= tM();
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 template<class Type>
@@ -238,7 +242,8 @@ template<class Type>
 inline void block<Type>::operator/=(const tmp<block<scalar>>& tM)
 {
     *this /= tM();
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 template<class Type>
@@ -309,7 +314,8 @@ template<class Type2>
 inline void block<Type>::operator=(const tmp<block<Type2>>& tM)
 {
     *this = tM();
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 template<class Type>
@@ -337,7 +343,8 @@ template<class Type2>
 inline void block<Type>::operator+=(const tmp<block<Type2>>& tM)
 {
     *this += tM();
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 template<class Type>
@@ -365,7 +372,8 @@ template<class Type2>
 inline void block<Type>::operator-=(const tmp<block<Type2>>& tM)
 {
     *this -= tM();
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 template<class Type>
@@ -433,7 +441,8 @@ template<class Type2>
 inline void block<Type>::operator*=(const tmp<block<Type2>>& tM)
 {
     *this *= tM();
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 template<class Type>
@@ -461,7 +470,8 @@ template<class Type2>
 inline void block<Type>::operator/=(const tmp<block<Type2>>& tM)
 {
     *this /= tM();
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 }

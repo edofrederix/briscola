@@ -43,7 +43,8 @@ grad
         grad(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tGrad;
 }
@@ -80,7 +81,8 @@ stagGrad
         stagGrad(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tStagGrad;
 }

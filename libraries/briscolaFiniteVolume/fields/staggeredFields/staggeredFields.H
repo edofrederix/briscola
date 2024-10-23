@@ -53,7 +53,10 @@ inline tmp<staggeredVectorField> stagT(const staggeredVectorField& f)
 inline tmp<staggeredVectorField> stagT(const tmp<staggeredVectorField>& tf)
 {
     tmp<staggeredVectorField> tT(stagT(tf()));
-    tf.clear();
+
+    if (tf.isTmp())
+        tf.clear();
+
     return tT;
 }
 

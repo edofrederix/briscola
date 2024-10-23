@@ -100,7 +100,8 @@ tmp<meshField<Type,staggered>> stagInterp
         stagInterp(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tInterp;
 }
@@ -160,7 +161,8 @@ tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
         stagFaceInterp(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tInterp;
 }
@@ -203,7 +205,8 @@ tmp<meshField<Type,colocated>> coloInterp
         stagInterp(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tInterp;
 }
@@ -245,7 +248,8 @@ tmp<meshField<LowerFaceSpace<Type>,colocated>> coloFaceInterp
         coloFaceInterp(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tInterp;
 }

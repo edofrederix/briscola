@@ -39,8 +39,8 @@ namespace fv
             this->imDdt(&tLambda(), field, factor)
         );
 
-        const_cast<tmp<meshField<scalar,MeshType>>&>(tLambda)
-       .clear();
+        if (tLambda.isTmp())
+            tLambda.clear();
 
         return tSys;
     }
@@ -104,8 +104,8 @@ namespace fv
             this->exDdt(&tLambda(), field, factor)
         );
 
-        const_cast<tmp<meshField<scalar,MeshType>>&>(tLambda)
-       .clear();
+        if (tLambda.isTmp())
+            tLambda.clear();
 
         return tDdt;
     }

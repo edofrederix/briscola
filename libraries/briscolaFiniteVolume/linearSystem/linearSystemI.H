@@ -358,7 +358,10 @@ operator+
 )
 {
     const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1).ref() += tSys2();
-    tSys2.clear();
+
+    if (tSys2.isTmp())
+        tSys2.clear();
+
     return tSys1;
 }
 
@@ -406,7 +409,9 @@ operator+
     );
 
     tRet.ref() += tField();
-    tField.clear();
+
+    if (tField.isTmp())
+        tField.clear();
 
     return tRet;
 }
@@ -421,7 +426,8 @@ operator+
 {
     const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() += tField();
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tSys;
 }
@@ -470,7 +476,9 @@ operator+
     );
 
     tRet.ref() += tField();
-    tField.clear();
+
+    if (tField.isTmp())
+        tField.clear();
 
     return tRet;
 }
@@ -485,7 +493,8 @@ operator+
 {
     const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() += tField();
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tSys;
 }
@@ -544,7 +553,10 @@ operator-
 )
 {
     const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1).ref() -= tSys2();
-    tSys2.clear();
+
+    if (tSys2.isTmp())
+        tSys2.clear();
+
     return tSys1;
 }
 
@@ -592,7 +604,9 @@ operator-
     );
 
     tRet.ref() -= tField();
-    tField.clear();
+
+    if (tField.isTmp())
+        tField.clear();
 
     return tRet;
 }
@@ -607,7 +621,8 @@ operator-
 {
     const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() -= tField();
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tSys;
 }
@@ -660,7 +675,9 @@ operator-
 
     tRet.ref() *= -1;
     tRet.ref() += tField();
-    tField.clear();
+
+    if (tField.isTmp())
+        tField.clear();
 
     return tRet;
 }
@@ -676,7 +693,8 @@ operator-
     const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() *= -1;
     const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() += tField();
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tSys;
 }

@@ -68,7 +68,8 @@ reconstruct
         reconstruct(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tRecon;
 }
@@ -135,7 +136,8 @@ reconstruct
         reconstruct(tFlux())
     );
 
-    tFlux.clear();
+    if (tFlux.isTmp())
+        tFlux.clear();
 
     return tRecon;
 }
@@ -182,7 +184,8 @@ inline tmp<meshField<Type,staggered>> stagReconstruct
         stagReconstruct(tFlux())
     );
 
-    tFlux.clear();
+    if (tFlux.isTmp())
+        tFlux.clear();
 
     return tRecon;
 }

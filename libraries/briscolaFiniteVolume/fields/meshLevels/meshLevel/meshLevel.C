@@ -161,7 +161,8 @@ meshLevel<Type,MeshType>::meshLevel
     mshFieldPtr_(nullptr)
 {
     setLevelPointers();
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -183,7 +184,8 @@ meshLevel<Type,MeshType>::meshLevel
 {
     setLevelPointers();
     *this = Zero;
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -205,7 +207,8 @@ meshLevel<Type,MeshType>::meshLevel
 {
     setLevelPointers();
     *this = v;
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -227,7 +230,8 @@ meshLevel<Type,MeshType>::meshLevel
 {
     setLevelPointers();
     *this = v;
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -639,7 +643,8 @@ void meshLevel<Type,MeshType>::operator=
         *this = tL();
     }
 
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -677,7 +682,8 @@ void meshLevel<Type,MeshType>::operator+=
 )
 {
     *this += tL();
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -694,7 +700,8 @@ void meshLevel<Type,MeshType>::operator-=
 )
 {
     *this -= tL();
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -711,7 +718,8 @@ void meshLevel<Type,MeshType>::operator*=
 )
 {
     *this *= tL();
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -728,7 +736,8 @@ void meshLevel<Type,MeshType>::operator/=
 )
 {
     *this /= tL();
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -806,7 +815,8 @@ void meshLevel<Type,MeshType>::operator=
 )
 {
     *this = tL();
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -828,7 +838,8 @@ void meshLevel<Type,MeshType>::operator+=
 )
 {
     *this += tL();
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -850,7 +861,8 @@ void meshLevel<Type,MeshType>::operator-=
 )
 {
     *this -= tL();
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -872,7 +884,8 @@ void meshLevel<Type,MeshType>::operator*=
 )
 {
     *this *= tL();
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -894,7 +907,8 @@ void meshLevel<Type,MeshType>::operator/=
 )
 {
     *this /= tL();
-    tL.clear();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>

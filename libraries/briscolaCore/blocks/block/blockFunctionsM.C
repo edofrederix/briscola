@@ -27,7 +27,7 @@ tmp<block<ReturnType>> Func(const tmp<block<Type>>& tf)                        \
 {                                                                              \
     tmp<block<ReturnType>> tRes = reuseTmp<ReturnType, Type>::New(tf);         \
     Func(tRes.ref(), tf());                                                    \
-    tf.clear();                                                                \
+    if (tf.isTmp()) tf.clear();                                                \
     return tRes;                                                               \
 }
 
@@ -57,7 +57,7 @@ tmp<block<ReturnType>> operator Op(const tmp<block<Type>>& tf)                 \
 {                                                                              \
     tmp<block<ReturnType>> tRes = reuseTmp<ReturnType, Type>::New(tf);         \
     OpFunc(tRes.ref(), tf());                                                  \
-    tf.clear();                                                                \
+    if (tf.isTmp()) tf.clear();                                                \
     return tRes;                                                               \
 }
 
@@ -100,7 +100,7 @@ tmp<block<ReturnType>> Func                                                    \
 {                                                                              \
     tmp<block<ReturnType>> tRes = reuseTmp<ReturnType, Type2>::New(tf2);       \
     Func(tRes.ref(), f1, tf2());                                               \
-    tf2.clear();                                                               \
+    if (tf2.isTmp()) tf2.clear();                                              \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
@@ -113,7 +113,7 @@ tmp<block<ReturnType>> Func                                                    \
 {                                                                              \
     tmp<block<ReturnType>> tRes = reuseTmp<ReturnType, Type1>::New(tf1);       \
     Func(tRes.ref(), tf1(), f2);                                               \
-    tf1.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
@@ -127,8 +127,8 @@ tmp<block<ReturnType>> Func                                                    \
     tmp<block<ReturnType>> tRes =                                              \
         reuseTmpTmp<ReturnType, Type1, Type1, Type2>::New(tf1, tf2);           \
     Func(tRes.ref(), tf1(), tf2());                                            \
-    tf1.clear();                                                               \
-    tf2.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
+    if (tf2.isTmp()) tf2.clear();                                              \
     return tRes;                                                               \
 }
 
@@ -171,7 +171,7 @@ tmp<block<ReturnType>> Func                                                    \
 {                                                                              \
     tmp<block<ReturnType>> tRes = reuseTmp<ReturnType, Type2>::New(tf2);       \
     Func(tRes.ref(), s1, tf2());                                               \
-    tf2.clear();                                                               \
+    if (tf2.isTmp()) tf2.clear();                                              \
     return tRes;                                                               \
 }
 
@@ -214,7 +214,7 @@ tmp<block<ReturnType>> Func                                                    \
 {                                                                              \
     tmp<block<ReturnType>> tRes = reuseTmp<ReturnType, Type1>::New(tf1);       \
     Func(tRes.ref(), tf1(), s2);                                               \
-    tf1.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
     return tRes;                                                               \
 }
 
@@ -261,7 +261,7 @@ tmp<block<ReturnType>> operator Op                                             \
 {                                                                              \
     tmp<block<ReturnType>> tRes = reuseTmp<ReturnType, Type2>::New(tf2);       \
     OpFunc(tRes.ref(), f1, tf2());                                             \
-    tf2.clear();                                                               \
+    if (tf2.isTmp()) tf2.clear();                                              \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
@@ -274,7 +274,7 @@ tmp<block<ReturnType>> operator Op                                             \
 {                                                                              \
     tmp<block<ReturnType>> tRes = reuseTmp<ReturnType, Type1>::New(tf1);       \
     OpFunc(tRes.ref(), tf1(), f2);                                             \
-    tf1.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
@@ -288,8 +288,8 @@ tmp<block<ReturnType>> operator Op                                             \
     tmp<block<ReturnType>> tRes =                                              \
         reuseTmpTmp<ReturnType, Type1, Type1, Type2>::New(tf1, tf2);           \
     OpFunc(tRes.ref(), tf1(), tf2());                                          \
-    tf1.clear();                                                               \
-    tf2.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
+    if (tf2.isTmp()) tf2.clear();                                              \
     return tRes;                                                               \
 }
 
@@ -332,7 +332,7 @@ tmp<block<ReturnType>> operator Op                                             \
 {                                                                              \
     tmp<block<ReturnType>> tRes = reuseTmp<ReturnType, Type2>::New(tf2);       \
     OpFunc(tRes.ref(), s1, tf2());                                             \
-    tf2.clear();                                                               \
+    if (tf2.isTmp()) tf2.clear();                                              \
     return tRes;                                                               \
 }
 
@@ -375,7 +375,7 @@ tmp<block<ReturnType>> operator Op                                             \
 {                                                                              \
     tmp<block<ReturnType>> tRes = reuseTmp<ReturnType, Type1>::New(tf1);       \
     OpFunc(tRes.ref(), tf1(), s2);                                             \
-    tf1.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
     return tRes;                                                               \
 }
 
@@ -418,7 +418,7 @@ operator Op(const block<Type1>& f1, const tmp<block<Type2>>& tf2)              \
     typedef typename product<Type1, Type2>::type productType;                  \
     tmp<block<productType>> tRes = reuseTmp<productType, Type2>::New(tf2);     \
     OpFunc(tRes.ref(), f1, tf2());                                             \
-    tf2.clear();                                                               \
+    if (tf2.isTmp()) tf2.clear();                                              \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
@@ -429,7 +429,7 @@ operator Op(const tmp<block<Type1>>& tf1, const block<Type2>& f2)              \
     typedef typename product<Type1, Type2>::type productType;                  \
     tmp<block<productType>> tRes = reuseTmp<productType, Type1>::New(tf1);     \
     OpFunc(tRes.ref(), tf1(), f2);                                             \
-    tf1.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
@@ -441,8 +441,8 @@ operator Op(const tmp<block<Type1>>& tf1, const tmp<block<Type2>>& tf2)        \
     tmp<block<productType>> tRes =                                             \
         reuseTmpTmp<productType, Type1, Type1, Type2>::New(tf1, tf2);          \
     OpFunc(tRes.ref(), tf1(), tf2());                                          \
-    tf1.clear();                                                               \
-    tf2.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
+    if (tf2.isTmp()) tf2.clear();                                              \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
@@ -503,7 +503,7 @@ operator Op                                                                    \
     typedef typename product<Type, Form>::type productType;                    \
     tmp<block<productType>> tRes = reuseTmp<productType, Type>::New(tf1);      \
     OpFunc(tRes.ref(), tf1(), static_cast<const Form&>(vs));                   \
-    tf1.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
@@ -562,7 +562,7 @@ operator Op                                                                    \
     typedef typename product<Form, Type>::type productType;                    \
     tmp<block<productType>> tRes = reuseTmp<productType, Type>::New(tf1);      \
     OpFunc(tRes.ref(), static_cast<const Form&>(vs), tf1());                   \
-    tf1.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
@@ -623,7 +623,7 @@ operator Op                                                                    \
     typedef typename product<Type, Form>::type productType;                    \
     tmp<block<productType>> tRes = reuseTmp<productType, Type>::New(tf1);      \
     OpFunc(tRes.ref(), tf1(), static_cast<const Form&>(vs));                   \
-    tf1.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
     return tRes;                                                               \
 }                                                                              \
                                                                                \
@@ -682,6 +682,6 @@ operator Op                                                                    \
     typedef typename product<Form, Type>::type productType;                    \
     tmp<block<productType>> tRes = reuseTmp<productType, Type>::New(tf1);      \
     OpFunc(tRes.ref(), static_cast<const Form&>(vs), tf1());                   \
-    tf1.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
     return tRes;                                                               \
 }

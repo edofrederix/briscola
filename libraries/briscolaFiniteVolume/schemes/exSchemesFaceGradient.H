@@ -41,7 +41,8 @@ inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
         faceGrad(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tFaceGrad;
 }

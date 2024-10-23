@@ -41,7 +41,8 @@ inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
         interp(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tInterp;
 }

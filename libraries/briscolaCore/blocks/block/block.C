@@ -325,7 +325,8 @@ block<Type>::block(const tmp<block<Type>>& tM)
         *this = tM();
     }
 
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 template<class Type>
@@ -350,7 +351,8 @@ block<Type>::block(const tmp<block<Type>>& tM, const zero&)
 
     *this = Zero;
 
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 template<class Type>
@@ -375,7 +377,8 @@ block<Type>::block(const tmp<block<Type>>& tM, const Type& v)
 
     *this = v;
 
-    tM.clear();
+    if (tM.isTmp())
+        tM.clear();
 }
 
 template<class Type>

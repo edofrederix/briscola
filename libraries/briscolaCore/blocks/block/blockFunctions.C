@@ -35,7 +35,8 @@ tmp<block<SCALARPRODTYPE>> mag(const tmp<block<Type>>& tf)
 {
     tmp<block<SCALARPRODTYPE>> tRes = reuseTmp<SCALARPRODTYPE, Type>::New(tf);
     mag(tRes.ref(), tf());
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return tRes;
 }
 
@@ -63,7 +64,8 @@ tmp<block<typename block<Type>::cmptType>> cmptMax(const tmp<block<Type>>& tf)
     typedef typename block<Type>::cmptType cmptType;
     tmp<block<cmptType>> tRes = reuseTmp<cmptType, Type>::New(tf);
     cmptMax(tRes.ref(), tf());
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return tRes;
 }
 
@@ -92,7 +94,8 @@ tmp<block<typename block<Type>::cmptType>> cmptMin(const tmp<block<Type>>& tf)
     typedef typename block<Type>::cmptType cmptType;
     tmp<block<cmptType>> tRes = reuseTmp<cmptType, Type>::New(tf);
     cmptMin(tRes.ref(), tf());
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return tRes;
 }
 
@@ -120,7 +123,8 @@ tmp<block<typename block<Type>::cmptType>> cmptAv(const tmp<block<Type>>& tf)
     typedef typename block<Type>::cmptType cmptType;
     tmp<block<cmptType>> tRes = reuseTmp<cmptType, Type>::New(tf);
     cmptAv(tRes.ref(), tf());
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return tRes;
 }
 
@@ -146,7 +150,8 @@ tmp<block<Type>> cmptMag(const tmp<block<Type>>& tf)
 {
     tmp<block<Type>> tRes = New(tf);
     cmptMag(tRes.ref(), tf());
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return tRes;
 }
 
@@ -156,7 +161,7 @@ template<class Type>                                                           \
 ReturnType Func(const tmp<block<Type>>& tf1)                                   \
 {                                                                              \
     ReturnType res = Func(tf1());                                              \
-    tf1.clear();                                                               \
+    if (tf1.isTmp()) tf1.clear();                                              \
     return res;                                                                \
 }
 
@@ -276,7 +281,8 @@ template<class Type>
 SCALARPRODTYPE maxMagSqr(const tmp<block<Type>>& tf1)
 {
     SCALARPRODTYPE res = maxMagSqr(tf1());
-    tf1.clear();
+    if (tf1.isTmp())
+        tf1.clear();
     return res;
 }
 
@@ -307,7 +313,8 @@ template<class Type>
 SCALARPRODTYPE minMagSqr(const tmp<block<Type>>& tf1)
 {
     SCALARPRODTYPE res = minMagSqr(tf1());
-    tf1.clear();
+    if (tf1.isTmp())
+        tf1.clear();
     return res;
 }
 
@@ -440,7 +447,8 @@ template<class Type>
 SCALARPRODTYPE sumMag(const tmp<block<Type>>& tf1)
 {
     SCALARPRODTYPE res = sumMag(tf1());
-    tf1.clear();
+    if (tf1.isTmp())
+        tf1.clear();
     return res;
 }
 

@@ -61,7 +61,8 @@ mag(const tmp<meshField<Type,MeshType>>& tf)
 
     mag(tRes.ref(), tf());
 
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
 
     return tRes;
 }
@@ -109,7 +110,8 @@ cmptMax(const tmp<meshField<Type,MeshType>>& tf)
 
     cmptMax(tRes.ref(), tf());
 
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
 
     return tRes;
 }
@@ -157,7 +159,8 @@ cmptMin(const tmp<meshField<Type,MeshType>>& tf)
 
     cmptMin(tRes.ref(), tf());
 
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
 
     return tRes;
 }
@@ -205,7 +208,8 @@ cmptAv(const tmp<meshField<Type,MeshType>>& tf)
 
     cmptAv(tRes.ref(), tf());
 
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
 
     return tRes;
 }
@@ -251,7 +255,8 @@ cmptMag(const tmp<meshField<Type,MeshType>>& tf)
 
     cmptMag(tRes.ref(), tf());
 
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
 
     return tRes;
 }
@@ -268,7 +273,8 @@ List<Type>
 max(const tmp<meshField<Type,MeshType>>& tf)
 {
     List<Type> ret(max(tf()[0]));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -284,7 +290,8 @@ List<Type>
 min(const tmp<meshField<Type,MeshType>>& tf)
 {
     List<Type> ret(min(tf()[0]));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -300,7 +307,8 @@ List<Type>
 sum(const tmp<meshField<Type,MeshType>>& tf)
 {
     List<Type> ret(sum(tf()[0]));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -316,7 +324,8 @@ List<Type>
 average(const tmp<meshField<Type,MeshType>>& tf)
 {
     List<Type> ret(average(tf()[0]));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -332,7 +341,8 @@ List<SCALARPRODTYPE>
 maxMagSqr(const tmp<meshField<Type,MeshType>>& tf)
 {
     List<SCALARPRODTYPE> ret(maxMagSqr(tf()[0]));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -348,7 +358,8 @@ List<SCALARPRODTYPE>
 minMagSqr(const tmp<meshField<Type,MeshType>>& tf)
 {
     List<SCALARPRODTYPE> ret(minMagSqr(tf()[0]));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -372,7 +383,8 @@ sumProd
 )
 {
     List<SCALARPRODTYPE> ret(sumProd(tf1()[0], f2[0]));
-    tf1.clear();
+    if (tf1.isTmp())
+        tf1.clear();
     return ret;
 }
 
@@ -385,7 +397,8 @@ sumProd
 )
 {
     List<SCALARPRODTYPE> ret(sumProd(f1[0], tf2()[0]));
-    tf2.clear();
+    if (tf2.isTmp())
+        tf2.clear();
     return ret;
 }
 
@@ -398,8 +411,10 @@ sumProd
 )
 {
     List<SCALARPRODTYPE> ret(sumProd(tf1()[0], tf2()[0]));
-    tf1.clear();
-    tf2.clear();
+    if (tf1.isTmp())
+        tf1.clear();
+    if (tf2.isTmp())
+        tf2.clear();
     return ret;
 }
 
@@ -421,7 +436,8 @@ List<Type> sumCmptProd
 )
 {
     List<Type> ret(sumCmptProd(tf1()[0], f2[0]));
-    tf1.clear();
+    if (tf1.isTmp())
+        tf1.clear();
     return ret;
 }
 
@@ -433,7 +449,8 @@ List<Type> sumCmptProd
 )
 {
     List<Type> ret(sumCmptProd(f1[0], tf2()[0]));
-    tf2.clear();
+    if (tf2.isTmp())
+        tf2.clear();
     return ret;
 }
 
@@ -445,8 +462,10 @@ List<Type> sumCmptProd
 )
 {
     List<Type> ret(sumCmptProd(tf1()[0], tf2()[0]));
-    tf1.clear();
-    tf2.clear();
+    if (tf1.isTmp())
+        tf1.clear();
+    if (tf2.isTmp())
+        tf2.clear();
     return ret;
 }
 
@@ -462,7 +481,8 @@ List<SCALARPRODTYPE>
 sumMag(const tmp<meshField<Type,MeshType>>& tf)
 {
     List<SCALARPRODTYPE> ret(sumMag(tf()[0]));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -478,7 +498,8 @@ List<Type>
 sumCmptMag(const tmp<meshField<Type,MeshType>>& tf)
 {
     List<Type> ret(sumCmptMag(tf()[0]));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -496,7 +517,7 @@ List<ReturnType>                                                               \
 gFunc(const tmp<meshField<Type,MeshType>>& tf, const label comm)               \
 {                                                                              \
     List<ReturnType> ret(gFunc(tf->operator[](0),comm));                       \
-    tf.clear();                                                                \
+    if (tf.isTmp()) tf.clear();                                                \
     return ret;                                                                \
 }
 

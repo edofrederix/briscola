@@ -61,7 +61,8 @@ rowProduct
 
     rowProduct(tRes.ref(),tf1(),f2);
 
-    tf1.clear();
+    if (tf1.isTmp())
+        tf1.clear();
 
     return tRes;
 }
@@ -81,7 +82,8 @@ rowProduct
 
     rowProduct(tRes.ref(),f1,tf2());
 
-    tf2.clear();
+    if (tf2.isTmp())
+        tf2.clear();
 
     return tRes;
 }
@@ -101,8 +103,11 @@ rowProduct
 
     rowProduct(tRes.ref(),tf1(),tf2());
 
-    tf1.clear();
-    tf2.clear();
+    if (tf1.isTmp())
+        tf1.clear();
+
+    if (tf2.isTmp())
+        tf2.clear();
 
     return tRes;
 }
@@ -150,7 +155,8 @@ rowProduct(const tmp<meshLevel<Type,MeshType>>& tf1, const Form& s)
 
     rowProduct(tRes.ref(),tf1(),s);
 
-    tf1.clear();
+    if (tf1.isTmp())
+        tf1.clear();
 
     return tRes;
 }
@@ -226,7 +232,8 @@ rowSum(const tmp<meshLevel<Type,MeshType>>& tf)
 
     rowSum(tRes.ref(), tf());
 
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
 
     return tRes;
 }

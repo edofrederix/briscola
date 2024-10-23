@@ -45,7 +45,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
             #Func "("+tf().name()+")"                                           \
         );                                                                      \
     Func(tRes.ref(), tf());                                                     \
-    tf.clear();                                                                 \
+    if (tf.isTmp()) tf.clear();                                                 \
     return tRes;                                                                \
 }
 
@@ -93,7 +93,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
     tmp<meshField<ReturnType,MeshType>> tRes =                                  \
         reuseFieTmp<ReturnType,Type,MeshType>::New(tf,#Op "("+tf().name()+")"); \
     OpFunc(tRes.ref(), tf());                                                   \
-    tf.clear();                                                                 \
+    if (tf.isTmp()) tf.clear();                                                 \
     return tRes;                                                                \
 }
 
@@ -149,7 +149,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
         );                                                                      \
     tRes->make(f1.deep() && tf2->deep());                                       \
     Func(tRes.ref(), f1, tf2());                                                \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -168,7 +168,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
         );                                                                      \
     tRes->make(tf1->deep() && f2.deep());                                       \
     Func(tRes.ref(), tf1(), f2);                                                \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -187,8 +187,8 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
             #Func "("+tf1().name()+","+tf2().name()+")"                         \
         );                                                                      \
     Func(tRes.ref(), tf1(), tf2());                                             \
-    tf1.clear();                                                                \
-    tf2.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -243,7 +243,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
             #Func "("+Foam::name(s1)+","+tf2().name()+")"                       \
         );                                                                      \
     Func(tRes.ref(), s1, tf2());                                                \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -296,7 +296,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
             #Func "("+Foam::name(s1)+","+tf2().name()+")"                       \
         );                                                                      \
     Func(tRes.ref(), s1, tf2());                                                \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -351,7 +351,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
             #Func "("+tf1().name()+","+Foam::name(s2)+")"                       \
         );                                                                      \
     Func(tRes.ref(), tf1(), s2);                                                \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -404,7 +404,7 @@ tmp<meshField<ReturnType,MeshType>> Func                                        
             #Func "("+tf1().name()+","+Foam::name(s2)+")"                       \
         );                                                                      \
     Func(tRes.ref(), tf1(), s2);                                                \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -464,7 +464,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
         );                                                                      \
     tRes->make(f1.deep() && tf2->deep());                                       \
     OpFunc(tRes.ref(), f1, tf2());                                              \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -483,7 +483,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
         );                                                                      \
     tRes->make(tf1->deep() && f2.deep());                                       \
     OpFunc(tRes.ref(), tf1(), f2);                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -502,8 +502,8 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
             "("+tf1().name()+#Op+tf2().name()+")"                               \
         );                                                                      \
     OpFunc(tRes.ref(), tf1(), tf2());                                           \
-    tf1.clear();                                                                \
-    tf2.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -558,7 +558,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
             "("+Foam::name(s1)+#Op+tf2().name()+")"                             \
         );                                                                      \
     OpFunc(tRes.ref(), s1, tf2());                                              \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -611,7 +611,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
             "("+Foam::name(s1)+#Op+tf2().name()+")"                             \
         );                                                                      \
     OpFunc(tRes.ref(), s1, tf2());                                              \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -666,7 +666,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
             "("+tf1().name()+#Op+Foam::name(s2)+")"                             \
         );                                                                      \
     OpFunc(tRes.ref(), tf1(), s2);                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -719,7 +719,7 @@ tmp<meshField<ReturnType,MeshType>> operator Op                                 
             "("+tf1().name()+#Op+Foam::name(s2)+")"                             \
         );                                                                      \
     OpFunc(tRes.ref(), tf1(), s2);                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -783,7 +783,7 @@ operator Op                                                                     
         );                                                                      \
     tRes->make(f1.deep() && tf2->deep());                                       \
     OpFunc(tRes.ref(), f1, tf2());                                              \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -804,7 +804,7 @@ operator Op                                                                     
         );                                                                      \
     tRes->make(tf1->deep() && f2.deep());                                       \
     OpFunc(tRes.ref(), tf1(), f2);                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -825,8 +825,8 @@ operator Op                                                                     
             "("+tf1().name()+#Op+tf2().name()+")"                               \
         );                                                                      \
     OpFunc(tRes.ref(), tf1(), tf2());                                           \
-    tf1.clear();                                                                \
-    tf2.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -906,7 +906,7 @@ operator Op                                                                     
             "("+tf1->name()+#Op+Foam::name(v2)+")"                              \
         );                                                                      \
     OpFunc(tRes.ref(), tf1(), v2);                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -984,7 +984,7 @@ operator Op                                                                     
             "("+Foam::name(v1)+#Op+tf2->name()+")"                              \
         );                                                                      \
     OpFunc(tRes.ref(), v1, tf2);                                                \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -1064,7 +1064,7 @@ operator Op                                                                     
             "("+tf1->name()+#Op+Foam::name(v2)+")"                              \
         );                                                                      \
     OpFunc(tRes.ref(), tf1(), v2);                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -1142,7 +1142,7 @@ operator Op                                                                     
             "("+Foam::name(v1)+#Op+tf2->name()+")"                              \
         );                                                                      \
     OpFunc(tRes.ref(), v1, tf2);                                                \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -1201,7 +1201,7 @@ operator Op                                                                     
             "("+tf1->name()+#Op+Foam::name(v2)+")"                              \
         );                                                                      \
     OpFunc(tRes.ref(), tf1(), v2);                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -1258,6 +1258,6 @@ operator Op                                                                     
             "("+Foam::name(v1)+#Op+tf2->name()+")"                              \
         );                                                                      \
     OpFunc(tRes.ref(), v1, tf2);                                                \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }

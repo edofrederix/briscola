@@ -26,8 +26,8 @@ namespace fv
                 this->imDiv(tPhi(), field)
             );
 
-            const_cast<tmp<meshField<lowerFaceScalar,MeshType>>&>(tPhi)
-           .clear();
+            if (tPhi.isTmp())
+                tPhi.clear();
 
             return tSys;
         }
@@ -51,8 +51,8 @@ namespace fv
                 this->exDiv(tPhi(), field)
             );
 
-            const_cast<tmp<meshField<lowerFaceScalar,MeshType>>&>(tPhi)
-           .clear();
+            if (tPhi.isTmp())
+                tPhi.clear();
 
             return tLap;
         }
