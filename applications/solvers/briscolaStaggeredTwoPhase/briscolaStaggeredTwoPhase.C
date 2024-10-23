@@ -77,12 +77,6 @@ int main(int argc, char *argv[])
         U -= deltaT*ex::stagReconstruct(Poisson->flux()/vcf)*v;
         U.correctBoundaryConditions();
 
-        if (fvMsh.time().writeTime())
-        {
-            Uc = ex::reconstruct(U);
-            Uc.correctBoundaryConditions();
-        }
-
         io.write<colocated>();
         io.write<staggered>();
 

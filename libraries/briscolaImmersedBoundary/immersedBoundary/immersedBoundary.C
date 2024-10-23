@@ -20,7 +20,7 @@ void immersedBoundary<MeshType>::setMasks()
 
     // Cell centers
     const meshField<vector,MeshType>& CC =
-        fvMsh_.metrics<MeshType>().cellCenters();
+        fvMshMetrics_.cellCenters();
 
     // Set IB mask fields
     forAllCells(mask_,l,d,i,j,k)
@@ -103,7 +103,7 @@ void immersedBoundary<MeshType>::calculateWallDistances()
 
     // Cell centers
     const meshField<vector,MeshType>& CC =
-        fvMsh_.metrics<MeshType>().cellCenters();
+        fvMshMetrics_.cellCenters();
 
     // Set wall distance fields
     forAllCells(mask_,l,d,i,j,k)
@@ -169,7 +169,7 @@ void immersedBoundary<MeshType>::setMirrorPoints()
 {
     // Cell centers
     const meshField<vector,MeshType>& CC =
-        fvMsh_.metrics<MeshType>().cellCenters();
+        fvMshMetrics_.cellCenters();
 
     // Mesh
     const mesh& msh = fvMsh_.msh();
@@ -225,17 +225,18 @@ void immersedBoundary<MeshType>::setMirrorPoints()
 template<class MeshType>
 immersedBoundary<MeshType>::immersedBoundary
 (
-    const fvMesh& fvMsh,
+    const fvMeshMetrics<MeshType>& metrics,
     const dictionary& dict
 )
 :
-    fvMsh_(fvMsh),
+    fvMsh_(metrics.fvMsh()),
+    fvMshMetrics_(metrics),
     name_(dict.dictName()),
     shapeOverlap_(false),
     mask_
     (
         "mask",
-        fvMsh,
+        fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
@@ -280,7 +281,7 @@ immersedBoundary<MeshType>::immersedBoundary
     neighborDist_
     (
         "neighborDist",
-        fvMsh,
+        fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
@@ -289,7 +290,7 @@ immersedBoundary<MeshType>::immersedBoundary
     mirrorPoints_
     (
         "mirrorPoints",
-        fvMsh,
+        fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
@@ -298,7 +299,7 @@ immersedBoundary<MeshType>::immersedBoundary
     emptyField_
     (
         "emptyField",
-        fvMsh,
+        fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
@@ -506,7 +507,7 @@ void immersedBoundary<MeshType>::checkOverlap()
 {
     // Cell centers
     const meshField<vector,MeshType>& CC =
-        fvMsh_.metrics<MeshType>().cellCenters();
+        fvMshMetrics_.cellCenters();
 
     forAllCells(CC,l,d,i,j,k)
     {

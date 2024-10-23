@@ -29,6 +29,9 @@ protected:
     // Reference to mesh
     const fvMesh& fvMsh_;
 
+    // Reference to fvMeshMetrics
+    const fvMeshMetrics<MeshType>& fvMshMetrics_;
+
     // Name of the immersed boundary
     const word name_;
 
@@ -83,8 +86,8 @@ public:
     // Declare name of the class and its debug switch
     TypeName("immersedBoundary");
 
-    // Construct from solverDict and fvMesh
-    immersedBoundary(const fvMesh&, const dictionary&);
+    // Construct from fvMeshMetrics and solverDict
+    immersedBoundary(const fvMeshMetrics<MeshType>&, const dictionary&);
 
     // Destructor
     virtual ~immersedBoundary();

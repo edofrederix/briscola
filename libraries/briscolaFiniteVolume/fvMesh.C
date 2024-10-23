@@ -84,14 +84,12 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
     setInternalCells<staggered>();
 
     colocatedMetrics_ = new fvMeshMetrics<colocated>(*this);
-    colocatedMetrics_->setIBs();
 
     // Only generate staggered metrics when the brick topology is structured
 
     if (mshPtr_->structured())
     {
         staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
-        staggeredMetrics_->setIBs();
     }
 }
 

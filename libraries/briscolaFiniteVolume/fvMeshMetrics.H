@@ -110,6 +110,12 @@ public:
     // Disallow default bitwise assignment
     void operator=(const fvMeshMetrics&);
 
+    // Const access to fvMesh
+    inline const fvMesh& fvMsh() const
+    {
+        return fvMsh_;
+    }
+
     // Const access to face centers
     inline const meshField<faceVector,MeshType>& faceCenters() const
     {

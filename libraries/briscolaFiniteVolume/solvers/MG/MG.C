@@ -91,21 +91,6 @@ void MG<SType,Type,MeshType>::cycle
                     if (!converged[d])
                     {
                         sys.residual(rl[d]);
-
-                        forAll(sys.x().immersedBoundaryConditions(), ib)
-                        {
-                            forAllCells(r[l][d],i,j,k)
-                            {
-                                if
-                                (
-                                    sys.x().immersedBoundaryConditions()[ib]
-                                        .forcingPoints()(l,d,i,j,k)
-                                )
-                                {
-                                    r[l][d](i,j,k) = Zero;
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -214,23 +199,6 @@ void MG<SType,Type,MeshType>::solve
 
     sys.residual(r[0]);
 
-    // Set residual to zero for IBM ghost points
-
-    forAll(sys.x().immersedBoundaryConditions(), ib)
-    {
-        forAllCells(r,d,i,j,k)
-        {
-            if
-            (
-                sys.x().immersedBoundaryConditions()[ib]
-                    .forcingPoints()(d,i,j,k)
-            )
-            {
-                r(d,i,j,k) = Zero;
-            }
-        }
-    }
-
     // Residual normalization factors
 
     const List<Type> normFactors(this->normFactors(sys,r,0));
@@ -291,21 +259,6 @@ void MG<SType,Type,MeshType>::solve
             if (!converged[d])
             {
                 sys.residual(r[0][d]);
-
-                forAll(sys.x().immersedBoundaryConditions(), ib)
-                {
-                    forAllCells(r,d,i,j,k)
-                    {
-                        if
-                        (
-                            sys.x().immersedBoundaryConditions()[ib]
-                                .forcingPoints()(d,i,j,k)
-                        )
-                        {
-                            r(d,i,j,k) = Zero;
-                        }
-                    }
-                }
             }
         }
 

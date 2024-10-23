@@ -63,21 +63,7 @@ void JAC<SType,Type,MeshType>::JAC::smooth
 
                 forAllCells(xd, i, j, k)
                 {
-                    Switch forcing = false;
-
-                    forAll(sys.x().immersedBoundaryConditions(), ib)
-                    {
-                        if
-                        (
-                            sys.x().immersedBoundaryConditions()[ib]
-                                .forcingPoints()(l,d,i,j,k)
-                        )
-                        {
-                            forcing = true;
-                        }
-                    }
-
-                    if (!forcing)
+                    if (!sys.IBMForcingMask()(l,d,i,j,k))
                     {
                         yd(i,j,k) =
                             yd(i,j,k)*(1.0-omega_)

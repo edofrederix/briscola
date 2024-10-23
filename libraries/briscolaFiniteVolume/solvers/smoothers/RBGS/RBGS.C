@@ -58,21 +58,7 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
                 forAllCells(xd, i, j, k)
                 {
-                    Switch forcing = false;
-
-                    forAll(sys.x().immersedBoundaryConditions(), ib)
-                    {
-                        if
-                        (
-                            sys.x().immersedBoundaryConditions()[ib]
-                                .forcingPoints()(l,d,i,j,k)
-                        )
-                        {
-                            forcing = true;
-                        }
-                    }
-
-                    if (even(i,j,k) && !forcing)
+                    if (even(i,j,k) && !sys.IBMForcingMask()(l,d,i,j,k))
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
@@ -85,21 +71,7 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
                 forAllCells(xd, i, j, k)
                 {
-                    Switch forcing = false;
-
-                    forAll(sys.x().immersedBoundaryConditions(), ib)
-                    {
-                        if
-                        (
-                            sys.x().immersedBoundaryConditions()[ib]
-                                .forcingPoints()(l,d,i,j,k)
-                        )
-                        {
-                            forcing = true;
-                        }
-                    }
-
-                    if (odd(i,j,k) && !forcing)
+                    if (odd(i,j,k) && !sys.IBMForcingMask()(l,d,i,j,k))
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
@@ -115,21 +87,7 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
                 forAllCellsReversed(xd, i, j, k)
                 {
-                    Switch forcing = false;
-
-                    forAll(sys.x().immersedBoundaryConditions(), ib)
-                    {
-                        if
-                        (
-                            sys.x().immersedBoundaryConditions()[ib]
-                                .forcingPoints()(l,d,i,j,k)
-                        )
-                        {
-                            forcing = true;
-                        }
-                    }
-
-                    if (even(i,j,k) && !forcing)
+                    if (even(i,j,k) && !sys.IBMForcingMask()(l,d,i,j,k))
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
@@ -142,21 +100,7 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
                 forAllCellsReversed(xd, i, j, k)
                 {
-                    Switch forcing = false;
-
-                    forAll(sys.x().immersedBoundaryConditions(), ib)
-                    {
-                        if
-                        (
-                            sys.x().immersedBoundaryConditions()[ib]
-                                .forcingPoints()(l,d,i,j,k)
-                        )
-                        {
-                            forcing = true;
-                        }
-                    }
-
-                    if (odd(i,j,k) && !forcing)
+                    if (odd(i,j,k) && !sys.IBMForcingMask()(l,d,i,j,k))
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)

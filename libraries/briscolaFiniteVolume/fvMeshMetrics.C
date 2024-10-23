@@ -355,7 +355,7 @@ void fvMeshMetrics<MeshType>::setIBs()
             (
                 new immersedBoundary<MeshType>
                 (
-                    fvMsh_,
+                    *this,
                     IBMdict.subDict(IBname)
                 )
             );
@@ -486,6 +486,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     calculateFaceDeltas();
     calculateFaceWeights();
     setGlobalCellNumbers();
+    setIBs();
 }
 
 template<class MeshType>

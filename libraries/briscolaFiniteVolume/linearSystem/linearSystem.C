@@ -21,9 +21,34 @@ void linearSystem<SType,Type,MeshType>::transfer
 }
 
 template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::setIBMForcingMask()
+{
+    if (IBM_)
+    {
+        IBMForcingMask_ = Zero;
+
+        forAll(x_.immersedBoundaryConditions(), ib)
+        {
+            forAllCells(IBMForcingMask_,l,d,i,j,k)
+            {
+                if
+                (
+                    x_.immersedBoundaryConditions()[ib]
+                        .forcingPoints()(l,d,i,j,k)
+                )
+                {
+                    IBMForcingMask_(l,d,i,j,k) = 1;
+                }
+            }
+        }
+    }
+}
+
+template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
 (
-    meshField<Type, MeshType>& x
+    meshField<Type, MeshType>& x,
+    bool IBM
 )
 :
     tmp<linearSystem<SType,Type,MeshType>>::refCount(),
@@ -44,8 +69,20 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    )
-{}
+    ),
+    IBMForcingMask_
+    (
+        IOobject::groupName(x_.name(), "IBMMask"),
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        true
+    ),
+    IBM_(IBM)
+{
+    setIBMForcingMask();
+}
 
 template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
@@ -71,7 +108,17 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    )
+    ),
+    IBMForcingMask_
+    (
+        IOobject::groupName(x_.name(), "IBMMask"),
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        true
+    ),
+    IBM_(false)
 {
     *this = sys;
 }
@@ -100,7 +147,17 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    )
+    ),
+    IBMForcingMask_
+    (
+        IOobject::groupName(x_.name(), "IBMMask"),
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        true
+    ),
+    IBM_(false)
 {
     if (tSys.isTmp())
     {
@@ -121,7 +178,8 @@ template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
 (
     const linearSystem<SType,Type,MeshType>& sys,
-    meshField<Type, MeshType>& x
+    meshField<Type, MeshType>& x,
+    bool IBM
 )
 :
     tmp<linearSystem<SType,Type,MeshType>>::refCount(),
@@ -142,16 +200,29 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    )
+    ),
+    IBMForcingMask_
+    (
+        IOobject::groupName(x_.name(), "IBMMask"),
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        true
+    ),
+    IBM_(IBM)
 {
     *this = sys;
+
+    setIBMForcingMask();
 }
 
 template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
 (
     const tmp<linearSystem<SType,Type,MeshType>>& tSys,
-    meshField<Type, MeshType>& x
+    meshField<Type, MeshType>& x,
+    bool IBM
 )
 :
     tmp<linearSystem<SType,Type,MeshType>>::refCount(),
@@ -172,7 +243,17 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    )
+    ),
+    IBMForcingMask_
+    (
+        IOobject::groupName(x_.name(), "IBMMask"),
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        true
+    ),
+    IBM_(IBM)
 {
     if (tSys.isTmp())
     {
@@ -187,6 +268,8 @@ linearSystem<SType,Type,MeshType>::linearSystem
     }
 
     tSys.clear();
+
+    setIBMForcingMask();
 }
 
 template<class SType, class Type, class MeshType>
@@ -333,6 +416,17 @@ void linearSystem<SType,Type,MeshType>::residual
     {
         forAllCells(res, i, j, k)
             res(i,j,k) = b(i,j,k) - rowProduct(A,x,i,j,k);
+    }
+
+    if (IBM_)
+    {
+        forAllCells(res,i,j,k)
+        {
+            if (IBMForcingMask_(l,d,i,j,k))
+            {
+                res = Zero;
+            }
+        }
     }
 }
 

@@ -11,6 +11,7 @@ meshField<scalar,colocated> T
 
 T = Zero;
 T.correctBoundaryConditions();
+T.correctImmersedBoundaryConditions();
 
 // Diffusivity
 

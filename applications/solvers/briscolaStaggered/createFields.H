@@ -11,6 +11,7 @@ staggeredScalarField U
 
 U = Zero;
 U.correctBoundaryConditions();
+U.correctImmersedBoundaryConditions();
 
 // Pressure
 
@@ -25,6 +26,7 @@ colocatedScalarField p
 
 p = Zero;
 p.correctBoundaryConditions();
+p.correctImmersedBoundaryConditions();
 
 // Viscosity
 
@@ -73,7 +75,7 @@ if (fvMsh.IBs<staggered>().size())
 
 // Solvers
 
-linearSystem<stencil,scalar,staggered> USys(U);
+linearSystem<stencil,scalar,staggered> USys(U,true);
 
 autoPtr<solver<stencil,scalar,staggered>> USolve
 (

@@ -39,8 +39,17 @@ class linearSystem
     // Diagonal bools
     List<bool> diagonal_;
 
+    // IBM forcing points mask
+    meshField<label,MeshType> IBMForcingMask_;
+
+    // Can this linear system be modified by an IBM
+    const bool IBM_;
+
     // Transfer data from other system
     void transfer(linearSystem<SType,Type,MeshType>&);
+
+    // Set IBM forcing mask
+    void setIBMForcingMask();
 
 public:
 
@@ -48,7 +57,7 @@ public:
     TypeName("linearSystem");
 
     // Construct from unknown
-    linearSystem(meshField<Type,MeshType>&);
+    linearSystem(meshField<Type,MeshType>& x, bool IBM = false);
 
     // Copy constructors
     linearSystem(const linearSystem<SType,Type,MeshType>&);
@@ -57,14 +66,16 @@ public:
     // Copy constructors with new unknown
     linearSystem
     (
-        const linearSystem<SType,Type,MeshType>&,
-        meshField<Type,MeshType>&
+        const linearSystem<SType,Type,MeshType>& sys,
+        meshField<Type,MeshType>& x,
+        bool IBM = false
     );
 
     linearSystem
     (
-        const tmp<linearSystem<SType,Type,MeshType>>&,
-        meshField<Type,MeshType>&
+        const tmp<linearSystem<SType,Type,MeshType>>& tSys,
+        meshField<Type,MeshType>& x,
+        bool IBM = false
     );
 
     // Destructor
@@ -84,6 +95,10 @@ public:
     // Return the right-hand side source
     inline meshField<Type,MeshType>& b() { return b_; }
     inline const meshField<Type,MeshType>& b() const { return b_; }
+
+    // Return the IBM forcing mask
+    inline meshField<label,MeshType>& IBMForcingMask() { return IBMForcingMask_; }
+    inline const meshField<label,MeshType>& IBMForcingMask() const { return IBMForcingMask_; }
 
     // A linear system is said to be singular if all matrix row sums at the
     // coarsest level  are zero. See Remark 5.6.5 in "Multigrid", U. Trottenberg
