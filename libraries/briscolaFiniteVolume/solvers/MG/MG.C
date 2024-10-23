@@ -371,6 +371,7 @@ void MG<SType,Type,MeshType>::solve
 )
 {
     sys.eliminateGhosts();
+    sys.setIBMForcingMask();
 
     sys.x().makeDeep();
     sys.b().makeDeep();

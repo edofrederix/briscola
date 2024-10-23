@@ -67,7 +67,7 @@ imSourceCoeff = scalar(twoPhaseDict.lookupOrDefault("sourceCoeff", 0.0));
 
 // Solvers
 
-linearSystem<stencil,vector,colocated> USys(U,true);
+linearSystem<stencil,vector,colocated> USys(U);
 
 autoPtr<solver<stencil,vector,colocated>> USolve
 (

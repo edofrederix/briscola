@@ -75,7 +75,7 @@ if (fvMsh.IBs<staggered>().size())
 
 // Solvers
 
-linearSystem<stencil,scalar,staggered> USys(U,true);
+linearSystem<stencil,scalar,staggered> USys(U);
 
 autoPtr<solver<stencil,scalar,staggered>> USolve
 (

@@ -40,16 +40,10 @@ class linearSystem
     List<bool> diagonal_;
 
     // IBM forcing points mask
-    meshField<label,MeshType> IBMForcingMask_;
-
-    // Can this linear system be modified by an IBM
-    bool IBM_;
+    autoPtr<meshField<label,MeshType>> IBMForcingMask_;
 
     // Transfer data from other system
     void transfer(linearSystem<SType,Type,MeshType>&);
-
-    // Set IBM forcing mask
-    void setIBMForcingMask();
 
 public:
 
@@ -57,7 +51,7 @@ public:
     TypeName("linearSystem");
 
     // Construct from unknown
-    linearSystem(meshField<Type,MeshType>& x, bool IBM = false);
+    linearSystem(meshField<Type,MeshType>& x);
 
     // Copy constructors
     linearSystem(const linearSystem<SType,Type,MeshType>&);
@@ -67,15 +61,13 @@ public:
     linearSystem
     (
         const linearSystem<SType,Type,MeshType>& sys,
-        meshField<Type,MeshType>& x,
-        bool IBM = false
+        meshField<Type,MeshType>& x
     );
 
     linearSystem
     (
         const tmp<linearSystem<SType,Type,MeshType>>& tSys,
-        meshField<Type,MeshType>& x,
-        bool IBM = false
+        meshField<Type,MeshType>& x
     );
 
     // Destructor
@@ -97,8 +89,8 @@ public:
     inline const meshField<Type,MeshType>& b() const { return b_; }
 
     // Return the IBM forcing mask
-    inline meshField<label,MeshType>& IBMForcingMask() { return IBMForcingMask_; }
-    inline const meshField<label,MeshType>& IBMForcingMask() const { return IBMForcingMask_; }
+    inline meshField<label,MeshType>& IBMForcingMask() { return IBMForcingMask_(); }
+    inline const meshField<label,MeshType>& IBMForcingMask() const { return IBMForcingMask_(); }
 
     // A linear system is said to be singular if all matrix row sums at the
     // coarsest level  are zero. See Remark 5.6.5 in "Multigrid", U. Trottenberg
@@ -109,14 +101,14 @@ public:
     List<bool> diagonal(const bool clearCache = false);
 
     // Compute the residual b-Ax and store in given object
-    void residual(meshField<Type,MeshType>&) const;
-    void residual(meshLevel<Type,MeshType>&) const;
-    void residual(meshDirection<Type,MeshType>&) const;
+    void residual(meshField<Type,MeshType>&);
+    void residual(meshLevel<Type,MeshType>&);
+    void residual(meshDirection<Type,MeshType>&);
 
     // Compute the residual b-Ax
-    tmp<meshField<Type,MeshType>> residual() const;
-    tmp<meshLevel<Type,MeshType>> residual(const label) const;
-    tmp<meshDirection<Type,MeshType>> residual(const label, const label) const;
+    tmp<meshField<Type,MeshType>> residual();
+    tmp<meshLevel<Type,MeshType>> residual(const label);
+    tmp<meshDirection<Type,MeshType>> residual(const label, const label);
 
     // Compute the evaluation (Ax-b)/V and store in given object
     void evaluate(meshField<Type,MeshType>&) const;
@@ -130,6 +122,9 @@ public:
 
     // Eliminate ghosts from the linear system where possible
     void eliminateGhosts();
+
+    // Set IBM forcing mask
+    void setIBMForcingMask();
 
     // Member Operators
 

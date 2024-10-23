@@ -48,7 +48,7 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
     {
         sysPtr_.reset
         (
-            new linearSystem<SType,Type,MeshType>(x,true)
+            new linearSystem<SType,Type,MeshType>(x)
         );
     }
 

@@ -21,41 +21,9 @@ void linearSystem<SType,Type,MeshType>::transfer
 }
 
 template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::setIBMForcingMask()
-{
-    if (IBM_)
-    {
-        IBMForcingMask_ = Zero;
-
-        if (x_.immersedBoundaryConditions().empty())
-        {
-            IBM_ = false;
-        }
-        else
-        {
-            forAll(x_.immersedBoundaryConditions(), ib)
-            {
-                forAllCells(IBMForcingMask_,l,d,i,j,k)
-                {
-                    if
-                    (
-                        x_.immersedBoundaryConditions()[ib]
-                            .forcingPoints()(l,d,i,j,k)
-                    )
-                    {
-                        IBMForcingMask_(l,d,i,j,k) = 1;
-                    }
-                }
-            }
-        }
-    }
-}
-
-template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
 (
-    meshField<Type, MeshType>& x,
-    bool IBM
+    meshField<Type, MeshType>& x
 )
 :
     tmp<linearSystem<SType,Type,MeshType>>::refCount(),
@@ -76,20 +44,8 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    IBMForcingMask_
-    (
-        IOobject::groupName(x_.name(), "IBMMask"),
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false,
-        true
-    ),
-    IBM_(IBM)
-{
-    setIBMForcingMask();
-}
+    )
+{}
 
 template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
@@ -115,17 +71,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    IBMForcingMask_
-    (
-        IOobject::groupName(x_.name(), "IBMMask"),
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false,
-        true
-    ),
-    IBM_(false)
+    )
 {
     *this = sys;
 }
@@ -154,17 +100,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    IBMForcingMask_
-    (
-        IOobject::groupName(x_.name(), "IBMMask"),
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false,
-        true
-    ),
-    IBM_(false)
+    )
 {
     if (tSys.isTmp())
     {
@@ -186,8 +122,7 @@ template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
 (
     const linearSystem<SType,Type,MeshType>& sys,
-    meshField<Type, MeshType>& x,
-    bool IBM
+    meshField<Type, MeshType>& x
 )
 :
     tmp<linearSystem<SType,Type,MeshType>>::refCount(),
@@ -208,29 +143,16 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    IBMForcingMask_
-    (
-        IOobject::groupName(x_.name(), "IBMMask"),
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false,
-        true
-    ),
-    IBM_(IBM)
+    )
 {
     *this = sys;
-
-    setIBMForcingMask();
 }
 
 template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
 (
     const tmp<linearSystem<SType,Type,MeshType>>& tSys,
-    meshField<Type, MeshType>& x,
-    bool IBM
+    meshField<Type, MeshType>& x
 )
 :
     tmp<linearSystem<SType,Type,MeshType>>::refCount(),
@@ -251,17 +173,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    ),
-    IBMForcingMask_
-    (
-        IOobject::groupName(x_.name(), "IBMMask"),
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false,
-        true
-    ),
-    IBM_(IBM)
+    )
 {
     if (tSys.isTmp())
     {
@@ -277,8 +189,6 @@ linearSystem<SType,Type,MeshType>::linearSystem
 
     if (tSys.isTmp())
         tSys.clear();
-
-    setIBMForcingMask();
 }
 
 template<class SType, class Type, class MeshType>
@@ -353,7 +263,7 @@ template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::residual
 (
     meshField<Type, MeshType>& res
-) const
+)
 {
     forAll(res, l)
         this->residual(res[l]);
@@ -361,7 +271,7 @@ void linearSystem<SType,Type,MeshType>::residual
 
 template<class SType, class Type, class MeshType>
 tmp<meshField<Type, MeshType>>
-linearSystem<SType,Type,MeshType>::residual() const
+linearSystem<SType,Type,MeshType>::residual()
 {
     tmp<meshField<Type,MeshType>> tRes
     (
@@ -381,7 +291,7 @@ template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::residual
 (
     meshLevel<Type,MeshType>& res
-) const
+)
 {
     forAll(res, d)
         this->residual(res[d]);
@@ -389,7 +299,7 @@ void linearSystem<SType,Type,MeshType>::residual
 
 template<class SType, class Type, class MeshType>
 tmp<meshLevel<Type,MeshType>>
-linearSystem<SType,Type,MeshType>::residual(const label l) const
+linearSystem<SType,Type,MeshType>::residual(const label l)
 {
     tmp<meshLevel<Type,MeshType>> tRes
     (
@@ -405,7 +315,7 @@ template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::residual
 (
     meshDirection<Type,MeshType>& res
-) const
+)
 {
     const label l = res.levelNum();
     const label d = res.directionNum();
@@ -427,13 +337,15 @@ void linearSystem<SType,Type,MeshType>::residual
             res(i,j,k) = b(i,j,k) - rowProduct(A,x,i,j,k);
     }
 
-    if (IBM_)
+    setIBMForcingMask();
+
+    if (!x_.immersedBoundaryConditions().empty())
     {
         forAllCells(res,i,j,k)
         {
-            if (IBMForcingMask_(l,d,i,j,k))
+            if (IBMForcingMask_()(l,d,i,j,k))
             {
-                res = Zero;
+                res(i,j,k) = Zero;
             }
         }
     }
@@ -445,7 +357,7 @@ linearSystem<SType,Type,MeshType>::residual
 (
     const label l,
     const label d
-) const
+)
 {
     tmp<meshDirection<Type,MeshType>> tRes
     (
@@ -566,6 +478,47 @@ void linearSystem<SType,Type,MeshType>::eliminateGhosts()
     forAll(A_, l)
         forAll(x_.boundaryConditions(), i)
             x_.boundaryConditions()[i].eliminateGhosts(*this, l);
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::setIBMForcingMask()
+{
+    if ( IBMForcingMask_.empty())
+    {
+        IBMForcingMask_.set
+        (
+            new meshField<label,MeshType>
+            (
+                IOobject::groupName(x_.name(),"IBMForcingMask"),
+                fvMsh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false,
+                true
+            )
+        );
+
+        IBMForcingMask_() = Zero;
+
+        if (!x_.immersedBoundaryConditions().empty())
+        {
+            forAll(x_.immersedBoundaryConditions(), ib)
+            {
+                forAllCells(IBMForcingMask_(),l,d,i,j,k)
+                {
+                    if
+                    (
+                        x_.immersedBoundaryConditions()[ib]
+                            .forcingPoints()(l,d,i,j,k)
+                    )
+                    {
+                        IBMForcingMask_()(l,d,i,j,k) = 1;
+                    }
+                }
+            }
+        }
+
+    }
 }
 
 template<class SType, class Type, class MeshType>
