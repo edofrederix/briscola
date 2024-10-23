@@ -63,11 +63,17 @@ public:
         const tmp<meshField<Type,MeshType>>& tField
     )
     {
+        if (tField.isTmp())
+            tField->correctBoundaryConditions();
+
         tmp<meshField<LowerFaceSpace<Type>,MeshType>> tInterp
         (
             interp(tField())
         );
-        tField.clear();
+
+        if (tField.isTmp())
+            tField.clear();
+
         return tInterp;
     }
 };

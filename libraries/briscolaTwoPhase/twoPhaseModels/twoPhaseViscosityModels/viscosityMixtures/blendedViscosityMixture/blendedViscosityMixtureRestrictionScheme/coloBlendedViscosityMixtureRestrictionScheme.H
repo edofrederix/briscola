@@ -1,7 +1,7 @@
-#ifndef coloBlendedViscosityRestrictionScheme_H
-#define coloBlendedViscosityRestrictionScheme_H
+#ifndef coloBlendedViscosityMixtureRestrictionScheme_H
+#define coloBlendedViscosityMixtureRestrictionScheme_H
 
-#include "blendedViscosityRestrictionScheme.H"
+#include "blendedViscosityMixtureRestrictionScheme.H"
 
 namespace Foam
 {
@@ -12,17 +12,17 @@ namespace briscola
 namespace fv
 {
 
-class coloBlendedViscosityRestrictionScheme
+class coloBlendedViscosityMixtureRestrictionScheme
 :
-    public blendedViscosityRestrictionScheme<colocated>
+    public blendedViscosityMixtureRestrictionScheme<colocated>
 {
 public:
 
     // Runtime type information
-    TypeName("blendedViscosity");
+    TypeName("blendedViscosityMixture");
 
     // Construct from stream and mesh
-    coloBlendedViscosityRestrictionScheme
+    coloBlendedViscosityMixtureRestrictionScheme
     (
         const fvMesh&,
         Istream& = scheme::nullStream

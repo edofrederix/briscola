@@ -44,8 +44,6 @@ void Brackbill<SigmaModel>::correct()
       * ex::interp(this->sigma_)
       * ex::faceGrad(this->alpha_)
     );
-
-    this->correctBoundaryConditions();
 }
 
 }

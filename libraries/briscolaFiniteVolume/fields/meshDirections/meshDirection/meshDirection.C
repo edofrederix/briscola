@@ -133,7 +133,8 @@ meshDirection<Type,MeshType>::meshDirection
     I_(tD->I_),
     mshLevelPtr_(nullptr)
 {
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -155,7 +156,8 @@ meshDirection<Type,MeshType>::meshDirection
     I_(tD->I_),
     mshLevelPtr_(nullptr)
 {
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -177,7 +179,8 @@ meshDirection<Type,MeshType>::meshDirection
     I_(tD->I_),
     mshLevelPtr_(nullptr)
 {
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -199,7 +202,8 @@ meshDirection<Type,MeshType>::meshDirection
     I_(tD->I_),
     mshLevelPtr_(nullptr)
 {
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -311,7 +315,8 @@ void meshDirection<Type,MeshType>::operator=
         *this = tD();
     }
 
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -342,7 +347,8 @@ void meshDirection<Type,MeshType>::operator+=
 )
 {
     *this += tD();
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -361,7 +367,8 @@ void meshDirection<Type,MeshType>::operator-=
 )
 {
     *this -= tD();
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -380,7 +387,8 @@ void meshDirection<Type,MeshType>::operator*=
 )
 {
     *this *= tD();
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -399,7 +407,8 @@ void meshDirection<Type,MeshType>::operator/=
 )
 {
     *this /= tD();
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -444,7 +453,8 @@ void meshDirection<Type,MeshType>::operator=
 )
 {
     *this = tD();
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -465,7 +475,8 @@ void meshDirection<Type,MeshType>::operator+=
 )
 {
     *this += tD();
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -486,7 +497,8 @@ void meshDirection<Type,MeshType>::operator-=
 )
 {
     *this -= tD();
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -507,7 +519,8 @@ void meshDirection<Type,MeshType>::operator*=
 )
 {
     *this *= tD();
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -528,7 +541,8 @@ void meshDirection<Type,MeshType>::operator/=
 )
 {
     *this /= tD();
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>

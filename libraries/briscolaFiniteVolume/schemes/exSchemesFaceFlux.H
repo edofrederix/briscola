@@ -38,12 +38,16 @@ inline tmp<meshField<lowerFaceScalar,colocated>> faceFlux
     const tmp<colocatedVectorField>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<lowerFaceScalar,colocated>> tFaceFlux
     (
         faceFlux(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tFaceFlux;
 }
@@ -67,12 +71,16 @@ inline tmp<meshField<lowerFaceVector,colocated>> faceFlux
     const tmp<colocatedTensorField>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<lowerFaceVector,colocated>> tFaceFlux
     (
         faceFlux(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tFaceFlux;
 }
@@ -96,12 +104,16 @@ inline tmp<meshField<lowerFaceScalar,staggered>> faceFlux
     const tmp<staggeredScalarField>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<lowerFaceScalar,staggered>> tFaceFlux
     (
         faceFlux(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tFaceFlux;
 }

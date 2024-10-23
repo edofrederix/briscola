@@ -171,7 +171,8 @@ linearSystem<SType,Type,MeshType>::linearSystem
         *this = tSys();
     }
 
-    tSys.clear();
+    if (tSys.isTmp())
+        tSys.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -267,7 +268,8 @@ linearSystem<SType,Type,MeshType>::linearSystem
         *this = tSys();
     }
 
-    tSys.clear();
+    if (tSys.isTmp())
+        tSys.clear();
 
     setIBMForcingMask();
 }
@@ -587,7 +589,8 @@ void linearSystem<SType,Type,MeshType>::operator=
         *this = tSys();
     }
 
-    tSys.clear();
+    if (tSys.isTmp())
+        tSys.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -607,7 +610,9 @@ void linearSystem<SType,Type,MeshType>::operator+=
 )
 {
     *this += tSys();
-    tSys.clear();
+
+    if (tSys.isTmp())
+        tSys.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -627,7 +632,9 @@ void linearSystem<SType,Type,MeshType>::operator-=
 )
 {
     *this -= tSys();
-    tSys.clear();
+
+    if (tSys.isTmp())
+        tSys.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -663,7 +670,9 @@ void linearSystem<SType,Type,MeshType>::operator=
 )
 {
     *this = tField();
-    tField.clear();
+
+    if (tField.isTmp())
+        tField.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -709,7 +718,9 @@ void linearSystem<SType,Type,MeshType>::operator+=
 )
 {
     *this += tField();
-    tField.clear();
+
+    if (tField.isTmp())
+        tField.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -755,7 +766,9 @@ void linearSystem<SType,Type,MeshType>::operator-=
 )
 {
     *this -= tField();
-    tField.clear();
+
+    if (tField.isTmp())
+        tField.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -777,7 +790,9 @@ void linearSystem<SType,Type,MeshType>::operator=
 )
 {
     *this = tSys();
-    tSys.clear();
+
+    if (tSys.isTmp())
+        tSys.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -809,7 +824,9 @@ void linearSystem<SType,Type,MeshType>::operator+=
 )
 {
     *this += tSys();
-    tSys.clear();
+
+    if (tSys.isTmp())
+        tSys.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -841,7 +858,9 @@ void linearSystem<SType,Type,MeshType>::operator-=
 )
 {
     *this -= tSys();
-    tSys.clear();
+
+    if (tSys.isTmp())
+        tSys.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -881,7 +900,9 @@ void linearSystem<SType,Type,MeshType>::operator*=
 )
 {
     *this *= tField();
-    tField.clear();
+
+    if (tField.isTmp())
+        tField.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -921,7 +942,9 @@ void linearSystem<SType,Type,MeshType>::operator/=
 )
 {
     *this /= tField();
-    tField.clear();
+
+    if (tField.isTmp())
+        tField.clear();
 }
 
 template<class SType, class Type, class MeshType>

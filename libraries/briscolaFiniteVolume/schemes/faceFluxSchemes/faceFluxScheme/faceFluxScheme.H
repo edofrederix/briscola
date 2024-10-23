@@ -50,19 +50,19 @@ public:
     // Destructor
     virtual ~faceFluxScheme();
 
-    // FaceFluxScheme of a colocated vector field
+    // Face flux of a colocated vector field
     virtual tmp<colocatedLowerFaceScalarField> faceFlux
     (
         const colocatedVectorField&
     ) = 0;
 
-    // FaceFluxScheme of a colocated tensor field
+    // Face flux of a colocated tensor field
     virtual tmp<colocatedLowerFaceVectorField> faceFlux
     (
         const colocatedTensorField&
     ) = 0;
 
-    // FaceFluxScheme of a staggered scalar field
+    // Face flux of a staggered scalar field
     virtual tmp<staggeredLowerFaceScalarField> faceFlux
     (
         const staggeredScalarField&

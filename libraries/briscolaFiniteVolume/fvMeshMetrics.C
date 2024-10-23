@@ -266,7 +266,7 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
     forAllFaces(delta, l, d, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(ijk-units[fd]);
+        const labelVector nei(lowerNei(i,j,k,fd));
 
         delta(l,d,ijk)[fd*2] =
             1.0/Foam::mag(cc(l,d,ijk)-cc(l,d,nei));
@@ -291,7 +291,7 @@ void fvMeshMetrics<MeshType>::calculateFaceWeights()
     forAllFaces(fwc, l, d, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(ijk-units[fd]);
+        const labelVector nei(lowerNei(i,j,k,fd));
 
         fwc(l,d,ijk)[fd*2] =
             Foam::mag(cc(l,d,nei) - fc(l,d,ijk)[fd*2])*delta(l,d,ijk)[fd*2];

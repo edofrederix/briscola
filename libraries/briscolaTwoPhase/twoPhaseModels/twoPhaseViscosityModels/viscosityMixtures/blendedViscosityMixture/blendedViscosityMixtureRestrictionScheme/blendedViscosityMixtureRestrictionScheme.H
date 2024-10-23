@@ -1,5 +1,5 @@
-#ifndef blendedViscosityRestrictionScheme_H
-#define blendedViscosityRestrictionScheme_H
+#ifndef blendedViscosityMixtureRestrictionScheme_H
+#define blendedViscosityMixtureRestrictionScheme_H
 
 #include "restrictionScheme.H"
 
@@ -13,7 +13,7 @@ namespace fv
 {
 
 template<class MeshType>
-class blendedViscosityRestrictionScheme
+class blendedViscosityMixtureRestrictionScheme
 :
     public restrictionScheme<lowerFaceScalar,MeshType>
 {
@@ -60,10 +60,10 @@ protected:
 public:
 
     // Runtime type information
-    TypeName("blendedViscosity");
+    TypeName("blendedViscosityMixture");
 
     // Construct from stream and mesh
-    blendedViscosityRestrictionScheme
+    blendedViscosityMixtureRestrictionScheme
     (
         const fvMesh&,
         Istream& = scheme::nullStream
@@ -77,7 +77,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "blendedViscosityRestrictionScheme.C"
+    #include "blendedViscosityMixtureRestrictionScheme.C"
 #endif
 
 #endif

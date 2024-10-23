@@ -114,7 +114,6 @@ parabolicFit::~parabolicFit()
 
 void parabolicFit::correct()
 {
-
     colocatedScalarField& kappa = *this;
 
     const colocatedVertexVectorField& v =
@@ -559,7 +558,7 @@ void parabolicFit::correct()
         }
     }
 
-    txgi.ref()[0].correctBoundaryConditions();
+    txgi->correctBoundaryConditions();
 
     forAllCells(kappa, i, j, k)
     {

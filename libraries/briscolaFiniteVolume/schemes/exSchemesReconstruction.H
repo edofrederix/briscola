@@ -63,12 +63,16 @@ reconstruct
     const tmp<meshField<Type,staggered>>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<typename outerProduct<vector,Type>::type,colocated>> tRecon
     (
         reconstruct(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tRecon;
 }
@@ -135,7 +139,8 @@ reconstruct
         reconstruct(tFlux())
     );
 
-    tFlux.clear();
+    if (tFlux.isTmp())
+        tFlux.clear();
 
     return tRecon;
 }
@@ -182,7 +187,8 @@ inline tmp<meshField<Type,staggered>> stagReconstruct
         stagReconstruct(tFlux())
     );
 
-    tFlux.clear();
+    if (tFlux.isTmp())
+        tFlux.clear();
 
     return tRecon;
 }

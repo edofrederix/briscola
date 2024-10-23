@@ -677,8 +677,8 @@ void LSFIR::correct()
 
         }
 
-        xgi[0].correctBoundaryConditions();
-        n[0].correctBoundaryConditions();
+        xgi.correctBoundaryConditions();
+        n.correctBoundaryConditions();
 
         // Minimize the square problem for all cells and store the solution
 
@@ -898,7 +898,7 @@ void LSFIR::correct()
         }
     }
 
-    n[0].correctBoundaryConditions();
+    n.correctBoundaryConditions();
 }
 
 }

@@ -89,7 +89,8 @@ namespace im
             source(tLambda(), field, factor)
         );
 
-        tLambda.clear();
+        if (tLambda.isTmp())
+            tLambda.clear();
 
         return tSource;
     }

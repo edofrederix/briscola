@@ -57,16 +57,18 @@ int main(int argc, char *argv[])
 
         phi = ex::faceFlux(U);
 
-        H = ex::div(phi,U)
-          - stagDotProduct(ex::grad(mu),ex::grad(U))*v;
+        H = ex::div(phi,U);
 
         USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
-        USys -= list(twoPhase.g());
-        USys -= ex::stagReconstruct(twoPhase.surfaceTension())*v;
+        USys -= twoPhase.gravity();
+        USys -= (ex::grad(mu) & stagT(ex::grad(U)))*v;
 
         // Solve predictor
 
         USolve->solve(USys);
+
+        U += deltaT*ex::stagReconstruct(twoPhase.surfaceTension())*v;
+        U.correctBoundaryConditions();
 
         // Pressure equation
 

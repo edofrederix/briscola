@@ -39,7 +39,8 @@ tmp<meshLevel<SCALARPRODTYPE,MeshType>> mag(const tmp<meshLevel<Type,MeshType>>&
         reuseLevTmp<SCALARPRODTYPE,Type,MeshType>::New(tf);
 
     mag(tRes.ref(), tf());
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return tRes;
 }
 
@@ -74,7 +75,8 @@ cmptMax(const tmp<meshLevel<Type,MeshType>>& tf)
         reuseLevTmp<cmptType,Type,MeshType>::New(tf);
 
     cmptMax(tRes.ref(), tf());
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return tRes;
 }
 
@@ -109,7 +111,8 @@ cmptMin(const tmp<meshLevel<Type,MeshType>>& tf)
         reuseLevTmp<cmptType,Type,MeshType>::New(tf);
 
     cmptMin(tRes.ref(), tf());
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return tRes;
 }
 
@@ -144,7 +147,8 @@ cmptAv(const tmp<meshLevel<Type,MeshType>>& tf)
         reuseLevTmp<cmptType,Type,MeshType>::New(tf);
 
     cmptAv(tRes.ref(), tf());
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return tRes;
 }
 
@@ -170,7 +174,8 @@ tmp<meshLevel<Type,MeshType>> cmptMag(const tmp<meshLevel<Type,MeshType>>& tf)
     tmp<meshLevel<Type,MeshType>> tRes = New(tf);
 
     cmptMag(tRes.ref(), tf());
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return tRes;
 }
 
@@ -191,7 +196,8 @@ template<class Type, class MeshType>
 List<Type> max(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     List<Type> ret(max(tf()));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -212,7 +218,8 @@ template<class Type, class MeshType>
 List<Type> min(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     List<Type> ret(min(tf()));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -233,7 +240,8 @@ template<class Type, class MeshType>
 List<Type> sum(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     List<Type> ret(sum(tf()));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -254,7 +262,8 @@ template<class Type, class MeshType>
 List<Type> average(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     List<Type> ret(average(tf()));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -275,7 +284,8 @@ template<class Type, class MeshType>
 List<SCALARPRODTYPE> maxMagSqr(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     List<SCALARPRODTYPE> ret(maxMagSqr(tf()));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -296,7 +306,8 @@ template<class Type, class MeshType>
 List<SCALARPRODTYPE> minMagSqr(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     List<SCALARPRODTYPE> ret(minMagSqr(tf()));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -325,7 +336,8 @@ List<SCALARPRODTYPE> sumProd
 )
 {
     List<SCALARPRODTYPE> ret(sumProd(tf1(),f2));
-    tf1.clear();
+    if (tf1.isTmp())
+        tf1.clear();
     return ret;
 }
 
@@ -337,7 +349,8 @@ List<SCALARPRODTYPE> sumProd
 )
 {
     List<SCALARPRODTYPE> ret(sumProd(f1,tf2()));
-    tf2.clear();
+    if (tf2.isTmp())
+        tf2.clear();
     return ret;
 }
 
@@ -349,8 +362,10 @@ List<SCALARPRODTYPE> sumProd
 )
 {
     List<SCALARPRODTYPE> ret(sumProd(tf1(),tf2()));
-    tf1.clear();
-    tf2.clear();
+    if (tf1.isTmp())
+        tf1.clear();
+    if (tf2.isTmp())
+        tf2.clear();
     return ret;
 }
 
@@ -379,7 +394,8 @@ List<Type> sumCmptProd
 )
 {
     List<Type> ret(sumCmptProd(tf1(),f2));
-    tf1.clear();
+    if (tf1.isTmp())
+        tf1.clear();
     return ret;
 }
 
@@ -391,7 +407,8 @@ List<Type> sumCmptProd
 )
 {
     List<Type> ret(sumCmptProd(f1,tf2()));
-    tf2.clear();
+    if (tf2.isTmp())
+        tf2.clear();
     return ret;
 }
 
@@ -403,8 +420,10 @@ List<Type> sumCmptProd
 )
 {
     List<Type> ret(sumCmptProd(tf1(),tf2()));
-    tf1.clear();
-    tf2.clear();
+    if (tf1.isTmp())
+        tf1.clear();
+    if (tf2.isTmp())
+        tf2.clear();
     return ret;
 }
 
@@ -425,7 +444,8 @@ template<class Type, class MeshType>
 List<SCALARPRODTYPE> sumMag(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     List<SCALARPRODTYPE> ret(sumMag(tf()));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -446,7 +466,8 @@ template<class Type, class MeshType>
 List<Type> sumCmptMag(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     List<Type> ret(sumCmptMag(tf()));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 
@@ -474,7 +495,7 @@ List<ReturnType> gFunc                                                          
 )                                                                               \
 {                                                                               \
     List<ReturnType> ret(gFunc(tf()));                                          \
-    tf.clear();                                                                 \
+    if (tf.isTmp()) tf.clear();                                                 \
     return ret;                                                                 \
 }
 
@@ -526,7 +547,8 @@ List<Type> gAverage
 )
 {
     List<Type> ret(gAverage(tf()));
-    tf.clear();
+    if (tf.isTmp())
+        tf.clear();
     return ret;
 }
 

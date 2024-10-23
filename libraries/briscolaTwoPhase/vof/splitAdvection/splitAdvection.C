@@ -37,7 +37,7 @@ void splitAdvection::updateFlux
     if (d == fd)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(ijk-units[d]);
+        const labelVector nei(lowerNei(i,j,k,d));
 
         // Select the donating side
 
@@ -203,7 +203,7 @@ void splitAdvection::solve(const colocatedLowerFaceScalarField& phi)
             forAllCells(alpha_, i, j, k)
             {
                 labelVector ijk(i,j,k);
-                labelVector nei(ijk + units[dir]);
+                labelVector nei(upperNei(i,j,k,dir));
 
                 alpha_(ijk) +=
                     dt/cv(ijk)
@@ -218,7 +218,7 @@ void splitAdvection::solve(const colocatedLowerFaceScalarField& phi)
                 alpha_(ijk) = Foam::min(Foam::max(alpha_(ijk), 0.0), 1.0);
             }
 
-            alpha_[0].correctBoundaryConditions();
+            alpha_.correctBoundaryConditions();
 
             // Update the normal after the alpha update, so that it is
             // consistent with alpha and can be reused by other parts of the

@@ -52,7 +52,8 @@ mag(const tmp<meshDirection<Type,MeshType>>& tD)
         reuseDirTmp<SCALARPRODTYPE,Type,MeshType>::New(tD);
 
     mag(tRes.ref(), tD());
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return tRes;
 }
 
@@ -99,7 +100,8 @@ cmptMax(const tmp<meshDirection<Type,MeshType>>& tD)
         reuseDirTmp<cmptType,Type,MeshType>::New(tD);
 
     cmptMax(tRes.ref(), tD());
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return tRes;
 }
 
@@ -146,7 +148,8 @@ cmptMin(const tmp<meshDirection<Type,MeshType>>& tD)
         reuseDirTmp<cmptType,Type,MeshType>::New(tD);
 
     cmptMin(tRes.ref(), tD());
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return tRes;
 }
 
@@ -189,7 +192,8 @@ cmptAv(const tmp<meshDirection<Type,MeshType>>& tD)
         reuseDirTmp<cmptType,Type,MeshType>::New(tD);
 
     cmptAv(tRes.ref(), tD());
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return tRes;
 }
 
@@ -228,7 +232,8 @@ cmptMag(const tmp<meshDirection<Type,MeshType>>& tD)
     tmp<meshDirection<Type,MeshType>> tRes = New(tD);
 
     cmptMag(tRes.ref(), tD());
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return tRes;
 }
 
@@ -254,7 +259,8 @@ template<class Type, class MeshType>
 Type max(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     Type ret(max(tD()));
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return ret;
 }
 
@@ -280,7 +286,8 @@ template<class Type, class MeshType>
 Type min(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     Type ret(min(tD()));
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return ret;
 }
 
@@ -303,7 +310,8 @@ template<class Type, class MeshType>
 Type sum(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     Type ret(sum(tD()));
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return ret;
 }
 
@@ -317,7 +325,8 @@ template<class Type, class MeshType>
 Type average(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     Type ret(average(tD()));
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return ret;
 }
 
@@ -343,7 +352,8 @@ template<class Type, class MeshType>
 SCALARPRODTYPE maxMagSqr(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     SCALARPRODTYPE ret(maxMagSqr(tD()));
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return ret;
 }
 
@@ -369,7 +379,8 @@ template<class Type, class MeshType>
 SCALARPRODTYPE minMagSqr(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     SCALARPRODTYPE ret(minMagSqr(tD()));
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return ret;
 }
 
@@ -400,7 +411,8 @@ SCALARPRODTYPE sumProd
 )
 {
     SCALARPRODTYPE ret(sumProd(tD1(),D2));
-    tD1.clear();
+    if (tD1.isTmp())
+        tD1.clear();
     return ret;
 }
 
@@ -412,7 +424,8 @@ SCALARPRODTYPE sumProd
 )
 {
     SCALARPRODTYPE ret(sumProd(D1,tD2()));
-    tD2.clear();
+    if (tD2.isTmp())
+        tD2.clear();
     return ret;
 }
 
@@ -424,8 +437,10 @@ SCALARPRODTYPE sumProd
 )
 {
     SCALARPRODTYPE ret(sumProd(tD1(),tD2()));
-    tD1.clear();
-    tD2.clear();
+    if (tD1.isTmp())
+        tD1.clear();
+    if (tD2.isTmp())
+        tD2.clear();
     return ret;
 }
 
@@ -456,7 +471,8 @@ Type sumCmptProd
 )
 {
     Type ret(sumCmptProd(tD1(),D2));
-    tD1.clear();
+    if (tD1.isTmp())
+        tD1.clear();
     return ret;
 }
 
@@ -468,7 +484,8 @@ Type sumCmptProd
 )
 {
     Type ret(sumCmptProd(D1,tD2()));
-    tD2.clear();
+    if (tD2.isTmp())
+        tD2.clear();
     return ret;
 }
 
@@ -480,8 +497,10 @@ Type sumCmptProd
 )
 {
     Type ret(sumCmptProd(tD1(),tD2()));
-    tD1.clear();
-    tD2.clear();
+    if (tD1.isTmp())
+        tD1.clear();
+    if (tD2.isTmp())
+        tD2.clear();
     return ret;
 }
 
@@ -504,7 +523,8 @@ template<class Type, class MeshType>
 SCALARPRODTYPE sumMag(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     SCALARPRODTYPE ret(sumMag(tD()));
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return ret;
 }
 
@@ -527,7 +547,8 @@ template<class Type, class MeshType>
 Type sumCmptMag(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     Type ret(sumCmptMag(tD()));
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return ret;
 }
 
@@ -554,7 +575,7 @@ ReturnType gFunc                                                               \
 )                                                                              \
 {                                                                              \
     ReturnType ret(gFunc(tD()));                                               \
-    tD.clear();                                                                \
+    if (tD.isTmp()) tD.clear();                                                \
     return ret;                                                                \
 }
 
@@ -597,7 +618,8 @@ Type gAverage
 )
 {
     Type ret(gAverage(tD()));
-    tD.clear();
+    if (tD.isTmp())
+        tD.clear();
     return ret;
 }
 

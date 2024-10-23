@@ -119,6 +119,9 @@ public:
     // Return const access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
+    // Return const access to the dictionary
+    inline const dictionary& dict() const { return dict_; }
+
     // Return access to the volume fraction
     inline colocatedScalarField& alpha() { return alpha_; }
 

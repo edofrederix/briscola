@@ -1,7 +1,7 @@
-#ifndef stagBlendedViscosityRestrictionScheme_H
-#define stagBlendedViscosityRestrictionScheme_H
+#ifndef stagBlendedViscosityMixtureRestrictionScheme_H
+#define stagBlendedViscosityMixtureRestrictionScheme_H
 
-#include "blendedViscosityRestrictionScheme.H"
+#include "blendedViscosityMixtureRestrictionScheme.H"
 
 namespace Foam
 {
@@ -12,17 +12,17 @@ namespace briscola
 namespace fv
 {
 
-class stagBlendedViscosityRestrictionScheme
+class stagBlendedViscosityMixtureRestrictionScheme
 :
-    public blendedViscosityRestrictionScheme<staggered>
+    public blendedViscosityMixtureRestrictionScheme<staggered>
 {
 public:
 
     // Runtime type information
-    TypeName("blendedViscosity");
+    TypeName("blendedViscosityMixture");
 
     // Construct from stream and mesh
-    stagBlendedViscosityRestrictionScheme
+    stagBlendedViscosityMixtureRestrictionScheme
     (
         const fvMesh&,
         Istream& = scheme::nullStream

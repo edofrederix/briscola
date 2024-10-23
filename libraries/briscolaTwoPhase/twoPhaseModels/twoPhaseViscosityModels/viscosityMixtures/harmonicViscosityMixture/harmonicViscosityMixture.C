@@ -1,6 +1,5 @@
-#include "harmonicViscosity.H"
+#include "harmonicViscosityMixture.H"
 #include "interpolationScheme.H"
-#include "exSchemes.H"
 
 namespace Foam
 {
@@ -12,42 +11,39 @@ namespace fv
 {
 
 template<class BaseModel>
-harmonicViscosity<BaseModel>::harmonicViscosity
+harmonicViscosityMixture<BaseModel>::harmonicViscosityMixture
 (
     const fvMesh& fvMsh,
     const IOdictionary& dict
 )
 :
-    BaseModel(fvMsh, dict),
-    mu1_(readScalar(dict.lookup("mu1"))),
-    mu2_(readScalar(dict.lookup("mu2")))
+    BaseModel(fvMsh, dict)
 {
     this->mu_.setRestrictionScheme("harmonicFaceAreaWeighted");
 }
 
 template<class BaseModel>
-harmonicViscosity<BaseModel>::harmonicViscosity(const harmonicViscosity& tpm)
+harmonicViscosityMixture<BaseModel>::
+harmonicViscosityMixture(const harmonicViscosityMixture& tpm)
 :
-    BaseModel(tpm),
-    mu1_(tpm.mu1_),
-    mu2_(tpm.mu2_)
+    BaseModel(tpm)
 {
     this->mu_.setRestrictionScheme("harmonicFaceAreaWeighted");
 }
 
 template<class BaseModel>
-harmonicViscosity<BaseModel>::~harmonicViscosity()
+harmonicViscosityMixture<BaseModel>::~harmonicViscosityMixture()
 {}
 
 template<class BaseModel>
-void harmonicViscosity<BaseModel>::correctMixture()
+void harmonicViscosityMixture<BaseModel>::correctMixture()
 {
     const meshField<lowerFaceScalar,typename BaseModel::meshType> alpha
     (
         this->faceAlpha()
     );
 
-    this->mu_ = 1.0/(alpha/mu2_ + (1.0 - alpha)/mu1_);
+    this->mu_ = 1.0/(alpha/this->mu2_ + (1.0 - alpha)/this->mu1_);
 
     BaseModel::correctMixture();
 }

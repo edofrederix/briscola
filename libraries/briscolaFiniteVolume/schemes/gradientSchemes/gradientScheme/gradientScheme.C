@@ -115,7 +115,8 @@ grad
         grad(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tGrad;
 }
@@ -171,7 +172,8 @@ grad
         grad(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tGrad;
 }

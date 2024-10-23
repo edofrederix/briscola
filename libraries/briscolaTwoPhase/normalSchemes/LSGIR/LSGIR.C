@@ -206,7 +206,7 @@ void LSGIR::correct()
         }
     }
 
-    n[0].correctBoundaryConditions();
+    n.correctBoundaryConditions();
 }
 
 }

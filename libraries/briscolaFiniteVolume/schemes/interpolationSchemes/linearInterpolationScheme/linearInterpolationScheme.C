@@ -48,7 +48,7 @@ linearInterpolationScheme<Type,MeshType>::interp
     forAllFaces(Interp, d, fd, i, j, k)
     {
         labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
+        labelVector nei(lowerNei(i,j,k,fd));
 
         Interp(d,ijk)[fd] =
             field(d,ijk)*fwc(d,ijk)[fd*2]

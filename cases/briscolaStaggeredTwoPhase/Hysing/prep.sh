@@ -34,6 +34,7 @@ case "$CASE" in
     *)
 
         echo "Invalid case"
+        exit
 
 esac
 

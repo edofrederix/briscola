@@ -71,6 +71,9 @@ public:
 
     // Return the colocated face flux
     virtual tmp<colocatedLowerFaceScalarField> coloFaceFlux() const;
+
+    // Return the gravitational acceleration
+    virtual List<typename MeshType::vectorType> gravity() const;
 };
 
 }

@@ -39,10 +39,10 @@ void coloFluxRestrictionScheme::restrict
     forAllFaces(coarse, fd, i, j, k)
     {
         labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
+        labelVector nei(lowerNei(i,j,k,fd));
 
         labelVector fijk(i*R.x(), j*R.y(), k*R.z());
-        labelVector fnei(fijk-units[fd]);
+        labelVector fnei(lowerNei(fijk,fd));
 
         labelVector o;
         for (o.x() = 0; o.x() < (fd == 0 ? 1 : R.x()); o.x()++)

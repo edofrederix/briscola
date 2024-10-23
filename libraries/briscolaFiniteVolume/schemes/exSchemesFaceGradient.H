@@ -36,12 +36,16 @@ inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
     const tmp<meshField<Type,MeshType>>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<LowerFaceSpace<Type>,MeshType>> tFaceGrad
     (
         faceGrad(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tFaceGrad;
 }

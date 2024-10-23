@@ -42,7 +42,7 @@ midPointInterpolationScheme<Type,MeshType>::interp
     forAllFaces(Interp, d, fd, i, j, k)
     {
         labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
+        labelVector nei(lowerNei(i,j,k,fd));
 
         Interp(d,ijk)[fd] = 0.5*(field(d,ijk) + field(d,nei));
     }

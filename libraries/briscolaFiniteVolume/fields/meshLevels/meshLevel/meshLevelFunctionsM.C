@@ -29,7 +29,7 @@ Func(const tmp<meshLevel<Type,MeshType>>& tf)                                   
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type,MeshType>::New(tf);                         \
     Func(tRes.ref(), tf());                                                     \
-    tf.clear();                                                                 \
+    if (tf.isTmp()) tf.clear();                                                 \
     return tRes;                                                                \
 }
 
@@ -63,7 +63,7 @@ operator Op(const tmp<meshLevel<Type,MeshType>>& tf)                            
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type,MeshType>::New(tf);                         \
     OpFunc(tRes.ref(), tf());                                                   \
-    tf.clear();                                                                 \
+    if (tf.isTmp()) tf.clear();                                                 \
     return tRes;                                                                \
 }
 
@@ -104,7 +104,7 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                        
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type2,MeshType>::New(tf2);                       \
     Func(tRes.ref(), f1, tf2());                                                \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -118,7 +118,7 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                        
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type1,MeshType>::New(tf1);                       \
     Func(tRes.ref(), tf1(), f2);                                                \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -132,8 +132,8 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                        
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmpTmp<ReturnType,Type1,Type1,Type2,MeshType>::New(tf1,tf2);    \
     Func(tRes.ref(), tf1(), tf2());                                             \
-    tf1.clear();                                                                \
-    tf2.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -174,7 +174,7 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                        
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type2,MeshType>::New(tf2);                       \
     Func(tRes.ref(), s1, tf2());                                                \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -213,7 +213,7 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                        
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type2,MeshType>::New(tf2);                       \
     Func(tRes.ref(), s1, tf2());                                                \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -254,7 +254,7 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                        
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type1,MeshType>::New(tf1);                       \
     Func(tRes.ref(), tf1(), s2);                                                \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -293,7 +293,7 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                        
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type1,MeshType>::New(tf1);                       \
     Func(tRes.ref(), tf1(), s2);                                                \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -338,7 +338,7 @@ tmp<meshLevel<ReturnType,MeshType>> operator Op                                 
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type2,MeshType>::New(tf2);                       \
     OpFunc(tRes.ref(), f1, tf2());                                              \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -352,7 +352,7 @@ tmp<meshLevel<ReturnType,MeshType>> operator Op                                 
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type1,MeshType>::New(tf1);                       \
     OpFunc(tRes.ref(), tf1(), f2);                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -366,8 +366,8 @@ tmp<meshLevel<ReturnType,MeshType>> operator Op                                 
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmpTmp<ReturnType,Type1,Type1,Type2,MeshType>::New(tf1, tf2);   \
     OpFunc(tRes.ref(), tf1(), tf2());                                           \
-    tf1.clear();                                                                \
-    tf2.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -408,7 +408,7 @@ tmp<meshLevel<ReturnType,MeshType>> operator Op                                 
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type2,MeshType>::New(tf2);                       \
     OpFunc(tRes.ref(), s1, tf2());                                              \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -447,7 +447,7 @@ tmp<meshLevel<ReturnType,MeshType>> operator Op                                 
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type2,MeshType>::New(tf2);                       \
     OpFunc(tRes.ref(), s1, tf2());                                              \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -488,7 +488,7 @@ tmp<meshLevel<ReturnType,MeshType>> operator Op                                 
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type1,MeshType>::New(tf1);                       \
     OpFunc(tRes.ref(), tf1(), s2);                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -527,7 +527,7 @@ tmp<meshLevel<ReturnType,MeshType>> operator Op                                 
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                  \
         reuseLevTmp<ReturnType,Type1,MeshType>::New(tf1);                       \
     OpFunc(tRes.ref(), tf1(), s2);                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }
 
@@ -576,7 +576,7 @@ operator Op                                                                     
     tmp<meshLevel<productType,MeshType>> tRes =                                 \
         reuseLevTmp<productType,Type2,MeshType>::New(tf2);                      \
     OpFunc(tRes.ref(), f1, tf2());                                              \
-    tf2.clear();                                                                \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -592,7 +592,7 @@ operator Op                                                                     
     tmp<meshLevel<productType,MeshType>> tRes =                                 \
         reuseLevTmp<productType,Type1,MeshType>::New(tf1);                      \
     OpFunc(tRes.ref(), tf1(), f2);                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -608,8 +608,8 @@ operator Op                                                                     
     tmp<meshLevel<productType,MeshType>> tRes =                                 \
         reuseLevTmpTmp<productType,Type1,Type1,Type2,MeshType>::New(tf1, tf2);  \
     OpFunc(tRes.ref(), tf1(), tf2());                                           \
-    tf1.clear();                                                                \
-    tf2.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
+    if (tf2.isTmp()) tf2.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -675,7 +675,7 @@ operator Op                                                                     
     tmp<meshLevel<productType,MeshType>> tRes =                                 \
         reuseLevTmp<productType,Type,MeshType>::New(tf1);                       \
     OpFunc(tRes.ref(), tf1(), static_cast<const Form&>(vs));                    \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -739,7 +739,7 @@ operator Op                                                                     
     tmp<meshLevel<productType,MeshType>> tRes =                                 \
         reuseLevTmp<productType,Type,MeshType>::New(tf1);                       \
     OpFunc(tRes.ref(), static_cast<const Form&>(vs), tf1());                    \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -805,7 +805,7 @@ operator Op                                                                     
     tmp<meshLevel<productType,MeshType>> tRes =                                 \
         reuseLevTmp<productType,Type,MeshType>::New(tf1);                       \
     OpFunc(tRes.ref(), tf1(), static_cast<const Form&>(vs));                    \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -869,7 +869,7 @@ operator Op                                                                     
     tmp<meshLevel<productType,MeshType>> tRes =                                 \
         reuseLevTmp<productType,Type,MeshType>::New(tf1);                       \
     OpFunc(tRes.ref(), static_cast<const Form&>(vs), tf1());                    \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -914,7 +914,7 @@ operator Op                                                                     
     tmp<meshLevel<productType,MeshType>> tRes =                                 \
         reuseLevTmp<productType,Type,MeshType>::New(tf1);                       \
     OpFunc(tRes.ref(), tf1(), vs);                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }                                                                               \
                                                                                 \
@@ -957,6 +957,6 @@ operator Op                                                                     
     tmp<meshLevel<productType,MeshType>> tRes =                                 \
         reuseLevTmp<productType,Type,MeshType>::New(tf1);                       \
     OpFunc(tRes.ref(), vs, tf1());                                              \
-    tf1.clear();                                                                \
+    if (tf1.isTmp()) tf1.clear();                                               \
     return tRes;                                                                \
 }

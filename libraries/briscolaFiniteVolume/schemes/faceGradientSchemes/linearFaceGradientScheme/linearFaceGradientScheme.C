@@ -48,7 +48,7 @@ linearFaceGradientScheme<Type,MeshType>::faceGrad
     forAllFaces(Grad, d, fd, i, j, k)
     {
         labelVector ijk(i,j,k);
-        labelVector nei(ijk-units[fd]);
+        labelVector nei(lowerNei(i,j,k,fd));
 
         Grad(d,ijk)[fd] = (field(d,nei) - field(d,ijk)) * delta(d,ijk)[fd*2];
     }

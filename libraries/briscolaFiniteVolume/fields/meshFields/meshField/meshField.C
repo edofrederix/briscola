@@ -208,30 +208,30 @@ meshField<Type,MeshType>::meshField
 template<class Type, class MeshType>
 meshField<Type,MeshType>::meshField
 (
-    const tmp<meshField<Type,MeshType>>& tfield,
+    const tmp<meshField<Type,MeshType>>& tField,
     const bool registerObject,
     const bool copyBCs
 )
 :
     PtrList<meshLevel<Type,MeshType>>
     (
-        const_cast<meshField<Type,MeshType>&>(tfield()),
-        tfield.isTmp()
+        const_cast<meshField<Type,MeshType>&>(tField()),
+        tField.isTmp()
     ),
     IOdictionary
     (
         IOobject
         (
-            tfield->name(),
-            tfield->fvMsh_.time().path()/"0",
-            tfield->fvMsh_.time(),
+            tField->name(),
+            tField->fvMsh_.time().path()/"0",
+            tField->fvMsh_.time(),
             IOobject::NO_READ,
             IOobject::NO_WRITE,
             registerObject
         )
     ),
     refCount(),
-    fvMsh_(tfield->fvMsh_),
+    fvMsh_(tField->fvMsh_),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
     reSchemePtr_()
@@ -242,44 +242,45 @@ meshField<Type,MeshType>::meshField
     {
         PtrList<boundaryCondition<Type,MeshType>> list
         (
-            tfield->boundaryConditions(),
+            tField->boundaryConditions(),
             *this
         );
 
         boundaryConditions_.transfer(list);
     }
 
-    tfield.clear();
+    if (tField.isTmp())
+        tField.clear();
 }
 
 template<class Type, class MeshType>
 meshField<Type,MeshType>::meshField
 (
     const word& name,
-    const tmp<meshField<Type,MeshType>>& tfield,
+    const tmp<meshField<Type,MeshType>>& tField,
     const bool registerObject,
     const bool copyBCs
 )
 :
     PtrList<meshLevel<Type,MeshType>>
     (
-        const_cast<meshField<Type,MeshType>&>(tfield()),
-        tfield.isTmp()
+        const_cast<meshField<Type,MeshType>&>(tField()),
+        tField.isTmp()
     ),
     IOdictionary
     (
         IOobject
         (
             name,
-            tfield->fvMsh_.time().path()/"0",
-            tfield->fvMsh_.time(),
+            tField->fvMsh_.time().path()/"0",
+            tField->fvMsh_.time(),
             IOobject::NO_READ,
             IOobject::NO_WRITE,
             registerObject
         )
     ),
     refCount(),
-    fvMsh_(tfield->fvMsh_),
+    fvMsh_(tField->fvMsh_),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
     reSchemePtr_()
@@ -290,14 +291,15 @@ meshField<Type,MeshType>::meshField
     {
         PtrList<boundaryCondition<Type,MeshType>> list
         (
-            tfield->boundaryConditions(),
+            tField->boundaryConditions(),
             *this
         );
 
         boundaryConditions_.transfer(list);
     }
 
-    tfield.clear();
+    if (tField.isTmp())
+        tField.clear();
 }
 
 // Destructor
@@ -539,7 +541,8 @@ void meshField<Type,MeshType>::operator=
         *this = tF();
     }
 
-    tF.clear();
+    if (tF.isTmp())
+        tF.clear();
 }
 
 template<class Type, class MeshType>
@@ -579,7 +582,8 @@ void meshField<Type,MeshType>::operator+=
 {
     checkMemberOperatorArgDepth(tF());
     *this += tF();
-    tF.clear();
+    if (tF.isTmp())
+        tF.clear();
 }
 
 template<class Type, class MeshType>
@@ -598,7 +602,8 @@ void meshField<Type,MeshType>::operator-=
 {
     checkMemberOperatorArgDepth(tF());
     *this -= tF();
-    tF.clear();
+    if (tF.isTmp())
+        tF.clear();
 }
 
 template<class Type, class MeshType>
@@ -617,7 +622,8 @@ void meshField<Type,MeshType>::operator*=
 {
     checkMemberOperatorArgDepth(tF());
     *this *= tF();
-    tF.clear();
+    if (tF.isTmp())
+        tF.clear();
 }
 
 template<class Type, class MeshType>
@@ -636,7 +642,8 @@ void meshField<Type,MeshType>::operator/=
 {
     checkMemberOperatorArgDepth(tF());
     *this /= tF();
-    tF.clear();
+    if (tF.isTmp())
+        tF.clear();
 }
 
 template<class Type, class MeshType>
@@ -716,7 +723,8 @@ void meshField<Type,MeshType>::operator=
 {
     this->make(tF->deep());
     *this = tF();
-    tF.clear();
+    if (tF.isTmp())
+        tF.clear();
 }
 
 template<class Type, class MeshType>
@@ -740,7 +748,8 @@ void meshField<Type,MeshType>::operator+=
 {
     checkMemberOperatorArgDepth(tF());
     *this += tF();
-    tF.clear();
+    if (tF.isTmp())
+        tF.clear();
 }
 
 template<class Type, class MeshType>
@@ -764,7 +773,8 @@ void meshField<Type,MeshType>::operator-=
 {
     checkMemberOperatorArgDepth(tF());
     *this -= tF();
-    tF.clear();
+    if (tF.isTmp())
+        tF.clear();
 }
 
 template<class Type, class MeshType>
@@ -788,7 +798,8 @@ void meshField<Type,MeshType>::operator*=
 {
     checkMemberOperatorArgDepth(tF());
     *this *= tF();
-    tF.clear();
+    if (tF.isTmp())
+        tF.clear();
 }
 
 template<class Type, class MeshType>
@@ -812,7 +823,8 @@ void meshField<Type,MeshType>::operator/=
 {
     checkMemberOperatorArgDepth(tF());
     *this /= tF();
-    tF.clear();
+    if (tF.isTmp())
+        tF.clear();
 }
 
 template<class Type, class MeshType>

@@ -557,7 +557,7 @@ void MYC::correct()
         }
     }
 
-    n[0].correctBoundaryConditions();
+    n.correctBoundaryConditions();
 }
 
 }

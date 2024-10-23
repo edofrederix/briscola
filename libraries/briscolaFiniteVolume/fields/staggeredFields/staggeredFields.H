@@ -15,85 +15,52 @@ namespace briscola
 namespace fv
 {
 
-// Special function to perform a dot product between a vector dimension (first
-// argument) and a staggered dimension (second argument). The vector must be
-// given at staggered locations. When the staggered dimension index is not equal
-// to the vector dimension index, interpolation is required.
+// Staggered transpose, exchanging vector directions with mesh directions
 
-inline tmp<staggeredScalarField>
-stagDotProduct
-(
-    const staggeredVectorField& f,
-    const staggeredVectorField& g
-)
+inline tmp<staggeredVectorField> stagT(const staggeredVectorField& f)
 {
-    tmp<staggeredScalarField> tProd
+    f.correctBoundaryConditions();
+
+    tmp<staggeredVectorField> tT
     (
-        new staggeredScalarField
+        new staggeredVectorField
         (
-            "("+f.name()+"&"+g.name()+")",
+            "T("+f.name()+")",
             f.fvMsh()
         )
     );
 
-    staggeredScalarField& Prod = tProd.ref();
+    staggeredVectorField& T = tT.ref();
 
-    Prod = Zero;
+    T = Zero;
 
-    forAllCells(Prod, di, i, j, k)
+    forAllCells(T, di, i, j, k)
         for (int dj = 0; dj < 3; dj++)
-            Prod(di,i,j,k) +=
-                f(di,i,j,k)[dj]
+            T(di,i,j,k)[dj] =
+                di == dj
+              ? f(dj,i,j,k)[di]
+              : 0.25
               * (
-                    di == dj
-                  ? g(dj,i,j,k)[di]
-                  : 0.25
-                  * (
-                        g(dj,i,j,k)[di]
-                      + g(dj,lowerNei(i,j,k,di))[di]
-                      + g(dj,upperNei(i,j,k,dj))[di]
-                      + g(dj,lowerNei(upperNei(i,j,k,dj),di))[di]
-                    )
+                    f(dj,i,j,k)[di]
+                  + f(dj,lowerNei(i,j,k,di))[di]
+                  + f(dj,upperNei(i,j,k,dj))[di]
+                  + f(dj,lowerNei(upperNei(i,j,k,dj),di))[di]
                 );
 
-    return tProd;
+    return tT;
 }
 
-inline tmp<staggeredScalarField>
-stagDotProduct
-(
-    const tmp<staggeredVectorField>& tf,
-    const staggeredVectorField& g
-)
+inline tmp<staggeredVectorField> stagT(const tmp<staggeredVectorField>& tf)
 {
-    tmp<staggeredScalarField> tProd(stagDotProduct(tf(),g));
-    tf.clear();
-    return tProd;
-}
+    if (tf.isTmp())
+        tf->correctBoundaryConditions();
 
-inline tmp<staggeredScalarField>
-stagDotProduct
-(
-    const staggeredVectorField& f,
-    const tmp<staggeredVectorField>& tg
-)
-{
-    tmp<staggeredScalarField> tProd(stagDotProduct(f,tg()));
-    tg.clear();
-    return tProd;
-}
+    tmp<staggeredVectorField> tT(stagT(tf()));
 
-inline tmp<staggeredScalarField>
-stagDotProduct
-(
-    const tmp<staggeredVectorField>& tf,
-    const tmp<staggeredVectorField>& tg
-)
-{
-    tmp<staggeredScalarField> tProd(stagDotProduct(tf(),tg()));
-    tf.clear();
-    tg.clear();
-    return tProd;
+    if (tf.isTmp())
+        tf.clear();
+
+    return tT;
 }
 
 }

@@ -28,7 +28,7 @@ linearGaussDivergenceScheme<Type,MeshType>::imDiv
     const scalar factor
 )
 {
-    const_cast<meshField<lowerFaceScalar,MeshType>&>(phi).restrict();
+    phi.restrict();
 
     tmp<linearSystem<stencil,Type,MeshType>> tSys
     (
@@ -72,7 +72,7 @@ linearGaussDivergenceScheme<Type,MeshType>::imDiv
         }
     }
 
-    const_cast<meshField<lowerFaceScalar,MeshType>&>(phi).makeShallow();
+    phi.makeShallow();
 
     return tSys;
 }

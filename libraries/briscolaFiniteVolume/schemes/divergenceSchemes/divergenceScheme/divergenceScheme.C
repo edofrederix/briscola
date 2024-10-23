@@ -109,7 +109,8 @@ tmp<meshField<Type,MeshType>> div
         div(tPhi())
     );
 
-    tPhi.clear();
+    if (tPhi.isTmp())
+        tPhi.clear();
 
     return tDiv;
 }
@@ -157,12 +158,16 @@ tmp<meshField<Type,colocated>> coloDiv
     const tmp<meshField<Type,staggered>>& tField
 )
 {
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
     tmp<meshField<Type,colocated>> tColoDiv
     (
         coloDiv(tField())
     );
 
-    tField.clear();
+    if (tField.isTmp())
+        tField.clear();
 
     return tColoDiv;
 }

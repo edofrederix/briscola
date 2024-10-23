@@ -41,8 +41,8 @@ namespace fv
                 this->imLaplacian(&tLambda(), field, factor)
             );
 
-            const_cast<tmp<meshField<lowerFaceScalar,MeshType>>&>(tLambda)
-           .clear();
+            if (tLambda.isTmp())
+                tLambda.clear();
 
             return tSys;
         }
@@ -108,8 +108,8 @@ namespace fv
                 this->exLaplacian(&tLambda(), field, factor)
             );
 
-            const_cast<tmp<meshField<lowerFaceScalar,MeshType>>&>(tLambda)
-           .clear();
+            if (tLambda.isTmp())
+                tLambda.clear();
 
             return tLap;
         }
