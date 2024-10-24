@@ -33,8 +33,8 @@ colocatedReconstruction::colocatedReconstruction
     briscolaFunctionObject(name, runTime, dict),
     fvMsh_(runTime.lookupObject<fvMesh>("briscolaMeshDict")),
     fields_(dict.lookup("fields")),
-    reconstructedFields_(),
-    requireBC_(dict.lookupOrDefault<Switch>("requireBC", false))
+    vectorFields_(),
+    tensorFields_()
 {
     init();
 }
@@ -43,43 +43,51 @@ void colocatedReconstruction::init()
 {
     const objectRegistry& db = fvMsh_.db();
 
-    // Number of staggered scalar fields needed
-    scalar size = 0;
-
     forAll(fields_, i)
     {
         if (db.foundObject<staggeredScalarField>(fields_[i]))
         {
-            size += 1;
+            vectorFields_.append
+            (
+                new colocatedVectorField
+                (
+                    fields_[i] + "c",
+                    fvMsh_,
+                    IOobject::READ_IF_PRESENT,
+                    IOobject::AUTO_WRITE,
+                    true
+                )
+            );
+        }
+        else if (db.foundObject<staggeredVectorField>(fields_[i]))
+        {
+            tensorFields_.append
+            (
+                new colocatedTensorField
+                (
+                    fields_[i] + "c",
+                    fvMsh_,
+                    IOobject::READ_IF_PRESENT,
+                    IOobject::AUTO_WRITE,
+                    true
+                )
+            );
         }
         else
         {
             WarningInFunction
-                << "Field " << fields_[i] << " requested for sampling by "
+                << "Field " << fields_[i] << " requested for reconstruction by "
                 << this->name() << " but not found in registry." << endl;
         }
     }
 
-    reconstructedFields_.setSize(size);
+    // Initialize to zero
 
-    forAll(reconstructedFields_, i)
-    {
-        reconstructedFields_.set
-        (
-            i,
-            new colocatedVectorField
-            (
-                fields_[i]+"c",
-                fvMsh_,
-                requireBC_ ? IOobject::MUST_READ : IOobject::NO_READ,
-                IOobject::AUTO_WRITE,
-                true,
-                requireBC_
-            )
-        );
+    forAll(vectorFields_, i)
+        vectorFields_[i] = Zero;
 
-        reconstructedFields_[i] = Zero;
-    }
+    forAll(tensorFields_, i)
+        tensorFields_[i] = Zero;
 }
 
 colocatedReconstruction::~colocatedReconstruction()
@@ -89,19 +97,30 @@ bool colocatedReconstruction::execute()
 {
     const objectRegistry& db = fvMsh_.db();
 
-    label index = 0;
+    label iv = 0;
+    label it = 0;
 
     forAll(fields_, i)
     {
         if (db.foundObject<staggeredScalarField>(fields_[i]))
         {
-            const staggeredScalarField& stagField
-                = db.lookupObject<staggeredScalarField>(fields_[i]);
+            const staggeredScalarField& field =
+                db.lookupObject<staggeredScalarField>(fields_[i]);
 
-            reconstructedFields_[index] = ex::reconstruct(stagField);
-            reconstructedFields_[index].correctBoundaryConditions();
+            vectorFields_[iv] = ex::reconstruct(field);
+            vectorFields_[iv].correctBoundaryConditions();
 
-            index++;
+            iv++;
+        }
+        else if (db.foundObject<staggeredVectorField>(fields_[i]))
+        {
+            const staggeredVectorField& field =
+                db.lookupObject<staggeredVectorField>(fields_[i]);
+
+            tensorFields_[it] = ex::reconstruct(field);
+            tensorFields_[it].correctBoundaryConditions();
+
+            it++;
         }
     }
 

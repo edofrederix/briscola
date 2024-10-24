@@ -27,11 +27,11 @@ class colocatedReconstruction
     // Fields to be reconstructed
     wordList fields_;
 
-    // Colocated reconstructed fields
-    PtrList<colocatedVectorField> reconstructedFields_;
+    // Reconstructed vectors
+    PtrList<colocatedVectorField> vectorFields_;
 
-    // Are boundary conditions required?
-    Switch requireBC_;
+    // Reconstructed tensors
+    PtrList<colocatedTensorField> tensorFields_;
 
     // Initialize
     void init();
