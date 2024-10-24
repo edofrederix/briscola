@@ -37,13 +37,6 @@ maxCo           0.4;
 
 functions
 {
-    reconstruct
-    {
-        type    colocatedReconstruction;
-        fields  (U);
-        requireBC true;
-    }
-
     timeAverage
     {
         type    timeAverage;

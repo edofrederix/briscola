@@ -47,17 +47,10 @@ functions
         type    initialCondition;
     }
 
-    reconstruct
-    {
-        type    colocatedReconstruction;
-        fields  (U);
-        requireBC true;
-    }
-
     timeAverage
     {
         type    timeAverage;
-        fields  (U);
+        fields  (U Uc);
         startTime 0;
     }
 }

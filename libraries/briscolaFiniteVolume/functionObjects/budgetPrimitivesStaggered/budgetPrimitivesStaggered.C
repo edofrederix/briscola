@@ -180,8 +180,6 @@ bool budgetPrimitivesStaggered::execute()
     const staggeredScalarField& U
         = db.lookupObject<staggeredScalarField>("U");
 
-    // Uc should be reconstructed using the colocatedReconstruction
-    // functionObject with requireBC set to true
     const colocatedVectorField& Uc
         = db.lookupObject<colocatedVectorField>("Uc");
 

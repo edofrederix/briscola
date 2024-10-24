@@ -13,6 +13,19 @@ U = Zero;
 U.correctBoundaryConditions();
 U.correctImmersedBoundaryConditions();
 
+// Reconstructed colocated velocity
+
+colocatedVectorField Uc
+(
+    "Uc",
+    fvMsh,
+    IOobject::READ_IF_PRESENT,
+    IOobject::AUTO_WRITE,
+    true
+);
+
+Uc = Zero;
+
 // Pressure
 
 colocatedScalarField p

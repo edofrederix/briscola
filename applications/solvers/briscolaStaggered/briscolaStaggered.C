@@ -75,6 +75,11 @@ int main(int argc, char *argv[])
         U -= deltaT*ex::stagGrad(p);
         U.correctBoundaryConditions();
 
+        // Reconstruct the colocated velocity
+
+        Uc = ex::reconstruct(U);
+        Uc.correctBoundaryConditions();
+
         io.write<colocated>();
         io.write<staggered>();
 
