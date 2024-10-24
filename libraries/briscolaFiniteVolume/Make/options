@@ -26,5 +26,6 @@ LIB_LIBS = \
     $(if $(SUPERLU_HOME),-lsuperlu,) \
     -lbriscolaCore \
     -lbriscolaMesh \
+    -lbriscolaImmersedBoundary \
     -lOpenFOAM \
     -lfftw3
