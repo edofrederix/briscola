@@ -3,6 +3,7 @@
 #include "fvMesh.H"
 
 #include "boundaryCondition.H"
+#include "immersedBoundaryCondition.H"
 
 #include "domainBoundary.H"
 #include "parallelBoundary.H"
@@ -621,14 +622,16 @@ void meshLevel<Type,MeshType>::correctEliminatedBoundaryConditions()
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctImmersedBoundaryConditions()
 {
-    if (mshFieldPtr_ && fvMsh_.IBs<MeshType>().size())
+    if (mshFieldPtr_ && fvMsh_.ibs<MeshType>().size())
     {
-        mshFieldPtr_->addImmersedBoundaryConditions();
+        this->addImmersedBoundaryConditions();
 
         forAll(mshFieldPtr_->immersedBoundaryConditions(), i)
         {
-            mshFieldPtr_->immersedBoundaryConditions()[i]
-                .correctJacobiPoints(*this);
+            immersedBoundaryCondition<Type,MeshType>& ibc =
+                mshFieldPtr_->immersedBoundaryConditions()[i];
+
+            ibc.evaluate(l_);
         }
     }
 }

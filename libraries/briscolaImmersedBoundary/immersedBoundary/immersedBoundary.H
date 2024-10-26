@@ -66,9 +66,6 @@ protected:
     // ghost cells
     meshField<vector,MeshType> mirrorPoints_;
 
-    // Empty meshField for empty immersed boundary condition
-    meshField<label,MeshType> emptyField_;
-
     // List of shapes making up the immersed boundary
     PtrList<immersedBoundaryShape> shapes_;
 
@@ -150,11 +147,6 @@ public:
     inline const meshField<vector,MeshType>& mirrorPoints() const
     {
         return mirrorPoints_;
-    }
-
-    inline const meshField<label,MeshType>& emptyField() const
-    {
-        return emptyField_;
     }
 };
 

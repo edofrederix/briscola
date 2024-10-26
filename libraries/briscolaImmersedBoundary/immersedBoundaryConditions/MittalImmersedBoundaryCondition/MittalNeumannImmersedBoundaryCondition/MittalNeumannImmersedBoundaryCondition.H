@@ -1,8 +1,7 @@
 #ifndef MittalNeumannImmersedBoundaryCondition_H
 #define MittalNeumannImmersedBoundaryCondition_H
 
-#include "immersedBoundaryCondition.H"
-#include "pointDataExchange.H"
+#include "MittalImmersedBoundaryCondition.H"
 
 namespace Foam
 {
@@ -16,17 +15,8 @@ namespace fv
 template<class Type, class MeshType>
 class MittalNeumannImmersedBoundaryCondition
 :
-    public immersedBoundaryCondition<Type,MeshType>
+    public MittalImmersedBoundaryCondition<Type,MeshType>
 {
-
-    // List of coordinates of points that need to be exchanged
-    // defined for each level and direction
-    List<List<vectorList>> exchangePoints_;
-
-    // List of point data exchanges
-    // defined for each level and direction
-    List<PtrList<pointDataExchange<MeshType>>> exchanges_;
-
     // Boundary gradients
     List<Type> boundaryGradients_;
 
@@ -45,8 +35,8 @@ public:
     // Destructor
     virtual ~MittalNeumannImmersedBoundaryCondition();
 
-    // Correct Jacobi points
-    void correctJacobiPoints(meshLevel<Type,MeshType>&) const;
+    // Evaluate the immersed boundary condition for given level and direction
+    virtual void evaluate(const label, const label);
 };
 
 }

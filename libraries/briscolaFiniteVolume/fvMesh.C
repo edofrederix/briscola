@@ -88,9 +88,7 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
     // Only generate staggered metrics when the brick topology is structured
 
     if (mshPtr_->structured())
-    {
         staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
-    }
 }
 
 fvMesh::fvMesh(const fvMesh& fvMsh)
@@ -105,15 +103,11 @@ fvMesh::fvMesh(const fvMesh& fvMsh)
     staggeredMetrics_()
 {
     colocatedMetrics_ = new fvMeshMetrics<colocated>(*this);
-    colocatedMetrics_->setIBs();
 
     // Only generate staggered metrics when the brick topology is structured
 
     if (mshPtr_->structured())
-    {
         staggeredMetrics_ = new fvMeshMetrics<staggered>(*this);
-        staggeredMetrics_->setIBs();
-    }
 }
 
 fvMesh::~fvMesh()
@@ -256,9 +250,9 @@ template List<labelVector>
 fvMesh::findCells<staggered>(const vectorList&, const label, const label) const;
 
 template const PtrList<immersedBoundary<staggered>>&
-fvMesh::IBs<staggered>() const;
+fvMesh::ibs<staggered>() const;
 template const PtrList<immersedBoundary<colocated>>&
-fvMesh::IBs<colocated>() const;
+fvMesh::ibs<colocated>() const;
 
 }
 

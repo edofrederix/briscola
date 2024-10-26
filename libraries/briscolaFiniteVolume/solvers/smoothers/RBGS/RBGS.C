@@ -34,6 +34,7 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
     const meshLevel<SType,MeshType>& A = sys.A()[l];
     const meshLevel<Type,MeshType>& b = sys.b()[l];
+    const meshLevel<label,MeshType>& f = sys.forcingMask()[l];
 
     bool singular = xi.size() > 0;
     xi = singular ? gAverage(x) : List<Type>(x.size(), Zero);
@@ -55,31 +56,32 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
                 const meshDirection<SType,MeshType>& Ad = A[d];
                 const meshDirection<Type,MeshType>& bd = b[d];
+                const meshDirection<label,MeshType>& fd = f[d];
 
                 forAllCells(xd, i, j, k)
                 {
-                    if (even(i,j,k) && !sys.IBMForcingMask()(l,d,i,j,k))
+                    if (even(i,j,k) && !fd(i,j,k))
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
-                            - lowerRowProduct(Ad,xd,i,j,k)
-                            - upperRowProduct(Ad,xd,i,j,k)
-                            - xi[d]
+                              - lowerRowProduct(Ad,xd,i,j,k)
+                              - upperRowProduct(Ad,xd,i,j,k)
+                              - xi[d]
                             )
-                        / Ad(i,j,k).center();
+                          / Ad(i,j,k).center();
                 }
 
                 forAllCells(xd, i, j, k)
                 {
-                    if (odd(i,j,k) && !sys.IBMForcingMask()(l,d,i,j,k))
+                    if (odd(i,j,k) && !fd(i,j,k))
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
-                            - lowerRowProduct(Ad,xd,i,j,k)
-                            - upperRowProduct(Ad,xd,i,j,k)
-                            - xi[d]
+                              - lowerRowProduct(Ad,xd,i,j,k)
+                              - upperRowProduct(Ad,xd,i,j,k)
+                              - xi[d]
                             )
-                        / Ad(i,j,k).center();
+                          / Ad(i,j,k).center();
                 }
 
                 if (!symmetric_)
@@ -87,28 +89,28 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
                 forAllCellsReversed(xd, i, j, k)
                 {
-                    if (even(i,j,k) && !sys.IBMForcingMask()(l,d,i,j,k))
+                    if (even(i,j,k) && !fd(i,j,k))
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
-                            - lowerRowProduct(Ad,xd,i,j,k)
-                            - upperRowProduct(Ad,xd,i,j,k)
-                            - xi[d]
+                              - lowerRowProduct(Ad,xd,i,j,k)
+                              - upperRowProduct(Ad,xd,i,j,k)
+                              - xi[d]
                             )
-                        / Ad(i,j,k).center();
+                          / Ad(i,j,k).center();
                 }
 
                 forAllCellsReversed(xd, i, j, k)
                 {
-                    if (odd(i,j,k) && !sys.IBMForcingMask()(l,d,i,j,k))
+                    if (odd(i,j,k) && !fd(i,j,k))
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
-                            - lowerRowProduct(Ad,xd,i,j,k)
-                            - upperRowProduct(Ad,xd,i,j,k)
-                            - xi[d]
+                              - lowerRowProduct(Ad,xd,i,j,k)
+                              - upperRowProduct(Ad,xd,i,j,k)
+                              - xi[d]
                             )
-                        / Ad(i,j,k).center();
+                          / Ad(i,j,k).center();
                 }
             }
         }

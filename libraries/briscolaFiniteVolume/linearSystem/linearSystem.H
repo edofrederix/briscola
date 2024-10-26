@@ -40,8 +40,8 @@ class linearSystem
     // Diagonal bools
     List<bool> diagonal_;
 
-    // IBM forcing points mask
-    autoPtr<meshField<label,MeshType>> IBMForcingMask_;
+    // IBM forcing mask
+    autoPtr<meshField<label,MeshType>> forcingMask_;
 
     // Transfer data from other system
     void transfer(linearSystem<SType,Type,MeshType>&);
@@ -107,8 +107,16 @@ public:
     inline const meshField<Type,MeshType>& b() const { return b_; }
 
     // Return the IBM forcing mask
-    inline meshField<label,MeshType>& IBMForcingMask() { return IBMForcingMask_(); }
-    inline const meshField<label,MeshType>& IBMForcingMask() const { return IBMForcingMask_(); }
+    inline meshField<label,MeshType>& forcingMask()
+    {
+        return forcingMask_();
+    }
+
+    // Return const access to the IBM forcing mask
+    inline const meshField<label,MeshType>& forcingMask() const
+    {
+        return forcingMask_();
+    }
 
     // A linear system is said to be singular if all matrix row sums at the
     // coarsest level  are zero. See Remark 5.6.5 in "Multigrid", U. Trottenberg
@@ -141,8 +149,8 @@ public:
     // Eliminate ghosts from the linear system where possible
     void eliminateGhosts();
 
-    // Set IBM forcing mask
-    void setIBMForcingMask();
+    // Set the IBM forcing mask if not yet done
+    void setForcingMask();
 
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }

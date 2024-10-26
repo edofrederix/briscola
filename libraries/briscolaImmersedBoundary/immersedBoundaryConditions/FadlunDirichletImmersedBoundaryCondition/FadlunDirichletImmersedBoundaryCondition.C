@@ -20,48 +20,40 @@ FadlunDirichletImmersedBoundaryCondition
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>
-    (
-        mshField,
-        ib,
-        ib.wallAdjMask()
-    ),
+    immersedBoundaryCondition<Type,MeshType>(mshField, ib, &ib.wallAdjMask()),
     boundaryValues_(this->dict().lookup("values"))
 {
     // Check shape overlap
-    if (this->IB_.shapeOverlap())
-    {
-        WarningInFunction
-            << "Overlapping shapes identified."
-            << " This may cause issues with Fadlun IBM." << endl;
-    }
+
+    if (this->ib_.shapeOverlap())
+        this->shapeOverlapWarning();
 
     // Check for closely packed shapes
-    forAllCells(this->IB_.wallAdjMask(),l,d,i,j,k)
+
+    const meshField<label,MeshType>& mask = this->forcingMask();
+
+    forAllCells(mask,l,d,i,j,k)
+    if (mask(l,d,i,j,k))
     {
         const labelVector ijk(i,j,k);
 
-        if (this->IB_.wallAdjMask()(l,d,i,j,k))
+        for (int dir = 0; dir < 3; dir++)
         {
-            for (int dir = 0; dir < 3; dir++)
+            const labelVector fo = units[dir];
+
+            if
+            (
+                this->ib_.mask()[l][d](ijk + fo)
+             && this->ib_.mask()[l][d](ijk - fo)
+            )
             {
-                const labelVector fo = faceOffsets[2*dir];
+                WarningInFunction
+                    << "Wall adjacent cell " << ijk
+                    << " at level " << l << ", direction " << d
+                    << " has an immersed boundary on both sides."
+                    << endl;
 
-                if
-                (
-                       this->IB_.mask()[l][d](ijk+fo)
-                    && this->IB_.mask()[l][d](ijk-fo)
-                )
-                {
-                    WarningInFunction
-                        << "Wall adjacent cell "
-                        << vector(i,j,k) << " at (l,d) = "<< l << ", "
-                        << d << " has immersed boundary on both sides."
-                        << " This may cause issues with Fadlun IBM."
-                        << endl;
-
-                    break;
-                }
+                break;
             }
         }
     }
@@ -75,40 +67,43 @@ FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::
 {}
 
 template<class Type, class MeshType>
-void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::
-correctJacobiPoints
+void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
 (
-    meshLevel<Type,MeshType>& x
-) const
+    const label l,
+    const label d
+)
 {
-    scalar omega = this->omega_;
+    const scalar omega = this->omega_;
 
-    label l = x.levelNum();
+    meshDirection<Type,MeshType>& x = this->mshField_[l][d];
 
-    forAllCells(x,d,i,j,k)
+    const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
+    const meshDirection<faceScalar,MeshType>& y = this->ib_.wallDistAdj()[l][d];
+
+    forAllCells(x,i,j,k)
     {
-        if (this->forcingPoints_(l,d,i,j,k))
+        const labelVector ijk(i,j,k);
+
+        if (mask(ijk))
         {
             scalar ximax = 0;
 
             // Loop over face number directions
             for (int dir = 0; dir < 6; dir++)
             {
-                if (this->IB_.wallDistAdj()(l,d,i,j,k)[dir] > ximax)
+                if (y(ijk)[dir] > ximax)
                 {
-                    ximax = this->IB_.wallDistAdj()(l,d,i,j,k)[dir];
-                    const scalar xic = 1.0
-                        - this->IB_.wallDistAdj()(l,d,i,j,k)[dir];
+                    ximax = y(ijk)[dir];
+
+                    const scalar xic = 1.0 - y(ijk)[dir];
                     const scalar xinb = 1.0 + xic;
                     const scalar w = xic/xinb;
 
-                    labelVector ijk(i,j,k);
+                    Type value =
+                        boundaryValues_[d]/xinb
+                      + w*x(ijk - faceOffsets[dir]);
 
-                    Type forcingValue = boundaryValues_[d]/xinb
-                        + w*x[d](ijk-faceOffsets[dir]);
-
-                    x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
-                        + omega * forcingValue;
+                    x(ijk) = (1.0 - omega)*x(ijk) + omega*value;
                 }
             }
         }

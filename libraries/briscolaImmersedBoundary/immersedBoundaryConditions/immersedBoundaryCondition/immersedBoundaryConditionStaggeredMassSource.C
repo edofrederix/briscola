@@ -14,7 +14,7 @@ namespace fv
 // across the immersed boundary that can occur in methods that use velocity
 // forcing.
 
-tmp<colocatedScalarField> IBMCorr
+tmp<colocatedScalarField> ibmCorr
 (
     tmp<colocatedScalarField> tColoDivU,
     const staggeredScalarField& field
@@ -24,9 +24,9 @@ tmp<colocatedScalarField> IBMCorr
 
     Switch massSource = false;
 
-    forAll(field.immersedBoundaryConditions(), ib)
+    forAll(field.immersedBoundaryConditions(), i)
     {
-        const word IBname = fvMsh.IBs<staggered>()[ib].name();
+        const word IBname = fvMsh.ibs<staggered>()[i].name();
 
         if
         (
@@ -50,11 +50,11 @@ tmp<colocatedScalarField> IBMCorr
 
         ghostMask = Zero;
 
-        forAll(fvMsh.IBs<staggered>(), ib)
+        forAll(fvMsh.ibs<staggered>(), ib)
         {
             forAllCells(ghostMask,l,d,i,j,k)
             {
-                if (fvMsh.IBs<staggered>()[ib].ghostMask()(l,d,i,j,k))
+                if (fvMsh.ibs<staggered>()[ib].ghostMask()(l,d,i,j,k))
                 {
                     ghostMask(l,d,i,j,k) = 1;
                 }

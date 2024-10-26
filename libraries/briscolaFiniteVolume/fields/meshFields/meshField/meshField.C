@@ -343,17 +343,17 @@ void meshField<Type,MeshType>::addImmersedBoundaryConditions()
     if
     (
         !immersedBoundaryConditions_.size()
-     && fvMsh_.IBs<MeshType>().size()
+     && fvMsh_.ibs<MeshType>().size()
     )
     {
-        forAll(fvMsh_.IBs<MeshType>(), i)
+        forAll(fvMsh_.ibs<MeshType>(), i)
         {
             immersedBoundaryConditions_.append
             (
                 immersedBoundaryCondition<Type,MeshType>::New
                 (
                     *this,
-                    fvMsh_.IBs<MeshType>()[i]
+                    fvMsh_.ibs<MeshType>()[i]
                 )
             );
         }

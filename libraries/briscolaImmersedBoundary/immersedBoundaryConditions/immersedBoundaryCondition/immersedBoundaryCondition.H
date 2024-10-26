@@ -22,9 +22,6 @@ class fvMesh;
 template<class Type, class MeshType>
 class meshField;
 
-template<class SType, class Type, class MeshType>
-class linearSystem;
-
 template<class Type, class MeshType>
 class immersedBoundaryCondition
 {
@@ -33,17 +30,29 @@ protected:
     // Reference to mesh
     const fvMesh& fvMsh_;
 
-    // Reference to immersed boundary
-    const immersedBoundary<MeshType>& IB_;
+    // Reference to the mesh field
+    meshField<Type,MeshType>& mshField_;
 
-    // Reference to the forcing points mask
-    const meshField<label,MeshType>& forcingPoints_;
+    // Reference to immersed boundary
+    const immersedBoundary<MeshType>& ib_;
+
+    // Pointer to the forcing mask
+    const meshField<label,MeshType>* forcingMaskPtr_;
 
     // Copy of the dictionary
     dictionary dict_;
 
     // Relaxation factor
     scalar omega_;
+
+    // Shape overlap warning
+    static void shapeOverlapWarning()
+    {
+        WarningInFunction
+            << "Overlapping shapes identified. This may cause issues "
+            << "with " << typeName << " immersed boundary condition."
+            << endl;
+    }
 
 public:
 
@@ -63,12 +72,12 @@ public:
         (mshField, ib)
     );
 
-    // Construct from meshField and immersedBoundary
+    // Construct from field, immersed boundary and mask pointer
     immersedBoundaryCondition
     (
         const meshField<Type,MeshType>& mshField,
         const immersedBoundary<MeshType>& ib,
-        const meshField<label,MeshType>& fp
+        const meshField<label,MeshType>* maskPtr
     );
 
     // Selector from dictionary
@@ -81,18 +90,33 @@ public:
     // Destructor
     virtual ~immersedBoundaryCondition();
 
-    // Correct Jacobi points
-    virtual void correctJacobiPoints(meshLevel<Type,MeshType>&) const = 0;
+    // Evaluate the immersed boundary condition for given level and direction
+    virtual void evaluate(const label);
+    virtual void evaluate(const label, const label) = 0;
 
-    // Inline access functions
-    inline const dictionary& dict() const { return dict_; }
+    // Access to the mesh
+    inline const fvMesh& fvMsh() const { return fvMsh_; }
 
-    // Const access to the forcing points
-    inline const meshField<label,MeshType>& forcingPoints() const
+    // Access to the mesh field
+    inline const meshField<Type,MeshType>& mshField() const
     {
-        return forcingPoints_;
+        return mshField_;
     }
 
+    // Access to the immersed boundary
+    inline const immersedBoundary<MeshType>& ib() const
+    {
+        return ib_;
+    }
+
+    // Const access to the forcing mask (unchecked!)
+    inline const meshField<label,MeshType>& forcingMask() const
+    {
+        return *forcingMaskPtr_;
+    }
+
+    // Access to the dictionary
+    inline const dictionary& dict() const { return dict_; }
 };
 
 }

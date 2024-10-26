@@ -18,7 +18,7 @@ emptyImmersedBoundaryCondition<Type,MeshType>::emptyImmersedBoundaryCondition
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField,ib,ib.emptyField())
+    immersedBoundaryCondition<Type,MeshType>(mshField, ib, nullptr)
 {}
 
 // Destructor
@@ -28,11 +28,11 @@ emptyImmersedBoundaryCondition<Type,MeshType>::~emptyImmersedBoundaryCondition()
 {}
 
 template<class Type, class MeshType>
-void emptyImmersedBoundaryCondition<Type,MeshType>::
-correctJacobiPoints
+void emptyImmersedBoundaryCondition<Type,MeshType>::evaluate
 (
-    meshLevel<Type,MeshType>& x
-) const
+    const label,
+    const label
+)
 {}
 
 }

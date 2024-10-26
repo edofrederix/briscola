@@ -34,6 +34,7 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
 
     const meshLevel<SType,MeshType>& A = sys.A()[l];
     const meshLevel<Type,MeshType>& b = sys.b()[l];
+    const meshLevel<label,MeshType>& f = sys.forcingMask()[l];
 
     bool singular = xi.size() > 0;
     xi = singular ? gAverage(x) : List<Type>(x.size(), Zero);
@@ -55,39 +56,32 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
 
                 const meshDirection<SType,MeshType>& Ad = A[d];
                 const meshDirection<Type,MeshType>& bd = b[d];
+                const meshDirection<label,MeshType>& fd = f[d];
 
                 forAllCells(xd, i, j, k)
-                {
-                    if (!sys.IBMForcingMask()(l,d,i,j,k))
-                    {
+                    if (!fd(i,j,k))
                         xd(i,j,k) =
                             (
-                            bd(i,j,k)
-                            - lowerRowProduct(Ad,xd,i,j,k)
-                            - upperRowProduct(Ad,xd,i,j,k)
-                            - xi[d]
+                                bd(i,j,k)
+                              - lowerRowProduct(Ad,xd,i,j,k)
+                              - upperRowProduct(Ad,xd,i,j,k)
+                              - xi[d]
                             )
-                        / Ad(i,j,k).center();
-                    }
-                }
+                          / Ad(i,j,k).center();
 
-                    if (!symmetric_)
-                        continue;
+                if (!symmetric_)
+                    continue;
 
                 forAllCells(xd, i, j, k)
-                {
-                    if (!sys.IBMForcingMask()(l,d,i,j,k))
-                    {
+                    if (!fd(i,j,k))
                         xd(i,j,k) =
                             (
-                            bd(i,j,k)
-                            - lowerRowProduct(Ad,xd,i,j,k)
-                            - upperRowProduct(Ad,xd,i,j,k)
-                            - xi[d]
+                                bd(i,j,k)
+                              - lowerRowProduct(Ad,xd,i,j,k)
+                              - upperRowProduct(Ad,xd,i,j,k)
+                              - xi[d]
                             )
-                        / Ad(i,j,k).center();
-                    }
-                }
+                          / Ad(i,j,k).center();
             }
         }
 

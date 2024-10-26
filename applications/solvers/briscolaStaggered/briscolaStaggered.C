@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 
         // Pressure equation
 
-        Poisson->solve(p, IBMCorr(ex::coloDiv(U),U)/(-deltaT));
+        Poisson->solve(p, ibmCorr(ex::coloDiv(U),U)/(-deltaT));
 
         // Correction
 

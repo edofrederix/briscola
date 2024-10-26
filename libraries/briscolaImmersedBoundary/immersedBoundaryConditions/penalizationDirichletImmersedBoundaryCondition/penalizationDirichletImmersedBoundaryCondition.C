@@ -20,12 +20,7 @@ penalizationDirichletImmersedBoundaryCondition
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>
-    (
-        mshField,
-        ib,
-        ib.mask()
-    ),
+    immersedBoundaryCondition<Type,MeshType>(mshField, ib, &ib.mask()),
     boundaryValues_(this->dict().lookup("values"))
 {}
 
@@ -37,25 +32,20 @@ penalizationDirichletImmersedBoundaryCondition<Type,MeshType>::
 {}
 
 template<class Type, class MeshType>
-void penalizationDirichletImmersedBoundaryCondition<Type,MeshType>
-::correctJacobiPoints
+void penalizationDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
 (
-    meshLevel<Type,MeshType>& x
-) const
+    const label l,
+    const label d
+)
 {
-    scalar omega = this->omega_;
+    const scalar omega = this->omega_;
 
-    label l = x.levelNum();
+    meshDirection<Type,MeshType>& x = this->mshField_[l][d];
+    const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
 
-    forAllCells(x,d,i,j,k)
-    {
-        if (this->forcingPoints_(l,d,i,j,k))
-        {
-            x(d,i,j,k) = (1.0 - omega) * x(d,i,j,k)
-                + omega * boundaryValues_[d];
-        }
-    }
-
+    forAllCells(x,i,j,k)
+        if (mask(i,j,k))
+            x(i,j,k) = (1.0 - omega)*x(i,j,k) + omega*boundaryValues_[d];
 }
 
 }

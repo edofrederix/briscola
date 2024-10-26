@@ -18,14 +18,8 @@ class VremanDirichletImmersedBoundaryCondition
 :
     public immersedBoundaryCondition<Type,MeshType>
 {
-
-    // List of out of bounds indices needed to correct ghost cell values
-    // defined for each level and direction
-    List<List<List<labelVector>>> exchangePoints_;
-
-    // List of cell data exchanges
-    // defined for each level and direction
-    List<PtrList<cellDataExchange<MeshType>>> exchanges_;
+    // List of point data exchanges defined for each level and direction
+    PtrList<PtrList<cellDataExchange<MeshType>>> exchanges_;
 
     // Boundary values
     List<Type> boundaryValues_;
@@ -45,8 +39,8 @@ public:
     // Destructor
     virtual ~VremanDirichletImmersedBoundaryCondition();
 
-    // Correct Jacobi points
-    void correctJacobiPoints(meshLevel<Type,MeshType>&) const;
+    // Evaluate the immersed boundary condition for given level and direction
+    virtual void evaluate(const label, const label);
 };
 
 }

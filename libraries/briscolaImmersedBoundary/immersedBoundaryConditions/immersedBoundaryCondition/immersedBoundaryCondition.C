@@ -14,11 +14,6 @@ namespace briscola
 namespace fv
 {
 
-using Foam::max;
-using Foam::min;
-using Foam::sqr;
-using Foam::mag;
-
 // Constructor
 
 template<class Type, class MeshType>
@@ -26,17 +21,18 @@ immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
 (
     const meshField<Type,MeshType>& mshField,
     const immersedBoundary<MeshType>& ib,
-    const meshField<label,MeshType>& fp
+    const meshField<label,MeshType>* maskPtr
 )
 :
     fvMsh_(mshField.fvMsh()),
-    IB_(ib),
-    forcingPoints_(fp),
+    mshField_(const_cast<meshField<Type,MeshType>&>(mshField)),
+    ib_(ib),
+    forcingMaskPtr_(maskPtr),
     dict_
     (
         mshField.found("boundaryConditions")
-     && mshField.subDict("boundaryConditions").found(IB_.name())
-      ? mshField.subDict("boundaryConditions").subDict(IB_.name())
+     && mshField.subDict("boundaryConditions").found(ib_.name())
+      ? mshField.subDict("boundaryConditions").subDict(ib_.name())
       : dictionary::null
     ),
     omega_
@@ -81,6 +77,13 @@ immersedBoundaryCondition<Type,MeshType>::New
     (
         cstrIter()(mshField, ib)
     );
+}
+
+template<class Type, class MeshType>
+void immersedBoundaryCondition<Type,MeshType>::evaluate(const label l)
+{
+    forAll(mshField_[l], d)
+        this->evaluate(l,d);
 }
 
 }

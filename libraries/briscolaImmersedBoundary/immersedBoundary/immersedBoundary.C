@@ -16,7 +16,6 @@ void immersedBoundary<MeshType>::setMasks()
     mask_ = Zero;
     ghostMask_ = Zero;
     wallAdjMask_ = Zero;
-    emptyField_ = Zero;
 
     // Cell centers
     const meshField<vector,MeshType>& CC =
@@ -91,7 +90,6 @@ void immersedBoundary<MeshType>::setMasks()
     mask_.correctCommsBoundaryConditions();
     ghostMask_.correctCommsBoundaryConditions();
     wallAdjMask_.correctCommsBoundaryConditions();
-    emptyField_.correctCommsBoundaryConditions();
 }
 
 template<class MeshType>
@@ -123,7 +121,7 @@ void immersedBoundary<MeshType>::calculateWallDistances()
                     // Neighbor cell in the IB
                     const vector nb(CC[l][d](ijk+fo));
                     const scalar wd = this->wallDistance(c,nb);
-                    const scalar xi = (mag(c-nb)-wd)/mag(c-nb);
+                    const scalar xi = (Foam::mag(c-nb)-wd)/Foam::mag(c-nb);
 
                     wallDistAdj_(l,d,i,j,k)[dir] = xi;
                 }
@@ -143,13 +141,13 @@ void immersedBoundary<MeshType>::calculateWallDistances()
                     // Wall-adjacent cell
                     const vector wa(CC[l][d](ijk+fo));
                     const scalar wd = this->wallDistance(wa,gc);
-                    const scalar xi = (mag(gc-wa)-wd)/mag(gc-wa);
+                    const scalar xi = (Foam::mag(gc-wa)-wd)/Foam::mag(gc-wa);
 
                     wallDistGhost_(l,d,i,j,k)[dir] = xi;
 
                     // Second neighbor
                     const vector sn(CC[l][d](ijk+2.0*fo));
-                    const scalar xi2 = mag(gc-sn)/mag(gc-wa);
+                    const scalar xi2 = Foam::mag(gc-sn)/Foam::mag(gc-wa);
 
                     neighborDist_(l,d,i,j,k)[dir] = xi2;
 
@@ -295,15 +293,6 @@ immersedBoundary<MeshType>::immersedBoundary
         IOobject::NO_WRITE,
         true,
         true
-    ),
-    emptyField_
-    (
-        "emptyField",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
     )
 {
     int nShapes = dict.size();
@@ -376,7 +365,7 @@ scalar immersedBoundary<MeshType>::wallDistance(vector c, vector nb) const
 
     for (int s = 0; s < shapes_.size(); s++)
     {
-        if (mag(dist+1) < 0.01)
+        if (Foam::mag(dist+1) < 0.01)
         {
             dist = shapes_[s].wallDistance(c, nb);
         }
@@ -425,7 +414,7 @@ scalar immersedBoundary<MeshType>::wallNormalDistance
 
     for (int s = 0; s < shapes_.size(); s++)
     {
-        if (mag(dist+1) < 0.01)
+        if (Foam::mag(dist+1) < 0.01)
         {
             dist = shapes_[s].wallNormalDistance(gc);
         }
@@ -472,7 +461,7 @@ vector immersedBoundary<MeshType>::mirrorPoint
 
     for (int s = 0; s < shapes_.size(); s++)
     {
-        if (mag(dist+1) < 0.01)
+        if (Foam::mag(dist+1) < 0.01)
         {
             dist = shapes_[s].wallNormalDistance(gc);
             mirror = shapes_[s].mirrorPoint(gc);

@@ -216,9 +216,9 @@ public:
 
     // Const access to immersed boundaries
     template<class MeshType>
-    const PtrList<immersedBoundary<MeshType>>& IBs() const
+    const PtrList<immersedBoundary<MeshType>>& ibs() const
     {
-        return metrics<MeshType>().IBs();
+        return metrics<MeshType>().ibs();
     }
 
     // Cell find function templated for the mesh type. Uses the cell find

@@ -402,17 +402,15 @@ void linearSystem<SType,Type,MeshType>::residual
             res(i,j,k) = b(i,j,k) - rowProduct(A,x,i,j,k);
     }
 
-    setIBMForcingMask();
-
-    if (!x_.immersedBoundaryConditions().empty())
+    if (x_.immersedBoundaryConditions().size())
     {
+        setForcingMask();
+
+        const meshField<label,MeshType>& f = forcingMask_();
+
         forAllCells(res,i,j,k)
-        {
-            if (IBMForcingMask_()(l,d,i,j,k))
-            {
+            if (f(l,d,i,j,k))
                 res(i,j,k) = Zero;
-            }
-        }
     }
 }
 
@@ -514,6 +512,17 @@ void linearSystem<SType,Type,MeshType>::evaluate
         forAllCells(eval, i, j, k)
             eval(i,j,k) = (rowProduct(A,x,i,j,k) - b(i,j,k))/cv(i,j,k);
     }
+
+    if (x_.immersedBoundaryConditions().size())
+    {
+        setForcingMask();
+
+        const meshField<label,MeshType>& f = forcingMask_();
+
+        forAllCells(eval,i,j,k)
+            if (f(l,d,i,j,k))
+                eval(i,j,k) = Zero;
+    }
 }
 
 template<class SType, class Type, class MeshType>
@@ -546,42 +555,29 @@ void linearSystem<SType,Type,MeshType>::eliminateGhosts()
 }
 
 template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::setIBMForcingMask()
+void linearSystem<SType,Type,MeshType>::setForcingMask()
 {
-    if (IBMForcingMask_.empty())
+    if (forcingMask_.empty())
     {
-        IBMForcingMask_.set
+        forcingMask_.set
         (
             new meshField<label,MeshType>
             (
-                IOobject::groupName(x_.name(),"IBMForcingMask"),
+                IOobject::groupName(x_.name(), "forcingMask"),
                 fvMsh_,
                 IOobject::NO_READ,
                 IOobject::NO_WRITE,
-                false,
+                true,
                 true
             )
         );
 
-        IBMForcingMask_() = Zero;
+        meshField<label,MeshType>& f = forcingMask_();
 
-        if (!x_.immersedBoundaryConditions().empty())
-        {
-            forAll(x_.immersedBoundaryConditions(), ib)
-            {
-                forAllCells(IBMForcingMask_(),l,d,i,j,k)
-                {
-                    if
-                    (
-                        x_.immersedBoundaryConditions()[ib]
-                            .forcingPoints()(l,d,i,j,k)
-                    )
-                    {
-                        IBMForcingMask_()(l,d,i,j,k) = 1;
-                    }
-                }
-            }
-        }
+        forAll(x_.immersedBoundaryConditions(), i)
+            f += x_.immersedBoundaryConditions()[i].forcingMask();
+
+        f = min(f,1);
     }
 }
 

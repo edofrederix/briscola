@@ -36,8 +36,8 @@ public:
     // Destructor
     virtual ~penalizationDirichletImmersedBoundaryCondition();
 
-    // Correct Jacobi points
-    void correctJacobiPoints(meshLevel<Type,MeshType>&) const;
+    // Evaluate the immersed boundary condition for given level and direction
+    virtual void evaluate(const label, const label);
 };
 
 }
