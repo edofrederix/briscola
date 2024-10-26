@@ -126,24 +126,56 @@ public:
     // Check if the linear system is diagonal. Result is cached.
     List<bool> diagonal(const bool clearCache = false);
 
-    // Compute the residual b-Ax and store in given object
-    void residual(meshField<Type,MeshType>&);
-    void residual(meshLevel<Type,MeshType>&);
-    void residual(meshDirection<Type,MeshType>&);
+    // Compute the residual b-Ax and store in given object. Optionally apply no
+    // forcing mask. This is determined via a template parameter instead of an
+    // argument, to avoid ambiguity with other arguments.
 
-    // Compute the residual b-Ax
-    tmp<meshField<Type,MeshType>> residual();
-    tmp<meshLevel<Type,MeshType>> residual(const label);
-    tmp<meshDirection<Type,MeshType>> residual(const label, const label);
+    template<bool NoMask = false>
+    void residual(meshField<Type,MeshType>&) const;
 
-    // Compute the evaluation (Ax-b)/V and store in given object
+    template<bool NoMask = false>
+    void residual(meshLevel<Type,MeshType>&) const;
+
+    template<bool NoMask = false>
+    void residual(meshDirection<Type,MeshType>&) const;
+
+    // Compute and return the residual b-Ax. Optionally apply no forcing mask.
+    // This is determined via a template parameter instead of an argument, to
+    // avoid ambiguity with other arguments.
+
+    template<bool NoMask = false>
+    tmp<meshField<Type,MeshType>> residual() const;
+
+    template<bool NoMask = false>
+    tmp<meshLevel<Type,MeshType>> residual(const label) const;
+
+    template<bool NoMask = false>
+    tmp<meshDirection<Type,MeshType>> residual(const label, const label) const;
+
+    // Compute the evaluation (Ax-b)/V and store in given object. Optionally
+    // apply no forcing mask. This is determined via a template parameter
+    // instead of an argument, to avoid ambiguity with other arguments.
+
+    template<bool NoMask = false>
     void evaluate(meshField<Type,MeshType>&) const;
+
+    template<bool NoMask = false>
     void evaluate(meshLevel<Type,MeshType>&) const;
+
+    template<bool NoMask = false>
     void evaluate(meshDirection<Type,MeshType>&) const;
 
-    // Compute the evaluation (Ax-b)/V
+    // Compute the evaluation (Ax-b)/V. Optionally apply no forcing mask. This
+    // is determined via a template parameter instead of an argument, to avoid
+    // ambiguity with other arguments.
+
+    template<bool NoMask = false>
     tmp<meshField<Type,MeshType>> evaluate() const;
+
+    template<bool NoMask = false>
     tmp<meshLevel<Type,MeshType>> evaluate(const label) const;
+
+    template<bool NoMask = false>
     tmp<meshDirection<Type,MeshType>> evaluate(const label, const label) const;
 
     // Eliminate ghosts from the linear system where possible
@@ -151,6 +183,12 @@ public:
 
     // Set the IBM forcing mask if not yet done
     void setForcingMask();
+
+    // Allow the IBM forcing mask to be set on a const linear system
+    void setForcingMask() const
+    {
+        const_cast<linearSystem<SType,Type,MeshType>*>(this)->setForcingMask();
+    }
 
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }

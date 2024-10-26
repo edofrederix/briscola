@@ -32,8 +32,6 @@ void sample::init()
             << "Not all points were found for " << name_ << " sample."
             << endl;
 
-
-
     const objectRegistry& db = fvMsh_.db();
 
     scalar size = 0;
@@ -171,7 +169,6 @@ sample::sample
     briscolaFunctionObject(name, runTime, dict),
     fvMsh_(runTime.lookupObject<fvMesh>("briscolaMeshDict")),
     fields_(dict.lookup("fields")),
-    name_(name),
     timeAverage_(dict.lookupOrDefault<Switch>("timeAverage", false)),
     timeAveragedData_(timeAverage_*fields_.size()),
     startTime_

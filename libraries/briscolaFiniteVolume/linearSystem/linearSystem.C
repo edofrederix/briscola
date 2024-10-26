@@ -325,62 +325,33 @@ List<bool> linearSystem<SType,Type,MeshType>::diagonal(const bool clearCache)
 }
 
 template<class SType, class Type, class MeshType>
+template<bool NoMask>
 void linearSystem<SType,Type,MeshType>::residual
 (
     meshField<Type, MeshType>& res
-)
+) const
 {
     forAll(res, l)
-        this->residual(res[l]);
+        this->residual<NoMask>(res[l]);
 }
 
 template<class SType, class Type, class MeshType>
-tmp<meshField<Type, MeshType>>
-linearSystem<SType,Type,MeshType>::residual()
-{
-    tmp<meshField<Type,MeshType>> tRes
-    (
-        new meshField<Type,MeshType>
-        (
-            "residual",
-            fvMsh_
-        )
-    );
-
-    this->residual(tRes.ref());
-
-    return tRes;
-}
-
-template<class SType, class Type, class MeshType>
+template<bool NoMask>
 void linearSystem<SType,Type,MeshType>::residual
 (
     meshLevel<Type,MeshType>& res
-)
+) const
 {
     forAll(res, d)
-        this->residual(res[d]);
+        this->residual<NoMask>(res[d]);
 }
 
 template<class SType, class Type, class MeshType>
-tmp<meshLevel<Type,MeshType>>
-linearSystem<SType,Type,MeshType>::residual(const label l)
-{
-    tmp<meshLevel<Type,MeshType>> tRes
-    (
-        new meshLevel<Type,MeshType>(fvMsh_,l)
-    );
-
-    this->residual(tRes.ref());
-
-    return tRes;
-}
-
-template<class SType, class Type, class MeshType>
+template<bool NoMask>
 void linearSystem<SType,Type,MeshType>::residual
 (
     meshDirection<Type,MeshType>& res
-)
+) const
 {
     const label l = res.levelNum();
     const label d = res.directionNum();
@@ -402,89 +373,96 @@ void linearSystem<SType,Type,MeshType>::residual
             res(i,j,k) = b(i,j,k) - rowProduct(A,x,i,j,k);
     }
 
-    if (x_.immersedBoundaryConditions().size())
+    if (!NoMask && x_.immersedBoundaryConditions().size())
     {
         setForcingMask();
 
-        const meshField<label,MeshType>& f = forcingMask_();
+        const meshDirection<label,MeshType>& f = forcingMask_()[l][d];
 
         forAllCells(res,i,j,k)
-            if (f(l,d,i,j,k))
+            if (f(i,j,k))
                 res(i,j,k) = Zero;
     }
 }
 
 template<class SType, class Type, class MeshType>
+template<bool NoMask>
+tmp<meshField<Type, MeshType>>
+linearSystem<SType,Type,MeshType>::residual() const
+{
+    tmp<meshField<Type,MeshType>> tRes
+    (
+        new meshField<Type,MeshType>
+        (
+            "residual",
+            fvMsh_
+        )
+    );
+
+    this->residual<NoMask>(tRes.ref());
+
+    return tRes;
+}
+
+template<class SType, class Type, class MeshType>
+template<bool NoMask>
+tmp<meshLevel<Type,MeshType>>
+linearSystem<SType,Type,MeshType>::residual(const label l) const
+{
+    tmp<meshLevel<Type,MeshType>> tRes
+    (
+        new meshLevel<Type,MeshType>(fvMsh_,l)
+    );
+
+    this->residual<NoMask>(tRes.ref());
+
+    return tRes;
+}
+
+template<class SType, class Type, class MeshType>
+template<bool NoMask>
 tmp<meshDirection<Type,MeshType>>
 linearSystem<SType,Type,MeshType>::residual
 (
     const label l,
     const label d
-)
+) const
 {
     tmp<meshDirection<Type,MeshType>> tRes
     (
         new meshDirection<Type,MeshType>(fvMsh_,l,d)
     );
 
-    this->residual(tRes.ref());
+    this->residual<NoMask>(tRes.ref());
 
     return tRes;
 }
 
 template<class SType, class Type, class MeshType>
+template<bool NoMask>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
     meshField<Type, MeshType>& eval
 ) const
 {
     forAll(eval, l)
-        this->evaluate(eval[l]);
+        this->evaluate<NoMask>(eval[l]);
 }
 
 template<class SType, class Type, class MeshType>
-tmp<meshField<Type, MeshType>>
-linearSystem<SType,Type,MeshType>::evaluate() const
-{
-    tmp<meshField<Type,MeshType>> tEval
-    (
-        new meshField<Type,MeshType>
-        (
-            "evaluate",
-            fvMsh_
-        )
-    );
-
-    this->evaluate(tEval.ref());
-
-    return tEval;
-}
-
-template<class SType, class Type, class MeshType>
+template<bool NoMask>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
     meshLevel<Type,MeshType>& eval
 ) const
 {
     forAll(eval, d)
-        this->evaluate(eval[d]);
+        this->evaluate<NoMask>(eval[d]);
 }
 
-template<class SType, class Type, class MeshType>
-tmp<meshLevel<Type,MeshType>>
-linearSystem<SType,Type,MeshType>::evaluate(const label l) const
-{
-    tmp<meshLevel<Type,MeshType>> tEval
-    (
-        new meshLevel<Type,MeshType>(fvMsh_,l)
-    );
-
-    this->evaluate(tEval.ref());
-
-    return tEval;
-}
 
 template<class SType, class Type, class MeshType>
+template<bool NoMask>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
     meshDirection<Type,MeshType>& eval
@@ -513,19 +491,54 @@ void linearSystem<SType,Type,MeshType>::evaluate
             eval(i,j,k) = (rowProduct(A,x,i,j,k) - b(i,j,k))/cv(i,j,k);
     }
 
-    if (x_.immersedBoundaryConditions().size())
+    if (!NoMask && x_.immersedBoundaryConditions().size())
     {
         setForcingMask();
 
-        const meshField<label,MeshType>& f = forcingMask_();
+        const meshDirection<label,MeshType>& f = forcingMask_()[l][d];
 
         forAllCells(eval,i,j,k)
-            if (f(l,d,i,j,k))
+            if (f(i,j,k))
                 eval(i,j,k) = Zero;
     }
 }
 
 template<class SType, class Type, class MeshType>
+template<bool NoMask>
+tmp<meshField<Type, MeshType>>
+linearSystem<SType,Type,MeshType>::evaluate() const
+{
+    tmp<meshField<Type,MeshType>> tEval
+    (
+        new meshField<Type,MeshType>
+        (
+            "evaluate",
+            fvMsh_
+        )
+    );
+
+    this->evaluate<NoMask>(tEval.ref());
+
+    return tEval;
+}
+
+template<class SType, class Type, class MeshType>
+template<bool NoMask>
+tmp<meshLevel<Type,MeshType>>
+linearSystem<SType,Type,MeshType>::evaluate(const label l) const
+{
+    tmp<meshLevel<Type,MeshType>> tEval
+    (
+        new meshLevel<Type,MeshType>(fvMsh_,l)
+    );
+
+    this->evaluate<NoMask>(tEval.ref());
+
+    return tEval;
+}
+
+template<class SType, class Type, class MeshType>
+template<bool NoMask>
 tmp<meshDirection<Type,MeshType>>
 linearSystem<SType,Type,MeshType>::evaluate
 (
@@ -538,7 +551,7 @@ linearSystem<SType,Type,MeshType>::evaluate
         new meshDirection<Type,MeshType>(fvMsh_,l,d)
     );
 
-    this->evaluate(tRes.ref());
+    this->evaluate<NoMask>(tRes.ref());
 
     return tRes;
 }

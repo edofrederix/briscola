@@ -6,4 +6,4 @@ FoamFile
     object      briscolaStaggeredDict;
 }
 
-nu          0.01;
+nu          0.005;

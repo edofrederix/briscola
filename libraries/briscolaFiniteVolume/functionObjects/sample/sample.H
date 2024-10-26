@@ -32,9 +32,6 @@ protected:
     // Fields to be sampled
     wordList fields_;
 
-    // Name of the function object
-    word name_;
-
     // Time average output data
     bool timeAverage_;
 

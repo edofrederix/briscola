@@ -13,9 +13,9 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         100;
+endTime         200;
 
-deltaT          1e-6;
+deltaT          1e-4;
 
 writeControl    adjustableRunTime;
 
@@ -39,9 +39,16 @@ functions
 {
     timeAverage
     {
-        type    timeAverage;
-        fields  (U Uc);
-        startTime 0;
+        type        timeAverage;
+        fields      (U Uc);
+        startTime   100;
+    }
+
+    force
+    {
+        type        stagImmersedBoundaryForce;
+        ibName      cylinder;
+        log         true;
     }
 }
 

@@ -24,7 +24,7 @@ bricks
     0
     {
         vertices    (((0 4)(2 6))((1 5)(3 7)));
-        N           (1024 512 1);
+        N           (128 64 1);
     }
 );
 
@@ -78,16 +78,6 @@ patches
 
 );
 
-decomposition
-{
-    type    manual;
-
-    brickDecompositions
-    (
-        (8 8 1)
-    );
-}
-
 immersedBoundaries
 {
     cylinder
@@ -100,4 +90,14 @@ immersedBoundaries
             radius  0.5;
         }
     }
+}
+
+decomposition
+{
+    type    manual;
+
+    brickDecompositions
+    (
+        (2 2 1)
+    );
 }

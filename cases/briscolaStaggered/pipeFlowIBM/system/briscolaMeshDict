@@ -24,7 +24,7 @@ bricks
     0
     {
         vertices    (((0 4)(2 6))((1 5)(3 7)));
-        N           (192 96 96);
+        N           (96 48 48);
     }
 );
 
@@ -69,16 +69,6 @@ patches
     }
 );
 
-decomposition
-{
-    type    manual;
-
-    brickDecompositions
-    (
-        (4 4 4)
-    );
-}
-
 immersedBoundaries
 {
     pipeWall
@@ -92,4 +82,14 @@ immersedBoundaries
             inverted true;
         }
     }
+}
+
+decomposition
+{
+    type    manual;
+
+    brickDecompositions
+    (
+        (2 2 2)
+    );
 }

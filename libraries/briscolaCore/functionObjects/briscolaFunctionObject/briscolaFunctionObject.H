@@ -18,6 +18,9 @@ protected:
     // Reference to runtime object
     const Time& runTime_;
 
+    // Name of the function object
+    const word name_;
+
     // Reference to the function object dictionary
     const dictionary& dict_;
 
@@ -54,6 +57,9 @@ public:
     {
         return wordList(0);
     }
+
+    // Read
+    virtual bool read(const dictionary&);
 
     // Disallow default bitwise assignment
     void operator=(const briscolaFunctionObject&) = delete;

@@ -34,9 +34,4 @@ boundaryConditions
     {
         type        empty;
     }
-
-    cylinder
-    {
-        type        Dirichlet;
-    }
 }
