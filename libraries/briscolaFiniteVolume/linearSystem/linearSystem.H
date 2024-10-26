@@ -19,7 +19,8 @@ namespace fv
 template<class SType, class Type, class MeshType>
 class linearSystem
 :
-    public tmp<linearSystem<SType,Type,MeshType>>::refCount
+    public regIOobject,
+    public refCount
 {
     // Reference to the mesh
     const fvMesh& fvMsh_;
@@ -51,23 +52,40 @@ public:
     TypeName("linearSystem");
 
     // Construct from unknown
-    linearSystem(meshField<Type,MeshType>& x);
+    linearSystem
+    (
+        meshField<Type,MeshType>& x,
+        const bool registerObject = false
+    );
 
     // Copy constructors
-    linearSystem(const linearSystem<SType,Type,MeshType>&);
-    linearSystem(const tmp<linearSystem<SType,Type,MeshType>>&);
+    linearSystem
+    (
+        const linearSystem<SType,Type,MeshType>& tSys,
+        const bool registerObject = false
+    );
+
+    // Copy constructor from tmp
+    linearSystem
+    (
+        const tmp<linearSystem<SType,Type,MeshType>>& tSys,
+        const bool registerObject = false
+    );
 
     // Copy constructors with new unknown
     linearSystem
     (
         const linearSystem<SType,Type,MeshType>& sys,
-        meshField<Type,MeshType>& x
+        meshField<Type,MeshType>& x,
+        const bool registerObject = false
     );
 
+    // Copy constructors from tmp with new unknown
     linearSystem
     (
         const tmp<linearSystem<SType,Type,MeshType>>& tSys,
-        meshField<Type,MeshType>& x
+        meshField<Type,MeshType>& x,
+        const bool registerObject = false
     );
 
     // Destructor
@@ -125,6 +143,9 @@ public:
 
     // Set IBM forcing mask
     void setIBMForcingMask();
+
+    // Write data (not supported)
+    bool writeData(Ostream& os) const { return os; }
 
     // Member Operators
 

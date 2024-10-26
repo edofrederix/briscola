@@ -15,29 +15,51 @@ void testConstructors(const fvMesh& fvMsh)
 
     // From a field
 
-    linearSystem<SType,Type,MeshType> s1(f);
+    linearSystem<SType,Type,MeshType> s1a(f);
+    linearSystem<SType,Type,MeshType> s1b(f, true);
 
     // Copy constructors
 
-    linearSystem<SType,Type,MeshType> s2a(s1);
-    linearSystem<SType,Type,MeshType> s2b
+    linearSystem<SType,Type,MeshType> s2a(s1a);
+    linearSystem<SType,Type,MeshType> s2b(s1a, true);
+
+    linearSystem<SType,Type,MeshType> s2c
     (
         tmp<linearSystem<SType,Type,MeshType>>
         (
             new linearSystem<SType,Type,MeshType>(f)
         )
     );
+    linearSystem<SType,Type,MeshType> s2d
+    (
+        tmp<linearSystem<SType,Type,MeshType>>
+        (
+            new linearSystem<SType,Type,MeshType>(f)
+        ),
+        true
+    );
 
     // Copy constructor with other variable
 
-    linearSystem<SType,Type,MeshType> s3a(s1, g);
-    linearSystem<SType,Type,MeshType> s3b
+    linearSystem<SType,Type,MeshType> s3a(s1a, g);
+    linearSystem<SType,Type,MeshType> s3b(s1a, g, true);
+
+    linearSystem<SType,Type,MeshType> s3c
     (
         tmp<linearSystem<SType,Type,MeshType>>
         (
             new linearSystem<SType,Type,MeshType>(f)
         ),
         g
+    );
+    linearSystem<SType,Type,MeshType> s3d
+    (
+        tmp<linearSystem<SType,Type,MeshType>>
+        (
+            new linearSystem<SType,Type,MeshType>(f)
+        ),
+        g,
+        true
     );
 }
 

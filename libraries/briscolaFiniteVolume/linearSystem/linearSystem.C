@@ -23,10 +23,23 @@ void linearSystem<SType,Type,MeshType>::transfer
 template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
 (
-    meshField<Type, MeshType>& x
+    meshField<Type, MeshType>& x,
+    const bool registerObject
 )
 :
-    tmp<linearSystem<SType,Type,MeshType>>::refCount(),
+    regIOobject
+    (
+        IOobject
+        (
+            typeName + "(" + x.name() + ")",
+            x.fvMsh().time().timeName(),
+            x.fvMsh().time(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            registerObject
+        )
+    ),
+    refCount(),
     fvMsh_(x.fvMsh()),
     x_(x),
     A_
@@ -50,10 +63,23 @@ linearSystem<SType,Type,MeshType>::linearSystem
 template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
 (
-    const linearSystem<SType,Type,MeshType>& sys
+    const linearSystem<SType,Type,MeshType>& sys,
+    const bool registerObject
 )
 :
-    tmp<linearSystem<SType,Type,MeshType>>::refCount(),
+    regIOobject
+    (
+        IOobject
+        (
+            typeName + "(" + sys.x_.name() + ")",
+            sys.fvMsh_.time().timeName(),
+            sys.fvMsh_.time(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            registerObject
+        )
+    ),
+    refCount(),
     fvMsh_(sys.fvMsh_),
     x_(sys.x_),
     A_
@@ -79,10 +105,23 @@ linearSystem<SType,Type,MeshType>::linearSystem
 template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
 (
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys
+    const tmp<linearSystem<SType,Type,MeshType>>& tSys,
+    const bool registerObject
 )
 :
-    tmp<linearSystem<SType,Type,MeshType>>::refCount(),
+    regIOobject
+    (
+        IOobject
+        (
+            typeName + "(" + tSys->x_.name() + ")",
+            tSys->fvMsh_.time().timeName(),
+            tSys->fvMsh_.time(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            registerObject
+        )
+    ),
+    refCount(),
     fvMsh_(tSys->fvMsh_),
     x_(tSys->x_),
     A_
@@ -122,10 +161,23 @@ template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
 (
     const linearSystem<SType,Type,MeshType>& sys,
-    meshField<Type, MeshType>& x
+    meshField<Type, MeshType>& x,
+    const bool registerObject
 )
 :
-    tmp<linearSystem<SType,Type,MeshType>>::refCount(),
+    regIOobject
+    (
+        IOobject
+        (
+            typeName + "(" + x.name() + ")",
+            sys.fvMsh_.time().timeName(),
+            sys.fvMsh_.time(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            registerObject
+        )
+    ),
+    refCount(),
     fvMsh_(sys.fvMsh_),
     x_(x),
     A_
@@ -152,10 +204,23 @@ template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
 (
     const tmp<linearSystem<SType,Type,MeshType>>& tSys,
-    meshField<Type, MeshType>& x
+    meshField<Type, MeshType>& x,
+    const bool registerObject
 )
 :
-    tmp<linearSystem<SType,Type,MeshType>>::refCount(),
+    regIOobject
+    (
+        IOobject
+        (
+            typeName + "(" + x.name() + ")",
+            tSys->fvMsh_.time().timeName(),
+            tSys->fvMsh_.time(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            registerObject
+        )
+    ),
+    refCount(),
     fvMsh_(tSys->fvMsh_),
     x_(x),
     A_
