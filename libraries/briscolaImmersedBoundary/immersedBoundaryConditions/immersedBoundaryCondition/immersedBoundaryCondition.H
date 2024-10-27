@@ -109,6 +109,12 @@ public:
         return ib_;
     }
 
+    // Const access to the forcing mask pointer
+    inline const meshField<label,MeshType>* forcingMaskPtr() const
+    {
+        return forcingMaskPtr_;
+    }
+
     // Const access to the forcing mask (unchecked!)
     inline const meshField<label,MeshType>& forcingMask() const
     {

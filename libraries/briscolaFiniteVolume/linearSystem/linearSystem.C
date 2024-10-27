@@ -587,10 +587,14 @@ void linearSystem<SType,Type,MeshType>::setForcingMask()
 
         meshField<label,MeshType>& f = forcingMask_();
 
+        f = Zero;
+
         forAll(x_.immersedBoundaryConditions(), i)
-            f += x_.immersedBoundaryConditions()[i].forcingMask();
+            if (x_.immersedBoundaryConditions()[i].forcingMaskPtr())
+                f += x_.immersedBoundaryConditions()[i].forcingMask();
 
         f = min(f,1);
+        f.correctBoundaryConditions();
     }
 }
 
