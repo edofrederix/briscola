@@ -84,10 +84,10 @@ void JAC<SType,Type,MeshType>::JAC::smooth
 
         x = y;
 
-        x.correctNonEliminatedBoundaryConditions();
-
         if (l==0)
             x.correctImmersedBoundaryConditions();
+
+        x.correctNonEliminatedBoundaryConditions();
     }
 
     x.correctEliminatedBoundaryConditions();

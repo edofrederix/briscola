@@ -115,9 +115,10 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
             }
         }
 
-        x.correctNonEliminatedBoundaryConditions();
         if (l == 0)
             x.correctImmersedBoundaryConditions();
+
+        x.correctNonEliminatedBoundaryConditions();
     }
 
     x.correctEliminatedBoundaryConditions();
