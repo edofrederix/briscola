@@ -86,9 +86,9 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
         const labelVector closest = labelVector
         (
-            Foam::max(Foam::min(index.x(), U.x()-1), L.x()),
-            Foam::max(Foam::min(index.y(), U.y()-1), L.y()),
-            Foam::max(Foam::min(index.z(), U.z()-1), L.z())
+            Foam::max(Foam::min(index.x(), U.x()), L.x()-1),
+            Foam::max(Foam::min(index.y(), U.y()), L.y()-1),
+            Foam::max(Foam::min(index.z(), U.z()), L.z()-1)
         );
 
         const labelVector offset = index - closest;
@@ -124,46 +124,23 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
                 break;
             }
 
-            // If no processor can be found, check if the cell can be found in
-            // the ghost cells of a neighbouring processor
+            // Error when not found
+
+            if (bNum == -1)
+                FatalErrorInFunction
+                    << "Could not find boundary corresponding to offset "
+                    << bo << endl << abort(FatalError);
+
+            // Error when we're outside the domain
 
             if
             (
-                bNum == -1
-             || msh.boundaries()[bNum].castable<domainBoundary>()
+                msh.boundaries()[bNum].castable<domainBoundary>()
              || msh.boundaries()[bNum].castable<emptyBoundary>()
             )
-            {
-                for (int j = 0; j < 3; j++)
-                    if (Foam::mag(offset[j]) < 2)
-                        bo[j] = 0;
-
-                bNum = -1;
-
-                forAll(msh.boundaries(), bi)
-                    if (msh.boundaries()[bi].offset() == bo)
-                    {
-                        bNum = bi;
-                        break;
-                    }
-
-
-                if (bNum == -1)
-                    FatalErrorInFunction
-                        << "Could not find patch corresponding to boundary "
-                        << "offset " << bo << endl << abort(FatalError);
-
-                const boundary& b1 = msh.boundaries()[bNum];
-
-                if
-                (
-                    b1.castable<domainBoundary>()
-                 || b1.castable<emptyBoundary>()
-                )
-                    FatalErrorInFunction
-                        << "Cannot exchange cell data across a boundary part "
-                        << "patch " << bo << endl << abort(FatalError);
-            }
+                FatalErrorInFunction
+                    << "Cannot exchange cell data across a domain boundary "
+                    << "at offset " << bo << endl << abort(FatalError);
 
             // Store trimmed index
 
