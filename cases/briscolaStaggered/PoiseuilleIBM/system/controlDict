@@ -41,8 +41,8 @@ functions
     {
         type            lineSample;
         writeControl    writeTime;
-        start           (4 -0.5 0);
-        end             (4  0.5 0);
+        start           (4 -0.5 0.05);
+        end             (4  0.5 0.05);
         N               100;
         fields          (p Uc);
     }
