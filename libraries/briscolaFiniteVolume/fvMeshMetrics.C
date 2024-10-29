@@ -4,6 +4,7 @@
 #include "staggeredFields.H"
 
 #include "fvMesh.H"
+#include "immersedBoundary.H"
 
 namespace Foam
 {
@@ -337,6 +338,32 @@ void fvMeshMetrics<MeshType>::setGlobalCellNumbers()
 }
 
 template<class MeshType>
+void fvMeshMetrics<MeshType>::setImmersedBoundaries()
+{
+    if (fvMsh_.msh().dict().found("immersedBoundaries"))
+    {
+        const dictionary& ibmDict =
+            fvMsh_.msh().dict().subDict("immersedBoundaries");
+
+        label size = ibmDict.size();
+
+        for (int i = 0; i < size; i++)
+        {
+            word IBname = ibmDict.toc()[i];
+
+            immersedBoundaries_.append
+            (
+                new immersedBoundary<MeshType>
+                (
+                    *this,
+                    ibmDict.subDict(IBname)
+                )
+            );
+        }
+    }
+}
+
+template<class MeshType>
 fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
 :
     fvMsh_(fvMsh),
@@ -447,7 +474,8 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         IOobject::NO_WRITE,
         true,
         true
-    )
+    ),
+    immersedBoundaries_()
 {
     calculateVertexCenters();
     calculateFaceCenters();
@@ -458,6 +486,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     calculateFaceDeltas();
     calculateFaceWeights();
     setGlobalCellNumbers();
+    setImmersedBoundaries();
 }
 
 template<class MeshType>

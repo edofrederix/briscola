@@ -866,6 +866,34 @@ inline scalar triArea
     return Foam::mag(triAreaVector(a,b,c));
 }
 
+// Clean round-off errors. This is useful for accurate comparison of two
+// numbers, for example when checking if a point coordinate falls within a cell.
+// In some cases the floating point round-off error can cause a point to
+// incorrectly fall just outside a cell. This is avoided by rounding the last
+// few significant digits.
+
+inline scalar clean(scalar s)
+{
+    if (s != 0)
+    {
+        const scalar factor =
+            Foam::pow(10.0, 14 - label(Foam::log10(Foam::mag(s))));
+
+        s = round(s*factor)/factor;
+    }
+
+    return s;
+}
+
+template<class Form, class Cmpt, direction Ncmpts>
+inline Form clean(VectorSpace<Form, Cmpt, Ncmpts> v)
+{
+    for (direction i = 0; i < Ncmpts; i++)
+        v.v_[i] = clean(v.v_[i]);
+
+    return v;
+}
+
 // Make a list from a scalar
 inline scalarList list(const scalar s)
 {

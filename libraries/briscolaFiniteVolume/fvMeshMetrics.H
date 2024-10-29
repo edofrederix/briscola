@@ -1,8 +1,7 @@
 #ifndef fvMeshMetrics_H
 #define fvMeshMetrics_H
 
-#include "colocatedFieldsFwd.H"
-#include "staggeredFieldsFwd.H"
+#include "immersedBoundaryFwd.H"
 
 namespace Foam
 {
@@ -58,6 +57,9 @@ class fvMeshMetrics
     // Global cell numbers
     meshField<label,MeshType> globalCellNumbers_;
 
+    // List of immersed boundaries (if any)
+    PtrList<immersedBoundary<MeshType>> immersedBoundaries_;
+
     // Calculate vertex centers
     void calculateVertexCenters();
 
@@ -85,6 +87,9 @@ class fvMeshMetrics
     // Set the global cell numbers
     void setGlobalCellNumbers();
 
+    // Set the immersed boundaries
+    void setImmersedBoundaries();
+
 public:
 
     // Declare name of the class and its debug switch
@@ -96,8 +101,20 @@ public:
     // Destructor
     ~fvMeshMetrics();
 
+    // Const access to immersed boundaries
+    const PtrList<immersedBoundary<MeshType>>& immersedBoundaries() const
+    {
+        return immersedBoundaries_;
+    }
+
     // Disallow default bitwise assignment
     void operator=(const fvMeshMetrics&);
+
+    // Const access to fvMesh
+    inline const fvMesh& fvMsh() const
+    {
+        return fvMsh_;
+    }
 
     // Const access to face centers
     inline const meshField<faceVector,MeshType>& faceCenters() const

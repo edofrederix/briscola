@@ -19,7 +19,8 @@ namespace fv
 template<class SType, class Type, class MeshType>
 class linearSystem
 :
-    public tmp<linearSystem<SType,Type,MeshType>>::refCount
+    public regIOobject,
+    public refCount
 {
     // Reference to the mesh
     const fvMesh& fvMsh_;
@@ -39,6 +40,9 @@ class linearSystem
     // Diagonal bools
     List<bool> diagonal_;
 
+    // IBM forcing mask
+    autoPtr<meshField<label,MeshType>> forcingMask_;
+
     // Transfer data from other system
     void transfer(linearSystem<SType,Type,MeshType>&);
 
@@ -48,23 +52,40 @@ public:
     TypeName("linearSystem");
 
     // Construct from unknown
-    linearSystem(meshField<Type,MeshType>&);
+    linearSystem
+    (
+        meshField<Type,MeshType>& x,
+        const bool registerObject = false
+    );
 
     // Copy constructors
-    linearSystem(const linearSystem<SType,Type,MeshType>&);
-    linearSystem(const tmp<linearSystem<SType,Type,MeshType>>&);
+    linearSystem
+    (
+        const linearSystem<SType,Type,MeshType>& tSys,
+        const bool registerObject = false
+    );
+
+    // Copy constructor from tmp
+    linearSystem
+    (
+        const tmp<linearSystem<SType,Type,MeshType>>& tSys,
+        const bool registerObject = false
+    );
 
     // Copy constructors with new unknown
     linearSystem
     (
-        const linearSystem<SType,Type,MeshType>&,
-        meshField<Type,MeshType>&
+        const linearSystem<SType,Type,MeshType>& sys,
+        meshField<Type,MeshType>& x,
+        const bool registerObject = false
     );
 
+    // Copy constructors from tmp with new unknown
     linearSystem
     (
-        const tmp<linearSystem<SType,Type,MeshType>>&,
-        meshField<Type,MeshType>&
+        const tmp<linearSystem<SType,Type,MeshType>>& tSys,
+        meshField<Type,MeshType>& x,
+        const bool registerObject = false
     );
 
     // Destructor
@@ -85,6 +106,18 @@ public:
     inline meshField<Type,MeshType>& b() { return b_; }
     inline const meshField<Type,MeshType>& b() const { return b_; }
 
+    // Return the IBM forcing mask
+    inline meshField<label,MeshType>& forcingMask()
+    {
+        return forcingMask_();
+    }
+
+    // Return const access to the IBM forcing mask
+    inline const meshField<label,MeshType>& forcingMask() const
+    {
+        return forcingMask_();
+    }
+
     // A linear system is said to be singular if all matrix row sums at the
     // coarsest level  are zero. See Remark 5.6.5 in "Multigrid", U. Trottenberg
     // et al., (2000). Result is cached.
@@ -93,28 +126,72 @@ public:
     // Check if the linear system is diagonal. Result is cached.
     List<bool> diagonal(const bool clearCache = false);
 
-    // Compute the residual b-Ax and store in given object
+    // Compute the residual b-Ax and store in given object. Optionally apply no
+    // forcing mask. This is determined via a template parameter instead of an
+    // argument, to avoid ambiguity with other arguments.
+
+    template<bool NoMask = false>
     void residual(meshField<Type,MeshType>&) const;
+
+    template<bool NoMask = false>
     void residual(meshLevel<Type,MeshType>&) const;
+
+    template<bool NoMask = false>
     void residual(meshDirection<Type,MeshType>&) const;
 
-    // Compute the residual b-Ax
+    // Compute and return the residual b-Ax. Optionally apply no forcing mask.
+    // This is determined via a template parameter instead of an argument, to
+    // avoid ambiguity with other arguments.
+
+    template<bool NoMask = false>
     tmp<meshField<Type,MeshType>> residual() const;
+
+    template<bool NoMask = false>
     tmp<meshLevel<Type,MeshType>> residual(const label) const;
+
+    template<bool NoMask = false>
     tmp<meshDirection<Type,MeshType>> residual(const label, const label) const;
 
-    // Compute the evaluation (Ax-b)/V and store in given object
+    // Compute the evaluation (Ax-b)/V and store in given object. Optionally
+    // apply no forcing mask. This is determined via a template parameter
+    // instead of an argument, to avoid ambiguity with other arguments.
+
+    template<bool NoMask = false>
     void evaluate(meshField<Type,MeshType>&) const;
+
+    template<bool NoMask = false>
     void evaluate(meshLevel<Type,MeshType>&) const;
+
+    template<bool NoMask = false>
     void evaluate(meshDirection<Type,MeshType>&) const;
 
-    // Compute the evaluation (Ax-b)/V
+    // Compute the evaluation (Ax-b)/V. Optionally apply no forcing mask. This
+    // is determined via a template parameter instead of an argument, to avoid
+    // ambiguity with other arguments.
+
+    template<bool NoMask = false>
     tmp<meshField<Type,MeshType>> evaluate() const;
+
+    template<bool NoMask = false>
     tmp<meshLevel<Type,MeshType>> evaluate(const label) const;
+
+    template<bool NoMask = false>
     tmp<meshDirection<Type,MeshType>> evaluate(const label, const label) const;
 
     // Eliminate ghosts from the linear system where possible
     void eliminateGhosts();
+
+    // Set the IBM forcing mask if not yet done
+    void setForcingMask();
+
+    // Allow the IBM forcing mask to be set on a const linear system
+    void setForcingMask() const
+    {
+        const_cast<linearSystem<SType,Type,MeshType>*>(this)->setForcingMask();
+    }
+
+    // Write data (not supported)
+    bool writeData(Ostream& os) const { return os; }
 
     // Member Operators
 

@@ -72,7 +72,7 @@ template<class MeshType>                                                    \
 List<TYPE> nearestPointInterpolator<MeshType>::operator()                   \
 (                                                                           \
     const meshField<TYPE,MeshType>& field                                   \
-)                                                                           \
+) const                                                                     \
 {                                                                           \
     return this->interp(field);                                             \
 }
@@ -93,7 +93,7 @@ template<class Type>
 List<Type> nearestPointInterpolator<MeshType>::interp
 (
     const meshField<Type,MeshType>& field
-)
+) const
 {
     List<Type> values(this->points_.size());
 

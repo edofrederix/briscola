@@ -79,6 +79,10 @@ functionObjects/example/example.C
 functionObjects/sample/sample.C
 functionObjects/sample/sampleTemplates.C
 functionObjects/lineSample/lineSample.C
+functionObjects/averagedLineSample/averagedLineSample.C
+functionObjects/timeAverage/timeAverage.C
+functionObjects/budgetPrimitivesStaggered/budgetPrimitivesStaggered.C
+functionObjects/colocatedReconstruction/colocatedReconstruction.C
 
 dataExchange/dataExchange/dataExchange.C
 dataExchange/cellDataExchange/cellDataExchange.C

@@ -22,9 +22,6 @@ namespace fv
 
 class fvMesh;
 
-// template<class Type, class MeshType>
-// class boundaryCondition;
-
 template<class Type, class MeshType>
 class meshField;
 
@@ -227,6 +224,19 @@ public:
         }
     }
 
+    // Add immersed boundary conditions only of not yet added
+    inline void addImmersedBoundaryConditions()
+    {
+        if
+        (
+            mshFieldPtr_
+         && mshFieldPtr_->immersedBoundaryConditions().size() == 0
+        )
+        {
+            mshFieldPtr_->addImmersedBoundaryConditions();
+        }
+    }
+
     // Correct boundary conditions
     void correctBoundaryConditions();
 
@@ -260,6 +270,9 @@ public:
 
     // Correct eliminated boundary conditions
     void correctEliminatedBoundaryConditions();
+
+    // Correct immersed boundary conditions
+    void correctImmersedBoundaryConditions();
 
     // Member operators
 

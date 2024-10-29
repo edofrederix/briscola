@@ -12,13 +12,13 @@ staggeredScalarField U
 U = Zero;
 U.correctBoundaryConditions();
 
-// Reconstruct colocated velocity field
+// Reconstructed colocated velocity
 
 colocatedVectorField Uc
 (
     "Uc",
     fvMsh,
-    IOobject::NO_READ,
+    IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
     true
 );
@@ -94,8 +94,7 @@ imSourceCoeff =
 
 // Solvers
 
-linearSystem<stencil,scalar,staggered> USys(U);
-linearSystem<stencil,scalar,colocated> pSys(p);
+linearSystem<stencil,scalar,staggered> USys(U, true);
 
 autoPtr<solver<stencil,scalar,staggered>> USolve
 (
@@ -110,7 +109,7 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
 (
     PoissonSolver<stencil,scalar,colocated>::New
     (
-        pSys.x().name(),
+        p.name(),
         fvMsh
     )
 );

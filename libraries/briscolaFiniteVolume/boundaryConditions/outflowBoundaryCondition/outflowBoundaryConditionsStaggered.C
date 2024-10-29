@@ -11,11 +11,11 @@ namespace fv
 {
 
 // Base
-makeBoundaryConditionTypes(outflow,outflow,staggered)
+makeBoundaryConditionType(outflow,outflow,scalar,staggered)
 
 // Derived
-makeBoundaryConditionMeshedTypes(stagOutflow,outflow,staggered)
-addBoundaryConditionMeshedTypes(stagOutflow,staggered)
+makeBoundaryConditionMeshedType(stagOutflow,outflow,scalar,staggered)
+addBoundaryConditionMeshedType(stagOutflow,scalar,staggered)
 
 }
 

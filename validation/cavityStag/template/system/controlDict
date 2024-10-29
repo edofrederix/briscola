@@ -37,6 +37,12 @@ maxCo           0.5;
 
 functions
 {
+    reconstruct
+    {
+        type    colocatedReconstruction;
+        fields  (U);
+    }
+
     x
     {
         type            lineSample;

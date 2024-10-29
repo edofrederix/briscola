@@ -32,8 +32,17 @@ protected:
     // Fields to be sampled
     wordList fields_;
 
-    // Name of the function object
-    word name_;
+    // Time average output data
+    bool timeAverage_;
+
+    // Time averaged data
+    PtrList<scalarList> timeAveragedData_;
+
+    // Sampling start time
+    scalar startTime_;
+
+    // Name of write-time folder
+    word writeTime_;
 
     // Initialize
     void init();

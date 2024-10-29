@@ -126,9 +126,27 @@ void tridiagonalSolver<SType>::computeDiagonals()
     // Square of cell sizes in each direction
     scalar d1sqr = sqr(cellSizes_[dir1_][0]);
     scalar d2sqr = sqr(cellSizes_[dir2_][0]);
-    scalarList d3sqr = sqr(cellSizes_[solver_.FFTPlan().solveDir()]);
+    scalarList d3 = cellSizes_[solver_.FFTPlan().solveDir()];
 
     label Nsolve = N_[solver_.FFTPlan().solveDir()];
+
+    scalarList d3e(Nsolve, Zero);
+    scalarList d3w(Nsolve, Zero);
+
+    forAll(d3e, k)
+    {
+        d3e[k] =
+        (
+            cellSizes_[solver_.FFTPlan().solveDir()][k]
+            + cellSizes_[solver_.FFTPlan().solveDir()][k+1]
+        ) / 2.0;
+
+        d3w[k] =
+        (
+            cellSizes_[solver_.FFTPlan().solveDir()][k]
+            + cellSizes_[solver_.FFTPlan().solveDir()][k-1]
+        ) / 2.0;
+    }
 
     label cursor = 0;
 
@@ -143,52 +161,70 @@ void tridiagonalSolver<SType>::computeDiagonals()
             {
                 case 1:
                     D_(cursor) = lambda1_[i]/d1sqr
-                        + lambda2_[j]/d2sqr - 3.0/d3sqr[0];
+                        + lambda2_[j]/d2sqr
+                        - 1.0 / (d3e[0]*d3[0])
+                        - 2.0 / (d3[0]*d3w[0]);
 
                     D_(cursor + Nsolve - 1) = lambda1_[i]/d1sqr
-                        + lambda2_[j]/d2sqr - 3.0/d3sqr[Nsolve - 1];
+                        + lambda2_[j]/d2sqr
+                        - 2.0 / (d3e[Nsolve - 1]*d3[Nsolve - 1])
+                        - 1.0 / (d3[Nsolve - 1]*d3w[Nsolve - 1]);
                     break;
 
                 case 2:
                     D_(cursor) = lambda1_[i]/d1sqr
-                        + lambda2_[j]/d2sqr - 1.0/d3sqr[0];
+                        + lambda2_[j]/d2sqr
+                        - 1.0 / (d3e[0]*d3[0]);
 
                     D_(cursor + Nsolve - 1) = lambda1_[i]/d1sqr
-                        + lambda2_[j]/d2sqr - 1.0/d3sqr[Nsolve - 1];
+                        + lambda2_[j]/d2sqr
+                        - 1.0 / (d3[Nsolve - 1]*d3w[Nsolve - 1]);
 
                     // If coefficient matrix is singular
                     if (lambda1_[i] == 0 && lambda2_[j] == 0)
                     {
-                        D_(cursor) -= 1e-10;
+                        D_(cursor) = - 1.0 / (d3e[0]*d3[0])
+                            - 2.0 / (d3[0]*d3w[0]);
                     }
                     break;
 
                 case 3:
                     D_(cursor) = lambda1_[i]/d1sqr
-                        + lambda2_[j]/d2sqr - 3.0/d3sqr[0];
+                        + lambda2_[j]/d2sqr
+                        - 1.0 / (d3e[0]*d3[0])
+                        - 2.0 / (d3[0]*d3w[0]);
 
                     D_(cursor + Nsolve - 1) = lambda1_[i]/d1sqr
-                        + lambda2_[j]/d2sqr - 1.0/d3sqr[Nsolve - 1];
+                        + lambda2_[j]/d2sqr
+                        - 1.0 / (d3[Nsolve - 1]*d3w[Nsolve - 1]);
                     break;
 
                 case 4:
                     D_(cursor) = lambda1_[i]/d1sqr
-                        + lambda2_[j]/d2sqr - 1.0/d3sqr[0];
+                        + lambda2_[j]/d2sqr
+                        - 1.0 / (d3e[0]*d3[0]);
 
                     D_(cursor + Nsolve - 1) = lambda1_[i]/d1sqr
-                        + lambda2_[j]/d2sqr - 3.0/d3sqr[Nsolve - 1];
+                        + lambda2_[j]/d2sqr
+                        - 2.0 / (d3e[Nsolve - 1]*d3[Nsolve - 1])
+                        - 1.0 / (d3[Nsolve - 1]*d3w[Nsolve - 1]);
                     break;
 
                 case 5:
                     D_(cursor) = lambda1_[i]/d1sqr
-                        + lambda2_[j]/d2sqr - 2.0/d3sqr[0];
+                        + lambda2_[j]/d2sqr
+                        - 1.0 / (d3e[0]*d3[0])
+                        - 1.0 / (d3[0]*d3w[0]);
                     D_(cursor + Nsolve - 1) = lambda1_[i]/d1sqr
-                        + lambda2_[j]/d2sqr - 2.0/d3sqr[Nsolve - 1];
+                        + lambda2_[j]/d2sqr
+                        - 1.0 / (d3e[Nsolve - 1]*d3[Nsolve - 1])
+                        - 1.0 / (d3[Nsolve - 1]*d3w[Nsolve - 1]);
 
                     // If coefficient matrix is singular
                     if (lambda1_[i] == 0 && lambda2_[j] == 0)
                     {
-                        D_(cursor) -= 1e-10;
+                        D_(cursor) = - 1.0 / (d3e[0]*d3[0])
+                            - 2.0 / (d3[0]*d3w[0]);
                     }
                     break;
 
@@ -204,11 +240,31 @@ void tridiagonalSolver<SType>::computeDiagonals()
             for (int k = 1; k < Nsolve - 1; k++)
             {
                 D_(cursor + k) = lambda1_[i]/d1sqr
-                    + lambda2_[j]/d2sqr - 2.0/d3sqr[k];
+                    + lambda2_[j]/d2sqr
+                    - 1.0 / (d3e[k]*d3[k])
+                    - 1.0 / (d3[k]*d3w[k]);
             }
 
             cursor += Nsolve;
         }
+    }
+
+    forAll(DU_, k)
+    {
+        DU_[k] = 1.0 /
+        (
+            cellSizes_[solver_.FFTPlan().solveDir()][k]
+            * d3e[k]
+        );
+    }
+
+    forAll(DL_, k)
+    {
+        DL_[k] = 1.0 /
+        (
+            cellSizes_[solver_.FFTPlan().solveDir()][k]
+            * d3w[k]
+        );
     }
 }
 
@@ -230,8 +286,8 @@ tridiagonalSolver<SType>::tridiagonalSolver
         cast<rectilinearMesh>().globalCellSizes()
     ),
     D_(Nd_, Zero),
-    DU_(1.0 / sqr(cellSizes_[solver_.FFTPlan().solveDir()])),
-    DL_(1.0 / sqr(cellSizes_[solver_.FFTPlan().solveDir()]))
+    DU_(N_[solver_.FFTPlan().solveDir()], Zero),
+    DL_(N_[solver_.FFTPlan().solveDir()], Zero)
 {
     switch (solver_.FFTPlan().solveDir())
     {

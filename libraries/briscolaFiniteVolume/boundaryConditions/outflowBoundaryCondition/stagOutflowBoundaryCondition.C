@@ -56,6 +56,40 @@ void stagOutflowBoundaryCondition<Type>::eliminateGhosts
         NeumannBoundaryCondition<Type,staggered>::eliminateGhosts(sys,l,d);
 }
 
+template<class Type>
+void stagOutflowBoundaryCondition<Type>::evaluate
+(
+    const label l,
+    const label d
+)
+{
+    const labelVector bo(this->offset());
+
+    meshDirection<Type,staggered>& fd = this->mshField_[l][d];
+
+    const labelVector S(this->S(l,d));
+    const labelVector E(this->E(l,d));
+
+    labelVector ijk;
+    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+    {
+        // Set velocity to zero if reverse flow
+        if
+        (
+               (Foam::mag(bo[d]) == 1)
+            && (fd(ijk)*bo[d] < 0)
+        )
+        {
+            fd(ijk) = Zero;
+        }
+
+        // Zero gradient
+        fd(ijk+bo) = fd(ijk);
+    }
+}
+
 }
 
 }

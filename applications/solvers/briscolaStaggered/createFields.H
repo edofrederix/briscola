@@ -18,7 +18,7 @@ colocatedVectorField Uc
 (
     "Uc",
     fvMsh,
-    IOobject::NO_READ,
+    IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
     true
 );
@@ -66,9 +66,27 @@ staggeredScalarField imSourceCoeff
 exSource = scalarList(solverDict.lookup("source"));
 imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
 
+// Immersed boundary
+
+if (fvMsh.immersedBoundaries<staggered>().size())
+{
+    // Set source terms to zero inside IB
+    forAll(fvMsh.immersedBoundaries<staggered>(), ib)
+    {
+        forAllCells(exSource,l,d,i,j,k)
+        {
+            if (fvMsh.immersedBoundaries<staggered>()[ib].mask()(l,d,i,j,k))
+            {
+                exSource(l,d,i,j,k) = Zero;
+                imSourceCoeff(l,d,i,j,k) = Zero;
+            }
+        }
+    }
+}
+
 // Solvers
 
-linearSystem<stencil,scalar,staggered> USys(U);
+linearSystem<stencil,scalar,staggered> USys(U, true);
 
 autoPtr<solver<stencil,scalar,staggered>> USolve
 (

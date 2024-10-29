@@ -3,6 +3,7 @@
 #include "fvMesh.H"
 
 #include "boundaryCondition.H"
+#include "immersedBoundaryCondition.H"
 
 #include "domainBoundary.H"
 #include "parallelBoundary.H"
@@ -315,6 +316,16 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions()
     {
         this->addBoundaryConditions();
 
+        // Immersed boundary conditions must be corrected first, so that cell
+        // values near the boundaries can be copied to neighbors. By default,
+        // only immersed boundary conditions on the first level are corrected.
+        // If the immersed boundary conditions must be corrected on another
+        // level, then the correctImmersedBoundaryConditions() must be called
+        // explicitly on that level.
+
+        if (l_ == 0)
+            this->correctImmersedBoundaryConditions();
+
         this->correctUnsetBoundaryConditions();
         this->correctDomainBoundaryConditions();
         this->correctCommsBoundaryConditions();
@@ -614,6 +625,23 @@ void meshLevel<Type,MeshType>::correctEliminatedBoundaryConditions()
             {
                 bc.evaluate(l_);
             }
+        }
+    }
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctImmersedBoundaryConditions()
+{
+    if (mshFieldPtr_ && fvMsh_.immersedBoundaries<MeshType>().size())
+    {
+        this->addImmersedBoundaryConditions();
+
+        forAll(mshFieldPtr_->immersedBoundaryConditions(), i)
+        {
+            immersedBoundaryCondition<Type,MeshType>& ibc =
+                mshFieldPtr_->immersedBoundaryConditions()[i];
+
+            ibc.evaluate(l_);
         }
     }
 }

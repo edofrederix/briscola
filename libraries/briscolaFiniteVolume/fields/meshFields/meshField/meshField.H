@@ -8,6 +8,7 @@
 
 #include "meshLevel.H"
 #include "boundaryCondition.H"
+#include "immersedBoundaryConditionFwd.H"
 
 namespace Foam
 {
@@ -45,6 +46,9 @@ class meshField
 
     // Boundary conditions
     PtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
+
+    // Immersed boundary condition
+    PtrList<immersedBoundaryCondition<Type,MeshType>> immersedBoundaryConditions_;
 
     // Restriction scheme associated with this field
     autoPtr<restrictionScheme<Type,MeshType>> reSchemePtr_;
@@ -303,8 +307,25 @@ public:
         return boundaryConditions_;
     }
 
+    // Access to the boundary conditions
+    inline PtrList<immersedBoundaryCondition<Type,MeshType>>&
+    immersedBoundaryConditions()
+    {
+        return immersedBoundaryConditions_;
+    }
+
+    // Const access to the boundary conditions
+    inline const PtrList<immersedBoundaryCondition<Type,MeshType>>&
+    immersedBoundaryConditions() const
+    {
+        return immersedBoundaryConditions_;
+    }
+
     // Add boundary conditions
     void addBoundaryConditions();
+
+    // Add immersed boundary conditions
+    void addImmersedBoundaryConditions();
 
     // Correct boundary conditions
     void correctBoundaryConditions();
@@ -336,6 +357,9 @@ public:
 
     // Correct eliminated boundary conditions
     void correctEliminatedBoundaryConditions();
+
+    // Correct immersed boundary conditions
+    void correctImmersedBoundaryConditions();
 
     // Set the old time field. Works recursively, so if the old time field has
     // an old time field too, it will be set as well.

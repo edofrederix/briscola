@@ -63,6 +63,8 @@ void testDataExchange(const fvMesh& fvMsh)
             f(d,i,j,k) = cc(d,i,j,k)[dir]*pTraits<Type>::one;
         }
 
+        f.correctBoundaryConditions();
+
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
             const faceLabel I = fvMsh.I<MeshType>(d);

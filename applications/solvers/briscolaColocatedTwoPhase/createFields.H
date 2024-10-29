@@ -65,8 +65,7 @@ imSourceCoeff = scalar(twoPhaseDict.lookupOrDefault("sourceCoeff", 0.0));
 
 // Solvers
 
-linearSystem<stencil,vector,colocated> USys(U);
-linearSystem<symmStencil,scalar,colocated> pSys(p);
+linearSystem<stencil,vector,colocated> USys(U, true);
 
 autoPtr<solver<stencil,vector,colocated>> USolve
 (
@@ -81,7 +80,7 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
 (
     PoissonSolver<symmStencil,scalar,colocated>::New
     (
-        pSys.x().name(),
+        p.name(),
         fvMsh
     )
 );

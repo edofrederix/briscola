@@ -2,6 +2,7 @@
 
 #include "colocatedFields.H"
 #include "staggeredFields.H"
+#include "immersedBoundary.H"
 
 namespace Foam
 {
@@ -247,6 +248,11 @@ template List<labelVector>
 fvMesh::findCells<colocated>(const vectorList&, const label, const label) const;
 template List<labelVector>
 fvMesh::findCells<staggered>(const vectorList&, const label, const label) const;
+
+template const PtrList<immersedBoundary<staggered>>&
+fvMesh::immersedBoundaries<staggered>() const;
+template const PtrList<immersedBoundary<colocated>>&
+fvMesh::immersedBoundaries<colocated>() const;
 
 }
 

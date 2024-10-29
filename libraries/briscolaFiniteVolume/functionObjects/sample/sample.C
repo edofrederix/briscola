@@ -31,6 +31,43 @@ void sample::init()
         WarningInFunction
             << "Not all points were found for " << name_ << " sample."
             << endl;
+
+    const objectRegistry& db = fvMsh_.db();
+
+    scalar size = 0;
+
+    forAll(fields_, i)
+    {
+        if (db.foundObject<colocatedScalarField>(fields_[i]))
+        {
+            size += 1;
+        }
+        else if (db.foundObject<colocatedVectorField>(fields_[i]))
+        {
+            size += 3;
+        }
+        else
+        {
+            WarningInFunction
+                << "Field " << fields_[i] << " requested for sampling by "
+                << name_ << " but not found in registry." << endl;
+        }
+    }
+
+    timeAveragedData_.setSize(timeAverage_*size);
+
+    forAll(timeAveragedData_, i)
+    {
+        timeAveragedData_.set
+        (
+            i,
+            new scalarList
+            (
+                interpPtr_->points().size(),
+                Zero
+            )
+        );
+    }
 }
 
 void sample::appendData
@@ -132,8 +169,20 @@ sample::sample
     briscolaFunctionObject(name, runTime, dict),
     fvMsh_(runTime.lookupObject<fvMesh>("briscolaMeshDict")),
     fields_(dict.lookup("fields")),
-    name_(name)
-{}
+    timeAverage_(dict.lookupOrDefault<Switch>("timeAverage", false)),
+    timeAveragedData_(timeAverage_*fields_.size()),
+    startTime_
+    (
+        Foam::max
+        (
+            dict.lookupOrDefault<scalar>("startTime", 0.0),
+            runTime.startTime().value()
+        )
+    ),
+    writeTime_(Foam::name(startTime_))
+{
+    // init();
+}
 
 sample::~sample()
 {}
@@ -153,40 +202,101 @@ bool sample::write()
         this->appendData(fields_[i], data, headers);
     }
 
-    if (Pstream::master())
+    if (Pstream::master() && (runTime_.value() > startTime_))
     {
-        const fileName path("postProcessing"/name_/runTime_.timeName());
-        mkDir(path);
-
-        OFstream file(path/"sample.txt");
-
-        // Write header
-
-        file<< "# x y z";
-
-        forAll(headers, i)
+        if (timeAverage_)
         {
-            file<< " " << headers[i];
-        }
-
-        file<< nl;
-
-        // Write data
-
-        const vectorList& points = interpPtr_->points();
-
-        forAll(points, i)
-        {
-            file<< points[i].x() << " "
-                << points[i].y() << " "
-                << points[i].z();
-
-            forAll(data, j)
+            forAll(timeAveragedData_, i)
             {
-                file<< " " << data[j][i];
+                forAll(timeAveragedData_[i], j)
+                {
+                    timeAveragedData_[i][j]
+                        += data[i][j] * runTime_.deltaTValue();
+                }
+            }
+
+            if (runTime_.writeTime())
+            {
+                writeTime_ = runTime_.timeName();
+            }
+
+            const fileName path("postProcessing"/name_/writeTime_);
+            mkDir(path);
+
+            OFstream file(path/"averagedSample.txt");
+
+            // Write header
+
+            file<< "# x y z";
+
+            forAll(headers, i)
+            {
+                file<< " " << headers[i];
             }
 
             file<< nl;
+
+            // Write data
+
+            const vectorList& points = interpPtr_->points();
+
+            forAll(points, i)
+            {
+                file<< points[i].x() << " "
+                    << points[i].y() << " "
+                    << points[i].z();
+
+                forAll(timeAveragedData_, j)
+                {
+                    const scalar avg
+                        = timeAveragedData_[j][i]
+                        /
+                        (
+                            runTime_.value()
+                            - startTime_
+                        );
+
+                    file<< " " << avg;
+                }
+
+                file<< nl;
+            }
+        }
+        else
+        {
+            const fileName path("postProcessing"/name_/runTime_.timeName());
+            mkDir(path);
+
+            OFstream file(path/"sample.txt");
+
+            // Write header
+
+            file<< "# x y z";
+
+            forAll(headers, i)
+            {
+                file<< " " << headers[i];
+            }
+
+            file<< nl;
+
+            // Write data
+
+            const vectorList& points = interpPtr_->points();
+
+            forAll(points, i)
+            {
+                file<< points[i].x() << " "
+                    << points[i].y() << " "
+                    << points[i].z();
+
+                forAll(data, j)
+                {
+                    file<< " " << data[j][i];
+                }
+
+                file<< nl;
+            }
         }
     }
 

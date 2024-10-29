@@ -49,7 +49,7 @@ protected:
 
     // Gather and scatter data
     template<class Type>
-    List<Type> combine(List<Type>&);
+    List<Type> combine(List<Type>&) const;
 
 private:
 
@@ -134,7 +134,7 @@ public:
     // Interpolators
 
     #define INTERPFUNC(TYPE) \
-    virtual List<TYPE> operator() (const meshField<TYPE,MeshType>&) = 0;
+    virtual List<TYPE> operator() (const meshField<TYPE,MeshType>&) const = 0;
 
     INTERPFUNC(scalar);
     INTERPFUNC(vector);

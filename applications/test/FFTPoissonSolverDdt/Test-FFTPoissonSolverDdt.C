@@ -16,9 +16,6 @@ bool check
     const scalar deltaT
 )
 {
-    labelVector Nf(x.B().shape());
-    labelVector N(x.fvMsh().msh().cast<rectilinearMesh>().N());
-
     const PtrList<PartialList<scalar>>& cellSizes
         = fvMsh.msh().cast<rectilinearMesh>().globalCellSizes();
 
@@ -29,41 +26,35 @@ bool check
     scalarList dy2 = sqr(cellSizes[1]);
     scalarList dz2 = sqr(cellSizes[2]);
 
-    for (int i = 1; i < Nf.x() - 1; i++)
+    forAllCells(x,i,j,k)
     {
-        for (int j = 1; j < Nf.y() - 1; j++)
-        {
-            for (int k = 1; k < Nf.z() - 1; k++)
-            {
-                scalar residual =
-                (
-                    x.B()(i-1,j,k)
-                  - 2.0 * x.B()(i,j,k)
-                  + x.B()(i+1,j,k)
-                ) / dx2[Si.x() + i-1]
-              + (
-                    x.B()(i,j-1,k)
-                  - 2.0 * x.B()(i,j,k)
-                  + x.B()(i,j+1,k)
-                ) / dy2[Si.y() + j-1]
-              + (
-                    x.B()(i,j,k-1)
-                  - 2.0 * x.B()(i,j,k)
-                  + x.B()(i,j,k+1)
-                ) / dz2[Si.z() + k-1]
-              - x.B()(i,j,k) / deltaT
-              + b.B()(i,j,k)
-              + x.oldTime().B()(i,j,k) / deltaT;
+        scalar residual =
+              x(i-1,j,k) / dx2[Si.x() + i]
+            - x(i,j,k)   / dx2[Si.x() + i]
+            - x(i,j,k)   / dx2[Si.x() + i]
+            + x(i+1,j,k) / dx2[Si.x() + i]
 
-                if(mag(residual) > 1e-10)
-                {
-                    FatalError
-                        << "Test failed. Residual =  " << residual
-                        << " at index " << labelVector(i,j,k)
-                        << " on processor " << Pstream::myProcNo()
-                        << endl << abort(FatalError);
-                }
-            }
+            + x(i,j-1,k) / dy2[Si.y() + j]
+            - x(i,j,k)   / dy2[Si.y() + j]
+            - x(i,j,k)   / dy2[Si.y() + j]
+            + x(i,j+1,k) / dy2[Si.y() + j]
+
+            + x(i,j,k-1) / dz2[Si.z() + k]
+            - x(i,j,k)   / dz2[Si.z() + k]
+            - x(i,j,k)   / dz2[Si.z() + k]
+            + x(i,j,k+1) / dz2[Si.z() + k]
+
+            - x(i,j,k) / deltaT
+            + b(i,j,k)
+            + x.oldTime()(i,j,k) / deltaT;
+
+        if(mag(residual) > 1e-10)
+        {
+            FatalError
+                << "Test failed. Residual =  " << residual
+                << " at index " << labelVector(i,j,k)
+                << " on processor " << Pstream::myProcNo()
+                << endl << abort(FatalError);
         }
     }
 

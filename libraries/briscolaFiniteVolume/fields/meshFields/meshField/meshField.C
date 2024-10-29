@@ -9,6 +9,8 @@
 #include "restrictionScheme.H"
 #include "boundaryExchange.H"
 
+#include "immersedBoundaryCondition.H"
+
 namespace Foam
 {
 
@@ -317,15 +319,22 @@ template<class Type, class MeshType>
 void meshField<Type,MeshType>::addBoundaryConditions()
 {
     if (boundaryConditions_.size() == 0)
+    {
+        boundaryConditions_.setSize(fvMsh_.boundaries().size());
+
         forAll(fvMsh_.boundaries(), i)
-            boundaryConditions_.append
+        {
+            boundaryConditions_.set
             (
+                i,
                 boundaryCondition<Type,MeshType>::New
                 (
                     *this,
                     fvMsh_.boundaries()[i]
                 )
             );
+        }
+    }
 
     #ifdef BOUNDARYEXCHANGE
 
@@ -333,6 +342,35 @@ void meshField<Type,MeshType>::addBoundaryConditions()
         bExchangePtr_.reset(new boundaryExchange<Type,MeshType>(*this));
 
     #endif
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::addImmersedBoundaryConditions()
+{
+    if
+    (
+        !immersedBoundaryConditions_.size()
+     && fvMsh_.immersedBoundaries<MeshType>().size()
+    )
+    {
+        immersedBoundaryConditions_.setSize
+        (
+            fvMsh_.immersedBoundaries<MeshType>().size()
+        );
+
+        forAll(fvMsh_.immersedBoundaries<MeshType>(), i)
+        {
+            immersedBoundaryConditions_.set
+            (
+                i,
+                immersedBoundaryCondition<Type,MeshType>::New
+                (
+                    *this,
+                    fvMsh_.immersedBoundaries<MeshType>()[i]
+                )
+            );
+        }
+    }
 }
 
 template<class Type, class MeshType>
@@ -405,6 +443,15 @@ void meshField<Type,MeshType>::correctEliminatedBoundaryConditions()
 
     forAll(*this, l)
         listType::operator[](l).correctEliminatedBoundaryConditions();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctImmersedBoundaryConditions()
+{
+    addImmersedBoundaryConditions();
+
+    forAll(*this, l)
+        listType::operator[](l).correctImmersedBoundaryConditions();
 }
 
 template<class Type, class MeshType>

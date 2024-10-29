@@ -1,0 +1,154 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      briscolaMeshDict;
+}
+
+vertices
+(
+    (0 0 0)
+    (1 0 0)
+    (0 0.5 0)
+    (1 0.5 0)
+    (0 1 0)
+    (1 1 0)
+
+    (0 0 1)
+    (1 0 1)
+    (0 0.5 1)
+    (1 0.5 1)
+    (0 1 1)
+    (1 1 1)
+);
+
+bricks
+(
+    0
+    {
+        vertices    (((0 6)(4 10))((1 7)(5 11)));
+        N           (128 128 128);
+        grading     geometric (1 1 1);
+    }
+);
+
+edges
+();
+
+patches
+(
+    left
+    {
+        type        patch;
+
+        faces
+        (
+            (0 4 6 10)
+        );
+    }
+
+    right
+    {
+        type        patch;
+
+        faces
+        (
+            (1 5 7 11)
+        );
+    }
+
+    back
+    {
+        type        patch;
+
+        faces
+        (
+            (0 1 4 5)
+        );
+    }
+
+    front
+    {
+        type        patch;
+
+        faces
+        (
+            (6 7 10 11)
+        );
+    }
+
+    top
+    {
+        type    patch;
+
+        faces
+        (
+            (4 5 10 11)
+        );
+    }
+
+    bottom
+    {
+        type    patch;
+
+        faces
+        (
+            (0 1 6 7)
+        );
+    }
+);
+
+decomposition
+{
+    type    manual;
+
+    brickDecompositions
+    (
+        (1 1 1)
+    );
+}
+
+immersedBoundaries
+{
+    ImmersedBoundary
+    {
+        cylinder1
+        {
+            type    cylinder;
+            start   (0.5 0.5 0);
+            end     (0.5 0.5 1);
+            radius  0.5;
+        }
+
+        cylinder2
+        {
+            type    cylinder;
+            start   (0 0.5 0.5);
+            end     (1 0.5 0.5);
+            radius  0.5;
+        }
+
+        sphere1
+        {
+            type    sphere;
+            center  (1 1 1);
+            radius  0.01;
+        }
+
+        sphere2
+        {
+            type    sphere;
+            center  (10 10 10);
+            radius  1;
+        }
+
+        cylinder3
+        {
+            type    cylinder;
+            start   (10 -1 0);
+            end     (10 -1 1);
+            radius  1;
+        }
+    }
+}

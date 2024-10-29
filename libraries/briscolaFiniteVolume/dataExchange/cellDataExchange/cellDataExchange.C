@@ -50,6 +50,11 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 {
     indices_ = indices;
 
+    // Nothing to prepare when this is a serial run
+
+    if (!Pstream::parRun())
+        return;
+
     const faceLabel I = this->fvMsh_.template I<MeshType>(this->l_,this->d_);
 
     const labelVector U = I.upper();
@@ -81,9 +86,9 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
         const labelVector closest = labelVector
         (
-            Foam::max(Foam::min(index.x(), U.x()-1), L.x()),
-            Foam::max(Foam::min(index.y(), U.y()-1), L.y()),
-            Foam::max(Foam::min(index.z(), U.z()-1), L.z())
+            Foam::max(Foam::min(index.x(), U.x()), L.x()-1),
+            Foam::max(Foam::min(index.y(), U.y()), L.y()-1),
+            Foam::max(Foam::min(index.z(), U.z()), L.z()-1)
         );
 
         const labelVector offset = index - closest;
@@ -119,46 +124,23 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
                 break;
             }
 
-            // If no processor can be found, check if the cell can be found in
-            // the ghost cells of a neighbouring processor
+            // Error when not found
+
+            if (bNum == -1)
+                FatalErrorInFunction
+                    << "Could not find boundary corresponding to offset "
+                    << bo << endl << abort(FatalError);
+
+            // Error when we're outside the domain
 
             if
             (
-                bNum == -1
-             || msh.boundaries()[bNum].castable<domainBoundary>()
+                msh.boundaries()[bNum].castable<domainBoundary>()
              || msh.boundaries()[bNum].castable<emptyBoundary>()
             )
-            {
-                for (int j = 0; j < 3; j++)
-                    if (Foam::mag(offset[j]) < 2)
-                        bo[j] = 0;
-
-                bNum = -1;
-
-                forAll(msh.boundaries(), bi)
-                    if (msh.boundaries()[bi].offset() == bo)
-                    {
-                        bNum = bi;
-                        break;
-                    }
-
-
-                if (bNum == -1)
-                    FatalErrorInFunction
-                        << "Could not find patch corresponding to boundary offset"
-                        << bo << endl << abort(FatalError);
-
-                const boundary& b1 = msh.boundaries()[bNum];
-
-                if
-                (
-                    b1.castable<domainBoundary>()
-                 || b1.castable<emptyBoundary>()
-                )
-                    FatalErrorInFunction
-                        << "Cannot exchange cell data across a boundary part patch"
-                        << bo << endl << abort(FatalError);
-            }
+                FatalErrorInFunction
+                    << "Cannot exchange cell data across a domain boundary "
+                    << "at offset " << bo << endl << abort(FatalError);
 
             // Store trimmed index
 
@@ -227,7 +209,7 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
                 recvCells_[i].byteSize()
             );
 
-    UPstream::waitRequests();
+    UOPstream::waitRequests();
 
     // Displace and transform send cell indices. Not needed for local cells.
 
@@ -267,49 +249,59 @@ template<class Type>
 List<Type> cellDataExchange<MeshType>::dataFunc
 (
     const meshField<Type,MeshType>& field
-)
+) const
 {
-    List<List<Type>> data(recvCells_.size());
-
-    forAll(recvCells_, i)
-    if (recvCells_[i].size() > 0)
-    {
-        data[i].setSize(recvCells_[i].size());
-
-        UIPstream::read
-        (
-            Pstream::commsTypes::nonBlocking,
-            neighbors_[i],
-            reinterpret_cast<char*>(data[i].begin()),
-            data[i].byteSize()
-        );
-    }
-
-    forAll(sendCells_, i)
-    if (sendCells_[i].size() > 0)
-    {
-        List<Type> data(sendCells_[i].size());
-
-        forAll(data, j)
-            data[j] = field(this->l_,this->d_,sendCells_[i][j]);
-
-        UOPstream::write
-        (
-            Pstream::commsTypes::nonBlocking,
-            neighbors_[i],
-            reinterpret_cast<char*>(data.begin()),
-            data.byteSize()
-        );
-    }
-
-    UPstream::waitRequests();
-
     List<Type> D(indices_.size());
 
-    forAll(D, i)
-        D[i] = data[map_[i].first()][map_[i].second()];
+    if (!Pstream::parRun())
+    {
+        forAll(D, i)
+            D[i] = field(this->l_, this->d_, indices_[i]);
 
-    return D;
+        return D;
+    }
+    else
+    {
+        List<List<Type>> data(recvCells_.size());
+
+        forAll(recvCells_, i)
+        if (recvCells_[i].size() > 0)
+        {
+            data[i].setSize(recvCells_[i].size());
+
+            UIPstream::read
+            (
+                Pstream::commsTypes::nonBlocking,
+                neighbors_[i],
+                reinterpret_cast<char*>(data[i].begin()),
+                data[i].byteSize()
+            );
+        }
+
+        forAll(sendCells_, i)
+        if (sendCells_[i].size() > 0)
+        {
+            List<Type> data(sendCells_[i].size());
+
+            forAll(data, j)
+                data[j] = field(this->l_, this->d_, sendCells_[i][j]);
+
+            UOPstream::write
+            (
+                Pstream::commsTypes::nonBlocking,
+                neighbors_[i],
+                reinterpret_cast<char*>(data.begin()),
+                data.byteSize()
+            );
+        }
+
+        UOPstream::waitRequests();
+
+        forAll(D, i)
+            D[i] = data[map_[i].first()][map_[i].second()];
+
+        return D;
+    }
 }
 
 // Instantiate class and data functions
@@ -321,7 +313,7 @@ template class cellDataExchange<staggered>;
 template List<TYPE> cellDataExchange<MESHTYPE>::dataFunc                       \
 (                                                                              \
     const meshField<TYPE,MESHTYPE>&                                            \
-);
+) const;
 
 INSTANTIATE(scalar,colocated)
 INSTANTIATE(vector,colocated)

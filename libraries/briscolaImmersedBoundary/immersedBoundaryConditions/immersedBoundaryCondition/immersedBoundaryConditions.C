@@ -1,0 +1,129 @@
+#include "immersedBoundaryConditions.H"
+#include "addToRunTimeSelectionTable.H"
+
+#include "emptyImmersedBoundaryCondition.H"
+#include "penalizationDirichletImmersedBoundaryCondition.H"
+#include "FadlunDirichletImmersedBoundaryCondition.H"
+#include "MittalDirichletImmersedBoundaryCondition.H"
+#include "MittalNeumannImmersedBoundaryCondition.H"
+#include "VremanDirichletImmersedBoundaryCondition.H"
+
+namespace Foam
+{
+
+namespace briscola
+{
+
+namespace fv
+{
+
+makeImmersedBoundaryConditionBase(label,colocated);
+makeImmersedBoundaryConditionBase(scalar,colocated);
+makeImmersedBoundaryConditionBase(faceScalar,colocated);
+makeImmersedBoundaryConditionBase(lowerFaceScalar,colocated);
+makeImmersedBoundaryConditionBase(edgeScalar,colocated);
+makeImmersedBoundaryConditionBase(vertexScalar,colocated);
+makeImmersedBoundaryConditionBase(vector,colocated);
+makeImmersedBoundaryConditionBase(faceVector,colocated);
+makeImmersedBoundaryConditionBase(lowerFaceVector,colocated);
+makeImmersedBoundaryConditionBase(edgeVector,colocated);
+makeImmersedBoundaryConditionBase(vertexVector,colocated);
+makeImmersedBoundaryConditionBase(tensor,colocated);
+makeImmersedBoundaryConditionBase(sphericalTensor,colocated)
+makeImmersedBoundaryConditionBase(symmTensor,colocated);
+makeImmersedBoundaryConditionBase(diagTensor,colocated);
+makeImmersedBoundaryConditionBase(stencil,colocated);
+makeImmersedBoundaryConditionBase(symmStencil,colocated);
+makeImmersedBoundaryConditionBase(diagStencil,colocated);
+
+makeImmersedBoundaryConditionBase(label,staggered);
+makeImmersedBoundaryConditionBase(scalar,staggered);
+makeImmersedBoundaryConditionBase(faceScalar,staggered);
+makeImmersedBoundaryConditionBase(lowerFaceScalar,staggered);
+makeImmersedBoundaryConditionBase(edgeScalar,staggered);
+makeImmersedBoundaryConditionBase(vertexScalar,staggered);
+makeImmersedBoundaryConditionBase(vector,staggered);
+makeImmersedBoundaryConditionBase(faceVector,staggered);
+makeImmersedBoundaryConditionBase(lowerFaceVector,staggered);
+makeImmersedBoundaryConditionBase(edgeVector,staggered);
+makeImmersedBoundaryConditionBase(vertexVector,staggered);
+makeImmersedBoundaryConditionBase(tensor,staggered);
+makeImmersedBoundaryConditionBase(sphericalTensor,staggered)
+makeImmersedBoundaryConditionBase(symmTensor,staggered);
+makeImmersedBoundaryConditionBase(diagTensor,staggered);
+makeImmersedBoundaryConditionBase(stencil,staggered);
+makeImmersedBoundaryConditionBase(symmStencil,staggered);
+makeImmersedBoundaryConditionBase(diagStencil,staggered);
+
+// We need the empty immersed boundary condition type for all possible data
+// types because it is used by default
+
+makeImmersedBoundaryConditionType(empty,label,colocated);
+makeImmersedBoundaryConditionType(empty,scalar,colocated);
+makeImmersedBoundaryConditionType(empty,faceScalar,colocated);
+makeImmersedBoundaryConditionType(empty,lowerFaceScalar,colocated);
+makeImmersedBoundaryConditionType(empty,edgeScalar,colocated);
+makeImmersedBoundaryConditionType(empty,vertexScalar,colocated);
+makeImmersedBoundaryConditionType(empty,vector,colocated);
+makeImmersedBoundaryConditionType(empty,faceVector,colocated);
+makeImmersedBoundaryConditionType(empty,lowerFaceVector,colocated);
+makeImmersedBoundaryConditionType(empty,edgeVector,colocated);
+makeImmersedBoundaryConditionType(empty,vertexVector,colocated);
+makeImmersedBoundaryConditionType(empty,tensor,colocated);
+makeImmersedBoundaryConditionType(empty,sphericalTensor,colocated)
+makeImmersedBoundaryConditionType(empty,symmTensor,colocated);
+makeImmersedBoundaryConditionType(empty,diagTensor,colocated);
+makeImmersedBoundaryConditionType(empty,stencil,colocated);
+makeImmersedBoundaryConditionType(empty,symmStencil,colocated);
+makeImmersedBoundaryConditionType(empty,diagStencil,colocated);
+
+makeImmersedBoundaryConditionType(empty,label,staggered);
+makeImmersedBoundaryConditionType(empty,scalar,staggered);
+makeImmersedBoundaryConditionType(empty,faceScalar,staggered);
+makeImmersedBoundaryConditionType(empty,lowerFaceScalar,staggered);
+makeImmersedBoundaryConditionType(empty,edgeScalar,staggered);
+makeImmersedBoundaryConditionType(empty,vertexScalar,staggered);
+makeImmersedBoundaryConditionType(empty,vector,staggered);
+makeImmersedBoundaryConditionType(empty,faceVector,staggered);
+makeImmersedBoundaryConditionType(empty,lowerFaceVector,staggered);
+makeImmersedBoundaryConditionType(empty,edgeVector,staggered);
+makeImmersedBoundaryConditionType(empty,vertexVector,staggered);
+makeImmersedBoundaryConditionType(empty,tensor,staggered);
+makeImmersedBoundaryConditionType(empty,sphericalTensor,staggered)
+makeImmersedBoundaryConditionType(empty,symmTensor,staggered);
+makeImmersedBoundaryConditionType(empty,diagTensor,staggered);
+makeImmersedBoundaryConditionType(empty,stencil,staggered);
+makeImmersedBoundaryConditionType(empty,symmStencil,staggered);
+makeImmersedBoundaryConditionType(empty,diagStencil,staggered);
+
+
+makeImmersedBoundaryConditionType(penalizationDirichlet,scalar,colocated);
+makeImmersedBoundaryConditionType(penalizationDirichlet,scalar,staggered);
+makeImmersedBoundaryConditionType(penalizationDirichlet,vector,colocated);
+makeImmersedBoundaryConditionType(penalizationDirichlet,vector,staggered);
+
+makeImmersedBoundaryConditionType(FadlunDirichlet,scalar,colocated);
+makeImmersedBoundaryConditionType(FadlunDirichlet,scalar,staggered);
+makeImmersedBoundaryConditionType(FadlunDirichlet,vector,colocated);
+makeImmersedBoundaryConditionType(FadlunDirichlet,vector,staggered);
+
+makeImmersedBoundaryConditionType(MittalDirichlet,scalar,colocated);
+makeImmersedBoundaryConditionType(MittalDirichlet,scalar,staggered);
+makeImmersedBoundaryConditionType(MittalDirichlet,vector,colocated);
+makeImmersedBoundaryConditionType(MittalDirichlet,vector,staggered);
+
+makeImmersedBoundaryConditionType(MittalNeumann,scalar,colocated);
+makeImmersedBoundaryConditionType(MittalNeumann,scalar,staggered);
+makeImmersedBoundaryConditionType(MittalNeumann,vector,colocated);
+makeImmersedBoundaryConditionType(MittalNeumann,vector,staggered);
+
+makeImmersedBoundaryConditionType(VremanDirichlet,scalar,colocated);
+makeImmersedBoundaryConditionType(VremanDirichlet,scalar,staggered);
+makeImmersedBoundaryConditionType(VremanDirichlet,vector,colocated);
+makeImmersedBoundaryConditionType(VremanDirichlet,vector,staggered);
+
+}
+
+}
+
+}

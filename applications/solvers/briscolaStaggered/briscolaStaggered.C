@@ -1,6 +1,7 @@
 #include "arguments.H"
 #include "IOdictionary.H"
 #include "Time.H"
+#include "immersedBoundaryConditionStaggeredMassSource.C"
 
 #include "fv.H"
 
@@ -67,18 +68,17 @@ int main(int argc, char *argv[])
 
         // Pressure equation
 
-        Poisson->solve(p, ex::coloDiv(U)/(-deltaT));
+        Poisson->solve(p, ibmCorr(ex::coloDiv(U),U)/(-deltaT));
 
         // Correction
 
         U -= deltaT*ex::stagGrad(p);
         U.correctBoundaryConditions();
 
-        if (fvMsh.time().writeTime())
-        {
-            Uc = ex::reconstruct(U);
-            Uc.correctBoundaryConditions();
-        }
+        // Reconstruct the colocated velocity
+
+        Uc = ex::reconstruct(U);
+        Uc.correctBoundaryConditions();
 
         io.write<colocated>();
         io.write<staggered>();

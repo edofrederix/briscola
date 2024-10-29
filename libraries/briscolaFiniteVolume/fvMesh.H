@@ -214,6 +214,13 @@ public:
     template<class MeshType>
     const fvMeshMetrics<MeshType>& metrics() const;
 
+    // Const access to immersed boundaries
+    template<class MeshType>
+    const PtrList<immersedBoundary<MeshType>>& immersedBoundaries() const
+    {
+        return metrics<MeshType>().immersedBoundaries();
+    }
+
     // Cell find function templated for the mesh type. Uses the cell find
     // function of the base mesh and always acts on the first level.
     template<class MeshType>
