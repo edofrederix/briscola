@@ -8,15 +8,15 @@ FoamFile
 
 vertices
 (
-    (0 0 0)
-    (8 0 0)
-    (0 1 0)
-    (8 1 0)
+    (0 -1 0)
+    (8 -1 0)
+    (0  1 0)
+    (8  1 0)
 
-    (0 0 0.1)
-    (8 0 0.1)
-    (0 1 0.1)
-    (8 1 0.1)
+    (0 -1 0.1)
+    (8 -1 0.1)
+    (0  1 0.1)
+    (8  1 0.1)
 );
 
 bricks
@@ -24,7 +24,7 @@ bricks
     0
     {
         vertices    (((0 4)(2 6))((1 5)(3 7)));
-        N           (256 32 1);
+        N           (64 64 1);
     }
 );
 
@@ -46,7 +46,8 @@ patches
 
     inlet
     {
-        type    patch;
+        type    periodic;
+        neighbor outlet;
 
         faces
         (
@@ -56,7 +57,8 @@ patches
 
     outlet
     {
-        type    patch;
+        type    periodic;
+        neighbor inlet;
 
         faces
         (
@@ -74,7 +76,6 @@ patches
             (4 5 6 7)
         );
     }
-
 );
 
 decomposition
@@ -83,6 +84,6 @@ decomposition
 
     brickDecompositions
     (
-        (4 2 1)
+        (2 2 1)
     );
 }

@@ -9,16 +9,12 @@ FoamFile
 U
 {
     type        MG;
-    relTol      1e-5;
-    tolerance   1e-8;
+    relTol      1e-3;
+    tolerance   1e-6;
     maxIter     100;
 }
 
 p
 {
-    type        MG;
-    relTol      1e-5;
-    tolerance   1e-8;
-    maxIter     100;
-    coarseMode  direct;
+    type        FFT;
 }

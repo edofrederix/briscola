@@ -15,12 +15,17 @@ boundaryConditions
 
     inlet
     {
-        type        Dirichlet;
-        values      (1 0 0);
+        type        periodic;
     }
 
     outlet
     {
-        type        outflow;
+        type        periodic;
+    }
+
+    ib
+    {
+        type        MittalDirichlet;
+        values      (0 0 0);
     }
 }

@@ -16,17 +16,15 @@ boundaryConditions
 
     inlet
     {
-        type        Neumann;
-        gradients   (0);
+        type        periodic;
     }
 
     outlet
     {
-        type        Dirichlet;
-        values      (0);
+        type        periodic;
     }
 
-    empties
+    ib
     {
         type        empty;
     }
