@@ -124,8 +124,6 @@ void MG<SType,Type,MeshType>::cycle
                     proScheme_->prolong(xl[d], xlCoarse[d], plusEqOp<Type>());
 
             xl.correctBoundaryConditions();
-            if (l == 0)
-                xl.correctImmersedBoundaryConditions();
 
             // Post-smooth
 
@@ -181,7 +179,6 @@ void MG<SType,Type,MeshType>::solve
     // Correct the boundary conditions
 
     x[0].correctBoundaryConditions();
-    x[0].correctImmersedBoundaryConditions();
 
     // Residual field
 

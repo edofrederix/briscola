@@ -11,7 +11,6 @@ staggeredScalarField U
 
 U = Zero;
 U.correctBoundaryConditions();
-U.correctImmersedBoundaryConditions();
 
 // Reconstructed colocated velocity
 
@@ -39,7 +38,6 @@ colocatedScalarField p
 
 p = Zero;
 p.correctBoundaryConditions();
-p.correctImmersedBoundaryConditions();
 
 // Viscosity
 

@@ -4,6 +4,7 @@
 #include "colocatedFieldsFwd.H"
 #include "staggeredFieldsFwd.H"
 #include "linearSystem.H"
+#include "emptyImmersedBoundaryCondition.H"
 
 namespace Foam
 {
@@ -53,30 +54,50 @@ immersedBoundaryCondition<Type,MeshType>::New
     const immersedBoundary<MeshType>& ib
 )
 {
-    dictionary IBCDict
-    (
-        mshField.subDict("boundaryConditions").subDict(ib.name())
-    );
+    // For fields with an existing boundary conditions dictionary, the immersed
+    // boundary condition must be specified. For other fields an empty immersed
+    // boundary condition is returned.
 
-    const word IBCType(IBCDict.lookup("type"));
-
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(IBCType);
-
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (mshField.found("boundaryConditions"))
     {
-        FatalErrorInFunction
-            << "Unknown immersed boundary condition "
-            << IBCType << nl << nl
-            << "Valid immersed boundary condition types are:" << nl
-            << dictionaryConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
-    }
+        dictionary ibmDict
+        (
+            mshField.subDict("boundaryConditions").subDict(ib.name())
+        );
 
-    return autoPtr<immersedBoundaryCondition<Type,MeshType>>
-    (
-        cstrIter()(mshField, ib)
-    );
+        const word IBCType(ibmDict.lookup("type"));
+
+        typename dictionaryConstructorTable::iterator cstrIter =
+            dictionaryConstructorTablePtr_->find(IBCType);
+
+        if (cstrIter == dictionaryConstructorTablePtr_->end())
+        {
+            FatalErrorInFunction
+                << "Unknown immersed boundary condition "
+                << IBCType << nl << nl
+                << "Valid immersed boundary condition types are:" << nl
+                << dictionaryConstructorTablePtr_->sortedToc()
+                << exit(FatalError);
+        }
+
+        return autoPtr<immersedBoundaryCondition<Type,MeshType>>
+        (
+            cstrIter()(mshField, ib)
+        );
+    }
+    else
+    {
+        typename dictionaryConstructorTable::iterator cstrIter =
+            dictionaryConstructorTablePtr_->find
+            (
+                emptyImmersedBoundaryCondition<Type,MeshType>::typeName
+            );
+
+        return autoPtr<immersedBoundaryCondition<Type,MeshType>>
+        (
+            cstrIter()(mshField, ib)
+        );
+    }
 }
 
 template<class Type, class MeshType>

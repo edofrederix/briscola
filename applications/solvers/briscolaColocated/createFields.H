@@ -11,7 +11,6 @@ colocatedVectorField U
 
 U = Zero;
 U.correctBoundaryConditions();
-U.correctImmersedBoundaryConditions();
 
 // Pressure
 
@@ -26,7 +25,6 @@ colocatedScalarField p
 
 p = Zero;
 p.correctBoundaryConditions();
-p.correctImmersedBoundaryConditions();
 
 // Flux
 
