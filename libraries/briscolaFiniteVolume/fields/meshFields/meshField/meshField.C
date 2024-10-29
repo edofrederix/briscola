@@ -319,15 +319,22 @@ template<class Type, class MeshType>
 void meshField<Type,MeshType>::addBoundaryConditions()
 {
     if (boundaryConditions_.size() == 0)
+    {
+        boundaryConditions_.setSize(fvMsh_.boundaries().size());
+
         forAll(fvMsh_.boundaries(), i)
-            boundaryConditions_.append
+        {
+            boundaryConditions_.set
             (
+                i,
                 boundaryCondition<Type,MeshType>::New
                 (
                     *this,
                     fvMsh_.boundaries()[i]
                 )
             );
+        }
+    }
 
     #ifdef BOUNDARYEXCHANGE
 
@@ -346,10 +353,13 @@ void meshField<Type,MeshType>::addImmersedBoundaryConditions()
      && fvMsh_.ibs<MeshType>().size()
     )
     {
+        immersedBoundaryConditions_.setSize(fvMsh_.ibs<MeshType>().size());
+
         forAll(fvMsh_.ibs<MeshType>(), i)
         {
-            immersedBoundaryConditions_.append
+            immersedBoundaryConditions_.set
             (
+                i,
                 immersedBoundaryCondition<Type,MeshType>::New
                 (
                     *this,
