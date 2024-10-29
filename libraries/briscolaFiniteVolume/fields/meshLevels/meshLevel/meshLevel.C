@@ -632,7 +632,7 @@ void meshLevel<Type,MeshType>::correctEliminatedBoundaryConditions()
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctImmersedBoundaryConditions()
 {
-    if (mshFieldPtr_ && fvMsh_.ibs<MeshType>().size())
+    if (mshFieldPtr_ && fvMsh_.immersedBoundaries<MeshType>().size())
     {
         this->addImmersedBoundaryConditions();
 

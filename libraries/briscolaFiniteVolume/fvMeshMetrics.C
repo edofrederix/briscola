@@ -338,7 +338,7 @@ void fvMeshMetrics<MeshType>::setGlobalCellNumbers()
 }
 
 template<class MeshType>
-void fvMeshMetrics<MeshType>::setIbs()
+void fvMeshMetrics<MeshType>::setImmersedBoundaries()
 {
     if (fvMsh_.msh().dict().found("immersedBoundaries"))
     {
@@ -351,7 +351,7 @@ void fvMeshMetrics<MeshType>::setIbs()
         {
             word IBname = ibmDict.toc()[i];
 
-            ibs_.append
+            immersedBoundaries_.append
             (
                 new immersedBoundary<MeshType>
                 (
@@ -475,7 +475,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         true,
         true
     ),
-    ibs_()
+    immersedBoundaries_()
 {
     calculateVertexCenters();
     calculateFaceCenters();
@@ -486,7 +486,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     calculateFaceDeltas();
     calculateFaceWeights();
     setGlobalCellNumbers();
-    setIbs();
+    setImmersedBoundaries();
 }
 
 template<class MeshType>

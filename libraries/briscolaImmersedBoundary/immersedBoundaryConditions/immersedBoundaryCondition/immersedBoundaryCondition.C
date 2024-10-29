@@ -65,16 +65,16 @@ immersedBoundaryCondition<Type,MeshType>::New
             mshField.subDict("boundaryConditions").subDict(ib.name())
         );
 
-        const word IBCType(ibmDict.lookup("type"));
+        const word ibcType(ibmDict.lookup("type"));
 
         typename dictionaryConstructorTable::iterator cstrIter =
-            dictionaryConstructorTablePtr_->find(IBCType);
+            dictionaryConstructorTablePtr_->find(ibcType);
 
         if (cstrIter == dictionaryConstructorTablePtr_->end())
         {
             FatalErrorInFunction
                 << "Unknown immersed boundary condition "
-                << IBCType << nl << nl
+                << ibcType << nl << nl
                 << "Valid immersed boundary condition types are:" << nl
                 << dictionaryConstructorTablePtr_->sortedToc()
                 << exit(FatalError);

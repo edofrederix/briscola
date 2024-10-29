@@ -26,11 +26,11 @@ tmp<colocatedScalarField> ibmCorr
 
     forAll(field.immersedBoundaryConditions(), i)
     {
-        const word IBname = fvMsh.ibs<staggered>()[i].name();
+        const word ibName = fvMsh.immersedBoundaries<staggered>()[i].name();
 
         if
         (
-            field.subDict("boundaryConditions").subDict(IBname)
+            field.subDict("boundaryConditions").subDict(ibName)
                 .lookupOrDefault<Switch>("massSource", false)
         )
         {
@@ -50,11 +50,14 @@ tmp<colocatedScalarField> ibmCorr
 
         ghostMask = Zero;
 
-        forAll(fvMsh.ibs<staggered>(), ib)
+        forAll(fvMsh.immersedBoundaries<staggered>(), ib)
         {
+            const immersedBoundary<staggered>& b =
+                fvMsh.immersedBoundaries<staggered>()[ib];
+
             forAllCells(ghostMask,l,d,i,j,k)
             {
-                if (fvMsh.ibs<staggered>()[ib].ghostMask()(l,d,i,j,k))
+                if (b.ghostMask()(l,d,i,j,k))
                 {
                     ghostMask(l,d,i,j,k) = 1;
                 }

@@ -68,14 +68,14 @@ imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
 
 // Immersed boundary
 
-if (fvMsh.ibs<staggered>().size())
+if (fvMsh.immersedBoundaries<staggered>().size())
 {
     // Set source terms to zero inside IB
-    forAll(fvMsh.ibs<staggered>(), ib)
+    forAll(fvMsh.immersedBoundaries<staggered>(), ib)
     {
         forAllCells(exSource,l,d,i,j,k)
         {
-            if (fvMsh.ibs<staggered>()[ib].mask()(l,d,i,j,k))
+            if (fvMsh.immersedBoundaries<staggered>()[ib].mask()(l,d,i,j,k))
             {
                 exSource(l,d,i,j,k) = Zero;
                 imSourceCoeff(l,d,i,j,k) = Zero;

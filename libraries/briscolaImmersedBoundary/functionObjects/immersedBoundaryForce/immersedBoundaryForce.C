@@ -62,9 +62,9 @@ immersedBoundaryForce<MeshType>::immersedBoundaryForce
     UName_(dict.lookupOrDefault<word>("UName", "U")),
     boundaryPtr_(nullptr)
 {
-    forAll(fvMsh_.ibs<MeshType>(), i)
-        if (fvMsh_.ibs<MeshType>()[i].name() == ibName_)
-            boundaryPtr_ = &fvMsh_.ibs<MeshType>()[i];
+    forAll(fvMsh_.immersedBoundaries<MeshType>(), i)
+        if (fvMsh_.immersedBoundaries<MeshType>()[i].name() == ibName_)
+            boundaryPtr_ = &fvMsh_.immersedBoundaries<MeshType>()[i];
 
     if (boundaryPtr_ == nullptr)
         FatalError

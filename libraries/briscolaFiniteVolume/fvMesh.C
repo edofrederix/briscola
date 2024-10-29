@@ -250,9 +250,9 @@ template List<labelVector>
 fvMesh::findCells<staggered>(const vectorList&, const label, const label) const;
 
 template const PtrList<immersedBoundary<staggered>>&
-fvMesh::ibs<staggered>() const;
+fvMesh::immersedBoundaries<staggered>() const;
 template const PtrList<immersedBoundary<colocated>>&
-fvMesh::ibs<colocated>() const;
+fvMesh::immersedBoundaries<colocated>() const;
 
 }
 

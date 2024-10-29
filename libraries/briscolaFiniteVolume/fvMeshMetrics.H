@@ -58,7 +58,7 @@ class fvMeshMetrics
     meshField<label,MeshType> globalCellNumbers_;
 
     // List of immersed boundaries (if any)
-    PtrList<immersedBoundary<MeshType>> ibs_;
+    PtrList<immersedBoundary<MeshType>> immersedBoundaries_;
 
     // Calculate vertex centers
     void calculateVertexCenters();
@@ -88,7 +88,7 @@ class fvMeshMetrics
     void setGlobalCellNumbers();
 
     // Set the immersed boundaries
-    void setIbs();
+    void setImmersedBoundaries();
 
 public:
 
@@ -102,9 +102,9 @@ public:
     ~fvMeshMetrics();
 
     // Const access to immersed boundaries
-    const PtrList<immersedBoundary<MeshType>>& ibs() const
+    const PtrList<immersedBoundary<MeshType>>& immersedBoundaries() const
     {
-        return ibs_;
+        return immersedBoundaries_;
     }
 
     // Disallow default bitwise assignment
