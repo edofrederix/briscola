@@ -877,7 +877,7 @@ inline scalar clean(scalar s)
     if (s != 0)
     {
         const scalar factor =
-            Foam::pow(10.0, 14 - ceil(Foam::log10(Foam::mag(s))));
+            Foam::pow(10.0, 14 - label(Foam::log10(Foam::mag(s))));
 
         s = round(s*factor)/factor;
     }
