@@ -48,7 +48,7 @@ class rectilinearMesh
     // Global cell starts for each processor part
     List<labelVector> globalStarts_;
 
-    // Set rectiliner metrics
+    // Set rectilinear metrics
     void setMetrics();
 
 public:

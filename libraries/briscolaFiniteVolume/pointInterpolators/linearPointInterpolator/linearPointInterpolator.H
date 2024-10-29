@@ -73,7 +73,7 @@ public:
 
     #undef INTERPFUNC
 
-    // Colocated interpolator
+    // Templated interpolation function
     template<class Type>
     List<Type> interp(const meshField<Type,MeshType>&) const;
 };

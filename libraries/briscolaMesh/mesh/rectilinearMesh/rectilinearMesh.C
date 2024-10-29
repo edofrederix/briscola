@@ -57,7 +57,7 @@ void rectilinearMesh::setMetrics()
 
         forAll(localPointsData, i)
         {
-            localPointsData[i] = points(dir*(i-1)) & base;
+            localPointsData[i] = clean(points(dir*(i-1)) & base);
         }
 
         forAll(localCellSizesData, i)
@@ -326,7 +326,7 @@ rectilinearMesh::~rectilinearMesh()
 
 labelVector rectilinearMesh::findCell(const vector& p, const label l) const
 {
-    const vector q(p & base_.x(), p & base_.y(), p & base_.z());
+    const vector q(clean(vector(p & base_.x(), p & base_.y(), p & base_.z())));
 
     const scalarList& x = localPoints_[0];
     const scalarList& y = localPoints_[1];

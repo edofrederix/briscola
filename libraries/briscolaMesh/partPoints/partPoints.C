@@ -316,19 +316,7 @@ void partPoints::clean()
     vectorBlock& points = *this;
 
     forAllBlock(points, i, j, k)
-    {
-        for (int d = 0; d < 3; d++)
-        {
-            scalar p = points(i,j,k)[d];
-
-            if (p != 0)
-            {
-                scalar S = Foam::pow(10.0, label(Foam::log10(Foam::mag(p))));
-
-                points(i,j,k)[d] = round(p/S*1e14)*S/1e14;
-            }
-        }
-    }
+        points(i,j,k) = clean(points(i,j,k));
 }
 
 }

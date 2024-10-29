@@ -1187,4 +1187,13 @@ inline bool operator<=
     return !(cs1 > cs2);
 }
 
+template<class Form, class Cmpt, direction Ncmpts>
+inline Form clean(CellSpace<Form, Cmpt, Ncmpts> cs)
+{
+    for (direction i = 0; i < Ncmpts; i++)
+        cs.v_[i] = clean(cs.v_[i]);
+
+    return cs;
+}
+
 }
