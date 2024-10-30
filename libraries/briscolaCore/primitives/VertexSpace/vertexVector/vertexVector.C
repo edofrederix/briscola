@@ -201,12 +201,7 @@ vector interpolationWeights
     }
     else
     {
-        return vector
-        (
-            Foam::min(Foam::max(u.x(),0),1),
-            Foam::min(Foam::max(u.y(),0),1),
-            Foam::min(Foam::max(u.z(),0),1)
-        );
+        return u;
     }
 }
 

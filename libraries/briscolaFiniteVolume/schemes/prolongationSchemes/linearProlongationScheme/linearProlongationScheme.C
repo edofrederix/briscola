@@ -50,15 +50,10 @@ void linearProlongationScheme<Type,MeshType>::setWeights()
                                     k/R.z() + c*oz
                                 );
 
-                // Calculate the tri-linear interpolation point. On very coarse
-                // unstructured meshes this may fail. In that case we take the
-                // mid point.
+                // Calculate the tri-linear interpolation point
 
                 vector w =
-                    interpolationWeights(ccf(i,j,k), vertices, true, false);
-
-                if (w == -vector::one)
-                    w = vector::one/2.0;
+                    interpolationWeights(ccf(i,j,k), vertices, false, false);
 
                 // Set the weights
 

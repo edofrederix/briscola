@@ -77,7 +77,7 @@ pointInterpolator<MeshType>::pointInterpolator
         if (indices_[i] != -unitXYZ)
         {
             cellCoordinates_[i] =
-                interpolationWeights(points_[i], v(indices_[i]), true);
+                interpolationWeights(points_[i], v(indices_[i]));
         }
         else
         {
