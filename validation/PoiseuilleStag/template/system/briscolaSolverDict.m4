@@ -1,0 +1,23 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      briscolaSchemesDict;
+}
+
+U
+{
+    type        MG;
+    relTol      1e-3;
+    tolerance   1e-6;
+    maxIter     100;
+}
+
+p
+{
+    type        VARPSOLVER;
+    relTol      1e-3;
+    tolerance   1e-6;
+    maxIter     100;
+}

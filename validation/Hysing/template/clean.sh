@@ -6,7 +6,10 @@ cleanCase
 
 rm -f briscola*.vtk.series *.pdf data.txt result.txt
 
-rm -fr code
+rm -fr code \
+    code.briscolaColocatedTwoPhase/libcode.so \
+    code.briscolaStaggeredTwoPhase/libcode.so
+
 wclean code.briscolaColocatedTwoPhase
 wclean code.briscolaStaggeredTwoPhase
 
