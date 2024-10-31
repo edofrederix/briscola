@@ -36,11 +36,16 @@ operator*
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>>& tRet =
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys);
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
 
     tRet->A() *= s;
     tRet->b() *= s;
+
+    if (tSys.isTmp())
+        tSys.clear();
 
     return tRet;
 }
@@ -72,11 +77,16 @@ operator*
     const scalar s
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>>& tRet =
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys);
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
 
     tRet->A() *= s;
     tRet->b() *= s;
+
+    if (tSys.isTmp())
+        tSys.clear();
 
     return tRet;
 }
@@ -91,8 +101,10 @@ operator*
 {
     const_cast<meshField<scalar,MeshType>&>(s).restrict();
 
-    tmp<linearSystem<SType,Type,MeshType>>& tRet =
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys);
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
 
     // The restricted field has undefined ghosts. Manually implement operation
     // to avoid segmentation errors.
@@ -107,6 +119,9 @@ operator*
         b(l,d,i,j,k) *= s(l,d,i,j,k);
 
     const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+
+    if (tSys.isTmp())
+        tSys.clear();
 
     return tRet;
 }
@@ -153,8 +168,10 @@ operator*
 {
     const_cast<meshField<scalar,MeshType>&>(s).restrict();
 
-    tmp<linearSystem<SType,Type,MeshType>>& tRet =
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys);
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
 
     // The restricted field has undefined ghosts. Manually implement operation
     // to avoid segmentation errors.
@@ -169,6 +186,9 @@ operator*
         b(l,d,i,j,k) *= s(l,d,i,j,k);
 
     const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+
+    if (tSys.isTmp())
+        tSys.clear();
 
     return tRet;
 }
@@ -202,11 +222,16 @@ operator/
     const scalar s
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>>& tRet =
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys);
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
 
     tRet->A() /= s;
     tRet->b() /= s;
+
+    if (tSys.isTmp())
+        tSys.clear();
 
     return tRet;
 }
@@ -285,8 +310,10 @@ operator/
 {
     const_cast<meshField<scalar,MeshType>&>(s).restrict();
 
-    tmp<linearSystem<SType,Type,MeshType>>& tRet =
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys);
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
 
     // The restricted field has undefined ghosts. Manually implement operation
     // to avoid segmentation errors.
@@ -301,6 +328,9 @@ operator/
         b(l,d,i,j,k) /= s(l,d,i,j,k);
 
     const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+
+    if (tSys.isTmp())
+        tSys.clear();
 
     return tRet;
 }
@@ -333,8 +363,17 @@ operator+
     const linearSystem<SType,Type,MeshType>& sys2
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1).ref() += sys2;
-    return tSys1;
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1)
+    );
+
+    tRet.ref() += sys2;
+
+    if (tSys1.isTmp())
+        tSys1.clear();
+
+    return tRet;
 }
 
 template<class SType, class Type, class MeshType>
@@ -345,8 +384,17 @@ operator+
     const tmp<linearSystem<SType,Type,MeshType>>& tSys2
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys2).ref() += sys1;
-    return tSys2;
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys2)
+    );
+
+    tRet.ref() += sys1;
+
+    if (tSys2.isTmp())
+        tSys2.clear();
+
+    return tRet;
 }
 
 template<class SType, class Type, class MeshType>
@@ -357,12 +405,20 @@ operator+
     const tmp<linearSystem<SType,Type,MeshType>>& tSys2
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1).ref() += tSys2();
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1)
+    );
+
+    tRet.ref() += tSys2();
+
+    if (tSys1.isTmp())
+        tSys1.clear();
 
     if (tSys2.isTmp())
         tSys2.clear();
 
-    return tSys1;
+    return tRet;
 }
 
 template<class SType, class Type, class MeshType>
@@ -391,8 +447,17 @@ operator+
     const meshField<Type,MeshType>& field
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() += field;
-    return tSys;
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
+
+    tRet.ref() += field;
+
+    if (tSys.isTmp())
+        tSys.clear();
+
+    return tRet;
 }
 
 template<class SType, class Type, class MeshType>
@@ -424,12 +489,20 @@ operator+
     const tmp<meshField<Type,MeshType>>& tField
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() += tField();
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
+
+    tRet.ref() += tField();
+
+    if (tSys.isTmp())
+        tSys.clear();
 
     if (tField.isTmp())
         tField.clear();
 
-    return tSys;
+    return tRet;
 }
 
 template<class SType, class Type, class MeshType>
@@ -458,8 +531,17 @@ operator+
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() += field;
-    return tSys;
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
+
+    tRet.ref() += field;
+
+    if (tSys.isTmp())
+        tSys.clear();
+
+    return tRet;
 }
 
 template<class SType, class Type, class MeshType>
@@ -491,12 +573,20 @@ operator+
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() += tField();
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
+
+    tRet.ref() += tField();
 
     if (tField.isTmp())
         tField.clear();
 
-    return tSys;
+    if (tSys.isTmp())
+        tSys.clear();
+
+    return tRet;
 }
 
 // Subtraction
@@ -527,8 +617,17 @@ operator-
     const linearSystem<SType,Type,MeshType>& sys2
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1).ref() -= sys2;
-    return tSys1;
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1)
+    );
+
+    tRet.ref() -= sys2;
+
+    if (tSys1.isTmp())
+        tSys1.clear();
+
+    return tRet;
 }
 
 template<class SType, class Type, class MeshType>
@@ -539,9 +638,18 @@ operator-
     const tmp<linearSystem<SType,Type,MeshType>>& tSys2
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys2).ref() *= -1;
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys2).ref() += sys1;
-    return tSys2;
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys2)
+    );
+
+    tRet.ref() *= -1;
+    tRet.ref() += sys1;
+
+    if (tSys2.isTmp())
+        tSys2.clear();
+
+    return tRet;
 }
 
 template<class SType, class Type, class MeshType>
@@ -552,12 +660,20 @@ operator-
     const tmp<linearSystem<SType,Type,MeshType>>& tSys2
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1).ref() -= tSys2();
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1)
+    );
+
+    tRet.ref() -= tSys2();
+
+    if (tSys1.isTmp())
+        tSys1.clear();
 
     if (tSys2.isTmp())
         tSys2.clear();
 
-    return tSys1;
+    return tRet;
 }
 
 template<class SType, class Type, class MeshType>
@@ -586,8 +702,17 @@ operator-
     const meshField<Type,MeshType>& field
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() -= field;
-    return tSys;
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
+
+    tRet.ref() -= field;
+
+    if (tSys.isTmp())
+        tSys.clear();
+
+    return tRet;
 }
 
 template<class SType, class Type, class MeshType>
@@ -619,12 +744,20 @@ operator-
     const tmp<meshField<Type,MeshType>>& tField
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() -= tField();
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
+
+    tRet.ref() -= tField();
+
+    if (tSys.isTmp())
+        tSys.clear();
 
     if (tField.isTmp())
         tField.clear();
 
-    return tSys;
+    return tRet;
 }
 
 template<class SType, class Type, class MeshType>
@@ -655,9 +788,18 @@ operator-
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() *= -1;
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() += field;
-    return tSys;
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
+
+    tRet.ref() *= -1;
+    tRet.ref() += field;
+
+    if (tSys.isTmp())
+        tSys.clear();
+
+    return tRet;
 }
 
 template<class SType, class Type, class MeshType>
@@ -690,13 +832,21 @@ operator-
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() *= -1;
-    const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys).ref() += tField();
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
+
+    tRet.ref() *= -1;
+    tRet.ref() += tField();
 
     if (tField.isTmp())
         tField.clear();
 
-    return tSys;
+    if (tSys.isTmp())
+        tSys.clear();
+
+    return tRet;
 }
 
 // Equation
