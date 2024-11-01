@@ -328,23 +328,27 @@ MG<SType,Type,MeshType>::MG
             << "Coarse level is set too high. Should be at most "
             << fvMsh.size()-2 << endl << abort(FatalError);
 
-    this->smoothPtr_.reset
-    (
-        solver<SType,Type,MeshType>::smoother::New
+    // Set the smoother of choice only if the stencil is not diagonal
+
+    if (SType::nComponents > 1)
+        this->smoothPtr_.reset
         (
-            this->dict_.template lookupOrDefault<word>
+            solver<SType,Type,MeshType>::smoother::New
             (
-                "smoother",
-                "RBGS"
-            ),
-            this->dict_,
-            fvMsh
-        ).ptr()
-    );
+                this->dict_.template lookupOrDefault<word>
+                (
+                    "smoother",
+                    "RBGS"
+                ),
+                this->dict_,
+                fvMsh
+            ).ptr()
+        );
 
-    // Set the coarse level solver
+    // Set the coarse level solver if requested to do so, and only if the
+    // stencil is not diagonal
 
-    if (coarseMode_ == DIRECT)
+    if (coarseMode_ == DIRECT && SType::nComponents > 1)
         this->directSolvePtr_.reset
         (
             solver<SType,Type,MeshType>::directSolver::New
@@ -368,10 +372,16 @@ void MG<SType,Type,MeshType>::solve
     const bool constMatrix
 )
 {
-    sys.eliminateGhosts();
+    if (SType::nComponents > 1)
+        sys.eliminateGhosts();
+
     sys.setForcingMask();
 
-    if (sum(sys.diagonal()) == MeshType::numberOfDirections)
+    if
+    (
+        SType::nComponents == 1
+     || sum(sys.diagonal()) == MeshType::numberOfDirections
+    )
     {
         sys.x().makeShallow();
         sys.b().makeShallow();

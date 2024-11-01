@@ -26,20 +26,25 @@ void diagonal<SType,Type,MeshType>::solve
     const bool constMatrix
 )
 {
-    sys.eliminateGhosts();
+    if (SType::nComponents > 1)
+        sys.eliminateGhosts();
+
     sys.setForcingMask();
 
     sys.x().makeShallow();
     sys.b().makeShallow();
 
-    List<bool> diag = sys.diagonal();
+    if (SType::nComponents > 1)
+    {
+        List<bool> diag = sys.diagonal();
 
-    forAll(diag, i)
-        if (!diag[i])
-            FatalErrorInFunction
-                << "Direction " << i << " of " << sys.name()
-                << " is not diagonal." << endl
-                << abort(FatalError);
+        forAll(diag, i)
+            if (!diag[i])
+                FatalErrorInFunction
+                    << "Direction " << i << " of " << sys.name()
+                    << " is not diagonal." << endl
+                    << abort(FatalError);
+    }
 
     for (int d = 0; d < MeshType::numberOfDirections; d++)
         solver<SType,Type,MeshType>::smoother::smoothDiag(sys, 0, d);

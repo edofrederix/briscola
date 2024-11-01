@@ -29,6 +29,11 @@ makeSolver(stencil,vector,colocated);
 makeSolver(stencil,vector,staggered);
 
 
+makeSolverType(MG,diagStencil,scalar,colocated);
+makeSolverType(MG,diagStencil,scalar,staggered);
+makeSolverType(MG,diagStencil,vector,colocated);
+makeSolverType(MG,diagStencil,vector,staggered);
+
 makeSolverType(MG,symmStencil,scalar,colocated);
 makeSolverType(MG,symmStencil,scalar,staggered);
 makeSolverType(MG,symmStencil,vector,colocated);
