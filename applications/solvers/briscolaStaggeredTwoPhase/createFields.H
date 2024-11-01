@@ -116,6 +116,21 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
 
 Poisson->enableFlux();
 
+// Runge-Kutta stage sources
+
+PtrList<staggeredScalarField> stageSourcesA
+(
+    rk.stageList<staggeredScalarField>("A")
+);
+
+PtrList<staggeredScalarField> stageSourcesB
+(
+    rk.stageList<staggeredScalarField>("B")
+);
+
+linearSystem<stencil,scalar,staggered> USysA(U);
+linearSystem<stencil,scalar,staggered> USysB(U);
+
 // Specific volumes
 
 staggeredScalarField v
@@ -139,16 +154,3 @@ colocatedLowerFaceScalarField vcf
 );
 
 vcf.setRestrictionScheme("faceAreaWeighted");
-
-// Adams-Bashforth source
-
-staggeredScalarField H
-(
-    "H",
-    fvMsh,
-    IOobject::READ_IF_PRESENT,
-    IOobject::AUTO_WRITE,
-    true
-);
-
-H = Zero;

@@ -19,7 +19,7 @@ deltaT          0.001;
 
 writeControl    adjustableRunTime;
 
-writeInterval   10;
+writeInterval   30;
 
 writeFormat     binary;
 

@@ -86,6 +86,12 @@ public:
     // Runtime type information
     TypeName("meshField");
 
+    // Data type
+    typedef Type dataType;
+
+    // Mesh type
+    typedef MeshType meshType;
+
     // Component type
     typedef typename pTraits<Type>::cmptType cmptType;
 

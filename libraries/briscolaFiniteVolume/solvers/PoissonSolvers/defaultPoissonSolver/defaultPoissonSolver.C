@@ -52,6 +52,13 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
         );
     }
 
+    // Initialize the Runge-Kutta stage solution list if we haven't done so yet
+    // and if there's a Runge-Kutta scheme pointer
+
+    if (this->rkSchemePtr_ && !this->stages_.size())
+        this->stages_ =
+            this->rkSchemePtr_->template stageList<Type,MeshType>(x.name());
+
     linearSystem<SType,Type,MeshType>& sys = sysPtr_();
 
     sys = im::laplacian<SType>(lambdaPtr,x);
@@ -64,7 +71,17 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
 
     const bool constMatrix = !ddt && !lambdaPtr;
 
+    // If we have a Runge-Kutta scheme pointer, use the previous stage solution
+    // as initial guess and store the solution for the next iteration. This
+    // improves convergence.
+
+    if (this->rkSchemePtr_)
+        x = this->stages_[this->rkSchemePtr_->stage()-1];
+
     solverPtr_->solve(sys,constMatrix);
+
+    if (this->rkSchemePtr_)
+        this->stages_[this->rkSchemePtr_->stage()-1] = x;
 
     // Compute the flux if needed
 

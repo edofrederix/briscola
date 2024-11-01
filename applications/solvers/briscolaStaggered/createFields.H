@@ -66,6 +66,21 @@ staggeredScalarField imSourceCoeff
 exSource = scalarList(solverDict.lookup("source"));
 imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
 
+// Runge-Kutta stage sources
+
+PtrList<staggeredScalarField> stageSourcesA
+(
+    rk.stageList<staggeredScalarField>("A")
+);
+
+PtrList<staggeredScalarField> stageSourcesB
+(
+    rk.stageList<staggeredScalarField>("B")
+);
+
+linearSystem<stencil,scalar,staggered> USysA(U);
+linearSystem<stencil,scalar,staggered> USysB(U);
+
 // Immersed boundary
 
 if (fvMsh.immersedBoundaries<staggered>().size())
@@ -111,16 +126,3 @@ Poisson->enableFlux();
 staggeredLowerFaceScalarField phi("phi", fvMsh);
 
 phi = ex::faceFlux(U);
-
-// Adams-Bashforth source
-
-staggeredScalarField H
-(
-    "H",
-    fvMsh,
-    IOobject::READ_IF_PRESENT,
-    IOobject::AUTO_WRITE,
-    true
-);
-
-H = ex::div(phi,U);

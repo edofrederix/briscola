@@ -6,11 +6,6 @@ FoamFile
     object      briscolaSchemesDict;
 }
 
-ddtSchemes
-{
-    default Euler;
-}
-
 laplacianSchemes
 {
     default linearGauss;
@@ -39,4 +34,9 @@ faceFluxSchemes
 reconstructionSchemes
 {
     default midPoint;
+}
+
+rkScheme
+{
+    scheme Ascher222;
 }

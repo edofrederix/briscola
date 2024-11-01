@@ -89,4 +89,7 @@ dataExchange/cellDataExchange/cellDataExchange.C
 dataExchange/pointDataExchange/pointDataExchange.C
 dataExchange/boundaryExchange/boundaryExchange.C
 
+schemes/RungeKuttaSchemes/RungeKuttaScheme/RungeKuttaScheme.C
+schemes/RungeKuttaSchemes/RungeKuttaScheme/RungeKuttaSchemes.C
+
 LIB = $(FOAM_USER_LIBBIN)/libbriscolaFiniteVolume

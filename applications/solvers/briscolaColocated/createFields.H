@@ -67,6 +67,21 @@ colocatedScalarField imSourceCoeff
 exSource = vector(solverDict.lookupOrDefault("source", vector::zero));
 imSourceCoeff = scalar(solverDict.lookupOrDefault("sourceCoeff", 0.0));
 
+// Runge-Kutta stage sources
+
+PtrList<colocatedVectorField> stageSourcesA
+(
+    rk.stageList<colocatedVectorField>("A")
+);
+
+PtrList<colocatedVectorField> stageSourcesB
+(
+    rk.stageList<colocatedVectorField>("B")
+);
+
+linearSystem<stencil,vector,colocated> USysA(U);
+linearSystem<stencil,vector,colocated> USysB(U);
+
 // Solvers
 
 linearSystem<stencil,vector,colocated> USys(U, true);
@@ -90,16 +105,3 @@ autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
 );
 
 Poisson->enableFlux();
-
-// Adams-Bashforth source
-
-colocatedVectorField H
-(
-    "H",
-    fvMsh,
-    IOobject::READ_IF_PRESENT,
-    IOobject::AUTO_WRITE,
-    true
-);
-
-H = ex::div(phi,U);

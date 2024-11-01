@@ -35,3 +35,8 @@ faceFluxSchemes
 {
     default midPoint;
 }
+
+rkScheme
+{
+    scheme VARRKSCHEME;
+}

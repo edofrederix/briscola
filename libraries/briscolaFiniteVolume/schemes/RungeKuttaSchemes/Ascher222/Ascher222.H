@@ -1,0 +1,63 @@
+#ifndef Ascher222_H
+#define Ascher222_H
+
+#include "RungeKuttaScheme.H"
+
+namespace Foam
+{
+
+namespace briscola
+{
+
+namespace fv
+{
+
+namespace RungeKuttaSchemes
+{
+
+class Ascher222
+:
+    public RungeKuttaScheme
+{
+    // Butcher tableaus
+    List<scalarList> a_;
+    List<scalarList> b_;
+
+public:
+
+    // Runtime type information
+    TypeName("Ascher222");
+
+    // Construct from mesh
+    Ascher222(const fvMesh& fvMsh);
+
+    // Destructor
+    ~Ascher222()
+    {}
+
+    // Return the Butcher tableau for source A
+    virtual const List<scalarList>& a() const
+    {
+        return a_;
+    }
+
+    // Return the Butcher tableau for source B
+    virtual const List<scalarList>& b() const
+    {
+        return b_;
+    }
+};
+
+}
+
+}
+
+}
+
+}
+
+#ifdef NoRepository
+    #include "Ascher222.C"
+#endif
+
+#endif

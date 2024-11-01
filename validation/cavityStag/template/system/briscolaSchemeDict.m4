@@ -6,11 +6,6 @@ FoamFile
     object      briscolaSchemesDict;
 }
 
-ddtSchemes
-{
-    default Euler;
-}
-
 laplacianSchemes
 {
     default VARLSCHEME;
@@ -34,4 +29,9 @@ faceGradientSchemes
 faceFluxSchemes
 {
     default midPoint;
+}
+
+rkScheme
+{
+    scheme VARRKSCHEME;
 }

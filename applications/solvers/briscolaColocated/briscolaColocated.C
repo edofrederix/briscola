@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
+    #include "createRungeKuttaScheme.H"
     #include "createTimeControls.H"
 
     // Solver dictionary
@@ -47,36 +48,71 @@ int main(int argc, char *argv[])
         U.setOldTime();
         p.setOldTime();
 
-        // Predictor
+        while (rk.loop())
+        {
+            const label stage = rk.stage();
 
-        USys = im::ddt(U);
+            if (rk.solve())
+            {
+                const scalar A = rk.A();
+                const scalar B = rk.B();
+                const scalar C = rk.C();
 
-        USys -= im::source(imSourceCoeff,U);
-        USys -= exSource;
+                // Predictor
 
-        USys -= im::laplacian(0.5*nu,U);
-        USys -= ex::laplacian(0.5*nu,U);
+                USys = im::ddt(U);
+                USys -= C*exSource;
+                USys -= rk.stageSum(stageSourcesA, stageSourcesB);
 
-        USys -= 0.5*H;
-        H = ex::div(phi,U);
-        USys += 1.5*H;
+                if (rk.implicitStageA())
+                {
+                    USysA = -im::div(phi,U);
+                    USys -= A*USysA;
+                }
 
-        // Solve predictor
+                if (rk.implicitStageB())
+                {
+                    USysB =
+                        im::laplacian(nu,U)
+                      + im::source(imSourceCoeff,U);
 
-        USolve->solve(USys);
+                    USys -= B*USysB;
+                }
 
-        // Pressure equation
+                // Solve predictor
 
-        phi = ex::faceFlux(U);
+                USolve->solve(USys);
 
-        Poisson->solve(p, ex::div(phi)/(-deltaT));
+                // Pressure equation
 
-        // Rhie-Chow correction
+                const colocatedLowerFaceScalarField phiStar(ex::faceFlux(U));
 
-        U -= deltaT*ex::grad(p);
-        U.correctBoundaryConditions();
+                Poisson->solve(p, ex::div(phiStar)/(-C*deltaT));
 
-        phi -= deltaT*Poisson->flux();
+                // Rhie-Chow correction
+
+                U -= C*deltaT*ex::grad(p);
+                U.correctBoundaryConditions();
+
+                if (rk.lastStage())
+                    phi = phiStar - C*deltaT*Poisson->flux();
+            }
+
+            // Store Runge-Kutta sources
+
+            if (!rk.lastStage())
+            {
+                stageSourcesA[stage-1] =
+                    rk.solve() && rk.implicitStageA()
+                  ? USysA.evaluate()
+                  : -ex::div(phi,U);
+
+                stageSourcesB[stage-1] =
+                    rk.solve() && rk.implicitStageB()
+                  ? USysB.evaluate()
+                  : ex::laplacian(nu,U) + ex::source(imSourceCoeff,U);
+            }
+        }
 
         io.write<colocated>();
 

@@ -5,6 +5,7 @@ NPROCX=$2
 NPROCY=$3
 IBM=$4
 PSOLVER=$5
+RKSCHEME=$6
 
 if [ "$IBM" == "none" ]; then
 
@@ -28,10 +29,12 @@ VARS="\
     -DVARMESHX=$MESHX \
     -DVARMESHY=$MESHY \
     -DVARIBMBC=$IBMBC \
-    -DVARPSOLVER=$PSOLVER"
+    -DVARPSOLVER=$PSOLVER
+    -DVARRKSCHEME=$RKSCHEME"
 
 m4 $VARS system/$MESHFILE.m4 > system/briscolaMeshDict
 m4 $VARS system/briscolaSolverDict.m4 > system/briscolaSolverDict
+m4 $VARS system/briscolaSchemeDict.m4 > system/briscolaSchemeDict
 m4 $VARS 0/U.m4 > 0/U
 
 wmake -silent code > log.wmake 2>&1

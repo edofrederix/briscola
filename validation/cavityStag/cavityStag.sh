@@ -21,8 +21,9 @@ NBRICKS=(1 4)
 NPROCSPERBRICKSIDE=(1 2)
 LSCHEMES=(linearGauss)
 DSCHEMES=(linearGauss midPointGauss)
-RES=(100 400 1000)
+RES=(400 1000)
 COARSEMODES=(smooth direct)
+RKSCHEMES=(forwardEuler RK3 Ascher222)
 
 ##
 
@@ -50,6 +51,7 @@ echo \
     "divergence scheme," \
     "Re," \
     "coarse mode," \
+    "Runge-Kutta scheme," \
     "error 1 [%]," \
     "error 2 [%]," \
     "test 1," \
@@ -84,6 +86,7 @@ for K in "${!LSCHEMES[@]}"; do
 for L in "${!DSCHEMES[@]}"; do
 for M in "${!RES[@]}"; do
 for N in "${!COARSEMODES[@]}"; do
+for O in "${!RKSCHEMES[@]}"; do
 
     sleep 1
 
@@ -94,6 +97,7 @@ for N in "${!COARSEMODES[@]}"; do
     DSCHEME=${DSCHEMES[$L]}
     RE=${RES[$M]}
     COARSEMODE=${COARSEMODES[$N]}
+    RKSCHEME=${RKSCHEMES[$O]}
 
     NPROCX=$NPROCPERBRICKSIDE
     NPROCY=$NPROCPERBRICKSIDE
@@ -102,7 +106,7 @@ for N in "${!COARSEMODES[@]}"; do
 
     NU=$(echo "print(1.0/$RE)" | python)
 
-    CASE="$MESH-$NPROC-$LSCHEME-$DSCHEME-$RE-$COARSEMODE"
+    CASE="$MESH-$NPROC-$LSCHEME-$DSCHEME-$RE-$COARSEMODE-$RKSCHEME"
 
     while [ "$(($(getNumTasks) + $NPROC))" -gt $NTASKS ]; do
 
@@ -123,7 +127,7 @@ for N in "${!COARSEMODES[@]}"; do
 
         cd $RUNDIR/$CASE
 
-        ./prep.sh $MESH $NPROCX $NPROCY $LSCHEME $DSCHEME $NU $COARSEMODE
+        ./prep.sh $MESH $NPROCX $NPROCY $LSCHEME $DSCHEME $NU $COARSEMODE $RKSCHEME
 
         if [ "$NPROC" == "1" ]; then
 
@@ -159,6 +163,7 @@ for N in "${!COARSEMODES[@]}"; do
             "$DSCHEME," \
             "$RE," \
             "$COARSEMODE," \
+            "$RKSCHEME," \
             "$E1," \
             "$E2," \
             "$P1," \
@@ -174,6 +179,7 @@ for N in "${!COARSEMODES[@]}"; do
 
     ) &
 
+done
 done
 done
 done

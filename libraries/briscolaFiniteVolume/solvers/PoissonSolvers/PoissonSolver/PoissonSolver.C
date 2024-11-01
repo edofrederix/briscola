@@ -32,8 +32,13 @@ PoissonSolver<SType,Type,MeshType>::PoissonSolver
 :
     dict_(dict),
     fvMsh_(fvMsh),
-    computeFlux_(false)
-{}
+    computeFlux_(false),
+    rkSchemePtr_(nullptr)
+{
+    if (fvMsh.db().foundObject<RungeKuttaScheme>("rkScheme"))
+        rkSchemePtr_ =
+            &fvMsh.db().lookupObjectRef<RungeKuttaScheme>("rkScheme");
+}
 
 template<class SType, class Type, class MeshType>
 PoissonSolver<SType,Type,MeshType>::~PoissonSolver()

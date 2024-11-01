@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
+    #include "createRungeKuttaScheme.H"
     #include "createTimeControls.H"
 
     // Solver dictionary
@@ -47,33 +48,68 @@ int main(int argc, char *argv[])
         U.setOldTime();
         p.setOldTime();
 
-        // Predictor
-
-        USys = im::ddt(U);
-
-        USys -= im::source(imSourceCoeff,U);
-        USys -= exSource;
-
-        USys -= im::laplacian(0.5*nu,U);
-        USys -= ex::laplacian(0.5*nu,U);
-
-        USys -= 0.5*H;
         phi = ex::faceFlux(U);
-        H = ex::div(phi,U);
-        USys += 1.5*H;
 
-        // Solve predictor
+        while (rk.loop())
+        {
+            const label stage = rk.stage();
 
-        USolve->solve(USys);
+            if (rk.solve())
+            {
+                const scalar A = rk.A();
+                const scalar B = rk.B();
+                const scalar C = rk.C();
 
-        // Pressure equation
+                // Predictor
 
-        Poisson->solve(p, ibmCorr(ex::coloDiv(U),U)/(-deltaT));
+                USys = im::ddt(U);
+                USys -= C*exSource;
+                USys -= rk.stageSum(stageSourcesA, stageSourcesB);
 
-        // Correction
+                if (rk.implicitStageA())
+                {
+                    USysA = -im::div(phi,U);
+                    USys -= A*USysA;
+                }
 
-        U -= deltaT*ex::stagGrad(p);
-        U.correctBoundaryConditions();
+                if (rk.implicitStageB())
+                {
+                    USysB =
+                        im::laplacian(nu,U)
+                      + im::source(imSourceCoeff,U);
+
+                    USys -= B*USysB;
+                }
+
+                // Solve predictor
+
+                USolve->solve(USys);
+
+                // Pressure equation
+
+                Poisson->solve(p, ibmCorr(ex::coloDiv(U),U)/(-C*deltaT));
+
+                // Correction
+
+                U -= C*deltaT*ex::stagReconstruct(Poisson->flux());
+                U.correctBoundaryConditions();
+            }
+
+            // Store Runge-Kutta sources
+
+            if (!rk.lastStage())
+            {
+                stageSourcesA[stage-1] =
+                    rk.solve() && rk.implicitStageA()
+                  ? USysA.evaluate()
+                  : -ex::div(phi,U);
+
+                stageSourcesB[stage-1] =
+                    rk.solve() && rk.implicitStageB()
+                  ? USysB.evaluate()
+                  : ex::laplacian(nu,U) + ex::source(imSourceCoeff,U);
+            }
+        }
 
         // Reconstruct the colocated velocity
 

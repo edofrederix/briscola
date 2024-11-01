@@ -1,0 +1,62 @@
+#ifndef RK4_H
+#define RK4_H
+
+#include "RungeKuttaScheme.H"
+
+namespace Foam
+{
+
+namespace briscola
+{
+
+namespace fv
+{
+
+namespace RungeKuttaSchemes
+{
+
+class RK4
+:
+    public RungeKuttaScheme
+{
+    // Butcher tableau
+    List<scalarList> a_;
+
+public:
+
+    // Runtime type information
+    TypeName("RK4");
+
+    // Construct from mesh
+    RK4(const fvMesh& fvMsh);
+
+    // Destructor
+    ~RK4()
+    {}
+
+    // Return the Butcher tableau for source A
+    virtual const List<scalarList>& a() const
+    {
+        return a_;
+    }
+
+    // Return the Butcher tableau for source B
+    virtual const List<scalarList>& b() const
+    {
+        return a_;
+    }
+};
+
+}
+
+}
+
+}
+
+}
+
+#ifdef NoRepository
+    #include "RK4.C"
+#endif
+
+#endif

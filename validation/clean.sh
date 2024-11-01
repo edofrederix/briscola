@@ -10,6 +10,9 @@ for DIR in $(find . -mindepth 1 -maxdepth 1 -type d); do
 
     rm -fr slurm* runs results.csv
 
+    cd template
+    ./clean.sh
+
     cd $CURDIR
 
 done

@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
+    #include "createRungeKuttaScheme.H"
     #include "createBriscolaColocatedTwoPhase.H"
     #include "createTimeControls.H"
 
@@ -30,7 +31,6 @@ int main(int argc, char *argv[])
         runTime++;
 
         const scalar deltaT = runTime.deltaTValue();
-        const scalar deltaT0 = runTime.deltaT0Value();
 
         Info << "Time = " << runTime.timeName() << endl;
 
@@ -44,48 +44,93 @@ int main(int argc, char *argv[])
         v = 1.0/rho;
         vf = ex::interp(v);
 
-        // Predictor
+        while (rk.loop())
+        {
+            const label stage = rk.stage();
 
-        USys = im::ddt(U);
+            if (rk.solve())
+            {
+                const scalar A = rk.A();
+                const scalar B = rk.B();
+                const scalar C = rk.C();
 
-        USys -= im::source(imSourceCoeff,U);
-        USys -= exSource;
+                // Predictor
 
-        USys -= im::laplacian(mu,U,0.5)*v;
-        USys -= ex::laplacian(mu,U,0.5)*v;
+                USys = im::ddt(U);
+                USys -= C*exSource*v;
+                USys -= rk.stageSum(stageSourcesA, stageSourcesB);
 
-        USys -= 0.5*(deltaT/deltaT0)*H;
+                if (rk.implicitStageA())
+                {
+                    USysA = -im::div(phi,U);
+                    USys -= A*USysA;
+                }
 
-        H = ex::div(phi,U);
+                if (rk.implicitStageB())
+                {
+                    USysB =
+                        v
+                      * (
+                            im::laplacian(mu,U)
+                          + ex::div(mu*ex::faceFlux(T(ex::grad(U))))
+                          + im::source(imSourceCoeff,U)
+                        );
 
-        USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
-        USys -= twoPhase.gravity();
-        USys -= ex::div(mu*ex::faceFlux(T(ex::grad(U))))*v;
+                    USys -= B*USysB;
+                }
 
-        // Solve predictor
+                USys -= C*twoPhase.g();
 
-        USolve->solve(USys);
+                // Solve predictor
 
-        // Pressure equation
+                USolve->solve(USys);
 
-        phi = ex::faceFlux(U);
-        phi += deltaT*twoPhase.surfaceTension()*vf;
+                // Pressure equation
 
-        Poisson->solve(p, ex::div(phi)/(-deltaT), vf);
+                const colocatedLowerFaceScalarField phiStar
+                (
+                    ex::faceFlux(U)
+                  + C*deltaT*twoPhase.surfaceTension()*vf
+                );
 
-        // Rhie-Chow correction
+                Poisson->solve(p, ex::div(phiStar)/(-C*deltaT), vf);
 
-        U -=
-            deltaT
-          * ex::reconstruct
-            (
-                Poisson->flux()/vf
-              - twoPhase.surfaceTension()
-            )*v;
+                // Rhie-Chow correction
 
-        U.correctBoundaryConditions();
+                U -=
+                    C*deltaT
+                  * ex::reconstruct
+                    (
+                        Poisson->flux()/vf
+                      - twoPhase.surfaceTension()
+                    )*v;
 
-        phi -= deltaT*Poisson->flux();
+                U.correctBoundaryConditions();
+
+                if (rk.lastStage())
+                    phi = phiStar - C*deltaT*Poisson->flux();
+            }
+
+            // Store Runge-Kutta sources
+
+            if (!rk.lastStage())
+            {
+                stageSourcesA[stage-1] =
+                    rk.solve() && rk.implicitStageA()
+                  ? USysA.evaluate()
+                  : -ex::div(phi,U);
+
+                stageSourcesB[stage-1] =
+                    rk.solve() && rk.implicitStageB()
+                  ? USysB.evaluate()
+                  : v
+                  * (
+                        ex::laplacian(mu,U)
+                      + ex::div(mu*ex::faceFlux(T(ex::grad(U))))
+                      + ex::source(imSourceCoeff,U)
+                    );
+            }
+        }
 
         io.write<colocated>();
 

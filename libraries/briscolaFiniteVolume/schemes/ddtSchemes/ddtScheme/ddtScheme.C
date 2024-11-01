@@ -1,4 +1,5 @@
 #include "ddtScheme.H"
+#include "EulerDdtScheme.H"
 
 namespace Foam
 {
@@ -39,25 +40,38 @@ autoPtr<ddtScheme<Type,MeshType>> ddtScheme<Type,MeshType>::New
     const word schemeName
 )
 {
-    Istream& is = getStream(fvMsh, "ddtSchemes", schemeName);
-
-    word ddtSchemeType;
-    is >> ddtSchemeType;
-
-    typename IstreamConstructorTable::iterator cstrIter =
-        IstreamConstructorTablePtr_->find(ddtSchemeType);
-
-    if (cstrIter == IstreamConstructorTablePtr_->end())
+    if (fvMsh.schemeDict().found("ddtSchemes"))
     {
-        FatalErrorInFunction
-            << "Unknown ddt scheme scheme "
-            << ddtSchemeType << nl << nl
-            << "Valid ddt schemes are:" << nl
-            << IstreamConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
-    }
+        Istream& is = getStream(fvMsh, "ddtSchemes", schemeName);
 
-    return autoPtr<ddtScheme<Type,MeshType>>(cstrIter()(fvMsh, is));
+        word ddtSchemeType;
+        is >> ddtSchemeType;
+
+        typename IstreamConstructorTable::iterator cstrIter =
+            IstreamConstructorTablePtr_->find(ddtSchemeType);
+
+        if (cstrIter == IstreamConstructorTablePtr_->end())
+        {
+            FatalErrorInFunction
+                << "Unknown ddt scheme scheme "
+                << ddtSchemeType << nl << nl
+                << "Valid ddt schemes are:" << nl
+                << IstreamConstructorTablePtr_->sortedToc()
+                << exit(FatalError);
+        }
+
+        return autoPtr<ddtScheme<Type,MeshType>>(cstrIter()(fvMsh, is));
+    }
+    else
+    {
+        typename IstreamConstructorTable::iterator cstrIter =
+            IstreamConstructorTablePtr_->find
+            (
+                word(EulerDdtScheme<Type,MeshType>::typeName)
+            );
+
+        return autoPtr<ddtScheme<Type,MeshType>>(cstrIter()(fvMsh, nullStream));
+    }
 }
 
 }

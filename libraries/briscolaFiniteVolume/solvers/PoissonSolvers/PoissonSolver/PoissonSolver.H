@@ -8,6 +8,7 @@
 #include "colocatedFields.H"
 #include "staggeredFields.H"
 #include "dictionary.H"
+#include "RungeKuttaScheme.H"
 
 namespace Foam
 {
@@ -34,6 +35,13 @@ protected:
 
     // Switch to compute the flux (defaults to false)
     Switch computeFlux_;
+
+    // Pointer to the Runge-Kutta scheme, if found
+    RungeKuttaScheme* rkSchemePtr_;
+
+    // Runge-Kutta stage solution cache which can be used by derived types as
+    // initial guess to improve convergence
+    PtrList<meshField<Type,MeshType>> stages_;
 
     // Function to initialize the flux field
     virtual void initFlux();
@@ -81,6 +89,24 @@ public:
 
     // Access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
+
+    // Return the Runge-Kutta scheme pointer
+    inline RungeKuttaScheme* rkSchemePtr() const
+    {
+        return rkSchemePtr_;
+    }
+
+    // Access to the Runge-Kutta stage cache
+    inline PtrList<meshField<Type,MeshType>>& stages()
+    {
+        return stages_;
+    }
+
+    // Return the Runge-Kutta stage cache
+    inline const PtrList<meshField<Type,MeshType>>& stages() const
+    {
+        return stages_;
+    }
 
     // Access to the flux
     inline const meshField<LowerFaceSpace<Type>,MeshType>& flux() const

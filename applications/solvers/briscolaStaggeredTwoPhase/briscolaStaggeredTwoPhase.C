@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
+    #include "createRungeKuttaScheme.H"
     #include "createBriscolaStaggeredTwoPhase.H"
     #include "createTimeControls.H"
 
@@ -29,12 +30,13 @@ int main(int argc, char *argv[])
         runTime++;
 
         const scalar deltaT = runTime.deltaTValue();
-        const scalar deltaT0 = runTime.deltaT0Value();
 
         Info << "Time = " << runTime.timeName() << endl;
 
         U.setOldTime();
         p.setOldTime();
+
+        phi = ex::faceFlux(U);
 
         // Update the two-phase model and specific volumes
 
@@ -43,41 +45,92 @@ int main(int argc, char *argv[])
         v = 1.0/rho;
         vcf = ex::coloFaceInterp(v);
 
-        // Predictor
+        while (rk.loop())
+        {
+            const label stage = rk.stage();
 
-        USys = im::ddt(U);
+            if (rk.solve())
+            {
+                const scalar A = rk.A();
+                const scalar B = rk.B();
+                const scalar C = rk.C();
 
-        USys -= im::source(imSourceCoeff,U);
-        USys -= v*exSource;
+                // Predictor
 
-        USys -= im::laplacian(mu,U,0.5)*v;
-        USys -= ex::laplacian(mu,U,0.5)*v;
+                USys = im::ddt(U);
+                USys -= C*exSource*v;
+                USys -= rk.stageSum(stageSourcesA, stageSourcesB);
 
-        USys -= 0.5*(deltaT/deltaT0)*H;
+                if (rk.implicitStageA())
+                {
+                    USysA = -im::div(phi,U);
+                    USys -= A*USysA;
+                }
 
-        phi = ex::faceFlux(U);
+                if (rk.implicitStageB())
+                {
+                    USysB =
+                        v
+                      * (
+                            im::laplacian(mu,U)
+                          + (ex::grad(mu) & stagT(ex::grad(U)))
+                          + im::source(imSourceCoeff,U)
+                        );
 
-        H = ex::div(phi,U);
+                    USys -= B*USysB;
+                }
 
-        USys += (1.0 + 0.5*(deltaT/deltaT0))*H;
-        USys -= twoPhase.gravity();
-        USys -= (ex::grad(mu) & stagT(ex::grad(U)))*v;
+                if (rk.implicitStageA())
+                {
+                    USys += A*im::div(phi,U);
+                }
 
-        // Solve predictor
+                if (rk.implicitStageB())
+                {
+                    USys -= B*im::laplacian(mu,U)*v;
+                    USys -= B*(ex::grad(mu) & stagT(ex::grad(U)))*v;
+                    USys -= B*im::source(imSourceCoeff,U)*v;
+                }
 
-        USolve->solve(USys);
+                USys -= list(C*twoPhase.g());
 
-        U += deltaT*ex::stagReconstruct(twoPhase.surfaceTension())*v;
-        U.correctBoundaryConditions();
+                // Solve predictor
 
-        // Pressure equation
+                USolve->solve(USys);
 
-        Poisson->solve(p, ex::coloDiv(U)/(-deltaT), vcf);
+                U += C*deltaT*ex::stagReconstruct(twoPhase.surfaceTension())*v;
+                U.correctBoundaryConditions();
 
-        // Correct velocity
+                // Pressure equation
 
-        U -= deltaT*ex::stagReconstruct(Poisson->flux()/vcf)*v;
-        U.correctBoundaryConditions();
+                Poisson->solve(p, ex::coloDiv(U)/(-C*deltaT), vcf);
+
+                // Correct velocity
+
+                U -= C*deltaT*ex::stagReconstruct(Poisson->flux()/vcf)*v;
+                U.correctBoundaryConditions();
+            }
+
+            // Store Runge-Kutta sources
+
+            if (!rk.lastStage())
+            {
+                stageSourcesA[stage-1] =
+                    rk.solve() && rk.implicitStageA()
+                  ? USysA.evaluate()
+                  : -ex::div(phi,U);
+
+                stageSourcesB[stage-1] =
+                    rk.solve() && rk.implicitStageB()
+                  ? USysB.evaluate()
+                  : v
+                  * (
+                        ex::laplacian(mu,U)
+                      + (ex::grad(mu) & stagT(ex::grad(U)))
+                      + ex::source(imSourceCoeff,U)
+                    );
+            }
+        }
 
         // Reconstruct the colocated velocity
 

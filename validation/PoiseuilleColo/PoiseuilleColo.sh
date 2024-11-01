@@ -19,6 +19,7 @@ MESHES=(32 64)
 IBMS=(none penalization Vreman Fadlun Mittal)
 NPROCSPERBRICKSIDE=(1 2 4)
 PSOLVERS=(MG FFT)
+RKSCHEMES=(RK3 Ascher222)
 
 ##
 
@@ -46,6 +47,7 @@ echo \
     "Nprocs," \
     "IBM," \
     "pressure solver," \
+    "Runge-Kutta scheme," \
     "error [%]," \
     "test," \
     "number of time steps," \
@@ -76,6 +78,7 @@ for I in "${!MESHES[@]}"; do
 for J in "${!IBMS[@]}"; do
 for K in "${!NPROCSPERBRICKSIDE[@]}"; do
 for L in "${!PSOLVERS[@]}"; do
+for M in "${!RKSCHEMES[@]}"; do
 
     sleep 1
 
@@ -83,13 +86,14 @@ for L in "${!PSOLVERS[@]}"; do
     IBM=${IBMS[$J]}
     NPROCPERBRICKSIDE=${NPROCSPERBRICKSIDE[$K]}
     PSOLVER=${PSOLVERS[$L]}
+    RKSCHEME=${RKSCHEMES[$M]}
 
     NPROCX=$NPROCPERBRICKSIDE
     NPROCY=$NPROCPERBRICKSIDE
 
     NPROC=$(echo "print(int($NPROCX*$NPROCY))" | python)
 
-    CASE="$MESH-$NPROC-$IBM-$PSOLVER"
+    CASE="$MESH-$NPROC-$IBM-$PSOLVER-$RKSCHEME"
 
     while [ "$(($(getNumTasks) + $NPROC))" -gt $NTASKS ]; do
 
@@ -110,7 +114,7 @@ for L in "${!PSOLVERS[@]}"; do
 
         cd $RUNDIR/$CASE
 
-        ./prep.sh $MESH $NPROCX $NPROCY $IBM $PSOLVER
+        ./prep.sh $MESH $NPROCX $NPROCY $IBM $PSOLVER $RKSCHEME
 
         if [ "$NPROC" == "1" ]; then
 
@@ -141,6 +145,7 @@ for L in "${!PSOLVERS[@]}"; do
             "$NPROC," \
             "$IBM," \
             "$PSOLVER," \
+            "$RKSCHEME," \
             "$E," \
             "$P," \
             "$NDT," \
@@ -154,6 +159,7 @@ for L in "${!PSOLVERS[@]}"; do
 
     ) &
 
+done
 done
 done
 done
