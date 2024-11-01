@@ -7,6 +7,47 @@ namespace briscola
 namespace fv
 {
 
+// Negation
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
+operator-
+(
+    const linearSystem<SType,Type,MeshType>& sys
+)
+{
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        new linearSystem<SType,Type,MeshType>(sys)
+    );
+
+    tRet->A() *= -1;
+    tRet->b() *= -1;
+
+    return tRet;
+}
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
+operator-
+(
+    const tmp<linearSystem<SType,Type,MeshType>>& tSys
+)
+{
+    tmp<linearSystem<SType,Type,MeshType>> tRet
+    (
+        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+    );
+
+    tRet->A() *= -1;
+    tRet->b() *= -1;
+
+    if (tSys.isTmp())
+        tSys.clear();
+
+    return tRet;
+}
+
 // Multiplication
 
 template<class SType, class Type, class MeshType>
@@ -337,37 +378,51 @@ operator/
 
 // Summation
 
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
+template<class SType1, class SType2, class Type, class MeshType>
+inline tmp<linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>>
 operator+
 (
-    const linearSystem<SType,Type,MeshType>& sys1,
-    const linearSystem<SType,Type,MeshType>& sys2
+    const linearSystem<SType1,Type,MeshType>& sys1,
+    const linearSystem<SType2,Type,MeshType>& sys2
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
+    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
+        sysType;
+
+    tmp<sysType> tRet
     (
-        new linearSystem<SType,Type,MeshType>(sys1)
+        new sysType
+        (
+            const_cast<meshField<Type,MeshType>&>(sys1.x())
+        )
     );
 
+    tRet.ref() = sys1;
     tRet.ref() += sys2;
 
     return tRet;
 }
 
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
+template<class SType1, class SType2, class Type, class MeshType>
+inline tmp<linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>>
 operator+
 (
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys1,
-    const linearSystem<SType,Type,MeshType>& sys2
+    const tmp<linearSystem<SType1,Type,MeshType>>& tSys1,
+    const linearSystem<SType2,Type,MeshType>& sys2
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
+    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
+        sysType;
+
+    tmp<sysType> tRet
     (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1)
+        new sysType
+        (
+            const_cast<meshField<Type,MeshType>&>(sys2.x())
+        )
     );
 
+    tRet.ref() = tSys1;
     tRet.ref() += sys2;
 
     if (tSys1.isTmp())
@@ -376,19 +431,26 @@ operator+
     return tRet;
 }
 
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
+template<class SType1, class SType2, class Type, class MeshType>
+inline tmp<linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>>
 operator+
 (
-    const linearSystem<SType,Type,MeshType>& sys1,
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys2
+    const linearSystem<SType1,Type,MeshType>& sys1,
+    const tmp<linearSystem<SType2,Type,MeshType>>& tSys2
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
+    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
+        sysType;
+
+    tmp<sysType> tRet
     (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys2)
+        new sysType
+        (
+            const_cast<meshField<Type,MeshType>&>(sys1.x())
+        )
     );
 
+    tRet.ref() = tSys2;
     tRet.ref() += sys1;
 
     if (tSys2.isTmp())
@@ -397,20 +459,35 @@ operator+
     return tRet;
 }
 
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
+template<class SType1, class SType2, class Type, class MeshType>
+inline tmp<linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>>
 operator+
 (
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys1,
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys2
+    const tmp<linearSystem<SType1,Type,MeshType>>& tSys1,
+    const tmp<linearSystem<SType2,Type,MeshType>>& tSys2
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
+    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
+        sysType;
+
+    tmp<sysType> tRet
     (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1)
+        new sysType
+        (
+            const_cast<meshField<Type,MeshType>&>(tSys1->x())
+        )
     );
 
-    tRet.ref() += tSys2();
+    if (std::is_same<typename typeOfSum<SType1,SType2>::type,SType1>::value)
+    {
+        tRet.ref() = tSys1;
+        tRet.ref() += tSys2;
+    }
+    else
+    {
+        tRet.ref() = tSys2;
+        tRet.ref() += tSys1;
+    }
 
     if (tSys1.isTmp())
         tSys1.clear();
@@ -591,37 +668,51 @@ operator+
 
 // Subtraction
 
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
+template<class SType1, class SType2, class Type, class MeshType>
+inline tmp<linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>>
 operator-
 (
-    const linearSystem<SType,Type,MeshType>& sys1,
-    const linearSystem<SType,Type,MeshType>& sys2
+    const linearSystem<SType1,Type,MeshType>& sys1,
+    const linearSystem<SType2,Type,MeshType>& sys2
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
+    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
+        sysType;
+
+    tmp<sysType> tRet
     (
-        new linearSystem<SType,Type,MeshType>(sys1)
+        new sysType
+        (
+            const_cast<meshField<Type,MeshType>&>(sys1.x())
+        )
     );
 
+    tRet.ref() = sys1;
     tRet.ref() -= sys2;
 
     return tRet;
 }
 
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
+template<class SType1, class SType2, class Type, class MeshType>
+inline tmp<linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>>
 operator-
 (
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys1,
-    const linearSystem<SType,Type,MeshType>& sys2
+    const tmp<linearSystem<SType1,Type,MeshType>>& tSys1,
+    const linearSystem<SType2,Type,MeshType>& sys2
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
+    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
+        sysType;
+
+    tmp<sysType> tRet
     (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1)
+        new sysType
+        (
+            const_cast<meshField<Type,MeshType>&>(sys2.x())
+        )
     );
 
+    tRet.ref() = tSys1;
     tRet.ref() -= sys2;
 
     if (tSys1.isTmp())
@@ -630,19 +721,26 @@ operator-
     return tRet;
 }
 
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
+template<class SType1, class SType2, class Type, class MeshType>
+inline tmp<linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>>
 operator-
 (
-    const linearSystem<SType,Type,MeshType>& sys1,
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys2
+    const linearSystem<SType1,Type,MeshType>& sys1,
+    const tmp<linearSystem<SType2,Type,MeshType>>& tSys2
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
+    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
+        sysType;
+
+    tmp<sysType> tRet
     (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys2)
+        new sysType
+        (
+            const_cast<meshField<Type,MeshType>&>(sys1.x())
+        )
     );
 
+    tRet.ref() = tSys2;
     tRet.ref() *= -1;
     tRet.ref() += sys1;
 
@@ -652,20 +750,36 @@ operator-
     return tRet;
 }
 
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
+template<class SType1, class SType2, class Type, class MeshType>
+inline tmp<linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>>
 operator-
 (
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys1,
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys2
+    const tmp<linearSystem<SType1,Type,MeshType>>& tSys1,
+    const tmp<linearSystem<SType2,Type,MeshType>>& tSys2
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
+    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
+        sysType;
+
+    tmp<sysType> tRet
     (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys1)
+        new sysType
+        (
+            const_cast<meshField<Type,MeshType>&>(tSys1->x())
+        )
     );
 
-    tRet.ref() -= tSys2();
+    if (std::is_same<typename typeOfSum<SType1,SType2>::type,SType1>::value)
+    {
+        tRet.ref() = tSys1;
+        tRet.ref() -= tSys2;
+    }
+    else
+    {
+        tRet.ref() = tSys2;
+        tRet.ref() *= -1;
+        tRet.ref() += tSys1;
+    }
 
     if (tSys1.isTmp())
         tSys1.clear();
@@ -851,45 +965,45 @@ operator-
 
 // Equation
 
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
+template<class SType1, class SType2, class Type, class MeshType>
+inline tmp<linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>>
 operator==
 (
-    const linearSystem<SType,Type,MeshType>& sys1,
-    const linearSystem<SType,Type,MeshType>& sys2
+    const linearSystem<SType1,Type,MeshType>& sys1,
+    const linearSystem<SType2,Type,MeshType>& sys2
 )
 {
     return sys1 - sys2;
 }
 
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
+template<class SType1, class SType2, class Type, class MeshType>
+inline tmp<linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>>
 operator==
 (
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys1,
-    const linearSystem<SType,Type,MeshType>& sys2
+    const tmp<linearSystem<SType1,Type,MeshType>>& tSys1,
+    const linearSystem<SType2,Type,MeshType>& sys2
 )
 {
     return tSys1 - sys2;
 }
 
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
+template<class SType1, class SType2, class Type, class MeshType>
+inline tmp<linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>>
 operator==
 (
-    const linearSystem<SType,Type,MeshType>& sys1,
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys2
+    const linearSystem<SType1,Type,MeshType>& sys1,
+    const tmp<linearSystem<SType2,Type,MeshType>>& tSys2
 )
 {
     return sys1 - tSys2;
 }
 
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
+template<class SType1, class SType2, class Type, class MeshType>
+inline tmp<linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>>
 operator==
 (
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys1,
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys2
+    const tmp<linearSystem<SType1,Type,MeshType>>& tSys1,
+    const tmp<linearSystem<SType2,Type,MeshType>>& tSys2
 )
 {
     return tSys1 - tSys2;
