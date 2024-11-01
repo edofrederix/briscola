@@ -1,4 +1,4 @@
 #!/bin/bash
 
-rm -fr build
+rm -fr build system/briscolaMeshDict
 wclean -silent
