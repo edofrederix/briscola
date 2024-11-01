@@ -1,4 +1,5 @@
 #include "MG.H"
+#include "diagonal.H"
 
 namespace Foam
 {
@@ -370,41 +371,59 @@ void MG<SType,Type,MeshType>::solve
     sys.eliminateGhosts();
     sys.setForcingMask();
 
-    sys.x().makeDeep();
-    sys.b().makeDeep();
-
-    // Set singular and diagonal bools
-
-    sys.singular();
-    sys.diagonal();
-
-    if
-    (
-        coarseMode_ == DIRECT
-     && (
-            !constMatrix
-         || !this->directSolvePtr_->prepared()
-        )
-    )
+    if (sum(sys.diagonal()) == MeshType::numberOfDirections)
     {
-        this->directSolvePtr_->prepare(sys);
+        sys.x().makeShallow();
+        sys.b().makeShallow();
+
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+            solver<SType,Type,MeshType>::smoother::smoothDiag(sys, 0, d);
+
+        sys.x().correctBoundaryConditions();
+
+        this->printSolverStats
+        (
+            diagonal<SType,Type,MeshType>::typeName,
+            sys.x().name(),
+            List<Type>(MeshType::numberOfDirections, pTraits<Type>::one),
+            List<Type>(MeshType::numberOfDirections, Zero),
+            0
+        );
     }
+    else
+    {
+        sys.singular();
+        sys.x().makeDeep();
+        sys.b().makeDeep();
 
-    this->solve
-    (
-        sys,
-        constMatrix,
-        this->relTol_,
-        this->tolerance_,
-        this->minIter_,
-        this->maxIter_,
-        this->nSweepsPre_,
-        this->nSweepsPost_,
-        this->coarseLevel_
-    );
+        if
+        (
+            coarseMode_ == DIRECT
+        && (
+                !constMatrix
+            || !this->directSolvePtr_->prepared()
+            )
+        )
+        {
+            this->directSolvePtr_->prepare(sys);
+        }
 
-    sys.x().makeShallow();
-    sys.b().makeShallow();
+        this->solve
+        (
+            sys,
+            constMatrix,
+            this->relTol_,
+            this->tolerance_,
+            this->minIter_,
+            this->maxIter_,
+            this->nSweepsPre_,
+            this->nSweepsPost_,
+            this->coarseLevel_
+        );
+
+        sys.x().makeShallow();
+        sys.b().makeShallow();
+    }
 }
 
 }

@@ -29,6 +29,27 @@ public:
 
     class smoother
     {
+    public:
+
+        // Diagonal smooth at given level and direction
+        static inline void smoothDiag
+        (
+            linearSystem<SType,Type,MeshType>& sys,
+            const label l,
+            const label d
+        )
+        {
+            meshDirection<Type,MeshType>& x = sys.x()[l][d];
+
+            const meshDirection<SType,MeshType>& A = sys.A()[l][d];
+            const meshDirection<Type,MeshType>& b = sys.b()[l][d];
+            const meshDirection<label,MeshType>& f = sys.forcingMask()[l][d];
+
+            forAllCells(x, i, j, k)
+                if (!f(i,j,k))
+                    x(i,j,k) = b(i,j,k)/A(i,j,k).center();
+        }
+
     protected:
 
         // Reference to the solver dictionary
@@ -36,23 +57,6 @@ public:
 
         // Reference to the mesh
         const fvMesh& fvMsh_;
-
-        // Diagonal smooth at given level and direction
-        inline void smoothDiag
-        (
-            linearSystem<SType,Type,MeshType>& sys,
-            const label l,
-            const label d
-        ) const
-        {
-            meshDirection<Type,MeshType>& x = sys.x()[l][d];
-
-            const meshDirection<SType,MeshType>& A = sys.A()[l][d];
-            const meshDirection<Type,MeshType>& b = sys.b()[l][d];
-
-            forAllCells(x, i, j, k)
-                x(i,j,k) = b(i,j,k)/A(i,j,k).center();
-        }
 
     public:
 

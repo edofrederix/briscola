@@ -2,6 +2,7 @@
 #include "addToRunTimeSelectionTable.H"
 
 #include "MG.H"
+#include "diagonal.H"
 
 namespace Foam
 {
@@ -11,6 +12,11 @@ namespace briscola
 
 namespace fv
 {
+
+makeSolver(diagStencil,scalar,colocated);
+makeSolver(diagStencil,scalar,staggered);
+makeSolver(diagStencil,vector,colocated);
+makeSolver(diagStencil,vector,staggered);
 
 makeSolver(symmStencil,scalar,colocated);
 makeSolver(symmStencil,scalar,staggered);
@@ -32,6 +38,22 @@ makeSolverType(MG,stencil,scalar,colocated);
 makeSolverType(MG,stencil,scalar,staggered);
 makeSolverType(MG,stencil,vector,colocated);
 makeSolverType(MG,stencil,vector,staggered);
+
+
+makeSolverType(diagonal,diagStencil,scalar,colocated);
+makeSolverType(diagonal,diagStencil,scalar,staggered);
+makeSolverType(diagonal,diagStencil,vector,colocated);
+makeSolverType(diagonal,diagStencil,vector,staggered);
+
+makeSolverType(diagonal,symmStencil,scalar,colocated);
+makeSolverType(diagonal,symmStencil,scalar,staggered);
+makeSolverType(diagonal,symmStencil,vector,colocated);
+makeSolverType(diagonal,symmStencil,vector,staggered);
+
+makeSolverType(diagonal,stencil,scalar,colocated);
+makeSolverType(diagonal,stencil,scalar,staggered);
+makeSolverType(diagonal,stencil,vector,colocated);
+makeSolverType(diagonal,stencil,vector,staggered);
 
 }
 
