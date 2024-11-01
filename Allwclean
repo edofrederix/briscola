@@ -12,5 +12,7 @@ wclean applications/utilities/briscolaWriteMesh
 wclean applications/solvers/briscolaLaplacian
 wclean applications/solvers/briscolaColocated
 wclean applications/solvers/briscolaStaggered
+wclean applications/solvers/briscolaColocatedCNAB
+wclean applications/solvers/briscolaStaggeredCNAB
 wclean applications/solvers/briscolaVofAdvection
 wclean applications/solvers/briscolaColocatedTwoPhase

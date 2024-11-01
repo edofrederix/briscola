@@ -23,7 +23,7 @@ LSCHEMES=(linearGauss)
 DSCHEMES=(linearGauss midPointGauss)
 RES=(400 1000)
 COARSEMODES=(smooth direct)
-RKSCHEMES=(forwardEuler RK3 Ascher222)
+RKSCHEMES=(forwardEuler RK3 Ascher222 CNAB)
 
 ##
 
@@ -51,7 +51,7 @@ echo \
     "divergence scheme," \
     "Re," \
     "coarse mode," \
-    "Runge-Kutta scheme," \
+    "Time scheme," \
     "error 1 [%]," \
     "error 2 [%]," \
     "test 1," \
@@ -129,9 +129,19 @@ for O in "${!RKSCHEMES[@]}"; do
 
         ./prep.sh $MESH $NPROCX $NPROCY $LSCHEME $DSCHEME $NU $COARSEMODE $RKSCHEME
 
+        if [ "$RKSCHEME" == "CNAB" ]; then
+
+            SOLVER2=${SOLVER}CNAB
+
+        else
+
+            SOLVER2=$SOLVER
+
+        fi
+
         if [ "$NPROC" == "1" ]; then
 
-            $SOLVER > log.$SOLVER
+            $SOLVER2 > log.$SOLVER
 
         else
 
@@ -139,7 +149,7 @@ for O in "${!RKSCHEMES[@]}"; do
                 --bind-to none \
                 --oversubscribe \
                 -n $NPROC \
-                $SOLVER -parallel > log.$SOLVER
+                $SOLVER2 -parallel > log.$SOLVER
 
         fi
 

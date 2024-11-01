@@ -19,7 +19,7 @@ MESHES=(32 64)
 IBMS=(none penalization Vreman Fadlun Mittal)
 NPROCSPERBRICKSIDE=(1 2 4)
 PSOLVERS=(MG FFT)
-RKSCHEMES=(RK3 Ascher222)
+RKSCHEMES=(RK3 Ascher222 CNAB)
 
 ##
 
@@ -47,7 +47,7 @@ echo \
     "Nprocs," \
     "IBM," \
     "pressure solver," \
-    "Runge-Kutta scheme," \
+    "Time scheme," \
     "error [%]," \
     "test," \
     "number of time steps," \
@@ -116,9 +116,19 @@ for M in "${!RKSCHEMES[@]}"; do
 
         ./prep.sh $MESH $NPROCX $NPROCY $IBM $PSOLVER $RKSCHEME
 
+        if [ "$RKSCHEME" == "CNAB" ]; then
+
+            SOLVER2=${SOLVER}CNAB
+
+        else
+
+            SOLVER2=$SOLVER
+
+        fi
+
         if [ "$NPROC" == "1" ]; then
 
-            $SOLVER > log.$SOLVER
+            $SOLVER2 > log.$SOLVER
 
         else
 
@@ -126,7 +136,7 @@ for M in "${!RKSCHEMES[@]}"; do
                 --bind-to none \
                 --oversubscribe \
                 -n $NPROC \
-                $SOLVER -parallel > log.$SOLVER
+                $SOLVER2 -parallel > log.$SOLVER
 
         fi
 

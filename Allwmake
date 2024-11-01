@@ -12,6 +12,8 @@ wmake applications/utilities/briscolaWriteMesh
 wmake applications/solvers/briscolaLaplacian
 wmake applications/solvers/briscolaColocated
 wmake applications/solvers/briscolaStaggered
+wmake applications/solvers/briscolaColocatedCNAB
+wmake applications/solvers/briscolaStaggeredCNAB
 wmake applications/solvers/briscolaVofAdvection
 wmake applications/solvers/briscolaColocatedTwoPhase
 wmake applications/solvers/briscolaStaggeredTwoPhase
