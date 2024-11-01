@@ -64,13 +64,13 @@ int main(int argc, char *argv[])
                 USys -= C*exSource;
                 USys -= rk.stageSum(stageSourcesA, stageSourcesB);
 
-                if (rk.implicitStageA())
+                if (rk.imStageA())
                 {
                     USysA = -im::div(phi,U);
                     USys -= A*USysA;
                 }
 
-                if (rk.implicitStageB())
+                if (rk.imStageB())
                 {
                     USysB =
                         im::laplacian(nu,U)
@@ -103,12 +103,12 @@ int main(int argc, char *argv[])
             if (!rk.lastStage())
             {
                 stageSourcesA[stage-1] =
-                    rk.solve() && rk.implicitStageA()
+                    rk.solve() && rk.imStageA()
                   ? USysA.evaluate()
                   : -ex::div(phi,U);
 
                 stageSourcesB[stage-1] =
-                    rk.solve() && rk.implicitStageB()
+                    rk.solve() && rk.imStageB()
                   ? USysB.evaluate()
                   : ex::laplacian(nu,U) + ex::source(imSourceCoeff,U);
             }

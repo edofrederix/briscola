@@ -115,28 +115,46 @@ public:
 
         // Switches
 
-            // Explicit Runge-Kutta stage A
-            inline Switch explicitStageA() const;
+            // Explicit current stage A
+            inline Switch exStageA() const;
 
-            // Explicit Runge-Kutta stage B
-            inline Switch explicitStageB() const;
+            // Explicit current stage B
+            inline Switch exStageB() const;
 
-            // Explicit Runge-Kutta stage
-            inline Switch explicitStage() const;
+            // Explicit current stage
+            inline Switch exStage() const;
 
-            // Implicit Runge-Kutta stage A
-            inline Switch implicitStageA() const;
+            // Explicit scheme A
+            inline Switch exA() const;
 
-            // Implicit Runge-Kutta stage B
-            inline Switch implicitStageB() const;
+            // Explicit scheme B
+            inline Switch exB() const;
 
-            // Implicit Runge-Kutta stage
-            inline Switch implicitStage() const;
+            // Explicit scheme
+            inline Switch ex() const;
 
-            // First Runge-Kutta stage
+            // Implicit current stage A
+            inline Switch imStageA() const;
+
+            // Implicit current stage B
+            inline Switch imStageB() const;
+
+            // Implicit current stage
+            inline Switch imStage() const;
+
+            // Implicit scheme A
+            inline Switch imA() const;
+
+            // Implicit scheme B
+            inline Switch imB() const;
+
+            // Explicit scheme
+            inline Switch im() const;
+
+            // First stage
             inline Switch firstStage() const;
 
-            // Last Runge-Kutta stage
+            // Last stage
             inline Switch lastStage() const;
 
             // Solve this stage

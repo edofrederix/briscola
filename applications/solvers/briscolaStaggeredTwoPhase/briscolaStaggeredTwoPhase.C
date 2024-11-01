@@ -61,13 +61,13 @@ int main(int argc, char *argv[])
                 USys -= C*exSource*v;
                 USys -= rk.stageSum(stageSourcesA, stageSourcesB);
 
-                if (rk.implicitStageA())
+                if (rk.imStageA())
                 {
                     USysA = -im::div(phi,U);
                     USys -= A*USysA;
                 }
 
-                if (rk.implicitStageB())
+                if (rk.imStageB())
                 {
                     USysB =
                         v
@@ -80,12 +80,12 @@ int main(int argc, char *argv[])
                     USys -= B*USysB;
                 }
 
-                if (rk.implicitStageA())
+                if (rk.imStageA())
                 {
                     USys += A*im::div(phi,U);
                 }
 
-                if (rk.implicitStageB())
+                if (rk.imStageB())
                 {
                     USys -= B*im::laplacian(mu,U)*v;
                     USys -= B*(ex::grad(mu) & stagT(ex::grad(U)))*v;
@@ -116,12 +116,12 @@ int main(int argc, char *argv[])
             if (!rk.lastStage())
             {
                 stageSourcesA[stage-1] =
-                    rk.solve() && rk.implicitStageA()
+                    rk.solve() && rk.imStageA()
                   ? USysA.evaluate()
                   : -ex::div(phi,U);
 
                 stageSourcesB[stage-1] =
-                    rk.solve() && rk.implicitStageB()
+                    rk.solve() && rk.imStageB()
                   ? USysB.evaluate()
                   : v
                   * (
