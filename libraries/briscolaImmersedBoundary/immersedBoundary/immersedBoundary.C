@@ -127,8 +127,7 @@ void immersedBoundary<MeshType>::calculateWallDistances()
                 }
             }
         }
-
-        if (this->isInside(CC(l,d,i,j,k)))
+        else
         {
             const vector gc(CC(l,d,i,j,k));
 

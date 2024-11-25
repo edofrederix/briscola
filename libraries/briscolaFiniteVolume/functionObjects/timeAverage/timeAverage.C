@@ -33,8 +33,12 @@ timeAverage::timeAverage
     briscolaFunctionObject(name, runTime, dict),
     fvMsh_(runTime.lookupObject<fvMesh>("briscolaMeshDict")),
     fields_(dict.lookup("fields")),
-    timeAveragedColFields_(),
-    timeAveragedStagFields_(),
+    avgColScalarFields_(),
+    avgColVectorFields_(),
+    avgColTensorFields_(),
+    avgColSymmTensorFields_(),
+    avgStagScalarFields_(),
+    avgStagVectorFields_(),
     startTime_
     (
         Foam::max
@@ -54,35 +58,47 @@ void timeAverage::init()
 {
     const objectRegistry& db = fvMsh_.db();
 
-    // Number of colocated/staggered scalar fields needed
-    scalar sizeCol = 0;
-    scalar sizeStag = 0;
+    // Number of colocated/staggered fields needed
+    label sizeColScalar = 0;
+    label sizeColVector = 0;
+    label sizeColTensor = 0;
+    label sizeColSymmTensor = 0;
+    label sizeStagScalar = 0;
+    label sizeStagVector = 0;
 
     // Indices of field lists
-    scalar indexCol = 0;
-    scalar indexStag = 0;
+    label indexColScalar = 0;
+    label indexColVector = 0;
+    label indexColTensor = 0;
+    label indexColSymmTensor = 0;
+    label indexStagScalar = 0;
+    label indexStagVector = 0;
 
     forAll(fields_, i)
     {
         if (db.foundObject<colocatedScalarField>(fields_[i]))
         {
-            sizeCol += 1;
+            sizeColScalar++;
         }
         else if (db.foundObject<colocatedVectorField>(fields_[i]))
         {
-            sizeCol += 3;
-        }
-        else if (db.foundObject<colocatedSymmTensorField>(fields_[i]))
-        {
-            sizeCol += 6;
+            sizeColVector++;
         }
         else if (db.foundObject<colocatedTensorField>(fields_[i]))
         {
-            sizeCol += 9;
+            sizeColTensor++;
+        }
+        else if (db.foundObject<colocatedSymmTensorField>(fields_[i]))
+        {
+            sizeColSymmTensor++;
         }
         else if (db.foundObject<staggeredScalarField>(fields_[i]))
         {
-            sizeStag += 1;
+            sizeStagScalar++;
+        }
+        else if (db.foundObject<staggeredVectorField>(fields_[i]))
+        {
+            sizeStagVector++;
         }
         else
         {
@@ -92,16 +108,22 @@ void timeAverage::init()
         }
     }
 
-    timeAveragedColFields_.setSize(sizeCol);
-    timeAveragedStagFields_.setSize(sizeStag);
+    avgColScalarFields_.setSize(sizeColScalar);
+    avgColVectorFields_.setSize(sizeColVector);
+    avgColTensorFields_.setSize(sizeColTensor);
+    avgColSymmTensorFields_.setSize(sizeColSymmTensor);
+
+    avgStagScalarFields_.setSize(sizeStagScalar);
+    avgStagVectorFields_.setSize(sizeStagVector);
+
 
     forAll(fields_, i)
     {
         if (db.foundObject<colocatedScalarField>(fields_[i]))
         {
-            timeAveragedColFields_.set
+            avgColScalarFields_.set
             (
-                indexCol,
+                indexColScalar,
                 new colocatedScalarField
                 (
                     fields_[i]+"_avg",
@@ -112,82 +134,64 @@ void timeAverage::init()
                 )
             );
 
-            indexCol++;
+            indexColScalar++;
         }
         else if (db.foundObject<colocatedVectorField>(fields_[i]))
         {
-            for (int c = 0; c < 3; c++)
-            {
-                wordList cmpts({"X", "Y", "Z"});
-
-                timeAveragedColFields_.set
+            avgColVectorFields_.set
+            (
+                indexColVector,
+                new colocatedVectorField
                 (
-                    indexCol,
-                    new colocatedScalarField
-                    (
-                        fields_[i]+"_"+cmpts[c]+"_avg",
-                        fvMsh_,
-                        IOobject::NO_READ,
-                        IOobject::AUTO_WRITE,
-                        true
-                    )
-                );
+                    fields_[i]+"_avg",
+                    fvMsh_,
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE,
+                    true
+                )
+            );
 
-                indexCol++;
-            }
-        }
-        else if (db.foundObject<colocatedSymmTensorField>(fields_[i]))
-        {
-            wordList cmpts({"XX", "XY", "XZ", "YY", "YZ", "ZZ"});
-
-            for (int c = 0; c < 6; c++)
-            {
-                timeAveragedColFields_.set
-                (
-                    indexCol,
-                    new colocatedScalarField
-                    (
-                        fields_[i]+"_"+cmpts[c]+"_avg",
-                        fvMsh_,
-                        IOobject::NO_READ,
-                        IOobject::AUTO_WRITE,
-                        true
-                    )
-                );
-
-                indexCol++;
-            }
+            indexColVector++;
         }
         else if (db.foundObject<colocatedTensorField>(fields_[i]))
         {
-            wordList cmpts
+            avgColTensorFields_.set
             (
-                {"XX", "XY", "XZ", "YX", "YY", "YZ", "ZX", "ZY", "ZZ"}
+                indexColTensor,
+                new colocatedTensorField
+                (
+                    fields_[i]+"_avg",
+                    fvMsh_,
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE,
+                    true
+                )
             );
 
-            for (int c = 0; c < 9; c++)
-            {
-                timeAveragedColFields_.set
+            indexColTensor++;
+        }
+        else if (db.foundObject<colocatedSymmTensorField>(fields_[i]))
+        {
+            avgColSymmTensorFields_.set
+            (
+                indexColSymmTensor,
+                new colocatedSymmTensorField
                 (
-                    indexCol,
-                    new colocatedScalarField
-                    (
-                        fields_[i]+"_"+cmpts[c]+"_avg",
-                        fvMsh_,
-                        IOobject::NO_READ,
-                        IOobject::AUTO_WRITE,
-                        true
-                    )
-                );
+                    fields_[i]+"_avg",
+                    fvMsh_,
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE,
+                    true
+                )
+            );
 
-                indexCol++;
-            }
+            indexColSymmTensor++;
         }
         else if (db.foundObject<staggeredScalarField>(fields_[i]))
         {
-            timeAveragedStagFields_.set
+            avgStagScalarFields_.set
             (
-                indexStag,
+                indexStagScalar,
                 new staggeredScalarField
                 (
                     fields_[i]+"_avg",
@@ -198,18 +202,55 @@ void timeAverage::init()
                 )
             );
 
-            indexStag++;
+            indexStagScalar++;
+        }
+        else if (db.foundObject<staggeredVectorField>(fields_[i]))
+        {
+            avgStagVectorFields_.set
+            (
+                indexStagVector,
+                new staggeredVectorField
+                (
+                    fields_[i]+"_avg",
+                    fvMsh_,
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE,
+                    true
+                )
+            );
+
+            indexStagVector++;
         }
     }
 
-    forAll(timeAveragedColFields_, i)
+    forAll(avgColScalarFields_, i)
     {
-        timeAveragedColFields_[i] = Zero;
+        avgColScalarFields_[i] = Zero;
     }
 
-    forAll(timeAveragedStagFields_, i)
+    forAll(avgColVectorFields_, i)
     {
-        timeAveragedStagFields_[i] = Zero;
+        avgColVectorFields_[i] = Zero;
+    }
+
+    forAll(avgColTensorFields_, i)
+    {
+        avgColTensorFields_[i] = Zero;
+    }
+
+    forAll(avgColSymmTensorFields_, i)
+    {
+        avgColSymmTensorFields_[i] = Zero;
+    }
+
+    forAll(avgStagScalarFields_, i)
+    {
+        avgStagScalarFields_[i] = Zero;
+    }
+
+    forAll(avgStagVectorFields_, i)
+    {
+        avgStagVectorFields_[i] = Zero;
     }
 }
 
@@ -222,8 +263,13 @@ bool timeAverage::execute()
     {
         const objectRegistry& db = fvMsh_.db();
 
-        scalar indexCol = 0;
-        scalar indexStag = 0;
+        // Indices of field lists
+        label indexColScalar = 0;
+        label indexColVector = 0;
+        label indexColTensor = 0;
+        label indexColSymmTensor = 0;
+        label indexStagScalar = 0;
+        label indexStagVector = 0;
 
         scalar avgT  = runTime_.value() - intervalStart_;
         scalar avgT0 = avgT - runTime_.deltaTValue();
@@ -237,87 +283,78 @@ bool timeAverage::execute()
 
                 if (reset_)
                 {
-                    timeAveragedColFields_[indexCol] = Zero;
+                    avgColScalarFields_[indexColScalar] = Zero;
                 }
 
-                forAllCells(csf,l,d,i,j,k)
+                forAllCells(csf[0],d,i,j,k)
                 {
-                    timeAveragedColFields_[indexCol](l,d,i,j,k) *= avgT0;
-                    timeAveragedColFields_[indexCol](l,d,i,j,k) += csf(l,d,i,j,k)
+                    avgColScalarFields_[indexColScalar](0,d,i,j,k) *= avgT0;
+                    avgColScalarFields_[indexColScalar](0,d,i,j,k) += csf(0,d,i,j,k)
                         * runTime_.deltaTValue();
-                    timeAveragedColFields_[indexCol](l,d,i,j,k) /= avgT;
+                    avgColScalarFields_[indexColScalar](0,d,i,j,k) /= avgT;
                 }
 
-                indexCol++;
+                indexColScalar++;
             }
             else if (db.foundObject<colocatedVectorField>(fields_[f]))
             {
                 const colocatedVectorField& cvf
                     = db.lookupObject<colocatedVectorField>(fields_[f]);
 
-                for (int c = 0; c < 3; c++)
+                if (reset_)
                 {
-                    if (reset_)
-                    {
-                        timeAveragedColFields_[indexCol] = Zero;
-                    }
-
-                    forAllCells(cvf,l,d,i,j,k)
-                    {
-                        timeAveragedColFields_[indexCol](l,d,i,j,k) *= avgT0;
-                        timeAveragedColFields_[indexCol](l,d,i,j,k)
-                            += cvf(l,d,i,j,k)[c] * runTime_.deltaTValue();
-                        timeAveragedColFields_[indexCol](l,d,i,j,k) /= avgT;
-                    }
-
-                    indexCol++;
+                    avgColVectorFields_[indexColVector] = Zero;
                 }
-            }
-            else if (db.foundObject<colocatedSymmTensorField>(fields_[f]))
-            {
-                const colocatedSymmTensorField& cstf
-                    = db.lookupObject<colocatedSymmTensorField>(fields_[f]);
 
-                for (int c = 0; c < 6; c++)
+                forAllCells(cvf[0],d,i,j,k)
                 {
-                    if (reset_)
-                    {
-                        timeAveragedColFields_[indexCol] = Zero;
-                    }
-
-                    forAllCells(cstf,l,d,i,j,k)
-                    {
-                        timeAveragedColFields_[indexCol](l,d,i,j,k) *= avgT0;
-                        timeAveragedColFields_[indexCol](l,d,i,j,k)
-                            += cstf(l,d,i,j,k)[c] * runTime_.deltaTValue();
-                        timeAveragedColFields_[indexCol](l,d,i,j,k) /= avgT;
-                    }
-
-                    indexCol++;
+                    avgColVectorFields_[indexColVector](0,d,i,j,k) *= avgT0;
+                    avgColVectorFields_[indexColVector](0,d,i,j,k) += cvf(0,d,i,j,k)
+                        * runTime_.deltaTValue();
+                    avgColVectorFields_[indexColVector](0,d,i,j,k) /= avgT;
                 }
+
+                indexColVector++;
             }
             else if (db.foundObject<colocatedTensorField>(fields_[f]))
             {
                 const colocatedTensorField& ctf
                     = db.lookupObject<colocatedTensorField>(fields_[f]);
 
-                for (int c = 0; c < 9; c++)
+                if (reset_)
                 {
-                    if (reset_)
-                    {
-                        timeAveragedColFields_[indexCol] = Zero;
-                    }
-
-                    forAllCells(ctf,l,d,i,j,k)
-                    {
-                        timeAveragedColFields_[indexCol](l,d,i,j,k) *= avgT0;
-                        timeAveragedColFields_[indexCol](l,d,i,j,k)
-                            += ctf(l,d,i,j,k)[c] * runTime_.deltaTValue();
-                        timeAveragedColFields_[indexCol](l,d,i,j,k) /= avgT;
-                    }
-
-                    indexCol++;
+                    avgColTensorFields_[indexColTensor] = Zero;
                 }
+
+                forAllCells(ctf[0],d,i,j,k)
+                {
+                    avgColTensorFields_[indexColTensor](0,d,i,j,k) *= avgT0;
+                    avgColTensorFields_[indexColTensor](0,d,i,j,k) += ctf(0,d,i,j,k)
+                        * runTime_.deltaTValue();
+                    avgColTensorFields_[indexColTensor](0,d,i,j,k) /= avgT;
+                }
+
+                indexColTensor++;
+            }
+            else if (db.foundObject<colocatedSymmTensorField>(fields_[f]))
+            {
+                const colocatedSymmTensorField& cstf
+                    = db.lookupObject<colocatedSymmTensorField>(fields_[f]);
+
+                if (reset_)
+                {
+                    avgColSymmTensorFields_[indexColSymmTensor] = Zero;
+                }
+
+                forAllCells(cstf[0],d,i,j,k)
+                {
+                    avgColSymmTensorFields_[indexColSymmTensor](0,d,i,j,k) *= avgT0;
+                    avgColSymmTensorFields_[indexColSymmTensor](0,d,i,j,k) += cstf(0,d,i,j,k)
+                        * runTime_.deltaTValue();
+                    avgColSymmTensorFields_[indexColSymmTensor](0,d,i,j,k) /= avgT;
+                }
+
+                indexColSymmTensor++;
             }
             else if (db.foundObject<staggeredScalarField>(fields_[f]))
             {
@@ -326,18 +363,38 @@ bool timeAverage::execute()
 
                 if (reset_)
                 {
-                    timeAveragedStagFields_[indexStag] = Zero;
+                    avgStagScalarFields_[indexStagScalar] = Zero;
                 }
 
-                forAllCells(ssf,l,d,i,j,k)
+                forAllCells(ssf[0],d,i,j,k)
                 {
-                    timeAveragedStagFields_[indexStag](l,d,i,j,k) *= avgT0;
-                    timeAveragedStagFields_[indexStag](l,d,i,j,k)
-                        += ssf(l,d,i,j,k) * runTime_.deltaTValue();
-                    timeAveragedStagFields_[indexStag](l,d,i,j,k) /= avgT;
+                    avgStagScalarFields_[indexStagScalar](0,d,i,j,k) *= avgT0;
+                    avgStagScalarFields_[indexStagScalar](0,d,i,j,k)
+                        += ssf(0,d,i,j,k) * runTime_.deltaTValue();
+                    avgStagScalarFields_[indexStagScalar](0,d,i,j,k) /= avgT;
                 }
 
-                indexStag++;
+                indexStagScalar++;
+            }
+            else if (db.foundObject<staggeredVectorField>(fields_[f]))
+            {
+                const staggeredVectorField& svf
+                    = db.lookupObject<staggeredVectorField>(fields_[f]);
+
+                if (reset_)
+                {
+                    avgStagVectorFields_[indexStagVector] = Zero;
+                }
+
+                forAllCells(svf[0],d,i,j,k)
+                {
+                    avgStagVectorFields_[indexStagVector](0,d,i,j,k) *= avgT0;
+                    avgStagVectorFields_[indexStagVector](0,d,i,j,k)
+                        += svf(0,d,i,j,k) * runTime_.deltaTValue();
+                    avgStagVectorFields_[indexStagVector](0,d,i,j,k) /= avgT;
+                }
+
+                indexStagVector++;
             }
         }
 

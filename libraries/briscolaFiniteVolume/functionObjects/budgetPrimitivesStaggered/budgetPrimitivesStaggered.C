@@ -45,7 +45,7 @@ budgetPrimitivesStaggered::budgetPrimitivesStaggered
         "U3",
         fvMsh_,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
+        IOobject::NO_WRITE,
         true
     ),
     p2_
@@ -69,7 +69,7 @@ budgetPrimitivesStaggered::budgetPrimitivesStaggered
         "Rii",
         fvMsh_,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
+        IOobject::NO_WRITE,
         true
     ),
     uiuiuk_
@@ -85,7 +85,7 @@ budgetPrimitivesStaggered::budgetPrimitivesStaggered
         "uiuiui",
         fvMsh_,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
+        IOobject::NO_WRITE,
         true
     ),
     pui_
@@ -109,7 +109,7 @@ budgetPrimitivesStaggered::budgetPrimitivesStaggered
         "stagdjui",
         fvMsh_,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
+        IOobject::NO_WRITE,
         true
     ),
     djui_
@@ -125,7 +125,7 @@ budgetPrimitivesStaggered::budgetPrimitivesStaggered
         "stagdjui2",
         fvMsh_,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
+        IOobject::NO_WRITE,
         true
     ),
     djui2_
@@ -133,7 +133,7 @@ budgetPrimitivesStaggered::budgetPrimitivesStaggered
         "djui2",
         fvMsh_,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
+        IOobject::NO_WRITE,
         true
     ),
     Sij_
@@ -191,10 +191,16 @@ bool budgetPrimitivesStaggered::execute()
         U2_(l,d,i,j,k) = Foam::sqr(U(l,d,i,j,k));
     }
 
+    U2_.correctCommsBoundaryConditions();
+    Rii_ = ex::reconstruct(U2_);
+
     forAllCells(U3_,l,d,i,j,k)
     {
         U3_(l,d,i,j,k) = Foam::pow3(U(l,d,i,j,k));
     }
+
+    U3_.correctCommsBoundaryConditions();
+    uiuiui_ = ex::reconstruct(U3_);
 
     forAllCells(p2_,l,d,i,j,k)
     {
@@ -203,36 +209,30 @@ bool budgetPrimitivesStaggered::execute()
 
     forAllCells(Rij_,l,d,i,j,k)
     {
-        Rij_(l,d,i,j,k).xx() = Uc(l,d,i,j,k)[0]*Uc(l,d,i,j,k)[0];
+        Rij_(l,d,i,j,k).xx() = Rii_(l,d,i,j,k).x();
         Rij_(l,d,i,j,k).xy() = Uc(l,d,i,j,k)[0]*Uc(l,d,i,j,k)[1];
         Rij_(l,d,i,j,k).xz() = Uc(l,d,i,j,k)[0]*Uc(l,d,i,j,k)[2];
 
-        Rij_(l,d,i,j,k).yy() = Uc(l,d,i,j,k)[1]*Uc(l,d,i,j,k)[1];
+        Rij_(l,d,i,j,k).yy() = Rii_(l,d,i,j,k).y();
         Rij_(l,d,i,j,k).yz() = Uc(l,d,i,j,k)[1]*Uc(l,d,i,j,k)[2];
 
-        Rij_(l,d,i,j,k).zz() = Uc(l,d,i,j,k)[2]*Uc(l,d,i,j,k)[2];
+        Rij_(l,d,i,j,k).zz() = Rii_(l,d,i,j,k).z();
     }
-
-    U2_.correctCommsBoundaryConditions();
-    Rii_ = ex::reconstruct(U2_);
 
     forAllCells(uiuiuk_,l,d,i,j,k)
     {
-        uiuiuk_(l,d,i,j,k).xx() = Rij_(l,d,i,j,k).xx()*Uc(l,d,i,j,k)[0];
+        uiuiuk_(l,d,i,j,k).xx() = uiuiui_(l,d,i,j,k).x();
         uiuiuk_(l,d,i,j,k).xy() = Rij_(l,d,i,j,k).xx()*Uc(l,d,i,j,k)[1];
         uiuiuk_(l,d,i,j,k).xz() = Rij_(l,d,i,j,k).xx()*Uc(l,d,i,j,k)[2];
 
         uiuiuk_(l,d,i,j,k).yx() = Rij_(l,d,i,j,k).yy()*Uc(l,d,i,j,k)[0];
-        uiuiuk_(l,d,i,j,k).yy() = Rij_(l,d,i,j,k).yy()*Uc(l,d,i,j,k)[1];
+        uiuiuk_(l,d,i,j,k).yy() = uiuiui_(l,d,i,j,k).y();
         uiuiuk_(l,d,i,j,k).yz() = Rij_(l,d,i,j,k).yy()*Uc(l,d,i,j,k)[2];
 
         uiuiuk_(l,d,i,j,k).zx() = Rij_(l,d,i,j,k).zz()*Uc(l,d,i,j,k)[0];
         uiuiuk_(l,d,i,j,k).zy() = Rij_(l,d,i,j,k).zz()*Uc(l,d,i,j,k)[1];
-        uiuiuk_(l,d,i,j,k).zz() = Rij_(l,d,i,j,k).zz()*Uc(l,d,i,j,k)[2];
+        uiuiuk_(l,d,i,j,k).zz() = uiuiui_(l,d,i,j,k).z();
     }
-
-    U3_.correctCommsBoundaryConditions();
-    uiuiui_ = ex::reconstruct(U3_);
 
     forAllCells(pui_,l,d,i,j,k)
     {
@@ -265,17 +265,17 @@ bool budgetPrimitivesStaggered::execute()
 
     forAllCells(eij_,l,d,i,j,k)
     {
-        eij_(l,d,i,j,k).xx() = Sij_(l,d,i,j,k).xx()*djui_(l,d,i,j,k).xx();
+        eij_(l,d,i,j,k).xx() = djui2_(l,d,i,j,k).x();
         eij_(l,d,i,j,k).xy() = Sij_(l,d,i,j,k).xy()*djui_(l,d,i,j,k).xy();
         eij_(l,d,i,j,k).xz() = Sij_(l,d,i,j,k).xz()*djui_(l,d,i,j,k).xz();
 
         eij_(l,d,i,j,k).yx() = Sij_(l,d,i,j,k).yx()*djui_(l,d,i,j,k).yx();
-        eij_(l,d,i,j,k).yy() = Sij_(l,d,i,j,k).yy()*djui_(l,d,i,j,k).yy();
+        eij_(l,d,i,j,k).yy() = djui2_(l,d,i,j,k).y();
         eij_(l,d,i,j,k).yz() = Sij_(l,d,i,j,k).yz()*djui_(l,d,i,j,k).yz();
 
         eij_(l,d,i,j,k).zx() = Sij_(l,d,i,j,k).zx()*djui_(l,d,i,j,k).zx();
         eij_(l,d,i,j,k).zy() = Sij_(l,d,i,j,k).zy()*djui_(l,d,i,j,k).zy();
-        eij_(l,d,i,j,k).zz() = Sij_(l,d,i,j,k).zz()*djui_(l,d,i,j,k).zz();
+        eij_(l,d,i,j,k).zz() = djui2_(l,d,i,j,k).z();
     }
 
     return true;
