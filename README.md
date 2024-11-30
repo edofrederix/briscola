@@ -1,4 +1,4 @@
-# Briscola
+# About Briscola
 
 ## About
 
@@ -55,6 +55,19 @@ packages are available. The compiler checks for the existence of the MKLROOT,
 SUITESPARSE_HOME and SUPERLU_HOME environment variables. If they exist, the
 Pardiso, UmfPack and SuperLU solvers are compiled, respectively. They are
 interfaced via the Eigen support functions.
+
+## Documentation
+
+The code is self-documented via Doxygen. The Doxygen output can be generated
+with
+
+```
+doxygen doc/Doxyfile
+```
+
+This requires doxygen and graphviz to be installed. There is also a short
+high-level documentation available that can be viewed
+[HERE](doc/chapters/start.md).
 
 ## Contact & Support
 

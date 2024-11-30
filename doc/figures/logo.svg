@@ -2,16 +2,16 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="968.23566"
-   height="358.23752"
-   viewBox="0 0 256.17901 94.78368"
+   width="1020"
+   height="400.00003"
+   viewBox="0 0 269.87499 105.83335"
    version="1.1"
    id="svg849"
    inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
-   sodipodi:docname="logo2.svg"
-   inkscape:export-filename="logo2.png"
-   inkscape:export-xdpi="58.34713"
-   inkscape:export-ydpi="58.34713"
+   sodipodi:docname="logo.svg"
+   inkscape:export-filename="logo.png"
+   inkscape:export-xdpi="96.376472"
+   inkscape:export-ydpi="96.376472"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -32,22 +32,22 @@
      units="px"
      inkscape:snap-grids="false"
      inkscape:zoom="0.49071405"
-     inkscape:cx="503.34813"
-     inkscape:cy="203.78467"
+     inkscape:cx="218.0496"
+     inkscape:cy="226.20098"
      inkscape:window-width="1842"
      inkscape:window-height="1057"
      inkscape:window-x="70"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer7"
      inkscape:snap-global="false"
      inkscape:showpageshadow="2"
      inkscape:deskcolor="#d1d1d1">
     <inkscape:grid
        type="xygrid"
        id="grid1244"
-       originx="-160.1478"
-       originy="-95.716352" />
+       originx="-153.45833"
+       originy="-89.958341" />
   </sodipodi:namedview>
   <defs
      id="defs846">
@@ -59,38 +59,38 @@
        id="rect3137" />
     <inkscape:perspective
        sodipodi:type="inkscape:persp3d"
-       inkscape:vp_x="0 : 442.11439 : 1"
-       inkscape:vp_y="0 : 999.99998 : 0"
-       inkscape:vp_z="744.09448 : 442.11439 : 1"
-       inkscape:persp3d-origin="372.04726 : 266.72068 : 1"
+       inkscape:vp_x="0 : 453.16408 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09447 : 453.16408 : 1"
+       inkscape:persp3d-origin="372.04726 : 277.77036 : 1"
        id="perspective3183" />
     <inkscape:perspective
        id="perspective3192"
-       inkscape:persp3d-origin="372.04726 : 266.72068 : 1"
-       inkscape:vp_z="744.09448 : 442.11439 : 1"
-       inkscape:vp_y="0 : 999.99998 : 0"
-       inkscape:vp_x="0 : 442.11439 : 1"
+       inkscape:persp3d-origin="372.04726 : 277.77036 : 1"
+       inkscape:vp_z="744.09447 : 453.16408 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 453.16408 : 1"
        sodipodi:type="inkscape:persp3d" />
     <inkscape:perspective
        sodipodi:type="inkscape:persp3d"
-       inkscape:vp_x="0 : 442.11439 : 1"
-       inkscape:vp_y="0 : 999.99998 : 0"
-       inkscape:vp_z="744.09448 : 442.11439 : 1"
-       inkscape:persp3d-origin="372.04726 : 266.72068 : 1"
+       inkscape:vp_x="0 : 453.16408 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09447 : 453.16408 : 1"
+       inkscape:persp3d-origin="372.04726 : 277.77036 : 1"
        id="perspective2408" />
     <inkscape:perspective
        sodipodi:type="inkscape:persp3d"
-       inkscape:vp_x="0 : 442.11439 : 1"
-       inkscape:vp_y="0 : 999.99998 : 0"
-       inkscape:vp_z="744.09448 : 442.11439 : 1"
-       inkscape:persp3d-origin="372.04726 : 266.72068 : 1"
+       inkscape:vp_x="0 : 453.16408 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09447 : 453.16408 : 1"
+       inkscape:persp3d-origin="372.04726 : 277.77036 : 1"
        id="perspective2930" />
     <inkscape:perspective
        id="perspective2921"
-       inkscape:persp3d-origin="372.04726 : 266.72068 : 1"
-       inkscape:vp_z="744.09448 : 442.11439 : 1"
-       inkscape:vp_y="0 : 999.99998 : 0"
-       inkscape:vp_x="0 : 442.11439 : 1"
+       inkscape:persp3d-origin="372.04726 : 277.77036 : 1"
+       inkscape:vp_z="744.09447 : 453.16408 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 453.16408 : 1"
        sodipodi:type="inkscape:persp3d" />
     <rect
        x="-1840"
@@ -124,10 +124,23 @@
        id="rect3137-6-6-6-3" />
   </defs>
   <g
+     inkscape:groupmode="layer"
+     id="layer7"
+     inkscape:label="Background"
+     transform="translate(6.6894665,5.7580185)">
+    <rect
+       style="fill:none;stroke:none;stroke-width:0.352777;stroke-linecap:square;stroke-dasharray:2.11666, 2.11666;stop-color:#000000"
+       id="rect2450"
+       width="269.875"
+       height="105.83334"
+       x="-6.6894665"
+       y="-5.7580185" />
+  </g>
+  <g
      inkscape:label="Spade"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-160.14783,-95.716323)"
+     transform="translate(-153.45836,-89.958305)"
      style="display:none">
     <g
        id="g3198"
@@ -151,7 +164,7 @@
      id="layer2"
      inkscape:label="Coppe"
      style="display:none"
-     transform="translate(-160.14783,-95.716323)">
+     transform="translate(-153.45836,-89.958305)">
     <g
        transform="matrix(0.17800047,0,0,0.17800047,-250.10193,93.329383)"
        id="layer1-5">
@@ -274,7 +287,7 @@
      id="layer3"
      inkscape:label="Dinari"
      style="display:none"
-     transform="translate(-160.14783,-95.716323)">
+     transform="translate(-153.45836,-89.958305)">
     <g
        transform="matrix(0.19503847,0,0,0.19503847,-74.590858,56.56142)"
        id="g2944">
@@ -293,19 +306,7 @@
      inkscape:groupmode="layer"
      id="layer4"
      inkscape:label="Bastoni"
-     transform="translate(-160.14783,-95.716323)">
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:82.1491px;line-height:0px;font-family:'Bodoni MT';-inkscape-font-specification:'Bodoni MT Bold';text-align:justify;text-decoration-color:#000000;white-space:pre;fill:#ffffff;stroke:#ffffff;stroke-width:1.55242;stroke-linecap:square;stroke-linejoin:round;stop-color:#000000"
-       x="168.55312"
-       y="178.41765"
-       id="text11166"
-       transform="scale(0.94183964,1.0617519)"><tspan
-         sodipodi:role="line"
-         id="tspan11164"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Bodoni MT';-inkscape-font-specification:'Bodoni MT Bold';fill:#000000;stroke:none;stroke-width:1.55242"
-         x="168.55312"
-         y="178.41765">Briscola</tspan></text>
+     transform="translate(-153.45836,-89.958305)">
     <g
        transform="matrix(0,0.20509302,-0.19989311,0,350.31739,26.203198)"
        id="g2419">
@@ -326,5 +327,23 @@
          id="path2421"
          style="fill:#020301" />
     </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Text"
+     transform="translate(6.6894665,5.7580185)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:82.1491px;line-height:0px;font-family:'Bodoni MT';-inkscape-font-specification:'Bodoni MT Bold';text-align:justify;text-decoration-color:#000000;white-space:pre;fill:#ffffff;stroke:#ffffff;stroke-width:1.55242;stroke-linecap:square;stroke-linejoin:round;stop-color:#000000"
+       x="-1.4841423"
+       y="88.268227"
+       id="text11166"
+       transform="scale(0.94183963,1.0617519)"><tspan
+         sodipodi:role="line"
+         id="tspan11164"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Bodoni MT';-inkscape-font-specification:'Bodoni MT Bold';fill:#000000;stroke:none;stroke-width:1.55242"
+         x="-1.4841423"
+         y="88.268227">Briscola</tspan></text>
   </g>
 </svg>
