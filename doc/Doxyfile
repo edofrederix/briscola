@@ -909,14 +909,14 @@ WARN_LOGFILE           =
 INPUT                  = \
     applications \
     libraries \
-    doc/chapters/start.md \
-    doc/chapters/tutorial.md \
-    doc/chapters/mesh.md \
-    doc/chapters/data.md \
-    doc/chapters/finiteVolume.md \
-    doc/chapters/twoPhase.md \
-    doc/chapters/ibm.md \
-    doc/chapters/solvers.md \
+    doc/chapters/0_start.md \
+    doc/chapters/1_tutorial.md \
+    doc/chapters/2_data.md \
+    doc/chapters/3_mesh.md \
+    doc/chapters/4_finiteVolume.md \
+    doc/chapters/5_twoPhase.md \
+    doc/chapters/6_ibm.md \
+    doc/chapters/7_solvers.md \
     README.md
 
 # This tag can be used to specify the character encoding of the source files
@@ -1015,7 +1015,7 @@ EXAMPLE_RECURSIVE      = NO
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             =
+IMAGE_PATH             = doc/chapters/figures
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program

@@ -15,10 +15,10 @@ below.
 
 ## Table of contents
 
-1. [A first tutorial case](doc/chapters/tutorial.md)
-2. [Data structure](doc/chapters/data.md)
-3. [Making a mesh](doc/chapters/mesh.md)
-4. [Finite volume solvers](doc/chapters/finiteVolume.md)
-5. [Two-phase solvers](doc/chapters/twoPhase.md)
-6. [Immersed boundary methods](doc/chapters/ibm.md)
-7. [Linear system solvers](doc/chapters/solvers.md)
+1. [A first tutorial case](./1_tutorial.md)
+2. [Data structure](./2_data.md)
+3. [Making a mesh](./3_mesh.md)
+4. [Finite volume solvers](./4_finiteVolume.md)
+5. [Two-phase solvers](./5_twoPhase.md)
+6. [Immersed boundary methods](./6_ibm.md)
+7. [Linear system solvers](./7_solvers.md)
