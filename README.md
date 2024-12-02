@@ -1,4 +1,4 @@
-# Briscola
+# About Briscola
 
 ## About
 
@@ -39,7 +39,7 @@ EU DuC.
 
 Briscola depends on the following third-party packages:
 
-* OpenFOAM (only libOpenFOAM, libPstream and libOSspecific)
+* OpenFOAM (foundation version 9 or 10)
 * OpenMPI (version 3 or later)
 * FFTW3
 * Eigen3
@@ -48,13 +48,29 @@ Briscola depends on the following third-party packages:
 * SuperLU (optional)
 
 FFTW3 and Eigen3 are required, and their locations should be specified by the
-FFTW_HOME and EIGEN_HOME environment variables.
+`FFTW_HOME` and `EIGEN_HOME` environment variables. From OpenFOAM, only the
+OpenFOAM library (libOpenFOAM.so) is linked. In turn, this library links against
+Pstream (libPstream.so). So only the OpenFOAM and Pstream libraries need to be
+compiled and in the library path.
 
 The sparse direct solvers of MKL, SuiteSparse and SuperLU are used if these
-packages are available. The compiler checks for the existence of the MKLROOT,
-SUITESPARSE_HOME and SUPERLU_HOME environment variables. If they exist, the
+packages are available. The compiler checks for the existence of the `MKLROOT`,
+`SUITESPARSE_HOME` and `SUPERLU_HOME` environment variables. If they exist, the
 Pardiso, UmfPack and SuperLU solvers are compiled, respectively. They are
 interfaced via the Eigen support functions.
+
+## Documentation
+
+The code is self-documented via Doxygen. The Doxygen output can be generated
+with
+
+```
+doxygen doc/Doxyfile
+```
+
+This requires doxygen and graphviz to be installed. There is also a short
+high-level documentation available that can be viewed
+[HERE](doc/chapters/0_start.md).
 
 ## Contact & Support
 
