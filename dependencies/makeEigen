@@ -1,13 +1,10 @@
 #!/bin/bash
 
-PACKAGE=superlu_dist
-VERSION=9.1.0
+PACKAGE=eigen
+VERSION=3.4.0
 
 # This is the installation location, can be modified:
 PREFIX=$HOME/opt/$PACKAGE-$VERSION
-
-# Build type (Release or Debug)
-BUILD_TYPE=Release
 
 case $1 in
 
@@ -51,23 +48,8 @@ case $1 in
         cd build/$PACKAGE/build
 
         cmake \
-            -DTPL_ENABLE_INTERNAL_BLASLIB=ON \
-            -DTPL_ENABLE_PARMETISLIB=OFF \
-            -DTPL_ENABLE_CUDALIB=OFF \
-            -DTPL_ENABLE_HIPLIB=OFF \
-            -DBUILD_SHARED_LIBS=ON \
-            -DBUILD_STATIC_LIBS=OFF \
-            -DXSDK_ENABLE_Fortran=OFF \
-            -Denable_examples=OFF\
-            -Denable_tests=OFF \
-            -Denable_python=OFF \
             -DCMAKE_INSTALL_PREFIX=$PREFIX \
-            -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-            .. || \
-                { echo "CMake command for $PACKAGE failed"; exit; }
-
-        make -j ${WM_NCOMPPROCS:-4} || \
-            { echo "Compilation of $PACKAGE failed"; exit; }
+            .. || { echo "CMake command for $PACKAGE failed"; exit; }
 
         make install || { echo "Installation of $PACKAGE failed"; exit; }
 
@@ -76,8 +58,7 @@ case $1 in
         echo ""
         echo "Add"
         echo ""
-        echo "export SUPERLU_DIST_HOME=$PREFIX"
-        echo "export LD_LIBRARY_PATH=\$SUPERLU_DIST_HOME/lib:\$LD_LIBRARY_PATH"
+        echo "export EIGEN_HOME=$PREFIX"
         echo ""
         echo "to your shell's rc file"
 

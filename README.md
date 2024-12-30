@@ -41,23 +41,44 @@ Briscola depends on the following third-party packages:
 
 * OpenFOAM (foundation version 9 or 10)
 * OpenMPI (version 3 or later)
-* FFTW3
-* Eigen3
+* FFTW
+* Eigen
+* SuperLU (optional)
 * Intel oneAPI MKL (optional)
 * SuiteSparse (optional)
-* SuperLU (optional)
 
-FFTW3 and Eigen3 are required, and their locations should be specified by the
-`FFTW_HOME` and `EIGEN_HOME` environment variables. From OpenFOAM, only the
-OpenFOAM library (libOpenFOAM.so) is linked. In turn, this library links against
-Pstream (libPstream.so). So only the OpenFOAM and Pstream libraries need to be
-compiled and in the library path.
+From OpenFOAM, only the OpenFOAM library (libOpenFOAM.so) is linked. In turn,
+this library links against Pstream (libPstream.so). So only the OpenFOAM and
+Pstream libraries need to be compiled and in the `LD_LIBRARY_PATH` environment
+variable.
+
+OpenMPI, FFTW and Eigen are required. OpenMPI should already be available
+through your OpenFOAM installation and is automatically used from that. The FFTW
+and Eigen package locations should be specified by the `FFTW_HOME` and
+`EIGEN_HOME` environment variables. If they are not already on your system, they
+can be installed with:
+
+```
+cd dependecies
+./makeFFTW
+./makeEigen
+```
+
+By default, the `makeFFTW` and `makeEigen` scripts configure, compile and
+install their respective packages to `$HOME/opt`. Both scripts will instruct you
+on which environment variables to set.
 
 The sparse direct solvers of MKL, SuiteSparse and SuperLU are used if these
-packages are available. The compiler checks for the existence of the `MKLROOT`,
-`SUITESPARSE_HOME` and `SUPERLU_HOME` environment variables. If they exist, the
-Pardiso, UmfPack and SuperLU solvers are compiled, respectively. They are
-interfaced via the Eigen support functions.
+packages are available, but are not required. The compiler checks for the
+existence of the `MKLROOT`, `SUITESPARSE_HOME` and `SUPERLU_HOME` environment
+variables. If they exist, the Pardiso, UmfPack and SuperLU solvers are compiled,
+respectively. They are interfaced via the Eigen support functions. The SuperLU
+package can optionally be built from the `dependencies` directory too with the
+`makeSuperLU` script.
+
+Because direct solvers are mostly only used at coarse grid levels their
+performance it usually not very important and the ones offered by Eigen should
+suffice.
 
 ## Documentation
 
