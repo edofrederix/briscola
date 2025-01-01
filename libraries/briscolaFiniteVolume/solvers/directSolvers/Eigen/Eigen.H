@@ -2,9 +2,8 @@
 #define Eigen_H
 
 #include "solver.H"
-#include "globalCellNumbers.H"
-#include "globalRowData.H"
 #include "EigenSolver.H"
+#include "EigenLinearSystem.H"
 
 #ifdef MKL
 #define EIGEN_USE_MKL_ALL
@@ -26,14 +25,36 @@ class Eigen
 {
 protected:
 
-    // Global stencil cell numbers
-    globalCellNumbers<SType,MeshType> gCellNumbers_;
-
-    // Sparse matrices
-    PtrList<EigenSolver::matrixType> APtrs_;
+    // Eigen linear system
+    autoPtr<EigenLinearSystem<SType,Type,MeshType>> APtr_;
 
     // Solvers
     PtrList<EigenSolver> solverPtrs_;
+
+    // Number of aggregation parts (defaults to 1)
+    label nAggregationParts_;
+
+    // Minimum number of iterations (defaults to 1)
+    label minIter_;
+
+    // Maximum number of iterations (forced to 1 when there's only one
+    // aggregation part and defaulting to nAggregationParts otherwise)
+    label maxIter_;
+
+    // Relative tolerance (defaults to 1e-3)
+    scalar relTol_;
+
+    // Absolute tolerance (defaults to 0)
+    scalar tolerance_;
+
+    // Print solver statistics (defaults to false)
+    Switch printStats_;
+
+    // Residual normalization factors
+    List<Type> normFactors_;
+
+    // Initial residuals
+    List<Type> initialResiduals_;
 
 public:
 

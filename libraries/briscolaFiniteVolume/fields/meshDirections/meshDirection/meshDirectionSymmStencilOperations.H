@@ -16,13 +16,13 @@ namespace fv
 // Full stencil conversion
 
 template<class MeshType>
-inline stencil fullStencil
+inline typename symmStencil::fullStencilType fullStencil
 (
     const meshDirection<symmStencil,MeshType>& st,
     const labelVector ijk
 )
 {
-    return stencil
+    return symmStencil::fullStencilType
     (
         st(ijk      ).center(),
         st(ijk      ).left(),
@@ -35,7 +35,7 @@ inline stencil fullStencil
 }
 
 template<class MeshType>
-inline stencil fullStencil
+inline typename symmStencil::fullStencilType fullStencil
 (
     const meshDirection<symmStencil,MeshType>& st,
     const label& i,

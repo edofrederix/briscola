@@ -19,17 +19,11 @@ class EigenSolver
 {
 public:
 
-    // Eigen types
-    typedef ::Eigen::SparseMatrix<double> matrixType;
-    typedef ::Eigen::MatrixXd rhsType;
+    // Eigen matrix type with row-major ordering
+    typedef typename ::Eigen::SparseMatrix<double> EigenMatrixType;
 
-protected:
-
-    // Check if the given sparse matrix is symmetric
-    bool isSymmetric(const matrixType&) const;
-
-    // Check if the given sparse matrix is positive definite
-    bool isPositiveDefinite(const matrixType&) const;
+    // Eigen right-hand side type
+    typedef typename ::Eigen::MatrixXd EigenRhsType;
 
 public:
 
@@ -58,10 +52,13 @@ public:
     virtual ~EigenSolver();
 
     // Prepare from a sparse matrix
-    virtual void prepare(const matrixType& A) = 0;
+    virtual void prepare(const EigenMatrixType& A, const scalar tolerance) = 0;
 
     // Solve given a right-hand side
-    virtual void solve(rhsType& x, const rhsType& b) const = 0;
+    virtual void solve(EigenRhsType& x, const EigenRhsType& b) const = 0;
+
+    // Specifiy if a first guess is needed
+    virtual bool needGuess() const = 0;
 };
 
 }

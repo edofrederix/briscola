@@ -1,4 +1,6 @@
 #include "defaultEigenSolver.H"
+#include "partialPivLUEigenSolver.H"
+#include "BiCGSTABEigenSolver.H"
 
 // The following solvers are only compiled when their macro variables are set.
 // This is conditionally done in Make/options, based on the existance of certain

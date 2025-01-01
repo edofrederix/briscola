@@ -1,59 +1,65 @@
+import os
 import numpy as np
 
-systems = [
-    'f-colocated-scalar_stencil_APLU',
-    'f-colocated-scalar_stencil_Eigen',
-    'f-colocated-scalar_symmStencil_APLU',
-    'f-colocated-scalar_symmStencil_Eigen',
-    'f-colocated-vector_stencil_APLU',
-    'f-colocated-vector_stencil_Eigen',
-    'f-colocated-vector_symmStencil_APLU',
-    'f-colocated-vector_symmStencil_Eigen',
-    'f-staggered-scalar_stencil_APLU_0',
-    'f-staggered-scalar_stencil_APLU_1',
-    'f-staggered-scalar_stencil_APLU_2',
-    'f-staggered-scalar_stencil_Eigen_0',
-    'f-staggered-scalar_stencil_Eigen_1',
-    'f-staggered-scalar_stencil_Eigen_2',
-    'f-staggered-vector_stencil_APLU_0',
-    'f-staggered-vector_stencil_APLU_1',
-    'f-staggered-vector_stencil_APLU_2',
-    'f-staggered-vector_stencil_Eigen_0',
-    'f-staggered-vector_stencil_Eigen_1',
-    'f-staggered-vector_stencil_Eigen_2',
+meshTypes = ['colocated', 'staggered']
+dataTypes = ['scalar', 'vector']
+stencilTypes = ['stencil', 'symmStencil']
+solverTypes = [
+    'default',
+    'partialPivLU',
+    'BiCGSTAB',
+    'SuperLU',
+    'Pardiso',
+    'UmfPack'
 ]
-
-typeSizes = [1, 1, 1, 1, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3]
 
 def removeBrackets(fileName):
 
-    with open(fileName, 'r') as inFile, open(fileName + '_mod','w') as outFile:
+    with open(fileName, 'r') as inFile:
 
         data = inFile.read()
         data = data.replace("(", "")
         data = data.replace(")", "")
 
-        outFile.write(data)
+        open(fileName, 'w').write(data)
 
-for i,system in enumerate(systems):
+for meshType in meshTypes:
+    for dataType in dataTypes:
+        for stencilType in stencilTypes:
+            for solverType in solverTypes:
 
-    typeSize = typeSizes[i]
+                if meshType == 'staggered' and stencilType == 'symmStencil':
+                    continue
 
-    removeBrackets(system)
+                dataTypeSize = 1 if dataType == 'scalar' else 3
+                numberOfDirections = 1 if meshType == 'colocated' else 3
 
-    data = np.loadtxt(system + '_mod')
+                for i in range(0,numberOfDirections):
 
-    A = np.array(data[:,:-typeSize])
-    b = np.array(data[:,-typeSize:])
+                    system = \
+                        'f-' + \
+                        meshType + '-' + \
+                        dataType + '_' + \
+                        stencilType + '_' + \
+                        solverType + \
+                        (('_' + str(i)) if numberOfDirections > 1 else '')
 
-    x = np.linalg.solve(A,b)
+                    if not os.path.isfile(system):
+                        continue
 
-    removeBrackets(system + '_solution')
+                    removeBrackets(system)
+                    data = np.loadtxt(system)
 
-    solution = np.loadtxt(system + '_solution_mod')
+                    A = np.array(data[:,:-dataTypeSize])
+                    b = np.array(data[:,-dataTypeSize:])
 
-    if len(solution.shape) == 1:
-        solution = solution[:, np.newaxis]
+                    x = np.linalg.solve(A,b)
 
-    if np.amax(abs(solution-x)) > 1e-6:
-        print('Direct solver test failed for', system)
+                    removeBrackets(system + '_solution')
+                    solution = np.loadtxt(system + '_solution')
+
+                    if len(solution.shape) == 1:
+                        solution = solution[:, np.newaxis]
+
+                    if np.amax(abs(solution-x)) > 1e-3:
+                        print('Direct solver test failed for', system)

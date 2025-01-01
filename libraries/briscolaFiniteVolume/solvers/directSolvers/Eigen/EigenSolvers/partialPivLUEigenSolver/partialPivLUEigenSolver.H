@@ -1,7 +1,8 @@
-#ifndef defaultEigenSolver_H
-#define defaultEigenSolver_H
+#ifndef partialPivLUEigenSolver_H
+#define partialPivLUEigenSolver_H
 
 #include "EigenSolver.H"
+#include <Eigen/Dense>
 
 namespace Foam
 {
@@ -12,12 +13,12 @@ namespace briscola
 namespace fv
 {
 
-class defaultEigenSolver
+class partialPivLUEigenSolver
 :
     public EigenSolver
 {
     // Solver types
-    typedef ::Eigen::SparseLU<EigenMatrixType> EigenSolverType;
+    typedef ::Eigen::PartialPivLU<EigenRhsType> EigenSolverType;
 
     // Solver pointer
     autoPtr<EigenSolverType> solverPtr_;
@@ -25,16 +26,16 @@ class defaultEigenSolver
 public:
 
     // Runtime type information
-    TypeName("default");
+    TypeName("partialPivLU");
 
     // Construct
-    defaultEigenSolver();
+    partialPivLUEigenSolver();
 
     // Copy constructor
-    defaultEigenSolver(const defaultEigenSolver&);
+    partialPivLUEigenSolver(const partialPivLUEigenSolver&);
 
     // Destructor
-    virtual ~defaultEigenSolver();
+    virtual ~partialPivLUEigenSolver();
 
     // Prepare from a sparse matrix
     virtual void prepare(const EigenMatrixType& A, const scalar tolerance);
@@ -53,7 +54,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "defaultEigenSolver.C"
+    #include "partialPivLUEigenSolver.C"
 #endif
 
 #endif

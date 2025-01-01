@@ -21,6 +21,9 @@ public:
     // Component labeling enumeration
     enum components { C, L, R, B, T, A, F };
 
+    // A stencil is a full stencil type
+    typedef stencil fullStencilType;
+
     // Construct null
     inline stencil();
 

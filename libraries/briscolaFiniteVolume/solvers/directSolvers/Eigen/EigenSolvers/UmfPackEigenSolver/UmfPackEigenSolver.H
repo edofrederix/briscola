@@ -18,10 +18,10 @@ class UmfPackEigenSolver
     public EigenSolver
 {
     // Solver type
-    typedef ::Eigen::UmfPackLU<matrixType> solverType;
+    typedef ::Eigen::UmfPackLU<EigenMatrixType> EigenSolverType;
 
     // Solver pointer
-    autoPtr<solverType> solverPtr_;
+    autoPtr<EigenSolverType> solverPtr_;
 
 public:
 
@@ -38,10 +38,13 @@ public:
     virtual ~UmfPackEigenSolver();
 
     // Prepare from a sparse matrix
-    virtual void prepare(const matrixType& A);
+    virtual void prepare(const EigenMatrixType& A, const scalar tolerance);
 
     // Solve given a right-hand side
-    virtual void solve(rhsType& x, const rhsType& b) const;
+    virtual void solve(EigenRhsType& x, const EigenRhsType& b) const;
+
+    // No first guess is needed
+    virtual bool needGuess() const { return false; }
 };
 
 }

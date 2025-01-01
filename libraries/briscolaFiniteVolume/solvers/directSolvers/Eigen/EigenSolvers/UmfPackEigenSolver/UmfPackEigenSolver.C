@@ -26,13 +26,17 @@ UmfPackEigenSolver::UmfPackEigenSolver(const UmfPackEigenSolver& s)
 UmfPackEigenSolver::~UmfPackEigenSolver()
 {}
 
-void UmfPackEigenSolver::prepare(const matrixType& A)
+void UmfPackEigenSolver::prepare
+(
+    const EigenMatrixType& A,
+    const scalar
+)
 {
-    solverPtr_.reset(new solverType(A));
+    solverPtr_.reset(new EigenSolverType(A));
     solverPtr_->compute(A);
 }
 
-void UmfPackEigenSolver::solve(rhsType& x, const rhsType& b) const
+void UmfPackEigenSolver::solve(EigenRhsType& x, const EigenRhsType& b) const
 {
     if (solverPtr_.valid())
     {

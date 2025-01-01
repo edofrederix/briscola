@@ -931,6 +931,28 @@ inline label listToType(const scalarList& l)
     return l[0];
 }
 
+// Cast a Type pointer to a double pointer
+
+template<class T>
+inline typename
+std::conditional<std::is_const<T>::value, const double*, double*>::type
+scalar_cast(T* ptr)
+{
+    return ptr->v_;
+}
+
+template<>
+inline double* scalar_cast(double* ptr)
+{
+    return ptr;
+}
+
+template<>
+inline const double* scalar_cast(const double* ptr)
+{
+    return ptr;
+}
+
 }
 
 // Return a string representation of a list (defined in the Foam namespace like

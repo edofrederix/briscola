@@ -1,5 +1,5 @@
-#ifndef defaultEigenSolver_H
-#define defaultEigenSolver_H
+#ifndef BiCGSTABEigenSolver_H
+#define BiCGSTABEigenSolver_H
 
 #include "EigenSolver.H"
 
@@ -12,12 +12,12 @@ namespace briscola
 namespace fv
 {
 
-class defaultEigenSolver
+class BiCGSTABEigenSolver
 :
     public EigenSolver
 {
     // Solver types
-    typedef ::Eigen::SparseLU<EigenMatrixType> EigenSolverType;
+    typedef ::Eigen::BiCGSTAB<EigenMatrixType> EigenSolverType;
 
     // Solver pointer
     autoPtr<EigenSolverType> solverPtr_;
@@ -25,16 +25,16 @@ class defaultEigenSolver
 public:
 
     // Runtime type information
-    TypeName("default");
+    TypeName("BiCGSTAB");
 
     // Construct
-    defaultEigenSolver();
+    BiCGSTABEigenSolver();
 
     // Copy constructor
-    defaultEigenSolver(const defaultEigenSolver&);
+    BiCGSTABEigenSolver(const BiCGSTABEigenSolver&);
 
     // Destructor
-    virtual ~defaultEigenSolver();
+    virtual ~BiCGSTABEigenSolver();
 
     // Prepare from a sparse matrix
     virtual void prepare(const EigenMatrixType& A, const scalar tolerance);
@@ -42,8 +42,8 @@ public:
     // Solve given a right-hand side
     virtual void solve(EigenRhsType& x, const EigenRhsType& b) const;
 
-    // No first guess is needed
-    virtual bool needGuess() const { return false; }
+    // A first guess is needed
+    virtual bool needGuess() const { return true; }
 };
 
 }
@@ -53,7 +53,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "defaultEigenSolver.C"
+    #include "BiCGSTABEigenSolver.C"
 #endif
 
 #endif

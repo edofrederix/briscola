@@ -4,9 +4,8 @@ EXE_INC = \
     -I../../../libraries/briscolaFiniteVolume/lnInclude \
     -I../../../libraries/briscolaImmersedBoundary/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude \
-    $(if $(MKLROOT),-DMKL,) \
-    $(if $(SUITESPARSE_HOME),-DSUITESPARSE,) \
-    $(if $(SUPERLU_HOME),-DSUPERLU,) \
+    -I$(EIGEN_HOME)/include/eigen3 \
+    -Wno-old-style-cast \
     -DFULLDEBUG -g -O0
 
 EXE_LIBS = \
@@ -14,5 +13,5 @@ EXE_LIBS = \
     -lbriscolaCore \
     -lbriscolaMesh \
     -lbriscolaFiniteVolume \
-    -lbriscolaImmersedBoundary \
+	-lbriscolaImmersedBoundary \
     -lOpenFOAM

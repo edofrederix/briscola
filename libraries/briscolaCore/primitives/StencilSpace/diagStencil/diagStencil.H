@@ -22,6 +22,9 @@ public:
     // Component labeling enumeration
     enum components { C };
 
+    // A diagStencil is a full stencil type
+    typedef diagStencil fullStencilType;
+
     // Construct null
     inline diagStencil();
 

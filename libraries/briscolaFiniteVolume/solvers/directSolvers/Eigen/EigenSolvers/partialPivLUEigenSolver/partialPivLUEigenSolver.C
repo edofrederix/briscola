@@ -1,4 +1,4 @@
-#include "SuperLUEigenSolver.H"
+#include "partialPivLUEigenSolver.H"
 #include "addToRunTimeSelectionTable.H"
 
 namespace Foam
@@ -10,23 +10,23 @@ namespace briscola
 namespace fv
 {
 
-defineTypeNameAndDebug(SuperLUEigenSolver, 0);
-addToRunTimeSelectionTable(EigenSolver, SuperLUEigenSolver, dictionary);
+defineTypeNameAndDebug(partialPivLUEigenSolver, 0);
+addToRunTimeSelectionTable(EigenSolver, partialPivLUEigenSolver, dictionary);
 
-SuperLUEigenSolver::SuperLUEigenSolver()
+partialPivLUEigenSolver::partialPivLUEigenSolver()
 :
     EigenSolver()
 {}
 
-SuperLUEigenSolver::SuperLUEigenSolver(const SuperLUEigenSolver& s)
+partialPivLUEigenSolver::partialPivLUEigenSolver(const partialPivLUEigenSolver& s)
 :
     EigenSolver(s)
 {}
 
-SuperLUEigenSolver::~SuperLUEigenSolver()
+partialPivLUEigenSolver::~partialPivLUEigenSolver()
 {}
 
-void SuperLUEigenSolver::prepare
+void partialPivLUEigenSolver::prepare
 (
     const EigenMatrixType& A,
     const scalar
@@ -36,7 +36,8 @@ void SuperLUEigenSolver::prepare
     solverPtr_->compute(A);
 }
 
-void SuperLUEigenSolver::solve(EigenRhsType& x, const EigenRhsType& b) const
+void partialPivLUEigenSolver::solve(EigenRhsType& x, const EigenRhsType& b)
+const
 {
     if (solverPtr_.valid())
     {

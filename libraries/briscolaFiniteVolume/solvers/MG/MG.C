@@ -199,7 +199,7 @@ void MG<SType,Type,MeshType>::solve
 
     // Residual normalization factors
 
-    const List<Type> normFactors(this->normFactors(sys,r,0));
+    const List<Type> normFactors(this->normFactors(sys,r[0]));
 
     const List<Type> initialResiduals =
         cmptDivide(gSum(cmptMag(r[0])), normFactors);
@@ -411,7 +411,7 @@ void MG<SType,Type,MeshType>::solve
             coarseMode_ == DIRECT
         && (
                 !constMatrix
-            || !this->directSolvePtr_->prepared()
+             || !this->directSolvePtr_->prepared()
             )
         )
         {

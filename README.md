@@ -49,8 +49,7 @@ Briscola depends on the following third-party packages:
 
 From OpenFOAM, only the OpenFOAM library (libOpenFOAM.so) is linked. In turn,
 this library links against Pstream (libPstream.so). So only the OpenFOAM and
-Pstream libraries need to be compiled and in the `LD_LIBRARY_PATH` environment
-variable.
+Pstream libraries need to be compiled and discoverable from your environment
 
 OpenMPI, FFTW and Eigen are required. OpenMPI should already be available
 through your OpenFOAM installation and is automatically used from that. The FFTW
@@ -75,10 +74,6 @@ variables. If they exist, the Pardiso, UmfPack and SuperLU solvers are compiled,
 respectively. They are interfaced via the Eigen support functions. The SuperLU
 package can optionally be built from the `dependencies` directory too with the
 `makeSuperLU` script.
-
-Because direct solvers are mostly only used at coarse grid levels their
-performance it usually not very important and the ones offered by Eigen should
-suffice.
 
 ## Documentation
 

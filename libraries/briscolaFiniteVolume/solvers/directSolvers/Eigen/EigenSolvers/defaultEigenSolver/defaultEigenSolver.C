@@ -26,31 +26,21 @@ defaultEigenSolver::defaultEigenSolver(const defaultEigenSolver& s)
 defaultEigenSolver::~defaultEigenSolver()
 {}
 
-void defaultEigenSolver::prepare(const matrixType& A)
+void defaultEigenSolver::prepare
+(
+    const EigenMatrixType& A,
+    const scalar
+)
 {
-    if (isPositiveDefinite(A))
-    {
-        gSolverPtr_.clear();
-        sSolverPtr_.reset(new sSolverType(A));
-        sSolverPtr_->compute(A);
-    }
-    else
-    {
-        sSolverPtr_.clear();
-        gSolverPtr_.reset(new gSolverType(A));
-        gSolverPtr_->compute(A);
-    }
+    solverPtr_.reset(new EigenSolverType(A));
+    solverPtr_->compute(A);
 }
 
-void defaultEigenSolver::solve(rhsType& x, const rhsType& b) const
+void defaultEigenSolver::solve(EigenRhsType& x, const EigenRhsType& b) const
 {
-    if (gSolverPtr_.valid())
+    if (solverPtr_.valid())
     {
-        x = gSolverPtr_->solve(b);
-    }
-    else if (sSolverPtr_.valid())
-    {
-        x = sSolverPtr_->solve(b);
+        x = solverPtr_->solve(b);
     }
     else
     {

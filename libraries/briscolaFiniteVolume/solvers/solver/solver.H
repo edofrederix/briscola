@@ -144,7 +144,7 @@ public:
             (dict, fvMsh, l)
         );
 
-        // Construct from dictionary and mesh
+        // Construct from dictionary, mesh and level
         directSolver(const dictionary&, const fvMesh&, const label);
 
         // Selector from name
@@ -209,6 +209,37 @@ protected:
 
 public:
 
+    // Compute residual normalization factors of the system Ax = b at given mesh
+    // level. The normalization factor is defined as sum(|Ax-Ay| + |b-Ay|), with
+    // y = mean(x). The function reuses a pre-computed residual.
+    static List<Type> normFactors
+    (
+        linearSystem<SType,Type,MeshType>&,
+        const meshLevel<Type,MeshType>&
+    );
+
+    // For each direction, check if the solution is converged, given a current
+    // and initial residual. Scalar residuals are computed as the
+    // L-infinity-normal of Type
+    static labelList checkConvergence
+    (
+        const List<Type>&,
+        const List<Type>&,
+        const scalar,
+        const scalar
+    );
+
+    // Print the statistics of the solver outcome for given solver name, field
+    // name, list of initial residual, final residuals and number of iterations
+    static void printSolverStats
+    (
+        const word,
+        const word,
+        const List<Type>,
+        const List<Type>,
+        const label
+    );
+
     // Runtime type information
     TypeName("solver");
 
@@ -265,39 +296,7 @@ public:
         const bool constMatrix = false
     );
 
-    // Compute residual normalization factors of the system Ax=b at given mesh
-    // level. The normalization factor is defined as sum(|Ax-Ay|+|b-Ay|), with y
-    // = mean(x). The function reuses the pre-computed residual.
-    virtual List<Type> normFactors
-    (
-        linearSystem<SType,Type,MeshType>&,
-        const meshField<Type,MeshType>&,
-        const label
-    ) const;
-
-    // Print the statistics of the solver outcome for given solver name, field
-    // name, list of initial residual, final residuals and number of iterations
-    static void printSolverStats
-    (
-        const word,
-        const word,
-        const List<Type>,
-        const List<Type>,
-        const label
-    );
-
-    // For each direction, check if the solution is converged, given a current
-    // and initial residual. Scalar residuals are computed as the
-    // L-infinity-normal of Type
-    labelList checkConvergence
-    (
-        const List<Type>&,
-        const List<Type>&,
-        const scalar,
-        const scalar
-    ) const;
-
-    // Same function with default arguments
+    // Same as the static function but with default arguments
     labelList checkConvergence
     (
         const List<Type>& currentResiduals,

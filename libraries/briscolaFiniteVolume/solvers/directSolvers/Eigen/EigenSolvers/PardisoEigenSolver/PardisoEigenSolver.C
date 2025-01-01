@@ -30,33 +30,21 @@ PardisoEigenSolver::PardisoEigenSolver(const PardisoEigenSolver& s)
 PardisoEigenSolver::~PardisoEigenSolver()
 {}
 
-void PardisoEigenSolver::prepare(const matrixType& A)
+void PardisoEigenSolver::prepare
+(
+    const EigenMatrixType& A,
+    const scalar
+)
 {
-    const bool symm = isSymmetric(A);
-
-    if (symm)
-    {
-        gSolverPtr_.clear();
-        sSolverPtr_.reset(new sSolverType(A));
-        sSolverPtr_->compute(A);
-    }
-    else
-    {
-        sSolverPtr_.clear();
-        gSolverPtr_.reset(new gSolverType(A));
-        gSolverPtr_->compute(A);
-    }
+    solverPtr_.reset(new EigenSolverType(A));
+    solverPtr_->compute(A);
 }
 
-void PardisoEigenSolver::solve(rhsType& x, const rhsType& b) const
+void PardisoEigenSolver::solve(EigenRhsType& x, const EigenRhsType& b) const
 {
-    if (gSolverPtr_.valid())
+    if (solverPtr_.valid())
     {
-        x = gSolverPtr_->solve(b);
-    }
-    else if (sSolverPtr_.valid())
-    {
-        x = sSolverPtr_->solve(b);
+        x = solverPtr_->solve(b);
     }
     else
     {

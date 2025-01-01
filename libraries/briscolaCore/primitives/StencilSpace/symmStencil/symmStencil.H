@@ -10,6 +10,8 @@
 namespace Foam
 {
 
+class stencil;
+
 class symmStencil
 :
     public StencilSpace<symmStencil, 4>
@@ -19,6 +21,9 @@ public:
 
     // Component labeling enumeration
     enum components { C, L, B, A };
+
+    // A stencil is the full stencil type of symmStencil
+    typedef stencil fullStencilType;
 
     // Construct null
     inline symmStencil();

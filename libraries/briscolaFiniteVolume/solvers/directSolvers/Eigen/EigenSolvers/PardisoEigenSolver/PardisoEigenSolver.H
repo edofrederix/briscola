@@ -19,12 +19,10 @@ class PardisoEigenSolver
     public EigenSolver
 {
     // Solver types
-    typedef ::Eigen::PardisoLU<matrixType> gSolverType;
-    typedef ::Eigen::PardisoLDLT<matrixType> sSolverType;
+    typedef ::Eigen::PardisoLU<EigenMatrixType> EigenSolverType;
 
-    // Solver pointers
-    autoPtr<gSolverType> gSolverPtr_;
-    autoPtr<sSolverType> sSolverPtr_;
+    // Solver pointer
+    autoPtr<EigenGSolverType> solverPtr_;
 
 public:
 
@@ -41,10 +39,13 @@ public:
     virtual ~PardisoEigenSolver();
 
     // Prepare from a sparse matrix
-    virtual void prepare(const matrixType& A);
+    virtual void prepare(const EigenMatrixType& A, const scalar tolerance);
 
     // Solve given a right-hand side
-    virtual void solve(rhsType& x, const rhsType& b) const;
+    virtual void solve(EigenRhsType& x, const EigenRhsType& b) const;
+
+    // No first guess is needed
+    virtual bool needGuess() const { return false; }
 };
 
 }

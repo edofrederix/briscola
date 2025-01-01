@@ -26,16 +26,6 @@ void test(const fvMesh& fvMsh, const word solverType)
 
     f = 0.1*pTraits<Type>::one;
 
-    autoPtr<typename solver<SType,Type,MeshType>::directSolver> solverPtr
-    (
-        solver<SType,Type,MeshType>::directSolver::New
-        (
-            solverType,
-            dictionary::null,
-            fvMsh
-        ).ptr()
-    );
-
     linearSystem<SType,Type,MeshType> sys(im::laplacian<SType>(f));
     sys -= im::ddt(f);
 
@@ -49,8 +39,30 @@ void test(const fvMesh& fvMsh, const word solverType)
 
     // Prepare solver and compute solution
 
-    solverPtr->prepare(sys);
-    solverPtr->solve(sys);
+    for (int nParts = 1; nParts <= Pstream::nProcs(); nParts++)
+    {
+        sys.x() = Zero;
+
+        dictionary dict;
+
+        dict.add("EigenSolver", solverType);
+        dict.add("nAggregationParts", nParts);
+        dict.add("maxIter", 100);
+        dict.add("printStats", true);
+
+        autoPtr<typename solver<SType,Type,MeshType>::directSolver> solverPtr
+        (
+            solver<SType,Type,MeshType>::directSolver::New
+            (
+                "Eigen",
+                dict,
+                fvMsh
+            ).ptr()
+        );
+
+        solverPtr->prepare(sys);
+        solverPtr->solve(sys);
+    }
 
     // Write the solution
 
@@ -96,10 +108,23 @@ int main(int argc, char *argv[])
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
 
-    wordList types(2);
+    wordList types;
 
-    types[0] = "APLU";
-    types[1] = "Eigen";
+    types.append("default");
+    types.append("partialPivLU");
+    types.append("BiCGSTAB");
+
+    #ifdef MKL
+    types.append("Pardiso");
+    #endif
+
+    #ifdef SUITESPARSE
+    types.append("UmfPack");
+    #endif
+
+    #ifdef SUPERLU
+    types.append("SuperLU");
+    #endif
 
     forAll(types, i)
     {
