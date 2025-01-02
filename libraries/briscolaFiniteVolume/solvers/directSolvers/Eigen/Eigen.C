@@ -61,10 +61,9 @@ void Eigen<SType,Type,MeshType>::prepare
 {
     if (APtr_.valid())
     {
-        // The Eigen linear system is already initialized. Update the matrix
-        // only.
+        // The linear system is already initialized so update the matrix only
 
-        APtr_->update(sys.A()[this->l_], sys.singular());
+        APtr_->update(sys);
     }
     else
     {
@@ -72,9 +71,9 @@ void Eigen<SType,Type,MeshType>::prepare
         (
             new EigenLinearSystem<SType,Type,MeshType>
             (
-                sys.A()[this->l_],
-                nAggregationParts_,
-                sys.singular()
+                sys,
+                this->l_,
+                nAggregationParts_
             )
         );
     }
@@ -88,17 +87,20 @@ void Eigen<SType,Type,MeshType>::prepare
     initialResiduals_ =
         cmptDivide(gSum(cmptMag(r)), normFactors_);
 
+    const List<bool> diagonal(sys.diagonal());
+
     if (APtr_->master())
         forAll(solverPtrs_, d)
-            solverPtrs_[d].prepare
-            (
-                APtr_->operator[](d),
-                Foam::max
+            if (!diagonal[d])
+                solverPtrs_[d].prepare
                 (
-                    0.5*Foam::cmptMax(initialResiduals_[d])*relTol_,
-                    0.5*tolerance_
-                )
-            );
+                    APtr_->operator[](d),
+                    Foam::max
+                    (
+                        0.5*Foam::cmptMax(initialResiduals_[d])*relTol_,
+                        0.5*tolerance_
+                    )
+                );
 
     solver<SType,Type,MeshType>::directSolver::prepare(sys);
 }

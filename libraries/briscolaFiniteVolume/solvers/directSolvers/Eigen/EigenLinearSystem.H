@@ -20,14 +20,20 @@ class EigenLinearSystem
     public PtrList<EigenSolver::EigenMatrixType>,
     public linearSystemAggregation<SType,Type,MeshType>
 {
+    // Level number
+    const label l_;
+
+    // Diagonal bools
+    List<bool> diagonal_;
+
 public:
 
     // Construct from components
     EigenLinearSystem
     (
-        const meshLevel<SType,MeshType>& A,
-        const label nParts,
-        const List<bool>& singular
+        const linearSystem<SType,Type,MeshType>& sys,
+        const label l,
+        const label nParts
     );
 
     // Copy constructor
@@ -37,11 +43,7 @@ public:
     ~EigenLinearSystem();
 
     // Update the matrix
-    void update
-    (
-        const meshLevel<SType,MeshType>& A,
-        const List<bool>& singular
-    );
+    void update(const linearSystem<SType,Type,MeshType>& sys);
 };
 
 }

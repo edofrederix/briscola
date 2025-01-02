@@ -35,7 +35,8 @@ void test(const fvMesh& fvMsh, const word solverType)
 
     // Write the system to a file
 
-    writeToFile(sys, f.name() + "_" + SType::typeName + "_" + solverType);
+    OFstream os(f.name() + "_" + SType::typeName + "_" + solverType);
+    sys.writeLevel(os);
 
     // Prepare solver and compute solution
 
@@ -66,6 +67,16 @@ void test(const fvMesh& fvMsh, const word solverType)
 
     // Write the solution
 
+    OFstream oss
+    (
+        f.name()
+      + "_"
+      + SType::typeName
+      + "_"
+      + solverType
+      + "_solution"
+    );
+
     for (int d = 0; d < MeshType::numberOfDirections; d++)
     {
         List<List<Type>> data(Pstream::nProcs());
@@ -79,26 +90,11 @@ void test(const fvMesh& fvMsh, const word solverType)
         Pstream::gatherList(data);
 
         if (Pstream::master())
-        {
-            const fileName name =
-                f.name()
-              + "_"
-              + SType::typeName
-              + "_"
-              + solverType
-              + (
-                    MeshType::numberOfDirections > 1
-                  ? "_" + Foam::name(d)
-                  : ""
-                )
-              + "_solution";
-
-            OFstream file(name);
-
             forAll(data, proc)
-                forAll(data[proc], l)
-                    file<< data[proc][l] << nl;
-        }
+                forAll(data[proc], j)
+                    for (int i = 0; i < pTraits<Type>::nComponents; i++)
+                        oss << scalar_cast(&data[proc][j])[i]
+                            << (i == pTraits<Type>::nComponents-1 ? nl : ' ');
     }
 }
 

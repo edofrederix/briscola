@@ -45,10 +45,9 @@ void test(const fvMesh& fvMsh, const label nParts)
 
             linearSystemAggregation<SType,Type,MeshType> lsa
             (
-                fvMsh,
+                sys,
                 l,
-                nParts,
-                singular
+                nParts
             );
 
             for (int d = 0; d < MeshType::numberOfDirections; d++)
@@ -74,9 +73,9 @@ void test(const fvMesh& fvMsh, const label nParts)
 
             EigenLinearSystem<SType,Type,MeshType> E
             (
-                sys.A()[l],
-                nParts,
-                singular
+                sys,
+                l,
+                nParts
             );
         }
     }

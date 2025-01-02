@@ -1,4 +1,4 @@
-import os
+import os, re
 import numpy as np
 
 meshTypes = ['colocated', 'staggered']
@@ -13,16 +13,6 @@ solverTypes = [
     'UmfPack'
 ]
 
-def removeBrackets(fileName):
-
-    with open(fileName, 'r') as inFile:
-
-        data = inFile.read()
-        data = data.replace("(", "")
-        data = data.replace(")", "")
-
-        open(fileName, 'w').write(data)
-
 for meshType in meshTypes:
     for dataType in dataTypes:
         for stencilType in stencilTypes:
@@ -34,29 +24,47 @@ for meshType in meshTypes:
                 dataTypeSize = 1 if dataType == 'scalar' else 3
                 numberOfDirections = 1 if meshType == 'colocated' else 3
 
+                system = \
+                    'f-' + \
+                    meshType + '-' + \
+                    dataType + '_' + \
+                    stencilType + '_' + \
+                    solverType
+
+                if not os.path.isfile(system):
+                    continue
+
+                indices = []
+                i = 0
+
+                with open(system) as file:
+                    for line in file:
+                        if re.search('^\d+ \d+$', line):
+                            indices.append(i)
+                        i = i+1
+
+                indices.append(i)
+
                 for i in range(0,numberOfDirections):
 
-                    system = \
-                        'f-' + \
-                        meshType + '-' + \
-                        dataType + '_' + \
-                        stencilType + '_' + \
-                        solverType + \
-                        (('_' + str(i)) if numberOfDirections > 1 else '')
+                    n = indices[i+1]-indices[i]-1
 
-                    if not os.path.isfile(system):
-                        continue
-
-                    removeBrackets(system)
-                    data = np.loadtxt(system)
+                    data = np.loadtxt(
+                        system,
+                        skiprows = indices[i] + 1,
+                        max_rows = n
+                    )
 
                     A = np.array(data[:,:-dataTypeSize])
                     b = np.array(data[:,-dataTypeSize:])
 
                     x = np.linalg.solve(A,b)
 
-                    removeBrackets(system + '_solution')
-                    solution = np.loadtxt(system + '_solution')
+                    solution = np.loadtxt(
+                        system + '_solution',
+                        skiprows = indices[i]-i,
+                        max_rows = n
+                    )
 
                     if len(solution.shape) == 1:
                         solution = solution[:, np.newaxis]

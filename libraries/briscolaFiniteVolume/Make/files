@@ -41,6 +41,7 @@ IO/IOReadTemplates.C
 IO/IOWriteTemplates.C
 
 linearSystem/linearSystems.C
+linearSystem/linearSystemAggregations.C
 
 schemes/scheme.C
 

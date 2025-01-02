@@ -1,6 +1,9 @@
 #ifndef linearSystemAggregation_H
 #define linearSystemAggregation_H
 
+#include "linearSystemFwd.H"
+#include "linearSystemAggregationFwd.H"
+
 #include "fvMesh.H"
 #include "meshDirection.H"
 #include "List.H"
@@ -51,13 +54,15 @@ class linearSystemAggregation
 
 public:
 
+    // Runtime type information
+    TypeName("linearSystemAggregation");
+
     // Construct from components
     linearSystemAggregation
     (
-        const fvMesh& fvMsh,
+        const linearSystem<SType,Type,MeshType>& sys,
         const label l,
-        const label nParts,
-        const List<bool>& singular
+        const label nParts
     );
 
     // Copy constructor
@@ -66,8 +71,8 @@ public:
         const linearSystemAggregation<SType,Type,MeshType>&
     );
 
-    // Destrictor
-    ~linearSystemAggregation();
+    // Destructor
+    virtual ~linearSystemAggregation();
 
     // Return labels
     inline label levelNum() const { return l_; }

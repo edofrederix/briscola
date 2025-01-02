@@ -1,6 +1,7 @@
 #include "linearSystemAggregation.H"
-#include "SortableList.H"
 
+#include "SortableList.H"
+#include "linearSystem.H"
 #include "domainBoundary.H"
 #include "parallelBoundary.H"
 #include "periodicBoundary.H"
@@ -18,16 +19,15 @@ namespace fv
 template<class SType, class Type, class MeshType>
 linearSystemAggregation<SType,Type,MeshType>::linearSystemAggregation
 (
-    const fvMesh& fvMsh,
+    const linearSystem<SType,Type,MeshType>& sys,
     const label l,
-    const label nParts,
-    const List<bool>& singular
+    const label nParts
 )
 :
-    fvMsh_(fvMsh),
+    fvMsh_(sys.fvMsh()),
     l_(l),
     nParts_(nParts),
-    singular_(singular),
+    singular_(const_cast<linearSystem<SType,Type,MeshType>&>(sys).singular()),
     globalStarts_(MeshType::numberOfDirections),
     globalEnds_(MeshType::numberOfDirections),
     colNums_(MeshType::numberOfDirections)
@@ -72,7 +72,7 @@ linearSystemAggregation<SType,Type,MeshType>::linearSystemAggregation
                     numbers
                     (
                         labelVector(i,j,k)
-                    + FullSType::componentOffsets[s]
+                      + FullSType::componentOffsets[s]
                     );
 
         // Send/receive column numbers
@@ -182,6 +182,9 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
 
     // Prepare data
 
+    const List<FixedList<label,FullSType::nComponents>>& myColNums =
+        colNums_[d][Pstream::myProcNo() - myPartMasterNum_];
+
     List<FullSType> myRows(A.size());
 
     label c = 0;
@@ -207,6 +210,19 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
             for (int s = 0; s < FullSType::nComponents; s++)
                 if (numbers(ijk + FullSType::componentOffsets[s]) == 0)
                     myRows[c][s] = 0;
+
+        // Move redundant indices
+
+        for (int s = 1; s < FullSType::nComponents; s++)
+        {
+            const int t = findIndex(myColNums[c], myColNums[c][s]);
+
+            if (t < s)
+            {
+                myRows[c][t] += myRows[c][s];
+                myRows[c][s] = 0;
+            }
+        }
 
         c++;
     }

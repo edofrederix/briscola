@@ -12,21 +12,16 @@ namespace fv
 template<class SType, class Type, class MeshType>
 EigenLinearSystem<SType,Type,MeshType>::EigenLinearSystem
 (
-    const meshLevel<SType,MeshType>& A,
-    const label nParts,
-    const List<bool>& singular
+    const linearSystem<SType,Type,MeshType>& sys,
+    const label l,
+    const label nParts
 )
 :
     PtrList<EigenSolver::EigenMatrixType>(),
-    linearSystemAggregation<SType,Type,MeshType>
-    (
-        A.fvMsh(),
-        A.levelNum(),
-        nParts,
-        singular
-    )
+    linearSystemAggregation<SType,Type,MeshType>(sys, l, nParts),
+    l_(l)
 {
-    this->update(A, singular);
+    this->update(sys);
 }
 
 template<class SType, class Type, class MeshType>
@@ -36,7 +31,9 @@ EigenLinearSystem<SType,Type,MeshType>::EigenLinearSystem
 )
 :
     PtrList<EigenSolver::EigenMatrixType>(A),
-    linearSystemAggregation<SType,Type,MeshType>(A)
+    linearSystemAggregation<SType,Type,MeshType>(A),
+    l_(A.l_),
+    diagonal_(A.diagonal_)
 {}
 
 template<class SType, class Type, class MeshType>
@@ -46,11 +43,13 @@ EigenLinearSystem<SType,Type,MeshType>::~EigenLinearSystem()
 template<class SType, class Type, class MeshType>
 void EigenLinearSystem<SType,Type,MeshType>::update
 (
-    const meshLevel<SType,MeshType>& A,
-    const List<bool>& singular
+    const linearSystem<SType,Type,MeshType>& sys
 )
 {
     linearSystemAggregation<SType,Type,MeshType>& lsa = *this;
+
+    diagonal_ =
+        const_cast<linearSystem<SType,Type,MeshType>&>(sys).diagonal();
 
     if (!this->size())
     {
@@ -58,40 +57,44 @@ void EigenLinearSystem<SType,Type,MeshType>::update
         this->resize(MeshType::numberOfDirections);
 
         forAll(*this, d)
-            this->set(d, new EigenSolver::EigenMatrixType());
+            if (!diagonal_[d])
+                this->set(d, new EigenSolver::EigenMatrixType());
     }
 
     forAll(*this, d)
     {
-        scalarList values;
-        labelList inners;
-        labelList outers;
-
-        lsa.compressedRowFormat
-        (
-            values,
-            inners,
-            outers,
-            A[d],
-            true
-        );
-
-        if (lsa.master())
+        if (!diagonal_[d])
         {
-            const label size = lsa.size(d);
+            scalarList values;
+            labelList inners;
+            labelList outers;
 
-            this->operator[](d) =
-                ::Eigen::SparseMatrix<double, ::Eigen::RowMajor>::Map
-                (
-                    size,
-                    size,
-                    values.size(),
-                    outers.begin(),
-                    inners.begin(),
-                    values.begin()
-                ).eval();
+            lsa.compressedRowFormat
+            (
+                values,
+                inners,
+                outers,
+                sys.A()[l_][d],
+                true
+            );
 
-            this->operator[](d).makeCompressed();
+            if (lsa.master())
+            {
+                const label size = lsa.size(d);
+
+                this->operator[](d) =
+                    ::Eigen::SparseMatrix<double, ::Eigen::RowMajor>::Map
+                    (
+                        size,
+                        size,
+                        values.size(),
+                        outers.begin(),
+                        inners.begin(),
+                        values.begin()
+                    ).eval();
+
+                this->operator[](d).makeCompressed();
+            }
         }
     }
 }

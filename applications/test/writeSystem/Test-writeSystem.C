@@ -9,27 +9,40 @@ using namespace Foam;
 using namespace briscola;
 using namespace fv;
 
-template<class SType, class MeshType>
+template<class SType, class Type, class MeshType>
 void test(const fvMesh& fvMsh)
 {
-    meshField<scalar,MeshType> f
+    meshField<Type,MeshType> f
     (
-        word("f-" + word(MeshType::typeName)),
+        "f-"
+      + word(MeshType::typeName)
+      + "-"
+      + word(pTraits<Type>::typeName),
         fvMsh,
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
         true
     );
 
-    f = 0.1;
+    f = 0.1*pTraits<Type>::one;
 
-    linearSystem<SType,scalar,MeshType> sys(im::laplacian<SType>(f));
+    linearSystem<SType,Type,MeshType> sys(im::laplacian<SType>(f));
     sys -= im::ddt(f);
+
     sys.eliminateGhosts();
+    sys.singular();
+    sys.diagonal();
 
-    // Write
+    sys.x().restrict();
+    sys.b().restrict();
 
-    writeToFile(sys, f.name(), 0);
+    // Write all levels
+
+    forAll(f, l)
+    {
+        OFstream os(f.name() + "_" + Foam::name(l));
+        sys.writeLevel(os, 0);
+    }
 }
 
 int main(int argc, char *argv[])
@@ -38,6 +51,12 @@ int main(int argc, char *argv[])
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
 
-    test<symmStencil,colocated>(fvMsh);
-    test<stencil,staggered>(fvMsh);
+    test<symmStencil,scalar,colocated>(fvMsh);
+    test<symmStencil,vector,colocated>(fvMsh);
+
+    test<stencil,scalar,colocated>(fvMsh);
+    test<stencil,vector,colocated>(fvMsh);
+
+    test<stencil,scalar,staggered>(fvMsh);
+    test<stencil,vector,staggered>(fvMsh);
 }
