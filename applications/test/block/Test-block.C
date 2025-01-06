@@ -1068,6 +1068,12 @@ void testVectorSpaceFunctions()
 
     b2/1.0;
     (1.0*b2)/1.0;
+
+    cmptSqr(b1);
+    cmptSqr(1.0*b1);
+
+    cmptSqrt(b1);
+    cmptSqrt(1.0*b1);
 }
 
 template<class Type>

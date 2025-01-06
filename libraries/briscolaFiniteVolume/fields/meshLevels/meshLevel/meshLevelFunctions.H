@@ -78,6 +78,24 @@ template<class Type, class MeshType>
 tmp<meshLevel<Type,MeshType>> cmptMag(const tmp<meshLevel<Type,MeshType>>&);
 
 template<class Type, class MeshType>
+void cmptSqr(meshLevel<Type,MeshType>&, const meshLevel<Type,MeshType>&);
+
+template<class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>> cmptSqr(const meshLevel<Type,MeshType>&);
+
+template<class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>> cmptSqr(const tmp<meshLevel<Type,MeshType>>&);
+
+template<class Type, class MeshType>
+void cmptSqrt(meshLevel<Type,MeshType>&, const meshLevel<Type,MeshType>&);
+
+template<class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>> cmptSqrt(const meshLevel<Type,MeshType>&);
+
+template<class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>> cmptSqrt(const tmp<meshLevel<Type,MeshType>>&);
+
+template<class Type, class MeshType>
 List<Type> max(const meshLevel<Type,MeshType>&);
 
 template<class Type, class MeshType>

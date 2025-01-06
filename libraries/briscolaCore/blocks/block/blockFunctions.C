@@ -155,6 +155,60 @@ tmp<block<Type>> cmptMag(const tmp<block<Type>>& tf)
     return tRes;
 }
 
+template<class Type>
+void cmptSqr(block<Type>& res, const block<Type>& f)
+{
+    forAllBlockLinear(res, i)
+    {
+        res(i) = Foam::cmptSqr(f(i));
+    }
+}
+
+template<class Type>
+tmp<block<Type>> cmptSqr(const block<Type>& f)
+{
+    tmp<block<Type>> tRes(new block<Type>(f.shape()));
+    cmptSqr(tRes.ref(), f);
+    return tRes;
+}
+
+template<class Type>
+tmp<block<Type>> cmptSqr(const tmp<block<Type>>& tf)
+{
+    tmp<block<Type>> tRes = New(tf);
+    cmptSqr(tRes.ref(), tf());
+    if (tf.isTmp())
+        tf.clear();
+    return tRes;
+}
+
+template<class Type>
+void cmptSqrt(block<Type>& res, const block<Type>& f)
+{
+    forAllBlockLinear(res, i)
+    {
+        res(i) = cmptSqrt(f(i));
+    }
+}
+
+template<class Type>
+tmp<block<Type>> cmptSqrt(const block<Type>& f)
+{
+    tmp<block<Type>> tRes(new block<Type>(f.shape()));
+    cmptSqrt(tRes.ref(), f);
+    return tRes;
+}
+
+template<class Type>
+tmp<block<Type>> cmptSqrt(const tmp<block<Type>>& tf)
+{
+    tmp<block<Type>> tRes = New(tf);
+    cmptSqrt(tRes.ref(), tf());
+    if (tf.isTmp())
+        tf.clear();
+    return tRes;
+}
+
 #define TMP_UNARY_FUNCTION(ReturnType, Func)                                   \
                                                                                \
 template<class Type>                                                           \

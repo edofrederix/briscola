@@ -238,6 +238,86 @@ cmptMag(const tmp<meshDirection<Type,MeshType>>& tD)
 }
 
 template<class Type, class MeshType>
+void cmptSqr
+(
+    meshDirection<Type,MeshType>& res,
+    const meshDirection<Type,MeshType>& D
+)
+{
+    cmptSqr(res.B(), D.B());
+}
+
+template<class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+cmptSqr(const meshDirection<Type,MeshType>& D)
+{
+    tmp<meshDirection<Type,MeshType>> tRes
+    (
+        new meshDirection<Type,MeshType>
+        (
+            D.fvMsh(),
+            D.levelNum(),
+            D.directionNum()
+        )
+    );
+
+    cmptSqr(tRes.ref(), D);
+    return tRes;
+}
+
+template<class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+cmptSqr(const tmp<meshDirection<Type,MeshType>>& tD)
+{
+    tmp<meshDirection<Type,MeshType>> tRes = New(tD);
+
+    cmptSqr(tRes.ref(), tD());
+    if (tD.isTmp())
+        tD.clear();
+    return tRes;
+}
+
+template<class Type, class MeshType>
+void cmptSqrt
+(
+    meshDirection<Type,MeshType>& res,
+    const meshDirection<Type,MeshType>& D
+)
+{
+    cmptSqrt(res.B(), D.B());
+}
+
+template<class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+cmptSqrt(const meshDirection<Type,MeshType>& D)
+{
+    tmp<meshDirection<Type,MeshType>> tRes
+    (
+        new meshDirection<Type,MeshType>
+        (
+            D.fvMsh(),
+            D.levelNum(),
+            D.directionNum()
+        )
+    );
+
+    cmptSqrt(tRes.ref(), D);
+    return tRes;
+}
+
+template<class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+cmptSqrt(const tmp<meshDirection<Type,MeshType>>& tD)
+{
+    tmp<meshDirection<Type,MeshType>> tRes = New(tD);
+
+    cmptSqrt(tRes.ref(), tD());
+    if (tD.isTmp())
+        tD.clear();
+    return tRes;
+}
+
+template<class Type, class MeshType>
 Type max(const meshDirection<Type,MeshType>& D)
 {
     Type Max(pTraits<Type>::min);

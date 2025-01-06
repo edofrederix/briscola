@@ -279,6 +279,12 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh)
     cmptDivide(m1*2.0,pTraits<Type>::one);
     cmptDivide(pTraits<Type>::one,m2);
     cmptDivide(pTraits<Type>::one,m2*2.0);
+
+    cmptSqr(m1);
+    cmptSqr(m1*2.0);
+
+    cmptSqrt(m1);
+    cmptSqrt(m1*2.0);
 }
 
 template<class Type, class MeshType>

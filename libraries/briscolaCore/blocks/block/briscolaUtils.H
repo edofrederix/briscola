@@ -955,6 +955,44 @@ inline const double* scalar_cast(const double* ptr)
 
 }
 
+// Sqrt of each component
+
+template<class T>
+class eqSqrtOp
+{
+public:
+
+    void operator()(T& x, const T& y) const
+    {
+        x = sqrt(y);
+    }
+};
+
+template<class Form, class Cmpt, direction Ncmpts>
+inline Form cmptSqrt
+(
+    const VectorSpace<Form, Cmpt, Ncmpts>& vs
+)
+{
+    Form v;
+    VectorSpaceOps<Ncmpts,0>::eqOp(v, vs, eqSqrtOp<Cmpt>());
+    return v;
+}
+
+inline scalar cmptSqrt(const scalar s)
+{
+    return sqrt(s);
+}
+
+template<class T>
+inline List<T> cmptSqrt(const List<T>& L)
+{
+    List<T> L2(L.size());
+    forAll(L, i)
+        L2[i] = cmptSqrt(L[i]);
+    return L2;
+}
+
 // Return a string representation of a list (defined in the Foam namespace like
 // all other name functions)
 template<class Type>

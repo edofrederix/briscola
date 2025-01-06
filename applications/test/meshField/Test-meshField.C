@@ -1787,6 +1787,12 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
         if (m3(l,d,i,j,k) != cmptDivide(pTraits<Type>::one,2*m2(l,d,i,j,k)))
             FatalErrorInFunction
                 << "test 37d failed" << abort(FatalError);
+
+    cmptSqr(m1);
+    cmptSqr(m1*2.0);
+
+    cmptSqrt(m1);
+    cmptSqrt(m1*2.0);
 }
 
 template<class Type, class MeshType>

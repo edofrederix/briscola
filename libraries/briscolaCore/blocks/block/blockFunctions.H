@@ -62,6 +62,23 @@ tmp<block<Type>> cmptMag(const block<Type>&);
 template<class Type>
 tmp<block<Type>> cmptMag(const tmp<block<Type>>&);
 
+template<class Type>
+void cmptSqr(block<Type>&, const block<Type>&);
+
+template<class Type>
+tmp<block<Type>> cmptSqr(const block<Type>&);
+
+template<class Type>
+tmp<block<Type>> cmptSqr(const tmp<block<Type>>&);
+
+template<class Type>
+void cmptSqrt(block<Type>&, const block<Type>&);
+
+template<class Type>
+tmp<block<Type>> cmptSqrt(const block<Type>&);
+
+template<class Type>
+tmp<block<Type>> cmptSqrt(const tmp<block<Type>>&);
 
 template<class Type>
 Type max(const block<Type>&);

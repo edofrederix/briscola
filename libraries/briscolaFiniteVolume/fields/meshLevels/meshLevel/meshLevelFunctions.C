@@ -180,6 +180,60 @@ tmp<meshLevel<Type,MeshType>> cmptMag(const tmp<meshLevel<Type,MeshType>>& tf)
 }
 
 template<class Type, class MeshType>
+void cmptSqr(meshLevel<Type,MeshType>& res, const meshLevel<Type,MeshType>& f)
+{
+    forAll(res, d)
+        cmptSqr(res[d],f[d]);
+}
+
+template<class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>> cmptSqr(const meshLevel<Type,MeshType>& f)
+{
+    tmp<meshLevel<Type,MeshType>>
+        tRes(new meshLevel<Type,MeshType>(f.fvMsh(),f.levelNum()));
+    cmptSqr(tRes.ref(), f);
+    return tRes;
+}
+
+template<class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>> cmptSqr(const tmp<meshLevel<Type,MeshType>>& tf)
+{
+    tmp<meshLevel<Type,MeshType>> tRes = New(tf);
+
+    cmptSqr(tRes.ref(), tf());
+    if (tf.isTmp())
+        tf.clear();
+    return tRes;
+}
+
+template<class Type, class MeshType>
+void cmptSqrt(meshLevel<Type,MeshType>& res, const meshLevel<Type,MeshType>& f)
+{
+    forAll(res, d)
+        cmptSqrt(res[d],f[d]);
+}
+
+template<class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>> cmptSqrt(const meshLevel<Type,MeshType>& f)
+{
+    tmp<meshLevel<Type,MeshType>>
+        tRes(new meshLevel<Type,MeshType>(f.fvMsh(),f.levelNum()));
+    cmptSqrt(tRes.ref(), f);
+    return tRes;
+}
+
+template<class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>> cmptSqrt(const tmp<meshLevel<Type,MeshType>>& tf)
+{
+    tmp<meshLevel<Type,MeshType>> tRes = New(tf);
+
+    cmptSqrt(tRes.ref(), tf());
+    if (tf.isTmp())
+        tf.clear();
+    return tRes;
+}
+
+template<class Type, class MeshType>
 List<Type> max(const meshLevel<Type,MeshType>& f)
 {
     List<Type> Max(f.size());
