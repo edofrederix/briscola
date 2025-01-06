@@ -22,10 +22,7 @@ class solver
 {
 public:
 
-    // Base smoother class with singular system augmentation, see Sec. 5.6.4 of
-    // "Multigrid", U. Trottenberg et al., 2000. If the xi list is empty, no
-    // singular system augmentation is applied. Having xi as an argument enables
-    // its reuse between different calls to the smoothers.
+    // Base smoother class
 
     class smoother
     {
@@ -100,7 +97,6 @@ public:
         virtual void smooth
         (
             linearSystem<SType,Type,MeshType>& sys,
-            List<Type>& xi,
             const label l,
             const label sweeps,
             const labelList& converged
@@ -147,10 +143,18 @@ public:
         // Construct from dictionary, mesh and level
         directSolver(const dictionary&, const fvMesh&, const label);
 
-        // Selector from name
+        // Selector from name and dictionary
         static autoPtr<directSolver> New
         (
             const word&,
+            const dictionary&,
+            const fvMesh&,
+            const label l = 0
+        );
+
+        // Selector from dictionary
+        static autoPtr<directSolver> New
+        (
             const dictionary&,
             const fvMesh&,
             const label l = 0
@@ -312,6 +316,13 @@ public:
                 this->tolerance_
             );
     }
+
+    // Set a singularity constraint at the given level
+    void setSingularityConstraint
+    (
+        linearSystem<SType,Type,MeshType>& sys,
+        const label l
+    ) const;
 };
 
 }

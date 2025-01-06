@@ -1,5 +1,4 @@
 #include "EigenSolver.H"
-#include "addToRunTimeSelectionTable.H"
 
 namespace Foam
 {
@@ -10,33 +9,41 @@ namespace briscola
 namespace fv
 {
 
-defineTypeNameAndDebug(EigenSolver, 0);
-defineRunTimeSelectionTable(EigenSolver, dictionary);
-
-EigenSolver::EigenSolver()
+template<class SolverType, int Order>
+EigenSolver<SolverType,Order>::EigenSolver(const dictionary& dict)
+:
+    EigenSolverBase(dict)
 {}
 
-EigenSolver::EigenSolver(const EigenSolver& s)
+template<class SolverType, int Order>
+EigenSolver<SolverType,Order>::EigenSolver(const EigenSolver& s)
+:
+    EigenSolverBase(s)
 {}
 
-EigenSolver::~EigenSolver()
+template<class SolverType, int Order>
+EigenSolver<SolverType,Order>::~EigenSolver()
 {}
 
-autoPtr<EigenSolver> EigenSolver::New(const word solverType)
+template<class SolverType, int Order>
+void EigenSolver<SolverType,Order>::prepare(const MatrixType& A)
 {
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(solverType);
+    solverPtr_.reset(new SolverType(A));
+    solverPtr_->compute(A);
+}
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+template<class SolverType, int Order>
+void EigenSolver<SolverType,Order>::solve(RhsType& x, const RhsType& b)
+{
+    if (solverPtr_.valid())
+    {
+        x = solverPtr_->solve(b);
+    }
+    else
     {
         FatalErrorInFunction
-            << "Unknown Eigen solver type " << solverType
-            << ". Valid Eigen solvers are" << endl
-            << dictionaryConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
+            << "Solver not prepared" << endl << abort(FatalError);
     }
-
-    return autoPtr<EigenSolver>(cstrIter()());
 }
 
 }

@@ -17,12 +17,12 @@ EigenLinearSystem<SType,Type,MeshType>::EigenLinearSystem
     const label nParts
 )
 :
-    PtrList<EigenSolver::EigenMatrixType>(),
     linearSystemAggregation<SType,Type,MeshType>(sys, l, nParts),
+    sys_(sys),
+    rowMajorMatrices_(MeshType::numberOfDirections),
+    colMajorMatrices_(MeshType::numberOfDirections),
     l_(l)
-{
-    this->update(sys);
-}
+{}
 
 template<class SType, class Type, class MeshType>
 EigenLinearSystem<SType,Type,MeshType>::EigenLinearSystem
@@ -30,10 +30,11 @@ EigenLinearSystem<SType,Type,MeshType>::EigenLinearSystem
     const EigenLinearSystem<SType,Type,MeshType>& A
 )
 :
-    PtrList<EigenSolver::EigenMatrixType>(A),
     linearSystemAggregation<SType,Type,MeshType>(A),
-    l_(A.l_),
-    diagonal_(A.diagonal_)
+    sys_(A.sys_),
+    rowMajorMatrices_(A.rowMajorMatrices_),
+    colMajorMatrices_(A.colMajorMatrices_),
+    l_(A.l_)
 {}
 
 template<class SType, class Type, class MeshType>
@@ -43,58 +44,77 @@ EigenLinearSystem<SType,Type,MeshType>::~EigenLinearSystem()
 template<class SType, class Type, class MeshType>
 void EigenLinearSystem<SType,Type,MeshType>::update
 (
-    const linearSystem<SType,Type,MeshType>& sys
+    const label order,
+    const label d
 )
 {
-    linearSystemAggregation<SType,Type,MeshType>& lsa = *this;
+    const linearSystemAggregation<SType,Type,MeshType>& lsa = *this;
 
-    diagonal_ =
-        const_cast<linearSystem<SType,Type,MeshType>&>(sys).diagonal();
+    scalarList values;
+    labelList inners;
+    labelList outers;
 
-    if (!this->size())
+    lsa.compressedRowFormat
+    (
+        values,
+        inners,
+        outers,
+        sys_,
+        d,
+        true
+    );
+
+    // Print inner indices for debugging
+
+    // for (int j = 0; j < outers.size()-1; j++)
+    //     for (int i = outers[j]; i < outers[j+1]; i++)
+    //         Pout<< inners[i] << (i == outers[j+1]-1 ? nl : ' ');
+    // Pout<< endl;
+
+    if (lsa.master())
     {
-        this->clear();
-        this->resize(MeshType::numberOfDirections);
+        const label size = lsa.size(d);
 
-        forAll(*this, d)
-            if (!diagonal_[d])
-                this->set(d, new EigenSolver::EigenMatrixType());
-    }
+        // Generate in row-major order
 
-    forAll(*this, d)
-    {
-        if (!diagonal_[d])
+        EigenSolverBase::RowMajorMatrixType::Map M
+        (
+            size,
+            size,
+            values.size(),
+            outers.begin(),
+            inners.begin(),
+            values.begin()
+        );
+
+        if (order == ::Eigen::RowMajor)
         {
-            scalarList values;
-            labelList inners;
-            labelList outers;
+            if (!rowMajorMatrices_.set(d))
+                rowMajorMatrices_.set
+                (
+                    d,
+                    new EigenSolverBase::RowMajorMatrixType()
+                );
 
-            lsa.compressedRowFormat
-            (
-                values,
-                inners,
-                outers,
-                sys.A()[l_][d],
-                true
-            );
+            rowMajorMatrices_[d] = M.eval();
+            rowMajorMatrices_[d].makeCompressed();
+        }
+        else if (order == ::Eigen::ColMajor)
+        {
+            if (!colMajorMatrices_.set(d))
+                colMajorMatrices_.set
+                (
+                    d,
+                    new EigenSolverBase::ColMajorMatrixType()
+                );
 
-            if (lsa.master())
-            {
-                const label size = lsa.size(d);
-
-                this->operator[](d) =
-                    ::Eigen::SparseMatrix<double, ::Eigen::RowMajor>::Map
-                    (
-                        size,
-                        size,
-                        values.size(),
-                        outers.begin(),
-                        inners.begin(),
-                        values.begin()
-                    ).eval();
-
-                this->operator[](d).makeCompressed();
-            }
+            colMajorMatrices_[d] = M.eval();
+            colMajorMatrices_[d].makeCompressed();
+        }
+        else
+        {
+            FatalErrorInFunction
+                << "Invalid order" << endl << abort(FatalError);
         }
     }
 }

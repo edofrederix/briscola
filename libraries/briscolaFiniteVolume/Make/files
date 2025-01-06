@@ -59,7 +59,7 @@ solvers/solver/solvers.C
 solvers/solver/solverSmoothers.C
 solvers/solver/solverDirectSolvers.C
 
-solvers/directSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolver.C
+solvers/directSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolverBase.C
 solvers/directSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolvers.C
 
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C

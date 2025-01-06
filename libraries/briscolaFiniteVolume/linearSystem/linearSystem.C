@@ -995,15 +995,11 @@ const
 
     for (int d = 0; d < MeshType::numberOfDirections; d++)
     {
-        const meshDirection<SType,MeshType>& A = A_[l][d];
-        const meshDirection<Type,MeshType>& x = x_[l][d];
-        const meshDirection<Type,MeshType>& b = b_[l][d];
-
         List<List<FullSType>> rows;
-        lsa.rowCoeffs(rows, A);
+        lsa.rowCoeffs(rows, *this, d);
 
         List<Type> rhs;
-        lsa.rhsSource(rhs, A, x, b);
+        lsa.rhsSource(rhs, *this, d);
 
         if (Pstream::master())
         {

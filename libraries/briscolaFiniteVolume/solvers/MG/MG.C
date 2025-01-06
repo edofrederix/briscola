@@ -32,7 +32,6 @@ void MG<SType,Type,MeshType>::cycle
     meshField<Type,MeshType>& r,
     labelList& visits,
     const label l,
-    const bool constMatrix,
     const labelList& converged,
     const label nSweepsPre,
     const label nSweepsPost,
@@ -42,23 +41,19 @@ void MG<SType,Type,MeshType>::cycle
     meshLevel<Type, MeshType>& xl = sys.x()[l];
     meshLevel<Type, MeshType>& rl = r[l];
 
-    const label nLevels = this->fvMsh_.size();
-    const label nDirs = xl.size();
+    // On the coarsest level force the first global cell to zero for a
+    // singular matrix
+
+    List<bool> singular(sys.singular());
+
+    forAll(singular, d)
+        if (l == coarseLevel && singular[d] && Pstream::master())
+            sys.b()[l][d](0,0,0) = Zero;
 
     // Initialize defects to zero
 
     if (l > 0)
         xl = Zero;
-
-    // Only apply singular system augmentation at the coarsest level and if any
-    // of the directions is actually singular. Initialize the auxiliary unknown
-    // to zero.
-
-    List<bool> singular(sys.singular());
-    List<Type> xi(0);
-
-    if (l == nLevels-1 && sum(singular))
-        xi.setSize(nDirs, Zero);
 
     // Pre-smooth
 
@@ -66,7 +61,6 @@ void MG<SType,Type,MeshType>::cycle
         this->smoothPtr_->smooth
         (
             sys,
-            xi,
             l,
             nSweepsPre,
             converged
@@ -75,7 +69,7 @@ void MG<SType,Type,MeshType>::cycle
     // If we are not on the coarsest level, continue to traverse levels.
     // Otherwise, just smooth (could be better to use a direct solver here)
 
-    if (l < nLevels-1-coarseLevel)
+    if (l < coarseLevel)
     {
         meshLevel<Type, MeshType>& xlCoarse = sys.x()[l+1];
         meshLevel<Type, MeshType>& blCoarse = sys.b()[l+1];
@@ -110,7 +104,6 @@ void MG<SType,Type,MeshType>::cycle
                 r,
                 visits,
                 l+1,
-                constMatrix,
                 converged,
                 nSweepsPre,
                 nSweepsPost,
@@ -132,7 +125,6 @@ void MG<SType,Type,MeshType>::cycle
                 this->smoothPtr_->smooth
                 (
                     sys,
-                    xi,
                     l,
                     nSweepsPost,
                     converged
@@ -150,7 +142,6 @@ void MG<SType,Type,MeshType>::cycle
             this->smoothPtr_->smooth
             (
                 sys,
-                xi,
                 l,
                 Foam::max(nSweepsPost,2),
                 converged
@@ -165,7 +156,6 @@ template<class SType, class Type, class MeshType>
 void MG<SType,Type,MeshType>::solve
 (
     linearSystem<SType,Type,MeshType>& sys,
-    const bool constMatrix,
     const scalar relTol,
     const scalar absTol,
     const label minIter,
@@ -202,7 +192,11 @@ void MG<SType,Type,MeshType>::solve
     const List<Type> normFactors(this->normFactors(sys,r[0]));
 
     const List<Type> initialResiduals =
-        cmptDivide(gSum(cmptMag(r[0])), normFactors);
+        cmptDivide
+        (
+            Foam::cmptSqrt(gSum(cmptSqr(r[0]))),
+            normFactors
+        );
 
     List<Type> currentResiduals(initialResiduals);
 
@@ -243,7 +237,6 @@ void MG<SType,Type,MeshType>::solve
             r,
             visits,
             0,
-            constMatrix,
             converged,
             nSweepsPre,
             nSweepsPost,
@@ -261,7 +254,11 @@ void MG<SType,Type,MeshType>::solve
         }
 
         currentResiduals =
-            cmptDivide(gSum(cmptMag(r[0])), normFactors);
+            cmptDivide
+            (
+                Foam::cmptSqrt(gSum(cmptSqr(r[0]))),
+                normFactors
+            );
 
         converged =
             this->checkConvergence
@@ -349,20 +346,25 @@ MG<SType,Type,MeshType>::MG
     // stencil is not diagonal
 
     if (coarseMode_ == DIRECT && SType::nComponents > 1)
+    {
+        if (!this->dict_.found("directSolver"))
+        {
+            this->dict_.add("directSolver", dictionary());
+            this->dict_.subDict("directSolver").add("type", "Eigen");
+        }
+
+        const label coarseLevel = fvMsh.msh().size() - coarseLevel_ - 1;
+
         this->directSolvePtr_.reset
         (
             solver<SType,Type,MeshType>::directSolver::New
             (
-                this->dict_.template lookupOrDefault<word>
-                (
-                    "directSolver",
-                    "Eigen"
-                ),
-                this->dict_,
+                this->dict_.subDict("directSolver"),
                 fvMsh,
-                fvMsh.msh().size()-1-coarseLevel_
+                coarseLevel
             ).ptr()
         );
+    }
 }
 
 template<class SType, class Type, class MeshType>
@@ -402,7 +404,10 @@ void MG<SType,Type,MeshType>::solve
     }
     else
     {
-        sys.singular();
+        const label coarseLevel = sys.A().size() - this->coarseLevel_ - 1;
+
+        this->setSingularityConstraint(sys, coarseLevel);
+
         sys.x().makeDeep();
         sys.b().makeDeep();
 
@@ -421,14 +426,13 @@ void MG<SType,Type,MeshType>::solve
         this->solve
         (
             sys,
-            constMatrix,
             this->relTol_,
             this->tolerance_,
             this->minIter_,
             this->maxIter_,
             this->nSweepsPre_,
             this->nSweepsPost_,
-            this->coarseLevel_
+            coarseLevel
         );
 
         sys.x().makeShallow();

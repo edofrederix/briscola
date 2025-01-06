@@ -11,36 +11,33 @@ namespace fv
 {
 
 defineTypeNameAndDebug(BiCGSTABEigenSolver, 0);
-addToRunTimeSelectionTable(EigenSolver, BiCGSTABEigenSolver, dictionary);
+addToRunTimeSelectionTable(EigenSolverBase, BiCGSTABEigenSolver, dictionary);
 
-BiCGSTABEigenSolver::BiCGSTABEigenSolver()
+BiCGSTABEigenSolver::BiCGSTABEigenSolver(const dictionary& dict)
 :
-    EigenSolver()
+    EigenSolver<BiCGSTABSolver,::Eigen::RowMajor>(dict),
+    maxIter_(dict.lookupOrDefault<label>("maxIter", 1000)),
+    tolerance_(dict.lookupOrDefault<scalar>("tolerance", -1))
 {}
 
 BiCGSTABEigenSolver::BiCGSTABEigenSolver(const BiCGSTABEigenSolver& s)
 :
-    EigenSolver(s)
+    EigenSolver<BiCGSTABSolver,::Eigen::RowMajor>(s),
+    maxIter_(s.maxIter_)
 {}
 
 BiCGSTABEigenSolver::~BiCGSTABEigenSolver()
 {}
 
-void BiCGSTABEigenSolver::prepare
-(
-    const EigenMatrixType& A,
-    const scalar tolerance
-)
-{
-    solverPtr_.reset(new EigenSolverType(A));
-    solverPtr_->setTolerance(tolerance);
-    solverPtr_->compute(A);
-}
-
-void BiCGSTABEigenSolver::solve(EigenRhsType& x, const EigenRhsType& b) const
+void BiCGSTABEigenSolver::solve(RhsType& x, const RhsType& b)
 {
     if (solverPtr_.valid())
     {
+        if (tolerance_ > 0)
+            solverPtr_->setTolerance(tolerance_);
+
+        solverPtr_->setMaxIterations(maxIter_);
+
         x = solverPtr_->solveWithGuess(b, x);
     }
     else

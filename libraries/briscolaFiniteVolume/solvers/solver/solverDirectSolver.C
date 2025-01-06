@@ -55,6 +55,24 @@ solver<SType,Type,MeshType>::directSolver::New
     );
 }
 
+template<class SType, class Type, class MeshType>
+autoPtr<typename solver<SType,Type,MeshType>::directSolver>
+solver<SType,Type,MeshType>::directSolver::New
+(
+    const dictionary& dict,
+    const fvMesh& fvMsh,
+    const label l
+)
+{
+    return solver<SType,Type,MeshType>::directSolver::New
+    (
+        dict.lookup("type"),
+        dict,
+        fvMsh,
+        l
+    );
+}
+
 }
 
 }

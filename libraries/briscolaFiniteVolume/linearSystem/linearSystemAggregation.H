@@ -32,9 +32,6 @@ class linearSystemAggregation
     // Number of parts
     label nParts_;
 
-    // Singularity bool for each direction
-    List<bool> singular_;
-
     // This processor's part number
     label myPartNum_;
 
@@ -83,9 +80,6 @@ public:
     inline const labelList& globalStart() const { return globalStarts_; }
     inline const labelList& globalEnd() const { return globalEnds_; }
 
-    // Return constraint bool
-    inline const List<bool>& singular() { return singular_; }
-
     // Return reference to the column number data
     inline const List<List<List<FixedList<label,FullSType::nComponents>>>>&
     colNums() const
@@ -109,26 +103,41 @@ public:
     void rowCoeffs
     (
         List<List<FullSType>>& rows,
-        const meshDirection<SType,MeshType>& A
+        const linearSystem<SType,Type,MeshType>& sys,
+        const label d
     ) const;
 
-    // Set the right-hand side source
+    // Set the right-hand side source including boundary sources
     void rhsSource
     (
         List<Type>& rhs,
-        const meshDirection<SType,MeshType>& A,
-        const meshDirection<Type,MeshType>& x,
-        const meshDirection<Type,MeshType>& b
+        const linearSystem<SType,Type,MeshType>& sys,
+        const label d
     ) const;
 
-    // Return the aggregated matrix in compressed row format, optionally sorted
+    // Compute the aggregated matrix in compressed row format, optionally sorted
     void compressedRowFormat
     (
         scalarList& values,
         labelList& inners,
         labelList& outers,
-        const meshDirection<SType,MeshType>& A,
+        const linearSystem<SType,Type,MeshType>& sys,
+        const label d,
         const bool sort = false
+    ) const;
+
+    // Collect the given direction into an aggregated list
+    void collect
+    (
+        List<Type>& data,
+        const meshDirection<Type,MeshType>& f
+    ) const;
+
+    // Distribute the given aggregated list back to the slaves
+    void distribute
+    (
+        meshDirection<Type,MeshType>& f,
+        const List<Type>& data
     ) const;
 
     // Correct the aggregation boundary conditions of the given level

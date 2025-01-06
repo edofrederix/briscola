@@ -44,8 +44,6 @@ Briscola depends on the following third-party packages:
 * FFTW
 * Eigen
 * SuperLU (optional)
-* Intel oneAPI MKL (optional)
-* SuiteSparse (optional)
 
 From OpenFOAM, only the OpenFOAM library (libOpenFOAM.so) is linked. In turn,
 this library links against Pstream (libPstream.so). So only the OpenFOAM and
@@ -67,12 +65,11 @@ By default, the `makeFFTW` and `makeEigen` scripts configure, compile and
 install their respective packages to `$HOME/opt`. Both scripts will instruct you
 on which environment variables to set.
 
-The sparse direct solvers of MKL, SuiteSparse and SuperLU are used if these
-packages are available, but are not required. The compiler checks for the
-existence of the `MKLROOT`, `SUITESPARSE_HOME` and `SUPERLU_HOME` environment
-variables. If they exist, the Pardiso, UmfPack and SuperLU solvers are compiled,
-respectively. They are interfaced via the Eigen support functions. The SuperLU
-package can optionally be built from the `dependencies` directory too with the
+The sparse direct solvers of SuperLU is used if this package is available, but
+is not required nor important. The compiler checks for the existence of the
+`SUPERLU_HOME` environment variable. If it exist, the SuperLU solver is
+compiled. It is interfaced via the Eigen support functions. The SuperLU package
+can optionally be built from the `dependencies` directory too with the
 `makeSuperLU` script.
 
 ## Documentation

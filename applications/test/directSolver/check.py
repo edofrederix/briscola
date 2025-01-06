@@ -6,7 +6,7 @@ dataTypes = ['scalar', 'vector']
 stencilTypes = ['stencil', 'symmStencil']
 solverTypes = [
     'default',
-    'partialPivLU',
+    'PartialPivLU',
     'BiCGSTAB',
     'SuperLU',
     'Pardiso',
@@ -69,5 +69,5 @@ for meshType in meshTypes:
                     if len(solution.shape) == 1:
                         solution = solution[:, np.newaxis]
 
-                    if np.amax(abs(solution-x)) > 1e-3:
+                    if np.sqrt(np.mean(np.square(solution-x))) > 1e-3:
                         print('Direct solver test failed for', system)

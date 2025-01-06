@@ -12,23 +12,26 @@ namespace briscola
 namespace fv
 {
 
+typedef ::Eigen::BiCGSTAB<EigenSolverBase::RowMajorMatrixType>
+    BiCGSTABSolver;
+
 class BiCGSTABEigenSolver
 :
-    public EigenSolver
+    public EigenSolver<BiCGSTABSolver,::Eigen::RowMajor>
 {
-    // Solver types
-    typedef ::Eigen::BiCGSTAB<EigenMatrixType> EigenSolverType;
+    // Maximum number of iterations (defaults to 1000)
+    label maxIter_;
 
-    // Solver pointer
-    autoPtr<EigenSolverType> solverPtr_;
+    // Tolerance (defaults -1, meaning that the default one is used)
+    scalar tolerance_;
 
 public:
 
     // Runtime type information
     TypeName("BiCGSTAB");
 
-    // Construct
-    BiCGSTABEigenSolver();
+    // Construct from dictionary
+    BiCGSTABEigenSolver(const dictionary& dict);
 
     // Copy constructor
     BiCGSTABEigenSolver(const BiCGSTABEigenSolver&);
@@ -36,13 +39,10 @@ public:
     // Destructor
     virtual ~BiCGSTABEigenSolver();
 
-    // Prepare from a sparse matrix
-    virtual void prepare(const EigenMatrixType& A, const scalar tolerance);
-
     // Solve given a right-hand side
-    virtual void solve(EigenRhsType& x, const EigenRhsType& b) const;
+    virtual void solve(RhsType& x, const RhsType& b);
 
-    // A first guess is needed
+    // First guess is needed
     virtual bool needGuess() const { return true; }
 };
 

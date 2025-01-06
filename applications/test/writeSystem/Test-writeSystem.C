@@ -41,7 +41,7 @@ void test(const fvMesh& fvMsh)
     forAll(f, l)
     {
         OFstream os(f.name() + "_" + Foam::name(l));
-        sys.writeLevel(os, 0);
+        sys.writeLevel(os, l);
     }
 }
 

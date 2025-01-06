@@ -52,21 +52,17 @@ void test(const fvMesh& fvMsh, const label nParts)
 
             for (int d = 0; d < MeshType::numberOfDirections; d++)
             {
-                const meshDirection<SType,MeshType>& A = sys.A()[l][d];
-                const meshDirection<Type,MeshType>& x = sys.x()[l][d];
-                const meshDirection<Type,MeshType>& b = sys.b()[l][d];
-
                 List<List<typename SType::fullStencilType>> rows;
-                lsa.rowCoeffs(rows, A);
+                lsa.rowCoeffs(rows, sys, d);
 
                 List<Type> rhs;
-                lsa.rhsSource(rhs, A, x, b);
+                lsa.rhsSource(rhs, sys, d);
 
                 scalarList values;
                 labelList inners;
                 labelList outers;
-                lsa.compressedRowFormat(values, inners, outers, A);
-                lsa.compressedRowFormat(values, inners, outers, A, true);
+                lsa.compressedRowFormat(values, inners, outers, sys, d);
+                lsa.compressedRowFormat(values, inners, outers, sys, d, true);
             }
 
             // Test Eigen linear system uses LSA

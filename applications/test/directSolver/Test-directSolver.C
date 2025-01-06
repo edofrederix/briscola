@@ -106,17 +106,9 @@ int main(int argc, char *argv[])
 
     wordList types;
 
-    types.append("default");
-    types.append("partialPivLU");
+    types.append("SparseLU");
+    types.append("PartialPivLU");
     types.append("BiCGSTAB");
-
-    #ifdef MKL
-    types.append("Pardiso");
-    #endif
-
-    #ifdef SUITESPARSE
-    types.append("UmfPack");
-    #endif
 
     #ifdef SUPERLU
     types.append("SuperLU");

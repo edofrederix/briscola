@@ -37,14 +37,17 @@ List<Type> solver<SType,Type,MeshType>::normFactors
               : rowSum(A,i,j,k)*y[d];
 
             f[d] +=
-                Foam::cmptMag(r(i,j,k) - b(i,j,k) + Ay)
-              + Foam::cmptMag(b(i,j,k) - Ay);
+                Foam::cmptSqr
+                (
+                    Foam::cmptMag(r(i,j,k) - b(i,j,k) + Ay)
+                  + Foam::cmptMag(b(i,j,k) - Ay)
+                );
         }
     }
 
     reduce(f, sumOp<List<Type>>());
 
-    return max(f, 1e-20*pTraits<Type>::one);
+    return max(Foam::cmptSqrt(f), 1e-20*pTraits<Type>::one);
 }
 
 template<class SType, class Type, class MeshType>
@@ -182,6 +185,44 @@ void solver<SType,Type,MeshType>::solve
     );
 
     tSys.clear();
+}
+
+template<class SType, class Type, class MeshType>
+void solver<SType,Type,MeshType>::setSingularityConstraint
+(
+    linearSystem<SType,Type,MeshType>& sys,
+    const label l
+) const
+{
+    const List<bool> singular(sys.singular());
+
+    forAll(singular, d)
+    {
+        if (singular[d])
+        {
+            meshDirection<SType,MeshType>& A = sys.A()[l][d];
+
+            const meshDirection<label,MeshType>& numbers =
+                sys.fvMsh().template
+                metrics<MeshType>().globalCellNumbers()[l][d];
+
+            // On master, the first cell value is forced to zero
+
+            if (Pstream::master())
+                A(0,0,0) = diagStencil(1.0);
+
+            // This means we can remove any dependence on the first cell value
+
+            forAllCells(A, i, j, k)
+                for (int s = 1; s < SType::nComponents; s++)
+                    if
+                    (
+                        A(i,j,k)[s] != 0
+                     && !numbers(labelVector(i,j,k)+SType::componentOffsets[s])
+                    )
+                        A(i,j,k)[s] = 0;
+        }
+    }
 }
 
 }

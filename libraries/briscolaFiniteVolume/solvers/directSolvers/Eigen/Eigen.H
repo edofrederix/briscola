@@ -5,10 +5,6 @@
 #include "EigenSolver.H"
 #include "EigenLinearSystem.H"
 
-#ifdef MKL
-#define EIGEN_USE_MKL_ALL
-#endif
-
 namespace Foam
 {
 
@@ -28,10 +24,10 @@ protected:
     // Eigen linear system
     autoPtr<EigenLinearSystem<SType,Type,MeshType>> APtr_;
 
-    // Solvers
-    PtrList<EigenSolver> solverPtrs_;
+    // Solvers. By default the iterative BiCGSTAB solver is used.
+    PtrList<EigenSolverBase> solverPtrs_;
 
-    // Number of aggregation parts (defaults to 1)
+    // Number of aggregation parts (defaults to the number of processors)
     label nAggregationParts_;
 
     // Minimum number of iterations (defaults to 1)
@@ -49,12 +45,6 @@ protected:
 
     // Print solver statistics (defaults to false)
     Switch printStats_;
-
-    // Residual normalization factors
-    List<Type> normFactors_;
-
-    // Initial residuals
-    List<Type> initialResiduals_;
 
 public:
 

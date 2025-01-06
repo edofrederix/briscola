@@ -27,7 +27,6 @@ linearSystemAggregation<SType,Type,MeshType>::linearSystemAggregation
     fvMsh_(sys.fvMsh()),
     l_(l),
     nParts_(nParts),
-    singular_(const_cast<linearSystem<SType,Type,MeshType>&>(sys).singular()),
     globalStarts_(MeshType::numberOfDirections),
     globalEnds_(MeshType::numberOfDirections),
     colNums_(MeshType::numberOfDirections)
@@ -65,15 +64,21 @@ linearSystemAggregation<SType,Type,MeshType>::linearSystemAggregation
 
         myColNums.setSize(numbers.size());
 
-        int c = -1;
+        int c = 0;
         forAllCells(numbers, i, j, k)
+        {
             for(int s = 0; s < FullSType::nComponents; s++)
-                myColNums[s == 0 ? ++c : c][s] =
+            {
+                myColNums[c][s] =
                     numbers
                     (
                         labelVector(i,j,k)
                       + FullSType::componentOffsets[s]
                     );
+            }
+
+            c++;
+        }
 
         // Send/receive column numbers
 
@@ -141,7 +146,6 @@ linearSystemAggregation<SType,Type,MeshType>::linearSystemAggregation
     fvMsh_(lsa.fvMsh_),
     l_(lsa.l_),
     nParts_(lsa.nParts_),
-    singular_(lsa.singular_),
     myPartNum_(lsa.myPartNum_),
     myPartMasterNum_(lsa.myPartMasterNum_),
     nProcsPerPart_(lsa.nProcsPerPart_),
@@ -158,11 +162,12 @@ template<class SType, class Type, class MeshType>
 void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
 (
     List<List<FullSType>>& rows,
-    const meshDirection<SType,MeshType>& A
+    const linearSystem<SType,Type,MeshType>& sys,
+    const label d
 ) const
 {
-    const label l = A.levelNum();
-    const label d = A.directionNum();
+    const label l = this->l_;
+    const meshDirection<SType,MeshType>& A = sys.A()[l][d];
 
     const label globalStart = globalStarts_[d];
     const label globalEnd = globalEnds_[d];
@@ -204,13 +209,6 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
             )
                 myRows[c][s] = 0;
 
-        // Add constraint if needed
-
-        if (singular_[d] && myPartMasterNum_ == 0)
-            for (int s = 0; s < FullSType::nComponents; s++)
-                if (numbers(ijk + FullSType::componentOffsets[s]) == 0)
-                    myRows[c][s] = 0;
-
         // Move redundant indices
 
         for (int s = 1; s < FullSType::nComponents; s++)
@@ -227,11 +225,6 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
         c++;
     }
 
-    // Add constraint if needed
-
-    if (singular_[d] && Pstream::myProcNo() == 0)
-        myRows[0][0] = 1;
-
     if (this->master())
     {
         // Receive data
@@ -245,8 +238,7 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
             proc++
         )
         {
-            const label i = proc-myPartMasterNum_;
-            rows[i].resize(colNums[i].size());
+            const label i = proc - myPartMasterNum_;
 
             if (i == 0)
             {
@@ -254,6 +246,8 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
             }
             else
             {
+                rows[i].resize(colNums[i].size());
+
                 UIPstream::read
                 (
                     Pstream::commsTypes::blocking,
@@ -288,13 +282,14 @@ template<class SType, class Type, class MeshType>
 void linearSystemAggregation<SType,Type,MeshType>::rhsSource
 (
     List<Type>& rhs,
-    const meshDirection<SType,MeshType>& A,
-    const meshDirection<Type,MeshType>& x,
-    const meshDirection<Type,MeshType>& b
+    const linearSystem<SType,Type,MeshType>& sys,
+    const label d
 ) const
 {
-    const label l = A.levelNum();
-    const label d = A.directionNum();
+    const label l = this->l_;
+    const meshDirection<SType,MeshType>& A = sys.A()[l][d];
+    const meshDirection<Type,MeshType>& x = sys.x()[l][d];
+    const meshDirection<Type,MeshType>& b = sys.b()[l][d];
 
     const label globalStart = globalStarts_[d];
     const label globalEnd = globalEnds_[d];
@@ -310,50 +305,41 @@ void linearSystemAggregation<SType,Type,MeshType>::rhsSource
     const meshDirection<label,MeshType>& numbers =
         fvMsh_.template metrics<MeshType>().globalCellNumbers()[l][d];
 
-    const labelVector* offsets = FullSType::componentOffsets;
-
     // Prepare data
 
-    List<Type> myRhs(b.size());
+    rhs.resize(this->master() ? this->size(d) : b.size());
 
     label c = 0;
     forAllCells(b, i, j, k)
     {
         const labelVector ijk(i,j,k);
 
-        myRhs[c] = b(ijk);
+        rhs[c] = b(ijk);
 
         // Add boundary source
 
         for (int s = 0; s < FullSType::nComponents; s++)
             if
             (
-                numbers(ijk + offsets[s]) < globalStart
-             || numbers(ijk + offsets[s]) >= globalEnd
+                numbers(ijk + FullSType::componentOffsets[s]) < globalStart
+             || numbers(ijk + FullSType::componentOffsets[s]) >= globalEnd
             )
-                myRhs[c] -=
+                rhs[c] -=
                     fullStencil(A,ijk)[s]
                   * x(ijk + FullSType::componentOffsets[s]);
 
         c++;
     }
 
-    // Add constraint if needed
-
-    if (singular_[d] && Pstream::myProcNo() == 0)
-        myRhs[0] = Zero;
-
     if (this->master())
     {
         // Receive data
 
-        rhs.resize(this->size(d));
-
-        label c = 0;
+        label c = b.size();
 
         for
         (
-            label proc = myPartMasterNum_;
+            label proc = myPartMasterNum_ + 1;
             proc < myPartMasterNum_ + nProcsPerPart_;
             proc++
         )
@@ -361,42 +347,34 @@ void linearSystemAggregation<SType,Type,MeshType>::rhsSource
             const label i = proc - myPartMasterNum_;
             const label size = colNums[i].size();
 
-            if (i == 0)
-            {
-                forAll(myRhs, j)
-                    rhs[j] = myRhs[j];
-            }
-            else
-            {
-                UIPstream::read
-                (
-                    Pstream::commsTypes::blocking,
-                    proc,
-                    reinterpret_cast<char*>(&rhs[c]),
-                    size*sizeof(Type),
-                    0,
-                    UPstream::worldComm
-                );
-            }
+            UIPstream::read
+            (
+                Pstream::commsTypes::blocking,
+                proc,
+                reinterpret_cast<char*>(&rhs[c]),
+                size*sizeof(Type),
+                0,
+                UPstream::worldComm
+            );
 
             c += size;
         }
     }
     else
     {
-        rhs.resize(0);
-
         // Send
 
         UOPstream::write
         (
             Pstream::commsTypes::blocking,
             myPartMasterNum_,
-            reinterpret_cast<char*>(myRhs.begin()),
-            myRhs.byteSize(),
+            reinterpret_cast<char*>(rhs.begin()),
+            rhs.byteSize(),
             0,
             UPstream::worldComm
         );
+
+        rhs.clear();
     }
 }
 
@@ -406,12 +384,12 @@ void linearSystemAggregation<SType,Type,MeshType>::compressedRowFormat
     scalarList& values,
     labelList& inners,
     labelList& outers,
-    const meshDirection<SType,MeshType>& A,
+    const linearSystem<SType,Type,MeshType>& sys,
+    const label d,
     const bool sort
 ) const
 {
-    const label l = A.levelNum();
-    const label d = A.directionNum();
+    const label l = this->l_;
 
     const label globalStart = globalStarts_[d];
 
@@ -424,7 +402,7 @@ void linearSystemAggregation<SType,Type,MeshType>::compressedRowFormat
             << abort(FatalError);
 
     List<List<FullSType>> rows;
-    this->rowCoeffs(rows, A);
+    this->rowCoeffs(rows, sys, d);
 
     if (this->master())
     {
@@ -485,6 +463,134 @@ void linearSystemAggregation<SType,Type,MeshType>::compressedRowFormat
                 }
             }
         }
+    }
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystemAggregation<SType,Type,MeshType>::collect
+(
+    List<Type>& data,
+    const meshDirection<Type,MeshType>& f
+) const
+{
+    const label d = f.directionNum();
+
+    const List<List<FixedList<label,FullSType::nComponents>>>& colNums =
+        colNums_[d];
+
+    data.resize(this->master() ? this->size(d) : f.size());
+
+    label c = 0;
+    forAllCells(f, i, j, k)
+        data[c++] = f(i,j,k);
+
+    if (this->master())
+    {
+        // Receive data
+
+        c = f.size();
+
+        for
+        (
+            label proc = myPartMasterNum_ + 1;
+            proc < myPartMasterNum_ + nProcsPerPart_;
+            proc++
+        )
+        {
+            const label i = proc - myPartMasterNum_;
+            const label size = colNums[i].size();
+
+            UIPstream::read
+            (
+                Pstream::commsTypes::blocking,
+                proc,
+                reinterpret_cast<char*>(&data[c]),
+                size*sizeof(Type),
+                0,
+                UPstream::worldComm
+            );
+
+            c += size;
+        }
+    }
+    else
+    {
+        // Send
+
+        UOPstream::write
+        (
+            Pstream::commsTypes::blocking,
+            myPartMasterNum_,
+            reinterpret_cast<char*>(data.begin()),
+            data.byteSize(),
+            0,
+            UPstream::worldComm
+        );
+
+        data.clear();
+    }
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystemAggregation<SType,Type,MeshType>::distribute
+(
+    meshDirection<Type,MeshType>& f,
+    const List<Type>& data
+) const
+{
+    const label d = f.directionNum();
+
+    if (master())
+    {
+        // Send/copy sol
+
+        label offset = 0;
+        forAll(this->colNums()[d], proc)
+        {
+            const label size = this->colNums()[d][proc].size();
+            const label procNum = this->myPartMasterNum() + proc;
+
+            if (Pstream::myProcNo() == procNum)
+            {
+                label c = 0;
+                forAllCells(f, i, j, k)
+                    f(i,j,k) = data[c++];
+            }
+            else
+            {
+                UOPstream::write
+                (
+                    Pstream::commsTypes::blocking,
+                    procNum,
+                    reinterpret_cast<const char*>(&data[offset]),
+                    size*sizeof(Type),
+                    0,
+                    UPstream::worldComm
+                );
+            }
+
+            offset += size;
+        }
+    }
+    else
+    {
+        // Receive and copy solution
+
+        List<Type> data(f.size());
+
+        UIPstream::read
+        (
+            Pstream::commsTypes::blocking,
+            this->myPartMasterNum(),
+            reinterpret_cast<char*>(data.begin()),
+            data.byteSize(),
+            0,
+            UPstream::worldComm
+        );
+
+        label c = 0;
+        forAllCells(f, i, j, k)
+            f(i,j,k) = data[c++];
     }
 }
 

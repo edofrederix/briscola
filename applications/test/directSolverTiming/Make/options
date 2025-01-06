@@ -5,7 +5,8 @@ EXE_INC = \
     -I../../../libraries/briscolaImmersedBoundary/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude \
     $(if $(SUPERLU_HOME),-DSUPERLU,) \
-    -DFULLDEBUG -g -O0
+    -Wno-old-style-cast \
+    -Wno-unknown-pragmas
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \

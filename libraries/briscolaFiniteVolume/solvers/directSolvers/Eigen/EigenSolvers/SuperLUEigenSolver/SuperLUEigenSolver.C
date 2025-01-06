@@ -11,43 +11,20 @@ namespace fv
 {
 
 defineTypeNameAndDebug(SuperLUEigenSolver, 0);
-addToRunTimeSelectionTable(EigenSolver, SuperLUEigenSolver, dictionary);
+addToRunTimeSelectionTable(EigenSolverBase, SuperLUEigenSolver, dictionary);
 
-SuperLUEigenSolver::SuperLUEigenSolver()
+SuperLUEigenSolver::SuperLUEigenSolver(const dictionary& dict)
 :
-    EigenSolver()
+    EigenSolver<SuperLUSolver, ::Eigen::ColMajor>(dict)
 {}
 
 SuperLUEigenSolver::SuperLUEigenSolver(const SuperLUEigenSolver& s)
 :
-    EigenSolver(s)
+    EigenSolver<SuperLUSolver, ::Eigen::ColMajor>(s)
 {}
 
 SuperLUEigenSolver::~SuperLUEigenSolver()
 {}
-
-void SuperLUEigenSolver::prepare
-(
-    const EigenMatrixType& A,
-    const scalar
-)
-{
-    solverPtr_.reset(new EigenSolverType(A));
-    solverPtr_->compute(A);
-}
-
-void SuperLUEigenSolver::solve(EigenRhsType& x, const EigenRhsType& b) const
-{
-    if (solverPtr_.valid())
-    {
-        x = solverPtr_->solve(b);
-    }
-    else
-    {
-        FatalErrorInFunction
-            << "Solver not prepared" << endl << abort(FatalError);
-    }
-}
 
 }
 
