@@ -42,7 +42,7 @@ EigenLinearSystem<SType,Type,MeshType>::~EigenLinearSystem()
 {}
 
 template<class SType, class Type, class MeshType>
-void EigenLinearSystem<SType,Type,MeshType>::update
+void EigenLinearSystem<SType,Type,MeshType>::prepare
 (
     const label order,
     const label d
@@ -73,7 +73,7 @@ void EigenLinearSystem<SType,Type,MeshType>::update
 
     if (lsa.master())
     {
-        const label size = lsa.size(d);
+        const label size = lsa.partSize(d);
 
         // Generate in row-major order
 

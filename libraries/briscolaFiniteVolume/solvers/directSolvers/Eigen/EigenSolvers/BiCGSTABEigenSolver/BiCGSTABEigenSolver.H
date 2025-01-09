@@ -41,9 +41,6 @@ public:
 
     // Solve given a right-hand side
     virtual void solve(RhsType& x, const RhsType& b);
-
-    // First guess is needed
-    virtual bool needGuess() const { return true; }
 };
 
 }

@@ -24,27 +24,8 @@ protected:
     // Eigen linear system
     autoPtr<EigenLinearSystem<SType,Type,MeshType>> APtr_;
 
-    // Solvers. By default the iterative BiCGSTAB solver is used.
+    // Solvers. By default the SparseLU solver is used.
     PtrList<EigenSolverBase> solverPtrs_;
-
-    // Number of aggregation parts (defaults to the number of processors)
-    label nAggregationParts_;
-
-    // Minimum number of iterations (defaults to 1)
-    label minIter_;
-
-    // Maximum number of iterations (forced to 1 when there's only one
-    // aggregation part and defaulting to nAggregationParts otherwise)
-    label maxIter_;
-
-    // Relative tolerance (defaults to 1e-3)
-    scalar relTol_;
-
-    // Absolute tolerance (defaults to 0)
-    scalar tolerance_;
-
-    // Print solver statistics (defaults to false)
-    Switch printStats_;
 
 public:
 

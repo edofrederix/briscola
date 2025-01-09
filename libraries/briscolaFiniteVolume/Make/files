@@ -41,7 +41,8 @@ IO/IOReadTemplates.C
 IO/IOWriteTemplates.C
 
 linearSystem/linearSystems.C
-linearSystem/linearSystemAggregations.C
+linearSystem/linearSystemAggregation.C
+linearSystem/PstreamGlobalsLsa.C
 
 schemes/scheme.C
 
@@ -61,6 +62,9 @@ solvers/solver/solverDirectSolvers.C
 
 solvers/directSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolverBase.C
 solvers/directSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolvers.C
+
+solvers/directSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolverBase.C
+solvers/directSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolvers.C
 
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C
 solvers/PoissonSolvers/FFTPoissonSolver/FFTPoissonSolver.C

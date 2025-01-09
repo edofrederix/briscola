@@ -7,18 +7,24 @@ EXE_INC = \
     -I../briscolaMesh/lnInclude \
 	-I../briscolaImmersedBoundary/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude \
+    -I$(LIB_SRC)/Pstream/mpi/lnInclude \
     -I$(FFTW_HOME)/include \
     -I$(EIGEN_HOME)/include/eigen3 \
+    -I$(PETSC_HOME)/include \
     $(if $(SUPERLU_HOME),-DSUPERLU -I$(SUPERLU_HOME)/include,) \
+    $(if $(SUPERLU_DIST_HOME),-DSUPERLU_DIST -I$(SUPERLU_DIST_HOME)/include,) \
     -Wno-old-style-cast \
     -Wno-unknown-pragmas
 
 LIB_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -L$(FFTW_HOME)/lib \
+    -L$(PETSC_HOME)/lib \
     $(if $(SUPERLU_HOME),-L${SUPERLU_HOME}/lib -lsuperlu,) \
+    $(if $(SUPERLU_DIST_HOME),-L${SUPERLU_DIST_HOME}/lib -lsuperlu_dist,) \
     -lbriscolaCore \
     -lbriscolaMesh \
     -lbriscolaImmersedBoundary \
     -lOpenFOAM \
-    -lfftw3
+    -lfftw3 \
+    -lpetsc

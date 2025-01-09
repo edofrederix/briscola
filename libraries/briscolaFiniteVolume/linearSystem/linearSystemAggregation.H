@@ -7,6 +7,7 @@
 #include "fvMesh.H"
 #include "meshDirection.H"
 #include "List.H"
+#include "Tuple2.H"
 
 namespace Foam
 {
@@ -33,21 +34,30 @@ class linearSystemAggregation
     label nParts_;
 
     // This processor's part number
-    label myPartNum_;
+    label partNum_;
 
     // This processor's part master number
-    label myPartMasterNum_;
+    label partMasterNum_;
 
     // Number of processor's per part
     label nProcsPerPart_;
 
+    // Global size of the matrix
+    labelList globalSizes_;
+
     // Global row/column start and end indices for each direction
-    labelList globalStarts_;
-    labelList globalEnds_;
+    labelList partStarts_;
+    labelList partEnds_;
 
     // Column numbers for each processor's row in this part, for each direction.
     // Construct for a full stencil type and not a symmetric one.
     List<List<List<FixedList<label,FullSType::nComponents>>>> colNums_;
+
+    // Part communicator number
+    label partCommNum_;
+
+    // Master communicator number
+    label masterCommNum_;
 
 public:
 
@@ -74,11 +84,12 @@ public:
     // Return labels
     inline label levelNum() const { return l_; }
     inline label nParts() const { return nParts_; }
-    inline label myPartNum() const { return myPartNum_; }
-    inline label myPartMasterNum() const { return myPartMasterNum_; }
+    inline label partNum() const { return partNum_; }
+    inline label partMasterNum() const { return partMasterNum_; }
     inline label nProcsPerPart() const { return nProcsPerPart_; }
-    inline const labelList& globalStart() const { return globalStarts_; }
-    inline const labelList& globalEnd() const { return globalEnds_; }
+    inline const labelList& globalSizes() const { return globalSizes_; }
+    inline const labelList& globalStart() const { return partStarts_; }
+    inline const labelList& globalEnd() const { return partEnds_; }
 
     // Return reference to the column number data
     inline const List<List<List<FixedList<label,FullSType::nComponents>>>>&
@@ -87,17 +98,41 @@ public:
         return colNums_;
     }
 
-    // Return the aggregated matrix dimension of the given direction
-    inline label size(const label d) const
+    // Return the global matrix size of the given direction
+    inline label globalSize(const label d) const
     {
-        return globalEnds_[d] - globalStarts_[d];
+        return globalSizes_[d];
+    }
+
+    // Return the aggregated part size of the given direction
+    inline label partSize(const label d) const
+    {
+        return partEnds_[d] - partStarts_[d];
+    }
+
+    // Return the aggregated part start of the given direction
+    inline label partStart(const label d) const
+    {
+        return partStarts_[d];
+    }
+
+    // Return the aggregated part end of the given direction
+    inline label partEnd(const label d) const
+    {
+        return partEnds_[d];
     }
 
     // Return true if this processor is master
     inline bool master() const
     {
-        return Pstream::myProcNo() == myPartMasterNum_;
+        return Pstream::myProcNo() == partMasterNum_;
     }
+
+    // Aggregated part communicator number
+    inline label partCommNum() const { return partCommNum_; }
+
+    // Master communicator number
+    inline label masterCommNum() const { return masterCommNum_; }
 
     // Set the row coefficients of the aggregated matrix per processor
     void rowCoeffs
@@ -139,9 +174,6 @@ public:
         meshDirection<Type,MeshType>& f,
         const List<Type>& data
     ) const;
-
-    // Correct the aggregation boundary conditions of the given level
-    void correctBoundaryConditions(meshLevel<Type,MeshType>& x) const;
 };
 
 }
@@ -149,9 +181,5 @@ public:
 }
 
 }
-
-#ifdef NoRepository
-    #include "linearSystemAggregation.C"
-#endif
 
 #endif

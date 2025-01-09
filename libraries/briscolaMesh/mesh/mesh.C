@@ -11,7 +11,6 @@
 #include "periodicBoundary.H"
 
 #include "PstreamGlobals.H"
-#include <mpi.h>
 
 namespace Foam
 {

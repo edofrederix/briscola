@@ -348,10 +348,12 @@ MG<SType,Type,MeshType>::MG
     if (coarseMode_ == DIRECT && SType::nComponents > 1)
     {
         if (!this->dict_.found("directSolver"))
-        {
             this->dict_.add("directSolver", dictionary());
-            this->dict_.subDict("directSolver").add("type", "Eigen");
-        }
+
+        dictionary& subDict = this->dict_.subDict("directSolver");
+
+        subDict.lookupOrAddDefault("type", word("PETSc"));
+        subDict.lookupOrAddDefault("relTol", scalar(1e-3));
 
         const label coarseLevel = fvMsh.msh().size() - coarseLevel_ - 1;
 

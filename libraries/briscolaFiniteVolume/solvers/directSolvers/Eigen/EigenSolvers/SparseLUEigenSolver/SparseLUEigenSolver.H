@@ -32,9 +32,6 @@ public:
 
     // Destructor
     virtual ~SparseLUEigenSolver();
-
-    // First guess is not needed
-    virtual bool needGuess() const { return false; }
 };
 
 }

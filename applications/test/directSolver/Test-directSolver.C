@@ -10,7 +10,7 @@ using namespace briscola;
 using namespace fv;
 
 template<class SType, class Type, class MeshType>
-void test(const fvMesh& fvMsh, const word solverType)
+void test(const fvMesh& fvMsh, const word solverType, const word subType)
 {
     meshField<Type,MeshType> f
     (
@@ -35,7 +35,17 @@ void test(const fvMesh& fvMsh, const word solverType)
 
     // Write the system to a file
 
-    OFstream os(f.name() + "_" + SType::typeName + "_" + solverType);
+    const word fileName
+    (
+        f.name() + "_" +
+        SType::typeName + "_" +
+        solverType + "_" +
+        subType
+    );
+
+    Info<< "Writing to " << fileName << endl;
+
+    OFstream os(fileName);
     sys.writeLevel(os);
 
     // Prepare solver and compute solution
@@ -46,16 +56,19 @@ void test(const fvMesh& fvMsh, const word solverType)
 
         dictionary dict;
 
-        dict.add("EigenSolver", solverType);
-        dict.add("nAggregationParts", nParts);
+        dict.add(word(solverType + "Solver"), subType);
+
         dict.add("maxIter", 100);
-        dict.add("printStats", true);
+        dict.add("relTol", 1e-12);
+        dict.add("tolerance", 1e-12);
+        dict.add("printStats", false);
+        dict.add("nAggregationParts", nParts);
 
         autoPtr<typename solver<SType,Type,MeshType>::directSolver> solverPtr
         (
             solver<SType,Type,MeshType>::directSolver::New
             (
-                "Eigen",
+                solverType,
                 dict,
                 fvMsh
             ).ptr()
@@ -65,17 +78,9 @@ void test(const fvMesh& fvMsh, const word solverType)
         solverPtr->solve(sys);
     }
 
-    // Write the solution
+    // Write last solution
 
-    OFstream oss
-    (
-        f.name()
-      + "_"
-      + SType::typeName
-      + "_"
-      + solverType
-      + "_solution"
-    );
+    OFstream oss(word(fileName + "_solution"));
 
     for (int d = 0; d < MeshType::numberOfDirections; d++)
     {
@@ -104,27 +109,48 @@ int main(int argc, char *argv[])
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
 
-    wordList types;
+    wordList solverTypes;
 
-    types.append("SparseLU");
-    types.append("PartialPivLU");
-    types.append("BiCGSTAB");
+    solverTypes.append("PETSc");
+    solverTypes.append("Eigen");
+
+    List<wordList> subTypes(solverTypes.size());
+
+    subTypes[findIndex(solverTypes,"PETSc")].append("PCLU");
+    subTypes[findIndex(solverTypes,"PETSc")].append("KSPBCGS");
+    subTypes[findIndex(solverTypes,"PETSc")].append("KSPIBCGS");
+    subTypes[findIndex(solverTypes,"PETSc")].append("KSPGMRES");
+    subTypes[findIndex(solverTypes,"PETSc")].append("KSPFGMRES");
+
+    subTypes[findIndex(solverTypes,"Eigen")].append("SparseLU");
+    subTypes[findIndex(solverTypes,"Eigen")].append("PartialPivLU");
+    subTypes[findIndex(solverTypes,"Eigen")].append("BiCGSTAB");
 
     #ifdef SUPERLU
-    types.append("SuperLU");
+    subTypes[findIndex(solverTypes,"PETSc")].append("SuperLU");
+    subTypes[findIndex(solverTypes,"Eigen")].append("SuperLU");
     #endif
 
-    forAll(types, i)
+    #ifdef SUPERLU_DIST
+    subTypes[findIndex(solverTypes,"PETSc")].append("SuperLUDist");
+    #endif
+
+    forAll(solverTypes, i)
     {
-        const word type = types[i];
+        const word solverType = solverTypes[i];
 
-        test<symmStencil,scalar,colocated>(fvMsh, type);
-        test<symmStencil,vector,colocated>(fvMsh, type);
+        forAll(subTypes[i], j)
+        {
+            const word subType = subTypes[i][j];
 
-        test<stencil,scalar,colocated>(fvMsh, type);
-        test<stencil,vector,colocated>(fvMsh, type);
+            test<stencil,scalar,colocated>(fvMsh, solverType, subType);
+            test<stencil,vector,colocated>(fvMsh, solverType, subType);
 
-        test<stencil,scalar,staggered>(fvMsh, type);
-        test<stencil,vector,staggered>(fvMsh, type);
+            test<symmStencil,scalar,colocated>(fvMsh, solverType, subType);
+            test<symmStencil,vector,colocated>(fvMsh, solverType, subType);
+
+            test<stencil,scalar,staggered>(fvMsh, solverType, subType);
+            test<stencil,vector,staggered>(fvMsh, solverType, subType);
+        }
     }
 }

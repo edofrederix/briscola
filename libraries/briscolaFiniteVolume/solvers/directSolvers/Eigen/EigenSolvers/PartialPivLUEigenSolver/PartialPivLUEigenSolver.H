@@ -33,9 +33,6 @@ public:
 
     // Destructor
     virtual ~PartialPivLUEigenSolver();
-
-    // First guess is not needed
-    virtual bool needGuess() const { return false; }
 };
 
 }

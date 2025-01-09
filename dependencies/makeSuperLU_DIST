@@ -51,7 +51,6 @@ case $1 in
         cd build/$PACKAGE/build
 
         cmake \
-            -DTPL_ENABLE_INTERNAL_BLASLIB=ON \
             -DTPL_ENABLE_PARMETISLIB=OFF \
             -DTPL_ENABLE_CUDALIB=OFF \
             -DTPL_ENABLE_HIPLIB=OFF \

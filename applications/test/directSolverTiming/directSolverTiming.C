@@ -19,13 +19,29 @@ int main(int argc, char *argv[])
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
 
-    wordList types;
+    wordList solverTypes;
 
-    types.append("SparseLU");
-    types.append("BiCGSTAB");
+    solverTypes.append("PETSc");
+    solverTypes.append("Eigen");
+
+    List<wordList> subTypes(solverTypes.size());
+
+    subTypes[findIndex(solverTypes,"PETSc")].append("PCLU");
+    subTypes[findIndex(solverTypes,"PETSc")].append("KSPBCGS");
+    subTypes[findIndex(solverTypes,"PETSc")].append("KSPIBCGS");
+    subTypes[findIndex(solverTypes,"PETSc")].append("KSPGMRES");
+    subTypes[findIndex(solverTypes,"PETSc")].append("KSPFGMRES");
+
+    subTypes[findIndex(solverTypes,"Eigen")].append("SparseLU");
+    subTypes[findIndex(solverTypes,"Eigen")].append("BiCGSTAB");
 
     #ifdef SUPERLU
-    types.append("SuperLU");
+    subTypes[findIndex(solverTypes,"PETSc")].append("SuperLU");
+    subTypes[findIndex(solverTypes,"Eigen")].append("SuperLU");
+    #endif
+
+    #ifdef SUPERLU_DIST
+    subTypes[findIndex(solverTypes,"PETSc")].append("SuperLUDist");
     #endif
 
     colocatedScalarField f
@@ -49,52 +65,65 @@ int main(int argc, char *argv[])
     sys.singular();
     sys.diagonal();
 
-    forAll(types, i)
+    forAll(solverTypes, i)
     {
-        const word type = types[i];
+        const word solverType = solverTypes[i];
 
-        // Prepare solver and compute solution
-
-        for (int nParts = 1; nParts <= Pstream::nProcs(); nParts++)
+        forAll(subTypes[i], j)
         {
-            sys.x() = Zero;
+            const word subType = subTypes[i][j];
 
-            dictionary dict;
+            // Prepare solver and compute solution
 
-            dict.add("EigenSolver", type);
-            dict.add("nAggregationParts", nParts);
-            dict.add("maxIter", 100);
-            dict.add("printStats", true);
-
-            forAll(sys.x(), l)
+            for (int nParts = 1; nParts <= Pstream::nProcs(); nParts++)
             {
-                Info<< "Solver = " << type
-                    << ", nParts = " << nParts
-                    << ", level = " << l << endl;
+                sys.x() = Zero;
 
-                initTicToc(2)
+                dictionary dict;
 
-                autoPtr<directSolverType>
-                    solverPtr
-                    (
-                        directSolverType::New
+                dict.add(word(solverType + "Solver"), subType);
+
+                dict.add("maxIter", 100);
+                dict.add("relTol", 1e-12);
+                dict.add("tolerance", 1e-12);
+                dict.add("printStats", false);
+                dict.add("nAggregationParts", nParts);
+
+                forAll(sys.x(), l)
+                {
+                    Info<< "Solver = " << solverType
+                        << ", sub-solver = " << subType
+                        << ", nParts = " << nParts
+                        << ", level = " << l << " ";
+
+                    initTicToc(3)
+
+                    autoPtr<directSolverType>
+                        solverPtr
                         (
-                            "Eigen",
-                            dict,
-                            fvMsh,
-                            l
-                        ).ptr()
-                    );
+                            directSolverType::New
+                            (
+                                solverType,
+                                dict,
+                                fvMsh,
+                                l
+                            ).ptr()
+                        );
 
-                tic(0)
-                solverPtr->prepare(sys);
-                toc(0)
+                    tic(0)
+                    solverPtr->prepare(sys);
+                    toc(0)
 
-                tic(1)
-                solverPtr->solve(sys);
-                toc(1)
+                    tic(1)
+                    solverPtr->solve(sys);
+                    toc(1)
 
-                printTicToc
+                    tic(2)
+                    solverPtr->solve(sys);
+                    toc(2)
+
+                    printTicToc
+                }
             }
         }
     }

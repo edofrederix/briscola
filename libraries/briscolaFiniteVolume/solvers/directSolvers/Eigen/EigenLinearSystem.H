@@ -45,8 +45,8 @@ public:
     // Destrictor
     ~EigenLinearSystem();
 
-    // Update the matrix
-    void update(const label order, const label d);
+    // Prepare the matrix
+    void prepare(const label order, const label d);
 
     // Return reference to the row-major matrices
 

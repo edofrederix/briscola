@@ -2,7 +2,7 @@
 #define linearSystem_H
 
 #include "linearSystemFwd.H"
-#include "linearSystemAggregationFwd.H"
+#include "linearSystemAggregation.H"
 
 #include "fvMesh.H"
 #include "meshFields.H"

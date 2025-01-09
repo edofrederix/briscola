@@ -33,9 +33,6 @@ public:
 
     // Destructor
     virtual ~SuperLUEigenSolver();
-
-    // First guess is not needed
-    virtual bool needGuess() const { return false; }
 };
 
 }

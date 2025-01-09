@@ -69,14 +69,6 @@ public:
 
     // Storage order
     virtual int order() const = 0;
-
-    // Specify if a first guess is needed
-    virtual bool needGuess() const = 0;
-
-    // Set tolerance. Do nothing by default.
-    virtual void setTolerance(const scalar tolerance)
-    {}
-
 };
 
 }
