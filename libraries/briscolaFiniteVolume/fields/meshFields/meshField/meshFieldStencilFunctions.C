@@ -60,7 +60,7 @@ rowProduct
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshField<productType,MeshType>> tRes =
-        reuseFieTmp<productType,Type1,MeshType>::New
+        reuseFieldTmp<productType,Type1,MeshType>::New
         (
             tf1,
             "rowProduct(" + tf1->name() + "," + f2.name() + ")"
@@ -88,7 +88,7 @@ rowProduct
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshField<productType,MeshType>> tRes =
-        reuseFieTmp<productType,Type2,MeshType>::New
+        reuseFieldTmp<productType,Type2,MeshType>::New
         (
             tf2,
             "rowProduct(" + f1.name() + "," + tf2->name() + ")"
@@ -119,7 +119,7 @@ rowProduct
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshField<productType,MeshType>> tRes =
-        reuseFieTmpTmp<productType,Type1,Type1,Type2,MeshType>::New
+        reuseFieldTmpTmp<productType,Type1,Type1,Type2,MeshType>::New
         (
             tf1,
             tf2,
@@ -178,7 +178,7 @@ rowProduct(const tmp<meshField<Type,MeshType>>& tf1, const Form& s)
     typedef typename stencilProduct<Type,Form>::type productType;
 
     tmp<meshField<productType,MeshType>> tRes =
-        reuseFieTmp<productType,Type,MeshType>::New
+        reuseFieldTmp<productType,Type,MeshType>::New
         (
             tf1,
             "rowProduct(" + tf1->name() + "," + Foam::name(s) + ")"

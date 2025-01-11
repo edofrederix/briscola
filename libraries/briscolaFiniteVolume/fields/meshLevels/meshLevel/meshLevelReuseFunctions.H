@@ -51,7 +51,7 @@ template
     class Type1,
     class MeshType
 >
-class reuseLevTmp
+class reuseLevelTmp
 {
 public:
 
@@ -76,7 +76,7 @@ template
     class TypeR,
     class MeshType
 >
-class reuseLevTmp<TypeR, TypeR, MeshType>
+class reuseLevelTmp<TypeR, TypeR, MeshType>
 {
 public:
 
@@ -111,7 +111,7 @@ template
     class Type2,
     class MeshType
 >
-class reuseLevTmpTmp
+class reuseLevelTmpTmp
 {
 public:
 
@@ -139,7 +139,7 @@ template
     class Type2,
     class MeshType
 >
-class reuseLevTmpTmp<TypeR, TypeR, Type12, Type2, MeshType>
+class reuseLevelTmpTmp<TypeR, TypeR, Type12, Type2, MeshType>
 {
 public:
 
@@ -174,7 +174,7 @@ template
     class Type12,
     class MeshType
 >
-class reuseLevTmpTmp<TypeR, Type1, Type12, TypeR, MeshType>
+class reuseLevelTmpTmp<TypeR, Type1, Type12, TypeR, MeshType>
 {
 public:
 
@@ -208,7 +208,7 @@ template
     class Type12,
     class MeshType
 >
-class reuseLevTmpTmp<TypeR, TypeR, Type12, TypeR, MeshType>
+class reuseLevelTmpTmp<TypeR, TypeR, Type12, TypeR, MeshType>
 {
 public:
 

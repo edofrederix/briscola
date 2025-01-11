@@ -60,7 +60,7 @@ template
     class Type1,
     class MeshType
 >
-class reuseFieTmp
+class reuseFieldTmp
 {
 public:
 
@@ -90,7 +90,7 @@ template
     class TypeR,
     class MeshType
 >
-class reuseFieTmp<TypeR, TypeR, MeshType>
+class reuseFieldTmp<TypeR, TypeR, MeshType>
 {
 public:
 
@@ -134,7 +134,7 @@ template
     class Type2,
     class MeshType
 >
-class reuseFieTmpTmp
+class reuseFieldTmpTmp
 {
 public:
 
@@ -167,7 +167,7 @@ template
     class Type12,
     class MeshType
 >
-class reuseFieTmpTmp<TypeR, Type1, Type12, TypeR, MeshType>
+class reuseFieldTmpTmp<TypeR, Type1, Type12, TypeR, MeshType>
 {
 public:
 
@@ -213,7 +213,7 @@ template
     class Type2,
     class MeshType
 >
-class reuseFieTmpTmp<TypeR, TypeR, Type12, Type2, MeshType>
+class reuseFieldTmpTmp<TypeR, TypeR, Type12, Type2, MeshType>
 {
 public:
 
@@ -258,7 +258,7 @@ template
     class Type12,
     class MeshType
 >
-class reuseFieTmpTmp<TypeR, TypeR, Type12, TypeR, MeshType>
+class reuseFieldTmpTmp<TypeR, TypeR, Type12, TypeR, MeshType>
 {
 public:
 

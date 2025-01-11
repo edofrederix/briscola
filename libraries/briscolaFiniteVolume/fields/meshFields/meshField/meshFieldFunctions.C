@@ -53,7 +53,7 @@ tmp<meshField<SCALARPRODTYPE,MeshType>>
 mag(const tmp<meshField<Type,MeshType>>& tf)
 {
     tmp<meshField<SCALARPRODTYPE,MeshType>> tRes =
-        reuseFieTmp<SCALARPRODTYPE,Type,MeshType>::New
+        reuseFieldTmp<SCALARPRODTYPE,Type,MeshType>::New
         (
             tf,
             "mag("+tf->name()+")"
@@ -106,7 +106,7 @@ cmptMax(const tmp<meshField<Type,MeshType>>& tf)
 {
     typedef typename meshField<Type,MeshType>::cmptType cmptType;
     tmp<meshField<cmptType,MeshType>> tRes =
-        reuseFieTmp<cmptType,Type,MeshType>::New(tf,"cmptMax("+tf->name()+")");
+        reuseFieldTmp<cmptType,Type,MeshType>::New(tf,"cmptMax("+tf->name()+")");
 
     cmptMax(tRes.ref(), tf());
 
@@ -155,7 +155,7 @@ cmptMin(const tmp<meshField<Type,MeshType>>& tf)
 {
     typedef typename meshField<Type,MeshType>::cmptType cmptType;
     tmp<meshField<cmptType,MeshType>> tRes =
-        reuseFieTmp<cmptType,Type,MeshType>::New(tf,"cmptMin("+tf->name()+")");
+        reuseFieldTmp<cmptType,Type,MeshType>::New(tf,"cmptMin("+tf->name()+")");
 
     cmptMin(tRes.ref(), tf());
 
@@ -204,7 +204,7 @@ cmptAv(const tmp<meshField<Type,MeshType>>& tf)
 {
     typedef typename meshField<Type,MeshType>::cmptType cmptType;
     tmp<meshField<cmptType,MeshType>> tRes =
-        reuseFieTmp<cmptType,Type,MeshType>::New(tf,"cmptAv("+tf->name()+")");
+        reuseFieldTmp<cmptType,Type,MeshType>::New(tf,"cmptAv("+tf->name()+")");
 
     cmptAv(tRes.ref(), tf());
 

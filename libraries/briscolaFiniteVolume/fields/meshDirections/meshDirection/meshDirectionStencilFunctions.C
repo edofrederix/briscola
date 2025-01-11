@@ -70,7 +70,7 @@ rowProduct
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshDirection<productType,MeshType>> tRes =
-        reuseDirTmp<productType,Type1,MeshType>::New(tf1);
+        reuseDirectionTmp<productType,Type1,MeshType>::New(tf1);
 
     rowProduct(tRes.ref(),tf1(),f2);
 
@@ -91,7 +91,7 @@ rowProduct
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshDirection<productType,MeshType>> tRes =
-        reuseDirTmp<productType,Type2,MeshType>::New(tf2);
+        reuseDirectionTmp<productType,Type2,MeshType>::New(tf2);
 
     rowProduct(tRes.ref(),f1,tf2());
 
@@ -112,7 +112,7 @@ rowProduct
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshDirection<productType,MeshType>> tRes =
-        reuseDirTmpTmp<productType,Type1,Type1,Type2,MeshType>::New(tf1,tf2);
+        reuseDirectionTmpTmp<productType,Type1,Type1,Type2,MeshType>::New(tf1,tf2);
 
     rowProduct(tRes.ref(),tf1(),tf2());
 
@@ -166,7 +166,7 @@ rowProduct(const tmp<meshDirection<Type,MeshType>>& tf1, const Form& s)
     typedef typename stencilProduct<Type,Form>::type productType;
 
     tmp<meshDirection<productType,MeshType>> tRes =
-        reuseDirTmp<productType,Type,MeshType>::New(tf1);
+        reuseDirectionTmp<productType,Type,MeshType>::New(tf1);
 
     rowProduct(tRes.ref(),tf1(),s);
 

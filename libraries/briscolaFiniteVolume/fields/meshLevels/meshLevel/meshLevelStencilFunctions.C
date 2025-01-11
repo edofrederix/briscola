@@ -57,7 +57,7 @@ rowProduct
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshLevel<productType,MeshType>> tRes =
-        reuseLevTmp<productType,Type1,MeshType>::New(tf1);
+        reuseLevelTmp<productType,Type1,MeshType>::New(tf1);
 
     rowProduct(tRes.ref(),tf1(),f2);
 
@@ -78,7 +78,7 @@ rowProduct
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshLevel<productType,MeshType>> tRes =
-        reuseLevTmp<productType,Type2,MeshType>::New(tf2);
+        reuseLevelTmp<productType,Type2,MeshType>::New(tf2);
 
     rowProduct(tRes.ref(),f1,tf2());
 
@@ -99,7 +99,7 @@ rowProduct
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshLevel<productType,MeshType>> tRes =
-        reuseLevTmpTmp<productType,Type1,Type1,Type2,MeshType>::New(tf1,tf2);
+        reuseLevelTmpTmp<productType,Type1,Type1,Type2,MeshType>::New(tf1,tf2);
 
     rowProduct(tRes.ref(),tf1(),tf2());
 
@@ -151,7 +151,7 @@ rowProduct(const tmp<meshLevel<Type,MeshType>>& tf1, const Form& s)
     typedef typename stencilProduct<Type,Form>::type productType;
 
     tmp<meshLevel<productType,MeshType>> tRes =
-        reuseLevTmp<productType,Type,MeshType>::New(tf1);
+        reuseLevelTmp<productType,Type,MeshType>::New(tf1);
 
     rowProduct(tRes.ref(),tf1(),s);
 

@@ -49,7 +49,7 @@ tmp<meshDirection<SCALARPRODTYPE,MeshType>>
 mag(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     tmp<meshDirection<SCALARPRODTYPE,MeshType>> tRes =
-        reuseDirTmp<SCALARPRODTYPE,Type,MeshType>::New(tD);
+        reuseDirectionTmp<SCALARPRODTYPE,Type,MeshType>::New(tD);
 
     mag(tRes.ref(), tD());
     if (tD.isTmp())
@@ -97,7 +97,7 @@ cmptMax(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     typedef typename meshDirection<Type,MeshType>::cmptType cmptType;
     tmp<meshDirection<cmptType,MeshType>> tRes =
-        reuseDirTmp<cmptType,Type,MeshType>::New(tD);
+        reuseDirectionTmp<cmptType,Type,MeshType>::New(tD);
 
     cmptMax(tRes.ref(), tD());
     if (tD.isTmp())
@@ -145,7 +145,7 @@ cmptMin(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     typedef typename meshDirection<Type,MeshType>::cmptType cmptType;
     tmp<meshDirection<cmptType,MeshType>> tRes =
-        reuseDirTmp<cmptType,Type,MeshType>::New(tD);
+        reuseDirectionTmp<cmptType,Type,MeshType>::New(tD);
 
     cmptMin(tRes.ref(), tD());
     if (tD.isTmp())
@@ -189,7 +189,7 @@ cmptAv(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     typedef typename meshDirection<Type,MeshType>::cmptType cmptType;
     tmp<meshDirection<cmptType,MeshType>> tRes =
-        reuseDirTmp<cmptType,Type,MeshType>::New(tD);
+        reuseDirectionTmp<cmptType,Type,MeshType>::New(tD);
 
     cmptAv(tRes.ref(), tD());
     if (tD.isTmp())

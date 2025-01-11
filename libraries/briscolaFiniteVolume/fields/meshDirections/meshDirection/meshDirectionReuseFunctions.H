@@ -52,7 +52,7 @@ template
     class Type1,
     class MeshType
 >
-class reuseDirTmp
+class reuseDirectionTmp
 {
 public:
 
@@ -78,7 +78,7 @@ template
     class TypeR,
     class MeshType
 >
-class reuseDirTmp<TypeR, TypeR, MeshType>
+class reuseDirectionTmp<TypeR, TypeR, MeshType>
 {
 public:
 
@@ -114,7 +114,7 @@ template
     class Type2,
     class MeshType
 >
-class reuseDirTmpTmp
+class reuseDirectionTmpTmp
 {
 public:
 
@@ -143,7 +143,7 @@ template
     class Type2,
     class MeshType
 >
-class reuseDirTmpTmp<TypeR, TypeR, Type12, Type2, MeshType>
+class reuseDirectionTmpTmp<TypeR, TypeR, Type12, Type2, MeshType>
 {
 public:
 
@@ -179,7 +179,7 @@ template
     class Type12,
     class MeshType
 >
-class reuseDirTmpTmp<TypeR, Type1, Type12, TypeR, MeshType>
+class reuseDirectionTmpTmp<TypeR, Type1, Type12, TypeR, MeshType>
 {
 public:
 
@@ -214,7 +214,7 @@ template
     class Type12,
     class MeshType
 >
-class reuseDirTmpTmp<TypeR, TypeR, Type12, TypeR, MeshType>
+class reuseDirectionTmpTmp<TypeR, TypeR, Type12, TypeR, MeshType>
 {
 public:
 

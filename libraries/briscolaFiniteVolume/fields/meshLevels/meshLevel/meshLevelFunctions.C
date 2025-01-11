@@ -36,7 +36,7 @@ template<class Type, class MeshType>
 tmp<meshLevel<SCALARPRODTYPE,MeshType>> mag(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     tmp<meshLevel<SCALARPRODTYPE,MeshType>> tRes =
-        reuseLevTmp<SCALARPRODTYPE,Type,MeshType>::New(tf);
+        reuseLevelTmp<SCALARPRODTYPE,Type,MeshType>::New(tf);
 
     mag(tRes.ref(), tf());
     if (tf.isTmp())
@@ -72,7 +72,7 @@ cmptMax(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     typedef typename meshLevel<Type,MeshType>::cmptType cmptType;
     tmp<meshLevel<cmptType,MeshType>> tRes =
-        reuseLevTmp<cmptType,Type,MeshType>::New(tf);
+        reuseLevelTmp<cmptType,Type,MeshType>::New(tf);
 
     cmptMax(tRes.ref(), tf());
     if (tf.isTmp())
@@ -108,7 +108,7 @@ cmptMin(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     typedef typename meshLevel<Type,MeshType>::cmptType cmptType;
     tmp<meshLevel<cmptType,MeshType>> tRes =
-        reuseLevTmp<cmptType,Type,MeshType>::New(tf);
+        reuseLevelTmp<cmptType,Type,MeshType>::New(tf);
 
     cmptMin(tRes.ref(), tf());
     if (tf.isTmp())
@@ -144,7 +144,7 @@ cmptAv(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     typedef typename meshLevel<Type,MeshType>::cmptType cmptType;
     tmp<meshLevel<cmptType,MeshType>> tRes =
-        reuseLevTmp<cmptType,Type,MeshType>::New(tf);
+        reuseLevelTmp<cmptType,Type,MeshType>::New(tf);
 
     cmptAv(tRes.ref(), tf());
     if (tf.isTmp())
