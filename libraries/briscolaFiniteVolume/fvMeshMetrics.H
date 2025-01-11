@@ -2,6 +2,7 @@
 #define fvMeshMetrics_H
 
 #include "immersedBoundaryFwd.H"
+#include "labelList.H"
 
 namespace Foam
 {
@@ -56,6 +57,9 @@ class fvMeshMetrics
 
     // Global cell numbers
     meshField<label,MeshType> globalCellNumbers_;
+
+    // Global cell counts per level
+    List<labelList> globalCellCounts_;
 
     // List of immersed boundaries (if any)
     PtrList<immersedBoundary<MeshType>> immersedBoundaries_;
@@ -186,6 +190,12 @@ public:
     inline const meshField<label,MeshType>& globalCellNumbers() const
     {
         return globalCellNumbers_;
+    }
+
+    // Global number of cells
+    inline const List<labelList>& globalCellCounts() const
+    {
+        return globalCellCounts_;
     }
 };
 

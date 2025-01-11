@@ -18,6 +18,9 @@ List<Type> solver<SType,Type,MeshType>::normFactors
 {
     const label l = res.levelNum();
 
+    const labelList& globalCellCounts =
+        sys.fvMsh().template metrics<MeshType>().globalCellCounts()[l];
+
     List<Type> y(gAverage(sys.x()[l]));
     List<Type> f(MeshType::numberOfDirections, Zero);
 
@@ -29,7 +32,7 @@ List<Type> solver<SType,Type,MeshType>::normFactors
         const meshDirection<Type,MeshType>& b = sys.b()[l][d];
         const meshDirection<Type,MeshType>& r = res[d];
 
-        forAllCells(A, i, j, k)
+        forAllCells(b, i, j, k)
         {
             Type Ay =
                 diagonal[d]
@@ -47,7 +50,16 @@ List<Type> solver<SType,Type,MeshType>::normFactors
 
     reduce(f, sumOp<List<Type>>());
 
-    return max(Foam::cmptSqrt(f), 1e-20*pTraits<Type>::one);
+    f = Foam::cmptSqrt(f);
+
+    // Limit the normalization factor to a residual value of 1e-12 for each cell
+    // on average. Below such a value we run into machine precision
+    // inaccuracies.
+
+    forAll(f, d)
+        f[d] = Foam::max(f[d], pTraits<Type>::one*globalCellCounts[d]*1e-12);
+
+    return f;
 }
 
 template<class SType, class Type, class MeshType>

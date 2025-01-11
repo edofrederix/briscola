@@ -68,9 +68,6 @@ void PETScKSPSolver::solve
         scalar finalResidual;
         KSPGetResidualNorm(ksp, &finalResidual);
 
-        KSPConvergedReason reason;
-        KSPGetConvergedReason(ksp, &reason);
-
         // Initial guess is zero so the initial residual is unity
 
         Info<< "PETSc " << this->type() << " solver"

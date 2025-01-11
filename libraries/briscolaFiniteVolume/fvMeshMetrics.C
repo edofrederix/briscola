@@ -308,9 +308,15 @@ template<class MeshType>
 void fvMeshMetrics<MeshType>::setGlobalCellNumbers()
 {
     globalCellNumbers_ = -1;
+    globalCellCounts_.resize(globalCellNumbers_.size());
+
+    // Cells are numbered lexicographically on each processor and with
+    // increasing processor rank
 
     forAll(globalCellNumbers_, l)
     {
+        globalCellCounts_[l].resize(MeshType::numberOfDirections);
+
         forAll(globalCellNumbers_[l], d)
         {
             labelList sizes(Pstream::nProcs());
@@ -331,6 +337,8 @@ void fvMeshMetrics<MeshType>::setGlobalCellNumbers()
             {
                 globalCellNumbers_[l][d](i,j,k) = start + c++;
             }
+
+            globalCellCounts_[l][d] = sum(sizes);
         }
     }
 

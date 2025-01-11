@@ -35,7 +35,11 @@ PETSc<SType,Type,MeshType>::PETSc
     if (Pstream::parRun())
         PETSC_COMM_WORLD = PstreamGlobals::MPI_COMM_FOAM;
 
-    PetscInitialize(NULL, NULL, NULL, NULL);
+    PetscBool initialized;
+    PetscInitialized(&initialized);
+
+    if (!initialized)
+        PetscInitialize(NULL, NULL, NULL, NULL);
 
     // Setup solvers
 
@@ -59,7 +63,11 @@ PETSc<SType,Type,MeshType>::PETSc
 template<class SType, class Type, class MeshType>
 PETSc<SType,Type,MeshType>::~PETSc()
 {
-    PetscFinalize();
+    PetscBool initialized;
+    PetscInitialized(&initialized);
+
+    if (initialized)
+        PetscFinalize();
 }
 
 template<class SType, class Type, class MeshType>

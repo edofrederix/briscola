@@ -72,8 +72,8 @@ int main(int argc, char *argv[])
             << duration_cast<milliseconds>(t2 - t1).count()
             << " ms" << endl;
 
-        // Matrix multiplication for a level. Should take about the same time as for
-        // a direction, because the level only has one direction (colocated)
+        // Matrix multiplication for a level. Should take about the same time as
+        // for a direction, because the level only has one direction (colocated)
 
         t1 = high_resolution_clock::now();
 
