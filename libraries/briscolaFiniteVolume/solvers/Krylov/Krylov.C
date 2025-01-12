@@ -161,22 +161,22 @@ void Krylov<SType,Type,MeshType>::solve
 
     x.correctBoundaryConditions();
 
-    // Residual
+    // Buffer
 
-    meshLevel<Type, MeshType> r(sys.fvMsh(), 0);
+    meshLevel<Type, MeshType> buffer(sys.fvMsh(), 0);
 
     // Initial residual
 
-    sys.residual(r);
+    sys.residual(buffer);
 
     // Residual normalization factors
 
-    const List<Type> normFactors(this->normFactors(sys,r));
+    const List<Type> normFactors(this->normFactors(sys,buffer));
 
     const List<Type> initialResiduals =
         cmptDivide
         (
-            Foam::cmptSqrt(gSum(cmptSqr(r))),
+            Foam::cmptSqrt(gSum(cmptSqr(buffer))),
             normFactors
         );
 
@@ -184,10 +184,6 @@ void Krylov<SType,Type,MeshType>::solve
     (
         Foam::cmptSqrt(gSum(cmptSqr(b)))
     );
-
-    // Buffer
-
-    meshLevel<Type,MeshType> buffer(sys.fvMsh(), 0);
 
     for (int d = 0; d < nDir; d++)
     {

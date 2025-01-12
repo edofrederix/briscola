@@ -52,7 +52,7 @@ bricks
     0
     {
         vertices    (((1 10)(4 13))((0 9)(3 12)));
-        N           (24 16 16);
+        N           (12 8 8);
     }
 
     // Coordinate order y,x,z, brick position (0,0,1)
@@ -60,7 +60,7 @@ bricks
     1
     {
         vertices    (((4 5)(13 14))((1 2)(10 11)));
-        N           (16 16 24);
+        N           (8 8 12);
     }
 );
 

@@ -155,7 +155,8 @@ cmptMin(const tmp<meshField<Type,MeshType>>& tf)
 {
     typedef typename meshField<Type,MeshType>::cmptType cmptType;
     tmp<meshField<cmptType,MeshType>> tRes =
-        reuseFieldTmp<cmptType,Type,MeshType>::New(tf,"cmptMin("+tf->name()+")");
+        reuseFieldTmp<cmptType,Type,MeshType>::
+        New(tf,"cmptMin("+tf->name()+")");
 
     cmptMin(tRes.ref(), tf());
 

@@ -20,18 +20,8 @@ void rowProduct
     const meshDirection<Type2,MeshType>& f2
 )
 {
-    res = Zero;
-
-    if (isStencil<Type1>())
-    {
-        forAllCells(f2, i, j, k)
-            res(i,j,k) = rowProduct(f1,f2,i,j,k);
-    }
-    else
-    {
-        forAllCells(f1, i, j, k)
-            res(i,j,k) = rowProduct(f1,f2,i,j,k);
-    }
+    forAllCells(res, i, j, k)
+        res(i,j,k) = rowProduct(f1,f2,i,j,k);
 }
 
 template<class Type1, class Type2, class MeshType>
@@ -132,8 +122,6 @@ void rowProduct
     const Form& s
 )
 {
-    res = Zero;
-
     forAllCells(f1, i, j, k)
         res(i,j,k) = rowProduct(f1,s,i,j,k);
 }
@@ -210,8 +198,6 @@ void rowSum
     const meshDirection<Type,MeshType>& f
 )
 {
-    res = Zero;
-
     forAllCells(f, i, j, k)
         res(i,j,k) = rowSum(f,i,j,k);
 }

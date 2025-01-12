@@ -13,9 +13,17 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::allocate(const labelVector B)
+void meshDirection<Type,MeshType>::allocate()
 {
-    blockType::reAllocate(B);
+    // Allocate a block of its level shape with mesh type padding and ghost cell
+    // layers on both sides
+
+    blockType::reAllocate
+    (
+        fvMsh_[l_].N()
+      + MeshType::padding[d_]
+      + 2*ghosts*unitXYZ
+    );
 }
 
 template<class Type, class MeshType>
@@ -52,7 +60,7 @@ meshDirection<Type,MeshType>::meshDirection
     I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(&mshLevel)
 {
-    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
+    allocate();
 }
 
 // Copy constructors
@@ -206,6 +214,8 @@ meshDirection<Type,MeshType>::meshDirection
         tD.clear();
 }
 
+// Standalone constructors
+
 template<class Type, class MeshType>
 meshDirection<Type,MeshType>::meshDirection
 (
@@ -221,7 +231,7 @@ meshDirection<Type,MeshType>::meshDirection
     I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(nullptr)
 {
-    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
+    allocate();
 }
 
 template<class Type, class MeshType>
@@ -240,7 +250,7 @@ meshDirection<Type,MeshType>::meshDirection
     I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(nullptr)
 {
-    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
+    allocate();
     *this = Zero;
 }
 
@@ -260,7 +270,7 @@ meshDirection<Type,MeshType>::meshDirection
     I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(nullptr)
 {
-    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
+    allocate();
     *this = v;
 }
 
@@ -280,7 +290,7 @@ meshDirection<Type,MeshType>::meshDirection
     I_(fvMsh.I<MeshType>(l,d)),
     mshLevelPtr_(nullptr)
 {
-    allocate(fvMsh[l].N() + MeshType::padding[d] + 2*unitXYZ);
+    allocate();
     *this = v[d];
 }
 

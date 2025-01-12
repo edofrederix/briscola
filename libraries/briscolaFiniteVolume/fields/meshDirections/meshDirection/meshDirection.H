@@ -34,6 +34,13 @@ class meshDirection
 
     private block<Type>
 {
+public:
+
+    // Number of ghost cell layers
+    static const label ghosts = 1;
+
+private:
+
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
@@ -50,10 +57,10 @@ class meshDirection
     meshLevel<Type,MeshType>* mshLevelPtr_;
 
     // Allocate data
-    void allocate(const labelVector);
+    void allocate();
 
     // Transfer data from other mesh direction
-    void transfer(meshDirection<Type,MeshType>&);
+    void transfer(meshDirection<Type,MeshType>& D);
 
 public:
 
@@ -77,28 +84,93 @@ public:
 
     meshDirection
     (
-        meshLevel<Type,MeshType>&,
-        const fvMesh&,
-        const label,
-        const label
+        meshLevel<Type,MeshType>& mshLevel,
+        const fvMesh& fvMsh,
+        const label l,
+        const label d
     );
 
     // Copy constructors: construct from mesh direction, tmp or mesh
 
-    meshDirection(const meshDirection<Type,MeshType>&);
-    meshDirection(const meshDirection<Type,MeshType>&, const zero&);
-    meshDirection(const meshDirection<Type,MeshType>&, const Type&);
-    meshDirection(const meshDirection<Type,MeshType>&, const List<Type>&);
+    meshDirection
+    (
+        const meshDirection<Type,MeshType>& D
+    );
 
-    meshDirection(const tmp<meshDirection<Type,MeshType>>&);
-    meshDirection(const tmp<meshDirection<Type,MeshType>>&, const zero&);
-    meshDirection(const tmp<meshDirection<Type,MeshType>>&, const Type&);
-    meshDirection(const tmp<meshDirection<Type,MeshType>>&, const List<Type>&);
+    meshDirection
+    (
+        const meshDirection<Type,MeshType>& D,
+        const zero&
+    );
 
-    meshDirection(const fvMesh&, const label, const label);
-    meshDirection(const fvMesh&, const label, const label, const zero&);
-    meshDirection(const fvMesh&, const label, const label, const Type&);
-    meshDirection(const fvMesh&, const label, const label, const List<Type>&);
+    meshDirection
+    (
+        const meshDirection<Type,MeshType>& D,
+        const Type&
+    );
+
+    meshDirection
+    (
+        const meshDirection<Type,MeshType>& D,
+        const List<Type>&
+    );
+
+    meshDirection
+    (
+        const tmp<meshDirection<Type,MeshType>>& tD
+    );
+
+    meshDirection
+    (
+        const tmp<meshDirection<Type,MeshType>>& tD,
+        const zero&
+    );
+
+    meshDirection
+    (
+        const tmp<meshDirection<Type,MeshType>>& tD,
+        const Type&
+    );
+
+    meshDirection
+    (
+        const tmp<meshDirection<Type,MeshType>>& tD,
+        const List<Type>&
+    );
+
+    // Standalone constructors: construct without parent level with optional
+    // ghost layers
+
+    meshDirection
+    (
+        const fvMesh& fvMsh,
+        const label l,
+        const label d
+    );
+
+    meshDirection
+    (
+        const fvMesh& fvMsh,
+        const label l,
+        const label d,
+        const zero& z
+    );
+
+    meshDirection
+    (
+        const fvMesh& fvMsh,
+        const label l,
+        const label d,
+        const Type& v
+    );
+
+    meshDirection
+    (
+        const fvMesh& fvMsh,
+        const label l,
+        const label d,
+        const List<Type>& v
+    );
 
     // Clone
 
@@ -199,7 +271,7 @@ public:
         return this->B()(i);
     }
 
-    // (i,j,k) element access operator. Account for ghost cell layers
+    // (i,j,k) element access operator. Account for ghost cell layers.
     inline Type& operator()
     (
         const int i,
@@ -207,10 +279,10 @@ public:
         const int k
     )
     {
-        return blockType::operator()(i+1,j+1,k+1);
+        return blockType::operator()(i+ghosts, j+ghosts, k+ghosts);
     }
 
-    // (i,j,k) const element access operator. Account for ghost cell layers
+    // (i,j,k) const element access operator. Account for ghost cell layers.
     inline const Type& operator()
     (
         const int i,
@@ -218,19 +290,19 @@ public:
         const int k
     ) const
     {
-        return blockType::operator()(i+1,j+1,k+1);
+        return blockType::operator()(i+ghosts, j+ghosts, k+ghosts);
     }
 
-    // (i,j,k) element access operator. Account for ghost cell layers
+    // (i,j,k) element access operator. Account for ghost cell layers.
     inline Type& operator() (const labelVector& ijk)
     {
-        return blockType::operator()(ijk+unitXYZ);
+        return blockType::operator()(ijk + ghosts*unitXYZ);
     }
 
-    // (i,j,k) const element access operator. Account for ghost cell layers
+    // (i,j,k) const element access operator. Account for ghost cell layers.
     inline const Type& operator() (const labelVector& ijk) const
     {
-        return blockType::operator()(ijk+unitXYZ);
+        return blockType::operator()(ijk + ghosts*unitXYZ);
     }
 
     // Member operators

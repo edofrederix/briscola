@@ -31,6 +31,13 @@ class meshLevel
     public PtrList<meshDirection<Type,MeshType>>,
     public refCount
 {
+public:
+
+    // Number of ghost cell layers
+    static const label ghosts = meshDirection<Type,MeshType>::ghosts;
+
+private:
+
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
@@ -64,27 +71,52 @@ public:
 
     meshLevel
     (
-        meshField<Type,MeshType>&,
-        const fvMesh&,
-        const label
+        meshField<Type,MeshType>& mshField,
+        const fvMesh& fvMsh,
+        const label l
     );
 
     // Copy constructors: construct from mesh level, tmp or mesh
 
-    meshLevel(const meshLevel<Type,MeshType>&);
-    meshLevel(const meshLevel<Type,MeshType>&, const zero&);
-    meshLevel(const meshLevel<Type,MeshType>&, const Type&);
-    meshLevel(const meshLevel<Type,MeshType>&, const List<Type>&);
+    meshLevel(const meshLevel<Type,MeshType>& L);
+    meshLevel(const meshLevel<Type,MeshType>& L, const zero&);
+    meshLevel(const meshLevel<Type,MeshType>& L, const Type&);
+    meshLevel(const meshLevel<Type,MeshType>& L, const List<Type>&);
 
-    meshLevel(const tmp<meshLevel<Type,MeshType>>&);
-    meshLevel(const tmp<meshLevel<Type,MeshType>>&, const zero&);
-    meshLevel(const tmp<meshLevel<Type,MeshType>>&, const Type&);
-    meshLevel(const tmp<meshLevel<Type,MeshType>>&, const List<Type>&);
+    meshLevel(const tmp<meshLevel<Type,MeshType>>& tL);
+    meshLevel(const tmp<meshLevel<Type,MeshType>>& tL, const zero&);
+    meshLevel(const tmp<meshLevel<Type,MeshType>>& tL, const Type&);
+    meshLevel(const tmp<meshLevel<Type,MeshType>>& tL, const List<Type>&);
 
-    meshLevel(const fvMesh&, const label);
-    meshLevel(const fvMesh&, const label, const zero&);
-    meshLevel(const fvMesh&, const label, const Type&);
-    meshLevel(const fvMesh&, const label, const List<Type>&);
+    // Standalone constructors: construct without parent field with optional
+    // ghost layers
+
+    meshLevel
+    (
+        const fvMesh& fvMsh,
+        const label l
+    );
+
+    meshLevel
+    (
+        const fvMesh& fvMsh,
+        const label l,
+        const zero&
+    );
+
+    meshLevel
+    (
+        const fvMesh& fvMsh,
+        const label l,
+        const Type& v
+    );
+
+    meshLevel
+    (
+        const fvMesh& fvMsh,
+        const label l,
+        const List<Type>& v
+    );
 
     // Clone
 
@@ -159,13 +191,13 @@ public:
     }
 
     // Alias access function
-    inline meshDirection<Type,MeshType>& direction(const int d)
+    inline meshDirection<Type,MeshType>& direction(const label d)
     {
         return this->operator[](d);
     }
 
     // Alias const access function
-    inline const meshDirection<Type,MeshType>& direction(const int d) const
+    inline const meshDirection<Type,MeshType>& direction(const label d) const
     {
         return this->operator[](d);
     }

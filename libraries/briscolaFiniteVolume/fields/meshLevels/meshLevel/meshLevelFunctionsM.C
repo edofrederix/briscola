@@ -16,8 +16,14 @@ void Func                                                                      \
 TEMPLATE                                                                       \
 tmp<meshLevel<ReturnType,MeshType>> Func(const meshLevel<Type,MeshType>& f)    \
 {                                                                              \
-    tmp<meshLevel<ReturnType,MeshType>>                                        \
-        tRes(new meshLevel<ReturnType,MeshType>(f.fvMsh(),f.levelNum()));      \
+    tmp<meshLevel<ReturnType,MeshType>> tRes                                   \
+    (                                                                          \
+        new meshLevel<ReturnType,MeshType>                                     \
+        (                                                                      \
+            f.fvMsh(),                                                         \
+            f.levelNum()                                                       \
+        )                                                                      \
+    );                                                                         \
     Func(tRes.ref(), f);                                                       \
     return tRes;                                                               \
 }                                                                              \
@@ -50,8 +56,14 @@ TEMPLATE                                                                       \
 tmp<meshLevel<ReturnType,MeshType>>                                            \
 operator Op(const meshLevel<Type,MeshType>& f)                                 \
 {                                                                              \
-    tmp<meshLevel<ReturnType,MeshType>>                                        \
-        tRes(new meshLevel<ReturnType,MeshType>(f.fvMsh(),f.levelNum()));      \
+    tmp<meshLevel<ReturnType,MeshType>> tRes                                   \
+    (                                                                          \
+        new meshLevel<ReturnType,MeshType>                                     \
+        (                                                                      \
+            f.fvMsh(),                                                         \
+            f.levelNum()                                                       \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), f);                                                     \
     return tRes;                                                               \
 }                                                                              \
@@ -88,8 +100,14 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                       \
     const meshLevel<Type2,MeshType>& f2                                        \
 )                                                                              \
 {                                                                              \
-    tmp<meshLevel<ReturnType,MeshType>>                                        \
-        tRes(new meshLevel<ReturnType,MeshType>(f1.fvMsh(),f1.levelNum()));    \
+    tmp<meshLevel<ReturnType,MeshType>> tRes                                   \
+    (                                                                          \
+        new meshLevel<ReturnType,MeshType>                                     \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     Func(tRes.ref(), f1, f2);                                                  \
     return tRes;                                                               \
 }                                                                              \
@@ -130,7 +148,8 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                       \
 )                                                                              \
 {                                                                              \
     tmp<meshLevel<ReturnType,MeshType>> tRes =                                 \
-        reuseLevelTmpTmp<ReturnType,Type1,Type1,Type2,MeshType>::New(tf1,tf2); \
+        reuseLevelTmpTmp<ReturnType,Type1,Type1,Type2,MeshType>::              \
+        New(tf1,tf2);                                                          \
     Func(tRes.ref(), tf1(), tf2());                                            \
     if (tf1.isTmp()) tf1.clear();                                              \
     if (tf2.isTmp()) tf2.clear();                                              \
@@ -158,8 +177,14 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                       \
     const meshLevel<Type2,MeshType>& f2                                        \
 )                                                                              \
 {                                                                              \
-    tmp<meshLevel<ReturnType,MeshType>>                                        \
-        tRes(new meshLevel<ReturnType,MeshType>(f2.fvMsh(),f2.levelNum()));    \
+    tmp<meshLevel<ReturnType,MeshType>> tRes                                   \
+    (                                                                          \
+        new meshLevel<ReturnType,MeshType>                                     \
+        (                                                                      \
+            f2.fvMsh(),                                                        \
+            f2.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     Func(tRes.ref(), s1, f2);                                                  \
     return tRes;                                                               \
 }                                                                              \
@@ -197,8 +222,14 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                       \
     const meshLevel<Type2,MeshType>& f2                                        \
 )                                                                              \
 {                                                                              \
-    tmp<meshLevel<ReturnType,MeshType>>                                        \
-        tRes(new meshLevel<ReturnType,MeshType>(f2.fvMsh(),f2.levelNum()));    \
+    tmp<meshLevel<ReturnType,MeshType>> tRes                                   \
+    (                                                                          \
+        new meshLevel<ReturnType,MeshType>                                     \
+        (                                                                      \
+            f2.fvMsh(),                                                        \
+            f2.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     Func(tRes.ref(), s1, f2);                                                  \
     return tRes;                                                               \
 }                                                                              \
@@ -238,8 +269,14 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                       \
     const Type2& s2                                                            \
 )                                                                              \
 {                                                                              \
-    tmp<meshLevel<ReturnType,MeshType>>                                        \
-        tRes(new meshLevel<ReturnType,MeshType>(f1.fvMsh(),f1.levelNum()));    \
+    tmp<meshLevel<ReturnType,MeshType>> tRes                                   \
+    (                                                                          \
+        new meshLevel<ReturnType,MeshType>                                     \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     Func(tRes.ref(), f1, s2);                                                  \
     return tRes;                                                               \
 }                                                                              \
@@ -277,8 +314,14 @@ tmp<meshLevel<ReturnType,MeshType>> Func                                       \
     const List<Type2>& s2                                                      \
 )                                                                              \
 {                                                                              \
-    tmp<meshLevel<ReturnType,MeshType>>                                        \
-        tRes(new meshLevel<ReturnType,MeshType>(f1.fvMsh(),f1.levelNum()));    \
+    tmp<meshLevel<ReturnType,MeshType>> tRes                                   \
+    (                                                                          \
+        new meshLevel<ReturnType,MeshType>                                     \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     Func(tRes.ref(), f1, s2);                                                  \
     return tRes;                                                               \
 }                                                                              \
@@ -322,8 +365,14 @@ tmp<meshLevel<ReturnType,MeshType>> operator Op                                \
     const meshLevel<Type2,MeshType>& f2                                        \
 )                                                                              \
 {                                                                              \
-    tmp<meshLevel<ReturnType,MeshType>>                                        \
-        tRes(new meshLevel<ReturnType,MeshType>(f1.fvMsh(),f1.levelNum()));    \
+    tmp<meshLevel<ReturnType,MeshType>> tRes                                   \
+    (                                                                          \
+        new meshLevel<ReturnType,MeshType>                                     \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), f1, f2);                                                \
     return tRes;                                                               \
 }                                                                              \
@@ -392,8 +441,14 @@ tmp<meshLevel<ReturnType,MeshType>> operator Op                                \
     const meshLevel<Type2,MeshType>& f2                                        \
 )                                                                              \
 {                                                                              \
-    tmp<meshLevel<ReturnType,MeshType>>                                        \
-        tRes(new meshLevel<ReturnType,MeshType>(f2.fvMsh(),f2.levelNum()));    \
+    tmp<meshLevel<ReturnType,MeshType>> tRes                                   \
+    (                                                                          \
+        new meshLevel<ReturnType,MeshType>                                     \
+        (                                                                      \
+            f2.fvMsh(),                                                        \
+            f2.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), s1, f2);                                                \
     return tRes;                                                               \
 }                                                                              \
@@ -431,8 +486,14 @@ tmp<meshLevel<ReturnType,MeshType>> operator Op                                \
     const meshLevel<Type2,MeshType>& f2                                        \
 )                                                                              \
 {                                                                              \
-    tmp<meshLevel<ReturnType,MeshType>>                                        \
-        tRes(new meshLevel<ReturnType,MeshType>(f2.fvMsh(),f2.levelNum()));    \
+    tmp<meshLevel<ReturnType,MeshType>> tRes                                   \
+    (                                                                          \
+        new meshLevel<ReturnType,MeshType>                                     \
+        (                                                                      \
+            f2.fvMsh(),                                                        \
+            f2.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), s1, f2);                                                \
     return tRes;                                                               \
 }                                                                              \
@@ -472,8 +533,14 @@ tmp<meshLevel<ReturnType,MeshType>> operator Op                                \
     const Type2& s2                                                            \
 )                                                                              \
 {                                                                              \
-    tmp<meshLevel<ReturnType,MeshType>>                                        \
-        tRes(new meshLevel<ReturnType,MeshType>(f1.fvMsh(),f1.levelNum()));    \
+    tmp<meshLevel<ReturnType,MeshType>> tRes                                   \
+    (                                                                          \
+        new meshLevel<ReturnType,MeshType>                                     \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), f1, s2);                                                \
     return tRes;                                                               \
 }                                                                              \
@@ -511,8 +578,14 @@ tmp<meshLevel<ReturnType,MeshType>> operator Op                                \
     const List<Type2>& s2                                                      \
 )                                                                              \
 {                                                                              \
-    tmp<meshLevel<ReturnType,MeshType>>                                        \
-        tRes(new meshLevel<ReturnType,MeshType>(f1.fvMsh(),f1.levelNum()));    \
+    tmp<meshLevel<ReturnType,MeshType>> tRes                                   \
+    (                                                                          \
+        new meshLevel<ReturnType,MeshType>                                     \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), f1, s2);                                                \
     return tRes;                                                               \
 }                                                                              \
@@ -558,8 +631,14 @@ operator Op                                                                    \
 )                                                                              \
 {                                                                              \
     typedef typename product<Type1, Type2>::type productType;                  \
-    tmp<meshLevel<productType,MeshType>>                                       \
-        tRes(new meshLevel<productType,MeshType>(f1.fvMsh(),f1.levelNum()));   \
+    tmp<meshLevel<productType,MeshType>> tRes                                  \
+    (                                                                          \
+        new meshLevel<productType,MeshType>                                    \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), f1, f2);                                                \
     return tRes;                                                               \
 }                                                                              \
@@ -651,8 +730,14 @@ operator Op                                                                    \
 )                                                                              \
 {                                                                              \
     typedef typename product<Type, Form>::type productType;                    \
-    tmp<meshLevel<productType,MeshType>>                                       \
-        tRes(new meshLevel<productType,MeshType>(f1.fvMsh(),f1.levelNum()));   \
+    tmp<meshLevel<productType,MeshType>> tRes                                  \
+    (                                                                          \
+        new meshLevel<productType,MeshType>                                    \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), f1, static_cast<const Form&>(vs));                      \
     return tRes;                                                               \
 }                                                                              \
@@ -715,8 +800,14 @@ operator Op                                                                    \
 )                                                                              \
 {                                                                              \
     typedef typename product<Form, Type>::type productType;                    \
-    tmp<meshLevel<productType,MeshType>>                                       \
-        tRes(new meshLevel<productType,MeshType>(f1.fvMsh(),f1.levelNum()));   \
+    tmp<meshLevel<productType,MeshType>> tRes                                  \
+    (                                                                          \
+        new meshLevel<productType,MeshType>                                    \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), static_cast<const Form&>(vs), f1);                      \
     return tRes;                                                               \
 }                                                                              \
@@ -781,8 +872,14 @@ operator Op                                                                    \
 )                                                                              \
 {                                                                              \
     typedef typename product<Type, Form>::type productType;                    \
-    tmp<meshLevel<productType,MeshType>>                                       \
-        tRes(new meshLevel<productType,MeshType>(f1.fvMsh(),f1.levelNum()));   \
+    tmp<meshLevel<productType,MeshType>> tRes                                  \
+    (                                                                          \
+        new meshLevel<productType,MeshType>                                    \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), f1, static_cast<const Form&>(vs));                      \
     return tRes;                                                               \
 }                                                                              \
@@ -845,8 +942,14 @@ operator Op                                                                    \
 )                                                                              \
 {                                                                              \
     typedef typename product<Form, Type>::type productType;                    \
-    tmp<meshLevel<productType,MeshType>>                                       \
-        tRes(new meshLevel<productType,MeshType>(f1.fvMsh(),f1.levelNum()));   \
+    tmp<meshLevel<productType,MeshType>> tRes                                  \
+    (                                                                          \
+        new meshLevel<productType,MeshType>                                    \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), static_cast<const Form&>(vs), f1);                      \
     return tRes;                                                               \
 }                                                                              \
@@ -897,8 +1000,14 @@ operator Op                                                                    \
 )                                                                              \
 {                                                                              \
     typedef typename product<Type, Form>::type productType;                    \
-    tmp<meshLevel<productType,MeshType>>                                       \
-        tRes(new meshLevel<productType,MeshType>(f1.fvMsh(),f1.levelNum()));   \
+    tmp<meshLevel<productType,MeshType>> tRes                                  \
+    (                                                                          \
+        new meshLevel<productType,MeshType>                                    \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), f1, vs);                                                \
     return tRes;                                                               \
 }                                                                              \
@@ -940,8 +1049,14 @@ operator Op                                                                    \
 )                                                                              \
 {                                                                              \
     typedef typename product<Form, Type>::type productType;                    \
-    tmp<meshLevel<productType,MeshType>>                                       \
-        tRes(new meshLevel<productType,MeshType>(f1.fvMsh(),f1.levelNum()));   \
+    tmp<meshLevel<productType,MeshType>> tRes                                  \
+    (                                                                          \
+        new meshLevel<productType,MeshType>                                    \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        )                                                                      \
+    );                                                                         \
     OpFunc(tRes.ref(), vs, f1);                                                \
     return tRes;                                                               \
 }                                                                              \
