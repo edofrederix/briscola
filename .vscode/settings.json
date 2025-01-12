@@ -13,5 +13,12 @@
         "**/lnInclude": true,
         "**/*.dep": true,
     },
-    "explorer.excludeGitIgnore": true
+    "explorer.excludeGitIgnore": true,
+    "C_Cpp.default.includePath": [
+        ""
+    ],
+    "C_Cpp.default.browse.path": [
+        ""
+    ],
+    "C_Cpp.errorSquiggles": "disabled"
 }
