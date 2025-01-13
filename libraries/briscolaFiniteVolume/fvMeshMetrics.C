@@ -263,15 +263,31 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
 
     delta = Zero;
 
-    forAllFaces(delta, l, d, fd, i, j, k)
+    forAll(fvMsh_, l)
     {
-        const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNei(i,j,k,fd));
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
 
-        delta(l,d,ijk)[fd*2] =
-            1.0/Foam::mag(cc(l,d,ijk)-cc(l,d,nei));
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                for (label f = 0; f < 6; f++)
+                {
+                    const labelVector nei(neighbor(ijk,f));
 
-        delta(l,d,nei)[fd*2+1] = delta(l,d,ijk)[fd*2];
+                    // Only for existing neighbors
+
+                    if (Foam::cmptMin(nei) > -2 && Foam::cmptMax(nei-N) < 1)
+                    {
+                        delta(l,d,ijk)[f] =
+                            1.0/Foam::mag(cc(l,d,ijk) - cc(l,d,nei));
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -288,19 +304,36 @@ void fvMeshMetrics<MeshType>::calculateFaceWeights()
     fwc = Zero;
     fwn = Zero;
 
-    forAllFaces(fwc, l, d, fd, i, j, k)
+    forAll(fvMsh_, l)
     {
-        const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNei(i,j,k,fd));
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
 
-        fwc(l,d,ijk)[fd*2] =
-            Foam::mag(cc(l,d,nei) - fc(l,d,ijk)[fd*2])*delta(l,d,ijk)[fd*2];
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                for (label f = 0; f < 6; f++)
+                {
+                    const labelVector nei(neighbor(ijk,f));
 
-        fwn(l,d,ijk)[fd*2] =
-            Foam::mag(cc(l,d,ijk) - fc(l,d,ijk)[fd*2])*delta(l,d,ijk)[fd*2];
+                    // Only for existing neighbors
 
-        fwc(l,d,nei)[fd*2+1] = fwn(l,d,ijk)[fd*2];
-        fwn(l,d,nei)[fd*2+1] = fwc(l,d,ijk)[fd*2];
+                    if (Foam::cmptMin(nei) > -2 && Foam::cmptMax(nei-N) < 1)
+                    {
+                        fwc(l,d,ijk)[f] =
+                            Foam::mag(cc(l,d,nei) - fc(l,d,ijk)[f])
+                          * delta(l,d,ijk)[f];
+
+                        fwn(l,d,ijk)[f] =
+                            Foam::mag(cc(l,d,ijk) - fc(l,d,ijk)[f])
+                          * delta(l,d,ijk)[f];
+                    }
+                }
+            }
+        }
     }
 }
 
