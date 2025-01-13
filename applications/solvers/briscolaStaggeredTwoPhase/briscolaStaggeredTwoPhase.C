@@ -80,18 +80,6 @@ int main(int argc, char *argv[])
                     USys -= B*USysB;
                 }
 
-                if (rk.imStageA())
-                {
-                    USys += A*im::div(phi,U);
-                }
-
-                if (rk.imStageB())
-                {
-                    USys -= B*im::laplacian(mu,U)*v;
-                    USys -= B*(ex::grad(mu) & stagT(ex::grad(U)))*v;
-                    USys -= B*im::source(imSourceCoeff,U)*v;
-                }
-
                 USys -= list(C*twoPhase.g());
 
                 // Solve predictor
