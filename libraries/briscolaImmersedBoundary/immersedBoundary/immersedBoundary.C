@@ -107,6 +107,7 @@ void immersedBoundary<MeshType>::calculateWallDistances()
     forAllCells(mask_,l,d,i,j,k)
     {
         const labelVector ijk(i,j,k);
+        faceLabel I = this->fvMsh_.template I<MeshType>(l,d);
 
         if (!this->isInside(CC(l,d,i,j,k)))
         {
@@ -145,7 +146,21 @@ void immersedBoundary<MeshType>::calculateWallDistances()
                     wallDistGhost_(l,d,i,j,k)[dir] = xi;
 
                     // Second neighbor
-                    const vector sn(CC[l][d](ijk+2.0*fo));
+                    vector sn(wa + (wa - CC[l][d](ijk)));
+
+                    if
+                    (
+                           (i+2*fo.x() >= I.left())
+                        && (i+2*fo.x() <= I.right())
+                        && (j+2*fo.y() >= I.bottom())
+                        && (j+2*fo.y() <= I.top())
+                        && (k+2*fo.z() >= I.aft())
+                        && (k+2*fo.z() <= I.fore())
+                    )
+                    {
+                        sn = CC[l][d](ijk+2.0*fo);
+                    }
+
                     const scalar xi2 = Foam::mag(gc-sn)/Foam::mag(gc-wa);
 
                     neighborDist_(l,d,i,j,k)[dir] = xi2;
