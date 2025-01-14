@@ -3,7 +3,7 @@ import numpy as np
 
 meshTypes = ['colocated', 'staggered']
 dataTypes = ['scalar', 'vector']
-stencilTypes = ['stencil', 'symmStencil']
+stencilTypes = ['stencil']
 solverTypes = [
     'Eigen_PartialPivLU',
     'Eigen_BiCGSTAB',
@@ -21,9 +21,6 @@ for meshType in meshTypes:
     for dataType in dataTypes:
         for stencilType in stencilTypes:
             for solverType in solverTypes:
-
-                if meshType == 'staggered' and stencilType == 'symmStencil':
-                    continue
 
                 dataTypeSize = 1 if dataType == 'scalar' else 3
                 numberOfDirections = 1 if meshType == 'colocated' else 3

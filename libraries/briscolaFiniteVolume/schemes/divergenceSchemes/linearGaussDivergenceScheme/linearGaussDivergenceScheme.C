@@ -23,7 +23,7 @@ template<class Type, class MeshType>
 tmp<linearSystem<stencil,Type,MeshType>>
 linearGaussDivergenceScheme<Type,MeshType>::imDiv
 (
-    const meshField<lowerFaceScalar,MeshType>& phi,
+    const meshField<faceScalar,MeshType>& phi,
     const meshField<Type,MeshType>& field,
     const scalar factor
 )
@@ -41,10 +41,6 @@ linearGaussDivergenceScheme<Type,MeshType>::imDiv
     linearSystem<stencil,Type,MeshType>& sys = tSys.ref();
 
     meshField<stencil,MeshType>& A = sys.A();
-    meshField<Type,MeshType>& b = sys.b();
-
-    A = Zero;
-    b = Zero;
 
     const meshField<faceScalar,MeshType>& fwc =
         field.fvMsh().template metrics<MeshType>().faceWeightsCenter();
@@ -54,23 +50,27 @@ linearGaussDivergenceScheme<Type,MeshType>::imDiv
 
     forAllCells(A, l, d, i, j, k)
     {
-        labelVector ijk(i,j,k);
+        #ifdef NO_BLOCK_ZERO_INIT
+        A(l,d,i,j,k)[0] = Zero;
+        #endif
 
-        for (int fd = 0; fd < 3; fd++)
+        for (label f = 0; f < 6; f++)
         {
-            labelVector nei(upperNei(ijk,fd));
+            A(l,d,i,j,k)[f+1] =
+                factor*phi(l,d,i,j,k)[f]*fwn(l,d,i,j,k)[f];
 
-            const scalar lowerPhi =   factor*phi(l,d,ijk)[fd];
-            const scalar upperPhi = - factor*phi(l,d,nei)[fd];
-
-            A(l,d,ijk)[fd*2+1] = lowerPhi*fwn(l,d,ijk)[fd*2  ];
-            A(l,d,ijk)[fd*2+2] = upperPhi*fwn(l,d,ijk)[fd*2+1];
-
-            A(l,d,ijk)[0] +=
-                lowerPhi*fwc(l,d,ijk)[fd*2  ]
-              + upperPhi*fwc(l,d,ijk)[fd*2+1];
+            A(l,d,i,j,k)[0] +=
+                factor*phi(l,d,i,j,k)[f]*fwc(l,d,i,j,k)[f];
         }
     }
+
+    #ifdef NO_BLOCK_ZERO_INIT
+
+    meshField<Type,MeshType>& b = sys.b();
+    forAllCells(b, l, d, i, j, k)
+        b(l,d,i,j,k) = Zero;
+
+    #endif
 
     phi.makeShallow();
 
@@ -81,7 +81,7 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 linearGaussDivergenceScheme<Type,MeshType>::exDiv
 (
-    const meshField<lowerFaceScalar,MeshType>& phi,
+    const meshField<faceScalar,MeshType>& phi,
     const meshField<Type,MeshType>& field
 )
 {
@@ -96,8 +96,6 @@ linearGaussDivergenceScheme<Type,MeshType>::exDiv
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 
-    Div = Zero;
-
     const meshField<faceScalar,MeshType>& fwc =
         field.fvMsh().template metrics<MeshType>().faceWeightsCenter();
 
@@ -109,25 +107,17 @@ linearGaussDivergenceScheme<Type,MeshType>::exDiv
 
     forAllCells(Div, d, i, j, k)
     {
-        labelVector ijk(i,j,k);
+        #ifdef NO_BLOCK_ZERO_INIT
+        Div(d,i,j,k) = Zero;
+        #endif
 
-        for (int fd = 0; fd < 3; fd++)
-        {
-            labelVector low(lowerNei(ijk,fd));
-            labelVector upp(upperNei(ijk,fd));
-
-            const scalar lowerPhi =   phi(d,ijk)[fd];
-            const scalar upperPhi = - phi(d,upp)[fd];
-
-            Div(d,ijk) +=
+        for (label f = 0; f < 6; f++)
+            Div(d,i,j,k) +=
                 (
-                    lowerPhi*fwc(d,ijk)[fd*2  ]*field(d,ijk)
-                  + upperPhi*fwc(d,ijk)[fd*2+1]*field(d,ijk)
-                  + lowerPhi*fwn(d,ijk)[fd*2  ]*field(d,low)
-                  + upperPhi*fwn(d,ijk)[fd*2+1]*field(d,upp)
+                    fwc(d,i,j,k)[f]*phi(d,i,j,k)[f]*field(d,i,j,k)
+                  + fwn(d,i,j,k)[f]*phi(d,i,j,k)[f]*field(d,neighbor(i,j,k,f))
                 )
-              / cv(d,ijk);
-        }
+              / cv(d,i,j,k);
     }
 
     return tDiv;

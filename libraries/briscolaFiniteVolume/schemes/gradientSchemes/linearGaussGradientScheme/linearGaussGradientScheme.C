@@ -39,8 +39,6 @@ linearGaussGradientScheme<Type,MeshType>::grad
 
     meshField<GradType,MeshType>& Grad = tGrad.ref();
 
-    Grad = Zero;
-
     const meshField<faceVector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
@@ -54,14 +52,20 @@ linearGaussGradientScheme<Type,MeshType>::grad
         field.fvMsh().template metrics<MeshType>().cellVolumes();
 
     forAllCells(Grad, d, i, j, k)
+    {
+        #ifdef NO_BLOCK_ZERO_INIT
+        Grad(d,i,j,k) = Zero;
+        #endif
+
         for (int f = 0; f < 6; f++)
             Grad(d,i,j,k) +=
                 (
                     fwc(d,i,j,k)[f]*field(d,i,j,k)
-                  + fwn(d,i,j,k)[f]*field(d,nei(i,j,k,f))
+                  + fwn(d,i,j,k)[f]*field(d,neighbor(i,j,k,f))
                 )
               * fan(d,i,j,k)[f]
               / cv(d,i,j,k);
+    }
 
     return tGrad;
 }
@@ -84,8 +88,6 @@ linearGaussGradientScheme<Type,MeshType>::stagGrad
 
     meshField<Type,staggered>& Grad = tGrad.ref();
 
-    Grad = Zero;
-
     const meshField<faceScalar,colocated>& fd =
             field.fvMsh().template metrics<colocated>().faceDeltas();
 
@@ -93,7 +95,7 @@ linearGaussGradientScheme<Type,MeshType>::stagGrad
         Grad(d,i,j,k) =
             (
                 field(i,j,k)
-              - field(lowerNei(i,j,k,d))
+              - field(lowerNeighbor(i,j,k,d))
             )
           * fd(i,j,k)[d*2];
 

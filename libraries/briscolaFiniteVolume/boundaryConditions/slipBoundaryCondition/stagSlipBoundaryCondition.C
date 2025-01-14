@@ -86,17 +86,6 @@ void stagSlipBoundaryCondition<Type>::eliminateGhosts
 }
 
 template<class Type>
-void stagSlipBoundaryCondition<Type>::eliminateGhosts
-(
-    linearSystem<symmStencil,Type,staggered>& sys,
-    const label l,
-    const label d
-)
-{
-    NotImplemented;
-}
-
-template<class Type>
 void stagSlipBoundaryCondition<Type>::evaluate
 (
     const label l,

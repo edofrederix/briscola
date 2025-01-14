@@ -20,24 +20,22 @@ linearFaceGradientScheme<Type,MeshType>::linearFaceGradientScheme
 {}
 
 template<class Type, class MeshType>
-tmp<meshField<LowerFaceSpace<Type>,MeshType>>
+tmp<meshField<FaceSpace<Type>,MeshType>>
 linearFaceGradientScheme<Type,MeshType>::faceGrad
 (
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<LowerFaceSpace<Type>,MeshType>> tGrad
+    tmp<meshField<FaceSpace<Type>,MeshType>> tGrad
     (
-        new meshField<LowerFaceSpace<Type>,MeshType>
+        new meshField<FaceSpace<Type>,MeshType>
         (
             "faceGrad("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    meshField<LowerFaceSpace<Type>,MeshType>& Grad = tGrad.ref();
-
-    Grad = Zero;
+    meshField<FaceSpace<Type>,MeshType>& Grad = tGrad.ref();
 
     const meshField<faceScalar,MeshType>& delta =
         field.fvMsh().template metrics<MeshType>().faceDeltas();
@@ -47,10 +45,11 @@ linearFaceGradientScheme<Type,MeshType>::faceGrad
 
     forAllFaces(Grad, d, fd, i, j, k)
     {
-        labelVector ijk(i,j,k);
-        labelVector nei(lowerNei(i,j,k,fd));
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        Grad(d,ijk)[fd] = (field(d,nei) - field(d,ijk)) * delta(d,ijk)[fd*2];
+        Grad(d,ijk)[fd*2  ] = (field(d,nei) - field(d,ijk))*delta(d,ijk)[fd*2];
+        Grad(d,nei)[fd*2+1] = -Grad(d,ijk)[fd*2];
     }
 
     return tGrad;

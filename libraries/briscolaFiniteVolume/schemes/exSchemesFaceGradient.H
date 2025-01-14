@@ -18,7 +18,7 @@ namespace ex
 // Face gradient
 
 template<class Type, class MeshType>
-inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
+inline tmp<meshField<FaceSpace<Type>,MeshType>> faceGrad
 (
     const meshField<Type,MeshType>& field
 )
@@ -31,7 +31,7 @@ inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
 }
 
 template<class Type, class MeshType>
-inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
+inline tmp<meshField<FaceSpace<Type>,MeshType>> faceGrad
 (
     const tmp<meshField<Type,MeshType>>& tField
 )
@@ -39,7 +39,7 @@ inline tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<LowerFaceSpace<Type>,MeshType>> tFaceGrad
+    tmp<meshField<FaceSpace<Type>,MeshType>> tFaceGrad
     (
         faceGrad(tField())
     );

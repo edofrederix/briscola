@@ -49,8 +49,7 @@ namespace im
             // implement operation to avoid segmentation errors.
 
             forAllCells(sys.A(), l, d, i, j, k)
-                sys.A()[l][d](i,j,k) *=
-                    (*lambdaPtr)[l][d](i,j,k);
+                sys.A()[l][d](i,j,k) *= (*lambdaPtr)[l][d](i,j,k);
         }
 
         sys.b() = Zero;

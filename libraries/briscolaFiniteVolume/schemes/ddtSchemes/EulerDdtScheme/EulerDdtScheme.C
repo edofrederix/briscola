@@ -54,8 +54,7 @@ EulerDdtScheme<Type,MeshType>::imDdt
         // operation to avoid segmentation errors.
 
         forAllCells(Sys.A(), l, d, i, j, k)
-            Sys.A()[l][d](i,j,k) *=
-                (*lambdaPtr)[l][d](i,j,k);
+            Sys.A()[l][d](i,j,k) *= (*lambdaPtr)[l][d](i,j,k);
 
         const meshField<scalar,MeshType>& lambdaOld = lambdaPtr->oldTime();
 

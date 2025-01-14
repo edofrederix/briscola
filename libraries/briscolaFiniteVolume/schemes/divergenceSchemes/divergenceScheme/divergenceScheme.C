@@ -67,7 +67,7 @@ divergenceScheme<SType,Type,MeshType>::New
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> div
 (
-    const meshField<LowerFaceSpace<Type>,MeshType>& phi
+    const meshField<FaceSpace<Type>,MeshType>& phi
 )
 {
     tmp<meshField<Type,MeshType>> tDiv
@@ -81,19 +81,18 @@ tmp<meshField<Type,MeshType>> div
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 
-    Div = Zero;
-
     const meshField<scalar,MeshType>& cv =
         phi.fvMsh().template metrics<MeshType>().cellVolumes();
 
     forAllCells(phi, d, i, j, k)
-        for (int fd = 0; fd < 3; fd++)
-            Div(d,i,j,k) +=
-                (
-                    phi(d,i,j,k)[fd]
-                  - phi(d,upperNei(i,j,k,fd))[fd]
-                )
-              / cv(d,i,j,k);
+    {
+        #ifdef NO_BLOCK_ZERO_INIT
+        Div(d,i,j,k) = Zero;
+        #endif
+
+        for (int f = 0; f < 6; f++)
+            Div(d,i,j,k) += phi(d,i,j,k)[f]/cv(d,i,j,k);
+    }
 
     return tDiv;
 }
@@ -101,7 +100,7 @@ tmp<meshField<Type,MeshType>> div
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> div
 (
-    const tmp<meshField<LowerFaceSpace<Type>,MeshType>>& tPhi
+    const tmp<meshField<FaceSpace<Type>,MeshType>>& tPhi
 )
 {
     tmp<meshField<Type,MeshType>> tDiv
@@ -132,8 +131,6 @@ tmp<meshField<Type,colocated>> coloDiv
 
     meshField<Type,colocated>& Div = tDiv.ref();
 
-    Div = Zero;
-
     const meshField<scalar,colocated>& cv =
         field.fvMsh().template metrics<colocated>().cellVolumes();
 
@@ -141,13 +138,19 @@ tmp<meshField<Type,colocated>> coloDiv
         field.fvMsh().template metrics<colocated>().faceAreas();
 
     forAllCells(Div, i, j, k)
+    {
+        #ifdef NO_BLOCK_ZERO_INIT
+        Div(i,j,k) = Zero;
+        #endif
+
         for (int fd = 0; fd < 3; fd++)
             Div(i,j,k) -=
                 (
                     field(fd,i,j,k)*fa(i,j,k)[fd*2]
-                  - field(fd,upperNei(i,j,k,fd))*fa(i,j,k)[fd*2+1]
+                  - field(fd,upperNeighbor(i,j,k,fd))*fa(i,j,k)[fd*2+1]
                 )
               / cv(i,j,k);
+    }
 
     return tDiv;
 }

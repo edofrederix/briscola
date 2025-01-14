@@ -12,18 +12,12 @@ namespace fv
 {
 
 typedef FFTPoissonSolver<stencil> FFTPoissonSolverStencil;
-typedef FFTPoissonSolver<symmStencil> FFTPoissonSolverSymmStencil;
 
 defineTemplateTypeNameAndDebugWithName(FFTPoissonSolverStencil,"FFT",0)
-defineTemplateTypeNameAndDebugWithName(FFTPoissonSolverSymmStencil,"FFT",0)
 
 PoissonSolver<stencil,scalar,colocated>::
 adddictionaryConstructorToTable<FFTPoissonSolverStencil>
     addFFTPoissonSolverStencilConstructorToTable_;
-
-PoissonSolver<symmStencil,scalar,colocated>::
-adddictionaryConstructorToTable<FFTPoissonSolverSymmStencil>
-    addFFTPoissonSolverSymmStencilConstructorToTable_;
 
 template<class SType>
 void FFTPoissonSolver<SType>::checkMesh(const fvMesh& fvMsh)
@@ -81,7 +75,7 @@ void FFTPoissonSolver<SType>::solve
 (
     colocatedScalarField& x,
     const colocatedScalarField* bPtr,
-    const colocatedLowerFaceScalarField* lambdaPtr,
+    const colocatedFaceScalarField* lambdaPtr,
     const bool ddt,
     const scalar dtFrac
 )
@@ -462,7 +456,6 @@ void FFTPoissonSolver<SType>::solve
 // Instantiate
 
 template class FFTPoissonSolver<stencil>;
-template class FFTPoissonSolver<symmStencil>;
 
 }
 

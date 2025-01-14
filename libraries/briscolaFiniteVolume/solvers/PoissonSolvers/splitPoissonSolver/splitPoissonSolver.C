@@ -33,7 +33,7 @@ void splitPoissonSolver<SType,Type,MeshType>::solve
 (
     meshField<Type,MeshType>& x,
     const meshField<Type,MeshType>* bPtr,
-    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+    const meshField<faceScalar,MeshType>* lambdaPtr,
     const bool ddt,
     const scalar dtFrac
 )
@@ -47,9 +47,9 @@ void splitPoissonSolver<SType,Type,MeshType>::solve
 
     // Modified coefficient
 
-    const meshField<lowerFaceScalar,MeshType>& lambda = *lambdaPtr;
+    const meshField<faceScalar,MeshType>& lambda = *lambdaPtr;
 
-    const lowerFaceScalar lambda0f = max(gMax(lambda));
+    const faceScalar lambda0f = max(gMax(lambda));
     const scalar lambda0 =
         Foam::max
         (

@@ -23,7 +23,7 @@ template<class Type, class MeshType>
 tmp<linearSystem<stencil,Type,MeshType>>
 midPointGaussDivergenceScheme<Type,MeshType>::imDiv
 (
-    const meshField<lowerFaceScalar,MeshType>& phi,
+    const meshField<faceScalar,MeshType>& phi,
     const meshField<Type,MeshType>& field,
     const scalar factor
 )
@@ -41,28 +41,25 @@ midPointGaussDivergenceScheme<Type,MeshType>::imDiv
     linearSystem<stencil,Type,MeshType>& sys = tSys.ref();
 
     meshField<stencil,MeshType>& A = sys.A();
-    meshField<Type,MeshType>& b = sys.b();
-
-    A = Zero;
-    b = Zero;
 
     forAllCells(A, l, d, i, j, k)
     {
-        labelVector ijk(i,j,k);
+        #ifdef NO_BLOCK_ZERO_INIT
+        A(l,d,i,j,k)[0] = Zero;
+        #endif
 
-        for (int fd = 0; fd < 3; fd++)
+        for (label f = 0; f < 6; f++)
         {
-            labelVector nei(upperNei(ijk,fd));
-
-            const scalar lowerPhi =   factor*phi(l,d,ijk)[fd];
-            const scalar upperPhi = - factor*phi(l,d,nei)[fd];
-
-            A(l,d,ijk)[fd*2+1] = 0.5*lowerPhi;
-            A(l,d,ijk)[fd*2+2] = 0.5*upperPhi;
-
-            A(l,d,ijk)[0] += 0.5*(lowerPhi + upperPhi);
+            A(l,d,i,j,k)[f+1] = 0.5*factor*phi(l,d,i,j,k)[f];
+            A(l,d,i,j,k)[0] +=  0.5*factor*phi(l,d,i,j,k)[f];
         }
     }
+
+    #ifdef NO_BLOCK_ZERO_INIT
+    meshField<Type,MeshType>& b = sys.b();
+    forAllCells(b, l, d, i, j, k)
+        b(l,d,i,j,k) = Zero;
+    #endif
 
     phi.makeShallow();
 
@@ -73,7 +70,7 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 midPointGaussDivergenceScheme<Type,MeshType>::exDiv
 (
-    const meshField<lowerFaceScalar,MeshType>& phi,
+    const meshField<faceScalar,MeshType>& phi,
     const meshField<Type,MeshType>& field
 )
 {
@@ -88,31 +85,22 @@ midPointGaussDivergenceScheme<Type,MeshType>::exDiv
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 
-    Div = Zero;
-
     const meshField<scalar,MeshType>& cv =
         phi.fvMsh().template metrics<MeshType>().cellVolumes();
 
     forAllCells(Div, d, i, j, k)
     {
-        labelVector ijk(i,j,k);
+        #ifdef NO_BLOCK_ZERO_INIT
+        Div(d,i,j,k) = Zero;
+        #endif
 
-        for (int fd = 0; fd < 3; fd++)
-        {
-            labelVector low(lowerNei(ijk,fd));
-            labelVector upp(upperNei(ijk,fd));
-
-            const scalar lowerPhi =   phi(d,ijk)[fd];
-            const scalar upperPhi = - phi(d,upp)[fd];
-
-            Div(d,ijk) +=
+        for (label f = 0; f < 6; f++)
+            Div(d,i,j,k) +=
                 (
-                    0.5*(lowerPhi+upperPhi)*field(d,ijk)
-                  + 0.5*lowerPhi*field(d,low)
-                  + 0.5*upperPhi*field(d,upp)
+                    0.5*phi(d,i,j,k)[f]*field(d,i,j,k)
+                  + 0.5*phi(d,i,j,k)[f]*field(d,neighbor(i,j,k,f))
                 )
-              / cv(d,ijk);
-        }
+              / cv(d,i,j,k);
     }
 
     return tDiv;

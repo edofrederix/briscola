@@ -43,8 +43,6 @@ PETScLinearSystem<SType,Type,MeshType>::~PETScLinearSystem()
 template<class SType, class Type, class MeshType>
 void PETScLinearSystem<SType,Type,MeshType>::prepare(const label d)
 {
-    typedef typename SType::fullStencilType FullSType;
-
     const linearSystemAggregation<SType,Type,MeshType>& lsa = *this;
 
     const MPI_Comm& comm =
@@ -52,17 +50,17 @@ void PETScLinearSystem<SType,Type,MeshType>::prepare(const label d)
       ? PstreamGlobals::lsaGetComm(lsa.masterCommNum())
       : PETSC_COMM_SELF;
 
-    List<List<FullSType>> coeffs;
+    List<List<SType>> coeffs;
     lsa.rowCoeffs(coeffs, sys_, d);
 
-    List<List<FixedList<label,FullSType::nComponents>>> colNums =
+    List<List<FixedList<label,SType::nComponents>>> colNums =
         lsa.colNums()[d];
 
     if (lsa.master())
     {
         const label m = lsa.partSize(d);
         const label M = lsa.globalSize(d);
-        const label nz = Foam::min(label(FullSType::nComponents),M);
+        const label nz = Foam::min(label(SType::nComponents),M);
 
         if (matrices_.set(d))
             MatDestroy(&matrices_[d]);

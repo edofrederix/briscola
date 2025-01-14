@@ -55,25 +55,26 @@ makeRestrictionScheme(volumeWeighted,tensor,staggered);
 makeRestrictionScheme(harmonicVolumeWeighted,scalar,colocated);
 makeRestrictionScheme(harmonicVolumeWeighted,scalar,staggered);
 
-// Lower face restriction schemes
+// Face restriction schemes
 
-makeRestrictionSchemeBase(lowerFaceScalar,colocated,"faceAverage");
-makeRestrictionSchemeBase(lowerFaceVector,colocated,"faceAverage");
-makeRestrictionSchemeBase(lowerFaceScalar,staggered,"faceAverage");
-makeRestrictionSchemeBase(lowerFaceVector,staggered,"faceAverage");
+makeRestrictionSchemeBase(faceScalar,colocated,"faceAverage");
+makeRestrictionSchemeBase(faceVector,colocated,"faceAverage");
+
+makeRestrictionSchemeBase(faceScalar,staggered,"faceAverage");
+makeRestrictionSchemeBase(faceVector,staggered,"faceAverage");
 
 makeRestrictionSchemeType
 (
     coloFaceAverage,
     faceAverage,
-    lowerFaceScalar,
+    faceScalar,
     colocated
 );
 makeRestrictionSchemeType
 (
     coloFaceAverage,
     faceAverage,
-    lowerFaceVector,
+    faceVector,
     colocated
 );
 
@@ -81,14 +82,14 @@ makeRestrictionSchemeType
 (
     stagFaceAverage,
     faceAverage,
-    lowerFaceScalar,
+    faceScalar,
     staggered
 );
 makeRestrictionSchemeType
 (
     stagFaceAverage,
     faceAverage,
-    lowerFaceVector,
+    faceVector,
     staggered
 );
 
@@ -96,14 +97,14 @@ makeRestrictionSchemeType
 (
     coloFaceAreaWeighted,
     faceAreaWeighted,
-    lowerFaceScalar,
+    faceScalar,
     colocated
 );
 makeRestrictionSchemeType
 (
     coloFaceAreaWeighted,
     faceAreaWeighted,
-    lowerFaceVector,
+    faceVector,
     colocated
 );
 
@@ -111,11 +112,11 @@ makeRestrictionSchemeType
 (
     coloHarmonicFaceAreaWeighted,
     harmonicFaceAreaWeighted,
-    lowerFaceScalar,
+    faceScalar,
     colocated
 );
 
-makeRestrictionSchemeNoTemplate(coloFlux,lowerFaceScalar,colocated);
+makeRestrictionSchemeNoTemplate(coloFlux,faceScalar,colocated);
 
 }
 

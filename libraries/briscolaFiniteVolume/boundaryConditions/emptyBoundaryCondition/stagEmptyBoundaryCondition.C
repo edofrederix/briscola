@@ -81,17 +81,6 @@ void stagEmptyBoundaryCondition<Type>::eliminateGhosts
 }
 
 template<class Type>
-void stagEmptyBoundaryCondition<Type>::eliminateGhosts
-(
-    linearSystem<symmStencil,Type,staggered>& sys,
-    const label l,
-    const label d
-)
-{
-    NotImplemented;
-}
-
-template<class Type>
 void stagEmptyBoundaryCondition<Type>::evaluate
 (
     const label l,

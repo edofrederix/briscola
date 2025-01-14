@@ -24,13 +24,6 @@ typedef linearSystem<diagStencil,vector,colocated> colocatedVectorDiagSystem;
 typedef linearSystem<diagStencil,vector,staggered> staggeredVectorDiagSystem;
 
 
-typedef linearSystem<symmStencil,scalar,colocated> colocatedScalarSymmSystem;
-typedef linearSystem<symmStencil,scalar,staggered> staggeredScalarSymmSystem;
-
-typedef linearSystem<symmStencil,vector,colocated> colocatedVectorSymmSystem;
-typedef linearSystem<symmStencil,vector,staggered> staggeredVectorSymmSystem;
-
-
 typedef linearSystem<stencil,scalar,colocated> colocatedScalarSystem;
 typedef linearSystem<stencil,scalar,staggered> staggeredScalarSystem;
 

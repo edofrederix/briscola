@@ -13,7 +13,7 @@ U = Zero;
 
 // Flux
 
-colocatedLowerFaceScalarField phi
+colocatedFaceScalarField phi
 (
     "phi",
     fvMsh,

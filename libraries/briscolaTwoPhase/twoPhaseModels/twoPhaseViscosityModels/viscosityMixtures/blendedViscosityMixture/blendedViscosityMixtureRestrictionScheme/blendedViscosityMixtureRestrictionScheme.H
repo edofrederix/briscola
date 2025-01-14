@@ -15,7 +15,7 @@ namespace fv
 template<class MeshType>
 class blendedViscosityMixtureRestrictionScheme
 :
-    public restrictionScheme<lowerFaceScalar,MeshType>
+    public restrictionScheme<faceScalar,MeshType>
 {
 protected:
 

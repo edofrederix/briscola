@@ -20,7 +20,7 @@ addToRunTimeSelectionTable(vof, splitAdvection, dictionary);
 
 void splitAdvection::updateFlux
 (
-    const colocatedLowerFaceScalarField& phi,
+    const colocatedFaceScalarField& phi,
     const label d
 )
 {
@@ -37,11 +37,11 @@ void splitAdvection::updateFlux
     if (d == fd)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNei(i,j,k,d));
+        const labelVector nei(lowerNeighbor(i,j,k,d));
 
         // Select the donating side
 
-        const scalar flux = phi(ijk)[d];
+        const scalar flux = phi(ijk)[d*2];
         const labelVector don(flux > 0 ? ijk : nei);
 
         if (Foam::mag(flux) > 0 && alpha_(don) > vof::threshold)
@@ -119,7 +119,8 @@ void splitAdvection::updateFlux
                 #endif
             }
 
-            flux_(ijk)[d] = Foam::sign(flux)*fluxAlpha;
+            flux_(ijk)[d*2  ] = Foam::sign(flux)*fluxAlpha;
+            flux_(nei)[d*2+1] = -flux_(ijk)[d*2];
         }
     }
 }
@@ -161,7 +162,7 @@ splitAdvection::splitAdvection(const splitAdvection& vf)
 splitAdvection::~splitAdvection()
 {}
 
-void splitAdvection::solve(const colocatedLowerFaceScalarField& phi)
+void splitAdvection::solve(const colocatedFaceScalarField& phi)
 {
     alpha_.setOldTime();
 
@@ -202,15 +203,18 @@ void splitAdvection::solve(const colocatedLowerFaceScalarField& phi)
 
             forAllCells(alpha_, i, j, k)
             {
-                labelVector ijk(i,j,k);
-                labelVector nei(upperNei(i,j,k,dir));
+                const labelVector ijk(i,j,k);
 
                 alpha_(ijk) +=
                     dt/cv(ijk)
                   * (
-                        scalar(alphac(ijk))*(phi(ijk)[dir] - phi(nei)[dir])
-                      - flux_(ijk)[dir]
-                      + flux_(nei)[dir]
+                        scalar(alphac(ijk))
+                      * (
+                            phi(ijk)[dir*2  ]
+                          + phi(ijk)[dir*2+1]
+                        )
+                      - flux_(ijk)[dir*2  ]
+                      - flux_(ijk)[dir*2+1]
                     );
 
                 // Remove tiny errors in alpha

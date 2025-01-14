@@ -59,15 +59,15 @@ void Youngs::correct()
             for (int d = 0; d < 3; d++)
                 alpha(i,j,k) =
                     0.5 *alpha(i,j,k)
-                  + 0.25*alpha(lowerNei(i,j,k,d))
-                  + 0.25*alpha(upperNei(i,j,k,d));
+                  + 0.25*alpha(lowerNeighbor(i,j,k,d))
+                  + 0.25*alpha(upperNeighbor(i,j,k,d));
 
         forAllCellsReversed(alpha, i, j, k)
             for (int d = 0; d < 3; d++)
                 alpha(i,j,k) =
                     0.5 *alpha(i,j,k)
-                  + 0.25*alpha(lowerNei(i,j,k,d))
-                  + 0.25*alpha(upperNei(i,j,k,d));
+                  + 0.25*alpha(lowerNeighbor(i,j,k,d))
+                  + 0.25*alpha(upperNeighbor(i,j,k,d));
     }
 
     const colocatedFaceScalarField& fa =

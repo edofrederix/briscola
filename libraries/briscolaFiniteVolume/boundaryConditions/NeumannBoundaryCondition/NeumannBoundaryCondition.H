@@ -95,13 +95,6 @@ public:
         const label
     );
 
-    virtual void eliminateGhosts
-    (
-        linearSystem<symmStencil,Type,MeshType>&,
-        const label,
-        const label
-    );
-
     // Evaluate the boundary condition for given level and direction
     virtual void evaluate(const label, const label);
 };

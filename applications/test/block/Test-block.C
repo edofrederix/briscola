@@ -1136,10 +1136,10 @@ void testFaceSpaceFunctions()
     const labelVector shape(2,3,4);
 
     block<FaceSpace<Type>> fs1(shape);
-    block<LowerFaceSpace<Type>> ls1(shape);
+    block<FaceSpace<Type>> ls1(shape);
 
     block<FaceSpace<scalar>> sfs1(shape);
-    block<LowerFaceSpace<scalar>> sls1(shape);
+    block<FaceSpace<scalar>> sls1(shape);
 
     block<scalar> s1(shape);
 
@@ -1171,7 +1171,7 @@ void testFaceSpaceFunctions()
 
     fs1 += FaceSpace<Type>::one;
     ls1 += FaceSpace<Type>::one;
-    ls1 += LowerFaceSpace<Type>::one;
+    ls1 += FaceSpace<Type>::one;
 
     fs1 + pTraits<Type>::one;
     ls1 + pTraits<Type>::one;
@@ -1181,11 +1181,11 @@ void testFaceSpaceFunctions()
 
     fs1 + FaceSpace<Type>::one;
     ls1 + FaceSpace<Type>::one;
-    ls1 + LowerFaceSpace<Type>::one;
+    ls1 + FaceSpace<Type>::one;
 
     (1.0*fs1) + FaceSpace<Type>::one;
     (1.0*ls1) + FaceSpace<Type>::one;
-    (1.0*ls1) + LowerFaceSpace<Type>::one;
+    (1.0*ls1) + FaceSpace<Type>::one;
 
     pTraits<Type>::one + fs1;
     pTraits<Type>::one + ls1;
@@ -1195,11 +1195,11 @@ void testFaceSpaceFunctions()
 
     FaceSpace<Type>::one + fs1;
     FaceSpace<Type>::one + ls1;
-    LowerFaceSpace<Type>::one + ls1;
+    FaceSpace<Type>::one + ls1;
 
     FaceSpace<Type>::one + (1.0*fs1);
     FaceSpace<Type>::one + (1.0*ls1);
-    LowerFaceSpace<Type>::one + (1.0*ls1);
+    FaceSpace<Type>::one + (1.0*ls1);
 
     ls1 -= fs1;
     ls1 -= (1.0*fs1);
@@ -1218,7 +1218,7 @@ void testFaceSpaceFunctions()
 
     fs1 -= FaceSpace<Type>::one;
     ls1 -= FaceSpace<Type>::one;
-    ls1 -= LowerFaceSpace<Type>::one;
+    ls1 -= FaceSpace<Type>::one;
 
     fs1 - pTraits<Type>::one;
     ls1 - pTraits<Type>::one;
@@ -1228,11 +1228,11 @@ void testFaceSpaceFunctions()
 
     fs1 - FaceSpace<Type>::one;
     ls1 - FaceSpace<Type>::one;
-    ls1 - LowerFaceSpace<Type>::one;
+    ls1 - FaceSpace<Type>::one;
 
     (1.0*fs1) - FaceSpace<Type>::one;
     (1.0*ls1) - FaceSpace<Type>::one;
-    (1.0*ls1) - LowerFaceSpace<Type>::one;
+    (1.0*ls1) - FaceSpace<Type>::one;
 
     pTraits<Type>::one - fs1;
     pTraits<Type>::one - ls1;
@@ -1242,11 +1242,11 @@ void testFaceSpaceFunctions()
 
     FaceSpace<Type>::one - fs1;
     FaceSpace<Type>::one - ls1;
-    LowerFaceSpace<Type>::one - ls1;
+    FaceSpace<Type>::one - ls1;
 
     FaceSpace<Type>::one - (1.0*fs1);
     FaceSpace<Type>::one - (1.0*ls1);
-    LowerFaceSpace<Type>::one - (1.0*ls1);
+    FaceSpace<Type>::one - (1.0*ls1);
 
     fs1 *= (1.0*s1);
     fs1 *= (1.0*sfs1);
@@ -1693,12 +1693,10 @@ int main(int argc, char *argv[])
     testConstructors<diagTensor>();
 
     testConstructors<faceScalar>();
-    testConstructors<lowerFaceScalar>();
     testConstructors<edgeScalar>();
     testConstructors<vertexScalar>();
 
     testConstructors<faceVector>();
-    testConstructors<lowerFaceVector>();
     testConstructors<edgeVector>();
     testConstructors<vertexVector>();
 
@@ -1716,12 +1714,10 @@ int main(int argc, char *argv[])
     testIndexing<diagTensor>();
 
     testIndexing<faceScalar>();
-    testIndexing<lowerFaceScalar>();
     testIndexing<edgeScalar>();
     testIndexing<vertexScalar>();
 
     testIndexing<faceVector>();
-    testIndexing<lowerFaceVector>();
     testIndexing<edgeVector>();
     testIndexing<vertexVector>();
 
@@ -1739,12 +1735,10 @@ int main(int argc, char *argv[])
     testTransformations<diagTensor>();
 
     testTransformations<faceScalar>();
-    testTransformations<lowerFaceScalar>();
     testTransformations<edgeScalar>();
     testTransformations<vertexScalar>();
 
     testTransformations<faceVector>();
-    testTransformations<lowerFaceVector>();
     testTransformations<edgeVector>();
     testTransformations<vertexVector>();
 
@@ -1762,12 +1756,10 @@ int main(int argc, char *argv[])
     testMemberOperators<diagTensor>();
 
     testMemberOperators<faceScalar>();
-    testMemberOperators<lowerFaceScalar>();
     testMemberOperators<edgeScalar>();
     testMemberOperators<vertexScalar>();
 
     testMemberOperators<faceVector>();
-    testMemberOperators<lowerFaceVector>();
     testMemberOperators<edgeVector>();
     testMemberOperators<vertexVector>();
 
@@ -1784,12 +1776,10 @@ int main(int argc, char *argv[])
     testPrimitiveFunctions<diagTensor>();
 
     testPrimitiveFunctions<faceScalar>();
-    testPrimitiveFunctions<lowerFaceScalar>();
     testPrimitiveFunctions<edgeScalar>();
     testPrimitiveFunctions<vertexScalar>();
 
     testPrimitiveFunctions<faceVector>();
-    testPrimitiveFunctions<lowerFaceVector>();
     testPrimitiveFunctions<edgeVector>();
     testPrimitiveFunctions<vertexVector>();
 

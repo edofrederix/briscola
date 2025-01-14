@@ -32,8 +32,6 @@ inline tmp<staggeredVectorField> stagT(const staggeredVectorField& f)
 
     staggeredVectorField& T = tT.ref();
 
-    T = Zero;
-
     forAllCells(T, di, i, j, k)
         for (int dj = 0; dj < 3; dj++)
             T(di,i,j,k)[dj] =
@@ -42,9 +40,9 @@ inline tmp<staggeredVectorField> stagT(const staggeredVectorField& f)
               : 0.25
               * (
                     f(dj,i,j,k)[di]
-                  + f(dj,lowerNei(i,j,k,di))[di]
-                  + f(dj,upperNei(i,j,k,dj))[di]
-                  + f(dj,lowerNei(upperNei(i,j,k,dj),di))[di]
+                  + f(dj,lowerNeighbor(i,j,k,di))[di]
+                  + f(dj,upperNeighbor(i,j,k,dj))[di]
+                  + f(dj,lowerNeighbor(upperNeighbor(i,j,k,dj),di))[di]
                 );
 
     return tT;

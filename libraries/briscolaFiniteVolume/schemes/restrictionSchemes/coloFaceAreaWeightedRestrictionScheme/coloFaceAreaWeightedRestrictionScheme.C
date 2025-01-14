@@ -35,8 +35,6 @@ void coloFaceAreaWeightedRestrictionScheme<Type>::restrict
 
     const labelVector R(coarse.mshPart().R());
 
-    coarse = Zero;
-
     const meshDirection<faceScalar,colocated>& faf =
         this->fvMsh().template
         metrics<colocated>().faceAreas()
@@ -46,23 +44,30 @@ void coloFaceAreaWeightedRestrictionScheme<Type>::restrict
 
     forAllFaces(coarse, fd, i, j, k)
     {
-        labelVector ijk(i,j,k);
-        labelVector fijk(i*R.x(), j*R.y(), k*R.z());
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        const labelVector fijk(briscola::cmptMultiply(ijk, R));
+        const labelVector fnei(briscola::cmptMultiply(nei, R));
 
         scalar area = 0.0;
+
+        coarse(ijk)[fd*2  ] = Zero;
+        coarse(nei)[fd*2+1] = Zero;
 
         labelVector o;
         for (o.x() = 0; o.x() < (fd == 0 ? 1 : R.x()); o.x()++)
         for (o.y() = 0; o.y() < (fd == 1 ? 1 : R.y()); o.y()++)
         for (o.z() = 0; o.z() < (fd == 2 ? 1 : R.z()); o.z()++)
         {
-            coarse(ijk)[fd] +=
-                faf(fijk+o)[fd*2]*fine(fijk+o)[fd];
+            coarse(ijk)[fd*2  ] += faf(fijk+o)[fd*2]*fine(fijk+o)[fd*2  ];
+            coarse(nei)[fd*2+1] += faf(fijk+o)[fd*2]*fine(fnei+o)[fd*2+1];
 
             area += faf(fijk+o)[fd*2];
         }
 
-        coarse(ijk)[fd] /= area;
+        coarse(ijk)[fd*2  ] /= area;
+        coarse(nei)[fd*2+1] /= area;
     }
 }
 

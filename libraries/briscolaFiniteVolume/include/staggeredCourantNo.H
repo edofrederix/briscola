@@ -8,10 +8,8 @@ scalar meanCoNum = 0.0;
     staggeredScalarLevel sumPhi(fvMsh,0,Zero);
 
     forAllCells(sumPhi, d, i, j, k)
-        for (int fd = 0; fd < 3; fd++)
-            sumPhi(d,i,j,k) +=
-                mag(phi(d,i,j,k)[fd])
-              + mag(phi(d,upperNei(i,j,k,fd))[fd]);
+        for (int f = 0; f < 6; f++)
+            sumPhi(d,i,j,k) += mag(phi(d,i,j,k)[f]);
 
     CoNum = max(0.5*gMax(sumPhi/cvl)*runTime.deltaTValue());
 

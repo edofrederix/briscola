@@ -1211,7 +1211,7 @@ void testFaceSpaceFunctions(const fvMesh& fvMsh)
         false
     );
 
-    meshField<LowerFaceSpace<Type>,MeshType> ls1
+    meshField<FaceSpace<Type>,MeshType> ls1
     (
         "ls1",
         fvMsh,
@@ -1231,7 +1231,7 @@ void testFaceSpaceFunctions(const fvMesh& fvMsh)
         false
     );
 
-    meshField<LowerFaceSpace<scalar>,MeshType> sls1
+    meshField<FaceSpace<scalar>,MeshType> sls1
     (
         "sls1",
         fvMsh,
@@ -1255,10 +1255,10 @@ void testFaceSpaceFunctions(const fvMesh& fvMsh)
         fs1(l,d,i,j,k) = pTraits<FaceSpace<Type>>::one*(l+d+i+j+k);
 
     forAllCells(ls1, l, d, i, j, k)
-        ls1(l,d,i,j,k) = pTraits<LowerFaceSpace<Type>>::one*(l+d+i+j+k);
+        ls1(l,d,i,j,k) = pTraits<FaceSpace<Type>>::one*(l+d+i+j+k);
 
     sfs1 = pTraits<FaceSpace<scalar>>::one;
-    sls1 = pTraits<LowerFaceSpace<scalar>>::one;
+    sls1 = pTraits<FaceSpace<scalar>>::one;
 
     s1 = scalar(1);
 
@@ -1279,7 +1279,7 @@ void testFaceSpaceFunctions(const fvMesh& fvMsh)
 
     fs1 += FaceSpace<Type>::one;
     ls1 += FaceSpace<Type>::one;
-    ls1 += LowerFaceSpace<Type>::one;
+    ls1 += FaceSpace<Type>::one;
 
     fs1 + pTraits<Type>::one;
     ls1 + pTraits<Type>::one;
@@ -1289,11 +1289,11 @@ void testFaceSpaceFunctions(const fvMesh& fvMsh)
 
     fs1 + FaceSpace<Type>::one;
     ls1 + FaceSpace<Type>::one;
-    ls1 + LowerFaceSpace<Type>::one;
+    ls1 + FaceSpace<Type>::one;
 
     (1.0*fs1) + FaceSpace<Type>::one;
     (1.0*ls1) + FaceSpace<Type>::one;
-    (1.0*ls1) + LowerFaceSpace<Type>::one;
+    (1.0*ls1) + FaceSpace<Type>::one;
 
     pTraits<Type>::one + fs1;
     pTraits<Type>::one + ls1;
@@ -1303,11 +1303,11 @@ void testFaceSpaceFunctions(const fvMesh& fvMsh)
 
     FaceSpace<Type>::one + fs1;
     FaceSpace<Type>::one + ls1;
-    LowerFaceSpace<Type>::one + ls1;
+    FaceSpace<Type>::one + ls1;
 
     FaceSpace<Type>::one + (1.0*fs1);
     FaceSpace<Type>::one + (1.0*ls1);
-    LowerFaceSpace<Type>::one + (1.0*ls1);
+    FaceSpace<Type>::one + (1.0*ls1);
 
     ls1 -= fs1;
     ls1 -= (1.0*fs1);
@@ -1326,7 +1326,7 @@ void testFaceSpaceFunctions(const fvMesh& fvMsh)
 
     fs1 -= FaceSpace<Type>::one;
     ls1 -= FaceSpace<Type>::one;
-    ls1 -= LowerFaceSpace<Type>::one;
+    ls1 -= FaceSpace<Type>::one;
 
     fs1 - pTraits<Type>::one;
     ls1 - pTraits<Type>::one;
@@ -1336,11 +1336,11 @@ void testFaceSpaceFunctions(const fvMesh& fvMsh)
 
     fs1 - FaceSpace<Type>::one;
     ls1 - FaceSpace<Type>::one;
-    ls1 - LowerFaceSpace<Type>::one;
+    ls1 - FaceSpace<Type>::one;
 
     (1.0*fs1) - FaceSpace<Type>::one;
     (1.0*ls1) - FaceSpace<Type>::one;
-    (1.0*ls1) - LowerFaceSpace<Type>::one;
+    (1.0*ls1) - FaceSpace<Type>::one;
 
     pTraits<Type>::one - fs1;
     pTraits<Type>::one - ls1;
@@ -1350,11 +1350,11 @@ void testFaceSpaceFunctions(const fvMesh& fvMsh)
 
     FaceSpace<Type>::one - fs1;
     FaceSpace<Type>::one - ls1;
-    LowerFaceSpace<Type>::one - ls1;
+    FaceSpace<Type>::one - ls1;
 
     FaceSpace<Type>::one - (1.0*fs1);
     FaceSpace<Type>::one - (1.0*ls1);
-    LowerFaceSpace<Type>::one - (1.0*ls1);
+    FaceSpace<Type>::one - (1.0*ls1);
 
     fs1 *= (1.0*s1);
     fs1 *= (1.0*sfs1);
@@ -2250,17 +2250,14 @@ int main(int argc, char *argv[])
         testConstructors<diagTensor,colocated>(fvMsh, deep);
 
         testConstructors<faceScalar,colocated>(fvMsh, deep);
-        testConstructors<lowerFaceScalar,colocated>(fvMsh, deep);
         testConstructors<edgeScalar,colocated>(fvMsh, deep);
         testConstructors<vertexScalar,colocated>(fvMsh, deep);
 
         testConstructors<faceVector,colocated>(fvMsh, deep);
-        testConstructors<lowerFaceVector,colocated>(fvMsh, deep);
         testConstructors<edgeVector,colocated>(fvMsh, deep);
         testConstructors<vertexVector,colocated>(fvMsh, deep);
 
         testConstructors<stencil,colocated>(fvMsh, deep);
-        testConstructors<symmStencil,colocated>(fvMsh, deep);
         testConstructors<diagStencil,colocated>(fvMsh, deep);
 
 
@@ -2274,17 +2271,14 @@ int main(int argc, char *argv[])
         testIndexing<diagTensor,colocated>(fvMsh, deep);
 
         testIndexing<faceScalar,colocated>(fvMsh, deep);
-        testIndexing<lowerFaceScalar,colocated>(fvMsh, deep);
         testIndexing<edgeScalar,colocated>(fvMsh, deep);
         testIndexing<vertexScalar,colocated>(fvMsh, deep);
 
         testIndexing<faceVector,colocated>(fvMsh, deep);
-        testIndexing<lowerFaceVector,colocated>(fvMsh, deep);
         testIndexing<edgeVector,colocated>(fvMsh, deep);
         testIndexing<vertexVector,colocated>(fvMsh, deep);
 
         testIndexing<stencil,colocated>(fvMsh, deep);
-        testIndexing<symmStencil,colocated>(fvMsh, deep);
         testIndexing<diagStencil,colocated>(fvMsh, deep);
 
 
@@ -2298,17 +2292,14 @@ int main(int argc, char *argv[])
         testMemberOperators<diagTensor,colocated>(fvMsh, deep);
 
         testMemberOperators<faceScalar,colocated>(fvMsh, deep);
-        testMemberOperators<lowerFaceScalar,colocated>(fvMsh, deep);
         testMemberOperators<edgeScalar,colocated>(fvMsh, deep);
         testMemberOperators<vertexScalar,colocated>(fvMsh, deep);
 
         testMemberOperators<faceVector,colocated>(fvMsh, deep);
-        testMemberOperators<lowerFaceVector,colocated>(fvMsh, deep);
         testMemberOperators<edgeVector,colocated>(fvMsh, deep);
         testMemberOperators<vertexVector,colocated>(fvMsh, deep);
 
         testMemberOperators<stencil,colocated>(fvMsh, deep);
-        testMemberOperators<symmStencil,colocated>(fvMsh, deep);
         testMemberOperators<diagStencil,colocated>(fvMsh, deep);
 
 
@@ -2322,12 +2313,10 @@ int main(int argc, char *argv[])
         testPrimitiveFunctions<diagTensor,colocated>(fvMsh, deep);
 
         testCellSpacePrimitiveFunctions<faceScalar,colocated>(fvMsh, deep);
-        testCellSpacePrimitiveFunctions<lowerFaceScalar,colocated>(fvMsh, deep);
         testCellSpacePrimitiveFunctions<edgeScalar,colocated>(fvMsh, deep);
         testCellSpacePrimitiveFunctions<vertexScalar,colocated>(fvMsh, deep);
 
         testCellSpacePrimitiveFunctions<faceVector,colocated>(fvMsh, deep);
-        testCellSpacePrimitiveFunctions<lowerFaceVector,colocated>(fvMsh, deep);
         testCellSpacePrimitiveFunctions<edgeVector,colocated>(fvMsh, deep);
         testCellSpacePrimitiveFunctions<vertexVector,colocated>(fvMsh, deep);
 
@@ -2341,7 +2330,6 @@ int main(int argc, char *argv[])
         testVectorSpaceFunctions<diagTensor,colocated>(fvMsh, deep);
 
         testStencilFunctions<stencil,colocated>(fvMsh, deep);
-        testStencilFunctions<symmStencil,colocated>(fvMsh, deep);
         testStencilFunctions<diagStencil,colocated>(fvMsh, deep);
 
         testScalarFunctions<colocated>(fvMsh, deep);
@@ -2365,17 +2353,14 @@ int main(int argc, char *argv[])
             testConstructors<diagTensor,staggered>(fvMsh, deep);
 
             testConstructors<faceScalar,staggered>(fvMsh, deep);
-            testConstructors<lowerFaceScalar,staggered>(fvMsh, deep);
             testConstructors<edgeScalar,staggered>(fvMsh, deep);
             testConstructors<vertexScalar,staggered>(fvMsh, deep);
 
             testConstructors<faceVector,staggered>(fvMsh, deep);
-            testConstructors<lowerFaceVector,staggered>(fvMsh, deep);
             testConstructors<edgeVector,staggered>(fvMsh, deep);
             testConstructors<vertexVector,staggered>(fvMsh, deep);
 
             testConstructors<stencil,staggered>(fvMsh, deep);
-            testConstructors<symmStencil,staggered>(fvMsh, deep);
             testConstructors<diagStencil,staggered>(fvMsh, deep);
 
 
@@ -2389,17 +2374,14 @@ int main(int argc, char *argv[])
             testIndexing<diagTensor,staggered>(fvMsh, deep);
 
             testIndexing<faceScalar,staggered>(fvMsh, deep);
-            testIndexing<lowerFaceScalar,staggered>(fvMsh, deep);
             testIndexing<edgeScalar,staggered>(fvMsh, deep);
             testIndexing<vertexScalar,staggered>(fvMsh, deep);
 
             testIndexing<faceVector,staggered>(fvMsh, deep);
-            testIndexing<lowerFaceVector,staggered>(fvMsh, deep);
             testIndexing<edgeVector,staggered>(fvMsh, deep);
             testIndexing<vertexVector,staggered>(fvMsh, deep);
 
             testIndexing<stencil,staggered>(fvMsh, deep);
-            testIndexing<symmStencil,staggered>(fvMsh, deep);
             testIndexing<diagStencil,staggered>(fvMsh, deep);
 
 
@@ -2413,17 +2395,14 @@ int main(int argc, char *argv[])
             testMemberOperators<diagTensor,staggered>(fvMsh, deep);
 
             testMemberOperators<faceScalar,staggered>(fvMsh, deep);
-            testMemberOperators<lowerFaceScalar,staggered>(fvMsh, deep);
             testMemberOperators<edgeScalar,staggered>(fvMsh, deep);
             testMemberOperators<vertexScalar,staggered>(fvMsh, deep);
 
             testMemberOperators<faceVector,staggered>(fvMsh, deep);
-            testMemberOperators<lowerFaceVector,staggered>(fvMsh, deep);
             testMemberOperators<edgeVector,staggered>(fvMsh, deep);
             testMemberOperators<vertexVector,staggered>(fvMsh, deep);
 
             testMemberOperators<stencil,staggered>(fvMsh, deep);
-            testMemberOperators<symmStencil,staggered>(fvMsh, deep);
             testMemberOperators<diagStencil,staggered>(fvMsh, deep);
 
 
@@ -2438,12 +2417,10 @@ int main(int argc, char *argv[])
 
 
             testCellSpacePrimitiveFunctions<faceScalar,staggered>(fvMsh, deep);
-            testCellSpacePrimitiveFunctions<lowerFaceScalar,staggered>(fvMsh, deep);
             testCellSpacePrimitiveFunctions<edgeScalar,staggered>(fvMsh, deep);
             testCellSpacePrimitiveFunctions<vertexScalar,staggered>(fvMsh, deep);
 
             testCellSpacePrimitiveFunctions<faceVector,staggered>(fvMsh, deep);
-            testCellSpacePrimitiveFunctions<lowerFaceVector,staggered>(fvMsh, deep);
             testCellSpacePrimitiveFunctions<edgeVector,staggered>(fvMsh, deep);
             testCellSpacePrimitiveFunctions<vertexVector,staggered>(fvMsh, deep);
 
@@ -2459,7 +2436,6 @@ int main(int argc, char *argv[])
 
 
             testStencilFunctions<stencil,staggered>(fvMsh, deep);
-            testStencilFunctions<symmStencil,staggered>(fvMsh, deep);
             testStencilFunctions<diagStencil,staggered>(fvMsh, deep);
 
 

@@ -101,12 +101,10 @@ public:
     makeboundaryExchange(label,MESHTYPE)                                       \
     makeboundaryExchange(scalar,MESHTYPE)                                      \
     makeboundaryExchange(faceScalar,MESHTYPE)                                  \
-    makeboundaryExchange(lowerFaceScalar,MESHTYPE)                             \
     makeboundaryExchange(edgeScalar,MESHTYPE)                                  \
     makeboundaryExchange(vertexScalar,MESHTYPE)                                \
     makeboundaryExchange(vector,MESHTYPE)                                      \
     makeboundaryExchange(faceVector,MESHTYPE)                                  \
-    makeboundaryExchange(lowerFaceVector,MESHTYPE)                             \
     makeboundaryExchange(edgeVector,MESHTYPE)                                  \
     makeboundaryExchange(vertexVector,MESHTYPE)                                \
     makeboundaryExchange(tensor,MESHTYPE)                                      \
@@ -114,7 +112,6 @@ public:
     makeboundaryExchange(symmTensor,MESHTYPE)                                  \
     makeboundaryExchange(diagTensor,MESHTYPE)                                  \
     makeboundaryExchange(stencil,MESHTYPE)                                     \
-    makeboundaryExchange(symmStencil,MESHTYPE)                                 \
     makeboundaryExchange(diagStencil,MESHTYPE)
 
 }

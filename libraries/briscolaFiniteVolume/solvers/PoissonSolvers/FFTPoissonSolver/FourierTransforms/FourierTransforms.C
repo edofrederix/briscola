@@ -416,7 +416,6 @@ void FourierTransforms<SType>::normalize(scalarBlock& transformedData) const
 // Instantiate
 
 template class FourierTransforms<stencil>;
-template class FourierTransforms<symmStencil>;
 
 }
 

@@ -24,7 +24,7 @@ namespace ex
         template<class SType, class Type, class MeshType>
         inline tmp<meshField<Type,MeshType>> laplacian
         (
-            const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+            const meshField<faceScalar,MeshType>* lambdaPtr,
             const meshField<Type,MeshType>& field,
             const scalar factor = 1.0
         )
@@ -43,7 +43,7 @@ namespace ex
         template<class SType, class Type, class MeshType>
         inline tmp<meshField<Type,MeshType>> laplacian
         (
-            const meshField<lowerFaceScalar,MeshType>& lambda,
+            const meshField<faceScalar,MeshType>& lambda,
             const meshField<Type,MeshType>& field,
             const scalar factor = 1.0
         )
@@ -60,7 +60,7 @@ namespace ex
         template<class SType, class Type, class MeshType>
         inline tmp<meshField<Type,MeshType>> laplacian
         (
-            const tmp<meshField<lowerFaceScalar,MeshType>>& tLambda,
+            const tmp<meshField<faceScalar,MeshType>>& tLambda,
             const meshField<Type,MeshType>& field,
             const scalar factor = 1.0
         )
@@ -105,7 +105,7 @@ namespace ex
             )->exLaplacian(field,factor);
         }
 
-// Default symmetric stencil type on colocated meshes
+// Default stencil type on colocated meshes
 
     // Return
 
@@ -114,12 +114,12 @@ namespace ex
         template<class Type>
         inline tmp<meshField<Type,colocated>> laplacian
         (
-            const meshField<lowerFaceScalar,colocated>* lambdaPtr,
+            const meshField<faceScalar,colocated>* lambdaPtr,
             const meshField<Type,colocated>& field,
             const scalar factor = 1.0
         )
         {
-            return laplacian<symmStencil>(lambdaPtr,field,factor);
+            return laplacian<stencil>(lambdaPtr,field,factor);
         }
 
         // Coefficient as reference
@@ -127,12 +127,12 @@ namespace ex
         template<class Type>
         inline tmp<meshField<Type,colocated>> laplacian
         (
-            const meshField<lowerFaceScalar,colocated>& lambda,
+            const meshField<faceScalar,colocated>& lambda,
             const meshField<Type,colocated>& field,
             const scalar factor = 1.0
         )
         {
-            return laplacian<symmStencil>(lambda,field,factor);
+            return laplacian<stencil>(lambda,field,factor);
         }
 
         // Coefficient as tmp
@@ -140,12 +140,12 @@ namespace ex
         template<class Type>
         inline tmp<meshField<Type,colocated>> laplacian
         (
-            const tmp<meshField<lowerFaceScalar,colocated>>& tLambda,
+            const tmp<meshField<faceScalar,colocated>>& tLambda,
             const meshField<Type,colocated>& field,
             const scalar factor = 1.0
         )
         {
-            return laplacian<symmStencil>(tLambda,field,factor);
+            return laplacian<stencil>(tLambda,field,factor);
         }
 
         // Coefficient as reference
@@ -158,7 +158,7 @@ namespace ex
             const scalar factor = 1.0
         )
         {
-            return laplacian<symmStencil>(lambda,field,factor);
+            return laplacian<stencil>(lambda,field,factor);
         }
 
         // No coefficient
@@ -170,7 +170,7 @@ namespace ex
             const scalar factor = 1.0
         )
         {
-            return laplacian<symmStencil>(field,factor);
+            return laplacian<stencil>(field,factor);
         }
 
 // Default stencil type on staggered meshes
@@ -182,7 +182,7 @@ namespace ex
         template<class Type>
         inline tmp<meshField<Type,staggered>> laplacian
         (
-            const meshField<lowerFaceScalar,staggered>* lambdaPtr,
+            const meshField<faceScalar,staggered>* lambdaPtr,
             const meshField<Type,staggered>& field,
             const scalar factor = 1.0
         )
@@ -195,7 +195,7 @@ namespace ex
         template<class Type>
         inline tmp<meshField<Type,staggered>> laplacian
         (
-            const meshField<lowerFaceScalar,staggered>& lambda,
+            const meshField<faceScalar,staggered>& lambda,
             const meshField<Type,staggered>& field,
             const scalar factor = 1.0
         )
@@ -208,7 +208,7 @@ namespace ex
         template<class Type>
         inline tmp<meshField<Type,staggered>> laplacian
         (
-            const tmp<meshField<lowerFaceScalar,staggered>>& tLambda,
+            const tmp<meshField<faceScalar,staggered>>& tLambda,
             const meshField<Type,staggered>& field,
             const scalar factor = 1.0
         )

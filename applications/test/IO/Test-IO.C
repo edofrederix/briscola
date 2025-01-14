@@ -157,11 +157,9 @@ int main(int argc, char *argv[])
         CREATEFIELD(symmTensor,SymmTensor,MESHTYPE,DEEP)                \
         CREATEFIELD(sphericalTensor,SphericalTensor,MESHTYPE,DEEP)      \
         CREATEFIELD(faceScalar,FaceScalar,MESHTYPE,DEEP)                \
-        CREATEFIELD(lowerFaceScalar,LowerFaceScalar,MESHTYPE,DEEP)      \
         CREATEFIELD(edgeScalar,EdgeScalar,MESHTYPE,DEEP)                \
         CREATEFIELD(vertexScalar,VertexScalar,MESHTYPE,DEEP)            \
         CREATEFIELD(faceVector,FaceVector,MESHTYPE,DEEP)                \
-        CREATEFIELD(lowerFaceVector,LowerFaceVector,MESHTYPE,DEEP)      \
         CREATEFIELD(edgeVector,EdgeVector,MESHTYPE,DEEP)                \
         CREATEFIELD(vertexVector,VertexVector,MESHTYPE,DEEP)            \
                                                                         \
@@ -178,11 +176,9 @@ int main(int argc, char *argv[])
         RESETFIELD(SymmTensor,MESHTYPE)                                 \
         RESETFIELD(SphericalTensor,MESHTYPE)                            \
         RESETFIELD(FaceScalar,MESHTYPE)                                 \
-        RESETFIELD(LowerFaceScalar,MESHTYPE)                            \
         RESETFIELD(EdgeScalar,MESHTYPE)                                 \
         RESETFIELD(VertexScalar,MESHTYPE)                               \
         RESETFIELD(FaceVector,MESHTYPE)                                 \
-        RESETFIELD(LowerFaceVector,MESHTYPE)                            \
         RESETFIELD(EdgeVector,MESHTYPE)                                 \
         RESETFIELD(VertexVector,MESHTYPE)                               \
                                                                         \
@@ -199,11 +195,9 @@ int main(int argc, char *argv[])
         TESTFIELD(symmTensor,SymmTensor,MESHTYPE,GHOSTS)                \
         TESTFIELD(sphericalTensor,SphericalTensor,MESHTYPE,GHOSTS)      \
         TESTFIELD(faceScalar,FaceScalar,MESHTYPE,GHOSTS)                \
-        TESTFIELD(lowerFaceScalar,LowerFaceScalar,MESHTYPE,GHOSTS)      \
         TESTFIELD(edgeScalar,EdgeScalar,MESHTYPE,GHOSTS)                \
         TESTFIELD(vertexScalar,VertexScalar,MESHTYPE,GHOSTS)            \
         TESTFIELD(faceVector,FaceVector,MESHTYPE,GHOSTS)                \
-        TESTFIELD(lowerFaceVector,LowerFaceVector,MESHTYPE,GHOSTS)      \
         TESTFIELD(edgeVector,EdgeVector,MESHTYPE,GHOSTS)                \
         TESTFIELD(vertexVector,VertexVector,MESHTYPE,GHOSTS)            \
     }

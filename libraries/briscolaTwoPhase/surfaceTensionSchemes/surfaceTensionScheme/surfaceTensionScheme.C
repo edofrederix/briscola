@@ -20,7 +20,7 @@ surfaceTensionScheme::surfaceTensionScheme
     const dictionary& dict
 )
 :
-    colocatedLowerFaceScalarField
+    colocatedFaceScalarField
     (
         "surfaceTension",
         tpm.fvMsh(),
@@ -59,7 +59,7 @@ surfaceTensionScheme::surfaceTensionScheme
 
 surfaceTensionScheme::surfaceTensionScheme(const surfaceTensionScheme& s)
 :
-    colocatedLowerFaceScalarField(s),
+    colocatedFaceScalarField(s),
     tpm_(s.tpm_),
     fvMsh_(s.fvMsh_),
     dict_(s.dict_),

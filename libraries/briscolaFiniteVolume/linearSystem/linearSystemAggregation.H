@@ -21,9 +21,6 @@ namespace fv
 template<class SType, class Type, class MeshType>
 class linearSystemAggregation
 {
-    // Full stencil type
-    typedef typename SType::fullStencilType FullSType;
-
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
@@ -51,7 +48,7 @@ class linearSystemAggregation
 
     // Column numbers for each processor's row in this part, for each direction.
     // Construct for a full stencil type and not a symmetric one.
-    List<List<List<FixedList<label,FullSType::nComponents>>>> colNums_;
+    List<List<List<FixedList<label,SType::nComponents>>>> colNums_;
 
     // Part communicator number
     label partCommNum_;
@@ -92,7 +89,7 @@ public:
     inline const labelList& globalEnd() const { return partEnds_; }
 
     // Return reference to the column number data
-    inline const List<List<List<FixedList<label,FullSType::nComponents>>>>&
+    inline const List<List<List<FixedList<label,SType::nComponents>>>>&
     colNums() const
     {
         return colNums_;
@@ -137,7 +134,7 @@ public:
     // Set the row coefficients of the aggregated matrix per processor
     void rowCoeffs
     (
-        List<List<FullSType>>& rows,
+        List<List<SType>>& rows,
         const linearSystem<SType,Type,MeshType>& sys,
         const label d
     ) const;

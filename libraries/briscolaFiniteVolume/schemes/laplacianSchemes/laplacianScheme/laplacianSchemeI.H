@@ -17,7 +17,7 @@ namespace fv
         inline tmp<linearSystem<SType,Type,MeshType>>
         laplacianScheme<SType,Type,MeshType>::imLaplacian
         (
-            const meshField<lowerFaceScalar,MeshType>& lambda,
+            const meshField<faceScalar,MeshType>& lambda,
             const meshField<Type,MeshType>& field,
             const scalar factor
         )
@@ -31,7 +31,7 @@ namespace fv
         inline tmp<linearSystem<SType,Type,MeshType>>
         laplacianScheme<SType,Type,MeshType>::imLaplacian
         (
-            const tmp<meshField<lowerFaceScalar,MeshType>>& tLambda,
+            const tmp<meshField<faceScalar,MeshType>>& tLambda,
             const meshField<Type,MeshType>& field,
             const scalar factor
         )
@@ -84,7 +84,7 @@ namespace fv
         inline tmp<meshField<Type,MeshType>>
         laplacianScheme<SType,Type,MeshType>::exLaplacian
         (
-            const meshField<lowerFaceScalar,MeshType>& lambda,
+            const meshField<faceScalar,MeshType>& lambda,
             const meshField<Type,MeshType>& field,
             const scalar factor
         )
@@ -98,7 +98,7 @@ namespace fv
         inline tmp<meshField<Type,MeshType>>
         laplacianScheme<SType,Type,MeshType>::exLaplacian
         (
-            const tmp<meshField<lowerFaceScalar,MeshType>>& tLambda,
+            const tmp<meshField<faceScalar,MeshType>>& tLambda,
             const meshField<Type,MeshType>& field,
             const scalar factor
         )

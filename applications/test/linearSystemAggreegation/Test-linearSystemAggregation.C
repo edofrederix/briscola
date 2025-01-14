@@ -52,7 +52,7 @@ void test(const fvMesh& fvMsh, const label nParts)
 
             for (int d = 0; d < MeshType::numberOfDirections; d++)
             {
-                List<List<typename SType::fullStencilType>> rows;
+                List<List<SType>> rows;
                 lsa.rowCoeffs(rows, sys, d);
 
                 List<Type> rhs;
@@ -86,15 +86,9 @@ int main(int argc, char *argv[])
     for (int nParts = 1; nParts <= Pstream::nProcs(); nParts++)
     {
         test<stencil,scalar,colocated>(fvMsh, nParts);
-        test<symmStencil,scalar,colocated>(fvMsh, nParts);
-
         test<stencil,vector,colocated>(fvMsh, nParts);
-        test<symmStencil,vector,colocated>(fvMsh, nParts);
 
         test<stencil,scalar,staggered>(fvMsh, nParts);
-        test<symmStencil,scalar,staggered>(fvMsh, nParts);
-
         test<stencil,vector,staggered>(fvMsh, nParts);
-        test<symmStencil,vector,staggered>(fvMsh, nParts);
     }
 }

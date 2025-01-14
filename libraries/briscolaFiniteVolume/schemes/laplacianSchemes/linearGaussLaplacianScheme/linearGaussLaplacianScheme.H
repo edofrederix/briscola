@@ -28,7 +28,7 @@ public:
     // Explicit laplacian schemes
     virtual tmp<meshField<Type,MeshType>> exLaplacian
     (
-        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+        const meshField<faceScalar,MeshType>* lambdaPtr,
         const meshField<Type,MeshType>& field,
         const scalar factor = 1.0
     );

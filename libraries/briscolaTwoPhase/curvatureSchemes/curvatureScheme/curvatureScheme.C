@@ -91,27 +91,25 @@ autoPtr<curvatureScheme> curvatureScheme::New
     );
 }
 
-tmp<colocatedLowerFaceScalarField> curvatureScheme::interp() const
+tmp<colocatedFaceScalarField> curvatureScheme::interp() const
 {
     const colocatedScalarField& kappa = *this;
 
-    tmp<colocatedLowerFaceScalarField> tInterp
+    tmp<colocatedFaceScalarField> tInterp
     (
-        new colocatedLowerFaceScalarField
+        new colocatedFaceScalarField
         (
             this->name(),
             fvMsh_
         )
     );
 
-    colocatedLowerFaceScalarField& Interp = tInterp.ref();
-
-    Interp = Zero;
+    colocatedFaceScalarField& Interp = tInterp.ref();
 
     forAllFaces(Interp, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNei(ijk,fd));
+        const labelVector nei(lowerNeighbor(ijk,fd));
 
         const bool lowerHasInterface =
             alpha_(nei) > vof::threshold && alpha_(nei) < 1 - vof::threshold;
@@ -121,16 +119,22 @@ tmp<colocatedLowerFaceScalarField> curvatureScheme::interp() const
 
         if (lowerHasInterface && upperHasInterface)
         {
-            Interp(ijk)[fd] = 0.5*(kappa(ijk) + kappa(nei));
+            Interp(ijk)[fd*2] = 0.5*(kappa(ijk) + kappa(nei));
         }
         else if (lowerHasInterface)
         {
-            Interp(ijk)[fd] = kappa(nei);
+            Interp(ijk)[fd*2] = kappa(nei);
         }
         else if (upperHasInterface)
         {
-            Interp(ijk)[fd] = kappa(ijk);
+            Interp(ijk)[fd*2] = kappa(ijk);
         }
+        else
+        {
+            Interp(ijk)[fd*2] = Zero;
+        }
+
+        Interp(nei)[fd*2+1] = Interp(ijk)[fd*2];
     }
 
     return tInterp;

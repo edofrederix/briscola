@@ -19,11 +19,6 @@ makeSolver(diagStencil,scalar,staggered);
 makeSolver(diagStencil,vector,colocated);
 makeSolver(diagStencil,vector,staggered);
 
-makeSolver(symmStencil,scalar,colocated);
-makeSolver(symmStencil,scalar,staggered);
-makeSolver(symmStencil,vector,colocated);
-makeSolver(symmStencil,vector,staggered);
-
 makeSolver(stencil,scalar,colocated);
 makeSolver(stencil,scalar,staggered);
 makeSolver(stencil,vector,colocated);
@@ -34,11 +29,6 @@ makeSolverType(MG,diagStencil,scalar,colocated);
 makeSolverType(MG,diagStencil,scalar,staggered);
 makeSolverType(MG,diagStencil,vector,colocated);
 makeSolverType(MG,diagStencil,vector,staggered);
-
-makeSolverType(MG,symmStencil,scalar,colocated);
-makeSolverType(MG,symmStencil,scalar,staggered);
-makeSolverType(MG,symmStencil,vector,colocated);
-makeSolverType(MG,symmStencil,vector,staggered);
 
 makeSolverType(MG,stencil,scalar,colocated);
 makeSolverType(MG,stencil,scalar,staggered);
@@ -51,11 +41,6 @@ makeSolverType(Krylov,diagStencil,scalar,staggered);
 makeSolverType(Krylov,diagStencil,vector,colocated);
 makeSolverType(Krylov,diagStencil,vector,staggered);
 
-makeSolverType(Krylov,symmStencil,scalar,colocated);
-makeSolverType(Krylov,symmStencil,scalar,staggered);
-makeSolverType(Krylov,symmStencil,vector,colocated);
-makeSolverType(Krylov,symmStencil,vector,staggered);
-
 makeSolverType(Krylov,stencil,scalar,colocated);
 makeSolverType(Krylov,stencil,scalar,staggered);
 makeSolverType(Krylov,stencil,vector,colocated);
@@ -66,11 +51,6 @@ makeSolverType(diagonal,diagStencil,scalar,colocated);
 makeSolverType(diagonal,diagStencil,scalar,staggered);
 makeSolverType(diagonal,diagStencil,vector,colocated);
 makeSolverType(diagonal,diagStencil,vector,staggered);
-
-makeSolverType(diagonal,symmStencil,scalar,colocated);
-makeSolverType(diagonal,symmStencil,scalar,staggered);
-makeSolverType(diagonal,symmStencil,vector,colocated);
-makeSolverType(diagonal,symmStencil,vector,staggered);
 
 makeSolverType(diagonal,stencil,scalar,colocated);
 makeSolverType(diagonal,stencil,scalar,staggered);

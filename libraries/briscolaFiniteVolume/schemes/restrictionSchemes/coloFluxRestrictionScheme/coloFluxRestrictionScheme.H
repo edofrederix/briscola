@@ -14,7 +14,7 @@ namespace fv
 
 class coloFluxRestrictionScheme
 :
-    public restrictionScheme<lowerFaceScalar,colocated>
+    public restrictionScheme<faceScalar,colocated>
 {
 public:
 
@@ -28,8 +28,8 @@ public:
     // level
     virtual void restrict
     (
-        meshDirection<lowerFaceScalar,colocated>&,
-        const meshDirection<lowerFaceScalar,colocated>&,
+        meshDirection<faceScalar,colocated>&,
+        const meshDirection<faceScalar,colocated>&,
         const bool = false
     );
 };

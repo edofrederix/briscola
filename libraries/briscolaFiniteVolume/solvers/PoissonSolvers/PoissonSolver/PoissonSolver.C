@@ -15,7 +15,7 @@ void PoissonSolver<SType,Type,MeshType>::initFlux()
     if (fluxPtr_.empty())
         fluxPtr_.reset
         (
-            new meshField<LowerFaceSpace<Type>,MeshType>
+            new meshField<FaceSpace<Type>,MeshType>
             (
                 "PoissonFlux",
                 fvMsh_

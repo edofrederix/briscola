@@ -14,7 +14,7 @@ T.correctBoundaryConditions();
 
 // Diffusivity
 
-meshField<lowerFaceScalar,colocated> lambda
+meshField<faceScalar,colocated> lambda
 (
     "lambda",
     fvMsh,
@@ -40,9 +40,9 @@ source = readScalar(solverDict.lookup("source"));
 
 // System and solver
 
-autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
+autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
 (
-    PoissonSolver<symmStencil,scalar,colocated>::New
+    PoissonSolver<stencil,scalar,colocated>::New
     (
         T.name(),
         fvMsh

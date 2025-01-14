@@ -107,14 +107,15 @@ void linearProlongationScheme<Type,MeshType>::prolong
         for (int c = 0; c < 2; c++)
             for (int b = 0; b < 2; b++)
                 for (int a = 0; a < 2; a++)
-                    value +=
-                        weights(i,j,k)[q++]
-                      * coarse
-                        (
-                            i/R.x() + a*ox,
-                            j/R.y() + b*oy,
-                            k/R.z() + c*oz
-                        );
+                    if (weights(i,j,k)[q++] != 0.0)
+                        value +=
+                            weights(i,j,k)[q-1]
+                          * coarse
+                            (
+                                i/R.x() + a*ox,
+                                j/R.y() + b*oy,
+                                k/R.z() + c*oz
+                            );
 
         bop(fine(i,j,k), value);
     }

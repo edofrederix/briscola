@@ -23,7 +23,7 @@ protected:
     meshField<scalar,MeshType> rho_;
 
     // Mixture dynamic viscosity
-    meshField<lowerFaceScalar,MeshType> mu_;
+    meshField<faceScalar,MeshType> mu_;
 
 private:
 
@@ -58,19 +58,19 @@ public:
     const meshField<scalar,MeshType>& rho() const { return rho_; }
 
     // Return access to the mixture dynamic viscosity
-    meshField<lowerFaceScalar,MeshType>& mu() { return mu_; }
+    meshField<faceScalar,MeshType>& mu() { return mu_; }
 
     // Return const access to the mixture dynamic viscosity
-    const meshField<lowerFaceScalar,MeshType>& mu() const { return mu_; }
+    const meshField<faceScalar,MeshType>& mu() const { return mu_; }
 
     // Return an interpolated value of the volume fraction
-    virtual tmp<meshField<lowerFaceScalar,MeshType>> faceAlpha() const;
+    virtual tmp<meshField<faceScalar,MeshType>> faceAlpha() const;
 
     // Return the volume fraction for the templated mesh type
     virtual tmp<meshField<scalar,MeshType>> meshAlpha() const;
 
     // Return the colocated face flux
-    virtual tmp<colocatedLowerFaceScalarField> coloFaceFlux() const;
+    virtual tmp<colocatedFaceScalarField> coloFaceFlux() const;
 
     // Return the gravitational acceleration
     virtual List<typename MeshType::vectorType> gravity() const;

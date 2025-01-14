@@ -51,9 +51,6 @@ int main(int argc, char *argv[])
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
 
-    test<symmStencil,scalar,colocated>(fvMsh);
-    test<symmStencil,vector,colocated>(fvMsh);
-
     test<stencil,scalar,colocated>(fvMsh);
     test<stencil,vector,colocated>(fvMsh);
 

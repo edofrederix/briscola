@@ -16,7 +16,7 @@ namespace fv
 makeRestrictionSchemeNoTemplate
 (
     stagBlendedViscosityMixture,
-    lowerFaceScalar,
+    faceScalar,
     staggered
 );
 
@@ -39,8 +39,8 @@ stagBlendedViscosityMixtureRestrictionScheme
 
 void stagBlendedViscosityMixtureRestrictionScheme::restrict
 (
-    meshDirection<lowerFaceScalar,staggered>& coarse,
-    const meshDirection<lowerFaceScalar,staggered>& fine,
+    meshDirection<faceScalar,staggered>& coarse,
+    const meshDirection<faceScalar,staggered>& fine,
     const bool scale
 )
 {
@@ -49,12 +49,13 @@ void stagBlendedViscosityMixtureRestrictionScheme::restrict
     const labelVector R(coarse.mshPart().R());
     const label d = coarse.directionNum();
 
-    coarse = Zero;
-
     forAllFaces(coarse, fd, i, j, k)
     {
-        labelVector ijk(i,j,k);
-        labelVector fijk(i*R.x(), j*R.y(), k*R.z());
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        const labelVector fijk(briscola::cmptMultiply(ijk,R));
+        const labelVector fnei(briscola::cmptMultiply(nei,R));
 
         labelVector o(Zero);
 
@@ -63,7 +64,9 @@ void stagBlendedViscosityMixtureRestrictionScheme::restrict
 
         // Reconstruct the face alpha
 
-        scalar alphaf = 0;
+        scalar alphaLower = 0.0;
+        scalar alphaUpper = 0.0;
+
         label nFaces = 0;
 
         for (o.x(); o.x() < (fd == 0 || d == 0 ? 1 : R.x()); o.x()++)
@@ -71,17 +74,22 @@ void stagBlendedViscosityMixtureRestrictionScheme::restrict
         for (o.z(); o.z() < (fd == 2 || d == 2 ? 1 : R.z()); o.z()++)
         {
             // Don't use cells with negative indices
-            labelVector fijko(briscola::cmptMax(fijk+o,zeroXYZ));
+            const labelVector fijko(briscola::cmptMax(fijk+o,zeroXYZ));
+            const labelVector fneio(briscola::cmptMax(fnei+o,zeroXYZ));
 
-            alphaf += this->inv(fine(fijko)[fd]);
+            alphaLower += this->inv(fine(fijko)[fd*2  ]);
+            alphaUpper += this->inv(fine(fneio)[fd*2+1]);
+
             nFaces++;
         }
 
-        alphaf /= nFaces;
+        alphaLower /= scalar(nFaces);
+        alphaUpper /= scalar(nFaces);
 
         // Apply the blending function
 
-        coarse(ijk)[fd] = this->blend(alphaf);
+        coarse(ijk)[fd*2  ] = this->blend(alphaLower);
+        coarse(ijk)[fd*2+1] = this->blend(alphaUpper);
     }
 }
 

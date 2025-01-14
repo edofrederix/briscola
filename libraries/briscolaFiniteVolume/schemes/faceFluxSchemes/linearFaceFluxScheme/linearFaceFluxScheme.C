@@ -14,7 +14,7 @@ tmp
 <
     meshField
     <
-        LowerFaceSpace<typename innerProduct<Type,vector>::type>,
+        FaceSpace<typename innerProduct<Type,vector>::type>,
         colocated
     >
 > linearFaceFluxScheme::coloFaceFlux
@@ -25,7 +25,7 @@ tmp
     typedef
         meshField
         <
-            LowerFaceSpace<typename innerProduct<Type,vector>::type>,
+            FaceSpace<typename innerProduct<Type,vector>::type>,
             colocated
         > returnType;
 
@@ -40,8 +40,6 @@ tmp
 
     returnType& Flux = tFlux.ref();
 
-    Flux = Zero;
-
     const colocatedFaceVectorField& fan =
         this->fvMsh().metrics<colocated>().faceAreaNormals();
 
@@ -53,10 +51,10 @@ tmp
 
     forAllFaces(Flux, fd, i, j, k)
     {
-        labelVector ijk(i,j,k);
-        labelVector nei(lowerNei(i,j,k,fd));
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        Flux(ijk)[fd] =
+        Flux(ijk)[fd*2] =
             (
                 (
                     field(ijk)*fwc(ijk)[fd*2]
@@ -64,6 +62,8 @@ tmp
                 )
               & fan(ijk)[fd*2]
             );
+
+        Flux(nei)[fd*2+1] = -Flux(ijk)[fd*2];
     }
 
     return tFlux;
@@ -78,7 +78,7 @@ linearFaceFluxScheme::linearFaceFluxScheme
     faceFluxScheme(fvMsh, is)
 {}
 
-tmp<colocatedLowerFaceScalarField> linearFaceFluxScheme::faceFlux
+tmp<colocatedFaceScalarField> linearFaceFluxScheme::faceFlux
 (
     const colocatedVectorField& field
 )
@@ -86,7 +86,7 @@ tmp<colocatedLowerFaceScalarField> linearFaceFluxScheme::faceFlux
     return this->coloFaceFlux(field);
 }
 
-tmp<colocatedLowerFaceVectorField> linearFaceFluxScheme::faceFlux
+tmp<colocatedFaceVectorField> linearFaceFluxScheme::faceFlux
 (
     const colocatedTensorField& field
 )
@@ -94,23 +94,21 @@ tmp<colocatedLowerFaceVectorField> linearFaceFluxScheme::faceFlux
     return this->coloFaceFlux(field);
 }
 
-tmp<staggeredLowerFaceScalarField> linearFaceFluxScheme::faceFlux
+tmp<staggeredFaceScalarField> linearFaceFluxScheme::faceFlux
 (
     const staggeredScalarField& field
 )
 {
-    tmp<staggeredLowerFaceScalarField> tFlux
+    tmp<staggeredFaceScalarField> tFlux
     (
-        new staggeredLowerFaceScalarField
+        new staggeredFaceScalarField
         (
             "faceFlux("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    staggeredLowerFaceScalarField& Flux = tFlux.ref();
-
-    Flux = Zero;
+    staggeredFaceScalarField& Flux = tFlux.ref();
 
     const staggeredFaceScalarField& fa =
         this->fvMsh().metrics<staggered>().faceAreas();
@@ -123,15 +121,20 @@ tmp<staggeredLowerFaceScalarField> linearFaceFluxScheme::faceFlux
 
     forAllFaces(Flux, d, fd, i, j, k)
     {
-        labelVector ijk(i,j,k);
-        labelVector nei(lowerNei(i,j,k,d));
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        Flux(d,ijk)[fd] =
+        // Fluxes in x-direction should receive from the first field direction,
+        // fluxes in y-direction from the second, etc
+
+        Flux(d,ijk)[fd*2] =
           - fa(d,ijk)[fd*2]
           * (
-                field(fd,ijk)*fwc(fd,ijk)[d*2]
-              + field(fd,nei)*fwn(fd,ijk)[d*2]
+                fwc(fd,ijk)[d*2]*field(fd,ijk)
+              + fwn(fd,ijk)[d*2]*field(fd,lowerNeighbor(ijk,d))
             );
+
+        Flux(d,nei)[fd*2+1] = -Flux(d,ijk)[fd*2];
     }
 
     return tFlux;

@@ -92,17 +92,6 @@ void stagDirichletBoundaryCondition<Type>::eliminateGhosts
 }
 
 template<class Type>
-void stagDirichletBoundaryCondition<Type>::eliminateGhosts
-(
-    linearSystem<symmStencil,Type,staggered>& sys,
-    const label l,
-    const label d
-)
-{
-    NotImplemented;
-}
-
-template<class Type>
 void stagDirichletBoundaryCondition<Type>::evaluate
 (
     const label l,

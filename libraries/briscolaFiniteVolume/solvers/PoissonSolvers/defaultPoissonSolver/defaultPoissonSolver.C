@@ -39,7 +39,7 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
 (
     meshField<Type,MeshType>& x,
     const meshField<Type,MeshType>* bPtr,
-    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+    const meshField<faceScalar,MeshType>* lambdaPtr,
     const bool ddt,
     const scalar dtFrac
 )

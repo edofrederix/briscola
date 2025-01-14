@@ -26,7 +26,7 @@ public:
     linearFaceGradientScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Face-normal gradient
-    virtual tmp<meshField<LowerFaceSpace<Type>,MeshType>> faceGrad
+    virtual tmp<meshField<FaceSpace<Type>,MeshType>> faceGrad
     (
         const meshField<Type,MeshType>&
     );

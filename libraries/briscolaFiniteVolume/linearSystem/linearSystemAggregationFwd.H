@@ -28,17 +28,6 @@ typedef linearSystemAggregation<diagStencil,vector,staggered>
     staggeredVectorDiagSystemAggregation;
 
 
-typedef linearSystemAggregation<symmStencil,scalar,colocated>
-    colocatedScalarSymmSystemAggregation;
-typedef linearSystemAggregation<symmStencil,scalar,staggered>
-    staggeredScalarSymmSystemAggregation;
-
-typedef linearSystemAggregation<symmStencil,vector,colocated>
-    colocatedVectorSymmSystemAggregation;
-typedef linearSystemAggregation<symmStencil,vector,staggered>
-    staggeredVectorSymmSystemAggregation;
-
-
 typedef linearSystemAggregation<stencil,scalar,colocated>
     colocatedScalarSystemAggregation;
 typedef linearSystemAggregation<stencil,scalar,staggered>
