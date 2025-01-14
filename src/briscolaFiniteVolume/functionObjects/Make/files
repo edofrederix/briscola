@@ -1,0 +1,10 @@
+example/example.C
+sample/sample.C
+sample/sampleTemplates.C
+lineSample/lineSample.C
+averagedLineSample/averagedLineSample.C
+timeAverage/timeAverage.C
+budgetPrimitivesStaggered/budgetPrimitivesStaggered.C
+colocatedReconstruction/colocatedReconstruction.C
+
+LIB = $(FOAM_USER_LIBBIN)/libbriscolaFvFunctionObjects

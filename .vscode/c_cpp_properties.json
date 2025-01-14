@@ -9,7 +9,7 @@
                 "${FOAM_SRC}/OpenFOAM/**",
                 "${FOAM_SRC}/Pstream/mpi/**",
                 "${FOAM_SRC}/OSspecific/POSIX/**",
-                "${workspaceFolder}/libraries/**",
+                "${workspaceFolder}/src/**",
                 "${workspaceFolder}/applications/solvers/**",
                 "${workspaceFolder}/applications/utilities/**"
             ],
@@ -39,7 +39,7 @@
                     "${FOAM_SRC}/OpenFOAM/**",
                     "${FOAM_SRC}/Pstream/mpi/**",
                     "${FOAM_SRC}/OSspecific/POSIX/**",
-                    "${workspaceFolder}/libraries/**",
+                    "${workspaceFolder}/src/**",
                     "${workspaceFolder}/applications/solvers/**",
                     "${workspaceFolder}/applications/utilities/**"
                 ]

@@ -908,7 +908,7 @@ WARN_LOGFILE           =
 
 INPUT                  = \
     applications \
-    libraries \
+    src \
     doc/chapters/0_start.md \
     doc/chapters/1_tutorial.md \
     doc/chapters/2_data.md \
@@ -2276,9 +2276,9 @@ SEARCH_INCLUDES        = YES
 # This tag requires that the tag SEARCH_INCLUDES is set to YES.
 
 INCLUDE_PATH           = \
-    libraries/briscolaTwoPhase/include \
-    libraries/briscolaCore/include \
-    libraries/briscolaFiniteVolume/include \
+    src/briscolaTwoPhase/include \
+    src/briscolaCore/include \
+    src/briscolaFiniteVolume/include \
     $(FOAM_SRC)/OpenFOAM/lnInclude \
     $(FOAM_SRC)/OpenFOAM/include \
     $(FOAM_SRC)/OpenFOAM/include

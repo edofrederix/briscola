@@ -76,6 +76,18 @@ SuperLU and SuperLU_DIST packages can optionally be built from the
 `dependencies` directory too with the `makeSuperLU` and `makeSuperLU_DIST`
 scripts.
 
+## Building Briscola
+
+Once the dependencies above are met, Briscola can be built with
+
+```
+./Allwmake
+```
+
+This script uses OpenFOAM's wmake build system. For faster compilation, make
+sure that the `WM_NCOMPPROCS` environment variable is set equal to the number of
+processors available on your machine for compilation.
+
 ## Documentation
 
 The code is self-documented via Doxygen. The Doxygen output can be generated

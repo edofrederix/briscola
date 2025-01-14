@@ -1,0 +1,10 @@
+colocatedScalarDiagSystem.C
+colocatedScalarSystem.C
+colocatedVectorDiagSystem.C
+colocatedVectorSystem.C
+staggeredScalarDiagSystem.C
+staggeredScalarSystem.C
+staggeredVectorDiagSystem.C
+staggeredVectorSystem.C
+
+LIB = $(FOAM_USER_LIBBIN)/libbriscolaFvLinearSystems

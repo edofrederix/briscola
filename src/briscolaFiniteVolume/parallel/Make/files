@@ -1,0 +1,13 @@
+linearSystemAggregation/linearSystemAggregation.C
+linearSystemAggregation/PstreamGlobalsLsa.C
+
+pointInterpolators/pointInterpolator/pointInterpolator.C
+pointInterpolators/linearPointInterpolator/linearPointInterpolator.C
+pointInterpolators/nearestPointInterpolator/nearestPointInterpolator.C
+
+dataExchange/dataExchange/dataExchange.C
+dataExchange/cellDataExchange/cellDataExchange.C
+dataExchange/pointDataExchange/pointDataExchange.C
+dataExchange/boundaryExchange/boundaryExchange.C
+
+LIB = $(FOAM_USER_LIBBIN)/libbriscolaFvParallel

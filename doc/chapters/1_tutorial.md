@@ -13,11 +13,11 @@ that Briscola users are at least able to run standard OpenFOAM tutorial cases.
 Just like OpenFOAM, Briscola uses the following key components:
 
 1. Numerical discretizations schemes, algorithms, solvers and models are
-   contained in `libraries`. Many of them are runtime selectable, meaning that
-   the type is only selected at runtime based on user input using the [Factory
+   contained in `src`. Many of them are runtime selectable, meaning that the
+   type is only selected at runtime based on user input using the [Factory
    method pattern](https://en.wikipedia.org/wiki/Factory_method_pattern). Most
-   of Briscola's code is contained in the libraries.
-2. Solvers, dynamically using the code in libraries, are contained in
+   of Briscola's code is contained in the `src` directory.
+2. Solvers, dynamically using the code in `src`, are contained in
    `applications/solvers` as executables. They set the high-level algorithm that
    is used to solve the set of PDEs. In Briscola, examples are the
    `briscolaColocated` and `briscolaStaggered` solvers, which are incompressible

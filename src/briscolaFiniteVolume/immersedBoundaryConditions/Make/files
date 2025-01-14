@@ -1,0 +1,8 @@
+immersedBoundary/immersedBoundary.C
+immersedBoundaryConditions/immersedBoundaryCondition/immersedBoundaryConditions.C
+immersedBoundaryShapes/immersedBoundaryShape/immersedBoundaryShapes.C
+immersedBoundaryConditions/immersedBoundaryCondition/immersedBoundaryConditionStaggeredMassSource.C
+
+functionObjects/immersedBoundaryForce/immersedBoundaryForce.C
+
+LIB = $(FOAM_USER_LIBBIN)/libbriscolaFvImmersedBoundaryConditions

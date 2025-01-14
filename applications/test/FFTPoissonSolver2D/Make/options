@@ -1,8 +1,7 @@
 EXE_INC = \
-    -I../../../libraries/briscolaCore/lnInclude \
-    -I../../../libraries/briscolaMesh/lnInclude \
-    -I../../../libraries/briscolaFiniteVolume/lnInclude \
-	-I../../../libraries/briscolaImmersedBoundary/lnInclude \
+    -I../../../src/briscolaCore/lnInclude \
+    -I../../../src/briscolaMesh/lnInclude \
+    -I../../../src/briscolaFiniteVolume/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude \
     -I$(FFTW_HOME)/include \
     -DFULLDEBUG -g -O0
@@ -10,9 +9,4 @@ EXE_INC = \
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -L$(FFTW_HOME)/lib \
-    -lbriscolaCore \
-    -lbriscolaMesh \
-    -lbriscolaFiniteVolume \
-	-lbriscolaImmersedBoundary \
-    -lOpenFOAM \
-    -lfftw3
+    -lbriscolaFiniteVolume

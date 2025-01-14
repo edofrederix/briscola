@@ -2,11 +2,7 @@
 
 # By default run 4 jobs simultaneously
 
-if [ -z "$WM_NCOMPPROCS" ]; then
-    N=4
-else
-    N=$WM_NCOMPPROCS
-fi
+N=${WM_NCOMPPROCS:-4}
 
 for DIR in ./*/; do
 
