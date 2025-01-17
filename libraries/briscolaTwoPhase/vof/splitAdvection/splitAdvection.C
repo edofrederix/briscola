@@ -220,9 +220,14 @@ void splitAdvection::solve(const colocatedLowerFaceScalarField& phi)
 
             alpha_.correctBoundaryConditions();
 
-            // Set alpha bounds, needed for Dirichlet boundary conditions
+            // Set alpha bounds in ghost cells, needed for Dirichlet boundary
+            // conditions
 
-            alpha_ = max(min(alpha_, 1.0), 0.0);
+            forAllBlockLinear(alpha_[0][0].B(),i)
+            {
+                alpha_[0][0].B()(i)
+                    = Foam::min(Foam::max(alpha_[0][0].B()(i), 0.0), 1.0);
+            }
 
             // Update the normal after the alpha update, so that it is
             // consistent with alpha and can be reused by other parts of the

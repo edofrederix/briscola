@@ -45,6 +45,8 @@ int main(int argc, char *argv[])
         v = 1.0/rho;
         vcf = ex::coloFaceInterp(v);
 
+        vcf.correctBoundaryConditions();
+
         while (rk.loop())
         {
             const label stage = rk.stage();
