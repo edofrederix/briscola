@@ -40,7 +40,7 @@ void coloFluxRestrictionScheme::restrict
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
         const labelVector fijk(briscola::cmptMultiply(ijk,R));
-        const labelVector fnei(briscola::cmptMultiply(nei,R));
+        const labelVector fnei(lowerNeighbor(fijk,fd));
 
         coarse(ijk)[fd*2  ] = Zero;
         coarse(nei)[fd*2+1] = Zero;

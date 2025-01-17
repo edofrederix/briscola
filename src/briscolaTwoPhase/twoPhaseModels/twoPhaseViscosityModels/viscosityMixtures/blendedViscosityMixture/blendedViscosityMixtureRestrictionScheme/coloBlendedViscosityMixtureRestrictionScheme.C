@@ -59,13 +59,10 @@ void coloBlendedViscosityMixtureRestrictionScheme::restrict
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
         const labelVector fijk(briscola::cmptMultiply(ijk,R));
-        const labelVector fnei(briscola::cmptMultiply(nei,R));
 
         // Reconstruct the face alpha
 
-        scalar alphaLower = 0.0;
-        scalar alphaUpper = 0.0;
-
+        scalar alpha = 0.0;
         scalar area = 0.0;
 
         labelVector o;
@@ -73,19 +70,17 @@ void coloBlendedViscosityMixtureRestrictionScheme::restrict
         for (o.y() = 0; o.y() < (fd == 1 ? 1 : R.y()); o.y()++)
         for (o.z() = 0; o.z() < (fd == 2 ? 1 : R.z()); o.z()++)
         {
-            alphaLower += this->inv(fine(fijk+o)[fd*2  ])*faf(fijk+o)[fd*2];
-            alphaUpper += this->inv(fine(fnei+o)[fd*2+1])*faf(fijk+o)[fd*2];
-
-            area += faf(fijk+o)[fd*2];
+            alpha += faf(fijk+o)[fd*2]*this->inv(fine(fijk+o)[fd*2]);
+            area +=  faf(fijk+o)[fd*2];
         }
 
-        alphaLower /= area;
-        alphaUpper /= area;
+        alpha /= area;
 
-        // Apply the blending function
+        // Apply the blending function. Viscosity has no sign so we can copy
+        // directly to the upper face of the lower neighbor.
 
-        coarse(ijk)[fd*2  ] = this->blend(alphaLower);
-        coarse(nei)[fd*2+1] = this->blend(alphaUpper);
+        coarse(ijk)[fd*2  ] = this->blend(alpha);
+        coarse(nei)[fd*2+1] = coarse(ijk)[fd*2];
     }
 }
 

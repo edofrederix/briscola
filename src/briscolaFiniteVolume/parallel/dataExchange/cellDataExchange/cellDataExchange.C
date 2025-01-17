@@ -62,15 +62,25 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
     const mesh& msh = this->fvMsh_.msh();
 
-    // Set neighboring processor numbers and boundaries. The first one is us.
+    // Set neighboring processor numbers, offsets and transformations. The first
+    // one is us.
 
     neighbors_.clear();
     neighbors_.setSize(msh.boundaries().size()+1,-1);
     neighbors_[0] = Pstream::myProcNo();
 
+    List<labelVector> neighborOffsets(neighbors_.size(), zeroXYZ);
+    List<labelTensor> neighborTs(neighbors_.size(), eye);
+
     forAll(msh.boundaries(), i)
+    {
         if (msh.boundaries()[i].castable<parallelBoundary>())
+        {
             neighbors_[i+1] = msh.boundaries()[i].neighborProcNum();
+            neighborOffsets[i+1] = msh.boundaries()[i].offset();
+            neighborTs[i+1] = msh.boundaries()[i].T();
+        }
+    }
 
     // Collect the required cells and store per neighbor processor
 
@@ -102,7 +112,7 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
         }
         else
         {
-            labelVector bo =
+            const labelVector bo =
                 briscola::cmptMin(briscola::cmptMax(offset, -unitXYZ), unitXYZ);
 
             const label degree = cmptSum(cmptMag(bo));
@@ -115,18 +125,14 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
             // Get the boundary to the other processor
 
-            label bNum = -1;
-
-            forAll(msh.boundaries(), bi)
-            if (msh.boundaries()[bi].offset() == bo)
-            {
-                bNum = bi;
-                break;
-            }
+            label bNum;
+            for (bNum = 1; bNum < neighborOffsets.size(); bNum++)
+                if (neighborOffsets[bNum] == bo)
+                    break;
 
             // Error when not found
 
-            if (bNum == -1)
+            if (bNum == neighborOffsets.size())
                 FatalErrorInFunction
                     << "Could not find boundary corresponding to offset "
                     << bo << endl << abort(FatalError);
@@ -135,8 +141,8 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
             if
             (
-                msh.boundaries()[bNum].castable<domainBoundary>()
-             || msh.boundaries()[bNum].castable<emptyBoundary>()
+                msh.boundaries()[bNum-1].castable<domainBoundary>()
+             || msh.boundaries()[bNum-1].castable<emptyBoundary>()
             )
                 FatalErrorInFunction
                     << "Cannot exchange cell data across a domain boundary "
@@ -146,29 +152,45 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
             for (int j = 0; j < 3; j++)
                 if (bo[j] != 0)
-                    index[j] = bo[j] > 0 ? index[j]-(U[j]-1) : index[j]-L[j];
+                    index[j] -= bo[j] > 0 ? (U[j]-1) :L[j];
 
-            recvCells_[bNum+1].append(index);
+            recvCells_[bNum].append(index);
 
             map_[i] =
                 Tuple2<label,label>
                 (
-                    bNum+1,
-                    recvCells_[bNum+1].size()-1
+                    bNum,
+                    recvCells_[bNum].size()-1
                 );
         }
     }
 
-    // Exchange processor numbers to talk to and data sizes
+    // Exchange processor numbers, sizes and boundary offsets
 
-    List<List<Tuple2<label,label>>> globalData(Pstream::nProcs());
+    List<List<FixedList<label,5>>> globalData(Pstream::nProcs());
 
     forAll(recvCells_, i)
+    {
         if (recvCells_[i].size() > 0)
-            globalData[Pstream::myProcNo()].append
-            (
-                Tuple2<label,label>(neighbors_[i], recvCells_[i].size())
-            );
+        {
+            FixedList<label,5> data(0);
+
+            data[0] = neighbors_[i];
+            data[1] = recvCells_[i].size();
+
+            // Compute the boundary offset that the neighbor should have
+
+            if (i > 0)
+            {
+                const labelVector bo = - (neighborTs[i].T() & neighborOffsets[i]);
+
+                for (int j = 0; j < 3; j++)
+                    data[j+2] = bo[j];
+            }
+
+            globalData[Pstream::myProcNo()].append(data);
+        }
+    }
 
     Pstream::gatherList(globalData);
     Pstream::scatterList(globalData);
@@ -178,16 +200,42 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
     sendCells_.clear();
     sendCells_.setSize(recvCells_.size());
 
-    forAll(sendCells_, i)
-        if (neighbors_[i] > -1)
-            forAll(globalData[neighbors_[i]], j)
-                if (globalData[neighbors_[i]][j].first() == Pstream::myProcNo())
-                    sendCells_[i].setSize
-                    (
-                        globalData[neighbors_[i]][j].second()
-                    );
+    forAll(globalData, proc)
+    forAll(globalData[proc], i)
+    {
+        if (globalData[proc][i][0] == Pstream::myProcNo())
+        {
+            // Requested boundary offset
 
-    // Send indices to neighbors and receive from neighbors
+            const labelVector bo
+            (
+                globalData[proc][i][2],
+                globalData[proc][i][3],
+                globalData[proc][i][4]
+            );
+
+            // Find the matching neighbor
+
+            bool found = false;
+
+            forAll(neighbors_, j)
+            if (neighbors_[j] == proc && bo == neighborOffsets[j])
+            {
+                sendCells_[j].setSize
+                (
+                    globalData[proc][i][1]
+                );
+
+                found = true;
+                break;
+            }
+
+            if (!found)
+                FatalErrorInFunction
+                    << "Could not find matching neighbor for boundary offset "
+                    << bo << endl << abort(FatalError);
+        }
+    }
 
     forAll(sendCells_, i)
         if (sendCells_[i].size() > 0)
@@ -216,15 +264,13 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
     forAll(sendCells_, i)
     if (i != 0 && sendCells_[i].size() > 0)
     {
-        const boundary& b = msh.boundaries()[i-1];
-        const labelTensor& T = b.T();
-
-        faceLabel J = pTransform<faceLabel>(T,I);
+        const labelTensor T = neighborTs[i];
+        const faceLabel J = pTransform<faceLabel>(T,I);
 
         const labelVector L = briscola::cmptMin(J.lower(), J.upper());
         const labelVector U = briscola::cmptMax(J.lower(), J.upper());
 
-        const labelVector bo = (T & b.offset());
+        const labelVector bo = (T & neighborOffsets[i]);
 
         forAll(sendCells_[i], j)
         {
@@ -232,14 +278,14 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
             for (int k = 0; k < 3; k++)
                 if (bo[k] != 0)
-                    index[k] = index[k] > 0 ? (L[k]-1)+index[k] : U[k]+index[k];
+                    index[k] += index[k] > 0 ? (L[k]-1) : U[k];
 
             // Transform back
 
             index = (T.T() & index);
 
             for (int k = 0; k < 3; k++)
-                index[k] = index[k] < 0 ? U[k]+index[k] : index[k];
+                index[k] += index[k] < 0 ? U[k] : 0;
         }
     }
 }

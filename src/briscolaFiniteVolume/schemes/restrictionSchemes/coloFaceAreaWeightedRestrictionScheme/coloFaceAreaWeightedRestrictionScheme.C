@@ -45,10 +45,10 @@ void coloFaceAreaWeightedRestrictionScheme<Type>::restrict
     forAllFaces(coarse, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,fd));
+        const labelVector nei(lowerNeighbor(ijk,fd));
 
         const labelVector fijk(briscola::cmptMultiply(ijk, R));
-        const labelVector fnei(briscola::cmptMultiply(nei, R));
+        const labelVector fnei(lowerNeighbor(fijk,fd));
 
         scalar area = 0.0;
 
