@@ -1,0 +1,19 @@
+solver/solvers.C
+solver/solverSmoothers.C
+solver/solverDirectSolvers.C
+
+directSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolverBase.C
+directSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolvers.C
+
+directSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolverBase.C
+directSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolvers.C
+
+PoissonSolvers/PoissonSolver/PoissonSolvers.C
+PoissonSolvers/FFTPoissonSolver/FFTPoissonSolver.C
+PoissonSolvers/FFTPoissonSolver/planner/planner.C
+PoissonSolvers/FFTPoissonSolver/pencilDecomposer/pencilDecomposer.C
+PoissonSolvers/FFTPoissonSolver/processorOverlap/processorOverlap.C
+PoissonSolvers/FFTPoissonSolver/FourierTransforms/FourierTransforms.C
+PoissonSolvers/FFTPoissonSolver/tridiagonalSolver/tridiagonalSolver.C
+
+LIB = $(FOAM_USER_LIBBIN)/libbriscolaFvSolvers

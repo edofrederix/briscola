@@ -1,18 +1,5 @@
 #!/bin/bash
 
-wclean libraries/briscolaCore
-wclean libraries/briscolaMesh
-wclean libraries/briscolaImmersedBoundary
-wclean libraries/briscolaFiniteVolume
-wclean libraries/briscolaTwoPhase
-
-wclean applications/utilities/briscolaCheckMesh
-wclean applications/utilities/briscolaWriteMesh
-
-wclean applications/solvers/briscolaLaplacian
-wclean applications/solvers/briscolaColocated
-wclean applications/solvers/briscolaStaggered
-wclean applications/solvers/briscolaColocatedCNAB
-wclean applications/solvers/briscolaStaggeredCNAB
-wclean applications/solvers/briscolaVofAdvection
-wclean applications/solvers/briscolaColocatedTwoPhase
+wclean -s all src
+wclean -s all applications/utilities
+wclean -s all applications/solvers

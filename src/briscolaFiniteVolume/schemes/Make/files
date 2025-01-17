@@ -1,0 +1,16 @@
+scheme.C
+
+ddtSchemes/ddtScheme/ddtSchemes.C
+divergenceSchemes/divergenceScheme/divergenceSchemes.C
+faceFluxSchemes/faceFluxScheme/faceFluxSchemes.C
+faceGradientSchemes/faceGradientScheme/faceGradientSchemes.C
+gradientSchemes/gradientScheme/gradientSchemes.C
+interpolationSchemes/interpolationScheme/interpolationSchemes.C
+laplacianSchemes/laplacianScheme/laplacianSchemes.C
+prolongationSchemes/prolongationScheme/prolongationSchemes.C
+restrictionSchemes/restrictionScheme/restrictionSchemes.C
+
+RungeKuttaSchemes/RungeKuttaScheme/RungeKuttaScheme.C
+RungeKuttaSchemes/RungeKuttaScheme/RungeKuttaSchemes.C
+
+LIB = $(FOAM_USER_LIBBIN)/libbriscolaFvSchemes

@@ -1,0 +1,5 @@
+EXE_INC = \
+    -I../briscolaCore/lnInclude \
+    -I../briscolaMesh/lnInclude \
+    -I../briscolaFiniteVolume/lnInclude \
+    -I$(LIB_SRC)/OpenFOAM/lnInclude

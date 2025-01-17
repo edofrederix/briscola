@@ -1,19 +1,9 @@
 #!/bin/bash
 
-wmake libso libraries/briscolaCore
-wmake libso libraries/briscolaMesh
-wmake libso libraries/briscolaImmersedBoundary
-wmake libso libraries/briscolaFiniteVolume
-wmake libso libraries/briscolaTwoPhase
+WM_NCOMPPROCS=${WM_NCOMPPROCS:-4}
 
-wmake applications/utilities/briscolaCheckMesh
-wmake applications/utilities/briscolaWriteMesh
+wmakeLnIncludeAll -j $WM_NCOMPPROCS src
 
-wmake applications/solvers/briscolaLaplacian
-wmake applications/solvers/briscolaColocated
-wmake applications/solvers/briscolaStaggered
-wmake applications/solvers/briscolaColocatedCNAB
-wmake applications/solvers/briscolaStaggeredCNAB
-wmake applications/solvers/briscolaVofAdvection
-wmake applications/solvers/briscolaColocatedTwoPhase
-wmake applications/solvers/briscolaStaggeredTwoPhase
+wmake -a -s src
+wmake -a -s applications/utilities
+wmake -a -s applications/solvers

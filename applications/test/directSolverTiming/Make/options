@@ -1,18 +1,11 @@
 EXE_INC = \
-    -I../../../libraries/briscolaCore/lnInclude \
-    -I../../../libraries/briscolaMesh/lnInclude \
-    -I../../../libraries/briscolaFiniteVolume/lnInclude \
-    -I../../../libraries/briscolaImmersedBoundary/lnInclude \
+    -I../../../src/briscolaCore/lnInclude \
+    -I../../../src/briscolaMesh/lnInclude \
+    -I../../../src/briscolaFiniteVolume/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude \
     $(if $(SUPERLU_HOME),-DSUPERLU,) \
-    $(if $(SUPERLU_DIST_HOME),-DSUPERLU_DIST,) \
-    -Wno-old-style-cast \
-    -Wno-unknown-pragmas
+    $(if $(SUPERLU_DIST_HOME),-DSUPERLU_DIST,)
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
-    -lbriscolaCore \
-    -lbriscolaMesh \
-    -lbriscolaFiniteVolume \
-    -lbriscolaImmersedBoundary \
-    -lOpenFOAM
+    -lbriscolaFiniteVolume

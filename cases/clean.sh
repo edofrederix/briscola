@@ -1,16 +1,15 @@
 #!/bin/bash
 
-CURDIR=$(pwd)
-
-for FILE in $(find . -mindepth 3 -maxdepth 3 -name clean.sh); do
-
+for FILE in $(find . -mindepth 2 -maxdepth 5 -name clean.sh); do
+(
     DIR=$(dirname $FILE)
-    CASE=$(basename $DIR)
+
+    echo $DIR
 
     cd $DIR
 
-    ./clean.sh
-
-    cd $CURDIR
-
+    ./clean.sh > /dev/null 2>&1
+) &
 done
+
+wait
