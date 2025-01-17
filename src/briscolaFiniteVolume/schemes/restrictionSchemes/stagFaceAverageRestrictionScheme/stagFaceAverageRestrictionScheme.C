@@ -43,7 +43,7 @@ void stagFaceAverageRestrictionScheme<Type>::restrict
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
         const labelVector fijk(briscola::cmptMultiply(ijk,R));
-        const labelVector fnei(briscola::cmptMultiply(nei,R));
+        const labelVector fnei(lowerNeighbor(fijk,fd));
 
         labelVector o(Zero);
 
