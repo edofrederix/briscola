@@ -1,16 +1,12 @@
-#include "defaultEigenSolver.H"
+#include "EigenSolver.H"
+
+#include "SparseLUEigenSolver.H"
+#include "PartialPivLUEigenSolver.H"
+#include "BiCGSTABEigenSolver.H"
 
 // The following solvers are only compiled when their macro variables are set.
-// This is conditionally done in Make/options, based on the existance of certain
+// This is conditionally done in Make/options, based on the existence of certain
 // environment variables.
-
-#ifdef MKL
-#include "PardisoEigenSolver.H"
-#endif
-
-#ifdef SUITESPARSE
-#include "UmfPackEigenSolver.H"
-#endif
 
 #ifdef SUPERLU
 #include "SuperLUEigenSolver.H"

@@ -49,7 +49,7 @@ tmp<meshDirection<SCALARPRODTYPE,MeshType>>
 mag(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     tmp<meshDirection<SCALARPRODTYPE,MeshType>> tRes =
-        reuseDirTmp<SCALARPRODTYPE,Type,MeshType>::New(tD);
+        reuseDirectionTmp<SCALARPRODTYPE,Type,MeshType>::New(tD);
 
     mag(tRes.ref(), tD());
     if (tD.isTmp())
@@ -97,7 +97,7 @@ cmptMax(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     typedef typename meshDirection<Type,MeshType>::cmptType cmptType;
     tmp<meshDirection<cmptType,MeshType>> tRes =
-        reuseDirTmp<cmptType,Type,MeshType>::New(tD);
+        reuseDirectionTmp<cmptType,Type,MeshType>::New(tD);
 
     cmptMax(tRes.ref(), tD());
     if (tD.isTmp())
@@ -145,7 +145,7 @@ cmptMin(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     typedef typename meshDirection<Type,MeshType>::cmptType cmptType;
     tmp<meshDirection<cmptType,MeshType>> tRes =
-        reuseDirTmp<cmptType,Type,MeshType>::New(tD);
+        reuseDirectionTmp<cmptType,Type,MeshType>::New(tD);
 
     cmptMin(tRes.ref(), tD());
     if (tD.isTmp())
@@ -189,7 +189,7 @@ cmptAv(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     typedef typename meshDirection<Type,MeshType>::cmptType cmptType;
     tmp<meshDirection<cmptType,MeshType>> tRes =
-        reuseDirTmp<cmptType,Type,MeshType>::New(tD);
+        reuseDirectionTmp<cmptType,Type,MeshType>::New(tD);
 
     cmptAv(tRes.ref(), tD());
     if (tD.isTmp())
@@ -232,6 +232,86 @@ cmptMag(const tmp<meshDirection<Type,MeshType>>& tD)
     tmp<meshDirection<Type,MeshType>> tRes = New(tD);
 
     cmptMag(tRes.ref(), tD());
+    if (tD.isTmp())
+        tD.clear();
+    return tRes;
+}
+
+template<class Type, class MeshType>
+void cmptSqr
+(
+    meshDirection<Type,MeshType>& res,
+    const meshDirection<Type,MeshType>& D
+)
+{
+    cmptSqr(res.B(), D.B());
+}
+
+template<class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+cmptSqr(const meshDirection<Type,MeshType>& D)
+{
+    tmp<meshDirection<Type,MeshType>> tRes
+    (
+        new meshDirection<Type,MeshType>
+        (
+            D.fvMsh(),
+            D.levelNum(),
+            D.directionNum()
+        )
+    );
+
+    cmptSqr(tRes.ref(), D);
+    return tRes;
+}
+
+template<class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+cmptSqr(const tmp<meshDirection<Type,MeshType>>& tD)
+{
+    tmp<meshDirection<Type,MeshType>> tRes = New(tD);
+
+    cmptSqr(tRes.ref(), tD());
+    if (tD.isTmp())
+        tD.clear();
+    return tRes;
+}
+
+template<class Type, class MeshType>
+void cmptSqrt
+(
+    meshDirection<Type,MeshType>& res,
+    const meshDirection<Type,MeshType>& D
+)
+{
+    cmptSqrt(res.B(), D.B());
+}
+
+template<class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+cmptSqrt(const meshDirection<Type,MeshType>& D)
+{
+    tmp<meshDirection<Type,MeshType>> tRes
+    (
+        new meshDirection<Type,MeshType>
+        (
+            D.fvMsh(),
+            D.levelNum(),
+            D.directionNum()
+        )
+    );
+
+    cmptSqrt(tRes.ref(), D);
+    return tRes;
+}
+
+template<class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+cmptSqrt(const tmp<meshDirection<Type,MeshType>>& tD)
+{
+    tmp<meshDirection<Type,MeshType>> tRes = New(tD);
+
+    cmptSqrt(tRes.ref(), tD());
     if (tD.isTmp())
         tD.clear();
     return tRes;

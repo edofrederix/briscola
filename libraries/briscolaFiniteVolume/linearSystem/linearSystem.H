@@ -2,6 +2,7 @@
 #define linearSystem_H
 
 #include "linearSystemFwd.H"
+#include "linearSystemAggregation.H"
 
 #include "fvMesh.H"
 #include "meshFields.H"
@@ -193,6 +194,11 @@ public:
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }
 
+    // Write the system at given level to an output stream. The last column is
+    // the right-hand side source. The dense matrix is written, so use only on
+    // very coarse meshes for debugging.
+    bool writeLevel(Ostream& os, const label = 0) const;
+
     // Member Operators
 
     void operator=(const linearSystem<SType,Type,MeshType>&);
@@ -247,17 +253,6 @@ public:
     void operator/=(const meshField<scalar,MeshType>&);
     void operator/=(const tmp<meshField<scalar,MeshType>>&);
 };
-
-// Write a stencil system at given level to a file. The last column is the
-// right-hand side source. Full matrix is written, so use only on very coarse
-// meshes.
-template<class SType, class Type, class MeshType>
-void writeToFile
-(
-    const linearSystem<SType,Type,MeshType>&,
-    const fileName file,
-    const label = 0
-);
 
 }
 

@@ -53,7 +53,7 @@ tmp<meshField<SCALARPRODTYPE,MeshType>>
 mag(const tmp<meshField<Type,MeshType>>& tf)
 {
     tmp<meshField<SCALARPRODTYPE,MeshType>> tRes =
-        reuseFieTmp<SCALARPRODTYPE,Type,MeshType>::New
+        reuseFieldTmp<SCALARPRODTYPE,Type,MeshType>::New
         (
             tf,
             "mag("+tf->name()+")"
@@ -106,7 +106,7 @@ cmptMax(const tmp<meshField<Type,MeshType>>& tf)
 {
     typedef typename meshField<Type,MeshType>::cmptType cmptType;
     tmp<meshField<cmptType,MeshType>> tRes =
-        reuseFieTmp<cmptType,Type,MeshType>::New(tf,"cmptMax("+tf->name()+")");
+        reuseFieldTmp<cmptType,Type,MeshType>::New(tf,"cmptMax("+tf->name()+")");
 
     cmptMax(tRes.ref(), tf());
 
@@ -155,7 +155,8 @@ cmptMin(const tmp<meshField<Type,MeshType>>& tf)
 {
     typedef typename meshField<Type,MeshType>::cmptType cmptType;
     tmp<meshField<cmptType,MeshType>> tRes =
-        reuseFieTmp<cmptType,Type,MeshType>::New(tf,"cmptMin("+tf->name()+")");
+        reuseFieldTmp<cmptType,Type,MeshType>::
+        New(tf,"cmptMin("+tf->name()+")");
 
     cmptMin(tRes.ref(), tf());
 
@@ -204,7 +205,7 @@ cmptAv(const tmp<meshField<Type,MeshType>>& tf)
 {
     typedef typename meshField<Type,MeshType>::cmptType cmptType;
     tmp<meshField<cmptType,MeshType>> tRes =
-        reuseFieTmp<cmptType,Type,MeshType>::New(tf,"cmptAv("+tf->name()+")");
+        reuseFieldTmp<cmptType,Type,MeshType>::New(tf,"cmptAv("+tf->name()+")");
 
     cmptAv(tRes.ref(), tf());
 
@@ -254,6 +255,100 @@ cmptMag(const tmp<meshField<Type,MeshType>>& tf)
     tmp<meshField<Type,MeshType>> tRes = New(tf,"cmptMag("+tf->name()+")");
 
     cmptMag(tRes.ref(), tf());
+
+    if (tf.isTmp())
+        tf.clear();
+
+    return tRes;
+}
+
+template<class Type, class MeshType>
+void cmptSqr
+(
+    meshField<Type,MeshType>& res,
+    const meshField<Type,MeshType>& f
+)
+{
+    forAll(res, i)
+        cmptSqr(res[i],f[i]);
+}
+
+template<class Type, class MeshType>
+tmp<meshField<Type,MeshType>>
+cmptSqr(const meshField<Type,MeshType>& f)
+{
+    tmp<meshField<Type,MeshType>> tRes
+    (
+        new meshField<Type,MeshType>
+        (
+            "cmptSqr("+f.name()+")",
+            f.fvMsh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            false,
+            f.deep()
+        )
+    );
+
+    cmptSqr(tRes.ref(), f);
+
+    return tRes;
+}
+
+template<class Type, class MeshType>
+tmp<meshField<Type,MeshType>>
+cmptSqr(const tmp<meshField<Type,MeshType>>& tf)
+{
+    tmp<meshField<Type,MeshType>> tRes = New(tf,"cmptSqr("+tf->name()+")");
+
+    cmptSqr(tRes.ref(), tf());
+
+    if (tf.isTmp())
+        tf.clear();
+
+    return tRes;
+}
+
+template<class Type, class MeshType>
+void cmptSqrt
+(
+    meshField<Type,MeshType>& res,
+    const meshField<Type,MeshType>& f
+)
+{
+    forAll(res, i)
+        cmptSqrt(res[i],f[i]);
+}
+
+template<class Type, class MeshType>
+tmp<meshField<Type,MeshType>>
+cmptSqrt(const meshField<Type,MeshType>& f)
+{
+    tmp<meshField<Type,MeshType>> tRes
+    (
+        new meshField<Type,MeshType>
+        (
+            "cmptSqrt("+f.name()+")",
+            f.fvMsh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            false,
+            f.deep()
+        )
+    );
+
+    cmptSqrt(tRes.ref(), f);
+
+    return tRes;
+}
+
+template<class Type, class MeshType>
+tmp<meshField<Type,MeshType>>
+cmptSqrt(const tmp<meshField<Type,MeshType>>& tf)
+{
+    tmp<meshField<Type,MeshType>> tRes = New(tf,"cmptSqrt("+tf->name()+")");
+
+    cmptSqrt(tRes.ref(), tf());
 
     if (tf.isTmp())
         tf.clear();

@@ -1,5 +1,5 @@
 #include "linearSystem.H"
-#include "Row.H"
+#include "linearSystemAggregation.H"
 
 namespace Foam
 {
@@ -270,11 +270,11 @@ List<bool> linearSystem<SType,Type,MeshType>::singular(const bool clearCache)
 
         forAll(singular_, d)
         {
-            // We need at least three cells in one direction to avoid looking at
-            // only constrained cells
+            // We prefer a level with at least three cells in one direction to
+            // avoid looking at only constrained cells
 
             label l = A_.size() - 1;
-            while (cmptMax(A_[l][d].N()) < 3) l--;
+            while (l > 0 && cmptMax(A_[l][d].N()) < 3) l--;
 
             const meshDirection<SType,MeshType>& A = A_[l][d];
 
@@ -302,11 +302,11 @@ List<bool> linearSystem<SType,Type,MeshType>::diagonal(const bool clearCache)
 
         forAll(diagonal_, d)
         {
-            // We need at least three cells in one direction to avoid looking at
-            // only constrained cells
+            // We prefer a level with at least three cells in one direction to
+            // avoid looking at only constrained cells
 
             label l = A_.size() - 1;
-            while (cmptMax(A_[l][d].N()) < 3) l--;
+            while (l > 0 && cmptMax(A_[l][d].N()) < 3) l--;
 
             const meshDirection<SType,MeshType>& A = A_[l][d];
 
@@ -985,170 +985,63 @@ void linearSystem<SType,Type,MeshType>::operator/=
 }
 
 template<class SType, class Type, class MeshType>
-void writeToFile
-(
-    linearSystem<SType,Type,MeshType>& sys,
-    const fileName file,
-    const label l = 0
-)
+bool linearSystem<SType,Type,MeshType>::writeLevel(Ostream& os, const label l)
+const
 {
+    typedef typename SType::fullStencilType FullSType;
+
+    // Aggregated linear system at master
+    const linearSystemAggregation<SType,Type,MeshType> lsa(*this,l,1);
+
     for (int d = 0; d < MeshType::numberOfDirections; d++)
     {
-        const meshDirection<SType,MeshType>& A = sys.A()[l][d];
-        const meshDirection<Type,MeshType>& b = sys.b()[l][d];
+        List<List<FullSType>> rows;
+        lsa.rowCoeffs(rows, *this, d);
 
-        const labelVector N = A.N();
-
-        List<labelVector> shapes(Pstream::nProcs());
-        shapes[Pstream::myProcNo()] = N;
-
-        Pstream::gatherList(shapes);
-
-        List<List<Row<stencil,Type>>> data
-        (
-            Pstream::nProcs()
-        );
-
-        data[Pstream::myProcNo()].setSize(cmptProduct(N));
-
-        int l = 0;
-        forAllCells(A, i, j, k)
-            data[Pstream::myProcNo()][l++] =
-                Row<stencil,Type>
-                (
-                    fullStencil<MeshType>(A,i,j,k),
-                    b(i,j,k)
-                );
-
-        Pstream::gatherList(data);
+        List<Type> rhs;
+        lsa.rhsSource(rhs, *this, d);
 
         if (Pstream::master())
         {
-            OFstream F
-            (
-                file
-              + fileName
-                (
-                    MeshType::numberOfDirections > 1
-                  ? ("_" + Foam::name(d)) : ""
-                )
-            );
+            const label n = rhs.size();
 
-            label n = 0;
-            forAll(data, i)
-                n += data[i].size();
+            os << n << " " << n << nl;
 
-            labelList offsets(Pstream::nProcs());
+            const auto& colNums = lsa.colNums()[d];
 
-            offsets[0] = 0;
-            for (int proc = 1; proc < Pstream::nProcs(); proc++)
-                offsets[proc] = offsets[proc-1] + cmptProduct(shapes[proc-1]);
-
-            const decomposition& decomp = sys.fvMsh().msh().decomp();
-
-            forAll(data, proc)
+            int c = 0;
+            forAll(rows, proci)
             {
-                const labelVector N = shapes[proc];
-
-                forAll(data[proc], i)
+                forAll(rows[proci], row)
                 {
-                    const stencil Ai(data[proc][i].stencil());
-                    const Type bi(data[proc][i].source());
+                    const auto& cols = colNums[proci][row];
 
-                    const labelVector ijk
-                    (
-                        (i/N.y()/N.z()) % N.x(),
-                        (i/N.z()) % N.y(),
-                        i % N.z()
-                    );
-
-                    faceLabel neigh(-faceLabel::one);
-
-                    for (int f = 0; f < 6; f++)
-                    if (Ai[f+1] != 0.0)
+                    for (int col = 0; col < n; col++)
                     {
-                        labelVector ijkn(ijk + faceOffsets[f]);
+                        const label i = findIndex(cols, col);
 
-                        if
-                        (
-                            briscola::cmptMax
-                            (
-                                briscola::cmptMin(ijkn, N-unitXYZ),
-                                zeroXYZ
-                            )
-                          == ijkn
-                        )
+                        if (i > -1 && rows[proci][row][i] != 0)
                         {
-                            // Local cell
-
-                            neigh[f] =
-                                offsets[proc]
-                              + ijkn.x()*N.y()*N.z()
-                              + ijkn.y()*N.z()
-                              + ijkn.z();
+                            os << rows[proci][row][i] << " ";
                         }
                         else
                         {
-                            // Neighbor cell
-
-                            const label neighProc =
-                                decomp.faceNeighborsPerProc()[proc][f];
-
-                            if (neighProc > -1)
-                            {
-                                const labelTensor T =
-                                    decomp.faceTsPerProc()[proc][f];
-
-                                const labelVector Nn = shapes[neighProc];
-                                const labelVector TNn = cmptMag(T & Nn);
-
-                                ijkn[f/2] = ijkn[f/2] < 0 ? TNn[f/2]-1 : 0;
-
-                                ijkn = (T.T() & ijkn) + Nn;
-
-                                for (int j = 0; j < 3; j++)
-                                    ijkn[j] = (ijkn[j] % Nn[j]);
-
-                                neigh[f] =
-                                    offsets[neighProc]
-                                  + ijkn.x()*Nn.y()*Nn.z()
-                                  + ijkn.y()*Nn.z()
-                                  + ijkn.z();
-                            }
+                            os << "0 ";
                         }
                     }
 
-                    // Write
+                    for (int i = 0; i < pTraits<Type>::nComponents; i++)
+                        os << scalar_cast(&rhs[c])[i] << " ";
 
-                    for (int j = 0; j < n; j++)
-                    {
-                        if (offsets[proc]+i == j)
-                        {
-                            F << Ai[0] << " ";
-                        }
-                        else
-                        {
-                            bool found = false;
-                            for (int f = 0; f < 6; f++)
-                            {
-                                if (neigh[f] == j)
-                                {
-                                    F << Ai[f+1] << " ";
-                                    found = true;
-                                    break;
-                                }
-                            }
+                    os << nl;
 
-                            if (!found)
-                                F << 0.0 << " ";
-                        }
-                    }
-
-                    F << bi << nl;
+                    c++;
                 }
             }
         }
     }
+
+    return os;
 }
 
 }

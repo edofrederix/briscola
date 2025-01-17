@@ -37,6 +37,13 @@ class meshField
     public IOdictionary,
     public refCount
 {
+public:
+
+    // Number of ghost cell layers
+    static const label ghosts = meshDirection<Type,MeshType>::ghosts;
+
+private:
+
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
@@ -98,7 +105,8 @@ public:
     // List type
     typedef PtrList<meshLevel<Type,MeshType>> listType;
 
-    // Main constructor: construct from name and mesh
+    // Main constructor: construct from name and mesh with optional read and
+    // write options, object registration and depth
 
     meshField
     (

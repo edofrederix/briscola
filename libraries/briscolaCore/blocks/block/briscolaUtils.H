@@ -931,6 +931,66 @@ inline label listToType(const scalarList& l)
     return l[0];
 }
 
+// Cast a Type pointer to a double pointer
+
+template<class T>
+inline typename
+std::conditional<std::is_const<T>::value, const double*, double*>::type
+scalar_cast(T* ptr)
+{
+    return ptr->v_;
+}
+
+template<>
+inline double* scalar_cast(double* ptr)
+{
+    return ptr;
+}
+
+template<>
+inline const double* scalar_cast(const double* ptr)
+{
+    return ptr;
+}
+
+}
+
+// Sqrt of each component
+
+template<class T>
+class eqSqrtOp
+{
+public:
+
+    void operator()(T& x, const T& y) const
+    {
+        x = sqrt(y);
+    }
+};
+
+template<class Form, class Cmpt, direction Ncmpts>
+inline Form cmptSqrt
+(
+    const VectorSpace<Form, Cmpt, Ncmpts>& vs
+)
+{
+    Form v;
+    VectorSpaceOps<Ncmpts,0>::eqOp(v, vs, eqSqrtOp<Cmpt>());
+    return v;
+}
+
+inline scalar cmptSqrt(const scalar s)
+{
+    return sqrt(s);
+}
+
+template<class T>
+inline List<T> cmptSqrt(const List<T>& L)
+{
+    List<T> L2(L.size());
+    forAll(L, i)
+        L2[i] = cmptSqrt(L[i]);
+    return L2;
 }
 
 // Return a string representation of a list (defined in the Foam namespace like

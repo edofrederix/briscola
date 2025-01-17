@@ -115,6 +115,48 @@ cmptMag
 );
 
 template<class Type, class MeshType>
+void cmptSqr
+(
+    meshField<Type,MeshType>&,
+    const meshField<Type,MeshType>&
+);
+
+template<class Type, class MeshType>
+tmp<meshField<Type,MeshType>>
+cmptSqr
+(
+    const meshField<Type,MeshType>&
+);
+
+template<class Type, class MeshType>
+tmp<meshField<Type,MeshType>>
+cmptSqr
+(
+    const tmp<meshField<Type,MeshType>>&
+);
+
+template<class Type, class MeshType>
+void cmptSqrt
+(
+    meshField<Type,MeshType>&,
+    const meshField<Type,MeshType>&
+);
+
+template<class Type, class MeshType>
+tmp<meshField<Type,MeshType>>
+cmptSqrt
+(
+    const meshField<Type,MeshType>&
+);
+
+template<class Type, class MeshType>
+tmp<meshField<Type,MeshType>>
+cmptSqrt
+(
+    const tmp<meshField<Type,MeshType>>&
+);
+
+template<class Type, class MeshType>
 List<Type>
 max(const meshField<Type,MeshType>&);
 

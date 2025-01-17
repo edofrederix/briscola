@@ -1,0 +1,50 @@
+{
+    "configurations": [
+        {
+            "name": "Briscola",
+            "includePath": [
+                "/software/OpenFOAM/OpenFOAM-9/src/OpenFOAM/**",
+                "/software/OpenFOAM/OpenFOAM-9/src/Pstream/mpi/**",
+                "/software/OpenFOAM/OpenFOAM-9/src/OSspecific/POSIX/**",
+                "${FOAM_SRC}/OpenFOAM/**",
+                "${FOAM_SRC}/Pstream/mpi/**",
+                "${FOAM_SRC}/OSspecific/POSIX/**",
+                "${workspaceFolder}/libraries/**",
+                "${workspaceFolder}/applications/solvers/**",
+                "${workspaceFolder}/applications/utilities/**"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "compilerPath": "/usr/bin/g++",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerArgs": [
+                "-DWM_DP",
+                "-Dlinux64",
+                "-DWM_ARCH_OPTION=64",
+                "-DWM_LABEL_SIZE=32"
+            ],
+            "defines": [
+                "WM_DP",
+                "linux64",
+                "WM_ARCH_OPTION=64",
+                "WM_LABEL_SIZE=32"
+            ],
+            "browse": {
+                "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db",
+                "limitSymbolsToIncludedHeaders": true,
+                "path":[
+                    "/software/OpenFOAM/OpenFOAM-9/src/OpenFOAM/**",
+                    "/software/OpenFOAM/OpenFOAM-9/src/Pstream/mpi/**",
+                    "/software/OpenFOAM/OpenFOAM-9/src/OSspecific/POSIX/**",
+                    "${FOAM_SRC}/OpenFOAM/**",
+                    "${FOAM_SRC}/Pstream/mpi/**",
+                    "${FOAM_SRC}/OSspecific/POSIX/**",
+                    "${workspaceFolder}/libraries/**",
+                    "${workspaceFolder}/applications/solvers/**",
+                    "${workspaceFolder}/applications/utilities/**"
+                ]
+            }
+        }
+    ],
+    "version": 4
+}

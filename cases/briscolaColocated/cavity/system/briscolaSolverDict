@@ -20,5 +20,5 @@ p
     relTol      1e-5;
     tolerance   1e-8;
     maxIter     100;
-    coarseLevel 4;
+    coarseLevel 3;
 }

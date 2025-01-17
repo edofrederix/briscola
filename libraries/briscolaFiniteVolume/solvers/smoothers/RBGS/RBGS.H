@@ -32,7 +32,6 @@ public:
     virtual void smooth
     (
         linearSystem<SType,Type,MeshType>& sys,
-        List<Type>& xi,
         const label l,
         const label sweeps,
         const labelList& converged

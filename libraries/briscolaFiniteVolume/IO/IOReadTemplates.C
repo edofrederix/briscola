@@ -94,8 +94,8 @@ void IO::readScalarField
     meshDirection<Type,MeshType>& D
 ) const
 {
-    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
-    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_)*D.ghosts;
+    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_)*D.ghosts;
     const labelVector N = E - S;
 
     List<floatScalar> data(nStructured(N));
@@ -132,8 +132,8 @@ void IO::readArrayField
 {
     const label n(Type::nComponents);
 
-    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
-    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_)*D.ghosts;
+    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_)*D.ghosts;
     const labelVector N = E - S;
 
     List<floatScalar> data(nStructured(N)*n);
@@ -170,8 +170,8 @@ void IO::readArrayArrayField
     const label n(Type::nComponents);
     const label m(pTraits<typename Type::cmpt>::nComponents);
 
-    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_);
-    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_);
+    const labelVector S = D.I().lower()-unitXYZ*label(ghosts_)*D.ghosts;
+    const labelVector E = D.I().upper()+unitXYZ*label(ghosts_)*D.ghosts;
     const labelVector N = E - S;
 
     List<floatScalar> data(nStructured(N)*m*n);

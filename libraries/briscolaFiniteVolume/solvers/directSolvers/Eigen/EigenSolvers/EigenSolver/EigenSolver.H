@@ -1,10 +1,7 @@
 #ifndef EigenSolver_H
 #define EigenSolver_H
 
-#include "dictionary.H"
-#include "autoPtr.H"
-
-#include <Eigen/Sparse>
+#include "EigenSolverBase.H"
 
 namespace Foam
 {
@@ -15,53 +12,40 @@ namespace briscola
 namespace fv
 {
 
+template<class SolverType, int Order>
 class EigenSolver
+:
+    public EigenSolverBase
 {
 public:
 
-    // Eigen types
-    typedef ::Eigen::SparseMatrix<double> matrixType;
-    typedef ::Eigen::MatrixXd rhsType;
+    // Eigen matrix type
+    typedef typename ::Eigen::SparseMatrix<double, Order> MatrixType;
 
 protected:
 
-    // Check if the given sparse matrix is symmetric
-    bool isSymmetric(const matrixType&) const;
-
-    // Check if the given sparse matrix is positive definite
-    bool isPositiveDefinite(const matrixType&) const;
+    // Solver pointer
+    autoPtr<SolverType> solverPtr_;
 
 public:
 
-    // Runtime type information
-    TypeName("EigenSolver");
+    // Construct from dictionary
+    EigenSolver(const dictionary& dict);
 
-    // Declare run-time constructor selection tables
-    declareRunTimeSelectionTable
-    (
-        autoPtr,
-        EigenSolver,
-        dictionary,
-        (),
-        ()
-    );
-
-    // Construct
-    EigenSolver();
-
-    EigenSolver(const EigenSolver&);
-
-    // Selector from solver type
-    static autoPtr<EigenSolver> New(const word);
+    // Copy constructor
+    EigenSolver(const EigenSolver<SolverType,Order>&);
 
     // Destructor
     virtual ~EigenSolver();
 
     // Prepare from a sparse matrix
-    virtual void prepare(const matrixType& A) = 0;
+    virtual void prepare(const MatrixType& A);
 
     // Solve given a right-hand side
-    virtual void solve(rhsType& x, const rhsType& b) const = 0;
+    virtual void solve(RhsType& x, const RhsType& b);
+
+    // Storage order
+    virtual int order() const { return Order; }
 };
 
 }
@@ -69,5 +53,9 @@ public:
 }
 
 }
+
+#ifdef NoRepository
+    #include "EigenSolver.C"
+#endif
 
 #endif

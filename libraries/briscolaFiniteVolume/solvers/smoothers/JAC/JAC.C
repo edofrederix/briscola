@@ -24,7 +24,6 @@ template<class SType, class Type, class MeshType>
 void JAC<SType,Type,MeshType>::JAC::smooth
 (
     linearSystem<SType,Type,MeshType>& sys,
-    List<Type>& xi,
     const label l,
     const label sweeps,
     const labelList& converged
@@ -35,11 +34,6 @@ void JAC<SType,Type,MeshType>::JAC::smooth
     const meshLevel<SType,MeshType>& A = sys.A()[l];
     const meshLevel<Type,MeshType>& b = sys.b()[l];
     const meshLevel<label,MeshType>& f = sys.forcingMask()[l];
-
-    bool singular = xi.size() > 0;
-
-    if (!singular)
-        xi = List<Type>(x.size(), Zero);
 
     const List<bool> diagonal(sys.diagonal());
 
@@ -74,7 +68,6 @@ void JAC<SType,Type,MeshType>::JAC::smooth
                                 bd(i,j,k)
                               - lowerRowProduct(Ad,xd,i,j,k)
                               - upperRowProduct(Ad,xd,i,j,k)
-                              - xi[d]
                             )
                           / Ad(i,j,k).center();
                     }
@@ -91,9 +84,6 @@ void JAC<SType,Type,MeshType>::JAC::smooth
     }
 
     x.correctEliminatedBoundaryConditions();
-
-    if (!singular)
-        xi.clear();
 }
 
 }

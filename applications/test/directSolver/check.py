@@ -1,59 +1,77 @@
+import os, re
 import numpy as np
 
-systems = [
-    'f-colocated-scalar_stencil_APLU',
-    'f-colocated-scalar_stencil_Eigen',
-    'f-colocated-scalar_symmStencil_APLU',
-    'f-colocated-scalar_symmStencil_Eigen',
-    'f-colocated-vector_stencil_APLU',
-    'f-colocated-vector_stencil_Eigen',
-    'f-colocated-vector_symmStencil_APLU',
-    'f-colocated-vector_symmStencil_Eigen',
-    'f-staggered-scalar_stencil_APLU_0',
-    'f-staggered-scalar_stencil_APLU_1',
-    'f-staggered-scalar_stencil_APLU_2',
-    'f-staggered-scalar_stencil_Eigen_0',
-    'f-staggered-scalar_stencil_Eigen_1',
-    'f-staggered-scalar_stencil_Eigen_2',
-    'f-staggered-vector_stencil_APLU_0',
-    'f-staggered-vector_stencil_APLU_1',
-    'f-staggered-vector_stencil_APLU_2',
-    'f-staggered-vector_stencil_Eigen_0',
-    'f-staggered-vector_stencil_Eigen_1',
-    'f-staggered-vector_stencil_Eigen_2',
+meshTypes = ['colocated', 'staggered']
+dataTypes = ['scalar', 'vector']
+stencilTypes = ['stencil', 'symmStencil']
+solverTypes = [
+    'Eigen_PartialPivLU',
+    'Eigen_BiCGSTAB',
+    'Eigen_SuperLU',
+    'PETSc_KSPBCGS',
+    'PETSc_KSPIBCGS',
+    'PETSc_KSPGMRES',
+    'PETSc_KSPFGMRES',
+    'PETSc_PCLU',
+    'PETSc_SuperLU',
+    'PETSc_SuperLUDist',
 ]
 
-typeSizes = [1, 1, 1, 1, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3]
+for meshType in meshTypes:
+    for dataType in dataTypes:
+        for stencilType in stencilTypes:
+            for solverType in solverTypes:
 
-def removeBrackets(fileName):
+                if meshType == 'staggered' and stencilType == 'symmStencil':
+                    continue
 
-    with open(fileName, 'r') as inFile, open(fileName + '_mod','w') as outFile:
+                dataTypeSize = 1 if dataType == 'scalar' else 3
+                numberOfDirections = 1 if meshType == 'colocated' else 3
 
-        data = inFile.read()
-        data = data.replace("(", "")
-        data = data.replace(")", "")
+                system = \
+                    'f-' + \
+                    meshType + '-' + \
+                    dataType + '_' + \
+                    stencilType + '_' + \
+                    solverType
 
-        outFile.write(data)
+                if not os.path.isfile(system):
+                    continue
 
-for i,system in enumerate(systems):
+                indices = []
+                i = 0
 
-    typeSize = typeSizes[i]
+                with open(system) as file:
+                    for line in file:
+                        if re.search('^\d+ \d+$', line):
+                            indices.append(i)
+                        i = i+1
 
-    removeBrackets(system)
+                indices.append(i)
 
-    data = np.loadtxt(system + '_mod')
+                for i in range(0,numberOfDirections):
 
-    A = np.array(data[:,:-typeSize])
-    b = np.array(data[:,-typeSize:])
+                    n = indices[i+1]-indices[i]-1
 
-    x = np.linalg.solve(A,b)
+                    data = np.loadtxt(
+                        system,
+                        skiprows = indices[i] + 1,
+                        max_rows = n
+                    )
 
-    removeBrackets(system + '_solution')
+                    A = np.array(data[:,:-dataTypeSize])
+                    b = np.array(data[:,-dataTypeSize:])
 
-    solution = np.loadtxt(system + '_solution_mod')
+                    x = np.linalg.solve(A,b)
 
-    if len(solution.shape) == 1:
-        solution = solution[:, np.newaxis]
+                    solution = np.loadtxt(
+                        system + '_solution',
+                        skiprows = indices[i]-i,
+                        max_rows = n
+                    )
 
-    if np.amax(abs(solution-x)) > 1e-6:
-        print('Direct solver test failed for', system)
+                    if len(solution.shape) == 1:
+                        solution = solution[:, np.newaxis]
+
+                    if np.sqrt(np.mean(np.square(solution-x))) > 1e-3:
+                        print('Direct solver test failed for', system)

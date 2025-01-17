@@ -66,7 +66,7 @@ void meshLevel<Type,MeshType>::transfer
 template<class Type, class MeshType>
 meshLevel<Type,MeshType>::meshLevel
 (
-    meshField<Type,MeshType>& field,
+    meshField<Type,MeshType>& mshField,
     const fvMesh& fvMsh,
     const label l
 )
@@ -75,7 +75,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(fvMsh),
     l_(l),
-    mshFieldPtr_(&field)
+    mshFieldPtr_(&mshField)
 {
     allocate();
 }
@@ -234,6 +234,8 @@ meshLevel<Type,MeshType>::meshLevel
     if (tL.isTmp())
         tL.clear();
 }
+
+// Standalone constructors
 
 template<class Type, class MeshType>
 meshLevel<Type,MeshType>::meshLevel

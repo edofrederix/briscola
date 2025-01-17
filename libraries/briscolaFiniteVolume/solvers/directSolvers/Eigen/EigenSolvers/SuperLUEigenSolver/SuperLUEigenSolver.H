@@ -1,8 +1,8 @@
 #ifndef SuperLUEigenSolver_H
 #define SuperLUEigenSolver_H
 
-#include "EigenSolver.H"
 #include <Eigen/SuperLUSupport>
+#include "EigenSolver.H"
 
 namespace Foam
 {
@@ -13,35 +13,26 @@ namespace briscola
 namespace fv
 {
 
+typedef ::Eigen::SuperLU<EigenSolverBase::ColMajorMatrixType>
+    SuperLUSolver;
+
 class SuperLUEigenSolver
 :
-    public EigenSolver
+    public EigenSolver<SuperLUSolver, ::Eigen::ColMajor>
 {
-    // Solver type
-    typedef ::Eigen::SuperLU<matrixType> solverType;
-
-    // Solver pointer
-    autoPtr<solverType> solverPtr_;
-
 public:
 
     // Runtime type information
     TypeName("SuperLU");
 
-    // Construct
-    SuperLUEigenSolver();
+    // Construct from dictionary
+    SuperLUEigenSolver(const dictionary& dict);
 
     // Copy constructor
     SuperLUEigenSolver(const SuperLUEigenSolver&);
 
     // Destructor
     virtual ~SuperLUEigenSolver();
-
-    // Prepare from a sparse matrix
-    virtual void prepare(const matrixType& A);
-
-    // Solve given a right-hand side
-    virtual void solve(rhsType& x, const rhsType& b) const;
 };
 
 }

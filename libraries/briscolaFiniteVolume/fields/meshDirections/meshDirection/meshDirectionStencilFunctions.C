@@ -20,18 +20,8 @@ void rowProduct
     const meshDirection<Type2,MeshType>& f2
 )
 {
-    res = Zero;
-
-    if (isStencil<Type1>())
-    {
-        forAllCells(f2, i, j, k)
-            res(i,j,k) = rowProduct(f1,f2,i,j,k);
-    }
-    else
-    {
-        forAllCells(f1, i, j, k)
-            res(i,j,k) = rowProduct(f1,f2,i,j,k);
-    }
+    forAllCells(res, i, j, k)
+        res(i,j,k) = rowProduct(f1,f2,i,j,k);
 }
 
 template<class Type1, class Type2, class MeshType>
@@ -70,7 +60,7 @@ rowProduct
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshDirection<productType,MeshType>> tRes =
-        reuseDirTmp<productType,Type1,MeshType>::New(tf1);
+        reuseDirectionTmp<productType,Type1,MeshType>::New(tf1);
 
     rowProduct(tRes.ref(),tf1(),f2);
 
@@ -91,7 +81,7 @@ rowProduct
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshDirection<productType,MeshType>> tRes =
-        reuseDirTmp<productType,Type2,MeshType>::New(tf2);
+        reuseDirectionTmp<productType,Type2,MeshType>::New(tf2);
 
     rowProduct(tRes.ref(),f1,tf2());
 
@@ -112,7 +102,7 @@ rowProduct
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
     tmp<meshDirection<productType,MeshType>> tRes =
-        reuseDirTmpTmp<productType,Type1,Type1,Type2,MeshType>::New(tf1,tf2);
+        reuseDirectionTmpTmp<productType,Type1,Type1,Type2,MeshType>::New(tf1,tf2);
 
     rowProduct(tRes.ref(),tf1(),tf2());
 
@@ -132,8 +122,6 @@ void rowProduct
     const Form& s
 )
 {
-    res = Zero;
-
     forAllCells(f1, i, j, k)
         res(i,j,k) = rowProduct(f1,s,i,j,k);
 }
@@ -166,7 +154,7 @@ rowProduct(const tmp<meshDirection<Type,MeshType>>& tf1, const Form& s)
     typedef typename stencilProduct<Type,Form>::type productType;
 
     tmp<meshDirection<productType,MeshType>> tRes =
-        reuseDirTmp<productType,Type,MeshType>::New(tf1);
+        reuseDirectionTmp<productType,Type,MeshType>::New(tf1);
 
     rowProduct(tRes.ref(),tf1(),s);
 
@@ -210,8 +198,6 @@ void rowSum
     const meshDirection<Type,MeshType>& f
 )
 {
-    res = Zero;
-
     forAllCells(f, i, j, k)
         res(i,j,k) = rowSum(f,i,j,k);
 }

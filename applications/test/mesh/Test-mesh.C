@@ -348,21 +348,21 @@ int main(int argc, char *argv[])
 
     forAll(dxl, i)
     {
-        if (Foam::mag(dxl[i]-1.0/24) > 1e-12)
+        if (Foam::mag(dxl[i]-1.0/12) > 1e-12)
             FatalErrorInFunction
                 << "Test 15a failed" << endl << abort(FatalError);
     }
 
     forAll(dyl, i)
     {
-        if (Foam::mag(dyl[i]-1.0/16) > 1e-12)
+        if (Foam::mag(dyl[i]-1.0/8) > 1e-12)
             FatalErrorInFunction
                 << "Test 15b failed" << endl << abort(FatalError);
     }
 
     forAll(dzl, i)
     {
-        if (Foam::mag(dzl[i]-1.0/16) > 1e-12)
+        if (Foam::mag(dzl[i]-1.0/8) > 1e-12)
             FatalErrorInFunction
                 << "Test 15c failed" << endl << abort(FatalError);
     }
@@ -373,21 +373,21 @@ int main(int argc, char *argv[])
 
     forAll(dxg, i)
     {
-        if (Foam::mag(dxg[i]-1.0/24) > 1e-12)
+        if (Foam::mag(dxg[i]-1.0/12) > 1e-12)
             FatalErrorInFunction
                 << "Test 16a failed" << endl << abort(FatalError);
     }
 
     forAll(dyg, i)
     {
-        if (Foam::mag(dyg[i]-1.0/16) > 1e-12)
+        if (Foam::mag(dyg[i]-1.0/8) > 1e-12)
             FatalErrorInFunction
                 << "Test 16b failed" << endl << abort(FatalError);
     }
 
     forAll(dzg, i)
     {
-        if (Foam::mag(dzg[i]-1.0/16) > 1e-12)
+        if (Foam::mag(dzg[i]-1.0/8) > 1e-12)
             FatalErrorInFunction
                 << "Test 16c failed" << endl << abort(FatalError);
     }
@@ -402,7 +402,7 @@ int main(int argc, char *argv[])
         const PartialList<scalar>& points = msh.localPoints()[d];
 
         for(int i = 0; i < points.size()+1; i++)
-            if (Foam::mag(points[i]-points[i-1]) - 1.0/16 > 1e-12)
+            if (Foam::mag(points[i]-points[i-1]) - 1.0/8 > 1e-12)
                     FatalErrorInFunction
                         << "Test 18 failed" << endl << abort(FatalError);
     }
@@ -412,7 +412,7 @@ int main(int argc, char *argv[])
         const PartialList<scalar>& points = msh.globalPoints()[d];
 
         for(int i = 0; i < points.size()+1; i++)
-            if (Foam::mag(points[i]-points[i-1]) - 1.0/16 > 1e-12)
+            if (Foam::mag(points[i]-points[i-1]) - 1.0/8 > 1e-12)
                     FatalErrorInFunction
                         << "Test 19 failed" << endl << abort(FatalError);
     }

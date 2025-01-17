@@ -2,6 +2,7 @@
 #include "addToRunTimeSelectionTable.H"
 
 #include "MG.H"
+#include "Krylov.H"
 #include "diagonal.H"
 
 namespace Foam
@@ -43,6 +44,22 @@ makeSolverType(MG,stencil,scalar,colocated);
 makeSolverType(MG,stencil,scalar,staggered);
 makeSolverType(MG,stencil,vector,colocated);
 makeSolverType(MG,stencil,vector,staggered);
+
+
+makeSolverType(Krylov,diagStencil,scalar,colocated);
+makeSolverType(Krylov,diagStencil,scalar,staggered);
+makeSolverType(Krylov,diagStencil,vector,colocated);
+makeSolverType(Krylov,diagStencil,vector,staggered);
+
+makeSolverType(Krylov,symmStencil,scalar,colocated);
+makeSolverType(Krylov,symmStencil,scalar,staggered);
+makeSolverType(Krylov,symmStencil,vector,colocated);
+makeSolverType(Krylov,symmStencil,vector,staggered);
+
+makeSolverType(Krylov,stencil,scalar,colocated);
+makeSolverType(Krylov,stencil,scalar,staggered);
+makeSolverType(Krylov,stencil,vector,colocated);
+makeSolverType(Krylov,stencil,vector,staggered);
 
 
 makeSolverType(diagonal,diagStencil,scalar,colocated);

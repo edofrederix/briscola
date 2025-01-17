@@ -16,7 +16,7 @@ namespace fv
 // Full stencil conversion
 
 template<class MeshType>
-inline stencil fullStencil
+inline typename diagStencil::fullStencilType fullStencil
 (
     const meshDirection<diagStencil,MeshType>& st,
     const label& i,
@@ -24,17 +24,17 @@ inline stencil fullStencil
     const label& k
 )
 {
-    return static_cast<const stencil&>(st(i,j,k));
+    return st(i,j,k);
 }
 
 template<class MeshType>
-inline stencil fullStencil
+inline typename diagStencil::fullStencilType fullStencil
 (
     const meshDirection<diagStencil,MeshType>& st,
     const labelVector ijk
 )
 {
-    return static_cast<const stencil&>(st(ijk));
+    return st(ijk);
 }
 
 // Stencil row sum

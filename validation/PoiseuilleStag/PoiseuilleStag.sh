@@ -18,7 +18,7 @@ TASKFILE="/tmp/tasks.$$"
 MESHES=(32 64)
 IBMS=(none penalization Vreman Fadlun Mittal)
 NPROCSPERBRICKSIDE=(1 2 4)
-PSOLVERS=(MG FFT)
+PSOLVERS=(MG FFT Krylov)
 RKSCHEMES=(RK3 Ascher222 CNAB)
 
 ##

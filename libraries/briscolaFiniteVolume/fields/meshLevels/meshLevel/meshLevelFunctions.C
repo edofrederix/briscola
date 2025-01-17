@@ -26,8 +26,14 @@ void mag(meshLevel<SCALARPRODTYPE,MeshType>& res, const meshLevel<Type,MeshType>
 template<class Type, class MeshType>
 tmp<meshLevel<SCALARPRODTYPE,MeshType>> mag(const meshLevel<Type,MeshType>& f)
 {
-    tmp<meshLevel<SCALARPRODTYPE,MeshType>>
-        tRes(new meshLevel<SCALARPRODTYPE,MeshType>(f.fvMsh(),f.levelNum()));
+    tmp<meshLevel<SCALARPRODTYPE,MeshType>> tRes
+    (
+        new meshLevel<SCALARPRODTYPE,MeshType>
+        (
+            f.fvMsh(),
+            f.levelNum()
+        )
+    );
     mag(tRes.ref(), f);
     return tRes;
 }
@@ -36,7 +42,7 @@ template<class Type, class MeshType>
 tmp<meshLevel<SCALARPRODTYPE,MeshType>> mag(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     tmp<meshLevel<SCALARPRODTYPE,MeshType>> tRes =
-        reuseLevTmp<SCALARPRODTYPE,Type,MeshType>::New(tf);
+        reuseLevelTmp<SCALARPRODTYPE,Type,MeshType>::New(tf);
 
     mag(tRes.ref(), tf());
     if (tf.isTmp())
@@ -60,8 +66,14 @@ tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
 cmptMax(const meshLevel<Type,MeshType>& f)
 {
     typedef typename meshLevel<Type,MeshType>::cmptType cmptType;
-    tmp<meshLevel<cmptType,MeshType>>
-        tRes(new meshLevel<cmptType,MeshType>(f.fvMsh(),f.levelNum()));
+    tmp<meshLevel<cmptType,MeshType>> tRes
+    (
+        new meshLevel<cmptType,MeshType>
+        (
+            f.fvMsh(),
+            f.levelNum()
+        )
+    );
     cmptMax(tRes.ref(), f);
     return tRes;
 }
@@ -72,7 +84,7 @@ cmptMax(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     typedef typename meshLevel<Type,MeshType>::cmptType cmptType;
     tmp<meshLevel<cmptType,MeshType>> tRes =
-        reuseLevTmp<cmptType,Type,MeshType>::New(tf);
+        reuseLevelTmp<cmptType,Type,MeshType>::New(tf);
 
     cmptMax(tRes.ref(), tf());
     if (tf.isTmp())
@@ -96,8 +108,14 @@ tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
 cmptMin(const meshLevel<Type,MeshType>& f)
 {
     typedef typename meshLevel<Type,MeshType>::cmptType cmptType;
-    tmp<meshLevel<cmptType,MeshType>>
-        tRes(new meshLevel<cmptType,MeshType>(f.fvMsh(),f.levelNum()));
+    tmp<meshLevel<cmptType,MeshType>> tRes
+    (
+        new meshLevel<cmptType,MeshType>
+        (
+            f.fvMsh(),
+            f.levelNum()
+        )
+    );
     cmptMin(tRes.ref(), f);
     return tRes;
 }
@@ -108,7 +126,7 @@ cmptMin(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     typedef typename meshLevel<Type,MeshType>::cmptType cmptType;
     tmp<meshLevel<cmptType,MeshType>> tRes =
-        reuseLevTmp<cmptType,Type,MeshType>::New(tf);
+        reuseLevelTmp<cmptType,Type,MeshType>::New(tf);
 
     cmptMin(tRes.ref(), tf());
     if (tf.isTmp())
@@ -132,8 +150,14 @@ tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
 cmptAv(const meshLevel<Type,MeshType>& f)
 {
     typedef typename meshLevel<Type,MeshType>::cmptType cmptType;
-    tmp<meshLevel<cmptType,MeshType>>
-        tRes(new meshLevel<cmptType,MeshType>(f.fvMsh(),f.levelNum()));
+    tmp<meshLevel<cmptType,MeshType>> tRes
+    (
+        new meshLevel<cmptType,MeshType>
+        (
+            f.fvMsh(),
+            f.levelNum()
+        )
+    );
     cmptAv(tRes.ref(), f);
     return tRes;
 }
@@ -144,7 +168,7 @@ cmptAv(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     typedef typename meshLevel<Type,MeshType>::cmptType cmptType;
     tmp<meshLevel<cmptType,MeshType>> tRes =
-        reuseLevTmp<cmptType,Type,MeshType>::New(tf);
+        reuseLevelTmp<cmptType,Type,MeshType>::New(tf);
 
     cmptAv(tRes.ref(), tf());
     if (tf.isTmp())
@@ -162,8 +186,14 @@ void cmptMag(meshLevel<Type,MeshType>& res, const meshLevel<Type,MeshType>& f)
 template<class Type, class MeshType>
 tmp<meshLevel<Type,MeshType>> cmptMag(const meshLevel<Type,MeshType>& f)
 {
-    tmp<meshLevel<Type,MeshType>>
-        tRes(new meshLevel<Type,MeshType>(f.fvMsh(),f.levelNum()));
+    tmp<meshLevel<Type,MeshType>> tRes
+    (
+        new meshLevel<Type,MeshType>
+        (
+            f.fvMsh(),
+            f.levelNum()
+        )
+    );
     cmptMag(tRes.ref(), f);
     return tRes;
 }
@@ -174,6 +204,72 @@ tmp<meshLevel<Type,MeshType>> cmptMag(const tmp<meshLevel<Type,MeshType>>& tf)
     tmp<meshLevel<Type,MeshType>> tRes = New(tf);
 
     cmptMag(tRes.ref(), tf());
+    if (tf.isTmp())
+        tf.clear();
+    return tRes;
+}
+
+template<class Type, class MeshType>
+void cmptSqr(meshLevel<Type,MeshType>& res, const meshLevel<Type,MeshType>& f)
+{
+    forAll(res, d)
+        cmptSqr(res[d],f[d]);
+}
+
+template<class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>> cmptSqr(const meshLevel<Type,MeshType>& f)
+{
+    tmp<meshLevel<Type,MeshType>> tRes
+    (
+        new meshLevel<Type,MeshType>
+        (
+            f.fvMsh(),
+            f.levelNum()
+        )
+    );
+    cmptSqr(tRes.ref(), f);
+    return tRes;
+}
+
+template<class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>> cmptSqr(const tmp<meshLevel<Type,MeshType>>& tf)
+{
+    tmp<meshLevel<Type,MeshType>> tRes = New(tf);
+
+    cmptSqr(tRes.ref(), tf());
+    if (tf.isTmp())
+        tf.clear();
+    return tRes;
+}
+
+template<class Type, class MeshType>
+void cmptSqrt(meshLevel<Type,MeshType>& res, const meshLevel<Type,MeshType>& f)
+{
+    forAll(res, d)
+        cmptSqrt(res[d],f[d]);
+}
+
+template<class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>> cmptSqrt(const meshLevel<Type,MeshType>& f)
+{
+    tmp<meshLevel<Type,MeshType>> tRes
+    (
+        new meshLevel<Type,MeshType>
+        (
+            f.fvMsh(),
+            f.levelNum()
+        )
+    );
+    cmptSqrt(tRes.ref(), f);
+    return tRes;
+}
+
+template<class Type, class MeshType>
+tmp<meshLevel<Type,MeshType>> cmptSqrt(const tmp<meshLevel<Type,MeshType>>& tf)
+{
+    tmp<meshLevel<Type,MeshType>> tRes = New(tf);
+
+    cmptSqrt(tRes.ref(), tf());
     if (tf.isTmp())
         tf.clear();
     return tRes;
@@ -472,31 +568,31 @@ List<Type> sumCmptMag(const tmp<meshLevel<Type,MeshType>>& tf)
 }
 
 
-#define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                        \
-                                                                                \
-template<class Type, class MeshType>                                            \
-List<ReturnType> gFunc                                                          \
-(                                                                               \
-    const meshLevel<Type,MeshType>& f,                                          \
-    const label comm                                                            \
-)                                                                               \
-{                                                                               \
-    List<ReturnType> res(Func(f));                                              \
-    forAll(res, d)                                                              \
-        reduce(res[d], rFunc##Op<ReturnType>(), Pstream::msgType(), comm);      \
-    return res;                                                                 \
-}                                                                               \
-                                                                                \
-template<class Type, class MeshType>                                            \
-List<ReturnType> gFunc                                                          \
-(                                                                               \
-    const tmp<meshLevel<Type,MeshType>>& tf,                                    \
-    const label comm                                                            \
-)                                                                               \
-{                                                                               \
-    List<ReturnType> ret(gFunc(tf()));                                          \
-    if (tf.isTmp()) tf.clear();                                                 \
-    return ret;                                                                 \
+#define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                       \
+                                                                               \
+template<class Type, class MeshType>                                           \
+List<ReturnType> gFunc                                                         \
+(                                                                              \
+    const meshLevel<Type,MeshType>& f,                                         \
+    const label comm                                                           \
+)                                                                              \
+{                                                                              \
+    List<ReturnType> res(Func(f));                                             \
+    forAll(res, d)                                                             \
+        reduce(res[d], rFunc##Op<ReturnType>(), Pstream::msgType(), comm);     \
+    return res;                                                                \
+}                                                                              \
+                                                                               \
+template<class Type, class MeshType>                                           \
+List<ReturnType> gFunc                                                         \
+(                                                                              \
+    const tmp<meshLevel<Type,MeshType>>& tf,                                   \
+    const label comm                                                           \
+)                                                                              \
+{                                                                              \
+    List<ReturnType> ret(gFunc(tf()));                                         \
+    if (tf.isTmp()) tf.clear();                                                \
+    return ret;                                                                \
 }
 
 G_UNARY_FUNCTION(Type, gMax, max, max)

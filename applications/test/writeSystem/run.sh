@@ -18,8 +18,6 @@ if [ -f build/Test-$TEST ]; then
 
     fi
 
-    python solve.py > solution
-
 else
 
     echo Test $TEST is not compiled

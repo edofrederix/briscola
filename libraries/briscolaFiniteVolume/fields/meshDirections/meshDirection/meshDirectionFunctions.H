@@ -82,6 +82,30 @@ tmp<meshDirection<Type,MeshType>>
 cmptMag(const tmp<meshDirection<Type,MeshType>>&);
 
 template<class Type, class MeshType>
+void
+cmptSqr(meshDirection<Type,MeshType>&, const meshDirection<Type,MeshType>&);
+
+template<class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+cmptSqr(const meshDirection<Type,MeshType>&);
+
+template<class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+cmptSqr(const tmp<meshDirection<Type,MeshType>>&);
+
+template<class Type, class MeshType>
+void
+cmptSqrt(meshDirection<Type,MeshType>&, const meshDirection<Type,MeshType>&);
+
+template<class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+cmptSqrt(const meshDirection<Type,MeshType>&);
+
+template<class Type, class MeshType>
+tmp<meshDirection<Type,MeshType>>
+cmptSqrt(const tmp<meshDirection<Type,MeshType>>&);
+
+template<class Type, class MeshType>
 Type max(const meshDirection<Type,MeshType>&);
 
 template<class Type, class MeshType>

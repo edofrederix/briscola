@@ -24,7 +24,6 @@ template<class SType, class Type, class MeshType>
 void RBGS<SType,Type,MeshType>::RBGS::smooth
 (
     linearSystem<SType,Type,MeshType>& sys,
-    List<Type>& xi,
     const label l,
     const label sweeps,
     const labelList& converged
@@ -35,9 +34,6 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
     const meshLevel<SType,MeshType>& A = sys.A()[l];
     const meshLevel<Type,MeshType>& b = sys.b()[l];
     const meshLevel<label,MeshType>& f = sys.forcingMask()[l];
-
-    bool singular = xi.size() > 0;
-    xi = singular ? gAverage(x) : List<Type>(x.size(), Zero);
 
     const List<bool> diagonal(sys.diagonal());
 
@@ -66,7 +62,6 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                                 bd(i,j,k)
                               - lowerRowProduct(Ad,xd,i,j,k)
                               - upperRowProduct(Ad,xd,i,j,k)
-                              - xi[d]
                             )
                           / Ad(i,j,k).center();
                 }
@@ -79,7 +74,6 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                                 bd(i,j,k)
                               - lowerRowProduct(Ad,xd,i,j,k)
                               - upperRowProduct(Ad,xd,i,j,k)
-                              - xi[d]
                             )
                           / Ad(i,j,k).center();
                 }
@@ -95,7 +89,6 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                                 bd(i,j,k)
                               - lowerRowProduct(Ad,xd,i,j,k)
                               - upperRowProduct(Ad,xd,i,j,k)
-                              - xi[d]
                             )
                           / Ad(i,j,k).center();
                 }
@@ -108,7 +101,6 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                                 bd(i,j,k)
                               - lowerRowProduct(Ad,xd,i,j,k)
                               - upperRowProduct(Ad,xd,i,j,k)
-                              - xi[d]
                             )
                           / Ad(i,j,k).center();
                 }
@@ -123,9 +115,6 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
     x.correctEliminatedBoundaryConditions();
     x.correctUnsetBoundaryConditions();
-
-    if (!singular)
-        xi.clear();
 }
 
 }

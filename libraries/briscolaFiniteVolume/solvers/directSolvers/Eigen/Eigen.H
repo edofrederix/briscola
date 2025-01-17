@@ -2,13 +2,8 @@
 #define Eigen_H
 
 #include "solver.H"
-#include "globalCellNumbers.H"
-#include "globalRowData.H"
 #include "EigenSolver.H"
-
-#ifdef MKL
-#define EIGEN_USE_MKL_ALL
-#endif
+#include "EigenLinearSystem.H"
 
 namespace Foam
 {
@@ -26,14 +21,11 @@ class Eigen
 {
 protected:
 
-    // Global stencil cell numbers
-    globalCellNumbers<SType,MeshType> gCellNumbers_;
+    // Eigen linear system
+    autoPtr<EigenLinearSystem<SType,Type,MeshType>> APtr_;
 
-    // Sparse matrices
-    PtrList<EigenSolver::matrixType> APtrs_;
-
-    // Solvers
-    PtrList<EigenSolver> solverPtrs_;
+    // Solvers. By default the SparseLU solver is used.
+    PtrList<EigenSolverBase> solverPtrs_;
 
 public:
 

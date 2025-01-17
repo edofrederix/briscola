@@ -6,7 +6,7 @@
 #include "VectorSpace.H"
 #include "CellSpace.H"
 
-#include <mpi.h>
+#include "PstreamGlobals.H"
 
 // Class that provides an MPI data type. When included, MPI must be included and
 // linked.

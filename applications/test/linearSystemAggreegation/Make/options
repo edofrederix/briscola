@@ -1,0 +1,17 @@
+EXE_INC = \
+    -I../../../libraries/briscolaCore/lnInclude \
+    -I../../../libraries/briscolaMesh/lnInclude \
+    -I../../../libraries/briscolaFiniteVolume/lnInclude \
+    -I../../../libraries/briscolaImmersedBoundary/lnInclude \
+    -I$(LIB_SRC)/OpenFOAM/lnInclude \
+    -I$(EIGEN_HOME)/include/eigen3 \
+    -Wno-old-style-cast \
+    -DFULLDEBUG -g -O0
+
+EXE_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lbriscolaCore \
+    -lbriscolaMesh \
+    -lbriscolaFiniteVolume \
+	-lbriscolaImmersedBoundary \
+    -lOpenFOAM

@@ -41,23 +41,40 @@ Briscola depends on the following third-party packages:
 
 * OpenFOAM (foundation version 9 or 10)
 * OpenMPI (version 3 or later)
-* FFTW3
-* Eigen3
-* Intel oneAPI MKL (optional)
-* SuiteSparse (optional)
+* FFTW
+* Eigen
+* PETSc
 * SuperLU (optional)
 
-FFTW3 and Eigen3 are required, and their locations should be specified by the
-`FFTW_HOME` and `EIGEN_HOME` environment variables. From OpenFOAM, only the
-OpenFOAM library (libOpenFOAM.so) is linked. In turn, this library links against
-Pstream (libPstream.so). So only the OpenFOAM and Pstream libraries need to be
-compiled and in the library path.
+From OpenFOAM, only the OpenFOAM library (libOpenFOAM.so) is linked. In turn,
+this library links against Pstream (libPstream.so). So only the OpenFOAM and
+Pstream libraries need to be compiled and discoverable from your environment
 
-The sparse direct solvers of MKL, SuiteSparse and SuperLU are used if these
-packages are available. The compiler checks for the existence of the `MKLROOT`,
-`SUITESPARSE_HOME` and `SUPERLU_HOME` environment variables. If they exist, the
-Pardiso, UmfPack and SuperLU solvers are compiled, respectively. They are
-interfaced via the Eigen support functions.
+OpenMPI, FFTW, Eigen and PETSc are required. OpenMPI should already be available
+through your OpenFOAM installation and is automatically used from that. The
+FFTW, Eigen and PETSc package locations should be specified by the `FFTW_HOME`,
+`EIGEN_HOME` and `PETSC_HOME` environment variables. If they are not already on
+your system, FFTW and Eigen can be installed with:
+
+```
+cd dependecies
+./makeFFTW
+./makeEigen
+```
+
+By default, the `makeFFTW` and `makeEigen` scripts configure, compile and
+install their respective packages to `$HOME/opt`. You can edit the scripts if
+you want to specify something else. Both scripts will instruct you on which
+environment variables to set. The PETSc package must be installed by yourself.
+
+The sparse direct solvers of SuperLU and SuperLU_DIST are used if these packages
+are available, but they are not required nor important. The compiler checks for
+the existence of the `SUPERLU_HOME` and `SUPERLU_DIST_HOME` environment
+variables. If they exist, Briscola's SuperLU and SuperLU_DIST-based solvers are
+compiled. It is interfaced via the Eigen and PETSc support functions. The
+SuperLU and SuperLU_DIST packages can optionally be built from the
+`dependencies` directory too with the `makeSuperLU` and `makeSuperLU_DIST`
+scripts.
 
 ## Documentation
 

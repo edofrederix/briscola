@@ -22,143 +22,83 @@ Eigen<SType,Type,MeshType>::Eigen
 )
 :
     solver<SType,Type,MeshType>::directSolver(dict,fvMsh,l),
-    gCellNumbers_(fvMsh,l),
-    APtrs_(MeshType::numberOfDirections),
+    APtr_(),
     solverPtrs_(MeshType::numberOfDirections)
 {
-    if (Pstream::master())
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-            solverPtrs_.set
+    forAll(solverPtrs_, d)
+        solverPtrs_.set
+        (
+            d,
+            EigenSolverBase::New
             (
-                d,
-                EigenSolver::New
-                (
-                    dict.lookupOrDefault<word>("EigenSolver", "default")
-                ).ptr()
-            );
+                dict.lookupOrDefault<word>("EigenSolver", "SparseLU"),
+                dict
+            ).ptr()
+        );
 }
 
 template<class SType, class Type, class MeshType>
 void Eigen<SType,Type,MeshType>::prepare
 (
-    linearSystem<SType,Type,MeshType>& xEqn
+    linearSystem<SType,Type,MeshType>& sys
 )
 {
-    const globalRowData<SType,Type,MeshType> gRowData(xEqn, this->l_);
-
-    const List<bool> singular(xEqn.singular());
-    const List<bool> diagonal(xEqn.diagonal());
-
-    if (Pstream::master())
+    if (!APtr_.valid())
     {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        APtr_.reset
+        (
+            new EigenLinearSystem<SType,Type,MeshType>
+            (
+                sys,
+                this->l_,
+                1
+            )
+        );
+    }
+
+    const List<bool> diagonal(sys.diagonal());
+
+    forAll(solverPtrs_, d)
+    {
+        if (!diagonal[d])
         {
-            // Nothing to be done for diagonal systems
+            APtr_->prepare(solverPtrs_[d].order(), d);
 
-            if (diagonal[d])
-                continue;
-
-            const auto& cellNumbers = gCellNumbers_.data(d);
-            const auto& rowData = gRowData.data(d);
-
-            const label n = gCellNumbers_.numberOfCells(d);
-
-            bool symm =
-                SType::csType::typeName == symmStencil::csType::typeName;
-
-            // Create linear system
-
-            APtrs_.set(d, new EigenSolver::matrixType(n,n));
-            EigenSolver::matrixType& A = APtrs_[d];
-
-            A.reserve(n*7);
-
-            label offset = 0;
-            forAll(cellNumbers, proc)
+            if (APtr_->master())
             {
-                const auto& nums = cellNumbers[proc];
-                const auto& rows = rowData[proc];
-
-                forAll(nums, cell)
+                if (solverPtrs_[d].order() == ::Eigen::RowMajor)
                 {
-                    const label i = offset+cell;
-
-                    const SType S = rows[cell];
-
-                    for (int s = 0; s < SType::nComponents; s++)
-                    {
-                        const label j = nums[cell][s];
-
-                        if (j > -1)
-                        {
-                            A.coeffRef(i,j) = S[s];
-
-                            if (symm && i != j)
-                                A.coeffRef(j,i) = S[s];
-                        }
-                        else if (Foam::mag(S[s]) > 1e-8)
-                        {
-                            // Homogeneous Neumann in case of non-eliminated
-                            // boundary coefficient
-
-                            A.coeffRef(i,i) += S[s];
-                        }
-                    }
+                    solverPtrs_[d].prepare(APtr_->rowMajorMatrix(d));
                 }
-
-                offset += nums.size();
+                else
+                {
+                    solverPtrs_[d].prepare(APtr_->colMajorMatrix(d));
+                }
             }
-
-            // For a singular matrix force the first value to zero
-
-            if (singular[d])
-            {
-                for (int k = 0; k < A.outerSize(); ++k)
-                    for (EigenSolver::matrixType::InnerIterator I(A,k); I; ++I)
-                        if (I.row() == 0 || I.col() == 0)
-                            A.coeffRef(I.row(), I.col()) = 0.0;
-
-                A.coeffRef(0,0) = 1.0;
-            }
-
-            // Set matrix and compute decomposition
-
-            A.makeCompressed();
-
-            // Print the full matrix for debugging
-
-            // EigenSolver::rhsType B(A);
-
-            // for (int i = 0; i < n; i++)
-            // {
-            //     for (int j = 0; j < n; j++)
-            //         Info<< B(i,j) << " ";
-            //     Info<< endl;
-            // }
-
-            solverPtrs_[d].prepare(A);
         }
     }
 
-    solver<SType,Type,MeshType>::directSolver::prepare(xEqn);
+    solver<SType,Type,MeshType>::directSolver::prepare(sys);
 }
 
 template<class SType, class Type, class MeshType>
 void Eigen<SType,Type,MeshType>::solve
 (
-    linearSystem<SType,Type,MeshType>& xEqn
+    linearSystem<SType,Type,MeshType>& sys
 )
 {
-    const globalRowData<SType,Type,MeshType> gRowData(xEqn, this->l_);
+    if (!this->prepared_)
+        this->prepare(sys);
 
-    meshLevel<Type,MeshType>& x = xEqn.x()[this->l_];
-    const meshLevel<Type,MeshType>& b = xEqn.b()[this->l_];
-    const meshLevel<SType,MeshType>& A = xEqn.A()[this->l_];
+    const EigenLinearSystem<SType,Type,MeshType>& E = APtr_();
 
-    const label m = list(pTraits<Type>::one).size();
+    const label n = list(pTraits<Type>::one).size();
 
-    const List<bool> singular(xEqn.singular());
-    const List<bool> diagonal(xEqn.diagonal());
+    const List<bool> diagonal(sys.diagonal());
+
+    meshLevel<Type,MeshType>& x = sys.x()[this->l_];
+    const meshLevel<Type,MeshType>& b = sys.b()[this->l_];
+    const meshLevel<SType,MeshType>& A = sys.A()[this->l_];
 
     for (int d = 0; d < MeshType::numberOfDirections; d++)
     {
@@ -167,150 +107,34 @@ void Eigen<SType,Type,MeshType>::solve
             forAllCells(x[d], i, j, k)
                 x[d](i,j,k) = b[d](i,j,k)/A[d](i,j,k).center();
         }
-        else if (Pstream::master())
-        {
-            const auto& cellNumbers = gCellNumbers_.data(d);
-            const label n = gCellNumbers_.numberOfCells(d);
-
-            // Get the right-hand side
-
-            List<Type> rhs(n);
-
-            label offset = 0;
-            forAll(cellNumbers, proc)
-            {
-                const auto& nums = cellNumbers[proc];
-
-                if (proc == Pstream::myProcNo())
-                {
-                    int c = 0;
-                    forAllCells(x[d], i, j, k)
-                        rhs[offset + c++] = b[d](i,j,k);
-                }
-                else
-                {
-                    UIPstream::read
-                    (
-                        Pstream::commsTypes::blocking,
-                        proc,
-                        reinterpret_cast<char*>(&rhs[offset]),
-                        nums.size()*sizeof(Type),
-                        0,
-                        UPstream::worldComm
-                    );
-                }
-
-                offset += nums.size();
-            }
-
-            // For a singular matrix the first value is forced to zero
-
-            if (singular[d])
-                rhs[0] = Zero;
-
-            // Copy to Eigen right-hand side type
-
-            EigenSolver::rhsType B(n,m);
-
-            forAll(rhs, i)
-            {
-                const scalarList L(list(rhs[i]));
-
-                forAll(L, j)
-                    B(i,j) = L[j];
-            }
-
-            // Solve
-
-            EigenSolver::rhsType X;
-            solverPtrs_[d].solve(X,B);
-
-            // Copy back to rhs
-
-            forAll(rhs, i)
-            {
-                scalarList L(m);
-
-                forAll(L, j)
-                    L[j] = X(i,j);
-
-                rhs[i] = listToType<Type>(L);
-            }
-
-            // Set mean to zero
-
-            if (singular[d])
-            {
-                Type avg = average(rhs);
-
-                forAll(rhs, i)
-                    rhs[i] -= avg;
-            }
-
-            // Send/copy solutions
-
-            offset = 0;
-            forAll(cellNumbers, proc)
-            {
-                const auto& nums = cellNumbers[proc];
-
-                if (proc != Pstream::myProcNo())
-                {
-                    UOPstream::write
-                    (
-                        Pstream::commsTypes::blocking,
-                        proc,
-                        reinterpret_cast<char*>(&rhs[offset]),
-                        nums.size()*sizeof(Type),
-                        0,
-                        UPstream::worldComm
-                    );
-                }
-                else
-                {
-                    label c = 0;
-                    forAllCells(x[d], i, j, k)
-                        x[d](i,j,k) = rhs[offset + c++];
-                }
-
-                offset += nums.size();
-            }
-        }
         else
         {
-            // Send right-hand side
+            List<Type> buffer;
+            E.rhsSource(buffer, sys, d);
 
-            List<Type> rhs(cmptProduct(x[d].N()));
+            if (E.master())
+            {
+                // Copy buffer to Eigen right-hand side type
 
-            int c = 0;
-            forAllCells(x[d], i, j, k)
-                rhs[c++] = b[d](i,j,k);
+                EigenSolverBase::RhsType B(buffer.size(),n);
 
-            UOPstream::write
-            (
-                Pstream::commsTypes::blocking,
-                Pstream::masterNo(),
-                reinterpret_cast<char*>(rhs.begin()),
-                rhs.byteSize(),
-                0,
-                UPstream::worldComm
-            );
+                forAll(buffer, i)
+                    for (int j = 0; j < n; j++)
+                        B(i,j) = scalar_cast(&buffer[i])[j];
 
-            // Receive and copy solution
+                // Solve
 
-            UIPstream::read
-            (
-                Pstream::commsTypes::blocking,
-                Pstream::masterNo(),
-                reinterpret_cast<char*>(rhs.begin()),
-                rhs.byteSize(),
-                0,
-                UPstream::worldComm
-            );
+                EigenSolverBase::RhsType X;
+                solverPtrs_[d].solve(X,B);
 
-            c = 0;
-            forAllCells(x[d], i, j, k)
-                x[d](i,j,k) = rhs[c++];
+                // Copy back to buffer
+
+                forAll(buffer, i)
+                    for (int j = 0; j < n; j++)
+                        scalar_cast(&buffer[i])[j] = X(i,j);
+            }
+
+            E.distribute(x[d], buffer);
         }
     }
 
