@@ -37,7 +37,7 @@ void Brackbill<SigmaModel>::correct()
 {
     SigmaModel::correct();
 
-    colocatedLowerFaceScalarField::operator=
+    colocatedFaceScalarField::operator=
     (
         this->fvMsh_.template metrics<colocated>().faceAreas()
       * this->kappa().interp()

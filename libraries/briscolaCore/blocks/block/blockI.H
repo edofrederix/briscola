@@ -10,6 +10,10 @@ inline void block<Type>::allocate()
     if (l_ && m_ && n_)
     {
         v_ = new Type[size()];
+
+        #ifndef NO_BLOCK_ZERO_INIT
+        *this = Zero;
+        #endif
     }
 }
 

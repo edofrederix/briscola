@@ -41,7 +41,7 @@ p.correctBoundaryConditions();
 
 // Flux
 
-staggeredLowerFaceScalarField phi
+staggeredFaceScalarField phi
 (
     "phi",
     fvMsh,
@@ -144,7 +144,7 @@ staggeredScalarField v
 
 v.setRestrictionScheme("harmonicVolumeWeighted");
 
-colocatedLowerFaceScalarField vcf
+colocatedFaceScalarField vcf
 (
     "vcf",
     fvMsh,

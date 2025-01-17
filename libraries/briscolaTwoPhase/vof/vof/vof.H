@@ -134,7 +134,7 @@ public:
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
     // Solve the Vof advection equation given a flux field
-    virtual void solve(const colocatedLowerFaceScalarField&) = 0;
+    virtual void solve(const colocatedFaceScalarField&) = 0;
 };
 
 }

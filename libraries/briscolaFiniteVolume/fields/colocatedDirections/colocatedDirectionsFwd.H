@@ -4,12 +4,10 @@
 #include "label.H"
 #include "scalar.H"
 #include "faceScalar.H"
-#include "lowerFaceScalar.H"
 #include "edgeScalar.H"
 #include "vertexScalar.H"
 #include "vector.H"
 #include "faceVector.H"
-#include "lowerFaceVector.H"
 #include "edgeVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
@@ -17,7 +15,6 @@
 #include "symmTensor.H"
 #include "diagTensor.H"
 #include "diagStencil.H"
-#include "symmStencil.H"
 #include "stencil.H"
 
 namespace Foam
@@ -37,12 +34,10 @@ class meshDirection;
 typedef meshDirection<label,colocated> colocatedLabelDirection;
 typedef meshDirection<scalar,colocated> colocatedScalarDirection;
 typedef meshDirection<faceScalar,colocated> colocatedFaceScalarDirection;
-typedef meshDirection<lowerFaceScalar,colocated> colocatedLowerFaceScalarDirection;
 typedef meshDirection<edgeScalar,colocated> colocatedEdgeScalarDirection;
 typedef meshDirection<vertexScalar,colocated> colocatedVertexScalarDirection;
 typedef meshDirection<vector,colocated> colocatedVectorDirection;
 typedef meshDirection<faceVector,colocated> colocatedFaceVectorDirection;
-typedef meshDirection<lowerFaceVector,colocated> colocatedLowerFaceVectorDirection;
 typedef meshDirection<edgeVector,colocated> colocatedEdgeVectorDirection;
 typedef meshDirection<vertexVector,colocated> colocatedVertexVectorDirection;
 typedef meshDirection<tensor,colocated> colocatedTensorDirection;
@@ -50,7 +45,6 @@ typedef meshDirection<sphericalTensor,colocated> colocatedSphericalTensorDirecti
 typedef meshDirection<symmTensor,colocated> colocatedSymmTensorDirection;
 typedef meshDirection<diagTensor,colocated> colocatedDiagTensorDirection;
 typedef meshDirection<diagStencil,colocated> colocatedDiagStencilDirection;
-typedef meshDirection<symmStencil,colocated> colocatedSymmStencilDirection;
 typedef meshDirection<stencil,colocated> colocatedStencilDirection;
 
 }

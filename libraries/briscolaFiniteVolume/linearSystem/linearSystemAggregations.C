@@ -24,12 +24,6 @@ defineTemplateTypeNameAndDebug(staggeredScalarDiagSystemAggregation, 0);
 defineTemplateTypeNameAndDebug(colocatedVectorDiagSystemAggregation, 0);
 defineTemplateTypeNameAndDebug(staggeredVectorDiagSystemAggregation, 0);
 
-defineTemplateTypeNameAndDebug(colocatedScalarSymmSystemAggregation, 0);
-defineTemplateTypeNameAndDebug(staggeredScalarSymmSystemAggregation, 0);
-
-defineTemplateTypeNameAndDebug(colocatedVectorSymmSystemAggregation, 0);
-defineTemplateTypeNameAndDebug(staggeredVectorSymmSystemAggregation, 0);
-
 defineTemplateTypeNameAndDebug(colocatedScalarSystemAggregation, 0);
 defineTemplateTypeNameAndDebug(staggeredScalarSystemAggregation, 0);
 

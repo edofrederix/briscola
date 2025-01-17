@@ -58,14 +58,14 @@ public:
 
         virtual tmp<linearSystem<SType,Type,MeshType>> imLaplacian
         (
-            const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+            const meshField<faceScalar,MeshType>* lambdaPtr,
             const meshField<Type,MeshType>& field,
             const scalar factor = 1.0
         ) = 0;
 
         virtual tmp<meshField<Type,MeshType>> exLaplacian
         (
-            const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+            const meshField<faceScalar,MeshType>* lambdaPtr,
             const meshField<Type,MeshType>& field,
             const scalar factor = 1.0
         ) = 0;
@@ -79,7 +79,7 @@ public:
                 // Coefficient as reference
                 inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
                 (
-                    const meshField<lowerFaceScalar,MeshType>& lambda,
+                    const meshField<faceScalar,MeshType>& lambda,
                     const meshField<Type,MeshType>& field,
                     const scalar factor = 1.0
                 );
@@ -87,7 +87,7 @@ public:
                 // Coefficient as tmp
                 inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
                 (
-                    const tmp<meshField<lowerFaceScalar,MeshType>>& tLambda,
+                    const tmp<meshField<faceScalar,MeshType>>& tLambda,
                     const meshField<Type,MeshType>& field,
                     const scalar factor = 1.0
                 );
@@ -114,7 +114,7 @@ public:
                 // Coefficient as reference
                 inline tmp<meshField<Type,MeshType>> exLaplacian
                 (
-                    const meshField<lowerFaceScalar,MeshType>& lambda,
+                    const meshField<faceScalar,MeshType>& lambda,
                     const meshField<Type,MeshType>& field,
                     const scalar factor = 1.0
                 );
@@ -122,7 +122,7 @@ public:
                 // Coefficient as tmp
                 inline tmp<meshField<Type,MeshType>> exLaplacian
                 (
-                    const tmp<meshField<lowerFaceScalar,MeshType>>& tLambda,
+                    const tmp<meshField<faceScalar,MeshType>>& tLambda,
                     const meshField<Type,MeshType>& field,
                     const scalar factor = 1.0
                 );

@@ -24,7 +24,7 @@ blendedViscosityMixtureRestrictionScheme
     Istream& is
 )
 :
-    restrictionScheme<lowerFaceScalar,MeshType>(fvMsh, is)
+    restrictionScheme<faceScalar,MeshType>(fvMsh, is)
 {
     const twoPhaseModel& model =
         fvMsh.db().lookupObject<twoPhaseModel>("briscolaTwoPhaseDict");

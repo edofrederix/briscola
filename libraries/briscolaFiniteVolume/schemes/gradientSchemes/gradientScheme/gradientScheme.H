@@ -85,20 +85,6 @@ grad
     const tmp<meshField<FaceSpace<Type>,MeshType>>&
 );
 
-template<class Type, class MeshType>
-tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
-grad
-(
-    const meshField<LowerFaceSpace<Type>,MeshType>&
-);
-
-template<class Type, class MeshType>
-tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
-grad
-(
-    const tmp<meshField<LowerFaceSpace<Type>,MeshType>>&
-);
-
 }
 
 }

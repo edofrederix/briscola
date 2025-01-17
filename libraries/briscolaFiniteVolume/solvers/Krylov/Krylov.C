@@ -17,9 +17,7 @@ void Krylov<SType,Type,MeshType>::prepare
     linearSystem<SType,Type,MeshType>& sys
 )
 {
-    typedef typename SType::fullStencilType FullSType;
-
-    const labelVector* offsets = FullSType::componentOffsets;
+    const labelVector* offsets = SType::componentOffsets;
 
     const MPI_Comm& comm =
         Pstream::parRun()
@@ -44,7 +42,7 @@ void Krylov<SType,Type,MeshType>::prepare
     {
         const label m = A[d].size();
         const label M = returnReduce(m, sumOp<label>());
-        const label nz = Foam::min(label(FullSType::nComponents),M);
+        const label nz = Foam::min(label(SType::nComponents),M);
 
         // Create matrix
 
@@ -72,9 +70,9 @@ void Krylov<SType,Type,MeshType>::prepare
         {
             const labelVector ijk(i,j,k);
 
-            FullSType coeffs(fullStencil(A[d],ijk));
+            SType coeffs = A[d](ijk);
 
-            labelList colNums(FullSType::nComponents);
+            labelList colNums(SType::nComponents);
 
             forAll(colNums, s)
                 colNums[s] = numbers(d, ijk+offsets[s]);
@@ -139,8 +137,7 @@ void Krylov<SType,Type,MeshType>::solve
     const label maxIter
 )
 {
-    typedef typename SType::fullStencilType FullSType;
-    const labelVector* offsets = FullSType::componentOffsets;
+    const labelVector* offsets = SType::componentOffsets;
     const label nDir = MeshType::numberOfDirections;
 
     meshLevel<Type, MeshType>& x = sys.x()[0];
@@ -208,9 +205,9 @@ void Krylov<SType,Type,MeshType>::solve
         {
             const labelVector ijk(i,j,k);
 
-            const FullSType coeffs(fullStencil(A[d],ijk));
+            const SType coeffs = A[d](ijk);
 
-            labelList colNums(FullSType::nComponents);
+            labelList colNums(SType::nComponents);
 
             forAll(colNums, s)
                 colNums[s] = numbers[d](ijk + offsets[s]);
@@ -349,13 +346,7 @@ Krylov<SType,Type,MeshType>::Krylov
 
 template<class SType, class Type, class MeshType>
 Krylov<SType,Type,MeshType>::~Krylov()
-{
-    PetscBool initialized;
-    PetscInitialized(&initialized);
-
-    if (initialized)
-        PetscFinalize();
-}
+{}
 
 template<class SType, class Type, class MeshType>
 void Krylov<SType,Type,MeshType>::solve

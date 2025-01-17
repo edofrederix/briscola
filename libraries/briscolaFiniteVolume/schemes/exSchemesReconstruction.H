@@ -39,19 +39,23 @@ reconstruct
 
     meshField<ReconType,colocated>& Recon = tRecon.ref();
 
-    Recon = Zero;
-
     const meshField<faceVector,colocated>& fn =
         field.fvMsh().template metrics<colocated>().faceNormals();
 
     forAllCells(Recon, i, j, k)
+    {
+        #ifdef NO_BLOCK_ZERO_INIT
+        Recon(i,j,k) = Zero;
+        #endif
+
         for (int d = 0; d < 3; d++)
             Recon(i,j,k) +=
                 0.5
               * (
                   - fn(i,j,k)[d*2  ]*field(d,i,j,k)
-                  + fn(i,j,k)[d*2+1]*field(d,upperNei(i,j,k,d))
+                  + fn(i,j,k)[d*2+1]*field(d,upperNeighbor(i,j,k,d))
                 );
+    }
 
     return tRecon;
 }
@@ -83,7 +87,7 @@ template<class Type, class MeshType>
 inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
 reconstruct
 (
-    const meshField<LowerFaceSpace<Type>,MeshType>& flux
+    const meshField<FaceSpace<Type>,MeshType>& flux
 )
 {
     typedef typename outerProduct<vector,Type>::type ReconType;
@@ -109,15 +113,13 @@ reconstruct
     {
         tensor weight = Zero;
 
-        for (int f = 0; f < 6; f++)
+        for (label f = 0; f < 6; f++)
             weight += fn(d,i,j,k)[f]*fan(d,i,j,k)[f];
 
         ReconType sum = Zero;
 
-        for (int fd = 0; fd < 3; fd++)
-            sum +=
-                fn(d,i,j,k)[fd*2  ]*flux(d,i,j,k)[fd]
-              - fn(d,i,j,k)[fd*2+1]*flux(d,upperNei(i,j,k,fd))[fd];
+        for (label f = 0; f < 6; f++)
+            sum += fn(d,i,j,k)[f]*flux(d,i,j,k)[f];
 
         Recon(i,j,k) = inv(weight) & sum;
     }
@@ -129,7 +131,7 @@ template<class Type, class MeshType>
 inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
 reconstruct
 (
-    const tmp<meshField<LowerFaceSpace<Type>,MeshType>>& tFlux
+    const tmp<meshField<FaceSpace<Type>,MeshType>>& tFlux
 )
 {
     typedef typename outerProduct<vector,Type>::type ReconType;
@@ -150,7 +152,7 @@ reconstruct
 template<class Type>
 inline tmp<meshField<Type,staggered>> stagReconstruct
 (
-    const meshField<LowerFaceSpace<Type>,colocated>& flux
+    const meshField<FaceSpace<Type>,colocated>& flux
 )
 {
     tmp<meshField<Type,staggered>> tRecon
@@ -164,14 +166,12 @@ inline tmp<meshField<Type,staggered>> stagReconstruct
 
     meshField<Type,staggered>& Recon = tRecon.ref();
 
-    Recon = Zero;
-
     const meshField<faceScalar,colocated>& fa =
         flux.fvMsh().template metrics<colocated>().faceAreas();
 
     forAllCells(Recon, d, i, j, k)
         Recon(d,i,j,k) =
-          - flux(i,j,k)[d]/fa(i,j,k)[d*2];
+          - flux(i,j,k)[d*2]/fa(i,j,k)[d*2];
 
     return tRecon;
 }
@@ -179,7 +179,7 @@ inline tmp<meshField<Type,staggered>> stagReconstruct
 template<class Type>
 inline tmp<meshField<Type,staggered>> stagReconstruct
 (
-    const tmp<meshField<LowerFaceSpace<Type>,colocated>>& tFlux
+    const tmp<meshField<FaceSpace<Type>,colocated>>& tFlux
 )
 {
     tmp<meshField<Type,staggered>> tRecon

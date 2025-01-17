@@ -4,7 +4,6 @@
 #include "scalarBlock.H"
 #include "stencil.H"
 #include "diagStencil.H"
-#include "symmStencil.H"
 #include "scalar.H"
 
 #define TEMPLATE

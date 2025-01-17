@@ -146,9 +146,6 @@ int main(int argc, char *argv[])
             test<stencil,scalar,colocated>(fvMsh, solverType, subType);
             test<stencil,vector,colocated>(fvMsh, solverType, subType);
 
-            test<symmStencil,scalar,colocated>(fvMsh, solverType, subType);
-            test<symmStencil,vector,colocated>(fvMsh, solverType, subType);
-
             test<stencil,scalar,staggered>(fvMsh, solverType, subType);
             test<stencil,vector,staggered>(fvMsh, solverType, subType);
         }

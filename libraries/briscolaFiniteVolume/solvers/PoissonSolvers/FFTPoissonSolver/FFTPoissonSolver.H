@@ -74,7 +74,7 @@ public:
     (
         colocatedScalarField& x,
         const colocatedScalarField* bPtr,
-        const colocatedLowerFaceScalarField* lambdaPtr,
+        const colocatedFaceScalarField* lambdaPtr,
         const bool ddt = false,
         const scalar dtFrac = 1
     );

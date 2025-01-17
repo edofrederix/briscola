@@ -70,13 +70,13 @@ autoPtr<TwoPhaseModel<MeshType>> TwoPhaseModel<MeshType>::New
 }
 
 template<>
-tmp<colocatedLowerFaceScalarField> TwoPhaseModel<colocated>::faceAlpha() const
+tmp<colocatedFaceScalarField> TwoPhaseModel<colocated>::faceAlpha() const
 {
     return ex::interp(alpha_);
 }
 
 template<>
-tmp<staggeredLowerFaceScalarField> TwoPhaseModel<staggered>::faceAlpha() const
+tmp<staggeredFaceScalarField> TwoPhaseModel<staggered>::faceAlpha() const
 {
     return ex::stagFaceInterp(alpha_);
 }
@@ -94,16 +94,16 @@ tmp<staggeredScalarField> TwoPhaseModel<staggered>::meshAlpha() const
 }
 
 template<>
-tmp<colocatedLowerFaceScalarField>
+tmp<colocatedFaceScalarField>
 TwoPhaseModel<colocated>::coloFaceFlux() const
 {
     return
         fvMsh_.db().template
-            lookupObject<colocatedLowerFaceScalarField>("phi");
+            lookupObject<colocatedFaceScalarField>("phi");
 }
 
 template<>
-tmp<colocatedLowerFaceScalarField>
+tmp<colocatedFaceScalarField>
 TwoPhaseModel<staggered>::coloFaceFlux() const
 {
     return

@@ -24,7 +24,7 @@ template<class Type, class MeshType>
 tmp<linearSystem<stencil,Type,MeshType>>
 stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
 (
-    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+    const meshField<faceScalar,MeshType>* lambdaPtr,
     const meshField<Type,MeshType>& field,
     const scalar factor
 )
@@ -43,7 +43,6 @@ stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
     linearSystem<stencil,Type,MeshType>& sys = tSys.ref();
 
     meshField<stencil,MeshType>& A = sys.A();
-    meshField<Type,MeshType>& b = sys.b();
 
     const meshField<faceScalar,MeshType>& fa =
         field.fvMsh().template metrics<MeshType>().faceAreas();
@@ -51,32 +50,30 @@ stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
     const meshField<faceScalar,MeshType>& delta =
         field.fvMsh().template metrics<MeshType>().faceDeltas();
 
-    A = Zero;
-    b = Zero;
-
     forAllCells(A, l, d, i, j, k)
     {
-        labelVector ijk(i,j,k);
+        #ifdef NO_BLOCK_ZERO_INIT
+        A(l,d,i,j,k)[0] = Zero;
+        #endif
 
-        for (int fd = 0; fd < 3; fd++)
+        for (int f = 0; f < 6; f++)
         {
-            labelVector nei(upperNei(ijk,fd));
-
-            scalar lower = factor*fa(l,d,ijk)[fd*2  ]*delta(l,d,ijk)[fd*2  ];
-            scalar upper = factor*fa(l,d,ijk)[fd*2+1]*delta(l,d,ijk)[fd*2+1];
+            scalar coeff =
+                factor*fa(l,d,i,j,k)[f]*delta(l,d,i,j,k)[f];
 
             if (lambdaPtr)
-            {
-                lower *= lambdaPtr->operator()(l,d,ijk)[fd];
-                upper *= lambdaPtr->operator()(l,d,nei)[fd];
-            }
+                coeff *= lambdaPtr->operator()(l,d,i,j,k)[f];
 
-            A(l,d,ijk)[2*fd+1] = lower;
-            A(l,d,ijk)[2*fd+2] = upper;
-
-            A(l,d,ijk)[0] -= lower + upper;
+            A(l,d,i,j,k)[f+1] = coeff;
+            A(l,d,i,j,k)[0] -= coeff;
         }
     }
+
+    #ifdef NO_BLOCK_ZERO_INIT
+    meshField<Type,MeshType>& b = sys.b();
+    forAllCells(b, l, d, i, j, k)
+        b(l,d,i,j,k) = Zero;
+    #endif
 
     if (lambdaPtr)
         lambdaPtr->makeShallow();

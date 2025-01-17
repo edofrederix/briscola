@@ -107,7 +107,7 @@ public:
     inline const colocatedScalarField& kappa() const { return *this; }
 
     // Compute and return the interpolated kappa field
-    tmp<colocatedLowerFaceScalarField> interp() const;
+    tmp<colocatedFaceScalarField> interp() const;
 
     // Correct the curvature
     virtual void correct() = 0;

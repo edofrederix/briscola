@@ -53,12 +53,12 @@ public:
     virtual ~interpolationScheme();
 
     // Interpolation to the face
-    virtual tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
+    virtual tmp<meshField<FaceSpace<Type>,MeshType>> interp
     (
         const meshField<Type,MeshType>&
     ) = 0;
 
-    virtual tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
+    virtual tmp<meshField<FaceSpace<Type>,MeshType>> interp
     (
         const tmp<meshField<Type,MeshType>>& tField
     )
@@ -66,7 +66,7 @@ public:
         if (tField.isTmp())
             tField->correctBoundaryConditions();
 
-        tmp<meshField<LowerFaceSpace<Type>,MeshType>> tInterp
+        tmp<meshField<FaceSpace<Type>,MeshType>> tInterp
         (
             interp(tField())
         );
@@ -95,13 +95,13 @@ tmp<meshField<Type,staggered>> stagInterp
 // Interpolation functions from colocated to staggered faces
 
 template<class Type>
-tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
+tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
 (
     const meshField<Type,colocated>&
 );
 
 template<class Type>
-tmp<meshField<LowerFaceSpace<Type>,staggered>> stagFaceInterp
+tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
 (
     const tmp<meshField<Type,colocated>>&
 );
@@ -123,13 +123,13 @@ tmp<meshField<Type,colocated>> coloInterp
 // Interpolation function from staggered to colocated faces
 
 template<class Type>
-tmp<meshField<LowerFaceSpace<Type>,colocated>> colorFaceInterp
+tmp<meshField<FaceSpace<Type>,colocated>> colorFaceInterp
 (
     const meshField<Type,staggered>&
 );
 
 template<class Type>
-tmp<meshField<LowerFaceSpace<Type>,colocated>> colorFaceInterp
+tmp<meshField<FaceSpace<Type>,colocated>> colorFaceInterp
 (
     const tmp<meshField<Type,staggered>>&
 );

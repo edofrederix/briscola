@@ -2,7 +2,6 @@
 #define meshDirectionStencilFunctions_H
 
 #include "meshDirectionStencilOperations.H"
-#include "meshDirectionSymmStencilOperations.H"
 #include "meshDirectionDiagStencilOperations.H"
 
 namespace Foam

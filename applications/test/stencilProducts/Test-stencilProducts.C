@@ -1,5 +1,4 @@
 #include "stencil.H"
-#include "symmStencil.H"
 #include "diagStencil.H"
 
 #include "arguments.H"

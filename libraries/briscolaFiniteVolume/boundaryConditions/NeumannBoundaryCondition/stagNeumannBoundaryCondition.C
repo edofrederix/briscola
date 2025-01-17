@@ -101,17 +101,6 @@ void stagNeumannBoundaryCondition<Type>::eliminateGhosts
 }
 
 template<class Type>
-void stagNeumannBoundaryCondition<Type>::eliminateGhosts
-(
-    linearSystem<symmStencil,Type,staggered>& sys,
-    const label l,
-    const label d
-)
-{
-    NotImplemented;
-}
-
-template<class Type>
 void stagNeumannBoundaryCondition<Type>::evaluate
 (
     const label l,

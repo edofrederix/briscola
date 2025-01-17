@@ -1,10 +1,8 @@
 #include "arguments.H"
 
 #include "stencil.H"
-#include "symmStencil.H"
 #include "diagStencil.H"
 #include "faceScalar.H"
-#include "lowerFaceScalar.H"
 
 #include "fileOperation.H"
 #include "OSspecific.H"
@@ -75,14 +73,11 @@ int main(int argc, char *argv[])
     arguments args(argc, argv);
 
     testConstructors<stencil>();
-    testConstructors<symmStencil>();
     testConstructors<diagStencil>();
 
-    symmStencil st1(1,2,3,4);
     stencil st2(1,2,3,4,5,6,7);
     diagStencil st3(1);
 
-    testMemberOperators<symmStencil>(st1);
     testMemberOperators<stencil>(st2);
     testMemberOperators<diagStencil>(st3);
 
@@ -104,14 +99,6 @@ int main(int argc, char *argv[])
     if (st2.aft()    != st2[5]) FatalErrorInFunction << "test 3f failed" << abort(FatalError);
     if (st2.fore()   != st2[6]) FatalErrorInFunction << "test 3g failed" << abort(FatalError);
 
-    st1 += st2;
-    st1 -= st2;
-    st1 = st2;
-
-    st1 += st3;
-    st1 -= st3;
-    st1 = st3;
-
     st2 += st3;
     st2 -= st3;
     st2 = st3;
@@ -125,29 +112,4 @@ int main(int argc, char *argv[])
     st2 + hs;
     st2 - hs;
     st2 * hs;
-
-    lowerFaceScalar ls(1,2,3);
-
-    st1 += ls;
-    st1 -= ls;
-    st1 = ls;
-
-    st1 + ls;
-    st1 - ls;
-    st1 * ls;
-
-    st3 = diagStencil(2);
-
-    if (st3.center() != 2) FatalErrorInFunction << "test 4a failed" << abort(FatalError);
-    if (st3.center() != st3[0]) FatalErrorInFunction << "test 4b failed" << abort(FatalError);
-
-    st1 = symmStencil(1,2,3,4);
-
-    if (st1.center() != 1) FatalErrorInFunction << "test 5a failed" << abort(FatalError);
-    if (st1.center() != st1[0]) FatalErrorInFunction << "test 5b failed" << abort(FatalError);
-
-    st2 = stencil(1,2,3,4,5,6,7);
-
-    if (st2.center() != 1) FatalErrorInFunction << "test 6a failed" << abort(FatalError);
-    if (st2.center() != st2[0]) FatalErrorInFunction << "test 6b failed" << abort(FatalError);
 }

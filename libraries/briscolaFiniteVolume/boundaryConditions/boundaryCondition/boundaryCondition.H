@@ -8,7 +8,6 @@
 #include "faceVector.H"
 #include "faceScalar.H"
 #include "stencil.H"
-#include "symmStencil.H"
 #include "diagStencil.H"
 
 #include "boundary.H"
@@ -237,12 +236,6 @@ public:
 
     virtual void eliminateGhosts
     (
-        linearSystem<symmStencil,Type,MeshType>&,
-        const label
-    );
-
-    virtual void eliminateGhosts
-    (
         linearSystem<diagStencil,Type,MeshType>&,
         const label
     );
@@ -253,13 +246,6 @@ public:
     virtual void eliminateGhosts
     (
         linearSystem<stencil,Type,MeshType>&,
-        const label,
-        const label
-    );
-
-    virtual void eliminateGhosts
-    (
-        linearSystem<symmStencil,Type,MeshType>&,
         const label,
         const label
     );

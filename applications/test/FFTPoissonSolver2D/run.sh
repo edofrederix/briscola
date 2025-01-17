@@ -12,7 +12,7 @@ if [ -f build/Test-$TEST ]; then
 
         sed -i "s/VARSTRETCH/$s/" "system/briscolaMeshDict"
 
-        OUTPUT=$(mpirun -np 4 ./build/Test-$TEST -parallel > /dev/null 2>&1)
+        OUTPUT=$(mpirun --oversubscribe -np 4 ./build/Test-$TEST -parallel > /dev/null 2>&1)
 
         RET=$?
 

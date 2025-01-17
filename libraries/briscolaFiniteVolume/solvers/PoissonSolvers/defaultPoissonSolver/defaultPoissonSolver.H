@@ -43,7 +43,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>* bPtr,
-        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+        const meshField<faceScalar,MeshType>* lambdaPtr,
         const bool ddt = false,
         const scalar dtFrac = 1
     );

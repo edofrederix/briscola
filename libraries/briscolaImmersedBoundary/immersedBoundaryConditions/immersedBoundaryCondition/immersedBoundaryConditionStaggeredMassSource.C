@@ -76,7 +76,7 @@ tmp<colocatedScalarField> ibmCorr
 
             for (int d = 0; d < 3; d++)
             {
-                const labelVector nei(upperNei(ijk,d));
+                const labelVector nei(upperNeighbor(ijk,d));
 
                 coloDivU(ijk) +=
                     (

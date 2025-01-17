@@ -28,7 +28,7 @@ p.correctBoundaryConditions();
 
 // Flux
 
-colocatedLowerFaceScalarField phi
+colocatedFaceScalarField phi
 (
     "phi",
     fvMsh,
@@ -80,9 +80,9 @@ autoPtr<solver<stencil,vector,colocated>> USolve
     )
 );
 
-autoPtr<PoissonSolver<symmStencil,scalar,colocated>> Poisson
+autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
 (
-    PoissonSolver<symmStencil,scalar,colocated>::New
+    PoissonSolver<stencil,scalar,colocated>::New
     (
         p.name(),
         fvMsh

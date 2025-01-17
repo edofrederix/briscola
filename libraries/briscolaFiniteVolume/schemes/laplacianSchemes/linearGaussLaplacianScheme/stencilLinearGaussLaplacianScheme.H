@@ -25,7 +25,7 @@ public:
     // Implicit laplacian scheme
     virtual tmp<linearSystem<stencil,Type,MeshType>> imLaplacian
     (
-        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+        const meshField<faceScalar,MeshType>* lambdaPtr,
         const meshField<Type,MeshType>& field,
         const scalar factor = 1.0
     );

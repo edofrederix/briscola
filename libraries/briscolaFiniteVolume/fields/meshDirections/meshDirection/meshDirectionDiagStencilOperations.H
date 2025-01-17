@@ -13,30 +13,6 @@ namespace briscola
 namespace fv
 {
 
-// Full stencil conversion
-
-template<class MeshType>
-inline typename diagStencil::fullStencilType fullStencil
-(
-    const meshDirection<diagStencil,MeshType>& st,
-    const label& i,
-    const label& j,
-    const label& k
-)
-{
-    return st(i,j,k);
-}
-
-template<class MeshType>
-inline typename diagStencil::fullStencilType fullStencil
-(
-    const meshDirection<diagStencil,MeshType>& st,
-    const labelVector ijk
-)
-{
-    return st(ijk);
-}
-
 // Stencil row sum
 
 template<class MeshType>

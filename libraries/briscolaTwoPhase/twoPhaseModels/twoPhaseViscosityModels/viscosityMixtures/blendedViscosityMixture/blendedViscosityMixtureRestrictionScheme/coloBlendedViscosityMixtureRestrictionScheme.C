@@ -16,7 +16,7 @@ namespace fv
 makeRestrictionSchemeNoTemplate
 (
     coloBlendedViscosityMixture,
-    lowerFaceScalar,
+    faceScalar,
     colocated
 );
 
@@ -39,16 +39,14 @@ coloBlendedViscosityMixtureRestrictionScheme
 
 void coloBlendedViscosityMixtureRestrictionScheme::restrict
 (
-    meshDirection<lowerFaceScalar,colocated>& coarse,
-    const meshDirection<lowerFaceScalar,colocated>& fine,
+    meshDirection<faceScalar,colocated>& coarse,
+    const meshDirection<faceScalar,colocated>& fine,
     const bool scale
 )
 {
     this->errorNoScaling(scale);
 
     const labelVector R(coarse.mshPart().R());
-
-    coarse = Zero;
 
     const meshDirection<faceScalar,colocated>& faf =
         this->fvMsh().template
@@ -57,12 +55,17 @@ void coloBlendedViscosityMixtureRestrictionScheme::restrict
 
     forAllFaces(coarse, fd, i, j, k)
     {
-        labelVector ijk(i,j,k);
-        labelVector fijk(i*R.x(), j*R.y(), k*R.z());
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        const labelVector fijk(briscola::cmptMultiply(ijk,R));
+        const labelVector fnei(briscola::cmptMultiply(nei,R));
 
         // Reconstruct the face alpha
 
-        scalar alphaf = 0.0;
+        scalar alphaLower = 0.0;
+        scalar alphaUpper = 0.0;
+
         scalar area = 0.0;
 
         labelVector o;
@@ -70,15 +73,19 @@ void coloBlendedViscosityMixtureRestrictionScheme::restrict
         for (o.y() = 0; o.y() < (fd == 1 ? 1 : R.y()); o.y()++)
         for (o.z() = 0; o.z() < (fd == 2 ? 1 : R.z()); o.z()++)
         {
-            alphaf += this->inv(fine(fijk+o)[fd])*faf(fijk+o)[fd*2];
+            alphaLower += this->inv(fine(fijk+o)[fd*2  ])*faf(fijk+o)[fd*2];
+            alphaUpper += this->inv(fine(fnei+o)[fd*2+1])*faf(fijk+o)[fd*2];
+
             area += faf(fijk+o)[fd*2];
         }
 
-        alphaf /= area;
+        alphaLower /= area;
+        alphaUpper /= area;
 
         // Apply the blending function
 
-        coarse(ijk)[fd] = this->blend(alphaf);
+        coarse(ijk)[fd*2  ] = this->blend(alphaLower);
+        coarse(nei)[fd*2+1] = this->blend(alphaUpper);
     }
 }
 

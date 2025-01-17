@@ -67,18 +67,18 @@ linearSystemAggregation<SType,Type,MeshType>::linearSystemAggregation
 
     // Set column number lists
 
-    const labelVector* offsets = FullSType::componentOffsets;
+    const labelVector* offsets = SType::componentOffsets;
 
     globalSizes_.setSize(MeshType::numberOfDirections);
 
     for (int d = 0; d < MeshType::numberOfDirections; d++)
     {
-        List<List<FixedList<label,FullSType::nComponents>>>& colNums =
+        List<List<FixedList<label,SType::nComponents>>>& colNums =
             colNums_[d];
 
         colNums.setSize(nProcsPerPart_);
 
-        List<FixedList<label,FullSType::nComponents>>& myColNums =
+        List<FixedList<label,SType::nComponents>>& myColNums =
             colNums[Pstream::myProcNo() - partMasterNum_];
 
         const meshDirection<label,MeshType>& numbers =
@@ -89,7 +89,7 @@ linearSystemAggregation<SType,Type,MeshType>::linearSystemAggregation
         int c = 0;
         forAllCells(numbers, i, j, k)
         {
-            for(int s = 0; s < FullSType::nComponents; s++)
+            for(int s = 0; s < SType::nComponents; s++)
             {
                 myColNums[c][s] =
                     numbers(labelVector(i,j,k) + offsets[s]);
@@ -206,7 +206,7 @@ linearSystemAggregation<SType,Type,MeshType>::~linearSystemAggregation()
 template<class SType, class Type, class MeshType>
 void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
 (
-    List<List<FullSType>>& rows,
+    List<List<SType>>& rows,
     const linearSystem<SType,Type,MeshType>& sys,
     const label d
 ) const
@@ -214,7 +214,7 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
     const label l = this->l_;
     const meshDirection<SType,MeshType>& A = sys.A()[l][d];
 
-    const List<List<FixedList<label,FullSType::nComponents>>>& colNums =
+    const List<List<FixedList<label,SType::nComponents>>>& colNums =
         colNums_[d];
 
     if (l != l_)
@@ -225,25 +225,25 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
     const meshDirection<label,MeshType>& numbers =
         fvMsh_.template metrics<MeshType>().globalCellNumbers()[l][d];
 
-    const labelVector* offsets = FullSType::componentOffsets;
+    const labelVector* offsets = SType::componentOffsets;
 
     // Prepare data
 
-    const List<FixedList<label,FullSType::nComponents>>& myColNums =
+    const List<FixedList<label,SType::nComponents>>& myColNums =
         colNums_[d][Pstream::myProcNo() - partMasterNum_];
 
-    List<FullSType> myRows(A.size());
+    List<SType> myRows(A.size());
 
     label c = 0;
     forAllCells(A, i, j, k)
     {
         const labelVector ijk(i,j,k);
 
-        myRows[c] = fullStencil(A,ijk);
+        myRows[c] = A(ijk);
 
         // Remove boundary coefficients
 
-        for (int s = 0; s < FullSType::nComponents; s++)
+        for (int s = 0; s < SType::nComponents; s++)
             if
             (
                 numbers(ijk + offsets[s]) < 0
@@ -253,7 +253,7 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
 
         // Move redundant indices
 
-        for (int s = 1; s < FullSType::nComponents; s++)
+        for (int s = 1; s < SType::nComponents; s++)
         {
             const int t = findIndex(myColNums[c], myColNums[c][s]);
 
@@ -321,7 +321,7 @@ void linearSystemAggregation<SType,Type,MeshType>::rhsSource
     const meshDirection<Type,MeshType>& x = sys.x()[l][d];
     const meshDirection<Type,MeshType>& b = sys.b()[l][d];
 
-    const List<List<FixedList<label,FullSType::nComponents>>>& colNums =
+    const List<List<FixedList<label,SType::nComponents>>>& colNums =
         colNums_[d];
 
     if (l != l_)
@@ -332,7 +332,7 @@ void linearSystemAggregation<SType,Type,MeshType>::rhsSource
     const meshDirection<label,MeshType>& numbers =
         fvMsh_.template metrics<MeshType>().globalCellNumbers()[l][d];
 
-    const labelVector* offsets = FullSType::componentOffsets;
+    const labelVector* offsets = SType::componentOffsets;
 
     // Prepare data
 
@@ -347,15 +347,13 @@ void linearSystemAggregation<SType,Type,MeshType>::rhsSource
 
         // Add boundary source
 
-        for (int s = 0; s < FullSType::nComponents; s++)
+        for (int s = 0; s < SType::nComponents; s++)
             if
             (
                 numbers(ijk + offsets[s]) < 0
              || numbers(ijk + offsets[s]) >= globalSizes_[d]
             )
-                rhs[c] -=
-                    fullStencil(A,ijk)[s]
-                  * x(ijk + offsets[s]);
+                rhs[c] -= A(ijk)[s]*x(ijk + offsets[s]);
 
         c++;
     }
@@ -416,7 +414,7 @@ void linearSystemAggregation<SType,Type,MeshType>::compressedRowFormat
 
     const label globalStart = partStarts_[d];
 
-    const List<List<FixedList<label,FullSType::nComponents>>>& colNums =
+    const List<List<FixedList<label,SType::nComponents>>>& colNums =
         colNums_[d];
 
     if (l != l_)
@@ -424,7 +422,7 @@ void linearSystemAggregation<SType,Type,MeshType>::compressedRowFormat
             << "Mesh direction is of invalid level"
             << abort(FatalError);
 
-    List<List<FullSType>> rows;
+    List<List<SType>> rows;
     this->rowCoeffs(rows, sys, d);
 
     if (this->master())
@@ -498,7 +496,7 @@ void linearSystemAggregation<SType,Type,MeshType>::collect
 {
     const label d = f.directionNum();
 
-    const List<List<FixedList<label,FullSType::nComponents>>>& colNums =
+    const List<List<FixedList<label,SType::nComponents>>>& colNums =
         colNums_[d];
 
     data.resize(this->master() ? this->partSize(d) : f.size());
@@ -623,11 +621,6 @@ INSTANTIATE(diagStencil, scalar, colocated)
 INSTANTIATE(diagStencil, scalar, staggered)
 INSTANTIATE(diagStencil, vector, colocated)
 INSTANTIATE(diagStencil, vector, staggered)
-
-INSTANTIATE(symmStencil, scalar, colocated)
-INSTANTIATE(symmStencil, scalar, staggered)
-INSTANTIATE(symmStencil, vector, colocated)
-INSTANTIATE(symmStencil, vector, staggered)
 
 INSTANTIATE(stencil, scalar, colocated)
 INSTANTIATE(stencil, scalar, staggered)

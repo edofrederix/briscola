@@ -26,7 +26,7 @@ public:
     linearInterpolationScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Interpolation to the face
-    virtual tmp<meshField<LowerFaceSpace<Type>,MeshType>> interp
+    virtual tmp<meshField<FaceSpace<Type>,MeshType>> interp
     (
         const meshField<Type,MeshType>&
     );

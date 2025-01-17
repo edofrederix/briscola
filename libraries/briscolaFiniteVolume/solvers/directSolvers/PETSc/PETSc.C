@@ -62,13 +62,7 @@ PETSc<SType,Type,MeshType>::PETSc
 
 template<class SType, class Type, class MeshType>
 PETSc<SType,Type,MeshType>::~PETSc()
-{
-    PetscBool initialized;
-    PetscInitialized(&initialized);
-
-    if (initialized)
-        PetscFinalize();
-}
+{}
 
 template<class SType, class Type, class MeshType>
 void PETSc<SType,Type,MeshType>::prepare

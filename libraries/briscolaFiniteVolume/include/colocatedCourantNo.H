@@ -8,10 +8,8 @@ scalar meanCoNum = 0.0;
     colocatedScalarDirection sumPhi(fvMsh,0,0,Zero);
 
     forAllCells(sumPhi, i, j, k)
-        for (int fd = 0; fd < 3; fd++)
-            sumPhi(i,j,k) +=
-                mag(phi(i,j,k)[fd])
-              + mag(phi(upperNei(i,j,k,fd))[fd]);
+        for (int f = 0; f < 6; f++)
+            sumPhi(i,j,k) += mag(phi(i,j,k)[f]);
 
     CoNum = 0.5*gMax(sumPhi/cvd)*runTime.deltaTValue();
 

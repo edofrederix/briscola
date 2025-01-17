@@ -5,7 +5,6 @@
 #include "briscolaUtils.H"
 #include "pTransform.H"
 #include "stencil.H"
-#include "LowerFaceSpace.H"
 
 namespace Foam
 {
@@ -88,9 +87,6 @@ public:
         return Vector<Cmpt>(right(), top(), fore());
     }
 
-    // Conversion to lower face space
-    inline operator LowerFaceSpace<Cmpt>() const;
-
     // Conversion to stencil (only implemented for Cmpt = scalar)
     inline operator stencil() const;
 
@@ -109,20 +105,6 @@ class CellSpaceCast<FaceSpace<Cmpt1>, FaceSpace<Cmpt2>, Cmpt3>
 {
 public:
     typedef FaceSpace<Cmpt3> type;
-};
-
-template<class Cmpt1, class Cmpt2, class Cmpt3>
-class CellSpaceCast<LowerFaceSpace<Cmpt1>, FaceSpace<Cmpt2>, Cmpt3>
-{
-public:
-    typedef LowerFaceSpace<Cmpt3> type;
-};
-
-template<class Cmpt1, class Cmpt2, class Cmpt3>
-class CellSpaceCast<FaceSpace<Cmpt1>, LowerFaceSpace<Cmpt2>, Cmpt3>
-{
-public:
-    typedef LowerFaceSpace<Cmpt3> type;
 };
 
 // FaceSpace partial specialization of pTransform

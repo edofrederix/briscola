@@ -360,8 +360,6 @@ void linearSystem<SType,Type,MeshType>::residual
     const meshDirection<Type,MeshType>& x = this->x()[l][d];
     const meshDirection<Type,MeshType>& b = this->b()[l][d];
 
-    res = Zero;
-
     if (diagonal_.size() && diagonal_[d])
     {
         forAllCells(res, i, j, k)
@@ -477,8 +475,6 @@ void linearSystem<SType,Type,MeshType>::evaluate
     const meshDirection<SType,MeshType>& A = this->A()[l][d];
     const meshDirection<Type,MeshType>& x = this->x()[l][d];
     const meshDirection<Type,MeshType>& b = this->b()[l][d];
-
-    eval = Zero;
 
     if (diagonal_.size() && diagonal_[d])
     {
@@ -988,14 +984,12 @@ template<class SType, class Type, class MeshType>
 bool linearSystem<SType,Type,MeshType>::writeLevel(Ostream& os, const label l)
 const
 {
-    typedef typename SType::fullStencilType FullSType;
-
     // Aggregated linear system at master
     const linearSystemAggregation<SType,Type,MeshType> lsa(*this,l,1);
 
     for (int d = 0; d < MeshType::numberOfDirections; d++)
     {
-        List<List<FullSType>> rows;
+        List<List<SType>> rows;
         lsa.rowCoeffs(rows, *this, d);
 
         List<Type> rhs;

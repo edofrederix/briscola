@@ -32,8 +32,8 @@ public:
     // level
     virtual void restrict
     (
-        meshDirection<lowerFaceScalar,staggered>&,
-        const meshDirection<lowerFaceScalar,staggered>&,
+        meshDirection<faceScalar,staggered>&,
+        const meshDirection<faceScalar,staggered>&,
         const bool = false
     );
 };

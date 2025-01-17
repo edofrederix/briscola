@@ -466,7 +466,6 @@ void tridiagonalSolver<SType>::solve
 // Instantiate
 
 template class tridiagonalSolver<stencil>;
-template class tridiagonalSolver<symmStencil>;
 
 }
 

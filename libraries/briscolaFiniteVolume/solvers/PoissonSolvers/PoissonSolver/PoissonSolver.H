@@ -31,7 +31,7 @@ protected:
     const fvMesh& fvMsh_;
 
     // Flux field
-    autoPtr<meshField<LowerFaceSpace<Type>,MeshType>> fluxPtr_;
+    autoPtr<meshField<FaceSpace<Type>,MeshType>> fluxPtr_;
 
     // Switch to compute the flux (defaults to false)
     Switch computeFlux_;
@@ -109,7 +109,7 @@ public:
     }
 
     // Access to the flux
-    inline const meshField<LowerFaceSpace<Type>,MeshType>& flux() const
+    inline const meshField<FaceSpace<Type>,MeshType>& flux() const
     {
         #ifdef FULLDEBUG
 
@@ -153,7 +153,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>* bPtr,
-        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+        const meshField<faceScalar,MeshType>* lambdaPtr,
         const bool ddt = false,
         const scalar dtFrac = 1
     ) = 0;
@@ -208,7 +208,7 @@ public:
     virtual void solve
     (
         meshField<Type,MeshType>& x,
-        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+        const meshField<faceScalar,MeshType>* lambdaPtr,
         const bool ddt = false,
         const scalar dtFrac = 1
     )
@@ -219,7 +219,7 @@ public:
     virtual void solve
     (
         meshField<Type,MeshType>& x,
-        const meshField<lowerFaceScalar,MeshType>& lambda,
+        const meshField<faceScalar,MeshType>& lambda,
         const bool ddt = false,
         const scalar dtFrac = 1
     )
@@ -230,7 +230,7 @@ public:
     virtual void solve
     (
         meshField<Type,MeshType>& x,
-        const tmp<meshField<lowerFaceScalar,MeshType>>& tlambda,
+        const tmp<meshField<faceScalar,MeshType>>& tlambda,
         const bool ddt = false,
         const scalar dtFrac = 1
     )
@@ -244,7 +244,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>& b,
-        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+        const meshField<faceScalar,MeshType>* lambdaPtr,
         const bool ddt = false,
         const scalar dtFrac = 1
     )
@@ -256,7 +256,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const tmp<meshField<Type,MeshType>>& tb,
-        const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+        const meshField<faceScalar,MeshType>* lambdaPtr,
         const bool ddt = false,
         const scalar dtFrac = 1
     )
@@ -268,7 +268,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>* bPtr,
-        const meshField<lowerFaceScalar,MeshType>& lambda,
+        const meshField<faceScalar,MeshType>& lambda,
         const bool ddt = false,
         const scalar dtFrac = 1
     )
@@ -280,7 +280,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>& b,
-        const meshField<lowerFaceScalar,MeshType>& lambda,
+        const meshField<faceScalar,MeshType>& lambda,
         const bool ddt = false,
         const scalar dtFrac = 1
     )
@@ -292,7 +292,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const tmp<meshField<Type,MeshType>>& tb,
-        const meshField<lowerFaceScalar,MeshType>& lambda,
+        const meshField<faceScalar,MeshType>& lambda,
         const bool ddt = false,
         const scalar dtFrac = 1
     )
@@ -304,7 +304,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>* bPtr,
-        const tmp<meshField<lowerFaceScalar,MeshType>>& tlambda,
+        const tmp<meshField<faceScalar,MeshType>>& tlambda,
         const bool ddt = false,
         const scalar dtFrac = 1
     )
@@ -316,7 +316,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const meshField<Type,MeshType>& b,
-        const tmp<meshField<lowerFaceScalar,MeshType>>& tlambda,
+        const tmp<meshField<faceScalar,MeshType>>& tlambda,
         const bool ddt = false,
         const scalar dtFrac = 1
     )
@@ -328,7 +328,7 @@ public:
     (
         meshField<Type,MeshType>& x,
         const tmp<meshField<Type,MeshType>>& tb,
-        const tmp<meshField<lowerFaceScalar,MeshType>>& tlambda,
+        const tmp<meshField<faceScalar,MeshType>>& tlambda,
         const bool ddt = false,
         const scalar dtFrac = 1
     )

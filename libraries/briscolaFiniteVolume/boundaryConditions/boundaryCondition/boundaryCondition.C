@@ -374,18 +374,6 @@ void boundaryCondition<Type,MeshType>::eliminateGhosts
 template<class Type, class MeshType>
 void boundaryCondition<Type,MeshType>::eliminateGhosts
 (
-    linearSystem<symmStencil,Type,MeshType>& sys,
-    const label l
-)
-{
-    if (this->eliminated())
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-            eliminateGhosts(sys, l, d);
-}
-
-template<class Type, class MeshType>
-void boundaryCondition<Type,MeshType>::eliminateGhosts
-(
     linearSystem<diagStencil,Type,MeshType>& sys,
     const label l
 )
@@ -401,17 +389,6 @@ template<class Type, class MeshType>
 void boundaryCondition<Type,MeshType>::eliminateGhosts
 (
     linearSystem<stencil,Type,MeshType>&,
-    const label,
-    const label
-)
-{
-    NotImplemented;
-}
-
-template<class Type, class MeshType>
-void boundaryCondition<Type,MeshType>::eliminateGhosts
-(
-    linearSystem<symmStencil,Type,MeshType>&,
     const label,
     const label
 )

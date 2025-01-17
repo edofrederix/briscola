@@ -5,10 +5,8 @@
         fvMsh.metrics<colocated>().cellVolumes();
 
     forAllCells(contError, i, j, k)
-        for (int fd = 0; fd < 3; fd++)
-            contError(i,j,k) +=
-                phi(i,j,k)[fd]
-              - phi(upperNei(i,j,k,fd))[fd];
+        for (int f = 0; f < 6; f++)
+            contError(i,j,k) += phi(i,j,k)[f];
 
     scalar sumLocalContError = 0.0;
     scalar globalContError = 0.0;

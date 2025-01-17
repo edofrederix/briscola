@@ -23,7 +23,7 @@ class twoPhaseModel;
 
 class surfaceTensionScheme
 :
-    public colocatedLowerFaceScalarField
+    public colocatedFaceScalarField
 {
 protected:
 

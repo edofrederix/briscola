@@ -4,12 +4,10 @@
 #include "labelMeshLevel.H"
 #include "scalarMeshLevel.H"
 #include "faceScalarMeshLevel.H"
-#include "lowerFaceScalarMeshLevel.H"
 #include "edgeScalarMeshLevel.H"
 #include "vertexScalarMeshLevel.H"
 #include "vectorMeshLevel.H"
 #include "faceVectorMeshLevel.H"
-#include "lowerFaceVectorMeshLevel.H"
 #include "edgeVectorMeshLevel.H"
 #include "vertexVectorMeshLevel.H"
 #include "tensorMeshLevel.H"
@@ -17,7 +15,6 @@
 #include "symmTensorMeshLevel.H"
 #include "diagTensorMeshLevel.H"
 #include "diagStencilMeshLevel.H"
-#include "symmStencilMeshLevel.H"
 #include "stencilMeshLevel.H"
 
 #endif

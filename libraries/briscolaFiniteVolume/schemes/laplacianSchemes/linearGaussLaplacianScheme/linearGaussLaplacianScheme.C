@@ -23,7 +23,7 @@ template<class SType, class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
 (
-    const meshField<lowerFaceScalar,MeshType>* lambdaPtr,
+    const meshField<faceScalar,MeshType>* lambdaPtr,
     const meshField<Type,MeshType>& field,
     const scalar factor
 )
@@ -41,8 +41,6 @@ linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
 
     meshField<Type,MeshType>& Lap = tLap.ref();
 
-    Lap = Zero;
-
     const meshField<faceScalar,MeshType>& fa =
         field.fvMsh().template metrics<MeshType>().faceAreas();
 
@@ -54,29 +52,17 @@ linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
 
     forAllCells(Lap, d, i, j, k)
     {
-        labelVector ijk(i,j,k);
+        #ifdef NO_BLOCK_ZERO_INIT
+        Lap(d,i,j,k) = Zero;
+        #endif
 
-        for (int fd = 0; fd < 3; fd++)
-        {
-            labelVector low(lowerNei(ijk,fd));
-            labelVector upp(upperNei(ijk,fd));
-
-            scalar lower = factor*fa(d,ijk)[fd*2  ]*delta(d,ijk)[fd*2  ];
-            scalar upper = factor*fa(d,ijk)[fd*2+1]*delta(d,ijk)[fd*2+1];
-
-            if (lambdaPtr)
-            {
-                lower *= lambdaPtr->operator()(d,ijk)[fd];
-                upper *= lambdaPtr->operator()(d,upp)[fd];
-            }
-
-            Lap(d,ijk) +=
-                (
-                    lower*(field(d,low) - field(d,ijk))
-                  + upper*(field(d,upp) - field(d,ijk))
-                )
-              / cv(d,ijk);
-        }
+        for (label f = 0; f < 6; f++)
+            Lap(d,i,j,k) +=
+                factor
+              * fa(d,i,j,k)[f]*delta(d,i,j,k)[f]
+              * (field(d,neighbor(i,j,k,f)) - field(d,i,j,k))
+              * (lambdaPtr ? lambdaPtr->operator()(d,i,j,k)[f] : 1.0)
+              / cv(d,i,j,k);
     }
 
     return tLap;

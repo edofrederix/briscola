@@ -57,14 +57,14 @@ public:
 
         virtual tmp<linearSystem<SType,Type,MeshType>> imDiv
         (
-            const meshField<lowerFaceScalar,MeshType>& phi,
+            const meshField<faceScalar,MeshType>& phi,
             const meshField<Type,MeshType>& field,
             const scalar factor = 1.0
         ) = 0;
 
         virtual tmp<meshField<Type,MeshType>> exDiv
         (
-            const meshField<lowerFaceScalar,MeshType>& phi,
+            const meshField<faceScalar,MeshType>& phi,
             const meshField<Type,MeshType>& field
         ) = 0;
 
@@ -77,7 +77,7 @@ public:
                 // Flux as tmp
                 inline tmp<linearSystem<SType,Type,MeshType>> imDiv
                 (
-                    const tmp<meshField<lowerFaceScalar,MeshType>>& tPhi,
+                    const tmp<meshField<faceScalar,MeshType>>& tPhi,
                     const meshField<Type,MeshType>& field
                 );
 
@@ -88,7 +88,7 @@ public:
                 // Flux as tmp
                 inline tmp<meshField<Type,MeshType>> exDiv
                 (
-                    const tmp<meshField<lowerFaceScalar,MeshType>>& tPhi,
+                    const tmp<meshField<faceScalar,MeshType>>& tPhi,
                     const meshField<Type,MeshType>& field
                 );
 };
@@ -96,13 +96,13 @@ public:
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> div
 (
-    const meshField<LowerFaceSpace<Type>,MeshType>&
+    const meshField<FaceSpace<Type>,MeshType>&
 );
 
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> div
 (
-    const tmp<meshField<LowerFaceSpace<Type>,MeshType>>&
+    const tmp<meshField<FaceSpace<Type>,MeshType>>&
 );
 
 template<class Type>

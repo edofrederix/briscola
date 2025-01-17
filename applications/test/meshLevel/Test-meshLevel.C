@@ -667,12 +667,10 @@ int main(int argc, char *argv[])
     testConstructors<diagTensor,colocated>(fvMsh);
 
     testConstructors<faceScalar,colocated>(fvMsh);
-    testConstructors<lowerFaceScalar,colocated>(fvMsh);
     testConstructors<edgeScalar,colocated>(fvMsh);
     testConstructors<vertexScalar,colocated>(fvMsh);
 
     testConstructors<faceVector,colocated>(fvMsh);
-    testConstructors<lowerFaceVector,colocated>(fvMsh);
     testConstructors<edgeVector,colocated>(fvMsh);
     testConstructors<vertexVector,colocated>(fvMsh);
 
@@ -690,12 +688,10 @@ int main(int argc, char *argv[])
     testIndexing<diagTensor,colocated>(fvMsh);
 
     testIndexing<faceScalar,colocated>(fvMsh);
-    testIndexing<lowerFaceScalar,colocated>(fvMsh);
     testIndexing<edgeScalar,colocated>(fvMsh);
     testIndexing<vertexScalar,colocated>(fvMsh);
 
     testIndexing<faceVector,colocated>(fvMsh);
-    testIndexing<lowerFaceVector,colocated>(fvMsh);
     testIndexing<edgeVector,colocated>(fvMsh);
     testIndexing<vertexVector,colocated>(fvMsh);
 
@@ -713,12 +709,10 @@ int main(int argc, char *argv[])
     testMemberOperators<diagTensor,colocated>(fvMsh);
 
     testMemberOperators<faceScalar,colocated>(fvMsh);
-    testMemberOperators<lowerFaceScalar,colocated>(fvMsh);
     testMemberOperators<edgeScalar,colocated>(fvMsh);
     testMemberOperators<vertexScalar,colocated>(fvMsh);
 
     testMemberOperators<faceVector,colocated>(fvMsh);
-    testMemberOperators<lowerFaceVector,colocated>(fvMsh);
     testMemberOperators<edgeVector,colocated>(fvMsh);
     testMemberOperators<vertexVector,colocated>(fvMsh);
 
@@ -762,12 +756,10 @@ int main(int argc, char *argv[])
         testConstructors<diagTensor,staggered>(fvMsh);
 
         testConstructors<faceScalar,staggered>(fvMsh);
-        testConstructors<lowerFaceScalar,staggered>(fvMsh);
         testConstructors<edgeScalar,staggered>(fvMsh);
         testConstructors<vertexScalar,staggered>(fvMsh);
 
         testConstructors<faceVector,staggered>(fvMsh);
-        testConstructors<lowerFaceVector,staggered>(fvMsh);
         testConstructors<edgeVector,staggered>(fvMsh);
         testConstructors<vertexVector,staggered>(fvMsh);
 
@@ -785,12 +777,10 @@ int main(int argc, char *argv[])
         testIndexing<diagTensor,staggered>(fvMsh);
 
         testIndexing<faceScalar,staggered>(fvMsh);
-        testIndexing<lowerFaceScalar,staggered>(fvMsh);
         testIndexing<edgeScalar,staggered>(fvMsh);
         testIndexing<vertexScalar,staggered>(fvMsh);
 
         testIndexing<faceVector,staggered>(fvMsh);
-        testIndexing<lowerFaceVector,staggered>(fvMsh);
         testIndexing<edgeVector,staggered>(fvMsh);
         testIndexing<vertexVector,staggered>(fvMsh);
 
@@ -799,50 +789,49 @@ int main(int argc, char *argv[])
 
 
         testMemberOperators<label,staggered>(fvMsh);
-        // testMemberOperators<scalar,staggered>(fvMsh);
+        testMemberOperators<scalar,staggered>(fvMsh);
 
-        // testMemberOperators<vector,staggered>(fvMsh);
-        // testMemberOperators<tensor,staggered>(fvMsh);
-        // testMemberOperators<symmTensor,staggered>(fvMsh);
-        // testMemberOperators<sphericalTensor,staggered>(fvMsh);
-        // testMemberOperators<diagTensor,staggered>(fvMsh);
+        testMemberOperators<vector,staggered>(fvMsh);
+        testMemberOperators<tensor,staggered>(fvMsh);
+        testMemberOperators<symmTensor,staggered>(fvMsh);
+        testMemberOperators<sphericalTensor,staggered>(fvMsh);
+        testMemberOperators<diagTensor,staggered>(fvMsh);
 
-        // testMemberOperators<faceScalar,staggered>(fvMsh);
-        // testMemberOperators<lowerFaceScalar,staggered>(fvMsh);
-        // testMemberOperators<edgeScalar,staggered>(fvMsh);
-        // testMemberOperators<vertexScalar,staggered>(fvMsh);
+        testMemberOperators<faceScalar,staggered>(fvMsh);
+        testMemberOperators<edgeScalar,staggered>(fvMsh);
+        testMemberOperators<vertexScalar,staggered>(fvMsh);
 
-        // testMemberOperators<faceVector,staggered>(fvMsh);
-        // testMemberOperators<edgeVector,staggered>(fvMsh);
-        // testMemberOperators<vertexVector,staggered>(fvMsh);
+        testMemberOperators<faceVector,staggered>(fvMsh);
+        testMemberOperators<edgeVector,staggered>(fvMsh);
+        testMemberOperators<vertexVector,staggered>(fvMsh);
 
-        // testMemberOperators<stencil,staggered>(fvMsh);
-        // testMemberOperators<diagStencil,staggered>(fvMsh);
-
-
-        // testPrimitiveFunctions<label,staggered>(fvMsh);
-        // testPrimitiveFunctions<scalar,staggered>(fvMsh);
-
-        // testPrimitiveFunctions<vector,staggered>(fvMsh);
-        // testPrimitiveFunctions<tensor,staggered>(fvMsh);
-        // testPrimitiveFunctions<symmTensor,staggered>(fvMsh);
-        // testPrimitiveFunctions<sphericalTensor,staggered>(fvMsh);
-        // testPrimitiveFunctions<diagTensor,staggered>(fvMsh);
+        testMemberOperators<stencil,staggered>(fvMsh);
+        testMemberOperators<diagStencil,staggered>(fvMsh);
 
 
-        // testVectorSpaceFunctions<vector,staggered>(fvMsh);
-        // testVectorSpaceFunctions<tensor,staggered>(fvMsh);
-        // testVectorSpaceFunctions<symmTensor,staggered>(fvMsh);
-        // testVectorSpaceFunctions<sphericalTensor,staggered>(fvMsh);
-        // testVectorSpaceFunctions<diagTensor,staggered>(fvMsh);
+        testPrimitiveFunctions<label,staggered>(fvMsh);
+        testPrimitiveFunctions<scalar,staggered>(fvMsh);
+
+        testPrimitiveFunctions<vector,staggered>(fvMsh);
+        testPrimitiveFunctions<tensor,staggered>(fvMsh);
+        testPrimitiveFunctions<symmTensor,staggered>(fvMsh);
+        testPrimitiveFunctions<sphericalTensor,staggered>(fvMsh);
+        testPrimitiveFunctions<diagTensor,staggered>(fvMsh);
 
 
-        // testStencilFunctions<stencil,staggered>(fvMsh);
-        // testStencilFunctions<diagStencil,staggered>(fvMsh);
+        testVectorSpaceFunctions<vector,staggered>(fvMsh);
+        testVectorSpaceFunctions<tensor,staggered>(fvMsh);
+        testVectorSpaceFunctions<symmTensor,staggered>(fvMsh);
+        testVectorSpaceFunctions<sphericalTensor,staggered>(fvMsh);
+        testVectorSpaceFunctions<diagTensor,staggered>(fvMsh);
 
 
-        // testScalarFunctions<staggered>(fvMsh);
-        // testVectorFunctions<staggered>(fvMsh);
-        // testTensorFunctions<staggered>(fvMsh);
+        testStencilFunctions<stencil,staggered>(fvMsh);
+        testStencilFunctions<diagStencil,staggered>(fvMsh);
+
+
+        testScalarFunctions<staggered>(fvMsh);
+        testVectorFunctions<staggered>(fvMsh);
+        testTensorFunctions<staggered>(fvMsh);
     }
 }

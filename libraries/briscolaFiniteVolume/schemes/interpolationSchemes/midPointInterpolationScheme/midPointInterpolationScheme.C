@@ -20,31 +20,30 @@ midPointInterpolationScheme<Type,MeshType>::midPointInterpolationScheme
 {}
 
 template<class Type, class MeshType>
-tmp<meshField<LowerFaceSpace<Type>,MeshType>>
+tmp<meshField<FaceSpace<Type>,MeshType>>
 midPointInterpolationScheme<Type,MeshType>::interp
 (
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<LowerFaceSpace<Type>,MeshType>> tInterp
+    tmp<meshField<FaceSpace<Type>,MeshType>> tInterp
     (
-        new meshField<LowerFaceSpace<Type>,MeshType>
+        new meshField<FaceSpace<Type>,MeshType>
         (
             "interp("+field.name()+")",
             field.fvMsh()
         )
     );
 
-    meshField<LowerFaceSpace<Type>,MeshType>& Interp = tInterp.ref();
-
-    Interp = Zero;
+    meshField<FaceSpace<Type>,MeshType>& Interp = tInterp.ref();
 
     forAllFaces(Interp, d, fd, i, j, k)
     {
-        labelVector ijk(i,j,k);
-        labelVector nei(lowerNei(i,j,k,fd));
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        Interp(d,ijk)[fd] = 0.5*(field(d,ijk) + field(d,nei));
+        Interp(d,ijk)[fd*2  ] = 0.5*(field(d,ijk) + field(d,nei));
+        Interp(d,nei)[fd*2+1] = Interp(d,ijk)[fd*2];
     }
 
     return tInterp;

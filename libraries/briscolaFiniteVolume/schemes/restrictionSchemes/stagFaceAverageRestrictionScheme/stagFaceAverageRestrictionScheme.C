@@ -35,19 +35,23 @@ void stagFaceAverageRestrictionScheme<Type>::restrict
     const labelVector R(coarse.mshPart().R());
     const label d = coarse.directionNum();
 
-    coarse = Zero;
-
     // Average face values of corresponding fine grid faces
 
     forAllFaces(coarse, fd, i, j, k)
     {
-        labelVector ijk(i,j,k);
-        labelVector fijk(i*R.x(), j*R.y(), k*R.z());
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        const labelVector fijk(briscola::cmptMultiply(ijk,R));
+        const labelVector fnei(briscola::cmptMultiply(nei,R));
 
         labelVector o(Zero);
 
         if (fd == d)
             o[d] = -1;
+
+        coarse(ijk)[fd*2  ] = Zero;
+        coarse(nei)[fd*2+1] = Zero;
 
         label nFaces = 0;
         for (o.x(); o.x() < (fd == 0 || d == 0 ? 1 : R.x()); o.x()++)
@@ -56,12 +60,16 @@ void stagFaceAverageRestrictionScheme<Type>::restrict
         {
             // Don't use cells with negative indices
             const labelVector fijko(briscola::cmptMax(fijk+o,zeroXYZ));
+            const labelVector fneio(briscola::cmptMax(fnei+o,zeroXYZ));
 
-            coarse(ijk)[fd] += fine(fijko)[fd];
+            coarse(ijk)[fd*2  ] += fine(fijko)[fd*2 ];
+            coarse(nei)[fd*2+1] += fine(fneio)[fd*2+1];
+
             nFaces++;
         }
 
-        coarse(ijk)[fd] /= scalar(nFaces);
+        coarse(ijk)[fd*2  ] /= scalar(nFaces);
+        coarse(nei)[fd*2+1] /= scalar(nFaces);
     }
 }
 

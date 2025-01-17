@@ -40,7 +40,7 @@ blendedViscosityMixture<BaseModel>::~blendedViscosityMixture()
 template<class BaseModel>
 void blendedViscosityMixture<BaseModel>::correctMixture()
 {
-    const meshField<lowerFaceScalar,typename BaseModel::meshType> alpha
+    const meshField<faceScalar,typename BaseModel::meshType> alpha
     (
         this->faceAlpha()
     );

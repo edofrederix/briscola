@@ -551,7 +551,7 @@ Vector<Type> flip(const Vector<Type>& v)
 
 // Return index of the neighbor across given face
 
-inline labelVector nei
+inline labelVector neighbor
 (
     const label& i,
     const label& j,
@@ -562,14 +562,14 @@ inline labelVector nei
     return labelVector(i,j,k) + faceOffsets[f];
 }
 
-inline labelVector nei(const labelVector& ijk, const label& f)
+inline labelVector neighbor(const labelVector& ijk, const label& f)
 {
-    return nei(ijk.x(), ijk.y(), ijk.z(), f);
+    return neighbor(ijk.x(), ijk.y(), ijk.z(), f);
 }
 
 // Return index of lower neighbor across given face direction
 
-inline labelVector lowerNei
+inline labelVector lowerNeighbor
 (
     const label& i,
     const label& j,
@@ -580,14 +580,14 @@ inline labelVector lowerNei
     return labelVector(i,j,k) - units[fd];
 }
 
-inline labelVector lowerNei(const labelVector& ijk, const label& fd)
+inline labelVector lowerNeighbor(const labelVector& ijk, const label& fd)
 {
-    return lowerNei(ijk.x(), ijk.y(), ijk.z(), fd);
+    return lowerNeighbor(ijk.x(), ijk.y(), ijk.z(), fd);
 }
 
 // Return index of upper neighbor across given face
 
-inline labelVector upperNei
+inline labelVector upperNeighbor
 (
     const label& i,
     const label& j,
@@ -598,9 +598,9 @@ inline labelVector upperNei
     return labelVector(i,j,k) + units[fd];
 }
 
-inline labelVector upperNei(const labelVector& ijk, const label& fd)
+inline labelVector upperNeighbor(const labelVector& ijk, const label& fd)
 {
-    return upperNei(ijk.x(), ijk.y(), ijk.z(), fd);
+    return upperNeighbor(ijk.x(), ijk.y(), ijk.z(), fd);
 }
 
 // Check if the given index is odd

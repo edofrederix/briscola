@@ -90,41 +90,6 @@ void DirichletBoundaryCondition<Type,MeshType>::eliminateGhosts
 }
 
 template<class Type, class MeshType>
-void DirichletBoundaryCondition<Type,MeshType>::eliminateGhosts
-(
-    linearSystem<symmStencil,Type,MeshType>& sys,
-    const label l,
-    const label d
-)
-{
-    const labelVector bo(this->offset());
-    const label faceNum(faceNumber(bo));
-
-    const labelVector o(faceNum%2 ? bo : zeroXYZ);
-
-    meshField<symmStencil,MeshType>& A = sys.A();
-    meshField<Type,MeshType>& b = sys.b();
-
-    const labelVector S(this->S(l,d));
-    const labelVector E(this->E(l,d));
-
-    labelVector ijk;
-    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-    {
-        const labelVector nei(ijk+o);
-        const scalar ghostCoeff = A(l,d,nei)[faceNum/2+1];
-
-        A(l,d,ijk)[0] -= ghostCoeff;
-        A(l,d,nei)[faceNum/2+1] = Zero;
-
-        if (l == 0)
-            b(l,d,ijk) -= ghostCoeff*2.0*boundaryValues_[d];
-    }
-}
-
-template<class Type, class MeshType>
 void DirichletBoundaryCondition<Type,MeshType>::evaluate
 (
     const label l,

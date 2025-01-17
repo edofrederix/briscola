@@ -21,7 +21,7 @@ using ::Foam::briscola::fv::coloFaceFlux;
 
 // Colocated face flux from vector
 
-inline tmp<meshField<lowerFaceScalar,colocated>> faceFlux
+inline tmp<meshField<faceScalar,colocated>> faceFlux
 (
     const colocatedVectorField& field
 )
@@ -33,7 +33,7 @@ inline tmp<meshField<lowerFaceScalar,colocated>> faceFlux
     )->faceFlux(field);
 }
 
-inline tmp<meshField<lowerFaceScalar,colocated>> faceFlux
+inline tmp<meshField<faceScalar,colocated>> faceFlux
 (
     const tmp<colocatedVectorField>& tField
 )
@@ -41,7 +41,7 @@ inline tmp<meshField<lowerFaceScalar,colocated>> faceFlux
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<lowerFaceScalar,colocated>> tFaceFlux
+    tmp<meshField<faceScalar,colocated>> tFaceFlux
     (
         faceFlux(tField())
     );
@@ -54,7 +54,7 @@ inline tmp<meshField<lowerFaceScalar,colocated>> faceFlux
 
 // Colocated face flux from tensor
 
-inline tmp<meshField<lowerFaceVector,colocated>> faceFlux
+inline tmp<meshField<faceVector,colocated>> faceFlux
 (
     const colocatedTensorField& field
 )
@@ -66,7 +66,7 @@ inline tmp<meshField<lowerFaceVector,colocated>> faceFlux
     )->faceFlux(field);
 }
 
-inline tmp<meshField<lowerFaceVector,colocated>> faceFlux
+inline tmp<meshField<faceVector,colocated>> faceFlux
 (
     const tmp<colocatedTensorField>& tField
 )
@@ -74,7 +74,7 @@ inline tmp<meshField<lowerFaceVector,colocated>> faceFlux
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<lowerFaceVector,colocated>> tFaceFlux
+    tmp<meshField<faceVector,colocated>> tFaceFlux
     (
         faceFlux(tField())
     );
@@ -87,7 +87,7 @@ inline tmp<meshField<lowerFaceVector,colocated>> faceFlux
 
 // Staggered face flux from scalar
 
-inline tmp<meshField<lowerFaceScalar,staggered>> faceFlux
+inline tmp<meshField<faceScalar,staggered>> faceFlux
 (
     const staggeredScalarField& field
 )
@@ -99,7 +99,7 @@ inline tmp<meshField<lowerFaceScalar,staggered>> faceFlux
     )->faceFlux(field);
 }
 
-inline tmp<meshField<lowerFaceScalar,staggered>> faceFlux
+inline tmp<meshField<faceScalar,staggered>> faceFlux
 (
     const tmp<staggeredScalarField>& tField
 )
@@ -107,7 +107,7 @@ inline tmp<meshField<lowerFaceScalar,staggered>> faceFlux
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<lowerFaceScalar,staggered>> tFaceFlux
+    tmp<meshField<faceScalar,staggered>> tFaceFlux
     (
         faceFlux(tField())
     );

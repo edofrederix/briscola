@@ -21,7 +21,7 @@ namespace im
     template<class SType, class Type, class MeshType>
     inline tmp<linearSystem<SType,Type,MeshType>> div
     (
-        const meshField<lowerFaceScalar,MeshType>& phi,
+        const meshField<faceScalar,MeshType>& phi,
         const meshField<Type,MeshType>& field
     )
     {
@@ -36,7 +36,7 @@ namespace im
     template<class SType, class Type, class MeshType>
     inline tmp<linearSystem<SType,Type,MeshType>> div
     (
-        const tmp<meshField<lowerFaceScalar,MeshType>>& tPhi,
+        const tmp<meshField<faceScalar,MeshType>>& tPhi,
         const meshField<Type,MeshType>& field
     )
     {
@@ -55,7 +55,7 @@ namespace im
         template<class Type, class MeshType>
         inline tmp<linearSystem<stencil,Type,MeshType>> div
         (
-            const meshField<lowerFaceScalar,MeshType>& phi,
+            const meshField<faceScalar,MeshType>& phi,
             const meshField<Type,MeshType>& field
         )
         {
@@ -66,7 +66,7 @@ namespace im
         template<class Type, class MeshType>
         inline tmp<linearSystem<stencil,Type,MeshType>> div
         (
-            const tmp<meshField<lowerFaceScalar,MeshType>>& tPhi,
+            const tmp<meshField<faceScalar,MeshType>>& tPhi,
             const meshField<Type,MeshType>& field
         )
         {
