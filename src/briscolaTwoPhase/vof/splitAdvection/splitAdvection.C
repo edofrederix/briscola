@@ -44,10 +44,12 @@ void splitAdvection::updateFlux
         const scalar flux = phi(ijk)[d*2];
         const labelVector don(flux > 0 ? ijk : nei);
 
-        if (Foam::mag(flux) > 0 && alpha_(don) > vof::threshold)
-        {
-            const scalar frac = Foam::mag(flux)*dt/cv(don);
+        const scalar frac = Foam::mag(flux)*dt/cv(don);
 
+        // Only handle faces with a measurable flux and volume fraction
+
+        if (Foam::mag(frac) > vof::threshold && alpha_(don) > vof::threshold)
+        {
             scalar fluxAlpha = 0;
 
             if (alpha_(don) >= 1 - vof::threshold)
@@ -102,8 +104,8 @@ void splitAdvection::updateFlux
 
                 scalar fluxVolume =
                     rectilinear_
-                    ? truncatedPiped(vertices,n(don),C).volume()
-                    : truncatedHex(vertices,n(don),C).volume();
+                  ? truncatedPiped(vertices,n(don),C).volume()
+                  : truncatedHex(vertices,n(don),C).volume();
 
                 fluxAlpha = fluxVolume/dt;
             }
