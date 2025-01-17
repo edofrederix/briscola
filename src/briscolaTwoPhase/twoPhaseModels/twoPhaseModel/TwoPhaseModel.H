@@ -25,6 +25,24 @@ protected:
     // Mixture dynamic viscosity
     meshField<faceScalar,MeshType> mu_;
 
+    // Cached g*h*A face field
+    autoPtr<colocatedFaceScalarField> ghAPtr_;
+
+    // Function to set the g*h*A field
+    void setGhA()
+    {
+        if (!ghAPtr_.valid())
+        {
+            const colocatedFaceVectorField& fc =
+                fvMsh_.template metrics<colocated>().faceCenters();
+
+            const colocatedFaceScalarField& fa =
+                fvMsh_.template metrics<colocated>().faceAreas();
+
+            ghAPtr_.set((- (this->g() & fc) * fa).ptr());
+        }
+    }
+
 private:
 
     // Disallow default bitwise assignment
@@ -72,8 +90,17 @@ public:
     // Return the colocated face flux
     virtual tmp<colocatedFaceScalarField> coloFaceFlux() const;
 
+    // Return the colocated mass density
+    virtual tmp<colocatedScalarField> coloRho() const = 0;
+
     // Return the gravitational acceleration
     virtual List<typename MeshType::vectorType> gravity() const;
+
+    // Return the buoyancy term
+    tmp<colocatedFaceScalarField> buoyancy();
+
+    // Return the interfacial flux
+    tmp<colocatedFaceScalarField> flux();
 };
 
 }

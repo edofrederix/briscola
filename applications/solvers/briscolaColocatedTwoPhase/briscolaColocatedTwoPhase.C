@@ -79,7 +79,8 @@ int main(int argc, char *argv[])
                     USys -= B*USysB;
                 }
 
-                USys -= C*twoPhase.g();
+                if (!reduced)
+                    USys -= C*twoPhase.g();
 
                 // Solve predictor
 
@@ -87,10 +88,10 @@ int main(int argc, char *argv[])
 
                 // Pressure equation
 
-                const colocatedFaceScalarField phiStar
+                colocatedFaceScalarField phiStar
                 (
                     ex::faceFlux(U)
-                  + C*deltaT*twoPhase.surfaceTension()*vf
+                  + C*deltaT*twoPhase.flux()*vf
                 );
 
                 Poisson->solve(p, ex::div(phiStar)/(-C*deltaT), vf);
@@ -102,7 +103,7 @@ int main(int argc, char *argv[])
                   * ex::reconstruct
                     (
                         Poisson->flux()/vf
-                      - twoPhase.surfaceTension()
+                      - twoPhase.flux()
                     )*v;
 
                 U.correctBoundaryConditions();
