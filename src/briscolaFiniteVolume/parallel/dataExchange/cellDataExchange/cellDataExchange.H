@@ -28,10 +28,10 @@ class cellDataExchange
     labelList neighbors_;
 
     // For each processor the cell indices to be sent
-    List<List<labelVector>> sendCells_;
+    List<DynamicList<labelVector>> sendCells_;
 
     // For each processor the cell indices to be received
-    List<List<labelVector>> recvCells_;
+    List<DynamicList<labelVector>> recvCells_;
 
 private:
 
