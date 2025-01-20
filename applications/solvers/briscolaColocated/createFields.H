@@ -79,12 +79,12 @@ PtrList<colocatedVectorField> stageSourcesB
     rk.stageList<colocatedVectorField>("B")
 );
 
-linearSystem<stencil,vector,colocated> USysA(U);
-linearSystem<stencil,vector,colocated> USysB(U);
+linearSystem<stencil,vector,colocated> USysA("A(U)", U);
+linearSystem<stencil,vector,colocated> USysB("B(U)", U);
 
 // Solvers
 
-linearSystem<stencil,vector,colocated> USys(U, true);
+linearSystem<stencil,vector,colocated> USys("NS(U)", U, true);
 
 autoPtr<solver<stencil,vector,colocated>> USolve
 (

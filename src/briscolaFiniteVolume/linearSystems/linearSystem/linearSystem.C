@@ -23,6 +23,7 @@ void linearSystem<SType,Type,MeshType>::transfer
 template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
 (
+    const word name,
     meshField<Type, MeshType>& x,
     const bool registerObject
 )
@@ -31,7 +32,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
     (
         IOobject
         (
-            typeName + "(" + x.name() + ")",
+            name,
             x.fvMsh().time().timeName(),
             x.fvMsh().time(),
             IOobject::NO_READ,
@@ -71,7 +72,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
     (
         IOobject
         (
-            typeName + "(" + sys.x_.name() + ")",
+            sys.name(),
             sys.fvMsh_.time().timeName(),
             sys.fvMsh_.time(),
             IOobject::NO_READ,
@@ -113,7 +114,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
     (
         IOobject
         (
-            typeName + "(" + tSys->x_.name() + ")",
+            tSys->name(),
             tSys->fvMsh_.time().timeName(),
             tSys->fvMsh_.time(),
             IOobject::NO_READ,
@@ -169,7 +170,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
     (
         IOobject
         (
-            typeName + "(" + x.name() + ")",
+            sys.name(),
             sys.fvMsh_.time().timeName(),
             sys.fvMsh_.time(),
             IOobject::NO_READ,
@@ -212,7 +213,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
     (
         IOobject
         (
-            typeName + "(" + x.name() + ")",
+            tSys->name(),
             tSys->fvMsh_.time().timeName(),
             tSys->fvMsh_.time(),
             IOobject::NO_READ,
@@ -922,8 +923,12 @@ void linearSystem<SType,Type,MeshType>::operator*=
     const meshField<scalar,MeshType>& field
 )
 {
+    const_cast<meshField<scalar,MeshType>&>(field).restrict();
+
     this->A() *= field;
     this->b() *= field;
+
+    const_cast<meshField<scalar,MeshType>&>(field).makeShallow();
 }
 
 template<class SType, class Type, class MeshType>
@@ -964,8 +969,12 @@ void linearSystem<SType,Type,MeshType>::operator/=
     const meshField<scalar,MeshType>& field
 )
 {
+    const_cast<meshField<scalar,MeshType>&>(field).restrict();
+
     this->A() /= field;
     this->b() /= field;
+
+    const_cast<meshField<scalar,MeshType>&>(field).makeShallow();
 }
 
 template<class SType, class Type, class MeshType>

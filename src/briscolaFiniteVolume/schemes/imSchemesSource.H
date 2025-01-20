@@ -32,6 +32,9 @@ namespace im
         (
             new linearSystem<diagStencil,Type,MeshType>
             (
+                lambdaPtr
+              ? word("source("+lambdaPtr->name()+","+field.name()+")")
+              : word("source("+field.name()+")"),
                 const_cast<meshField<Type,MeshType>&>(field)
             )
         );

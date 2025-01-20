@@ -69,7 +69,7 @@ imSourceCoeff = scalar(solverDict.lookupOrDefault("sourceCoeff", 0.0));
 
 // Solvers
 
-linearSystem<stencil,vector,colocated> USys(U, true);
+linearSystem<stencil,vector,colocated> USys("NS(U)", U, true);
 
 autoPtr<solver<stencil,vector,colocated>> USolve
 (

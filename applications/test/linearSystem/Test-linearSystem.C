@@ -15,8 +15,8 @@ void testConstructors(const fvMesh& fvMsh)
 
     // From a field
 
-    linearSystem<SType,Type,MeshType> s1a(f);
-    linearSystem<SType,Type,MeshType> s1b(f, true);
+    linearSystem<SType,Type,MeshType> s1a("s1a(f)", f);
+    linearSystem<SType,Type,MeshType> s1b("s1b(f)", f, true);
 
     // Copy constructors
 
@@ -27,14 +27,14 @@ void testConstructors(const fvMesh& fvMsh)
     (
         tmp<linearSystem<SType,Type,MeshType>>
         (
-            new linearSystem<SType,Type,MeshType>(f)
+            new linearSystem<SType,Type,MeshType>("s2c(f)", f)
         )
     );
     linearSystem<SType,Type,MeshType> s2d
     (
         tmp<linearSystem<SType,Type,MeshType>>
         (
-            new linearSystem<SType,Type,MeshType>(f)
+            new linearSystem<SType,Type,MeshType>("s2d(f)", f)
         ),
         true
     );
@@ -48,7 +48,7 @@ void testConstructors(const fvMesh& fvMsh)
     (
         tmp<linearSystem<SType,Type,MeshType>>
         (
-            new linearSystem<SType,Type,MeshType>(f)
+            new linearSystem<SType,Type,MeshType>("s3c(f)", f)
         ),
         g
     );
@@ -56,7 +56,7 @@ void testConstructors(const fvMesh& fvMsh)
     (
         tmp<linearSystem<SType,Type,MeshType>>
         (
-            new linearSystem<SType,Type,MeshType>(f)
+            new linearSystem<SType,Type,MeshType>("s3d(f)", f)
         ),
         g,
         true
@@ -72,7 +72,7 @@ void testResiduals(const fvMesh& fvMsh)
     f = Zero;
     res = Zero;
 
-    linearSystem<SType,Type,MeshType> sys(f);
+    linearSystem<SType,Type,MeshType> sys("sys(f)", f);
 
     sys.residual(res);
     res = sys.residual();
@@ -96,28 +96,28 @@ void testMemberOperators(const fvMesh& fvMsh)
     meshField<Type,MeshType> f("f", fvMsh);
     meshField<Type,MeshType> g("g", fvMsh);
 
-    linearSystem<SType,Type,MeshType> sys1(f);
-    linearSystem<SType,Type,MeshType> sys2(f);
+    linearSystem<SType,Type,MeshType> sys1("sys1(f)", f);
+    linearSystem<SType,Type,MeshType> sys2("sys2(f)", f);
 
     sys1 = sys2;
     sys1 =
         tmp<linearSystem<SType,Type,MeshType>>
         (
-            new linearSystem<SType,Type,MeshType>(f)
+            new linearSystem<SType,Type,MeshType>("sys1(f)", f)
         );
 
     sys1 += sys2;
     sys1 +=
         tmp<linearSystem<SType,Type,MeshType>>
         (
-            new linearSystem<SType,Type,MeshType>(f)
+            new linearSystem<SType,Type,MeshType>("sys1(f)", f)
         );
 
     sys1 -= sys2;
     sys1 -=
         tmp<linearSystem<SType,Type,MeshType>>
         (
-            new linearSystem<SType,Type,MeshType>(f)
+            new linearSystem<SType,Type,MeshType>("sys1(f)", f)
         );
 
     sys1 = g;

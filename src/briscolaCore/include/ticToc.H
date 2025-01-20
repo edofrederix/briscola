@@ -14,7 +14,7 @@
             ::std::chrono::duration_cast<::std::chrono::microseconds>          \
             (                                                                  \
                 ::std::chrono::high_resolution_clock::now()                    \
-             - ticToc##num                                                     \
+              - ticToc##num                                                    \
              ).count()                                                         \
         );
 
@@ -22,6 +22,7 @@
 {                                                                              \
     Info<< "Tic-tocs [ms] = ";                                                 \
     forAll(ticTocs, i)                                                         \
-        Info<< Foam::name(i) << "=" << ticTocs[i]/1000.0 << ", ";              \
+        Info<< Foam::name(i) << "=" << ticTocs[i]/1000.0 << " ("               \
+            << ticTocs[i]/sum(ticTocs)*100 << "%), ";                          \
     Info<< "sum = " << sum(ticTocs)/1000.0 << endl;                            \
 }

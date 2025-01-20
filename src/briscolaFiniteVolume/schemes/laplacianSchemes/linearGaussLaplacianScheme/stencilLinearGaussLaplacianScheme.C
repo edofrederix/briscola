@@ -36,6 +36,9 @@ stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
     (
         new linearSystem<stencil,Type,MeshType>
         (
+            lambdaPtr
+          ? "laplacian("+lambdaPtr->name()+","+field.name()+")"
+          : "laplacian("+field.name()+")",
             const_cast<meshField<Type,MeshType>&>(field)
         )
     );

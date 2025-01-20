@@ -48,7 +48,13 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
     {
         sysPtr_.reset
         (
-            new linearSystem<SType,Type,MeshType>(x)
+            new linearSystem<SType,Type,MeshType>
+            (
+                lambdaPtr
+              ? word("Poisson("+lambdaPtr->name()+","+x.name()+")")
+              : word("Poisson("+x.name()+")"),
+                x
+            )
         );
     }
 

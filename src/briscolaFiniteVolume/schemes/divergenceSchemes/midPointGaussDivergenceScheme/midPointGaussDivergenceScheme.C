@@ -34,6 +34,7 @@ midPointGaussDivergenceScheme<Type,MeshType>::imDiv
     (
         new linearSystem<stencil,Type,MeshType>
         (
+            word("div(" + phi.name() + "," + field.name() + ")"),
             const_cast<meshField<Type,MeshType>&>(field)
         )
     );
