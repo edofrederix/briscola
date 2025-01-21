@@ -17,10 +17,19 @@ class JAC
 :
     public solver<SType,Type,MeshType>::smoother
 {
-    // Relaxation factor
-    const scalar omega_;
-
 public:
+
+    // Relaxation factor
+    static const scalar omega_;
+
+    // Static smooth function
+    static void Smooth
+    (
+        linearSystem<SType,Type,MeshType>& sys,
+        const label l,
+        const label sweeps,
+        const labelList& converged
+    );
 
     // Runtime type information
     TypeName("JAC");

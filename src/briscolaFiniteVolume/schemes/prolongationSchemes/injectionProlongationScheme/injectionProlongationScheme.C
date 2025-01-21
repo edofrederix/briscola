@@ -22,14 +22,10 @@ void injectionProlongationScheme<Type,MeshType>::prolong
 
     forAllCells(fine, i, j, k)
     {
-        const label il = i/R.x();
-        const label jl = j/R.y();
-        const label kl = k/R.z();
-
         bop
         (
             fine(i,j,k),
-            coarse(il,jl,kl)
+            coarse(briscola::cmptDivide(labelVector(i,j,k),R))
         );
     }
 }

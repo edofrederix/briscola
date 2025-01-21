@@ -67,6 +67,15 @@ protected:
     // Restriction operator. By default the average scheme is used
     autoPtr<restrictionScheme<Type,MeshType>> reScheme_;
 
+    // Smoother function pointer to avoid virtual function call
+    void (*Smooth)
+    (
+        linearSystem<SType,Type,MeshType>& sys,
+        const label l,
+        const label sweeps,
+        const labelList& converged
+    );
+
     // Solve system and provide parameters
     virtual void solve
     (

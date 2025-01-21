@@ -293,6 +293,56 @@ inline Type upperRowProduct
     return Zero;
 }
 
+// Off-diagonal row product
+
+template<class Type, class MeshType>
+inline Type offDiagRowProduct
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return Zero;
+}
+
+template<class Type, class MeshType>
+inline Type offDiagRowProduct
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const Type& v,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return Zero;
+}
+
+template<class Type, class MeshType>
+inline Type offDiagRowProduct
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const labelVector& ijk
+)
+{
+    return Zero;
+}
+
+template<class Type, class MeshType>
+inline Type offDiagRowProduct
+(
+    const meshDirection<diagStencil,MeshType>& st,
+    const Type& v,
+    const labelVector& ijk
+)
+{
+    return Zero;
+}
+
 #define DIAGSTENCIL_PRODUCT(Type)                                              \
 template<>                                                                     \
 class stencilProduct<diagStencil,Type>{ public: typedef Type type; };          \

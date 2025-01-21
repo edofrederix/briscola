@@ -10,18 +10,7 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-LEXGS<SType,Type,MeshType>::LEXGS
-(
-    const dictionary& dict,
-    const fvMesh& fvMsh
-)
-:
-    solver<SType,Type,MeshType>::smoother(dict,fvMsh),
-    symmetric_(dict.lookupOrDefault<Switch>("symmetric", true))
-{}
-
-template<class SType, class Type, class MeshType>
-void LEXGS<SType,Type,MeshType>::LEXGS::smooth
+void LEXGS<SType,Type,MeshType>::LEXGS::Smooth
 (
     linearSystem<SType,Type,MeshType>& sys,
     const label l,
@@ -44,7 +33,7 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
         {
             if (diagonal[d])
             {
-                this->smoothDiag(sys, l, d);
+                solver<SType,Type,MeshType>::smoother::smoothDiag(sys, l, d);
             }
             else
             {
@@ -59,21 +48,16 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
-                              - lowerRowProduct(Ad,xd,i,j,k)
-                              - upperRowProduct(Ad,xd,i,j,k)
+                              - offDiagRowProduct(Ad,xd,i,j,k)
                             )
                           / Ad(i,j,k).center();
 
-                if (!symmetric_)
-                    continue;
-
-                forAllCells(xd, i, j, k)
+                forAllCellsReversed(xd, i, j, k)
                     if (!fd(i,j,k))
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
-                              - lowerRowProduct(Ad,xd,i,j,k)
-                              - upperRowProduct(Ad,xd,i,j,k)
+                              - offDiagRowProduct(Ad,xd,i,j,k)
                             )
                           / Ad(i,j,k).center();
             }
@@ -87,6 +71,28 @@ void LEXGS<SType,Type,MeshType>::LEXGS::smooth
 
     x.correctEliminatedBoundaryConditions();
     x.correctUnsetBoundaryConditions();
+}
+
+template<class SType, class Type, class MeshType>
+LEXGS<SType,Type,MeshType>::LEXGS
+(
+    const dictionary& dict,
+    const fvMesh& fvMsh
+)
+:
+    solver<SType,Type,MeshType>::smoother(dict,fvMsh)
+{}
+
+template<class SType, class Type, class MeshType>
+void LEXGS<SType,Type,MeshType>::LEXGS::smooth
+(
+    linearSystem<SType,Type,MeshType>& sys,
+    const label l,
+    const label sweeps,
+    const labelList& converged
+)
+{
+    this->Smooth(sys, l, sweeps, converged);
 }
 
 }

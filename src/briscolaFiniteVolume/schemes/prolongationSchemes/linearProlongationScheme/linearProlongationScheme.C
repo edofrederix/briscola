@@ -10,11 +10,20 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-void linearProlongationScheme<Type,MeshType>::setWeights()
+void linearProlongationScheme<Type,MeshType>::setWeightsAndIndices()
 {
+    weights_.clear();
+    indices_.clear();
+
+    weights_.setSize(this->fvMsh().size()-1);
+    indices_.setSize(this->fvMsh().size()-1);
+
     for (label l = 0; l < this->fvMsh().size()-1; l++)
     {
         const labelVector R(this->fvMsh()[l+1].R());
+
+        weights_[l].setSize(MeshType::numberOfDirections);
+        indices_[l].setSize(MeshType::numberOfDirections);
 
         for (label d = 0; d < MeshType::numberOfDirections; d++)
         {
@@ -26,29 +35,39 @@ void linearProlongationScheme<Type,MeshType>::setWeights()
                 this->fvMsh().template metrics<MeshType>()
                .cellCenters()[l+1][d];
 
-            meshDirection<vertexScalar,MeshType>& weights = weights_[l][d];
+            List<FixedList<scalar,8>>& weights = weights_[l][d];
+            List<FixedList<labelVector,8>>& indices = indices_[l][d];
 
-            weights = Zero;
+            weights.setSize(ccf.size());
+            indices.setSize(ccf.size());
 
+            label c = 0;
             forAllCells(ccf, i, j, k)
             {
-                const label ox = (i%2)*2-1;
-                const label oy = (j%2)*2-1;
-                const label oz = (k%2)*2-1;
+                const labelVector ijk(i,j,k);
+                const labelVector off
+                (
+                    i%2 ? 1 : -1,
+                    j%2 ? 1 : -1,
+                    k%2 ? 1 : -1
+                );
+
+                // Set the indices
+
+                int v = 0;
+                labelVector abc;
+                for (abc.z() = 0; abc.z() < 2; abc.z()++)
+                    for (abc.y() = 0; abc.y() < 2; abc.y()++)
+                        for (abc.x() = 0; abc.x() < 2; abc.x()++)
+                            indices[c][v++] =
+                                briscola::cmptDivide(ijk,R)
+                              + briscola::cmptMultiply(abc,off);
+
+                // Interpolation cell vertices
 
                 vertexVector vertices;
-
-                int q = 0;
-                for (int c = 0; c < 2; c++)
-                    for (int b = 0; b < 2; b++)
-                        for (int a = 0; a < 2; a++)
-                            vertices[q++] =
-                                ccc
-                                (
-                                    i/R.x() + a*ox,
-                                    j/R.y() + b*oy,
-                                    k/R.z() + c*oz
-                                );
+                for (v = 0; v < 8; v++)
+                    vertices[v] = ccc(indices[c][v]);
 
                 // Calculate the tri-linear interpolation point
 
@@ -57,25 +76,23 @@ void linearProlongationScheme<Type,MeshType>::setWeights()
 
                 // Set the weights
 
-                weights(i,j,k) =
-                    vertexScalar
-                    (
-                        (1.0-w.x()) * (1.0-w.y()) * (1.0-w.z()),
-                        (    w.x()) * (1.0-w.y()) * (1.0-w.z()),
-                        (1.0-w.x()) * (    w.y()) * (1.0-w.z()),
-                        (    w.x()) * (    w.y()) * (1.0-w.z()),
-                        (1.0-w.x()) * (1.0-w.y()) * (    w.z()),
-                        (    w.x()) * (1.0-w.y()) * (    w.z()),
-                        (1.0-w.x()) * (    w.y()) * (    w.z()),
-                        (    w.x()) * (    w.y()) * (    w.z())
-                    );
+                v = 0;
+                for (abc.z() = 0; abc.z() < 2; abc.z()++)
+                    for (abc.y() = 0; abc.y() < 2; abc.y()++)
+                        for (abc.x() = 0; abc.x() < 2; abc.x()++)
+                            weights[c][v++] =
+                                (1.0 - abc.x() + w.x()*(2*abc.x() - 1))
+                              * (1.0 - abc.y() + w.y()*(2*abc.y() - 1))
+                              * (1.0 - abc.z() + w.z()*(2*abc.z() - 1));
 
                 // Important to remove small weights to avoid using
                 // uninitialized memory!
 
-                for (int vi = 0; vi < 8; vi++)
-                    if (weights(i,j,k)[vi] <= 1e-12)
-                        weights(i,j,k)[vi] = 0.0;
+                for (int v = 0; v < 8; v++)
+                    if (Foam::mag(weights[c][v]) <= 1e-12)
+                        weights[c][v] = 0.0;
+
+                c++;
             }
         }
     }
@@ -90,34 +107,24 @@ void linearProlongationScheme<Type,MeshType>::prolong
     const OpType<Type>& bop
 )
 {
-    const labelVector R(coarse.mshPart().R());
-
-    meshDirection<vertexScalar,MeshType>& weights =
+    const List<FixedList<scalar,8>>& weights =
         weights_[fine.levelNum()][fine.directionNum()];
 
+    const List<FixedList<labelVector,8>>& indices =
+        indices_[fine.levelNum()][fine.directionNum()];
+
+    label c = 0;
     forAllCells(fine, i, j, k)
     {
-        const label ox = ((i%2)*2-1) * (R.x()>1);
-        const label oy = ((j%2)*2-1) * (R.y()>1);
-        const label oz = ((k%2)*2-1) * (R.z()>1);
-
         Type value = Zero;
 
-        int q = 0;
-        for (int c = 0; c < 2; c++)
-            for (int b = 0; b < 2; b++)
-                for (int a = 0; a < 2; a++)
-                    if (weights(i,j,k)[q++] != 0.0)
-                        value +=
-                            weights(i,j,k)[q-1]
-                          * coarse
-                            (
-                                i/R.x() + a*ox,
-                                j/R.y() + b*oy,
-                                k/R.z() + c*oz
-                            );
+        for (label v = 0; v < 8; v++)
+            if (weights[c][v] != 0.0)
+                value += weights[c][v]*coarse(indices[c][v]);
 
         bop(fine(i,j,k), value);
+
+        c++;
     }
 }
 
@@ -128,18 +135,9 @@ linearProlongationScheme<Type,MeshType>::linearProlongationScheme
     Istream& is
 )
 :
-    prolongationScheme<Type,MeshType>(fvMsh, is),
-    weights_
-    (
-        "weights",
-        this->fvMsh(),
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false,
-        true
-    )
+    prolongationScheme<Type,MeshType>(fvMsh, is)
 {
-    setWeights();
+    setWeightsAndIndices();
 }
 
 template<class Type, class MeshType>

@@ -2,6 +2,9 @@
 
 #include <chrono>
 
+#define initTicTocHeader scalarList ticTocs;
+#define initTicTocConstructor(count)  ticTocs(count,Zero)
+
 #define initTicToc(count) scalarList ticTocs(count,Zero);
 
 #define tic(num)                                                               \

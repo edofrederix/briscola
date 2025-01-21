@@ -18,14 +18,17 @@ class linearProlongationScheme
     public prolongationScheme<Type,MeshType>
 {
     // Cached weights
-    meshField<vertexScalar,MeshType> weights_;
+    List<List<List<FixedList<scalar,8>>>> weights_;
 
-    // Set weights
-    void setWeights();
+    // Cached indices
+    List<List<List<FixedList<labelVector,8>>>> indices_;
+
+    // Set weights and indices
+    void setWeightsAndIndices();
 
 protected:
 
-    // MidPoint prolongation function
+    // Linear prolongation function
     template<template<class> class OpType>
     void prolong
     (
