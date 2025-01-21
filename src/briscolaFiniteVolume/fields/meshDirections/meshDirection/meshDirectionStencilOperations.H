@@ -321,6 +321,62 @@ inline Type upperRowProduct
     return upperRowProduct(st,v,ijk.x(),ijk.y(),ijk.z());
 }
 
+// Off-diagonal row product
+
+template<class Type, class MeshType>
+inline Type offDiagRowProduct
+(
+    const meshDirection<stencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return
+        st(i,j,k).left()   * s(i-1,j,  k  )
+      + st(i,j,k).right()  * s(i+1,j,  k  )
+      + st(i,j,k).bottom() * s(i,  j-1,k  )
+      + st(i,j,k).top()    * s(i,  j+1,k  )
+      + st(i,j,k).aft()    * s(i,  j,  k-1)
+      + st(i,j,k).fore()   * s(i,  j,  k+1);
+}
+
+template<class Type, class MeshType>
+inline Type offDiagRowProduct
+(
+    const meshDirection<stencil,MeshType>& st,
+    const Type& v,
+    const label& i,
+    const label& j,
+    const label& k
+)
+{
+    return offDiagRowSum(st,i,j,k)*v;
+}
+
+template<class Type, class MeshType>
+inline Type offDiagRowProduct
+(
+    const meshDirection<stencil,MeshType>& st,
+    const meshDirection<Type,MeshType>& s,
+    const labelVector& ijk
+)
+{
+    return offDiagRowProduct(st,s,ijk.x(),ijk.y(),ijk.z());
+}
+
+template<class Type, class MeshType>
+inline Type offDiagRowProduct
+(
+    const meshDirection<stencil,MeshType>& st,
+    const Type& v,
+    const labelVector& ijk
+)
+{
+    return offDiagRowProduct(st,v,ijk.x(),ijk.y(),ijk.z());
+}
+
 #define STENCIL_PRODUCT(Type)                                                  \
 template<>                                                                     \
 class stencilProduct<stencil,Type>{ public: typedef Type type; };              \

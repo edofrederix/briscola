@@ -21,6 +21,7 @@ NPROCSPERBRICKSIDE=(2 4)
 PSOLVERS=(MG split)
 NORMALSCHEMES=(Youngs MYC LSGIR)
 CURVATURESCHEMES=(SHF CV)
+REDUCEDPRESSURES=(true false)
 
 ##
 
@@ -61,6 +62,7 @@ echo \
     "pressure solver," \
     "normal scheme," \
     "curvature scheme," \
+    "reduced pressure," \
     "error 1 [%]," \
     "error 2 [%]," \
     "test 1," \
@@ -95,6 +97,7 @@ for K in "${!NPROCSPERBRICKSIDE[@]}"; do
 for L in "${!PSOLVERS[@]}"; do
 for M in "${!NORMALSCHEMES[@]}"; do
 for N in "${!CURVATURESCHEMES[@]}"; do
+for O in "${!REDUCEDPRESSURES[@]}"; do
 
     sleep 1
 
@@ -104,6 +107,7 @@ for N in "${!CURVATURESCHEMES[@]}"; do
     PSOLVER=${PSOLVERS[$L]}
     NORMALSCHEME=${NORMALSCHEMES[$M]}
     CURVATURESCHEME=${CURVATURESCHEMES[$N]}
+    REDUCEDPRESSURE=${REDUCEDPRESSURES[$O]}
 
     NPROCX=$NPROCPERBRICKSIDE
     NPROCY=$NPROCPERBRICKSIDE
@@ -113,7 +117,7 @@ for N in "${!CURVATURESCHEMES[@]}"; do
     MESHX=$MESH
     MESHY=$(echo "print(int(2*$MESH))" | python)
 
-    CASE="$SOLVER-$MESH-$NPROC-$PSOLVER-$NORMALSCHEME-$CURVATURESCHEME"
+    CASE="$SOLVER-$MESH-$NPROC-$PSOLVER-$NORMALSCHEME-$CURVATURESCHEME-$REDUCEDPRESSURE"
 
     while [ "$(($(getNumTasks) + $NPROC))" -gt $NTASKS ]; do
 
@@ -142,7 +146,8 @@ for N in "${!CURVATURESCHEMES[@]}"; do
             $NPROCY \
             $PSOLVER \
             $NORMALSCHEME \
-            $CURVATURESCHEME
+            $CURVATURESCHEME \
+            $REDUCEDPRESSURE
 
         if [ "$NPROC" == "1" ]; then
 
@@ -182,6 +187,7 @@ for N in "${!CURVATURESCHEMES[@]}"; do
             "$PSOLVER," \
             "$NORMALSCHEME," \
             "$CURVATURESCHEME," \
+            "$REDUCEDPRESSURE," \
             "$E1," \
             "$E2," \
             "$P1," \
@@ -197,6 +203,7 @@ for N in "${!CURVATURESCHEMES[@]}"; do
 
     ) &
 
+done
 done
 done
 done

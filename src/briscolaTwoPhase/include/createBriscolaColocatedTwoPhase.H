@@ -16,3 +16,5 @@ autoPtr<TwoPhaseModel<colocated>> twoPhasePtr
 );
 
 TwoPhaseModel<colocated>& twoPhase = twoPhasePtr();
+
+const Switch reduced = twoPhase.reduced();

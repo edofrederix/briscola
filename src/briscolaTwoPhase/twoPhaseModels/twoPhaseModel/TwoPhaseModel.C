@@ -126,6 +126,39 @@ List<typename staggered::vectorType> TwoPhaseModel<staggered>::gravity() const
     return list(this->g());
 }
 
+template<class MeshType>
+tmp<colocatedFaceScalarField> TwoPhaseModel<MeshType>::buoyancy()
+{
+    setGhA();
+    return ghAPtr_()*ex::faceGrad(this->coloRho());
+}
+
+template<class MeshType>
+tmp<colocatedFaceScalarField> TwoPhaseModel<MeshType>::flux()
+{
+    tmp<colocatedFaceScalarField> tFlux
+    (
+        new colocatedFaceScalarField("twoPhaseFlux", this->fvMsh_)
+    );
+
+    colocatedFaceScalarField& flux = tFlux.ref();
+
+    #ifdef NO_BLOCK_ZERO_INIT
+    flux = Zero;
+    #endif
+
+    // And the buoyancy flux when using reduced pressure
+    if (this->reduced_)
+        flux += this->buoyancy();
+
+    // Add the surface tension flux when we have a surface tension model
+    if (this->tension())
+        flux +=
+            static_cast<colocatedFaceScalarField&>(this->surfaceTension());
+
+    return tFlux;
+}
+
 }
 
 }

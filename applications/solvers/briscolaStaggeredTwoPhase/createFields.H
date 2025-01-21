@@ -94,7 +94,7 @@ imSourceCoeff =
 
 // Solvers
 
-linearSystem<stencil,scalar,staggered> USys(U, true);
+linearSystem<stencil,scalar,staggered> USys("NS(U)", U, true);
 
 autoPtr<solver<stencil,scalar,staggered>> USolve
 (
@@ -128,8 +128,8 @@ PtrList<staggeredScalarField> stageSourcesB
     rk.stageList<staggeredScalarField>("B")
 );
 
-linearSystem<stencil,scalar,staggered> USysA(U);
-linearSystem<stencil,scalar,staggered> USysB(U);
+linearSystem<stencil,scalar,staggered> USysA("A(U)", U);
+linearSystem<stencil,scalar,staggered> USysB("B(U)", U);
 
 // Specific volumes
 

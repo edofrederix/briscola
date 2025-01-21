@@ -86,7 +86,7 @@ if (fvMsh.immersedBoundaries<staggered>().size())
 
 // Solvers
 
-linearSystem<stencil,scalar,staggered> USys(U, true);
+linearSystem<stencil,scalar,staggered> USys("NS(U)", U, true);
 
 autoPtr<solver<stencil,scalar,staggered>> USolve
 (

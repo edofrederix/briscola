@@ -55,6 +55,7 @@ public:
     // Construct from unknown
     linearSystem
     (
+        const word name,
         meshField<Type,MeshType>& x,
         const bool registerObject = false
     );

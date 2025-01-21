@@ -46,6 +46,9 @@ public:
     // Mass density of the second phase
     virtual scalar rho2() { return rho2_; }
 
+    // Return the colocated mass density
+    virtual tmp<colocatedScalarField> coloRho() const;
+
     // Correct the two-phase mixture
     virtual void correctMixture();
 };

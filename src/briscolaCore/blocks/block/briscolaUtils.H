@@ -603,6 +603,50 @@ inline labelVector upperNeighbor(const labelVector& ijk, const label& fd)
     return upperNeighbor(ijk.x(), ijk.y(), ijk.z(), fd);
 }
 
+// Return the index of the upper neighbor of the given face
+
+inline labelVector upperFaceNeighbor
+(
+    const label& i,
+    const label& j,
+    const label& k,
+    const label& f
+)
+{
+    return labelVector(i,j,k) + (f%2 ? units[f/2] : zeroXYZ);
+}
+
+inline labelVector upperFaceNeighbor
+(
+    const labelVector& ijk,
+    const label& f
+)
+{
+    return upperFaceNeighbor(ijk.x(), ijk.y(), ijk.z(), f);
+}
+
+// Return the index of the lower neighbor of the given face
+
+inline labelVector lowerFaceNeighbor
+(
+    const label& i,
+    const label& j,
+    const label& k,
+    const label& f
+)
+{
+    return labelVector(i,j,k) - (f%2 ? zeroXYZ : units[f/2]);
+}
+
+inline labelVector lowerFaceNeighbor
+(
+    const labelVector& ijk,
+    const label& f
+)
+{
+    return lowerFaceNeighbor(ijk.x(), ijk.y(), ijk.z(), f);
+}
+
 // Check if the given index is odd
 inline bool odd(const label i, const label j, const label k)
 {

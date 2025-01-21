@@ -36,6 +36,9 @@ EulerDdtScheme<Type,MeshType>::imDdt
     (
         new linearSystem<diagStencil,Type,MeshType>
         (
+            lambdaPtr
+          ? word("ddt("+lambdaPtr->name()+","+field.name()+")")
+          : word("ddt("+field.name()+")"),
             const_cast<meshField<Type,MeshType>&>(field)
         )
     );

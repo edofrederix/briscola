@@ -36,3 +36,5 @@ vof
 {
     type    splitAdvection;
 }
+
+reduced VARREDUCEDPRESSURE;

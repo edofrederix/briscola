@@ -80,13 +80,14 @@ int main(int argc, char *argv[])
                     USys -= B*USysB;
                 }
 
-                USys -= list(C*twoPhase.g());
+                if (!reduced)
+                    USys -= list(C*twoPhase.g());
 
                 // Solve predictor
 
                 USolve->solve(USys);
 
-                U += C*deltaT*ex::stagReconstruct(twoPhase.surfaceTension())*v;
+                U += C*deltaT*ex::stagReconstruct(twoPhase.flux())*v;
                 U.correctBoundaryConditions();
 
                 // Pressure equation

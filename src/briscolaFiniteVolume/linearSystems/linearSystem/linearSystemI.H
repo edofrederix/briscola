@@ -393,6 +393,7 @@ operator+
     (
         new sysType
         (
+            sys1.name() + "+" + sys2.name(),
             const_cast<meshField<Type,MeshType>&>(sys1.x())
         )
     );
@@ -418,6 +419,7 @@ operator+
     (
         new sysType
         (
+            tSys1->name() + "+" + sys2.name(),
             const_cast<meshField<Type,MeshType>&>(sys2.x())
         )
     );
@@ -446,6 +448,7 @@ operator+
     (
         new sysType
         (
+            sys1.name() + "+" + tSys2->name(),
             const_cast<meshField<Type,MeshType>&>(sys1.x())
         )
     );
@@ -474,6 +477,7 @@ operator+
     (
         new sysType
         (
+            tSys1->name() + "+" + tSys2->name(),
             const_cast<meshField<Type,MeshType>&>(tSys1->x())
         )
     );
@@ -683,6 +687,7 @@ operator-
     (
         new sysType
         (
+            sys1.name() + "-" + sys2.name(),
             const_cast<meshField<Type,MeshType>&>(sys1.x())
         )
     );
@@ -708,6 +713,7 @@ operator-
     (
         new sysType
         (
+            tSys1->name() + "-" + sys2.name(),
             const_cast<meshField<Type,MeshType>&>(sys2.x())
         )
     );
@@ -736,6 +742,7 @@ operator-
     (
         new sysType
         (
+            sys1.name() + "-" + tSys2->name(),
             const_cast<meshField<Type,MeshType>&>(sys1.x())
         )
     );
@@ -765,6 +772,7 @@ operator-
     (
         new sysType
         (
+            tSys1->name() + "-" + tSys2->name(),
             const_cast<meshField<Type,MeshType>&>(tSys1->x())
         )
     );

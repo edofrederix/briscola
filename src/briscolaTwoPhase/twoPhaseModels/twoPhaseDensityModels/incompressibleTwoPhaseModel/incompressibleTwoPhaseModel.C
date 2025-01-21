@@ -44,6 +44,27 @@ template<class MeshType>
 incompressibleTwoPhaseModel<MeshType>::~incompressibleTwoPhaseModel()
 {}
 
+template<>
+tmp<colocatedScalarField>
+incompressibleTwoPhaseModel<colocated>::coloRho() const
+{
+    return this->rho_;
+}
+
+template<>
+tmp<colocatedScalarField>
+incompressibleTwoPhaseModel<staggered>::coloRho() const
+{
+    tmp<colocatedScalarField> tRho
+    (
+        rho2_*this->alpha_ + rho1_*(1.0 - this->alpha_)
+    );
+
+    tRho->correctBoundaryConditions();
+
+    return tRho;
+}
+
 template<class MeshType>
 void incompressibleTwoPhaseModel<MeshType>::correctMixture()
 {

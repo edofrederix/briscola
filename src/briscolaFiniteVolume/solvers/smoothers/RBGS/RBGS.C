@@ -10,18 +10,7 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-RBGS<SType,Type,MeshType>::RBGS
-(
-    const dictionary& dict,
-    const fvMesh& fvMsh
-)
-:
-    solver<SType,Type,MeshType>::smoother(dict,fvMsh),
-    symmetric_(dict.lookupOrDefault<Switch>("symmetric", true))
-{}
-
-template<class SType, class Type, class MeshType>
-void RBGS<SType,Type,MeshType>::RBGS::smooth
+void RBGS<SType,Type,MeshType>::RBGS::Smooth
 (
     linearSystem<SType,Type,MeshType>& sys,
     const label l,
@@ -44,7 +33,7 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
         {
             if (diagonal[d])
             {
-                this->smoothDiag(sys, l, d);
+                solver<SType,Type,MeshType>::smoother::smoothDiag(sys, l, d);
             }
             else
             {
@@ -60,8 +49,7 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
-                              - lowerRowProduct(Ad,xd,i,j,k)
-                              - upperRowProduct(Ad,xd,i,j,k)
+                              - offDiagRowProduct(Ad,xd,i,j,k)
                             )
                           / Ad(i,j,k).center();
                 }
@@ -72,14 +60,10 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
-                              - lowerRowProduct(Ad,xd,i,j,k)
-                              - upperRowProduct(Ad,xd,i,j,k)
+                              - offDiagRowProduct(Ad,xd,i,j,k)
                             )
                           / Ad(i,j,k).center();
                 }
-
-                if (!symmetric_)
-                    continue;
 
                 forAllCellsReversed(xd, i, j, k)
                 {
@@ -87,8 +71,7 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
-                              - lowerRowProduct(Ad,xd,i,j,k)
-                              - upperRowProduct(Ad,xd,i,j,k)
+                              - offDiagRowProduct(Ad,xd,i,j,k)
                             )
                           / Ad(i,j,k).center();
                 }
@@ -99,8 +82,7 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
                         xd(i,j,k) =
                             (
                                 bd(i,j,k)
-                              - lowerRowProduct(Ad,xd,i,j,k)
-                              - upperRowProduct(Ad,xd,i,j,k)
+                              - offDiagRowProduct(Ad,xd,i,j,k)
                             )
                           / Ad(i,j,k).center();
                 }
@@ -115,6 +97,28 @@ void RBGS<SType,Type,MeshType>::RBGS::smooth
 
     x.correctEliminatedBoundaryConditions();
     x.correctUnsetBoundaryConditions();
+}
+
+template<class SType, class Type, class MeshType>
+RBGS<SType,Type,MeshType>::RBGS
+(
+    const dictionary& dict,
+    const fvMesh& fvMsh
+)
+:
+    solver<SType,Type,MeshType>::smoother(dict,fvMsh)
+{}
+
+template<class SType, class Type, class MeshType>
+void RBGS<SType,Type,MeshType>::RBGS::smooth
+(
+    linearSystem<SType,Type,MeshType>& sys,
+    const label l,
+    const label sweeps,
+    const labelList& converged
+)
+{
+    this->Smooth(sys, l, sweeps, converged);
 }
 
 }

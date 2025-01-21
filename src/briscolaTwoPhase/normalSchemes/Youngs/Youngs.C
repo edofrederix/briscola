@@ -53,21 +53,16 @@ void Youngs::correct()
 
     for (int i = 0; i < nSmooth_; i++)
     {
-        // Gauss-Seidel-like sweep
+        // Jacobi sweep (Gauss-Seidel will make every cell interfacial)
+
+        colocatedScalarField alpha0(alpha);
 
         forAllCells(alpha, i, j, k)
             for (int d = 0; d < 3; d++)
                 alpha(i,j,k) =
-                    0.5 *alpha(i,j,k)
-                  + 0.25*alpha(lowerNeighbor(i,j,k,d))
-                  + 0.25*alpha(upperNeighbor(i,j,k,d));
-
-        forAllCellsReversed(alpha, i, j, k)
-            for (int d = 0; d < 3; d++)
-                alpha(i,j,k) =
-                    0.5 *alpha(i,j,k)
-                  + 0.25*alpha(lowerNeighbor(i,j,k,d))
-                  + 0.25*alpha(upperNeighbor(i,j,k,d));
+                    0.5 *alpha0(i,j,k)
+                  + 0.25*alpha0(lowerNeighbor(i,j,k,d))
+                  + 0.25*alpha0(upperNeighbor(i,j,k,d));
     }
 
     const colocatedFaceScalarField& fa =

@@ -1,6 +1,10 @@
 #include "MG.H"
 #include "diagonal.H"
 
+#include "RBGS.H"
+#include "LEXGS.H"
+#include "JAC.H"
+
 namespace Foam
 {
 
@@ -58,7 +62,7 @@ void MG<SType,Type,MeshType>::cycle
     // Pre-smooth
 
     if (nSweepsPre > 0)
-        this->smoothPtr_->smooth
+        this->Smooth
         (
             sys,
             l,
@@ -122,7 +126,7 @@ void MG<SType,Type,MeshType>::cycle
             // Post-smooth
 
             if (nSweepsPost > 0)
-                this->smoothPtr_->smooth
+                this->Smooth
                 (
                     sys,
                     l,
@@ -139,7 +143,7 @@ void MG<SType,Type,MeshType>::cycle
         }
         else
         {
-            this->smoothPtr_->smooth
+            this->Smooth
             (
                 sys,
                 l,
@@ -341,6 +345,53 @@ MG<SType,Type,MeshType>::MG
                 fvMsh
             ).ptr()
         );
+
+    // Set smoother pointer to avoid virtual function call
+
+    if (this->smoothPtr_.valid())
+    {
+        if
+        (
+            this->smoothPtr_->type()
+         == RBGS<SType,Type,MeshType>::typeName
+        )
+        {
+            Smooth =
+                &dynamic_cast<RBGS<SType,Type,MeshType>*>
+                (
+                    &this->smoothPtr_()
+                )->Smooth;
+        }
+        else if
+        (
+            this->smoothPtr_->type()
+         == LEXGS<SType,Type,MeshType>::typeName
+        )
+        {
+            Smooth =
+                &dynamic_cast<LEXGS<SType,Type,MeshType>*>
+                (
+                    &this->smoothPtr_()
+                )->Smooth;
+        }
+        else if
+        (
+            this->smoothPtr_->type()
+         == JAC<SType,Type,MeshType>::typeName
+        )
+        {
+            Smooth =
+                &dynamic_cast<JAC<SType,Type,MeshType>*>
+                (
+                    &this->smoothPtr_()
+                )->Smooth;
+        }
+        else
+        {
+            FatalErrorInFunction
+                << "Unsupported smoother type" << endl << abort(FatalError);
+        }
+    }
 
     // Set the coarse level solver if requested to do so, and only if the
     // stencil is not diagonal
