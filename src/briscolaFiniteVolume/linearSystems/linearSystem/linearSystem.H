@@ -128,6 +128,10 @@ public:
     // Check if the linear system is diagonal. Result is cached.
     List<bool> diagonal(const bool clearCache = false);
 
+    // Return const access to the singular and diagonal lists
+    const List<bool>& singular() const { return singular_; }
+    const List<bool>& diagonal() const { return diagonal_; }
+
     // Compute the residual b-Ax and store in given object. Optionally apply no
     // forcing mask. This is determined via a template parameter instead of an
     // argument, to avoid ambiguity with other arguments.

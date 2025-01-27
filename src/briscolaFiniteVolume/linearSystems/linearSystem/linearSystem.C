@@ -18,6 +18,9 @@ void linearSystem<SType,Type,MeshType>::transfer
 {
     A_.transfer(sys.A_);
     b_.transfer(sys.b_);
+
+    singular_ = sys.singular_;
+    diagonal_ = sys.diagonal_;
 }
 
 template<class SType, class Type, class MeshType>
@@ -603,6 +606,9 @@ void linearSystem<SType,Type,MeshType>::operator=
 {
     this->A() = sys.A();
     this->b() = sys.b();
+
+    this->singular_ = sys.singular();
+    this->diagonal_ = sys.diagonal();
 }
 
 template<class SType, class Type, class MeshType>
@@ -635,6 +641,9 @@ void linearSystem<SType,Type,MeshType>::operator+=
 {
     this->A() += sys.A();
     this->b() += sys.b();
+
+    this->singular_.clear();
+    this->diagonal_.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -657,6 +666,9 @@ void linearSystem<SType,Type,MeshType>::operator-=
 {
     this->A() -= sys.A();
     this->b() -= sys.b();
+
+    this->singular_.clear();
+    this->diagonal_.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -682,6 +694,9 @@ void linearSystem<SType,Type,MeshType>::operator=
 
     this->A() = diagStencil(0.0);
     this->b() = -cv*v;
+
+    this->singular_.clear();
+    this->diagonal_.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -695,6 +710,9 @@ void linearSystem<SType,Type,MeshType>::operator=
 
     this->A() = diagStencil(0.0);
     this->b() = -cv*field;
+
+    singular_.clear();
+    diagonal_.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -814,6 +832,9 @@ void linearSystem<SType,Type,MeshType>::operator=
 {
     this->A() = sys.A();
     this->b() = sys.b();
+
+    this->singular_.clear();
+    this->diagonal_.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -848,6 +869,9 @@ void linearSystem<SType,Type,MeshType>::operator+=
 {
     this->A() += sys.A();
     this->b() += sys.b();
+
+    this->singular_.clear();
+    this->diagonal_.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -882,6 +906,9 @@ void linearSystem<SType,Type,MeshType>::operator-=
 {
     this->A() -= sys.A();
     this->b() -= sys.b();
+
+    this->singular_.clear();
+    this->diagonal_.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -928,6 +955,9 @@ void linearSystem<SType,Type,MeshType>::operator*=
     this->A() *= field;
     this->b() *= field;
 
+    this->singular_.clear();
+    this->diagonal_.clear();
+
     const_cast<meshField<scalar,MeshType>&>(field).makeShallow();
 }
 
@@ -973,6 +1003,9 @@ void linearSystem<SType,Type,MeshType>::operator/=
 
     this->A() /= field;
     this->b() /= field;
+
+    this->singular_.clear();
+    this->diagonal_.clear();
 
     const_cast<meshField<scalar,MeshType>&>(field).makeShallow();
 }
