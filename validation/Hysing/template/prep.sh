@@ -9,6 +9,7 @@ PSOLVER=$6
 NORMALSCHEME=$7
 CURVATURESCHEME=$8
 REDUCEDPRESSURE=$9
+PMODE=${10}
 
 VARS="\
     -DVARMESHX=$MESHX \
@@ -18,11 +19,13 @@ VARS="\
     -DVARPSOLVER=$PSOLVER \
     -DVARNORMALSCHEME=$NORMALSCHEME \
     -DVARCURVATURESCHEME=$CURVATURESCHEME \
-    -DVARREDUCEDPRESSURE=$REDUCEDPRESSURE"
+    -DVARREDUCEDPRESSURE=$REDUCEDPRESSURE \
+    -DVARPMODE=$PMODE"
 
 m4 $VARS system/briscolaMeshDict.m4 > system/briscolaMeshDict
 m4 $VARS system/briscolaTwoPhaseDict.m4 > system/briscolaTwoPhaseDict
 m4 $VARS system/briscolaSolverDict.m4 > system/briscolaSolverDict
+m4 $VARS system/briscolaSchemeDict.m4 > system/briscolaSchemeDict
 
 if [ -d "code.$SOLVER" ]; then
 

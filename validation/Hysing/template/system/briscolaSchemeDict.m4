@@ -38,5 +38,6 @@ interpolationSchemes
 
 rkScheme
 {
-    scheme Ascher222;
+    scheme  Ascher222;
+    pMode   VARPMODE;
 }

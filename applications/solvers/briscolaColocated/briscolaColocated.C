@@ -83,35 +83,37 @@ int main(int argc, char *argv[])
 
                 USolve->solve(USys);
 
-                // Pressure equation
+                if (rk.solvePressure())
+                {
+                    // Pressure equation
 
-                const colocatedFaceScalarField phiStar(ex::faceFlux(U));
+                    const colocatedFaceScalarField phiStar(ex::faceFlux(U));
 
-                Poisson->solve(p, ex::div(phiStar)/(-C*deltaT));
+                    Poisson->solve(p, ex::div(phiStar)/(-C*deltaT));
 
-                // Rhie-Chow correction
+                    // Rhie-Chow correction
 
-                U -= C*deltaT*ex::grad(p);
-                U.correctBoundaryConditions();
+                    U -= C*deltaT*ex::grad(p);
+                    U.correctBoundaryConditions();
 
-                if (rk.lastStage())
-                    phi = phiStar - C*deltaT*Poisson->flux();
+                    if (rk.lastStage())
+                        phi = phiStar - C*deltaT*Poisson->flux();
+                }
             }
 
             // Store Runge-Kutta sources
 
-            if (!rk.lastStage())
-            {
+            if (rk.storeStageA())
                 stageSourcesA[stage-1] =
                     rk.solve() && rk.imStageA()
                   ? USysA.evaluate()
                   : -ex::div(phi,U);
 
+            if (rk.storeStageB())
                 stageSourcesB[stage-1] =
                     rk.solve() && rk.imStageB()
                   ? USysB.evaluate()
                   : ex::laplacian(nu,U) + ex::source(imSourceCoeff,U);
-            }
         }
 
         io.write<colocated>();

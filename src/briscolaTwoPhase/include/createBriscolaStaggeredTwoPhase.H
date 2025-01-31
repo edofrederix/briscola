@@ -16,5 +16,3 @@ autoPtr<TwoPhaseModel<staggered>> twoPhasePtr
 );
 
 TwoPhaseModel<staggered>& twoPhase = twoPhasePtr();
-
-const Switch reduced = twoPhase.reduced();

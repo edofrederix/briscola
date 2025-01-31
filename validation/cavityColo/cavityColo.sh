@@ -24,6 +24,7 @@ DSCHEMES=(linearGauss midPointGauss)
 RES=(400 1000)
 COARSEMODES=(smooth direct)
 RKSCHEMES=(forwardEuler RK3 Ascher222 CNAB)
+PMODES=(allStages lastStage)
 
 ##
 
@@ -50,6 +51,7 @@ echo \
     "Re," \
     "coarse mode," \
     "Time scheme," \
+    "Pressure mode," \
     "error 1 [%]," \
     "error 2 [%]," \
     "test 1," \
@@ -85,6 +87,7 @@ for L in "${!DSCHEMES[@]}"; do
 for M in "${!RES[@]}"; do
 for N in "${!COARSEMODES[@]}"; do
 for O in "${!RKSCHEMES[@]}"; do
+for P in "${!PMODES[@]}"; do
 
     sleep 1
 
@@ -96,6 +99,7 @@ for O in "${!RKSCHEMES[@]}"; do
     RE=${RES[$M]}
     COARSEMODE=${COARSEMODES[$N]}
     RKSCHEME=${RKSCHEMES[$O]}
+    PMODE=${PMODES[$P]}
 
     NPROCX=$NPROCPERBRICKSIDE
     NPROCY=$NPROCPERBRICKSIDE
@@ -104,7 +108,7 @@ for O in "${!RKSCHEMES[@]}"; do
 
     NU=$(echo "print(1.0/$RE)" | python)
 
-    CASE="$MESH-$NPROC-$LSCHEME-$DSCHEME-$RE-$COARSEMODE-$RKSCHEME"
+    CASE="$MESH-$NPROC-$LSCHEME-$DSCHEME-$RE-$COARSEMODE-$RKSCHEME-$PMODE"
 
     while [ "$(($(getNumTasks) + $NPROC))" -gt $NTASKS ]; do
 
@@ -125,7 +129,7 @@ for O in "${!RKSCHEMES[@]}"; do
 
         cd $RUNDIR/$CASE
 
-        ./prep.sh $MESH $NPROCX $NPROCY $LSCHEME $DSCHEME $NU $COARSEMODE $RKSCHEME
+        ./prep.sh $MESH $NPROCX $NPROCY $LSCHEME $DSCHEME $NU $COARSEMODE $RKSCHEME $PMODE
 
         if [ "$RKSCHEME" == "CNAB" ]; then
 
@@ -172,6 +176,7 @@ for O in "${!RKSCHEMES[@]}"; do
             "$RE," \
             "$COARSEMODE," \
             "$RKSCHEME," \
+            "$PMODE," \
             "$E1," \
             "$E2," \
             "$P1," \
@@ -187,6 +192,7 @@ for O in "${!RKSCHEMES[@]}"; do
 
     ) &
 
+done
 done
 done
 done

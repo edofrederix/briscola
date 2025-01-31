@@ -17,6 +17,11 @@ inline const dictionary& RungeKuttaScheme::dict() const
     return dict_;
 }
 
+inline RungeKuttaScheme::pModeType RungeKuttaScheme::pMode() const
+{
+    return pMode_;
+}
+
 inline label RungeKuttaScheme::stage() const
 {
     return stage_;
@@ -120,9 +125,34 @@ inline Switch RungeKuttaScheme::lastStage() const
     return stage_ == numberOfStages();
 }
 
+inline Switch RungeKuttaScheme::storeStageA() const
+{
+    for (label i = stage_+1; i <= numberOfStages(); i++)
+        if (a()[i-1][stage_-1])
+            return true;
+
+    return false;
+}
+
+inline Switch RungeKuttaScheme::storeStageB() const
+{
+    for (label i = stage_+1; i <= numberOfStages(); i++)
+        if (b()[i-1][stage_-1])
+            return true;
+
+    return false;
+}
+
 inline Switch RungeKuttaScheme::solve() const
 {
     return !(firstStage() && exStage());
+}
+
+inline Switch RungeKuttaScheme::solvePressure() const
+{
+    return
+        pMode_ == pModeType::ALLSTAGES
+     || lastStage();
 }
 
 inline Switch RungeKuttaScheme::loop()

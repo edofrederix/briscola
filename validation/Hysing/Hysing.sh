@@ -22,6 +22,7 @@ PSOLVERS=(MG split)
 NORMALSCHEMES=(Youngs MYC LSGIR)
 CURVATURESCHEMES=(SHF CV)
 REDUCEDPRESSURES=(true false)
+PMODES=(allStages lastStage)
 
 ##
 
@@ -63,6 +64,7 @@ echo \
     "normal scheme," \
     "curvature scheme," \
     "reduced pressure," \
+    "pressure mode," \
     "error 1 [%]," \
     "error 2 [%]," \
     "test 1," \
@@ -98,6 +100,7 @@ for L in "${!PSOLVERS[@]}"; do
 for M in "${!NORMALSCHEMES[@]}"; do
 for N in "${!CURVATURESCHEMES[@]}"; do
 for O in "${!REDUCEDPRESSURES[@]}"; do
+for P in "${!PMODES[@]}"; do
 
     sleep 1
 
@@ -108,6 +111,7 @@ for O in "${!REDUCEDPRESSURES[@]}"; do
     NORMALSCHEME=${NORMALSCHEMES[$M]}
     CURVATURESCHEME=${CURVATURESCHEMES[$N]}
     REDUCEDPRESSURE=${REDUCEDPRESSURES[$O]}
+    PMODE=${PMODES[$P]}
 
     NPROCX=$NPROCPERBRICKSIDE
     NPROCY=$NPROCPERBRICKSIDE
@@ -117,7 +121,7 @@ for O in "${!REDUCEDPRESSURES[@]}"; do
     MESHX=$MESH
     MESHY=$(echo "print(int(2*$MESH))" | python)
 
-    CASE="$SOLVER-$MESH-$NPROC-$PSOLVER-$NORMALSCHEME-$CURVATURESCHEME-$REDUCEDPRESSURE"
+    CASE="$SOLVER-$MESH-$NPROC-$PSOLVER-$NORMALSCHEME-$CURVATURESCHEME-$REDUCEDPRESSURE-$PMODE"
 
     while [ "$(($(getNumTasks) + $NPROC))" -gt $NTASKS ]; do
 
@@ -147,7 +151,8 @@ for O in "${!REDUCEDPRESSURES[@]}"; do
             $PSOLVER \
             $NORMALSCHEME \
             $CURVATURESCHEME \
-            $REDUCEDPRESSURE
+            $REDUCEDPRESSURE \
+            $PMODE
 
         if [ "$NPROC" == "1" ]; then
 
@@ -188,6 +193,7 @@ for O in "${!REDUCEDPRESSURES[@]}"; do
             "$NORMALSCHEME," \
             "$CURVATURESCHEME," \
             "$REDUCEDPRESSURE," \
+            "$PMODE," \
             "$E1," \
             "$E2," \
             "$P1," \
@@ -203,6 +209,7 @@ for O in "${!REDUCEDPRESSURES[@]}"; do
 
     ) &
 
+done
 done
 done
 done

@@ -16,4 +16,5 @@ wclean code.briscolaStaggeredTwoPhase
 rm -f \
     system/briscolaMeshDict \
     system/briscolaTwoPhaseDict \
-    system/briscolaSolverDict
+    system/briscolaSolverDict \
+    system/briscolaSchemeDict

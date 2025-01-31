@@ -80,35 +80,38 @@ int main(int argc, char *argv[])
                     USys -= B*USysB;
                 }
 
-                if (!reduced)
+                if (!twoPhase.reduced())
                     USys -= list(C*twoPhase.g());
 
                 // Solve predictor
 
                 USolve->solve(USys);
 
-                U += C*deltaT*ex::stagReconstruct(twoPhase.flux())*v;
-                U.correctBoundaryConditions();
+                if (rk.solvePressure())
+                {
+                    U += C*deltaT*ex::stagReconstruct(twoPhase.flux())*v;
+                    U.correctBoundaryConditions();
 
-                // Pressure equation
+                    // Pressure equation
 
-                Poisson->solve(p, ex::coloDiv(U)/(-C*deltaT), vcf);
+                    Poisson->solve(p, ex::coloDiv(U)/(-C*deltaT), vcf);
 
-                // Correct velocity
+                    // Correct velocity
 
-                U -= C*deltaT*ex::stagReconstruct(Poisson->flux()/vcf)*v;
-                U.correctBoundaryConditions();
+                    U -= C*deltaT*ex::stagReconstruct(Poisson->flux()/vcf)*v;
+                    U.correctBoundaryConditions();
+                }
             }
 
             // Store Runge-Kutta sources
 
-            if (!rk.lastStage())
-            {
+            if (rk.storeStageA())
                 stageSourcesA[stage-1] =
                     rk.solve() && rk.imStageA()
                   ? USysA.evaluate()
                   : -ex::div(phi,U);
 
+            if (rk.storeStageB())
                 stageSourcesB[stage-1] =
                     rk.solve() && rk.imStageB()
                   ? USysB.evaluate()
@@ -118,7 +121,6 @@ int main(int argc, char *argv[])
                       + (ex::grad(mu) & stagT(ex::grad(U)))
                       + ex::source(imSourceCoeff,U)
                     );
-            }
         }
 
         // Reconstruct the colocated velocity

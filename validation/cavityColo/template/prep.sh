@@ -8,6 +8,7 @@ DSCHEME=$5
 NU=$6
 COARSEMODE=$7
 RKSCHEME=$8
+PMODE=$9
 
 VARS="\
     -DVARNPROCX=$NPROCX \
@@ -16,7 +17,8 @@ VARS="\
     -DVARDSCHEME=$DSCHEME \
     -DVARNU=$NU \
     -DVARCOARSEMODE=$COARSEMODE \
-    -DVARRKSCHEME=$RKSCHEME"
+    -DVARRKSCHEME=$RKSCHEME
+    -DVARPMODE=$PMODE"
 
 cp system/briscolaMeshDict.$MESH.m4 system/briscolaMeshDict.m4
 

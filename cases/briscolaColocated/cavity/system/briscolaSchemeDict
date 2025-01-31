@@ -33,5 +33,6 @@ faceFluxSchemes
 
 rkScheme
 {
-    scheme RK3;
+    scheme          RK3CN;
+    pressureMode    lastStage;
 }

@@ -79,48 +79,51 @@ int main(int argc, char *argv[])
                     USys -= B*USysB;
                 }
 
-                if (!reduced)
+                if (!twoPhase.reduced())
                     USys -= C*twoPhase.g();
 
                 // Solve predictor
 
                 USolve->solve(USys);
 
-                // Pressure equation
+                if (rk.solvePressure())
+                {
+                    // Pressure equation
 
-                colocatedFaceScalarField phiStar
-                (
-                    ex::faceFlux(U)
-                  + C*deltaT*twoPhase.flux()*vf
-                );
-
-                Poisson->solve(p, ex::div(phiStar)/(-C*deltaT), vf);
-
-                // Rhie-Chow correction
-
-                U -=
-                    C*deltaT
-                  * ex::reconstruct
+                    colocatedFaceScalarField phiStar
                     (
-                        Poisson->flux()/vf
-                      - twoPhase.flux()
-                    )*v;
+                        ex::faceFlux(U)
+                      + C*deltaT*twoPhase.flux()*vf
+                    );
 
-                U.correctBoundaryConditions();
+                    Poisson->solve(p, ex::div(phiStar)/(-C*deltaT), vf);
 
-                if (rk.lastStage())
-                    phi = phiStar - C*deltaT*Poisson->flux();
+                    // Rhie-Chow correction
+
+                    U -=
+                        C*deltaT
+                      * ex::reconstruct
+                        (
+                            Poisson->flux()/vf
+                          - twoPhase.flux()
+                        )*v;
+
+                    U.correctBoundaryConditions();
+
+                    if (rk.lastStage())
+                        phi = phiStar - C*deltaT*Poisson->flux();
+                }
             }
 
             // Store Runge-Kutta sources
 
-            if (!rk.lastStage())
-            {
+            if (rk.storeStageA())
                 stageSourcesA[stage-1] =
                     rk.solve() && rk.imStageA()
                   ? USysA.evaluate()
                   : -ex::div(phi,U);
 
+            if (rk.storeStageB())
                 stageSourcesB[stage-1] =
                     rk.solve() && rk.imStageB()
                   ? USysB.evaluate()
@@ -130,7 +133,6 @@ int main(int argc, char *argv[])
                       + ex::div(mu*ex::faceFlux(T(ex::grad(U))))
                       + ex::source(imSourceCoeff,U)
                     );
-            }
         }
 
         io.write<colocated>();
