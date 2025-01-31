@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "stkb.rewrap",
-        "yo1dog.cursor-align"
+        "yo1dog.cursor-align",
+        "ms-vscode.cpptools"
     ]
 }
