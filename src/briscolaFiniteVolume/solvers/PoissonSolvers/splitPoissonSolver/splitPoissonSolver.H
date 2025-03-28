@@ -20,11 +20,20 @@ class splitPoissonSolver
 {
 protected:
 
+    // An optional pre-conditioner to improve the solution extrapolation
+    autoPtr<PoissonSolver<SType,Type,MeshType>> preSolverPtr_;
+
     // The actual Poisson solver
     autoPtr<PoissonSolver<SType,Type,MeshType>> solverPtr_;
 
     // Cached modified right-hand side
     autoPtr<meshField<Type,MeshType>> bHatPtr_;
+
+    // Number of corrections (defaults to 1)
+    label nCorr_;
+
+    // Use a solution extrapolation as initial prediction (defaults to true)
+    Switch prediction_;
 
 public:
 

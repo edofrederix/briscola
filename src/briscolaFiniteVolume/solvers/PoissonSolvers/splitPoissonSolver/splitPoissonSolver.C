@@ -25,8 +25,29 @@ splitPoissonSolver<SType,Type,MeshType>::splitPoissonSolver
             dict.subDict("solver"),
             fvMsh
         )
-    )
-{}
+    ),
+    nCorr_(dict.lookupOrDefault<label>("nCorr", 1)),
+    prediction_(dict.lookupOrDefault<Switch>("prediction", true))
+{
+    if (dict.found("preconditioner"))
+    {
+        preSolverPtr_.reset
+        (
+            PoissonSolver<SType,Type,MeshType>::New
+            (
+                dict.subDict("preconditioner"),
+                fvMsh
+            ).ptr()
+        );
+
+        preSolverPtr_->enableFlux();
+    }
+
+    if (nCorr_ < 1)
+        FatalErrorInFunction
+            << "nCorr must be at least 1"
+            << endl << abort(FatalError);
+}
 
 template<class SType, class Type, class MeshType>
 void splitPoissonSolver<SType,Type,MeshType>::solve
@@ -43,6 +64,25 @@ void splitPoissonSolver<SType,Type,MeshType>::solve
         FatalErrorInFunction
             << "Poisson equation has no coefficient so it cannot be split. "
             << endl << abort(FatalError);
+    }
+
+    // Set prediction
+
+    if (prediction_)
+    {
+        const scalar deltaT = x.fvMsh().time().deltaTValue()*dtFrac;
+        const scalar deltaT0 = x.fvMsh().time().deltaT0Value();
+
+        x =
+            (1.0 + deltaT/deltaT0)*x.oldTime()
+          - deltaT/deltaT0*x.oldTime().oldTime();
+    }
+
+    // Pre-conditioner
+
+    if (preSolverPtr_.valid())
+    {
+        preSolverPtr_->solve(x, bPtr, lambdaPtr, ddt, dtFrac);
     }
 
     // Modified coefficient
@@ -84,51 +124,38 @@ void splitPoissonSolver<SType,Type,MeshType>::solve
 
     meshField<Type,MeshType>& bHat = bHatPtr_();
 
-    if (bPtr)
+    const meshField<faceScalar,MeshType>& fa =
+        x.fvMsh().template metrics<MeshType>().faceAreas();
+
+    for (int corr = 0; corr < nCorr_; corr++)
     {
-        bHat = (*bPtr);
-        bHat /= lambda0;
-    }
-    else
-    {
-        bHat = Zero;
-    }
+        if (bPtr)
+        {
+            bHat = (*bPtr)/lambda0;
+        }
+        else
+        {
+            bHat = Zero;
+        }
 
-    const scalar deltaT = x.fvMsh().time().deltaTValue()*dtFrac;
-    const scalar deltaT0 = x.fvMsh().time().deltaT0Value();
-
-    const meshField<Type,MeshType> xHat
-    (
-        (1.0 + deltaT/deltaT0)*x.oldTime()
-      - deltaT/deltaT0*x.oldTime().oldTime()
-    );
-
-    bHat += ex::laplacian(lambda/lambda0 - 1.0, xHat);
-
-    // Solve approximate constant coefficient system following Dodd & Ferrante
-    // (2014), Eq. (16)
-
-    solverPtr_->solve(x, &bHat, nullptr, ddt, dtFrac);
-
-    // Compute the flux if needed
-
-    if (this->computeFlux())
-    {
-        this->initFlux();
-
-        const meshField<faceScalar,MeshType>& fa =
-            x.fvMsh().template metrics<MeshType>().faceAreas();
-
-        // Dodd & Ferrante (2014), Eq. (14)
-
-        this->fluxPtr_() =
-            lambda0*solverPtr_->flux()
-          + (lambda - lambda0)*ex::faceGrad(xHat)*fa;
-
-        this->fluxPtr_->rename
+        const meshField<FaceSpace<Type>,MeshType> phi
         (
-            lambda.name() + "*" + solverPtr_->flux().name()
+            (lambda/lambda0 - 1.0)*ex::faceGrad(x)*fa
         );
+
+        bHat += ex::div(phi);
+
+        solverPtr_->solve(x, &bHat, nullptr, ddt, dtFrac);
+
+        // Compute the flux if needed
+
+        if (this->computeFlux() && corr == nCorr_-1)
+        {
+            this->initFlux();
+
+            this->fluxPtr_() = solverPtr_->flux() + phi;
+            this->fluxPtr_() *= lambda0;
+        }
     }
 }
 
