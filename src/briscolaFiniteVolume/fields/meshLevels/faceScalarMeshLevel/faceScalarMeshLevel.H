@@ -27,6 +27,8 @@ BINARY_TYPE_OPERATOR(faceScalar, scalar, faceScalar, -, subtract)
 BINARY_OPERATOR(faceScalar, faceScalar, faceScalar, /, divide)
 BINARY_TYPE_OPERATOR(faceScalar, scalar, faceScalar, /, divide)
 
+BINARY_TYPE_FUNCTION_FS(faceScalar, faceScalar, scalar, pow)
+
 UNARY_FUNCTION(faceScalar, faceScalar, pow3)
 UNARY_FUNCTION(faceScalar, faceScalar, pow4)
 UNARY_FUNCTION(faceScalar, faceScalar, pow5)

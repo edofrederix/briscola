@@ -691,6 +691,21 @@ inline Form operator*
     return s*cs;
 }
 
+template<class Form, direction Ncmpts>
+inline Form pow
+(
+    const CellSpace<Form, scalar, Ncmpts>& cs,
+    scalar p
+)
+{
+    Form r;
+
+    for (label i = 0; i < Ncmpts; i++)
+        r.v_[i] = pow(cs.v_[i], p);
+
+    return r;
+}
+
 template
 <
     class Form1,
