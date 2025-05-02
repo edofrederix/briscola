@@ -39,5 +39,4 @@ faceFluxSchemes
 rkScheme
 {
     scheme  VARRKSCHEME;
-    pMode   VARPMODE;
 }

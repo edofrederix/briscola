@@ -25,8 +25,6 @@
 #include "Ascher222.H"
 #include "Ascher232.H"
 #include "Ascher233.H"
-#include "RK3CN.H"
-#include "RK4CN.H"
 
 namespace Foam
 {
@@ -74,8 +72,6 @@ makeRungeKuttaScheme(Ascher122);
 makeRungeKuttaScheme(Ascher222);
 makeRungeKuttaScheme(Ascher232);
 makeRungeKuttaScheme(Ascher233);
-makeRungeKuttaScheme(RK3CN);
-makeRungeKuttaScheme(RK4CN);
 
 }
 

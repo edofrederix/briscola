@@ -21,18 +21,6 @@ class RungeKuttaScheme
 :
     public regIOobject
 {
-public:
-
-    // Pressure solution modes
-    enum pModeType
-    {
-        ALLSTAGES,  // Solve for pressure every stage
-        LASTSTAGE   // Solve for pressure only in the last stage
-    };
-
-    // Pressure mode names
-    static const NamedEnum<pModeType,2> pModeNames;
-
 protected:
 
     // Protected data
@@ -45,9 +33,6 @@ protected:
 
         // Runge-Kutta stage
         label stage_;
-
-        // Pressure solution mode, defaulting to ALLSTAGES
-        pModeType pMode_;
 
     // Private Member Functions
 
@@ -107,9 +92,6 @@ public:
 
             // Return the Runge-Kutta dictionary
             inline const dictionary& dict() const;
-
-            // Return the pressure mode
-            inline pModeType pMode() const;
 
             // Current stage level
             inline label stage() const;
@@ -184,9 +166,6 @@ public:
 
             // Solve this stage
             inline Switch solve() const;
-
-            // Solve for pressure
-            inline Switch solvePressure() const;
 
         // Solution control
 

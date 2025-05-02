@@ -17,11 +17,6 @@ inline const dictionary& RungeKuttaScheme::dict() const
     return dict_;
 }
 
-inline RungeKuttaScheme::pModeType RungeKuttaScheme::pMode() const
-{
-    return pMode_;
-}
-
 inline label RungeKuttaScheme::stage() const
 {
     return stage_;
@@ -146,13 +141,6 @@ inline Switch RungeKuttaScheme::storeStageB() const
 inline Switch RungeKuttaScheme::solve() const
 {
     return !(firstStage() && exStage());
-}
-
-inline Switch RungeKuttaScheme::solvePressure() const
-{
-    return
-        pMode_ == pModeType::ALLSTAGES
-     || lastStage();
 }
 
 inline Switch RungeKuttaScheme::loop()

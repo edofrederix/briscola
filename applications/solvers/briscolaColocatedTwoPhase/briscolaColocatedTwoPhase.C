@@ -86,33 +86,30 @@ int main(int argc, char *argv[])
 
                 USolve->solve(USys);
 
-                if (rk.solvePressure())
-                {
-                    // Pressure equation
+                // Pressure equation
 
-                    colocatedFaceScalarField phiStar
+                colocatedFaceScalarField phiStar
+                (
+                    ex::faceFlux(U)
+                    + C*deltaT*twoPhase.flux()*vf
+                );
+
+                Poisson->solve(p, ex::div(phiStar)/(-C*deltaT), vf);
+
+                // Rhie-Chow correction
+
+                U -=
+                    C*deltaT
+                    * ex::reconstruct
                     (
-                        ex::faceFlux(U)
-                      + C*deltaT*twoPhase.flux()*vf
-                    );
+                        Poisson->flux()/vf
+                        - twoPhase.flux()
+                    )*v;
 
-                    Poisson->solve(p, ex::div(phiStar)/(-C*deltaT), vf);
+                U.correctBoundaryConditions();
 
-                    // Rhie-Chow correction
-
-                    U -=
-                        C*deltaT
-                      * ex::reconstruct
-                        (
-                            Poisson->flux()/vf
-                          - twoPhase.flux()
-                        )*v;
-
-                    U.correctBoundaryConditions();
-
-                    if (rk.lastStage())
-                        phi = phiStar - C*deltaT*Poisson->flux();
-                }
+                if (rk.lastStage())
+                    phi = phiStar - C*deltaT*Poisson->flux();
             }
 
             // Store Runge-Kutta sources

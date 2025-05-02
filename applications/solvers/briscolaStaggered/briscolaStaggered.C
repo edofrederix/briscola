@@ -85,17 +85,14 @@ int main(int argc, char *argv[])
 
                 USolve->solve(USys);
 
-                if (rk.solvePressure())
-                {
-                    // Pressure equation
+                // Pressure equation
 
-                    Poisson->solve(p, ibmCorr(ex::coloDiv(U),U)/(-C*deltaT));
+                Poisson->solve(p, ibmCorr(ex::coloDiv(U),U)/(-C*deltaT));
 
-                    // Correction
+                // Correction
 
-                    U -= C*deltaT*ex::stagReconstruct(Poisson->flux());
-                    U.correctBoundaryConditions();
-                }
+                U -= C*deltaT*ex::stagReconstruct(Poisson->flux());
+                U.correctBoundaryConditions();
             }
 
             // Store Runge-Kutta sources

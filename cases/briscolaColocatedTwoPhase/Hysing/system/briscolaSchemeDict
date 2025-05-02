@@ -38,6 +38,5 @@ interpolationSchemes
 
 rkScheme
 {
-    scheme  RK3CN;
-    pMode   lastStage;
+    scheme  Ascher222;
 }

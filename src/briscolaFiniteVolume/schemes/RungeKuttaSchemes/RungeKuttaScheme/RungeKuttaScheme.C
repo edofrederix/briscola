@@ -15,15 +15,6 @@ namespace fv
 defineTypeNameAndDebug(RungeKuttaScheme, 0);
 defineRunTimeSelectionTable(RungeKuttaScheme, dictionary);
 
-template<>
-const char* NamedEnum<RungeKuttaScheme::pModeType,2>::names[] =
-{
-    "allStages",
-    "lastStage"
-};
-
-const NamedEnum<RungeKuttaScheme::pModeType,2> RungeKuttaScheme::pModeNames;
-
 RungeKuttaScheme::RungeKuttaScheme(const fvMesh& fvMsh)
 :
     regIOobject
@@ -40,14 +31,7 @@ RungeKuttaScheme::RungeKuttaScheme(const fvMesh& fvMsh)
     ),
     fvMsh_(fvMsh),
     dict_(fvMsh.schemeDict().subDict("rkScheme")),
-    stage_(0),
-    pMode_
-    (
-        pModeNames
-        [
-            dict_.lookupOrDefault<word>("pMode", "allStages")
-        ]
-    )
+    stage_(0)
 {}
 
 RungeKuttaScheme::~RungeKuttaScheme()

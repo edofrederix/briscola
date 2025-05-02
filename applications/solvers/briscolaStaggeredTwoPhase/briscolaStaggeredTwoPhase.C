@@ -87,20 +87,17 @@ int main(int argc, char *argv[])
 
                 USolve->solve(USys);
 
-                if (rk.solvePressure())
-                {
-                    U += C*deltaT*ex::stagReconstruct(twoPhase.flux())*v;
-                    U.correctBoundaryConditions();
+                U += C*deltaT*ex::stagReconstruct(twoPhase.flux())*v;
+                U.correctBoundaryConditions();
 
-                    // Pressure equation
+                // Pressure equation
 
-                    Poisson->solve(p, ex::coloDiv(U)/(-C*deltaT), vcf);
+                Poisson->solve(p, ex::coloDiv(U)/(-C*deltaT), vcf);
 
-                    // Correct velocity
+                // Correct velocity
 
-                    U -= C*deltaT*ex::stagReconstruct(Poisson->flux()/vcf)*v;
-                    U.correctBoundaryConditions();
-                }
+                U -= C*deltaT*ex::stagReconstruct(Poisson->flux()/vcf)*v;
+                U.correctBoundaryConditions();
             }
 
             // Store Runge-Kutta sources
