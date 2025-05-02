@@ -56,16 +56,6 @@ void meshField<Type,MeshType>::transfer
 )
 {
     listType::transfer(field);
-
-    // Only transfer the old time ptr if the argument field has one. Otherwise
-    // we leave it as-is.
-
-    if (field.oldTimePtr_ != nullptr)
-    {
-        oldTimePtr_ = field.oldTimePtr_;
-        field.oldTimePtr_ = nullptr;
-    }
-
     setFieldPointers();
 }
 
@@ -468,7 +458,10 @@ void meshField<Type,MeshType>::setOldTime()
         oldTimePtr_ = new meshField<Type,MeshType>
         (
             IOobject::groupName(name(), "oldTime"),
-            fvMsh_
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            this->registerObject()
         );
     }
 

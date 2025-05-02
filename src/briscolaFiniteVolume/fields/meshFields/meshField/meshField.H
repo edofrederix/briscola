@@ -48,7 +48,8 @@ private:
     const fvMesh& fvMsh_;
 
     // Old time field pointer, explicitly set by setOldTime and never changed by
-    // any operation
+    // any other operation. It is also not copied/created during assignment or
+    // construction from another field that has the old time field pointer set.
     meshField<Type,MeshType>* oldTimePtr_;
 
     // Boundary conditions
