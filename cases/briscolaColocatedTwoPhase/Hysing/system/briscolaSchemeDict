@@ -13,7 +13,7 @@ laplacianSchemes
 
 divergenceSchemes
 {
-    default midPointGauss;
+    div(phi,U) limitedGauss twoPhase vanLeer;
 }
 
 gradientSchemes

@@ -7,6 +7,7 @@ faceGradientSchemes/faceGradientScheme/faceGradientSchemes.C
 gradientSchemes/gradientScheme/gradientSchemes.C
 interpolationSchemes/interpolationScheme/interpolationSchemes.C
 laplacianSchemes/laplacianScheme/laplacianSchemes.C
+limiterSchemes/limiterScheme/limiterSchemes.C
 prolongationSchemes/prolongationScheme/prolongationSchemes.C
 restrictionSchemes/restrictionScheme/restrictionSchemes.C
 
