@@ -15,7 +15,7 @@ namespace fv
 defineTypeNameAndDebug(vof, 0);
 defineRunTimeSelectionTable(vof, dictionary);
 
-const scalar vof::threshold = 1e-12;
+const scalar vof::threshold = 1e-8;
 
 vof::vof
 (
@@ -86,6 +86,28 @@ autoPtr<vof> vof::New
     }
 
     return autoPtr<vof>(cstrIter()(fvMsh, dict, normal, alpha));
+}
+
+void vof::correct()
+{
+    alpha_.correctBoundaryConditions();
+
+    // Apply the alpha correction after the boundary correction and at block
+    // level, such that also boundary values are properly set
+
+    scalarBlock& alpha = alpha_.B();
+
+    forAllBlockLinear(alpha, i)
+        alpha(i) =
+            Foam::min
+            (
+                Foam::max
+                (
+                    round(0.5*alpha(i)/threshold)*2.0*threshold,
+                    0.0
+                ),
+                1.0
+            );
 }
 
 }

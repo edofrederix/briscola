@@ -109,8 +109,4 @@ public:
 
 }
 
-#ifdef NoRepository
-    #include "TwoPhaseModel.C"
-#endif
-
 #endif

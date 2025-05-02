@@ -10,6 +10,7 @@ normalSchemes/LSGIR/LSGIR.C
 normalSchemes/LSFIR/LSFIR.C
 normalSchemes/MYC/MYC.C
 
+twoPhaseModels/twoPhaseModel/TwoPhaseModel.C
 twoPhaseModels/twoPhaseModel/twoPhaseModel.C
 twoPhaseModels/twoPhaseModel/twoPhaseModels.C
 

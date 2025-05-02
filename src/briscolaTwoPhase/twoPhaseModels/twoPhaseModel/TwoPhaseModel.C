@@ -159,6 +159,10 @@ tmp<colocatedFaceScalarField> TwoPhaseModel<MeshType>::flux()
     return tFlux;
 }
 
+// Instantiate
+template class TwoPhaseModel<colocated>;
+template class TwoPhaseModel<staggered>;
+
 }
 
 }

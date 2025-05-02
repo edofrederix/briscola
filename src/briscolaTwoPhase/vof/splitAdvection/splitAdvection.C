@@ -218,22 +218,11 @@ void splitAdvection::solve(const colocatedFaceScalarField& phi)
                       - flux_(ijk)[dir*2  ]
                       - flux_(ijk)[dir*2+1]
                     );
-
-                // Remove tiny errors in alpha
-
-                alpha_(ijk) = Foam::min(Foam::max(alpha_(ijk), 0.0), 1.0);
             }
 
-            alpha_.correctBoundaryConditions();
+            // Correct the alpha field
 
-            // Set alpha bounds in ghost cells, needed for Dirichlet boundary
-            // conditions
-
-            forAllBlockLinear(alpha_[0][0].B(),i)
-            {
-                alpha_[0][0].B()(i)
-                    = Foam::min(Foam::max(alpha_[0][0].B()(i), 0.0), 1.0);
-            }
+            this->correct();
 
             // Update the normal after the alpha update, so that it is
             // consistent with alpha and can be reused by other parts of the
