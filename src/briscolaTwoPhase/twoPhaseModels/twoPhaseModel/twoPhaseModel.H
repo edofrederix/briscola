@@ -40,9 +40,6 @@ protected:
     // Gravitational acceleration
     vector g_;
 
-    // Reduced pressure formulation (defaults to false)
-    Switch reduced_;
-
     // Surface tension switch to check if surface tension is active
     Switch tension_;
 
@@ -154,9 +151,6 @@ public:
 
     // Gravitational acceleration
     const vector& g() const { return g_; }
-
-    // Return the reduced pressure formulation switch
-    Switch reduced() const { return reduced_; }
 
     // Return the surface tension switch
     Switch tension() const { return tension_; }

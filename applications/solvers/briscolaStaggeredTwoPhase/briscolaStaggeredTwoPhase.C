@@ -80,8 +80,7 @@ int main(int argc, char *argv[])
                     USys -= B*USysB;
                 }
 
-                if (!twoPhase.reduced())
-                    USys -= list(C*twoPhase.g());
+                USys -= C*twoPhase.buoyancy()*v;
 
                 // Solve predictor
 

@@ -53,6 +53,9 @@ public:
     // Type of mesh
     typedef MeshType meshType;
 
+    // Type of vector on this mesh type
+    typedef typename MeshType::vectorType MeshVectorType;
+
     // Construct from IOdictionary
     TwoPhaseModel(const fvMesh&, const IOdictionary&);
 
@@ -93,11 +96,11 @@ public:
     // Return the colocated mass density
     virtual tmp<colocatedScalarField> coloRho() const = 0;
 
-    // Return the gravitational acceleration
-    virtual List<typename MeshType::vectorType> gravity() const;
+    // Compute the mean mixture mass density
+    virtual scalar rhoMean() const;
 
-    // Return the buoyancy term
-    tmp<colocatedFaceScalarField> buoyancy();
+    // Return the buoyancy term defined as (rho - rhoMean)*g
+    virtual tmp<meshField<MeshVectorType,MeshType>> buoyancy() const;
 
     // Return the interfacial flux
     tmp<colocatedFaceScalarField> flux();

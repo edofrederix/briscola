@@ -51,7 +51,6 @@ twoPhaseModel::twoPhaseModel
         ).ptr()
     ),
     g_(dict.lookup("g")),
-    reduced_(dict.lookupOrDefault<Switch>("reduced", false)),
     tension_(surfaceTensionSchemePtr_->type() != "none")
 {
     alpha_.setRestrictionScheme("volumeWeighted");
@@ -67,7 +66,6 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
     normalSchemePtr_(tpm.normalSchemePtr_, false),
     surfaceTensionSchemePtr_(tpm.surfaceTensionSchemePtr_, false),
     g_(tpm.g_),
-    reduced_(tpm.reduced_),
     tension_(tpm.tension_)
 {
     alpha_.setRestrictionScheme("volumeWeighted");

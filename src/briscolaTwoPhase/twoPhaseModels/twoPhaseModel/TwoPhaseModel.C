@@ -114,23 +114,58 @@ TwoPhaseModel<staggered>::coloFaceFlux() const
         );
 }
 
-template<>
-List<typename colocated::vectorType> TwoPhaseModel<colocated>::gravity() const
-{
-    return vectorList(1, this->g());
-}
-
-template<>
-List<typename staggered::vectorType> TwoPhaseModel<staggered>::gravity() const
-{
-    return list(this->g());
-}
-
 template<class MeshType>
-tmp<colocatedFaceScalarField> TwoPhaseModel<MeshType>::buoyancy()
+scalar TwoPhaseModel<MeshType>::rhoMean() const
 {
-    setGhA();
-    return ghAPtr_()*ex::faceGrad(this->coloRho());
+    const colocatedScalarDirection& cv =
+        fvMsh_.template metrics<colocated>().cellVolumes()[0][0];
+
+    return gSum(this->coloRho()()[0][0]*cv)/gSum(cv);
+}
+
+template<>
+tmp<colocatedVectorField> TwoPhaseModel<colocated>::buoyancy() const
+{
+    tmp<colocatedVectorField> tBuoyancy
+    (
+        new colocatedVectorField("buoyancy", this->fvMsh_)
+    );
+
+    colocatedVectorField& buoyancy = tBuoyancy.ref();
+
+    #ifdef NO_BLOCK_ZERO_INIT
+    buoyancy = Zero;
+    #endif
+
+    if (Foam::mag(this->g()) > 0.0)
+        buoyancy[0][0] = (this->rho()[0][0] - this->rhoMean())*this->g();
+
+    return tBuoyancy;
+}
+
+template<>
+tmp<staggeredScalarField> TwoPhaseModel<staggered>::buoyancy() const
+{
+    tmp<staggeredScalarField> tBuoyancy
+    (
+        new staggeredScalarField("buoyancy", this->fvMsh_)
+    );
+
+    staggeredScalarField& buoyancy = tBuoyancy.ref();
+
+    #ifdef NO_BLOCK_ZERO_INIT
+    buoyancy = Zero;
+    #endif
+
+    if (Foam::mag(this->g()) > 0.0)
+    {
+        const scalar rhoMean(this->rhoMean());
+
+        forAll(buoyancy[0], l)
+            buoyancy[0][l] = (this->rho()[0][l] - rhoMean)*this->g()[l];
+    }
+
+    return tBuoyancy;
 }
 
 template<class MeshType>
@@ -147,11 +182,6 @@ tmp<colocatedFaceScalarField> TwoPhaseModel<MeshType>::flux()
     flux = Zero;
     #endif
 
-    // And the buoyancy flux when using reduced pressure
-    if (this->reduced_)
-        flux += this->buoyancy();
-
-    // Add the surface tension flux when we have a surface tension model
     if (this->tension())
         flux +=
             static_cast<colocatedFaceScalarField&>(this->surfaceTension());
