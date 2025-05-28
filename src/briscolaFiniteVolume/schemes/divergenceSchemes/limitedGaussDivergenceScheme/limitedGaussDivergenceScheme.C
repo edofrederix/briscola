@@ -30,6 +30,7 @@ limitedGaussDivergenceScheme<Type,MeshType>::imDiv
 )
 {
     phi.restrict();
+    field.restrict();
 
     tmp<linearSystem<stencil,Type,MeshType>> tSys
     (
@@ -85,6 +86,7 @@ limitedGaussDivergenceScheme<Type,MeshType>::imDiv
     #endif
 
     phi.makeShallow();
+    field.makeShallow();
 
     return tSys;
 }

@@ -37,8 +37,15 @@ tmp<meshField<faceScalar,MeshType>> twoPhaseLimiterScheme<Type,MeshType>::psi
        .template lookupObjectRef<twoPhaseModel>("briscolaTwoPhaseDict")
        .template cast<TwoPhaseModel<MeshType>>();
 
-    const meshField<faceScalar,MeshType> alpha(model.faceAlpha());
     const meshField<faceScalar,MeshType> psi(limiter_->psi(phi,field));
+
+    meshField<faceScalar,MeshType> alpha(model.faceAlpha());
+
+    if (phi.deep() && field.deep())
+    {
+        alpha.setRestrictionScheme("faceAreaWeighted");
+        alpha.restrict();
+    }
 
     return
         1.0
