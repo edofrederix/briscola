@@ -405,6 +405,20 @@ void fvMeshMetrics<MeshType>::setImmersedBoundaries()
 }
 
 template<class MeshType>
+void fvMeshMetrics<MeshType>::setImmersedBoundaryMask()
+{
+    mask_ = Zero;
+
+    if (immersedBoundaries_.size())
+    {
+        forAll(immersedBoundaries_, i)
+            mask_ += immersedBoundaries_[i].mask();
+
+        mask_ = min(mask_, 1.0);
+    }
+}
+
+template<class MeshType>
 fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
 :
     fvMsh_(fvMsh),
@@ -516,7 +530,16 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         true,
         true
     ),
-    immersedBoundaries_()
+    immersedBoundaries_(),
+    mask_
+    (
+        word(MeshType::typeName) + "Mask",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    )
 {
     calculateVertexCenters();
     calculateFaceCenters();
@@ -528,6 +551,7 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     calculateFaceWeights();
     setGlobalCellNumbers();
     setImmersedBoundaries();
+    setImmersedBoundaryMask();
 }
 
 template<class MeshType>

@@ -64,6 +64,9 @@ class fvMeshMetrics
     // List of immersed boundaries (if any)
     PtrList<immersedBoundary<MeshType>> immersedBoundaries_;
 
+    // Global immersed boundary mask
+    meshField<scalar,MeshType> mask_;
+
     // Calculate vertex centers
     void calculateVertexCenters();
 
@@ -93,6 +96,9 @@ class fvMeshMetrics
 
     // Set the immersed boundaries
     void setImmersedBoundaries();
+
+    // Set the immersed boundary mask
+    void setImmersedBoundaryMask();
 
 public:
 
@@ -196,6 +202,27 @@ public:
     inline const List<labelList>& globalCellCounts() const
     {
         return globalCellCounts_;
+    }
+
+    // Immersed boundary mask
+    inline const meshField<scalar,MeshType>& mask() const
+    {
+        return mask_;
+    }
+
+    // Fluid mask
+    inline tmp<meshField<scalar,MeshType>> fluidMask() const
+    {
+        return 1.0 - mask_;
+    }
+
+    // Solid mask
+    inline tmp<meshField<scalar,MeshType>> solidMask() const
+    {
+        return tmp<meshField<scalar,MeshType>>
+        (
+            new meshField<scalar,MeshType>(mask_)
+        );
     }
 };
 

@@ -64,8 +64,13 @@ colocatedScalarField imSourceCoeff
     true
 );
 
-exSource = vector(solverDict.lookupOrDefault("source", vector::zero));
-imSourceCoeff = scalar(solverDict.lookupOrDefault("sourceCoeff", 0.0));
+exSource =
+    fvMsh.metrics<colocated>().fluidMask()
+  * vector(solverDict.lookupOrDefault("source", vector::zero));
+
+imSourceCoeff =
+    fvMsh.metrics<colocated>().fluidMask()
+  * scalar(solverDict.lookupOrDefault("sourceCoeff", 0.0));
 
 // Runge-Kutta stage sources
 

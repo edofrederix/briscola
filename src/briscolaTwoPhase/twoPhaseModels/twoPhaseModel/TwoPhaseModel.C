@@ -120,7 +120,12 @@ scalar TwoPhaseModel<MeshType>::rhoMean() const
     const colocatedScalarDirection& cv =
         fvMsh_.template metrics<colocated>().cellVolumes()[0][0];
 
-    return gSum(this->coloRho()()[0][0]*cv)/gSum(cv);
+    const colocatedScalarDirection mask
+    (
+        fvMsh_.template metrics<colocated>().fluidMask()()[0][0]
+    );
+
+    return gSum(mask*this->coloRho()()[0][0]*cv)/gSum(mask*cv);
 }
 
 template<>

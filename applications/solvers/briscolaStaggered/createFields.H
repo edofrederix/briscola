@@ -63,8 +63,13 @@ staggeredScalarField imSourceCoeff
     true
 );
 
-exSource = scalarList(solverDict.lookup("source"));
-imSourceCoeff = scalarList(solverDict.lookup("sourceCoeff"));
+exSource =
+    fvMsh.metrics<staggered>().fluidMask()
+  * scalarList(solverDict.lookup("source"));
+
+imSourceCoeff =
+    fvMsh.metrics<staggered>().fluidMask()
+  * scalarList(solverDict.lookup("sourceCoeff"));
 
 // Runge-Kutta stage sources
 
@@ -80,24 +85,6 @@ PtrList<staggeredScalarField> stageSourcesB
 
 linearSystem<stencil,scalar,staggered> USysA("A(U)", U);
 linearSystem<stencil,scalar,staggered> USysB("B(U)", U);
-
-// Immersed boundary
-
-if (fvMsh.immersedBoundaries<staggered>().size())
-{
-    // Set source terms to zero inside IB
-    forAll(fvMsh.immersedBoundaries<staggered>(), ib)
-    {
-        forAllCells(exSource,l,d,i,j,k)
-        {
-            if (fvMsh.immersedBoundaries<staggered>()[ib].mask()(l,d,i,j,k))
-            {
-                exSource(l,d,i,j,k) = Zero;
-                imSourceCoeff(l,d,i,j,k) = Zero;
-            }
-        }
-    }
-}
 
 // Solvers
 
