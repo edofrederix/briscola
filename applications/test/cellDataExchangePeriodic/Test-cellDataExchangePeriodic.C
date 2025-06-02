@@ -13,41 +13,6 @@ using namespace Foam;
 using namespace briscola;
 using namespace fv;
 
-template<class MeshType>
-inline scalar coord
-(
-    const label d,
-    const labelVector& ijk,
-    const label coordDir
-)
-{
-    const vector c =
-        vector(MeshType::shift[d])/64.0
-      + 0.5*vector(unitX)*(Pstream::myProcNo() > 1)
-      + 0.5*vector(unitY)*(Pstream::myProcNo() % 2)
-      + (vector(ijk)+0.5*vector(unitXYZ))/64.0;
-
-    return c[coordDir];
-}
-
-template<class Type, class MeshType>
-inline bool test
-(
-    const Type& value,
-    const labelVector& ijk,
-    const label d,
-    const label coordDir
-)
-{
-    return
-        Foam::mag
-        (
-            value
-          - coord<MeshType>(d,ijk,coordDir)*pTraits<Type>::one
-        )
-      < 1e-8;
-}
-
 template<class Type, class MeshType>
 void testDataExchange(const fvMesh& fvMsh)
 {
@@ -55,6 +20,9 @@ void testDataExchange(const fvMesh& fvMsh)
 
     const meshField<vector,MeshType>& cc =
         fvMsh.metrics<MeshType>().cellCenters();
+
+    const labelVector N(12,12,12);
+    const labelVector start(fvMsh.msh().decomp().myBrickPartStart());
 
     for (int dir = 0; dir < 2; dir++)
     {
@@ -67,35 +35,30 @@ void testDataExchange(const fvMesh& fvMsh)
 
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
-            const faceLabel I = fvMsh.I<MeshType>(d);
+            // Add sample cells that are outside this processor domain
 
-            // Add some sample cells that are outside this processor domain
-
-            List<labelVector> cells;
+            DynamicList<labelVector> cells;
 
             forAll(fvMsh.msh().boundaries(), i)
             {
                 const boundary& b = fvMsh.msh().boundaries()[i];
 
-                if (b.castable<parallelBoundary>())
+                if (b.castable<periodicBoundary>())
                 {
                     const labelVector bo = b.offset();
 
-                    for (int j = 0; j < 4+Pstream::myProcNo(); j++)
-                        cells.append
-                        (
-                            (
-                                bo.x() == 0 ? unitX*(j*3+2)
-                              : bo.x() == 1 ? (I.right()-1)*unitX
-                              :               zeroXYZ
-                            )
-                          + (
-                                bo.y() == 0 ? unitY*(j*3+2)
-                              : bo.y() == 1 ? (I.top()-1)*unitY
-                              :               zeroXYZ
-                            )
-                          + labelVector(bo*(j+1))
-                        );
+                    const labelVector S(fvMsh.S<MeshType>(d,bo));
+                    const labelVector E(fvMsh.E<MeshType>(d,bo));
+
+                    labelVector ijk;
+
+                    for (int j = 1; j <= 2; j++)
+                    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                    {
+                        cells.append(ijk + bo*j);
+                    }
                 }
             }
 
@@ -103,7 +66,8 @@ void testDataExchange(const fvMesh& fvMsh)
 
             cells.append(labelVector(1,1,0));
             cells.append(labelVector(2,0,0));
-            cells.append(labelVector(4,3,0));
+            cells.append(labelVector(0,2,1));
+            cells.append(labelVector(1,2,2));
 
             cellDataExchange<MeshType> exchange(cells, fvMsh, 0, d);
 
@@ -111,10 +75,32 @@ void testDataExchange(const fvMesh& fvMsh)
 
             // Check the coordinate
 
-            forAll(data, i)
-                if (!test<Type,MeshType>(data[i],cells[i],d,dir))
+            forAll(cells, i)
+            {
+                const labelVector ijk
+                (
+                    (start.x() + cells[i].x() + N.x()) % N.x(),
+                    (start.y() + cells[i].y() + N.y()) % N.y(),
+                    (start.z() + cells[i].z() + N.z()) % N.z()
+                );
+
+                const vector C
+                (
+                    cmptDivide
+                    (
+                        vector(ijk) + vector(unitXYZ)/2 + MeshType::shift[d],
+                        vector(N)
+                    )
+                );
+
+
+                if (Foam::mag(C[dir]*pTraits<Type>::one - data[i]) > 1e-8)
+                {
+                    Pout<< C[dir] << " " << data[i] << " " << cells[i] << endl;
                     FatalErrorInFunction
                         << "Test 1 failed" << endl << abort(FatalError);
+                }
+            }
         }
     }
 }

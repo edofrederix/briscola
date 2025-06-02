@@ -21,17 +21,23 @@ class cellDataExchange
     // List of cell indices to obtain
     List<labelVector> indices_;
 
-    // For each index, the receive number and index number
+    // For each index, the boundary and cell index number
     List<Tuple2<label,label>> map_;
 
     // Neighboring processor numbers
     labelList neighbors_;
 
+    // Neighbor boundary offsets
+    List<labelVector> neighborOffsets_;
+
     // For each processor the cell indices to be sent
-    List<DynamicList<labelVector>> sendCells_;
+    List<DynamicList<labelVector>> cellsToSend_;
 
     // For each processor the cell indices to be received
-    List<DynamicList<labelVector>> recvCells_;
+    List<DynamicList<labelVector>> cellsToRecv_;
+
+    // Send tags
+    labelList sendTags_;
 
 private:
 
