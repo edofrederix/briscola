@@ -23,4 +23,9 @@ boundaryConditions
         type        Neumann;
         gradients   (0);
     }
+
+    wall
+    {
+        type        empty;
+    }
 }
