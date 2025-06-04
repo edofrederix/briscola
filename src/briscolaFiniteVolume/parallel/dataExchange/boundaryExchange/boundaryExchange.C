@@ -82,7 +82,7 @@ void boundaryExchange<Type,MeshType>::correct
                 for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
                 for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                 {
-                    sendBuffer[c++] = field(ijk);
+                    sendBuffer[c++] = field(d,ijk);
                 }
 
                 counts[i] += cmptProduct(E-S);
@@ -92,18 +92,50 @@ void boundaryExchange<Type,MeshType>::correct
 
     // Exchange data
 
-    MPI_Neighbor_alltoallv
-    (
-        sendBuffer.begin(),
-        counts.begin(),
-        displacements.begin(),
-        mpiDataTypePtr_->type,
-        recvBuffer.begin(),
-        counts.begin(),
-        displacements.begin(),
-        mpiDataTypePtr_->type,
-        fvMsh_.msh().comm()
-    );
+    if (Pstream::parRun())
+    {
+        MPI_Neighbor_alltoallv
+        (
+            sendBuffer.begin(),
+            counts.begin(),
+            displacements.begin(),
+            mpiDataTypePtr_->type,
+            recvBuffer.begin(),
+            counts.begin(),
+            displacements.begin(),
+            mpiDataTypePtr_->type,
+            fvMsh_.msh().comm()
+        );
+    }
+    else
+    {
+        // When running in serial, the only exchange can occur across periodic
+        // boundaries. Copy manually.
+
+        if (baseType == -1 || baseType == PERIODICBC)
+        forAll(this->boundaryPtrs_, i)
+        {
+            const parallelBoundaryCondition<Type,MeshType>& bc1 =
+                *this->boundaryPtrs_[i];
+
+            const labelVector bo1(bc1.offset());
+
+            forAll(this->boundaryPtrs_, j)
+            {
+                const parallelBoundaryCondition<Type,MeshType>& bc2 =
+                    *this->boundaryPtrs_[j];
+
+                const labelVector bo2(bc2.offset());
+
+                // Find opposite boundary and copy
+
+                if (bo1 == -bo2)
+                    for (int k = 0; k < counts[i]; k++)
+                        recvBuffer[displacements[j]+k] =
+                            sendBuffer[displacements[i]+k];
+            }
+        }
+    }
 
     // Unpack data
 
@@ -131,7 +163,7 @@ void boundaryExchange<Type,MeshType>::correct
                     for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
                     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                     {
-                        field(ijk+bo) = recvBuffer[c++];
+                        field(d,ijk+bo) = recvBuffer[c++];
                     }
                 }
             }
@@ -157,7 +189,7 @@ void boundaryExchange<Type,MeshType>::correct
                     for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
                     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                     {
-                        field(ijk+bo) = B(ijk-S);
+                        field(d,ijk+bo) = B(ijk-S);
                     }
                 }
             }

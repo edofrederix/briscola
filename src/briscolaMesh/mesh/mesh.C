@@ -672,7 +672,14 @@ void mesh::setDistributedCommGraph()
             const labelVector N(this->operator[](0).N());
 
             neighbors.append(b.neighborProcNum());
-            weights.append((unitXYZ-cmptMag(bo)) & N);
+
+            label weight = 1;
+
+            for (int d = 0; d < 3; d++)
+                if (bo[d] == 0)
+                    weight *= N[d];
+
+            weights.append(weight);
         }
 
         MPI_Dist_graph_create_adjacent

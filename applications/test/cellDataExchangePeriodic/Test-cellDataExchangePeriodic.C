@@ -95,11 +95,8 @@ void testDataExchange(const fvMesh& fvMsh)
 
 
                 if (Foam::mag(C[dir]*pTraits<Type>::one - data[i]) > 1e-8)
-                {
-                    Pout<< C[dir] << " " << data[i] << " " << cells[i] << endl;
                     FatalErrorInFunction
                         << "Test 1 failed" << endl << abort(FatalError);
-                }
             }
         }
     }
