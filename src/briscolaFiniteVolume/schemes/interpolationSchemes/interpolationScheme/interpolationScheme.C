@@ -272,6 +272,57 @@ tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
     return tInterp;
 }
 
+template<class Type>
+tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
+(
+    const meshField<FaceSpace<Type>,staggered>& field
+)
+{
+    tmp<meshField<FaceSpace<Type>,colocated>> tInterp
+    (
+        new meshField<FaceSpace<Type>,colocated>
+        (
+            "coloFaceInterp("+field.name()+")",
+            field.fvMsh()
+        )
+    );
+
+    meshField<FaceSpace<Type>,colocated>& Interp = tInterp.ref();
+
+    forAllFaces(Interp, fd, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        Interp(ijk)[fd*2  ] =
+            0.5*(field(fd,i,j,k)[fd*2] + field(fd,i,j,k)[fd*2+1]);
+
+        Interp(nei)[fd*2+1] = Interp(ijk)[fd*2];
+    }
+
+    return tInterp;
+}
+
+template<class Type>
+tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
+(
+    const tmp<meshField<FaceSpace<Type>,staggered>>& tField
+)
+{
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
+    tmp<meshField<FaceSpace<Type>,colocated>> tInterp
+    (
+        coloFaceInterp(tField())
+    );
+
+    if (tField.isTmp())
+        tField.clear();
+
+    return tInterp;
+}
+
 }
 
 }

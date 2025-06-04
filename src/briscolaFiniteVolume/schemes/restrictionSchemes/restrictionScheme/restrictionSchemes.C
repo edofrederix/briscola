@@ -12,6 +12,8 @@
 #include "coloFluxRestrictionScheme.H"
 
 #include "stagFaceAverageRestrictionScheme.H"
+#include "stagFaceAreaWeightedRestrictionScheme.H"
+#include "stagHarmonicFaceAreaWeightedRestrictionScheme.H"
 
 namespace Foam
 {
@@ -114,6 +116,30 @@ makeRestrictionSchemeType
     harmonicFaceAreaWeighted,
     faceScalar,
     colocated
+);
+
+makeRestrictionSchemeType
+(
+    stagFaceAreaWeighted,
+    faceAreaWeighted,
+    faceScalar,
+    staggered
+);
+
+makeRestrictionSchemeType
+(
+    stagFaceAreaWeighted,
+    faceAreaWeighted,
+    faceVector,
+    staggered
+);
+
+makeRestrictionSchemeType
+(
+    stagHarmonicFaceAreaWeighted,
+    harmonicFaceAreaWeighted,
+    faceScalar,
+    staggered
 );
 
 makeRestrictionSchemeNoTemplate(coloFlux,faceScalar,colocated);

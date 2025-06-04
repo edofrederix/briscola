@@ -123,15 +123,27 @@ tmp<meshField<Type,colocated>> coloInterp
 // Interpolation function from staggered to colocated faces
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,colocated>> colorFaceInterp
+tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
 (
     const meshField<Type,staggered>&
 );
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,colocated>> colorFaceInterp
+tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
 (
     const tmp<meshField<Type,staggered>>&
+);
+
+template<class Type>
+tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
+(
+    const meshField<FaceSpace<Type>,staggered>&
+);
+
+template<class Type>
+tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
+(
+    const tmp<meshField<FaceSpace<Type>,staggered>>&
 );
 
 }
