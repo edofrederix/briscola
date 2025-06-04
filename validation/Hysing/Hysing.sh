@@ -15,7 +15,11 @@ TASKFILE="/tmp/tasks.$$"
 
 # Simulation parameters
 
-SOLVERS=(briscolaColocatedTwoPhase briscolaStaggeredTwoPhase)
+SOLVERS=(\
+    briscolaColocatedTwoPhase \
+    briscolaColocatedTwoPhaseCNAB \
+    briscolaStaggeredTwoPhase \
+    briscolaStaggeredTwoPhaseCNAB)
 MESHES=(32 64)
 NPROCSPERBRICKSIDE=(2 4)
 PSOLVERS=(MG split)
