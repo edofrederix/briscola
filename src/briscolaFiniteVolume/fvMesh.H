@@ -18,6 +18,14 @@ namespace briscola
 namespace fv
 {
 
+/**
+
+@brief Main finite volume mesh class, containing the basic mesh object
+
+This class defines the finite volume mesh, containing the basic mesh object. While the basic mesh offers a mapping of bricks into cells, the finite volume mesh offers colocated and staggered cells and their metrics. Also, it defines which cells are 'internal', being cells for which the variable (say, pressure, velocity or temperature) is unknown. This is defined by faceLabels, providing the start and end indices in all three spatial dimensions, for each mesh level and each mesh direction.
+
+*/
+
 class fvMesh
 :
     public regIOobject
@@ -81,7 +89,7 @@ public:
         return mshPtr_();
     }
 
-    // Const access to the internal cell start and end indices
+    //~ Const access to the internal cell start and end indices
 
     template<class MeshType>
     const faceLabel& I(const label l, const label d) const;
@@ -98,7 +106,7 @@ public:
         return I<MeshType>(0,0);
     }
 
-    // Internal cell block size
+    //~ Internal cell block size
 
     template<class MeshType>
     inline labelVector N(const label l, const label d) const
@@ -119,7 +127,7 @@ public:
         return N<MeshType>(0,0);
     }
 
-    // Return the start point of the internal cell boundary at given offset
+    //~ Return the start point of the internal cell boundary at given offset
 
     template<class MeshType>
     inline labelVector S
@@ -152,7 +160,7 @@ public:
         return S<MeshType>(0,0,bo);
     }
 
-    // Return the end point of the internal cell boundary at given offset
+    //~ Return the end point of the internal cell boundary at given offset
 
     template<class MeshType>
     inline labelVector E
@@ -185,7 +193,7 @@ public:
         return E<MeshType>(0,0,bo);
     }
 
-    // Return the shape of the internal cell boundary at given offset
+    //~ Return the shape of the internal cell boundary at given offset
 
     template<class MeshType>
     inline labelVector N
@@ -249,7 +257,7 @@ public:
     // Needed by regIOobject
     virtual bool writeData(Ostream&) const { return true; }
 
-    // Member functions that pass directly to the mesh object
+    //~ Member functions that pass directly to the mesh object
 
         // Access to the mesh part
         inline part& operator[](const label i)

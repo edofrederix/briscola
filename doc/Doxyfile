@@ -534,25 +534,25 @@ TIMESTAMP              = NO
 # normally produced when WARNINGS is set to YES.
 # The default value is: NO.
 
-EXTRACT_ALL            = NO
+EXTRACT_ALL            = YES
 
 # If the EXTRACT_PRIVATE tag is set to YES, all private members of a class will
 # be included in the documentation.
 # The default value is: NO.
 
-EXTRACT_PRIVATE        = NO
+EXTRACT_PRIVATE        = YES
 
 # If the EXTRACT_PRIV_VIRTUAL tag is set to YES, documented private virtual
 # methods of a class will be included in the documentation.
 # The default value is: NO.
 
-EXTRACT_PRIV_VIRTUAL   = NO
+EXTRACT_PRIV_VIRTUAL   = YES
 
 # If the EXTRACT_PACKAGE tag is set to YES, all members with package or internal
 # scope will be included in the documentation.
 # The default value is: NO.
 
-EXTRACT_PACKAGE        = NO
+EXTRACT_PACKAGE        = YES
 
 # If the EXTRACT_STATIC tag is set to YES, all static members of a file will be
 # included in the documentation.
@@ -1132,15 +1132,26 @@ IMAGE_PATH             = doc/chapters/figures
 # need to set EXTENSION_MAPPING for the extension otherwise the files are not
 # properly processed by Doxygen.
 
-# First regex replaces normal comments starting with // by //!
 
-# Second regex attempts to replace equations $ ... $ by \f$ ... \f$. Dollar
+
+
+# The first regex replaces normal comments starting with // by //!, if the
+# comment is preceded by at least four spaces (one tab). Comments preceded by
+# //! will be interpreted by Doxygen as a description. If the // is followed by
+# ~, then it is not replaced by //!. The requirement for at least one tab assure
+# that this replacement is only done for indented comments, for example for
+# class member functions/data.
+
+# The second regex attempts to replace equations $ ... $ by \f$ ... \f$. Dollar
 # signs can be escaped by a \. Also, some attempt is made to avoid matching
 # environment variables, but it can be problematic to have both environment
 # variables and equations on the same line.
 
-INPUT_FILTER           = "perl -pe 's/^(\s*)\/\/(.*)/$1\/\/!$2/g; \
+INPUT_FILTER           = "perl -pe 's/^\s{4}(\s*)\/\/(?!~)(.*)/$1\/\/!$2/g; \
     s/(?<!\\)\$(.*?)(?<!\\)\$(?![A-Za-z0-9_])/\\f\$$1\\f\$/g'"
+
+
+
 
 # The FILTER_PATTERNS tag can be used to specify filters on a per file pattern
 # basis. Doxygen will compare the file name with each pattern and apply the

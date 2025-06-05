@@ -15,6 +15,17 @@ namespace fv
 
 class fvMesh;
 
+/**
+
+@brief Class that defines metrics of the mesh
+
+This class generates important mesh metrics, such as cell/face/edge/vertex
+centers, normals, volumes, weights and numbers. Also immersed boundaries are
+generated. The metric fields can then be accessed by everything else, through
+the fvMesh object of which this class is part.
+
+*/
+
 template<class MeshType>
 class fvMeshMetrics
 {
