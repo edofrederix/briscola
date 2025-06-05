@@ -3,10 +3,10 @@ EXE_INC = \
     -I../../../src/briscolaMesh/lnInclude \
     -I../../../src/briscolaFiniteVolume/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude \
-    -I$(FFTW_HOME)/include \
+    $(if $(FFTW_HOME),-I$(FFTW_HOME)/include,$(shell pkg-config --cflags fftw3)) \
     -DFULLDEBUG -g -O0
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
-    -L$(FFTW_HOME)/lib \
+    $(if $(FFTW_HOME),-L$(FFTW_HOME)/lib -lfftw3,$(shell pkg-config --libs fftw3)) \
     -lbriscolaFiniteVolume

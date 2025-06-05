@@ -52,9 +52,12 @@ Pstream libraries need to be compiled and discoverable from your environment
 
 OpenMPI, FFTW, Eigen and PETSc are required. OpenMPI should already be available
 through your OpenFOAM installation and is automatically used from that. The
-FFTW, Eigen and PETSc package locations should be specified by the `FFTW_HOME`,
-`EIGEN_HOME` and `PETSC_HOME` environment variables. If they are not already on
-your system, FFTW and Eigen can be installed with:
+FFTW, Eigen and PETSc package locations can be specified by the `FFTW_HOME`,
+`EIGEN_HOME` and `PETSC_HOME` environment variables. If those variables are not
+set, an attempt is done to find the respective packages in system locations
+using the pkg-config tool. If that fails too, the compilation process will
+complain that a package was not found. If these packages are not already on your
+system, FFTW and Eigen can be installed with:
 
 ```
 cd dependecies
@@ -62,10 +65,10 @@ cd dependecies
 ./makeEigen
 ```
 
-By default, the `makeFFTW` and `makeEigen` scripts configure, compile and
-install their respective packages to `$HOME/opt`. You can edit the scripts if
-you want to specify something else. Both scripts will instruct you on which
-environment variables to set. The PETSc package must be installed by yourself.
+By default, these make scripts configure, compile and install their respective
+packages to `$HOME/opt`. You can edit the make scripts if you want to specify
+another location. Both scripts will instruct you on which environment variables
+to set. The PETSc package must be installed by yourself.
 
 The sparse direct solvers of SuperLU and SuperLU_DIST are used if these packages
 are available, but they are not required nor important. The compiler checks for
