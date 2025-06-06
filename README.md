@@ -100,8 +100,9 @@ with
 doxygen doc/Doxyfile
 ```
 
-This requires doxygen to be installed. HTML output is written to
-doc/Doxygen/html and can be best viewed by opening doc/Doxygen/html/index.html.
+This requires doxygen, perl and graphviz to be installed. HTML output is written
+to doc/Doxygen/html and can be best viewed by opening
+doc/Doxygen/html/index.html.
 
 There is also a short high-level documentation available that can be viewed
 [HERE](doc/chapters/0_start.md).

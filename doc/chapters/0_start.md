@@ -7,7 +7,7 @@ with
 doxygen doc/Doxyfile
 ```
 
-This requires doxygen and graphviz to be installed.
+This requires doxygen, perl and graphviz to be installed.
 
 The documentation you are currently reading gives a high-level description of
 the code, its main ideas and how it can be used. The table of contents is given
