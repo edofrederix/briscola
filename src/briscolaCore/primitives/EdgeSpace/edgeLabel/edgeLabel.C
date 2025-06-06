@@ -40,15 +40,12 @@ template<>
 const edgeLabel edgeLabel::csType::min(edgeLabel::uniform(pTraits<label>::min));
 
 template<>
-const edgeLabel edgeLabel::csType::rootMax
-(
-    edgeLabel::uniform(pTraits<label>::rootMax)
-);
+const edgeLabel edgeLabel::csType::rootMax(edgeLabel::uniform(::sqrt(INT_MAX)));
 
 template<>
 const edgeLabel edgeLabel::csType::rootMin
 (
-    edgeLabel::uniform(pTraits<label>::rootMin)
+    edgeLabel::uniform(-::sqrt(INT_MAX))
 );
 
 }

@@ -1,18 +1,26 @@
+-include $(GENERAL_RULES)/mplibType
+
 EXE_INC = \
+    $(PFLAGS) $(PINC) \
+    -I./lnInclude \
     -I../briscolaCore/lnInclude \
     -I../briscolaMesh/lnInclude \
-    -I$(LIB_SRC)/OpenFOAM/lnInclude
+    -I$(LIB_SRC)/OpenFOAM/lnInclude \
+    -I$(LIB_SRC)/Pstream/mpi/lnInclude \
+    $(if $(FFTW_HOME),-I$(FFTW_HOME)/include,$(shell pkg-config --cflags fftw3)) \
+    $(if $(EIGEN_HOME),-I$(EIGEN_HOME)/include/eigen3,$(shell pkg-config --cflags eigen3)) \
+    $(if $(PETSC_HOME),-I$(PETSC_HOME)/include,$(shell pkg-config --cflags petsc)) \
+    $(if $(SUPERLU_HOME),-DSUPERLU -I$(SUPERLU_HOME)/include,$(if $(shell pkg-config --exists superlu && echo 1),-DSUPERLU $(shell pkg-config --cflags superlu),)) \
+    $(if $(SUPERLU_DIST_HOME),-DSUPERLU_DIST -I$(SUPERLU_DIST_HOME)/include,$(if $(shell pkg-config --exists superlu_dist && echo 1),-DSUPERLU_DIST $(shell pkg-config --cflags superlu_dist),)) \
+    -Wno-old-style-cast \
+    -Wno-unknown-pragmas
 
 LIB_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
+    -lOpenFOAM \
+    -lbriscolaCore \
     -lbriscolaMesh \
-    -lbriscolaFvBoundaryConditions \
-    -lbriscolaFvFields \
-    -lbriscolaFvFunctionObjects \
-    -lbriscolaFvImmersedBoundaryConditions \
-    -lbriscolaFvIO \
-    -lbriscolaFvLinearSystems \
-    -lbriscolaFvParallel \
-    -lbriscolaFvSchemes \
-    -lbriscolaFvSolvers \
-    -lOpenFOAM
+    $(if $(FFTW_HOME),-L$(FFTW_HOME)/lib -lfftw3,$(shell pkg-config --libs fftw3)) \
+    $(if $(PETSC_HOME),-L$(PETSC_HOME)/lib -lpetsc,$(shell pkg-config --libs petsc)) \
+    $(if $(SUPERLU_HOME),-L${SUPERLU_HOME}/lib -lsuperlu,$(shell pkg-config --exists superlu && pkg-config --libs superlu)) \
+    $(if $(SUPERLU_DIST_HOME),-L${SUPERLU_DIST_HOME}/lib -lsuperlu_dist,$(shell pkg-config --exists superlu_dist && pkg-config --libs superlu_dist))

@@ -1,5 +1,0 @@
-EXE_INC = \
-    -I../lnInclude \
-    -I../../briscolaCore/lnInclude \
-    -I../../briscolaMesh/lnInclude \
-    -I$(LIB_SRC)/OpenFOAM/lnInclude

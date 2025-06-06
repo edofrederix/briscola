@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
         const scalar deltaT = runTime.deltaTValue();
 
-        Info << "Time = " << runTime.timeName() << endl;
+        Info << "Time = " << runTime.name() << endl;
 
         U.setOldTime();
         p.setOldTime();

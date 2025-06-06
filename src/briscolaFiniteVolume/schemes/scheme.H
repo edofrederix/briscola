@@ -23,13 +23,13 @@ inline bool isEqOp() { return false; }
 template<>
 inline bool isEqOp<eqOp>() { return true; }
 
-// Function to check of OpType is eqMinusOp
+// Function to check of OpType is eqNegOp
 template<template<class> class OpType>
-inline bool isEqMinusOp() { return false; }
+inline bool isEqNegOp() { return false; }
 
 // Specialization
 template<>
-inline bool isEqMinusOp<eqMinusOp>() { return true; }
+inline bool isEqNegOp<eqNegOp>() { return true; }
 
 // Flip operator
 
@@ -44,11 +44,11 @@ template<class Type>
 class FlipOp<Type,eqOp>
 {
 public:
-    typedef eqMinusOp<Type> type;
+    typedef eqNegOp<Type> type;
 };
 
 template<class Type>
-class FlipOp<Type,eqMinusOp>
+class FlipOp<Type,eqNegOp>
 {
 public:
     typedef eqOp<Type> type;

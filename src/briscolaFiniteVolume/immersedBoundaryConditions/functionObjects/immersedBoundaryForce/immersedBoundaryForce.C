@@ -73,7 +73,7 @@ immersedBoundaryForce<MeshType>::immersedBoundaryForce
 
     if (Pstream::master())
     {
-        const fileName path("postProcessing"/name_/runTime_.timeName());
+        const fileName path("postProcessing"/name_/runTime_.name());
         mkDir(path);
 
         filePtr_.reset(new OFstream(path/this->typeName + ".txt"));

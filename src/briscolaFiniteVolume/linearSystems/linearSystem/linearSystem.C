@@ -36,7 +36,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject
         (
             name,
-            x.fvMsh().time().timeName(),
+            x.fvMsh().time().name(),
             x.fvMsh().time(),
             IOobject::NO_READ,
             IOobject::NO_WRITE,
@@ -76,7 +76,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject
         (
             sys.name(),
-            sys.fvMsh_.time().timeName(),
+            sys.fvMsh_.time().name(),
             sys.fvMsh_.time(),
             IOobject::NO_READ,
             IOobject::NO_WRITE,
@@ -118,7 +118,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject
         (
             tSys->name(),
-            tSys->fvMsh_.time().timeName(),
+            tSys->fvMsh_.time().name(),
             tSys->fvMsh_.time(),
             IOobject::NO_READ,
             IOobject::NO_WRITE,
@@ -174,7 +174,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject
         (
             sys.name(),
-            sys.fvMsh_.time().timeName(),
+            sys.fvMsh_.time().name(),
             sys.fvMsh_.time(),
             IOobject::NO_READ,
             IOobject::NO_WRITE,
@@ -217,7 +217,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject
         (
             tSys->name(),
-            tSys->fvMsh_.time().timeName(),
+            tSys->fvMsh_.time().name(),
             tSys->fvMsh_.time(),
             IOobject::NO_READ,
             IOobject::NO_WRITE,

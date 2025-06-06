@@ -1,9 +1,0 @@
--include $(GENERAL_RULES)/mplibType
-
-EXE_INC = \
-    $(PFLAGS) $(PINC) \
-    -I../lnInclude \
-    -I../../briscolaCore/lnInclude \
-    -I../../briscolaMesh/lnInclude \
-    -I$(LIB_SRC)/OpenFOAM/lnInclude \
-    -I$(LIB_SRC)/Pstream/mpi/lnInclude

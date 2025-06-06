@@ -496,14 +496,14 @@ void IO::writeFields
 {
     typedef meshField<Type,MeshType> FieldType;
 
-    const wordList names(fvMsh_.time().names<FieldType>());
+    const wordList toc(fvMsh_.time().toc<FieldType>());
 
     label count = 0;
 
-    forAll(names, i)
+    forAll(toc, i)
     {
         const FieldType& field =
-            fvMsh_.time().lookupObject<FieldType>(names[i]);
+            fvMsh_.time().lookupObject<FieldType>(toc[i]);
 
         if
         (
@@ -528,10 +528,10 @@ void IO::writeFields
 
     if (count > 0)
     {
-        forAll(names, i)
+        forAll(toc, i)
         {
             const FieldType& field =
-                fvMsh_.time().lookupObject<FieldType>(names[i]);
+                fvMsh_.time().lookupObject<FieldType>(toc[i]);
 
             if
             (
@@ -797,7 +797,7 @@ void IO::writeNow(const label l)
 {
     const Time& time = fvMsh_.time();
 
-    const word timeName(time.timeName());
+    const word timeName(time.name());
 
     if (Pstream::master())
     {
@@ -826,7 +826,7 @@ void IO::read(const label l)
 {
     const Time& time = fvMsh_.time();
 
-    const word timeName(time.timeName());
+    const word timeName(time.name());
 
     if (Pstream::master())
     {

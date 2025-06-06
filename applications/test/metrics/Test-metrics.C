@@ -225,7 +225,7 @@ void testFaceNormals(const fvMesh& fvMsh)
     {
         label lr = 2*(o%2)-1;
 
-        if (mag(fn(l,d,i,j,k)[o] - lr*vector(units[o/2])) > 1e-12)
+        if (mag(fn(l,d,i,j,k)[o] - lr*vector(briscola::units[o/2])) > 1e-12)
             FatalErrorInFunction
                 << "test 5 failed" << abort(FatalError);
     }
@@ -274,7 +274,11 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
         {
             label lr = 2*(o%2)-1;
 
-            if (mag(fan(l,d,i,j,k)[o] - lr*A[o/2]*vector(units[o/2])) > 1e-12)
+            if
+            (
+                mag(fan(l,d,i,j,k)[o] - lr*A[o/2]*vector(briscola::units[o/2]))
+              > 1e-12
+            )
             {
                 FatalErrorInFunction
                     << "test 7 failed" << abort(FatalError);

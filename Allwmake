@@ -2,7 +2,7 @@
 
 WM_NCOMPPROCS=${WM_NCOMPPROCS:-4}
 
-wmakeLnIncludeAll src
+wmakeLnIncludeAll -u -j$WM_NCOMPPROCS src
 
 wmake -a -s src
 wmake -a -s applications/utilities

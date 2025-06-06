@@ -22,7 +22,7 @@ RungeKuttaScheme::RungeKuttaScheme(const fvMesh& fvMsh)
         IOobject
         (
             "rkScheme",
-            fvMsh.time().timeName(),
+            fvMsh.time().name(),
             fvMsh.time(),
             IOobject::NO_READ,
             IOobject::NO_WRITE,

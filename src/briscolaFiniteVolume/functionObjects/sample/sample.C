@@ -217,7 +217,7 @@ bool sample::write()
 
             if (runTime_.writeTime())
             {
-                writeTime_ = runTime_.timeName();
+                writeTime_ = runTime_.name();
             }
 
             const fileName path("postProcessing"/name_/writeTime_);
@@ -264,7 +264,7 @@ bool sample::write()
         }
         else
         {
-            const fileName path("postProcessing"/name_/runTime_.timeName());
+            const fileName path("postProcessing"/name_/runTime_.name());
             mkDir(path);
 
             OFstream file(path/"sample.txt");

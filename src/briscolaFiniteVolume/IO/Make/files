@@ -1,5 +1,0 @@
-IO.C
-IOReadTemplates.C
-IOWriteTemplates.C
-
-LIB = $(FOAM_USER_LIBBIN)/libbriscolaFvIO

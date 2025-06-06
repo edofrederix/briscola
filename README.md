@@ -39,7 +39,7 @@ EU DuC.
 
 Briscola depends on the following third-party packages:
 
-* OpenFOAM (foundation version 9 or 10)
+* OpenFOAM (foundation version 12)
 * OpenMPI (version 3 or later)
 * FFTW
 * Eigen

@@ -44,13 +44,13 @@ const vertexLabel vertexLabel::csType::min
 template<>
 const vertexLabel vertexLabel::csType::rootMax
 (
-    vertexLabel::uniform(pTraits<label>::rootMax)
+    vertexLabel::uniform(::sqrt(INT_MAX))
 );
 
 template<>
 const vertexLabel vertexLabel::csType::rootMin
 (
-    vertexLabel::uniform(pTraits<label>::rootMin)
+    vertexLabel::uniform(-::sqrt(INT_MAX))
 );
 
 }

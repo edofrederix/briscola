@@ -8,7 +8,7 @@
 
 #include "pointDataExchange.H"
 
-#include "Random.H"
+#include "randomGenerator.H"
 #include "constants.H"
 
 using namespace Foam;
@@ -80,7 +80,7 @@ void testDataExchange(const fvMesh& fvMsh)
             // Generate random points, assuming a domain that coincides with its
             // bounding box
 
-            Random R(Pstream::myProcNo() + seed++);
+            randomGenerator R(Pstream::myProcNo() + seed++);
 
             vectorList points(N);
             forAll(points, c)

@@ -30,7 +30,7 @@ vof::vof
         IOobject
         (
             "vof",
-            fvMsh.time().timeName(),
+            fvMsh.time().name(),
             fvMsh.time(),
             IOobject::NO_READ,
             IOobject::NO_WRITE

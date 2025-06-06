@@ -14,7 +14,7 @@ briscolaFunctionObject::briscolaFunctionObject
     const dictionary& dict
 )
 :
-    functionObject(name),
+    functionObject(name, runTime),
     runTime_(runTime),
     name_(name),
     dict_(dict)
