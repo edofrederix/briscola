@@ -46,7 +46,7 @@ demonstrate this, Hysing's rising bubble case will be simulated using the
 1259-1288.]. Hysing's case consists of a 1x2 domain with a bubble of size 0.5
 that is initially stagnant and rises under gravity, as shown in the figure:
 
-![Hysing's rising bubble case](./figures/Hysing.png)
+![Hysing's rising bubble case](./figures/tutorial/Hysing.png)
 
 Before starting, make sure that OpenFOAM is loaded and that Briscola is
 compiled. Every change to the Briscola code requires recompilation of the part
@@ -169,7 +169,7 @@ file. While this is a staggered simulation, Briscola automatically calculates a
 colocated velocity field that is more intuitive. Moving ParaView to time 3, the
 following results are obtained for the velocity and volume fraction fields:
 
-![Hysing's rising bubble case solution](./figures/HysingSolution.png)
+![Hysing's rising bubble case solution](./figures/tutorial/HysingSolution.png)
 
 For staggered solvers, one can also load the separate staggered 'mesh
 directions' in ParaView (see [Data structure](./data.md)), i.e., by loading
@@ -185,8 +185,8 @@ This requires Python with the Numpy module to be installed on the system. It
 generates two plots in `y.pdf` and `u.pdf`, being the bubble upward position and
 bubble upward velocity, respectively. They are shown here:
 
-![Hysing's rising bubble case solution](./figures/HysingY.png)
-![Hysing's rising bubble case solution](./figures/HysingU.png)
+![Hysing's rising bubble case solution](./figures/tutorial/HysingY.png)
+![Hysing's rising bubble case solution](./figures/tutorial/HysingU.png)
 
 Reasonable agreement is found with the reference data of Hysing.
 
