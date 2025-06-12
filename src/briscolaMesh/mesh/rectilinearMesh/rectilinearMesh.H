@@ -48,6 +48,9 @@ class rectilinearMesh
     // Global cell starts for each processor part
     List<labelVector> globalStarts_;
 
+    // Check if global mesh directions are uniform
+    labelVector globalUniform_;
+
     // Set rectilinear metrics
     void setMetrics();
 
@@ -111,6 +114,12 @@ public:
     inline const List<labelVector>& globalStarts() const
     {
         return globalStarts_;
+    }
+
+    // Return if global mesh is uniform per direction
+    inline const labelVector globalUniform() const
+    {
+        return globalUniform_;
     }
 
     // Find cells efficiently using the local point data

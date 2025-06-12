@@ -22,9 +22,21 @@ adddictionaryConstructorToTable<FFTPoissonSolverStencil>
 template<class SType>
 void FFTPoissonSolver<SType>::checkMesh(const fvMesh& fvMsh)
 {
+    // First check if brick meshes have at least two uniform directions
+
     const rectilinearMesh& mesh = fvMsh.msh().cast<rectilinearMesh>();
 
     if (cmptSum(mesh.uniform()) < 2)
+    {
+        FatalErrorInFunction
+            << "At least two mesh directions must be uniform "
+            << "for the " << this->type() << " solver." << endl
+            << abort(FatalError);
+    }
+
+    // Then check if the global mesh has no more than one nonuniform directions
+
+    if (cmptSum(mesh.globalUniform()) < 2)
     {
         FatalErrorInFunction
             << "At least two mesh directions must be uniform "

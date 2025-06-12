@@ -61,15 +61,15 @@ planner::planner
 
     solveDir_ = -1;
 
-    if (!mesh.uniform().x())
+    if (!mesh.uniform().x() || !mesh.globalUniform().x())
     {
         solveDir_ = 0;
     }
-    else if (!mesh.uniform().y())
+    else if (!mesh.uniform().y() || !mesh.globalUniform().y())
     {
         solveDir_ = 1;
     }
-    else if (!mesh.uniform().z())
+    else if (!mesh.uniform().z() || !mesh.globalUniform().z())
     {
         solveDir_ = 2;
     }

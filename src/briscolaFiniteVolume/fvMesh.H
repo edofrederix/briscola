@@ -22,7 +22,13 @@ namespace fv
 
 @brief Main finite volume mesh class, containing the basic mesh object
 
-This class defines the finite volume mesh, containing the basic mesh object. While the basic mesh offers a mapping of bricks into cells, the finite volume mesh offers colocated and staggered cells and their metrics. Also, it defines which cells are 'internal', being cells for which the variable (say, pressure, velocity or temperature) is unknown. This is defined by faceLabels, providing the start and end indices in all three spatial dimensions, for each mesh level and each mesh direction.
+This class defines the finite volume mesh, containing the basic mesh object.
+While the basic mesh offers a mapping of bricks into cells, the finite volume
+mesh offers colocated and staggered cells and their metrics. Also, it defines
+which cells are 'internal', being cells for which the variable (say, pressure,
+velocity or temperature) is unknown. This is defined by faceLabels, providing
+the start and end indices in all three spatial dimensions, for each mesh level
+and each mesh direction.
 
 */
 

@@ -18,6 +18,30 @@ namespace briscola
 namespace fv
 {
 
+/**
+
+@brief Class that defines the FFT-based Poisson solver
+
+This class defines a solver for Poisson equations with constant coefficients,
+in which (for a three-diagonal problem) Fast Fourier (or Sine/Cosine, depending
+on the boundary conditions) Transforms are applied in two spatial directions to
+reduce the heptadiagonal linear system to a tridiagonal one. The tridiagonal
+system is solved using the Thomas algorithm. Finally, the inverse transforms
+are applied to give the real-space solution of the Poisson equation.
+
+References:
+
+Schumann, U., & Sweet, R. A. (1988).
+Fast Fourier transforms for direct solution of Poisson's equation with
+staggered boundary conditions.
+Journal of Computational Physics, 75(1), 123-137.
+
+Cifani, P., Kuerten, J. G. M., & Geurts, B. J. (2018).
+Highly scalable DNS solver for turbulent bubble-laden channel flow.
+Computers & Fluids, 172, 67-83.
+
+*/
+
 template<class SType>
 class FFTPoissonSolver
 :

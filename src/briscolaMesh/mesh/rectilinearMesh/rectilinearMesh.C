@@ -285,6 +285,23 @@ void rectilinearMesh::setMetrics()
         for (int d = 0; d < 3; d++)
             globalStarts_[proc][d] = starts[d][ijk[d]];
     }
+
+    // Check if global mesh directions are uniform
+
+    globalUniform_ = labelVector(1,1,1);
+
+    const scalar tol = 1e-7;
+
+    forAll(globalCellSizes_, d)
+    {
+        scalar maxCellSize = max(globalCellSizes_[d]);
+        scalar minCellSize = min(globalCellSizes_[d]);
+
+        if (maxCellSize - minCellSize > tol)
+        {
+            globalUniform_[d] = 0;
+        }
+    }
 }
 
 rectilinearMesh::rectilinearMesh(const IOdictionary& dict)
@@ -308,7 +325,8 @@ rectilinearMesh::rectilinearMesh(const rectilinearMesh& msh)
     localCellSizes_(msh.localCellSizes_),
     localPoints_(msh.localPoints_),
     globalCellSizes_(msh.globalCellSizes_),
-    globalPoints_(msh.globalPoints_)
+    globalPoints_(msh.globalPoints_),
+    globalUniform_(msh.globalUniform_)
 {}
 
 rectilinearMesh::rectilinearMesh(rectilinearMesh& msh, bool reuse)
@@ -318,7 +336,8 @@ rectilinearMesh::rectilinearMesh(rectilinearMesh& msh, bool reuse)
     localCellSizes_(msh.localCellSizes_),
     localPoints_(msh.localPoints_),
     globalCellSizes_(msh.globalCellSizes_),
-    globalPoints_(msh.globalPoints_)
+    globalPoints_(msh.globalPoints_),
+    globalUniform_(msh.globalUniform_)
 {}
 
 rectilinearMesh::~rectilinearMesh()
