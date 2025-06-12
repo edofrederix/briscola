@@ -163,12 +163,13 @@ vertices that define the edge. For an arc edge, the `point` entry defines the
 center of the edge.
 
 The `patches` entry defines the boundaries of the domain. A patch is a
-collection of faces that enclose the mesh domain. The `patches` entry contains a
-collection of named dictionaries, each defining a patch. A patch has a `type`
-entry defining the type of the patch and a `faces` entry which is a list of
-vertex lists, with each vertex list being a slice of the vertex block that
-defines a brick. Thus, the ordering of the vertices in this vertex list is the
-same as the ordering of vertices in the brick definition.
+collection of external faces that enclose the mesh domain. The `patches` entry
+contains a collection of named dictionaries, each defining a patch. A patch has
+a `type` entry defining the type of the patch and a `faces` entry which is a
+list of vertex lists, with each vertex list being a slice of the vertex block
+that defines a brick. Thus, the ordering of the vertices in this vertex list is
+the same as the ordering of vertices in the brick definition. Any external brick
+faces that are not added explicitly to patches are added to the 'default' patch.
 
 Finally, the `decomposition` entry defines for each brick its decomposition.
 Currently, only a manual decomposition type is supported, meaning that brick
@@ -178,7 +179,14 @@ processors is, by definition, the product of the three components of each
 decomposition vector, summed over all bricks.
 
 For a more complicated example, have a look at the unstructured pipe flow mesh
-in `cases/briscolaColocated/pipeFlow/system/briscolaMeshDict`.
+in `cases/briscolaColocated/pipeFlow`. The `briscolaMeshDict` file can be
+generated with the `prep.sh` script, i.e.,
+```
+./prep.sh
+```
+The mesh has five bricks that form an unstructured cylindrical mesh. By default,
+each brick is decomposed in four brick parts, thus requiring 20 processors in
+total.
 
 ## Mesh hierarchy
 
