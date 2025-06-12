@@ -23,7 +23,7 @@ bricks
 (
     0
     {
-        vertices    (((0 4)(2 6))((1 5)(3 7)));
+        vertices    (0 4 2 6 1 5 3 7);
         N           (64 64 1);
     }
 );
@@ -54,7 +54,7 @@ patches
             (2 3 6 7)
         );
     }
-    
+
     empties
     {
         type    empty;

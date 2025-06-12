@@ -23,7 +23,7 @@ bricks
 (
     0
     {
-        vertices    (((0 4)(2 6))((1 5)(3 7)));
+        vertices    (0 4 2 6 1 5 3 7);
         N           (VARMESHX VARMESHY 1);
     }
 );

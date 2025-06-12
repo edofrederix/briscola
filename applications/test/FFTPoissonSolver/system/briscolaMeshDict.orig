@@ -27,7 +27,7 @@ bricks
 (
     0
     {
-        vertices    (((0 6)(4 10))((1 7)(5 11)));
+        vertices    (0 6 4 10 1 7 5 11);
         N           (16 64 32);
         grading     geometric VARSTRETCH;
     }

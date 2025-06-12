@@ -31,31 +31,31 @@ bricks
 (
     0
     {
-        vertices    (((0 8)(2 10))((1 9)(3 11)));
+        vertices    (0 8 2 10 1 9 3 11);
         N           (VARNX VARNY VARNZ);
     }
 
     1
     {
-        vertices    (((4 12)(0 8))((5 13)(1 9)));
+        vertices    (4 12 0 8 5 13 1 9);
         N           (VARNX VARNR VARNZ);
     }
 
     2
     {
-        vertices    (((4 12)(6 14))((0 8)(2 10)));
+        vertices    (4 12 6 14 0 8 2 10);
         N           (VARNR VARNY VARNZ);
     }
 
     3
     {
-        vertices    (((1 9)(3 11))((5 13)(7 15)));
+        vertices    (1 9 3 11 5 13 7 15);
         N           (VARNR VARNY VARNZ);
     }
 
     4
     {
-        vertices    (((2 10)(6 14))((3 11)(7 15)));
+        vertices    (2 10 6 14 3 11 7 15);
         N           (VARNX VARNR VARNZ);
     }
 );

@@ -27,13 +27,13 @@ bricks
 (
     0
     {
-        vertices    (((0 6)(2 8))((1 7)(3 9)));
+        vertices    (0 6 2 8 1 7 3 9);
         N           (128 32 64);
         grading     geometric (1 1 1);
     }
     1
     {
-        vertices    (((2 8)(4 10))((3 9)(5 11)));
+        vertices    (2 8 4 10 3 9 5 11);
         N           (128 32 64);
         grading     geometric (1 1 1);
     }

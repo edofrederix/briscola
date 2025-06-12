@@ -37,28 +37,28 @@ bricks
 (
     0
     {
-        vertices    (((0 9)(3 12))((1 10)(4 13)));
+        vertices    (0 9 3 12 1 10 4 13);
         N           (32 32 1);
         grading     geometricEdge (4 1 4 1 4 1 4 1 1 1 1 1);
     }
 
     1
     {
-        vertices    (((3 12)(6 15))((4 13)(7 16)));
+        vertices    (3 12 6 15 4 13 7 16);
         N           (32 32 1);
         grading     geometricEdge (1 4 1 4 0.25 1 0.25 1 1 1 1 1);
     }
 
     2
     {
-        vertices    (((1 10)(4 13))((2 11)(5 14)));
+        vertices    (1 10 4 13 2 11 5 14);
         N           (32 32 1);
         grading     geometricEdge (0.25 1 0.25 1 1 4 1 4 1 1 1 1);
     }
 
     3
     {
-        vertices    (((4 13)(7 16))((5 14)(8 17)));
+        vertices    (4 13 7 16 5 14 8 17);
         N           (32 32 1);
         grading     geometricEdge (1 0.25 1 0.25 1 0.25 1 0.25 1 1 1 1);
     }
@@ -94,7 +94,7 @@ patches
             (7 16 8 17)
         );
     }
-    
+
     empties
     {
         type    empty;

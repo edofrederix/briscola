@@ -45,7 +45,7 @@ brick::brick(const geometry& g, const label num, const dictionary& dict)
 :
     meshObject<geometry>(g, num),
     dict_(dict),
-    v_(dict.lookup("vertices")),
+    v_(2, 2, 2, labelList(dict.lookup("vertices"))),
     N_(dict.lookup("N")),
     grading_(grading::New(*this)),
     faces_()

@@ -31,15 +31,17 @@ void meshData::checkData() const
                 << exit(FatalError);
         }
 
-        const labelBlock vertices(brickData_[i].lookup("vertices"));
+        const labelList vlist(brickData_[i].lookup("vertices"));
 
-        if (vertices.size() != 8)
+        if (vlist.size() != 8)
         {
             FatalErrorInFunction
                 << "Incorrect number of vertices specified for brick "
-                << i << ": " << vertices << endl
+                << i << ": " << vlist << endl
                 << exit(FatalError);
         }
+
+        const labelBlock vertices(2, 2, 2, vlist);
 
         forAllBlockLinear(vertices, l)
         {
