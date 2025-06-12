@@ -60,6 +60,19 @@ A label block `B` of shape $(2,3,4)$ is created and filled with data using the
 `forAllBlock` iterator. Then, a second label block is created as the
 element-wise square of `B`.
 
+The underlying storage of data inside the block class is in a simple C array.
+The ordering of the data is such that the three-dimensional loop
+```
+for (int i = 0; i < B.l(); i++)
+    for (int j = 0; j < B.m(); j++)
+        for (int k = 0; k < B.n(); k++)
+            B(i,j,k) = ...;
+```
+walks through the data in a contiguous way. In fact, the `forAllBlock` macro
+performs exactly this three-dimensional loop. Note that the `l()`, `m()` and
+`n()` member functions of the `block` class return the data size in the local
+$x$, $y$ and $z$-directions.
+
 The block class is templated for primitive types such as scalar, vector, tensor,
 etc. Thus, it can handle all sorts of data associated with hexahedron objects.
 Have a look at `applications/test/block/Test-block.C` for all the things that
