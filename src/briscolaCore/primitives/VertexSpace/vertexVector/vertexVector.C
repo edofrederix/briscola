@@ -59,16 +59,18 @@ const vertexVector vertexVector::csType::rootMin
     vertexVector::uniform(vector::uniform(-rootVGreat))
 );
 
+namespace briscola
+{
+
 vector interpolationWeights
 (
     const vector& point,
     const vertexVector& vertices,
     const bool insideOnly,
-    const bool fatal
+    const bool fatal,
+    const scalar tol
 )
 {
-    const scalar tol = 1e-14;
-
     if (insideOnly)
     {
         // Bounding box check for early rejection
@@ -175,14 +177,14 @@ vector interpolationWeights
         return -vector::one;
     }
 
-    // Round up to tol. This seems to be important to have the point belong to
-    // the correct cell when the point is very close to a face.
+    // Round up to machine precision. This is important to have the point belong
+    // to the correct cell when the point is very close to a face.
 
     u = vector
     (
-        round(u.x()/tol)*tol,
-        round(u.y()/tol)*tol,
-        round(u.z()/tol)*tol
+        round(u.x()/1e-12)*1e-12,
+        round(u.y()/1e-12)*1e-12,
+        round(u.z()/1e-12)*1e-12
     );
 
     if
@@ -203,6 +205,8 @@ vector interpolationWeights
     {
         return u;
     }
+}
+
 }
 
 }

@@ -69,10 +69,25 @@ void linearProlongationScheme<Type,MeshType>::setWeightsAndIndices()
                 for (v = 0; v < 8; v++)
                     vertices[v] = ccc(indices[c][v]);
 
-                // Calculate the tri-linear interpolation point
+                // Calculate the tri-linear interpolation point using a large
+                // tolerance. As tolerance length scale the cubic root of the
+                // interpolation hexahedron volume is used.
 
                 vector w =
-                    interpolationWeights(ccf(i,j,k), vertices, false, false);
+                    interpolationWeights
+                    (
+                        ccf(i,j,k),
+                        vertices,
+                        true,
+                        false,
+                        1e-3*Foam::cbrt(Foam::mag(hexVolume(vertices)))
+                    );
+
+                // On very coarse unstructured meshes the interpolation point
+                // calculation may fail. In that case we take the midpoint.
+
+                if (w == -vector::one)
+                    w = vector::one/2.0;
 
                 // Set the weights
 
@@ -84,13 +99,6 @@ void linearProlongationScheme<Type,MeshType>::setWeightsAndIndices()
                                 (1.0 - abc.x() + w.x()*(2*abc.x() - 1))
                               * (1.0 - abc.y() + w.y()*(2*abc.y() - 1))
                               * (1.0 - abc.z() + w.z()*(2*abc.z() - 1));
-
-                // Important to remove small weights to avoid using
-                // uninitialized memory!
-
-                for (int v = 0; v < 8; v++)
-                    if (Foam::mag(weights[c][v]) <= 1e-12)
-                        weights[c][v] = 0.0;
 
                 c++;
             }
