@@ -68,9 +68,6 @@ public:
     // Copy constructor
     rectilinearMesh(const rectilinearMesh& msh);
 
-    // Transfer or copy constructor
-    rectilinearMesh(rectilinearMesh& msh, bool reuse);
-
     // Clone mesh
     virtual autoPtr<mesh> clone() const
     {

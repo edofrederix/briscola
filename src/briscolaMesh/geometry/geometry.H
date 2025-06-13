@@ -56,11 +56,8 @@ public:
     // Construct from IOdictionary
     geometry(const IOdictionary&);
 
-    // Copy constructor
+    // Copy constructor. Copies bricks and re-generates everything else.
     geometry(const geometry& geo);
-
-    // Transfer or copy constructor
-    geometry(geometry& geo, bool reuse);
 
     // Destructor
     ~geometry();

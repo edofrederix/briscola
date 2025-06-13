@@ -329,17 +329,6 @@ rectilinearMesh::rectilinearMesh(const rectilinearMesh& msh)
     globalUniform_(msh.globalUniform_)
 {}
 
-rectilinearMesh::rectilinearMesh(rectilinearMesh& msh, bool reuse)
-:
-    structuredMesh(msh, reuse),
-    base_(msh.base_),
-    localCellSizes_(msh.localCellSizes_),
-    localPoints_(msh.localPoints_),
-    globalCellSizes_(msh.globalCellSizes_),
-    globalPoints_(msh.globalPoints_),
-    globalUniform_(msh.globalUniform_)
-{}
-
 rectilinearMesh::~rectilinearMesh()
 {}
 

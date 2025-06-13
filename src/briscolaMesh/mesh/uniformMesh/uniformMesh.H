@@ -33,9 +33,6 @@ public:
     // Copy constructor
     uniformMesh(const uniformMesh& msh);
 
-    // Transfer or copy constructor
-    uniformMesh(uniformMesh& msh, bool reuse);
-
     // Clone mesh
     virtual autoPtr<mesh> clone() const
     {

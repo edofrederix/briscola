@@ -17,19 +17,12 @@ unstructuredMesh::unstructuredMesh(const IOdictionary& dict)
 
 unstructuredMesh::unstructuredMesh(autoPtr<mesh>& mshPtr)
 :
-    mesh(mshPtr(), true)
-{
-    mshPtr.clear();
-}
+    mesh(mshPtr)
+{}
 
 unstructuredMesh::unstructuredMesh(const unstructuredMesh& msh)
 :
     mesh(msh)
-{}
-
-unstructuredMesh::unstructuredMesh(unstructuredMesh& msh, bool reuse)
-:
-    mesh(msh, reuse)
 {}
 
 unstructuredMesh::~unstructuredMesh()

@@ -811,7 +811,7 @@ mesh::mesh(const mesh& msh)
 
 mesh::mesh(autoPtr<mesh>& mshPtr)
 :
-    geometry(mshPtr(), true),
+    geometry(mshPtr()),
     PtrList<part>(mshPtr(), true),
     decomp_(mshPtr->decomp_, true),
     boundaries_(mshPtr->boundaries_, true),
@@ -831,30 +831,6 @@ mesh::mesh(autoPtr<mesh>& mshPtr)
     comm_(MPI_COMM_NULL)
 {
     mshPtr.clear();
-    setDistributedCommGraph();
-}
-
-mesh::mesh(mesh& msh, bool reuse)
-:
-    geometry(msh, reuse),
-    PtrList<part>(msh, reuse),
-    decomp_(msh.decomp_, reuse),
-    boundaries_(msh.boundaries_, reuse),
-    faceBoundaryMasterPerProc_(msh.faceBoundaryMasterPerProc_),
-    edgeBoundaryMasterPerProc_(msh.edgeBoundaryMasterPerProc_),
-    vertexBoundaryMasterPerProc_(msh.vertexBoundaryMasterPerProc_),
-    faceBoundaryTypePerProc_(msh.faceBoundaryTypePerProc_),
-    edgeBoundaryTypePerProc_(msh.edgeBoundaryTypePerProc_),
-    vertexBoundaryTypePerProc_(msh.vertexBoundaryTypePerProc_),
-    edgePatchExtension_(msh.edgePatchExtension_),
-    vertexPatchExtension_(msh.vertexPatchExtension_),
-    emptyPatchOffsets_(msh.emptyPatchOffsets_),
-    structured_(msh.structured_),
-    rectilinear_(msh.rectilinear_),
-    uniform_(msh.uniform_),
-    boundingBox_(msh.boundingBox_),
-    comm_(MPI_COMM_NULL)
-{
     setDistributedCommGraph();
 }
 

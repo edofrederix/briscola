@@ -62,12 +62,6 @@ structuredMesh::structuredMesh(const structuredMesh& msh)
     N_(msh.N_)
 {}
 
-structuredMesh::structuredMesh(structuredMesh& msh, bool reuse)
-:
-    unstructuredMesh(msh, reuse),
-    N_(msh.N_)
-{}
-
 structuredMesh::~structuredMesh()
 {}
 

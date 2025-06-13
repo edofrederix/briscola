@@ -42,7 +42,7 @@ patch::patch
 )
 :
     meshObject<geometry>(g, num),
-    dict_(&dict),
+    dictPtr_(&dict),
     name_(name),
     type_
     (
@@ -125,7 +125,7 @@ patch::patch
 )
 :
     meshObject<geometry>(g, num),
-    dict_(nullptr),
+    dictPtr_(nullptr),
     name_(name),
     type_(PATCH),
     facePtrs_(facePtrs)
@@ -139,7 +139,7 @@ patch::patch
 )
 :
     meshObject<geometry>(p.parentGeometry(), p.num()),
-    dict_(&p.dict()),
+    dictPtr_(&p.dict()),
     name_(p.name()),
     type_(p.type()),
     facePtrs_(p.facePtrs())

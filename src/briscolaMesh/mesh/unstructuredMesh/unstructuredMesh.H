@@ -27,9 +27,6 @@ public:
     // Copy constructor
     unstructuredMesh(const unstructuredMesh& msh);
 
-    // Transfer or copy constructor
-    unstructuredMesh(unstructuredMesh& msh, bool reuse);
-
     // Clone mesh
     virtual autoPtr<mesh> clone() const
     {

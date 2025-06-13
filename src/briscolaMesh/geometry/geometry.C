@@ -110,7 +110,10 @@ void geometry::createDefaultPatch()
 
     if (defaultFaces.size() > 0)
     {
-        patches_.append(new patch(*this, patches_.size(), "default", defaultFaces));
+        patches_.append
+        (
+            new patch(*this, patches_.size(), "default", defaultFaces)
+        );
     }
 }
 
@@ -142,7 +145,8 @@ void geometry::createPatchPairs()
                     if (patch1.type() != patch::PERIODIC)
                     {
                         FatalErrorInFunction
-                            << "Found periodic neighbor patch named " << patch1.name()
+                            << "Found periodic neighbor patch named "
+                            << patch1.name()
                             << " but it is not a periodic patch." << endl
                             << exit(FatalError);
                     }
@@ -152,8 +156,10 @@ void geometry::createPatchPairs()
                     if (neighbor1 != patch0.name())
                     {
                         FatalErrorInFunction
-                            << "Patch " << patch0.name() << "'s periodic neighbor is "
-                            << neighbor0 << ", but patch " << neighbor0 << "'s periodic "
+                            << "Patch " << patch0.name()
+                            << "'s periodic neighbor is "
+                            << neighbor0 << ", but patch " << neighbor0
+                            << "'s periodic "
                             << "neighbor is " << neighbor1 << endl
                             << exit(FatalError);
                     }
@@ -161,8 +167,10 @@ void geometry::createPatchPairs()
                     if (patch0.facePtrs().size() != patch1.facePtrs().size())
                     {
                         FatalErrorInFunction
-                            << "Patch " << patch0.name() << " forms a periodic patch pair "
-                            << "with patch " << patch1.name() << " but they have a different "
+                            << "Patch " << patch0.name()
+                            << " forms a periodic patch pair "
+                            << "with patch " << patch1.name()
+                            << " but they have a different "
                             << "number of faces." << endl
                             << exit(FatalError);
                     }
@@ -186,7 +194,10 @@ void geometry::createPatchPairs()
 
                     if (!foundPair)
                     {
-                        patchPairs_.append(new patchPair(*this, i, patch0, patch1));
+                        patchPairs_.append
+                        (
+                            new patchPair(*this, i, patch0, patch1)
+                        );
                         i++;
                     }
 
@@ -285,20 +296,16 @@ geometry::geometry(const IOdictionary& dict)
 geometry::geometry(const geometry& geo)
 :
     meshData(geo),
-    bricks_(geo.bricks_, *this),
-    topology_(geo.topology_),
-    patches_(geo.patches_),
-    patchPairs_(geo.patchPairs_)
-{}
-
-geometry::geometry(geometry& geo, bool reuse)
-:
-    meshData(geo),
-    bricks_(geo.bricks_, *this),
-    topology_(geo.topology_, reuse),
-    patches_(geo.patches_, reuse),
-    patchPairs_(geo.patchPairs_, reuse)
-{}
+    bricks_(geo.bricks_, *this)
+{
+    createPatches();
+    createPatchPairs();
+    checkPatchConsistency();
+    createBrickTopology();
+    alignBricks();
+    createDefaultPatch();
+    checkPatchConsistency();
+}
 
 geometry::~geometry()
 {}

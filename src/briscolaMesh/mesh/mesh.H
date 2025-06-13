@@ -147,9 +147,6 @@ public:
     // Transfer constructor and reset arg
     mesh(autoPtr<mesh>&);
 
-    // Transfer or copy constructor
-    mesh(mesh& msh, bool reuse);
-
     // Clone mesh
     virtual autoPtr<mesh> clone() const
     {

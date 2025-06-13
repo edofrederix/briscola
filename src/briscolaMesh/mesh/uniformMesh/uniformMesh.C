@@ -42,12 +42,6 @@ uniformMesh::uniformMesh(const uniformMesh& msh)
     cellSize_(msh.cellSize_)
 {}
 
-uniformMesh::uniformMesh(uniformMesh& msh, bool reuse)
-:
-    rectilinearMesh(msh, reuse),
-    cellSize_(msh.cellSize_)
-{}
-
 uniformMesh::~uniformMesh()
 {}
 

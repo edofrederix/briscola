@@ -33,9 +33,6 @@ public:
     // Copy constructor
     structuredMesh(const structuredMesh& msh);
 
-    // Transfer or copy constructor
-    structuredMesh(structuredMesh& msh, bool reuse);
-
     // Clone mesh
     virtual autoPtr<mesh> clone() const
     {
