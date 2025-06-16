@@ -28,6 +28,29 @@ FourierTransforms<SType>::FourierTransforms
 {
     FFTBoundaryConditions();
     FFTWplans();
+
+    // Check if x has non-empty immersed boundary conditions
+
+    if (x.immersedBoundaryConditions().size())
+    {
+        forAll(x.immersedBoundaryConditions(), i)
+        {
+            if
+            (
+                   x.immersedBoundaryConditions()[i].dict().found("type")
+                && word
+                (
+                    x.immersedBoundaryConditions()[i].dict().lookup("type")
+                ) != "empty"
+            )
+            {
+                FatalErrorInFunction
+                    << "FFT Poisson solver does not support use of "
+                    << "immersed boundary conditions." << endl
+                    << abort(FatalError);
+            }
+        }
+    }
 }
 
 // Destructor
