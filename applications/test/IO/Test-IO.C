@@ -84,7 +84,12 @@ void testField(const meshField<Type,MeshType>& f, bool ghosts)
         for (int i = S.x(); i < E.x(); i++)
         for (int j = S.y(); j < E.y(); j++)
         for (int k = S.z(); k < E.z(); k++)
-        if (!ghosts || f.fvMsh().structured() || structured(i,j,k,N))
+        if
+        (
+            !ghosts
+          || f.fvMsh().structured()
+          || structured(i-S.x(), j-S.y(), k-S.z(), N)
+        )
         {
             if
             (

@@ -114,12 +114,10 @@ void IO::readScalarField
     label c = 0;
 
     for (int i = S.x(); i < E.x(); i++)
-    for (int j = S.y(); j < E.y(); j++)
-    for (int k = S.z(); k < E.z(); k++)
-    if (structured(i,j,k,N))
-    {
-        D(i,j,k) = data[c++];
-    }
+        for (int j = S.y(); j < E.y(); j++)
+            for (int k = S.z(); k < E.z(); k++)
+                if (structured(i-S.x(),j-S.y(),k-S.z(),N))
+                    D(i,j,k) = data[c++];
 }
 
 template<class Type, class MeshType>
@@ -152,11 +150,11 @@ void IO::readArrayField
     label c = 0;
 
     for (int i = S.x(); i < E.x(); i++)
-    for (int j = S.y(); j < E.y(); j++)
-    for (int k = S.z(); k < E.z(); k++)
-    if (structured(i,j,k,N))
-        for (int ii = 0; ii < n; ii++)
-            D(i,j,k)[ii] = data[c++];
+        for (int j = S.y(); j < E.y(); j++)
+            for (int k = S.z(); k < E.z(); k++)
+                if (structured(i-S.x(),j-S.y(),k-S.z(),N))
+                    for (int ii = 0; ii < n; ii++)
+                        D(i,j,k)[ii] = data[c++];
 }
 
 template<class Type, class MeshType>
@@ -190,12 +188,12 @@ void IO::readArrayArrayField
     label c = 0;
 
     for (int i = S.x(); i < E.x(); i++)
-    for (int j = S.y(); j < E.y(); j++)
-    for (int k = S.z(); k < E.z(); k++)
-    if (structured(i,j,k,N))
-        for (int ii = 0; ii < n; ii++)
-            for (int jj = 0; jj < m; jj++)
-                D(i,j,k)[ii][jj] = data[c++];
+        for (int j = S.y(); j < E.y(); j++)
+            for (int k = S.z(); k < E.z(); k++)
+                if (structured(i-S.x(),j-S.y(),k-S.z(),N))
+                    for (int ii = 0; ii < n; ii++)
+                        for (int jj = 0; jj < m; jj++)
+                            D(i,j,k)[ii][jj] = data[c++];
 }
 
 // Instantiate

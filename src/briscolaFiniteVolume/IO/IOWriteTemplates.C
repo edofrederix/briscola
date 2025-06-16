@@ -128,12 +128,10 @@ void IO::writeScalarField
     List<floatScalar> data(nStructured(N));
 
     for (int i = S.x(); i < E.x(); i++)
-    for (int j = S.y(); j < E.y(); j++)
-    for (int k = S.z(); k < E.z(); k++)
-    if (structured(i,j,k,N))
-    {
-        data[c++] = D(i,j,k);
-    }
+        for (int j = S.y(); j < E.y(); j++)
+            for (int k = S.z(); k < E.z(); k++)
+                if (structured(i-S.x(),j-S.y(),k-S.z(),N))
+                    data[c++] = D(i,j,k);
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
@@ -167,13 +165,11 @@ void IO::writeArrayField
     List<floatScalar> data(nStructured(N)*n);
 
     for (int i = S.x(); i < E.x(); i++)
-    for (int j = S.y(); j < E.y(); j++)
-    for (int k = S.z(); k < E.z(); k++)
-    if (structured(i,j,k,N))
-    {
-        for (label ii = 0; ii < n; ii++)
-            data[c++] = D(i,j,k)[ii];
-    }
+        for (int j = S.y(); j < E.y(); j++)
+            for (int k = S.z(); k < E.z(); k++)
+                if (structured(i-S.x(),j-S.y(),k-S.z(),N))
+                    for (label ii = 0; ii < n; ii++)
+                        data[c++] = D(i,j,k)[ii];
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
@@ -208,14 +204,12 @@ void IO::writeArrayArrayField
     List<floatScalar> data(nStructured(N)*m*n);
 
     for (int i = S.x(); i < E.x(); i++)
-    for (int j = S.y(); j < E.y(); j++)
-    for (int k = S.z(); k < E.z(); k++)
-    if (structured(i,j,k,N))
-    {
-        for (label ii = 0; ii < n; ii++)
-            for (label jj = 0; jj < m; jj++)
-                data[c++] = D(i,j,k)[ii][jj];
-    }
+        for (int j = S.y(); j < E.y(); j++)
+            for (int k = S.z(); k < E.z(); k++)
+                if (structured(i-S.x(),j-S.y(),k-S.z(),N))
+                    for (label ii = 0; ii < n; ii++)
+                        for (label jj = 0; jj < m; jj++)
+                            data[c++] = D(i,j,k)[ii][jj];
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();

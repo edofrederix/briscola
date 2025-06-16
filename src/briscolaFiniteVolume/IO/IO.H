@@ -216,7 +216,8 @@ class IO
         return cmptProduct(shape) - nUnstructured(shape);
     }
 
-    // Check if cell in given mesh shape is a structured cell
+    // Check if cell in given mesh shape is a structured cell. Note: the first
+    // cell must correspond to (i,j,k) = (0,0,0).
     inline bool structured
     (
         const label i,
