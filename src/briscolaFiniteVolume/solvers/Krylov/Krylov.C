@@ -263,7 +263,7 @@ void Krylov<SType,Type,MeshType>::solve
             KSPSetTolerances
             (
                 ksp,
-                relTol*nf*initialResidual/bnf,
+                relTol*nf*initialResidual/Foam::max(bnf, 1e-12),
                 absTol*nf,
                 PETSC_DETERMINE,
                 maxIter

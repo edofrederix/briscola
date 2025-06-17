@@ -9,7 +9,9 @@ FoamFile
 U
 {
     type        MG;
-    relTol      0;
+    // type        Krylov;
+
+    relTol      1e-3;
     tolerance   1e-6;
     maxIter     100;
 }
@@ -20,4 +22,20 @@ p
     relTol      0.001;
     tolerance   1e-8;
     maxIter     100;
+
+    coarseMode  direct;
+    // coarseMode  smooth;
+
+    directSolver
+    {
+        type        PETSc;
+        PETScSolver PCLU;
+        // PETScSolver KSPBCGS;
+
+        // type        Eigen;
+        // EigenSolver PartialPivLU;
+
+        // Relative tolerance in case an iterative solver is used
+        relTol      1e-2;
+    }
 }
