@@ -32,7 +32,7 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
             const vector shift = MeshType::shift[d];
 
             // Create vertices from a partPoints object, which consistently
-            // generated ghost points
+            // generates ghost points
 
             partPoints p(fvMsh_.msh());
 
@@ -270,21 +270,21 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
             const labelVector N = fvMsh_.N<MeshType>(l,d);
 
             labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            for (ijk.x() = 0; ijk.x() < N.x(); ijk.x()++)
+            for (ijk.y() = 0; ijk.y() < N.y(); ijk.y()++)
+            for (ijk.z() = 0; ijk.z() < N.z(); ijk.z()++)
             {
                 for (label f = 0; f < 6; f++)
                 {
                     const labelVector nei(neighbor(ijk,f));
 
-                    // Only for existing neighbors
+                    delta(l,d,ijk)[f] =
+                        1.0/Foam::mag(cc(l,d,ijk) - cc(l,d,nei));
 
-                    if (Foam::cmptMin(nei) > -2 && Foam::cmptMax(nei-N) < 1)
-                    {
-                        delta(l,d,ijk)[f] =
-                            1.0/Foam::mag(cc(l,d,ijk) - cc(l,d,nei));
-                    }
+                    // Assure that ghost cells also have the relevant face
+                    // values set
+
+                    delta(l,d,nei)[f%2 ? f-1 : f+1] = delta(l,d,ijk)[f];
                 }
             }
         }
@@ -311,26 +311,51 @@ void fvMeshMetrics<MeshType>::calculateFaceWeights()
             const labelVector N = fvMsh_.N<MeshType>(l,d);
 
             labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            for (ijk.x() = 0; ijk.x() < N.x(); ijk.x()++)
+            for (ijk.y() = 0; ijk.y() < N.y(); ijk.y()++)
+            for (ijk.z() = 0; ijk.z() < N.z(); ijk.z()++)
             {
                 for (label f = 0; f < 6; f++)
                 {
                     const labelVector nei(neighbor(ijk,f));
 
-                    // Only for existing neighbors
+                    // Project the vector that connects the face center and
+                    // the cell center onto the cell-to-cell vector
 
-                    if (Foam::cmptMin(nei) > -2 && Foam::cmptMax(nei-N) < 1)
-                    {
-                        fwc(l,d,ijk)[f] =
-                            Foam::mag(cc(l,d,nei) - fc(l,d,ijk)[f])
-                          * delta(l,d,ijk)[f];
+                    fwc(l,d,ijk)[f] =
+                        Foam::mag
+                        (
+                            (cc(l,d,nei) - fc(l,d,ijk)[f])
+                          & (cc(l,d,nei) - cc(l,d,ijk))
+                        )
+                      * Foam::sqr(delta(l,d,ijk)[f]);
 
-                        fwn(l,d,ijk)[f] =
-                            Foam::mag(cc(l,d,ijk) - fc(l,d,ijk)[f])
-                          * delta(l,d,ijk)[f];
-                    }
+                    fwn(l,d,ijk)[f] =
+                        Foam::mag
+                        (
+                            (cc(l,d,ijk) - fc(l,d,ijk)[f])
+                          & (cc(l,d,nei) - cc(l,d,ijk))
+                        )
+                      * Foam::sqr(delta(l,d,ijk)[f]);
+
+                    // Assure that ghost cells also have the relevant face
+                    // values set
+
+                    fwc(l,d,nei)[f%2 ? f-1 : f+1] = fwc(l,d,ijk)[f];
+                    fwn(l,d,nei)[f%2 ? f-1 : f+1] = fwn(l,d,ijk)[f];
+
+                    // Check if the weights add up to unity up to some precision
+
+                    const scalar sum =
+                        round((fwc(l,d,ijk)[f] + fwn(l,d,ijk)[f])*1e12)/1e12;
+
+                    if (sum != 1.0)
+                        FatalErrorInFunction
+                            << "Face weights do not add up to unity at "
+                            << "level " << l
+                            << ", " << MeshType::typeName << " direction " << d
+                            << ", cell " << ijk
+                            << ", face " << f << endl << abort(FatalError);
                 }
             }
         }
