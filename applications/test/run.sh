@@ -1,12 +1,11 @@
 #!/bin/bash
 
-# By default run 4 jobs simultaneously
+# By default run 16 tests simultaneously. May be overwritten by providing an
+# argument.
 
-N=${WM_NCOMPPROCS:-4}
+N=${1:-16}
 
-for DIR in ./*/; do
-
-    TEST=$(echo $DIR | cut -c3- | rev | cut -c2- | rev)
+for DIR in $(find . -maxdepth 1 -mindepth 1 -type d | sort); do
 
     # Wait as long as N jobs are running in the background
 
@@ -16,9 +15,9 @@ for DIR in ./*/; do
 
     done
 
-    if [ -f "$TEST/build.sh" ]; then
+    if [ -f "$DIR/build.sh" ]; then
     (
-        echo Test $TEST
+        echo Test $DIR
 
         cd $DIR
 
