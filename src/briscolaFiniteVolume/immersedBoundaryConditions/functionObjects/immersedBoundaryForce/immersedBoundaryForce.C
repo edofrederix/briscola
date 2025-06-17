@@ -99,7 +99,7 @@ bool immersedBoundaryForce<MeshType>::execute()
     const sysType& sys =
         fvMsh_.db().lookupObject<sysType>
         (
-            sysType::typeName + "(" + UName_ + ")"
+            "NS(" + UName_ + ")"
         );
 
     fieldType r(- sys.template residual<true>());
