@@ -71,7 +71,7 @@ void MG<SType,Type,MeshType>::cycle
         );
 
     // If we are not on the coarsest level, continue to traverse levels.
-    // Otherwise, just smooth (could be better to use a direct solver here)
+    // Otherwise solve the coarsest level.
 
     if (l < coarseLevel)
     {
@@ -139,7 +139,7 @@ void MG<SType,Type,MeshType>::cycle
     {
         if (coarseMode_ == DIRECT)
         {
-            this->directSolvePtr_->solve(sys);
+            this->coarseSolverPtr_->solve(sys);
         }
         else
         {
@@ -398,21 +398,21 @@ MG<SType,Type,MeshType>::MG
 
     if (coarseMode_ == DIRECT && SType::nComponents > 1)
     {
-        if (!this->dict_.found("directSolver"))
-            this->dict_.add("directSolver", dictionary());
+        if (!this->dict_.found("coarseSolver"))
+            this->dict_.add("coarseSolver", dictionary());
 
-        dictionary& subDict = this->dict_.subDict("directSolver");
+        dictionary& subDict = this->dict_.subDict("coarseSolver");
 
         subDict.lookupOrAddDefault("type", word("PETSc"));
         subDict.lookupOrAddDefault("relTol", scalar(1e-3));
 
         const label coarseLevel = fvMsh.msh().size() - coarseLevel_ - 1;
 
-        this->directSolvePtr_.reset
+        this->coarseSolverPtr_.reset
         (
-            solver<SType,Type,MeshType>::directSolver::New
+            solver<SType,Type,MeshType>::externalSolver::New
             (
-                this->dict_.subDict("directSolver"),
+                this->dict_.subDict("coarseSolver"),
                 fvMsh,
                 coarseLevel
             ).ptr()
@@ -469,11 +469,11 @@ void MG<SType,Type,MeshType>::solve
             coarseMode_ == DIRECT
         && (
                 !constMatrix
-             || !this->directSolvePtr_->prepared()
+             || !this->coarseSolverPtr_->prepared()
             )
         )
         {
-            this->directSolvePtr_->prepare(sys);
+            this->coarseSolverPtr_->prepare(sys);
         }
 
         this->solve

@@ -92,13 +92,13 @@ schemes/RungeKuttaSchemes/RungeKuttaScheme/RungeKuttaSchemes.C
 
 solvers/solver/solvers.C
 solvers/solver/solverSmoothers.C
-solvers/solver/solverDirectSolvers.C
+solvers/solver/solverExternalSolvers.C
 
-solvers/directSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolverBase.C
-solvers/directSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolvers.C
+solvers/externalSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolverBase.C
+solvers/externalSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolvers.C
 
-solvers/directSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolverBase.C
-solvers/directSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolvers.C
+solvers/externalSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolverBase.C
+solvers/externalSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolvers.C
 
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C
 solvers/PoissonSolvers/FFTPoissonSolver/FFTPoissonSolver.C

@@ -103,9 +103,9 @@ public:
         ) = 0;
     };
 
-    // Base direct solver class
+    // Base external solver class
 
-    class directSolver
+    class externalSolver
     {
     protected:
 
@@ -124,13 +124,13 @@ public:
     public:
 
         // Runtime type information
-        TypeName("directSolver");
+        TypeName("externalSolver");
 
         // Declare run-time constructor selection tables
         declareRunTimeSelectionTable
         (
             autoPtr,
-            directSolver,
+            externalSolver,
             dictionary,
             (
                 const dictionary& dict,
@@ -141,10 +141,10 @@ public:
         );
 
         // Construct from dictionary, mesh and level
-        directSolver(const dictionary&, const fvMesh&, const label);
+        externalSolver(const dictionary&, const fvMesh&, const label);
 
         // Selector from name and dictionary
-        static autoPtr<directSolver> New
+        static autoPtr<externalSolver> New
         (
             const word&,
             const dictionary&,
@@ -153,7 +153,7 @@ public:
         );
 
         // Selector from dictionary
-        static autoPtr<directSolver> New
+        static autoPtr<externalSolver> New
         (
             const dictionary&,
             const fvMesh&,
@@ -161,7 +161,7 @@ public:
         );
 
         // Destructor
-        virtual ~directSolver();
+        virtual ~externalSolver();
 
         // Access to the dictionary
         inline const dictionary& dict() const { return dict_; }
@@ -196,8 +196,8 @@ protected:
     // Smoother
     autoPtr<smoother> smoothPtr_;
 
-    // Direct solver
-    autoPtr<directSolver> directSolvePtr_;
+    // Coarse grid solver
+    autoPtr<externalSolver> coarseSolverPtr_;
 
     // Relative tolerance
     scalar relTol_;
@@ -334,7 +334,7 @@ public:
 #ifdef NoRepository
     #include "solver.C"
     #include "solverSmoother.C"
-    #include "solverDirectSolver.C"
+    #include "solverExternalSolver.C"
 #endif
 
 #endif

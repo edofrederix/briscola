@@ -258,8 +258,8 @@ solvers can be found [here](https://petsc.org/main/manualpages/KSP/KSPType/).
 
 A number of direct solvers are also available through the Eigen and PETSc
 libraries. These solvers can be found in
-`src/briscolaFiniteVolume/solvers/directSolvers/Eigen/EigenSolvers` and
-`src/briscolaFiniteVolume/solvers/directSolvers/PETSc/PETScSolvers`
+`src/briscolaFiniteVolume/solvers/externalSolvers/Eigen/EigenSolvers` and
+`src/briscolaFiniteVolume/solvers/externalSolvers/PETSc/PETScSolvers`
 respectively. If SuperLU is also installed when compiling Briscola, its direct
 solvers become available through its Eigen and PETSc interfaces.
 
