@@ -1,0 +1,42 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      U;
+}
+
+boundaryConditions
+{
+    inlet
+    {
+        type        Dirichlet;
+        values      ((1 0 0));
+    }
+
+    outlet
+    {
+        type        Neumann;
+        gradients   ((0 0 0));
+    }
+
+    wall
+    {
+        type        noSlip;
+    }
+
+    top
+    {
+        type        slip;
+    }
+
+    bottom
+    {
+        type        slip;
+    }
+
+    empties
+    {
+        type        empty;
+    }
+}
