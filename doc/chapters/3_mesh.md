@@ -159,8 +159,8 @@ principle, edges do not need to be defined explicitly because they follow
 immediately from the brick definition. However, when edges are not straight
 lines, they can be explicitly defined in the `edges` entry. In particular, an
 arc can be defined as indicated. The name of the dictionary is the list of two
-vertices that define the edge. For an arc edge, the `point` entry defines the
-center of the edge.
+vertices that define the edge. For an arc edge, the `point` entry defines a
+point in between the two vertices through which the arc should pass.
 
 The `patches` entry defines the boundaries of the domain. A patch is a
 collection of external faces that enclose the mesh domain. The `patches` entry
@@ -179,7 +179,8 @@ processors is, by definition, the product of the three components of each
 decomposition vector, summed over all bricks.
 
 For a more complicated example, have a look at the unstructured pipe flow mesh
-in `cases/briscolaColocated/pipeFlow`. The `briscolaMeshDict` file can be
+in `cases/briscolaColocated/pipeFlow` or
+`cases/briscolaColocated/flowOverCylinder`. The `briscolaMeshDict` file can be
 generated with the `prep.sh` script, i.e.,
 ```
 ./prep.sh
@@ -234,5 +235,38 @@ cast to the `rectilinearMesh` type, of which a reference is obtained to the
 global cell sizes pointer list, which contains three vectors with cell sizes in
 the three base directions and is, of course, only defined for a rectilinear
 mesh.
+
+## Inspecting a mesh
+
+When designing a mesh it is useful to view it. In Briscola, unlike OpenFOAM, the
+mesh is not written to disk. Instead, the mesh is generated every time a solver
+is started. This can be done because the mesh generation process is relatively
+simple due to the simple brick-structured data structure. Simulation data is
+written in the legacy VTK format. Using that data, the mesh may be viewed. With
+the `briscolaWriteMesh` utility, the mesh can be written in VTK format and read
+in ParaView. Since the mesh is generated only at runtime, and since the mesh
+decomposition is an intrinsic part of the mesh in Briscola, this application
+must be run in parallel when the mesh has a parallel decomposition. Thus:
+```
+cd cases/briscolaColocated/cavity
+./prep.sh
+mpirun -n 4 briscolaWriteMesh -parallel
+```
+This will write all levels of the mesh in colocated format, and also in
+staggered format if the mesh is structured (which is the case for the cavity
+case). The mesh can be read in ParaView by loading the corresponding `.series`
+file.
+
+It is also possible to extract more information from the mesh. Using the
+`briscolaCheckMesh` utility, the mesh is checked for consistency. Also, using
+the `-brickInfo`, `-levelInfo`, `-parallelInfo`, `-parallelConnectivityInfo` and
+`-patchInfo` arguments, respective information can be obtained. Again, the
+application must be run in parallel if the mesh is decomposed. For example,
+```
+cd cases/briscolaColocated/cavity
+./prep.sh
+mpirun -n 4 briscolaCheckMesh -patchInfo -parallel
+```
+will show patch information of the cavity case mesh.
 
 [Back to the table of contents](./0_start.md)
