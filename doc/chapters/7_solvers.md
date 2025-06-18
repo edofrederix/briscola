@@ -109,8 +109,9 @@ precision. The FFT Poisson solver can only be used under the following criteria:
 * No immersed boundary conditions are applied to the Poisson equation
 * The Poisson equation is of the form $\nabla^2 x=b$ (`im::laplacian(x)=b`)
 with `x` the unknown meshField and `b` the right hand source meshField. For
-Poisson equations with variable coefficients (i.e., $\nabla(\lambda\nabla x)=b$
-or `im::laplacian(lambda,x)=b`), the split Poisson solver may be used.
+Poisson equations with variable coefficients (i.e.,
+$\nabla\cdot(\lambda\nabla x)=b$ or `im::laplacian(lambda,x)=b`), the split
+Poisson solver may be used.
 
 The main motivation behind the implementation of the FFT Poisson solver is for
 the solution of the pressure Poisson equation which is common when using the

@@ -38,17 +38,16 @@ In this chapter meshing in Briscola is discussed.
 
 ![Data structure](./figures/mesh/numbering.png)
 
-However, before the mesh dictionary file is discussed we first define a few
-numbering and naming conventions in Briscola. Referring to the figure above, a
-brick or brick part is constructed from 8 vertices, 12 edges and 6 faces. In a
+Before the mesh dictionary file is discussed we first define a few numbering
+and naming conventions in Briscola. Referring to the figure above, a brick or
+brick part is constructed from 8 vertices, 12 edges and 6 faces. In a
 right-handed local coordinate system aligned with this brick, the two faces with
 normal in $x$ are called *left* and *right*, the two faces with normal in $y$
 are called *bottom* and *top* and the faces with normal in $z$ are called *aft*
 and *fore*. They are often abbreviated to *l*, *r*, *b*, *t*, *a* and *f*. Using
 these abbreviations, edges and vertices can be denoted by combinations of two or
 three of them, respectively. For example, the left-bottom-aft vertex would be
-*lba*, the left-aft edge directed in $y$-direction would be *la*, etc. The aft
-face is not called 'rear' because this would confuse with the right face.
+*lba*, the left-aft edge directed in $y$-direction would be *la*, etc.
 
 A specific lexicographic ordering of edge and vertex numbering is followed that
 generally goes 'from $x$ to $z$'. The first vertex labeled '0' is the
@@ -227,8 +226,8 @@ requires a mesh to be at least rectilinear. Thus, a cast is performed to the
 `rectilinearMesh` type, and all properties of that type can then be used. In
 this snippet:
 ```
-    const PtrList<PartialList<scalar>>& cellSizes
-        = fvMsh.msh().cast<rectilinearMesh>().globalCellSizes();
+const PtrList<PartialList<scalar>>& cellSizes
+    = fvMsh.msh().cast<rectilinearMesh>().globalCellSizes();
 ```
 the `mesh` object is obtained from the finite volume mesh object `fvMsh`, then
 cast to the `rectilinearMesh` type, of which a reference is obtained to the

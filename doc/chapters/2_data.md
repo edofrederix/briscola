@@ -10,7 +10,7 @@ Briscola is 'brick-structured', meaning that the numerical mesh is built out of
 rectangular 'bricks' (i.e., hexahedrons), data can be managed in quite a simple
 way. One important rule is that each processor contains *at most one brick*.
 Thus, the number of processors required is at least equal to the number of
-bricks. But also more than one processor can be assigned to one brick. A second
+bricks, but also more than one processor can be assigned to one brick. A second
 rule is then that the number of processors assigned to each brick must be such
 that the brick can be distributed across those processors in equal parts, with
 each part being a hexahedron too. In turn, this means that the numerical mesh
@@ -27,15 +27,15 @@ The front view of a three-dimensional mesh is shown (in Briscola, a mesh is
 always three-dimensional), consisting of five bricks (thick black lines) such as
 the one marked in blue. The mesh is unstructured as there exists a vertex which
 is contained by more than four bricks (the central vertex). Each brick is
-decomposed by four brick parts such as the one marked in red. The mesh contained
-by that brick part is shown in purple. The data associated with the mesh as
-shown above is, by definition, stored on 20 processors (five bricks having each
-four brick parts). The minimum number of processors that the mesh would require
-is five (five bricks). One may also use more than 20 processors. However, the
-processor decomposition of each brick should be such that the decomposition on
-brick faces and edges are the same across all bricks that share those faces and
-edges. As said, each brick part contains a structured mesh as shown by the
-purple mesh.
+decomposed into four brick parts such as the one marked in red. The mesh
+contained by that brick part is shown in purple. The data associated with the
+mesh as shown above is, by definition, stored on 20 processors (five bricks
+having each four brick parts). The minimum number of processors that the mesh
+would require is five (five bricks). One may also use more than 20 processors.
+However, the processor decomposition of each brick should be such that the
+decomposition on brick faces and edges are the same across all bricks that share
+those faces and edges. As said, each brick part contains a structured mesh as
+shown by the purple mesh.
 
 ## The block class
 
@@ -93,7 +93,7 @@ primitive type (like scalar, vector, tensor) but also for the mesh type (i.e.,
 colocated or staggered). As is known, staggered discretizations offer superior
 numerical properties such as conservation of energy and are thus worthwhile to
 consider in high resolution simulation. Moreover, staggered discretizations
-seamlessly integrate with structured meshes as Briscola is designed to handle
+seamlessly integrate with structured meshes which Briscola is designed to handle
 efficiently.
 
 ![Colocated and staggered data structure](./figures/data/coloAndStag.png)
@@ -106,11 +106,11 @@ numbers, starting from the left-bottom-aft which has ID $(0,0,0)$ and ending at
 the right-top-fore which has ID $(N_x-1,N_y-1,N_z-1)$ (the figure obviously only
 shows two dimensions).
 
-Next, the staggered mesh actually consists of three meshes: one that's shifted
+Next, the staggered mesh actually consists of three meshes: one that is shifted
 half a cell to the left and padded by an additional layer on the right (the
 purple one), one that is shifted half a cell to the bottom and padded by an
 additional layer on the top (the green one), and, by extension, one that is
-shifted by half a cell to the aft and padded by an additional layer on the fore
+shifted half a cell to the aft and padded by an additional layer on the fore
 (not shown in the figure). The centers of the staggered cells are, by
 definition, located on the face centers of the colocated cells. We refer to each
 staggered mesh as a *mesh direction*. In general, the colocated mesh has just
@@ -146,7 +146,7 @@ types, which are `numberOfDirections`, `directionNames`, `padding` and `shift`.
 
 Another aspect that is intrinsically built into Briscola is the concept of *mesh
 levels*. The structured nature of the data on each processor allows for a simple
-geometric coarsening of cells, simply by combing each cube of 2x2x2 cells into
+geometric coarsening of cells, simply by combining each cube of 2x2x2 cells into
 one. When $N_x$, $N_y$ and $N_z$ are powers of two, or powers of two multiplied
 by 3, then this coarsening can be repeated until a very coarse mesh is obtained
 with at most 3x3x3 cells. This coarsening generates a hierarchy of meshes that
@@ -156,7 +156,9 @@ smoothing high frequency errors, but not good at smoothing low frequency errors,
 coarsening the problem and solving related defect equations while extrapolating
 their solutions back to finer levels dramatically increases the performance of
 these smoothers. As it turns out, this yields solution algorithms with
-$O(N)$-complexity, with $N$ the total number of cells.
+$O(N)$-complexity, with $N$ the total number of cells. The geometric multigrid
+solver implemented in Briscola is explained in more detail in
+[Chapter 7](./7_solvers.md).
 
 ![Colocated mesh levels](./figures/data/coloLevels.png)
 ![Staggered mesh levels](./figures/data/stagLevelsX.png)
@@ -171,7 +173,7 @@ to coarse (restriction) and coarse to fine (prolongation).
 
 Mesh levels and directions are built into fields. A field can be made 'shallow'
 or 'deep', meaning that it only has one level (the finest one) or the full
-cascade of levels. The nice thing about having levels built into fields is that
+cascade of levels. The advantage of having levels built into fields is that
 any operation on the field can automatically be applied to all levels, as
 demonstrated by the following code:
 ```
@@ -184,8 +186,8 @@ coarser levels are iteratively populated by restriction of the fine level. Then,
 `h` is computed as the product of `f` and `g`, which automatically takes into
 account the fact that these fields are deep.
 
-Also the `forAllCells` iterator can handle levels. For example, we may iterate
-over `h` as follows:
+Also the `forAllCells` iterator can also handle levels. For example, we may
+iterate over `h` as follows:
 ```
 forAllCells(h, l, d, i, j, k)
 {
