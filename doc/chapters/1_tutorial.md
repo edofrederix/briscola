@@ -31,7 +31,7 @@ Just like OpenFOAM, Briscola uses the following key components:
    parameters. Just like in OpenFOAM cases, a `0` directory is used to define
    the fields and their boundary conditions and a `system` case is used to set
    various parameters in several dictionary files. For each solver, Briscola
-   provides a number of example cases.
+   provides a number of example cases in the `cases` directory.
 
 In this first chapter, one of the example cases will be explored.
 
@@ -65,13 +65,13 @@ cd cases/briscolaStaggeredTwoPhase/Hysing
 ```
 With `ls` you will see that the case has the following files and directories:
 
-* 0: Directory with boundary condition files for each solution field
-* clean.sh: Bash script to clean-up the case after running
-* code: Directory containing additional code needed for initialization of the
+* `0`: Directory with boundary condition files for each solution field
+* `clean.sh`: Bash script to clean-up the case after running
+* `code`: Directory containing additional code needed for initialization of the
   problem and for post-processing the solution
-* plot.py: Python script to plot the post-processed results
-* prep.sh: Bash script to prepare the case
-* system: Directory that contains case parameters including mesh and numerics
+* `plot.py`: Python script to plot the post-processed results
+* `prep.sh`: Bash script to prepare the case
+* `system`: Directory that contains case parameters including mesh and numerics
 
 Most Briscola cases consist of these files. At a minimum, only the system and 0
 directories must be provided. Most cases present in the cases directory have a
@@ -107,7 +107,7 @@ generated from the `system/briscolaTwoPhaseDict.m4` file, by replacing `VARRHO2`
 and `VARMU2` by the proper values corresponding to the selected case . Have a
 look at the contents of the `prep.sh` script.
 
-The preparation script compiles the code that is located in the `code`
+The preparation script also compiles the code that is located in the `code`
 directory. More specifically, it compiles the file
 `code/functionObjects/Hysing/Hysing.C`. Inspecting this file, it can be seen
 that two things are done:
@@ -147,11 +147,11 @@ the [data structure](data.md) in Briscola significantly.
 
 ### Running
 
-From the briscolaMeshDict file we can see that the mesh has one brick, and that
-this brick is decomposed in 2x2x1 processes. Thus, we need to run the case using
+From the `briscolaMeshDict` file we can see that the mesh has one brick, and
+that this brick is decomposed in 2x2x1 processes. Thus, we need to run the case
 using four processors in total. This can be done with
 ```
-mpirun -n 4 briscolaStaggeredTwoPhase -parallel
+mpirun -np 4 briscolaStaggeredTwoPhase -parallel
 ```
 The solver used here is `briscolaStaggeredTwoPhase` and it is invoked by mpirun
 using four processors. Since it is a parallel run we need to specify the
@@ -176,7 +176,7 @@ directions' in ParaView (see [Data structure](./data.md)), i.e., by loading
 briscola_staggered_x.vtk.series or briscola_staggered_y.vtk.series. This will
 then show the solution for each velocity component.
 
-The Hysing case also has a Pythons script that post-processes results in a more
+The Hysing case also has a Python script that post-processes results in a more
 quantitative way. After running the case, the script can be run with
 ```
 python plot.py
@@ -188,7 +188,7 @@ bubble upward velocity, respectively. They are shown here:
 ![Hysing's rising bubble case solution](./figures/tutorial/HysingY.png)
 ![Hysing's rising bubble case solution](./figures/tutorial/HysingU.png)
 
-Reasonable agreement is found with the reference data of Hysing.
+Good agreement is found with the reference data of Hysing.
 
 The case can be cleaned up and brought back to its initial state by
 ```

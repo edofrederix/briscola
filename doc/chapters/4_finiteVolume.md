@@ -101,7 +101,7 @@ components correspond to the cell itself and its six direct neighbors across
 cell faces. For each of these components, a scalar coefficient is defined. Also
 the `diagStencil` class is defined, which trivially has just one diagonal
 component. In principle, Briscola is designed to handle any sort of stencil,
-possibly containing many more coefficients. This is not yet implemented. The
+possibly containing many more coefficients, but this is not yet implemented. The
 `linearSystem` class can, given a solution field $x$, compute the residual $r
 \equiv b-Ax$ as well as the evaluation $(Ax-b)/V$ with $V$ the cell volumes. The
 division by $V$ is included because the discretizations contained in $A$ are
@@ -160,5 +160,40 @@ coefficients in the form of a Butcher tableau (see Komen, E.M.J., et al.
 "Analysis of the numerical dissipation rate of different Runge–Kutta and
 velocity interpolation methods in an unstructured collocated finite volume
 method in OpenFOAM." Computer Physics Communications 253 (2020): 107145.)
+
+## Finite volume flow solvers
+
+Briscola has several flow solvers which are based on the finite volume library.
+These solver applications can be found in `applications/solvers`. They are
+briefly described here:
+* `briscolaColocated`: Colocated single-phase flow solver using Runge-Kutta time
+discretization.
+* `briscolaColocatedCNAB`: Colocated single-phase flow solver using
+Crank-Nicolson discretization for the viscous term and Adamsh-Bashforth
+discretization for the convective term.
+* `briscolaColocatedTwoPhase`: Colocated two-phase flow solver using Runge-Kutta
+time discretization and the Volume-of-Fluid (VOF) method for the two-phase
+interface. More details on two-phase solvers are given in
+[Chapter 5](./5_twoPhase.md).
+* `briscolaColocatedTwoPhaseCNAB`: Colocated two-phase flow solver using
+Crank-Nicolson discretization for the viscous term and Adamsh-Bashforth
+discretization for the convective term.
+* `briscolaLaplacian`: Colocated solver for a heat conduction equation of the
+form $\partial T/\partial t=\nabla \cdot  (\alpha \nabla T) + S$, with temperature
+$T$, diffusivity $\alpha$ and heat source $S$. The solver may also be used for
+any other equation with the same form.
+* `briscolaStaggered`: Staggered single-phase flow solver using Runge-Kutta time
+discretization.
+* `briscolaStaggeredCNAB`: Staggered single-phase flow solver using
+Crank-Nicolson discretization for the viscous term and Adamsh-Bashforth
+discretization for the convective term.
+* `briscolaStaggeredTwoPhase`: Staggered two-phase flow solver using Runge-Kutta
+time discretization.
+* `briscolaStaggeredTwoPhaseCNAB`: Staggered two-phase flow solver using
+Crank-Nicolson discretization for the viscous term and Adamsh-Bashforth
+discretization for the convective term.
+* `briscolaVofAdvection`: Colocated VOF advection solver without coupling to a
+Navier-Stokes equation. Mainly used for verification test cases of VOF advection
+under pre-defined velocity fields.
 
 [Back to the table of contents](./0_start.md)
