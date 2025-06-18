@@ -117,16 +117,16 @@ the solution of the pressure Poisson equation which is common when using the
 projection method to solve the incompressible Navier-Stokes equation. This
 equation has the following form:
 
-$ \nabla^2 p^{n+1} = \frac{\nabla \cdot \mathbf{u^*}}{\Delta t} $,
+$\nabla^2 p^{n+1} = \frac{\nabla \cdot \mathbf{u^\star}}{\Delta t}$,
 
-where $\mathbf{u^*}$ is the preliminary velocity solution and $\Delta t$ is the
-time step. The solution to this equation, $p^{n+1}$ gives the pseudo-pressure
-field onto which the preliminary velocity must be projected in order to make it
-divergence-free. Due to the elliptic nature of this equation, solving it with
-iterative solvers is often computationally very expensive. With the use of
-Fourier expansions, this equation can be diagonalized allowing for a fast and
-direct solution instead. The FFT solver goes through the following steps to
-solve a three-dimensional Poisson equation:
+where $\mathbf{u^\star}$ is the preliminary velocity solution and $\Delta t$ is
+the time step. The solution to this equation, $p^{n+1}$ gives the
+pseudo-pressure field onto which the preliminary velocity must be projected in
+order to make it divergence-free. Due to the elliptic nature of this equation,
+solving it with iterative solvers is often computationally very expensive. With
+the use of Fourier expansions, this equation can be diagonalized allowing for a
+fast and direct solution instead. The FFT solver goes through the following
+steps to solve a three-dimensional Poisson equation:
 
 1. The Poisson equation is transformed in two spatial directions using FFT's,
 reducing the heptadiagonal linear system to a tridiagonal one.
@@ -201,7 +201,7 @@ equations with a variable coefficient. This is particularly important for the
 pressure Poisson equation in a two-phase system with variable density:
 
 $\nabla \cdot (1/\rho^{n+1} \nabla p^{n+1})
-    = \frac{\nabla \cdot \mathbf{u}^*}{\Delta t}$
+    = \frac{\nabla \cdot \mathbf{u}^\star}{\Delta t}$
 
 To solve this equation, we can split it into a constant coefficient part, which
 is treated implicitly within the FFT solver, and a variable coefficient part
@@ -275,5 +275,25 @@ problems, it may be worthwhile to tune the solver settings. For example, see the
 `system/briscolaSolverDict` file in the
 `cases/briscolaColocated/flowOverCylinder` case for some (commented)
 suggestions.
+
+## Solver applications
+
+Unlike the more recent versions of OpenFOAM (i.e., foundation version), Briscola
+does not use solver modules but still relies on dedicated applications. They are
+listed in `applications/solvers`, and can be used on cases to solve them. To
+keep things efficient, we have dedicated colocated and dedicated staggered
+solvers. For single phase flows, there are the `briscolaColocated` and
+`briscolaStaggered` solvers which use Runge-Kutta time integration. Instead, the
+`briscolaColocatedCNAB` and `briscolaStaggeredCNAB` solvers use the
+Crank-Nicolson/Adams-Bashforth (CNAB) IMEX scheme for time integration, see
+Ascher, U.M., Steven J.R., and Brian T.R.W. "Implicit-explicit methods for
+time-dependent partial differential equations." SIAM Journal on Numerical
+Analysis 32.3 (1995): 797-823. The `briscolaColocatedTwoPhase` and
+`briscolaStaggeredTwoPhase` solvers are designed for two-phase flow cases using
+Runge-Kutta integration while the `briscolaColocatedTwoPhaseCNAB` and
+`briscolaStaggeredTwoPhaseCNAB` solvers use the CNAB scheme again. Finally,
+there are the `briscolaLaplacian` and `briscolaVofAdvection` solvers, which are
+mostly simple test application for solving the Poisson equation and advecting a
+VOF field.
 
 [Back to the table of contents](./0_start.md)
