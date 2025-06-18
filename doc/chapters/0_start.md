@@ -22,3 +22,4 @@ below.
 5. [Two-phase solvers](./5_twoPhase.md)
 6. [Immersed boundary methods](./6_ibm.md)
 7. [Linear system solvers](./7_solvers.md)
+8. [Current limitations](./8_limitations.md)
