@@ -8,7 +8,7 @@ hexahedron. In turn, proven algorithms can be used to capture a two-phase
 interface. We do this in the context of the Volume Of Fluid (VOF) method, with
 geometric reconstruction. While it can be tedious to implement, this method is
 superior in terms of computational efficiency compared to algebraic interface
-capturing methods. At relatively coarse meshes, sharp interfaces may be captured
+capturing methods. On relatively coarse meshes, sharp interfaces may be captured
 in a way that does not produce too much numerical error.
 
 Briscola's VOF approach revolves around the solution of the volume fraction
@@ -39,7 +39,7 @@ free-surface simulations on cartesian-grids." Journal of Computational Physics
    gradient of $\alpha^n$. Briscola also has more advanced algorithms, such as
    LSFIR, LSGIR and MYC, see `src/briscolaTwoPhase/normalSchems`.
 2. With $\alpha^n$ and $\mathbf{n}$ known, we may reconstruct a planar interface
-   in each cell. Consider this figure:
+   in each interfacial cell. Consider this figure:
 
    ![Hexahedron truncation](./figures/two-phase/truncation.png)
 
@@ -79,7 +79,7 @@ By making some clever interpolation choices, Weymouth & Yue showed that this
 leads to a method that is monotonic and mass conserving while preserving
 sharpness of the interface. See
 `src/briscolaTwoPhase/vof/splitAdvection/splitAdvection.C` for Briscola's
-interpolation of this algorithm.
+implementation of this algorithm.
 
 ## Surface tension and curvature
 
@@ -96,12 +96,12 @@ approach implemented in `SHF` or a parabolic fit method implemented in
 ## Two-phase solvers
 
 Briscola has dedicated two-phase solvers that are colocated or staggered and use
-Runge-Kutta or CNAB time integration (this will be discussed in
-[Solvers](./7_solvers.md)). The solution algorithm in these solvers is the same.
+Runge-Kutta or CNAB time integration (see
+[Chapter 4](./4_finiteVolume.md)). The solution algorithm in these solvers is the same.
 First, the volume fraction equation is solved as discussed above in the
 `twoPhase.correct()` function call. Given a new solution for $\alpha^{n+1}$, a
 new density field is computed and interpolated to faces, either staggered or
-colocated. Next, a momentum equation predictor is solved. However, as oppose to
+colocated. Next, a momentum equation predictor is solved. However, as opposed to
 single phase solvers, this momentum equation has a variable density that cannot
 be absorbed in the pressure and viscosity. Thus, the variable density remains as
 a coefficient in the right-hand side of the momentum equation, which is written

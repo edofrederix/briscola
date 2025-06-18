@@ -10,9 +10,9 @@ encouraged and can be proposed via Github.
 * *Two-phase solver:* While most normal and interface reconstruction algorithms
   are capable of handling general hexahedron cells, the split advection solver
   is currently not able to handle unstructured meshes.
-* *FFT solver:* The split FFT solver only works well for mild density ratios.
-  Improving this requires fundamental improvements to the FFT algorithm, or to
-  the pressure extrapolation method.
+* *FFT solver:* For two-phase simulations, the split FFT solver only works well
+  for mild density ratios. Improving this requires fundamental improvements to
+  the solver's algorithm, or to the pressure extrapolation method.
 * *Staggered solvers:* Staggered solvers only work on rectilinear meshes that
   are aligned with the coordinate system. Following the discretizations proposed
   in Wesseling, P. Principles of computational fluid dynamics. Vol. 29. Springer
@@ -24,7 +24,10 @@ encouraged and can be proposed via Github.
 * *Two-phase solver:* The surface tension approach is explicit, and can impose a
   restriction on the time step size. This is currently not checked, and may lead
   to instability.
-* ...
+* *Immersed boundaries*: Currently, only infinite cylinders and spheres (both
+  normal and inverted) can be used to define immersed boundaries. Additional
+  analytical shape definitions are yet to be implemented. Definition of immersed
+  boundaries based on CAD files is also currently not supported.
 
 Feel free to report any additional issues via Github or by contacting the
 authors directly.
