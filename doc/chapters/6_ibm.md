@@ -8,7 +8,10 @@ Briscola uses the immersed boundary method (IBM) to enable simulations in
 complex geometries on orthogonal meshes. In the IBM approach, a complex
 boundary shape $\Gamma_b$ arbitrarily cuts through the orthogonal mesh:
 
-<img src="./figures/ibm/immersedBoundary.png" alt="Immersed boundary on an orthogonal mesh" width="300" onerror="this.onerror=null; this.src='./immersedBoundary.png';"/>
+<img src="./figures/ibm/immersedBoundary.png"
+    alt="Immersed boundary on an orthogonal mesh"
+    width="300"
+    onerror="this.onerror=null; this.src='./immersedBoundary.png';"/>
 
 Instead of directly applying boundary conditions on cell- or face-centered
 values, the IBM applies (approximate) boundary conditions on $\Gamma_b$ by
@@ -39,7 +42,8 @@ immersedBoundaries
 {
     pipeWall
     {
-        cylinder1 // Inverted cylinder along the z-axis, used here as a pipe wall.
+        // Inverted cylinder along the z-axis, used here as a pipe wall.
+        cylinder1
         {
             type    cylinder;
             start   (0 0 0);
@@ -51,7 +55,8 @@ immersedBoundaries
 
     obstacles
     {
-        cylinder2 // Cylindrical obstacle oriented along x-axis, at a height of z=1.
+        // Cylindrical obstacle oriented along x-axis, at a height of z=1.
+        cylinder2
         {
             type    cylinder;
             start   (0 0 1);
@@ -60,7 +65,9 @@ immersedBoundaries
             inverted false;
         }
 
-        sphere1 // Spherical obstacle at the center of the pipe, at a height of z=1.2. Will default to inverted=false.
+        // Spherical obstacle at the center of the pipe, at a height of z=1.2.
+        // Will default to inverted=false.
+        sphere1
         {
             type    sphere;
             center  (0 0 1.2);
@@ -92,7 +99,10 @@ desired boundary value specified by the `values` option is applied in those
 cells. With this method, the real immersed boundary ends up being approximated
 by a staircase shape:
 
-<img src="./figures/ibm/penalization.png" alt="penalizationDirichlet" width="300" onerror="this.onerror=null; this.src='./penalization.png';"/>
+<img src="./figures/ibm/penalization.png"
+    alt="penalizationDirichlet"
+    width="300"
+    onerror="this.onerror=null; this.src='./penalization.png';"/>
 
 While the penalization is very simple and robust, the boundary condition is not
 actually applied at the location of the immersed boundary, which can limit the
@@ -107,7 +117,10 @@ according to a linear profile between the exact location of the interface in
 the direction of the mesh and the second wall-adjacent cell with value
 $\phi_n$:
 
-<img src="./figures/ibm/Fadlun.png" alt="FadlunDirichlet" width="300" onerror="this.onerror=null; this.src='./Fadlun.png';"/>
+<img src="./figures/ibm/Fadlun.png"
+    alt="FadlunDirichlet"
+    width="300"
+    onerror="this.onerror=null; this.src='./Fadlun.png';"/>
 
 The wall-adjacent cell values are forced according to the following relation:
 
@@ -140,7 +153,10 @@ inside of the immersed boundary) are set as a function of the two
 wall-adjacent layers of cells on the outside of the immersed boundary,
 $\phi_1$ and $\phi_2$:
 
-<img src="./figures/ibm/Vreman.png" alt="VremanDirichlet" width="300" onerror="this.onerror=null; this.src='./Vreman.png';"/>
+<img src="./figures/ibm/Vreman.png"
+    alt="VremanDirichlet"
+    width="300"
+    onerror="this.onerror=null; this.src='./Vreman.png';"/>
 
 The following relation is used:
 
@@ -162,7 +178,10 @@ immersed boundary. However, it does not follow grid lines and instead assumes a
 linear profile in the boundary-normal direction. The value of $\phi_g$ is set
 as a function of its mirror point residing in the fluid domain, $\phi_m$:
 
-<img src="./figures/ibm/Mittal.png" alt="MittalDirichlet" width="300" onerror="this.onerror=null; this.src='./Mittal.png';"/>
+<img src="./figures/ibm/Mittal.png"
+    alt="MittalDirichlet"
+    width="300"
+    onerror="this.onerror=null; this.src='./Mittal.png';"/>
 
 Since $\phi_m$ does not necessarily coincide with a cell-center, its value is
 obtained by simple trilinear interpolation of the values in the surrounding
