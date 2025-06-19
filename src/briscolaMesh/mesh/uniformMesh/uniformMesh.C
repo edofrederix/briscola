@@ -47,7 +47,18 @@ uniformMesh::~uniformMesh()
 
 labelVector uniformMesh::findCell(const vector& p, const label l) const
 {
-    vector q(clean(vector(p & base().x(), p & base().y(), p & base().z())));
+    const vector q
+    (
+        trimPrecision
+        (
+            vector
+            (
+                p & base().x(),
+                p & base().y(),
+                p & base().z()
+            )
+        )
+    );
 
     const scalarList& x = localPoints()[0];
     const scalarList& y = localPoints()[1];

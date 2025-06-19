@@ -38,44 +38,49 @@ class LVE
 
     inline scalar exactCubicSolver
     (
-        const scalar& Vf,
-        const scalar& alpha0,
-        const scalar& alpha1,
-        const scalar& alpha2,
-        const scalar& alpha3,
-        const scalar& Cmin,
-        const scalar& Cmax,
-        const scalar& Vkmin,
-        const scalar& Vkmax,
-        const scalar& Vtotal
+        const scalar Vf,
+        const scalarList& alpha,
+        const scalar Cmin,
+        const scalar Cmax,
+        const scalar Wmin,
+        const scalar Wmax,
+        const scalar V
     ) const;
 
-    inline scalar newtonCubicSolver
+    inline scalar NewtonCubicSolver
     (
-        const scalar& Vf,
-        const scalar& alpha0,
-        const scalar& alpha1,
-        const scalar& alpha2,
-        const scalar& alpha3,
-        const scalar& Cmin,
-        const scalar& Cmax,
-        const scalar& Vkmin,
-        const scalar& Vkmax,
-        const scalar& Vtotal
+        const scalar Vf,
+        const scalarList& alpha,
+        const scalar Cmin,
+        const scalar Cmax,
+        const scalar Wmin,
+        const scalar Wmax,
+        const scalar V
     ) const;
 
     inline scalar bisectionCubicSolver
     (
-        const scalar& Vf,
-        const scalar& alpha0,
-        const scalar& alpha1,
-        const scalar& alpha2,
-        const scalar& alpha3,
-        const scalar& Cmin,
-        const scalar& Cmax,
-        const scalar& Vkmin,
-        const scalar& Vkmax,
-        const scalar& Vtotal
+        const scalar Vf,
+        const scalarList& alpha,
+        const scalar Cmin,
+        const scalar Cmax,
+        const scalar Wmin,
+        const scalar Wmax,
+        const scalar V
+    ) const;
+
+    // CIBRAVE algorithm
+
+    inline scalar cLVE
+    (
+        const vertexVector& vertices,
+        const vector& n,
+        const scalar f,
+        const scalar V,
+        const vectorList& triAreas,
+        const vectorList& triNormals,
+        const scalarList& Cj,
+        const labelList& m
     ) const;
 
 public:
@@ -96,15 +101,7 @@ public:
     (
         const vertexVector& vertices,
         const vector& n,
-        const scalar& f,
-        const scalar& Vtotal
-    ) const;
-
-    inline scalar cLVE
-    (
-        const vertexVector& vertices,
-        const vector& n,
-        const scalar& f
+        const scalar f
     ) const;
 
     // Solve the local volume enforcement problem on parallelepiped
@@ -113,7 +110,7 @@ public:
     (
         const vertexVector& vertices,
         const vector& n,
-        const scalar& f
+        const scalar f
     ) const;
 
     // Solve the local volume enforcement problem
@@ -127,16 +124,16 @@ public:
     {
         const vector m(n/Foam::mag(n));
 
-        return rectilinear_ ? pLVE(v,m,f) : cLVE(v,m,f,cv);
+        return rectilinear_ ? pLVE(v,m,f) : cLVE(v,m,f);
     }
 
     scalar fluxVolumeLVE
     (
         const vertexVector& v,
-        const scalar& Vtotal,
-        const scalar& Vf,
-        const label& u,
-        const label& l
+        const scalar V,
+        const scalar Vf,
+        const label u,
+        const label l
     ) const;
 };
 

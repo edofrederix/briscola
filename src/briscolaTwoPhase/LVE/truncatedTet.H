@@ -38,15 +38,23 @@ class truncatedTet
         scalar factor = - (C_ + (n_ & v_[i]))/stabilise(n_ & d, 1e-16);
 
         if (factor >= 0 && factor <= 1)
-            return v_[i] + factor * d;
+        {
+            return v_[i] + factor*d;
+        }
         else if (factor < 0)
+        {
             factor = 1e-12;
+        }
         else if (factor > 1)
+        {
             factor = 1 - 1e-12;
+        }
         else
+        {
             factor = 0.5;
+        }
 
-        return v_[i] + factor * d;
+        return v_[i] + factor*d;
     }
 
     // Disallow default bitwise assignment

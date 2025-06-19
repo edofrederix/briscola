@@ -316,7 +316,7 @@ void partPoints::clean()
     vectorBlock& points = *this;
 
     forAllBlock(points, i, j, k)
-        points(i,j,k) = briscola::clean(points(i,j,k));
+        points(i,j,k) = briscola::trimPrecision(points(i,j,k));
 }
 
 }

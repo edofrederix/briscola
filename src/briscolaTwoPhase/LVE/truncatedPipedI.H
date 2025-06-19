@@ -72,9 +72,9 @@ inline scalar truncatedPiped::volume() const
     vector n = T & n_;
     scalar C = C_ + (n_ & lba_);
 
-    for (int i = 0; i < 3; i++)
+    for (label i = 0; i < 3; i++)
     {
-       if (n[i] < 0)
+        if (n[i] < 0)
         {
             C += n[i];
             n[i] = -n[i];
@@ -125,56 +125,56 @@ inline scalar truncatedPiped::volume() const
     // Small modification to prevent round off errors in some extreme cases
     // where m1 is close to 0.
 
-    if ((m2 <= C) && (C < mm) && ((m1/m2) < 1e-12))
+    if (m2 <= C && C < mm && m1/m2 < 1e-12)
     {
         m1 = 0;
         m12 = m2;
         mm = Foam::min(m12, m3);
     }
 
-    scalar v1 = Foam::sqr(m1) / Foam::max(6.0 * m2 * m3, 1e-50);
+    scalar v1 = Foam::sqr(m1)/Foam::max(6.0*m2*m3, 1e-50);
 
     if (C < m1)
     {
-        V = Foam::pow3(C) / (6.0 * m1 * m2 * m3);
+        V = Foam::pow3(C)/(6.0*m1*m2*m3);
     }
     else if (C < m2)
     {
-        V = (C*(C - m1)) / (2.0*m2*m3) + v1;
+        V = C*(C - m1)/(2.0*m2*m3) + v1;
     }
     else if (C < mm)
     {
         V =
             (
-                Foam::sqr(C) * (3.0*m12 - C)
-              + Foam::sqr(m1) * (m1 - 3.0*C)
-              + Foam::sqr(m2) * (m2 - 3.0*C)
+                Foam::sqr(C)*(3.0*m12 - C)
+              + Foam::sqr(m1)*(m1 - 3.0*C)
+              + Foam::sqr(m2)*(m2 - 3.0*C)
             )
-          / (6*m1*m2*m3);
+          / (6.0*m1*m2*m3);
     }
     else if (m3 < m12)
     {
         V =
             (
-                Foam::sqr(C)  * (3.0 - 2.0*C)
-              + Foam::sqr(m1) * (m1 - 3.0*C)
-              + Foam::sqr(m2) * (m2 - 3.0*C)
-              + Foam::sqr(m3) * (m3 - 3.0*C)
+                Foam::sqr(C)*(3.0 - 2.0*C)
+              + Foam::sqr(m1)*(m1 - 3.0*C)
+              + Foam::sqr(m2)*(m2 - 3.0*C)
+              + Foam::sqr(m3)*(m3 - 3.0*C)
             )
-          / (6*m1*m2*m3);
+          / (6.0*m1*m2*m3);
     }
     else
     {
-        V = (2.0*C - m12) / (2.0*m3);
+        V = 0.5*(2.0*C - m12)/m3;
     }
 
     if (inverse)
     {
-        return V * scalingFactor;
+        return V*scalingFactor;
     }
     else
     {
-        return (1.0-V) * scalingFactor;
+        return (1.0 - V)*scalingFactor;
     }
 }
 

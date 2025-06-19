@@ -15,76 +15,68 @@ const label LVE::maxIter_ = 100;
 scalar LVE::fluxVolumeLVE
 (
     const vertexVector& v,
-    const scalar& Vtotal,
-    const scalar& Vf,
-    const label& u,
-    const label& l
+    const scalar V,
+    const scalar Vf,
+    const label u,
+    const label l
 ) const
 {
     vectorList x(8);
     vectorList e(8);
 
-    for (int iv = 0; iv < 4; iv++)
+    for (int i = 0; i < 4; i++)
     {
-        x[vertexNumsInFace[u][iv]] = v[vertexNumsInFace[u][iv]];
-        x[vertexNumsInFace[l][iv]] = v[vertexNumsInFace[l][iv]];
+        x[vertexNumsInFace[u][i]] = v[vertexNumsInFace[u][i]];
+        x[vertexNumsInFace[l][i]] = v[vertexNumsInFace[l][i]];
 
-        e[vertexNumsInFace[u][iv]] = v[vertexNumsInFace[l][iv]] - v[vertexNumsInFace[u][iv]];
-        e[vertexNumsInFace[l][iv]] = Zero;
+        e[vertexNumsInFace[u][i]] =
+            v[vertexNumsInFace[l][i]]
+          - v[vertexNumsInFace[u][i]];
+
+        e[vertexNumsInFace[l][i]] = Zero;
     }
 
-    scalar alpha0 = 0;
-    scalar alpha1 = 0;
-    scalar alpha2 = 0;
-    scalar alpha3 = 0;
+    scalarList alpha(4, 0.0);
 
     for (int i = 0; i < numberOfTets; i++)
     {
-        vectorList x1(3);
-        vectorList e1(3);
+        vectorList w(3);
+        vectorList e(3);
 
         for (int j = 0; j < 3; j++)
         {
-            x1[j] = x[tetDecomp[i][j]] - x[tetDecomp[i][3]];
-            e1[j] = e[tetDecomp[i][j]] - e[tetDecomp[i][3]];
+            w[j] = x[tetDecomp[i][j]] - x[tetDecomp[i][3]];
+            e[j] = e[tetDecomp[i][j]] - e[tetDecomp[i][3]];
         }
 
-        alpha0 += (x1[0] & (x1[1] ^ x1[2]));
-        alpha1 += (e1[0] & (x1[1] ^ x1[2]))
-                + (x1[0] & (e1[1] ^ x1[2]))
-                + (x1[0] & (x1[1] ^ e1[2]));
-        alpha2 += (x1[0] & (e1[1] ^ e1[2]))
-                + (e1[0] & (x1[1] ^ e1[2]))
-                + (e1[0] & (e1[1] ^ x1[2]));
-        alpha3 += (e1[0] & (e1[1] ^ e1[2]));
+        alpha[0] += (w[0] & (w[1] ^ w[2]));
+        alpha[3] += (e[0] & (e[1] ^ e[2]));
 
+        alpha[1] +=
+            (e[0] & (w[1] ^ w[2]))
+          + (w[0] & (e[1] ^ w[2]))
+          + (w[0] & (w[1] ^ e[2]));
+
+        alpha[2] +=
+            (w[0] & (e[1] ^ e[2]))
+          + (e[0] & (w[1] ^ e[2]))
+          + (e[0] & (e[1] ^ w[2]));
     }
 
-    scalar C = 1 + LVE::exactCubicSolver
-    (
-        Vf,
-        alpha0,
-        alpha1,
-        alpha2,
-        alpha3,
-        0,
-        1,
-        0,
-        Vtotal,
-        Vtotal
-    );
+    const scalar C =
+        LVE::exactCubicSolver
+        (
+            Vf,
+            alpha,
+            0,
+            1,
+            0,
+            V,
+            V
+        )
+      + 1.0;
 
-    if (C > 1)
-    {
-        C = 1;
-    }
-    else if (C < 0)
-    {
-        C = 0;
-    }
-
-    return C;
-
+    return Foam::max(Foam::min(1.0, C), 0.0);
 }
 
 }

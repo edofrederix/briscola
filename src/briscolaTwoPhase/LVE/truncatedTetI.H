@@ -70,8 +70,8 @@ inline scalar truncatedTet::volume() const
         case 2:
         {
             vectorList p(4);
-            labelList  q(4);
-            labelList  s(2);
+            labelList q(4);
+            labelList s(2);
 
             label j = 0;
             label k = 0;

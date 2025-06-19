@@ -54,9 +54,9 @@ free-surface simulations on cartesian-grids." Journal of Computational Physics
    with $C$ the 'intercept' constant which must be computed. The problem of
    finding $C$ is referred to as the Local Volume Enforcement (LVE) problem.
    Briscola has two algorithms implemented for solving the LVE: the CIBRAVE
-   algorithm (Marić, T. "Iterative Volume-of-Fluid interface positioning in
-   general polyhedrons with Consecutive Cubic Spline interpolation." Journal of
-   Computational Physics: X 11 (2021): 100093.) for general hexahedrons and an
+   algorithm (López, Joaquín, et al. "A new volume conservation enforcement
+   method for PLIC reconstruction in general convex grids." Journal of
+   Computational Physics 316 (2016): 338-359.) for general hexahedrons and an
    analytical algorithm (Scardovelli, R., and Stephane Z.. "Analytical relations
    connecting linear interfaces and volume fractions in rectangular grids."
    Journal of Computational Physics 164.1 (2000): 228-237) for parallelepiped

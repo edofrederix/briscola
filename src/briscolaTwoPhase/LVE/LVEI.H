@@ -9,26 +9,22 @@ namespace fv
 
 inline scalar LVE::exactCubicSolver
 (
-    const scalar& Vf,
-    const scalar& alpha0,
-    const scalar& alpha1,
-    const scalar& alpha2,
-    const scalar& alpha3,
-    const scalar& Cmin,
-    const scalar& Cmax,
-    const scalar& Vkmin,
-    const scalar& Vkmax,
-    const scalar& Vtotal
+    const scalar Vf,
+    const scalarList& alpha,
+    const scalar Cmin,
+    const scalar Cmax,
+    const scalar Wmin,
+    const scalar Wmax,
+    const scalar V
 ) const
 {
-    // Analytic cubic equation solver
-    //
-    // If the leading order term is smaller than a prescribed tolerance or the
-    // found root is not in the desired bracket a newton solver is called
+    // Analytic cubic equation solver. If the leading order term is smaller than
+    // a prescribed tolerance or the found root is not in the desired bracket a
+    // Newton solver is called
 
-    const scalar Cr = Foam::mag(Cmax - Cmin);
+    const scalar dC = Foam::mag(Cmax - Cmin);
 
-    if (Foam::mag(alpha3) > 0)
+    if (Foam::mag(alpha[3]) > 0)
     {
         if
         (
@@ -36,253 +32,179 @@ inline scalar LVE::exactCubicSolver
             (
                 Foam::min
                 (
-                    Foam::mag(alpha3/stabilise(alpha0,1e-16)),
-                    Foam::mag(alpha3/stabilise(alpha1,1e-16))
+                    Foam::mag(alpha[3]/stabilise(alpha[0],1e-16)),
+                    Foam::mag(alpha[3]/stabilise(alpha[1],1e-16))
                 ),
-                Foam::mag(alpha3/stabilise(alpha2,1e-16))
+                Foam::mag(alpha[3]/stabilise(alpha[2],1e-16))
             ) < tol_
         )
         {
-            return LVE::newtonCubicSolver
+            return LVE::NewtonCubicSolver
             (
                 Vf,
-                alpha0,
-                alpha1,
-                alpha2,
-                alpha3,
+                alpha,
                 Cmin,
                 Cmax,
-                Vkmin,
-                Vkmax,
-                Vtotal
+                Wmin,
+                Wmax,
+                V
             );
         }
         else
         {
-            const scalar a0 = (alpha0 - 6.0 * Vf) / alpha3;
-            const scalar a1 = alpha1 / alpha3;
-            const scalar a2 = alpha2 / alpha3;
+            const scalar a0 = (alpha[0] - 6.0*Vf)/alpha[3];
+            const scalar a1 = alpha[1]/alpha[3];
+            const scalar a2 = alpha[2]/alpha[3];
 
-            const scalar q = (a1/3) - (Foam::sqr(a2)/9);
-            const scalar r = ((a1*a2 - 3*a0)/6) - (Foam::pow3(a2)/27);
+            const scalar q = a1/3 - Foam::sqr(a2)/9.0;
+            const scalar r = (a1*a2 - 3*a0)/6.0 - Foam::pow3(a2)/27.0;
 
-            if ((Foam::sqr(r) + Foam::pow3(q)) > 0)
+            if (Foam::sqr(r) + Foam::pow3(q) > 0)
             {
                 const scalar A =
-                    Foam::cbrt(Foam::mag(r)
-                  + Foam::sqrt((Foam::sqr(r) + Foam::pow3(q))));
+                    Foam::cbrt
+                    (
+                        Foam::mag(r)
+                      + Foam::sqrt(Foam::sqr(r) + Foam::pow3(q))
+                    );
 
-                scalar t1 = 0;
-
-                if (r >= 0)
-                {
-                    t1 = A - q/A;
-                }
-                else
-                {
-                    t1 = q/A - A;
-                }
-
+                const scalar t1 = r >= 0 ? A - q/A : q/A - A;
                 const scalar z1 = t1 - a2/3;
 
-                if ((Cmin <= z1 + (tol_ * Cr)) && (z1 <= Cmax + (tol_ * Cr)))
+                if (Cmin <= z1 + tol_*dC && z1 <= Cmax + tol_*dC)
                 {
-                    if (z1 < Cmin)
-                        return -Cmin;
-                    else if (z1 > Cmax)
-                        return -Cmax;
-                    else
-                        return -z1;
+                    return -Foam::max(Foam::min(z1,Cmax),Cmin);
                 }
                 else
                 {
-                    return LVE::newtonCubicSolver
+                    return LVE::NewtonCubicSolver
                     (
                         Vf,
-                        alpha0,
-                        alpha1,
-                        alpha2,
-                        alpha3,
+                        alpha,
                         Cmin,
                         Cmax,
-                        Vkmin,
-                        Vkmax,
-                        Vtotal
+                        Wmin,
+                        Wmax,
+                        V
                     );
                 }
-
             }
             else
             {
-                scalar theta = 0;
+                const scalar theta =
+                    q < 0 ? Foam::acos(r/Foam::pow(-q,3.0/2.0)) : 0.0;
 
-                if (q < 0)
+                const scalar pi = Foam::constant::mathematical::pi;
+
+                const scalar phi1 = theta/3.0;
+                const scalar phi2 = phi1 - 2.0*pi/3.0;
+                const scalar phi3 = phi1 + 2.0*pi/3.0;
+
+                const scalar z1 = 2.0*Foam::sqrt(-q)*Foam::cos(phi1) - a2/3.0;
+                const scalar z2 = 2.0*Foam::sqrt(-q)*Foam::cos(phi2) - a2/3.0;
+                const scalar z3 = 2.0*Foam::sqrt(-q)*Foam::cos(phi3) - a2/3.0;
+
+                if (Cmin <= z1 + tol_*dC && z1 <= Cmax + tol_*dC)
                 {
-                    theta = Foam::acos(r/Foam::pow(-q,3/2.));
+                    return -Foam::max(Foam::min(z1,Cmax),Cmin);
                 }
-
-                const scalar phi1 = theta/3;
-                const scalar phi2 =
-                    phi1 - ((2*Foam::constant::mathematical::pi)/3);
-                const scalar phi3 =
-                    phi1 + ((2*Foam::constant::mathematical::pi)/3);
-
-                const scalar z1 = 2 * Foam::sqrt(-q) * Foam::cos(phi1) - a2 /3;
-                const scalar z2 = 2 * Foam::sqrt(-q) * Foam::cos(phi2) - a2 /3;
-                const scalar z3 = 2 * Foam::sqrt(-q) * Foam::cos(phi3) - a2 /3;
-
-                if ((Cmin <= z1 + (tol_ * Cr)) && (z1 <= Cmax + (tol_ * Cr)))
+                else if (Cmin <= z2 + tol_*dC && z2 <= Cmax + tol_*dC)
                 {
-                    if (z1 < Cmin)
-                        return -Cmin;
-                    else if (z1 > Cmax)
-                        return -Cmax;
-                    else
-                        return -z1;
+                    return -Foam::max(Foam::min(z2,Cmax),Cmin);
                 }
-                else if
-                (
-                    (Cmin <= z2 + (tol_ * Cr)) && (z2 <= Cmax + (tol_ * Cr))
-                )
+                else if (Cmin <= z3 + tol_*dC && z3 <= Cmax + tol_*dC)
                 {
-                    if (z2 < Cmin)
-                        return -Cmin;
-                    else if (z2 > Cmax)
-                        return -Cmax;
-                    else
-                        return -z2;
-                }
-                else if
-                (
-                    (Cmin <= z3 + (tol_ * Cr)) && (z3 <= Cmax + (tol_ * Cr))
-                )
-                {
-                    if (z3 < Cmin)
-                        return -Cmin;
-                    else if (z3 > Cmax)
-                        return -Cmax;
-                    else
-                        return -z3;
+                    return -Foam::max(Foam::min(z3,Cmax),Cmin);
                 }
                 else
                 {
-                    return LVE::newtonCubicSolver
+                    return LVE::NewtonCubicSolver
                     (
                         Vf,
-                        alpha0,
-                        alpha1,
-                        alpha2,
-                        alpha3,
+                        alpha,
                         Cmin,
                         Cmax,
-                        Vkmin,
-                        Vkmax,
-                        Vtotal
+                        Wmin,
+                        Wmax,
+                        V
                     );
                 }
-
             }
         }
     }
-    else if (Foam::mag(alpha2) > 0)
+    else if (Foam::mag(alpha[2]) > 0)
     {
         if
         (
             Foam::min
             (
-                Foam::mag(alpha2/stabilise(alpha0,1e-16)),
-                Foam::mag(alpha2/stabilise(alpha1,1e-16))
+                Foam::mag(alpha[2]/stabilise(alpha[0],1e-16)),
+                Foam::mag(alpha[2]/stabilise(alpha[1],1e-16))
             ) < tol_
         )
         {
-            return LVE::newtonCubicSolver
+            return LVE::NewtonCubicSolver
             (
                 Vf,
-                alpha0,
-                alpha1,
-                alpha2,
-                alpha3,
+                alpha,
                 Cmin,
                 Cmax,
-                Vkmin,
-                Vkmax,
-                Vtotal
+                Wmin,
+                Wmax,
+                V
             );
         }
         else
         {
-            const scalar disc = Foam::sqr(alpha1)
-                - 4.0 * alpha2 * (alpha0 - 6.0 * Vf);
+            const scalar disc =
+                Foam::sqr(alpha[1]) - 4.0*alpha[2]*(alpha[0] - 6.0*Vf);
+
             if (disc > 0)
             {
-                const scalar z1 = (- alpha1 + Foam::sqrt(disc))/(2.0 * alpha2);
-                const scalar z2 = (- alpha1 - Foam::sqrt(disc))/(2.0 * alpha2);
+                const scalar z1 = 0.5*(-alpha[1] + Foam::sqrt(disc))/alpha[2];
+                const scalar z2 = 0.5*(-alpha[1] - Foam::sqrt(disc))/alpha[2];
 
-                if ((Cmin <= z1 + (tol_ * Cr)) && (z1 <= Cmax + (tol_ * Cr)))
+                if (Cmin <= z1 + tol_*dC && z1 <= Cmax + tol_*dC)
                 {
-                    if (z1 < Cmin)
-                        return -Cmin;
-                    else if (z1 > Cmax)
-                        return -Cmax;
-                    else
-                        return -z1;
+                    return -Foam::max(Foam::min(z1,Cmax),Cmin);
                 }
-                else if
-                (
-                    (Cmin <= z2 + (tol_ * Cr)) && (z2 <= Cmax + (tol_ * Cr))
-                )
+                else if (Cmin <= z2 + tol_*dC && z2 <= Cmax + tol_*dC)
                 {
-                    if (z2 < Cmin)
-                        return -Cmin;
-                    else if (z2 > Cmax)
-                        return -Cmax;
-                    else
-                        return -z2;
+                    return -Foam::max(Foam::min(z2,Cmax),Cmin);
                 }
                 else
                 {
-                    return LVE::newtonCubicSolver
+                    return LVE::NewtonCubicSolver
                     (
                         Vf,
-                        alpha0,
-                        alpha1,
-                        alpha2,
-                        alpha3,
+                        alpha,
                         Cmin,
                         Cmax,
-                        Vkmin,
-                        Vkmax,
-                        Vtotal
+                        Wmin,
+                        Wmax,
+                        V
                     );
                 }
             }
             else
             {
-                const scalar z1 = - alpha1 / (2.0 * alpha2);
+                const scalar z1 = -0.5*alpha[1]/alpha[2];
 
-                if ((Cmin <= z1 + (tol_ * Cr)) && (z1 <= Cmax + (tol_ * Cr)))
+                if (Cmin <= z1 + tol_*dC && z1 <= Cmax + tol_*dC)
                 {
-                    if (z1 < Cmin)
-                        return -Cmin;
-                    else if (z1 > Cmax)
-                        return -Cmax;
-                    else
-                        return -z1;
+                    return -Foam::max(Foam::min(z1,Cmax),Cmin);
                 }
                 else
                 {
-                    return LVE::newtonCubicSolver
+                    return LVE::NewtonCubicSolver
                     (
                         Vf,
-                        alpha0,
-                        alpha1,
-                        alpha2,
-                        alpha3,
+                        alpha,
                         Cmin,
                         Cmax,
-                        Vkmin,
-                        Vkmax,
-                        Vtotal
+                        Wmin,
+                        Wmax,
+                        V
                     );
                 }
             }
@@ -290,715 +212,611 @@ inline scalar LVE::exactCubicSolver
     }
     else
     {
-        const scalar z1 = (6.0 * Vf - alpha0) / alpha1;
+        const scalar z1 = (6.0*Vf - alpha[0])/alpha[1];
 
-        if ((Cmin <= z1 + (tol_ * Cr)) && (z1 <= Cmax + (tol_ * Cr)))
+        if (Cmin <= z1 + tol_*dC && z1 <= Cmax + tol_*dC)
         {
-            if (z1 < Cmin)
-                return -Cmin;
-            else if (z1 > Cmax)
-                return -Cmax;
-            else
-                return -z1;
+            return -Foam::max(Foam::min(z1,Cmax),Cmin);
         }
         else
         {
-            return LVE::newtonCubicSolver
+            return LVE::NewtonCubicSolver
             (
                 Vf,
-                alpha0,
-                alpha1,
-                alpha2,
-                alpha3,
+                alpha,
                 Cmin,
                 Cmax,
-                Vkmin,
-                Vkmax,
-                Vtotal
+                Wmin,
+                Wmax,
+                V
             );
         }
     }
 }
 
-inline scalar LVE::newtonCubicSolver
+inline scalar LVE::NewtonCubicSolver
 (
-    const scalar& Vf,
-    const scalar& alpha0,
-    const scalar& alpha1,
-    const scalar& alpha2,
-    const scalar& alpha3,
-    const scalar& Cmin,
-    const scalar& Cmax,
-    const scalar& Vkmin,
-    const scalar& Vkmax,
-    const scalar& Vtotal
+    const scalar Vf,
+    const scalarList& alpha,
+    const scalar Cmin,
+    const scalar Cmax,
+    const scalar Wmin,
+    const scalar Wmax,
+    const scalar V
 ) const
 {
-    // Newton method cubic equation solver
-    //
-    // If the method doesn't converge a bisection solver is called
+    // Newton method cubic equation solver. If the method doesn't converge a
+    // bisection solver is called.
 
-    scalar Cn = Cmin + (Cmax - Cmin) * (Vf - Vkmax)/(Vkmin - Vkmax);
-    scalar fn, dfn;
+    scalar C = Cmin + (Cmax - Cmin)*(Wmax - Vf)/(Wmax - Wmin);
 
-    for (int iter = 0; iter < 2 * maxIter_; iter++)
+    for (label iter = 0; iter < 2*maxIter_; iter++)
     {
-        fn = (1.0/6.0) * ((alpha3 * Foam::pow3(Cn))
-            + (alpha2 * Foam::sqr(Cn)) + (alpha1 * Cn) + alpha0) - Vf;
+        const scalar fn =
+            (
+                alpha[3]*Foam::pow3(C)
+              + alpha[2]*Foam::sqr(C)
+              + alpha[1]*C
+              + alpha[0]
+            )/6.0
+          - Vf;
 
-        if (Foam::mag(fn/Vtotal) < tol_)
-        {
-            if (Cn < Cmin)
-                return -Cmin;
-            else if (Cn > Cmax)
-                return -Cmax;
-            else
-                return -Cn;
-            return - Cn;
-        }
+        if (Foam::mag(fn/V) < tol_)
+            return -Foam::max(Foam::min(C,Cmax),Cmin);
 
-        dfn = (1.0/6.0) * ((3.0 * alpha3 * Foam::sqr(Cn))
-            + (2.0 * alpha2 * Cn) + (alpha1));
+        const scalar dfn =
+            (
+                alpha[3]*Foam::sqr(C)*3.0
+              + alpha[2]*C*2.0
+              + alpha[1]
+            )/6.0;
 
-        Cn = Cn - fn / (stabilise(dfn,1e-25));
+        C = C - fn/stabilise(dfn,1e-25);
     }
 
     return LVE::bisectionCubicSolver
     (
         Vf,
-        alpha0,
-        alpha1,
-        alpha2,
-        alpha3,
+        alpha,
         Cmin,
         Cmax,
-        Vkmin,
-        Vkmax,
-        Vtotal
+        Wmin,
+        Wmax,
+        V
     );
 }
 
 inline scalar LVE::bisectionCubicSolver
 (
-    const scalar& Vf,
-    const scalar& alpha0,
-    const scalar& alpha1,
-    const scalar& alpha2,
-    const scalar& alpha3,
-    const scalar& Cmin,
-    const scalar& Cmax,
-    const scalar& Vkmin,
-    const scalar& Vkmax,
-    const scalar& Vtotal
+    const scalar Vf,
+    const scalarList& alpha,
+    const scalar Cmin,
+    const scalar Cmax,
+    const scalar Wmin,
+    const scalar Wmax,
+    const scalar V
 ) const
 {
-    // Bisection method cubic equation solver
+    // Bisection method cubic equation solver. Last resort.
 
     scalar C1 = Cmin;
     scalar C2 = Cmax;
-    scalar Cn = Cmin + (Cmax - Cmin) * (Vf - Vkmax)/(Vkmin - Vkmax);
-    scalar fn;
+    scalar C = Cmin + (Cmax - Cmin)*(Wmax - Vf)/(Wmax - Wmin);
 
-    for (int iter = 0; iter < maxIter_; iter++)
+    for (label iter = 0; iter < maxIter_; iter++)
     {
-        fn = (1/6.0) * ((alpha3 * Foam::pow3(Cn))
-            + (alpha2 * Foam::sqr(Cn)) + (alpha1 * Cn) + alpha0) - Vf;
+        const scalar fn =
+            (
+                alpha[3]*Foam::pow3(C)
+              + alpha[2]*Foam::sqr(C)
+              + alpha[1]*C
+              + alpha[0]
+            )/6.0
+          - Vf;
 
-        if (Foam::mag(fn/Vtotal) < tol_)
-        {
-            return - Cn;
-        }
+        if (Foam::mag(fn/V) < tol_)
+            return -Foam::max(Foam::min(C,Cmax),Cmin);
+
+        // Adjust limits
 
         if (fn < 0)
         {
-            C2 = Cn;
+            C2 = C;
         }
         else
         {
-            C1 = Cn;
+            C1 = C;
         }
 
-        Cn = 0.5 * (C1 + C2);
+        // Bisection
+
+        C = 0.5*(C1 + C2);
     }
 
-    return - Cn;
+    FatalError
+        << "Could not find LVE solution" << endl << abort(FatalError);
+
+    return -C;
 }
 
 inline scalar LVE::cLVE
 (
     const vertexVector& v,
     const vector& n,
-    const scalar& f,
-    const scalar& Vtotal
+    const scalar f,
+    const scalar V,
+    const vectorList& triAreas,
+    const vectorList& triNormals,
+    const scalarList& Cj,
+    const labelList& m
 ) const
 {
     // CIBRAVE algorithm of J. López, J. Hernández, P. Gómez and F. Faura (2016)
     // adapted for non-convex polyhedrons following, López, J. Hernández, P.
     // Gómez and F. Faura (2019). In this version the cell volume is known.
 
-    scalar Vmin = 0, Vmax;
-    scalar Vkmin, Vkmax;
-    int Kmin = 0, Kmax = 7, Kf = 0;
-    int maxNumberOfFaces = 16;
+    const scalar Vf = V*f;
 
-    scalarList Kjs(maxNumberOfFaces);
-    scalarList Mjs(maxNumberOfFaces);
-    scalarList Ljs(maxNumberOfFaces);
-    int hjs[maxNumberOfFaces];
-    int epsilonjs[maxNumberOfFaces];
+    // Sorting vertex by their C value. The clean function trims truncation
+    // error.
 
-    vectorList ns(maxNumberOfFaces);
-    scalarList Cjs(12);
+    scalarList C(8);
+    forAll(C, i)
+        C[i] = trimPrecision(n & v[i]);
 
-    int Kmap[8];
+    labelList order;
+    sortedOrder(C, order);
+
     scalarList Cs(8);
-
-    int IA[8];
-
-    // Sorting vertex by their C value
-
-    double originalCs[8];
-
-    for (int i = 0; i < 8; i++)
-    {
-        originalCs[i] = (n & v[i]);
-    }
-
-    double SortedCs[8] = {0};
-    int sortedCsIndex[8] = {0};
-
-    int len = 1;
-    int place = 0;
-
-    SortedCs[0] = originalCs[0];
-    sortedCsIndex[0] = 0;
-
-    for (int i = 1; i < 8; i++)
-    {
-        place = len;
-        for (int j = 0; j < len; j++)
-        {
-            if (originalCs[i] < SortedCs[j])
-            {
-                place = j;
-                break;
-            }
-        }
-
-        for (int j = len; j > place; j--)
-        {
-           SortedCs[j] = SortedCs[j-1];
-           sortedCsIndex[j] = sortedCsIndex[j-1];
-        }
-
-        SortedCs[place] = originalCs[i];
-        sortedCsIndex[place] = i;
-        len++;
-
-    }
-
-    // Computation of the normals and their maximum component
-
-    vector aux;
-
-    for (int j = 0; j < 12; j++)
-    {
-        aux =
-            (
-                v[faceTriangleDecompCC[j][1]]
-              - v[faceTriangleDecompCC[j][0]]
-            )
-          ^ (
-                v[faceTriangleDecompCC[j][2]]
-              - v[faceTriangleDecompCC[j][0]]
-            );
-
-        ns[j] = aux / Foam::mag(aux);
-
-        Cjs[j] =  - ns[j] & v[faceTriangleDecompCC[j][1]];
-    }
-
-    int maxNormalIndex[maxNumberOfFaces];
-    scalar auxMax;
-
-    for (int j = 0; j < 12; j++)
-    {
-        auxMax = Foam::mag(ns[j][0]);
-        maxNormalIndex[j] = 0;
-
-        for (int i = 1; i < 3; i++)
-        {
-            if (Foam::mag(ns[j][i]) > auxMax)
-            {
-                auxMax = Foam::mag(ns[j][i]);
-                maxNormalIndex[j] = i;
-            }
-        }
-    }
+    forAll(C, i)
+        Cs[i] = C[order[i]];
 
     // Check limiting volumes
 
-    Vmax = Vtotal;
-    const scalar Vf = Vmax * f;
-
-    if ((Foam::mag(Vf-Vmax)/Vtotal) < tol_)
+    if (f < tol_)
     {
-        return -SortedCs[0];
+        return -Cs.last();
     }
-    else if ((Foam::mag(Vf)/Vtotal) < tol_)
+    else if (f > 1.0-tol_)
     {
-        return -SortedCs[7];
+        return -Cs.first();
     }
 
-    const scalar Cr = Foam::mag(SortedCs[7] - SortedCs[0]);
+    // Unique sorting
 
-    // Prevent edges parallel to the plane from being cut
+    labelList uniqueOrder(8, 0);
+    for (label i = 1; i < 8; i++)
+        uniqueOrder[i] =
+            uniqueOrder[i-1] + (Cs[i] != Cs[i-1] ? 1 : 0);
 
-    Cs[0] = SortedCs[0];
-    Kmap[sortedCsIndex[0]] = 0;
-    int Knum = 0;
+    // Unique C values
 
-    for (int i = 1; i < 8; i++)
+    scalarList Cu(uniqueOrder.last()+1);
+    forAll(Cu, i)
+        Cu[i] = Cs[findIndex(uniqueOrder,i)];
+
+    label Kmin = 0, Kmax = Cu.size()-1;
+    scalar Vmin = 0.0, Vmax = V;
+
+    label iter = 0;
+    while (iter < 8 && Kmin < Kmax)
     {
-        if (Foam::mag(SortedCs[i-1] - SortedCs[i]) / Cr < tol_)
-        {
-            Kmap[sortedCsIndex[i]] = Knum;
-        }
-        else
-        {
-            Knum++;
-            Cs[Knum] = SortedCs[i];
-            Kmap[sortedCsIndex[i]] = Knum;
-        }
-    }
+        iter++;
 
-    Kmax = Knum;
+        // Find bracket by interpolation
 
-    int iterationCount = 0;
-    while ((iterationCount < 8) && (Kmin < Kmax))
-    {
+        scalar Ci =
+            Cu[Kmin] + (Cu[Kmax] - Cu[Kmin])*(Vmax - Vf)/(Vmax - Vmin);
 
-        iterationCount++;
-        int NIPV1[maxNumberOfFaces] = {0};
-        int IPV1[maxNumberOfFaces][14];
+        // Lower unique vertex index
 
-        int insertedVertex[12][6];
-        int totalInsertedVertex = 0;
-        int Nf = 12;
+        const label Kj =
+            Foam::min(Foam::max(findLower(Cu,Ci), Kmin), Kmax-1);
 
-        // Find Bracket by interpolation
+        // Check once every iteration if vertex C values are larger than Ci
 
-        int Ip = 8;
-        scalar interpolatedC =
-            Cs[Kmin] + (Cs[Kmax] - Cs[Kmin]) * (Vf - Vmax)/(Vmin - Vmax);
+        List<bool> IA(8);
+        forAll(IA, i)
+            IA[i] = C[i] > Ci;
 
-        for (int i = Kmin; i <= Kmax; i++)
-        {
-            if (Cs[i] > interpolatedC)
-            {
-                Kf = i - 1;
-                break;
-            }
-        }
+        // Arrange new face using Lopez (2020) algorithm. The maximum number of
+        // faces is 16.
 
-        if (Kf < Kmin)
-            Kf = Kmin;
-        else if (Kf >= Kmax)
-            Kf = Kmax - 1;
+        labelList NIPV1(16, 0);
+        List<labelList> IPV1(16, labelList(14,-1));
+        List<labelList> IN(0);
 
-        for (int i = 0; i < 8; i++)
-        {
-            if (Kmap[i] <= Kf)
-                IA[i] = 0;
-            else
-                IA[i] = 1;
-        }
+        // Total number of vertices
 
-        // Arrange new face using Lopez (2020) algorithm
+        label I = 8;
+
+        // Loop over face triangles
 
         for (int j = 0; j < 12; j++)
         {
+            // In this face triangle, count the number of vertices that have a C
+            // value larger than Ci
+
             for (int i = 0; i < 3; i++)
-            {
-                if (IA[faceTriangleDecompCC[j][i]] == 1)
-                    NIPV1[j]++;
-            }
+                NIPV1[j] += IA[faceTriangleDecompCC[j][i]];
+
+            // Check if at least one vertex has a large C value
 
             if (NIPV1[j] > 0)
             {
-                int index = 0;
-                for (int i = 1; i <= 3; i++)
+                label k = 0;
+                for (label i = 0; i < 3; i++)
                 {
-                    int ip1 = faceTriangleDecompCC[j][i % 3];
-                    int ip2 = faceTriangleDecompCC[j][(i+1) % 3];
+                    label i1 = faceTriangleDecompCC[j][(i+1) % 3];
+                    label i2 = faceTriangleDecompCC[j][(i+2) % 3];
 
-                    if (IA[ip1] == 1)
+                    if (IA[i1])
                     {
-                        index++;
-                        IPV1[j][index] = ip1;
+                        k++;
+                        IPV1[j][k] = i1;
                     }
-                    if (IA[ip1] != IA[ip2])
-                    {
-                        index++;
-                        bool flag = true;
 
-                        for (int aux = 0; aux < totalInsertedVertex; aux ++)
+                    if (IA[i1] != IA[i2])
+                    {
+                        k++;
+                        bool add = true;
+
+                        forAll(IN, l)
                         {
                             if
                             (
-                                ((insertedVertex[aux][1] == ip1)
-                                    || (insertedVertex[aux][2] == ip1))
-                                & ((insertedVertex[aux][1] == ip2)
-                                    || (insertedVertex[aux][2] == ip2))
+                                (IN[l][1] == i1 || IN[l][2] == i1)
+                             && (IN[l][1] == i2 || IN[l][2] == i2)
                             )
                             {
-                                flag = false;
-                                IPV1[j][index] = insertedVertex[aux][0];
-                                if (IA[ip2] == 1)
+                                add = false;
+
+                                IPV1[j][k] = IN[l][0];
+
+                                if (IA[i2] == 1)
                                 {
-                                    insertedVertex[aux][3] = j;
-                                    insertedVertex[aux][4] = index;
+                                    IN[l][3] = j;
+                                    IN[l][4] = k;
                                 }
+
                                 break;
                             }
                         }
 
-                        if (flag)
+                        if (add)
                         {
-                            insertedVertex[totalInsertedVertex][0] = Ip;
-                            IPV1[j][index] = Ip;
+                            IN.append(labelList(6));
+                            IN.last()[0] = I;
+                            IPV1[j][k] = I;
 
-                            if (IA[ip2] == 1)
+                            if (IA[i2] == 1)
                             {
-                                insertedVertex[totalInsertedVertex][3] = j;
-                                insertedVertex[totalInsertedVertex][4] = index;
-                                insertedVertex[totalInsertedVertex][2] = ip1;
-                                insertedVertex[totalInsertedVertex][1] = ip2;
+                                IN.last()[1] = i2;
+                                IN.last()[2] = i1;
+                                IN.last()[3] = j;
+                                IN.last()[4] = k;
                             }
                             else
                             {
-                                insertedVertex[totalInsertedVertex][1] = ip1;
-                                insertedVertex[totalInsertedVertex][2] = ip2;
+                                IN.last()[1] = i1;
+                                IN.last()[2] = i2;
+                                IN.last()[3] = -1;
+                                IN.last()[4] = -1;
                             }
 
-                            insertedVertex[totalInsertedVertex][5] = 0;
-                            totalInsertedVertex++;
-                            Ip++;
+                            IN.last()[5] = 0;
+                            I++;
                         }
                     }
                 }
 
-                NIPV1[j] = index;
+                NIPV1[j] = k;
                 IPV1[j][0] = IPV1[j][NIPV1[j]];
                 IPV1[j][NIPV1[j]+1] = IPV1[j][1];
             }
         }
 
-        int index = 1;
-        bool untaggedVertex = true;
-        int taggedVertex = 1;
+        // Total number of faces
 
-        IPV1[Nf][index] = 8;
-        insertedVertex[0][5] = 1;
-        int counter = 0;
+        label J = 12;
 
-        while (untaggedVertex)
+        // Arrange faces
+
+        label K = 1, nTags = 1;
+        IPV1[J][K] = 8;
+        IN[0][5] = 1;
+
+        label count = 0;
+        bool keepGoing = true;
+        while (keepGoing)
         {
-            if (counter > 13)
-            {
+            if (count > 13)
                 FatalErrorInFunction
-                    << " Arrangement of the new face in LVE failed."
+                    << "Arrangement of the new face in LVE failed."
                     << endl << abort(FatalError);
-            }
 
-            int auxj = insertedVertex[IPV1[Nf][index]-8][3];
-            int auxi = insertedVertex[IPV1[Nf][index]-8][4];
+            int i = IN[IPV1[J][K]-8][4];
+            int j = IN[IPV1[J][K]-8][3];
 
-            if (IPV1[auxj][auxi - 1] != IPV1[Nf][1])
+            if (IPV1[j][i-1] != IPV1[J][1])
             {
-                index++;
-                IPV1[Nf][index] = IPV1[auxj][auxi - 1];
-                insertedVertex[IPV1[Nf][index]-8][5] = 1;
-                taggedVertex++;
+                K++;
+
+                IPV1[J][K] = IPV1[j][i-1];
+                IN[IPV1[J][K]-8][5] = 1;
+                nTags++;
             }
             else
             {
-                NIPV1[Nf] = index;
-                IPV1[Nf][0] = IPV1[Nf][NIPV1[Nf]];
-                IPV1[Nf][NIPV1[Nf]+1] = IPV1[Nf][1];
-                Nf++;
+                NIPV1[J] = K;
+                IPV1[J][0] = IPV1[J][NIPV1[J]];
+                IPV1[J][NIPV1[J]+1] = IPV1[J][1];
 
-                if (taggedVertex == totalInsertedVertex)
+                J++;
+
+                if (nTags == IN.size())
                 {
-                    untaggedVertex = false;
+                    keepGoing = false;
                 }
                 else
                 {
-                    index = 1;
-                    for (int auxip = 0; auxip < totalInsertedVertex; auxip++)
+                    K = 1;
+                    for (int k = 0; k < IN.size(); k++)
                     {
-                        if (insertedVertex[auxip][5] == 0)
+                        if (IN[k][5] == 0)
                         {
-                            IPV1[Nf][index] = insertedVertex[auxip][0];
-                            insertedVertex[auxip][5] = 1;
-                            taggedVertex++;
+                            IPV1[J][K] = IN[k][0];
+                            IN[k][5] = 1;
+
+                            nTags++;
+
                             break;
                         }
                     }
                 }
-
             }
 
-            counter++;
+            count++;
         }
 
-        // Compute the piecewise analytical function
+        // Extend list of normals
 
-        scalar alpha0 = 0;
-        scalar alpha1 = 0;
-        scalar alpha2 = 0;
-        scalar alpha3 = 0;
+        vectorList normals(triNormals);
+        normals.resize(16);
 
-        for (int j = 12; j < Nf; j++)
+        // Set new face normals to the interface normal
+
+        for (int j = 12; j < J; j++)
+            normals[j] = -n;
+
+        // Extend list of vertices
+
+        vectorList w(I);
+        vectorList E(I,Zero);
+
+        for (label i = 0; i < 8; i++)
+            w[i] = v[i];
+
+        for (int i = 8; i < I; i++)
         {
-            ns[j] = - n;
+            const vector z = v[IN[i-8][2]] - v[IN[i-8][1]];
+            const vector normal = z/Foam::mag(z);
+
+            E[i] = normal/(n & normal);
+            w[i] = v[IN[i-8][1]] - (n & v[IN[i-8][1]]) * E[i];
         }
 
-        vectorList x0(Ip);
-        vectorList E(Ip);
+        // Extend list of m indices
 
-        for (int i = 0; i < Ip; i++)
-        {
-            if (i < 8)
-            {
-                x0[i] = v[i];
-                E[i] = Foam::zero();
-            }
-            else
-            {
-                aux = v[insertedVertex[i-8][2]]
-                    - v[insertedVertex[i-8][1]];
-                aux = aux / Foam::mag(aux);
-                E[i] = aux / (n & aux);
-                x0[i] = v[insertedVertex[i-8][1]]
-                    - (n & v[insertedVertex[i-8][1]]) * E[i];
-            }
-        }
+        labelList M(m);
+        M.resize(J);
 
-        for (int j = 12; j < Nf; j++)
-        {
-            auxMax = Foam::mag(ns[j][0]);
-            maxNormalIndex[j] = 0;
+        for (int j = 12; j < J; j++)
+            M[j] =
+                Foam::mag(normals[j].y()) > Foam::mag(normals[j].x())
+              ? Foam::mag(normals[j].z()) > Foam::mag(normals[j].y()) ? 2 : 1
+              : Foam::mag(normals[j].z()) > Foam::mag(normals[j].x()) ? 2 : 0;
 
-            for (int i = 1; i < 3; i++)
-            {
-                if (Foam::mag(ns[j][i]) > auxMax)
-                {
-                    auxMax = Foam::mag(ns[j][i]);
-                    maxNormalIndex[j] = i;
-                }
-            }
-        }
+        // Set area vector components
 
-        for (int j = 0; j < Nf; j++)
+        List<scalarList> areas(3, scalarList(16, 0.0));
+
+        for (int j = 0; j < J; j++)
         {
             if (NIPV1[j] > 0)
             {
-                hjs[j] = int((NIPV1[j]-2)/2);
-                epsilonjs[j] = NIPV1[j] % 2;
-
-                Kjs[j] = Foam::zero();
-                Ljs[j] = Foam::zero();
-                Mjs[j] = Foam::zero();
-
-                for (int i = 2; i <= (hjs[j] + 1); i++)
+                for (int i = 2; i <= (label((NIPV1[j]-2)/2) + 1); i++)
                 {
-                    Kjs[j] +=
+                    areas[0][j] +=
                         crossProductComponent
                         (
-                            (x0[IPV1[j][2*i - 1]] - x0[IPV1[j][1]]),
-                            (x0[IPV1[j][2*i]] - x0[IPV1[j][2*i-2]]),
-                            maxNormalIndex[j]
+                            (w[IPV1[j][2*i-1]] - w[IPV1[j][1    ]]),
+                            (w[IPV1[j][2*i  ]] - w[IPV1[j][2*i-2]]),
+                            M[j]
                         );
 
-                    Ljs[j] +=
+                    areas[1][j] +=
                         crossProductComponent
                         (
-                            (x0[IPV1[j][2*i - 1]] - x0[IPV1[j][1]]),
-                            (E[IPV1[j][2*i]] - E[IPV1[j][2*i-2]]),
-                            maxNormalIndex[j]
+                            (w[IPV1[j][2*i - 1]] - w[IPV1[j][1    ]]),
+                            (E[IPV1[j][2*i    ]] - E[IPV1[j][2*i-2]]),
+                            M[j]
                         )
                       + crossProductComponent
                         (
-                            (E[IPV1[j][2*i - 1]] - E[IPV1[j][1]]),
-                            (x0[IPV1[j][2*i]] - x0[IPV1[j][2*i-2]]),
-                            maxNormalIndex[j]
+                            (E[IPV1[j][2*i - 1]] - E[IPV1[j][1    ]]),
+                            (w[IPV1[j][2*i    ]] - w[IPV1[j][2*i-2]]),
+                            M[j]
                         );
 
-                    Mjs[j] +=
+                    areas[2][j] +=
                         crossProductComponent
                         (
-                            (E[IPV1[j][2*i - 1]] - E[IPV1[j][1]]),
-                            (E[IPV1[j][2*i]] - E[IPV1[j][2*i-2]]),
-                            maxNormalIndex[j]
+                            (E[IPV1[j][2*i - 1]] - E[IPV1[j][1    ]]),
+                            (E[IPV1[j][2*i    ]] - E[IPV1[j][2*i-2]]),
+                            M[j]
                         );
                 }
 
-                if (epsilonjs[j] == 1)
+                if (NIPV1[j] % 2)
                 {
-                    Kjs[j] +=
+                    areas[0][j] +=
                         crossProductComponent
                         (
-                            (x0[IPV1[j][NIPV1[j]]] - x0[IPV1[j][1]]),
-                            (x0[IPV1[j][1]] - x0[IPV1[j][NIPV1[j]-1]]),
-                            maxNormalIndex[j]
+                            (w[IPV1[j][NIPV1[j]]] - w[IPV1[j][1         ]]),
+                            (w[IPV1[j][1       ]] - w[IPV1[j][NIPV1[j]-1]]),
+                            M[j]
                         );
 
-                    Ljs[j] +=
+                    areas[1][j] +=
                         crossProductComponent
                         (
-                            (x0[IPV1[j][NIPV1[j]]] - x0[IPV1[j][1]]),
-                            (E[IPV1[j][1]] - E[IPV1[j][NIPV1[j]-1]]),
-                            maxNormalIndex[j]
+                            (w[IPV1[j][NIPV1[j]]] - w[IPV1[j][1         ]]),
+                            (E[IPV1[j][1       ]] - E[IPV1[j][NIPV1[j]-1]]),
+                            M[j]
                         )
                       + crossProductComponent
                         (
-                            (E[IPV1[j][NIPV1[j]]] - E[IPV1[j][1]]),
-                            (x0[IPV1[j][1]] - x0[IPV1[j][NIPV1[j]-1]]),
-                            maxNormalIndex[j]
+                            (E[IPV1[j][NIPV1[j]]] - E[IPV1[j][1         ]]),
+                            (w[IPV1[j][1       ]] - w[IPV1[j][NIPV1[j]-1]]),
+                            M[j]
                         );
 
-                    Mjs[j] +=
+                    areas[2][j] +=
                         crossProductComponent
                         (
-                            (E[IPV1[j][NIPV1[j]]] - E[IPV1[j][1]]),
-                            (E[IPV1[j][1]] - E[IPV1[j][NIPV1[j]-1]]),
-                            maxNormalIndex[j]
+                            (E[IPV1[j][NIPV1[j]]] - E[IPV1[j][1         ]]),
+                            (E[IPV1[j][1       ]] - E[IPV1[j][NIPV1[j]-1]]),
+                            M[j]
                         );
                 }
             }
         }
+
+        // Alpha values
+
+        scalarList alpha(4, 0.0);
 
         for (int j = 0; j < 12; j++)
-        {
             if (NIPV1[j] > 0)
-            {
-                alpha0 += - Cjs[j] * (Kjs[j] / ns[j][maxNormalIndex[j]]);
-                alpha1 += - Cjs[j] * (Ljs[j] / ns[j][maxNormalIndex[j]]);
-                alpha2 += - Cjs[j] * (Mjs[j] / ns[j][maxNormalIndex[j]]);
-            }
-        }
+                for (int i = 0; i < 3; i++)
+                    alpha[i] -=
+                        Cj[j]*areas[i][j]/normals[j][M[j]];
 
-        for (int j = 12; j < Nf; j++)
-        {
+        for (int j = 12; j < J; j++)
             if (NIPV1[j] > 0)
-            {
-                alpha1 += - (Kjs[j] / ns[j][maxNormalIndex[j]]);
-                alpha2 += - (Ljs[j] / ns[j][maxNormalIndex[j]]);
-                alpha3 += - (Mjs[j] / ns[j][maxNormalIndex[j]]);
-            }
-        }
+                for (int i = 0; i < 3; i++)
+                    alpha[i+1] -=
+                        areas[i][j]/normals[j][M[j]];
 
-        // Check bracket and solve inverse problem
+        // Check bracket volumes and solve inverse problem
 
-        Vkmin = (1/6.0) * ((alpha3 * Foam::pow3(Cs[Kf + 1]))
-            + (alpha2 * Foam::sqr(Cs[Kf + 1])) + (alpha1 * Cs[Kf + 1]) + alpha0);
-        Vkmax = (1/6.0) * ((alpha3 * Foam::pow3(Cs[Kf]))
-            + (alpha2 * Foam::sqr(Cs[Kf])) + (alpha1 * Cs[Kf]) + alpha0);
+        const scalar Wmin =
+            (
+                alpha[3]*Foam::pow3(Cu[Kj+1])
+              + alpha[2]*Foam::sqr(Cu[Kj+1])
+              + alpha[1]*Cu[Kj+1]
+              + alpha[0]
+            )/6.0;
 
-        if (Foam::mag(Vkmin - Vf)/Vtotal < tol_)
+        const scalar Wmax =
+            (
+                alpha[3]*Foam::pow3(Cu[Kj])
+              + alpha[2]*Foam::sqr(Cu[Kj])
+              + alpha[1]*Cu[Kj]
+              + alpha[0]
+            )/6.0;
+
+        if (Foam::mag(Wmin - Vf)/V < tol_)
         {
-            return -Cs[Kf + 1];
-        }
-        else if (Foam::mag(Vkmax - Vf)/Vtotal < tol_)
-        {
-            return -Cs[Kf];
-        }
-        else if ((Vkmin <= Vf) & (Vf <= Vkmax))
-        {
+            // We are exactly on the upper bound
 
-            // The equation is solved using an exact solver except in some cases
-            // where the leading order coefficient is small. In those cases the
-            // newton method is used and if the newton method doesn't converge
-            // the bisection method is used
+            return -Cu[Kj+1];
+        }
+        else if (Foam::mag(Wmax - Vf)/V < tol_)
+        {
+            // We are exactly on the lower bound
 
-            scalar z = LVE::exactCubicSolver
+            return -Cu[Kj];
+        }
+        else if (Wmin <= Vf && Vf <= Wmax)
+        {
+            // Target falls within bracket
+
+            const scalar z = LVE::exactCubicSolver
             (
                 Vf,
-                alpha0,
-                alpha1,
-                alpha2,
-                alpha3,
-                Cs[Kf],
-                Cs[Kf + 1],
-                Vkmin,
-                Vkmax,
-                Vtotal
+                alpha,
+                Cu[Kj],
+                Cu[Kj+1],
+                Wmin,
+                Wmax,
+                V
             );
 
             if (z != z)
-            {
                 FatalErrorInFunction
-                    << "LVE solver failed. Cn: " << z
+                    << "LVE solver failed. C: " << z
                     << endl << abort(FatalError);
-            }
 
             return z;
         }
-        else if (Vf > Vkmax)
+        else if (Vf > Wmax)
         {
-            if (Kmin == Kf)
+            // Target volume is above bracket
+
+            if (Kmin == Kj)
             {
-                return -Cs[Kf];
+                return -Cu[Kj];
             }
             else
             {
-                Vmin = Vkmax;
-                Kmax = Kf;
+                // Adjust bracket
+                Vmin = Wmax;
+                Kmax = Kj;
             }
         }
         else
         {
-            if (Kmax == (Kf + 1))
+            // Target volume is below bracket
+
+            if (Kmax == Kj+1)
             {
-                return -Cs[Kf + 1];
+                return -Cu[Kj+1];
             }
             else
             {
-                Vmax = Vkmin;
-                Kmin = Kf + 1;
+                // Adjust bracket
+                Vmax = Wmin;
+                Kmin = Kj+1;
             }
         }
-
     }
 
     FatalErrorInFunction
         <<  "LVE solver failed." << endl << abort(FatalError);
 
-    return Cs[0];
+    return Cu[0];
 }
 
 inline scalar LVE::cLVE
 (
     const vertexVector& v,
     const vector& n,
-    const scalar& f
+    const scalar f
 ) const
 {
+    // Consistently compute the volume of a general hexahedron and then call the
+    // CIBRAVE algorithm
 
-    // Compute the volume of a general cell and then call the CIBRAVE algorithm
-
-    scalarList Ajs(12);
-    int hjs[12];
-    int epsilonjs[12];
-
-    vectorList ns(12);
-    scalarList Cjs(12);
-    vector aux;
+    vectorList triAreas(12);
+    vectorList triNormals(12);
+    scalarList C(12);
+    labelList m(12);
 
     for (int j = 0; j < 12; j++)
     {
-        aux =
+        triAreas[j] =
             (
                 v[faceTriangleDecompCC[j][1]]
               - v[faceTriangleDecompCC[j][0]]
@@ -1008,87 +826,30 @@ inline scalar LVE::cLVE
               - v[faceTriangleDecompCC[j][0]]
             );
 
-        ns[j] = aux / Foam::mag(aux);
+        triNormals[j] = triAreas[j]/Foam::mag(triAreas[j]);
 
-        Cjs[j] =  - ns[j] & v[faceTriangleDecompCC[j][0]];
+        C[j] = -(triNormals[j] & v[faceTriangleDecompCC[j][0]]);
+
+        m[j] =
+            Foam::mag(triNormals[j].y()) > Foam::mag(triNormals[j].x())
+          ? Foam::mag(triNormals[j].z()) > Foam::mag(triNormals[j].y()) ? 2 : 1
+          : Foam::mag(triNormals[j].z()) > Foam::mag(triNormals[j].x()) ? 2 : 0;
     }
 
-    int maxNormalIndex[12];
-    scalar auxMax;
+    // Surface integration to calculate the volume
 
+    scalar V = 0.0;
     for (int j = 0; j < 12; j++)
-    {
-        auxMax = Foam::mag(ns[j][0]);
-        maxNormalIndex[j] = 0;
+        V += -C[j]*triAreas[j][m[j]]/triNormals[j][m[j]]/6.0;
 
-        for (int i = 1; i < 3; i++)
-        {
-            if (Foam::mag(ns[j][i]) > auxMax)
-            {
-                auxMax = Foam::mag(ns[j][i]);
-                maxNormalIndex[j] = i;
-            }
-        }
-    }
-
-    for (int j = 0; j < 12; j++)
-    {
-        hjs[j] = int((3-2)/2);
-        epsilonjs[j] = 3 % 2;
-
-        Ajs[j] = Foam::zero();
-
-        for (int i = 1; i < (hjs[j] + 1); i++)
-        {
-            Ajs[j] +=
-                crossProductComponent
-                (
-                    (
-                        v[faceTriangleDecompCC[j][(2*i - 1) % 3]]
-                      - v[faceTriangleDecompCC[j][0]]
-                    ),
-                    (
-                        v[faceTriangleDecompCC[j][(2*i) % 3]]
-                      - v[faceTriangleDecompCC[j][(2*i-2) % 3]]
-                    ),
-                    maxNormalIndex[j]
-                );
-        }
-
-        if (epsilonjs[j] == 1)
-        {
-            Ajs[j] +=
-                crossProductComponent
-                (
-                    (
-                        v[faceTriangleDecompCC[j][2]]
-                      - v[faceTriangleDecompCC[j][0]]
-                    ),
-                    (
-                        v[faceTriangleDecompCC[j][0]]
-                      - v[faceTriangleDecompCC[j][1]]
-                    ),
-                    maxNormalIndex[j]
-                );
-        }
-    }
-
-    scalar Vtotal = 0;
-    for (int j = 0; j < 12; j++)
-    {
-        Vtotal += - Cjs[j] * (Ajs[j] / ns[j][maxNormalIndex[j]]);
-    }
-
-    Vtotal /= 6;
-
-    return cLVE(v,n,f,Vtotal);
+    return cLVE(v,n,f,V,triAreas,triNormals,C,m);
 }
 
 inline scalar LVE::pLVE
 (
     const vertexVector& vertices,
     const vector& no,
-    const scalar& fo
+    const scalar fo
 ) const
 {
     // Algorithm of Scardovelli & Zaleski (2000) as implemented in Basilisk and
@@ -1220,11 +981,11 @@ inline scalar LVE::pLVE
 
     if (fo <= 0.5)
     {
-        C = CMin + alpha * Foam::mag(CMax - CMin);
+        C = CMin + alpha*Foam::mag(CMax - CMin);
     }
     else
     {
-        C = CMax - alpha * Foam::mag(CMax - CMin);
+        C = CMax - alpha*Foam::mag(CMax - CMin);
     }
 
     return C*S - (no & vertices.lba());

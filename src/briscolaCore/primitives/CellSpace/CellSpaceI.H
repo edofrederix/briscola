@@ -1203,10 +1203,10 @@ inline bool operator<=
 }
 
 template<class Form, class Cmpt, direction Ncmpts>
-inline Form clean(CellSpace<Form, Cmpt, Ncmpts> cs)
+inline Form trimPrecision(CellSpace<Form, Cmpt, Ncmpts> cs)
 {
     for (direction i = 0; i < Ncmpts; i++)
-        cs.v_[i] = clean(cs.v_[i]);
+        cs.v_[i] = trimPrecision(cs.v_[i]);
 
     return cs;
 }
