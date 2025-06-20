@@ -1,6 +1,7 @@
 # Chapter 2: Data structure
 
 [Back to the table of contents](./0_start.md)
+or [Previous chapter: A first tutorial case](./1_tutorial.md)
 
 ## Brick-structured mesh decomposition
 
@@ -218,3 +219,4 @@ field, the short-hand type would be `colocatedScalarField`. Have a look at
 for all such types.
 
 [Back to the table of contents](./0_start.md)
+or [Next chapter: Making a mesh](./3_mesh.md)

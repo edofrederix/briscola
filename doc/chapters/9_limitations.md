@@ -1,6 +1,7 @@
-# Chapter 8: Current limitations
+# Chapter 9: Current limitations
 
 [Back to the table of contents](./0_start.md)
+or [Previous chapter: Testing and validation](./8_testing.md)
 
 Briscola is in development, and currently has some limitations which are listed
 here. Briscola's development team is small and its resources are limited. Thus,
