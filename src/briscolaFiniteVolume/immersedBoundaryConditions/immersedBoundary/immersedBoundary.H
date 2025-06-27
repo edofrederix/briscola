@@ -11,7 +11,7 @@
 #include "meshField.H"
 #include "linearSystem.H"
 #include "rectilinearMesh.H"
-#include "briscolaUtils.H"
+#include "utils.H"
 
 namespace Foam
 {

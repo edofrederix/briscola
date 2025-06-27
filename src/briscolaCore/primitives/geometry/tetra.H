@@ -6,7 +6,7 @@
 #include "scalarList.H"
 #include "vectorList.H"
 #include "contiguous.H"
-#include "briscolaUtils.H"
+#include "utils.H"
 
 namespace Foam
 {

@@ -11,7 +11,7 @@
 #include "products.H"
 
 #include "blockFwd.H"
-#include "briscolaUtils.H"
+#include "utils.H"
 
 // Uncomment the definition of the NO_BLOCK_ZERO_INIT variable to avoid
 // initialization of block memory to zero. Doing so could potentially speed up

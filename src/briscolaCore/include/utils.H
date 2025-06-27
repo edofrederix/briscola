@@ -1,5 +1,5 @@
-#ifndef briscolaUtils_H
-#define briscolaUtils_H
+#ifndef utils_H
+#define utils_H
 
 #include "labelTensor.H"
 #include "labelVector.H"

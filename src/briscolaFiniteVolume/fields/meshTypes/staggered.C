@@ -1,5 +1,5 @@
 #include "staggered.H"
-#include "briscolaUtils.H"
+#include "utils.H"
 
 template<>
 const int

@@ -5,7 +5,7 @@
 #include "labelVector.H"
 #include "labelTensor.H"
 #include "labelList.H"
-#include "briscolaUtils.H"
+#include "utils.H"
 
 namespace Foam
 {
