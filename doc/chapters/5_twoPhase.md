@@ -1,6 +1,7 @@
 # Chapter 5: Two-phase solvers
 
 [Back to the table of contents](./0_start.md)
+or [Previous chapter: The Finite Volume library](./4_finiteVolume.md)
 
 An important part of the Briscola is its two-phase flow simulation capability.
 Since each processor has a structured mesh, this means that each cell is
@@ -142,3 +143,4 @@ scheme, surface tension and VOF scheme can be chosen. Have a look at the
 [Tutorial](./1_tutorial.md).
 
 [Back to the table of contents](./0_start.md)
+or [Next chapter: Immersed boundary methods](./6_ibm.md)

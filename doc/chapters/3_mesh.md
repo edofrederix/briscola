@@ -1,6 +1,7 @@
 # Chapter 3: Making a mesh
 
 [Back to the table of contents](./0_start.md)
+or [Previous chapter: Data structure](./2_data.md)
 
 ## Brick-structured mesh decomposition
 
@@ -269,3 +270,4 @@ mpirun -n 4 briscolaCheckMesh -patchInfo -parallel
 will show patch information of the cavity case mesh.
 
 [Back to the table of contents](./0_start.md)
+or [Next chapter: The Finite Volume library](./4_finiteVolume.md)

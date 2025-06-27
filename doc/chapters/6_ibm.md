@@ -1,10 +1,11 @@
 # Chapter 6: Immersed boundary methods
 
 [Back to the table of contents](./0_start.md)
+or [Previous chapter: Two-phase solvers](./5_twoPhase.md)
 
 ## Introduction
 
-Briscola uses the immersed boundary method (IBM) to enable simulations in
+Briscola uses the Immersed Boundary Method (IBM) to enable simulations in
 complex geometries on orthogonal meshes. In the IBM approach, a complex
 boundary shape $\Gamma_b$ arbitrarily cuts through the orthogonal mesh:
 
@@ -15,10 +16,11 @@ boundary shape $\Gamma_b$ arbitrarily cuts through the orthogonal mesh:
 
 Instead of directly applying boundary conditions on cell- or face-centered
 values, the IBM applies (approximate) boundary conditions on $\Gamma_b$ by
-modifying the discretized linear system in the surrounding cells. The use of
-IBM can significantly simplify the meshing process, while also maintaining the
-advantages of orthogonal meshes: staggered fields, accurate geometric VOF
-interface reconstruction, FFT solver, etc.
+modifying the solution procedure of the discretized linear system in the
+vicinity of $\Gamma_b$. The use of the IBM can significantly simplify the
+meshing process, while also maintaining the advantages of orthogonal meshes:
+staggered fields, accurate geometric VOF interface reconstruction, FFT solver,
+etc.
 
 ## Defining the immersed boundary
 
@@ -97,7 +99,7 @@ enforcing an immersed Dirichlet boundary condition. In the penalization method,
 all of the points that lie inside of the immersed boundary are marked, and the
 desired boundary value specified by the `values` option is applied in those
 cells. With this method, the real immersed boundary ends up being approximated
-by a staircase shape:
+in a coarse way:
 
 <img src="./figures/ibm/penalization.png"
     alt="penalizationDirichlet"
@@ -266,3 +268,4 @@ desired for pressure, the FFT Poisson solver (see [Chapter 7](./7_solvers.md))
 can no longer be used.
 
 [Back to the table of contents](./0_start.md)
+or [Next chapter: Linear system solvers](./7_solvers.md)

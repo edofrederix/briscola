@@ -1,6 +1,7 @@
 # Chapter 4: The Finite Volume library
 
 [Back to the table of contents](./0_start.md)
+or [Previous chapter: Making a mesh](./3_mesh.md)
 
 ## Finite volume discretization in Briscola
 
@@ -197,3 +198,4 @@ Navier-Stokes equation. Mainly used for verification test cases of VOF advection
 under pre-defined velocity fields.
 
 [Back to the table of contents](./0_start.md)
+or [Next chapter: Two-phase solvers](./5_twoPhase.md)

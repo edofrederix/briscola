@@ -1,6 +1,7 @@
 # Chapter 7: Linear system solvers
 
 [Back to the table of contents](./0_start.md)
+or [Previous chapter: Immersed boundary methods](./6_ibm.md)
 
 Briscola has several solvers which can be used to solve linear systems. These
 solvers are part of the `briscolaFiniteVolume` library and can be found in
@@ -298,3 +299,5 @@ mostly simple test application for solving the Poisson equation and advecting a
 VOF field.
 
 [Back to the table of contents](./0_start.md)
+or [Next chapter: Testing and validation](./8_testing.md)
+
