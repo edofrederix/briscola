@@ -2,8 +2,6 @@
 
 #include "addToRunTimeSelectionTable.H"
 #include "rectilinearMesh.H"
-#include "truncatedHex.H"
-#include "truncatedPiped.H"
 
 namespace Foam
 {

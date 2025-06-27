@@ -2,9 +2,8 @@
 
 #include "addToRunTimeSelectionTable.H"
 #include "rectilinearMesh.H"
-#include "truncatedHex.H"
-#include "truncatedPiped.H"
 #include "twoPhaseModel.H"
+#include "geometry.H"
 
 namespace Foam
 {
@@ -104,8 +103,8 @@ void splitAdvection::updateFlux
 
                 scalar fluxVolume =
                     rectilinear_
-                  ? truncatedPiped(vertices,n(don),C).volume()
-                  : truncatedHex(vertices,n(don),C).volume();
+                  ? piped(vertices).truncationVolume(n(don),C)
+                  : hexa(vertices).truncationVolume(n(don),C);
 
                 fluxAlpha = fluxVolume/dt;
             }

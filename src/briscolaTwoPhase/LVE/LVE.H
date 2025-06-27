@@ -1,9 +1,7 @@
 #ifndef LVE_H
 #define LVE_H
 
-#include "truncatedHex.H"
-#include "truncatedPiped.H"
-#include "SortableList.H"
+#include "fvMesh.H"
 #include "constants.H"
 
 namespace Foam
