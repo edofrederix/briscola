@@ -508,7 +508,7 @@ int main(int argc, char *argv[])
 
             forAllCells(a, i, j, k)
             {
-                const scalar C = gvf.lve()(a(i,j,k),v(i,j,k),cv(i,j,k),n);
+                const scalar C = gvf.lve()(a(i,j,k),v(i,j,k),n);
 
                 const scalar f = truncatedHex(v(i,j,k),n,C).volume()/cv(i,j,k);
 

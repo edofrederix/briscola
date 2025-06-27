@@ -47,7 +47,7 @@ void testCellCenters(const fvMesh& fvMsh)
             )
         );
 
-        if (mag(c(l,d,i,j,k) - cc) > 1e-12)
+        if (mag(c(l,d,i,j,k) - cc)/mag(L) > 1e-12)
             FatalErrorInFunction
                 << "test 1 failed" << abort(FatalError);
     }
@@ -73,7 +73,9 @@ void testCellVolumes(const fvMesh& fvMsh)
           * Lp.z()/fvMsh[l].N().z()
         );
 
-        if (mag(v(l,d,i,j,k) - V) > 1e-12)
+        // Slightly larger tolerance because of larger roundoff errors in the
+        // volume computation
+        if (mag(v(l,d,i,j,k) - V)/V > 1e-11)
             FatalErrorInFunction
                 << "test 2 failed" << abort(FatalError);
     }
@@ -109,7 +111,7 @@ void testFaceCenters(const fvMesh& fvMsh)
             )
         );
 
-        if (mag(c(l,d,i,j,k)[o] - cc) > 1e-12)
+        if (mag(c(l,d,i,j,k)[o] - cc)/mag(L) > 1e-12)
             FatalErrorInFunction
                 << "test 3a failed" << abort(FatalError);
     }
@@ -145,7 +147,7 @@ void testEdgeCenters(const fvMesh& fvMsh)
             )
         );
 
-        if (mag(c(l,d,i,j,k)[o] - cc) > 1e-12)
+        if (mag(c(l,d,i,j,k)[o] - cc)/mag(L) > 1e-12)
             FatalErrorInFunction
                 << "test 3b failed" << abort(FatalError);
     }
@@ -181,7 +183,7 @@ void testVertexCenters(const fvMesh& fvMsh)
             )
         );
 
-        if (mag(c(l,d,i,j,k)[o] - cc) > 1e-12)
+        if (mag(c(l,d,i,j,k)[o] - cc)/mag(L) > 1e-12)
             FatalErrorInFunction
                 << "test 3c failed" << abort(FatalError);
     }
@@ -208,7 +210,7 @@ void testFaceAreas(const fvMesh& fvMsh)
         );
 
         for (label o = 0; o < 6; o++)
-            if (mag(a(l,d,i,j,k)[o] - A[o/2]) > 1e-12)
+            if (mag(a(l,d,i,j,k)[o] - A[o/2])/A[o/2] > 1e-12)
                 FatalErrorInFunction
                     << "test 4 failed" << abort(FatalError);
     }
@@ -277,6 +279,7 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
             if
             (
                 mag(fan(l,d,i,j,k)[o] - lr*A[o/2]*vector(briscola::units[o/2]))
+              / A[o/2]
               > 1e-12
             )
             {
@@ -327,7 +330,7 @@ void testFaceDeltas(const fvMesh& fvMsh)
         );
 
         for (label o = 0; o < 6; o++)
-            if (mag(fd(l,d,i,j,k)[o] - D[o/2]) > 1e-12)
+            if (mag(fd(l,d,i,j,k)[o] - D[o/2])/D[o/2] > 1e-12)
                 FatalErrorInFunction
                     << "test 9 failed" << abort(FatalError);
     }

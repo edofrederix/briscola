@@ -156,7 +156,7 @@ void parabolicFit::correct()
             // cell
 
             scalar C =
-                lve_(alpha_(i,j,k),v(i,j,k),cv(i,j,k),normal_(i,j,k));
+                lve_(alpha_(i,j,k),v(i,j,k),normal_(i,j,k));
 
             double originalCs[8];
 

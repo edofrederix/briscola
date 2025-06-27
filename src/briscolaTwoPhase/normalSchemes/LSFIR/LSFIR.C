@@ -149,8 +149,6 @@ void LSFIR::correct()
 
     const colocatedVertexVectorField& v =
         fvMsh_.template metrics<colocated>().vertexCenters();
-    const colocatedScalarField& cv =
-        fvMsh_.template metrics<colocated>().cellVolumes();
 
     colocatedVectorField xgi("surface_centers", fvMsh_);
 
@@ -212,7 +210,7 @@ void LSFIR::correct()
                 // cell
 
                 scalar C =
-                    lve_(alpha_(i,j,k),v(i,j,k),cv(i,j,k),n(i,j,k));
+                    lve_(alpha_(i,j,k),v(i,j,k),n(i,j,k));
 
                 double originalCs[8];
 

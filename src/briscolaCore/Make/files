@@ -21,6 +21,9 @@ primitives/VertexSpace/vertexLabelTensor/vertexLabelTensor.C
 primitives/StencilSpace/stencil/stencil.C
 primitives/StencilSpace/diagStencil/diagStencil.C
 
+primitives/geometry/tetra.C
+primitives/geometry/hexa.C
+
 blocks/labelBlock/labelBlock.C
 blocks/scalarBlock/scalarBlock.C
 

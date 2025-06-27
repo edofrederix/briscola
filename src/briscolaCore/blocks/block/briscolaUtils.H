@@ -469,6 +469,80 @@ const label faceTriangleDecompCC[12][3] =
     {6,5,7}
 };
 
+//  Tet vertex numbering:
+//
+//    (1)
+//      \.
+//       o
+//       #  # ,
+//       # #    # ,
+//       #  #       # ,
+//       #   #          # ,
+//  (0)--o . .#. . . . . . o-- (2)
+//         #   #         #
+//           #  #      #
+//             # #   #
+//                o
+//               /
+//             (3)
+
+//  Tet edge numbering:
+//
+//       o                      o
+//       #  # ,                 #  # ,
+//       # #    # ,             # #    # ,
+//      (0) #      (3),         #  #       # ,
+//       #   #          # ,     #  (4)         # ,
+//       o . .#. .(1). . . o    o . .#. . . . . . o
+//         #   #         #        #   #         #
+//           #  #      #            #  #     (5)
+//             # #   #             /   # #   #
+//                o              (2)      o
+
+//  Tet face numbering:
+//
+//       o          (0)
+//       #  # ,     /
+//       # #    # ,/
+//       #  #     / # ,
+//       # o #   o      # ,
+//       o/. .#. . . . . . o
+//       / #   #  o-------------(2)
+//      /    #  #      #
+//    (1)      # #   #
+//                o
+//
+//  0: back face, 1: left face, 2: bottom face, 3: 'diagonal' face (not marked)
+
+// Vertex numbers in tet faces ordered in counter-clockwise direction
+const label vertexNumsInTetFace[4][3]
+{
+    {0,1,2},
+    {1,0,3},
+    {0,2,3},
+    {2,1,3}
+};
+
+// Vertex numbers in tet edges, ordered from low to high vertex number
+const label vertexNumsInTetEdge[6][2]
+{
+    {0,1},
+    {0,2},
+    {0,3},
+    {1,2},
+    {1,3},
+    {2,3}
+};
+
+// Edge numbers in tet faces
+const label edgeNumsInTetFace[4][3]
+{
+    {0,1,3},
+    {0,2,4},
+    {1,5,2},
+    {3,4,5}
+};
+
 // Calculate the linear index from indices and block size
 
 inline label lin

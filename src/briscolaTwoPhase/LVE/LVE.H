@@ -17,6 +17,20 @@ namespace fv
 
 class vof;
 
+/**
+
+@brief Local Volume Enforcement (LVE) solver
+
+This class offers tools to solve the LVE problem. The LVE problem is defined by
+a cell, a plane normal and a volume fraction which is enclosed by the plane and
+the faces of the cell. Given the plane normal, the LVE's task is to compute the
+scalar parameter in the equations dot(x,n) + C = 0 that defines the plane, with
+normal n. For parallelepiped quadrilateral hexahedrons an analytical approach
+can be used. For general hexahedrons the CIBRAVE algorithm of López et al.
+(2016) is used.
+
+*/
+
 class LVE
 {
     // Rectilinear bool (stored here for efficiency)
@@ -118,7 +132,6 @@ public:
     (
         const scalar f,
         const vertexVector& v,
-        const scalar cv,
         const vector& n
     ) const
     {

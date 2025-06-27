@@ -6,6 +6,8 @@
 #include "fvMesh.H"
 #include "immersedBoundary.H"
 
+#include "geometry.H"
+
 namespace Foam
 {
 
@@ -84,18 +86,15 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
         {
             const labelVector N = fvMsh_.N<MeshType>(l,d);
 
-            // For each cell the face centers are calculated from the average of
-            // the four face vertices (Wesseling, p. 483).
-
             labelVector ijk;
             for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
             for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
             for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
             {
+                const hexa h(vc(l,d,ijk));
+
                 for (int fi = 0; fi < 6; fi++)
-                    for (int vi = 0; vi < 4; vi++)
-                        fc(l,d,ijk)[fi] +=
-                            0.25*vc(l,d,ijk)[vertexNumsInFace[fi][vi]];
+                    fc(l,d,ijk)[fi] = h.faceCenter(fi);
             }
         }
     }
@@ -116,18 +115,13 @@ void fvMeshMetrics<MeshType>::calculateEdgeCenters()
         {
             const labelVector N = fvMsh_.N<MeshType>(l,d);
 
-            // For each cell the edge centers are calculated from the average of
-            // the two edge vertices
-
             labelVector ijk;
             for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
             for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
             for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
             {
                 for (int ei = 0; ei < 12; ei++)
-                    for (int vi = 0; vi < 2; vi++)
-                        ec(l,d,ijk)[ei] +=
-                            0.5*vc(l,d,ijk)[vertexNumsInEdge[ei][vi]];
+                    ec(l,d,ijk)[ei] = hexa(vc(l,d,ijk)).edgeCenter(ei);
             }
         }
     }
@@ -152,11 +146,6 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
         {
             const labelVector N = fvMsh_.N<MeshType>(l,d);
 
-            // For each cell the outward face normals are calculated by taking
-            // half the cross product of the two vectors connecting the diagonal
-            // vertex pairs (Wesseling, p. 483). The normal's magnitude equals
-            // the face area.
-
             labelVector ijk;
             for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
             for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
@@ -164,19 +153,7 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
             {
                 for (int fi = 0; fi < 6; fi++)
                 {
-                    fan(l,d,ijk)[fi] =
-                        0.5
-                      * (
-                            (
-                                vc(l,d,ijk)[vertexNumsInFaceCC[fi][2]]
-                              - vc(l,d,ijk)[vertexNumsInFaceCC[fi][0]]
-                            )
-                          ^ (
-                                vc(l,d,ijk)[vertexNumsInFaceCC[fi][3]]
-                              - vc(l,d,ijk)[vertexNumsInFaceCC[fi][1]]
-                            )
-                        );
-
+                    fan(l,d,ijk)[fi] = hexa(vc(l,d,ijk)).faceAreaNormal(fi);
                     fa(l,d,ijk)[fi] = Foam::mag(fan(l,d,ijk)[fi]);
                     fn(l,d,ijk)[fi] = Foam::normalised(fan(l,d,ijk)[fi]);
                 }
@@ -200,16 +177,13 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
         {
             const labelVector N = fvMsh_.N<MeshType>(l,d);
 
-            // For each cell the cell center is calculated from the average of
-            // the eight vertices
-
             labelVector ijk;
             for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
             for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
             for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
             {
                 for (int vi = 0; vi < 8; vi++)
-                    cc(l,d,ijk) += 0.125*vc(l,d,ijk)[vi];
+                    cc(l,d,ijk) = hexa(vc(l,d,ijk)).center();
             }
         }
     }
@@ -240,15 +214,7 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
             for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
             for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
             {
-                for (int ti = 0; ti < numberOfTets; ti++)
-                    cv(l,d,ijk) +=
-                        tetVolume
-                        (
-                            vc(l,d,ijk)[tetDecomp[ti][0]],
-                            vc(l,d,ijk)[tetDecomp[ti][1]],
-                            vc(l,d,ijk)[tetDecomp[ti][2]],
-                            vc(l,d,ijk)[tetDecomp[ti][3]]
-                        );
+                cv(l,d,ijk) = hexa(vc(l,d,ijk)).volume();
             }
         }
     }

@@ -1,6 +1,7 @@
 #ifndef vertexVector_H
 #define vertexVector_H
 
+#include "vertexScalar.H"
 #include "vector.H"
 #include "VertexSpace.H"
 #include "contiguous.H"

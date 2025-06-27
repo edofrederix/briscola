@@ -53,14 +53,9 @@ inline truncatedPiped::truncatedPiped(const truncatedPiped& p)
 inline scalar truncatedPiped::volume() const
 {
     // This function computes and returns the volume of the parallelepiped
-    // truncated by the plane dot(x,n) + C = 0.
-    //
-    // First the linear transform
-    //
-    // x_old = lba + T * x_new
-    //
-    // projects the parallelepiped into the unit cube, then the algorithm of
-    // Scardovelli & Zaleski (2000) is used.
+    // truncated by the plane dot(x,n) + C = 0. First the linear transform x_old
+    // = lba + dot(T,x_new) projects the parallelepiped into the unit cube, then
+    // the algorithm of Scardovelli & Zaleski (2000) is used.
 
     const tensor T
     (

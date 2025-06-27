@@ -58,7 +58,7 @@ void splitAdvection::updateFlux
             }
             else if (Foam::mag(n(don)))
             {
-                const scalar C = lve_(alpha_(don),v(don),cv(don),n(don));
+                const scalar C = lve_(alpha_(don),v(don),n(don));
 
                 const label l = flux > 0 ? d*2 : d*2+1;
                 const label u = flux < 0 ? d*2 : d*2+1;
