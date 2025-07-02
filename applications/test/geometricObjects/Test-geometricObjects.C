@@ -1,6 +1,6 @@
 #include "arguments.H"
 
-#include "geometry.H"
+#include "geometricObjects.H"
 #include "constants.H"
 
 using namespace Foam;

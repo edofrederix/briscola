@@ -26,7 +26,7 @@ tessellation tetra::truncate(const vector& n, const scalar C) const
     {
         d[i] = (v_[i] & n) + C;
 
-        if (d[i] <= 0.0)
+        if (d[i] >= 0.0)
         {
             inside[j++] = i;
         }

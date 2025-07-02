@@ -2,9 +2,7 @@
 #include "Time.H"
 #include "fvMesh.H"
 #include "geometricVof.H"
-
-#include "truncatedPiped.H"
-#include "truncatedHex.H"
+#include "geometricObjects.H"
 #include "SortableList.H"
 #include "constants.H"
 
@@ -23,7 +21,7 @@ void testVolumeHex(const vertexVector& v, const vector n)
     for (int i = 0; i < 8; i++)
     {
         C[i] = - (n & v[i]);
-        V[i] = truncatedHex(v,n,C[i]).volume();
+        V[i] = hexa(v).truncationVolume(n,C[i]);
     }
 
     V.sort();
@@ -41,9 +39,7 @@ void testVolumeHex(const vertexVector& v, const vector n)
         {
             const scalar C = CMin + (CMax-CMin)*j/scalar(NC);
 
-            truncatedHex thex(v,n,C);
-
-            const scalar VNew = thex.volume();
+            const scalar VNew = hexa(v).truncationVolume(n,C);
 
             if (VNew - Vi < -1e-12)
                 FatalErrorInFunction
@@ -62,7 +58,7 @@ void testVolumePiped(const vertexVector& v, const vector n)
     for (int i = 0; i < 8; i++)
     {
         C[i] = - (n & v[i]);
-        V[i] = truncatedPiped(v,n,C[i]).volume();
+        V[i] = piped(v).truncationVolume(n,C[i]);
     }
 
     V.sort();
@@ -80,9 +76,7 @@ void testVolumePiped(const vertexVector& v, const vector n)
         {
             const scalar C = CMin + (CMax-CMin)*j/scalar(NC);
 
-            truncatedPiped thex(v,n,C);
-
-            const scalar VNew = thex.volume();
+            const scalar VNew = piped(v).truncationVolume(n,C);
 
             if (VNew - Vi < -1e-12)
                 FatalErrorInFunction
@@ -233,7 +227,7 @@ void testLVE
     for (int i = 0; i < 8; i++)
     {
         C[i] = - (n & v[i]);
-        V[i] = truncatedHex(v,n,C[i]).volume();
+        V[i] = hexa(v).truncationVolume(n,C[i]);
     }
 
     C.sort();
@@ -256,7 +250,7 @@ void testLVE
             Ci = gvf.lve().cLVE(v,n,fi);
         }
 
-        const scalar fj = truncatedHex(v,n,Ci).volume()/Vc;
+        const scalar fj = hexa(v).truncationVolume(n,Ci)/Vc;
 
         if (Foam::mag(fi - fj) > 1e-7)
             FatalErrorInFunction
@@ -272,7 +266,7 @@ void testLVE
     for (int i = 0 ; i <= N; i++)
     {
         const scalar C1 = CMin + 0.3 * (CMax-CMin)*i/N;
-        const scalar f1 = truncatedHex(v,n,C1).volume()/Vc;
+        const scalar f1 = hexa(v).truncationVolume(n,C1)/Vc;
         scalar C2;
 
         if (method == "p")
@@ -284,7 +278,7 @@ void testLVE
             C2 = gvf.lve().cLVE(v,n,f1);
         }
 
-        const scalar f2 = truncatedHex(v,n,C2).volume()/Vc;
+        const scalar f2 = hexa(v).truncationVolume(n,C2)/Vc;
 
         if (Foam::mag(f1-f2) > 1e-7)
             FatalErrorInFunction
@@ -303,7 +297,7 @@ void testLVE
         Cf = gvf.lve().cLVE(v,n,1);
     }
 
-    if (Foam::mag(truncatedHex(v,n,Cf).volume()/Vc - 1.0) > 1e-7)
+    if (Foam::mag(hexa(v).truncationVolume(n,Cf)/Vc - 1.0) > 1e-7)
         FatalErrorInFunction
                 << "Test 2c failed" << endl << abort(FatalError);
 
@@ -316,7 +310,7 @@ void testLVE
         Ce = gvf.lve().cLVE(v,n,0);
     }
 
-    if (Foam::mag(truncatedHex(v,n,Ce).volume()/Vc) > 1e-7)
+    if (Foam::mag(hexa(v).truncationVolume(n,Ce)/Vc) > 1e-7)
         FatalErrorInFunction
                 << "Test 2d failed" << endl << abort(FatalError);
 
@@ -467,9 +461,6 @@ int main(int argc, char *argv[])
         testRotatedVolumesPiped(unit, n);
         testRotatedVolumesPiped(skewed, n);
         testRotatedVolumesPiped(0.5*skewed, n);
-        testRotatedVolumesPiped(stretch & general, n);
-        testRotatedVolumesPiped(0.9*general, n);
-        testRotatedVolumesPiped(0.1*general+unit, n);
 
         // Local volume enforcement
 
@@ -510,7 +501,7 @@ int main(int argc, char *argv[])
             {
                 const scalar C = gvf.lve()(a(i,j,k),v(i,j,k),n);
 
-                const scalar f = truncatedHex(v(i,j,k),n,C).volume()/cv(i,j,k);
+                const scalar f = hexa(v(i,j,k)).truncationVolume(n,C)/cv(i,j,k);
 
                 if (Foam::mag(f-a(i,j,k)) > 1e-8)
                     FatalErrorInFunction

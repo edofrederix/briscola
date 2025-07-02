@@ -11,7 +11,7 @@ inline scalar piped::truncationVolume(const vector& m, const scalar C) const
     // This is faster than decomposing the piped in six tets and truncating
     // those.
 
-    vector n = T() & m;
+    vector n = (T() & m);
     scalar D = C + (m & p());
 
     for (label i = 0; i < 3; i++)

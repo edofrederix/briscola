@@ -68,8 +68,8 @@ number 2 and the top-fore (tf) one with number 3. Following the same logic, the
 $y$-directed edges are la, ra, lf, rf and the $z$-directed edges are lb, rb, lt
 and rt.
 
-Have a look at `src/briscolaCore/blocks/block/briscolaUtils.H` for some
-elementary definitions and corresponding ASCII drawings in the comments.
+Have a look at `src/briscolaCore/include/utils.H` for some elementary
+definitions and corresponding ASCII drawings in the comments.
 
 ## Vertices, bricks, edges and patches
 

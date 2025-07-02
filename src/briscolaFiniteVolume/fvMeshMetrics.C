@@ -6,7 +6,7 @@
 #include "fvMesh.H"
 #include "immersedBoundary.H"
 
-#include "geometry.H"
+#include "geometricObjects.H"
 
 namespace Foam
 {

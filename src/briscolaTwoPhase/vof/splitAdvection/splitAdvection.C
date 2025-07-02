@@ -3,7 +3,7 @@
 #include "addToRunTimeSelectionTable.H"
 #include "rectilinearMesh.H"
 #include "twoPhaseModel.H"
-#include "geometry.H"
+#include "geometricObjects.H"
 
 namespace Foam
 {

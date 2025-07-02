@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TEST=geometry
+TEST=geometricObjects
 
 if [ -f build/Test-$TEST ]; then
 
