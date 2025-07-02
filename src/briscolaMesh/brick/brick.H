@@ -77,6 +77,10 @@ public:
         return N_;
     }
 
+    // Grading object (unchecked!)
+    inline grading& g() { return grading_(); }
+    inline const grading& g() const { return grading_(); }
+
     // Access to the list of faces
     inline const PtrList<face>& faces() const
     {

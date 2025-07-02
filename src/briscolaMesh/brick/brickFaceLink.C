@@ -26,17 +26,18 @@ brickFaceLink::brickFaceLink
 
     T_ = offsetRotation(offset1, -offset0);
 
-    brick b2(f1.parentBrick());
+    const brick& b0 = f0.parentBrick();
+    brick b1(f1.parentBrick());
 
-    b2.transform(T_);
+    b1.transform(T_);
 
     // Rotate around face normal until edges align
 
     const label k(faceNumber(-offset0));
 
-    while (f0.e0() != b2.f(k).e0())
+    while (f0.e0() != b1.f(k).e0())
     {
-        T_ = (b2.rotate(1, f0.num()/2) & T_);
+        T_ = (b1.rotate(1, f0.num()/2) & T_);
     }
 
     // Check number of cells on either side
@@ -55,6 +56,34 @@ brickFaceLink::brickFaceLink
             << f1.parentBrick().num() << " at "
             << f0 << endl
             << abort(FatalError);
+    }
+
+    // Check edge grading on either side by sampling the edges on 16 points
+
+    const face& F1 = b1.f(k);
+
+    const grading& g0 = b0.g();
+    const grading& g1 = b1.g();
+
+    scalarField xi(16);
+    forAll(xi, i)
+        xi[i] = 1.0/(xi.size()-1)*i;
+
+    for (label i = 0; i < 4; i++)
+    {
+        const scalarField p0(g0(xi,f0.edges()[i].num()));
+        const scalarField p1(g1(xi,F1.edges()[i].num()));
+
+        forAll(p0, j)
+            if (trimPrecision(p0[j]) != trimPrecision(p1[j]))
+                FatalErrorInFunction
+                    << "Invalid edge grading across bricks "
+                    << f0.parentBrick().num() << " and "
+                    << f1.parentBrick().num() << " at "
+                    << f0 << " "
+                    << f0.edges()[i] << endl
+                    << abort(FatalError);
+
     }
 }
 
