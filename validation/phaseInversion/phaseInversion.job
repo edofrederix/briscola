@@ -1,4 +1,4 @@
 #!/bin/bash
-#SBATCH -n 128 -p vinci128
+#SBATCH -n 64
 
 ./phaseInversion.sh
