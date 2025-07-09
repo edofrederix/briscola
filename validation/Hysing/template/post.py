@@ -4,7 +4,7 @@ import os, sys
 import re
 
 maxError_y = 5
-maxError_u = 10
+maxError_u = 5
 
 BRISCOLA = os.environ.get('BRISCOLA')
 
@@ -31,7 +31,7 @@ y = np.loadtxt(BRISCOLA + '/data/Hysing/1/Y.txt')
 u = np.loadtxt(BRISCOLA + '/data/Hysing/1/U.txt')
 
 y_sim = np.interp(y[:,0], data[:,0], data[:,1])
-u_sim = np.interp(u[:,0], data[:,1], data[:,2])
+u_sim = np.interp(u[:,0], data[:,0], data[:,2])
 
 ey = np.round(100*1000*np.mean(np.square(y[:,1] - y_sim))**0.5)/1000
 eu = np.round(100*1000*np.mean(np.square(u[:,1] - u_sim))**0.5)/1000

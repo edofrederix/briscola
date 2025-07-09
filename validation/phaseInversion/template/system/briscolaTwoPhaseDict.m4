@@ -1,0 +1,38 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      briscolaTwoPhaseDict;
+}
+
+type    twoPhaseVof;
+
+g       (0 -9.728 0);
+
+rho1    1000.0;
+rho2    900;
+mu1     1;
+mu2     1;
+
+normalScheme
+{
+    type    VARNORMALSCHEME;
+}
+
+surfaceTensionScheme
+{
+    type    Brackbill;
+
+    curvatureScheme
+    {
+        type    VARCURVATURESCHEME;
+    }
+
+    sigma  0.45;
+}
+
+vof
+{
+    type    splitAdvection;
+}
