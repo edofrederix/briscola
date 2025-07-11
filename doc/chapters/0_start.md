@@ -23,4 +23,4 @@ below.
 6. [Immersed boundary methods](./6_ibm.md)
 7. [Linear system solvers](./7_solvers.md)
 8. [Testing and validation](./8_testing.md)
-8. [Current limitations](./9_limitations.md)
+9. [Current limitations](./9_limitations.md)

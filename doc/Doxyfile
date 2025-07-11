@@ -1001,6 +1001,8 @@ INPUT                  = applications \
                          doc/chapters/5_twoPhase.md \
                          doc/chapters/6_ibm.md \
                          doc/chapters/7_solvers.md \
+                         doc/chapters/8_testing.md \
+                         doc/chapters/9_limitations.md \
                          README.md
 
 # This tag can be used to specify the character encoding of the source files
