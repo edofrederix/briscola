@@ -40,10 +40,10 @@ ke2_sim = np.interp(ke2[:,0], data[:,0], data[:,2])
 pe1_sim = np.interp(pe1[:,0], data[:,0], data[:,3])
 pe2_sim = np.interp(pe2[:,0], data[:,0], data[:,4])
 
-ek1 = np.round(100*1000*np.mean(np.abs(ke1[:,1] - ke1_sim)/ke1[:,1]))/1000
-ek2 = np.round(100*1000*np.mean(np.abs(ke2[:,1] - ke2_sim)/ke2[:,1]))/1000
-ep1 = np.round(100*1000*np.mean(np.abs(pe1[:,1] - pe1_sim)/pe1[:,1]))/1000
-ep2 = np.round(100*1000*np.mean(np.abs(pe2[:,1] - pe2_sim)/pe2[:,1]))/1000
+ek1 = np.round(100*1000*np.mean(np.square(ke1[:,1] - ke1_sim))**0.5)/1000
+ek2 = np.round(100*1000*np.mean(np.square(ke2[:,1] - ke2_sim))**0.5)/1000
+ep1 = np.round(100*1000*np.mean(np.square(pe1[:,1] - pe1_sim))**0.5)/1000
+ep2 = np.round(100*1000*np.mean(np.square(pe2[:,1] - pe2_sim))**0.5)/1000
 
 ##
 
