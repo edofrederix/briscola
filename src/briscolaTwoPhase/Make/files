@@ -2,6 +2,9 @@ vof/vof/vof.C
 vof/geometricVof/geometricVof.C
 vof/splitAdvection/splitAdvection.C
 
+CCL/CCL/CCL.C
+CCL/twoPass/twoPass.C
+
 LVE/LVE.C
 
 normalSchemes/normalScheme/normalScheme.C
