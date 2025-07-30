@@ -26,7 +26,7 @@ CCL::CCL
         "m",
         fvMsh,
         IOobject::NO_READ,
-        IOobject::NO_WRITE,
+        IOobject::AUTO_WRITE,
         true,
         false
     ),
@@ -77,9 +77,17 @@ autoPtr<CCL> CCL::New
     );
 }
 
+void CCL::correct()
+{
+    binaryTag();
+    this->tag();
+}
+
 void CCL::binaryTag()
 {
     colocatedLabelField& m = *this;
+
+    m = Zero;
 
     forAllCells(m,l,d,i,j,k)
         m(l,d,i,j,k) = alpha_(l,d,i,j,k) > vof::threshold;

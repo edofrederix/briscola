@@ -38,6 +38,18 @@ twoPhaseModel::twoPhaseModel
         true,
         false
     ),
+    coaSupp_(bool(dict.lookupOrDefault("coalescenceSuppression", false))),
+    CCLPtr_
+    (
+        coaSupp_
+      ? CCL::New
+        (
+            fvMsh,
+            dict.subDict("CCL"),
+            alpha_
+        ).ptr()
+      : nullptr
+    ),
     normalSchemePtr_
     (
         normalScheme::New(*this, dict.subDict("normalScheme")).ptr()
@@ -63,6 +75,8 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
     fvMsh_(tpm.fvMsh_),
     dict_(tpm.dict_),
     alpha_(tpm.alpha_),
+    coaSupp_(tpm.coaSupp_),
+    CCLPtr_(tpm.CCLPtr_, false),
     normalSchemePtr_(tpm.normalSchemePtr_, false),
     surfaceTensionSchemePtr_(tpm.surfaceTensionSchemePtr_, false),
     g_(tpm.g_),
@@ -124,6 +138,10 @@ autoPtr<twoPhaseModel> twoPhaseModel::New<staggered>
 
 void twoPhaseModel::correctMixture()
 {
+    if (coaSupp_)
+    {
+        CCLPtr_->correct();
+    }
     surfaceTensionSchemePtr_->correct();
 }
 

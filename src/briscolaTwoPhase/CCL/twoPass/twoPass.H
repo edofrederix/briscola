@@ -16,6 +16,17 @@ class twoPass
 :
     public CCL
 {
+    // Labeling stride across processors for parallel tagging
+    static const label procStride;
+
+    // Tag union lookup table
+    HashTable<label,label> unionTable_;
+
+    // Find root tag
+    int find(label);
+
+    // Unite tags
+    void uniteTags(label,label);
 
 public:
 
@@ -44,6 +55,8 @@ public:
 
     // Tag the binary field
     virtual void tag();
+
+
 };
 
 }

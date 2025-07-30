@@ -6,6 +6,7 @@
 #include "regIOobject.H"
 #include "normalScheme.H"
 #include "surfaceTensionScheme.H"
+#include "CCL.H"
 
 namespace Foam
 {
@@ -30,6 +31,12 @@ protected:
 
     // Volume fraction field
     colocatedScalarField alpha_;
+
+    // Switch for coalescence suppression
+    Switch coaSupp_;
+
+    // Connected Component Labeling
+    autoPtr<CCL> CCLPtr_;
 
     // Normal scheme
     autoPtr<normalScheme> normalSchemePtr_;

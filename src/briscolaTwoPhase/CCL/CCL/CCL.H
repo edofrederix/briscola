@@ -81,6 +81,9 @@ public:
     // Access to the volume fraction
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
+    // Correct the CCL field
+    void correct();
+
     // Assign binary field values
     void binaryTag();
 
