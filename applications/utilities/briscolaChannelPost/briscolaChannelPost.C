@@ -16,28 +16,24 @@ using namespace Foam;
 using namespace briscola;
 using namespace fv;
 
-// General case: fallback (compile-time error)
 template<class Type>
 void printComponents(OFstream& file, const Type& val)
 {
     NotImplemented::error("printComponents", "Unsupported type");
 }
 
-// Specialization for scalar
 template<>
 void printComponents<scalar>(OFstream& file, const scalar& val)
 {
     file << val << nl;
 }
 
-// Specialization for vector
 template<>
 void printComponents<vector>(OFstream& file, const vector& val)
 {
     file << val.x() << ";" << val.y() << ";" << val.z() << nl;
 }
 
-// Specialization for symmTensor (6 components)
 template<>
 void printComponents<symmTensor>(OFstream& file, const symmTensor& val)
 {
@@ -45,7 +41,6 @@ void printComponents<symmTensor>(OFstream& file, const symmTensor& val)
          << val.yy() << ";" << val.yz() << ";" << val.zz() << nl;
 }
 
-// Specialization for tensor (9 components)
 template<>
 void printComponents<tensor>(OFstream& file, const tensor& val)
 {
@@ -55,20 +50,8 @@ void printComponents<tensor>(OFstream& file, const tensor& val)
 }
 
 template<class Type, class MeshType>
-int briscolaChannelPost(int argc, char *argv[])
+int briscolaChannelPost(arguments args)
 {
-    arguments::addBoolOption("parallel", "run in parallel");
-    arguments::validArgs.append("line direction");
-    arguments::validArgs.append("field to average");
-    arguments::addOption
-    (
-        "time",
-        "ranges",
-        "comma-separated time ranges - eg, ':10,20,40:70,1000:'"
-    );
-
-    arguments args(argc, argv);
-
     #include "createBriscolaTime.H"
     #include "createBriscolaMesh.H"
 
@@ -318,4 +301,40 @@ int briscolaChannelPost(int argc, char *argv[])
     return 0;
 }
 
+int main(int argc, char *argv[])
+{
+    arguments::addBoolOption("parallel", "run in parallel");
+    arguments::validArgs.append("line direction");
+    arguments::validArgs.append("field to average");
+    arguments::validArgs.append("field type");
+    arguments::addOption
+    (
+        "time",
+        "ranges",
+        "comma-separated time ranges - eg, ':10,20,40:70,1000:'"
+    );
 
+    arguments args(argc, argv);
+
+    const word type(args.argRead<word>(3));
+
+    if (type == "colocatedScalar")
+        return briscolaChannelPost<scalar,colocated>(args);
+    else if (type == "colocatedVector")
+        return briscolaChannelPost<vector,colocated>(args);
+    else if (type == "colocatedTensor")
+        return briscolaChannelPost<tensor,colocated>(args);
+    else if (type == "colocatedSymmTensor")
+        return briscolaChannelPost<symmTensor,colocated>(args);
+    else if (type == "staggeredScalar")
+        return briscolaChannelPost<scalar,staggered>(args);
+    else
+    {
+        FatalError
+                << "Type " << type
+                << " not supported."
+                << endl << abort(FatalError);
+
+        return 1;
+    }
+}

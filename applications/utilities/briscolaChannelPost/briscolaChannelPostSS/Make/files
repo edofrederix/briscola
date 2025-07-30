@@ -1,3 +1,0 @@
-briscolaChannelPostSS.C
-
-EXE = $(FOAM_USER_APPBIN)/briscolaChannelPostSS

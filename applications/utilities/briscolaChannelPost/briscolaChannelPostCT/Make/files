@@ -1,3 +1,0 @@
-briscolaChannelPostCT.C
-
-EXE = $(FOAM_USER_APPBIN)/briscolaChannelPostCT
