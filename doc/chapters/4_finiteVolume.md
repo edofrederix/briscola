@@ -20,7 +20,7 @@ the FVM are grouped into the `briscolaFiniteVolume` library.
 In Briscola, boundary conditions can broadly be grouped into two categories:
 standard boundary conditions and immersed boundary conditions. Standard boundary
 conditions are defined at domain boundary patches and therefore always coincide
-exactly with cell faces. Immersed boundary conditions on the other hand are
+exactly with cell faces. Immersed boundary conditions, on the other hand, are
 internal to the flow domain, and can be set on immersed boundaries which may
 arbitrarily cross cells and cell faces. The immersed boundary method and
 immersed boundary conditions are discussed in more detail in [Chapter
@@ -36,7 +36,7 @@ discretization across the domain boundary, the desired boundary condition is
 enforced at the domain boundary. The main advantage of the ghost-cell method is
 that the same discretization can be used throughout the entire mesh, including
 for boundary-adjacent cells. As Briscola uses a compact discretization stencil,
-a single layer of ghost-cells is required. However, for higher order
+a single layer of ghost-cells is required. However, for higher-order
 discretizations with larger stencils, the number of ghost-cell layers could
 simply be increased, although this is not yet implemented. The following
 boundary condition types are available in Briscola:
@@ -51,13 +51,13 @@ boundary-adjacent cell inside the flow domain.
 * Empty boundary condition: For two-dimensional meshes, the empty boundary
 condition must be used in the unused third spatial direction. This boundary
 condition is a specialization of the Neumann boundary condition with a
-zero-gradient.
+zero boundary-normal gradient.
 * No-slip boundary condition: This boundary condition is a specialization of the
 Dirichlet boundary condition with a boundary value of zero.
 * Slip boundary condition: This boundary condition is meant for the velocity at
 a slip wall. It sets the boundary-normal velocity and the wall shear to zero.
 * Outflow boundary condition: This boundary condition is also a specialization
-of the Neumann boundary condition with a zero-gradient. However, for staggered
+of the Neumann boundary condition with a zero boundary-normal gradient. However, for staggered
 quantities, it also checks for and prevents inflow. This is needed for numerical
 stability of staggered flow solvers in certain cases.
 * Parallel boundary condition: This boundary condition is generated
@@ -72,12 +72,12 @@ neighboring processors but between processors adjacent to a pair of periodic
 patches. This can also be one and the same processor if there is no parallel
 decomposition in the periodic direction.
 * Dummy boundary condition: This boundary condition is used as a dummy for
-fields which don't need any particular boundary conditions. Correcting this
-boundary condition does nothing.
+fields that don't need any particular boundary conditions. Correcting this
+boundary condition (i.e., updating the
+ghost-cell values) does nothing.
 
 Boundary conditions are defined for each `meshField` as a `PtrList` of
-`boundaryCondition`s. To correct the boundary conditions (i.e., to update the
-ghost-cell values), `meshField`'s `correctBoundaryCondition()` function can be
+`boundaryCondition`s. To correct the boundary conditions, `meshField`'s `correctBoundaryCondition()` function can be
 called. This function updates ghost-cell values for each `meshLevel` and each
 `meshDirection`. The implementation of the update is done in the `meshLevel`
 class, such that one could also call the `correctBoundaryConditions()` function
@@ -91,7 +91,7 @@ variable, and $b$ the right-hand side source. Such a linear system can be
 defined in Briscola using the `linearSystem` class. This class is templated and
 takes three template arguments: the stencil type (for $A$), the field type (for
 $x$ and $b$) and the mesh type (for $A$, $x$ and $b$). The stencil type defines
-a unique stencil size and shape which is used throughout the stencil matrix $A$.
+a unique stencil size and shape that is used throughout the stencil matrix $A$.
 Briscola's different stencil types are defined in
 
 `src/briscolaCore/primitives/StencilSpace`.
@@ -125,7 +125,7 @@ several solvers available in Briscola. These are described in more detail in
 
 ## Schemes
 
-Similarly to OpenFOAM, Briscola has several different generic classes to define
+Similar to OpenFOAM, Briscola has several different generic classes to define
 discretization schemes for spatial and temporal operators. These are defined in
 
 `src/briscolaFiniteVolume/schemes`
@@ -153,8 +153,8 @@ for the following:
 * Limiter schemes
 * Prolongation and restriction schemes: these are needed for the geometric
 multigrid solver, and define how fields can be prolonged or restricted to finer
-and coarser grids respectively.
-* Runge-Kutta schemes: For solvers which use Runge-Kutta-type schemes for
+and coarser grids, respectively.
+* Runge-Kutta schemes: For solvers that use Runge-Kutta-type schemes for
 temporal discretization, the `RungeKuttaScheme` class and its derived
 specializations define the number of intermediate stages and associated
 coefficients in the form of a Butcher tableau (see Komen, E.M.J., et al.
@@ -164,20 +164,20 @@ method in OpenFOAM." Computer Physics Communications 253 (2020): 107145.)
 
 ## Finite volume flow solvers
 
-Briscola has several flow solvers which are based on the finite volume library.
+Briscola has several flow solvers that are based on the finite volume library.
 These solver applications can be found in `applications/solvers`. They are
 briefly described here:
 * `briscolaColocated`: Colocated single-phase flow solver using Runge-Kutta time
 discretization.
 * `briscolaColocatedCNAB`: Colocated single-phase flow solver using
-Crank-Nicolson discretization for the viscous term and Adamsh-Bashforth
+Crank-Nicolson discretization for the viscous term and Adams-Bashforth
 discretization for the convective term.
 * `briscolaColocatedTwoPhase`: Colocated two-phase flow solver using Runge-Kutta
 time discretization and the Volume-of-Fluid (VOF) method for the two-phase
 interface. More details on two-phase solvers are given in
 [Chapter 5](./5_twoPhase.md).
 * `briscolaColocatedTwoPhaseCNAB`: Colocated two-phase flow solver using
-Crank-Nicolson discretization for the viscous term and Adamsh-Bashforth
+Crank-Nicolson discretization for the viscous term and Adams-Bashforth
 discretization for the convective term.
 * `briscolaLaplacian`: Colocated solver for a heat conduction equation of the
 form $\partial T/\partial t=\nabla \cdot  (\alpha \nabla T) + S$, with temperature
@@ -186,12 +186,12 @@ any other equation with the same form.
 * `briscolaStaggered`: Staggered single-phase flow solver using Runge-Kutta time
 discretization.
 * `briscolaStaggeredCNAB`: Staggered single-phase flow solver using
-Crank-Nicolson discretization for the viscous term and Adamsh-Bashforth
+Crank-Nicolson discretization for the viscous term and Adams-Bashforth
 discretization for the convective term.
 * `briscolaStaggeredTwoPhase`: Staggered two-phase flow solver using Runge-Kutta
 time discretization.
 * `briscolaStaggeredTwoPhaseCNAB`: Staggered two-phase flow solver using
-Crank-Nicolson discretization for the viscous term and Adamsh-Bashforth
+Crank-Nicolson discretization for the viscous term and Adams-Bashforth
 discretization for the convective term.
 * `briscolaVofAdvection`: Colocated VOF advection solver without coupling to a
 Navier-Stokes equation. Mainly used for verification test cases of VOF advection
