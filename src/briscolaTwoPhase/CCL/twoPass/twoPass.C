@@ -13,6 +13,7 @@ namespace fv
 defineTypeNameAndDebug(twoPass, 0);
 addToRunTimeSelectionTable(CCL, twoPass, dictionary);
 
+// Number of tags per processor should not exceed this number
 const label twoPass::procStride = 1e5;
 
 int twoPass::find(label x)
@@ -45,6 +46,126 @@ void twoPass::uniteTags(label x, label y)
     }
 }
 
+void twoPass::parallelReduce()
+{
+    colocatedLabelField& m = *this;
+
+    m.correctCommsBoundaryConditions();
+
+    List<label> neighbors(0, Zero);
+
+    // Identify equivalent tags in ghost cells
+
+    forAllCells(m,i,j,k)
+    {
+        if (m(i,j,k))
+        {
+            neighbors.clear();
+
+            if (m(i-1,j,k))
+            {
+                neighbors.append(m(i-1,j,k));
+            }
+            if (m(i,j-1,k))
+            {
+                neighbors.append(m(i,j-1,k));
+            }
+            if (m(i,j,k-1))
+            {
+                neighbors.append(m(i,j,k-1));
+            }
+            if (m(i+1,j,k))
+            {
+                neighbors.append(m(i+1,j,k));
+            }
+            if (m(i,j+1,k))
+            {
+                neighbors.append(m(i,j+1,k));
+            }
+            if (m(i,j,k+1))
+            {
+                neighbors.append(m(i,j,k+1));
+            }
+
+            if (neighbors.size() != 0)
+            {
+                label minLabel = Foam::min(neighbors);
+
+                forAll(neighbors, n)
+                {
+                    uniteTags(minLabel,neighbors[n]);
+                }
+            }
+        }
+    }
+
+    // Serialize HashTable's
+
+    OStringStream os;
+
+    os << unionTable_;
+
+    string localSerialized = os.str();
+
+    // Gather tables
+
+    List<string> gatheredTables(Pstream::nProcs());
+
+    gatheredTables[Pstream::myProcNo()] = localSerialized;
+
+    Pstream::gatherList(gatheredTables);
+
+    // Merge tables on master
+
+    HashTable<label,label> mergedTable;
+
+    string mergedStr;
+
+    if (Pstream::master())
+    {
+        forAll(gatheredTables, procI)
+        {
+            IStringStream is(gatheredTables[procI]);
+            HashTable<label,label> localTable(is);
+
+            forAll(localTable.toc(), e)
+            {
+                mergedTable.insert
+                (
+                    localTable.toc()[e],
+                    localTable[localTable.toc()[e]]
+                );
+            }
+        }
+
+        OStringStream mergedStream;
+
+        mergedStream << mergedTable;
+
+        mergedStr = mergedStream.str();
+    }
+
+    // Scatter tables to all processors
+
+    Pstream::scatter(mergedStr);
+
+    IStringStream mergedStrStream(mergedStr);
+
+    HashTable<label,label> globalMergedTable(mergedStrStream);
+
+    unionTable_.insert(globalMergedTable);
+
+    // Resolve unified tags again
+
+    forAllCells(m, i,j,k)
+    {
+        if (m(i,j,k))
+        {
+            m(i,j,k) = find(m(i,j,k));
+        }
+    }
+}
+
 twoPass::twoPass
 (
     const fvMesh& fvMsh,
@@ -71,106 +192,57 @@ void twoPass::tag()
 
     label tag = Pstream::myProcNo() * procStride + 1;
 
-    bool firstLoop = true;
-    bool changed = true;
-
     colocatedLabelField& m = *this;
 
-    while (changed)
+    // First pass
+    forAllCells(m, i,j,k)
     {
-        // First pass
-        forAllCells(m, i,j,k)
+        if (m(i,j,k))
         {
-            if (m(i,j,k))
+            neighbors.clear();
+
+            if (m(i-1,j,k))
             {
-                neighbors.clear();
+                neighbors.append(m(i-1,j,k));
+            }
+            if (m(i,j-1,k))
+            {
+                neighbors.append(m(i,j-1,k));
+            }
+            if (m(i,j,k-1))
+            {
+                neighbors.append(m(i,j,k-1));
+            }
 
-                if (m(i-1,j,k))
+            if (neighbors.size() == 0)
+            {
+                m(i,j,k) = tag++;
+            }
+            else
+            {
+                label minLabel = Foam::min(neighbors);
+
+                m(i,j,k) = minLabel;
+
+                forAll(neighbors, n)
                 {
-                    neighbors.append(m(i-1,j,k));
-                }
-                if (m(i,j-1,k))
-                {
-                    neighbors.append(m(i,j-1,k));
-                }
-                if (m(i,j,k-1))
-                {
-                    neighbors.append(m(i,j,k-1));
-                }
-
-                if (firstLoop)
-                {
-                    if (neighbors.size() == 0)
-                    {
-                        m(i,j,k) = tag++;
-                    }
-                    else
-                    {
-                        label minLabel = Foam::min(neighbors);
-
-                        m(i,j,k) = minLabel;
-
-                        forAll(neighbors, n)
-                        {
-                            uniteTags(minLabel,neighbors[n]);
-                        }
-                    }
-                }
-                else
-                {
-                    if (m(i+1,j,k))
-                    {
-                        neighbors.append(m(i+1,j,k));
-                    }
-                    if (m(i,j+1,k))
-                    {
-                        neighbors.append(m(i,j+1,k));
-                    }
-                    if (m(i,j,k+1))
-                    {
-                        neighbors.append(m(i,j,k+1));
-                    }
-
-                    if (neighbors.size() != 0)
-                    {
-                        label minLabel = Foam::min(neighbors);
-
-                        forAll(neighbors, n)
-                        {
-                            uniteTags(minLabel,neighbors[n]);
-                        }
-                    }
+                    uniteTags(minLabel,neighbors[n]);
                 }
             }
         }
-
-        changed = false;
-
-        // Second pass
-        forAllCells(m, i,j,k)
-        {
-            if
-            (
-                m(i,j,k) &&
-                m(i,j,k) != find(m(i,j,k))
-            )
-            {
-                m(i,j,k) = find(m(i,j,k));
-
-                changed = true;
-            }
-        }
-
-        // Global or reduction, only stop
-        // loop if no changes on any processor
-        reduce(changed, orOp<bool>());
-
-        // Exchange ghost cells
-        m.correctCommsBoundaryConditions();
-
-        if (firstLoop)
-            firstLoop = false;
     }
+
+    // Second pass
+    forAllCells(m, i,j,k)
+    {
+        if (m(i,j,k))
+        {
+            m(i,j,k) = find(m(i,j,k));
+        }
+    }
+
+    // Parallel reduction
+    parallelReduce();
 }
 
 }

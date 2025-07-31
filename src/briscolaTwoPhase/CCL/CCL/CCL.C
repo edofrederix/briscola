@@ -57,7 +57,12 @@ autoPtr<CCL> CCL::New
     const colocatedScalarField& alpha
 )
 {
-    const word CCLType(dict.lookup("type"));
+    const word CCLType
+    (
+        dict.isNull()
+      ? word("twoPass")
+      : dict.lookup("type")
+    );
 
     dictionaryConstructorTable::iterator cstrIter =
         dictionaryConstructorTablePtr_->find(CCLType);

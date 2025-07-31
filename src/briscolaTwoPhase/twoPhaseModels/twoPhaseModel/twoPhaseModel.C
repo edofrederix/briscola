@@ -45,7 +45,9 @@ twoPhaseModel::twoPhaseModel
       ? CCL::New
         (
             fvMsh,
-            dict.subDict("CCL"),
+            dict.found("CCL")
+          ? dict.subDict("CCL")
+          : dictionary::null,
             alpha_
         ).ptr()
       : nullptr

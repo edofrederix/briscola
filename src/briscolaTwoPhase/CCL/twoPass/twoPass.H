@@ -28,6 +28,9 @@ class twoPass
     // Unite tags
     void uniteTags(label,label);
 
+    // Parallel reduction
+    void parallelReduce();
+
 public:
 
     // Runtime type information
