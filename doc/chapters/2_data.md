@@ -86,8 +86,8 @@ Just like OpenFOAM, Briscola largely relies on finite volume discretizations.
 Much of the code is contained in the briscolaFiniteVolume library. Associated
 with discretizations are fields, boundary conditions, schemes and solvers. They
 require some sort of data structure of the eventual solution variables such as
-pressure, temperature or velocity. Discretizations in Briscola are both
-*colocated* (like OpenFOAM) but can also be *staggered*. This data structure is
+pressure, temperature or velocity. Discretizations in Briscola can be either 
+*colocated* (like OpenFOAM) or *staggered*. This data structure is
 an intrinsic part of Briscola, and is programmed in an abstract sense. Data
 fields, boundary conditions, schemes and solvers are not just templated for a
 primitive type (like scalar, vector, tensor) but also for the mesh type (i.e.,
@@ -99,7 +99,7 @@ efficiently.
 
 ![Colocated and staggered data structure](./figures/data/coloAndStag.png)
 
-The figure above shows a colocated and staggered mesh arrangement. In black is
+The figure above compares colocated and staggered mesh arrangements. In black is
 the colocated mesh, which exactly maps the domain of the brick part for each
 processor. Mesh points are defined in the barycenter of each cell, and fields
 are defined on these cell centers. Indexing is as indicated by the black

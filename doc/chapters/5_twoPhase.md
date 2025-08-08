@@ -5,7 +5,7 @@ or [Previous chapter: The Finite Volume library](./4_finiteVolume.md)
 
 An important part of the Briscola is its two-phase flow simulation capability.
 Since each processor has a structured mesh, this means that each cell is
-hexahedron. In turn, proven algorithms can be used to capture a two-phase
+a hexahedron. In turn, proven algorithms can be used to capture a two-phase
 interface. We do this in the context of the Volume Of Fluid (VOF) method, with
 geometric reconstruction. While it can be tedious to implement, this method is
 superior in terms of computational efficiency compared to algebraic interface
@@ -19,7 +19,7 @@ $\frac{\partial\alpha}{\partial t} + \mathbf{u}\cdot\nabla\alpha = 0$
 
 In principle, this could be done algebraically. However, it is well known that
 solutions for the volume fraction $\alpha$ then become either non-monotonic
-using high order schemes or diffuse using limited schemes (pick one). As an
+using high-order schemes or diffuse using limited schemes (pick one). As an
 alternative, we may exploit the hyperbolic nature of the equation above by
 tracking characteristics on which the solution for $\alpha$ is constant. For
 this, however, the precise geometry of the interface must be reconstructed
@@ -57,27 +57,27 @@ free-surface simulations on cartesian-grids." Journal of Computational Physics
    Briscola has two algorithms implemented for solving the LVE: the CIBRAVE
    algorithm (López, Joaquín, et al. "A new volume conservation enforcement
    method for PLIC reconstruction in general convex grids." Journal of
-   Computational Physics 316 (2016): 338-359.) for general hexahedrons and an
+   Computational Physics 316 (2016): 338-359.) for general hexahedra and an
    analytical algorithm (Scardovelli, R., and Stephane Z.. "Analytical relations
    connecting linear interfaces and volume fractions in rectangular grids."
    Journal of Computational Physics 164.1 (2000): 228-237) for parallelepiped
-   quadrilateral hexahedrons, see the code in `src/briscolaTwoPhase/LVE`.
+   quadrilateral hexahedra, see the code in `src/briscolaTwoPhase/LVE`.
 3. With the interface reconstructed, we may simply use the method of
    characteristics to track lines in time and space on which the solution for
-   $\alpha^n$ remains constant. To do this in a monotonic and mass conserving
+   $\alpha^n$ remains constant. To do this in a monotonic and mass-conserving
    way, the split advection approach of Weymouth & Yue is used which only works
    on structured grids. Given the truncation plane, we may exactly compute the
-   flux though the $x$-faces of the hexahedron given a velocity at the $x$-faces
+   flux through the $x$-faces of the hexahedron given a velocity at the $x$-faces
    while setting the velocities on the $y$- and $z$-faces to zero. This then
    gives an intermediate solution $\alpha^\star$. Now, step 1-3 can be repeated
    with $\alpha^\star$ as the initial solution (thus requiring a new
    reconstruction of $\mathbf{n}$ and $C$), with the only difference that
-   advection is now done in the $y$-direction, giving intermediate solution
-   $\alpha^{\star\star}$. Finally, step 1-3 are repeated in the $z$-direction to
+   advection is now done in the $y$-direction, giving an intermediate solution
+   $\alpha^{\star\star}$. Finally, steps 1-3 are repeated in the $z$-direction to
    give the final solution $\alpha^{n+1}$.
 
 By making some clever interpolation choices, Weymouth & Yue showed that this
-leads to a method that is monotonic and mass conserving while preserving
+leads to a method that is monotonic and mass-conserving while preserving
 sharpness of the interface. See
 `src/briscolaTwoPhase/vof/splitAdvection/splitAdvection.C` for Briscola's
 implementation of this algorithm.
@@ -103,7 +103,7 @@ First, the volume fraction equation is solved as discussed above in the
 `twoPhase.correct()` function call. Given a new solution for $\alpha^{n+1}$, a
 new density field is computed and interpolated to faces, either staggered or
 colocated. Next, a momentum equation predictor is solved. However, as opposed to
-single phase solvers, this momentum equation has a variable density that cannot
+single-phase solvers, this momentum equation has a variable density that cannot
 be absorbed in the pressure and viscosity. Thus, the variable density remains as
 a coefficient in the right-hand side of the momentum equation, which is written
 in a 'non-conservative' formulation. Moreover, the density now also appears in
@@ -114,7 +114,7 @@ $\nabla\cdot\left(\frac{1}{\rho}\nabla p\right) =
 
 See [Solvers](./7_solvers.md) for a discussion on how this equation can be
 solved. Finally, once a new pressure is obtained the velocity prediction can be
-corrected, just like single phase solvers.
+corrected, just like single-phase solvers.
 
 An additional contribution to the momentum equation in two-phase flows is
 buoyancy. To avoid pressure jumps across periodic boundaries that are normal to

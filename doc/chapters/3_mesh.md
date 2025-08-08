@@ -6,15 +6,15 @@ or [Previous chapter: Data structure](./2_data.md)
 ## Brick-structured mesh decomposition
 
 As already stated in the previous chapter (read it first if not yet done!),
-Briscola is a brick-structured code. The domain $\Omega$ is comprised by a
-number of bricks that are each hexahedron as shown here:
+Briscola is a brick-structured code. The domain $\Omega$ is comprised of a
+number of bricks that are each a hexahedron as shown here:
 
 ![Data structure](./figures/data/data.png)
 
-In turn, a brick can be decomposed by a number of brick parts in a structured
+In turn, a brick can be decomposed into a number of brick parts in a structured
 way. Thus, each brick part is a hexahedron too, and can be mapped by a fully
 structured mesh. The processor decomposition of each brick should be such that
-the decomposition on brick faces and edges are the same across all bricks that
+the decompositions on brick faces and edges are the same across all bricks that
 share those faces and edges.
 
 To define the mesh, just like OpenFOAM a case-specific dictionary file is used.
@@ -26,20 +26,20 @@ part of the mesh that is structured, meaning that it can have at most one brick.
 The reason for this, as explained in the previous chapter, is that it
 drastically simplifies data management. As in the example above, each processor
 has a brick part which is a quarter of a brick and is thus also a hexahedron.
-The decomposition of the mesh in Briscola is quite straight-forward, and can be
+The decomposition of the mesh in Briscola is relatively straight-forward, and can be
 handled best as an intrinsic part of the mesh. Moreover, some methods used in
-Briscola require a 'full picture' of the full domain and its decomposition.
+Briscola requires a 'full picture' of the full domain and its decomposition.
 Thus, the shape and decomposition of the mesh must be known to all processors
 whereas in OpenFOAM domain decomposition is designed to split the problem into a
 number of strictly local problems.
 
-In this chapter meshing in Briscola is discussed.
+In this chapter, the meshing in Briscola is discussed.
 
 ## Mesh element numbering
 
 ![Data structure](./figures/mesh/numbering.png)
 
-Before the mesh dictionary file is discussed we first define a few numbering
+Before the mesh dictionary file is discussed, we first define a few numbering
 and naming conventions in Briscola. Referring to the figure above, a brick or
 brick part is constructed from 8 vertices, 12 edges and 6 faces. In a
 right-handed local coordinate system aligned with this brick, the two faces with
@@ -71,10 +71,10 @@ and rt.
 Have a look at `src/briscolaCore/include/utils.H` for some elementary
 definitions and corresponding ASCII drawings in the comments.
 
-## Vertices, bricks, edges and patches
+## Vertices, bricks, edges, and patches
 
-Just like OpenFOAM, in Briscola a mesh is defined from vertices, bricks (blocks
-in OpenFOAM), edges and patches. The format of system/briscolaMeshDict is
+Just like OpenFOAM, in Briscola, a mesh is defined from vertices, bricks (blocks
+in OpenFOAM), edges, and patches. The format of system/briscolaMeshDict is
 ```
 vertices
 (
@@ -134,10 +134,10 @@ decomposition
     );
 }
 ```
-There are 5 key entries: `vertices`, `bricks`, `edges`, `patches` and
+There are 5 key entries: `vertices`, `bricks`, `edges`, `patches`, and
 `decomposition`. The `vertices` entry contains a simple list of coordinates
 defined with respect to a global right-handed coordinate system. The `bricks`
-entry contains a collection of numbered dictionaries where each dictionary
+entry contains a collection of numbered dictionaries, where each dictionary
 defines a brick. A brick is defined by its 8 vertices, and the number of mesh
 cells in each local direction. The vertices are stored in a list that is ordered
 lexicographically and would be the output of
@@ -168,7 +168,7 @@ contains a collection of named dictionaries, each defining a patch. A patch has
 a `type` entry defining the type of the patch and a `faces` entry which is a
 list of vertex lists, with each vertex list being a slice of the vertex block
 that defines a brick. Thus, the ordering of the vertices in this vertex list is
-the same as the ordering of vertices in the brick definition. Any external brick
+the same as the ordering of the vertices in the brick definition. Any external brick
 faces that are not added explicitly to patches are added to the 'default' patch.
 
 Finally, the `decomposition` entry defines the decomposition of each brick.
@@ -191,7 +191,7 @@ total.
 
 ## Mesh hierarchy
 
-Since Briscola is a brick-structured code, globally a mesh can be
+Since Briscola is a brick-structured code, globally, a mesh can be
 *unstructured*. Here, 'unstructured' means that the connectivity graph of bricks
 does not form a 3D lattice. This is checked by the `buildTopologyMap()` function
 in `src/briscolaMesh/brick/brickTopology.C`, where such a 3D lattice graph is
@@ -260,7 +260,7 @@ file.
 It is also possible to extract more information from the mesh. Using the
 `briscolaCheckMesh` utility, the mesh is checked for consistency. Also, using
 the `-brickInfo`, `-levelInfo`, `-parallelInfo`, `-parallelConnectivityInfo` and
-`-patchInfo` arguments, respective information can be obtained. Again, the
+`-patchInfo` arguments, the respective information can be obtained. Again, the
 application must be run in parallel if the mesh is decomposed. For example,
 ```
 cd cases/briscolaColocated/cavity
