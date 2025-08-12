@@ -27,9 +27,6 @@ class surfaceTensionScheme
 {
 protected:
 
-    // Reference to the two-phase model
-    const twoPhaseModel& tpm_;
-
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
@@ -60,17 +57,21 @@ public:
         surfaceTensionScheme,
         dictionary,
         (
-            const twoPhaseModel& tpm,
-            const dictionary& dict
+            const fvMesh& fvMsh,
+            const dictionary& dict,
+            const normalScheme& normal,
+            const colocatedScalarField& alpha
         ),
-        (tpm, dict)
+        (fvMsh, dict, normal, alpha)
     );
 
     // Construct from two-phase model
     surfaceTensionScheme
     (
-        const twoPhaseModel&,
-        const dictionary&
+        const fvMesh&,
+        const dictionary&,
+        const normalScheme&,
+        const colocatedScalarField&
     );
 
     // Copy constructor
@@ -79,18 +80,17 @@ public:
     // Clone surfaceTensionScheme
     virtual autoPtr<surfaceTensionScheme> clone() const = 0;
 
-    // Selector from two-phase model
+    // Selector from components
     static autoPtr<surfaceTensionScheme> New
     (
-        const twoPhaseModel&,
-        const dictionary&
+        const fvMesh&,
+        const dictionary&,
+        const normalScheme&,
+        const colocatedScalarField&
     );
 
     // Destructor
     virtual ~surfaceTensionScheme();
-
-    // Access to the two-phase model
-    inline const twoPhaseModel& tpm() const { return tpm_; }
 
     // Access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }

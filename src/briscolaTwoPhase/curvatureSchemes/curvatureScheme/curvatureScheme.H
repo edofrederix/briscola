@@ -69,13 +69,6 @@ public:
     // Clone normalScheme
     virtual autoPtr<curvatureScheme> clone() const = 0;
 
-    // Selector from two-phase model
-    static autoPtr<curvatureScheme> New
-    (
-        const twoPhaseModel&,
-        const dictionary&
-    );
-
     // Selector from components
     static autoPtr<curvatureScheme> New
     (

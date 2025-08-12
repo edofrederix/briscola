@@ -19,6 +19,12 @@ class twoPhaseVof
 {
 protected:
 
+    // Normal scheme
+    autoPtr<normalScheme> normalSchemePtr_;
+
+    // Surface tension scheme
+    autoPtr<surfaceTensionScheme> surfaceTensionSchemePtr_;
+
     // The Vof model
     autoPtr<vof> vfPtr_;
 
@@ -46,6 +52,18 @@ public:
 
     // Destructor
     virtual ~twoPhaseVof();
+
+    // Return surface tension flux
+    virtual tmp<colocatedFaceScalarField> surfaceTensionFlux()
+    {
+        return tmp<colocatedFaceScalarField>
+            (
+                static_cast<colocatedFaceScalarField&>
+                (
+                    surfaceTensionSchemePtr_()
+                )
+            );
+    }
 
     // Return access to the Vof model
     inline vof& vf() { return vfPtr_(); }

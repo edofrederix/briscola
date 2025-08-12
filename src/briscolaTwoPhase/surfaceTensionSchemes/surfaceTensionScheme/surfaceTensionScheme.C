@@ -16,32 +16,25 @@ defineRunTimeSelectionTable(surfaceTensionScheme, dictionary);
 
 surfaceTensionScheme::surfaceTensionScheme
 (
-    const twoPhaseModel& tpm,
-    const dictionary& dict
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const normalScheme& normal,
+    const colocatedScalarField& alpha
 )
 :
     colocatedFaceScalarField
     (
         "surfaceTension",
-        tpm.fvMsh(),
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        false
+        fvMsh
     ),
-    tpm_(tpm),
-    fvMsh_(tpm.fvMsh()),
+    fvMsh_(fvMsh),
     dict_(dict),
-    normal_(tpm.normal()),
-    alpha_(tpm.alpha()),
+    normal_(normal),
+    alpha_(alpha),
     sigma_
     (
         "sigma",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        false
+        fvMsh_
     ),
     curvatureSchemePtr_
     (
@@ -60,7 +53,6 @@ surfaceTensionScheme::surfaceTensionScheme
 surfaceTensionScheme::surfaceTensionScheme(const surfaceTensionScheme& s)
 :
     colocatedFaceScalarField(s),
-    tpm_(s.tpm_),
     fvMsh_(s.fvMsh_),
     dict_(s.dict_),
     normal_(s.normal_),
@@ -74,8 +66,10 @@ surfaceTensionScheme::~surfaceTensionScheme()
 
 autoPtr<surfaceTensionScheme> surfaceTensionScheme::New
 (
-    const twoPhaseModel& tpm,
-    const dictionary& dict
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const normalScheme& normal,
+    const colocatedScalarField& alpha
 )
 {
     const word surfaceTensionSchemeType(dict.lookup("type"));
@@ -86,15 +80,15 @@ autoPtr<surfaceTensionScheme> surfaceTensionScheme::New
     if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown normal scheme type " << surfaceTensionSchemeType
-            << ". Valid normal schemes are" << endl
+            << "Unknown surface tension scheme type " << surfaceTensionSchemeType
+            << ". Valid surface tension schemes are" << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
     return autoPtr<surfaceTensionScheme>
     (
-        cstrIter()(tpm, dict)
+        cstrIter()(fvMsh, dict, normal, alpha)
     );
 }
 

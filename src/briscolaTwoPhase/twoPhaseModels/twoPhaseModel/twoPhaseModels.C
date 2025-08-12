@@ -8,6 +8,7 @@
 #include "volumeWeightedViscosityMixture.H"
 #include "NewtonianViscosity.H"
 #include "twoPhaseVof.H"
+#include "twoPhaseMultiVof.H"
 
 namespace Foam
 {
@@ -17,6 +18,28 @@ namespace briscola
 
 namespace fv
 {
+
+// Multiple marker
+
+makeTwoPhaseModel
+(
+    twoPhaseMultiVof,
+    twoPhaseMultiVof,
+    blendedViscosityMixture,
+    NewtonianViscosity,
+    incompressibleTwoPhaseModel,
+    colocated
+)
+
+makeTwoPhaseModel
+(
+    twoPhaseMultiVof,
+    twoPhaseMultiVof,
+    blendedViscosityMixture,
+    NewtonianViscosity,
+    incompressibleTwoPhaseModel,
+    staggered
+)
 
 // Incompressible, blended mixing of viscosity and a basic vof solver
 

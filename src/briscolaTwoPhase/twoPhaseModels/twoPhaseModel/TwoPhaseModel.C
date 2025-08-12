@@ -188,8 +188,7 @@ tmp<colocatedFaceScalarField> TwoPhaseModel<MeshType>::flux()
     #endif
 
     if (this->tension())
-        flux +=
-            static_cast<colocatedFaceScalarField&>(this->surfaceTension());
+        flux += this->surfaceTensionFlux();
 
     return tFlux;
 }

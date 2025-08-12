@@ -38,34 +38,8 @@ twoPhaseModel::twoPhaseModel
         true,
         false
     ),
-    coaSupp_(bool(dict.lookupOrDefault("coalescenceSuppression", false))),
-    CCLPtr_
-    (
-        coaSupp_
-      ? CCL::New
-        (
-            fvMsh,
-            dict.found("CCL")
-          ? dict.subDict("CCL")
-          : dictionary::null,
-            alpha_
-        ).ptr()
-      : nullptr
-    ),
-    normalSchemePtr_
-    (
-        normalScheme::New(*this, dict.subDict("normalScheme")).ptr()
-    ),
-    surfaceTensionSchemePtr_
-    (
-        surfaceTensionScheme::New
-        (
-            *this,
-            dict.subDict("surfaceTensionScheme")
-        ).ptr()
-    ),
     g_(dict.lookup("g")),
-    tension_(surfaceTensionSchemePtr_->type() != "none")
+    tension_(dict.subDict("surfaceTensionScheme").lookup("type") != "none")
 {
     alpha_.setRestrictionScheme("volumeWeighted");
     alpha_ = Zero;
@@ -77,10 +51,6 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
     fvMsh_(tpm.fvMsh_),
     dict_(tpm.dict_),
     alpha_(tpm.alpha_),
-    coaSupp_(tpm.coaSupp_),
-    CCLPtr_(tpm.CCLPtr_, false),
-    normalSchemePtr_(tpm.normalSchemePtr_, false),
-    surfaceTensionSchemePtr_(tpm.surfaceTensionSchemePtr_, false),
     g_(tpm.g_),
     tension_(tpm.tension_)
 {
@@ -136,15 +106,6 @@ autoPtr<twoPhaseModel> twoPhaseModel::New<staggered>
     }
 
     return autoPtr<twoPhaseModel>(cstrIter()(fvMsh, dict));
-}
-
-void twoPhaseModel::correctMixture()
-{
-    if (coaSupp_)
-    {
-        CCLPtr_->correct();
-    }
-    surfaceTensionSchemePtr_->correct();
 }
 
 }

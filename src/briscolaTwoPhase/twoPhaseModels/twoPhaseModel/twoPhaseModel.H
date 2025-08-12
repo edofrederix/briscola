@@ -6,7 +6,6 @@
 #include "regIOobject.H"
 #include "normalScheme.H"
 #include "surfaceTensionScheme.H"
-#include "CCL.H"
 
 namespace Foam
 {
@@ -31,18 +30,6 @@ protected:
 
     // Volume fraction field
     colocatedScalarField alpha_;
-
-    // Switch for coalescence suppression
-    Switch coaSupp_;
-
-    // Connected Component Labeling
-    autoPtr<CCL> CCLPtr_;
-
-    // Normal scheme
-    autoPtr<normalScheme> normalSchemePtr_;
-
-    // Surface tension scheme
-    autoPtr<surfaceTensionScheme> surfaceTensionSchemePtr_;
 
     // Gravitational acceleration
     vector g_;
@@ -138,23 +125,8 @@ public:
     // Return const access to the volume fraction
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
-    // Return access the normal scheme
-    normalScheme& normal() { return normalSchemePtr_(); }
-
-    // Return const access to the normal scheme
-    const normalScheme& normal() const { return normalSchemePtr_(); }
-
-    // Return access the surface tension scheme
-    surfaceTensionScheme& surfaceTension()
-    {
-        return surfaceTensionSchemePtr_();
-    }
-
-    // Return const access to the surface tension scheme
-    const surfaceTensionScheme& surfaceTension() const
-    {
-        return surfaceTensionSchemePtr_();
-    }
+    // Return surface tension flux
+    virtual tmp<colocatedFaceScalarField> surfaceTensionFlux() = 0;
 
     // Gravitational acceleration
     const vector& g() const { return g_; }

@@ -69,13 +69,6 @@ public:
     // Clone vof
     virtual autoPtr<vof> clone() const = 0;
 
-    // Selector from two-phase model
-    static autoPtr<vof> New
-    (
-        twoPhaseModel&,
-        const dictionary&
-    );
-
     // Selector from components
     static autoPtr<vof> New
     (

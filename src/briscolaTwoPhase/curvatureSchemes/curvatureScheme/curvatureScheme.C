@@ -56,15 +56,6 @@ curvatureScheme::~curvatureScheme()
 
 autoPtr<curvatureScheme> curvatureScheme::New
 (
-    const twoPhaseModel& tpm,
-    const dictionary& dict
-)
-{
-    return curvatureScheme::New(tpm.fvMsh(), dict, tpm.normal(), tpm.alpha());
-}
-
-autoPtr<curvatureScheme> curvatureScheme::New
-(
     const fvMesh& fvMsh,
     const dictionary& dict,
     const normalScheme& normal,

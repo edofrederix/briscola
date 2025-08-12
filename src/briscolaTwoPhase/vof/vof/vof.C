@@ -56,15 +56,6 @@ vof::~vof()
 
 autoPtr<vof> vof::New
 (
-    twoPhaseModel& tpm,
-    const dictionary& dict
-)
-{
-    return vof::New(tpm.fvMsh(), dict, tpm.normal(), tpm.alpha());
-}
-
-autoPtr<vof> vof::New
-(
     const fvMesh& fvMsh,
     const dictionary& dict,
     normalScheme& normal,

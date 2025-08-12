@@ -42,12 +42,6 @@ libs
 
 functions
 {
-    reconstruct
-    {
-        type    colocatedReconstruction;
-        fields  (U);
-    }
-
     Hysing
     {
         type    Hysing;

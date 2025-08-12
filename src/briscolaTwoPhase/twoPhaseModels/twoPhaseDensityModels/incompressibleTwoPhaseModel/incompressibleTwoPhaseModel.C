@@ -75,8 +75,6 @@ void incompressibleTwoPhaseModel<MeshType>::correctMixture()
 
     this->rho_ = rho2_*talpha() + rho1_*(1.0 - talpha());
     this->rho_.correctBoundaryConditions();
-
-    TwoPhaseModel<MeshType>::correctMixture();
 }
 
 }
