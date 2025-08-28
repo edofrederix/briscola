@@ -26,7 +26,17 @@ protected:
     const dictionary& dict_;
 
     // Reference to the void fraction
-    const colocatedScalarField& alpha_;
+    colocatedScalarField& alpha_;
+
+    // Number of connected components,
+    // reset after each tag() call
+    label n_;
+
+    // Tag the binary field
+    virtual void tag() = 0;
+
+    // Remove small droplets or bubbles
+    void removeSmallComponents();
 
 public:
 
@@ -42,7 +52,7 @@ public:
         (
             const fvMesh& fvMsh,
             const dictionary& dict,
-            const colocatedScalarField& alpha
+            colocatedScalarField& alpha
         ),
         (fvMsh, dict, alpha)
     );
@@ -52,7 +62,7 @@ public:
     (
         const fvMesh&,
         const dictionary&,
-        const colocatedScalarField&
+        colocatedScalarField&
     );
 
     // Copy constructor
@@ -66,7 +76,7 @@ public:
     (
         const fvMesh&,
         const dictionary&,
-        const colocatedScalarField&
+        colocatedScalarField&
     );
 
     // Destructor
@@ -81,14 +91,15 @@ public:
     // Access to the volume fraction
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
+    // Access the number of connected components
+    inline label n() { return n_; }
+
     // Correct the CCL field
     void correct();
 
     // Assign binary field values
     void binaryTag();
 
-    // Tag the binary field
-    virtual void tag() = 0;
 };
 
 }

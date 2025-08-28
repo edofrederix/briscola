@@ -35,10 +35,49 @@ protected:
     // Connected Component Labeling
     PtrList<CCL> CCL_;
 
+    // Global CCL field
+    colocatedLabelField globalCCL_;
+
+    // Colors field (for visualisation only)
+    colocatedLabelField colors_;
+
+    // Global total number of bubbles
+    label globalN_;
+
+    // To which alpha field does the tag belong to
+    labelList phi_;
+
+    // Connectivity matrix
+    List<List<Switch>> connectivityMatrix_;
+
 private:
 
     // Disallow default bitwise assignment
     void operator=(const twoPhaseMultiVof&);
+
+    // Initialize PtrLists
+    void initAlphas();
+
+    // Create new alpha field
+    void addAlphaField();
+
+    // Compute global CCL field
+    void computeGlobalCCL();
+
+    // Compute global total number of bubbles
+    void computeGlobalN();
+
+    // Set phi
+    void setPhi();
+
+    // Set global ID's as tags
+    void overwriteTagsWithIDs();
+
+    // Set connectivity matrix
+    void setConnectivityMatrix();
+
+    // Prevent collisions
+    void moveFields();
 
 public:
 

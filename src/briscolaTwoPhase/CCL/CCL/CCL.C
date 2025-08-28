@@ -14,11 +14,42 @@ namespace fv
 defineTypeNameAndDebug(CCL, 0);
 defineRunTimeSelectionTable(CCL, dictionary);
 
+void CCL::removeSmallComponents()
+{
+    colocatedLabelField& m = *this;
+
+    const label minSize = 9;
+
+    labelList sizes(n_, Zero);
+
+    forAllCells(m,i,j,k)
+    {
+        if (m(i,j,k))
+        {
+            sizes[m(i,j,k) - 1]++;
+        }
+    }
+
+    forAll(sizes, i)
+    {
+        reduce(sizes[i], sumOp<label>());
+    }
+
+    forAllCells(m,i,j,k)
+    {
+        if (m(i,j,k) && sizes[m(i,j,k) - 1] < minSize)
+        {
+            m(i,j,k) = Zero;
+            alpha_(i,j,k) = Zero;
+        }
+    }
+}
+
 CCL::CCL
 (
     const fvMesh& fvMsh,
     const dictionary& dict,
-    const colocatedScalarField& alpha
+    colocatedScalarField& alpha
 )
 :
     colocatedLabelField
@@ -26,13 +57,14 @@ CCL::CCL
         "m",
         fvMsh,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
-        true,
+        IOobject::NO_WRITE,
+        false,
         false
     ),
     fvMsh_(fvMsh),
     dict_(dict),
-    alpha_(alpha)
+    alpha_(alpha),
+    n_(-1)
 {
     // Initialize the label field to zero
 
@@ -44,7 +76,8 @@ CCL::CCL(const CCL& s)
     colocatedLabelField(s),
     fvMsh_(s.fvMsh_),
     dict_(s.dict_),
-    alpha_(s.alpha_)
+    alpha_(s.alpha_),
+    n_(s.n_)
 {}
 
 CCL::~CCL()
@@ -54,7 +87,7 @@ autoPtr<CCL> CCL::New
 (
     const fvMesh& fvMsh,
     const dictionary& dict,
-    const colocatedScalarField& alpha
+    colocatedScalarField& alpha
 )
 {
     const word CCLType
@@ -85,7 +118,10 @@ autoPtr<CCL> CCL::New
 void CCL::correct()
 {
     binaryTag();
+
     this->tag();
+
+    removeSmallComponents();
 }
 
 void CCL::binaryTag()
@@ -95,7 +131,7 @@ void CCL::binaryTag()
     m = Zero;
 
     forAllCells(m,l,d,i,j,k)
-        m(l,d,i,j,k) = alpha_(l,d,i,j,k) > vof::threshold;
+        m(l,d,i,j,k) = alpha_(l,d,i,j,k) > 1e-3;
 }
 
 }

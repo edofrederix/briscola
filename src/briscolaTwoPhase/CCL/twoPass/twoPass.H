@@ -16,20 +16,27 @@ class twoPass
 :
     public CCL
 {
-    // Labeling stride across processors for parallel tagging
-    static const label procStride;
+private:
 
     // Tag union lookup table
     HashTable<label,label> unionTable_;
 
-    // Find root tag
+    // Find root tag in union table
     int find(label);
+
+    // Find root tag in table
+    int find(label, HashTable<label,label>&);
 
     // Unite tags
     void uniteTags(label,label);
 
     // Parallel reduction
     void parallelReduce();
+
+protected:
+
+    // Tag the binary field
+    virtual void tag();
 
 public:
 
@@ -41,7 +48,7 @@ public:
     (
         const fvMesh&,
         const dictionary&,
-        const colocatedScalarField&
+        colocatedScalarField&
     );
 
     // Copy constructor
@@ -55,10 +62,6 @@ public:
     {
         return autoPtr<CCL>(new twoPass(*this));
     }
-
-    // Tag the binary field
-    virtual void tag();
-
 
 };
 

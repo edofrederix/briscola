@@ -13,22 +13,24 @@ namespace fv
 defineTypeNameAndDebug(twoPass, 0);
 addToRunTimeSelectionTable(CCL, twoPass, dictionary);
 
-// Number of tags per processor should not exceed this number
-const label twoPass::procStride = 1e5;
-
 int twoPass::find(label x)
 {
-    if (!unionTable_.found(x))
+    return find(x, unionTable_);
+}
+
+int twoPass::find(label x, HashTable<label,label>& table)
+{
+    if (!table.found(x))
     {
-        unionTable_.insert(x,x);
+        table.insert(x,x);
     }
 
-    if (unionTable_[x] != x)
+    if (table[x] != x)
     {
-        unionTable_.set(x,find(unionTable_[x]));
+        table.set(x, find(table[x], table));
     }
 
-    return unionTable_[x];
+    return table[x];
 }
 
 void twoPass::uniteTags(label x, label y)
@@ -138,9 +140,30 @@ void twoPass::parallelReduce()
             }
         }
 
+        HashTable<label,label> compactTable;
+        label nextLabel = 1;
+
+        forAll(mergedTable.toc(), e)
+        {
+            label root = find(mergedTable.toc()[e], mergedTable);
+
+            if (compactTable.found(root))
+            {
+                compactTable.insert(mergedTable.toc()[e], compactTable[root]);
+            }
+
+            if (!compactTable.found(root))
+            {
+                compactTable.insert(mergedTable.toc()[e], nextLabel);
+                compactTable.insert(root, nextLabel++);
+            }
+        }
+
+        this->n_ = nextLabel - 1;
+
         OStringStream mergedStream;
 
-        mergedStream << mergedTable;
+        mergedStream << compactTable;
 
         mergedStr = mergedStream.str();
     }
@@ -148,12 +171,13 @@ void twoPass::parallelReduce()
     // Scatter tables to all processors
 
     Pstream::scatter(mergedStr);
+    Pstream::scatter(this->n_);
 
     IStringStream mergedStrStream(mergedStr);
 
     HashTable<label,label> globalMergedTable(mergedStrStream);
 
-    unionTable_.insert(globalMergedTable);
+    unionTable_.transfer(globalMergedTable);
 
     // Resolve unified tags again
 
@@ -161,36 +185,19 @@ void twoPass::parallelReduce()
     {
         if (m(i,j,k))
         {
-            m(i,j,k) = find(m(i,j,k));
+            m(i,j,k) = unionTable_[m(i,j,k)];
         }
     }
 }
-
-twoPass::twoPass
-(
-    const fvMesh& fvMsh,
-    const dictionary& dict,
-    const colocatedScalarField& alpha
-)
-:
-    CCL(fvMsh, dict, alpha)
-{}
-
-twoPass::twoPass(const twoPass& s)
-:
-    CCL(s)
-{}
-
-twoPass::~twoPass()
-{}
 
 void twoPass::tag()
 {
     unionTable_.clear();
 
-    List<label> neighbors(0, Zero);
+    labelList neighbors(0, Zero);
 
-    label tag = Pstream::myProcNo() * procStride + 1;
+    label tag =
+        fvMsh().metrics<colocated>().globalCellNumbers()(0,0,0) + 1;
 
     colocatedLabelField& m = *this;
 
@@ -244,6 +251,24 @@ void twoPass::tag()
     // Parallel reduction
     parallelReduce();
 }
+
+twoPass::twoPass
+(
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    colocatedScalarField& alpha
+)
+:
+    CCL(fvMsh, dict, alpha)
+{}
+
+twoPass::twoPass(const twoPass& s)
+:
+    CCL(s)
+{}
+
+twoPass::~twoPass()
+{}
 
 }
 
