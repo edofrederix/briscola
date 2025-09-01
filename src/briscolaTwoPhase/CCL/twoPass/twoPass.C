@@ -35,12 +35,17 @@ int twoPass::find(label x, HashTable<label,label>& table)
 
 void twoPass::uniteTags(label x, label y)
 {
-    label xRoot = find(x);
-    label yRoot = find(y);
+    uniteTags(x,y,unionTable_);
+}
+
+void twoPass::uniteTags(label x, label y, HashTable<label,label>& table)
+{
+    label xRoot = find(x,table);
+    label yRoot = find(y,table);
 
     if (xRoot != yRoot)
     {
-        unionTable_.set
+        table.set
         (
             Foam::max(xRoot, yRoot),
             Foam::min(xRoot, yRoot)
@@ -132,10 +137,11 @@ void twoPass::parallelReduce()
 
             forAll(localTable.toc(), e)
             {
-                mergedTable.insert
+                uniteTags
                 (
                     localTable.toc()[e],
-                    localTable[localTable.toc()[e]]
+                    localTable[localTable.toc()[e]],
+                    mergedTable
                 );
             }
         }

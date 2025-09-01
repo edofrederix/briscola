@@ -27,8 +27,11 @@ private:
     // Find root tag in table
     int find(label, HashTable<label,label>&);
 
-    // Unite tags
+    // Unite tags in union table
     void uniteTags(label,label);
+
+    // Unite tags in table
+    void uniteTags(label,label,HashTable<label,label>&);
 
     // Parallel reduction
     void parallelReduce();

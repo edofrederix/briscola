@@ -531,7 +531,7 @@ void twoPhaseMultiVof<BaseModel>::correct()
     {
         if (colors_(i,j,k))
         {
-            colors_(i,j,k) = phi_[colors_(i,j,k)-1];
+            colors_(i,j,k) = phi_[colors_(i,j,k)-1] + 1;
         }
     }
 
