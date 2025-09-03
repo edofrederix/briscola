@@ -8,7 +8,7 @@ or [Previous chapter: A first tutorial case](./1_tutorial.md)
 An important aspect of Briscola is the way that data is managed. Data management
 in Briscola is inherently *parallel* in a distributed memory sense. Since
 Briscola is 'brick-structured', meaning that the numerical mesh is built out of
-rectangular 'bricks' (i.e., hexahedrons), data can be managed in quite a simple
+rectangular 'bricks' (i.e., hexahedra), data can be managed in quite a simple
 way. One important rule is that each processor contains *at most one brick*.
 Thus, the number of processors required is at least equal to the number of
 bricks, but also more than one processor can be assigned to one brick. A second
@@ -26,7 +26,7 @@ indices $(i,j,k)$.
 The figure above shows the geometric ordering of the data structure in Briscola.
 The front view of a three-dimensional mesh is shown (in Briscola, a mesh is
 always three-dimensional), consisting of five bricks (thick black lines) such as
-the one marked in blue. The mesh is unstructured as there exists a vertex which
+the one marked in blue. The mesh is unstructured as there exists a vertex that
 is contained by more than four bricks (the central vertex). Each brick is
 decomposed into four brick parts such as the one marked in red. The mesh
 contained by that brick part is shown in purple. The data associated with the
@@ -34,7 +34,7 @@ mesh as shown above is, by definition, stored on 20 processors (five bricks
 having each four brick parts). The minimum number of processors that the mesh
 would require is five (five bricks). One may also use more than 20 processors.
 However, the processor decomposition of each brick should be such that the
-decomposition on brick faces and edges are the same across all bricks that share
+decompositions on brick faces and edges are the same across all bricks that share
 those faces and edges. As said, each brick part contains a structured mesh as
 shown by the purple mesh.
 
@@ -93,7 +93,7 @@ fields, boundary conditions, schemes and solvers are not just templated for a
 primitive type (like scalar, vector, tensor) but also for the mesh type (i.e.,
 colocated or staggered). As is known, staggered discretizations offer superior
 numerical properties such as conservation of energy and are thus worthwhile to
-consider in high resolution simulation. Moreover, staggered discretizations
+consider in high-resolution simulations. Moreover, staggered discretizations
 seamlessly integrate with structured meshes which Briscola is designed to handle
 efficiently.
 
@@ -153,7 +153,7 @@ by 3, then this coarsening can be repeated until a very coarse mesh is obtained
 with at most 3x3x3 cells. This coarsening generates a hierarchy of meshes that
 are extremely useful if solving partial differential equations in the context of
 *multigrid solvers*. Since smoothers such as Gauss-Seidel or Jacobi are good at
-smoothing high frequency errors, but not good at smoothing low frequency errors,
+smoothing high-frequency errors, but not good at smoothing low-frequency errors,
 coarsening the problem and solving related defect equations while extrapolating
 their solutions back to finer levels dramatically increases the performance of
 these smoothers. As it turns out, this yields solution algorithms with
@@ -197,7 +197,7 @@ forAllCells(h, l, d, i, j, k)
 ```
 The iterator will automatically loop over all levels, and the range of $(i,j,k)$
 will automatically adjust based on the level. If a field is deep, we may still
-access it by using `f(d,i,j,k)` to access the first (finest) level directly. In
+access it by using `f(d,i,j,k)` to directly access the first (finest) level. In
 fact, we may even use `f(i,j,k)` to access the first mesh direction of the first
 mesh level directly. Clearly, each level automatically consists of the number of
 directions that matches the mesh type (one for colocated, three for staggered).

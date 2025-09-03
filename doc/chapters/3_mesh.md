@@ -171,7 +171,7 @@ that defines a brick. Thus, the ordering of the vertices in this vertex list is
 the same as the ordering of vertices in the brick definition. Any external brick
 faces that are not added explicitly to patches are added to the 'default' patch.
 
-Finally, the `decomposition` entry defines for each brick its decomposition.
+Finally, the `decomposition` entry defines the decomposition of each brick.
 Currently, only a manual decomposition type is supported, meaning that brick
 decompositions must be specified manually by means of an integer vector that
 spans the 'rectilinear' decomposition of the brick. The total number of
@@ -186,7 +186,7 @@ generated with the `prep.sh` script, i.e.,
 ./prep.sh
 ```
 The mesh has five bricks that form an unstructured cylindrical mesh. By default,
-each brick is decomposed in four brick parts, thus requiring 20 processors in
+each brick is decomposed into four brick parts, thus requiring 20 processors in
 total.
 
 ## Mesh hierarchy
@@ -195,7 +195,7 @@ Since Briscola is a brick-structured code, globally a mesh can be
 *unstructured*. Here, 'unstructured' means that the connectivity graph of bricks
 does not form a 3D lattice. This is checked by the `buildTopologyMap()` function
 in `src/briscolaMesh/brick/brickTopology.C`, where such a 3D lattice graph is
-built and if this process fails the mesh is said to be unstructured. For
+built and if this process fails, the mesh is said to be unstructured. For
 example, a mesh is unstructured when there is an edge that is enclosed by a
 number of bricks that is unequal to four. If the `buildTopologyMap()` function
 succeeds, the mesh is called *structured*.
@@ -238,7 +238,7 @@ mesh.
 
 ## Inspecting a mesh
 
-When designing a mesh it is useful to view it. In Briscola, unlike OpenFOAM, the
+When designing a mesh, it is useful to view it. In Briscola, unlike OpenFOAM, the
 mesh is not written to disk. Instead, the mesh is generated every time a solver
 is started. This can be done because the mesh generation process is relatively
 simple due to the simple brick-structured data structure. Simulation data is
@@ -267,7 +267,7 @@ cd cases/briscolaColocated/cavity
 ./prep.sh
 mpirun -n 4 briscolaCheckMesh -patchInfo -parallel
 ```
-will show patch information of the cavity case mesh.
+will show the patch information of the cavity case mesh.
 
 [Back to the table of contents](./0_start.md)
 or [Next chapter: The Finite Volume library](./4_finiteVolume.md)
