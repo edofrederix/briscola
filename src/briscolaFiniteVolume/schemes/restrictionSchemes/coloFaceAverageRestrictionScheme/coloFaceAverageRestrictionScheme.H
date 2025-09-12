@@ -15,7 +15,7 @@ namespace fv
 template<class Type>
 class coloFaceAverageRestrictionScheme
 :
-    public restrictionScheme<Type,colocated>
+    public restrictionScheme<FaceSpace<Type>,colocated>
 {
 public:
 
@@ -33,8 +33,8 @@ public:
     // level
     virtual void restrict
     (
-        meshDirection<Type,colocated>&,
-        const meshDirection<Type,colocated>&,
+        meshDirection<FaceSpace<Type>,colocated>&,
+        const meshDirection<FaceSpace<Type>,colocated>&,
         const bool = false
     );
 };

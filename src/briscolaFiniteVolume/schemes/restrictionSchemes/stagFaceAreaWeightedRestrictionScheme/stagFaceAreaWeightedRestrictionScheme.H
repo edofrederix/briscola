@@ -15,7 +15,7 @@ namespace fv
 template<class Type>
 class stagFaceAreaWeightedRestrictionScheme
 :
-    public restrictionScheme<Type,staggered>
+    public restrictionScheme<FaceSpace<Type>,staggered>
 {
 public:
 
@@ -33,8 +33,8 @@ public:
     // level
     virtual void restrict
     (
-        meshDirection<Type,staggered>&,
-        const meshDirection<Type,staggered>&,
+        meshDirection<FaceSpace<Type>,staggered>&,
+        const meshDirection<FaceSpace<Type>,staggered>&,
         const bool = false
     );
 };

@@ -20,14 +20,14 @@ stagHarmonicFaceAreaWeightedRestrictionScheme
     Istream& is
 )
 :
-    restrictionScheme<Type,staggered>(fvMsh, is)
+    restrictionScheme<FaceSpace<Type>,staggered>(fvMsh, is)
 {}
 
 template<class Type>
 void stagHarmonicFaceAreaWeightedRestrictionScheme<Type>::restrict
 (
-    meshDirection<Type,staggered>& coarse,
-    const meshDirection<Type,staggered>& fine,
+    meshDirection<FaceSpace<Type>,staggered>& coarse,
+    const meshDirection<FaceSpace<Type>,staggered>& fine,
     const bool scale
 )
 {
@@ -37,8 +37,8 @@ void stagHarmonicFaceAreaWeightedRestrictionScheme<Type>::restrict
 
     // First interpolate to colocated faces
 
-    meshDirection<Type,colocated> coloFine(fine.fvMsh(), l, 0);
-    const meshLevel<Type,staggered>& finel = fine.mshLevel();
+    meshDirection<FaceSpace<Type>,colocated> coloFine(fine.fvMsh(), l, 0);
+    const meshLevel<FaceSpace<Type>,staggered>& finel = fine.mshLevel();
 
     forAllFacesInDirection(coloFine, fd, i, j, k)
     {

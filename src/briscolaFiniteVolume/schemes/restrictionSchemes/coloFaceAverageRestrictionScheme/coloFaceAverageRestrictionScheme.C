@@ -19,14 +19,14 @@ coloFaceAverageRestrictionScheme<Type>::coloFaceAverageRestrictionScheme
     Istream& is
 )
 :
-    restrictionScheme<Type,colocated>(fvMsh, is)
+    restrictionScheme<FaceSpace<Type>,colocated>(fvMsh, is)
 {}
 
 template<class Type>
 void coloFaceAverageRestrictionScheme<Type>::restrict
 (
-    meshDirection<Type,colocated>& coarse,
-    const meshDirection<Type,colocated>& fine,
+    meshDirection<FaceSpace<Type>,colocated>& coarse,
+    const meshDirection<FaceSpace<Type>,colocated>& fine,
     const bool scale
 )
 {

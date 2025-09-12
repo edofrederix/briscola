@@ -65,79 +65,89 @@ makeRestrictionSchemeBase(faceVector,colocated,"faceAverage");
 makeRestrictionSchemeBase(faceScalar,staggered,"faceAverage");
 makeRestrictionSchemeBase(faceVector,staggered,"faceAverage");
 
-makeRestrictionSchemeType
+makeFaceRestrictionSchemeType
 (
     coloFaceAverage,
     faceAverage,
+    scalar,
     faceScalar,
     colocated
 );
-makeRestrictionSchemeType
+makeFaceRestrictionSchemeType
 (
     coloFaceAverage,
     faceAverage,
+    vector,
     faceVector,
     colocated
 );
 
-makeRestrictionSchemeType
+makeFaceRestrictionSchemeType
 (
     stagFaceAverage,
     faceAverage,
+    scalar,
     faceScalar,
     staggered
 );
-makeRestrictionSchemeType
+makeFaceRestrictionSchemeType
 (
     stagFaceAverage,
     faceAverage,
+    vector,
     faceVector,
     staggered
 );
 
-makeRestrictionSchemeType
+makeFaceRestrictionSchemeType
 (
     coloFaceAreaWeighted,
     faceAreaWeighted,
+    scalar,
     faceScalar,
     colocated
 );
-makeRestrictionSchemeType
+makeFaceRestrictionSchemeType
 (
     coloFaceAreaWeighted,
     faceAreaWeighted,
+    vector,
     faceVector,
     colocated
 );
 
-makeRestrictionSchemeType
+makeFaceRestrictionSchemeType
 (
     coloHarmonicFaceAreaWeighted,
     harmonicFaceAreaWeighted,
+    scalar,
     faceScalar,
     colocated
 );
 
-makeRestrictionSchemeType
+makeFaceRestrictionSchemeType
 (
     stagFaceAreaWeighted,
     faceAreaWeighted,
+    scalar,
     faceScalar,
     staggered
 );
 
-makeRestrictionSchemeType
+makeFaceRestrictionSchemeType
 (
     stagFaceAreaWeighted,
     faceAreaWeighted,
+    vector,
     faceVector,
     staggered
 );
 
-makeRestrictionSchemeType
+makeFaceRestrictionSchemeType
 (
     stagHarmonicFaceAreaWeighted,
     harmonicFaceAreaWeighted,
+    scalar,
     faceScalar,
     staggered
 );
