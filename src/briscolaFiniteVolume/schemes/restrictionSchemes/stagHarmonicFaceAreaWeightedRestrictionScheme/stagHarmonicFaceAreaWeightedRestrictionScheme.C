@@ -43,10 +43,10 @@ void stagHarmonicFaceAreaWeightedRestrictionScheme<Type>::restrict
     forAllFacesInDirection(coloFine, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,fd));
+        const labelVector nei(lowerNeighbor(ijk,fd));
 
         coloFine(ijk)[fd*2] =
-            0.5*(finel(fd,i,j,k)[fd*2] + finel(fd,i,j,k)[fd*2+1]);
+            0.5*(finel(fd,ijk)[fd*2] + finel(fd,ijk)[fd*2+1]);
 
         coloFine(nei)[fd*2+1] = coloFine(ijk)[fd*2];
     }
