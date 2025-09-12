@@ -107,7 +107,9 @@ void stagHarmonicFaceAreaWeightedRestrictionScheme<Type>::restrict
             for (o.y() = 0; o.y() < (fd == 1 ? 1 : R.y()); o.y()++)
             for (o.z() = 0; o.z() < (fd == 2 ? 1 : R.z()); o.z()++)
             {
-                coarse(ijk)[f] += faf(fijk+o+s)[f]/coloFine(fijk+o+s)[f];
+                coarse(ijk)[f] +=
+                    faf(fijk+o+s)[f]/stabilise(coloFine(fijk+o+s)[f], 1e-12);
+
                 area += faf(fijk+o+s)[f];
             }
 

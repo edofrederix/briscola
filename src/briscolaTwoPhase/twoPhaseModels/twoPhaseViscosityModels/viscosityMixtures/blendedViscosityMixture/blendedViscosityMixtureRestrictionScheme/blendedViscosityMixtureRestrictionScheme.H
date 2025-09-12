@@ -40,7 +40,15 @@ protected:
     {
         const scalar xHat
         (
-            Foam::min(Foam::max((y - mu2_)/(mu1_ - mu2_), 1e-12), 1-1e-12)
+            Foam::min
+            (
+                Foam::max
+                (
+                    (y - mu2_)/stabilise(mu1_ - mu2_, 1e-12),
+                    1e-12
+                ),
+                1-1e-12
+            )
         );
 
         return

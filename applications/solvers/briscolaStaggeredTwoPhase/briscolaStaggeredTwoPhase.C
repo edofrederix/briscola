@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
         twoPhase.correct();
 
         v = 1.0/rho;
-        vcf = ex::coloFaceInterp(v);
+        vcf = max(ex::coloFaceInterp(v), 1e-12*faceScalar::one);
 
         while (rk.loop())
         {
