@@ -65,6 +65,12 @@ UNARY_FUNCTION(faceScalar, faceScalar, j1)
 UNARY_FUNCTION(faceScalar, faceScalar, y0)
 UNARY_FUNCTION(faceScalar, faceScalar, y1)
 
+BINARY_TYPE_FUNCTION(faceScalar, faceScalar, scalar, max)
+BINARY_TYPE_FUNCTION(faceScalar, scalar, faceScalar, max)
+
+BINARY_TYPE_FUNCTION(faceScalar, faceScalar, scalar, min)
+BINARY_TYPE_FUNCTION(faceScalar, scalar, faceScalar, min)
+
 }
 
 }

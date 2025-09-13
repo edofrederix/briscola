@@ -40,6 +40,12 @@ BINARY_FUNCTION(faceVector, faceVector, faceVector, max)
 BINARY_FUNCTION(faceVector, faceVector, faceVector, min)
 BINARY_FUNCTION(faceVector, faceVector, faceVector, minMod)
 
+BINARY_TYPE_FUNCTION(faceVector, faceVector, vector, max)
+BINARY_TYPE_FUNCTION(faceVector, vector, faceVector, max)
+
+BINARY_TYPE_FUNCTION(faceVector, faceVector, vector, min)
+BINARY_TYPE_FUNCTION(faceVector, vector, faceVector, min)
+
 }
 
 }
