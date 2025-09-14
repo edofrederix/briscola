@@ -20,6 +20,24 @@ scalar hexa::volume() const
     return tessellation(*this).volume();
 }
 
+bool hexa::valid() const
+{
+    const vector c = center();
+
+    for (int fi = 0; fi < 6; fi++)
+    {
+        const vector n = faceAreaNormal(fi)/faceArea(fi);
+
+        for (int vi = 0; vi < 4; vi++)
+        {
+            if (((v_[vertexNumsInFaceCC[fi][vi]] - c) & n) < -1e-12)
+                return false;
+        }
+    }
+
+    return true;
+}
+
 tessellation hexa::truncate(const vector& n, const scalar C) const
 {
     return tessellation(*this).truncate(n,C);
