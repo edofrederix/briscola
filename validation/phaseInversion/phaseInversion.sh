@@ -20,7 +20,7 @@ SOLVERS=(\
     briscolaColocatedTwoPhaseCNAB \
     briscolaStaggeredTwoPhase \
     briscolaStaggeredTwoPhaseCNAB)
-MESHES=(32 64 128)
+MESHES=(64 128)
 NPROCSPERBRICKSIDE=(2 4)
 PSOLVERS=(MG split)
 NORMALSCHEMES=(Youngs MYC LSGIR)
