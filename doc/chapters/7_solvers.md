@@ -3,7 +3,7 @@
 [Back to the table of contents](./0_start.md)
 or [Previous chapter: Immersed boundary methods](./6_ibm.md)
 
-Briscola has several solvers which can be used to solve linear systems. These
+Briscola has several solvers that can be used to solve linear systems. These
 solvers are part of the `briscolaFiniteVolume` library and can be found in
 
 `src/briscolaFiniteVolume/solvers`
@@ -32,9 +32,9 @@ chapter, the different solvers implemented in Briscola are explained.
 
 ## Geometric multigrid solver
 
-Briscola's brick-structured design and data structure allows it to use the
-geometric multigrid solver to efficiently solve linear systems. The geometric
-multigrid solver is an iterative linear system solver which uses one or several
+Briscola's brick-structured design and data structure allow it to use the
+geometric multigrid solver to solve linear systems efficiently. The geometric
+multigrid solver is an iterative linear system solver that uses one or several
 coarser grids in order to obtain a solution on the main (finest) grid. In brief,
 the solution procedure for an unknown variable $x$ is as follows:
 
@@ -62,7 +62,7 @@ the finest grid, where the correction is applied to $x_a$. Additional
 post-smoothing sweeps may be applied to the solution after prolongation as well.
 6. Iteration: Several such multigrid cycles may be performed until the solution
 on the original (finest) grid reaches the desired residual tolerance. The number
-of times and order in which different grid levels are visited during the
+of times and the order in which different grid levels are visited during the
 multigrid cycle can be changed to obtain different cycle types. In Briscola, the
 F-cycle is the default due to its good convergence properties, but V- and W-
 cycles can also be selected and could be more efficient in some situations.
@@ -88,9 +88,9 @@ relative residual tolerance (`tolerance` and `relTol`). The following optional
 additional entries can also be specified:
 
 * `minIter` and `maxIter`: minimum and maximum number of multigrid cycles per
-`solve()` call. Defaults to 0 and 999 respectively
+`solve()` call. Defaults to 0 and 999, respectively
 * `nSweepsPre` and `nSweepsPost`: number of pre- and post-cycle smoothing
-sweeps. Defaults to 0 and 2 respectively.
+sweeps. Defaults to 0 and 2, respectively.
 * `cycleType`: type of multigrid cycle (`F`, `V` or `W`). Defaults to `F`.
 * `coarseMode`: solve mode for the coarsest grid level (`direct` or `smooth`).
 Defaults to `direct`.
@@ -102,14 +102,14 @@ Briscola: the Jacobi smoother (`JAC`), the lexicographical Gauss-Seidel smoother
 
 For Poisson equations, Briscola also has an FFT-based direct solver. In many
 cases, this solver is significantly faster than the multigrid solver, and it
-gives a solution to the discrete equation which is accurate up to machine
+gives a solution to the discrete equation that is accurate up to machine
 precision. The FFT Poisson solver can only be used under the following criteria:
 
 * The mesh is rectilinear
 * Mesh cells are uniformly sized in at least two spatial directions
 * No immersed boundary conditions are applied to the Poisson equation
 * The Poisson equation is of the form $\nabla^2 x=b$ (`im::laplacian(x)=b`)
-with `x` the unknown meshField and `b` the right hand source meshField. For
+with `x` the unknown meshField and `b` the right-hand source meshField. For
 Poisson equations with variable coefficients (i.e.,
 $\nabla\cdot(\lambda\nabla x)=b$ or `im::laplacian(lambda,x)=b`), the split
 Poisson solver may be used.
@@ -126,7 +126,7 @@ the time step. The solution to this equation, $p^{n+1}$ gives the
 pseudo-pressure field onto which the preliminary velocity must be projected in
 order to make it divergence-free. Due to the elliptic nature of this equation,
 solving it with iterative solvers is often computationally very expensive. With
-the use of Fourier expansions, this equation can be diagonalized allowing for a
+the use of Fourier expansions, this equation can be diagonalized, allowing for a
 fast and direct solution instead. The FFT solver goes through the following
 steps to solve a three-dimensional Poisson equation:
 
@@ -139,8 +139,8 @@ solution in real space.
 
 The mesh must be uniform in the two transformed directions (a requirement for
 Fourier transforms), while the Thomas algorithm also works with non-uniform mesh
-spacing. In practice, Briscola automatically selects the directions which are
-transformed and the direction which is solved with the Thomas algorithm for a
+spacing. In practice, Briscola automatically selects the directions that are
+transformed and the direction that is solved with the Thomas algorithm for a
 given mesh.
 
 For parallel computations, an additional constraint is that data must be
@@ -189,8 +189,8 @@ between different decompositions. For this, it uses OpenFOAM's wrapper around
 MPI_Alltoall (`UPstream::allToAll`).
 * `processorOverlap`: For a given pair of parallel decompositions, this class
 computes and saves communication variables required for the all-to-all (e.g.,
-send and receive sizes, starting indices and displacements). The information is
-saved such that it doesn't need to be determined again at every time step.
+send and receive sizes, starting indices, and displacements). The information is
+saved so that it doesn't need to be determined again at every time step.
 * `tridiagonalSolver`: This class implements the standard Thomas algorithm as
 well as the modified Thomas algorithm for periodic tridiagonal systems. It also
 computes the eigenvalues of the transforms as these eigenvalues appear in the
@@ -205,13 +205,13 @@ pressure Poisson equation in a two-phase system with variable density:
 $\nabla \cdot (1/\rho^{n+1} \nabla p^{n+1})
     = \frac{\nabla \cdot \mathbf{u}^\star}{\Delta t}$
 
-To solve this equation, we can split it into a constant coefficient part, which
+To solve this equation, we can split it into a constant coefficient part, that
 is treated implicitly within the FFT solver, and a variable coefficient part
-which is treated explicitly based on an explicit approximation of $p^{n+1}$.
-This explicit approximation means that the solution obtained with the split
-Poisson solver is an approximate one, unlike that of the standard FFT solver.
-Briscola's split Poisson solver follows the method proposed by Dodd & Ferrante
-[Dodd, M. S., & Ferrante, A. (2014). JCP, 273, 416-434.]
+that is treated explicitly based on an explicit approximation of $p^{n+1}$. This
+explicit approximation means that the solution obtained with the split Poisson
+solver is an approximate one, unlike that of the standard FFT solver. Briscola's
+split Poisson solver follows the method proposed by Dodd & Ferrante [Dodd, M.
+S., & Ferrante, A. (2014). JCP, 273, 416-434.]
 
 The implementation of the split Poisson solver (see
 `src/briscolaFiniteVolume/solvers/PoissonSolvers/splitPoissonSolver`) has two
@@ -220,9 +220,9 @@ is generalized such that any `PoissonSolver` can be used to solve the constant
 coefficient Poisson equation. While this may not have any obvious use cases,
 this means that the constant coefficient Poisson equation can also be solved
 with the multigrid solver rather than the FFT solver. The second addition is the
-possibility to use pre-conditioning to improve the explicit approximation for
-$p^{n+1}$. For example, a single multigrid V-cycle can be used as
-pre-conditioner before using the FFT solver. This would be done as follows in
+possibility to use preconditioning to improve the explicit approximation for
+$p^{n+1}$. For example, a single multigrid V-cycle can be used as preconditioner
+before using the FFT solver. This would be done as follows in
 `briscolaSolverDict`:
 
 ```
@@ -235,7 +235,7 @@ p
         type    FFT;
     }
 
-    preconditioner // Pre-conditioner
+    preconditioner // preconditioner
     {
         type        MG;
         relTol      0;
@@ -247,11 +247,11 @@ p
 
 ```
 From practical experience, it was found that the standard split Poisson solver
-(i.e., with FFT's and without pre-conditioner) can lead to numerical
+(i.e., with FFT's and without preconditioner) can lead to numerical
 instabilities when used for the pressure equation in two-phase problems with
 large density ratios.
 
-## Eigen, PETSc and SuperLU
+## Eigen, PETSc, and SuperLU
 
 Solvers from these external libraries can also be used in Briscola. From PETSc,
 the different Krylov solvers can be accessed with the `Krylov` class (see
@@ -261,7 +261,7 @@ solvers can be found [here](https://petsc.org/main/manualpages/KSP/KSPType/).
 A number of direct solvers are also available through the Eigen and PETSc
 libraries. These solvers can be found in
 `src/briscolaFiniteVolume/solvers/externalSolvers/Eigen/EigenSolvers` and
-`src/briscolaFiniteVolume/solvers/externalSolvers/PETSc/PETScSolvers`
+`src/briscolaFiniteVolume/solvers/externalSolvers/PETSc/PETScSolvers`,
 respectively. If SuperLU is also installed when compiling Briscola, its direct
 solvers become available through its Eigen and PETSc interfaces.
 
@@ -283,7 +283,7 @@ suggestions.
 Unlike the more recent versions of OpenFOAM (i.e., foundation version), Briscola
 does not use solver modules but still relies on dedicated applications. They are
 listed in `applications/solvers`, and can be used on cases to solve them. To
-keep things efficient, we have dedicated colocated and dedicated staggered
+keep things efficient, we have dedicated colocated and staggered
 solvers. For single phase flows, there are the `briscolaColocated` and
 `briscolaStaggered` solvers which use Runge-Kutta time integration. Instead, the
 `briscolaColocatedCNAB` and `briscolaStaggeredCNAB` solvers use the

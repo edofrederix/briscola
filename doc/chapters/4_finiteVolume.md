@@ -38,7 +38,7 @@ that the same discretization can be used throughout the entire mesh, including
 for boundary-adjacent cells. As Briscola uses a compact discretization stencil,
 a single layer of ghost-cells is required. However, for higher-order
 discretizations with larger stencils, the number of ghost-cell layers could
-simply be increased, although this is not yet implemented. The following
+simply be increased, although this has not yet been implemented. The following
 boundary condition types are available in Briscola:
 
 * Dirichlet boundary condition: a fixed boundary value $\phi_b$ needs to be
@@ -58,7 +58,7 @@ Dirichlet boundary condition with a boundary value of zero.
 a slip wall. It sets the boundary-normal velocity and the wall shear to zero.
 * Outflow boundary condition: This boundary condition is also a specialization
 of the Neumann boundary condition with a zero boundary-normal gradient. However, for staggered
-quantities, it also checks for and prevents inflow. This is needed for numerical
+quantities, it also checks for and prevents inflow. This is needed for the numerical
 stability of staggered flow solvers in certain cases.
 * Parallel boundary condition: This boundary condition is generated
 automatically when a mesh is decomposed across multiple processors. It sets the
@@ -90,7 +90,7 @@ of equations of the form $Ax=b$, with $A$ the stencil matrix, $x$ the unknown
 variable, and $b$ the right-hand side source. Such a linear system can be
 defined in Briscola using the `linearSystem` class. This class is templated and
 takes three template arguments: the stencil type (for $A$), the field type (for
-$x$ and $b$) and the mesh type (for $A$, $x$ and $b$). The stencil type defines
+$x$ and $b$), and the mesh type (for $A$, $x$ and $b$). The stencil type defines
 a unique stencil size and shape that is used throughout the stencil matrix $A$.
 Briscola's different stencil types are defined in
 
@@ -145,7 +145,7 @@ similar to how an `fvMatrix` can be constructed in OpenFOAM.
 namespace in OpenFOAM. An explicit scheme returns a meshField which is equal to
 the explicit evaluation of the chosen discrete operator.
 
-In Briscola we've opted for the use of the `im` and `ex` namespaces as these
+In Briscola, we've opted for the use of the `im` and `ex` namespaces as these
 names are more meaningful and intuitive.
 
 In addition to standard spatial and temporal operations, Briscola has schemes
