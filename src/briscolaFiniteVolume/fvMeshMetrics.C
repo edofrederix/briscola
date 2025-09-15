@@ -221,10 +221,6 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 
     meshField<scalar,MeshType>& cv = cellVolumes_;
 
-    // Small number to avoid division by zero in unset ghost cells
-
-    cv = 1e-16;
-
     forAll(fvMsh_, l)
     {
         for (int d = 0; d < MeshType::numberOfDirections; d++)
@@ -243,6 +239,9 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
             }
         }
     }
+
+    // Small number to avoid division by zero in unset/invalid ghost cells
+    cv = max(cv, 1e-16);
 }
 
 template<class MeshType>
