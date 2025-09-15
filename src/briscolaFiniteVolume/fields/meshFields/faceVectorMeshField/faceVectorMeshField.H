@@ -50,6 +50,12 @@ BINARY_FUNCTION(faceVector, faceVector, faceVector, minMod)
 BINARY_FUNCTION(faceVector, scalar, faceVector, dot)
 BINARY_FUNCTION(faceVector, faceVector, scalar, dot)
 
+BINARY_TYPE_FUNCTION(faceVector, faceVector, vector, max)
+BINARY_TYPE_FUNCTION(faceVector, vector, faceVector, max)
+
+BINARY_TYPE_FUNCTION(faceVector, faceVector, vector, min)
+BINARY_TYPE_FUNCTION(faceVector, vector, faceVector, min)
+
 }
 
 }

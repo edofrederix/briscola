@@ -68,25 +68,13 @@ public:
         v_.rbf() = rbf;
         v_.ltf() = ltf;
         v_.rtf() = rtf;
-
-        #ifdef FULLDEBUG
-        if (volume() < -1e-12)
-            FatalErrorInFunction
-                << "Hex has negative volume" << endl << abort(FatalError);
-        #endif
     }
 
     // Construct from vertex vector
     inline hexa(const vertexVector& v)
     :
         v_(v)
-    {
-        #ifdef FULLDEBUG
-        if (volume() < -1e-12)
-            FatalErrorInFunction
-                << "Hex has negative volume" << endl << abort(FatalError);
-        #endif
-    }
+    {}
 
     // Construct from piped
     hexa(const piped& p);
@@ -102,12 +90,6 @@ public:
         v_.rbf() = v[5];
         v_.ltf() = v[6];
         v_.rtf() = v[7];
-
-        #ifdef FULLDEBUG
-        if (volume() < -1e-12)
-            FatalErrorInFunction
-                << "Hex has negative volume" << endl << abort(FatalError);
-        #endif
     }
 
     // Access to the vertices
@@ -206,6 +188,9 @@ public:
 
     // Compute the volume from the tessellation
     scalar volume() const;
+
+    // Check if hex is valid
+    bool valid() const;
 
     // Compute truncated tessellation from this hex and a plane defined by
     // dot(x,n) + C = 0

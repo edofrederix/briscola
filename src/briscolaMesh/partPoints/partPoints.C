@@ -4,6 +4,8 @@
 #include "parallelBoundary.H"
 #include "periodicBoundary.H"
 
+#include "hexa.H"
+
 namespace Foam
 {
 
@@ -47,29 +49,40 @@ void partPoints::calcGhostPoints()
 
     const labelVector N = points.shape();
 
-    // Project boundary vertices along vertex lines
+    // Project boundary vertices along the vector that connects the boundary
+    // vertex to its internal vertex neighbor. This may cause invalid ghost cell
+    // hexahedrals especially at coarser grid levels. Once an invalid hexahedral
+    // is encountered, the process is repeated across all processors with half
+    // the projection distance, until a valid mesh is found.
 
-    for (int fi = 0; fi < 6; fi++)
+    scalar dist(1.0);
+    label nIter(0);
+
+    while (true)
     {
-        const labelVector bo(faceOffsets[fi]);
+        nIter++;
 
-        const labelVector S(start(bo,N));
-        const labelVector E(end(bo,N));
+        // Face ghost points
 
-        labelVector ijk;
-
-        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+        for (int fi = 0; fi < 6; fi++)
         {
-            points(ijk + bo) = 2.0*points(ijk) - points(ijk-bo);
+            const labelVector bo(faceOffsets[fi]);
+
+            const labelVector S(start(bo,N));
+            const labelVector E(end(bo,N));
+
+            labelVector ijk;
+            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+            {
+                points(ijk+bo) =
+                    points(ijk) + dist*(points(ijk) - points(ijk-bo));
+            }
         }
-    }
 
-    // Also set edge and vertex vertices on structured meshes only
+        // Edge ghost points
 
-    if (msh_.structured())
-    {
         for (int ei = 0; ei < 12; ei++)
         {
             const labelVector bo(edgeOffsets[ei]);
@@ -78,44 +91,79 @@ void partPoints::calcGhostPoints()
             const labelVector S(start(bo,N));
             const labelVector E(end(bo,N));
 
-            labelVector ijk;
-
             const labelVector bo1(dir == 0 ? bo.y()*unitY : bo.x()*unitX);
             const labelVector bo2(dir == 2 ? bo.y()*unitY : bo.z()*unitZ);
 
+            labelVector ijk;
             for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
+                // Sum of the two outward ghost vertex vectors at the edge
+
                 points(ijk+bo) =
                     points(ijk+bo1) + points(ijk+bo2) - points(ijk);
             }
         }
 
+        // Vertex ghost point
+
         for (int vi = 0; vi < 8; vi++)
         {
             const labelVector bo(vertexOffsets[vi]);
 
-            const labelVector S(start(bo,N));
-            const labelVector E(end(bo,N));
-
-            labelVector ijk;
+            const labelVector ijk(start(bo,N));
 
             const labelVector bo1(bo.x()*unitX);
             const labelVector bo2(bo.y()*unitY);
             const labelVector bo3(bo.z()*unitZ);
 
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                points(ijk+bo) =
-                    points(ijk+bo1)
-                  + points(ijk+bo2)
-                  + points(ijk+bo3)
-                  - points(ijk)*2.0;
-            }
+            // Sum of the three outward vertex vectors
+
+            points(ijk+bo) =
+                points(ijk+bo1)
+              + points(ijk+bo2)
+              + points(ijk+bo3)
+              - points(ijk)*2.0;
         }
+
+        // Check cell validity
+
+        bool valid = true;
+
+        const labelVector S(start(-unitXYZ,N)-unitXYZ);
+        const labelVector E(end(unitXYZ,N));
+
+        labelVector ijk;
+        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+        if (valid)
+        {
+            const hexa h
+            (
+                points(ijk),
+                points(ijk + unitX),
+                points(ijk + unitY),
+                points(ijk + unitXY),
+                points(ijk + unitZ),
+                points(ijk + unitXZ),
+                points(ijk + unitYZ),
+                points(ijk + unitXYZ)
+            );
+
+            if (!h.valid())
+                valid = false;
+        }
+
+        if (returnReduce(valid, andOp<bool>())) break;
+
+        dist = dist/2.0;
+
+        if (nIter == 1000)
+            FatalErrorInFunction
+                << "Ghost point calculation failed in " << nIter
+                << " iterations" << endl << abort(FatalError);
     }
 
     // Next, at parallel and periodic boundaries, set the ghost points equal to

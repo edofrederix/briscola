@@ -121,9 +121,7 @@ public:
     :
         hexa(lba, rba, lta, rta, lbf, rbf, ltf, rtf)
     {
-        #ifdef FULLDEBUG
         checkPiped();
-        #endif
     }
 
     // Construct from vertex vector
@@ -131,9 +129,7 @@ public:
     :
         hexa(v)
     {
-        #ifdef FULLDEBUG
         checkPiped();
-        #endif
     }
 
     // Construct from a list of eight vertices
@@ -141,9 +137,7 @@ public:
     :
         hexa(v)
     {
-        #ifdef FULLDEBUG
         checkPiped();
-        #endif
     }
 
     // Base point
@@ -161,6 +155,12 @@ public:
     inline scalar volume() const
     {
         return det(T());
+    }
+
+    // Check if piped is valid
+    inline bool valid() const
+    {
+        return volume() > 0.0;
     }
 
     // Volume of this piped truncated by a plane. Analytical function for a

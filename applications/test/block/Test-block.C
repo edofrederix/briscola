@@ -1334,6 +1334,18 @@ void testFaceSpaceFunctions()
 
     (1.0*ls1)/(sfs1*1.0);
     (1.0*fs1)/(sls1*1.0);
+
+    max(ls1, FaceSpace<Type>::one);
+    max(FaceSpace<Type>::one, ls1);
+
+    max(ls1, pTraits<Type>::one);
+    max(pTraits<Type>::one, ls1);
+
+    min(ls1, FaceSpace<Type>::one);
+    min(FaceSpace<Type>::one, ls1);
+
+    min(ls1, pTraits<Type>::one);
+    min(pTraits<Type>::one, ls1);
 }
 
 void testScalarFunctions()

@@ -66,6 +66,31 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
                         p(ijk + unitYZ),
                         p(ijk + unitXYZ)
                     );
+
+                // Create hexahedral from vertex vector and check its validity.
+                // On unstructured meshes only internal cells and face ghosts
+                // need to be valid. Subsequent functions do not need to check
+                // anymore.
+
+                const hexa h(vc(l,d,ijk));
+
+                if
+                (
+                    fvMsh_.structured()
+                 || (
+                      - cmptSum(briscola::cmptMin(ijk,zeroXYZ))
+                      + cmptSum(briscola::cmptMax(ijk-N+unitXYZ,zeroXYZ))
+                     <= 1
+                    )
+                )
+                    if (!h.valid())
+                        FatalErrorInFunction
+                            << "Invalid hexahedral created from vertices "
+                            << vc(l,d,ijk) << nl << "at"
+                            << " level " << l
+                            << " direction " << d
+                            << " index " << ijk << endl
+                            << abort(FatalError);
             }
         }
     }

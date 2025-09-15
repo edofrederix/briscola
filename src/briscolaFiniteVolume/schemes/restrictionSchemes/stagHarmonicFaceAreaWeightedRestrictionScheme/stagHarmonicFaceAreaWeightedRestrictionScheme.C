@@ -20,14 +20,14 @@ stagHarmonicFaceAreaWeightedRestrictionScheme
     Istream& is
 )
 :
-    restrictionScheme<Type,staggered>(fvMsh, is)
+    restrictionScheme<FaceSpace<Type>,staggered>(fvMsh, is)
 {}
 
 template<class Type>
 void stagHarmonicFaceAreaWeightedRestrictionScheme<Type>::restrict
 (
-    meshDirection<Type,staggered>& coarse,
-    const meshDirection<Type,staggered>& fine,
+    meshDirection<FaceSpace<Type>,staggered>& coarse,
+    const meshDirection<FaceSpace<Type>,staggered>& fine,
     const bool scale
 )
 {
@@ -37,16 +37,16 @@ void stagHarmonicFaceAreaWeightedRestrictionScheme<Type>::restrict
 
     // First interpolate to colocated faces
 
-    meshDirection<Type,colocated> coloFine(fine.fvMsh(), l, 0);
-    const meshLevel<Type,staggered>& finel = fine.mshLevel();
+    meshDirection<FaceSpace<Type>,colocated> coloFine(fine.fvMsh(), l, 0);
+    const meshLevel<FaceSpace<Type>,staggered>& finel = fine.mshLevel();
 
     forAllFacesInDirection(coloFine, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,fd));
+        const labelVector nei(lowerNeighbor(ijk,fd));
 
         coloFine(ijk)[fd*2] =
-            0.5*(finel(fd,i,j,k)[fd*2] + finel(fd,i,j,k)[fd*2+1]);
+            0.5*(finel(fd,ijk)[fd*2] + finel(fd,ijk)[fd*2+1]);
 
         coloFine(nei)[fd*2+1] = coloFine(ijk)[fd*2];
     }
@@ -107,7 +107,9 @@ void stagHarmonicFaceAreaWeightedRestrictionScheme<Type>::restrict
             for (o.y() = 0; o.y() < (fd == 1 ? 1 : R.y()); o.y()++)
             for (o.z() = 0; o.z() < (fd == 2 ? 1 : R.z()); o.z()++)
             {
-                coarse(ijk)[f] += faf(fijk+o+s)[f]/coloFine(fijk+o+s)[f];
+                coarse(ijk)[f] +=
+                    faf(fijk+o+s)[f]/stabilise(coloFine(fijk+o+s)[f], 1e-12);
+
                 area += faf(fijk+o+s)[f];
             }
 

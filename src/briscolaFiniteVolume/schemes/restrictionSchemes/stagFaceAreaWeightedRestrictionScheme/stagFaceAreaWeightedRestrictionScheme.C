@@ -20,14 +20,14 @@ stagFaceAreaWeightedRestrictionScheme
     Istream& is
 )
 :
-    restrictionScheme<Type,staggered>(fvMsh, is)
+    restrictionScheme<FaceSpace<Type>,staggered>(fvMsh, is)
 {}
 
 template<class Type>
 void stagFaceAreaWeightedRestrictionScheme<Type>::restrict
 (
-    meshDirection<Type,staggered>& coarse,
-    const meshDirection<Type,staggered>& fine,
+    meshDirection<FaceSpace<Type>,staggered>& coarse,
+    const meshDirection<FaceSpace<Type>,staggered>& fine,
     const bool scale
 )
 {
@@ -37,16 +37,16 @@ void stagFaceAreaWeightedRestrictionScheme<Type>::restrict
 
     // First interpolate to colocated faces
 
-    meshDirection<Type,colocated> coloFine(fine.fvMsh(), l, 0);
-    const meshLevel<Type,staggered>& finel = fine.mshLevel();
+    meshDirection<FaceSpace<Type>,colocated> coloFine(fine.fvMsh(), l, 0);
+    const meshLevel<FaceSpace<Type>,staggered>& finel = fine.mshLevel();
 
     forAllFacesInDirection(coloFine, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,fd));
+        const labelVector nei(lowerNeighbor(ijk,fd));
 
         coloFine(ijk)[fd*2] =
-            0.5*(finel(fd,i,j,k)[fd*2] + finel(fd,i,j,k)[fd*2+1]);
+            0.5*(finel(fd,ijk)[fd*2] + finel(fd,ijk)[fd*2+1]);
 
         coloFine(nei)[fd*2+1] = coloFine(ijk)[fd*2];
     }
@@ -70,9 +70,9 @@ void stagFaceAreaWeightedRestrictionScheme<Type>::restrict
         }
     }
 
-    // Harmonic face area weighted average of corresponding colocated fine grid
-    // faces. We must use a cell iterator in order to avoid accessing
-    // non-existent ghost cells of colocated ghost cells.
+    // Face area weighted average of corresponding colocated fine grid faces. We
+    // must use a cell iterator in order to avoid accessing non-existent ghost
+    // cells of colocated ghost cells.
 
     const label d = fine.directionNum();
 

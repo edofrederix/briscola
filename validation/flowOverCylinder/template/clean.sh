@@ -8,4 +8,5 @@ cleanCase
 
 rm -f briscola*.vtk.series system/briscolaMeshDict *.txt *.pdf \
     system/briscolaColocatedDict \
-    system/briscolaSchemeDict
+    system/briscolaSchemeDict \
+    code/libcode.so

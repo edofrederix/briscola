@@ -510,6 +510,36 @@ inline Form max
 }
 
 template<class Form, class Cmpt, direction Ncmpts>
+inline Form max
+(
+    const CellSpace<Form, Cmpt, Ncmpts>& cs1,
+    const Cmpt& s2
+)
+{
+    Form r;
+
+    for (label i = 0; i < Ncmpts; i++)
+        r.v_[i] = max(cs1.v_[i], s2);
+
+    return r;
+}
+
+template<class Form, class Cmpt, direction Ncmpts>
+inline Form max
+(
+    const Cmpt& s1,
+    const CellSpace<Form, Cmpt, Ncmpts>& cs2
+)
+{
+    Form r;
+
+    for (label i = 0; i < Ncmpts; i++)
+        r.v_[i] = max(s1, cs2.v_[i]);
+
+    return r;
+}
+
+template<class Form, class Cmpt, direction Ncmpts>
 inline Form min
 (
     const CellSpace<Form, Cmpt, Ncmpts>& cs1,
@@ -520,6 +550,36 @@ inline Form min
 
     for (label i = 0; i < Ncmpts; i++)
         r.v_[i] = min(cs1.v_[i], cs2.v_[i]);
+
+    return r;
+}
+
+template<class Form, class Cmpt, direction Ncmpts>
+inline Form min
+(
+    const CellSpace<Form, Cmpt, Ncmpts>& cs1,
+    const Cmpt& s2
+)
+{
+    Form r;
+
+    for (label i = 0; i < Ncmpts; i++)
+        r.v_[i] = min(cs1.v_[i], s2);
+
+    return r;
+}
+
+template<class Form, class Cmpt, direction Ncmpts>
+inline Form min
+(
+    const Cmpt& s1,
+    const CellSpace<Form, Cmpt, Ncmpts>& cs2
+)
+{
+    Form r;
+
+    for (label i = 0; i < Ncmpts; i++)
+        r.v_[i] = min(s1, cs2.v_[i]);
 
     return r;
 }

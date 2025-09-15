@@ -46,44 +46,90 @@ void stagBlendedViscosityMixtureRestrictionScheme::restrict
 {
     this->errorNoScaling(scale);
 
-    const labelVector R(coarse.mshPart().R());
-    const label d = coarse.directionNum();
+    const label l = fine.levelNum();
 
-    forAllFaces(coarse, fd, i, j, k)
+    // First interpolate to colocated faces
+
+    meshDirection<faceScalar,colocated> coloFine(fine.fvMsh(), l, 0);
+    const meshLevel<faceScalar,staggered>& finel = fine.mshLevel();
+
+    forAllFacesInDirection(coloFine, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,fd));
+        const labelVector nei(lowerNeighbor(ijk,fd));
 
-        const labelVector fijk(briscola::cmptMultiply(ijk,R));
+        coloFine(ijk)[fd*2] =
+            0.5*(finel(fd,ijk)[fd*2] + finel(fd,ijk)[fd*2+1]);
 
-        labelVector o(Zero);
+        coloFine(nei)[fd*2+1] = coloFine(ijk)[fd*2];
+    }
 
-        if (fd == d)
-            o[d] = -1;
+    // Homogeneous Neumann for required colocated ghost cell faces
 
-        // Reconstruct the face alpha
+    for (int f = 0; f < 6; f++)
+    {
+        const labelVector bo(faceOffsets[f]);
 
-        scalar alpha = 0.0;
-        label nFaces = 0;
+        const labelVector S(fine.fvMsh().template S<colocated>(l,0,bo));
+        const labelVector E(fine.fvMsh().template E<colocated>(l,0,bo));
 
-        for (o.x(); o.x() < (fd == 0 || d == 0 ? 1 : R.x()); o.x()++)
-        for (o.y(); o.y() < (fd == 1 || d == 1 ? 1 : R.y()); o.y()++)
-        for (o.z(); o.z() < (fd == 2 || d == 2 ? 1 : R.z()); o.z()++)
+        labelVector ijk;
+
+        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            // Don't use cells with negative indices
-            const labelVector fijko(briscola::cmptMax(fijk+o,zeroXYZ));
-
-            alpha += this->inv(fine(fijko)[fd*2]);
-            nFaces++;
+            coloFine(ijk+bo)[f] = coloFine(ijk)[(f%2) ? f-1 : f+1];
         }
+    }
 
-        alpha /= scalar(nFaces);
+    // Blended viscosity calculation from the reconstructed volume fractions at
+    // the colocated faces. We must use a cell iterator in order to avoid
+    // accessing non-existent ghost cells of colocated ghost cells.
 
-        // Apply the blending function. Viscosity has no sign so we can copy
-        // directly to the upper face of the lower neighbor.
+    const label d = fine.directionNum();
 
-        coarse(ijk)[fd*2  ] = this->blend(alpha);
-        coarse(ijk)[fd*2+1] = coarse(ijk)[fd*2];
+    const labelVector R(coarse.mshPart().R());
+
+    const meshDirection<faceScalar,colocated>& faf =
+        this->fvMsh().template metrics<colocated>().faceAreas()[l][0];
+
+    forAllCellsInDirection(coarse, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+
+        // The lower colocated fine grid cell contained by the staggered coarse
+        // grid cell has an index scaled by R and padding subtracted
+
+        const labelVector fijk
+        (
+            briscola::cmptMultiply(ijk,R)
+          - staggered::padding[d]
+        );
+
+        for (int f = 0; f < 6; f++)
+        {
+            const int fd = f/2;
+            const labelVector s((f%2) ? units[fd] : zeroXYZ);
+
+            scalar area = 0.0;
+            scalar alpha = 0.0;
+
+            labelVector o;
+            for (o.x() = 0; o.x() < (fd == 0 ? 1 : R.x()); o.x()++)
+            for (o.y() = 0; o.y() < (fd == 1 ? 1 : R.y()); o.y()++)
+            for (o.z() = 0; o.z() < (fd == 2 ? 1 : R.z()); o.z()++)
+            {
+                alpha += faf(fijk+o+s)[f]*this->inv(coloFine(fijk+o+s)[f]);
+                area += faf(fijk+o+s)[f];
+            }
+
+            alpha /= area;
+
+            // Apply the blending function from the reconstructed alpha
+
+            coarse(ijk)[f] = this->blend(alpha);
+        }
     }
 }
 

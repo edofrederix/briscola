@@ -74,41 +74,19 @@ public:
         v_[1] = lta;
         v_[2] = rba;
         v_[3] = lbf;
-
-        #ifdef FULLDEBUG
-        if (volume() < -1e-12)
-            FatalErrorInFunction
-                << "Tet has negative volume" << endl << abort(FatalError);
-        #endif
     }
 
     // Construct from a list of four vertices
     inline tetra(const vectorList& v)
     :
         v_(v)
-    {
-        #ifdef FULLDEBUG
-
-        if (volume() < -1e-12)
-            FatalErrorInFunction
-                << "Tet has negative volume" << endl << abort(FatalError);
-
-        #endif
-    }
+    {}
 
     // Construct from a fixed list of four vertices
     inline tetra(const FixedList<vector,4>& v)
     :
         v_(v)
-    {
-        #ifdef FULLDEBUG
-
-        if (volume() < -1e-12)
-            FatalErrorInFunction
-                << "Tet has negative volume" << endl << abort(FatalError);
-
-        #endif
-    }
+    {}
 
     // Access to the vertices
     inline FixedList<vector,4>& v() { return v_; }
@@ -193,6 +171,12 @@ public:
     inline scalar volume() const
     {
         return tetVolume(v_[0], v_[1], v_[2], v_[3]);
+    }
+
+    // Check if tet is valid
+    inline bool valid() const
+    {
+        return volume() > 0.0;
     }
 
     // Compute truncated tessellation from this tet and a plane defined by

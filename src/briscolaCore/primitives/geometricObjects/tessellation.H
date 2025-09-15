@@ -124,6 +124,16 @@ public:
         return V;
     }
 
+    // Check if tesselation is valid
+    inline bool valid() const
+    {
+        forAll(*this, i)
+            if (!this->operator[](i).valid())
+                return false;
+
+        return true;
+    }
+
     // Compute a new truncated tessellation from this tessellation and a plane
     // defined by dot(x,n) + C = 0
     inline tessellation truncate(const vector& n, const scalar C) const

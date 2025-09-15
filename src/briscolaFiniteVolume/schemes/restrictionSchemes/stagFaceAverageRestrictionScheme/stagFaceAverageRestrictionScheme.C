@@ -19,14 +19,14 @@ stagFaceAverageRestrictionScheme<Type>::stagFaceAverageRestrictionScheme
     Istream& is
 )
 :
-    restrictionScheme<Type,staggered>(fvMsh, is)
+    restrictionScheme<FaceSpace<Type>,staggered>(fvMsh, is)
 {}
 
 template<class Type>
 void stagFaceAverageRestrictionScheme<Type>::restrict
 (
-    meshDirection<Type,staggered>& coarse,
-    const meshDirection<Type,staggered>& fine,
+    meshDirection<FaceSpace<Type>,staggered>& coarse,
+    const meshDirection<FaceSpace<Type>,staggered>& fine,
     const bool scale
 )
 {

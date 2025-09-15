@@ -80,6 +80,24 @@
     addIstreamConstructorToTable<SCHEME##RestrictionScheme##TYPE>              \
     add##SCHEME##RestrictionScheme##TYPE##ConstructorToTable_;
 
+// Make a face restriction scheme templated for a type
+
+#define makeFaceRestrictionSchemeType(SCHEME,NAME,TYPE,FTYPE,MESHTYPE)         \
+                                                                               \
+    typedef SCHEME##RestrictionScheme<TYPE>                                    \
+        SCHEME##RestrictionScheme##TYPE;                                       \
+                                                                               \
+    defineTemplateTypeNameAndDebugWithName                                     \
+    (                                                                          \
+        SCHEME##RestrictionScheme##TYPE,                                       \
+        #NAME,                                                                 \
+        0                                                                      \
+    );                                                                         \
+                                                                               \
+    restrictionScheme<FTYPE,MESHTYPE>::                                        \
+    addIstreamConstructorToTable<SCHEME##RestrictionScheme##TYPE>              \
+    add##SCHEME##RestrictionScheme##FTYPE##ConstructorToTable_;
+
 // Make an non-templated restriction scheme
 
 #define makeRestrictionSchemeNoTemplate(SCHEME,TYPE,MESHTYPE)                  \
