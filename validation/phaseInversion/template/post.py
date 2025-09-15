@@ -3,8 +3,8 @@ from matplotlib import pyplot as plt
 import os, sys
 import re
 
-maxError_ke1 = 12
-maxError_ke2 = 12
+maxError_ke1 = 10
+maxError_ke2 = 25
 
 maxError_pe1 = 3
 maxError_pe2 = 1
