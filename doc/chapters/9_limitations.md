@@ -9,8 +9,8 @@ contributions from the community towards resolving these limitations are
 encouraged and can be proposed via GitHub.
 
 * *Two-phase solver:* While most normal and interface reconstruction algorithms
-  can handle general hexahedron cells, the split advection solver
-  is currently not able to handle unstructured meshes.
+  can handle general hexahedron cells, the split advection solver is currently
+  not able to handle unstructured meshes.
 * *FFT solver:* For two-phase simulations, the split FFT solver only works well
   for mild density ratios. Improving this requires fundamental improvements to
   the solver's algorithm, or to the pressure extrapolation method.

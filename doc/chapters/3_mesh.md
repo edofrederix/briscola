@@ -26,12 +26,12 @@ part of the mesh that is structured, meaning that it can have at most one brick.
 The reason for this, as explained in the previous chapter, is that it
 drastically simplifies data management. As in the example above, each processor
 has a brick part which is a quarter of a brick and is thus also a hexahedron.
-The decomposition of the mesh in Briscola is relatively straight-forward, and can be
-handled best as an intrinsic part of the mesh. Moreover, some methods used in
-Briscola requires a 'full picture' of the full domain and its decomposition.
-Thus, the shape and decomposition of the mesh must be known to all processors
-whereas in OpenFOAM domain decomposition is designed to split the problem into a
-number of strictly local problems.
+The decomposition of the mesh in Briscola is relatively straight-forward, and
+can be handled best as an intrinsic part of the mesh. Moreover, some methods
+used in Briscola requires a 'full picture' of the full domain and its
+decomposition. Thus, the shape and decomposition of the mesh must be known to
+all processors whereas in OpenFOAM domain decomposition is designed to split the
+problem into a number of strictly local problems.
 
 In this chapter, the meshing in Briscola is discussed.
 
@@ -168,8 +168,9 @@ contains a collection of named dictionaries, each defining a patch. A patch has
 a `type` entry defining the type of the patch and a `faces` entry which is a
 list of vertex lists, with each vertex list being a slice of the vertex block
 that defines a brick. Thus, the ordering of the vertices in this vertex list is
-the same as the ordering of the vertices in the brick definition. Any external brick
-faces that are not added explicitly to patches are added to the 'default' patch.
+the same as the ordering of the vertices in the brick definition. Any external
+brick faces that are not added explicitly to patches are added to the 'default'
+patch.
 
 Finally, the `decomposition` entry defines the decomposition of each brick.
 Currently, only a manual decomposition type is supported, meaning that brick

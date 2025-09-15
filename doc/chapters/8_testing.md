@@ -36,16 +36,16 @@ automatically compile and run all tests at once. To do this, change to the
 ```
 ./run.sh
 ```
-This script will, by default, run up to 16 tests in parallel until all tests have
-been run. An argument can also be given to the script to run a different number
-of tests in parallel. All test directories can be cleaned and returned to their
-original state with the `clean.sh` script.
+This script will, by default, run up to 16 tests in parallel until all tests
+have been run. An argument can also be given to the script to run a different
+number of tests in parallel. All test directories can be cleaned and returned to
+their original state with the `clean.sh` script.
 
 Unit tests are an important quality control tool used throughout Briscola's
-development, as they allow for the early identification of bugs when changes
-are made to the code. Therefore, for users who intend to make changes or
-additions to the code, it is recommended to run the test cases after modifying
-the code to ensure that nothing was accidentally broken.
+development, as they allow for the early identification of bugs when changes are
+made to the code. Therefore, for users who intend to make changes or additions
+to the code, it is recommended to run the test cases after modifying the code to
+ensure that nothing was accidentally broken.
 
 ## Validation cases
 
@@ -53,10 +53,10 @@ Besides unit tests, a number of validation cases are also provided for Briscola.
 These validation cases can serve as integral tests for different flow solvers.
 In addition, they can highlight the impact of different solver choices (e.g.,
 staggered vs. colocated) and models (e.g., different interface normal schemes in
-two-phase simulations). As an example, let us look at the Hysing
-validation case in `validation/Hysing`. This case is based on the same benchmark
-that is also used in the [tutorial](./1_tutorial.md), so have a look there
-first for more details on the case.
+two-phase simulations). As an example, let us look at the Hysing validation case
+in `validation/Hysing`. This case is based on the same benchmark that is also
+used in the [tutorial](./1_tutorial.md), so have a look there first for more
+details on the case.
 
 ### Running the case
 
@@ -94,8 +94,8 @@ else
 fi
 ```
 and finally runs a post-processing Python script tht creates plots to compare
-the simulation results with the benchmark reference, and computes some
-mean errors:
+the simulation results with the benchmark reference, and computes some mean
+errors:
 ```
 $PYTHON post.py log.$SOLVER
 ```
@@ -115,18 +115,18 @@ The number of cores can also be increased or decreased in `Hysing.job`.
 After all of the validation simulations are finished running, a few different
 outputs can be inspected to see the outcomes. First, we can take a look at all
 of the individual validation runs in the `runs` directory. The name of each
-subdirectory here indicates the combination of two-phase solver, mesh resolution,
-number of processors, pressure solver, normal scheme, and curvature scheme.
-Within each subdirectory, the evolution of the velocity and position of the
-bubble is plotted and compared with the reference.
+subdirectory here indicates the combination of two-phase solver, mesh
+resolution, number of processors, pressure solver, normal scheme, and curvature
+scheme. Within each subdirectory, the evolution of the velocity and position of
+the bubble is plotted and compared with the reference.
 
-Looking at these plots for each validation runs can be tedious.
-Therefore, the results are also summarized in `results.csv` within the main
-Hysing directory. For each run, this file shows the mean error in bubble position
-and in bubble velocity (`error 1 [%]` and `error 2 [%]` respectively). The
-entries for `test 1` and `test 2` indicate whether these errors are within an
-acceptable range. Additionally, the number of time steps and pressure
-iterations are given for each run.
+Looking at these plots for each validation runs can be tedious. Therefore, the
+results are also summarized in `results.csv` within the main Hysing directory.
+For each run, this file shows the mean error in bubble position and in bubble
+velocity (`error 1 [%]` and `error 2 [%]` respectively). The entries for `test
+1` and `test 2` indicate whether these errors are within an acceptable range.
+Additionally, the number of time steps and pressure iterations are given for
+each run.
 
 ### Other cases
 
@@ -137,8 +137,8 @@ Poiseuille flow case (both colocated and staggered, and with standard boundary
 conditions as well as immersed boundary conditions). All validation cases can be
 run at once using the `submitJobs.sh` script. It should be noted that running
 this script will launch a large number of simulations, which may take a long
-time and a lot of computational resources to run. All validation directories
-can be cleaned and returned to their original state with the `clean.sh` script.
+time and a lot of computational resources to run. All validation directories can
+be cleaned and returned to their original state with the `clean.sh` script.
 
 [Back to the table of contents](./0_start.md)
 or [Next chapter: Current limitations](./9_limitations.md)

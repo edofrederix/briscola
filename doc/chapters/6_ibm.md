@@ -30,13 +30,13 @@ exact knowledge of the location of the immersed boundary surface. Immersed
 boundaries in Briscola are fixed in time and space, and can therefore not be
 used to model moving objects in a fixed frame of reference. Users may specify
 any number of immersed boundaries in `system/briscolaMeshDict`, each containing
-any number of shapes. Spheres are defined by the coordinate vector of the
-center of the sphere as well as a radius, while cylinders are defined by two
-coordinate vectors corresponding to points on the cylinder axis, as well as a
-radius. Cylindrical objects are infinite in length. Additionally, the `inverted`
+any number of shapes. Spheres are defined by the coordinate vector of the center
+of the sphere as well as a radius, while cylinders are defined by two coordinate
+vectors corresponding to points on the cylinder axis, as well as a radius.
+Cylindrical objects are infinite in length. Additionally, the `inverted`
 argument (which defaults to `false`) can be set to true if the flow is intended
-to occur inside the shape object, instead of around it (e.g., for a pipe
-flow). The following is an example of an immersed boundary entry in
+to occur inside the shape object, instead of around it (e.g., for a pipe flow).
+The following is an example of an immersed boundary entry in
 `system/briscolaMeshDict`:
 
 ```
@@ -142,13 +142,13 @@ analytically, such that the wall-distance may also be calculated analytically.
 
 The Vreman Dirichlet immersed boundary condition is based on the approach
 presented in [Vreman, A.W. (2020). JCP, 423 : 109783]. In this IBM, the field
-being forced is assumed to follow a quadratic profile near the boundary.
-Unlike the originally presented method, the method is implemented in Briscola
-by forcing the velocity on the first layer of cells inside the immersed
-boundary, while the original paper instead proposes to modify the coefficients
-of the linear system on the outside of the immersed boundary. This change was
-added to ensure that the method could also be compatible with explicit or
-semi-implicit temporal discretization schemes.
+being forced is assumed to follow a quadratic profile near the boundary. Unlike
+the originally presented method, the method is implemented in Briscola by
+forcing the velocity on the first layer of cells inside the immersed boundary,
+while the original paper instead proposes to modify the coefficients of the
+linear system on the outside of the immersed boundary. This change was added to
+ensure that the method could also be compatible with explicit or semi-implicit
+temporal discretization schemes.
 
 The values $\phi_g$ at the ghost cells (i.e., the first layer of cells on the
 inside of the immersed boundary) are set as a function of the two
@@ -205,16 +205,16 @@ the distance between the ghost point and its mirror point.
 
 All of the IBMs detailed above operate by forcing values of certain cells
 ('forcing points', marked in red in the above figures) to predetermined values.
-In Briscola, the implementation of IBMs is integrated into the multigrid
-solver (see [Chapter 7](./7_solvers.md) for more details on the multigrid
-solver). At the start of an IBM simulation, one or multiple `immersedBoundary`
-objects are constructed according to the specified entries in
-`system/briscolaMeshDict`. Based on the shape entries, the `immersedBoundary`
-object computes a number of fields: mask fields in which the forcing points are
-marked, wall-distance fields in which the distances from cell-centers to the
-immersed boundary are stored, and a mirror point field in which the coordinates
-of each ghost cell mirror point are stored. By calculating and storing these
-values in advance, the computational load during the simulation is minimized.
+In Briscola, the implementation of IBMs is integrated into the multigrid solver
+(see [Chapter 7](./7_solvers.md) for more details on the multigrid solver). At
+the start of an IBM simulation, one or multiple `immersedBoundary` objects are
+constructed according to the specified entries in `system/briscolaMeshDict`.
+Based on the shape entries, the `immersedBoundary` object computes a number of
+fields: mask fields in which the forcing points are marked, wall-distance fields
+in which the distances from cell-centers to the immersed boundary are stored,
+and a mirror point field in which the coordinates of each ghost cell mirror
+point are stored. By calculating and storing these values in advance, the
+computational load during the simulation is minimized.
 
 Within the multigrid solver, the discrete linear system is solved iteratively
 with Gauss-Seidel (or Jacobi) smoothing. Within each Gauss-Seidel sweep in an
@@ -225,19 +225,19 @@ standard and parallel boundary conditions are corrected, according to the
 different methods presented above. The multigrid solver iterates over this
 process until the solution is converged, making this a semi-implicit IBM
 implementation. It should be noted that convergence in the multigrid solver is
-defined by criteria on the residual field. However, since the IBM forcing
-fields do not conform to the linear system given to the multigrid solver, the
-residual will not go to zero in these cells by itself, and is instead set to
-zero at residual evaluation. This has two important effects: first, the
-convergence of the multigrid is controlled by the solution in all cells that
-are not forced by the IBM, and secondly, this informs the coarser grids of the
-multigrid solver that the solution is already 'correct' (at least, according
-to the IBM approximation) in these cells. Because of this, the IBM correction
-only needs to be applied to the main (finest) grid of the multigrid solver. In
-order to ensure numerical stability of this approach, an under-relaxation
-factor of $\omega=4/5$ is applied. This under-relaxation is w.r.t. the previous
-IBM update within the same time-step, rather than w.r.t. the previous
-time-step, hence still ensuring proper time-advancement.
+defined by criteria on the residual field. However, since the IBM forcing fields
+do not conform to the linear system given to the multigrid solver, the residual
+will not go to zero in these cells by itself, and is instead set to zero at
+residual evaluation. This has two important effects: first, the convergence of
+the multigrid is controlled by the solution in all cells that are not forced by
+the IBM, and secondly, this informs the coarser grids of the multigrid solver
+that the solution is already 'correct' (at least, according to the IBM
+approximation) in these cells. Because of this, the IBM correction only needs to
+be applied to the main (finest) grid of the multigrid solver. In order to ensure
+numerical stability of this approach, an under-relaxation factor of $\omega=4/5$
+is applied. This under-relaxation is w.r.t. the previous IBM update within the
+same time-step, rather than w.r.t. the previous time-step, hence still ensuring
+proper time-advancement.
 
 Both the Vreman and Mittal IBMs require stencils that are larger than the
 compact 7-point stencil used in Briscola. In most situations, this is not a

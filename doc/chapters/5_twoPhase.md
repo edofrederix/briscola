@@ -4,8 +4,8 @@
 or [Previous chapter: The Finite Volume library](./4_finiteVolume.md)
 
 An important part of the Briscola is its two-phase flow simulation capability.
-Since each processor has a structured mesh, this means that each cell is
-a hexahedron. In turn, proven algorithms can be used to capture a two-phase
+Since each processor has a structured mesh, this means that each cell is a
+hexahedron. In turn, proven algorithms can be used to capture a two-phase
 interface. We do this in the context of the Volume Of Fluid (VOF) method, with
 geometric reconstruction. While it can be tedious to implement, this method is
 superior in terms of computational efficiency compared to algebraic interface
@@ -35,10 +35,11 @@ free-surface simulations on cartesian-grids." Journal of Computational Physics
 
 1. Given a discrete colocated solution $\alpha^n$ at time level $n$, reconstruct
    the interface normal $\mathbf{n}$ for each interfacial cell (i.e., each cell
-   for which $0<\alpha^n<1$). There are several normal reconstruction algorithms.
-   The simplest one is Young's algorithm, which computes $\mathbf{n}$ from the
-   gradient of $\alpha^n$. Briscola also has more advanced algorithms, such as
-   LSFIR, LSGIR and MYC, see `src/briscolaTwoPhase/normalSchems`.
+   for which $0<\alpha^n<1$). There are several normal reconstruction
+   algorithms. The simplest one is Young's algorithm, which computes
+   $\mathbf{n}$ from the gradient of $\alpha^n$. Briscola also has more advanced
+   algorithms, such as LSFIR, LSGIR and MYC, see
+   `src/briscolaTwoPhase/normalSchems`.
 2. With $\alpha^n$ and $\mathbf{n}$ known, we may reconstruct a planar interface
    in each interfacial cell. Consider this figure:
 
@@ -67,14 +68,14 @@ free-surface simulations on cartesian-grids." Journal of Computational Physics
    $\alpha^n$ remains constant. To do this in a monotonic and mass-conserving
    way, the split advection approach of Weymouth & Yue is used which only works
    on structured grids. Given the truncation plane, we may exactly compute the
-   flux through the $x$-faces of the hexahedron given a velocity at the $x$-faces
-   while setting the velocities on the $y$- and $z$-faces to zero. This then
-   gives an intermediate solution $\alpha^\star$. Now, step 1-3 can be repeated
-   with $\alpha^\star$ as the initial solution (thus requiring a new
+   flux through the $x$-faces of the hexahedron given a velocity at the
+   $x$-faces while setting the velocities on the $y$- and $z$-faces to zero.
+   This then gives an intermediate solution $\alpha^\star$. Now, step 1-3 can be
+   repeated with $\alpha^\star$ as the initial solution (thus requiring a new
    reconstruction of $\mathbf{n}$ and $C$), with the only difference that
    advection is now done in the $y$-direction, giving an intermediate solution
-   $\alpha^{\star\star}$. Finally, steps 1-3 are repeated in the $z$-direction to
-   give the final solution $\alpha^{n+1}$.
+   $\alpha^{\star\star}$. Finally, steps 1-3 are repeated in the $z$-direction
+   to give the final solution $\alpha^{n+1}$.
 
 By making some clever interpolation choices, Weymouth & Yue showed that this
 leads to a method that is monotonic and mass-conserving while preserving
@@ -97,17 +98,17 @@ approach implemented in `SHF` or a parabolic fit method implemented in
 ## Two-phase solvers
 
 Briscola has dedicated two-phase solvers that are colocated or staggered and use
-Runge-Kutta or CNAB time integration (see
-[Chapter 4](./4_finiteVolume.md)). The solution algorithm in these solvers is the same.
-First, the volume fraction equation is solved as discussed above in the
-`twoPhase.correct()` function call. Given a new solution for $\alpha^{n+1}$, a
-new density field is computed and interpolated to faces, either staggered or
-colocated. Next, a momentum equation predictor is solved. However, as opposed to
-single-phase solvers, this momentum equation has a variable density that cannot
-be absorbed in the pressure and viscosity. Thus, the variable density remains as
-a coefficient in the right-hand side of the momentum equation, which is written
-in a 'non-conservative' formulation. Moreover, the density now also appears in
-the pressure equation which is of the form
+Runge-Kutta or CNAB time integration (see [Chapter 4](./4_finiteVolume.md)). The
+solution algorithm in these solvers is the same. First, the volume fraction
+equation is solved as discussed above in the `twoPhase.correct()` function call.
+Given a new solution for $\alpha^{n+1}$, a new density field is computed and
+interpolated to faces, either staggered or colocated. Next, a momentum equation
+predictor is solved. However, as opposed to single-phase solvers, this momentum
+equation has a variable density that cannot be absorbed in the pressure and
+viscosity. Thus, the variable density remains as a coefficient in the right-hand
+side of the momentum equation, which is written in a 'non-conservative'
+formulation. Moreover, the density now also appears in the pressure equation
+which is of the form
 
 $\nabla\cdot\left(\frac{1}{\rho}\nabla p\right) =
     \frac{\nabla \cdot \mathbf{u^\star}}{\Delta t}$

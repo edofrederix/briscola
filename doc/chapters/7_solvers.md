@@ -207,11 +207,11 @@ $\nabla \cdot (1/\rho^{n+1} \nabla p^{n+1})
 
 To solve this equation, we can split it into a constant coefficient part, that
 is treated implicitly within the FFT solver, and a variable coefficient part
-that is treated explicitly based on an explicit approximation of $p^{n+1}$.
-This explicit approximation means that the solution obtained with the split
-Poisson solver is an approximate one, unlike that of the standard FFT solver.
-Briscola's split Poisson solver follows the method proposed by Dodd & Ferrante
-[Dodd, M. S., & Ferrante, A. (2014). JCP, 273, 416-434.]
+that is treated explicitly based on an explicit approximation of $p^{n+1}$. This
+explicit approximation means that the solution obtained with the split Poisson
+solver is an approximate one, unlike that of the standard FFT solver. Briscola's
+split Poisson solver follows the method proposed by Dodd & Ferrante [Dodd, M.
+S., & Ferrante, A. (2014). JCP, 273, 416-434.]
 
 The implementation of the split Poisson solver (see
 `src/briscolaFiniteVolume/solvers/PoissonSolvers/splitPoissonSolver`) has two
@@ -221,8 +221,8 @@ coefficient Poisson equation. While this may not have any obvious use cases,
 this means that the constant coefficient Poisson equation can also be solved
 with the multigrid solver rather than the FFT solver. The second addition is the
 possibility to use preconditioning to improve the explicit approximation for
-$p^{n+1}$. For example, a single multigrid V-cycle can be used as
-preconditioner before using the FFT solver. This would be done as follows in
+$p^{n+1}$. For example, a single multigrid V-cycle can be used as preconditioner
+before using the FFT solver. This would be done as follows in
 `briscolaSolverDict`:
 
 ```
@@ -261,7 +261,7 @@ solvers can be found [here](https://petsc.org/main/manualpages/KSP/KSPType/).
 A number of direct solvers are also available through the Eigen and PETSc
 libraries. These solvers can be found in
 `src/briscolaFiniteVolume/solvers/externalSolvers/Eigen/EigenSolvers` and
-`src/briscolaFiniteVolume/solvers/externalSolvers/PETSc/PETScSolvers`, 
+`src/briscolaFiniteVolume/solvers/externalSolvers/PETSc/PETScSolvers`,
 respectively. If SuperLU is also installed when compiling Briscola, its direct
 solvers become available through its Eigen and PETSc interfaces.
 
