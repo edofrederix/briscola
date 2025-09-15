@@ -46,6 +46,9 @@ void PCLUPETScSolver::prepare(const Mat& mat, const MPI_Comm& comm)
 
     MatLUFactorSymbolic(f, mat, row_perm, col_perm, NULL);
     MatLUFactorNumeric(f, mat, NULL);
+
+    ISDestroy(&row_perm);
+    ISDestroy(&col_perm);
 }
 
 }

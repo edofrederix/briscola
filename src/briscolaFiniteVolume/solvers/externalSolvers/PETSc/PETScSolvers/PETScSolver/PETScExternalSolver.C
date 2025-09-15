@@ -39,12 +39,13 @@ void PETScExternalSolver::solve
 {
     if (&x == &rhs)
     {
-        Vec x;
-        VecDuplicate(rhs, &x);
+        Vec tmp;
+        VecDuplicate(rhs, &tmp);
 
-        MatSolve(factor_(), rhs, x);
+        MatSolve(factor_(), rhs, tmp);
 
-        VecCopy(x, rhs);
+        VecCopy(tmp, x);
+        VecDestroy(&tmp);
     }
     else
     {
