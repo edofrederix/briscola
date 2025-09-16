@@ -1,7 +1,7 @@
 #ifndef stagNoSlipBoundaryCondition_H
 #define stagNoSlipBoundaryCondition_H
 
-#include "stagDirichletBoundaryCondition.H"
+#include "DirichletBoundaryCondition.H"
 
 namespace Foam
 {
@@ -15,7 +15,7 @@ namespace fv
 template<class Type>
 class stagNoSlipBoundaryCondition
 :
-    public stagDirichletBoundaryCondition<Type>
+    public DirichletBoundaryCondition<Type,staggered>
 {
 public:
 

@@ -1,7 +1,7 @@
 #ifndef stagSlipBoundaryCondition_H
 #define stagSlipBoundaryCondition_H
 
-#include "stagNeumannBoundaryCondition.H"
+#include "NeumannBoundaryCondition.H"
 
 namespace Foam
 {
@@ -15,7 +15,7 @@ namespace fv
 template<class Type>
 class stagSlipBoundaryCondition
 :
-    public stagNeumannBoundaryCondition<Type>
+    public NeumannBoundaryCondition<Type,staggered>
 {
 public:
 

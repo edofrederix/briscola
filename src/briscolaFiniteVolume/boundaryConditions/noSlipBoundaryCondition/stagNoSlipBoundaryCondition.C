@@ -20,7 +20,7 @@ stagNoSlipBoundaryCondition<Type>::stagNoSlipBoundaryCondition
     const boundary& b
 )
 :
-    stagDirichletBoundaryCondition<Type>
+    DirichletBoundaryCondition<Type,staggered>
     (
         mshField,
         b,
@@ -34,7 +34,7 @@ stagNoSlipBoundaryCondition<Type>::stagNoSlipBoundaryCondition
     const stagNoSlipBoundaryCondition<Type>& bc
 )
 :
-    stagDirichletBoundaryCondition<Type>(bc)
+    DirichletBoundaryCondition<Type,staggered>(bc)
 {}
 
 template<class Type>
@@ -44,7 +44,7 @@ stagNoSlipBoundaryCondition<Type>::stagNoSlipBoundaryCondition
     const stagNoSlipBoundaryCondition<Type>& bc
 )
 :
-    stagDirichletBoundaryCondition<Type>(field, bc)
+    DirichletBoundaryCondition<Type,staggered>(field, bc)
 {}
 
 }

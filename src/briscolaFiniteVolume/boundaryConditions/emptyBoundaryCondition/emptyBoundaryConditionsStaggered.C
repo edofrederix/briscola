@@ -1,5 +1,5 @@
 #include "boundaryConditions.H"
-#include "stagEmptyBoundaryCondition.H"
+#include "emptyBoundaryCondition.H"
 
 namespace Foam
 {
@@ -10,12 +10,8 @@ namespace briscola
 namespace fv
 {
 
-// Base
 makeBoundaryConditionTypes(empty,empty,staggered)
-
-// Derived
-makeBoundaryConditionMeshedTypes(stagEmpty,empty,staggered)
-addBoundaryConditionMeshedTypes(stagEmpty,staggered)
+addBoundaryConditionTypes(empty,staggered)
 
 }
 
