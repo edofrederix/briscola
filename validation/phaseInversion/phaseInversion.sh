@@ -97,6 +97,21 @@ getNumTasks () {
     echo $COUNT
 }
 
+# Handle SIGTERM
+
+PIDS=()
+
+cleanup() {
+    echo "Caught signal, killing children..."
+    kill -TERM "${PIDS[@]}" 2>/dev/null
+    wait
+    exit 1
+}
+
+trap cleanup SIGINT SIGTERM
+
+##
+
 for I in "${!SOLVERS[@]}"; do
 for J in "${!MESHES[@]}"; do
 for K in "${!NPROCSPERBRICKSIDE[@]}"; do
@@ -210,7 +225,7 @@ for N in "${!CURVATURESCHEMES[@]}"; do
 
             echo "Finished $CASE"
 
-        ) &
+        ) & PIDS+=($!)
     fi
 
 done
