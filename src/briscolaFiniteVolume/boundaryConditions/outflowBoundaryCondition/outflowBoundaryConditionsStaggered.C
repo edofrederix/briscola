@@ -1,5 +1,5 @@
 #include "boundaryConditions.H"
-#include "stagOutflowBoundaryCondition.H"
+#include "outflowBoundaryCondition.H"
 
 namespace Foam
 {
@@ -10,12 +10,8 @@ namespace briscola
 namespace fv
 {
 
-// Base
 makeBoundaryConditionType(outflow,outflow,scalar,staggered)
-
-// Derived
-makeBoundaryConditionMeshedType(stagOutflow,outflow,scalar,staggered)
-addBoundaryConditionMeshedType(stagOutflow,scalar,staggered)
+addBoundaryConditionType(outflow,scalar,staggered)
 
 }
 

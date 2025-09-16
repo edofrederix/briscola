@@ -13,39 +13,49 @@ namespace briscola
 namespace fv
 {
 
-template<class Type, class MeshType>
-outflowBoundaryCondition<Type,MeshType>::outflowBoundaryCondition
-(
-    const meshField<Type,MeshType>& mshField,
-    const boundary& b
-)
-:
-    NeumannBoundaryCondition<Type,MeshType>
-    (
-        mshField,
-        b,
-        List<Type>(MeshType::numberOfDirections, Zero)
-    )
-{}
+// Staggered
 
-template<class Type, class MeshType>
-outflowBoundaryCondition<Type,MeshType>::outflowBoundaryCondition
+template<class Type>
+void outflowBoundaryCondition<Type,staggered>::eliminateGhosts
 (
-    const outflowBoundaryCondition<Type,MeshType>& bc
+    linearSystem<stencil,Type,staggered>& sys,
+    const label l,
+    const label d
 )
-:
-    NeumannBoundaryCondition<Type,MeshType>(bc)
-{}
+{
+    // Eliminate only for non-shifted boundaries
 
-template<class Type, class MeshType>
-outflowBoundaryCondition<Type,MeshType>::outflowBoundaryCondition
+    if (faceNumber(this->offset())/2 != d)
+        NeumannBoundaryCondition<Type,staggered>::eliminateGhosts(sys,l,d);
+}
+
+template<class Type>
+void outflowBoundaryCondition<Type,staggered>::evaluate
 (
-    const meshField<Type,MeshType>& field,
-    const outflowBoundaryCondition<Type,MeshType>& bc
+    const label l,
+    const label d
 )
-:
-    NeumannBoundaryCondition<Type,MeshType>(field, bc)
-{}
+{
+    const labelVector bo(this->offset());
+
+    meshDirection<Type,staggered>& fd = this->mshField_[l][d];
+
+    const labelVector S(this->S(l,d));
+    const labelVector E(this->E(l,d));
+
+    labelVector ijk;
+    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+    {
+        // Set velocity to zero if reverse flow
+        if(Foam::mag(bo[d]) == 1 && fd(ijk)*bo[d] < 0)
+            fd(ijk) = Zero;
+
+        // Zero gradient
+        fd(ijk+bo) = fd(ijk);
+    }
+}
 
 }
 
