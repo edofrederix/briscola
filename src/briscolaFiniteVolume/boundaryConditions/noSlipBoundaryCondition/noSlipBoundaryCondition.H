@@ -22,25 +22,24 @@ public:
     // Runtime type information
     TypeName("noSlip");
 
-    // Construct from components
-    noSlipBoundaryCondition
-    (
-        const meshField<Type,MeshType>&,
-        const boundary&
-    );
+    // Use base class constructors
+    using DirichletBoundaryCondition<Type,MeshType>::
+        DirichletBoundaryCondition;
 
-    // Copy constructor
+    // Construct from components setting zero value
     noSlipBoundaryCondition
     (
-        const noSlipBoundaryCondition<Type,MeshType>&
-    );
-
-    // Copy constructor resetting field reference
-    noSlipBoundaryCondition
-    (
-        const meshField<Type,MeshType>&,
-        const noSlipBoundaryCondition<Type,MeshType>&
-    );
+        const meshField<Type,MeshType>& mshField,
+        const boundary& b
+    )
+    :
+        DirichletBoundaryCondition<Type,MeshType>
+        (
+            mshField,
+            b,
+            List<Type>(MeshType::numberOfDirections, Zero)
+        )
+    {}
 
     // Construct and return a clone
     virtual tmp<boundaryCondition<Type,MeshType>> clone() const
@@ -62,12 +61,6 @@ public:
             new noSlipBoundaryCondition<Type,MeshType>(field,*this)
         );
     }
-
-    // Boundary condition base type
-    virtual boundaryConditionBaseType baseType() const
-    {
-        return DIRICHLETBC;
-    }
 };
 
 }
@@ -75,9 +68,5 @@ public:
 }
 
 }
-
-#ifdef NoRepository
-    #include "noSlipBoundaryCondition.C"
-#endif
 
 #endif
