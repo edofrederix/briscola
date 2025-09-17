@@ -12,7 +12,6 @@ CSV="results.csv"
 TEMPLATE="template"
 SOLVER="briscolaStaggered"
 PYTHON="python3"
-TASKFILE="/tmp/tasks.$$"
 
 # Simulation parameters
 
@@ -59,41 +58,9 @@ echo \
     "number of time steps," \
     "mean number of pressure iters" > $CURR/$CSV
 
-rm -f $TASKFILE.[0-9]+
-
-getNumTasks () {
-
-    COUNT=0
-
-    for PID in $(jobs -p -r); do
-
-        while [ ! -f "$TASKFILE.$PID" ]; do
-
-            sleep 1
-
-        done
-
-        COUNT=$(($COUNT + $(cat $TASKFILE.$PID)))
-
-    done
-
-    echo $COUNT
-}
-
-# Handle SIGTERM
-
-PIDS=()
-
-cleanup() {
-    echo "Caught signal, killing children..."
-    kill -TERM "${PIDS[@]}" 2>/dev/null
-    wait
-    exit 1
-}
-
-trap cleanup SIGINT SIGTERM
-
 ##
+
+source ../procManagement.sh
 
 for I in "${!MESHES[@]}"; do
 for J in "${!NPROCSPERBRICKSIDE[@]}"; do
@@ -123,20 +90,10 @@ for O in "${!RKSCHEMES[@]}"; do
 
     CASE="$MESH-$NPROC-$LSCHEME-$DSCHEME-$RE-$COARSEMODE-$RKSCHEME"
 
-    while [ "$(($(getNumTasks) + $NPROC))" -gt $NTASKS ]; do
-
-        echo \
-            Procs running = $(getNumTasks), \
-            Procs needed = $NPROC
-
-        sleep 1
-
-    done
+    wait_for_procs $NPROC $NTASKS
 
     (
         echo "Starting $CASE"
-
-        echo $NPROC > $TASKFILE.$BASHPID
 
         cp -r $TEMPLATE $RUNDIR/$CASE
 
@@ -155,17 +112,9 @@ for O in "${!RKSCHEMES[@]}"; do
         fi
 
         if [ "$NPROC" == "1" ]; then
-
-            $SOLVER2 > log.$SOLVER
-
+            srun --exclusive -n $NPROC $SOLVER2 > log.$SOLVER
         else
-
-            mpirun \
-                --bind-to none \
-                --oversubscribe \
-                -n $NPROC \
-                $SOLVER2 -parallel > log.$SOLVER
-
+            srun --exclusive -n $NPROC $SOLVER2 -parallel > log.$SOLVER
         fi
 
         ##
@@ -202,7 +151,9 @@ for O in "${!RKSCHEMES[@]}"; do
 
         echo "Finished $CASE"
 
-    ) & PIDS+=($!)
+    ) &
+
+    store_procs $NPROC $!
 
 done
 done
@@ -213,5 +164,3 @@ done
 done
 
 wait
-
-rm -f $TASKFILE.[0-9]+
