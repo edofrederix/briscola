@@ -1,4 +1,4 @@
-#include "coloFluxRestrictionScheme.H"
+#include "fluxRestrictionScheme.H"
 
 #include "colocated.H"
 #include "staggered.H"
@@ -12,19 +12,13 @@ namespace briscola
 namespace fv
 {
 
-coloFluxRestrictionScheme::coloFluxRestrictionScheme
-(
-    const fvMesh& fvMsh,
-    Istream& is
-)
-:
-    restrictionScheme<faceScalar,colocated>(fvMsh, is)
-{}
+// Colocated
 
-void coloFluxRestrictionScheme::restrict
+template<class Type>
+void fluxRestrictionScheme<Type,colocated>::restrict
 (
-    meshDirection<faceScalar,colocated>& coarse,
-    const meshDirection<faceScalar,colocated>& fine,
+    meshDirection<FaceSpace<Type>,colocated>& coarse,
+    const meshDirection<FaceSpace<Type>,colocated>& fine,
     const bool scale
 )
 {

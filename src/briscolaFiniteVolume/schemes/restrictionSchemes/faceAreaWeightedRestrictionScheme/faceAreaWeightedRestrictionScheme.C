@@ -1,7 +1,6 @@
-#include "stagBlendedViscosityMixtureRestrictionScheme.H"
+#include "faceAreaWeightedRestrictionScheme.H"
 
-#include "restrictionSchemes.H"
-#include "addToRunTimeSelectionTable.H"
+#include "colocated.H"
 #include "staggered.H"
 
 namespace Foam
@@ -13,34 +12,63 @@ namespace briscola
 namespace fv
 {
 
-makeRestrictionSchemeNoTemplate
-(
-    stagBlendedViscosityMixture,
-    faceScalar,
-    staggered
-);
+// Colocated
 
-defineTemplateTypeNameAndDebugWithName
+template<class Type>
+void faceAreaWeightedRestrictionScheme<Type,colocated>::restrict
 (
-    blendedViscosityMixtureRestrictionScheme<staggered>,
-    "blendedViscosityMixture",
-    0
-);
-
-stagBlendedViscosityMixtureRestrictionScheme::
-stagBlendedViscosityMixtureRestrictionScheme
-(
-    const fvMesh& fvMsh,
-    Istream& is
+    meshDirection<FaceSpace<Type>,colocated>& coarse,
+    const meshDirection<FaceSpace<Type>,colocated>& fine,
+    const bool scale
 )
-:
-    blendedViscosityMixtureRestrictionScheme<staggered>(fvMsh, is)
-{}
+{
+    this->errorNoScaling(scale);
 
-void stagBlendedViscosityMixtureRestrictionScheme::restrict
+    const labelVector R(coarse.mshPart().R());
+
+    const meshDirection<faceScalar,colocated>& faf =
+        this->fvMsh().template
+        metrics<colocated>().faceAreas()
+        [fine.levelNum()][fine.directionNum()];
+
+    // Face area weighted average of corresponding fine grid faces
+
+    forAllFaces(coarse, fd, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(ijk,fd));
+
+        const labelVector fijk(briscola::cmptMultiply(ijk, R));
+        const labelVector fnei(lowerNeighbor(fijk,fd));
+
+        scalar area = 0.0;
+
+        coarse(ijk)[fd*2  ] = Zero;
+        coarse(nei)[fd*2+1] = Zero;
+
+        labelVector o;
+        for (o.x() = 0; o.x() < (fd == 0 ? 1 : R.x()); o.x()++)
+        for (o.y() = 0; o.y() < (fd == 1 ? 1 : R.y()); o.y()++)
+        for (o.z() = 0; o.z() < (fd == 2 ? 1 : R.z()); o.z()++)
+        {
+            coarse(ijk)[fd*2  ] += faf(fijk+o)[fd*2]*fine(fijk+o)[fd*2  ];
+            coarse(nei)[fd*2+1] += faf(fijk+o)[fd*2]*fine(fnei+o)[fd*2+1];
+
+            area += faf(fijk+o)[fd*2];
+        }
+
+        coarse(ijk)[fd*2  ] /= area;
+        coarse(nei)[fd*2+1] /= area;
+    }
+}
+
+// Staggered
+
+template<class Type>
+void faceAreaWeightedRestrictionScheme<Type,staggered>::restrict
 (
-    meshDirection<faceScalar,staggered>& coarse,
-    const meshDirection<faceScalar,staggered>& fine,
+    meshDirection<FaceSpace<Type>,staggered>& coarse,
+    const meshDirection<FaceSpace<Type>,staggered>& fine,
     const bool scale
 )
 {
@@ -50,8 +78,8 @@ void stagBlendedViscosityMixtureRestrictionScheme::restrict
 
     // First interpolate to colocated faces
 
-    meshDirection<faceScalar,colocated> coloFine(fine.fvMsh(), l, 0);
-    const meshLevel<faceScalar,staggered>& finel = fine.mshLevel();
+    meshDirection<FaceSpace<Type>,colocated> coloFine(fine.fvMsh(), l, 0);
+    const meshLevel<FaceSpace<Type>,staggered>& finel = fine.mshLevel();
 
     forAllFacesInDirection(coloFine, fd, i, j, k)
     {
@@ -83,9 +111,9 @@ void stagBlendedViscosityMixtureRestrictionScheme::restrict
         }
     }
 
-    // Blended viscosity calculation from the reconstructed volume fractions at
-    // the colocated faces. We must use a cell iterator in order to avoid
-    // accessing non-existent ghost cells of colocated ghost cells.
+    // Face area weighted average of corresponding colocated fine grid faces. We
+    // must use a cell iterator in order to avoid accessing non-existent ghost
+    // cells of colocated ghost cells.
 
     const label d = fine.directionNum();
 
@@ -113,22 +141,18 @@ void stagBlendedViscosityMixtureRestrictionScheme::restrict
             const labelVector s((f%2) ? units[fd] : zeroXYZ);
 
             scalar area = 0.0;
-            scalar alpha = 0.0;
+            coarse(ijk)[f] = Zero;
 
             labelVector o;
             for (o.x() = 0; o.x() < (fd == 0 ? 1 : R.x()); o.x()++)
             for (o.y() = 0; o.y() < (fd == 1 ? 1 : R.y()); o.y()++)
             for (o.z() = 0; o.z() < (fd == 2 ? 1 : R.z()); o.z()++)
             {
-                alpha += faf(fijk+o+s)[f]*this->inv(coloFine(fijk+o+s)[f]);
+                coarse(ijk)[f] += faf(fijk+o+s)[f]*coloFine(fijk+o+s)[f];
                 area += faf(fijk+o+s)[f];
             }
 
-            alpha /= area;
-
-            // Apply the blending function from the reconstructed alpha
-
-            coarse(ijk)[f] = this->blend(alpha);
+            coarse(ijk)[f] /= area;
         }
     }
 }

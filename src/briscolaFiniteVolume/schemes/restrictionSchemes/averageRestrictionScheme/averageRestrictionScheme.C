@@ -13,16 +13,6 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-averageRestrictionScheme<Type,MeshType>::averageRestrictionScheme
-(
-    const fvMesh& fvMsh,
-    Istream& is
-)
-:
-    restrictionScheme<Type,MeshType>(fvMsh, is)
-{}
-
-template<class Type, class MeshType>
 void averageRestrictionScheme<Type,MeshType>::restrict
 (
     meshDirection<Type,MeshType>& coarse,

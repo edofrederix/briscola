@@ -13,16 +13,6 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-volumeWeightedRestrictionScheme<Type,MeshType>::volumeWeightedRestrictionScheme
-(
-    const fvMesh& fvMsh,
-    Istream& is
-)
-:
-    restrictionScheme<Type,MeshType>(fvMsh, is)
-{}
-
-template<class Type, class MeshType>
 void volumeWeightedRestrictionScheme<Type,MeshType>::restrict
 (
     meshDirection<Type,MeshType>& coarse,

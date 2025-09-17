@@ -22,8 +22,8 @@ public:
     // Runtime type information
     TypeName("average");
 
-    // Construct from stream and mesh
-    averageRestrictionScheme(const fvMesh&, Istream& = scheme::nullStream);
+    // Use base constructors
+    using restrictionScheme<Type,MeshType>::restrictionScheme;
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
     // level, with option to scale by cell volume

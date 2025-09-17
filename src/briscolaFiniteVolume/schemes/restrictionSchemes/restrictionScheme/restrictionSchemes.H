@@ -26,6 +26,7 @@
         Istream                                                                \
     );
 
+
 // Make a restriction scheme templated for a type and mesh type
 
 #define makeRestrictionScheme(SCHEME,TYPE,MESHTYPE)                            \
@@ -44,72 +45,46 @@
     addIstreamConstructorToTable<SCHEME##RestrictionScheme##TYPE##MESHTYPE>    \
     add##SCHEME##RestrictionScheme##TYPE##MESHTYPE##ConstructorToTable_;
 
-// Make a restriction scheme templated for a mesh type
+// Make a face restriction scheme templated for a type and mesh type
 
-#define makeRestrictionSchemeMeshType(SCHEME,NAME,TYPE,MESHTYPE)               \
+#define makeFaceRestrictionScheme(SCHEME,TYPE,FTYPE,MESHTYPE)                  \
+                                                                               \
+    typedef SCHEME##RestrictionScheme<TYPE,MESHTYPE>                           \
+        SCHEME##RestrictionScheme##TYPE##MESHTYPE;                             \
+                                                                               \
+    defineTemplateTypeNameAndDebugWithName                                     \
+    (                                                                          \
+        SCHEME##RestrictionScheme##TYPE##MESHTYPE,                             \
+        #SCHEME,                                                               \
+        0                                                                      \
+    );                                                                         \
+                                                                               \
+    restrictionScheme<FTYPE,MESHTYPE>::                                        \
+    addIstreamConstructorToTable<SCHEME##RestrictionScheme##TYPE##MESHTYPE>    \
+    add##SCHEME##RestrictionScheme##FTYPE##MESHTYPE##ConstructorToTable_;
+
+
+// Make a restriction scheme templated for only a mesh type
+
+#define makeRestrictionSchemeMeshType(SCHEME,TYPE,MESHTYPE)                    \
                                                                                \
     typedef SCHEME##RestrictionScheme<MESHTYPE>                                \
         SCHEME##RestrictionScheme##MESHTYPE;                                   \
                                                                                \
-    defineTemplateTypeNameAndDebugWithName                                     \
+    defineTypeNameAndDebugWithName                                             \
     (                                                                          \
         SCHEME##RestrictionScheme##MESHTYPE,                                   \
-        #NAME,                                                                 \
+        #SCHEME,                                                               \
         0                                                                      \
     );                                                                         \
                                                                                \
     restrictionScheme<TYPE,MESHTYPE>::                                         \
     addIstreamConstructorToTable<SCHEME##RestrictionScheme##MESHTYPE>          \
-    add##SCHEME##RestrictionScheme##MESHTYPE##ConstructorToTable_;
+    add##SCHEME##RestrictionScheme##TYPE##MESHTYPE##ConstructorToTable_;
 
-// Make a restriction scheme templated for a type
+// Make a face restriction scheme templated for only a mesh type
 
-#define makeRestrictionSchemeType(SCHEME,NAME,TYPE,MESHTYPE)                   \
-                                                                               \
-    typedef SCHEME##RestrictionScheme<TYPE>                                    \
-        SCHEME##RestrictionScheme##TYPE;                                       \
-                                                                               \
-    defineTemplateTypeNameAndDebugWithName                                     \
-    (                                                                          \
-        SCHEME##RestrictionScheme##TYPE,                                       \
-        #NAME,                                                                 \
-        0                                                                      \
-    );                                                                         \
-                                                                               \
-    restrictionScheme<TYPE,MESHTYPE>::                                         \
-    addIstreamConstructorToTable<SCHEME##RestrictionScheme##TYPE>              \
-    add##SCHEME##RestrictionScheme##TYPE##ConstructorToTable_;
-
-// Make a face restriction scheme templated for a type
-
-#define makeFaceRestrictionSchemeType(SCHEME,NAME,TYPE,FTYPE,MESHTYPE)         \
-                                                                               \
-    typedef SCHEME##RestrictionScheme<TYPE>                                    \
-        SCHEME##RestrictionScheme##TYPE;                                       \
-                                                                               \
-    defineTemplateTypeNameAndDebugWithName                                     \
-    (                                                                          \
-        SCHEME##RestrictionScheme##TYPE,                                       \
-        #NAME,                                                                 \
-        0                                                                      \
-    );                                                                         \
-                                                                               \
-    restrictionScheme<FTYPE,MESHTYPE>::                                        \
-    addIstreamConstructorToTable<SCHEME##RestrictionScheme##TYPE>              \
-    add##SCHEME##RestrictionScheme##FTYPE##ConstructorToTable_;
-
-// Make an non-templated restriction scheme
-
-#define makeRestrictionSchemeNoTemplate(SCHEME,TYPE,MESHTYPE)                  \
-                                                                               \
-    defineTypeNameAndDebug                                                     \
-    (                                                                          \
-        SCHEME##RestrictionScheme,                                             \
-        0                                                                      \
-    );                                                                         \
-                                                                               \
-    restrictionScheme<TYPE,MESHTYPE>::                                         \
-    addIstreamConstructorToTable<SCHEME##RestrictionScheme>                    \
-    add##SCHEME##RestrictionScheme##ConstructorToTable_;
+#define makeFaceRestrictionSchemeMeshType(SCHEME,FTYPE,MESHTYPE)               \
+    makeRestrictionSchemeMeshType(SCHEME,FTYPE,MESHTYPE)
 
 #endif

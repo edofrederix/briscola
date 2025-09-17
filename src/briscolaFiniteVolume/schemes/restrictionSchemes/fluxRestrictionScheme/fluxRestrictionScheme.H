@@ -1,5 +1,5 @@
-#ifndef coloHarmonicFaceAreaWeightedRestrictionScheme_H
-#define coloHarmonicFaceAreaWeightedRestrictionScheme_H
+#ifndef fluxRestrictionScheme_H
+#define fluxRestrictionScheme_H
 
 #include "restrictionScheme.H"
 
@@ -12,22 +12,26 @@ namespace briscola
 namespace fv
 {
 
+// Forward declaration
+
+template<class Type, class MeshType>
+class fluxRestrictionScheme;
+
+
+// Colocated
+
 template<class Type>
-class coloHarmonicFaceAreaWeightedRestrictionScheme
+class fluxRestrictionScheme<Type,colocated>
 :
     public restrictionScheme<FaceSpace<Type>,colocated>
 {
 public:
 
     // Runtime type information
-    TypeName("harmonicFaceAreaWeighted");
+    TypeName("flux");
 
-    // Construct from stream and mesh
-    coloHarmonicFaceAreaWeightedRestrictionScheme
-    (
-        const fvMesh&,
-        Istream&
-    );
+    // Use constructors from base
+    using restrictionScheme<FaceSpace<Type>,colocated>:: restrictionScheme;
 
     // In-place restriction from a fine cell level to an adjacent coarse cell
     // level
@@ -46,7 +50,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "coloHarmonicFaceAreaWeightedRestrictionScheme.C"
+    #include "fluxRestrictionScheme.C"
 #endif
 
 #endif

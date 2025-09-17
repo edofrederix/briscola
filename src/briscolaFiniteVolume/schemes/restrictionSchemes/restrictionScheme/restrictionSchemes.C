@@ -6,14 +6,10 @@
 #include "volumeWeightedRestrictionScheme.H"
 #include "harmonicVolumeWeightedRestrictionScheme.H"
 
-#include "coloFaceAverageRestrictionScheme.H"
-#include "coloFaceAreaWeightedRestrictionScheme.H"
-#include "coloHarmonicFaceAreaWeightedRestrictionScheme.H"
-#include "coloFluxRestrictionScheme.H"
-
-#include "stagFaceAverageRestrictionScheme.H"
-#include "stagFaceAreaWeightedRestrictionScheme.H"
-#include "stagHarmonicFaceAreaWeightedRestrictionScheme.H"
+#include "harmonicFaceAreaWeightedRestrictionScheme.H"
+#include "faceAreaWeightedRestrictionScheme.H"
+#include "faceAverageRestrictionScheme.H"
+#include "fluxRestrictionScheme.H"
 
 namespace Foam
 {
@@ -65,94 +61,21 @@ makeRestrictionSchemeBase(faceVector,colocated,"faceAverage");
 makeRestrictionSchemeBase(faceScalar,staggered,"faceAverage");
 makeRestrictionSchemeBase(faceVector,staggered,"faceAverage");
 
-makeFaceRestrictionSchemeType
-(
-    coloFaceAverage,
-    faceAverage,
-    scalar,
-    faceScalar,
-    colocated
-);
-makeFaceRestrictionSchemeType
-(
-    coloFaceAverage,
-    faceAverage,
-    vector,
-    faceVector,
-    colocated
-);
+makeFaceRestrictionScheme(faceAverage,scalar,faceScalar,colocated);
+makeFaceRestrictionScheme(faceAverage,vector,faceVector,colocated);
+makeFaceRestrictionScheme(faceAverage,scalar,faceScalar,staggered);
+makeFaceRestrictionScheme(faceAverage,vector,faceVector,staggered);
 
-makeFaceRestrictionSchemeType
-(
-    stagFaceAverage,
-    faceAverage,
-    scalar,
-    faceScalar,
-    staggered
-);
-makeFaceRestrictionSchemeType
-(
-    stagFaceAverage,
-    faceAverage,
-    vector,
-    faceVector,
-    staggered
-);
+makeFaceRestrictionScheme(faceAreaWeighted,scalar,faceScalar,colocated);
+makeFaceRestrictionScheme(faceAreaWeighted,vector,faceVector,colocated);
+makeFaceRestrictionScheme(faceAreaWeighted,scalar,faceScalar,staggered);
+makeFaceRestrictionScheme(faceAreaWeighted,vector,faceVector,staggered);
 
-makeFaceRestrictionSchemeType
-(
-    coloFaceAreaWeighted,
-    faceAreaWeighted,
-    scalar,
-    faceScalar,
-    colocated
-);
-makeFaceRestrictionSchemeType
-(
-    coloFaceAreaWeighted,
-    faceAreaWeighted,
-    vector,
-    faceVector,
-    colocated
-);
+makeFaceRestrictionScheme(harmonicFaceAreaWeighted,scalar,faceScalar,colocated);
+makeFaceRestrictionScheme(harmonicFaceAreaWeighted,scalar,faceScalar,staggered);
 
-makeFaceRestrictionSchemeType
-(
-    coloHarmonicFaceAreaWeighted,
-    harmonicFaceAreaWeighted,
-    scalar,
-    faceScalar,
-    colocated
-);
-
-makeFaceRestrictionSchemeType
-(
-    stagFaceAreaWeighted,
-    faceAreaWeighted,
-    scalar,
-    faceScalar,
-    staggered
-);
-
-makeFaceRestrictionSchemeType
-(
-    stagFaceAreaWeighted,
-    faceAreaWeighted,
-    vector,
-    faceVector,
-    staggered
-);
-
-makeFaceRestrictionSchemeType
-(
-    stagHarmonicFaceAreaWeighted,
-    harmonicFaceAreaWeighted,
-    scalar,
-    faceScalar,
-    staggered
-);
-
-makeRestrictionSchemeNoTemplate(coloFlux,faceScalar,colocated);
+makeFaceRestrictionScheme(flux,scalar,faceScalar,colocated);
+makeFaceRestrictionScheme(flux,vector,faceVector,colocated);
 
 }
 
