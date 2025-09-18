@@ -186,12 +186,6 @@ public:
         return b_.extension();
     }
 
-    // Return the transformation tensor
-    inline labelTensor T() const
-    {
-        return b_.T();
-    }
-
     // Return the start point of the internal cell boundary
     labelVector S(const label l, const label d) const;
 

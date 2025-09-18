@@ -32,15 +32,6 @@ protected:
     // boundary offset vector
     label offsetDegree_;
 
-    // Rotation of the neighbor in case of a parallel boundary (defaults to the
-    // identity tensor)
-    labelTensor T_;
-
-    // Master bool. Boundaries that require communication can be master or
-    // slave. By default a boundary is master. Can be modified by derived
-    // classes.
-    bool master_;
-
     // Extension of the boundary into other boundaries
     faceLabel extension_;
 
@@ -126,13 +117,6 @@ public:
     {
         return offsetDegree_;
     }
-
-    // Rotation of the neighbor
-    inline const labelTensor& T() const { return T_; }
-
-    // Master bool
-    inline bool master() const { return master_; }
-    inline bool slave() const { return !master_; }
 
     // Access to the extension face label
     inline faceLabel& extension() { return extension_; }

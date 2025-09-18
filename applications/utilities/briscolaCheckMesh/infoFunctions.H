@@ -211,7 +211,12 @@ void parallelInfo(const fvMesh& fvMsh)
         const boundary& b = fvMsh.boundaries()[bi];
 
         bDicts[Pstream::myProcNo()].append(b.dict());
-        masterPatch[Pstream::myProcNo()].append(b.master());
+        masterPatch[Pstream::myProcNo()].append
+        (
+            b.castable<parallelBoundary>()
+          ? b.cast<parallelBoundary>().master()
+          : 1
+        );
     }
 
     Pstream::gatherList(pDicts);
@@ -295,7 +300,7 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
         {
             dictionary dict(b.dict());
 
-            dict.add("master", b.master());
+            dict.add("master", b.cast<parallelBoundary>().master());
             dict.add("tag", b.cast<parallelBoundary>().tag());
 
             bDicts[Pstream::myProcNo()].append

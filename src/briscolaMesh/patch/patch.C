@@ -5,14 +5,15 @@ namespace Foam
 {
 
 template<>
-const char* NamedEnum<briscola::patch::patchType,3>::names[] =
+const char* NamedEnum<briscola::patch::patchType,4>::names[] =
 {
     "patch",
     "periodic",
+    "mapped",
     "empty"
 };
 
-const NamedEnum<briscola::patch::patchType,3> briscola::patch::patchTypeNames;
+const NamedEnum<briscola::patch::patchType,4> briscola::patch::patchTypeNames;
 
 namespace briscola
 {

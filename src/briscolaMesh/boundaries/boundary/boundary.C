@@ -26,8 +26,6 @@ boundary::boundary(const mesh& msh, const dictionary& dict)
     (
         cmptSum(cmptMag(offset_))
     ),
-    T_(dict.lookupOrDefault<labelTensor>("T", eye)),
-    master_(true),
     extension_(Zero)
 {}
 
@@ -40,8 +38,6 @@ boundary::boundary
     name_(b.name_),
     offset_(b.offset_),
     offsetDegree_(b.offsetDegree_),
-    T_(b.T_),
-    master_(b.master_),
     extension_(Zero)
 {}
 

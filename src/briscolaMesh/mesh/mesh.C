@@ -27,6 +27,7 @@ void mesh::addBoundary
     const word type,
     const labelTensor T,
     const labelVector offset,
+    const vector mappingOffset,
     const labelVector neighborOffset,
     const label neighborProcNum
 )
@@ -37,6 +38,9 @@ void mesh::addBoundary
     dict.add("type", type);
     dict.add("T", T);
     dict.add("offset", offset);
+
+    if (mappingOffset != vector::zero)
+        dict.add("mappingOffset", mappingOffset);
 
     if (neighborOffset != zeroXYZ)
         dict.add("neighborOffset", neighborOffset);
@@ -95,6 +99,7 @@ void mesh::generateBrickInternalBoundaries()
                 "parallel",
                 eye,
                 bo,
+                vector::zero,
               - bo,
                 neighborProcNum
             );
@@ -163,6 +168,7 @@ void mesh::generateLinkBoundaries(const brickLink& link)
             link.periodic() ? "periodic" : "parallel",
             T,
             bo,
+            vector::zero,
           - (T.T() & bo),
             slice.procNum1()
         );
@@ -206,6 +212,7 @@ void mesh::generateLinkBoundaries(const brickLink& link)
                         link.periodic() ? "periodic" : "parallel",
                         T,
                         bo2,
+                        vector::zero,
                       - (T.T() & bo2),
                         slice2.procNum1()
                     );
@@ -249,6 +256,7 @@ void mesh::generateLinkBoundaries(const brickLink& link)
                         link.periodic() ? "periodic" : "parallel",
                         T,
                         bo2,
+                        vector::zero,
                       - (T.T() & bo2),
                         slice2.procNum1()
                     );
@@ -284,14 +292,17 @@ void mesh::generateDomainBoundaries()
             forAll(p.facePtrs(), facej)
             if (&f == p.facePtrs()[facej])
             {
-                addBoundary
-                (
-                    p.name(),
-                    patches()[patchi].type() == patch::EMPTY
-                  ? "empty" : "domain",
-                    eye,
-                    offset
-                );
+                const word type =
+                    patches()[patchi].type() == patch::PATCH
+                  ? "domain"
+                  : patches()[patchi].typeName();
+
+                const vector mappingOffset =
+                    patches()[patchi].type() == patch::MAPPED
+                  ? vector(patches()[patchi].dict().lookup("offset"))
+                  : vector::zero;
+
+                addBoundary(p.name(), type, eye, offset, mappingOffset);
 
                 goto found;
             }
@@ -511,7 +522,7 @@ void mesh::setEmptyBoundaryOffsets()
 void mesh::setBoundaryLabels()
 {
     // Initialize edge and vertex master label to -1 as their corresponding
-    // boundaries may not exist
+    // boundaries may not exist. Face boundary is master by default.
 
     faceBoundaryMasterPerProc_.resize
     (
@@ -560,8 +571,9 @@ void mesh::setBoundaryLabels()
         {
             const label facei = faceNumber(b.offset());
 
-            faceBoundaryMasterPerProc_[Pstream::myProcNo()][facei] =
-                b.master();
+            if (b.castable<parallelBoundary>())
+                faceBoundaryMasterPerProc_[Pstream::myProcNo()][facei] =
+                    b.cast<parallelBoundary>().master();
 
             faceBoundaryTypePerProc_[Pstream::myProcNo()][facei] =
                 b.typeNum();
@@ -570,8 +582,9 @@ void mesh::setBoundaryLabels()
         {
             const label edgei = edgeNumber(b.offset());
 
-            edgeBoundaryMasterPerProc_[Pstream::myProcNo()][edgei] =
-                b.master();
+            if (b.castable<parallelBoundary>())
+                edgeBoundaryMasterPerProc_[Pstream::myProcNo()][edgei] =
+                    b.cast<parallelBoundary>().master();
 
             edgeBoundaryTypePerProc_[Pstream::myProcNo()][edgei] =
                 b.typeNum();
@@ -580,8 +593,9 @@ void mesh::setBoundaryLabels()
         {
             const label vertexi = vertexNumber(b.offset());
 
-            vertexBoundaryMasterPerProc_[Pstream::myProcNo()][vertexi] =
-                b.master();
+            if (b.castable<parallelBoundary>())
+                vertexBoundaryMasterPerProc_[Pstream::myProcNo()][vertexi] =
+                    b.cast<parallelBoundary>().master();
 
             vertexBoundaryTypePerProc_[Pstream::myProcNo()][vertexi] =
                 b.typeNum();
@@ -625,7 +639,7 @@ void mesh::reorderBoundaries()
 
     int j = 0;
 
-    // Domain boundaries
+    // Domain/mapped boundaries
 
     forAll(boundaries_, i)
         if (boundaries_[i].castable<domainBoundary>())

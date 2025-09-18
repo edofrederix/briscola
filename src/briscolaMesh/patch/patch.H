@@ -24,10 +24,11 @@ public:
     {
         PATCH,
         PERIODIC,
+        MAPPED,
         EMPTY
     };
 
-    static const NamedEnum<patchType,3> patchTypeNames;
+    static const NamedEnum<patchType,4> patchTypeNames;
 
 private:
 

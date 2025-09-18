@@ -38,6 +38,7 @@ decompositions/brickDecompositionInterface/brickDecompositionSlice.C
 boundaries/boundary/boundary.C
 boundaries/parallelBoundary/parallelBoundary.C
 boundaries/periodicBoundary/periodicBoundary.C
+boundaries/mappedBoundary/mappedBoundary.C
 boundaries/domainBoundary/domainBoundary.C
 boundaries/emptyBoundary/emptyBoundary.C
 

@@ -72,6 +72,7 @@ class mesh
         const word type,
         const labelTensor T,
         const labelVector offset,
+        const vector mappedOffset = vector::zero,
         const labelVector neighborOffset = zeroXYZ,
         const label neighborProcNum = -1
     );
