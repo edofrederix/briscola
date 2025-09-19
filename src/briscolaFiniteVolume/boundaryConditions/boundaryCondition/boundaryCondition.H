@@ -95,14 +95,6 @@ public:
         const meshField<Type,MeshType>& field
     ) const = 0;
 
-    // Selector for given type
-    static autoPtr<boundaryCondition<Type,MeshType>> New
-    (
-        const meshField<Type,MeshType>&,
-        const boundary&,
-        const word
-    );
-
     // Selector which determines type based on the provided boundary type
     static autoPtr<boundaryCondition<Type,MeshType>> New
     (

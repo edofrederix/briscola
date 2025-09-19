@@ -33,9 +33,9 @@ void LSGIR::createBoundaryType()
                     aux =
                         i == 0
                       ? aux && faceType.left()
-                      > domainBoundary::typeNumber
+                      > patchBoundary::typeNumber
                       : aux && faceType.right()
-                      > domainBoundary::typeNumber;
+                      > patchBoundary::typeNumber;
                 }
 
                 if ((fvMsh_[0].m() > 1) && (j != 1))
@@ -43,9 +43,9 @@ void LSGIR::createBoundaryType()
                     aux =
                         j == 0
                       ? aux && faceType.bottom()
-                      > domainBoundary::typeNumber
+                      > patchBoundary::typeNumber
                       : aux && faceType.top()
-                      > domainBoundary::typeNumber;
+                      > patchBoundary::typeNumber;
                 }
 
                 if ((fvMsh_[0].n() > 1) && (k != 1))
@@ -53,9 +53,9 @@ void LSGIR::createBoundaryType()
                     aux =
                         k == 0
                       ? aux && faceType.aft()
-                      > domainBoundary::typeNumber
+                      > patchBoundary::typeNumber
                       : aux && faceType.fore()
-                      > domainBoundary::typeNumber;
+                      > patchBoundary::typeNumber;
                 }
 
                 boundaryType_[i][j][k] = aux;

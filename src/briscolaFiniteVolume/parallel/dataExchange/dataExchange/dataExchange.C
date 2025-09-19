@@ -1,5 +1,5 @@
 #include "dataExchange.H"
-#include "domainBoundary.H"
+#include "patchBoundary.H"
 
 namespace Foam
 {

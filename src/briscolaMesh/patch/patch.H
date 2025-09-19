@@ -32,8 +32,8 @@ public:
 
 private:
 
-    // Patch dictionary
-    const dictionary* dictPtr_;
+    // Copy of the patch dictionary
+    const dictionary dict_;
 
     // Name of the patch
     const word name_;
@@ -92,7 +92,7 @@ public:
     // Access to the patch dictionary
     inline const dictionary& dict() const
     {
-        return *dictPtr_;
+        return dict_;
     }
 
     // Access to the list of face pointers

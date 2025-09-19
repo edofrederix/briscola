@@ -5,7 +5,7 @@
 #include "rectilinearMesh.H"
 #include "uniformMesh.H"
 
-#include "domainBoundary.H"
+#include "patchBoundary.H"
 #include "emptyBoundary.H"
 #include "parallelBoundary.H"
 #include "periodicBoundary.H"
@@ -48,10 +48,7 @@ void mesh::addBoundary
     if (neighborProcNum >= 0)
         dict.add("neighborProcNum", neighborProcNum);
 
-    boundaries_.append
-    (
-        boundary::New(*this, dict)
-    );
+    boundaries_.append(boundary::New(*this, dict));
 }
 
 void mesh::generateBrickInternalBoundaries()
@@ -266,55 +263,100 @@ void mesh::generateLinkBoundaries(const brickLink& link)
     }
 }
 
-void mesh::generateDomainBoundaries()
+void mesh::generatePatchBoundaries()
 {
-    // All face boundaries that are not yet set must be part of a domain
-    // boundary
+    // Loop over all patches and find the corresponding brick face. If not
+    // found, the faces of this part are not part of the patch and we set a fake
+    // patch boundary associated with the patch, with a zero boundary offset.
+    // This is needed to enable global parallel operations on patch boundaries.
 
-    for (label facei = 0; facei < 6; facei++)
+    const label brickNum = decomp().myBrickNum();
+    const brick& b = bricks()[brickNum];
+
+    forAll(patches(), patchi)
+    if (patches()[patchi].type() != patch::PERIODIC)
     {
-        const labelVector offset = faceOffsets[facei];
-        const label brickNum = decomp().myBrickNum();
-        const brick& b = bricks()[brickNum];
-        const face& f = b.faces()[facei];
+        const patch& p = patches()[patchi];
 
-        forAll(boundaries_, bi)
-        if (boundaries_[bi].offset() == offset)
-        {
-            goto found;
-        }
+        bool found = false;
 
-        forAll(patches(), patchi)
-        if (patches()[patchi].type() != patch::PERIODIC)
+        // Multiple faces can belong to the same boundary, so don't break the
+        // loop after finding a matching face.
+
+        forAll(b.faces(), facei)
         {
-            const patch& p = patches()[patchi];
+            const face& fi = b.faces()[facei];
+
+            // Skip faces that are already assigned to a boundary
+
+            bool assigned = false;
+            forAll(boundaries_, i)
+                if (boundaries_[i].offset() == faceOffsets[facei])
+                    assigned = true;
+
+            if (assigned)
+                continue;
 
             forAll(p.facePtrs(), facej)
-            if (&f == p.facePtrs()[facej])
             {
-                const word type =
-                    patches()[patchi].type() == patch::PATCH
-                  ? "domain"
-                  : patches()[patchi].typeName();
+                const face& fj = *p.facePtrs()[facej];
 
-                const vector mappingOffset =
-                    patches()[patchi].type() == patch::MAPPED
-                  ? vector(patches()[patchi].dict().lookup("offset"))
-                  : vector::zero;
+                if (&fi == &fj)
+                {
+                    addBoundary
+                    (
+                        p.name(),
+                        patches()[patchi].typeName(),
+                        eye,
+                        faceOffsets[facei],
+                        p.dict().lookupOrDefault("offset",vector::zero)
+                    );
 
-                addBoundary(p.name(), type, eye, offset, mappingOffset);
-
-                goto found;
+                    found = true;
+                }
             }
         }
 
-        FatalErrorInFunction
-            << "Could not find the patch to which face " << facei
-            << " of processor " << Pstream::myProcNo()
-            << " belongs to."
-            << endl << abort(FatalError);
+        if (!found)
+        {
+            addBoundary
+            (
+                p.name(),
+                patches()[patchi].typeName(),
+                eye,
+                zeroXYZ,
+                p.dict().lookupOrDefault("offset",vector::zero)
+            );
+        }
+    }
 
-        found:;
+    // By now, all faces must have one and only one boundary associated with
+    // them. Check.
+
+    forAll(b.faces(), facei)
+    {
+        label count = 0;
+        forAll(boundaries_, j)
+            if (faceOffsets[facei] == boundaries_[j].offset())
+                count++;
+
+        if (count < 1)
+        {
+            FatalErrorInFunction
+                << "Could not find the patch to which face " << facei
+                << " belongs." << endl << abort(FatalError);
+        }
+
+        if (count > 1)
+        {
+            forAll(boundaries_, j)
+                Info<< boundaries_[j].offset() << endl;
+
+            std::exit(-1);
+            FatalErrorInFunction
+                << "Face " << facei << " is associated with "
+                << count << " boundaries." << endl << abort(FatalError);
+        }
     }
 }
 
@@ -456,8 +498,7 @@ void mesh::setCommTags()
         boundary& b = boundaries_[bi];
 
         if (b.castable<parallelBoundary>())
-            const_cast<parallelBoundary&>(b.cast<parallelBoundary>())
-           .setTag(myTags[c++]);
+            b.cast<parallelBoundary>().setTag(myTags[c++]);
     }
 }
 
@@ -467,6 +508,7 @@ void mesh::setBoundaryExtension()
     vertexPatchExtension_ = Zero;
 
     forAll(boundaries_, i)
+    if (boundaries_[i].offsetDegree() > 0)
     {
         const boundary& b = boundaries_[i];
 
@@ -567,7 +609,15 @@ void mesh::setBoundaryLabels()
     {
         const boundary& b = boundaries_[i];
 
-        if (b.offsetDegree() == 1)
+        // Boundaries with zero offset degree are fake patch boundaries. They
+        // are not associated with a face, edge or vertex number so they don't
+        // need to be treated.
+
+        if (b.offsetDegree() == 0)
+        {
+            continue;
+        }
+        else if (b.offsetDegree() == 1)
         {
             const label facei = faceNumber(b.offset());
 
@@ -623,7 +673,7 @@ void mesh::generateBoundaries()
 {
     generateBrickInternalBoundaries();
     generateBrickExternalBoundaries();
-    generateDomainBoundaries();
+    generatePatchBoundaries();
 
     reorderBoundaries();
 
@@ -639,10 +689,10 @@ void mesh::reorderBoundaries()
 
     int j = 0;
 
-    // Domain/mapped boundaries
+    // Patch boundaries
 
     forAll(boundaries_, i)
-        if (boundaries_[i].castable<domainBoundary>())
+        if (boundaries_[i].castable<patchBoundary>())
             oldToNew[i] = j++;
 
     // Parallel/periodic boundaries

@@ -22,10 +22,7 @@ boundary::boundary(const mesh& msh, const dictionary& dict)
     dict_(dict),
     name_(dict.lookup("name")),
     offset_(dict.lookup("offset")),
-    offsetDegree_
-    (
-        cmptSum(cmptMag(offset_))
-    ),
+    offsetDegree_(cmptSum(cmptMag(offset_))),
     extension_(Zero)
 {}
 

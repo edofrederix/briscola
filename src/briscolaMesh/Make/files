@@ -39,7 +39,7 @@ boundaries/boundary/boundary.C
 boundaries/parallelBoundary/parallelBoundary.C
 boundaries/periodicBoundary/periodicBoundary.C
 boundaries/mappedBoundary/mappedBoundary.C
-boundaries/domainBoundary/domainBoundary.C
+boundaries/patchBoundary/patchBoundary.C
 boundaries/emptyBoundary/emptyBoundary.C
 
 partPoints/partPoints.C

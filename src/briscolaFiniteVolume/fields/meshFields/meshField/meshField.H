@@ -352,8 +352,8 @@ public:
             ->correctBoundaryConditions();
     }
 
-    // Correct domain boundary conditions
-    void correctDomainBoundaryConditions();
+    // Correct patch boundary conditions
+    void correctPatchBoundaryConditions();
 
     // Correct empty boundary conditions
     void correctEmptyBoundaryConditions();

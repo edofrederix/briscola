@@ -43,15 +43,15 @@ patch::patch
 )
 :
     meshObject<geometry>(g, num),
-    dictPtr_(&dict),
+    dict_(dict),
     name_(name),
     type_
     (
-        patchTypeNames.read(dict.lookup("type"))
+        patchTypeNames.read(dict_.lookup("type"))
     ),
     facePtrs_()
 {
-    const List<labelList> vertexNumList(dict.lookup("faces"));
+    const List<labelList> vertexNumList(dict_.lookup("faces"));
 
     if (vertexNumList.size() == 0)
     {
@@ -126,7 +126,7 @@ patch::patch
 )
 :
     meshObject<geometry>(g, num),
-    dictPtr_(nullptr),
+    dict_(),
     name_(name),
     type_(PATCH),
     facePtrs_(facePtrs)
@@ -134,16 +134,13 @@ patch::patch
     checkConsistency();
 }
 
-patch::patch
-(
-    const patch& p
-)
+patch::patch(const patch& p)
 :
-    meshObject<geometry>(p.parentGeometry(), p.num()),
-    dictPtr_(&p.dict()),
-    name_(p.name()),
-    type_(p.type()),
-    facePtrs_(p.facePtrs())
+    meshObject<geometry>(p),
+    dict_(p.dict_),
+    name_(p.name_),
+    type_(p.type_),
+    facePtrs_(p.facePtrs_)
 {}
 
 patch::~patch()

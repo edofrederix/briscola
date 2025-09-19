@@ -1,7 +1,7 @@
 #ifndef mappedBoundary_H
 #define mappedBoundary_H
 
-#include "domainBoundary.H"
+#include "patchBoundary.H"
 
 namespace Foam
 {
@@ -11,7 +11,7 @@ namespace briscola
 
 class mappedBoundary
 :
-    public domainBoundary
+    public patchBoundary
 {
     // Mapping offset
     vector mappingOffset_;

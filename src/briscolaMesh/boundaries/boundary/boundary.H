@@ -84,6 +84,23 @@ public:
 
     // Cast to derived type, if possible. Returns error otherwise.
     template<class BoundaryType>
+    inline BoundaryType& cast()
+    {
+        BoundaryType* bPtr = dynamic_cast<BoundaryType*>(this);
+
+        if (!bPtr)
+        {
+            FatalErrorInFunction
+                << "Boundary cannot be cast to " << BoundaryType::typeName
+                << " because it is " << this->type()
+                << abort(FatalError);
+        }
+
+        return *bPtr;
+    }
+
+    // Cast to derived const type, if possible. Returns error otherwise.
+    template<class BoundaryType>
     inline const BoundaryType& cast() const
     {
         const BoundaryType* bPtr = dynamic_cast<const BoundaryType*>(this);

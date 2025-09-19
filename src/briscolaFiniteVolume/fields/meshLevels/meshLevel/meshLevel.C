@@ -5,7 +5,7 @@
 #include "boundaryCondition.H"
 #include "immersedBoundaryCondition.H"
 
-#include "domainBoundary.H"
+#include "patchBoundary.H"
 #include "parallelBoundary.H"
 #include "periodicBoundary.H"
 #include "emptyBoundary.H"
@@ -329,7 +329,7 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions()
             this->correctImmersedBoundaryConditions();
 
         this->correctUnsetBoundaryConditions();
-        this->correctDomainBoundaryConditions();
+        this->correctPatchBoundaryConditions();
         this->correctCommsBoundaryConditions();
         this->correctEmptyBoundaryConditions();
     }
@@ -362,7 +362,7 @@ void meshLevel<Type,MeshType>::correctUnsetBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctDomainBoundaryConditions()
+void meshLevel<Type,MeshType>::correctPatchBoundaryConditions()
 {
     if (mshFieldPtr_)
     {
@@ -375,7 +375,7 @@ void meshLevel<Type,MeshType>::correctDomainBoundaryConditions()
 
             const boundary& b = bc.mshBoundary();
 
-            if (b.castable<domainBoundary>())
+            if (b.castable<patchBoundary>())
             {
                 bc.evaluate(l_);
             }
@@ -570,7 +570,7 @@ void meshLevel<Type,MeshType>::correctNonEliminatedBoundaryConditions()
     {
         this->addBoundaryConditions();
 
-        // First non-eliminated domain boundaries
+        // First non-eliminated patch boundaries
 
         forAll(mshFieldPtr_->boundaryConditions(), i)
         {
@@ -579,7 +579,7 @@ void meshLevel<Type,MeshType>::correctNonEliminatedBoundaryConditions()
 
             const boundary& b = bc.mshBoundary();
 
-            if (!bc.eliminated() && b.castable<domainBoundary>())
+            if (!bc.eliminated() && b.castable<patchBoundary>())
             {
                 bc.evaluate(l_);
             }
@@ -601,7 +601,7 @@ void meshLevel<Type,MeshType>::correctNonEliminatedBoundaryConditions()
             if
             (
                 !bc.eliminated()
-             && !b.castable<domainBoundary>()
+             && !b.castable<patchBoundary>()
              && !b.castable<parallelBoundary>()
             )
             {

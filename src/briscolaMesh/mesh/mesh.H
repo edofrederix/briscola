@@ -86,23 +86,23 @@ class mesh
     // Generate link boundaries from brick link
     void generateLinkBoundaries(const brickLink&);
 
-    // Generate domain boundaries
-    void generateDomainBoundaries();
+    // Generate patch boundaries
+    void generatePatchBoundaries();
 
     // Generate boundaries
     void generateBoundaries();
 
     // Reorder boundaries in the order:
     //
-    //  1) domain boundaries,
+    //  1) patch/mapped boundaries,
     //  2) parallel/periodic faces,
     //  3) parallel/periodic edges,
     //  4) parallel/periodic vertices and
     //  5) empty boundaries.
     //
     //  This order is important, so that parallel boundary conditions can copy
-    //  domain boundaries and empty boundaries can copy both domain and
-    //  parallel/periodic boundaries.
+    //  patch/mapped boundaries and empty boundaries can copy both patch/mapped
+    //  and parallel/periodic boundaries.
     void reorderBoundaries();
 
     // Set communication tags in parallel and periodic boundaries. Tags avoid

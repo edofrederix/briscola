@@ -33,7 +33,7 @@ void SHF::setCommunication()
 
         // On parallel/periodic boundaries only
 
-        if (boundaryType[f] > domainBoundary::typeNumber)
+        if (boundaryType[f] > patchBoundary::typeNumber)
         {
             faceLabel J(I.lower() - unitXYZ, I.upper() + unitXYZ);
 

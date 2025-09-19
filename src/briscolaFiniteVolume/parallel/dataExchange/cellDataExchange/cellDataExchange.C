@@ -1,5 +1,5 @@
 #include "cellDataExchange.H"
-#include "domainBoundary.H"
+#include "patchBoundary.H"
 
 namespace Foam
 {
@@ -140,7 +140,7 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
             if
             (
-                msh.boundaries()[bNum-1].castable<domainBoundary>()
+                msh.boundaries()[bNum-1].castable<patchBoundary>()
              || msh.boundaries()[bNum-1].castable<emptyBoundary>()
             )
                 FatalErrorInFunction

@@ -1,5 +1,5 @@
-#ifndef domainBoundary_H
-#define domainBoundary_H
+#ifndef patchBoundary_H
+#define patchBoundary_H
 
 #include "boundary.H"
 
@@ -9,12 +9,12 @@ namespace Foam
 namespace briscola
 {
 
-class domainBoundary
+class patchBoundary
 :
     public boundary
 {
     // Disallow default bitwise assignment
-    void operator=(const domainBoundary&);
+    void operator=(const patchBoundary&);
 
 public:
 
@@ -22,18 +22,18 @@ public:
     const static label typeNumber;
 
     // Runtime type information
-    TypeName("domain");
+    TypeName("patch");
 
     // Construct from components
-    domainBoundary(const mesh& msh, const dictionary& dict);
+    patchBoundary(const mesh& msh, const dictionary& dict);
 
     // Copy constructor
-    domainBoundary(const domainBoundary&);
+    patchBoundary(const patchBoundary&);
 
     // Clone boundary
     virtual autoPtr<boundary> clone() const
     {
-        return autoPtr<boundary>(new domainBoundary(*this));
+        return autoPtr<boundary>(new patchBoundary(*this));
     }
 
     // Boundary type number

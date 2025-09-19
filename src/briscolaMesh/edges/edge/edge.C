@@ -61,7 +61,7 @@ edge::edge
 
 edge::edge(const edge& e)
 :
-    meshObject<face>(e.parentFace(), e.num()),
+    meshObject<face>(e),
     v_(e.v_),
     N_(e.N_),
     vertices_(e.vertices_, *this)

@@ -63,12 +63,9 @@ face::face
     }
 }
 
-face::face
-(
-    const face& f
-)
+face::face(const face& f)
 :
-    meshObject<brick>(f.parentBrick(), f.num()),
+    meshObject<brick>(f),
     v_(f.v_),
     N_(f.N_),
     edges_(f.edges_, *this)

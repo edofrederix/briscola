@@ -36,9 +36,9 @@ void LSFIR::createBoundaryTypes()
                     aux2 =
                         i == 0
                       ? aux2 && faceType.left()
-                      > domainBoundary::typeNumber
+                      > patchBoundary::typeNumber
                       : aux2 && faceType.right()
-                      > domainBoundary::typeNumber;
+                      > patchBoundary::typeNumber;
                 }
 
                 if (j != 1)
@@ -46,9 +46,9 @@ void LSFIR::createBoundaryTypes()
                     aux2 =
                         j == 0
                       ? aux2 && faceType.bottom()
-                      > domainBoundary::typeNumber
+                      > patchBoundary::typeNumber
                       : aux2 && faceType.top()
-                      > domainBoundary::typeNumber;
+                      > patchBoundary::typeNumber;
                 }
 
                 if (k != 1)
@@ -56,9 +56,9 @@ void LSFIR::createBoundaryTypes()
                     aux2 =
                         k == 0
                       ? aux2 && faceType.aft()
-                      > domainBoundary::typeNumber
+                      > patchBoundary::typeNumber
                       : aux2 && faceType.fore()
-                      > domainBoundary::typeNumber;
+                      > patchBoundary::typeNumber;
                 }
 
                 boundaryTypeLSFIR_[i][j][k] = aux2;
