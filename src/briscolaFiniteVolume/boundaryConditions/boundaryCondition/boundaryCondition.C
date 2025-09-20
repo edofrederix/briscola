@@ -83,7 +83,7 @@ autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
           ? word
             (
                 mshField.subDict("boundaryConditions")
-               .subDict(b.name()).lookup("type")
+               .subDict(IOobject::member(b.name())).lookup("type")
             )
           : word("dummy");
     }

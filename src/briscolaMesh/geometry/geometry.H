@@ -41,6 +41,10 @@ class geometry
     // Create the default patch (requires topology to be set)
     void createDefaultPatch();
 
+    /// Add given patch and possibly split up the patch if it has faces that
+    /// share the same brick
+    void addPatch(const patch& p);
+
     // Create patch pairs
     void createPatchPairs();
 

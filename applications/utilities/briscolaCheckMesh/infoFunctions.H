@@ -154,7 +154,7 @@ void patchInfo(const fvMesh& fvMsh)
         const patch& p = fvMsh.msh().patches()[patchi];
 
         Info<< "    Patch " << p.name() << " is of type "
-            << p.typeName() << " and has "
+            << p.type() << " and has "
             << p.facePtrs().size() << " brick faces:" << endl;
 
         forAll(p.facePtrs(), facei)

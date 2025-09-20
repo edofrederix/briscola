@@ -130,6 +130,16 @@ public:
           + triArea(v3(), v2(), v1());
     }
 
+    // Return list of vertices
+    inline labelList vertexList() const
+    {
+        labelList vertices;
+        forAllBlockLinear(v_, i)
+            vertices.append(v_(i));
+
+        return vertices;
+    }
+
     // Equality operator
     bool operator==(const face&) const;
 

@@ -4,7 +4,7 @@
 #include "structuredMesh.H"
 #include "rectilinearMesh.H"
 #include "uniformMesh.H"
-
+#include "periodicPatch.H"
 #include "patchBoundary.H"
 #include "emptyBoundary.H"
 #include "parallelBoundary.H"
@@ -274,7 +274,7 @@ void mesh::generatePatchBoundaries()
     const brick& b = bricks()[brickNum];
 
     forAll(patches(), patchi)
-    if (patches()[patchi].type() != patch::PERIODIC)
+    if (!patches()[patchi].castable<periodicPatch>())
     {
         const patch& p = patches()[patchi];
 
@@ -306,7 +306,7 @@ void mesh::generatePatchBoundaries()
                     addBoundary
                     (
                         p.name(),
-                        patches()[patchi].typeName(),
+                        patches()[patchi].type(),
                         eye,
                         faceOffsets[facei],
                         p.dict().lookupOrDefault("offset",vector::zero)
@@ -322,7 +322,7 @@ void mesh::generatePatchBoundaries()
             addBoundary
             (
                 p.name(),
-                patches()[patchi].typeName(),
+                patches()[patchi].type(),
                 eye,
                 zeroXYZ,
                 p.dict().lookupOrDefault("offset",vector::zero)
