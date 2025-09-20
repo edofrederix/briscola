@@ -96,6 +96,12 @@ public:
         List<tetra>(tets)
     {}
 
+    // Assignment
+    inline void operator=(const tessellation& t)
+    {
+        static_cast<List<tetra>&>(*this) = t;
+    }
+
     // Compute the center as the volume average of the tet centers
     inline vector center() const
     {
