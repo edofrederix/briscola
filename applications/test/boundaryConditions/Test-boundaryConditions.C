@@ -44,7 +44,7 @@ void testDirichlet(const fvMesh& fvMsh)
 
         const labelVector bo(bcd.offset());
 
-        if (bcd.offsetDegree() > 1)
+        if (bcd.offsetDegree() != 1)
         {
             continue;
         }
@@ -133,7 +133,7 @@ void testNeumann(const fvMesh& fvMsh)
 
         const labelVector bo(bcd.offset());
 
-        if (bcd.offsetDegree() > 1)
+        if (bcd.offsetDegree() != 1)
         {
             continue;
         }

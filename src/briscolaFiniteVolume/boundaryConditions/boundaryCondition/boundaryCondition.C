@@ -29,8 +29,8 @@ boundaryCondition<Type,MeshType>::boundaryCondition
     dict_
     (
         mshField_.found("boundaryConditions")
-     && mshField_.subDict("boundaryConditions").found(b_.name())
-      ? mshField_.subDict("boundaryConditions").subDict(b_.name())
+     && mshField_.subDict("boundaryConditions").found(IOobject::member(b_.name()))
+      ? mshField_.subDict("boundaryConditions").subDict(IOobject::member(b_.name()))
       : dictionary::null
     )
 {}

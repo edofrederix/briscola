@@ -185,7 +185,7 @@ void geometry::addPatch(const patch& p)
                     *this,
                     patches_.size(),
                     name,
-                    p.dict()
+                    dict
                 )
             );
         }

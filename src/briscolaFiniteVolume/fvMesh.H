@@ -135,6 +135,20 @@ public:
 
     //~ Return the start point of the internal cell boundary at given offset
 
+    inline void checkBoundaryOffset(const labelVector& bo) const
+    {
+        if
+        (
+            cmptMax(bo) > 1
+         || cmptMin(bo) < -1
+         || cmptSum(cmptMag(bo)) < 1
+         || cmptSum(cmptMag(bo)) > 3
+        )
+            FatalErrorInFunction
+                << "Invalid boundary offset"
+                << endl << abort(FatalError);
+    }
+
     template<class MeshType>
     inline labelVector S
     (
@@ -143,6 +157,8 @@ public:
         const labelVector& bo
     ) const
     {
+        checkBoundaryOffset(bo);
+
         const faceLabel& I = this->I<MeshType>(l,d);
 
         labelVector S(I.lower());
@@ -176,6 +192,8 @@ public:
         const labelVector& bo
     ) const
     {
+        checkBoundaryOffset(bo);
+
         const faceLabel& I = this->I<MeshType>(l,d);
 
         labelVector E(I.upper());
