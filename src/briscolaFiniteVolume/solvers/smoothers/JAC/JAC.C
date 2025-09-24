@@ -75,6 +75,7 @@ void JAC<SType,Type,MeshType>::JAC::Smooth
     }
 
     x.correctEliminatedBoundaryConditions();
+    x.correctUnsetBoundaryConditions();
 }
 
 template<class SType, class Type, class MeshType>

@@ -190,15 +190,13 @@ void splitAdvection::solve(const colocatedFaceScalarField& phi)
     const scalar dt = fvMsh_.time().deltaT().value();
     const label ti = fvMsh_.time().timeIndex();
 
-    const faceLabel boundaryType(this->fvMsh_.msh().faceBoundaryType());
-
     for (int d = 0; d < 3; d++)
     {
         const label dir = (ti + d) % 3;
 
         // Skip empty directions
 
-        if (boundaryType[dir*2] != emptyBoundary::typeNumber)
+        if (!fvMsh_.msh().b(units[dir]).castable<emptyBoundary>())
         {
             this->updateFlux(phi, dir);
 

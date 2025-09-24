@@ -29,25 +29,8 @@ class mesh
     // This processor's boundaries
     PtrList<boundary> boundaries_;
 
-    // Boundary master face labels, indicating for each processor which face
-    // boundaries are master. Orientation is processor-specific.
-    List<faceLabel> faceBoundaryMasterPerProc_;
-    List<edgeLabel> edgeBoundaryMasterPerProc_;
-    List<vertexLabel> vertexBoundaryMasterPerProc_;
-
-    // Boundary type face labels, indicating for each processor the type of the
-    // face boundaries. Orientation is processor-specific.
-    List<faceLabel> faceBoundaryTypePerProc_;
-    List<edgeLabel> edgeBoundaryTypePerProc_;
-    List<vertexLabel> vertexBoundaryTypePerProc_;
-
-    // Patch extension labels
-    edgeLabel edgePatchExtension_;
-    vertexLabel vertexPatchExtension_;
-
-    // List of empty boundary offsets, which are boundary offsets in which no
-    // boundary is present
-    List<labelVector> emptyPatchOffsets_;
+    // Mask to keep track of set boundaries
+    labelBlock setBoundaryMask_;
 
     // Bool to check if mesh is structured or unstructured. If the brick
     // topology is structured, so is the mesh.
@@ -92,6 +75,9 @@ class mesh
     // Generate boundaries
     void generateBoundaries();
 
+    // Set boundary mask
+    void setBoundaryMask();
+
     // Reorder boundaries in the order:
     //
     //  1) patch/mapped boundaries,
@@ -108,9 +94,6 @@ class mesh
     // Set communication tags in parallel and periodic boundaries. Tags avoid
     // inconsistent communication.
     void setCommTags();
-
-    // Set boundary master and type label lists
-    void setBoundaryLabels();
 
     // Set boundary extension labels
     void setBoundaryExtension();
@@ -196,113 +179,23 @@ public:
         return boundaries_;
     }
 
-    // Const access to the boundary master label lists
-
-    inline const List<faceLabel>& faceBoundaryMasterPerProc() const
+    // Get boundary from offset vector
+    inline const boundary& b(const labelVector& bo) const
     {
-        return faceBoundaryMasterPerProc_;
+        forAll(boundaries_, i)
+            if (boundaries_[i].offset() == bo)
+                return boundaries_[i];
+
+        FatalErrorInFunction
+            << "Invalid boundary offset" << endl << abort(FatalError);
+
+        return boundaries_[0];
     }
 
-    inline const List<edgeLabel>& edgeBoundaryMasterPerProc() const
+    // Return the set boundary mask
+    inline const labelBlock& setBoundaryMask() const
     {
-        return edgeBoundaryMasterPerProc_;
-    }
-
-    inline const List<vertexLabel>& vertexBoundaryMasterPerProc() const
-    {
-        return vertexBoundaryMasterPerProc_;
-    }
-
-    // Const access to the boundary type label list
-
-    inline const List<faceLabel>& faceBoundaryTypePerProc() const
-    {
-        return faceBoundaryTypePerProc_;
-    }
-
-    inline const List<edgeLabel>& edgeBoundaryTypePerProc() const
-    {
-        return edgeBoundaryTypePerProc_;
-    }
-
-    inline const List<vertexLabel>& vertexBoundaryTypePerProc() const
-    {
-        return vertexBoundaryTypePerProc_;
-    }
-
-    // Return this processor's boundary master labels
-
-    inline const faceLabel& faceBoundaryMaster() const
-    {
-        return faceBoundaryMasterPerProc_[Pstream::myProcNo()];
-    }
-
-    inline const edgeLabel& edgeBoundaryMaster() const
-    {
-        return edgeBoundaryMasterPerProc_[Pstream::myProcNo()];
-    }
-
-    inline const vertexLabel& vertexBoundaryMaster() const
-    {
-        return vertexBoundaryMasterPerProc_[Pstream::myProcNo()];
-    }
-
-    // Return this processor's boundary slave face label
-
-    inline faceLabel facePatchSlave() const
-    {
-        return
-            pTraits<faceLabel>::one
-          - faceBoundaryMasterPerProc_[Pstream::myProcNo()];
-    }
-
-    inline edgeLabel edgePatchSlave() const
-    {
-        return
-            pTraits<edgeLabel>::one
-          - edgeBoundaryMasterPerProc_[Pstream::myProcNo()];
-    }
-
-    inline vertexLabel vertexPatchSlave() const
-    {
-        return
-            pTraits<vertexLabel>::one
-          - vertexBoundaryMasterPerProc_[Pstream::myProcNo()];
-    }
-
-    // Return this processor's boundary type face label
-
-    inline const faceLabel& faceBoundaryType() const
-    {
-        return faceBoundaryTypePerProc_[Pstream::myProcNo()];
-    }
-
-    inline const edgeLabel& edgeBoundaryType() const
-    {
-        return edgeBoundaryTypePerProc_[Pstream::myProcNo()];
-    }
-
-    inline const vertexLabel& vertexBoundaryType() const
-    {
-        return vertexBoundaryTypePerProc_[Pstream::myProcNo()];
-    }
-
-    // Return boundary extension
-
-    inline const edgeLabel& edgePatchExtension() const
-    {
-        return edgePatchExtension_;
-    }
-
-    inline const vertexLabel& vertexPatchExtension() const
-    {
-        return vertexPatchExtension_;
-    }
-
-    // Return the list of empty boundary offsets
-    inline const List<labelVector>& emptyPatchOffsets() const
-    {
-        return emptyPatchOffsets_;
+        return setBoundaryMask_;
     }
 
     // Structured mesh bool

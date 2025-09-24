@@ -342,9 +342,13 @@ void meshLevel<Type,MeshType>::correctUnsetBoundaryConditions()
     {
         meshDirection<Type,MeshType>& field = listType::operator[](d);
 
-        forAll(fvMsh_.msh().emptyPatchOffsets(), i)
+        forAllBlock(fvMsh_.msh().setBoundaryMask(), i, j, k)
+        if (!fvMsh_.msh().setBoundaryMask()(i,j,k))
         {
-            const labelVector bo(fvMsh_.msh().emptyPatchOffsets()[i]);
+            if (labelVector(i,j,k) == unitXYZ)
+                continue;
+
+            const labelVector bo(labelVector(i,j,k) - unitXYZ);
 
             const labelVector S(fvMsh_.template S<MeshType>(l_,d,bo));
             const labelVector E(fvMsh_.template E<MeshType>(l_,d,bo));

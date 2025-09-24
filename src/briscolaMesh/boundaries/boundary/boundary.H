@@ -32,6 +32,11 @@ protected:
     // boundary offset vector
     label offsetDegree_;
 
+    // Master bool. Boundaries that require communication can be master or
+    // slave. By default a boundary is master. Can be modified by derived
+    // classes.
+    bool master_;
+
     // Extension of the boundary into other boundaries
     faceLabel extension_;
 
@@ -135,15 +140,16 @@ public:
         return offsetDegree_;
     }
 
+    // Master bool
+    inline bool master() const { return master_; }
+    inline bool slave() const { return !master_; }
+
     // Access to the extension face label
     inline faceLabel& extension() { return extension_; }
     inline const faceLabel& extension() const { return extension_; }
 
     // Check if the boundary is extended
     inline bool extended() const { return extension_ != faceLabel::zero; }
-
-    // Boundary type number
-    virtual label typeNum() const = 0;
 
     // Neighbor processor number
     virtual label neighborProcNum() const { return -1; }

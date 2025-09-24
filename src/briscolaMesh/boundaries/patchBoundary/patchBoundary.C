@@ -11,8 +11,6 @@ namespace briscola
 defineTypeNameAndDebug(patchBoundary, 0);
 addToRunTimeSelectionTable(boundary, patchBoundary, dictionary);
 
-const label patchBoundary::typeNumber = 2;
-
 patchBoundary::patchBoundary(const mesh& msh, const dictionary& dict)
 :
     boundary(msh, dict)

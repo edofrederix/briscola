@@ -502,173 +502,6 @@ void mesh::setCommTags()
     }
 }
 
-void mesh::setBoundaryExtension()
-{
-    edgePatchExtension_ = Zero;
-    vertexPatchExtension_ = Zero;
-
-    forAll(boundaries_, i)
-    if (boundaries_[i].offsetDegree() > 0)
-    {
-        const boundary& b = boundaries_[i];
-
-        //  Add edges to extended faces, and vertices to extended edges
-
-        for (int j = 0; j < 6; j++)
-        if (b.extension()[j] == 1)
-        {
-            const labelVector offset =
-                b.offset() + faceOffsets[j];
-
-            if (edgeNumber(offset) != -1)
-            {
-                edgePatchExtension_[edgeNumber(offset)] = 1;
-            }
-            else
-            {
-                vertexPatchExtension_[vertexNumber(offset)] = 1;
-            }
-        }
-
-        // Also add vertices for face boundaries extended in two directions
-
-        if (b.offsetDegree() == 1)
-        {
-            for (int j = 0; j < 5; j++)
-            for (int k = j+1; k < 6; k++)
-            if (b.extension()[j] == 1 && b.extension()[k] == 1)
-            {
-                const labelVector offset =
-                    b.offset() + faceOffsets[j] + faceOffsets[k];
-
-                if (vertexNumber(offset) != -1)
-                    vertexPatchExtension_[vertexNumber(offset)] = 1;
-            }
-        }
-    }
-}
-
-void mesh::setEmptyBoundaryOffsets()
-{
-    emptyPatchOffsets_.clear();
-
-    for (int i = 0; i < 12; i++)
-        if (edgeBoundaryType()[i] == -1 && edgePatchExtension()[i] == 0)
-            emptyPatchOffsets_.append(edgeOffsets[i]);
-
-    for (int i = 0; i < 8; i++)
-        if (vertexBoundaryType()[i] == -1 && vertexPatchExtension()[i] == 0)
-            emptyPatchOffsets_.append(vertexOffsets[i]);
-}
-
-void mesh::setBoundaryLabels()
-{
-    // Initialize edge and vertex master label to -1 as their corresponding
-    // boundaries may not exist. Face boundary is master by default.
-
-    faceBoundaryMasterPerProc_.resize
-    (
-        Pstream::nProcs(),
-        pTraits<faceLabel>::one
-    );
-
-    edgeBoundaryMasterPerProc_.resize
-    (
-        Pstream::nProcs(),
-      - pTraits<edgeLabel>::one
-    );
-
-    vertexBoundaryMasterPerProc_.resize
-    (
-        Pstream::nProcs(),
-      - pTraits<vertexLabel>::one
-    );
-
-    // Initialize edge and vertex boundary types to -1 as their corresponding
-    // boundaries may not exist
-
-    faceBoundaryTypePerProc_.resize
-    (
-        Pstream::nProcs(),
-        pTraits<faceLabel>::zero
-    );
-
-    edgeBoundaryTypePerProc_.resize
-    (
-        Pstream::nProcs(),
-      - pTraits<edgeLabel>::one
-    );
-
-    vertexBoundaryTypePerProc_.resize
-    (
-        Pstream::nProcs(),
-      - pTraits<vertexLabel>::one
-    );
-
-    forAll(boundaries_, i)
-    {
-        const boundary& b = boundaries_[i];
-
-        // Boundaries with zero offset degree are fake patch boundaries. They
-        // are not associated with a face, edge or vertex number so they don't
-        // need to be treated.
-
-        if (b.offsetDegree() == 0)
-        {
-            continue;
-        }
-        else if (b.offsetDegree() == 1)
-        {
-            const label facei = faceNumber(b.offset());
-
-            if (b.castable<parallelBoundary>())
-                faceBoundaryMasterPerProc_[Pstream::myProcNo()][facei] =
-                    b.cast<parallelBoundary>().master();
-
-            faceBoundaryTypePerProc_[Pstream::myProcNo()][facei] =
-                b.typeNum();
-        }
-        else if (b.offsetDegree() == 2)
-        {
-            const label edgei = edgeNumber(b.offset());
-
-            if (b.castable<parallelBoundary>())
-                edgeBoundaryMasterPerProc_[Pstream::myProcNo()][edgei] =
-                    b.cast<parallelBoundary>().master();
-
-            edgeBoundaryTypePerProc_[Pstream::myProcNo()][edgei] =
-                b.typeNum();
-        }
-        else
-        {
-            const label vertexi = vertexNumber(b.offset());
-
-            if (b.castable<parallelBoundary>())
-                vertexBoundaryMasterPerProc_[Pstream::myProcNo()][vertexi] =
-                    b.cast<parallelBoundary>().master();
-
-            vertexBoundaryTypePerProc_[Pstream::myProcNo()][vertexi] =
-                b.typeNum();
-        }
-    }
-
-    Pstream::gatherList(faceBoundaryMasterPerProc_);
-    Pstream::gatherList(edgeBoundaryMasterPerProc_);
-    Pstream::gatherList(vertexBoundaryMasterPerProc_);
-
-    Pstream::gatherList(faceBoundaryTypePerProc_);
-    Pstream::gatherList(edgeBoundaryTypePerProc_);
-    Pstream::gatherList(vertexBoundaryTypePerProc_);
-
-    Pstream::scatterList(faceBoundaryMasterPerProc_);
-    Pstream::scatterList(edgeBoundaryMasterPerProc_);
-    Pstream::scatterList(vertexBoundaryMasterPerProc_);
-
-    Pstream::scatterList(faceBoundaryTypePerProc_);
-    Pstream::scatterList(edgeBoundaryTypePerProc_);
-    Pstream::scatterList(vertexBoundaryTypePerProc_);
-}
-
 void mesh::generateBoundaries()
 {
     generateBrickInternalBoundaries();
@@ -678,9 +511,60 @@ void mesh::generateBoundaries()
     reorderBoundaries();
 
     setCommTags();
-    setBoundaryLabels();
-    setBoundaryExtension();
-    setEmptyBoundaryOffsets();
+    setBoundaryMask();
+}
+
+void mesh::setBoundaryMask()
+{
+    setBoundaryMask_.setSize(3,3,3);
+    setBoundaryMask_ = Zero;
+
+    // Set boundaries
+
+    forAll(boundaries_, i)
+        if (boundaries_[i].offsetDegree() > 0)
+            setBoundaryMask_(boundaries_[i].offset()+unitXYZ) = 1;
+
+    // Set edge boundaries for extended face boundaries, and vertex boundaries
+    // for extended edge boundaries
+
+    forAll(boundaries_, i)
+        if (boundaries_[i].extended())
+            for (int j = 0; j < 6; j++)
+                if (boundaries_[i].extension()[j])
+                    setBoundaryMask_
+                    (
+                        boundaries_[i].offset()
+                      + unitXYZ
+                      + faceOffsets[j]
+                    ) = 1;
+
+    // Also set vertex boundaries for face boundaries extended in two orthogonal
+    // directions
+
+    forAll(boundaries_, i)
+    if (boundaries_[i].extended() && boundaries_[i].offsetDegree() == 1)
+    {
+        const boundary& b = boundaries_[i];
+        const label f = faceNumber(b.offset());
+
+        // Cycle through orthogonal edge pairs
+
+        for (label j = 0; j < 4; j++)
+        {
+            const labelVector eo1(edgeOffsets[edgeNumsInFaceCC[f][j      ]]);
+            const labelVector eo2(edgeOffsets[edgeNumsInFaceCC[f][(j+1)%4]]);
+
+            if
+            (
+                b.extension()[faceNumber(eo1 - b.offset())]
+             && b.extension()[faceNumber(eo2 - b.offset())]
+            )
+            {
+                setBoundaryMask_(eo1 + eo2 + unitXYZ - b.offset()) = 1;
+            }
+        }
+    }
 }
 
 void mesh::reorderBoundaries()
@@ -855,15 +739,7 @@ mesh::mesh(const mesh& msh)
     PtrList<part>(msh),
     decomp_(msh.decomp_),
     boundaries_(msh.boundaries_),
-    faceBoundaryMasterPerProc_(msh.faceBoundaryMasterPerProc_),
-    edgeBoundaryMasterPerProc_(msh.edgeBoundaryMasterPerProc_),
-    vertexBoundaryMasterPerProc_(msh.vertexBoundaryMasterPerProc_),
-    faceBoundaryTypePerProc_(msh.faceBoundaryTypePerProc_),
-    edgeBoundaryTypePerProc_(msh.edgeBoundaryTypePerProc_),
-    vertexBoundaryTypePerProc_(msh.vertexBoundaryTypePerProc_),
-    edgePatchExtension_(msh.edgePatchExtension_),
-    vertexPatchExtension_(msh.vertexPatchExtension_),
-    emptyPatchOffsets_(msh.emptyPatchOffsets_),
+    setBoundaryMask_(msh.setBoundaryMask_),
     structured_(msh.structured_),
     rectilinear_(msh.rectilinear_),
     uniform_(msh.uniform_),
@@ -879,15 +755,7 @@ mesh::mesh(autoPtr<mesh>& mshPtr)
     PtrList<part>(mshPtr(), true),
     decomp_(mshPtr->decomp_, true),
     boundaries_(mshPtr->boundaries_, true),
-    faceBoundaryMasterPerProc_(mshPtr->faceBoundaryMasterPerProc_),
-    edgeBoundaryMasterPerProc_(mshPtr->edgeBoundaryMasterPerProc_),
-    vertexBoundaryMasterPerProc_(mshPtr->vertexBoundaryMasterPerProc_),
-    faceBoundaryTypePerProc_(mshPtr->faceBoundaryTypePerProc_),
-    edgeBoundaryTypePerProc_(mshPtr->edgeBoundaryTypePerProc_),
-    vertexBoundaryTypePerProc_(mshPtr->vertexBoundaryTypePerProc_),
-    edgePatchExtension_(mshPtr->edgePatchExtension_),
-    vertexPatchExtension_(mshPtr->vertexPatchExtension_),
-    emptyPatchOffsets_(mshPtr->emptyPatchOffsets_),
+    setBoundaryMask_(mshPtr->setBoundaryMask_),
     structured_(mshPtr->structured_),
     rectilinear_(mshPtr->rectilinear_),
     uniform_(mshPtr->uniform_),
@@ -1072,8 +940,8 @@ labelVector mesh::coarsen(const labelVector P) const
             if
             (
                 Q[d] < 2
-             && faceBoundaryType()[2*d  ] == periodicBoundary::typeNumber
-             && faceBoundaryType()[2*d+1] == periodicBoundary::typeNumber
+             && b(faceOffsets[2*d  ]).castable<periodicBoundary>()
+             && b(faceOffsets[2*d+1]).castable<periodicBoundary>()
             )
             {
                 Q[d] = 2;

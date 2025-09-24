@@ -21,9 +21,6 @@ class mappedBoundary
 
 public:
 
-    // Type number
-    const static label typeNumber;
-
     // Runtime type information
     TypeName("mapped");
 
@@ -37,12 +34,6 @@ public:
     virtual autoPtr<boundary> clone() const
     {
         return autoPtr<boundary>(new mappedBoundary(*this));
-    }
-
-    // Boundary type number
-    virtual label typeNum() const
-    {
-        return typeNumber;
     }
 
     // Mapping offset

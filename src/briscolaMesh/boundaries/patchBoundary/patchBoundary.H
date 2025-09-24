@@ -18,9 +18,6 @@ class patchBoundary
 
 public:
 
-    // Type number
-    const static label typeNumber;
-
     // Runtime type information
     TypeName("patch");
 
@@ -34,12 +31,6 @@ public:
     virtual autoPtr<boundary> clone() const
     {
         return autoPtr<boundary>(new patchBoundary(*this));
-    }
-
-    // Boundary type number
-    virtual label typeNum() const
-    {
-        return typeNumber;
     }
 };
 

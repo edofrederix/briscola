@@ -20,11 +20,6 @@ class parallelBoundary
     // identity tensor)
     labelTensor T_;
 
-    // Master bool. Boundaries that require communication can be master or
-    // slave. By default a boundary is master. Can be modified by derived
-    // classes.
-    bool master_;
-
     // Communication tag
     label tag_;
 
@@ -32,9 +27,6 @@ class parallelBoundary
     void operator=(const parallelBoundary&);
 
 public:
-
-    // Type number
-    const static label typeNumber;
 
     // Runtime type information
     TypeName("parallel");
@@ -51,18 +43,8 @@ public:
         return autoPtr<boundary>(new parallelBoundary(*this));
     }
 
-    // Boundary type number
-    virtual label typeNum() const
-    {
-        return typeNumber;
-    }
-
     // Rotation of the neighbor
     inline const labelTensor& T() const { return T_; }
-
-    // Master bool
-    inline bool master() const { return master_; }
-    inline bool slave() const { return !master_; }
 
     // Tag number
     virtual label tag() const
