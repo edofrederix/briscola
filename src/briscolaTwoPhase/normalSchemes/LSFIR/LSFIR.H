@@ -25,7 +25,7 @@ class LSFIR
 
     // Boundary type stencil for the LSFIR iteration (true for parallel and
     // periodic boundaries)
-    bool boundaryTypeLSFIR_[3][3][3];
+    labelBlock boundaryType_;
 
     // Number of vertex in each face
     int NIPV0_[12] = {0};

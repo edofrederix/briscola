@@ -19,7 +19,7 @@ class LSGIR
 protected:
 
     // Boundary type stencil (true for parallel, periodic and empty boundaries)
-    bool boundaryType_[3][3][3];
+    labelBlock boundaryType_;
 
 private:
 

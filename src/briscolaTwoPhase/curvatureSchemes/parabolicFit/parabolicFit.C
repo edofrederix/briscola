@@ -19,7 +19,13 @@ addToRunTimeSelectionTable(curvatureScheme, parabolicFit, dictionary);
 
 void parabolicFit::createBoundaryTypes()
 {
-    const faceLabel& faceType = fvMsh_.msh().faceBoundaryType();
+    faceLabel pBoundary;
+    for (int i = 0; i < 6; i++)
+        pBoundary[i] =
+            fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
+
+    boundaryType_.setSize(3,3,3);
+    boundaryType_ = Zero;
 
     for (int i = 0; i < 3; i++)
     {
@@ -33,33 +39,27 @@ void parabolicFit::createBoundaryTypes()
                 {
                     aux2 =
                         i == 0
-                      ? aux2 && faceType.left()
-                      > patchBoundary::typeNumber
-                      : aux2 && faceType.right()
-                      > patchBoundary::typeNumber;
+                      ? aux2 && pBoundary.left()
+                      : aux2 && pBoundary.right();
                 }
 
                 if (j != 1)
                 {
                     aux2 =
                         j == 0
-                      ? aux2 && faceType.bottom()
-                      > patchBoundary::typeNumber
-                      : aux2 && faceType.top()
-                      > patchBoundary::typeNumber;
+                      ? aux2 && pBoundary.bottom()
+                      : aux2 && pBoundary.top();
                 }
 
                 if (k != 1)
                 {
                     aux2 =
                         k == 0
-                      ? aux2 && faceType.aft()
-                      > patchBoundary::typeNumber
-                      : aux2 && faceType.fore()
-                      > patchBoundary::typeNumber;
+                      ? aux2 && pBoundary.aft()
+                      : aux2 && pBoundary.fore();
                 }
 
-                boundaryType_[i][j][k] = aux2;
+                boundaryType_(i,j,k) = aux2;
             }
         }
     }
@@ -618,7 +618,7 @@ void parabolicFit::correct()
                               < 1.0 - vof::threshold
                              && (
                                     interiorNode
-                                 || boundaryType_[aux1 + 1][aux2 + 1][aux3 + 1]
+                                 || boundaryType_(aux1+1,aux2+1,aux3+1)
                                 )
                             )
                             {
@@ -815,7 +815,7 @@ void parabolicFit::correct()
                               < (1.0 - vof::threshold)
                              && (
                                     interiorNode
-                                 || boundaryType_[aux1 + 1][aux2 + 1][aux3 + 1]
+                                 || boundaryType_(aux1+1,aux2+1,aux3+1)
                                 )
                             )
                             {
