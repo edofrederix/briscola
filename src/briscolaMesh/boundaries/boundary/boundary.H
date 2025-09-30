@@ -96,7 +96,8 @@ public:
         if (!bPtr)
         {
             FatalErrorInFunction
-                << "Boundary cannot be cast to " << BoundaryType::typeName
+                << "Boundary " << name_ << " cannot be cast to "
+                << BoundaryType::typeName
                 << " because it is " << this->type()
                 << abort(FatalError);
         }
@@ -108,17 +109,7 @@ public:
     template<class BoundaryType>
     inline const BoundaryType& cast() const
     {
-        const BoundaryType* bPtr = dynamic_cast<const BoundaryType*>(this);
-
-        if (!bPtr)
-        {
-            FatalErrorInFunction
-                << "Boundary cannot be cast to " << BoundaryType::typeName
-                << " because it is " << this->type()
-                << abort(FatalError);
-        }
-
-        return *bPtr;
+        return const_cast<boundary*>(this)->cast<BoundaryType>();
     }
 
     // Access to the dictionary

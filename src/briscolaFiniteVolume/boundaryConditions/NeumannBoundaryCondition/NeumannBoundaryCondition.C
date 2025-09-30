@@ -47,7 +47,7 @@ void NeumannBoundaryCondition<Type,colocated>::eliminateGhosts
         if (l == 0)
         {
             const scalar dx = 1.0/delta(l,d,ijk)[faceNum];
-            b(l,d,ijk) -= ghostCoeff*dx*this->boundaryGradients_[d];
+            b(l,d,ijk) -= ghostCoeff*dx*this->boundaryGradients_[l](ijk-S);
         }
     }
 }
@@ -78,7 +78,7 @@ void NeumannBoundaryCondition<Type,colocated>::evaluate
     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
     {
         const scalar dx = 1.0/delta(ijk)[faceNum];
-        fd(ijk+bo) = fd(ijk) + H*dx*this->boundaryGradients_[d];
+        fd(ijk+bo) = fd(ijk) + H*dx*this->boundaryGradients_[l](ijk-S);
     }
 }
 
@@ -92,6 +92,8 @@ void NeumannBoundaryCondition<Type,staggered>::eliminateGhosts
     const label d
 )
 {
+    const label c = l*3 + d;
+
     const labelVector bo(this->offset());
     const label faceNum(faceNumber(bo));
     const label faceNum2(faceNumber(-bo));
@@ -122,7 +124,7 @@ void NeumannBoundaryCondition<Type,staggered>::eliminateGhosts
 
             if (l == 0)
                 b(l,d,ijk) -=
-                    ghostCoeff*dx2*this->boundaryGradients_[d];
+                    ghostCoeff*dx2*this->boundaryGradients_[c](ijk-S);
         }
     }
     else
@@ -139,7 +141,7 @@ void NeumannBoundaryCondition<Type,staggered>::eliminateGhosts
             if (l == 0)
             {
                 const scalar dx = 1.0/delta(l,d,ijk)[faceNum];
-                b(l,d,ijk) -= ghostCoeff*dx*this->boundaryGradients_[d];
+                b(l,d,ijk) -= ghostCoeff*dx*this->boundaryGradients_[c](ijk-S);
             }
         }
     }
@@ -152,6 +154,8 @@ void NeumannBoundaryCondition<Type,staggered>::evaluate
     const label d
 )
 {
+    const label c = l*3 + d;
+
     const labelVector bo(this->offset());
     const label faceNum(faceNumber(bo));
     const label faceNum2(faceNumber(-bo));
@@ -177,7 +181,7 @@ void NeumannBoundaryCondition<Type,staggered>::evaluate
             const scalar dx2 =
                 1.0/delta(ijk)[faceNum] + 1.0/delta(ijk)[faceNum2];
 
-            fd(ijk+bo) = fd(ijk-bo) + H*dx2*this->boundaryGradients_[d];
+            fd(ijk+bo) = fd(ijk-bo) + H*dx2*this->boundaryGradients_[c](ijk-S);
         }
     }
     else
@@ -187,7 +191,7 @@ void NeumannBoundaryCondition<Type,staggered>::evaluate
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
             const scalar dx = 1.0/delta(ijk)[faceNum];
-            fd(ijk+bo) = fd(ijk) + H*dx*this->boundaryGradients_[d];
+            fd(ijk+bo) = fd(ijk) + H*dx*this->boundaryGradients_[c](ijk-S);
         }
     }
 }

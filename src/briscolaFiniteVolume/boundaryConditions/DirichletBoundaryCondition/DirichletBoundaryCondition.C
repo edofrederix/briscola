@@ -43,7 +43,7 @@ void DirichletBoundaryCondition<Type,colocated>::eliminateGhosts
         A(l,d,ijk)[faceNum+1] = Zero;
 
         if (l == 0)
-            b(l,d,ijk) -= ghostCoeff*2.0*this->boundaryValues_[d];
+            b(l,d,ijk) -= ghostCoeff*2.0*this->boundaryValues_[l](ijk-S);
     }
 }
 
@@ -68,7 +68,7 @@ void DirichletBoundaryCondition<Type,colocated>::evaluate
     for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
     {
-        fd(ijk+bo) = H*2.0*this->boundaryValues_[d] - fd(ijk);
+        fd(ijk+bo) = H*2.0*this->boundaryValues_[l](ijk-S) - fd(ijk);
     }
 }
 
@@ -82,6 +82,8 @@ void DirichletBoundaryCondition<Type,staggered>::eliminateGhosts
     const label d
 )
 {
+    const label c = l*3 + d;
+
     const labelVector bo(this->offset());
     const label faceNum(faceNumber(bo));
 
@@ -104,7 +106,7 @@ void DirichletBoundaryCondition<Type,staggered>::eliminateGhosts
             A(l,d,ijk) = diagStencil(cv(l,d,ijk));
 
             if (l == 0)
-                b(l,d,ijk) = this->boundaryValues_[d]*cv(l,d,ijk);
+                b(l,d,ijk) = this->boundaryValues_[c](ijk-S)*cv(l,d,ijk);
         }
     }
     else
@@ -119,7 +121,7 @@ void DirichletBoundaryCondition<Type,staggered>::eliminateGhosts
             A(l,d,ijk)[faceNum+1] = Zero;
 
             if (l == 0)
-                b(l,d,ijk) -= ghostCoeff*2.0*this->boundaryValues_[d];
+                b(l,d,ijk) -= ghostCoeff*2.0*this->boundaryValues_[c](ijk-S);
         }
     }
 }
@@ -131,6 +133,7 @@ void DirichletBoundaryCondition<Type,staggered>::evaluate
     const label d
 )
 {
+    const label c = l*3 + d;
 
     const labelVector bo(this->offset());
     const label faceNum(faceNumber(bo));
@@ -150,7 +153,7 @@ void DirichletBoundaryCondition<Type,staggered>::evaluate
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            fd(ijk+bo) = H*this->boundaryValues_[d];
+            fd(ijk+bo) = H*this->boundaryValues_[c](ijk-S);
         }
     }
     else
@@ -159,7 +162,7 @@ void DirichletBoundaryCondition<Type,staggered>::evaluate
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            fd(ijk+bo) = H*2.0*this->boundaryValues_[d] - fd(ijk);
+            fd(ijk+bo) = H*2.0*this->boundaryValues_[c](ijk-S) - fd(ijk);
         }
     }
 }

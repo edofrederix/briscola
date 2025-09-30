@@ -180,7 +180,7 @@ public:
     }
 
     // Get boundary from offset vector
-    inline const boundary& b(const labelVector& bo) const
+    inline boundary& b(const labelVector& bo)
     {
         forAll(boundaries_, i)
             if (boundaries_[i].offset() == bo)
@@ -190,6 +190,12 @@ public:
             << "Invalid boundary offset" << endl << abort(FatalError);
 
         return boundaries_[0];
+    }
+
+    // Get const reference to boundary from offset vector
+    inline const boundary& b(const labelVector& bo) const
+    {
+        return const_cast<mesh*>(this)->b(bo);
     }
 
     // Return the set boundary mask

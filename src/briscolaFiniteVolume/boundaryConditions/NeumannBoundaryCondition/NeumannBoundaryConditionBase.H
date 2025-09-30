@@ -19,8 +19,12 @@ class NeumannBoundaryConditionBase
 {
 protected:
 
-    // Boundary gradients
-    List<Type> boundaryGradients_;
+    // Flattened list of boundary gradients for each level and direction
+    PtrList<block<Type>> boundaryGradients_;
+
+    // Function to initialize boundary gradients from a list of uniform
+    // gradients for each direction
+    void init(const List<Type>&);
 
 public:
 
@@ -31,12 +35,20 @@ public:
         const boundary&
     );
 
-    // Construct from components and boundary gradient
+    // Construct from components and uniform boundary gradient list
     NeumannBoundaryConditionBase
     (
         const meshField<Type,MeshType>&,
         const boundary&,
         const List<Type>&
+    );
+
+    // Construct from components and boundary gradients
+    NeumannBoundaryConditionBase
+    (
+        const meshField<Type,MeshType>&,
+        const boundary&,
+        const PtrList<block<Type>>&
     );
 
     // Copy constructor
@@ -51,6 +63,18 @@ public:
         const meshField<Type,MeshType>&,
         const NeumannBoundaryConditionBase<Type,MeshType>&
     );
+
+    // Access to the boundary gradients
+    PtrList<block<Type>>& boundaryGradients()
+    {
+        return boundaryGradients_;
+    }
+
+    // Const access to the boundary gradients
+    const PtrList<block<Type>>& boundaryGradients() const
+    {
+        return boundaryGradients_;
+    }
 
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const

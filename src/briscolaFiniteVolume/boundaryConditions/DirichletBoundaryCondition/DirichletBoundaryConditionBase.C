@@ -10,22 +10,51 @@ namespace fv
 {
 
 template<class Type, class MeshType>
+void DirichletBoundaryConditionBase<Type,MeshType>::init
+(
+    const List<Type>& values
+)
+{
+    boundaryValues_.clear();
+    boundaryValues_.resize(this->fvMsh_.size()*MeshType::numberOfDirections);
+
+    label c = 0;
+    forAll(this->fvMsh_, l)
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+            boundaryValues_.set(c++, new block<Type>(this->N(l,d), values[d]));
+}
+
+template<class Type, class MeshType>
 DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 (
     const meshField<Type,MeshType>& mshField,
     const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b),
-    boundaryValues_(this->dict().lookup("values"))
-{}
+    boundaryCondition<Type,MeshType>(mshField, b)
+{
+    init(List<Type>(this->dict().lookup("values")));
+}
 
 template<class Type, class MeshType>
 DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 (
     const meshField<Type,MeshType>& mshField,
     const boundary& b,
-    const List<Type>& boundaryValues
+    const List<Type>& values
+)
+:
+    boundaryCondition<Type,MeshType>(mshField, b)
+{
+    init(values);
+}
+
+template<class Type, class MeshType>
+DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
+(
+    const meshField<Type,MeshType>& mshField,
+    const boundary& b,
+    const PtrList<block<Type>>& boundaryValues
 )
 :
     boundaryCondition<Type,MeshType>(mshField, b),
