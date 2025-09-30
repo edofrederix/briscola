@@ -253,8 +253,7 @@ public:
         return metrics<MeshType>().immersedBoundaries();
     }
 
-    // Cell find function templated for the mesh type. Uses the cell find
-    // function of the base mesh and always acts on the first level.
+    // Cell find function templated for the mesh type
     template<class MeshType>
     labelVector findCell
     (

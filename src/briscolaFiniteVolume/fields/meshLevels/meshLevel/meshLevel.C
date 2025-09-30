@@ -381,6 +381,7 @@ void meshLevel<Type,MeshType>::correctPatchBoundaryConditions()
 
             if (b.castable<patchBoundary>())
             {
+                bc.prepare(l_);
                 bc.evaluate(l_);
             }
         }
@@ -403,6 +404,7 @@ void meshLevel<Type,MeshType>::correctEmptyBoundaryConditions()
 
             if (b.castable<emptyBoundary>())
             {
+                bc.prepare(l_);
                 bc.evaluate(l_);
             }
         }
@@ -585,6 +587,7 @@ void meshLevel<Type,MeshType>::correctNonEliminatedBoundaryConditions()
 
             if (!bc.eliminated() && b.castable<patchBoundary>())
             {
+                bc.prepare(l_);
                 bc.evaluate(l_);
             }
         }
@@ -609,6 +612,7 @@ void meshLevel<Type,MeshType>::correctNonEliminatedBoundaryConditions()
              && !b.castable<parallelBoundary>()
             )
             {
+                bc.prepare(l_);
                 bc.evaluate(l_);
             }
         }
@@ -629,6 +633,7 @@ void meshLevel<Type,MeshType>::correctEliminatedBoundaryConditions()
 
             if (bc.eliminated())
             {
+                bc.prepare(l_);
                 bc.evaluate(l_);
             }
         }

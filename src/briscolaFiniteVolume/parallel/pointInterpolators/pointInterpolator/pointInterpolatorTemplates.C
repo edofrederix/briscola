@@ -9,6 +9,8 @@ namespace briscola
 namespace fv
 {
 
+// Operator that sets x to y if x is zero
+
 template<class Type>
 class nonZeroOp
 {

@@ -111,9 +111,9 @@ public:
 
     // Cast to derived type, if possible. Returns error otherwise.
     template<class BoundaryType>
-    inline const BoundaryType& cast() const
+    inline BoundaryType& cast()
     {
-        const BoundaryType* bPtr = dynamic_cast<const BoundaryType*>(this);
+        BoundaryType* bPtr = dynamic_cast<BoundaryType*>(this);
 
         if (!bPtr)
         {
@@ -125,6 +125,15 @@ public:
         }
 
         return *bPtr;
+    }
+
+    // Cast to const derived type reference
+    template<class BoundaryType>
+    inline const BoundaryType& cast() const
+    {
+        return
+            const_cast<boundaryCondition<Type,MeshType>*>(this)
+          ->cast<BoundaryType>();
     }
 
     // Determine a field's boundary condition base type for a global boundary

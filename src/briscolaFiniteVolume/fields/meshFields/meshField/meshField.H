@@ -322,6 +322,31 @@ public:
         return boundaryConditions_;
     }
 
+    // Get boundary condition from offset vector
+    inline boundaryCondition<Type,MeshType>& boundary
+    (
+        const labelVector& bo
+    )
+    {
+        forAll(boundaryConditions_, i)
+            if (boundaryConditions_[i].offset() == bo)
+                return boundaryConditions_[i];
+
+        FatalErrorInFunction
+            << "Invalid boundary condition offset" << endl << abort(FatalError);
+
+        return boundaryConditions_[0];
+    }
+
+    // Get const reference to boundary condition from offset vector
+    inline const boundaryCondition<Type,MeshType>& boundary
+    (
+        const labelVector& bo
+    ) const
+    {
+        return const_cast<meshField<Type,MeshType>*>(this)->boundary(bo);
+    }
+
     // Access to the boundary conditions
     inline PtrList<immersedBoundaryCondition<Type,MeshType>>&
     immersedBoundaryConditions()

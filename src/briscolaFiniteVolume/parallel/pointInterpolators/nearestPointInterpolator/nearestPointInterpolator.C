@@ -95,19 +95,11 @@ List<Type> nearestPointInterpolator<MeshType>::interp
     const meshField<Type,MeshType>& field
 ) const
 {
-    List<Type> values(this->points_.size());
+    List<Type> values(this->points_.size(), Zero);
 
     forAll(this->points_, i)
-    {
         if (this->indices_[i] != -unitXYZ)
-        {
             values[i] = field(this->l_, this->d_, this->indices_[i]);
-        }
-        else
-        {
-            values[i] = Zero;
-        }
-    }
 
     return this->combine(values);
 }

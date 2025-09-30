@@ -72,7 +72,7 @@ pointInterpolator<MeshType>::pointInterpolator
 
     forAll(points_, i)
     {
-        indices_[i] = fvMsh.findCell<MeshType>(points_[i], l, d);
+        indices_[i] = fvMsh.findCell<MeshType>(trimPrecision(points_[i]), l, d);
 
         if (indices_[i] != -unitXYZ)
         {
@@ -135,7 +135,7 @@ autoPtr<pointInterpolator<MeshType>> pointInterpolator<MeshType>::New
 }
 
 template<class MeshType>
-bool pointInterpolator<MeshType>::allPointsFound() const
+vectorList pointInterpolator<MeshType>::missingPoints() const
 {
     List<label> found(indices_.size());
 
@@ -143,13 +143,39 @@ bool pointInterpolator<MeshType>::allPointsFound() const
         found[i] = (indices_[i] != -unitXYZ);
 
     Pstream::listCombineGather(found, plusEqOp<label>());
-    Pstream::listCombineScatter(found);
 
-    forAll(found, i)
-        if (!found[i])
-            return false;
+    DynamicList<vector> missing;
 
-    return true;
+    if (Pstream::master())
+    {
+        forAll(found, i)
+            if (!found[i])
+                missing.append(points_[i]);
+
+        for (int proc = 0; proc < Pstream::nProcs(); proc++)
+        if (proc != Pstream::masterNo())
+        {
+            OPstream send
+            (
+                Pstream::commsTypes::blocking,
+                proc
+            );
+
+            send << missing;
+        }
+    }
+    else
+    {
+        IPstream recv
+        (
+            Pstream::commsTypes::blocking,
+            Pstream::masterNo()
+        );
+
+        recv >> missing;
+    }
+
+    return missing;
 }
 
 template class pointInterpolator<colocated>;

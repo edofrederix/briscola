@@ -147,7 +147,7 @@ List<Type> linearPointInterpolator<MeshType>::interp
     const meshField<Type,MeshType>& field
 ) const
 {
-    List<Type> values(this->points_.size());
+    List<Type> values(this->points_.size(), Zero);
 
     forAll(this->points_, i)
     {
@@ -172,10 +172,6 @@ List<Type> linearPointInterpolator<MeshType>::interp
               + weights_[i].rbf()*field(this->l_,this->d_,ii+di,jj,   kk+dk)
               + weights_[i].ltf()*field(this->l_,this->d_,ii,   jj+dj,kk+dk)
               + weights_[i].rtf()*field(this->l_,this->d_,ii+di,jj+dj,kk+dk);
-        }
-        else
-        {
-            values[i] = Zero;
         }
     }
 

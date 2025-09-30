@@ -351,11 +351,13 @@ labelVector rectilinearMesh::findCell(const vector& p, const label l) const
     const scalarList& y = localPoints_[1];
     const scalarList& z = localPoints_[2];
 
+    // If the point is on the upper boundary include it in the last cell
+
     if
     (
-        q.x() < x[0] || q.x() >= x[x.size()-1]
-     || q.y() < y[0] || q.y() >= y[y.size()-1]
-     || q.z() < z[0] || q.z() >= z[z.size()-1]
+        q.x() < x[0] || q.x() > x[x.size()-1]
+     || q.y() < y[0] || q.y() > y[y.size()-1]
+     || q.z() < z[0] || q.z() > z[z.size()-1]
     )
     {
         return -unitXYZ;
@@ -367,11 +369,20 @@ labelVector rectilinearMesh::findCell(const vector& p, const label l) const
     );
 
     // Binary search. Use <= operator so that at faces points belong to the
-    // upper cell.
+    // upper cell. Assign points that are exactly on the upper boundary to the
+    // nearest internal cell.
 
-    const label i = findLower(x, q.x(), 0, lessEqOp<scalar>());
-    const label j = findLower(y, q.y(), 0, lessEqOp<scalar>());
-    const label k = findLower(z, q.z(), 0, lessEqOp<scalar>());
+    const label i =
+        q.x() == x.last() ? x.size()-1
+      : findLower(x, q.x(), 0, lessEqOp<scalar>());
+
+    const label j =
+        q.y() == y.last() ? y.size()-1
+      : findLower(y, q.y(), 0, lessEqOp<scalar>());
+
+    const label k =
+        q.z() == z.last() ? z.size()-1
+      : findLower(z, q.z(), 0, lessEqOp<scalar>());
 
     return labelVector(i/R.x(), j/R.y(), k/R.z());
 }
