@@ -658,6 +658,20 @@ inline Form operator*
 }
 
 template<class Form, direction Ncmpts>
+inline Form sqr
+(
+    const CellSpace<Form, scalar, Ncmpts>& cs
+)
+{
+    Form r;
+
+    for (label i = 0; i < Ncmpts; i++)
+        r.v_[i] = sqr(cs.v_[i]);
+
+    return r;
+}
+
+template<class Form, direction Ncmpts>
 inline Form pow
 (
     const CellSpace<Form, scalar, Ncmpts>& cs,

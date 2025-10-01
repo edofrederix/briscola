@@ -1404,6 +1404,7 @@ void testScalarFunctions()
     pow5(b1);
     pow6(b1);
     pow025(b1);
+    sqr(b1);
     sqrt(b1);
     cbrt(b1);
     sign(b1);
