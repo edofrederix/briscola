@@ -160,20 +160,20 @@ Type sumCmptMag(const block<Type>&);
 template<class Type>
 Type sumCmptMag(const tmp<block<Type>>&);
 
-#define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                        \
-                                                                                \
-template<class Type>                                                            \
-ReturnType gFunc                                                                \
-(                                                                               \
-    const block<Type>&,                                                         \
-    const label comm = UPstream::worldComm                                      \
-);                                                                              \
-                                                                                \
-template<class Type>                                                            \
-ReturnType gFunc                                                                \
-(                                                                               \
-    const tmp<block<Type>>&,                                                    \
-    const label comm = UPstream::worldComm                                      \
+#define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                       \
+                                                                               \
+template<class Type>                                                           \
+ReturnType gFunc                                                               \
+(                                                                              \
+    const block<Type>&,                                                        \
+    const label comm = UPstream::worldComm                                     \
+);                                                                             \
+                                                                               \
+template<class Type>                                                           \
+ReturnType gFunc                                                               \
+(                                                                              \
+    const tmp<block<Type>>&,                                                   \
+    const label comm = UPstream::worldComm                                     \
 );
 
 G_UNARY_FUNCTION(Type, gMax, max, max)

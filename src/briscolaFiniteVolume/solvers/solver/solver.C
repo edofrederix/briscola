@@ -226,7 +226,7 @@ void solver<SType,Type,MeshType>::setSingularityConstraint
             // This means we can remove any dependence on the first cell value
 
             forAllCells(A, i, j, k)
-                for (int s = 1; s < SType::nComponents; s++)
+                for (int s = 1; s < SType::nCsComponents; s++)
                     if
                     (
                         A(i,j,k)[s] != 0

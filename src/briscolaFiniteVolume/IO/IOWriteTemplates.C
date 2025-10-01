@@ -148,7 +148,7 @@ void IO::writeScalarField
 }
 
 template<class Type, class MeshType>
-void IO::writeArrayField
+void IO::writeVectorSpaceField
 (
     List<autoPtr<std::ofstream>>& filePtrs,
     const meshDirection<Type,MeshType>& D
@@ -169,7 +169,7 @@ void IO::writeArrayField
             for (int k = S.z(); k < E.z(); k++)
                 if (structured(i-S.x(),j-S.y(),k-S.z(),N))
                     for (label ii = 0; ii < n; ii++)
-                        data[c++] = D(i,j,k)[ii];
+                        data[c++] = component(D(i,j,k),ii);
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
@@ -186,14 +186,14 @@ void IO::writeArrayField
 }
 
 template<class Type, class MeshType>
-void IO::writeArrayArrayField
+void IO::writeCellSpaceField
 (
     List<autoPtr<std::ofstream>>& filePtrs,
     const meshDirection<Type,MeshType>& D
 ) const
 {
-    const label n(Type::nComponents);
-    const label m(pTraits<typename Type::cmpt>::nComponents);
+    const label n(Type::nCsComponents);
+    const label m(Type::nComponents);
 
     label c = 0;
 
@@ -209,7 +209,7 @@ void IO::writeArrayArrayField
                 if (structured(i-S.x(),j-S.y(),k-S.z(),N))
                     for (label ii = 0; ii < n; ii++)
                         for (label jj = 0; jj < m; jj++)
-                            data[c++] = D(i,j,k)[ii][jj];
+                            data[c++] = component(D(i,j,k)[ii],jj);
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();
@@ -247,31 +247,31 @@ template void IO::FUNC                                                         \
 
 WRITETYPEFIELD(writeScalarField,scalar,colocated)
 WRITETYPEFIELD(writeScalarField,label,colocated)
-WRITETYPEFIELD(writeArrayField,vector,colocated)
-WRITETYPEFIELD(writeArrayField,tensor,colocated)
-WRITETYPEFIELD(writeArrayField,diagTensor,colocated)
-WRITETYPEFIELD(writeArrayField,symmTensor,colocated)
-WRITETYPEFIELD(writeArrayField,sphericalTensor,colocated)
-WRITETYPEFIELD(writeArrayField,faceScalar,colocated)
-WRITETYPEFIELD(writeArrayField,edgeScalar,colocated)
-WRITETYPEFIELD(writeArrayField,vertexScalar,colocated)
-WRITETYPEFIELD(writeArrayArrayField,faceVector,colocated)
-WRITETYPEFIELD(writeArrayArrayField,edgeVector,colocated)
-WRITETYPEFIELD(writeArrayArrayField,vertexVector,colocated)
+WRITETYPEFIELD(writeVectorSpaceField,vector,colocated)
+WRITETYPEFIELD(writeVectorSpaceField,tensor,colocated)
+WRITETYPEFIELD(writeVectorSpaceField,diagTensor,colocated)
+WRITETYPEFIELD(writeVectorSpaceField,symmTensor,colocated)
+WRITETYPEFIELD(writeVectorSpaceField,sphericalTensor,colocated)
+WRITETYPEFIELD(writeCellSpaceField,faceScalar,colocated)
+WRITETYPEFIELD(writeCellSpaceField,edgeScalar,colocated)
+WRITETYPEFIELD(writeCellSpaceField,vertexScalar,colocated)
+WRITETYPEFIELD(writeCellSpaceField,faceVector,colocated)
+WRITETYPEFIELD(writeCellSpaceField,edgeVector,colocated)
+WRITETYPEFIELD(writeCellSpaceField,vertexVector,colocated)
 
 WRITETYPEFIELD(writeScalarField,scalar,staggered)
 WRITETYPEFIELD(writeScalarField,label,staggered)
-WRITETYPEFIELD(writeArrayField,vector,staggered)
-WRITETYPEFIELD(writeArrayField,tensor,staggered)
-WRITETYPEFIELD(writeArrayField,diagTensor,staggered)
-WRITETYPEFIELD(writeArrayField,symmTensor,staggered)
-WRITETYPEFIELD(writeArrayField,sphericalTensor,staggered)
-WRITETYPEFIELD(writeArrayField,faceScalar,staggered)
-WRITETYPEFIELD(writeArrayField,edgeScalar,staggered)
-WRITETYPEFIELD(writeArrayField,vertexScalar,staggered)
-WRITETYPEFIELD(writeArrayArrayField,faceVector,staggered)
-WRITETYPEFIELD(writeArrayArrayField,edgeVector,staggered)
-WRITETYPEFIELD(writeArrayArrayField,vertexVector,staggered)
+WRITETYPEFIELD(writeVectorSpaceField,vector,staggered)
+WRITETYPEFIELD(writeVectorSpaceField,tensor,staggered)
+WRITETYPEFIELD(writeVectorSpaceField,diagTensor,staggered)
+WRITETYPEFIELD(writeVectorSpaceField,symmTensor,staggered)
+WRITETYPEFIELD(writeVectorSpaceField,sphericalTensor,staggered)
+WRITETYPEFIELD(writeCellSpaceField,faceScalar,staggered)
+WRITETYPEFIELD(writeCellSpaceField,edgeScalar,staggered)
+WRITETYPEFIELD(writeCellSpaceField,vertexScalar,staggered)
+WRITETYPEFIELD(writeCellSpaceField,faceVector,staggered)
+WRITETYPEFIELD(writeCellSpaceField,edgeVector,staggered)
+WRITETYPEFIELD(writeCellSpaceField,vertexVector,staggered)
 
 }
 

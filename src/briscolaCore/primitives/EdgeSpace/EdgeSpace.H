@@ -134,6 +134,20 @@ public:
     }
 };
 
+// Replace function specialization
+
+template<class Type>
+inline void replace
+(
+    EdgeSpace<Type>& p,
+    const direction dir,
+    const typename EdgeSpace<Type>::cmptType& v
+)
+{
+    for (label i = 0; i < EdgeSpace<Type>::nCsComponents; i++)
+        setComponent(p[i], dir) = v[i];
+}
+
 }
 
 #include "EdgeSpaceProducts.H"

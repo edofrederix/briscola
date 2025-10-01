@@ -43,80 +43,6 @@ inline direction CellSpace<Form, Cmpt, Ncmpts>::size()
 }
 
 template<class Form, class Cmpt, direction Ncmpts>
-inline const Cmpt& CellSpace<Form, Cmpt, Ncmpts>::component
-(
-    const direction d
-) const
-{
-    #ifdef FULLDEBUG
-    if (d >= Ncmpts)
-    {
-        FatalErrorInFunction
-            << "index out of range"
-            << abort(FatalError);
-    }
-    #endif
-
-    return v_[d];
-}
-
-template<class Form, class Cmpt, direction Ncmpts>
-inline Cmpt& CellSpace<Form, Cmpt, Ncmpts>::component
-(
-    const direction d
-)
-{
-    #ifdef FULLDEBUG
-    if (d >= Ncmpts)
-    {
-        FatalErrorInFunction
-            << "index out of range"
-            << abort(FatalError);
-    }
-    #endif
-
-    return v_[d];
-}
-
-template<class Form, class Cmpt, direction Ncmpts>
-inline void CellSpace<Form, Cmpt, Ncmpts>::component
-(
-    Cmpt& c,
-    const direction d
-) const
-{
-    #ifdef FULLDEBUG
-    if (d >= Ncmpts)
-    {
-        FatalErrorInFunction
-            << "index out of range"
-            << abort(FatalError);
-    }
-    #endif
-
-    c = v_[d];
-}
-
-template<class Form, class Cmpt, direction Ncmpts>
-inline void CellSpace<Form, Cmpt, Ncmpts>::replace
-(
-    const direction d,
-    const Cmpt& c
-)
-{
-    #ifdef FULLDEBUG
-    if (d >= Ncmpts)
-    {
-        FatalErrorInFunction
-            << "index out of range"
-            << abort(FatalError);
-    }
-    #endif
-
-    v_[d] = c;
-}
-
-template<class Form, class Cmpt, direction Ncmpts>
 inline Form CellSpace<Form, Cmpt, Ncmpts>::uniform(const Cmpt& s)
 {
     CellSpace<Form, Cmpt, Ncmpts> v;
@@ -265,26 +191,6 @@ inline void CellSpace<Form, Cmpt, Ncmpts>::operator-=
 {
     for (label i = 0; i < Ncmpts; i++)
         v_[i] -= v;
-}
-
-template<class Form, class Cmpt, direction Ncmpts>
-inline Cmpt& setComponent
-(
-    CellSpace<Form, Cmpt, Ncmpts>& cs,
-    const direction d
-)
-{
-    return cs.component(d);
-}
-
-template<class Form, class Cmpt, direction Ncmpts>
-inline const Cmpt& component
-(
-    const CellSpace<Form, Cmpt, Ncmpts>& cs,
-    const direction d
-)
-{
-    return cs.component(d);
 }
 
 template<class Form, class Cmpt, direction Ncmpts>

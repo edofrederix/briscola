@@ -48,7 +48,7 @@ class linearSystemAggregation
 
     // Column numbers for each processor's row in this part, for each direction.
     // Construct for a full stencil type and not a symmetric one.
-    List<List<List<FixedList<label,SType::nComponents>>>> colNums_;
+    List<List<List<FixedList<label,SType::nCsComponents>>>> colNums_;
 
     // Part communicator number
     label partCommNum_;
@@ -89,7 +89,7 @@ public:
     inline const labelList& globalEnd() const { return partEnds_; }
 
     // Return reference to the column number data
-    inline const List<List<List<FixedList<label,SType::nComponents>>>>&
+    inline const List<List<List<FixedList<label,SType::nCsComponents>>>>&
     colNums() const
     {
         return colNums_;

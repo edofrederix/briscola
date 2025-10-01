@@ -473,6 +473,16 @@ public:
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }
 
+    // Return a component
+    tmp<meshField<cmptType,MeshType>> component(const label) const;
+
+    // Set a component from a directional list of values
+    void replace(const label, const List<cmptType>&);
+
+    // Set a component from a component field
+    void replace(const label, const meshField<cmptType,MeshType>&);
+    void replace(const label, const tmp<meshField<cmptType,MeshType>>&);
+
     // Member operators
 
     void operator=(const meshField<Type,MeshType>&);

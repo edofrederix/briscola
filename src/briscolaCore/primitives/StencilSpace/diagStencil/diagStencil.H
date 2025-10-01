@@ -113,6 +113,20 @@ inline bool isStencil<diagStencil>()
     return true;
 }
 
+// Replace function specialization
+
+template<>
+inline void replace
+(
+    diagStencil& s,
+    const direction dir,
+    const typename diagStencil::cmptType& v
+)
+{
+    for (label i = 0; i < diagStencil::nCsComponents; i++)
+        setComponent(s[i], dir) = v[i];
+}
+
 }
 
 #include "diagStencilProducts.H"

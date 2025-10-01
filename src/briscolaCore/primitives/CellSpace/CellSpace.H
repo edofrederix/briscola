@@ -6,6 +6,7 @@
 #include "word.H"
 #include "zero.H"
 #include "labelVector.H"
+#include "replace.H"
 
 namespace Foam
 {
@@ -58,13 +59,22 @@ public:
     typedef CellSpace<Form, Cmpt, Ncmpts> csType;
 
     // Component type
-    typedef Cmpt cmptType;
+    typedef
+        typename CellSpaceCast
+        <
+            Form,
+            Form,
+            typename pTraits<Cmpt>::cmptType
+        >::type cmptType;
 
     // Dimensionality of space
     static const direction dim = Cmpt::dim;
 
-    // Number of components in this cell space
-    static const direction nComponents = Ncmpts;
+    // Number of components in the underlying vector space
+    static const direction nComponents = pTraits<Cmpt>::nComponents;
+
+    // Number of components in the cell space
+    static const direction nCsComponents = Ncmpts;
 
     // Static Data Members
 
@@ -96,12 +106,6 @@ public:
 
     // Return the number of elements in the CellSpace = Ncmpts.
     inline static direction size();
-
-    inline const Cmpt& component(const direction) const;
-    inline Cmpt& component(const direction);
-
-    inline void component(Cmpt&, const direction) const;
-    inline void replace(const direction, const Cmpt&);
 
     // Return a CellSpace with all elements = s
     inline static Form uniform(const Cmpt& s);
@@ -165,6 +169,22 @@ public:
 template<class Form, class Cmpt, direction Ncmpts>
 word name(const CellSpace<Form, Cmpt, Ncmpts>&);
 
+// Component function specialization
+template<class Form, class Cmpt, direction Ncmpts>
+typename CellSpace<Form, Cmpt, Ncmpts>::cmptType component
+(
+    const CellSpace<Form, Cmpt, Ncmpts>& cs,
+    const direction dir
+)
+{
+    typename CellSpace<Form, Cmpt, Ncmpts>::cmptType r;
+
+    for (label i = 0; i < Ncmpts; i++)
+        r[i] = component(cs[i], dir);
+
+    return r;
+}
+
 }
 
 // Unary function macro
@@ -173,7 +193,7 @@ word name(const CellSpace<Form, Cmpt, Ncmpts>&);
                                                                                \
 inline void Func(ReturnType& r, const Type& t)                                 \
 {                                                                              \
-    for (label i = 0; i < t.nComponents; i++)                                  \
+    for (label i = 0; i < Type::nCsComponents; i++)                            \
         r.v_[i] = Func(t.v_[i]);                                               \
 }                                                                              \
                                                                                \

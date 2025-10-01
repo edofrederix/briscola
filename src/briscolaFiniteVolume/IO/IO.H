@@ -120,7 +120,7 @@ class IO
 
     // Write array-like types
     template<class Type, class MeshType>
-    void writeArrayField
+    void writeVectorSpaceField
     (
         List<autoPtr<std::ofstream>>&,
         const meshDirection<Type, MeshType>&
@@ -128,7 +128,7 @@ class IO
 
     // Write two-dimensional array-like types
     template<class Type, class MeshType>
-    void writeArrayArrayField
+    void writeCellSpaceField
     (
         List<autoPtr<std::ofstream>>&,
         const meshDirection<Type, MeshType>&
@@ -166,7 +166,7 @@ class IO
 
     // Write array-like types
     template<class Type, class MeshType>
-    void readArrayField
+    void readVectorSpaceField
     (
         autoPtr<std::ifstream>&,
         const bool,
@@ -175,7 +175,7 @@ class IO
 
     // Write two-dimensional array-like types
     template<class Type, class MeshType>
-    void readArrayArrayField
+    void readCellSpaceField
     (
         autoPtr<std::ifstream>&,
         const bool,

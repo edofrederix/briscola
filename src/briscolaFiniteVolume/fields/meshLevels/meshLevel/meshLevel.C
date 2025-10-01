@@ -651,6 +651,59 @@ void meshLevel<Type,MeshType>::correctImmersedBoundaryConditions()
 }
 
 template<class Type, class MeshType>
+tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
+meshLevel<Type,MeshType>::component
+(
+    const label dir
+) const
+{
+    tmp<meshLevel<cmptType,MeshType>> tL
+    (
+        new meshLevel<cmptType,MeshType>(this->fvMsh_, this->l_)
+    );
+
+    forAll(*this, d)
+        tL.ref()[d] = listType::operator[](d).component(dir);
+
+    return tL;
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::replace
+(
+    const label dir,
+    const List<cmptType>& values
+)
+{
+    forAll(*this, d)
+        listType::operator[](d).replace(dir,values[d]);
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::replace
+(
+    const label dir,
+    const meshLevel<cmptType,MeshType>& L
+)
+{
+    forAll(*this, d)
+        listType::operator[](d).replace(dir,L[d]);
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::replace
+(
+    const label dir,
+    const tmp<meshLevel<cmptType,MeshType>>& tL
+)
+{
+    this->replace(dir,tL());
+
+    if (tL.isTmp())
+        tL.clear();
+}
+
+template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::operator=(const meshLevel<Type,MeshType>& L)
 {
     forAll(*this, d)

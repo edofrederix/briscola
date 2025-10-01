@@ -402,6 +402,16 @@ public:
     Type interp(const scalar i, const scalar j, const scalar k) const;
     Type interp(const vector ijk) const;
 
+    // Return a component
+    tmp<block<cmptType>> component(const label) const;
+
+    // Set a component from a value
+    void replace(const label, const cmptType&);
+
+    // Set a component from a component block
+    void replace(const label, const block<cmptType>&);
+    void replace(const label, const tmp<block<cmptType>>&);
+
     // Member operators
 
     inline void operator=(const block<Type>&);

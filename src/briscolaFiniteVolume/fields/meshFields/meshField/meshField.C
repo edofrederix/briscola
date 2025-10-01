@@ -558,6 +558,67 @@ void meshField<Type,MeshType>::restrict()
 }
 
 template<class Type, class MeshType>
+tmp<meshField<typename meshField<Type,MeshType>::cmptType,MeshType>>
+meshField<Type,MeshType>::component
+(
+    const label dir
+) const
+{
+    tmp<meshField<cmptType,MeshType>> tF
+    (
+        new meshField<cmptType,MeshType>
+        (
+            this->name() + ".component(" + Foam::name(dir) + ")",
+            this->fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            false,
+            this->deep()
+        )
+    );
+
+    forAll(*this, l)
+        tF.ref()[l] = listType::operator[](l).component(dir);
+
+    return tF;
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::replace
+(
+    const label dir,
+    const List<cmptType>& values
+)
+{
+    forAll(*this, l)
+        listType::operator[](l).replace(dir,values);
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::replace
+(
+    const label dir,
+    const meshField<cmptType,MeshType>& F
+)
+{
+    forAll(*this, l)
+        listType::operator[](l).replace(dir,F[l]);
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::replace
+(
+    const label dir,
+    const tmp<meshField<cmptType,MeshType>>& tF
+)
+{
+    this->replace(dir,tF());
+
+    if (tF.isTmp())
+        tF.clear();
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator=(const meshField<Type,MeshType>& F)
 {
     this->make(F.deep());

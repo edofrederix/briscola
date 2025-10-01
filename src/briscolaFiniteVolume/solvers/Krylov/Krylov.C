@@ -44,7 +44,7 @@ void Krylov<SType,Type,MeshType>::prepare
     {
         const label m = A[d].size();
         const label M = returnReduce(m, sumOp<label>());
-        const label nz = Foam::min(label(SType::nComponents),M);
+        const label nz = Foam::min(label(SType::nCsComponents),M);
 
         // Create matrix
 
@@ -73,7 +73,7 @@ void Krylov<SType,Type,MeshType>::prepare
 
             SType coeffs = A[d](ijk);
 
-            labelList colNums(SType::nComponents);
+            labelList colNums(SType::nCsComponents);
 
             forAll(colNums, s)
                 colNums[s] = numbers(d, ijk+offsets[s]);
@@ -207,7 +207,7 @@ void Krylov<SType,Type,MeshType>::solve
 
             const SType coeffs = A[d](ijk);
 
-            labelList colNums(SType::nComponents);
+            labelList colNums(SType::nCsComponents);
 
             forAll(colNums, s)
                 colNums[s] = numbers[d](ijk + offsets[s]);
@@ -357,14 +357,14 @@ void Krylov<SType,Type,MeshType>::solve
 {
     const label nDir = MeshType::numberOfDirections;
 
-    if (SType::nComponents > 1)
+    if (SType::nCsComponents > 1)
         sys.eliminateGhosts();
 
     sys.setForcingMask();
 
     if
     (
-        SType::nComponents == 1
+        SType::nCsComponents == 1
      || sum(sys.diagonal()) == nDir
     )
     {

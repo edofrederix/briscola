@@ -14,10 +14,10 @@
 namespace Foam
 {
 
-// Base class for templated types
+// Base class for cell space types
 
-template<class Type, template<class> class TType>
-class pMPI<TType<Type>>
+template<class Form, class Cmpt, direction Ncmpts>
+class pMPI<CellSpace<Form,Cmpt,Ncmpts>>
 {
 public:
 
@@ -27,7 +27,8 @@ public:
     {
         MPI_Type_contiguous
         (
-            TType<Type>::nComponents*pTraits<Type>::nComponents,
+            CellSpace<Form,Cmpt,Ncmpts>::nCsComponents
+          * pTraits<Cmpt>::nComponents,
             MPI_DOUBLE,
             &type
         );

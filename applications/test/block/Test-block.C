@@ -145,6 +145,16 @@ void testIndexing()
             FatalErrorInFunction << "test 9b failed" << abort(FatalError);
         }
     }
+
+    // Components and replacements
+
+    typedef typename pTraits<Type>::cmptType cmptType;
+
+    block<cmptType> s1(b1.component(0));
+
+    b1.replace(0, pTraits<cmptType>::one);
+    b1.replace(0, s1);
+    b1.replace(0, s1*1.0);
 }
 
 template<class Type>

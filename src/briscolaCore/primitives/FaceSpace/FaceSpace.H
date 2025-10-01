@@ -138,6 +138,20 @@ public:
     }
 };
 
+// Replace function specialization
+
+template<class Type>
+inline void replace
+(
+    FaceSpace<Type>& p,
+    const direction dir,
+    const typename FaceSpace<Type>::cmptType& v
+)
+{
+    for (label i = 0; i < FaceSpace<Type>::nCsComponents; i++)
+        setComponent(p[i], dir) = v[i];
+}
+
 }
 
 #include "FaceSpaceProducts.H"

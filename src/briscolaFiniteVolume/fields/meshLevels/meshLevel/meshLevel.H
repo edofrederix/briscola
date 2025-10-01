@@ -333,6 +333,16 @@ public:
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();
 
+    // Return a component
+    tmp<meshLevel<cmptType,MeshType>> component(const label) const;
+
+    // Set a component from a directional list of values
+    void replace(const label, const List<cmptType>&);
+
+    // Set a component from a component level
+    void replace(const label, const meshLevel<cmptType,MeshType>&);
+    void replace(const label, const tmp<meshLevel<cmptType,MeshType>>&);
+
     // Member operators
 
     void operator=(const meshLevel<Type,MeshType>&);

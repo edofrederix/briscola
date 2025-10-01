@@ -67,8 +67,8 @@ void sample::appendArrayArrayData
 
     List<Type> interpData(move(interp(field)));
 
-    const label n(Type::nComponents);
-    const label m(pTraits<typename Type::cmpt>::nComponents);
+    const label n(Type::nCsComponents);
+    const label m(Type::nComponents);
 
     for (int i = 0; i < n; i++)
     for (int j = 0; j < m; j++)

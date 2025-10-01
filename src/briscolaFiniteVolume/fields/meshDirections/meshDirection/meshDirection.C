@@ -306,6 +306,56 @@ void meshDirection<Type,MeshType>::operator=
 }
 
 template<class Type, class MeshType>
+tmp<meshDirection<typename meshDirection<Type,MeshType>::cmptType,MeshType>>
+meshDirection<Type,MeshType>::component
+(
+    const label dir
+) const
+{
+    tmp<meshDirection<cmptType,MeshType>> tD
+    (
+        new meshDirection<cmptType,MeshType>(this->fvMsh_, this->l_, this->d_)
+    );
+
+    tD->B() = this->B().component(dir);
+
+    return tD;
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::replace
+(
+    const label dir,
+    const cmptType& v
+)
+{
+    this->B().replace(dir,v);
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::replace
+(
+    const label dir,
+    const meshDirection<cmptType,MeshType>& D
+)
+{
+    this->B().replace(dir, D.B());
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::replace
+(
+    const label dir,
+    const tmp<meshDirection<cmptType,MeshType>>& tD
+)
+{
+    this->replace(dir,tD());
+
+    if (tD.isTmp())
+        tD.clear();
+}
+
+template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::operator=
 (
     const tmp<meshDirection<Type,MeshType>>& tD

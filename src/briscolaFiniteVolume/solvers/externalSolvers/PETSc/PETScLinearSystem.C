@@ -53,14 +53,14 @@ void PETScLinearSystem<SType,Type,MeshType>::prepare(const label d)
     List<List<SType>> coeffs;
     lsa.rowCoeffs(coeffs, sys_, d);
 
-    List<List<FixedList<label,SType::nComponents>>> colNums =
+    List<List<FixedList<label,SType::nCsComponents>>> colNums =
         lsa.colNums()[d];
 
     if (lsa.master())
     {
         const label m = lsa.partSize(d);
         const label M = lsa.globalSize(d);
-        const label nz = Foam::min(label(SType::nComponents),M);
+        const label nz = Foam::min(label(SType::nCsComponents),M);
 
         if (matrices_.set(d))
             MatDestroy(&matrices_[d]);

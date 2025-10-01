@@ -332,6 +332,16 @@ public:
         return blockType::operator()(ijk + ghosts*unitXYZ);
     }
 
+    // Return a component
+    tmp<meshDirection<cmptType,MeshType>> component(const label) const;
+
+    // Set a component from a value
+    void replace(const label, const cmptType&);
+
+    // Set a component from a component direction
+    void replace(const label, const meshDirection<cmptType,MeshType>&);
+    void replace(const label, const tmp<meshDirection<cmptType,MeshType>>&);
+
     // Member operators
 
     void operator=(const meshDirection<Type,MeshType>&);

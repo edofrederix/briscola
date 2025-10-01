@@ -17,7 +17,7 @@ class Row
     public FixedList
     <
         scalar,
-        SType::nComponents
+        SType::nCsComponents
       + pTraits<Type>::nComponents
     >
 {
@@ -26,7 +26,7 @@ public:
     typedef FixedList
     <
         scalar,
-        SType::nComponents+pTraits<Type>::nComponents
+        SType::nCsComponents+pTraits<Type>::nComponents
     > listType;
 
     // Null constructor

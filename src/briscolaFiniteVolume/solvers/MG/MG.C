@@ -331,7 +331,7 @@ MG<SType,Type,MeshType>::MG
 
     // Set the smoother of choice only if the stencil is not diagonal
 
-    if (SType::nComponents > 1)
+    if (SType::nCsComponents > 1)
         this->smoothPtr_.reset
         (
             solver<SType,Type,MeshType>::smoother::New
@@ -396,7 +396,7 @@ MG<SType,Type,MeshType>::MG
     // Set the coarse level solver if requested to do so, and only if the
     // stencil is not diagonal
 
-    if (coarseMode_ == DIRECT && SType::nComponents > 1)
+    if (coarseMode_ == DIRECT && SType::nCsComponents > 1)
     {
         if (!this->dict_.found("coarseSolver"))
             this->dict_.add("coarseSolver", dictionary());
@@ -427,14 +427,14 @@ void MG<SType,Type,MeshType>::solve
     const bool constMatrix
 )
 {
-    if (SType::nComponents > 1)
+    if (SType::nCsComponents > 1)
         sys.eliminateGhosts();
 
     sys.setForcingMask();
 
     if
     (
-        SType::nComponents == 1
+        SType::nCsComponents == 1
      || sum(sys.diagonal()) == MeshType::numberOfDirections
     )
     {

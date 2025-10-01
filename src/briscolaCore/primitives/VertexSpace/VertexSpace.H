@@ -122,6 +122,20 @@ public:
     }
 };
 
+// Replace function specialization
+
+template<class Type>
+inline void replace
+(
+    VertexSpace<Type>& p,
+    const direction dir,
+    const typename VertexSpace<Type>::cmptType& v
+)
+{
+    for (label i = 0; i < VertexSpace<Type>::nCsComponents; i++)
+        setComponent(p[i], dir) = v[i];
+}
+
 }
 
 #include "VertexSpaceProducts.H"

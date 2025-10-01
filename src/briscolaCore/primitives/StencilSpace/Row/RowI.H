@@ -11,11 +11,11 @@ inline void transferRowData
     const Type& b
 )
 {
-    for (int i = 0; i < SType::nComponents; i++)
+    for (int i = 0; i < SType::nCsComponents; i++)
         row[i] = s[i];
 
     for (int i = 0; i < pTraits<Type>::nComponents; i++)
-        row[i+SType::nComponents] = b[i];
+        row[i+SType::nCsComponents] = b[i];
 }
 
 // Scalar specialization
@@ -28,10 +28,10 @@ inline void transferRowData
     const scalar& b
 )
 {
-    for (int i = 0; i < SType::nComponents; i++)
+    for (int i = 0; i < SType::nCsComponents; i++)
         row[i] = s[i];
 
-    row[SType::nComponents] = b;
+    row[SType::nCsComponents] = b;
 }
 
 // Helper function to return the source, allowing for partial specialization
@@ -41,7 +41,7 @@ inline Type sourceFromRow(const Row<SType,Type>& row)
 {
     Type b;
     for (int i = 0; i < pTraits<Type>::nComponents; i++)
-        b[i] = row[i+SType::nComponents];
+        b[i] = row[i+SType::nCsComponents];
 
     return b;
 }
@@ -51,7 +51,7 @@ inline Type sourceFromRow(const Row<SType,Type>& row)
 template<class SType>
 inline scalar sourceFromRow(const Row<SType,scalar>& row)
 {
-    return row[SType::nComponents];
+    return row[SType::nCsComponents];
 }
 
 // Row class
@@ -74,7 +74,7 @@ template<class SType, class Type>
 inline SType Row<SType,Type>::stencil() const
 {
     SType s;
-    for (int i = 0; i < SType::nComponents; i++)
+    for (int i = 0; i < SType::nCsComponents; i++)
         s[i] = this->operator[](i);
 
     return s;

@@ -26,7 +26,7 @@ void diagonal<SType,Type,MeshType>::solve
     const bool constMatrix
 )
 {
-    if (SType::nComponents > 1)
+    if (SType::nCsComponents > 1)
         sys.eliminateGhosts();
 
     sys.setForcingMask();
@@ -34,7 +34,7 @@ void diagonal<SType,Type,MeshType>::solve
     sys.x().makeShallow();
     sys.b().makeShallow();
 
-    if (SType::nComponents > 1)
+    if (SType::nCsComponents > 1)
     {
         List<bool> diag = sys.diagonal();
 

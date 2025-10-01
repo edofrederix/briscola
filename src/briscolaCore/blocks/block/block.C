@@ -2,6 +2,7 @@
 #include "blockM.H"
 
 #include "pTransform.H"
+#include "replace.H"
 
 namespace Foam
 {
@@ -942,6 +943,65 @@ template<class Type>
 Type block<Type>::interp(const vector ijk) const
 {
     return this->interp(ijk.x(), ijk.y(), ijk.z());
+}
+
+template<class Type>
+tmp<block<typename block<Type>::cmptType>>
+block<Type>::component(const label dir) const
+{
+    tmp<block<cmptType>> tD
+    (
+        new block<cmptType>(l_,m_,n_)
+    );
+
+    forAllBlockLinear(*this, i)
+        tD->operator()(i) =
+            ::Foam::component(v_[i], dir);
+
+    return tD;
+}
+
+template<class Type>
+void block<Type>::replace
+(
+    const label dir,
+    const cmptType& v
+)
+{
+    // We need to use a custom replace function here that handles CellSpace
+    // types too. The default setComponent method will not work for such types
+    // because it relies on a reference.
+
+    forAllBlockLinear(*this, i)
+        ::Foam::replace(v_[i], dir, v);
+}
+
+template<class Type>
+void block<Type>::replace
+(
+    const label dir,
+    const block<cmptType>& D
+)
+{
+    // We need to use a custom replace function here that handles CellSpace
+    // types too. The default setComponent method will not work for such types
+    // because it relies on a reference.
+
+    forAllBlockLinear(*this, i)
+        ::Foam::replace(v_[i], dir, D(i));
+}
+
+template<class Type>
+void block<Type>::replace
+(
+    const label dir,
+    const tmp<block<cmptType>>& tD
+)
+{
+    this->replace(dir,tD());
+
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type>
