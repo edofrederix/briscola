@@ -30,7 +30,11 @@ class mesh
     PtrList<boundary> boundaries_;
 
     // Mask to keep track of set boundaries
-    labelBlock setBoundaryMask_;
+    labelBlock boundaryMask_;
+
+    // Mask to keep track of parallel/periodic boundaries (including boundaries
+    // that are indirectly set by boundary extensions)
+    labelBlock pBoundaryMask_;
 
     // Bool to check if mesh is structured or unstructured. If the brick
     // topology is structured, so is the mesh.
@@ -199,9 +203,15 @@ public:
     }
 
     // Return the set boundary mask
-    inline const labelBlock& setBoundaryMask() const
+    inline const labelBlock& boundaryMask() const
     {
-        return setBoundaryMask_;
+        return boundaryMask_;
+    }
+
+    // Return the parallel boundary mask
+    inline const labelBlock& pBoundaryMask() const
+    {
+        return pBoundaryMask_;
     }
 
     // Structured mesh bool
