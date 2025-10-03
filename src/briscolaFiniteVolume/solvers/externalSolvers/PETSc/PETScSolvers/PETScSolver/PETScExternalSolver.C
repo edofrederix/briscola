@@ -25,7 +25,7 @@ PETScExternalSolver::~PETScExternalSolver()
 void PETScExternalSolver::prepare(const Mat& mat, const MPI_Comm& comm)
 {
     if (factor_.valid())
-        MatDestroy(factor_.ptr());
+        MatDestroy(&factor_());
 
     factor_.set(new Mat);
 }
