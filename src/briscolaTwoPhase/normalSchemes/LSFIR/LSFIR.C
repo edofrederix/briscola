@@ -6,6 +6,7 @@
 #include "SortableList.H"
 #include "constants.H"
 #include "Time.H"
+#include "tensor2D.H"
 
 namespace Foam
 {
@@ -19,95 +20,150 @@ namespace fv
 defineTypeNameAndDebug(LSFIR, 0);
 addToRunTimeSelectionTable(normalScheme, LSFIR, dictionary);
 
-void LSFIR::createBoundaryTypes()
+vector LSFIR::centroid
+(
+    const labelVector& ijk,
+    const List<Switch>& IA,
+    const scalar C
+) const
 {
-    faceLabel pBoundary;
-    for (int i = 0; i < 6; i++)
-        pBoundary[i] =
-            fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
+    const vertexVector v =
+        fvMsh_.template metrics<colocated>().vertexCenters()(ijk);
 
-    boundaryType_.setSize(3,3,3);
-    boundaryType_ = Zero;
+    const vector n = this->operator()(ijk);
 
-    for (int i = 0; i < 3; i++)
+    // Collect intersection points in unsorted list
+
+    DynamicList<vector> uPoints;
+
+    for (label fi = 0; fi < 12; fi++)
+    for (label vi = 0; vi < 3; vi++)
     {
-        for (int j = 0; j < 3; j++)
+        const label v1 = faceTriangleDecompCC[fi][vi];
+        const label v2 = faceTriangleDecompCC[fi][(vi+1)%3];
+
+        if (IA[v1] != IA[v2])
         {
-            for (int k = 0; k < 3; k++)
-            {
-                bool aux2 = true;
+            const vector x1 = v[v1];
+            const vector x2 = v[v2];
 
-                if (i != 1)
-                {
-                    aux2 =
-                        i == 0
-                      ? aux2 && pBoundary.left()
-                      : aux2 && pBoundary.right();
-                }
+            const vector d(x2 - x1);
 
-                if (j != 1)
-                {
-                    aux2 =
-                        j == 0
-                      ? aux2 && pBoundary.bottom()
-                      : aux2 && pBoundary.top();
-                }
-
-                if (k != 1)
-                {
-                    aux2 =
-                        k == 0
-                      ? aux2 && pBoundary.aft()
-                      : aux2 && pBoundary.fore();
-                }
-
-                boundaryType_(i,j,k) = aux2;
-            }
+            if (Foam::mag(n & d) > VSMALL)
+                uPoints.append(trimPrecision(x1 - (C + (n & x1))*d/(n & d)));
         }
     }
+
+    if (uPoints.empty())
+        return Zero;
+
+    // Find dominant normal index
+
+    label d = 0;
+    if (Foam::mag(n[1]) > Foam::mag(n[d])) d = 1;
+    if (Foam::mag(n[2]) > Foam::mag(n[d])) d = 2;
+
+    // Set other two indices (rotate)
+
+    const label d1 = (d + 1)%3;
+    const label d2 = (d + 2)%3;
+
+    // Compute 2D centroid as the average of all points
+
+    vector2D average(vector2D::zero);
+
+    forAll(uPoints, i)
+    {
+        average.x() += uPoints[i][d1];
+        average.y() += uPoints[i][d2];
+    }
+
+    average /= scalar(uPoints.size());
+
+    // Compute angles around the centroid
+
+    scalarList angles(uPoints.size());
+    forAll(uPoints, i)
+    {
+        const scalar ax = uPoints[i][d1] - average.x();
+        const scalar ay = uPoints[i][d2] - average.y();
+
+        angles[i] = Foam::atan2(ay,ax);
+    }
+
+    // Sort unique points according to their angles
+
+    labelList order;
+    uniqueOrder(angles, order);
+
+    vectorList points(order.size());
+    forAll(points, i)
+        points[i] = uPoints[order[i]];
+
+    // Compute centroid of polygon
+
+    const vector p0 = points[0];
+    scalar W = 0.0;
+    vector centroid(Zero);
+
+    for (label i = 1; i < points.size()-1; i++)
+    {
+        const vector a1 = points[i] - p0;
+        const vector a2 = points[i+1] - p0;
+
+        const scalar w = Foam::mag(a1 ^ a2)/2.0;
+        const vector c = p0 + (a1 + a2)/3.0;
+
+        W += w;
+        centroid += w*c;
+    }
+
+    return
+        Foam::mag(W) > VSMALL
+      ? trimPrecision(centroid/W)
+      : centroidFromVertices(ijk, IA, C);
 }
 
-void LSFIR::createHexagonDescription()
+vector LSFIR::centroidFromVertices
+(
+    const labelVector& ijk,
+    const List<Switch>& IA,
+    const scalar C
+) const
 {
-    // Create the table to describe the hexahedron for planar faces or
-    // non-planar faces hexahedrons
+    const vertexVector v =
+        fvMsh_.template metrics<colocated>().vertexCenters()(ijk);
 
-    if (planarFaces_)
+    const vector n = this->operator()(ijk);
+
+    vector c(Zero);
+
+    label i = 0;
+    for (label fi = 0; fi < 12; fi++)
+    for (label vi = 0; vi < 3;  vi++)
     {
-        int NIPV0[12] = {4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0};
+        const label v1 = faceTriangleDecompCC[fi][vi];
+        const label v2 = faceTriangleDecompCC[fi][(vi+1)%3];
 
-        for (int i = 0; i < 6; i++)
+        if (IA[v1] != IA[v2])
         {
-            NIPV0_[i] = NIPV0[i];
-            for (int j = 0; j < 4; j++)
+            const vector x1 = v[v1];
+            const vector x2 = v[v2];
+
+            const vector d(x2 - x1);
+
+            if (Foam::mag(n & d) > VSMALL)
             {
-                IPV0_[i][j + 1] = vertexNumsInFaceCC[i][j];
+                c += x1 - (C + (n & x1))*d/(n & d);
+                i++;
             }
-
-            IPV0_[i][0] = IPV0_[i][NIPV0[i]];
-            IPV0_[i][NIPV0[i] + 1] = IPV0_[i][1];
         }
-
-        originalNf_ = 6;
     }
-    else
-    {
-        int NIPV0[12] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
 
-        for (int i = 0; i < 12; i++)
-        {
-            NIPV0_[i] = NIPV0[i];
-            for (int j = 0; j < 3; j++)
-            {
-                IPV0_[i][j + 1] = faceTriangleDecompCC[i][j];
-            }
+    if (i == 0)
+        return Zero;
 
-            IPV0_[i][0] = IPV0_[i][NIPV0[i]];
-            IPV0_[i][NIPV0[i] + 1] = IPV0_[i][1];
-        }
-
-        originalNf_ = 12;
-    }
+    return trimPrecision(c/scalar(i));
 }
 
 LSFIR::LSFIR
@@ -117,783 +173,204 @@ LSFIR::LSFIR
     const colocatedScalarField& alpha
 )
 :
-    LSGIR(fvMsh, dict, alpha),
-    planarFaces_(dict.lookupOrDefault<bool>("planarFaces", true)),
-    centerAveraging_(dict.lookupOrDefault<bool>("centerAveraging", false)),
-    lve_(fvMsh.msh()[0].rectilinear() == unitXYZ)
-{
-    createBoundaryTypes();
-    createHexagonDescription();
-}
+    LSGIR(fvMsh, dict, alpha)
+{}
 
 LSFIR::LSFIR(const LSFIR& s)
 :
-    LSGIR(s),
-    planarFaces_(s.planarFaces_),
-    centerAveraging_(s.centerAveraging_),
-    lve_(s.fvMsh().msh()[0].rectilinear() == unitXYZ)
-{
-    createBoundaryTypes();
-    createHexagonDescription();
-}
+    LSGIR(s)
+{}
 
 LSFIR::~LSFIR()
 {}
 
 void LSFIR::correct()
 {
+    LSGIR::correct();
+
+    const scalar pi = Foam::constant::mathematical::pi;
+
     colocatedVectorField& n = *this;
 
-    // Reconstruct the interface normal using the version of LSFIR presented in
-    // Lopez (2022).
+    const faceLabel I(n.I());
+
+    // Reconstruct the interface normal using the version of LSGIR presented in
+    // Lopez & Hernández (2022)
 
     const colocatedVertexVectorField& v =
         fvMsh_.template metrics<colocated>().vertexCenters();
 
-    colocatedVectorField xgi("surface_centers", fvMsh_);
+    colocatedVectorField centroids("centroids", fvMsh_);
 
     const scalar angleTol = Foam::cos(1e-3);
+    const scalar validAngleTol = Foam::cos(pi/4);
 
-    const scalar validAngleTol =
-        Foam::cos(0.25 * Foam::constant::mathematical::pi);
+    // Temporary normal field constructed from the LSGIR normal
 
-    // Initialise the normal using LSGIR and store that one
+    colocatedVectorField nt(n);
 
-    LSGIR::correct();
-    colocatedVectorField nNew(n);
+    const LVE lve(fvMsh_.msh().rectilinear() == unitXYZ);
 
-    int maxIterNumber = 4;
-    int updatedNormals = 1;
+    Switch update = true;
+    label iter = 0;
 
-    for (int iter = 0; iter < maxIterNumber; iter ++)
+    while (update && iter < 1)
     {
-        // Check the stopping criterion
+        const scalar maxAngleTol =
+            Foam::cos(0.166*pi/scalar(iter+1));
 
-        reduce(updatedNormals, maxOp<int>());
+        update = false;
 
-        if (updatedNormals == 0)
+        // Compute the centroids of the interface for all interfacial cells
+
+        centroids = Zero;
+
+        forAllCells(centroids, i, j, k)
         {
-            break;
-        }
-
-        scalar maxAngleTol = Foam::cos
-        (
-            0.166 * Foam::constant::mathematical::pi
-          / scalar(iter + 1)
-        );
-
-        updatedNormals = 0;
-
-        // Compute the centers of the interface for all interfacial cells
-
-        forAllCells(n, i, j, k)
-        {
-            xgi(i,j,k) = Zero;
+            const labelVector ijk(i,j,k);
 
             if
             (
-                alpha_(i,j,k) > vof::threshold
-             && alpha_(i,j,k) < (1.0 - vof::threshold)
+                alpha_(ijk) > vof::threshold
+             && alpha_(ijk) < 1- vof::threshold
             )
             {
+                // Compute the C coefficient based on the LSGIR normal
 
-                // Prevent computing interface for zero normal
+                scalar Ci =
+                    trimPrecision(lve(alpha_(ijk), v(ijk), n(ijk)));
 
-                const scalar S = Foam::mag(n(i,j,k));
+                // Compute vertex C coefficients
 
-                if (S < 1e-12)
-                {
-                    n(i,j,k)[0] = 1;
-                }
+                scalarList C(8);
+                forAll(C, ii)
+                    C[ii] = trimPrecision(n(ijk) & v(ijk)[ii]);
 
-                // Compute which vertex are inside the liquid for the truncated
-                // cell
+                // Check if vertex C values are larger than Ci
 
-                scalar C =
-                    lve_(alpha_(i,j,k),v(i,j,k),n(i,j,k));
+                List<Switch> IA(8);
+                forAll(IA, ii)
+                    IA[ii] = C[ii] < -Ci;
 
-                double originalCs[8];
+                // Compute the plane centroid
 
-                for (int aux1 = 0; aux1 < 8; aux1++)
-                {
-                    originalCs[aux1] = (n(i,j,k) & v(i,j,k)[aux1]);
-                }
-
-                double SortedCs[8] = {0};
-                int sortedCsIndex[8] = {0};
-
-                int len = 1;
-                int place = 0;
-
-                SortedCs[0] = originalCs[0];
-                sortedCsIndex[0] = 0;
-
-                for (int aux1 = 1; aux1 < 8; aux1++)
-                {
-                    place = len;
-                    for (int aux2 = 0; aux2 < len; aux2++)
-                    {
-                        if (originalCs[aux1] < SortedCs[aux2])
-                        {
-                            place = aux2;
-                            break;
-                        }
-                    }
-
-                    for (int aux2 = len; aux2 > place; aux2--)
-                    {
-                    SortedCs[aux2] = SortedCs[aux2-1];
-                    sortedCsIndex[aux2] = sortedCsIndex[aux2-1];
-                    }
-
-                    SortedCs[place] = originalCs[aux1];
-                    sortedCsIndex[place] = aux1;
-                    len++;
-
-                }
-
-                int Kmap[8];
-                scalarList Cs(8);
-                int IA[8];
-                int Kf = 0;
-
-                Cs[0] = SortedCs[0];
-                Kmap[sortedCsIndex[0]] = 0;
-                int Knum = 0;
-
-                for (int aux1 = 1; aux1 < 8; aux1++)
-                {
-                    if
-                    (
-                        Foam::mag(SortedCs[aux1-1] - SortedCs[aux1])
-                      / Foam::mag(SortedCs[0] - SortedCs[7])
-                      < 1e-8
-                    )
-                    {
-                        Kmap[sortedCsIndex[aux1]] = Knum;
-                    }
-                    else
-                    {
-                        Knum++;
-                        Cs[Knum] = SortedCs[aux1];
-                        Kmap[sortedCsIndex[aux1]] = Knum;
-                    }
-                }
-
-                if (Foam::mag(Cs[0] + C)/(Cs[Knum] - Cs[0]) < 1e-8)
-                {
-                    C += - (Cs[Knum] - Cs[0]) * 1e-8;
-                }
-                else if (Foam::mag(Cs[Knum] + C)/(Cs[Knum] - Cs[0]) < 1e-8)
-                {
-                    C += (Cs[Knum] - Cs[0]) * 1e-8;
-                }
-
-                for (int aux1 = 1; aux1 <= Knum; aux1++)
-                {
-                    if (Cs[aux1] > -C)
-                    {
-                        Kf = aux1 - 1;
-                        break;
-                    }
-
-                    if (aux1 == Knum)
-                    {
-                        Kf = aux1 - 1;
-                    }
-                }
-
-                for (int aux1 = 0; aux1 < 8; aux1++)
-                {
-                    if (Kmap[aux1] <= Kf)
-                        IA[aux1] = 0;
-                    else
-                        IA[aux1] = 1;
-                }
-
-                // If centerAveraging is true compute the center as the average
-                // of the vertex, if not compute it as a center of mass
-
-                if (!centerAveraging_)
-                {
-                    // Find the truncated interface using Lopez (2020) algorithm
-
-                    int NIPV1[16] = {0};
-                    int IPV1[16][14];
-
-                    int insertedVertex[12][6];
-                    int totalInsertedVertex = 0;
-                    int Nf = originalNf_;
-                    int Ip = 8;
-
-                    for (int jt = 0; jt < originalNf_; jt++)
-                    {
-                        for (int it = 1; it <= NIPV0_[jt]; it++)
-                        {
-                            if (IA[IPV0_[jt][it]] == 1)
-                                NIPV1[jt]++;
-                        }
-
-                        if (NIPV1[jt] > 0)
-                        {
-                            int index = 0;
-                            for (int it = 1; it <= NIPV0_[jt]; it++)
-                            {
-                                int ip1 = IPV0_[jt][it];
-                                int ip2 = IPV0_[jt][it+1];
-
-                                if (IA[ip1] == 1)
-                                {
-                                    index++;
-                                    IPV1[jt][index] = ip1;
-                                }
-                                if (IA[ip1] != IA[ip2])
-                                {
-                                    index++;
-                                    bool flag = true;
-
-                                    for
-                                    (
-                                        int aux = 0;
-                                        aux < totalInsertedVertex;
-                                        aux ++
-                                    )
-                                    {
-                                        if
-                                        (
-                                            (
-                                                (insertedVertex[aux][1] == ip1)
-                                             || (insertedVertex[aux][2] == ip1)
-                                            )
-                                         && (
-                                                (insertedVertex[aux][1] == ip2)
-                                             || (insertedVertex[aux][2] == ip2)
-                                            )
-                                        )
-                                        {
-                                            flag = false;
-                                            IPV1[jt][index] =
-                                                insertedVertex[aux][0];
-
-                                            if (IA[ip2] == 1)
-                                            {
-                                                insertedVertex[aux][3] = jt;
-                                                insertedVertex[aux][4] = index;
-                                            }
-                                            break;
-                                        }
-                                    }
-
-                                    if (flag)
-                                    {
-                                        insertedVertex
-                                            [totalInsertedVertex][0] = Ip;
-
-                                        IPV1[jt][index] = Ip;
-
-                                        if (IA[ip2] == 1)
-                                        {
-                                            insertedVertex
-                                                [totalInsertedVertex][3] = jt;
-                                            insertedVertex
-                                                [totalInsertedVertex][4] =
-                                                    index;
-                                            insertedVertex
-                                                [totalInsertedVertex][2] = ip1;
-                                            insertedVertex
-                                                [totalInsertedVertex][1] = ip2;
-                                        }
-                                        else
-                                        {
-                                            insertedVertex
-                                                [totalInsertedVertex][1] = ip1;
-                                            insertedVertex
-                                                [totalInsertedVertex][2] = ip2;
-                                        }
-
-                                        insertedVertex
-                                            [totalInsertedVertex][5] = 0;
-
-                                        totalInsertedVertex++;
-
-                                        Ip++;
-                                    }
-                                }
-                            }
-
-                            NIPV1[jt] = index;
-                            IPV1[jt][0] = IPV1[jt][NIPV1[jt]];
-                            IPV1[jt][NIPV1[jt]+1] = IPV1[jt][1];
-                        }
-                    }
-
-                    int index = 1;
-                    bool untaggedVertex = true;
-                    int taggedVertex = 1;
-
-                    IPV1[Nf][index] = 8;
-                    insertedVertex[0][5] = 1;
-                    int counter = 0;
-
-                    while (untaggedVertex)
-                    {
-                        if (counter > 13)
-                        {
-                            FatalErrorInFunction
-                                << " Arrangement of the new face in LVE failed."
-                                << endl << abort(FatalError);
-                        }
-
-                        int auxj = insertedVertex[IPV1[Nf][index]-8][3];
-                        int auxi = insertedVertex[IPV1[Nf][index]-8][4];
-
-                        if (IPV1[auxj][auxi - 1] != IPV1[Nf][1])
-                        {
-                            index++;
-                            IPV1[Nf][index] = IPV1[auxj][auxi - 1];
-                            insertedVertex[IPV1[Nf][index]-8][5] = 1;
-                            taggedVertex++;
-                        }
-                        else
-                        {
-                            NIPV1[Nf] = index;
-                            IPV1[Nf][0] = IPV1[Nf][NIPV1[Nf]];
-                            IPV1[Nf][NIPV1[Nf]+1] = IPV1[Nf][1];
-                            Nf++;
-
-                            if (taggedVertex == totalInsertedVertex)
-                            {
-                                untaggedVertex = false;
-                            }
-                            else
-                            {
-                                index = 1;
-                                for
-                                (
-                                    int auxip = 0;
-                                    auxip < totalInsertedVertex;
-                                    auxip++
-                                )
-                                {
-                                    if (insertedVertex[auxip][5] == 0)
-                                    {
-                                        IPV1[Nf][index] =
-                                            insertedVertex[auxip][0];
-                                        insertedVertex[auxip][5] = 1;
-                                        taggedVertex++;
-                                        break;
-                                    }
-                                }
-                            }
-
-                        }
-
-                        counter++;
-                    }
-
-                    // If there are more than one interface polygons
-                    // compute the center as an average of vertex
-
-                    if (Nf - originalNf_ == 1)
-                    {
-                        vector Xin;
-                        vector e;
-                        vectorList x0(totalInsertedVertex);
-
-                        for (int it = 0; it < totalInsertedVertex; it++)
-                        {
-                            e = v(i,j,k)[insertedVertex[it][2]]
-                                - v(i,j,k)[insertedVertex[it][1]];
-                            e /= Foam::mag(e);
-                            Xin = v(i,j,k)[insertedVertex[it][1]];
-                            x0[insertedVertex[it][0] - 8] =
-                                Xin
-                              + (-C - (n(i,j,k) & Xin))
-                              * e * (1.0 / (n(i,j,k) & e));
-                        }
-
-                        scalar auxMax;
-                        int maxNormalIndex;
-
-                        auxMax = Foam::mag(n(i,j,k)[0]);
-                        maxNormalIndex = 0;
-
-                        for (int it = 1; it < 3; it++)
-                        {
-                            if (Foam::mag(n(i,j,k)[it]) > auxMax)
-                            {
-                                auxMax = Foam::mag(n(i,j,k)[it]);
-                                maxNormalIndex = it;
-                            }
-                        }
-
-                        scalar TotalArea = 0;
-                        vector Centroid;
-                        scalar Area;
-
-                        for (int it = 2; it < NIPV1[originalNf_]; it++)
-                        {
-                            Centroid = x0[IPV1[originalNf_][1]-8];
-                            Centroid += x0[IPV1[originalNf_][it]-8];
-                            Centroid += x0[IPV1[originalNf_][it+1]-8];
-                            Centroid /= 3;
-
-                            Area =
-                                crossProductComponent
-                                (
-                                    x0[IPV1[originalNf_][it]-8]
-                                  - x0[IPV1[originalNf_][1]-8],
-                                    x0[IPV1[originalNf_][it+1]-8]
-                                  - x0[IPV1[originalNf_][1]-8],
-                                    maxNormalIndex
-                                );
-
-                            Area /= n(i,j,k)[maxNormalIndex];
-
-                            TotalArea += Area;
-                            xgi(i,j,k) += Area * Centroid;
-                        }
-
-                        xgi(i,j,k) /= TotalArea;
-
-                        if (xgi(i,j,k)[1] != xgi(i,j,k)[1])
-                        {
-                            FatalErrorInFunction
-                                << "LSFIR: geometric center computation failed."
-                                << endl << abort(FatalError);
-                        }
-                    }
-                    else
-                    {
-                        int numberOfPoints = 0;
-                        vector e;
-                        vector Xin;
-
-                        for (int aux1 = 0; aux1 < originalNf_; aux1++)
-                        {
-                            for (int aux2 = 1; aux2 <= NIPV0_[aux1]; aux2++)
-                            {
-                                if
-                                (
-                                    IA[IPV0_[aux1][aux2]] == 0
-                                 && IA[IPV0_[aux1][aux2 + 1]] == 1
-                                )
-                                {
-                                    if (IA[IPV0_[aux1][aux2]] == 1)
-                                    {
-                                        e =
-                                            v(i,j,k)[IPV0_[aux1][aux2 + 1]]
-                                          - v(i,j,k)[IPV0_[aux1][aux2]];
-
-                                        Xin = v(i,j,k)[IPV0_[aux1][aux2]];
-                                    }
-                                    else
-                                    {
-                                        e =
-                                            v(i,j,k)[IPV0_[aux1][aux2]]
-                                          - v(i,j,k)[IPV0_[aux1][aux2 + 1]];
-
-                                        Xin = v(i,j,k)[IPV0_[aux1][aux2 + 1]];
-                                    }
-
-                                    e /= Foam::mag(e);
-
-                                    xgi(i,j,k) += Xin
-                                        + (-C - (n(i,j,k) & Xin))
-                                        * e * (1 / (n(i,j,k) & e));
-
-                                    numberOfPoints++;
-                                }
-                            }
-                        }
-
-                        xgi(i,j,k) /= numberOfPoints;
-
-                        if (xgi(i,j,k)[1] != xgi(i,j,k)[1])
-                        {
-                            FatalErrorInFunction
-                                << "LSFIR: center of vertex computation failed."
-                                << endl << abort(FatalError);
-                        }
-                    }
-                }
-                else
-                {
-                    int numberOfPoints = 0;
-                    vector e;
-                    vector Xin;
-
-                    for (int aux1 = 0; aux1 < originalNf_; aux1++)
-                    {
-                        for (int aux2 = 1; aux2 <= NIPV0_[aux1]; aux2++)
-                        {
-                            if
-                            (
-                                IA[IPV0_[aux1][aux2]] == 0
-                             && IA[IPV0_[aux1][aux2 + 1]] == 1
-                            )
-                            {
-                                if (IA[IPV0_[aux1][aux2]] == 1)
-                                {
-                                    e =
-                                        v(i,j,k)[IPV0_[aux1][aux2 + 1]]
-                                      - v(i,j,k)[IPV0_[aux1][aux2]];
-
-                                    Xin = v(i,j,k)[IPV0_[aux1][aux2]];
-                                }
-                                else
-                                {
-                                    e =
-                                        v(i,j,k)[IPV0_[aux1][aux2]]
-                                      - v(i,j,k)[IPV0_[aux1][aux2 + 1]];
-
-                                    Xin = v(i,j,k)[IPV0_[aux1][aux2 + 1]];
-                                }
-
-                                e /= Foam::mag(e);
-
-                                xgi(i,j,k) += Xin
-                                        + (-C - (n(i,j,k) & Xin))
-                                        * e * (1 / (n(i,j,k) & e));
-
-                                numberOfPoints++;
-                            }
-                        }
-                    }
-
-                    xgi(i,j,k) /= numberOfPoints;
-
-                    if (xgi(i,j,k)[1] != xgi(i,j,k)[1])
-                    {
-                        FatalErrorInFunction
-                            <<  "LSFIR: center of vertex computation failed."
-                            << endl << abort(FatalError);
-                    }
-                }
-
+                centroids(ijk) = centroid(ijk, IA, Ci);
             }
-
         }
 
-        xgi.correctBoundaryConditions();
+        centroids.correctBoundaryConditions();
         n.correctBoundaryConditions();
 
         // Minimize the square problem for all cells and store the solution
 
-        forAllCells(n, i, j, k)
+        forAllCells(nt, i, j, k)
         {
+            const labelVector ijk(i,j,k);
 
             if
             (
-                alpha_(i,j,k) > vof::threshold
-             && alpha_(i,j,k) < 1 - vof::threshold
+                alpha_(ijk) > vof::threshold
+             && alpha_(ijk) < 1 - vof::threshold
             )
             {
-                int d1 = 0;
-                int d2 = 1;
-                int d3 = 2;
-                scalar value;
-                double A[2][2] = {0};
-                double b[2] = {0};
-                scalar wi = 0;
+                // Get order of normal component magnitudes
 
-                value = Foam::mag(n(i,j,k)[0]);
+                labelList order;
+                sortedOrder(list(cmptMag(n(ijk))), order);
 
-                if (Foam::mag(n(i,j,k)[1]) > value)
+                // Collect 2x2 linear system
+
+                label count = 0;
+                tensor2D A(tensor2D::zero);
+                vector2D b(vector2D::zero);
+
+                labelVector o;
+                for (o.x() = -1; o.x() < 2; o.x()++)
+                for (o.y() = -1; o.y() < 2; o.y()++)
+                for (o.z() = -1; o.z() < 2; o.z()++)
+                if (o != zeroXYZ)
                 {
-                    d1 = 1;
-                    d2 = 0;
-                    value = Foam::mag(n(i,j,k)[1]);
-                }
+                    const bool internal =
+                        cmptMin(ijk + o - I.lower()) > -1
+                     && cmptMax(ijk + o - I.upper()) <  0;
 
-                if (Foam::mag(n(i,j,k)[2]) > value)
-                {
-                    d3 = d1;
-                    d1 = 2;
-                    value = Foam::mag(n(i,j,k)[2]);
-                }
+                    const bool pBoundary =
+                        fvMsh_.msh().pBoundaryMask()(o + unitXYZ);
 
-                int nNeighs = 0;
+                    const bool interface =
+                        alpha_(ijk + o) > vof::threshold
+                     && alpha_(ijk + o) < 1 - vof::threshold;
 
-                for (int aux1 = 0; aux1 < 3; aux1++)
-                {
-                    for (int aux2 = 0; aux2 < 3; aux2++)
+                    if (interface && (internal || pBoundary))
                     {
-                        for (int aux3 = 0; aux3 < 3; aux3++)
+                        const scalar angle = (n(ijk+o) & n(ijk));
+
+                        Pout<< n(ijk) << " " << n(ijk+o) << endl;
+
+                        if (angle > validAngleTol)
                         {
-                            bool interiorNode =
-                                (
-                                    (i+aux1-1) >= n.I().left()
-                                 && (i+aux1-1) <  n.I().right()
-                                 && (j+aux2-1) >= n.I().bottom()
-                                 && (j+aux2-1) <  n.I().top()
-                                 && (k+aux3-1) >= n.I().aft()
-                                 && (k+aux3-1) <  n.I().fore()
-                                );
+                            const vector dist =
+                                centroids(ijk+o) - centroids(ijk);
 
-                            if
-                            (
-                                alpha_(i+aux1-1,j+aux2-1,k+aux3-1)
-                              > vof::threshold
-                             && alpha_(i+aux1-1,j+aux2-1,k+aux3-1)
-                              < (1.0 - vof::threshold)
-                             && (
-                                    (aux1 != 1)
-                                 || (aux2 != 1)
-                                 || (aux3 != 1)
-                                )
-                             && (
-                                    interiorNode
-                                 || boundaryType_(aux1,aux2,aux3)
-                                )
-                            )
-                            {
-                                scalar angle =
-                                    (
-                                        n(i+aux1-1,j+aux2-1,k+aux3-1)
-                                      & n(i,j,k)
-                                    )
-                                  / (
-                                        Foam::mag
-                                        (
-                                            n(i+aux1-1,j+aux2-1,k+aux3-1)
-                                        )
-                                      * Foam::mag(n(i,j,k))
-                                    );
+                            const scalar weight =
+                                1.0/Foam::pow(Foam::max(mag(dist), 1e-16), 2.5);
 
-                                if (angle > validAngleTol)
-                                {
-                                    vector dist =
-                                        xgi(i+aux1-1,j+aux2-1,k+aux3-1)
-                                      - xgi(i,j,k);
+                            A.xx() += weight*Foam::sqr(dist[order[0]]);
+                            A.yy() += weight*Foam::sqr(dist[order[1]]);
 
-                                    wi =
-                                        1.0
-                                      / Foam::max
-                                        (
-                                            1e-20,
-                                            Foam::pow(Foam::mag(dist),2.5)
-                                        );
+                            A.xy() += weight*dist[order[0]]*dist[order[1]];
+                            A.yx() += weight*dist[order[0]]*dist[order[1]];
 
-                                    A[0][0] += wi*Foam::sqr(dist[d2]);
-                                    A[0][1] += wi*(dist[d2]) * (dist[d3]);
-                                    A[1][1] += wi*Foam::sqr(dist[d3]);
+                            b.x() -= weight*dist[order[2]]*dist[order[0]];
+                            b.y() -= weight*dist[order[2]]*dist[order[1]];
 
-                                    b[0] += - wi*(dist[d2]) * (dist[d1]);
-                                    b[1] += - wi*(dist[d3]) * (dist[d1]);
-
-                                    nNeighs++;
-                                }
-                            }
+                            count++;
                         }
                     }
                 }
 
-                A[1][0] = A[0][1];
+                // Remove truncation errors
 
-                vector nc;
+                for (int ii = 0; ii < 4; ii++)
+                    A[ii] = trimPrecision(A[ii]);
 
-                if (nNeighs > 0)
+                // Solve 2x2 linear system if a solution exists
+
+                if (count > 0 && det(A) != 0.0)
                 {
-                    if ((A[0][0] * A[1][1] - A[0][1] * A[1][0]) == 0)
-                    {
-                        nc = n(i,j,k);
-                    }
-                    else
-                    {
-                        if
-                        (
-                            (A[0][0] == 0.0 && A[1][1] != 0)
-                         || Foam::mag(A[0][0]/stabilise(A[1][1], 1e-40))
-                          < 1e-12
-                        )
-                        {
-                            nc[d2] = 0.0;
-                            nc[d3] = b[1] / stabilise(A[1][1], 1e-40);
-                        }
-                        else if
-                        (
-                            (A[0][0] != 0.0 && A[1][1] == 0)
-                         || Foam::mag(A[1][1]/stabilise(A[0][0], 1e-40))
-                          < 1e-12
-                        )
-                        {
-                            nc[d3] = 0.0;
-                            nc[d2] = b[0] / stabilise(A[0][0], 1e-40);
-                        }
-                        else
-                        {
-                            nc[d2] =
-                                (A[1][1] * b[0] - A[0][1] * b[1])
-                              / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
+                    vector2D x(inv(A) & b);
 
-                            nc[d3] =
-                                (- A[1][0] * b[0] + A[0][0] * b[1])
-                              / (A[0][0] * A[1][1] - A[0][1] * A[1][0]);
-                        }
+                    vector nNew;
 
-                        if (n(i,j,k)[d1] < 0)
-                        {
-                            nc[d1] = - 1.0;
-                            nc[d2] = - nc[d2];
-                            nc[d3] = - nc[d3];
-                        }
-                        else
-                        {
-                            nc[d1] = 1.0;
-                        }
-                    }
+                    nNew[order[0]] = x.x();
+                    nNew[order[1]] = x.y();
+                    nNew[order[2]] = 1.0;
 
-                    nc /= Foam::mag(nc);
-                    scalar angle =
-                        (nc & n(i,j,k))
-                      / (Foam::mag(nc) * Foam::mag(n(i,j,k)));
+                    if (n(ijk)[order[0]] < 0)
+                        nNew = -nNew;
+
+                    nNew /= mag(nNew);
+
+                    const scalar angle = (nNew & n(ijk));
 
                     if (angle > maxAngleTol)
                     {
-                        nNew(i,j,k) = nc;
+                        nt(ijk) = nNew;
 
                         if (angle < angleTol)
-                            updatedNormals = 1;
+                            update = true;
                     }
-                    else
-                    {
-                        nNew(i,j,k) = n(i,j,k);
-                    }
-                }
-                else
-                {
-                    nNew(i,j,k) = n(i,j,k);
-                }
-
-                if
-                (
-                    nNew(i,j,k)[1] != nNew(i,j,k)[1]
-                 || nNew(i,j,k)[2] != nNew(i,j,k)[2]
-                 || nNew(i,j,k)[0] != nNew(i,j,k)[0]
-                )
-                {
-                    FatalErrorInFunction
-                        <<  "LSFIR: normal computation failed."
-                        <<  "n new: " << nNew(i,j,k) << endl
-                        << endl << abort(FatalError);
                 }
             }
         }
 
-        // Update the normals
+        // Copy back the improved normals
 
-        forAllCells(n, i, j, k)
-        {
-            if
-            (
-                alpha_(i,j,k) > vof::threshold
-             && alpha_(i,j,k) < 1.0 - vof::threshold
-            )
-            {
-                n(i,j,k) = nNew(i,j,k);
-            }
-        }
+        n = nt;
+
+        reduce(update, orOp<Switch>());
+
+        iter++;
     }
 
     n.correctBoundaryConditions();

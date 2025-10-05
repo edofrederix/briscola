@@ -526,72 +526,14 @@ void mesh::setBoundaryMask()
 
     forAll(boundaries_, i)
         if (boundaries_[i].offsetDegree() > 0)
-            boundaryMask_(boundaries_[i].offset()+unitXYZ) = true;
+            boundaryMask_(boundaries_[i].offset()+unitXYZ) = 1;
 
     // Set parallel/periodic boundary mask
 
     forAll(boundaries_, i)
-        if (boundaries_[i].castable<periodicBoundary>() > 0)
-            pBoundaryMask_(boundaries_[i].offset()+unitXYZ) = true;
-
-    // Set edge boundaries for extended face boundaries, and vertex boundaries
-    // for extended edge boundaries
-
-    forAll(boundaries_, i)
-    {
-        if
-        (
-            boundaries_[i].extended()
-         && boundaries_[i].offsetDegree() > 0
-        )
-        {
-            for (int j = 0; j < 6; j++)
-            {
-                if (boundaries_[i].extension()[j])
-                {
-                    const labelVector o =
-                        boundaries_[i].offset() + unitXYZ + faceOffsets[j];
-
-                    boundaryMask_(o) = true;
-
-                    if (boundaries_[i].castable<parallelBoundary>())
-                        pBoundaryMask_(o) = true;
-                }
-            }
-        }
-    }
-
-    // Also set vertex boundaries for face boundaries extended in two orthogonal
-    // directions
-
-    forAll(boundaries_, i)
-    if (boundaries_[i].extended() && boundaries_[i].offsetDegree() == 1)
-    {
-        const boundary& b = boundaries_[i];
-        const label f = faceNumber(b.offset());
-
-        // Cycle through orthogonal edge pairs
-
-        for (label j = 0; j < 4; j++)
-        {
-            const labelVector eo1(edgeOffsets[edgeNumsInFaceCC[f][j      ]]);
-            const labelVector eo2(edgeOffsets[edgeNumsInFaceCC[f][(j+1)%4]]);
-
-            if
-            (
-                b.extension()[faceNumber(eo1 - b.offset())]
-             && b.extension()[faceNumber(eo2 - b.offset())]
-            )
-            {
-                const labelVector o = eo1 + eo2 + unitXYZ - b.offset();
-
-                boundaryMask_(o) = true;
-
-                if (b.castable<parallelBoundary>())
-                    pBoundaryMask_(o) = true;
-            }
-        }
-    }
+        if (boundaries_[i].offsetDegree() > 0)
+            if (boundaries_[i].castable<parallelBoundary>() > 0)
+                pBoundaryMask_(boundaries_[i].offset()+unitXYZ) = 1;
 }
 
 void mesh::reorderBoundaries()

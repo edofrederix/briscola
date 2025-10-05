@@ -32,8 +32,7 @@ class mesh
     // Mask to keep track of set boundaries
     labelBlock boundaryMask_;
 
-    // Mask to keep track of parallel/periodic boundaries (including boundaries
-    // that are indirectly set by boundary extensions)
+    // Mask to keep track of parallel/periodic boundaries
     labelBlock pBoundaryMask_;
 
     // Bool to check if mesh is structured or unstructured. If the brick
