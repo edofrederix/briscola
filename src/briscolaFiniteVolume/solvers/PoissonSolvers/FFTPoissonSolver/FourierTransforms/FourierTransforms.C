@@ -71,121 +71,144 @@ void FourierTransforms<SType>::FFTBoundaryConditions()
 {
     BC_ = labelVector(-1,-1,-1);
 
-    switch (globalBoundaryConditionBaseType(x_, faceOffsets[0]))
+    boundaryConditionBaseType bcX0
+        = globalBoundaryConditionBaseType(x_, faceOffsets[0]);
+
+    if (bcX0 == boundaryConditionBaseType::EMPTYBC)
     {
-        case 1:
-            BC_.x() = 0; // Empty
-            break;
+        BC_.x() = 0; // Empty
+    }
+    else if (bcX0 == boundaryConditionBaseType::PERIODICBC)
+    {
+        BC_.x() = 5; // C-C
+    }
+    else if (bcX0 == boundaryConditionBaseType::DIRICHLETBC)
+    {
+        boundaryConditionBaseType bcX1
+            = globalBoundaryConditionBaseType(x_, faceOffsets[1]);
 
-        case 3:
-            BC_.x() = 5; // C-C
-            break;
+        if (bcX1 == boundaryConditionBaseType::DIRICHLETBC)
+        {
+            BC_.x() = 1; // D-D
+        }
+        else if (bcX1 == boundaryConditionBaseType::NEUMANNBC)
+        {
+            BC_.x() = 3; // D-N
+        }
+    }
+    else if (bcX0 == boundaryConditionBaseType::NEUMANNBC)
+    {
+        boundaryConditionBaseType bcX1
+            = globalBoundaryConditionBaseType(x_, faceOffsets[1]);
 
-        case 4:
-            if (globalBoundaryConditionBaseType(x_, faceOffsets[1]) == 4)
-            {
-                BC_.x() = 1; // D-D
-            }
-            else if (globalBoundaryConditionBaseType(x_, faceOffsets[1]) == 5)
-            {
-                BC_.x() = 3; // D-N
-            }
-            break;
-
-        case 5:
-            if (globalBoundaryConditionBaseType(x_, faceOffsets[1]) == 4)
-            {
-                BC_.x() = 4; // N-D
-            }
-            else if (globalBoundaryConditionBaseType(x_, faceOffsets[1]) == 5)
-            {
-                BC_.x() = 2; // N-N
-            }
-            break;
-
-        default:
-            FatalError
-                << "Incorrect boundary condition." << endl
-                << abort(FatalError);
-            break;
+        if (bcX1 == boundaryConditionBaseType::DIRICHLETBC)
+        {
+            BC_.x() = 4; // N-D
+        }
+        else if (bcX1 == boundaryConditionBaseType::NEUMANNBC)
+        {
+            BC_.x() = 2; // N-N
+        }
+    }
+    else
+    {
+        FatalError
+            << "Incorrect boundary condition." << endl
+            << abort(FatalError);
     }
 
-    switch (globalBoundaryConditionBaseType(x_, faceOffsets[2]))
+
+    boundaryConditionBaseType bcY0
+        = globalBoundaryConditionBaseType(x_, faceOffsets[2]);
+
+    if (bcY0 == boundaryConditionBaseType::EMPTYBC)
     {
-        case 1:
-            BC_.y() = 0; // Empty
-            break;
+        BC_.y() = 0; // Empty
+    }
+    else if (bcY0 == boundaryConditionBaseType::PERIODICBC)
+    {
+        BC_.y() = 5; // C-C
+    }
+    else if (bcY0 == boundaryConditionBaseType::DIRICHLETBC)
+    {
+        boundaryConditionBaseType bcY1
+            = globalBoundaryConditionBaseType(x_, faceOffsets[3]);
 
-        case 3:
-            BC_.y() = 5; // C-C
-            break;
+        if (bcY1 == boundaryConditionBaseType::DIRICHLETBC)
+        {
+            BC_.y() = 1; // D-D
+        }
+        else if (bcY1 == boundaryConditionBaseType::NEUMANNBC)
+        {
+            BC_.y() = 3; // D-N
+        }
+    }
+    else if (bcY0 == boundaryConditionBaseType::NEUMANNBC)
+    {
+        boundaryConditionBaseType bcY1
+            = globalBoundaryConditionBaseType(x_, faceOffsets[3]);
 
-        case 4:
-            if (globalBoundaryConditionBaseType(x_, faceOffsets[3]) == 4)
-            {
-                BC_.y() = 1; // D-D
-            }
-            else if (globalBoundaryConditionBaseType(x_, faceOffsets[3]) == 5)
-            {
-                BC_.y() = 3; // D-N
-            }
-            break;
-
-        case 5:
-            if (globalBoundaryConditionBaseType(x_, faceOffsets[3]) == 4)
-            {
-                BC_.y() = 4; // N-D
-            }
-            else if (globalBoundaryConditionBaseType(x_, faceOffsets[3]) == 5)
-            {
-                BC_.y() = 2; // N-N
-            }
-            break;
-
-        default:
-            FatalError
-                << "Incorrect boundary condition." << endl
-                << abort(FatalError);
-            break;
+        if (bcY1 == boundaryConditionBaseType::DIRICHLETBC)
+        {
+            BC_.y() = 4; // N-D
+        }
+        else if (bcY1 == boundaryConditionBaseType::NEUMANNBC)
+        {
+            BC_.y() = 2; // N-N
+        }
+    }
+    else
+    {
+        FatalError
+            << "Incorrect boundary condition." << endl
+            << abort(FatalError);
     }
 
-    switch (globalBoundaryConditionBaseType(x_, faceOffsets[4]))
+
+    boundaryConditionBaseType bcZ0
+        = globalBoundaryConditionBaseType(x_, faceOffsets[4]);
+
+    if (bcZ0 == boundaryConditionBaseType::EMPTYBC)
     {
-        case 1:
-            BC_.z() = 0; // Empty
-            break;
+        BC_.z() = 0; // Empty
+    }
+    else if (bcZ0 == boundaryConditionBaseType::PERIODICBC)
+    {
+        BC_.z() = 5; // C-C
+    }
+    else if (bcZ0 == boundaryConditionBaseType::DIRICHLETBC)
+    {
+        boundaryConditionBaseType bcZ1
+            = globalBoundaryConditionBaseType(x_, faceOffsets[5]);
 
-        case 3:
-            BC_.z() = 5; // C-C
-            break;
+        if (bcZ1 == boundaryConditionBaseType::DIRICHLETBC)
+        {
+            BC_.z() = 1; // D-D
+        }
+        else if (bcZ1 == boundaryConditionBaseType::NEUMANNBC)
+        {
+            BC_.z() = 3; // D-N
+        }
+    }
+    else if (bcZ0 == boundaryConditionBaseType::NEUMANNBC)
+    {
+        boundaryConditionBaseType bcZ1
+            = globalBoundaryConditionBaseType(x_, faceOffsets[5]);
 
-        case 4:
-            if (globalBoundaryConditionBaseType(x_, faceOffsets[5]) == 4)
-            {
-                BC_.z() = 1; // D-D
-            }
-            else if (globalBoundaryConditionBaseType(x_, faceOffsets[5]) == 5)
-            {
-                BC_.z() = 3; // D-N
-            }
-            break;
-
-        case 5:
-            if (globalBoundaryConditionBaseType(x_, faceOffsets[5]) == 4)
-            {
-                BC_.z() = 4; // N-D
-            }
-            else if (globalBoundaryConditionBaseType(x_, faceOffsets[5]) == 5)
-            {
-                BC_.z() = 2; // N-N
-            }
-            break;
-
-        default:
-            FatalError
-                << "Incorrect boundary condition." << endl
-                << abort(FatalError);
-            break;
+        if (bcZ1 == boundaryConditionBaseType::DIRICHLETBC)
+        {
+            BC_.z() = 4; // N-D
+        }
+        else if (bcZ1 == boundaryConditionBaseType::NEUMANNBC)
+        {
+            BC_.z() = 2; // N-N
+        }
+    }
+    else
+    {
+        FatalError
+            << "Incorrect boundary condition." << endl
+            << abort(FatalError);
     }
 }
 
