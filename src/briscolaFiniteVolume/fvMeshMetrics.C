@@ -331,8 +331,8 @@ void fvMeshMetrics<MeshType>::calculateFaceWeights()
                     // Assure that ghost cells also have the relevant face
                     // values set
 
-                    fwc(l,d,nei)[f%2 ? f-1 : f+1] = fwc(l,d,ijk)[f];
-                    fwn(l,d,nei)[f%2 ? f-1 : f+1] = fwn(l,d,ijk)[f];
+                    fwc(l,d,nei)[f%2 ? f-1 : f+1] = fwn(l,d,ijk)[f];
+                    fwn(l,d,nei)[f%2 ? f-1 : f+1] = fwc(l,d,ijk)[f];
 
                     // Check if the weights add up to unity up to some precision
 
@@ -350,6 +350,11 @@ void fvMeshMetrics<MeshType>::calculateFaceWeights()
             }
         }
     }
+
+    // Also set remaining ghost cell face values at processor interfaces
+
+    fwc.correctCommsBoundaryConditions();
+    fwn.correctCommsBoundaryConditions();
 }
 
 template<class MeshType>

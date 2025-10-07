@@ -28,7 +28,7 @@ faceGradientSchemes
 
 faceFluxSchemes
 {
-    default midPoint;
+    default linear;
 }
 
 reconstructionSchemes
