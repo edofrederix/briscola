@@ -105,7 +105,11 @@ void LSGIR::correct()
                 for (label ii = 0; ii < 3; ii++)
                     ATb[ii] += A[l][ii]*b[l];
 
-            // Invert 3x3 matrix and compute normal
+            // Solve stabilized linear system
+
+            for (label ii = 0; ii < 3; ii++)
+                if (trimPrecision(ATA(ii,ii)) == 0)
+                    ATA(ii,ii) = SMALL;
 
             n(ijk) = ATA.inv() & ATb;
             n(ijk) /= Foam::mag(n(ijk));

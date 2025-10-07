@@ -532,7 +532,7 @@ void mesh::setBoundaryMask()
 
     forAll(boundaries_, i)
         if (boundaries_[i].offsetDegree() > 0)
-            if (boundaries_[i].castable<parallelBoundary>() > 0)
+            if (boundaries_[i].castable<parallelBoundary>())
                 pBoundaryMask_(boundaries_[i].offset()+unitXYZ) = 1;
 }
 

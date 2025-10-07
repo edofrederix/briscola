@@ -11,6 +11,8 @@
 namespace Foam
 {
 
+using Foam::constant::mathematical::pi;
+
 namespace briscola
 {
 
@@ -173,12 +175,23 @@ LSFIR::LSFIR
     const colocatedScalarField& alpha
 )
 :
-    LSGIR(fvMsh, dict, alpha)
+    LSGIR(fvMsh, dict, alpha),
+    maxIter_(dict.lookupOrDefault<label>("maxIter", 2)),
+    tolerance_
+    (
+        dict.lookupOrDefault<scalar>
+        (
+            "tolerance",
+            2.0*pi/360.0
+        )
+    )
 {}
 
 LSFIR::LSFIR(const LSFIR& s)
 :
-    LSGIR(s)
+    LSGIR(s),
+    maxIter_(s.maxIter_),
+    tolerance_(s.tolerance_)
 {}
 
 LSFIR::~LSFIR()
@@ -186,24 +199,19 @@ LSFIR::~LSFIR()
 
 void LSFIR::correct()
 {
-    LSGIR::correct();
+    // Reconstruct the interface normal using the version of LSGIR presented in
+    // Lopez & Hernández (2022)
 
-    const scalar pi = Foam::constant::mathematical::pi;
+    LSGIR::correct();
 
     colocatedVectorField& n = *this;
 
     const faceLabel I(n.I());
 
-    // Reconstruct the interface normal using the version of LSGIR presented in
-    // Lopez & Hernández (2022)
-
     const colocatedVertexVectorField& v =
         fvMsh_.template metrics<colocated>().vertexCenters();
 
     colocatedVectorField centroids("centroids", fvMsh_);
-
-    const scalar angleTol = Foam::cos(1e-3);
-    const scalar validAngleTol = Foam::cos(pi/4);
 
     // Temporary normal field constructed from the LSGIR normal
 
@@ -211,16 +219,9 @@ void LSFIR::correct()
 
     const LVE lve(fvMsh_.msh().rectilinear() == unitXYZ);
 
-    Switch update = true;
-    label iter = 0;
-
-    while (update && iter < 1)
+    label iter;
+    for (iter = 0; iter < maxIter_; iter++)
     {
-        const scalar maxAngleTol =
-            Foam::cos(0.166*pi/scalar(iter+1));
-
-        update = false;
-
         // Compute the centroids of the interface for all interfacial cells
 
         centroids = Zero;
@@ -263,6 +264,9 @@ void LSFIR::correct()
 
         // Minimize the square problem for all cells and store the solution
 
+        const scalar maxChangeInAngle = 0.166*pi/scalar(iter+1);
+        bool converged = true;
+
         forAllCells(nt, i, j, k)
         {
             const labelVector ijk(i,j,k);
@@ -273,16 +277,21 @@ void LSFIR::correct()
              && alpha_(ijk) < 1 - vof::threshold
             )
             {
-                // Get order of normal component magnitudes
+                // Find dominant normal index
 
-                labelList order;
-                sortedOrder(list(cmptMag(n(ijk))), order);
+                label d = 0;
+                if (Foam::mag(n(ijk)[1]) > Foam::mag(n(ijk)[d])) d = 1;
+                if (Foam::mag(n(ijk)[2]) > Foam::mag(n(ijk)[d])) d = 2;
 
-                // Collect 2x2 linear system
+                // Set other two indices (rotate)
 
-                label count = 0;
+                const label d1 = (d + 1)%3;
+                const label d2 = (d + 2)%3;
+
                 tensor2D A(tensor2D::zero);
                 vector2D b(vector2D::zero);
+
+                label count = 0;
 
                 labelVector o;
                 for (o.x() = -1; o.x() < 2; o.x()++)
@@ -303,62 +312,73 @@ void LSFIR::correct()
 
                     if (interface && (internal || pBoundary))
                     {
-                        const scalar angle = (n(ijk+o) & n(ijk));
+                        // Only use neighbor if the angle between the normals is
+                        // within 45 degrees
 
-                        Pout<< n(ijk) << " " << n(ijk+o) << endl;
-
-                        if (angle > validAngleTol)
+                        if (Foam::acos(n(ijk+o) & n(ijk)) < pi/4.0)
                         {
                             const vector dist =
                                 centroids(ijk+o) - centroids(ijk);
 
                             const scalar weight =
-                                1.0/Foam::pow(Foam::max(mag(dist), 1e-16), 2.5);
+                                1.0/Foam::pow(Foam::max(mag(dist), 1e-20), 2.5);
 
-                            A.xx() += weight*Foam::sqr(dist[order[0]]);
-                            A.yy() += weight*Foam::sqr(dist[order[1]]);
+                            A.xx() += weight*Foam::sqr(dist[d1]);
+                            A.xy() += weight*dist[d1]*dist[d2];
+                            A.yy() += weight*Foam::sqr(dist[d2]);
 
-                            A.xy() += weight*dist[order[0]]*dist[order[1]];
-                            A.yx() += weight*dist[order[0]]*dist[order[1]];
-
-                            b.x() -= weight*dist[order[2]]*dist[order[0]];
-                            b.y() -= weight*dist[order[2]]*dist[order[1]];
+                            b.x() -= weight*dist[d1]*dist[d];
+                            b.y() -= weight*dist[d2]*dist[d];
 
                             count++;
                         }
                     }
                 }
 
-                // Remove truncation errors
-
-                for (int ii = 0; ii < 4; ii++)
-                    A[ii] = trimPrecision(A[ii]);
-
-                // Solve 2x2 linear system if a solution exists
+                A.yx() = A.xy();
 
                 if (count > 0 && det(A) != 0.0)
                 {
-                    vector2D x(inv(A) & b);
+                    const scalar r = Foam::mag(A.xx()/stabilise(A.yy(), 1e-40));
 
-                    vector nNew;
+                    vector nNew(Zero);
 
-                    nNew[order[0]] = x.x();
-                    nNew[order[1]] = x.y();
-                    nNew[order[2]] = 1.0;
+                    if (r < 1e-12)
+                    {
+                        nNew[d2] = b.y()/stabilise(A.yy(), 1e-40);
+                    }
+                    else if (1.0/r < 1e-12)
+                    {
+                        nNew[d1] = b.x()/stabilise(A.xx(), 1e-40);
+                    }
+                    else
+                    {
+                        const vector2D x(inv(A) & b);
 
-                    if (n(ijk)[order[0]] < 0)
+                        nNew[d1] = x.x();
+                        nNew[d2] = x.y();
+                    }
+
+                    nNew[d] = 1.0;
+                    nNew /= Foam::mag(nNew);
+
+                    if (n(ijk)[d] < 0)
                         nNew = -nNew;
 
-                    nNew /= mag(nNew);
+                    const scalar angle = Foam::acos(nNew & n(ijk));
 
-                    const scalar angle = (nNew & n(ijk));
+                    // Update only if the change in angle is smaller than a
+                    // threshold
 
-                    if (angle > maxAngleTol)
+                    if (angle < maxChangeInAngle)
                     {
                         nt(ijk) = nNew;
 
-                        if (angle < angleTol)
-                            update = true;
+                        // If the change in angle is larger than the angle
+                        // tolerance, keep iterating
+
+                        if (angle > tolerance_)
+                            converged = false;
                     }
                 }
             }
@@ -368,7 +388,10 @@ void LSFIR::correct()
 
         n = nt;
 
-        reduce(update, orOp<Switch>());
+        reduce(converged, andOp<Switch>());
+
+        if (converged)
+            break;
 
         iter++;
     }
