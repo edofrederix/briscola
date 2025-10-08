@@ -11,8 +11,6 @@ namespace briscola
 defineTypeNameAndDebug(periodicBoundary, 0);
 addToRunTimeSelectionTable(boundary, periodicBoundary, dictionary);
 
-const label periodicBoundary::typeNumber = 3;
-
 periodicBoundary::periodicBoundary(const mesh& msh, const dictionary& dict)
 :
     parallelBoundary(msh, dict)

@@ -18,7 +18,11 @@ addToRunTimeSelectionTable(curvatureScheme, SHF, dictionary);
 
 void SHF::setCommunication()
 {
-    const faceLabel& boundaryType = fvMsh_.msh().faceBoundaryType();
+    faceLabel pBoundary;
+    for (int i = 0; i < 6; i++)
+        pBoundary[i] =
+            fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
+
     const faceLabel I = fvMsh_.template I<colocated>();
 
     List<labelVector> indices(0);
@@ -33,7 +37,7 @@ void SHF::setCommunication()
 
         // On parallel/periodic boundaries only
 
-        if (boundaryType[f] > domainBoundary::typeNumber)
+        if (pBoundary[f])
         {
             faceLabel J(I.lower() - unitXYZ, I.upper() + unitXYZ);
 
@@ -97,7 +101,11 @@ void SHF::correct()
     colocatedScalarField& kappa = *this;
     kappa = Zero;
 
-    const faceLabel& boundaryType = fvMsh_.msh().faceBoundaryType();
+    faceLabel pBoundary;
+    for (int i = 0; i < 6; i++)
+        pBoundary[i] =
+            fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
+
     const labelVector& N = fvMsh_.template N<colocated>();
     const faceLabel& I = fvMsh_.template I<colocated>();
 
@@ -224,14 +232,8 @@ void SHF::correct()
 
                 // Do not go beyond domain boundary ghost cells
 
-                if
-                (
-                    ii + a > I[f.right()]
-                 && boundaryType[f.right()] < parallelBoundary::typeNumber
-                )
-                {
+                if (ii + a > I[f.right()] && !pBoundary[f.right()])
                     break;
-                }
 
                 for (int b = -1; b <= 1; b++)
                     for (int c = -1; c <= 1; c++)
@@ -265,14 +267,8 @@ void SHF::correct()
 
                 // Do not go beyond domain boundary ghost cells
 
-                if
-                (
-                    ii - a < (I[f.left()] - 1)
-                 && boundaryType[f.left()] < parallelBoundary::typeNumber
-                )
-                {
+                if (ii - a < (I[f.left()] - 1) && !pBoundary[f.left()])
                     break;
-                }
 
                 for (int b = -1; b <= 1; b++)
                     for (int c = -1; c <= 1; c++)

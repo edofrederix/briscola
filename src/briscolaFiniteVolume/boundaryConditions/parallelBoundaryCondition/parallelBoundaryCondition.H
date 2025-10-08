@@ -2,6 +2,7 @@
 #define parallelBoundaryCondition_H
 
 #include "boundaryCondition.H"
+#include "parallelBoundary.H"
 
 #include "block.H"
 #include "faceLabel.H"
@@ -92,6 +93,12 @@ public:
     virtual boundaryConditionBaseType baseType() const
     {
         return PARALLELBC;
+    }
+
+    // Return the transformation tensor
+    inline labelTensor T() const
+    {
+        return this->b_.template cast<parallelBoundary>().T();
     }
 
     // Non-eliminated boundary condition

@@ -2,7 +2,7 @@
 
 #include "SortableList.H"
 #include "linearSystem.H"
-#include "domainBoundary.H"
+#include "patchBoundary.H"
 #include "parallelBoundary.H"
 #include "periodicBoundary.H"
 #include "emptyBoundary.H"

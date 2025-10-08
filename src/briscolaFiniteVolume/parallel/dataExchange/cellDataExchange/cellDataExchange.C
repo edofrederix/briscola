@@ -1,5 +1,5 @@
 #include "cellDataExchange.H"
-#include "domainBoundary.H"
+#include "patchBoundary.H"
 
 namespace Foam
 {
@@ -75,9 +75,12 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
     {
         if (msh.boundaries()[i].castable<parallelBoundary>())
         {
-            neighbors_[i+1] = msh.boundaries()[i].neighborProcNum();
-            neighborOffsets_[i+1] = msh.boundaries()[i].offset();
-            neighborTs[i+1] = msh.boundaries()[i].T();
+            const parallelBoundary& b =
+                msh.boundaries()[i].cast<parallelBoundary>();
+
+            neighbors_[i+1] = b.neighborProcNum();
+            neighborOffsets_[i+1] = b.offset();
+            neighborTs[i+1] = b.T();
         }
     }
 
@@ -137,7 +140,7 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
             if
             (
-                msh.boundaries()[bNum-1].castable<domainBoundary>()
+                msh.boundaries()[bNum-1].castable<patchBoundary>()
              || msh.boundaries()[bNum-1].castable<emptyBoundary>()
             )
                 FatalErrorInFunction

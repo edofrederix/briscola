@@ -17,8 +17,13 @@ addToRunTimeSelectionTable(normalScheme, LSGIR, dictionary);
 
 void LSGIR::createBoundaryType()
 {
-    const faceLabel& faceType =
-        fvMsh_.msh().faceBoundaryType();
+    faceLabel pBoundary;
+    for (int i = 0; i < 6; i++)
+        pBoundary[i] =
+            fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
+
+    boundaryType_.setSize(3,3,3);
+    boundaryType_ = Zero;
 
     for (int i = 0; i < 3; i++)
     {
@@ -32,33 +37,27 @@ void LSGIR::createBoundaryType()
                 {
                     aux =
                         i == 0
-                      ? aux && faceType.left()
-                      > domainBoundary::typeNumber
-                      : aux && faceType.right()
-                      > domainBoundary::typeNumber;
+                      ? aux && pBoundary.left()
+                      : aux && pBoundary.right();
                 }
 
                 if ((fvMsh_[0].m() > 1) && (j != 1))
                 {
                     aux =
                         j == 0
-                      ? aux && faceType.bottom()
-                      > domainBoundary::typeNumber
-                      : aux && faceType.top()
-                      > domainBoundary::typeNumber;
+                      ? aux && pBoundary.bottom()
+                      : aux && pBoundary.top();
                 }
 
                 if ((fvMsh_[0].n() > 1) && (k != 1))
                 {
                     aux =
                         k == 0
-                      ? aux && faceType.aft()
-                      > domainBoundary::typeNumber
-                      : aux && faceType.fore()
-                      > domainBoundary::typeNumber;
+                      ? aux && pBoundary.aft()
+                      : aux && pBoundary.fore();
                 }
 
-                boundaryType_[i][j][k] = aux;
+                boundaryType_(i,j,k) = aux;
             }
         }
     }
@@ -132,7 +131,7 @@ void LSGIR::correct()
                         if
                         (
                             (aux1 != 1 || aux2 != 1 || aux3 != 1)
-                         && (interiorNode || boundaryType_[aux1][aux2][aux3])
+                         && (interiorNode || boundaryType_(aux1,aux2,aux3))
                         )
                         {
                             index = aux1 + 3 * aux2 + 9 * aux3;

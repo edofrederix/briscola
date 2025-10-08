@@ -18,9 +18,6 @@ class emptyBoundary
 
 public:
 
-    // Type number
-    const static label typeNumber;
-
     // Runtime type information
     TypeName("empty");
 
@@ -34,12 +31,6 @@ public:
     virtual autoPtr<boundary> clone() const
     {
         return autoPtr<boundary>(new emptyBoundary(*this));
-    }
-
-    // Boundary type number
-    virtual label typeNum() const
-    {
-        return typeNumber;
     }
 };
 

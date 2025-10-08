@@ -32,10 +32,6 @@ protected:
     // boundary offset vector
     label offsetDegree_;
 
-    // Rotation of the neighbor in case of a parallel boundary (defaults to the
-    // identity tensor)
-    labelTensor T_;
-
     // Master bool. Boundaries that require communication can be master or
     // slave. By default a boundary is master. Can be modified by derived
     // classes.
@@ -93,19 +89,27 @@ public:
 
     // Cast to derived type, if possible. Returns error otherwise.
     template<class BoundaryType>
-    inline const BoundaryType& cast() const
+    inline BoundaryType& cast()
     {
-        const BoundaryType* bPtr = dynamic_cast<const BoundaryType*>(this);
+        BoundaryType* bPtr = dynamic_cast<BoundaryType*>(this);
 
         if (!bPtr)
         {
             FatalErrorInFunction
-                << "Boundary cannot be cast to " << BoundaryType::typeName
+                << "Boundary " << name_ << " cannot be cast to "
+                << BoundaryType::typeName
                 << " because it is " << this->type()
                 << abort(FatalError);
         }
 
         return *bPtr;
+    }
+
+    // Cast to derived const type, if possible. Returns error otherwise.
+    template<class BoundaryType>
+    inline const BoundaryType& cast() const
+    {
+        return const_cast<boundary*>(this)->cast<BoundaryType>();
     }
 
     // Access to the dictionary
@@ -127,9 +131,6 @@ public:
         return offsetDegree_;
     }
 
-    // Rotation of the neighbor
-    inline const labelTensor& T() const { return T_; }
-
     // Master bool
     inline bool master() const { return master_; }
     inline bool slave() const { return !master_; }
@@ -140,9 +141,6 @@ public:
 
     // Check if the boundary is extended
     inline bool extended() const { return extension_ != faceLabel::zero; }
-
-    // Boundary type number
-    virtual label typeNum() const = 0;
 
     // Neighbor processor number
     virtual label neighborProcNum() const { return -1; }

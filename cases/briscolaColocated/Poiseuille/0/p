@@ -14,9 +14,21 @@ boundaryConditions
         gradients   (0);
     }
 
+    inlet_mapped
+    {
+        type        Neumann;
+        gradients   (0);
+    }
+
     inlet
     {
         type        periodic;
+    }
+
+    outlet_mapped
+    {
+        type        Dirichlet;
+        values      (0);
     }
 
     outlet

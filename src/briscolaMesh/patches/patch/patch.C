@@ -1,21 +1,16 @@
 #include "patch.H"
 #include "geometry.H"
+#include "addToRunTimeSelectionTable.H"
 
 namespace Foam
 {
 
-template<>
-const char* NamedEnum<briscola::patch::patchType,3>::names[] =
-{
-    "patch",
-    "periodic",
-    "empty"
-};
-
-const NamedEnum<briscola::patch::patchType,3> briscola::patch::patchTypeNames;
-
 namespace briscola
 {
+
+defineTypeNameAndDebug(patch, 0);
+defineRunTimeSelectionTable(patch, dictionary);
+addToRunTimeSelectionTable(patch, patch, dictionary);
 
 void patch::checkConsistency() const
 {
@@ -42,15 +37,10 @@ patch::patch
 )
 :
     meshObject<geometry>(g, num),
-    dictPtr_(&dict),
-    name_(name),
-    type_
-    (
-        patchTypeNames.read(dict.lookup("type"))
-    ),
-    facePtrs_()
+    dict_(dict),
+    name_(name)
 {
-    const List<labelList> vertexNumList(dict.lookup("faces"));
+    const List<labelList> vertexNumList(dict_.lookup("faces"));
 
     if (vertexNumList.size() == 0)
     {
@@ -59,7 +49,6 @@ patch::patch
             << exit(FatalError);
     }
 
-    facePtrs_.clear();
     facePtrs_.setSize(vertexNumList.size(), nullptr);
 
     forAll(vertexNumList, facei)
@@ -116,37 +105,41 @@ patch::patch
     checkConsistency();
 }
 
-patch::patch
-(
-    const geometry& g,
-    const label num,
-    const word name,
-    const List<const face*>& facePtrs
-)
+patch::patch(const patch& p)
 :
-    meshObject<geometry>(g, num),
-    dictPtr_(nullptr),
-    name_(name),
-    type_(PATCH),
-    facePtrs_(facePtrs)
-{
-    checkConsistency();
-}
-
-patch::patch
-(
-    const patch& p
-)
-:
-    meshObject<geometry>(p.parentGeometry(), p.num()),
-    dictPtr_(&p.dict()),
-    name_(p.name()),
-    type_(p.type()),
-    facePtrs_(p.facePtrs())
+    meshObject<geometry>(p),
+    dict_(p.dict_),
+    name_(p.name_),
+    facePtrs_(p.facePtrs_)
 {}
 
 patch::~patch()
 {}
+
+autoPtr<patch> patch::New
+(
+    const geometry& geo,
+    const label num,
+    const word name,
+    const dictionary& dict
+)
+{
+    const word patchType(dict.lookup("type"));
+
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(patchType);
+
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    {
+        FatalErrorInFunction
+            << "Unknown patch type " << patchType << endl
+            << "Valid patch types are" << endl
+            << dictionaryConstructorTablePtr_->sortedToc()
+            << exit(FatalError);
+    }
+
+    return autoPtr<patch>(cstrIter()(geo, num, name, dict));
+}
 
 bool patch::operator==(const patch& p) const
 {

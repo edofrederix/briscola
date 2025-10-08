@@ -21,7 +21,13 @@ addToRunTimeSelectionTable(normalScheme, LSFIR, dictionary);
 
 void LSFIR::createBoundaryTypes()
 {
-    const faceLabel& faceType = fvMsh_.msh().faceBoundaryType();
+    faceLabel pBoundary;
+    for (int i = 0; i < 6; i++)
+        pBoundary[i] =
+            fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
+
+    boundaryType_.setSize(3,3,3);
+    boundaryType_ = Zero;
 
     for (int i = 0; i < 3; i++)
     {
@@ -35,33 +41,27 @@ void LSFIR::createBoundaryTypes()
                 {
                     aux2 =
                         i == 0
-                      ? aux2 && faceType.left()
-                      > domainBoundary::typeNumber
-                      : aux2 && faceType.right()
-                      > domainBoundary::typeNumber;
+                      ? aux2 && pBoundary.left()
+                      : aux2 && pBoundary.right();
                 }
 
                 if (j != 1)
                 {
                     aux2 =
                         j == 0
-                      ? aux2 && faceType.bottom()
-                      > domainBoundary::typeNumber
-                      : aux2 && faceType.top()
-                      > domainBoundary::typeNumber;
+                      ? aux2 && pBoundary.bottom()
+                      : aux2 && pBoundary.top();
                 }
 
                 if (k != 1)
                 {
                     aux2 =
                         k == 0
-                      ? aux2 && faceType.aft()
-                      > domainBoundary::typeNumber
-                      : aux2 && faceType.fore()
-                      > domainBoundary::typeNumber;
+                      ? aux2 && pBoundary.aft()
+                      : aux2 && pBoundary.fore();
                 }
 
-                boundaryTypeLSFIR_[i][j][k] = aux2;
+                boundaryType_(i,j,k) = aux2;
             }
         }
     }
@@ -744,7 +744,7 @@ void LSFIR::correct()
                                 )
                              && (
                                     interiorNode
-                                 || boundaryTypeLSFIR_[aux1][aux2][aux3]
+                                 || boundaryType_(aux1,aux2,aux3)
                                 )
                             )
                             {

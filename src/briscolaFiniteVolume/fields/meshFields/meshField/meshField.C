@@ -1,7 +1,7 @@
 #include "meshField.H"
 #include "fvMesh.H"
 
-#include "domainBoundary.H"
+#include "patchBoundary.H"
 #include "parallelBoundary.H"
 #include "periodicBoundary.H"
 #include "emptyBoundary.H"
@@ -379,12 +379,12 @@ void meshField<Type,MeshType>::correctBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctDomainBoundaryConditions()
+void meshField<Type,MeshType>::correctPatchBoundaryConditions()
 {
     addBoundaryConditions();
 
     forAll(*this, l)
-        listType::operator[](l).correctDomainBoundaryConditions();
+        listType::operator[](l).correctPatchBoundaryConditions();
 }
 
 template<class Type, class MeshType>

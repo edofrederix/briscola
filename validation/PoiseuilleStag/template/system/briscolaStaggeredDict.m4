@@ -6,9 +6,6 @@ FoamFile
     object      briscolaStaggeredDict;
 }
 
-// Solution is u(y) = 0.5/nu*dp/dx*(h^2 - y^2). To have mean(u) = 1 with h = 1,
-// we thus have dp/dx = 4*nu.
-
 nu          0.01;
-source      (0.04 0 0);
+source      (VARSOURCE 0 0);
 sourceCoeff (0 0 0);

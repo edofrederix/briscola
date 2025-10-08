@@ -95,14 +95,6 @@ public:
         const meshField<Type,MeshType>& field
     ) const = 0;
 
-    // Selector for given type
-    static autoPtr<boundaryCondition<Type,MeshType>> New
-    (
-        const meshField<Type,MeshType>&,
-        const boundary&,
-        const word
-    );
-
     // Selector which determines type based on the provided boundary type
     static autoPtr<boundaryCondition<Type,MeshType>> New
     (
@@ -119,9 +111,9 @@ public:
 
     // Cast to derived type, if possible. Returns error otherwise.
     template<class BoundaryType>
-    inline const BoundaryType& cast() const
+    inline BoundaryType& cast()
     {
-        const BoundaryType* bPtr = dynamic_cast<const BoundaryType*>(this);
+        BoundaryType* bPtr = dynamic_cast<BoundaryType*>(this);
 
         if (!bPtr)
         {
@@ -133,6 +125,15 @@ public:
         }
 
         return *bPtr;
+    }
+
+    // Cast to const derived type reference
+    template<class BoundaryType>
+    inline const BoundaryType& cast() const
+    {
+        return
+            const_cast<boundaryCondition<Type,MeshType>*>(this)
+          ->cast<BoundaryType>();
     }
 
     // Determine a field's boundary condition base type for a global boundary
@@ -184,12 +185,6 @@ public:
     inline const faceLabel& extension() const
     {
         return b_.extension();
-    }
-
-    // Return the transformation tensor
-    inline labelTensor T() const
-    {
-        return b_.T();
     }
 
     // Return the start point of the internal cell boundary

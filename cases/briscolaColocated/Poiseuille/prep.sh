@@ -7,28 +7,33 @@ if [ -z "$BRISCOLA" ]; then
 
 fi
 
-IBM=${1:-false}
+MODE=${1:-normal}
 
-case "$IBM" in
+case "$MODE" in
 
-    true)
+    normal)
+
+        cp system/briscolaMeshDict.normal system/briscolaMeshDict
+
+        ;;
+
+    IBM)
 
         cp system/briscolaMeshDict.IBM system/briscolaMeshDict
 
         ;;
 
-    false)
+    mapped)
 
-        cp system/briscolaMeshDict.noIBM system/briscolaMeshDict
+        cp system/briscolaMeshDict.mapped system/briscolaMeshDict
 
         ;;
 
     *)
 
-        echo "Invalid IBM option (true or false)"
+        echo "Invalid mode (normal, IBM or mapped)"
         exit
 
 esac
 
 wmake -silent code
-

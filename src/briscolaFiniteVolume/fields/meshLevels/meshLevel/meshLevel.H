@@ -283,7 +283,7 @@ public:
     void correctUnsetBoundaryConditions();
 
     // Correct domain boundary conditions
-    void correctDomainBoundaryConditions();
+    void correctPatchBoundaryConditions();
 
     // Correct empty boundary conditions
     void correctEmptyBoundaryConditions();

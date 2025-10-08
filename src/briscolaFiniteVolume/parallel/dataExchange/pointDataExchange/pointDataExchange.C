@@ -1,5 +1,5 @@
 #include "pointDataExchange.H"
-#include "domainBoundary.H"
+#include "patchBoundary.H"
 
 namespace Foam
 {
@@ -56,6 +56,16 @@ void pointDataExchange<MeshType>::init(const List<vector>& points)
             this->d_
         ).ptr()
     );
+
+    const vectorList missing(move(interpPtr_->missingPoints()));
+
+    if (missing.size())
+        FatalErrorInFunction
+            << "Not all interpolation points were found. Missing points are: "
+            << endl << missing << endl
+            << "at the " << MeshType::typeName << " mesh level "
+            << interpPtr_->l() << " direction " << interpPtr_->d() << endl
+            << abort(FatalError);
 }
 
 template<class MeshType>

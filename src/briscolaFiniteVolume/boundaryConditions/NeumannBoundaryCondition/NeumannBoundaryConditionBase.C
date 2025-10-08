@@ -1,9 +1,5 @@
 #include "NeumannBoundaryConditionBase.H"
 
-#include "colocated.H"
-#include "staggered.H"
-#include "meshLevel.H"
-
 namespace Foam
 {
 
@@ -14,22 +10,55 @@ namespace fv
 {
 
 template<class Type, class MeshType>
+void NeumannBoundaryConditionBase<Type,MeshType>::init
+(
+    const List<Type>& gradients
+)
+{
+    boundaryGradients_.clear();
+    boundaryGradients_.resize(this->fvMsh_.size()*MeshType::numberOfDirections);
+
+    label c = 0;
+    forAll(this->fvMsh_, l)
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+            boundaryGradients_.set
+            (
+                c++,
+                new block<Type>(this->N(l,d), gradients[d])
+            );
+}
+
+template<class Type, class MeshType>
 NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 (
     const meshField<Type,MeshType>& mshField,
     const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b),
-    boundaryGradients_(this->dict().lookup("gradients"))
-{}
+    boundaryCondition<Type,MeshType>(mshField, b)
+{
+    init(List<Type>(this->dict().lookup("gradients")));
+}
 
 template<class Type, class MeshType>
 NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 (
     const meshField<Type,MeshType>& mshField,
     const boundary& b,
-    const List<Type>& boundaryGradients
+    const List<Type>& gradients
+)
+:
+    boundaryCondition<Type,MeshType>(mshField, b)
+{
+    init(gradients);
+}
+
+template<class Type, class MeshType>
+NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
+(
+    const meshField<Type,MeshType>& mshField,
+    const boundary& b,
+    const PtrList<block<Type>>& boundaryGradients
 )
 :
     boundaryCondition<Type,MeshType>(mshField, b),

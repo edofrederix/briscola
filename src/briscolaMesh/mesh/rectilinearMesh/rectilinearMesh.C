@@ -1,5 +1,6 @@
 #include "rectilinearMesh.H"
 #include "addToRunTimeSelectionTable.H"
+#include "parallelBoundary.H"
 
 namespace Foam
 {
@@ -347,33 +348,53 @@ labelVector rectilinearMesh::findCell(const vector& p, const label l) const
         )
     );
 
-    const scalarList& x = localPoints_[0];
-    const scalarList& y = localPoints_[1];
-    const scalarList& z = localPoints_[2];
+    const PtrList<PartialList<scalar>>& x = localPoints_;
 
-    if
-    (
-        q.x() < x[0] || q.x() >= x[x.size()-1]
-     || q.y() < y[0] || q.y() >= y[y.size()-1]
-     || q.z() < z[0] || q.z() >= z[z.size()-1]
-    )
-    {
-        return -unitXYZ;
-    }
+    // Check if the point is outside the domain boundaries
 
-    const labelVector R
-    (
-        cmptDivide(this->operator[](0).N(),this->operator[](l).N())
-    );
+    for (label d = 0; d < 3; d++)
+        if (q[d] < x[d].first() || q[d] > x[d].last() + 1e-12)
+            return -unitXYZ;
+
+    // Check if the point is just above/below the upper/lower boundary. If so,
+    // the point is included if the boundary is not be a parallel one. If the
+    // point is exactly on the lower boundary it must be included anyway.
+
+    for (label d = 0; d < 3; d++)
+        if (q[d] >= x[d].last() && q[d] <= x[d].last() + 1e-12)
+            if (b(units[d]).castable<parallelBoundary>())
+                return -unitXYZ;
+
+    for (label d = 0; d < 3; d++)
+        if (q[d] < x[d].first() && q[d] >= x[d].first() - 1e-12)
+            if (b(-units[d]).castable<parallelBoundary>())
+                return -unitXYZ;
 
     // Binary search. Use <= operator so that at faces points belong to the
-    // upper cell.
+    // upper cell. Assign points that are on the upper boundary to the nearest
+    // internal cell.
 
-    const label i = findLower(x, q.x(), 0, lessEqOp<scalar>());
-    const label j = findLower(y, q.y(), 0, lessEqOp<scalar>());
-    const label k = findLower(z, q.z(), 0, lessEqOp<scalar>());
+    const labelVector N(this->operator[](0).N());
+    const labelVector R
+    (
+        cmptDivide(N, this->operator[](l).N())
+    );
 
-    return labelVector(i/R.x(), j/R.y(), k/R.z());
+    labelVector ijk;
+
+    for (label d = 0; d < 3; d++)
+        ijk[d] =
+            Foam::min
+            (
+                Foam::max
+                (
+                    findLower(x[d], q[d], 0, lessEqOp<scalar>()),
+                    0
+                ),
+                N[d]-1
+            );
+
+    return cmptDivide(ijk, R);
 }
 
 }

@@ -128,8 +128,8 @@ public:
         return cellCoordinates_;
     }
 
-    // Check if all points were found
-    virtual bool allPointsFound() const;
+    // Return list of missing points
+    virtual vectorList missingPoints() const;
 
     // Interpolators
 

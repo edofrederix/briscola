@@ -15,7 +15,7 @@ SOLVER="briscolaStaggered"
 # Simulation parameters
 
 MESHES=(32 64)
-IBMS=(none penalization Vreman Fadlun Mittal)
+MODES=(normal mapped penalization Vreman Fadlun Mittal)
 NPROCSPERBRICKSIDE=(1 2 4)
 PSOLVERS=(MG FFT Krylov)
 RKSCHEMES=(RK3 Ascher222 CNAB)
@@ -44,19 +44,19 @@ mkdir -p $RUNDIR
 echo \
     "Mesh," \
     "Nprocs," \
-    "IBM," \
-    "pressure solver," \
+    "Mode," \
+    "Pressure solver," \
     "Time scheme," \
-    "error [%]," \
-    "test," \
-    "number of time steps," \
-    "mean number of pressure iters" > $CURR/$CSV
+    "Error [%]," \
+    "Test," \
+    "Number of time steps," \
+    "Mean number of pressure iters" > $CURR/$CSV
 ##
 
 source ../procManagement.sh
 
 for I in "${!MESHES[@]}"; do
-for J in "${!IBMS[@]}"; do
+for J in "${!MODES[@]}"; do
 for K in "${!NPROCSPERBRICKSIDE[@]}"; do
 for L in "${!PSOLVERS[@]}"; do
 for M in "${!RKSCHEMES[@]}"; do
@@ -64,7 +64,7 @@ for M in "${!RKSCHEMES[@]}"; do
     sleep 1
 
     MESH=${MESHES[$I]}
-    IBM=${IBMS[$J]}
+    MODE=${MODES[$J]}
     NPROCPERBRICKSIDE=${NPROCSPERBRICKSIDE[$K]}
     PSOLVER=${PSOLVERS[$L]}
     RKSCHEME=${RKSCHEMES[$M]}
@@ -74,7 +74,7 @@ for M in "${!RKSCHEMES[@]}"; do
 
     NPROC=$(echo "print(int($NPROCX*$NPROCY))" | python)
 
-    CASE="$MESH-$NPROC-$IBM-$PSOLVER-$RKSCHEME"
+    CASE="$MESH-$NPROC-$MODE-$PSOLVER-$RKSCHEME"
 
     wait_for_procs $NPROC $NTASKS
 
@@ -85,7 +85,7 @@ for M in "${!RKSCHEMES[@]}"; do
 
         cd $RUNDIR/$CASE
 
-        ./prep.sh $MESH $NPROCX $NPROCY $IBM $PSOLVER $RKSCHEME
+        ./prep.sh $MESH $NPROCX $NPROCY $MODE $PSOLVER $RKSCHEME
 
         if [ "$RKSCHEME" == "CNAB" ]; then
 
@@ -116,7 +116,7 @@ for M in "${!RKSCHEMES[@]}"; do
         echo \
             "$MESH," \
             "$NPROC," \
-            "$IBM," \
+            "$MODE," \
             "$PSOLVER," \
             "$RKSCHEME," \
             "$E," \
