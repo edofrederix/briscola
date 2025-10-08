@@ -23,7 +23,11 @@ brick/brickVertexLink.C
 brick/brickTopology.C
 brick/brickTopologyMap.C
 
-patch/patch.C
+patches/patch/patch.C
+patches/mappedPatch/mappedPatch.C
+patches/emptyPatch/emptyPatch.C
+patches/periodicPatch/periodicPatch.C
+
 patchPair/patchPair.C
 
 geometry/geometry.C
@@ -38,7 +42,8 @@ decompositions/brickDecompositionInterface/brickDecompositionSlice.C
 boundaries/boundary/boundary.C
 boundaries/parallelBoundary/parallelBoundary.C
 boundaries/periodicBoundary/periodicBoundary.C
-boundaries/domainBoundary/domainBoundary.C
+boundaries/mappedBoundary/mappedBoundary.C
+boundaries/patchBoundary/patchBoundary.C
 boundaries/emptyBoundary/emptyBoundary.C
 
 partPoints/partPoints.C

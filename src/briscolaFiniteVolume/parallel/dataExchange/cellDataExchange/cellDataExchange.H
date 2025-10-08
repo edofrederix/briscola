@@ -61,6 +61,15 @@ public:
     // Copy constructor
     cellDataExchange(const cellDataExchange&);
 
+    // Clone the data exchange
+    virtual autoPtr<cellDataExchange<MeshType>> clone() const
+    {
+        return autoPtr<cellDataExchange<MeshType>>
+        (
+            new cellDataExchange(*this)
+        );
+    }
+
     // Destructor
     virtual ~cellDataExchange();
 

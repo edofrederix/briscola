@@ -73,7 +73,7 @@ brick::brick(const geometry& g, const label num, const dictionary& dict)
 
 brick::brick(const brick& b)
 :
-    meshObject<geometry>(b.parentGeometry(), b.num()),
+    meshObject<geometry>(b),
     dict_(b.dict_),
     v_(b.v_),
     N_(b.N_),

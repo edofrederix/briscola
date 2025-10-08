@@ -1,8 +1,7 @@
 #ifndef NeumannBoundaryCondition_H
 #define NeumannBoundaryCondition_H
 
-#include "boundaryCondition.H"
-#include "block.H"
+#include "NeumannBoundaryConditionBase.H"
 
 namespace Foam
 {
@@ -13,84 +12,103 @@ namespace briscola
 namespace fv
 {
 
+// Forward declaration
+
 template<class Type, class MeshType>
-class NeumannBoundaryCondition
+class NeumannBoundaryCondition;
+
+
+// Colocated
+
+template<class Type>
+class NeumannBoundaryCondition<Type,colocated>
 :
-    public boundaryCondition<Type,MeshType>
+    public NeumannBoundaryConditionBase<Type,colocated>
 {
-protected:
-
-    // Boundary gradients
-    List<Type> boundaryGradients_;
-
 public:
 
     // Runtime type information
     TypeName("Neumann");
 
-    // Construct from components
-    NeumannBoundaryCondition
-    (
-        const meshField<Type,MeshType>&,
-        const boundary&
-    );
-
-    // Construct from components and boundary gradient
-    NeumannBoundaryCondition
-    (
-        const meshField<Type,MeshType>&,
-        const boundary&,
-        const List<Type>&
-    );
-
-    // Copy constructor
-    NeumannBoundaryCondition
-    (
-        const NeumannBoundaryCondition<Type,MeshType>&
-    );
-
-    // Copy constructor resetting field reference
-    NeumannBoundaryCondition
-    (
-        const meshField<Type,MeshType>&,
-        const NeumannBoundaryCondition<Type,MeshType>&
-    );
+    // Use constructors from base
+    using NeumannBoundaryConditionBase<Type,colocated>::
+        NeumannBoundaryConditionBase;
 
     // Construct and return a clone
-    virtual tmp<boundaryCondition<Type,MeshType>> clone() const
+    virtual tmp<boundaryCondition<Type,colocated>> clone() const
     {
-        return tmp<boundaryCondition<Type,MeshType>>
+        return tmp<boundaryCondition<Type,colocated>>
         (
-            new NeumannBoundaryCondition<Type,MeshType>(*this)
+            new NeumannBoundaryCondition<Type,colocated>(*this)
         );
     }
 
     // Construct and return a clone setting field reference
-    virtual tmp<boundaryCondition<Type,MeshType>> clone
+    virtual tmp<boundaryCondition<Type,colocated>> clone
     (
-        const meshField<Type,MeshType>& field
+        const meshField<Type,colocated>& field
     ) const
     {
-        return tmp<boundaryCondition<Type,MeshType>>
+        return tmp<boundaryCondition<Type,colocated>>
         (
-            new NeumannBoundaryCondition<Type,MeshType>(field,*this)
+            new NeumannBoundaryCondition<Type,colocated>(field,*this)
         );
     }
 
-    // Boundary condition base type
-    virtual boundaryConditionBaseType baseType() const
-    {
-        return NEUMANNBC;
-    }
-
-    // Eliminated boundary condition
-    virtual bool eliminated() const { return true; }
-
     // Eliminate ghosts from the linear system at given level and direction
-
     virtual void eliminateGhosts
     (
-        linearSystem<stencil,Type,MeshType>&,
+        linearSystem<stencil,Type,colocated>&,
+        const label,
+        const label
+    );
+
+    // Evaluate the boundary condition for given level and direction
+    virtual void evaluate(const label, const label);
+};
+
+
+// Staggered
+
+template<class Type>
+class NeumannBoundaryCondition<Type,staggered>
+:
+    public NeumannBoundaryConditionBase<Type,staggered>
+{
+public:
+
+    // Runtime type information
+    TypeName("Neumann");
+
+    // Use constructors from base
+    using NeumannBoundaryConditionBase<Type,staggered>::
+        NeumannBoundaryConditionBase;
+
+    // Construct and return a clone
+    virtual tmp<boundaryCondition<Type,staggered>> clone() const
+    {
+        return tmp<boundaryCondition<Type,staggered>>
+        (
+            new NeumannBoundaryCondition<Type,staggered>(*this)
+        );
+    }
+
+    // Construct and return a clone setting field reference
+    virtual tmp<boundaryCondition<Type,staggered>> clone
+    (
+        const meshField<Type,staggered>& field
+    ) const
+    {
+        return tmp<boundaryCondition<Type,staggered>>
+        (
+            new NeumannBoundaryCondition<Type,staggered>(field,*this)
+        );
+    }
+
+    // Eliminate ghosts from the linear system at given level and direction
+    virtual void eliminateGhosts
+    (
+        linearSystem<stencil,Type,staggered>&,
         const label,
         const label
     );

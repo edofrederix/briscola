@@ -13,54 +13,12 @@ namespace briscola
 namespace fv
 {
 
-template<class Type, class MeshType>
-DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
-(
-    const meshField<Type,MeshType>& mshField,
-    const boundary& b
-)
-:
-    boundaryCondition<Type,MeshType>(mshField, b),
-    boundaryValues_(this->dict().lookup("values"))
-{}
+// Colocated
 
-template<class Type, class MeshType>
-DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
+template<class Type>
+void DirichletBoundaryCondition<Type,colocated>::eliminateGhosts
 (
-    const meshField<Type,MeshType>& mshField,
-    const boundary& b,
-    const List<Type>& boundaryValues
-)
-:
-    boundaryCondition<Type,MeshType>(mshField, b),
-    boundaryValues_(boundaryValues)
-{}
-
-template<class Type, class MeshType>
-DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
-(
-    const DirichletBoundaryCondition<Type,MeshType>& bc
-)
-:
-    boundaryCondition<Type,MeshType>(bc),
-    boundaryValues_(bc.boundaryValues_)
-{}
-
-template<class Type, class MeshType>
-DirichletBoundaryCondition<Type,MeshType>::DirichletBoundaryCondition
-(
-    const meshField<Type,MeshType>& field,
-    const DirichletBoundaryCondition<Type,MeshType>& bc
-)
-:
-    boundaryCondition<Type,MeshType>(field, bc),
-    boundaryValues_(bc.boundaryValues_)
-{}
-
-template<class Type, class MeshType>
-void DirichletBoundaryCondition<Type,MeshType>::eliminateGhosts
-(
-    linearSystem<stencil,Type,MeshType>& sys,
+    linearSystem<stencil,Type,colocated>& sys,
     const label l,
     const label d
 )
@@ -68,8 +26,8 @@ void DirichletBoundaryCondition<Type,MeshType>::eliminateGhosts
     const labelVector bo(this->offset());
     const label faceNum(faceNumber(bo));
 
-    meshField<stencil,MeshType>& A = sys.A();
-    meshField<Type,MeshType>& b = sys.b();
+    meshField<stencil,colocated>& A = sys.A();
+    meshField<Type,colocated>& b = sys.b();
 
     const labelVector S(this->S(l,d));
     const labelVector E(this->E(l,d));
@@ -85,12 +43,12 @@ void DirichletBoundaryCondition<Type,MeshType>::eliminateGhosts
         A(l,d,ijk)[faceNum+1] = Zero;
 
         if (l == 0)
-            b(l,d,ijk) -= ghostCoeff*2.0*boundaryValues_[d];
+            b(l,d,ijk) -= ghostCoeff*2.0*this->boundaryValues_[l](ijk-S);
     }
 }
 
-template<class Type, class MeshType>
-void DirichletBoundaryCondition<Type,MeshType>::evaluate
+template<class Type>
+void DirichletBoundaryCondition<Type,colocated>::evaluate
 (
     const label l,
     const label d
@@ -100,7 +58,7 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
 
     const labelVector bo(this->offset());
 
-    meshDirection<Type,MeshType>& fd = this->mshField_[l][d];
+    meshDirection<Type,colocated>& fd = this->mshField_[l][d];
 
     const labelVector S(this->S(l,d));
     const labelVector E(this->E(l,d));
@@ -110,7 +68,102 @@ void DirichletBoundaryCondition<Type,MeshType>::evaluate
     for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
     {
-        fd(ijk+bo) = H*2.0*boundaryValues_[d] - fd(ijk);
+        fd(ijk+bo) = H*2.0*this->boundaryValues_[l](ijk-S) - fd(ijk);
+    }
+}
+
+// Staggered
+
+template<class Type>
+void DirichletBoundaryCondition<Type,staggered>::eliminateGhosts
+(
+    linearSystem<stencil,Type,staggered>& sys,
+    const label l,
+    const label d
+)
+{
+    const label c = l*3 + d;
+
+    const labelVector bo(this->offset());
+    const label faceNum(faceNumber(bo));
+
+    meshField<stencil,staggered>& A = sys.A();
+    meshField<Type,staggered>& b = sys.b();
+
+    const meshField<scalar,staggered>& cv = this->cellVolumes();
+
+    const labelVector S(this->S(l,d));
+    const labelVector E(this->E(l,d));
+
+    labelVector ijk;
+
+    if (faceNum/2 == d)
+    {
+        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+        {
+            A(l,d,ijk) = diagStencil(cv(l,d,ijk));
+
+            if (l == 0)
+                b(l,d,ijk) = this->boundaryValues_[c](ijk-S)*cv(l,d,ijk);
+        }
+    }
+    else
+    {
+        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+        {
+            const scalar ghostCoeff = A(l,d,ijk)[faceNum+1];
+
+            A(l,d,ijk)[0] -= ghostCoeff;
+            A(l,d,ijk)[faceNum+1] = Zero;
+
+            if (l == 0)
+                b(l,d,ijk) -= ghostCoeff*2.0*this->boundaryValues_[c](ijk-S);
+        }
+    }
+}
+
+template<class Type>
+void DirichletBoundaryCondition<Type,staggered>::evaluate
+(
+    const label l,
+    const label d
+)
+{
+    const label c = l*3 + d;
+
+    const labelVector bo(this->offset());
+    const label faceNum(faceNumber(bo));
+
+    const scalar H = l == 0;
+
+    meshDirection<Type,staggered>& fd = this->mshField_[l][d];
+
+    const labelVector S(this->S(l,d));
+    const labelVector E(this->E(l,d));
+
+    labelVector ijk;
+
+    if (faceNum/2 == d)
+    {
+        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+        {
+            fd(ijk+bo) = H*this->boundaryValues_[c](ijk-S);
+        }
+    }
+    else
+    {
+        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+        {
+            fd(ijk+bo) = H*2.0*this->boundaryValues_[c](ijk-S) - fd(ijk);
+        }
     }
 }
 

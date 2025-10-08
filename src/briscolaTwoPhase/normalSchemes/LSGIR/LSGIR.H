@@ -18,13 +18,8 @@ class LSGIR
 {
 protected:
 
-    // Boundary type stencil (true for parallel, periodic and empty boundaries)
-    bool boundaryType_[3][3][3];
-
-private:
-
-    // Construct boundaryType
-    void createBoundaryType();
+    // Beta power coefficient (defaults to 1.5)
+    scalar beta_;
 
 public:
 

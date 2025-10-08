@@ -4,7 +4,7 @@
 #include "staggered.H"
 #include "meshField.H"
 #include "linearSystem.H"
-#include "domainBoundary.H"
+#include "patchBoundary.H"
 
 namespace Foam
 {
@@ -29,8 +29,8 @@ boundaryCondition<Type,MeshType>::boundaryCondition
     dict_
     (
         mshField_.found("boundaryConditions")
-     && mshField_.subDict("boundaryConditions").found(b_.name())
-      ? mshField_.subDict("boundaryConditions").subDict(b_.name())
+     && mshField_.subDict("boundaryConditions").found(IOobject::member(b_.name()))
+      ? mshField_.subDict("boundaryConditions").subDict(IOobject::member(b_.name()))
       : dictionary::null
     )
 {}
@@ -71,46 +71,19 @@ template<class Type, class MeshType>
 autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
 (
     const meshField<Type,MeshType>& mshField,
-    const boundary& b,
-    const word boundaryConditionType
-)
-{
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(boundaryConditionType);
-
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
-    {
-        FatalErrorInFunction
-            << "Unknown boundary condition type "
-            << boundaryConditionType << nl << nl
-            << "Valid boundary condition types are:" << nl
-            << dictionaryConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
-    }
-
-    return autoPtr<boundaryCondition<Type,MeshType>>
-    (
-        cstrIter()(mshField, b)
-    );
-}
-
-template<class Type, class MeshType>
-autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
-(
-    const meshField<Type,MeshType>& mshField,
     const boundary& b
 )
 {
     word boundaryConditionType;
 
-    if (b.castable<domainBoundary>())
+    if (b.castable<patchBoundary>())
     {
         boundaryConditionType =
             mshField.found("boundaryConditions")
           ? word
             (
                 mshField.subDict("boundaryConditions")
-               .subDict(b.name()).lookup("type")
+               .subDict(IOobject::member(b.name())).lookup("type")
             )
           : word("dummy");
     }
@@ -292,7 +265,10 @@ inline labelVector boundaryCondition<Type,MeshType>::S
     const label d
 ) const
 {
-    return this->fvMsh_.template S<MeshType>(l,d,this->offset());
+    return
+        this->offset() == zeroXYZ
+      ? zeroXYZ
+      : this->fvMsh_.template S<MeshType>(l,d,this->offset());
 }
 
 template<class Type, class MeshType>
@@ -302,7 +278,10 @@ inline labelVector boundaryCondition<Type,MeshType>::E
     const label d
 ) const
 {
-    return this->fvMsh_.template E<MeshType>(l,d,this->offset());
+    return
+        this->offset() == zeroXYZ
+      ? zeroXYZ
+      : this->fvMsh_.template E<MeshType>(l,d,this->offset());
 }
 
 template<class Type, class MeshType>
@@ -312,7 +291,10 @@ inline labelVector boundaryCondition<Type,MeshType>::N
     const label d
 ) const
 {
-    return this->fvMsh_.template N<MeshType>(l,d,this->offset());
+    return
+        this->offset() == zeroXYZ
+      ? zeroXYZ
+      : this->fvMsh_.template N<MeshType>(l,d,this->offset());
 }
 
 template<class Type, class MeshType>

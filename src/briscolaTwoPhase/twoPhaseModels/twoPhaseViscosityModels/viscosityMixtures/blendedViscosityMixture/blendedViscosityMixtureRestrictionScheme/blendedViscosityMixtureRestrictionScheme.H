@@ -1,7 +1,7 @@
 #ifndef blendedViscosityMixtureRestrictionScheme_H
 #define blendedViscosityMixtureRestrictionScheme_H
 
-#include "restrictionScheme.H"
+#include "blendedViscosityMixtureRestrictionSchemeBase.H"
 
 namespace Foam
 {
@@ -12,69 +12,68 @@ namespace briscola
 namespace fv
 {
 
+// Forward declaration
+
 template<class MeshType>
-class blendedViscosityMixtureRestrictionScheme
+class blendedViscosityMixtureRestrictionScheme;
+
+
+// Colocated
+
+template<>
+class blendedViscosityMixtureRestrictionScheme<colocated>
 :
-    public restrictionScheme<faceScalar,MeshType>
+    public blendedViscosityMixtureRestrictionSchemeBase<colocated>
 {
-protected:
-
-    // Blending function coefficients taken from the viscosity model
-    scalar C_;
-    scalar mu1_;
-    scalar mu2_;
-
-    // The blending function
-    inline scalar blend(const scalar x) const
-    {
-        const scalar xHat(Foam::min(Foam::max(x, 1e-12), 1-1e-12));
-
-        return
-            (mu2_ - mu1_)/2.0
-          * (Foam::tanh(C_*Foam::atanh(2.0*xHat - 1.0)) - 1.0)
-          + mu2_;
-    }
-
-    // The inverse blending function
-    inline scalar inv(const scalar y) const
-    {
-        const scalar xHat
-        (
-            Foam::min
-            (
-                Foam::max
-                (
-                    (y - mu2_)/stabilise(mu1_ - mu2_, 1e-12),
-                    1e-12
-                ),
-                1-1e-12
-            )
-        );
-
-        return
-            0.5
-          * (
-                Foam::tanh
-                (
-                    Foam::atanh
-                    (
-                        1.0 - 2.0*xHat
-                    )/C_
-                )
-              + 1.0
-            );
-    }
-
 public:
 
     // Runtime type information
     TypeName("blendedViscosityMixture");
 
-    // Construct from stream and mesh
-    blendedViscosityMixtureRestrictionScheme
+    // Use base constructors
+    using blendedViscosityMixtureRestrictionSchemeBase<colocated>::
+        blendedViscosityMixtureRestrictionSchemeBase;
+
+    // // Destructor
+    // virtual ~blendedViscosityMixtureRestrictionScheme();
+
+    // In-place restriction from a fine cell level to an adjacent coarse cell
+    // level
+    virtual void restrict
     (
-        const fvMesh&,
-        Istream& = scheme::nullStream
+        meshDirection<faceScalar,colocated>&,
+        const meshDirection<faceScalar,colocated>&,
+        const bool = false
+    );
+};
+
+
+// Staggered
+
+template<>
+class blendedViscosityMixtureRestrictionScheme<staggered>
+:
+    public blendedViscosityMixtureRestrictionSchemeBase<staggered>
+{
+public:
+
+    // Runtime type information
+    TypeName("blendedViscosityMixture");
+
+    // Use base constructors
+    using blendedViscosityMixtureRestrictionSchemeBase<staggered>::
+        blendedViscosityMixtureRestrictionSchemeBase;
+
+    // // Destructor
+    // virtual ~blendedViscosityMixtureRestrictionScheme();
+
+    // In-place restriction from a fine cell level to an adjacent coarse cell
+    // level
+    virtual void restrict
+    (
+        meshDirection<faceScalar,staggered>&,
+        const meshDirection<faceScalar,staggered>&,
+        const bool = false
     );
 };
 

@@ -11,7 +11,6 @@ RUNDIR="runs"
 CSV="results.csv"
 TEMPLATE="template"
 PYTHON="python3"
-TASKFILE="/tmp/tasks.$$"
 
 # Simulation parameters
 
@@ -75,145 +74,105 @@ echo \
     "test 4," \
     "number of time steps," \
     "mean number of pressure iters" > $CURR/$CSV
+##
 
-rm -f $TASKFILE.[0-9]+
-
-getNumTasks () {
-
-    COUNT=0
-
-    for PID in $(jobs -p -r); do
-
-        while [ ! -f "$TASKFILE.$PID" ]; do
-
-            sleep 1
-
-        done
-
-        COUNT=$(($COUNT + $(cat $TASKFILE.$PID)))
-
-    done
-
-    echo $COUNT
-}
+source ../procManagement.sh
 
 for I in "${!SOLVERS[@]}"; do
 for J in "${!MESHES[@]}"; do
-for K in "${!NPROCSPERBRICKSIDE[@]}"; do
-for L in "${!PSOLVERS[@]}"; do
-for M in "${!NORMALSCHEMES[@]}"; do
-for N in "${!CURVATURESCHEMES[@]}"; do
+for K in "${!PSOLVERS[@]}"; do
+for L in "${!NORMALSCHEMES[@]}"; do
+for M in "${!CURVATURESCHEMES[@]}"; do
+
+    sleep 1
 
     SOLVER=${SOLVERS[$I]}
     MESH=${MESHES[$J]}
-    NPROCPERBRICKSIDE=${NPROCSPERBRICKSIDE[$K]}
-    PSOLVER=${PSOLVERS[$L]}
-    NORMALSCHEME=${NORMALSCHEMES[$M]}
-    CURVATURESCHEME=${CURVATURESCHEMES[$N]}
+    NPROCPERBRICKSIDE=${NPROCSPERBRICKSIDE[$J]}
+    PSOLVER=${PSOLVERS[$K]}
+    NORMALSCHEME=${NORMALSCHEMES[$L]}
+    CURVATURESCHEME=${CURVATURESCHEMES[$M]}
 
-    if ! { [ "$MESH" -eq 32 ] && [ "$NPROCPERBRICKSIDE" -eq 4 ]; } && \
-       ! { [ "$MESH" -eq 128 ] && [ "$NPROCPERBRICKSIDE" -eq 2 ]; }; then
+    NPROCX=$NPROCPERBRICKSIDE
 
-        sleep 1
+    NPROC=$(echo "print(int($NPROCX**3))" | python)
 
-        NPROCX=$NPROCPERBRICKSIDE
+    MESHX=$MESH
 
-        NPROC=$(echo "print(int($NPROCX**3))" | python)
+    CASE="$SOLVER-$MESH-$NPROC-$PSOLVER-$NORMALSCHEME-$CURVATURESCHEME"
 
-        MESHX=$MESH
+    wait_for_procs $NPROC $NTASKS
 
-        CASE="$SOLVER-$MESH-$NPROC-$PSOLVER-$NORMALSCHEME-$CURVATURESCHEME"
+    (
+        echo "Starting $CASE"
 
-        while [ "$(($(getNumTasks) + $NPROC))" -gt $NTASKS ]; do
+        cp -r $TEMPLATE $RUNDIR/$CASE
 
-            echo \
-                Procs running = $(getNumTasks), \
-                Procs needed = $NPROC
+        cd $RUNDIR/$CASE
 
-            sleep 1
+        ./prep.sh \
+            $SOLVER \
+            $MESHX \
+            $NPROCX \
+            $PSOLVER \
+            $NORMALSCHEME \
+            $CURVATURESCHEME
 
-        done
+        if [ "$NPROC" == "1" ]; then
+            srun --exclusive -n $NPROC $SOLVER > log.$SOLVER
+        else
+            srun --exclusive -n $NPROC $SOLVER -parallel > log.$SOLVER
+        fi
 
-        (
-            echo "Starting $CASE"
+        ##
 
-            echo $NPROC > $TASKFILE.$BASHPID
+        $PYTHON post.py log.$SOLVER
 
-            cp -r $TEMPLATE $RUNDIR/$CASE
+        if [ -f "result.txt" ]; then
 
-            cd $RUNDIR/$CASE
+            E1=$(sed -n '1p' < result.txt)
+            E2=$(sed -n '2p' < result.txt)
+            E3=$(sed -n '3p' < result.txt)
+            E4=$(sed -n '4p' < result.txt)
 
-            ./prep.sh \
-                $SOLVER \
-                $MESHX \
-                $NPROCX \
-                $PSOLVER \
-                $NORMALSCHEME \
-                $CURVATURESCHEME
+            P1=$(sed -n '5p' < result.txt)
+            P2=$(sed -n '6p' < result.txt)
+            P3=$(sed -n '7p' < result.txt)
+            P4=$(sed -n '8p' < result.txt)
 
-            if [ "$NPROC" == "1" ]; then
+            NDT=$(sed -n '9p' < result.txt)
+            NITER=$(sed -n '10p' < result.txt)
 
-                $SOLVER > log.$SOLVER
+        fi
 
-            else
+        echo \
+            "$SOLVER," \
+            "$MESH," \
+            "$NPROC," \
+            "$PSOLVER," \
+            "$NORMALSCHEME," \
+            "$CURVATURESCHEME," \
+            "$E1," \
+            "$E2," \
+            "$E3," \
+            "$E4," \
+            "$P1," \
+            "$P2," \
+            "$P3," \
+            "$P4," \
+            "$NDT," \
+            "$NITER" \ >> $CURR/$CSV
 
-                mpirun \
-                    --bind-to none \
-                    --oversubscribe \
-                    -n $NPROC \
-                    $SOLVER -parallel > log.$SOLVER
+        ##
 
-            fi
+        cd $CURR
 
-            ##
+        echo "Finished $CASE"
 
-            $PYTHON post.py log.$SOLVER
+    ) &
 
-            if [ -f "result.txt" ]; then
+    store_procs $NPROC $!
 
-                E1=$(sed -n '1p' < result.txt)
-                E2=$(sed -n '2p' < result.txt)
-                E3=$(sed -n '3p' < result.txt)
-                E4=$(sed -n '4p' < result.txt)
-
-                P1=$(sed -n '5p' < result.txt)
-                P2=$(sed -n '6p' < result.txt)
-                P3=$(sed -n '7p' < result.txt)
-                P4=$(sed -n '8p' < result.txt)
-
-                NDT=$(sed -n '9p' < result.txt)
-                NITER=$(sed -n '10p' < result.txt)
-
-            fi
-
-            echo \
-                "$SOLVER," \
-                "$MESH," \
-                "$NPROC," \
-                "$PSOLVER," \
-                "$NORMALSCHEME," \
-                "$CURVATURESCHEME," \
-                "$E1," \
-                "$E2," \
-                "$E3," \
-                "$E4," \
-                "$P1," \
-                "$P2," \
-                "$P3," \
-                "$P4," \
-                "$NDT," \
-                "$NITER" \ >> $CURR/$CSV
-
-            ##
-
-            cd $CURR
-
-            echo "Finished $CASE"
-
-        ) &
-    fi
-
-done
 done
 done
 done
@@ -221,5 +180,3 @@ done
 done
 
 wait
-
-rm -f $TASKFILE.[0-9]+

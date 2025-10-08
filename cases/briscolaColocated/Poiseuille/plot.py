@@ -7,7 +7,7 @@ import figStyle as fs
 
 h = 1
 mu = 0.01
-dpdx = 4*mu
+dpdx = 3*mu
 
 fs.prep(plt)
 

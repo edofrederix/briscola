@@ -1,5 +1,5 @@
 #include "boundaryConditions.H"
-#include "stagNoSlipBoundaryCondition.H"
+#include "noSlipBoundaryCondition.H"
 
 namespace Foam
 {
@@ -10,9 +10,8 @@ namespace briscola
 namespace fv
 {
 
-// Derived
-makeBoundaryConditionMeshedType(stagNoSlip,noSlip,scalar,staggered)
-addBoundaryConditionMeshedType(stagNoSlip,scalar,staggered)
+makeBoundaryConditionType(noSlip,noSlip,scalar,staggered)
+addBoundaryConditionType(noSlip,scalar,staggered)
 
 }
 

@@ -11,12 +11,11 @@ RUNDIR="runs"
 CSV="results.csv"
 TEMPLATE="template"
 SOLVER="briscolaColocated"
-TASKFILE="/tmp/tasks.$$"
 
 # Simulation parameters
 
 MESHES=(32 64)
-IBMS=(none penalization Vreman Fadlun Mittal)
+MODES=(normal mapped penalization Vreman Fadlun Mittal)
 NPROCSPERBRICKSIDE=(1 2 4)
 PSOLVERS=(MG FFT Krylov)
 RKSCHEMES=(RK3 Ascher222 CNAB)
@@ -45,37 +44,19 @@ mkdir -p $RUNDIR
 echo \
     "Mesh," \
     "Nprocs," \
-    "IBM," \
-    "pressure solver," \
+    "Mode," \
+    "Pressure solver," \
     "Time scheme," \
-    "error [%]," \
-    "test," \
-    "number of time steps," \
-    "mean number of pressure iters" > $CURR/$CSV
+    "Error [%]," \
+    "Test," \
+    "Number of time steps," \
+    "Mean number of pressure iters" > $CURR/$CSV
+##
 
-rm -f $TASKFILE.[0-9]+
-
-getNumTasks () {
-
-    COUNT=0
-
-    for PID in $(jobs -p -r); do
-
-        while [ ! -f "$TASKFILE.$PID" ]; do
-
-            sleep 1
-
-        done
-
-        COUNT=$(($COUNT + $(cat $TASKFILE.$PID)))
-
-    done
-
-    echo $COUNT
-}
+source ../procManagement.sh
 
 for I in "${!MESHES[@]}"; do
-for J in "${!IBMS[@]}"; do
+for J in "${!MODES[@]}"; do
 for K in "${!NPROCSPERBRICKSIDE[@]}"; do
 for L in "${!PSOLVERS[@]}"; do
 for M in "${!RKSCHEMES[@]}"; do
@@ -83,7 +64,7 @@ for M in "${!RKSCHEMES[@]}"; do
     sleep 1
 
     MESH=${MESHES[$I]}
-    IBM=${IBMS[$J]}
+    MODE=${MODES[$J]}
     NPROCPERBRICKSIDE=${NPROCSPERBRICKSIDE[$K]}
     PSOLVER=${PSOLVERS[$L]}
     RKSCHEME=${RKSCHEMES[$M]}
@@ -93,28 +74,18 @@ for M in "${!RKSCHEMES[@]}"; do
 
     NPROC=$(echo "print(int($NPROCX*$NPROCY))" | python)
 
-    CASE="$MESH-$NPROC-$IBM-$PSOLVER-$RKSCHEME"
+    CASE="$MESH-$NPROC-$MODE-$PSOLVER-$RKSCHEME"
 
-    while [ "$(($(getNumTasks) + $NPROC))" -gt $NTASKS ]; do
-
-        echo \
-            Procs running = $(getNumTasks), \
-            Procs needed = $NPROC
-
-        sleep 1
-
-    done
+    wait_for_procs $NPROC $NTASKS
 
     (
         echo "Starting $CASE"
-
-        echo $NPROC > $TASKFILE.$BASHPID
 
         cp -r $TEMPLATE $RUNDIR/$CASE
 
         cd $RUNDIR/$CASE
 
-        ./prep.sh $MESH $NPROCX $NPROCY $IBM $PSOLVER $RKSCHEME
+        ./prep.sh $MESH $NPROCX $NPROCY $MODE $PSOLVER $RKSCHEME
 
         if [ "$RKSCHEME" == "CNAB" ]; then
 
@@ -127,17 +98,9 @@ for M in "${!RKSCHEMES[@]}"; do
         fi
 
         if [ "$NPROC" == "1" ]; then
-
-            $SOLVER2 > log.$SOLVER
-
+            srun --exclusive -n $NPROC -n 1 $SOLVER2 > log.$SOLVER
         else
-
-            mpirun \
-                --bind-to none \
-                --oversubscribe \
-                -n $NPROC \
-                $SOLVER2 -parallel > log.$SOLVER
-
+            srun --exclusive -n $NPROC $SOLVER2 -parallel > log.$SOLVER
         fi
 
         ##
@@ -153,7 +116,7 @@ for M in "${!RKSCHEMES[@]}"; do
         echo \
             "$MESH," \
             "$NPROC," \
-            "$IBM," \
+            "$MODE," \
             "$PSOLVER," \
             "$RKSCHEME," \
             "$E," \
@@ -169,8 +132,8 @@ for M in "${!RKSCHEMES[@]}"; do
 
     ) &
 
-done
-done
+    store_procs $NPROC $!
+
 done
 done
 done
@@ -178,5 +141,3 @@ done
 done
 
 wait
-
-rm -f $TASKFILE.[0-9]+

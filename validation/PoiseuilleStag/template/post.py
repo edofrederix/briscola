@@ -5,7 +5,7 @@ import re
 
 h = 1
 mu = 0.01
-dpdx = 4*mu
+dpdx = 3*mu
 
 # Quite a big tolerance needed because of the penalization IBC
 maxError = 10

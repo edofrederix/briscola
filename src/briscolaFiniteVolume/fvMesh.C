@@ -18,6 +18,10 @@ defineTypeNameAndDebug(fvMesh, 0);
 template<class MeshType>
 void fvMesh::setInternalCells()
 {
+    faceLabel slave;
+    for (int i = 0; i < 6; i++)
+        slave[i] = mshPtr_->b(faceOffsets[i]).slave();
+
     forAll(*this, l)
     {
         const part& p = this->operator[](l);
@@ -27,7 +31,6 @@ void fvMesh::setInternalCells()
             faceLabel& I = this->I<MeshType>(l,d);
 
             const labelVector& padding = MeshType::padding[d];
-            const faceLabel slave = mshPtr_->facePatchSlave();
 
             I = faceLabel(zeroXYZ, p.N()+padding);
 

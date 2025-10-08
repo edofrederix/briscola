@@ -11,7 +11,6 @@ RUNDIR="runs"
 CSV="results.csv"
 TEMPLATE="template"
 PYTHON="python3"
-TASKFILE="/tmp/tasks.$$"
 
 # Simulation parameters
 
@@ -72,26 +71,9 @@ echo \
     "number of time steps," \
     "mean number of pressure iters" > $CURR/$CSV
 
-rm -f $TASKFILE.[0-9]+
+##
 
-getNumTasks () {
-
-    COUNT=0
-
-    for PID in $(jobs -p -r); do
-
-        while [ ! -f "$TASKFILE.$PID" ]; do
-
-            sleep 1
-
-        done
-
-        COUNT=$(($COUNT + $(cat $TASKFILE.$PID)))
-
-    done
-
-    echo $COUNT
-}
+source ../procManagement.sh
 
 for I in "${!SOLVERS[@]}"; do
 for J in "${!MESHES[@]}"; do
@@ -119,20 +101,10 @@ for N in "${!CURVATURESCHEMES[@]}"; do
 
     CASE="$SOLVER-$MESH-$NPROC-$PSOLVER-$NORMALSCHEME-$CURVATURESCHEME"
 
-    while [ "$(($(getNumTasks) + $NPROC))" -gt $NTASKS ]; do
-
-        echo \
-            Procs running = $(getNumTasks), \
-            Procs needed = $NPROC
-
-        sleep 1
-
-    done
+    wait_for_procs $NPROC $NTASKS
 
     (
         echo "Starting $CASE"
-
-        echo $NPROC > $TASKFILE.$BASHPID
 
         cp -r $TEMPLATE $RUNDIR/$CASE
 
@@ -149,17 +121,9 @@ for N in "${!CURVATURESCHEMES[@]}"; do
             $CURVATURESCHEME
 
         if [ "$NPROC" == "1" ]; then
-
-            $SOLVER > log.$SOLVER
-
+            srun --exclusive -n $NPROC $SOLVER > log.$SOLVER
         else
-
-            mpirun \
-                --bind-to none \
-                --oversubscribe \
-                -n $NPROC \
-                $SOLVER -parallel > log.$SOLVER
-
+            srun --exclusive -n $NPROC $SOLVER -parallel > log.$SOLVER
         fi
 
         ##
@@ -201,6 +165,8 @@ for N in "${!CURVATURESCHEMES[@]}"; do
 
     ) &
 
+    store_procs $NPROC $!
+
 done
 done
 done
@@ -209,5 +175,3 @@ done
 done
 
 wait
-
-rm -f $TASKFILE.[0-9]+

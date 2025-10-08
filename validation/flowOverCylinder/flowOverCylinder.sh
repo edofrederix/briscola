@@ -12,7 +12,6 @@ CSV="results.csv"
 TEMPLATE="template"
 SOLVER="briscolaColocated"
 PYTHON="python3"
-TASKFILE="/tmp/tasks.$$"
 NPROC=12
 
 # Simulation parameters
@@ -60,26 +59,9 @@ echo \
     "number of time steps," \
     "mean number of pressure iters" > $CURR/$CSV
 
-rm -f $TASKFILE.[0-9]+
+##
 
-getNumTasks () {
-
-    COUNT=0
-
-    for PID in $(jobs -p -r); do
-
-        while [ ! -f "$TASKFILE.$PID" ]; do
-
-            sleep 1
-
-        done
-
-        COUNT=$(($COUNT + $(cat $TASKFILE.$PID)))
-
-    done
-
-    echo $COUNT
-}
+source ../procManagement.sh
 
 for I in "${!MESHES[@]}"; do
 for J in "${!DSCHEMES[@]}"; do
@@ -99,20 +81,10 @@ for M in "${!RKSCHEMES[@]}"; do
 
     CASE="$MESH-$DSCHEME-$GRADSCHEME-$RE-$RKSCHEME"
 
-    while [ "$(($(getNumTasks) + $NPROC))" -gt $NTASKS ]; do
-
-        echo \
-            Procs running = $(getNumTasks), \
-            Procs needed = $NPROC
-
-        sleep 1
-
-    done
+    wait_for_procs $NPROC $NTASKS
 
     (
         echo "Starting $CASE"
-
-        echo $NPROC > $TASKFILE.$BASHPID
 
         cp -r $TEMPLATE $RUNDIR/$CASE
 
@@ -131,17 +103,9 @@ for M in "${!RKSCHEMES[@]}"; do
         fi
 
         if [ "$NPROC" == "1" ]; then
-
-            $SOLVER2 > log.$SOLVER
-
+            srun --exclusive -n $NPROC $SOLVER2 > log.$SOLVER
         else
-
-            mpirun \
-                --bind-to none \
-                --oversubscribe \
-                -n $NPROC \
-                $SOLVER2 -parallel > log.$SOLVER
-
+            srun --exclusive -n $NPROC $SOLVER2 -parallel > log.$SOLVER
         fi
 
         ##
@@ -173,6 +137,8 @@ for M in "${!RKSCHEMES[@]}"; do
 
     ) &
 
+    store_procs $NPROC $!
+
 done
 done
 done
@@ -180,5 +146,3 @@ done
 done
 
 wait
-
-rm -f $TASKFILE.[0-9]+

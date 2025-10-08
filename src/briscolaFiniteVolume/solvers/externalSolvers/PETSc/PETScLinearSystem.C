@@ -20,7 +20,7 @@ PETScLinearSystem<SType,Type,MeshType>::PETScLinearSystem
 :
     linearSystemAggregation<SType,Type,MeshType>(sys, l, nParts),
     sys_(sys),
-    matrices_(MeshType::numberOfDirections, nullptr),
+    matrices_(MeshType::numberOfDirections),
     l_(l)
 {}
 
@@ -32,7 +32,7 @@ PETScLinearSystem<SType,Type,MeshType>::PETScLinearSystem
 :
     linearSystemAggregation<SType,Type,MeshType>(A),
     sys_(A.sys_),
-    matrices_(A.matrices_),
+    matrices_(MeshType::numberOfDirections),
     l_(A.l_)
 {}
 
@@ -62,27 +62,27 @@ void PETScLinearSystem<SType,Type,MeshType>::prepare(const label d)
         const label M = lsa.globalSize(d);
         const label nz = Foam::min(label(SType::nComponents),M);
 
-        if (matrices_[d])
-        {
+        if (matrices_.set(d))
             MatDestroy(&matrices_[d]);
-            matrices_[d] = nullptr;
-        }
 
-        MatCreate(comm, &matrices_[d]);
-        MatSetSizes(matrices_[d], m, m, M, M);
+        matrices_.set(d, new Mat);
+        Mat& mat = matrices_[d];
+
+        MatCreate(comm, &mat);
+        MatSetSizes(mat, m, m, M, M);
 
         if (Pstream::parRun() && lsa.nParts() > 1)
         {
-            MatSetType(matrices_[d], MATMPIAIJ);
-            MatMPIAIJSetPreallocation(matrices_[d], nz, NULL, nz, NULL);
+            MatSetType(mat, MATMPIAIJ);
+            MatMPIAIJSetPreallocation(mat, nz, NULL, nz, NULL);
         }
         else
         {
-            MatSetType(matrices_[d], MATSEQAIJ);
-            MatSeqAIJSetPreallocation(matrices_[d], nz, NULL);
+            MatSetType(mat, MATSEQAIJ);
+            MatSeqAIJSetPreallocation(mat, nz, NULL);
         }
 
-        MatSetUp(matrices_[d]);
+        MatSetUp(mat);
 
         int row = lsa.partStart(d);
         forAll(coeffs, proc)
@@ -93,7 +93,7 @@ void PETScLinearSystem<SType,Type,MeshType>::prepare(const label d)
                     if (colNums[proc][i][j] >= 0 && coeffs[proc][i][j] != 0)
                         MatSetValue
                         (
-                            matrices_[d],
+                            mat,
                             row,
                             colNums[proc][i][j],
                             coeffs[proc][i][j],
@@ -104,14 +104,14 @@ void PETScLinearSystem<SType,Type,MeshType>::prepare(const label d)
             }
         }
 
-        MatAssemblyBegin(matrices_[d], MAT_FINAL_ASSEMBLY);
-        MatAssemblyEnd(matrices_[d], MAT_FINAL_ASSEMBLY);
+        MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY);
+        MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY);
 
         // View matrix for debugging:
 
         // MatView
         // (
-        //     matrices_[d],
+        //     mat,
         //     PETSC_VIEWER_STDOUT_
         //     (
         //         Pstream::parRun()

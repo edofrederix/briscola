@@ -31,11 +31,13 @@ void Krylov<SType,Type,MeshType>::prepare
 
     const List<bool> diagonal(sys.diagonal());
 
-    matrices_.clear();
-    solvers_.clear();
+    forAll(solvers_, i)
+        if (solvers_.set(i))
+            KSPDestroy(&solvers_[i]);
 
-    matrices_.setSize(A.size());
-    solvers_.setSize(A.size());
+    forAll(matrices_, i)
+        if (matrices_.set(i))
+            MatDestroy(&matrices_[i]);
 
     forAll(A, d)
     if (!diagonal[d])
@@ -47,7 +49,6 @@ void Krylov<SType,Type,MeshType>::prepare
         // Create matrix
 
         matrices_.set(d, new Mat);
-
         Mat& mat = matrices_[d];
 
         MatCreate(comm, &mat);
@@ -116,7 +117,6 @@ void Krylov<SType,Type,MeshType>::prepare
         // Setup solver
 
         solvers_.set(d, new KSP);
-
         KSP& ksp = solvers_[d];
 
         KSPCreate(comm, &ksp);
@@ -265,7 +265,7 @@ void Krylov<SType,Type,MeshType>::solve
                 ksp,
                 relTol*nf*initialResidual/Foam::max(bnf, 1e-12),
                 absTol*nf,
-                PETSC_DETERMINE,
+                1e3,
                 maxIter
             );
 

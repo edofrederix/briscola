@@ -23,7 +23,7 @@ vertex::vertex(const edge& e, const label num, const label j)
 
 vertex::vertex(const vertex& v)
 :
-    meshObject<edge>(v.parentEdge(), v.num()),
+    meshObject<edge>(v),
     vector(v),
     j_(v.j_)
 {}

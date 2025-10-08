@@ -43,8 +43,8 @@ Some key components of Briscola are the use of a staggered grid and the
 implementation of geometric two-phase volume-of-fluid advection schemes. To
 demonstrate this, Hysing's rising bubble case will be simulated using the
 `briscolaStaggeredTwoPhase` solver [Hysing, S., et al. IJNMF 60.11 (2009):
-1259-1288.]. Hysing's case consists of a 1x2 domain with a bubble of size 0.5
-that is initially stagnant and rises under gravity, as shown in the figure:
+1259-1288.]. Hysing's case consists of a 1x2 domain with a bubble of diameter
+0.5 that is initially stagnant and rises under gravity, as shown in the figure:
 
 ![Hysing's rising bubble case](./figures/tutorial/Hysing.png)
 
@@ -76,7 +76,7 @@ With `ls` you will see that the case has the following files and directories:
 Most Briscola cases consist of these files. At a minimum, only the system and 0
 directories must be provided. Most cases present in the cases directory have a
 preparation and a clean script. In many cases, these scripts need to be aware of
-the location where Briscola is installed. This must be explicitly set using the
+the location where Briscola is installed. This must be set explicitly using the
 `BRISCOLA` environment variable. The variable can be set using
 ```
 export BRISCOLA=<Your Briscola installation location>
@@ -198,8 +198,8 @@ The case can be cleaned up and brought back to its initial state by
 ### Next steps
 
 It is recommended that the Hysing tutorial case is studied in a bit more detail
-before continuing. Do not forget to prepare the case again with the `prep.sh`
-script. Some things that may be tested are the following:
+before continuing. Remember to prepare the case again with the `prep.sh` script.
+Some things that may be tested are the following:
 
 * Change the mesh resolution, by modifying the brick definition in
   `system/briscolaMeshDict`

@@ -167,6 +167,17 @@ void splitAdvection::solve(const colocatedFaceScalarField& phi)
 {
     alpha_.setOldTime();
 
+    const colocatedScalarField& cv =
+        fvMsh_.template metrics<colocated>().cellVolumes();
+
+    // If this is the first time step, the normal is probably not computed yet
+    // so it needs to be updated
+
+    if (fvMsh_.time().timeIndex() == 1)
+        normal_.correct();
+
+    // Central volume fraction value of Weymouth & Yue (2010)
+
     colocatedLabelField alphac
     (
         "alphac",
@@ -174,11 +185,6 @@ void splitAdvection::solve(const colocatedFaceScalarField& phi)
         IOobject::NO_READ,
         IOobject::NO_WRITE
     );
-
-    const colocatedScalarField& cv =
-        fvMsh_.template metrics<colocated>().cellVolumes();
-
-    // Central volume fraction value of Weymouth & Yue (2010)
 
     forAllCells(alpha_, i, j, k)
         alphac(i,j,k) = alpha_(i,j,k) > 0.5;
@@ -190,15 +196,13 @@ void splitAdvection::solve(const colocatedFaceScalarField& phi)
     const scalar dt = fvMsh_.time().deltaT().value();
     const label ti = fvMsh_.time().timeIndex();
 
-    const faceLabel boundaryType(this->fvMsh_.msh().faceBoundaryType());
-
     for (int d = 0; d < 3; d++)
     {
         const label dir = (ti + d) % 3;
 
         // Skip empty directions
 
-        if (boundaryType[dir*2] != emptyBoundary::typeNumber)
+        if (!fvMsh_.msh().b(units[dir]).castable<emptyBoundary>())
         {
             this->updateFlux(phi, dir);
 

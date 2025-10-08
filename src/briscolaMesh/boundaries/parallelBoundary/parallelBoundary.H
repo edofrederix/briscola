@@ -16,6 +16,10 @@ class parallelBoundary
     // Processor number of the other side
     label neighborProcNum_;
 
+    // Rotation of the neighbor in case of a parallel boundary (defaults to the
+    // identity tensor)
+    labelTensor T_;
+
     // Communication tag
     label tag_;
 
@@ -23,9 +27,6 @@ class parallelBoundary
     void operator=(const parallelBoundary&);
 
 public:
-
-    // Type number
-    const static label typeNumber;
 
     // Runtime type information
     TypeName("parallel");
@@ -42,11 +43,8 @@ public:
         return autoPtr<boundary>(new parallelBoundary(*this));
     }
 
-    // Boundary type number
-    virtual label typeNum() const
-    {
-        return typeNumber;
-    }
+    // Rotation of the neighbor
+    inline const labelTensor& T() const { return T_; }
 
     // Tag number
     virtual label tag() const

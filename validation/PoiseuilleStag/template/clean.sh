@@ -10,4 +10,5 @@ rm -f briscola*.vtk.series *.pdf *.txt code/libcode.so \
     system/briscolaMeshDict \
     system/briscolaSolverDict \
     system/briscolaSchemeDict \
+    system/briscolaStaggeredDict \
     0/U

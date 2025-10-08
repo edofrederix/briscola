@@ -32,7 +32,10 @@ PETScKSPSolver::~PETScKSPSolver()
 
 void PETScKSPSolver::prepare(const Mat& mat, const MPI_Comm& comm)
 {
-    solverPtr_.reset(new KSP);
+    if (solverPtr_.valid())
+        KSPDestroy(&solverPtr_());
+
+    solverPtr_.set(new KSP);
     KSP& ksp = solverPtr_();
 
     KSPCreate(comm, &ksp);

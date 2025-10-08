@@ -48,12 +48,9 @@ patchPair::patchPair
     checkConsistency();
 }
 
-patchPair::patchPair
-(
-    const patchPair& p
-)
+patchPair::patchPair(const patchPair& p)
 :
-    meshObject<geometry>(p.parentGeometry(), p.num()),
+    meshObject<geometry>(p),
     patch0_(p.patch0()),
     patch1_(p.patch1())
 {

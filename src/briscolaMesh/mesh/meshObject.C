@@ -18,6 +18,13 @@ meshObject<ParentType>::meshObject(const ParentType& p, const label num)
 {}
 
 template<class ParentType>
+meshObject<ParentType>::meshObject(const meshObject& obj)
+:
+    parent_(obj.parent_),
+    num_(obj.num_)
+{}
+
+template<class ParentType>
 meshObject<ParentType>::~meshObject()
 {}
 

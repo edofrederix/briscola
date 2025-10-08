@@ -30,6 +30,9 @@ public:
     // Construct from components
     meshObject(const ParentType&, const label);
 
+    // Copy constructor
+    meshObject(const meshObject&);
+
     // Destructor
     virtual ~meshObject();
 

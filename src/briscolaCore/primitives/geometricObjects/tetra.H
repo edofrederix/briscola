@@ -88,6 +88,12 @@ public:
         v_(v)
     {}
 
+    // Assignment
+    inline void operator=(const tetra& t)
+    {
+        v_ = t.v_;
+    }
+
     // Access to the vertices
     inline FixedList<vector,4>& v() { return v_; }
     inline const FixedList<vector,4>& v() const { return v_; }

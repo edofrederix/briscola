@@ -1,8 +1,7 @@
 #ifndef DirichletBoundaryCondition_H
 #define DirichletBoundaryCondition_H
 
-#include "boundaryCondition.H"
-#include "block.H"
+#include "DirichletBoundaryConditionBase.H"
 
 namespace Foam
 {
@@ -13,84 +12,103 @@ namespace briscola
 namespace fv
 {
 
+// Forward declaration
+
 template<class Type, class MeshType>
-class DirichletBoundaryCondition
+class DirichletBoundaryCondition;
+
+
+// Colocated
+
+template<class Type>
+class DirichletBoundaryCondition<Type,colocated>
 :
-    public boundaryCondition<Type,MeshType>
+    public DirichletBoundaryConditionBase<Type,colocated>
 {
-protected:
-
-    // Boundary values
-    List<Type> boundaryValues_;
-
 public:
 
     // Runtime type information
     TypeName("Dirichlet");
 
-    // Construct from components
-    DirichletBoundaryCondition
-    (
-        const meshField<Type,MeshType>&,
-        const boundary&
-    );
-
-    // Construct from components and boundary values
-    DirichletBoundaryCondition
-    (
-        const meshField<Type,MeshType>&,
-        const boundary&,
-        const List<Type>&
-    );
-
-    // Copy constructor
-    DirichletBoundaryCondition
-    (
-        const DirichletBoundaryCondition<Type,MeshType>&
-    );
-
-    // Copy constructor resetting field reference
-    DirichletBoundaryCondition
-    (
-        const meshField<Type,MeshType>&,
-        const DirichletBoundaryCondition<Type,MeshType>&
-    );
+    // Use constructors from base
+    using DirichletBoundaryConditionBase<Type,colocated>::
+        DirichletBoundaryConditionBase;
 
     // Construct and return a clone
-    virtual tmp<boundaryCondition<Type,MeshType>> clone() const
+    virtual tmp<boundaryCondition<Type,colocated>> clone() const
     {
-        return tmp<boundaryCondition<Type,MeshType>>
+        return tmp<boundaryCondition<Type,colocated>>
         (
-            new DirichletBoundaryCondition<Type,MeshType>(*this)
+            new DirichletBoundaryCondition<Type,colocated>(*this)
         );
     }
 
     // Construct and return a clone setting field reference
-    virtual tmp<boundaryCondition<Type,MeshType>> clone
+    virtual tmp<boundaryCondition<Type,colocated>> clone
     (
-        const meshField<Type,MeshType>& field
+        const meshField<Type,colocated>& field
     ) const
     {
-        return tmp<boundaryCondition<Type,MeshType>>
+        return tmp<boundaryCondition<Type,colocated>>
         (
-            new DirichletBoundaryCondition<Type,MeshType>(field,*this)
+            new DirichletBoundaryCondition<Type,colocated>(field,*this)
         );
     }
 
-    // Boundary condition base type
-    virtual boundaryConditionBaseType baseType() const
-    {
-        return DIRICHLETBC;
-    }
-
-    // Eliminated boundary condition
-    virtual bool eliminated() const { return true; }
-
     // Eliminate ghosts from the linear system at given level and direction
-
     virtual void eliminateGhosts
     (
-        linearSystem<stencil,Type,MeshType>&,
+        linearSystem<stencil,Type,colocated>&,
+        const label,
+        const label
+    );
+
+    // Evaluate the boundary condition for given level and direction
+    virtual void evaluate(const label, const label);
+};
+
+
+// Staggered
+
+template<class Type>
+class DirichletBoundaryCondition<Type,staggered>
+:
+    public DirichletBoundaryConditionBase<Type,staggered>
+{
+public:
+
+    // Runtime type information
+    TypeName("Dirichlet");
+
+    // Use constructors from base
+    using DirichletBoundaryConditionBase<Type,staggered>::
+        DirichletBoundaryConditionBase;
+
+    // Construct and return a clone
+    virtual tmp<boundaryCondition<Type,staggered>> clone() const
+    {
+        return tmp<boundaryCondition<Type,staggered>>
+        (
+            new DirichletBoundaryCondition<Type,staggered>(*this)
+        );
+    }
+
+    // Construct and return a clone setting field reference
+    virtual tmp<boundaryCondition<Type,staggered>> clone
+    (
+        const meshField<Type,staggered>& field
+    ) const
+    {
+        return tmp<boundaryCondition<Type,staggered>>
+        (
+            new DirichletBoundaryCondition<Type,staggered>(field,*this)
+        );
+    }
+
+    // Eliminate ghosts from the linear system at given level and direction
+    virtual void eliminateGhosts
+    (
+        linearSystem<stencil,Type,staggered>&,
         const label,
         const label
     );

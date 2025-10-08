@@ -27,10 +27,12 @@ void sample::init()
         ).ptr()
     );
 
-    if (!interpPtr_->allPointsFound())
+    const vectorList missing(move(interpPtr_->missingPoints()));
+
+    if (missing.size())
         WarningInFunction
             << "Not all points were found for " << name_ << " sample."
-            << endl;
+            << "Missing points: " << endl << missing << endl;
 
     const objectRegistry& db = fvMsh_.db();
 

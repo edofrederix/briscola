@@ -44,6 +44,15 @@ public:
     // Copy constructor
     pointDataExchange(const pointDataExchange&);
 
+    // Clone the data exchange
+    virtual autoPtr<pointDataExchange<MeshType>> clone() const
+    {
+        return autoPtr<pointDataExchange<MeshType>>
+        (
+            new pointDataExchange(*this)
+        );
+    }
+
     // Destructor
     virtual ~pointDataExchange();
 

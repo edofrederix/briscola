@@ -6,11 +6,11 @@ or [Previous chapter: Testing and validation](./8_testing.md)
 Briscola is in development, and currently has some limitations which are listed
 here. Briscola's development team is small and its resources are limited. Thus,
 contributions from the community towards resolving these limitations are
-encouraged and can be proposed via Github.
+encouraged and can be proposed via GitHub.
 
 * *Two-phase solver:* While most normal and interface reconstruction algorithms
-  are capable of handling general hexahedron cells, the split advection solver
-  is currently not able to handle unstructured meshes.
+  can handle general hexahedron cells, the split advection solver is currently
+  not able to handle unstructured meshes.
 * *FFT solver:* For two-phase simulations, the split FFT solver only works well
   for mild density ratios. Improving this requires fundamental improvements to
   the solver's algorithm, or to the pressure extrapolation method.
@@ -27,10 +27,10 @@ encouraged and can be proposed via Github.
   to instability.
 * *Immersed boundaries*: Currently, only infinite cylinders and spheres (both
   normal and inverted) can be used to define immersed boundaries. Additional
-  analytical shape definitions are yet to be implemented. Definition of immersed
+  analytical shape definitions are yet to be implemented. Defining immersed
   boundaries based on CAD files is also currently not supported.
 
-Feel free to report any additional issues via Github or by contacting the
+Feel free to report any additional issues via GitHub or by contacting the
 authors directly.
 
 [Back to the table of contents](./0_start.md)

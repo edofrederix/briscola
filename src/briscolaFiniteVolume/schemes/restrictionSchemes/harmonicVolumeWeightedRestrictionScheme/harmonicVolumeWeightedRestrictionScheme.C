@@ -13,17 +13,6 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-harmonicVolumeWeightedRestrictionScheme<Type,MeshType>::
-harmonicVolumeWeightedRestrictionScheme
-(
-    const fvMesh& fvMsh,
-    Istream& is
-)
-:
-    restrictionScheme<Type,MeshType>(fvMsh, is)
-{}
-
-template<class Type, class MeshType>
 void harmonicVolumeWeightedRestrictionScheme<Type,MeshType>::restrict
 (
     meshDirection<Type,MeshType>& coarse,

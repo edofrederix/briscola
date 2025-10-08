@@ -1,5 +1,6 @@
 #include "uniformMesh.H"
 #include "addToRunTimeSelectionTable.H"
+#include "parallelBoundary.H"
 
 namespace Foam
 {
@@ -60,33 +61,52 @@ labelVector uniformMesh::findCell(const vector& p, const label l) const
         )
     );
 
-    const scalarList& x = localPoints()[0];
-    const scalarList& y = localPoints()[1];
-    const scalarList& z = localPoints()[2];
+    const PtrList<PartialList<scalar>>& x = localPoints();
 
-    if
-    (
-        q.x() < x[0] || q.x() >= x[x.size()-1]
-     || q.y() < y[0] || q.y() >= y[y.size()-1]
-     || q.z() < z[0] || q.z() >= z[z.size()-1]
-    )
-    {
-        return -unitXYZ;
-    }
+    // Check if the point is outside the domain boundaries
+
+    for (label d = 0; d < 3; d++)
+        if (q[d] < x[d].first() - 1e-12 || q[d] > x[d].last() + 1e-12)
+            return -unitXYZ;
+
+    // Check if the point is just above/below the upper/lower boundary. If so,
+    // the point is included if the boundary is not be a parallel one. If the
+    // point is exactly on the lower boundary it must be included anyway.
+
+    for (label d = 0; d < 3; d++)
+        if (q[d] >= x[d].last() && q[d] <= x[d].last() + 1e-12)
+            if (b(units[d]).castable<parallelBoundary>())
+                return -unitXYZ;
+
+    for (label d = 0; d < 3; d++)
+        if (q[d] < x[d].first() && q[d] >= x[d].first() - 1e-12)
+            if (b(-units[d]).castable<parallelBoundary>())
+                return -unitXYZ;
+
+    // Algebraic relation. Cast to label automatically applies floor. Assign
+    // points that are on the upper boundary to the nearest internal cell.
 
     const labelVector N(this->operator[](0).N());
     const labelVector R
     (
-        cmptDivide(N,this->operator[](l).N())
+        cmptDivide(N, this->operator[](l).N())
     );
 
-    // Algebraic relation. Cast to label automatically applies floor.
+    labelVector ijk;
 
-    const label i = (q.x() - x[0])/(x[x.size()-1] - x[0])*N.x();
-    const label j = (q.y() - y[0])/(y[y.size()-1] - y[0])*N.y();
-    const label k = (q.z() - z[0])/(z[z.size()-1] - z[0])*N.z();
+    for (label d = 0; d < 3; d++)
+        ijk[d] =
+            Foam::min
+            (
+                Foam::max
+                (
+                    (q[d] - x[d].first())/(x[d].last() - x[d].first())*N[d],
+                    0
+                ),
+                N[d]-1
+            );
 
-    return labelVector(i/R.x(), j/R.y(), k/R.z());
+    return cmptDivide(ijk, R);
 }
 
 

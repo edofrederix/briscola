@@ -1,4 +1,5 @@
 #include "geometry.H"
+#include "periodicPatch.H"
 
 namespace Foam
 {
@@ -57,16 +58,8 @@ void geometry::createPatches()
 {
     patches_.clear();
 
-    label i = 0;
-
     forAllConstIter(patchTable, patchData(), iter)
-    {
-        const dictionary& patchDict = iter();
-
-        patches_.append(new patch(*this, i, iter.key(), patchDict));
-
-        i++;
-    }
+        addPatch(patch(*this, patches_.size(), iter.key(), iter()));
 }
 
 void geometry::createDefaultPatch()
@@ -74,7 +67,7 @@ void geometry::createDefaultPatch()
     // Add all faces which are not part of a patch nor connected to another
     // brick to the default patch
 
-    List<const face*> defaultFaces;
+    List<labelList> defaultFaces;
 
     for (label bricki = 0; bricki < bricks_.size(); bricki++)
     {
@@ -103,17 +96,99 @@ void geometry::createDefaultPatch()
 
             if (!found)
             {
-                defaultFaces.append(&f);
+                defaultFaces.append(f.vertexList());
             }
         }
     }
 
     if (defaultFaces.size() > 0)
     {
-        patches_.append
-        (
-            new patch(*this, patches_.size(), "default", defaultFaces)
-        );
+        dictionary dict;
+        dict.add("type", patch::typeName);
+        dict.add("faces", defaultFaces);
+
+        addPatch(patch(*this, patches_.size(), "default", dict));
+    }
+}
+
+void geometry::addPatch(const patch& p)
+{
+    // A patch may not contain two faces of the same brick. So, in some cases,
+    // the original patch needs to be split up in multiple patches. Once a brick
+    // is detected that contains two or more faces, faces are separated from
+    // each other based on their face numbers in the brick.
+
+    // Collect face and brick numbers
+
+    labelList faceNums(p.facePtrs().size());
+    labelList brickNums(p.facePtrs().size());
+
+    forAll(p.facePtrs(), i)
+    {
+        faceNums[i] = p.facePtrs()[i]->num();
+        brickNums[i] = p.facePtrs()[i]->parentBrick().num();
+    }
+
+    // Check number of unique brick numbers
+
+    labelList order;
+    uniqueOrder(brickNums, order);
+
+    // If the number of unique brick numbers is not equal to the number of
+    // bricks then there are faces that share the same brick. In that case we
+    // split up the patch into patches with faces having the same face number in
+    // their respective brick (i.e., they have the same orientation).
+
+    List<List<labelList>> faces(6, List<labelList>(0));
+
+    if (order.size() != brickNums.size())
+    {
+        forAll(p.facePtrs(), i)
+            faces[faceNums[i]].append(p.facePtrs()[i]->vertexList());
+    }
+    else
+    {
+        // Just copy to the first entry
+        forAll(p.facePtrs(), i)
+            faces[0].append(p.facePtrs()[i]->vertexList());
+    }
+
+    // Count number of sub-patches
+
+    label nSubPatches = 0;
+
+    forAll(faces, i)
+        if (faces[i].size())
+            nSubPatches++;
+
+    // Add (sub-)patches
+
+    label j = 0;
+    forAll(faces, i)
+    {
+        if (faces[i].size())
+        {
+            dictionary dict(p.dict());
+            dict.set("faces", faces[i]);
+
+            const word name
+            (
+                nSubPatches > 1
+              ? IOobject::groupName(p.name(), Foam::name(j++))
+              : p.name()
+            );
+
+            patches_.append
+            (
+                patch::New
+                (
+                    *this,
+                    patches_.size(),
+                    name,
+                    dict
+                )
+            );
+        }
     }
 }
 
@@ -125,33 +200,25 @@ void geometry::createPatchPairs()
 
     for (label p0 = 0; p0 < patches_.size(); p0++)
     {
-        const patch& patch0 = patches_[p0];
-
-        if (patch0.type() == patch::PERIODIC)
+        if (patches_[p0].castable<periodicPatch>())
         {
-            const word neighbor0(patch0.dict().lookup("neighbor"));
+            const periodicPatch& patch0 =
+                patches_[p0].cast<periodicPatch>();
+
+            const word neighbor0(patch0.neighbor());
 
             bool found = false;
 
             for (label p1 = 0; p1 < patches_.size(); p1++)
-            if (p1 != p0)
             {
-                const patch& patch1 = patches_[p1];
-
-                if (patch1.name() == neighbor0)
+                if (patches_[p1].name() == neighbor0)
                 {
                     found = true;
 
-                    if (patch1.type() != patch::PERIODIC)
-                    {
-                        FatalErrorInFunction
-                            << "Found periodic neighbor patch named "
-                            << patch1.name()
-                            << " but it is not a periodic patch." << endl
-                            << exit(FatalError);
-                    }
+                    const periodicPatch& patch1 =
+                        patches_[p1].cast<periodicPatch>();
 
-                    const word neighbor1(patch1.dict().lookup("neighbor"));
+                    const word neighbor1(patch1.neighbor());
 
                     if (neighbor1 != patch0.name())
                     {

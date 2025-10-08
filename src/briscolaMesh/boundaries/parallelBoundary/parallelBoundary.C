@@ -11,12 +11,11 @@ namespace briscola
 defineTypeNameAndDebug(parallelBoundary, 0);
 addToRunTimeSelectionTable(boundary, parallelBoundary, dictionary);
 
-const label parallelBoundary::typeNumber = 2;
-
 parallelBoundary::parallelBoundary(const mesh& msh, const dictionary& dict)
 :
     boundary(msh, dict),
     neighborProcNum_(readLabel(dict.lookup("neighborProcNum"))),
+    T_(dict.lookupOrDefault<labelTensor>("T", eye)),
     tag_(0)
 {
     // Set master bool. This boundary is master if its face, edge or vertex
@@ -58,10 +57,12 @@ parallelBoundary::parallelBoundary(const mesh& msh, const dictionary& dict)
     this->extend();
 }
 
-parallelBoundary::parallelBoundary(const parallelBoundary& pp)
+parallelBoundary::parallelBoundary(const parallelBoundary& b)
 :
-    boundary(pp),
-    neighborProcNum_(pp.neighborProcNum_)
+    boundary(b),
+    neighborProcNum_(b.neighborProcNum_),
+    T_(b.T_),
+    tag_(b.tag_)
 {}
 
 }
