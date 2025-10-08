@@ -342,8 +342,8 @@ void meshLevel<Type,MeshType>::correctUnsetBoundaryConditions()
     {
         meshDirection<Type,MeshType>& field = listType::operator[](d);
 
-        forAllBlock(fvMsh_.msh().setBoundaryMask(), i, j, k)
-        if (!fvMsh_.msh().setBoundaryMask()(i,j,k))
+        forAllBlock(fvMsh_.msh().boundaryMask(), i, j, k)
+        if (!fvMsh_.msh().boundaryMask()(i,j,k))
         {
             if (labelVector(i,j,k) == unitXYZ)
                 continue;

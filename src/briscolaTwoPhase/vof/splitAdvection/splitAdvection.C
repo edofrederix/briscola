@@ -167,6 +167,17 @@ void splitAdvection::solve(const colocatedFaceScalarField& phi)
 {
     alpha_.setOldTime();
 
+    const colocatedScalarField& cv =
+        fvMsh_.template metrics<colocated>().cellVolumes();
+
+    // If this is the first time step, the normal is probably not computed yet
+    // so it needs to be updated
+
+    if (fvMsh_.time().timeIndex() == 1)
+        normal_.correct();
+
+    // Central volume fraction value of Weymouth & Yue (2010)
+
     colocatedLabelField alphac
     (
         "alphac",
@@ -174,11 +185,6 @@ void splitAdvection::solve(const colocatedFaceScalarField& phi)
         IOobject::NO_READ,
         IOobject::NO_WRITE
     );
-
-    const colocatedScalarField& cv =
-        fvMsh_.template metrics<colocated>().cellVolumes();
-
-    // Central volume fraction value of Weymouth & Yue (2010)
 
     forAllCells(alpha_, i, j, k)
         alphac(i,j,k) = alpha_(i,j,k) > 0.5;

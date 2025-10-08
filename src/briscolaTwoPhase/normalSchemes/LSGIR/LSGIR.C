@@ -15,54 +15,6 @@ namespace fv
 defineTypeNameAndDebug(LSGIR, 0);
 addToRunTimeSelectionTable(normalScheme, LSGIR, dictionary);
 
-void LSGIR::createBoundaryType()
-{
-    faceLabel pBoundary;
-    for (int i = 0; i < 6; i++)
-        pBoundary[i] =
-            fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
-
-    boundaryType_.setSize(3,3,3);
-    boundaryType_ = Zero;
-
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            for (int k = 0; k < 3; k++)
-            {
-                bool aux = true;
-
-                if ((fvMsh_[0].l() > 1) && (i != 1))
-                {
-                    aux =
-                        i == 0
-                      ? aux && pBoundary.left()
-                      : aux && pBoundary.right();
-                }
-
-                if ((fvMsh_[0].m() > 1) && (j != 1))
-                {
-                    aux =
-                        j == 0
-                      ? aux && pBoundary.bottom()
-                      : aux && pBoundary.top();
-                }
-
-                if ((fvMsh_[0].n() > 1) && (k != 1))
-                {
-                    aux =
-                        k == 0
-                      ? aux && pBoundary.aft()
-                      : aux && pBoundary.fore();
-                }
-
-                boundaryType_(i,j,k) = aux;
-            }
-        }
-    }
-}
-
 LSGIR::LSGIR
 (
     const fvMesh& fvMsh,
@@ -70,17 +22,15 @@ LSGIR::LSGIR
     const colocatedScalarField& alpha
 )
 :
-    normalScheme(fvMsh, dict, alpha)
-{
-    createBoundaryType();
-}
+    normalScheme(fvMsh, dict, alpha),
+    beta_(dict.lookupOrDefault<scalar>("beta", 1.5))
+{}
 
 LSGIR::LSGIR(const LSGIR& s)
 :
-    normalScheme(s)
-{
-    createBoundaryType();
-}
+    normalScheme(s),
+    beta_(s.beta_)
+{}
 
 LSGIR::~LSGIR()
 {}
@@ -90,118 +40,83 @@ void LSGIR::correct()
     colocatedVectorField& n = *this;
 
     // Reconstruct the interface normal using the version of LSGIR presented in
-    // Lopez (2022)
+    // Lopez & Hernández (2022)
 
     const meshField<vector,colocated>& cc =
         fvMsh_.template metrics<colocated>().cellCenters();
 
-    int index;
-    scalar weight;
+    const faceLabel I(n.I());
 
     forAllCells(n, i, j, k)
     {
+        const labelVector ijk(i,j,k);
+
         if
         (
-            (alpha_(i,j,k) > vof::threshold)
-         && (alpha_(i,j,k) < 1 - vof::threshold)
+            (alpha_(ijk) > vof::threshold)
+         && (alpha_(ijk) < 1 - vof::threshold)
         )
         {
-            double Aaux[26][3] = {0};
-            double baux[26] = {0};
+            // Loop over 3^3-1 neighboring cells and compute A and b matrices
 
-            tensor A = Zero;
-            vector b = Zero;
+            vectorList A(26, Zero);
+            scalarList b(26, Zero);
 
-            for (int aux1 = 0; aux1 < 3; aux1++)
+            label c = 0;
+            labelVector o;
+            for (o.x() = -1; o.x() < 2; o.x()++)
+            for (o.y() = -1; o.y() < 2; o.y()++)
+            for (o.z() = -1; o.z() < 2; o.z()++)
+            if (o != zeroXYZ)
             {
-                for (int aux2 = 0; aux2 < 3; aux2++)
+                // Check if we are in a neighboring cell that is internal or is
+                // a parallel/periodic ghost cell
+
+                const bool internal =
+                    cmptMin(ijk + o - I.lower()) > -1
+                 && cmptMax(ijk + o - I.upper()) <  0;
+
+                if (internal || fvMsh_.msh().pBoundaryMask()(o+unitXYZ))
                 {
-                    for (int aux3 = 0; aux3 < 3; aux3++)
-                    {
-                        bool interiorNode =
-                            (
-                                (i+aux1-1) >= n.I().left()
-                             && (i+aux1-1) <  n.I().right()
-                             && (j+aux2-1) >= n.I().bottom()
-                             && (j+aux2-1) <  n.I().top()
-                             && (k+aux3-1) >= n.I().aft()
-                             && (k+aux3-1) <  n.I().fore()
-                            );
+                    const scalar weight =
+                        1.0/Foam::pow(mag(cc(ijk) - cc(ijk+o)), beta_);
 
-                        if
-                        (
-                            (aux1 != 1 || aux2 != 1 || aux3 != 1)
-                         && (interiorNode || boundaryType_(aux1,aux2,aux3))
-                        )
-                        {
-                            index = aux1 + 3 * aux2 + 9 * aux3;
+                    A[c] = weight*(cc(ijk+o) - cc(ijk));
+                    b[c] = weight*(alpha_(ijk+o) - alpha_(ijk));
 
-                            if (index > 13)
-                                index--;
-
-                            weight =
-                                1.0/Foam::pow
-                                (
-                                    Foam::mag
-                                    (
-                                        cc(i,j,k)
-                                      - cc(i+aux1-1,j+aux2-1,k+aux3-1)
-                                    ),
-                                    1.5
-                                );
-
-                            baux[index] =
-                                weight *
-                                (
-                                    alpha_(i+aux1-1,j+aux2-1,k+aux3-1)
-                                  - alpha_(i,j,k)
-                                );
-
-                            Aaux[index][0] =
-                                weight *
-                                (
-                                    cc(i+aux1-1,j+aux2-1,k+aux3-1)[0]
-                                  - cc(i,j,k)[0]
-                                );
-
-                            Aaux[index][1] =
-                                weight *
-                                (
-                                    cc(i+aux1-1,j+aux2-1,k+aux3-1)[1]
-                                  - cc(i,j,k)[1]
-                                );
-
-                            Aaux[index][2] =
-                                weight *
-                                (
-                                    cc(i+aux1-1,j+aux2-1,k+aux3-1)[2]
-                                  - cc(i,j,k)[2]
-                                );
-                        }
-                    }
+                    c++;
                 }
             }
 
-            for (int aux3 = 0; aux3 < 26; aux3++)
-            {
-                for (int aux1 = 0; aux1 < 3; aux1++)
-                {
-                    for (int aux2 = 0; aux2 < 3; aux2++)
-                    {
-                        A[3*aux1 + aux2] +=
-                            Aaux[aux3][aux1] * Aaux[aux3][aux2];
-                    }
+            A.resize(c);
+            b.resize(c);
 
-                    b[aux1] += Aaux[aux3][aux1] * baux[aux3];
-                }
-            }
+            // Compute the matrix product A^TA and matrix-vector product A^Tb
 
-            n(i,j,k) = A.inv() & b;
-            n(i,j,k) /= Foam::mag(n(i,j,k));
+            tensor ATA = Zero;
+            vector ATb = Zero;
+
+            forAll(A, l)
+                for (label ii = 0; ii < 3; ii++)
+                    for (label jj = 0; jj < 3; jj++)
+                        ATA(ii,jj) += A[l][ii]*A[l][jj];
+
+            forAll(b, l)
+                for (label ii = 0; ii < 3; ii++)
+                    ATb[ii] += A[l][ii]*b[l];
+
+            // Solve stabilized linear system
+
+            for (label ii = 0; ii < 3; ii++)
+                if (trimPrecision(ATA(ii,ii)) == 0)
+                    ATA(ii,ii) = SMALL;
+
+            n(ijk) = ATA.inv() & ATb;
+            n(ijk) /= Foam::mag(n(ijk));
         }
         else
         {
-            n(i,j,k) = Zero;
+            n(ijk) = Zero;
         }
     }
 

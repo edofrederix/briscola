@@ -17,33 +17,29 @@ class LSFIR
 :
     public LSGIR
 {
-    // Mesh formed by hexahedrons with planar faces (default true)
-    bool planarFaces_;
+protected:
 
-    // True for using vertex averages instead of centers of mass (default false)
-    bool centerAveraging_;
+    // Maximum number of iterations (defaults to 2)
+    label maxIter_;
 
-    // Boundary type stencil for the LSFIR iteration (true for parallel and
-    // periodic boundaries)
-    labelBlock boundaryType_;
+    // Angle tolerance in rad (defaults to rad equivalent of 1 degree)
+    scalar tolerance_;
 
-    // Number of vertex in each face
-    int NIPV0_[12] = {0};
+    // Compute the plane centroid as the center of mass
+    vector centroid
+    (
+        const labelVector&,
+        const List<Switch>&,
+        const scalar C
+    ) const;
 
-    // Vertex index for each face in counter clock wise order
-    int IPV0_[12][6] = {0};
-
-    // Number of faces
-    int originalNf_;
-
-    // Local volume enforcement problem solver
-    LVE lve_;
-
-    // Construct boundaryTypes
-    void createBoundaryTypes();
-
-    // Construct NIPV0, IPV0 and originalNf
-    void createHexagonDescription();
+    // Compute the plane centroid as vertex average as fallback
+    vector centroidFromVertices
+    (
+        const labelVector&,
+        const List<Switch>&,
+        const scalar C
+    ) const;
 
 public:
 
