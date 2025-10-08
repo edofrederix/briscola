@@ -279,6 +279,10 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
             }
         }
     }
+
+    // Also set remaining ghost cell face values at processor interfaces
+
+    delta.correctCommsBoundaryConditions();
 }
 
 template<class MeshType>
