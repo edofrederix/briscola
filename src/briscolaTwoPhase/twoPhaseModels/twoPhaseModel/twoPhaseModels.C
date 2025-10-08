@@ -19,28 +19,6 @@ namespace briscola
 namespace fv
 {
 
-// Multiple marker
-
-makeTwoPhaseModel
-(
-    twoPhaseMultiVof,
-    twoPhaseMultiVof,
-    blendedViscosityMixture,
-    NewtonianViscosity,
-    incompressibleTwoPhaseModel,
-    colocated
-)
-
-makeTwoPhaseModel
-(
-    twoPhaseMultiVof,
-    twoPhaseMultiVof,
-    blendedViscosityMixture,
-    NewtonianViscosity,
-    incompressibleTwoPhaseModel,
-    staggered
-)
-
 // Incompressible, blended mixing of viscosity and a basic vof solver
 
 makeTwoPhaseModel
@@ -102,6 +80,28 @@ makeTwoPhaseModel
     twoPhaseVofDF,
     twoPhaseVof,
     volumeWeightedViscosityMixture,
+    NewtonianViscosity,
+    incompressibleTwoPhaseModel,
+    staggered
+)
+
+// Incompressible, blended mixing of viscosity and a multiple-marker vof solver
+
+makeTwoPhaseModel
+(
+    twoPhaseMultiVof,
+    twoPhaseMultiVof,
+    blendedViscosityMixture,
+    NewtonianViscosity,
+    incompressibleTwoPhaseModel,
+    colocated
+)
+
+makeTwoPhaseModel
+(
+    twoPhaseMultiVof,
+    twoPhaseMultiVof,
+    blendedViscosityMixture,
     NewtonianViscosity,
     incompressibleTwoPhaseModel,
     staggered
