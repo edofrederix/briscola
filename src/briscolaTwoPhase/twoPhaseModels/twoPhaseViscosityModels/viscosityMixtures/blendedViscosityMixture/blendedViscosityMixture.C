@@ -19,9 +19,7 @@ blendedViscosityMixture<BaseModel>::blendedViscosityMixture
 :
     BaseModel(fvMsh, dict),
     C_(dict.lookupOrDefault<scalar>("C", 8))
-{
-    this->mu_.setRestrictionScheme("blendedViscosityMixture");
-}
+{}
 
 template<class BaseModel>
 blendedViscosityMixture<BaseModel>::
@@ -33,9 +31,7 @@ blendedViscosityMixture(const blendedViscosityMixture& tpm)
 
 template<class BaseModel>
 blendedViscosityMixture<BaseModel>::~blendedViscosityMixture()
-{
-    this->mu_.setRestrictionScheme("blendedViscosityMixture");
-}
+{}
 
 template<class BaseModel>
 void blendedViscosityMixture<BaseModel>::correctMixture()

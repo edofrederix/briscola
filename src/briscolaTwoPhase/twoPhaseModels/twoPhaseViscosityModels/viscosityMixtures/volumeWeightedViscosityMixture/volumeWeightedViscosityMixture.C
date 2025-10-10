@@ -18,9 +18,7 @@ volumeWeightedViscosityMixture<BaseModel>::volumeWeightedViscosityMixture
 )
 :
     BaseModel(fvMsh, dict)
-{
-    this->mu_.setRestrictionScheme("faceAreaWeighted");
-}
+{}
 
 template<class BaseModel>
 volumeWeightedViscosityMixture<BaseModel>::volumeWeightedViscosityMixture
@@ -29,9 +27,7 @@ volumeWeightedViscosityMixture<BaseModel>::volumeWeightedViscosityMixture
 )
 :
     BaseModel(tpm)
-{
-    this->mu_.setRestrictionScheme("faceAreaWeighted");
-}
+{}
 
 template<class BaseModel>
 volumeWeightedViscosityMixture<BaseModel>::~volumeWeightedViscosityMixture()

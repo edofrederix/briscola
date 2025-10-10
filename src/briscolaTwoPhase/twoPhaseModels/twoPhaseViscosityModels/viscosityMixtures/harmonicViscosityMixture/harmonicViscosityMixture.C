@@ -18,18 +18,14 @@ harmonicViscosityMixture<BaseModel>::harmonicViscosityMixture
 )
 :
     BaseModel(fvMsh, dict)
-{
-    this->mu_.setRestrictionScheme("harmonicFaceAreaWeighted");
-}
+{}
 
 template<class BaseModel>
 harmonicViscosityMixture<BaseModel>::
 harmonicViscosityMixture(const harmonicViscosityMixture& tpm)
 :
     BaseModel(tpm)
-{
-    this->mu_.setRestrictionScheme("harmonicFaceAreaWeighted");
-}
+{}
 
 template<class BaseModel>
 harmonicViscosityMixture<BaseModel>::~harmonicViscosityMixture()
