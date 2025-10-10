@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
             USys -= ex::laplacian(0.5*mu,U)*v;
         }
 
+        USys -= ex::div(mu*ex::faceDotGrad(U))*v;
         USys -= twoPhase.buoyancy()*v;
 
         // Solve predictor

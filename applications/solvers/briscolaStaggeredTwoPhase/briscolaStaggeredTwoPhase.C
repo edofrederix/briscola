@@ -73,13 +73,13 @@ int main(int argc, char *argv[])
                         v
                       * (
                             im::laplacian(mu,U)
-                          + (ex::grad(mu) & stagT(ex::grad(U)))
                           + im::source(imSourceCoeff,U)
                         );
 
                     USys -= B*USysB;
                 }
 
+                USys -= C*ex::div(mu*ex::faceDotGrad(U))*v;
                 USys -= C*twoPhase.buoyancy()*v;
 
                 // Solve predictor
@@ -114,7 +114,6 @@ int main(int argc, char *argv[])
                   : v
                   * (
                         ex::laplacian(mu,U)
-                      + (ex::grad(mu) & stagT(ex::grad(U)))
                       + ex::source(imSourceCoeff,U)
                     );
         }

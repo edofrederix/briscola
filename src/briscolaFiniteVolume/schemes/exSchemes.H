@@ -3,6 +3,7 @@
 #include "exSchemesDdt.H"
 #include "exSchemesFaceFlux.H"
 #include "exSchemesFaceGradient.H"
+#include "exSchemesFaceDotGradient.H"
 #include "exSchemesGradient.H"
 #include "exSchemesInterpolation.H"
 #include "exSchemesReconstruction.H"

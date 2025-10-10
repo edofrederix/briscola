@@ -26,6 +26,11 @@ faceGradientSchemes
     default linear;
 }
 
+faceDotGradientSchemes
+{
+    default linear;
+}
+
 faceFluxSchemes
 {
     default linear;

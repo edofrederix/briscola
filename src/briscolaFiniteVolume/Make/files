@@ -83,6 +83,7 @@ schemes/divergenceSchemes/divergenceScheme/divergenceSchemes.C
 schemes/faceFluxSchemes/faceFluxScheme/faceFluxSchemes.C
 schemes/faceGradientSchemes/faceGradientScheme/faceGradientSchemes.C
 schemes/gradientSchemes/gradientScheme/gradientSchemes.C
+schemes/faceDotGradientSchemes/faceDotGradientScheme/faceDotGradientSchemes.C
 schemes/interpolationSchemes/interpolationScheme/interpolationSchemes.C
 schemes/laplacianSchemes/laplacianScheme/laplacianSchemes.C
 schemes/limiterSchemes/limiterScheme/limiterSchemes.C
