@@ -22,7 +22,8 @@ tmp<Type> fvMesh::NewObject(const word name, const bool cached) const
         {
             // The object was found in the cache
 
-            Info<< "Reusing " << name << endl;
+            if (fvMesh::debug)
+                Pout<< "Reusing " << name << endl;
 
             objPtr = &const_cast<Type&>(db.lookupObjectRef<Type>(name));
 
@@ -53,8 +54,9 @@ tmp<Type> fvMesh::NewObject(const word name, const bool cached) const
             {
                 if (iter()->refCount::count() < 1)
                 {
-                    Info<< "Reusing " << iter()->name()
-                        << " for " << name << endl;
+                    if (fvMesh::debug)
+                        Pout<< "Reusing " << iter()->name()
+                            << " for " << name << endl;
 
                     objPtr = const_cast<Type*>(iter());
                     objPtr->rename(name);
@@ -70,7 +72,8 @@ tmp<Type> fvMesh::NewObject(const word name, const bool cached) const
 
             if (!objPtr)
             {
-                Info<< "Allocating " << name << endl;
+                if (fvMesh::debug)
+                    Pout<< "Allocating " << name << endl;
 
                 objPtr =
                     new Type
