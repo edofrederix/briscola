@@ -72,7 +72,6 @@ public:
     meshLevel
     (
         meshField<Type,MeshType>& mshField,
-        const fvMesh& fvMsh,
         const label l
     );
 
@@ -117,6 +116,34 @@ public:
         const label l,
         const List<Type>& v
     );
+
+    // Temporary level constructors
+
+    static tmp<meshLevel<Type,MeshType>> New
+    (
+        meshField<Type,MeshType>& mshField,
+        const label l
+    )
+    {
+        return
+            tmp<meshLevel<Type,MeshType>>
+            (
+                new meshLevel<Type,MeshType>(mshField,l)
+            );
+    }
+
+    static tmp<meshLevel<Type,MeshType>> New
+    (
+        const fvMesh& fvMsh,
+        const label l
+    )
+    {
+        return
+            tmp<meshLevel<Type,MeshType>>
+            (
+                new meshLevel<Type,MeshType>(fvMsh,l)
+            );
+    }
 
     // Clone
 

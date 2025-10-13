@@ -26,14 +26,12 @@ linearFaceGradientScheme<Type,MeshType>::faceGrad
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<FaceSpace<Type>,MeshType>> tGrad
-    (
-        new meshField<FaceSpace<Type>,MeshType>
+    tmp<meshField<FaceSpace<Type>,MeshType>> tGrad =
+        meshField<FaceSpace<Type>,MeshType>::New
         (
             "faceGrad("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<FaceSpace<Type>,MeshType>& Grad = tGrad.ref();
 

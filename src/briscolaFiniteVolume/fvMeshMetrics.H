@@ -230,10 +230,7 @@ public:
     // Solid mask
     inline tmp<meshField<scalar,MeshType>> solidMask() const
     {
-        return tmp<meshField<scalar,MeshType>>
-        (
-            new meshField<scalar,MeshType>(mask_)
-        );
+        return mask_;
     }
 };
 

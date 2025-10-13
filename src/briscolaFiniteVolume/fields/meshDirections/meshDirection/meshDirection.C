@@ -48,16 +48,14 @@ template<class Type, class MeshType>
 meshDirection<Type,MeshType>::meshDirection
 (
     meshLevel<Type,MeshType>& mshLevel,
-    const fvMesh& fvMsh,
-    const label l,
     const label d
 )
 :
     block<Type>(),
-    fvMsh_(fvMsh),
-    l_(l),
+    fvMsh_(mshLevel.fvMsh()),
+    l_(mshLevel.levelNum()),
     d_(d),
-    I_(fvMsh.I<MeshType>(l,d)),
+    I_(fvMsh_.I<MeshType>(l_,d)),
     mshLevelPtr_(&mshLevel)
 {
     allocate();

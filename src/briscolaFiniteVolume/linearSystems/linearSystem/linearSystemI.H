@@ -1,3 +1,5 @@
+#include "linearSystemReuseFunctions.H"
+
 namespace Foam
 {
 
@@ -16,13 +18,15 @@ operator-
     const linearSystem<SType,Type,MeshType>& sys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "-" + sys.name(),
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
 
-    tRet->A() *= -1;
-    tRet->b() *= -1;
+    tRet.ref() = sys;
+    tRet.ref() *= -1;
 
     return tRet;
 }
@@ -34,13 +38,15 @@ operator-
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "-" + tSys->name()
+        );
 
-    tRet->A() *= -1;
-    tRet->b() *= -1;
+    tRet->A() = -tSys->A();
+    tRet->b() = -tSys->b();
 
     if (tSys.isTmp())
         tSys.clear();
@@ -58,13 +64,15 @@ operator*
     const linearSystem<SType,Type,MeshType>& sys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + Foam::name(s) + "*" + sys.name() + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
 
-    tRet->A() *= s;
-    tRet->b() *= s;
+    tRet.ref() = sys;
+    tRet.ref() *= s;
 
     return tRet;
 }
@@ -77,89 +85,15 @@ operator*
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + Foam::name(s) + "*" + tSys->name() + ")"
+        );
 
-    tRet->A() *= s;
-    tRet->b() *= s;
-
-    if (tSys.isTmp())
-        tSys.clear();
-
-    return tRet;
-}
-
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
-operator*
-(
-    const linearSystem<SType,Type,MeshType>& sys,
-    const scalar s
-)
-{
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
-
-    tRet->A() *= s;
-    tRet->b() *= s;
-
-    return tRet;
-}
-
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
-operator*
-(
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys,
-    const scalar s
-)
-{
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
-    );
-
-    tRet->A() *= s;
-    tRet->b() *= s;
-
-    if (tSys.isTmp())
-        tSys.clear();
-
-    return tRet;
-}
-
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
-operator*
-(
-    const meshField<scalar,MeshType>& s,
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys
-)
-{
-    const_cast<meshField<scalar,MeshType>&>(s).restrict();
-
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
-    );
-
-    // The restricted field has undefined ghosts. Manually implement operation
-    // to avoid segmentation errors.
-
-    meshField<SType,MeshType>& A = tRet->A();
-    meshField<Type,MeshType>& b = tRet->b();
-
-    forAllCells(A, l, d, i, j, k)
-        A(l,d,i,j,k) *= s(l,d,i,j,k);
-
-    forAllCells(b, l, d, i, j, k)
-        b(l,d,i,j,k) *= s(l,d,i,j,k);
-
-    const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+    tRet->A() = s*tSys->A();
+    tRet->b() = s*tSys->b();
 
     if (tSys.isTmp())
         tSys.clear();
@@ -172,29 +106,18 @@ inline tmp<linearSystem<SType,Type,MeshType>>
 operator*
 (
     const linearSystem<SType,Type,MeshType>& sys,
-    const meshField<scalar,MeshType>& s
+    const scalar s
 )
 {
-    const_cast<meshField<scalar,MeshType>&>(s).restrict();
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + sys.name() + "*" + Foam::name(s) + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
 
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
-
-    // The restricted field has undefined ghosts. Manually implement operation
-    // to avoid segmentation errors.
-
-    meshField<SType,MeshType>& A = tRet->A();
-    meshField<Type,MeshType>& b = tRet->b();
-
-    forAllCells(A, l, d, i, j, k)
-        A(l,d,i,j,k) *= s(l,d,i,j,k);
-
-    forAllCells(b, l, d, i, j, k)
-        b(l,d,i,j,k) *= s(l,d,i,j,k);
-
-    const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+    tRet.ref() = sys;
+    tRet.ref() *= s;
 
     return tRet;
 }
@@ -204,72 +127,18 @@ inline tmp<linearSystem<SType,Type,MeshType>>
 operator*
 (
     const tmp<linearSystem<SType,Type,MeshType>>& tSys,
-    const meshField<scalar,MeshType>& s
-)
-{
-    const_cast<meshField<scalar,MeshType>&>(s).restrict();
-
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
-    );
-
-    // The restricted field has undefined ghosts. Manually implement operation
-    // to avoid segmentation errors.
-
-    meshField<SType,MeshType>& A = tRet->A();
-    meshField<Type,MeshType>& b = tRet->b();
-
-    forAllCells(A, l, d, i, j, k)
-        A(l,d,i,j,k) *= s(l,d,i,j,k);
-
-    forAllCells(b, l, d, i, j, k)
-        b(l,d,i,j,k) *= s(l,d,i,j,k);
-
-    const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
-
-    if (tSys.isTmp())
-        tSys.clear();
-
-    return tRet;
-}
-
-// Division
-
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
-operator/
-(
-    const linearSystem<SType,Type,MeshType>& sys,
     const scalar s
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + tSys->name() + "*" + Foam::name(s) + ")"
+        );
 
-    tRet->A() /= s;
-    tRet->b() /= s;
-
-    return tRet;
-}
-
-template<class SType, class Type, class MeshType>
-inline tmp<linearSystem<SType,Type,MeshType>>
-operator/
-(
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys,
-    const scalar s
-)
-{
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
-    );
-
-    tRet->A() /= s;
-    tRet->b() /= s;
+    tRet->A() = tRet->A()*s;
+    tRet->b() = tRet->b()*s;
 
     if (tSys.isTmp())
         tSys.clear();
@@ -287,10 +156,14 @@ operator*
 {
     const_cast<meshField<scalar,MeshType>&>(s).restrict();
 
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + s.name() + "*" + sys.name() + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
+
+    tRet.ref() = sys;
 
     // The restricted field has undefined ghosts. Manually implement operation
     // to avoid segmentation errors.
@@ -311,6 +184,235 @@ operator*
 
 template<class SType, class Type, class MeshType>
 inline tmp<linearSystem<SType,Type,MeshType>>
+operator*
+(
+    const meshField<scalar,MeshType>& s,
+    const tmp<linearSystem<SType,Type,MeshType>>& tSys
+)
+{
+    const_cast<meshField<scalar,MeshType>&>(s).restrict();
+
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + s.name() + "*" + tSys->name() + ")"
+        );
+
+    // The restricted field has undefined ghosts. Manually implement operation
+    // to avoid segmentation faults.
+
+    meshField<SType,MeshType>& A = tRet->A();
+    meshField<Type,MeshType>& b = tRet->b();
+
+    const meshField<SType,MeshType>& As = tSys->A();
+    const meshField<Type,MeshType>& bs = tSys->b();
+
+    forAllCells(A, l, d, i, j, k)
+        A(l,d,i,j,k) = As(l,d,i,j,k)*s(l,d,i,j,k);
+
+    forAllCells(b, l, d, i, j, k)
+        b(l,d,i,j,k) = bs(l,d,i,j,k)*s(l,d,i,j,k);
+
+    const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+
+    if (tSys.isTmp())
+        tSys.clear();
+
+    return tRet;
+}
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
+operator*
+(
+    const tmp<meshField<scalar,MeshType>>& ts,
+    const linearSystem<SType,Type,MeshType>& sys
+)
+{
+    tmp<linearSystem<SType,Type,MeshType>> tRet(ts()*sys);
+
+    if (ts.isTmp())
+        ts.clear();
+
+    return tRet;
+}
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
+operator*
+(
+    const tmp<meshField<scalar,MeshType>>& ts,
+    const tmp<linearSystem<SType,Type,MeshType>>& tSys
+)
+{
+    tmp<linearSystem<SType,Type,MeshType>> tRet(ts()*tSys);
+
+    if (ts.isTmp())
+        ts.clear();
+
+    return tRet;
+}
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
+operator*
+(
+    const linearSystem<SType,Type,MeshType>& sys,
+    const meshField<scalar,MeshType>& s
+)
+{
+    const_cast<meshField<scalar,MeshType>&>(s).restrict();
+
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + sys.name() + "*" + s.name() + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
+
+    tRet.ref() = sys;
+
+    // The restricted field has undefined ghosts. Manually implement operation
+    // to avoid segmentation errors.
+
+    meshField<SType,MeshType>& A = tRet->A();
+    meshField<Type,MeshType>& b = tRet->b();
+
+    forAllCells(A, l, d, i, j, k)
+        A(l,d,i,j,k) *= s(l,d,i,j,k);
+
+    forAllCells(b, l, d, i, j, k)
+        b(l,d,i,j,k) *= s(l,d,i,j,k);
+
+    const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+
+    return tRet;
+}
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
+operator*
+(
+    const tmp<linearSystem<SType,Type,MeshType>>& tSys,
+    const meshField<scalar,MeshType>& s
+)
+{
+    const_cast<meshField<scalar,MeshType>&>(s).restrict();
+
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + tSys->name() + "*" + s.name() + ")"
+        );
+
+    // The restricted field has undefined ghosts. Manually implement operation
+    // to avoid segmentation errors.
+
+    meshField<SType,MeshType>& A = tRet->A();
+    meshField<Type,MeshType>& b = tRet->b();
+
+    const meshField<SType,MeshType>& As = tSys->A();
+    const meshField<Type,MeshType>& bs = tSys->b();
+
+    forAllCells(A, l, d, i, j, k)
+        A(l,d,i,j,k) = As(l,d,i,j,k)*s(l,d,i,j,k);
+
+    forAllCells(b, l, d, i, j, k)
+        b(l,d,i,j,k) = bs(l,d,i,j,k)*s(l,d,i,j,k);
+
+    const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+
+    if (tSys.isTmp())
+        tSys.clear();
+
+    return tRet;
+}
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
+operator*
+(
+    const linearSystem<SType,Type,MeshType>& sys,
+    const tmp<meshField<scalar,MeshType>>& ts
+)
+{
+    tmp<linearSystem<SType,Type,MeshType>> tRet(sys*ts());
+
+    if (ts.isTmp())
+        ts.clear();
+
+    return tRet;
+}
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
+operator*
+(
+    const tmp<linearSystem<SType,Type,MeshType>>& tSys,
+    const tmp<meshField<scalar,MeshType>>& ts
+)
+{
+    tmp<linearSystem<SType,Type,MeshType>> tRet(tSys*ts());
+
+    if (ts.isTmp())
+        ts.clear();
+
+    return tRet;
+}
+
+// Division
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
+operator/
+(
+    const linearSystem<SType,Type,MeshType>& sys,
+    const scalar s
+)
+{
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + sys.name() + "/" + Foam::name(s) + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
+
+    tRet.ref() = sys;
+
+    tRet->A() /= s;
+    tRet->b() /= s;
+
+    return tRet;
+}
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
+operator/
+(
+    const tmp<linearSystem<SType,Type,MeshType>>& tSys,
+    const scalar s
+)
+{
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + tSys->name() + "/" + Foam::name(s) + ")"
+        );
+
+    tRet->A() = tSys->A()/s;
+    tRet->b() = tSys->b()/s;
+
+    if (tSys.isTmp())
+        tSys.clear();
+
+    return tRet;
+}
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
 operator/
 (
     const linearSystem<SType,Type,MeshType>& sys,
@@ -319,10 +421,14 @@ operator/
 {
     const_cast<meshField<scalar,MeshType>&>(s).restrict();
 
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + sys.name() + "/" + s.name() + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
+
+    tRet.ref() = sys;
 
     // The restricted field has undefined ghosts. Manually implement operation
     // to avoid segmentation errors.
@@ -351,10 +457,12 @@ operator/
 {
     const_cast<meshField<scalar,MeshType>&>(s).restrict();
 
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + tSys->name() + "/" + s.name() + ")"
+        );
 
     // The restricted field has undefined ghosts. Manually implement operation
     // to avoid segmentation errors.
@@ -362,16 +470,51 @@ operator/
     meshField<SType,MeshType>& A = tRet->A();
     meshField<Type,MeshType>& b = tRet->b();
 
+    const meshField<SType,MeshType>& As = tSys->A();
+    const meshField<Type,MeshType>& bs = tSys->b();
+
     forAllCells(A, l, d, i, j, k)
-        A(l,d,i,j,k) /= s(l,d,i,j,k);
+        A(l,d,i,j,k) = As(l,d,i,j,k)/s(l,d,i,j,k);
 
     forAllCells(b, l, d, i, j, k)
-        b(l,d,i,j,k) /= s(l,d,i,j,k);
+        b(l,d,i,j,k) = bs(l,d,i,j,k)/s(l,d,i,j,k);
 
     const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
 
     if (tSys.isTmp())
         tSys.clear();
+
+    return tRet;
+}
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
+operator/
+(
+    const linearSystem<SType,Type,MeshType>& sys,
+    const tmp<meshField<scalar,MeshType>>& ts
+)
+{
+    tmp<linearSystem<SType,Type,MeshType>> tRet(sys/ts());
+
+    if (ts.isTmp())
+        ts.clear();
+
+    return tRet;
+}
+
+template<class SType, class Type, class MeshType>
+inline tmp<linearSystem<SType,Type,MeshType>>
+operator/
+(
+    const tmp<linearSystem<SType,Type,MeshType>>& tSys,
+    const tmp<meshField<scalar,MeshType>>& ts
+)
+{
+    tmp<linearSystem<SType,Type,MeshType>> tRet(tSys/ts());
+
+    if (ts.isTmp())
+        ts.clear();
 
     return tRet;
 }
@@ -386,17 +529,15 @@ operator+
     const linearSystem<SType2,Type,MeshType>& sys2
 )
 {
-    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
-        sysType;
+    typedef typename typeOfSum<SType1,SType2>::type STypeR;
+    typedef linearSystem<STypeR,Type,MeshType> SysType;
 
-    tmp<sysType> tRet
-    (
-        new sysType
+    tmp<SysType> tRet =
+        SysType::New
         (
-            sys1.name() + "+" + sys2.name(),
+            "(" + sys1.name() + "+" + sys2.name() + ")",
             const_cast<meshField<Type,MeshType>&>(sys1.x())
-        )
-    );
+        );
 
     tRet.ref() = sys1;
     tRet.ref() += sys2;
@@ -412,19 +553,19 @@ operator+
     const linearSystem<SType2,Type,MeshType>& sys2
 )
 {
-    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
-        sysType;
+    typedef typename typeOfSum<SType1,SType2>::type STypeR;
+    typedef linearSystem<STypeR,Type,MeshType> SysType;
 
-    tmp<sysType> tRet
-    (
-        new sysType
+    tmp<SysType> tRet =
+        reuseSysTmp<STypeR,SType1,Type,MeshType>::New
         (
-            tSys1->name() + "+" + sys2.name(),
-            const_cast<meshField<Type,MeshType>&>(sys2.x())
-        )
-    );
+            tSys1,
+            "(" + tSys1->name() + "+" + sys2.name() + ")"
+        );
 
-    tRet.ref() = tSys1;
+    if (static_cast<const void*>(&tRet()) != static_cast<const void*>(&tSys1()))
+        tRet.ref() = tSys1;
+
     tRet.ref() += sys2;
 
     if (tSys1.isTmp())
@@ -441,19 +582,18 @@ operator+
     const tmp<linearSystem<SType2,Type,MeshType>>& tSys2
 )
 {
-    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
-        sysType;
+    typedef typename typeOfSum<SType1,SType2>::type STypeR;
+    typedef linearSystem<STypeR,Type,MeshType> SysType;
 
-    tmp<sysType> tRet
-    (
-        new sysType
+    tmp<SysType> tRet =
+        reuseSysTmp<STypeR,SType1,Type,MeshType>::New
         (
-            sys1.name() + "+" + tSys2->name(),
-            const_cast<meshField<Type,MeshType>&>(sys1.x())
-        )
-    );
+            tSys2,
+            "(" + sys1.name() + "+" + tSys2->name() + ")"
+        );
 
-    tRet.ref() = tSys2;
+    if (static_cast<const void*>(&tRet()) != static_cast<const void*>(&tSys2()))
+        tRet.ref() = tSys2;
     tRet.ref() += sys1;
 
     if (tSys2.isTmp())
@@ -470,27 +610,41 @@ operator+
     const tmp<linearSystem<SType2,Type,MeshType>>& tSys2
 )
 {
-    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
-        sysType;
+    typedef typename typeOfSum<SType1,SType2>::type STypeR;
+    typedef linearSystem<STypeR,Type,MeshType> SysType;
 
-    tmp<sysType> tRet
-    (
-        new sysType
+    tmp<SysType> tRet =
+        reuseSysTmpTmp<STypeR,SType1,SType1,SType2,Type,MeshType>::New
         (
-            tSys1->name() + "+" + tSys2->name(),
-            const_cast<meshField<Type,MeshType>&>(tSys1->x())
-        )
-    );
+            tSys1,
+            tSys2,
+            "(" + tSys1->name() + "+" + tSys2->name() + ")"
+        );
 
-    if (std::is_same<typename typeOfSum<SType1,SType2>::type,SType1>::value)
+    if (static_cast<const void*>(&tRet()) == static_cast<const void*>(&tSys1()))
     {
-        tRet.ref() = tSys1;
         tRet.ref() += tSys2;
+    }
+    else if
+    (
+        static_cast<const void*>(&tRet())
+     == static_cast<const void*>(&tSys2())
+    )
+    {
+        tRet.ref() += tSys1;
     }
     else
     {
-        tRet.ref() = tSys2;
-        tRet.ref() += tSys1;
+        if (std::is_same<STypeR,SType1>::value)
+        {
+            tRet.ref() = tSys1;
+            tRet.ref() += tSys2;
+        }
+        else
+        {
+            tRet.ref() = tSys2;
+            tRet.ref() += tSys1;
+        }
     }
 
     if (tSys1.isTmp())
@@ -510,10 +664,14 @@ operator+
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + sys.name() + "+" + field.name() + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
+
+    tRet.ref() = sys;
 
     tRet.ref() += field;
 
@@ -530,8 +688,15 @@ operator+
 {
     tmp<linearSystem<SType,Type,MeshType>> tRet
     (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + tSys->name() + "+" + field.name() + ")"
+        )
     );
+
+    if (static_cast<const void*>(&tRet()) != &tSys())
+        tRet.ref() = tSys;
 
     tRet.ref() += field;
 
@@ -549,10 +714,14 @@ operator+
     const tmp<meshField<Type,MeshType>>& tField
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + sys.name() + "*" + tField->name() + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
+
+    tRet.ref() = sys;
 
     tRet.ref() += tField();
 
@@ -572,8 +741,15 @@ operator+
 {
     tmp<linearSystem<SType,Type,MeshType>> tRet
     (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + tSys->name() + "+" + tField->name() + ")"
+        )
     );
+
+    if (static_cast<const void*>(&tRet()) != &tSys())
+        tRet.ref() = tSys;
 
     tRet.ref() += tField();
 
@@ -594,11 +770,14 @@ operator+
     const linearSystem<SType,Type,MeshType>& sys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + field.name() + "+" + sys.name() + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
 
+    tRet.ref() = sys;
     tRet.ref() += field;
 
     return tRet;
@@ -614,8 +793,15 @@ operator+
 {
     tmp<linearSystem<SType,Type,MeshType>> tRet
     (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + field.name() + "+" + tSys->name() + ")"
+        )
     );
+
+    if (static_cast<const void*>(&tRet()) != &tSys())
+        tRet.ref() = tSys;
 
     tRet.ref() += field;
 
@@ -633,11 +819,14 @@ operator+
     const linearSystem<SType,Type,MeshType>& sys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + tField->name() + "+" + sys.name() + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
 
+    tRet.ref() = sys;
     tRet.ref() += tField();
 
     if (tField.isTmp())
@@ -656,8 +845,15 @@ operator+
 {
     tmp<linearSystem<SType,Type,MeshType>> tRet
     (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + tField->name() + "+" + tSys->name() + ")"
+        )
     );
+
+    if (static_cast<const void*>(&tRet()) != &tSys())
+        tRet.ref() = tSys;
 
     tRet.ref() += tField();
 
@@ -680,17 +876,15 @@ operator-
     const linearSystem<SType2,Type,MeshType>& sys2
 )
 {
-    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
-        sysType;
+    typedef typename typeOfSum<SType1,SType2>::type STypeR;
+    typedef linearSystem<STypeR,Type,MeshType> SysType;
 
-    tmp<sysType> tRet
-    (
-        new sysType
+    tmp<SysType> tRet =
+        SysType::New
         (
-            sys1.name() + "-" + sys2.name(),
+            "(" + sys1.name() + "-" + sys2.name() + ")",
             const_cast<meshField<Type,MeshType>&>(sys1.x())
-        )
-    );
+        );
 
     tRet.ref() = sys1;
     tRet.ref() -= sys2;
@@ -706,19 +900,21 @@ operator-
     const linearSystem<SType2,Type,MeshType>& sys2
 )
 {
-    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
-        sysType;
+    typedef typename typeOfSum<SType1,SType2>::type STypeR;
+    typedef linearSystem<STypeR,Type,MeshType> SysType;
 
-    tmp<sysType> tRet
+    tmp<SysType> tRet
     (
-        new sysType
+        reuseSysTmp<STypeR,SType1,Type,MeshType>::New
         (
-            tSys1->name() + "-" + sys2.name(),
-            const_cast<meshField<Type,MeshType>&>(sys2.x())
+            tSys1,
+            "(" + tSys1->name() + "-" + sys2.name() + ")"
         )
     );
 
-    tRet.ref() = tSys1;
+    if (static_cast<const void*>(&tRet()) != static_cast<const void*>(&tSys1()))
+        tRet.ref() = tSys1;
+
     tRet.ref() -= sys2;
 
     if (tSys1.isTmp())
@@ -735,19 +931,21 @@ operator-
     const tmp<linearSystem<SType2,Type,MeshType>>& tSys2
 )
 {
-    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
-        sysType;
+    typedef typename typeOfSum<SType1,SType2>::type STypeR;
+    typedef linearSystem<STypeR,Type,MeshType> SysType;
 
-    tmp<sysType> tRet
+    tmp<SysType> tRet
     (
-        new sysType
+        reuseSysTmp<STypeR,SType1,Type,MeshType>::New
         (
-            sys1.name() + "-" + tSys2->name(),
-            const_cast<meshField<Type,MeshType>&>(sys1.x())
+            tSys2,
+            "(" + sys1.name() + "-" + tSys2->name() + ")"
         )
     );
 
-    tRet.ref() = tSys2;
+    if (static_cast<const void*>(&tRet()) != static_cast<const void*>(&tSys2()))
+        tRet.ref() = tSys2;
+
     tRet.ref() *= -1;
     tRet.ref() += sys1;
 
@@ -765,28 +963,34 @@ operator-
     const tmp<linearSystem<SType2,Type,MeshType>>& tSys2
 )
 {
-    typedef linearSystem<typename typeOfSum<SType1,SType2>::type,Type,MeshType>
-        sysType;
+    typedef typename typeOfSum<SType1,SType2>::type STypeR;
+    typedef linearSystem<STypeR,Type,MeshType> SysType;
 
-    tmp<sysType> tRet
-    (
-        new sysType
+    tmp<SysType> tRet =
+        reuseSysTmpTmp<STypeR,SType1,SType1,SType2,Type,MeshType>::New
         (
-            tSys1->name() + "-" + tSys2->name(),
-            const_cast<meshField<Type,MeshType>&>(tSys1->x())
-        )
-    );
+            tSys1,
+            tSys2,
+            "(" + tSys1->name() + "-" + tSys2->name() + ")"
+        );
 
-    if (std::is_same<typename typeOfSum<SType1,SType2>::type,SType1>::value)
+    if (static_cast<const void*>(&tRet()) == static_cast<const void*>(&tSys1()))
     {
-        tRet.ref() = tSys1;
         tRet.ref() -= tSys2;
+    }
+    else if
+    (
+        static_cast<const void*>(&tRet())
+     == static_cast<const void*>(&tSys2())
+    )
+    {
+        tRet.ref() *= -1;
+        tRet.ref() += tSys1;
     }
     else
     {
-        tRet.ref() = tSys2;
-        tRet.ref() *= -1;
-        tRet.ref() += tSys1;
+        tRet.ref() = tSys1;
+        tRet.ref() -= tSys2;
     }
 
     if (tSys1.isTmp())
@@ -806,11 +1010,14 @@ operator-
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + sys.name() + "-" + field.name() + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
 
+    tRet.ref() = sys;
     tRet.ref() -= field;
 
     return tRet;
@@ -824,10 +1031,15 @@ operator-
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + tSys->name() + "-" + field.name() + ")"
+        );
+
+    if (static_cast<const void*>(&tRet()) != &tSys())
+        tRet.ref() = tSys;
 
     tRet.ref() -= field;
 
@@ -845,11 +1057,14 @@ operator-
     const tmp<meshField<Type,MeshType>>& tField
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + sys.name() + "-" + tField->name() + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
 
+    tRet.ref() = sys;
     tRet.ref() -= tField();
 
     if (tField.isTmp())
@@ -866,10 +1081,15 @@ operator-
     const tmp<meshField<Type,MeshType>>& tField
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + tSys->name() + "-" + tField->name() + ")"
+        );
+
+    if (static_cast<const void*>(&tRet()) != &tSys())
+        tRet.ref() = tSys;
 
     tRet.ref() -= tField();
 
@@ -890,12 +1110,14 @@ operator-
     const linearSystem<SType,Type,MeshType>& sys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + field.name() + "-" + sys.name() + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
 
-
+    tRet.ref() = sys;
     tRet.ref() *= -1;
     tRet.ref() += field;
 
@@ -910,10 +1132,15 @@ operator-
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + field.name() + "-" + tSys->name() + ")"
+        );
+
+    if (static_cast<const void*>(&tRet()) != &tSys())
+        tRet.ref() = tSys;
 
     tRet.ref() *= -1;
     tRet.ref() += field;
@@ -932,11 +1159,14 @@ operator-
     const linearSystem<SType,Type,MeshType>& sys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        new linearSystem<SType,Type,MeshType>(sys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        linearSystem<SType,Type,MeshType>::New
+        (
+            "(" + tField->name() + "-" + sys.name() + ")",
+            const_cast<meshField<Type,MeshType>&>(sys.x())
+        );
 
+    tRet.ref() = sys;
     tRet.ref() *= -1;
     tRet.ref() += tField();
 
@@ -954,10 +1184,15 @@ operator-
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
-        const_cast<tmp<linearSystem<SType,Type,MeshType>>&>(tSys)
-    );
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
+        reuseSysTmp<SType,SType,Type,MeshType>::New
+        (
+            tSys,
+            "(" + tField->name() + "-" + tSys->name() + ")"
+        );
+
+    if (static_cast<const void*>(&tRet()) != &tSys())
+        tRet.ref() = tSys;
 
     tRet.ref() *= -1;
     tRet.ref() += tField();

@@ -23,7 +23,7 @@ RungeKuttaScheme::RungeKuttaScheme(const fvMesh& fvMsh)
         (
             "rkScheme",
             fvMsh.time().name(),
-            fvMsh.time(),
+            fvMsh.db(),
             IOobject::NO_READ,
             IOobject::NO_WRITE,
             true
@@ -96,14 +96,7 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumA
     const PtrList<meshField<Type,MeshType>>& list
 ) const
 {
-    tmp<meshField<Type,MeshType>> tF
-    (
-        new meshField<Type,MeshType>
-        (
-            a()[stage_-1][0]*list[0]
-        )
-    );
-
+    tmp<meshField<Type,MeshType>> tF(a()[stage_-1][0]*list[0]);
     meshField<Type,MeshType>& F = tF.ref();
 
     for (int i = 2; i < stage_; i++)
@@ -119,14 +112,7 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumB
     const PtrList<meshField<Type,MeshType>>& list
 ) const
 {
-    tmp<meshField<Type,MeshType>> tF
-    (
-        new meshField<Type,MeshType>
-        (
-            b()[stage_-1][0]*list[0]
-        )
-    );
-
+    tmp<meshField<Type,MeshType>> tF(b()[stage_-1][0]*list[0]);
     meshField<Type,MeshType>& F = tF.ref();
 
     for (int i = 2; i < stage_; i++)

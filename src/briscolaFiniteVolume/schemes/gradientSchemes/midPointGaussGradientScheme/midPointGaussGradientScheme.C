@@ -28,14 +28,12 @@ midPointGaussGradientScheme<Type,MeshType>::grad
 {
     typedef typename gradientScheme<Type,MeshType>::GradType GradType;
 
-    tmp<meshField<GradType,MeshType>> tGrad
-    (
-        new meshField<GradType,MeshType>
+    tmp<meshField<GradType,MeshType>> tGrad =
+        meshField<GradType,MeshType>::New
         (
             "grad("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<GradType,MeshType>& Grad = tGrad.ref();
 
@@ -72,14 +70,12 @@ midPointGaussGradientScheme<Type,MeshType>::stagGrad
     const meshField<Type,colocated>& field
 )
 {
-    tmp<meshField<Type,staggered>> tGrad
-    (
-        new meshField<Type,staggered>
+    tmp<meshField<Type,staggered>> tGrad =
+        meshField<Type,staggered>::New
         (
             "stagGrad("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,staggered>& Grad = tGrad.ref();
 

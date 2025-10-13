@@ -39,10 +39,8 @@ inline tmp<meshField<FaceSpace<Type>,MeshType>> faceGrad
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<FaceSpace<Type>,MeshType>> tFaceGrad
-    (
-        faceGrad(tField())
-    );
+    tmp<meshField<FaceSpace<Type>,MeshType>> tFaceGrad =
+        faceGrad(tField());
 
     if (tField.isTmp())
         tField.clear();

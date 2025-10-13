@@ -25,16 +25,14 @@ namespace ex
         const scalar factor = 1.0
     )
     {
-        tmp<meshField<Type,MeshType>> tS
-        (
-            new meshField<Type,MeshType>
+        tmp<meshField<Type,MeshType>> tS =
+            meshField<Type,MeshType>::New
             (
                 lambdaPtr
               ? "source("+lambdaPtr->name()+","+field.name()+")"
               : "source("+field.name()+")",
                 field.fvMsh()
-            )
-        );
+            );
 
         meshField<Type,MeshType>& S = tS.ref();
 
@@ -73,10 +71,7 @@ namespace ex
         const scalar factor = 1.0
     )
     {
-        tmp<meshField<Type,MeshType>> tS
-        (
-            source(tLambda(), field, factor)
-        );
+        tmp<meshField<Type,MeshType>> tS = source(tLambda(), field, factor);
 
         if (tLambda.isTmp())
             tLambda.clear();

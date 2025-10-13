@@ -29,14 +29,12 @@ tmp
             colocated
         > returnType;
 
-    tmp<returnType> tFlux
-    (
-        new returnType
+    tmp<returnType> tFlux =
+        returnType::New
         (
             "faceFlux("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     returnType& Flux = tFlux.ref();
 
@@ -85,14 +83,12 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
     const staggeredScalarField& field
 )
 {
-    tmp<staggeredFaceScalarField> tFlux
-    (
-        new staggeredFaceScalarField
+    tmp<staggeredFaceScalarField> tFlux =
+        staggeredFaceScalarField::New
         (
             "faceFlux("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     staggeredFaceScalarField& Flux = tFlux.ref();
 

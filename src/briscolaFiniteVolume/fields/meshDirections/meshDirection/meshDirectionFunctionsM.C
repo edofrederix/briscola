@@ -16,15 +16,13 @@ TEMPLATE                                                                       \
 tmp<meshDirection<ReturnType,MeshType>>                                        \
 Func(const meshDirection<Type,MeshType>& D)                                    \
 {                                                                              \
-    tmp<meshDirection<ReturnType,MeshType>> tRes                               \
-    (                                                                          \
-        new meshDirection<ReturnType,MeshType>                                 \
+    tmp<meshDirection<ReturnType,MeshType>> tRes =                             \
+        meshDirection<ReturnType,MeshType>::New                                \
         (                                                                      \
             D.fvMsh(),                                                         \
             D.levelNum(),                                                      \
             D.directionNum()                                                   \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     Func(tRes.ref(), D);                                                       \
     return tRes;                                                               \
 }                                                                              \
@@ -56,15 +54,13 @@ TEMPLATE                                                                       \
 tmp<meshDirection<ReturnType,MeshType>>                                        \
 operator Op(const meshDirection<Type,MeshType>& D)                             \
 {                                                                              \
-    tmp<meshDirection<ReturnType,MeshType>> tRes                               \
-    (                                                                          \
-        new meshDirection<ReturnType,MeshType>                                 \
+    tmp<meshDirection<ReturnType,MeshType>> tRes =                             \
+        meshDirection<ReturnType,MeshType>::New                                \
         (                                                                      \
             D.fvMsh(),                                                         \
             D.levelNum(),                                                      \
             D.directionNum()                                                   \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     OpFunc(tRes.ref(), D);                                                     \
     return tRes;                                                               \
 }                                                                              \
@@ -100,15 +96,13 @@ tmp<meshDirection<ReturnType,MeshType>> Func                                   \
     const meshDirection<Type2,MeshType>& D2                                    \
 )                                                                              \
 {                                                                              \
-    tmp<meshDirection<ReturnType,MeshType>> tRes                               \
-    (                                                                          \
-        new meshDirection<ReturnType,MeshType>                                 \
+    tmp<meshDirection<ReturnType,MeshType>> tRes =                             \
+        meshDirection<ReturnType,MeshType>::New                                \
         (                                                                      \
             D1.fvMsh(),                                                        \
             D1.levelNum(),                                                     \
             D1.directionNum()                                                  \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     Func(tRes.ref(), D1, D2);                                                  \
     return tRes;                                                               \
 }                                                                              \
@@ -177,15 +171,13 @@ tmp<meshDirection<ReturnType,MeshType>> Func                                   \
     const meshDirection<Type2,MeshType>& D2                                    \
 )                                                                              \
 {                                                                              \
-    tmp<meshDirection<ReturnType,MeshType>> tRes                               \
-    (                                                                          \
-        new meshDirection<ReturnType,MeshType>                                 \
+    tmp<meshDirection<ReturnType,MeshType>> tRes =                             \
+        meshDirection<ReturnType,MeshType>::New                                \
         (                                                                      \
             D2.fvMsh(),                                                        \
             D2.levelNum(),                                                     \
             D2.directionNum()                                                  \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     Func(tRes.ref(), s1, D2);                                                  \
     return tRes;                                                               \
 }                                                                              \
@@ -225,15 +217,13 @@ tmp<meshDirection<ReturnType,MeshType>> Func                                   \
     const Type2& s2                                                            \
 )                                                                              \
 {                                                                              \
-    tmp<meshDirection<ReturnType,MeshType>> tRes                               \
-    (                                                                          \
-        new meshDirection<ReturnType,MeshType>                                 \
+    tmp<meshDirection<ReturnType,MeshType>> tRes =                             \
+        meshDirection<ReturnType,MeshType>::New                                \
         (                                                                      \
             D1.fvMsh(),                                                        \
             D1.levelNum(),                                                     \
             D1.directionNum()                                                  \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     Func(tRes.ref(), D1, s2);                                                  \
     return tRes;                                                               \
 }                                                                              \
@@ -276,15 +266,13 @@ tmp<meshDirection<ReturnType,MeshType>> operator Op                            \
     const meshDirection<Type2,MeshType>& D2                                    \
 )                                                                              \
 {                                                                              \
-    tmp<meshDirection<ReturnType,MeshType>> tRes                               \
-    (                                                                          \
-        new meshDirection<ReturnType,MeshType>                                 \
+    tmp<meshDirection<ReturnType,MeshType>> tRes =                             \
+        meshDirection<ReturnType,MeshType>::New                                \
         (                                                                      \
             D1.fvMsh(),                                                        \
             D1.levelNum(),                                                     \
             D1.directionNum()                                                  \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     OpFunc(tRes.ref(), D1, D2);                                                \
     return tRes;                                                               \
 }                                                                              \
@@ -353,15 +341,13 @@ tmp<meshDirection<ReturnType,MeshType>> operator Op                            \
     const meshDirection<Type2,MeshType>& D2                                    \
 )                                                                              \
 {                                                                              \
-    tmp<meshDirection<ReturnType,MeshType>> tRes                               \
-    (                                                                          \
-        new meshDirection<ReturnType,MeshType>                                 \
+    tmp<meshDirection<ReturnType,MeshType>> tRes =                             \
+        meshDirection<ReturnType,MeshType>::New                                \
         (                                                                      \
             D2.fvMsh(),                                                        \
             D2.levelNum(),                                                     \
             D2.directionNum()                                                  \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     OpFunc(tRes.ref(), s1, D2);                                                \
     return tRes;                                                               \
 }                                                                              \
@@ -400,15 +386,13 @@ tmp<meshDirection<ReturnType,MeshType>> operator Op                            \
     const Type2& s2                                                            \
 )                                                                              \
 {                                                                              \
-    tmp<meshDirection<ReturnType,MeshType>> tRes                               \
-    (                                                                          \
-        new meshDirection<ReturnType,MeshType>                                 \
+    tmp<meshDirection<ReturnType,MeshType>> tRes =                             \
+        meshDirection<ReturnType,MeshType>::New                                \
         (                                                                      \
             D1.fvMsh(),                                                        \
             D1.levelNum(),                                                     \
             D1.directionNum()                                                  \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     OpFunc(tRes.ref(), D1, s2);                                                \
     return tRes;                                                               \
 }                                                                              \
@@ -453,15 +437,13 @@ operator Op                                                                    \
 )                                                                              \
 {                                                                              \
     typedef typename product<Type1, Type2>::type productType;                  \
-    tmp<meshDirection<productType,MeshType>> tRes                              \
-    (                                                                          \
-        new meshDirection<productType,MeshType>                                \
+    tmp<meshDirection<productType,MeshType>> tRes =                            \
+        meshDirection<productType,MeshType>::New                               \
         (                                                                      \
             D1.fvMsh(),                                                        \
             D1.levelNum(),                                                     \
             D1.directionNum()                                                  \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     OpFunc(tRes.ref(), D1, D2);                                                \
     return tRes;                                                               \
 }                                                                              \
@@ -552,15 +534,13 @@ operator Op                                                                    \
 )                                                                              \
 {                                                                              \
     typedef typename product<Type, Form>::type productType;                    \
-    tmp<meshDirection<productType,MeshType>> tRes                              \
-    (                                                                          \
-        new meshDirection<productType,MeshType>                                \
+    tmp<meshDirection<productType,MeshType>> tRes =                            \
+        meshDirection<productType,MeshType>::New                               \
         (                                                                      \
             D1.fvMsh(),                                                        \
             D1.levelNum(),                                                     \
             D1.directionNum()                                                  \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     OpFunc(tRes.ref(), D1, static_cast<const Form&>(vs));                      \
     return tRes;                                                               \
 }                                                                              \
@@ -622,15 +602,13 @@ operator Op                                                                    \
 )                                                                              \
 {                                                                              \
     typedef typename product<Form, Type>::type productType;                    \
-    tmp<meshDirection<productType,MeshType>> tRes                              \
-    (                                                                          \
-        new meshDirection<productType,MeshType>                                \
+    tmp<meshDirection<productType,MeshType>> tRes =                            \
+        meshDirection<productType,MeshType>::New                               \
         (                                                                      \
             D1.fvMsh(),                                                        \
             D1.levelNum(),                                                     \
             D1.directionNum()                                                  \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     OpFunc(tRes.ref(), static_cast<const Form&>(vs), D1);                      \
     return tRes;                                                               \
 }                                                                              \
@@ -694,15 +672,13 @@ operator Op                                                                    \
 )                                                                              \
 {                                                                              \
     typedef typename product<Type, Form>::type productType;                    \
-    tmp<meshDirection<productType,MeshType>> tRes                              \
-    (                                                                          \
-        new meshDirection<productType,MeshType>                                \
+    tmp<meshDirection<productType,MeshType>> tRes =                            \
+        meshDirection<productType,MeshType>::New                               \
         (                                                                      \
             D1.fvMsh(),                                                        \
             D1.levelNum(),                                                     \
             D1.directionNum()                                                  \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     OpFunc(tRes.ref(), D1, static_cast<const Form&>(vs));                      \
     return tRes;                                                               \
 }                                                                              \
@@ -764,15 +740,13 @@ operator Op                                                                    \
 )                                                                              \
 {                                                                              \
     typedef typename product<Form, Type>::type productType;                    \
-    tmp<meshDirection<productType,MeshType>> tRes                              \
-    (                                                                          \
-        new meshDirection<productType,MeshType>                                \
+    tmp<meshDirection<productType,MeshType>> tRes =                            \
+        meshDirection<productType,MeshType>::New                               \
         (                                                                      \
             D1.fvMsh(),                                                        \
             D1.levelNum(),                                                     \
             D1.directionNum()                                                  \
-        )                                                                      \
-    );                                                                         \
+        );                                                                     \
     OpFunc(tRes.ref(), static_cast<const Form&>(vs), D1);                      \
     return tRes;                                                               \
 }                                                                              \

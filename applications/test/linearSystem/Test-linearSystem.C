@@ -95,6 +95,7 @@ void testMemberOperators(const fvMesh& fvMsh)
 {
     meshField<Type,MeshType> f("f", fvMsh);
     meshField<Type,MeshType> g("g", fvMsh);
+    meshField<scalar,MeshType> s("s", fvMsh);
 
     linearSystem<SType,Type,MeshType> sys1("sys1(f)", f);
     linearSystem<SType,Type,MeshType> sys2("sys2(f)", f);
@@ -179,6 +180,28 @@ void testMemberOperators(const fvMesh& fvMsh)
     (2*g) == sys2;
     g == (2*sys2);
     (2*g) == (2*sys2);
+
+    -(2*sys2);
+    2*(2*sys2);
+    (2*sys2)*2;
+
+    sys2/2;
+    (2*sys2)/2;
+
+    sys2*s;
+    (2*sys2)*s;
+    sys2*(2*s);
+    (2*sys2)*(2*s);
+
+    s*sys2;
+    s*(2*sys2);
+    (2*s)*sys2;
+    (2*s)*(2*sys2);
+
+    sys2/s;
+    (2*sys2)/s;
+    sys2/(2*s);
+    (2*sys2)/(2*s);
 }
 
 int main(int argc, char *argv[])

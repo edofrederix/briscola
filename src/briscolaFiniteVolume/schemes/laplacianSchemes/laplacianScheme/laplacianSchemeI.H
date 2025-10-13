@@ -36,10 +36,8 @@ namespace fv
             const scalar factor
         )
         {
-            tmp<linearSystem<SType,Type,MeshType>> tSys
-            (
-                this->imLaplacian(&tLambda(), field, factor)
-            );
+            tmp<linearSystem<SType,Type,MeshType>> tSys =
+                this->imLaplacian(&tLambda(), field, factor);
 
             if (tLambda.isTmp())
                 tLambda.clear();
@@ -103,10 +101,8 @@ namespace fv
             const scalar factor
         )
         {
-            tmp<meshField<Type,MeshType>> tLap
-            (
-                this->exLaplacian(&tLambda(), field, factor)
-            );
+            tmp<meshField<Type,MeshType>> tLap =
+                this->exLaplacian(&tLambda(), field, factor);
 
             if (tLambda.isTmp())
                 tLambda.clear();

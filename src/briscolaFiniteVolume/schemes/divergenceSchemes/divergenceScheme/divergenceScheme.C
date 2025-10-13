@@ -70,14 +70,12 @@ tmp<meshField<Type,MeshType>> div
     const meshField<FaceSpace<Type>,MeshType>& phi
 )
 {
-    tmp<meshField<Type,MeshType>> tDiv
-    (
-        new meshField<Type,MeshType>
+    tmp<meshField<Type,MeshType>> tDiv =
+        meshField<Type,MeshType>::New
         (
             "div("+phi.name()+")",
             phi.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 
@@ -103,10 +101,7 @@ tmp<meshField<Type,MeshType>> div
     const tmp<meshField<FaceSpace<Type>,MeshType>>& tPhi
 )
 {
-    tmp<meshField<Type,MeshType>> tDiv
-    (
-        div(tPhi())
-    );
+    tmp<meshField<Type,MeshType>> tDiv = div(tPhi());
 
     if (tPhi.isTmp())
         tPhi.clear();
@@ -120,14 +115,12 @@ tmp<meshField<Type,colocated>> coloDiv
     const meshField<Type,staggered>& field
 )
 {
-    tmp<meshField<Type,colocated>> tDiv
-    (
-        new meshField<Type,colocated>
+    tmp<meshField<Type,colocated>> tDiv =
+        meshField<Type,colocated>::New
         (
             "coloDiv("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,colocated>& Div = tDiv.ref();
 
@@ -164,10 +157,7 @@ tmp<meshField<Type,colocated>> coloDiv
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<Type,colocated>> tColoDiv
-    (
-        coloDiv(tField())
-    );
+    tmp<meshField<Type,colocated>> tColoDiv = coloDiv(tField());
 
     if (tField.isTmp())
         tField.clear();

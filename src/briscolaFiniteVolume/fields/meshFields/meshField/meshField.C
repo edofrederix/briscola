@@ -32,12 +32,7 @@ void meshField<Type,MeshType>::allocate(const bool deep)
         listType::set
         (
             l,
-            new meshLevel<Type,MeshType>
-            (
-                *this,
-                fvMsh_,
-                l
-            )
+            new meshLevel<Type,MeshType>(*this, l)
         );
     }
 }
@@ -79,13 +74,13 @@ meshField<Type,MeshType>::meshField
         (
             name,
             fvMsh.time().path()/"0",
-            fvMsh.time(),
+            fvMsh.db(),
             r,
             w,
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(fvMsh),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
@@ -104,6 +99,47 @@ meshField<Type,MeshType>::meshField
         (
             r == IOobject::MUST_READ
          || r == IOobject::MUST_READ_IF_MODIFIED
+        )
+     && !headerOk()
+    )
+    {
+        FatalErrorInFunction
+            << "Cannot read field from " << objectPath() << endl
+            << exit(FatalError);
+    }
+
+    this->allocate(deep);
+}
+
+template<class Type, class MeshType>
+meshField<Type,MeshType>::meshField
+(
+    const IOobject& io,
+    const fvMesh& fvMsh,
+    const bool deep
+)
+:
+    PtrList<meshLevel<Type,MeshType>>(),
+    IOdictionary(io),
+    cachedRefCount(),
+    fvMsh_(fvMsh),
+    oldTimePtr_(nullptr),
+    boundaryConditions_(),
+    reSchemePtr_()
+{
+    if (!fvMsh.structured() && MeshType::numberOfDirections > 1)
+    {
+        FatalErrorInFunction
+            << "Cannot create a " << MeshType::typeName << " field on an "
+            << "unstructured mesh."
+            << endl << abort(FatalError);
+    }
+
+    if
+    (
+        (
+            io.readOpt() == IOobject::MUST_READ
+         || io.readOpt() == IOobject::MUST_READ_IF_MODIFIED
         )
      && !headerOk()
     )
@@ -139,7 +175,7 @@ meshField<Type,MeshType>::meshField
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(field.fvMsh()),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
@@ -181,7 +217,7 @@ meshField<Type,MeshType>::meshField
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(field.fvMsh()),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
@@ -212,7 +248,7 @@ meshField<Type,MeshType>::meshField
     PtrList<meshLevel<Type,MeshType>>
     (
         const_cast<meshField<Type,MeshType>&>(tField()),
-        tField.isTmp()
+        tField.isTmp() && tField->unique()
     ),
     IOdictionary
     (
@@ -226,7 +262,7 @@ meshField<Type,MeshType>::meshField
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(tField->fvMsh_),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
@@ -261,7 +297,7 @@ meshField<Type,MeshType>::meshField
     PtrList<meshLevel<Type,MeshType>>
     (
         const_cast<meshField<Type,MeshType>&>(tField()),
-        tField.isTmp()
+        tField.isTmp() && tField->unique()
     ),
     IOdictionary
     (
@@ -275,7 +311,7 @@ meshField<Type,MeshType>::meshField
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(tField->fvMsh_),
     oldTimePtr_(nullptr),
     boundaryConditions_(),
@@ -485,12 +521,7 @@ void meshField<Type,MeshType>::makeDeep()
             listType::set
             (
                 l,
-                new meshLevel<Type,MeshType>
-                (
-                    *this,
-                    fvMsh_,
-                    l
-                )
+                new meshLevel<Type,MeshType>(*this, l)
             );
         }
     }
@@ -540,7 +571,7 @@ void meshField<Type,MeshType>::operator=
     const tmp<meshField<Type,MeshType>>& tF
 )
 {
-    if (tF.isTmp())
+    if (tF.isTmp() && tF->unique())
     {
         meshField<Type,MeshType>& F =
             const_cast<meshField<Type,MeshType>&>(tF());
@@ -581,7 +612,9 @@ void meshField<Type,MeshType>::operator=(const zero)
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator+=(const meshField<Type,MeshType>& F)
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) += F[l];
 }
@@ -592,7 +625,9 @@ void meshField<Type,MeshType>::operator+=
     const tmp<meshField<Type,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this += tF();
     if (tF.isTmp())
         tF.clear();
@@ -601,7 +636,9 @@ void meshField<Type,MeshType>::operator+=
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator-=(const meshField<Type,MeshType>& F)
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) -= F[l];
 }
@@ -612,7 +649,9 @@ void meshField<Type,MeshType>::operator-=
     const tmp<meshField<Type,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this -= tF();
     if (tF.isTmp())
         tF.clear();
@@ -621,7 +660,9 @@ void meshField<Type,MeshType>::operator-=
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator*=(const meshField<scalar,MeshType>& F)
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) *= F[l];
 }
@@ -632,7 +673,9 @@ void meshField<Type,MeshType>::operator*=
     const tmp<meshField<scalar,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this *= tF();
     if (tF.isTmp())
         tF.clear();
@@ -641,7 +684,9 @@ void meshField<Type,MeshType>::operator*=
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator/=(const meshField<scalar,MeshType>& F)
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) /= F[l];
 }
@@ -652,7 +697,9 @@ void meshField<Type,MeshType>::operator/=
     const tmp<meshField<scalar,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this /= tF();
     if (tF.isTmp())
         tF.clear();
@@ -746,7 +793,9 @@ void meshField<Type,MeshType>::operator+=
     const meshField<Type2,MeshType>& F
 )
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) += F[l];
 }
@@ -758,7 +807,9 @@ void meshField<Type,MeshType>::operator+=
     const tmp<meshField<Type2,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this += tF();
     if (tF.isTmp())
         tF.clear();
@@ -771,7 +822,9 @@ void meshField<Type,MeshType>::operator-=
     const meshField<Type2,MeshType>& F
 )
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) -= F[l];
 }
@@ -783,7 +836,9 @@ void meshField<Type,MeshType>::operator-=
     const tmp<meshField<Type2,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this -= tF();
     if (tF.isTmp())
         tF.clear();
@@ -796,7 +851,9 @@ void meshField<Type,MeshType>::operator*=
     const meshField<Type2,MeshType>& F
 )
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) *= F[l];
 }
@@ -808,7 +865,9 @@ void meshField<Type,MeshType>::operator*=
     const tmp<meshField<Type2,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this *= tF();
     if (tF.isTmp())
         tF.clear();
@@ -821,7 +880,9 @@ void meshField<Type,MeshType>::operator/=
     const meshField<Type2,MeshType>& F
 )
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) /= F[l];
 }
@@ -833,7 +894,9 @@ void meshField<Type,MeshType>::operator/=
     const tmp<meshField<Type2,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this /= tF();
     if (tF.isTmp())
         tF.clear();

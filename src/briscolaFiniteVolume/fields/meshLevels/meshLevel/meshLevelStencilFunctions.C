@@ -32,14 +32,12 @@ rowProduct
 {
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
-    tmp<meshLevel<productType,MeshType>> tRes
-    (
-        new meshLevel<productType,MeshType>
+    tmp<meshLevel<productType,MeshType>> tRes =
+        meshLevel<productType,MeshType>::New
         (
             f1.fvMsh(),
             f1.levelNum()
-        )
-    );
+        );
 
     rowProduct(tRes.ref(), f1, f2);
 
@@ -130,14 +128,12 @@ rowProduct(const meshLevel<Type,MeshType>& f1, const Form& s)
 {
     typedef typename stencilProduct<Type,Form>::type productType;
 
-    tmp<meshLevel<productType,MeshType>> tRes
-    (
-        new meshLevel<productType,MeshType>
+    tmp<meshLevel<productType,MeshType>> tRes =
+        meshLevel<productType,MeshType>::New
         (
             f1.fvMsh(),
             f1.levelNum()
-        )
-    );
+        );
 
     rowProduct(tRes.ref(), f1, s);
 
@@ -203,14 +199,12 @@ template<class Type, class MeshType>
 tmp<meshLevel<scalar,MeshType>>
 rowSum(const meshLevel<Type,MeshType>& f)
 {
-    tmp<meshLevel<scalar,MeshType>> tRes
-    (
-        new meshLevel<scalar,MeshType>
+    tmp<meshLevel<scalar,MeshType>> tRes =
+        meshLevel<scalar,MeshType>::New
         (
             f.fvMsh(),
             f.levelNum()
-        )
-    );
+        );
 
     rowSum(tRes.ref(), f);
 
@@ -221,14 +215,12 @@ template<class Type, class MeshType>
 tmp<meshLevel<scalar,MeshType>>
 rowSum(const tmp<meshLevel<Type,MeshType>>& tf)
 {
-    tmp<meshLevel<scalar,MeshType>> tRes
-    (
-        new meshLevel<scalar,MeshType>
+    tmp<meshLevel<scalar,MeshType>> tRes =
+        meshLevel<scalar,MeshType>::New
         (
             tf->fvMsh(),
             tf->levelNum()
-        )
-    );
+        );
 
     rowSum(tRes.ref(), tf());
 

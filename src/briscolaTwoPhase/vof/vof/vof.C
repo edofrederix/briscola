@@ -31,7 +31,7 @@ vof::vof
         (
             "vof",
             fvMsh.time().name(),
-            fvMsh.time(),
+            fvMsh.db(),
             IOobject::NO_READ,
             IOobject::NO_WRITE
         )

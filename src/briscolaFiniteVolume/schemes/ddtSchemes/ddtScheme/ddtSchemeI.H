@@ -34,10 +34,8 @@ namespace fv
         const scalar factor
     )
     {
-        tmp<linearSystem<diagStencil,Type,MeshType>> tSys
-        (
-            this->imDdt(&tLambda(), field, factor)
-        );
+        tmp<linearSystem<diagStencil,Type,MeshType>> tSys =
+            this->imDdt(&tLambda(), field, factor);
 
         if (tLambda.isTmp())
             tLambda.clear();
@@ -99,10 +97,8 @@ namespace fv
         const scalar factor
     )
     {
-        tmp<meshField<Type,MeshType>> tDdt
-        (
-            this->exDdt(&tLambda(), field, factor)
-        );
+        tmp<meshField<Type,MeshType>> tDdt =
+            this->exDdt(&tLambda(), field, factor);
 
         if (tLambda.isTmp())
             tLambda.clear();

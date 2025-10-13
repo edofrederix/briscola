@@ -28,16 +28,14 @@ namespace im
         if (lambdaPtr)
             const_cast<meshField<scalar,MeshType>&>(*lambdaPtr).restrict();
 
-        tmp<linearSystem<diagStencil,Type,MeshType>> tSys
-        (
-            new linearSystem<diagStencil,Type,MeshType>
+        tmp<linearSystem<diagStencil,Type,MeshType>> tSys =
+            linearSystem<diagStencil,Type,MeshType>::New
             (
                 lambdaPtr
               ? word("source("+lambdaPtr->name()+","+field.name()+")")
               : word("source("+field.name()+")"),
                 const_cast<meshField<Type,MeshType>&>(field)
-            )
-        );
+            );
 
         linearSystem<diagStencil,Type,MeshType>& sys = tSys.ref();
 
@@ -86,10 +84,8 @@ namespace im
         const scalar factor = 1.0
     )
     {
-        tmp<linearSystem<diagStencil,Type,MeshType>> tSource
-        (
-            source(tLambda(), field, factor)
-        );
+        tmp<linearSystem<diagStencil,Type,MeshType>> tSource =
+            source(tLambda(), field, factor);
 
         if (tLambda.isTmp())
             tLambda.clear();

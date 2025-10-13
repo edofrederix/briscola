@@ -22,43 +22,29 @@ void linearFaceDotGradientScheme<Type,colocated>::cache
 
     if (!fvMsh.db().foundObject<colocatedFaceVectorField>("faceDotGradDelta0"))
     {
+        Info<< "store" << endl;
         // Cache fields
 
-        tmp<colocatedFaceVectorField> tDelta0
-        (
-            new colocatedFaceVectorField
+        tmp<colocatedFaceVectorField> tDelta0 =
+            colocatedFaceVectorField::New
             (
                 "faceDotGradDelta0",
-                fvMsh,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE,
-                true
-            )
-        );
+                fvMsh
+            );
 
-        tmp<colocatedFaceVectorField> tDelta1
-        (
-            new colocatedFaceVectorField
+        tmp<colocatedFaceVectorField> tDelta1 =
+            colocatedFaceVectorField::New
             (
                 "faceDotGradDelta1",
-                fvMsh,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE,
-                true
-            )
-        );
+                fvMsh
+            );
 
-        tmp<colocatedFaceVectorField> tDelta2
-        (
-            new colocatedFaceVectorField
+        tmp<colocatedFaceVectorField> tDelta2 =
+            colocatedFaceVectorField::New
             (
                 "faceDotGradDelta2",
-                fvMsh,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE,
-                true
-            )
-        );
+                fvMsh
+            );
 
         colocatedFaceVectorDirection& delta0 = tDelta0.ref()[0][0];
         colocatedFaceVectorDirection& delta1 = tDelta1.ref()[0][0];
@@ -122,14 +108,12 @@ linearFaceDotGradientScheme<Type,colocated>::faceDotGrad
 {
     const fvMesh& fvMsh = field.fvMsh();
 
-    tmp<meshField<FaceSpace<Type>,colocated>> tGrad
-    (
-        new meshField<FaceSpace<Type>,colocated>
+    tmp<meshField<FaceSpace<Type>,colocated>> tGrad =
+        meshField<FaceSpace<Type>,colocated>::New
         (
             "faceDotGrad("+field.name()+")",
             fvMsh
-        )
-    );
+        );
 
     meshDirection<FaceSpace<Type>,colocated>& grad = tGrad.ref()[0][0];
 
@@ -204,14 +188,12 @@ linearFaceDotGradientScheme<Type,staggered>::faceDotGrad
 {
     const fvMesh& fvMsh = field.fvMsh();
 
-    tmp<meshField<FaceSpace<Type>,staggered>> tGrad
-    (
-        new meshField<FaceSpace<Type>,staggered>
+    tmp<meshField<FaceSpace<Type>,staggered>> tGrad =
+        meshField<FaceSpace<Type>,staggered>::New
         (
             "faceDotGrad("+field.name()+")",
             fvMsh
-        )
-    );
+        );
 
     meshLevel<FaceSpace<Type>,staggered>& grad = tGrad.ref()[0];
 

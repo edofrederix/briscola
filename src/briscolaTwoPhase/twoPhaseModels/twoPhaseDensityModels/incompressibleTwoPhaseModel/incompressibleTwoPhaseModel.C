@@ -68,10 +68,7 @@ incompressibleTwoPhaseModel<staggered>::coloRho() const
 template<class MeshType>
 void incompressibleTwoPhaseModel<MeshType>::correctMixture()
 {
-    tmp<meshField<scalar,MeshType>> talpha
-    (
-        this->meshAlpha()
-    );
+    tmp<meshField<scalar,MeshType>> talpha = this->meshAlpha();
 
     this->rho_ = rho2_*talpha() + rho1_*(1.0 - talpha());
     this->rho_.correctBoundaryConditions();

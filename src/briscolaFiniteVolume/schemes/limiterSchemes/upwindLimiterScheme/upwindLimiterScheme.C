@@ -26,20 +26,12 @@ tmp<meshField<faceScalar,MeshType>> upwindLimiterScheme<Type,MeshType>::psi
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<faceScalar,MeshType>> tPsi
-    (
-        new meshField<faceScalar,MeshType>
-        (
-            "psi",
-            field.fvMsh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            phi.deep() && field.deep()
-        )
-    );
+    tmp<meshField<faceScalar,MeshType>> tPsi =
+        meshField<faceScalar,MeshType>::New("psi", field.fvMsh());
 
     meshField<faceScalar,MeshType>& Psi = tPsi.ref();
+
+    Psi.make(phi.deep() && field.deep());
 
     Psi = Zero;
 

@@ -99,20 +99,12 @@ tmp<meshField<faceScalar,MeshType>> limiterScheme<Type,MeshType>::rType
     const meshField<scalar,MeshType>& field
 )
 {
-    tmp<meshField<faceScalar,MeshType>> tR
-    (
-        new meshField<faceScalar,MeshType>
-        (
-            "r",
-            field.fvMsh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            phi.deep() && field.deep()
-        )
-    );
+    tmp<meshField<faceScalar,MeshType>> tR =
+        meshField<faceScalar,MeshType>::New("r", field.fvMsh());
 
     meshField<faceScalar,MeshType>& R = tR.ref();
+
+    R.make(phi.deep() && field.deep());
 
     meshField<vector,MeshType> grad
     (
@@ -161,20 +153,12 @@ tmp<meshField<faceScalar,MeshType>> limiterScheme<Type,MeshType>::rType
     const meshField<vector,MeshType>& field
 )
 {
-    tmp<meshField<faceScalar,MeshType>> tR
-    (
-        new meshField<faceScalar,MeshType>
-        (
-            "r",
-            field.fvMsh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            phi.deep() && field.deep()
-        )
-    );
+    tmp<meshField<faceScalar,MeshType>> tR =
+        meshField<faceScalar,MeshType>::New("r", field.fvMsh());
 
     meshField<faceScalar,MeshType>& R = tR.ref();
+
+    R.make(phi.deep() && field.deep());
 
     meshField<tensor,MeshType> grad
     (

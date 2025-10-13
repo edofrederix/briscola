@@ -21,10 +21,8 @@ namespace fv
             const meshField<Type,MeshType>& field
         )
         {
-            tmp<linearSystem<SType,Type,MeshType>> tSys
-            (
-                this->imDiv(tPhi(), field)
-            );
+            tmp<linearSystem<SType,Type,MeshType>> tSys =
+                this->imDiv(tPhi(), field);
 
             if (tPhi.isTmp())
                 tPhi.clear();
@@ -46,10 +44,7 @@ namespace fv
             const meshField<Type,MeshType>& field
         )
         {
-            tmp<meshField<Type,MeshType>> tLap
-            (
-                this->exDiv(tPhi(), field)
-            );
+            tmp<meshField<Type,MeshType>> tLap = this->exDiv(tPhi(), field);
 
             if (tPhi.isTmp())
                 tPhi.clear();

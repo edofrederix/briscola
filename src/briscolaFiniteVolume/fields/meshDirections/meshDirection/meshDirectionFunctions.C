@@ -30,15 +30,13 @@ template<class Type, class MeshType>
 tmp<meshDirection<SCALARPRODTYPE,MeshType>>
 mag(const meshDirection<Type,MeshType>& D)
 {
-    tmp<meshDirection<SCALARPRODTYPE,MeshType>> tRes
-    (
-        new meshDirection<SCALARPRODTYPE,MeshType>
+    tmp<meshDirection<SCALARPRODTYPE,MeshType>> tRes =
+        meshDirection<SCALARPRODTYPE,MeshType>::New
         (
             D.fvMsh(),
             D.levelNum(),
             D.directionNum()
-        )
-    );
+        );
 
     mag(tRes.ref(), D);
     return tRes;
@@ -77,15 +75,13 @@ cmptMax(const meshDirection<Type,MeshType>& D)
 {
     typedef typename meshDirection<Type,MeshType>::cmptType cmptType;
 
-    tmp<meshDirection<cmptType,MeshType>> tRes
-    (
-        new meshDirection<cmptType,MeshType>
+    tmp<meshDirection<cmptType,MeshType>> tRes =
+        meshDirection<cmptType,MeshType>::New
         (
             D.fvMsh(),
             D.levelNum(),
             D.directionNum()
-        )
-    );
+        );
 
     cmptMax(tRes.ref(), D);
     return tRes;
@@ -125,15 +121,13 @@ cmptMin(const meshDirection<Type,MeshType>& D)
 {
     typedef typename meshDirection<Type,MeshType>::cmptType cmptType;
 
-    tmp<meshDirection<cmptType,MeshType>> tRes
-    (
-        new meshDirection<cmptType,MeshType>
+    tmp<meshDirection<cmptType,MeshType>> tRes =
+        meshDirection<cmptType,MeshType>::New
         (
             D.fvMsh(),
             D.levelNum(),
             D.directionNum()
-        )
-    );
+        );
 
     cmptMin(tRes.ref(), D);
     return tRes;
@@ -156,7 +150,11 @@ cmptMin(const tmp<meshDirection<Type,MeshType>>& tD)
 template<class Type, class MeshType>
 void cmptAv
 (
-    meshDirection<typename meshDirection<Type,MeshType>::cmptType,MeshType>& res,
+    meshDirection
+    <
+        typename meshDirection<Type,MeshType>::cmptType,
+        MeshType
+    >& res,
     const meshDirection<Type,MeshType>& D
 )
 {
@@ -169,15 +167,13 @@ cmptAv(const meshDirection<Type,MeshType>& D)
 {
     typedef typename meshDirection<Type,MeshType>::cmptType cmptType;
 
-    tmp<meshDirection<cmptType,MeshType>> tRes
-    (
-        new meshDirection<cmptType,MeshType>
+    tmp<meshDirection<cmptType,MeshType>> tRes =
+        meshDirection<cmptType,MeshType>::New
         (
             D.fvMsh(),
             D.levelNum(),
             D.directionNum()
-        )
-    );
+        );
 
     cmptAv(tRes.ref(), D);
     return tRes;
@@ -211,15 +207,13 @@ template<class Type, class MeshType>
 tmp<meshDirection<Type,MeshType>>
 cmptMag(const meshDirection<Type,MeshType>& D)
 {
-    tmp<meshDirection<Type,MeshType>> tRes
-    (
-        new meshDirection<Type,MeshType>
+    tmp<meshDirection<Type,MeshType>> tRes =
+        meshDirection<Type,MeshType>::New
         (
             D.fvMsh(),
             D.levelNum(),
             D.directionNum()
-        )
-    );
+        );
 
     cmptMag(tRes.ref(), D);
     return tRes;
@@ -229,7 +223,8 @@ template<class Type, class MeshType>
 tmp<meshDirection<Type,MeshType>>
 cmptMag(const tmp<meshDirection<Type,MeshType>>& tD)
 {
-    tmp<meshDirection<Type,MeshType>> tRes = New(tD);
+    tmp<meshDirection<Type,MeshType>> tRes =
+        reuseDirectionTmp<Type,Type,MeshType>::New(tD);
 
     cmptMag(tRes.ref(), tD());
     if (tD.isTmp())
@@ -251,15 +246,13 @@ template<class Type, class MeshType>
 tmp<meshDirection<Type,MeshType>>
 cmptSqr(const meshDirection<Type,MeshType>& D)
 {
-    tmp<meshDirection<Type,MeshType>> tRes
-    (
-        new meshDirection<Type,MeshType>
+    tmp<meshDirection<Type,MeshType>> tRes =
+        meshDirection<Type,MeshType>::New
         (
             D.fvMsh(),
             D.levelNum(),
             D.directionNum()
-        )
-    );
+        );
 
     cmptSqr(tRes.ref(), D);
     return tRes;
@@ -269,7 +262,8 @@ template<class Type, class MeshType>
 tmp<meshDirection<Type,MeshType>>
 cmptSqr(const tmp<meshDirection<Type,MeshType>>& tD)
 {
-    tmp<meshDirection<Type,MeshType>> tRes = New(tD);
+    tmp<meshDirection<Type,MeshType>> tRes =
+        reuseDirectionTmp<Type,Type,MeshType>::New(tD);
 
     cmptSqr(tRes.ref(), tD());
     if (tD.isTmp())
@@ -291,15 +285,13 @@ template<class Type, class MeshType>
 tmp<meshDirection<Type,MeshType>>
 cmptSqrt(const meshDirection<Type,MeshType>& D)
 {
-    tmp<meshDirection<Type,MeshType>> tRes
-    (
-        new meshDirection<Type,MeshType>
+    tmp<meshDirection<Type,MeshType>> tRes =
+        meshDirection<Type,MeshType>::New
         (
             D.fvMsh(),
             D.levelNum(),
             D.directionNum()
-        )
-    );
+        );
 
     cmptSqrt(tRes.ref(), D);
     return tRes;
@@ -309,7 +301,8 @@ template<class Type, class MeshType>
 tmp<meshDirection<Type,MeshType>>
 cmptSqrt(const tmp<meshDirection<Type,MeshType>>& tD)
 {
-    tmp<meshDirection<Type,MeshType>> tRes = New(tD);
+    tmp<meshDirection<Type,MeshType>> tRes =
+        reuseDirectionTmp<Type,Type,MeshType>::New(tD);
 
     cmptSqrt(tRes.ref(), tD());
     if (tD.isTmp())

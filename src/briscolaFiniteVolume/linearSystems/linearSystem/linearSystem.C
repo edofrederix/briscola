@@ -43,12 +43,12 @@ linearSystem<SType,Type,MeshType>::linearSystem
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(x.fvMsh()),
-    x_(x),
+    xPtr_(&x),
     A_
     (
-        IOobject::groupName("A", x_.name()),
+        IOobject::groupName(IOobject::name(), "A"),
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -57,7 +57,36 @@ linearSystem<SType,Type,MeshType>::linearSystem
     ),
     b_
     (
-        IOobject::groupName("b", x_.name()),
+        IOobject::groupName(IOobject::name(), "b"),
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    )
+{}
+
+template<class SType, class Type, class MeshType>
+linearSystem<SType,Type,MeshType>::linearSystem
+(
+    const IOobject& io,
+    const fvMesh& fvMsh
+)
+:
+    regIOobject(io),
+    cachedRefCount(),
+    fvMsh_(fvMsh),
+    xPtr_(nullptr),
+    A_
+    (
+        IOobject::groupName(IOobject::name(), "A"),
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        false,
+        true
+    ),
+    b_
+    (
+        IOobject::groupName(IOobject::name(), "b"),
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
@@ -83,12 +112,12 @@ linearSystem<SType,Type,MeshType>::linearSystem
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(sys.fvMsh_),
-    x_(sys.x_),
+    xPtr_(sys.xPtr_),
     A_
     (
-        IOobject::groupName("A", x_.name()),
+        IOobject::groupName(IOobject::name(), "A"),
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -97,7 +126,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
     ),
     b_
     (
-        IOobject::groupName("b", x_.name()),
+        IOobject::groupName(IOobject::name(), "b"),
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
@@ -125,12 +154,12 @@ linearSystem<SType,Type,MeshType>::linearSystem
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(tSys->fvMsh_),
-    x_(tSys->x_),
+    xPtr_(tSys->xPtr_),
     A_
     (
-        IOobject::groupName("A", x_.name()),
+        IOobject::groupName(IOobject::name(), "A"),
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -139,26 +168,25 @@ linearSystem<SType,Type,MeshType>::linearSystem
     ),
     b_
     (
-        IOobject::groupName("b", x_.name()),
+        IOobject::groupName(IOobject::name(), "b"),
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
     )
 {
-    if (tSys.isTmp())
+    if (tSys.isTmp() && tSys->unique())
     {
         linearSystem<SType,Type,MeshType>& sys =
             const_cast<linearSystem<SType,Type,MeshType>&>(tSys());
 
         transfer(sys);
+
+        tSys.clear();
     }
     else
     {
         *this = tSys();
     }
-
-    if (tSys.isTmp())
-        tSys.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -181,12 +209,12 @@ linearSystem<SType,Type,MeshType>::linearSystem
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(sys.fvMsh_),
-    x_(x),
+    xPtr_(&x),
     A_
     (
-        IOobject::groupName("A", x_.name()),
+        IOobject::groupName(IOobject::name(), "A"),
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -195,7 +223,7 @@ linearSystem<SType,Type,MeshType>::linearSystem
     ),
     b_
     (
-        IOobject::groupName("b", x_.name()),
+        IOobject::groupName(IOobject::name(), "b"),
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
@@ -224,12 +252,12 @@ linearSystem<SType,Type,MeshType>::linearSystem
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(tSys->fvMsh_),
-    x_(x),
+    xPtr_(&x),
     A_
     (
-        IOobject::groupName("A", x_.name()),
+        IOobject::groupName(IOobject::name(), "A"),
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -238,26 +266,25 @@ linearSystem<SType,Type,MeshType>::linearSystem
     ),
     b_
     (
-        IOobject::groupName("b", x_.name()),
+        IOobject::groupName(IOobject::name(), "b"),
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
     )
 {
-    if (tSys.isTmp())
+    if (tSys.isTmp() && tSys->unique())
     {
         linearSystem<SType,Type,MeshType>& sys =
             const_cast<linearSystem<SType,Type,MeshType>&>(tSys());
 
         transfer(sys);
+
+        tSys.clear();
     }
     else
     {
         *this = tSys();
     }
-
-    if (tSys.isTmp())
-        tSys.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -375,7 +402,7 @@ void linearSystem<SType,Type,MeshType>::residual
             res(i,j,k) = b(i,j,k) - rowProduct(A,x,i,j,k);
     }
 
-    if (!NoMask && x_.immersedBoundaryConditions().size())
+    if (!NoMask && xPtr_->immersedBoundaryConditions().size())
     {
         setForcingMask();
 
@@ -392,14 +419,12 @@ template<bool NoMask>
 tmp<meshField<Type, MeshType>>
 linearSystem<SType,Type,MeshType>::residual() const
 {
-    tmp<meshField<Type,MeshType>> tRes
-    (
-        new meshField<Type,MeshType>
+    tmp<meshField<Type,MeshType>> tRes =
+        meshField<Type,MeshType>::New
         (
             "residual",
             fvMsh_
-        )
-    );
+        );
 
     this->residual<NoMask>(tRes.ref());
 
@@ -411,10 +436,8 @@ template<bool NoMask>
 tmp<meshLevel<Type,MeshType>>
 linearSystem<SType,Type,MeshType>::residual(const label l) const
 {
-    tmp<meshLevel<Type,MeshType>> tRes
-    (
-        new meshLevel<Type,MeshType>(fvMsh_,l)
-    );
+    tmp<meshLevel<Type,MeshType>> tRes =
+        meshLevel<Type,MeshType>::New(fvMsh_,l);
 
     this->residual<NoMask>(tRes.ref());
 
@@ -430,10 +453,8 @@ linearSystem<SType,Type,MeshType>::residual
     const label d
 ) const
 {
-    tmp<meshDirection<Type,MeshType>> tRes
-    (
-        new meshDirection<Type,MeshType>(fvMsh_,l,d)
-    );
+    tmp<meshDirection<Type,MeshType>> tRes =
+        meshDirection<Type,MeshType>::New(fvMsh_,l,d);
 
     this->residual<NoMask>(tRes.ref());
 
@@ -491,7 +512,7 @@ void linearSystem<SType,Type,MeshType>::evaluate
             eval(i,j,k) = (rowProduct(A,x,i,j,k) - b(i,j,k))/cv(i,j,k);
     }
 
-    if (!NoMask && x_.immersedBoundaryConditions().size())
+    if (!NoMask && xPtr_->immersedBoundaryConditions().size())
     {
         setForcingMask();
 
@@ -508,14 +529,12 @@ template<bool NoMask>
 tmp<meshField<Type, MeshType>>
 linearSystem<SType,Type,MeshType>::evaluate() const
 {
-    tmp<meshField<Type,MeshType>> tEval
-    (
-        new meshField<Type,MeshType>
+    tmp<meshField<Type,MeshType>> tEval =
+        meshField<Type,MeshType>::New
         (
             "evaluate",
             fvMsh_
-        )
-    );
+        );
 
     this->evaluate<NoMask>(tEval.ref());
 
@@ -527,10 +546,8 @@ template<bool NoMask>
 tmp<meshLevel<Type,MeshType>>
 linearSystem<SType,Type,MeshType>::evaluate(const label l) const
 {
-    tmp<meshLevel<Type,MeshType>> tEval
-    (
-        new meshLevel<Type,MeshType>(fvMsh_,l)
-    );
+    tmp<meshLevel<Type,MeshType>> tEval =
+        meshLevel<Type,MeshType>::New(fvMsh_,l);
 
     this->evaluate<NoMask>(tEval.ref());
 
@@ -546,10 +563,8 @@ linearSystem<SType,Type,MeshType>::evaluate
     const label d
 ) const
 {
-    tmp<meshDirection<Type,MeshType>> tRes
-    (
-        new meshDirection<Type,MeshType>(fvMsh_,l,d)
-    );
+    tmp<meshDirection<Type,MeshType>> tRes =
+        meshDirection<Type,MeshType>::New(fvMsh_,l,d);
 
     this->evaluate<NoMask>(tRes.ref());
 
@@ -559,12 +574,12 @@ linearSystem<SType,Type,MeshType>::evaluate
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::eliminateGhosts()
 {
-    if (!x_.boundaryConditions().size())
-        x_.addBoundaryConditions();
+    if (!xPtr_->boundaryConditions().size())
+        xPtr_->addBoundaryConditions();
 
     forAll(A_, l)
-        forAll(x_.boundaryConditions(), i)
-            x_.boundaryConditions()[i].eliminateGhosts(*this, l);
+        forAll(xPtr_->boundaryConditions(), i)
+            xPtr_->boundaryConditions()[i].eliminateGhosts(*this, l);
 }
 
 template<class SType, class Type, class MeshType>
@@ -576,7 +591,7 @@ void linearSystem<SType,Type,MeshType>::setForcingMask()
         (
             new meshField<label,MeshType>
             (
-                IOobject::groupName(x_.name(), "forcingMask"),
+                IOobject::groupName(xPtr_->name(), "forcingMask"),
                 fvMsh_,
                 IOobject::NO_READ,
                 IOobject::NO_WRITE,
@@ -589,9 +604,9 @@ void linearSystem<SType,Type,MeshType>::setForcingMask()
 
         f = Zero;
 
-        forAll(x_.immersedBoundaryConditions(), i)
-            if (x_.immersedBoundaryConditions()[i].forcingMaskPtr())
-                f += x_.immersedBoundaryConditions()[i].forcingMask();
+        forAll(xPtr_->immersedBoundaryConditions(), i)
+            if (xPtr_->immersedBoundaryConditions()[i].forcingMaskPtr())
+                f += xPtr_->immersedBoundaryConditions()[i].forcingMask();
 
         f = min(f,1);
         f.correctBoundaryConditions();
@@ -617,20 +632,19 @@ void linearSystem<SType,Type,MeshType>::operator=
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    if (tSys.isTmp())
+    if (tSys.isTmp() && tSys->unique())
     {
         linearSystem<SType,Type,MeshType>& sys =
             const_cast<linearSystem<SType,Type,MeshType>&>(tSys());
 
         transfer(sys);
+
+        tSys.clear();
     }
     else
     {
         *this = tSys();
     }
-
-    if (tSys.isTmp())
-        tSys.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -681,6 +695,19 @@ void linearSystem<SType,Type,MeshType>::operator-=
 
     if (tSys.isTmp())
         tSys.clear();
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator=
+(
+    const zero
+)
+{
+    this->A() = Zero;
+    this->b() = Zero;
+
+    this->singular_.clear();
+    this->diagonal_.clear();
 }
 
 template<class SType, class Type, class MeshType>

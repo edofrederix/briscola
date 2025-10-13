@@ -29,13 +29,7 @@ void meshLevel<Type,MeshType>::allocate()
         listType::set
         (
             d,
-            new meshDirection<Type,MeshType>
-            (
-                *this,
-                fvMsh_,
-                l_,
-                d
-            )
+            new meshDirection<Type,MeshType>(*this, d)
         );
     }
 }
@@ -67,13 +61,12 @@ template<class Type, class MeshType>
 meshLevel<Type,MeshType>::meshLevel
 (
     meshField<Type,MeshType>& mshField,
-    const fvMesh& fvMsh,
     const label l
 )
 :
     PtrList<meshDirection<Type,MeshType>>(),
     refCount(),
-    fvMsh_(fvMsh),
+    fvMsh_(mshField.fvMsh()),
     l_(l),
     mshFieldPtr_(&mshField)
 {

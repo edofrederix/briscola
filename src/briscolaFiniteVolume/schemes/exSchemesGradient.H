@@ -41,10 +41,9 @@ grad
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>> tGrad
-    (
-        grad(tField())
-    );
+    typedef typename outerProduct<vector,Type>::type GradType;
+
+    tmp<meshField<GradType,MeshType>> tGrad = grad(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -82,10 +81,7 @@ stagGrad
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<Type,staggered>> tStagGrad
-    (
-        stagGrad(tField())
-    );
+    tmp<meshField<Type,staggered>> tStagGrad = stagGrad(tField());
 
     if (tField.isTmp())
         tField.clear();

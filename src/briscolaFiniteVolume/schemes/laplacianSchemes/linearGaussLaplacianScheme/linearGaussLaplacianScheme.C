@@ -28,16 +28,14 @@ linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
     const scalar factor
 )
 {
-    tmp<meshField<Type,MeshType>> tLap
-    (
-        new meshField<Type,MeshType>
+    tmp<meshField<Type,MeshType>> tLap =
+        meshField<Type,MeshType>::New
         (
             lambdaPtr
           ? "laplacian("+lambdaPtr->name()+","+field.name()+")"
           : "laplacian("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,MeshType>& Lap = tLap.ref();
 

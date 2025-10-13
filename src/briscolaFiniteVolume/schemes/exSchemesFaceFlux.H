@@ -41,10 +41,7 @@ inline tmp<meshField<faceScalar,colocated>> faceFlux
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<faceScalar,colocated>> tFaceFlux
-    (
-        faceFlux(tField())
-    );
+    tmp<meshField<faceScalar,colocated>> tFaceFlux = faceFlux(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -74,10 +71,7 @@ inline tmp<meshField<faceVector,colocated>> faceFlux
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<faceVector,colocated>> tFaceFlux
-    (
-        faceFlux(tField())
-    );
+    tmp<meshField<faceVector,colocated>> tFaceFlux = faceFlux(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -107,10 +101,7 @@ inline tmp<meshField<faceScalar,staggered>> faceFlux
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<faceScalar,staggered>> tFaceFlux
-    (
-        faceFlux(tField())
-    );
+    tmp<meshField<faceScalar,staggered>> tFaceFlux = faceFlux(tField());
 
     if (tField.isTmp())
         tField.clear();

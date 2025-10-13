@@ -39,10 +39,7 @@ inline tmp<meshField<FaceSpace<Type>,MeshType>> interp
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<FaceSpace<Type>,MeshType>> tInterp
-    (
-        interp(tField())
-    );
+    tmp<meshField<FaceSpace<Type>,MeshType>> tInterp = interp(tField());
 
     if (tField.isTmp())
         tField.clear();

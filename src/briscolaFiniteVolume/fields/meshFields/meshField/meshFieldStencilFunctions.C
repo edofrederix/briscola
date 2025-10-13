@@ -32,14 +32,12 @@ rowProduct
 {
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
-    tmp<meshField<productType,MeshType>> tRes
-    (
-        new meshField<productType,MeshType>
+    tmp<meshField<productType,MeshType>> tRes =
+        meshField<productType,MeshType>::New
         (
             "rowProduct(" + f1.name() + "," + f2.name() + ")",
             f1.fvMsh()
-        )
-    );
+        );
 
     rowProduct(tRes.ref(), f1, f2);
 
@@ -154,14 +152,12 @@ rowProduct(const meshField<Type,MeshType>& f1, const Form& s)
 {
     typedef typename stencilProduct<Type,Form>::type productType;
 
-    tmp<meshField<productType,MeshType>> tRes
-    (
-        new meshField<productType,MeshType>
+    tmp<meshField<productType,MeshType>> tRes =
+        meshField<productType,MeshType>::New
         (
             "rowProduct(" + f1.name() + "," + Foam::name(s) + ")",
             f1.fvMsh()
-        )
-    );
+        );
 
     rowProduct(tRes.ref(), f1, s);
 
@@ -234,14 +230,12 @@ template<class Type, class MeshType>
 tmp<meshField<scalar,MeshType>>
 rowSum(const meshField<Type,MeshType>& f)
 {
-    tmp<meshField<scalar,MeshType>> tRes
-    (
-        new meshField<scalar,MeshType>
+    tmp<meshField<scalar,MeshType>> tRes =
+        meshField<scalar,MeshType>::New
         (
             "rowSum(" + f.name() + ")",
             f.fvMsh()
-        )
-    );
+        );
 
     rowSum(tRes.ref(), f);
 
@@ -255,14 +249,12 @@ rowSum(const tmp<meshField<Type,MeshType>>& tf)
     if (tf.isTmp())
         tf->correctBoundaryConditions();
 
-    tmp<meshField<scalar,MeshType>> tRes
-    (
-        new meshField<scalar,MeshType>
+    tmp<meshField<scalar,MeshType>> tRes =
+        meshField<scalar,MeshType>::New
         (
             "rowSum(" + tf->name() + ")",
             tf->fvMsh()
-        )
-    );
+        );
 
     rowSum(tRes.ref(), tf());
 

@@ -277,6 +277,19 @@ public:
     // Solver dictionary
     inline const dictionary& solverDict() const { return solverDict_; }
 
+    // Object registry
+    const objectRegistry& db() const { return time(); }
+
+    // Field cache object registry
+    const objectRegistry& cache() const
+    {
+        return db().subRegistry("cache", true);
+    }
+
+    // New fvMesh-based object from name with optional caching
+    template<class Type>
+    tmp<Type> NewObject(const word name, const bool cached = false) const;
+
     // Needed by regIOobject
     virtual bool writeData(Ostream&) const { return true; }
 
@@ -330,5 +343,7 @@ public:
 }
 
 }
+
+#include "fvMeshI.H"
 
 #endif

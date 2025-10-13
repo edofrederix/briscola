@@ -32,14 +32,12 @@ limitedGaussDivergenceScheme<Type,MeshType>::imDiv
     phi.restrict();
     field.restrict();
 
-    tmp<linearSystem<stencil,Type,MeshType>> tSys
-    (
-        new linearSystem<stencil,Type,MeshType>
+    tmp<linearSystem<stencil,Type,MeshType>> tSys =
+        linearSystem<stencil,Type,MeshType>::New
         (
             word("div(" + phi.name() + "," + field.name() + ")"),
             const_cast<meshField<Type,MeshType>&>(field)
-        )
-    );
+        );
 
     linearSystem<stencil,Type,MeshType>& sys = tSys.ref();
 
@@ -99,14 +97,12 @@ limitedGaussDivergenceScheme<Type,MeshType>::exDiv
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<Type,MeshType>> tDiv
-    (
-        new meshField<Type,MeshType>
+    tmp<meshField<Type,MeshType>> tDiv =
+        meshField<Type,MeshType>::New
         (
             "div("+phi.name()+","+field.name()+")",
             phi.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 

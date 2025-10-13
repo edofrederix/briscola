@@ -9,6 +9,7 @@
 #include "meshLevel.H"
 #include "boundaryCondition.H"
 #include "immersedBoundaryConditionFwd.H"
+#include "cachedRefCount.H"
 
 namespace Foam
 {
@@ -35,7 +36,7 @@ class meshField
 :
     public PtrList<meshLevel<Type,MeshType>>,
     public IOdictionary,
-    public refCount
+    public cachedRefCount
 {
 public:
 
@@ -75,20 +76,6 @@ protected:
     // Transfer data from other mesh field
     void transfer(meshField<Type,MeshType>&);
 
-    // Check if the given field's depth is compatible with this field's depth to
-    // execute a member operator
-    template<class Type2>
-    inline void checkMemberOperatorArgDepth
-    (
-        const meshField<Type2,MeshType>& F
-    ) const
-    {
-        if (this->deep() && F.shallow())
-            FatalErrorInFunction
-                << "Member operator with a shallow field argument on a deep "
-                << "field is not supported." << endl << abort(FatalError);
-    }
-
 public:
 
     // Runtime type information
@@ -116,6 +103,13 @@ public:
         const IOobject::readOption r = NO_READ,
         const IOobject::writeOption w = NO_WRITE,
         const bool registerObject = false,
+        const bool deep = false
+    );
+
+    meshField
+    (
+        const IOobject& io,
+        const fvMesh& fvMsh,
         const bool deep = false
     );
 
@@ -151,6 +145,19 @@ public:
         const bool registerObject = false,
         const bool copyBCs = false
     );
+
+    // Temporary field constructor
+    static tmp<meshField<Type,MeshType>> New
+    (
+        const word& name,
+        const fvMesh& fvMsh,
+        const bool cached = false
+    )
+    {
+        return
+            fvMsh.template
+            NewObject<meshField<Type,MeshType>>(name, cached);
+    }
 
     // Clone
     inline autoPtr<meshField<Type,MeshType>> clone() const

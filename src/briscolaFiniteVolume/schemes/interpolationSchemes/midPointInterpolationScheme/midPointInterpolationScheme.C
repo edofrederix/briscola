@@ -26,14 +26,12 @@ midPointInterpolationScheme<Type,MeshType>::interp
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<FaceSpace<Type>,MeshType>> tInterp
-    (
-        new meshField<FaceSpace<Type>,MeshType>
+    tmp<meshField<FaceSpace<Type>,MeshType>> tInterp =
+        meshField<FaceSpace<Type>,MeshType>::New
         (
             "interp("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<FaceSpace<Type>,MeshType>& Interp = tInterp.ref();
 

@@ -55,11 +55,11 @@ makeRestrictionScheme(harmonicVolumeWeighted,scalar,staggered);
 
 // Face restriction schemes
 
-makeRestrictionSchemeBase(faceScalar,colocated,"faceAverage");
-makeRestrictionSchemeBase(faceVector,colocated,"faceAverage");
+makeRestrictionSchemeBase(faceScalar,colocated,"faceAreaWeighted");
+makeRestrictionSchemeBase(faceVector,colocated,"faceAreaWeighted");
 
-makeRestrictionSchemeBase(faceScalar,staggered,"faceAverage");
-makeRestrictionSchemeBase(faceVector,staggered,"faceAverage");
+makeRestrictionSchemeBase(faceScalar,staggered,"faceAreaWeighted");
+makeRestrictionSchemeBase(faceVector,staggered,"faceAreaWeighted");
 
 makeFaceRestrictionScheme(faceAverage,scalar,faceScalar,colocated);
 makeFaceRestrictionScheme(faceAverage,vector,faceVector,colocated);

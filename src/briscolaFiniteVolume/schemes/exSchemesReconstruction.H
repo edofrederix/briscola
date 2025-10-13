@@ -28,14 +28,12 @@ reconstruct
 {
     typedef typename outerProduct<vector,Type>::type ReconType;
 
-    tmp<meshField<ReconType,colocated>> tRecon
-    (
-        new meshField<ReconType,colocated>
+    tmp<meshField<ReconType,colocated>> tRecon =
+        meshField<ReconType,colocated>::New
         (
             "reconstruct("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<ReconType,colocated>& Recon = tRecon.ref();
 
@@ -70,10 +68,9 @@ reconstruct
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<typename outerProduct<vector,Type>::type,colocated>> tRecon
-    (
-        reconstruct(tField())
-    );
+    typedef typename outerProduct<vector,Type>::type ReconType;
+
+    tmp<meshField<ReconType,colocated>> tRecon = reconstruct(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -92,14 +89,12 @@ reconstruct
 {
     typedef typename outerProduct<vector,Type>::type ReconType;
 
-    tmp<meshField<ReconType,MeshType>> tRecon
-    (
-        new meshField<ReconType,MeshType>
+    tmp<meshField<ReconType,MeshType>> tRecon =
+        meshField<ReconType,MeshType>::New
         (
             "reconstruct("+flux.name()+")",
             flux.fvMsh()
-        )
-    );
+        );
 
     meshField<ReconType,MeshType>& Recon = tRecon.ref();
 
@@ -136,10 +131,7 @@ reconstruct
 {
     typedef typename outerProduct<vector,Type>::type ReconType;
 
-    tmp<meshField<ReconType,MeshType>> tRecon
-    (
-        reconstruct(tFlux())
-    );
+    tmp<meshField<ReconType,MeshType>> tRecon = reconstruct(tFlux());
 
     if (tFlux.isTmp())
         tFlux.clear();
@@ -155,14 +147,12 @@ inline tmp<meshField<Type,staggered>> stagReconstruct
     const meshField<FaceSpace<Type>,colocated>& flux
 )
 {
-    tmp<meshField<Type,staggered>> tRecon
-    (
-        new meshField<Type,staggered>
+    tmp<meshField<Type,staggered>> tRecon =
+        meshField<Type,staggered>::New
         (
             "reconstruct("+flux.name()+")",
             flux.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,staggered>& Recon = tRecon.ref();
 
@@ -182,10 +172,8 @@ inline tmp<meshField<Type,staggered>> stagReconstruct
     const tmp<meshField<FaceSpace<Type>,colocated>>& tFlux
 )
 {
-    tmp<meshField<Type,staggered>> tRecon
-    (
-        stagReconstruct(tFlux())
-    );
+    tmp<meshField<Type,staggered>> tRecon =
+        stagReconstruct(tFlux());
 
     if (tFlux.isTmp())
         tFlux.clear();

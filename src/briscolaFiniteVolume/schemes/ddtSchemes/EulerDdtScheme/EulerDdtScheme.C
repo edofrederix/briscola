@@ -32,16 +32,14 @@ EulerDdtScheme<Type,MeshType>::imDdt
         const_cast<meshField<scalar,MeshType>&>(*lambdaPtr)
        .restrict();
 
-    tmp<linearSystem<diagStencil,Type,MeshType>> tSys
-    (
-        new linearSystem<diagStencil,Type,MeshType>
+    tmp<linearSystem<diagStencil,Type,MeshType>> tSys =
+        linearSystem<diagStencil,Type,MeshType>::New
         (
             lambdaPtr
           ? word("ddt("+lambdaPtr->name()+","+field.name()+")")
           : word("ddt("+field.name()+")"),
             const_cast<meshField<Type,MeshType>&>(field)
-        )
-    );
+        );
 
     linearSystem<diagStencil,Type,MeshType>& Sys = tSys.ref();
 
@@ -81,16 +79,14 @@ EulerDdtScheme<Type,MeshType>::exDdt
     const scalar factor
 )
 {
-    tmp<meshField<Type,MeshType>> tDdt
-    (
-        new meshField<Type,MeshType>
+    tmp<meshField<Type,MeshType>> tDdt =
+        meshField<Type,MeshType>::New
         (
             lambdaPtr
           ? "ddt("+lambdaPtr->name()+","+field.name()+")"
           : "ddt("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,MeshType>& ddt = tDdt.ref();
 

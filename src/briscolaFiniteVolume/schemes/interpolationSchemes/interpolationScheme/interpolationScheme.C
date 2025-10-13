@@ -69,14 +69,12 @@ tmp<meshField<Type,staggered>> stagInterp
     const meshField<Type,colocated>& field
 )
 {
-    tmp<meshField<Type,staggered>> tInterp
-    (
-        new meshField<Type,staggered>
+    tmp<meshField<Type,staggered>> tInterp =
+        meshField<Type,staggered>::New
         (
             "stagInterp("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,staggered>& Interp = tInterp.ref();
 
@@ -96,10 +94,7 @@ tmp<meshField<Type,staggered>> stagInterp
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<Type,staggered>> tInterp
-    (
-        stagInterp(tField())
-    );
+    tmp<meshField<Type,staggered>> tInterp = stagInterp(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -113,14 +108,12 @@ tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
     const meshField<Type,colocated>& field
 )
 {
-    tmp<meshField<FaceSpace<Type>,staggered>> tInterp
-    (
-        new meshField<FaceSpace<Type>,staggered>
+    tmp<meshField<FaceSpace<Type>,staggered>> tInterp =
+        meshField<FaceSpace<Type>,staggered>::New
         (
             "stagFaceInterp("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<FaceSpace<Type>,staggered>& Interp = tInterp.ref();
 
@@ -160,10 +153,8 @@ tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<FaceSpace<Type>,staggered>> tInterp
-    (
-        stagFaceInterp(tField())
-    );
+    tmp<meshField<FaceSpace<Type>,staggered>> tInterp =
+        stagFaceInterp(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -177,14 +168,12 @@ tmp<meshField<Type,colocated>> coloInterp
     const meshField<Type,staggered>& field
 )
 {
-    tmp<meshField<Type,colocated>> tInterp
-    (
-        new meshField<Type,colocated>
+    tmp<meshField<Type,colocated>> tInterp =
+        meshField<Type,colocated>::New
         (
             "coloInterp("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,colocated>& Interp = tInterp.ref();
 
@@ -211,10 +200,7 @@ tmp<meshField<Type,colocated>> coloInterp
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<Type,colocated>> tInterp
-    (
-        stagInterp(tField())
-    );
+    tmp<meshField<Type,colocated>> tInterp = stagInterp(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -229,14 +215,12 @@ tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
     const meshField<Type,staggered>& field
 )
 {
-    tmp<meshField<FaceSpace<Type>,colocated>> tInterp
-    (
-        new meshField<FaceSpace<Type>,colocated>
+    tmp<meshField<FaceSpace<Type>,colocated>> tInterp =
+        meshField<FaceSpace<Type>,colocated>::New
         (
             "coloFaceInterp("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<FaceSpace<Type>,colocated>& Interp = tInterp.ref();
 
@@ -261,10 +245,8 @@ tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<FaceSpace<Type>,colocated>> tInterp
-    (
-        coloFaceInterp(tField())
-    );
+    tmp<meshField<FaceSpace<Type>,colocated>> tInterp =
+        coloFaceInterp(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -278,14 +260,12 @@ tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
     const meshField<FaceSpace<Type>,staggered>& field
 )
 {
-    tmp<meshField<FaceSpace<Type>,colocated>> tInterp
-    (
-        new meshField<FaceSpace<Type>,colocated>
+    tmp<meshField<FaceSpace<Type>,colocated>> tInterp =
+        meshField<FaceSpace<Type>,colocated>::New
         (
             "coloFaceInterp("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<FaceSpace<Type>,colocated>& Interp = tInterp.ref();
 
@@ -312,10 +292,8 @@ tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<FaceSpace<Type>,colocated>> tInterp
-    (
-        coloFaceInterp(tField())
-    );
+    tmp<meshField<FaceSpace<Type>,colocated>> tInterp =
+        coloFaceInterp(tField());
 
     if (tField.isTmp())
         tField.clear();

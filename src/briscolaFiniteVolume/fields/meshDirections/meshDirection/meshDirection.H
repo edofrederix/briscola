@@ -85,8 +85,6 @@ public:
     meshDirection
     (
         meshLevel<Type,MeshType>& mshLevel,
-        const fvMesh& fvMsh,
-        const label l,
         const label d
     );
 
@@ -171,6 +169,35 @@ public:
         const label d,
         const List<Type>& v
     );
+
+    // Temporary direction constructors
+
+    static tmp<meshDirection<Type,MeshType>> New
+    (
+        meshLevel<Type,MeshType>& mshLevel,
+        const label d
+    )
+    {
+        return
+            tmp<meshDirection<Type,MeshType>>
+            (
+                new meshDirection<Type,MeshType>(mshLevel,d)
+            );
+    }
+
+    static tmp<meshDirection<Type,MeshType>> New
+    (
+        const fvMesh& fvMsh,
+        const label l,
+        const label d
+    )
+    {
+        return
+            tmp<meshDirection<Type,MeshType>>
+            (
+                new meshDirection<Type,MeshType>(fvMsh,l,d)
+            );
+    }
 
     // Clone
 

@@ -71,16 +71,16 @@ grad
     const meshField<FaceSpace<Type>,MeshType>& field
 )
 {
-    tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>> tGrad
-    (
-        new meshField<typename outerProduct<vector,Type>::type,MeshType>
+    typedef typename outerProduct<vector,Type>::type TypeR;
+
+    tmp<meshField<TypeR,MeshType>> tGrad =
+        meshField<TypeR,MeshType>::New
         (
             "grad("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
-    meshField<typename outerProduct<vector,Type>::type,MeshType>& Grad =
+    meshField<TypeR,MeshType>& Grad =
         tGrad.ref();
 
     const meshField<scalar,MeshType>& cv =
@@ -114,10 +114,9 @@ grad
     const tmp<meshField<FaceSpace<Type>,MeshType>>& tField
 )
 {
-    tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>> tGrad
-    (
-        grad(tField())
-    );
+    typedef typename outerProduct<vector,Type>::type TypeR;
+
+    tmp<meshField<TypeR,MeshType>> tGrad = grad(tField());
 
     if (tField.isTmp())
         tField.clear();

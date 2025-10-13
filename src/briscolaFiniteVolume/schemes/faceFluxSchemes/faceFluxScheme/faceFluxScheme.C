@@ -62,14 +62,12 @@ tmp<colocatedFaceScalarField> coloFaceFlux
     const staggeredScalarField& field
 )
 {
-    tmp<colocatedFaceScalarField> tphi
-    (
-        new colocatedFaceScalarField
+    tmp<colocatedFaceScalarField> tphi =
+        colocatedFaceScalarField::New
         (
             "coloFaceFlux("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     colocatedFaceScalarField& phi = tphi.ref();
 

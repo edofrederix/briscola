@@ -32,16 +32,14 @@ stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
     if (lambdaPtr)
         lambdaPtr->restrict();
 
-    tmp<linearSystem<stencil,Type,MeshType>> tSys
-    (
-        new linearSystem<stencil,Type,MeshType>
+    tmp<linearSystem<stencil,Type,MeshType>> tSys =
+        linearSystem<stencil,Type,MeshType>::New
         (
             lambdaPtr
           ? "laplacian("+lambdaPtr->name()+","+field.name()+")"
           : "laplacian("+field.name()+")",
             const_cast<meshField<Type,MeshType>&>(field)
-        )
-    );
+        );
 
     linearSystem<stencil,Type,MeshType>& sys = tSys.ref();
 

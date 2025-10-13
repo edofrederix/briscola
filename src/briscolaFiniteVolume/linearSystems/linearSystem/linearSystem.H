@@ -7,6 +7,7 @@
 #include "fvMesh.H"
 #include "meshFields.H"
 #include "OFstream.H"
+#include "cachedRefCount.H"
 
 namespace Foam
 {
@@ -21,13 +22,13 @@ template<class SType, class Type, class MeshType>
 class linearSystem
 :
     public regIOobject,
-    public refCount
+    public cachedRefCount
 {
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
-    // Reference to the unknown
-    meshField<Type,MeshType>& x_;
+    // Pointer to the unknown
+    meshField<Type,MeshType>* xPtr_;
 
     // The stencil matrix which is deep by default
     meshField<SType,MeshType> A_;
@@ -60,6 +61,13 @@ public:
         const bool registerObject = false
     );
 
+    // Construct from IOobject and mesh, without unknown
+    linearSystem
+    (
+        const IOobject& io,
+        const fvMesh& fvMsh
+    );
+
     // Copy constructors
     linearSystem
     (
@@ -90,15 +98,38 @@ public:
         const bool registerObject = false
     );
 
+    // Temporary linear system constructor
+    static tmp<linearSystem<SType,Type,MeshType>> New
+    (
+        const word& name,
+        meshField<Type,MeshType>& x,
+        const bool cached = false
+    )
+    {
+        tmp<linearSystem<SType,Type,MeshType>> tSys =
+            x.fvMsh().template
+            NewObject<linearSystem<SType,Type,MeshType>>(name, cached);
+
+        tSys->setUnknown(x);
+
+        return tSys;
+    }
+
     // Destructor
     virtual ~linearSystem();
 
     // Return the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
-    // Return the unknown
-    inline meshField<Type,MeshType>& x() { return x_; }
-    inline const meshField<Type,MeshType>& x() const { return x_; }
+    // Set the unknown
+    inline void setUnknown(meshField<Type,MeshType>& x)
+    {
+        xPtr_ = &x;
+    }
+
+    // Return the unknown (unchecked!)
+    inline meshField<Type,MeshType>& x() { return *xPtr_; }
+    inline const meshField<Type,MeshType>& x() const { return *xPtr_; }
 
     // Return the stencil matrix
     inline meshField<SType,MeshType>& A() { return A_; }
@@ -216,6 +247,7 @@ public:
     void operator-=(const tmp<linearSystem<SType,Type,MeshType>>&);
 
     void operator=(const Type&);
+    void operator=(const zero);
     void operator=(const meshField<Type,MeshType>&);
     void operator=(const tmp<meshField<Type,MeshType>>&);
 
