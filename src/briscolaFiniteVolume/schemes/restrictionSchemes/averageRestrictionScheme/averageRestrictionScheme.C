@@ -43,9 +43,9 @@ void averageRestrictionScheme<Type,MeshType>::restrict
             metrics<MeshType>().cellVolumes()
             [coarse.levelNum()][coarse.directionNum()];
 
-        const meshDirection<scalar,MeshType>& cvf =
+        const meshDirection<scalar,MeshType>& icvf =
             this->fvMsh().template
-            metrics<MeshType>().cellVolumes()
+            metrics<MeshType>().inverseCellVolumes()
             [fine.levelNum()][fine.directionNum()];
 
         forAllCells(coarse, i, j, k)
@@ -59,16 +59,16 @@ void averageRestrictionScheme<Type,MeshType>::restrict
             const label ku = k*R.z() + (R2.z() == 2);
 
             coarse(i,j,k) =
-                fine(il,jl,kl)/cvf(il,jl,kl)
-              + fine(il,jl,ku)/cvf(il,jl,ku)
-              + fine(il,ju,kl)/cvf(il,ju,kl)
-              + fine(il,ju,ku)/cvf(il,ju,ku)
-              + fine(iu,jl,kl)/cvf(iu,jl,kl)
-              + fine(iu,jl,ku)/cvf(iu,jl,ku)
-              + fine(iu,ju,kl)/cvf(iu,ju,kl)
-              + fine(iu,ju,ku)/cvf(iu,ju,ku);
+                fine(il,jl,kl)*icvf(il,jl,kl)
+              + fine(il,jl,ku)*icvf(il,jl,ku)
+              + fine(il,ju,kl)*icvf(il,ju,kl)
+              + fine(il,ju,ku)*icvf(il,ju,ku)
+              + fine(iu,jl,kl)*icvf(iu,jl,kl)
+              + fine(iu,jl,ku)*icvf(iu,jl,ku)
+              + fine(iu,ju,kl)*icvf(iu,ju,kl)
+              + fine(iu,ju,ku)*icvf(iu,ju,ku);
 
-            coarse(i,j,k) *= cvc(i,j,k)/8.0;
+            coarse(i,j,k) *= 0.125*cvc(i,j,k);
         }
     }
     else
@@ -93,7 +93,7 @@ void averageRestrictionScheme<Type,MeshType>::restrict
               + fine(iu,ju,kl)
               + fine(iu,ju,ku);
 
-            coarse(i,j,k) /= scalar(8.0);
+            coarse(i,j,k) *= 0.125;
         }
     }
 }

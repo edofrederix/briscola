@@ -242,6 +242,9 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 
     // Small number to avoid division by zero in unset/invalid ghost cells
     cv = max(cv, 1e-16);
+
+    // Compute at store the inverse cell volumes
+    inverseCellVolumes_ = 1.0/cv;
 }
 
 template<class MeshType>
@@ -512,6 +515,15 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     cellVolumes_
     (
         word(MeshType::typeName) + "CellVolumes",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    inverseCellVolumes_
+    (
+        word(MeshType::typeName) + "InverseCellVolumes",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,

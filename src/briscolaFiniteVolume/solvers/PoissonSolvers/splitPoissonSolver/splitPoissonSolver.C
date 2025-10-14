@@ -1,5 +1,6 @@
 #include "splitPoissonSolver.H"
-#include "exSchemes.H"
+#include "exSchemesDivergence.H"
+#include "exSchemesFaceGradient.H"
 
 namespace Foam
 {

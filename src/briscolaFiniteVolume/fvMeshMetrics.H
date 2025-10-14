@@ -56,6 +56,9 @@ class fvMeshMetrics
     // Cell volume field
     meshField<scalar,MeshType> cellVolumes_;
 
+    // Inverse cell volume field
+    meshField<scalar,MeshType> inverseCellVolumes_;
+
     // Face delta coefficients (inverse of the cell-to-cell distance across a
     // face)
     meshField<faceScalar,MeshType> faceDeltas_;
@@ -183,6 +186,12 @@ public:
     inline const meshField<scalar,MeshType>& cellVolumes() const
     {
         return cellVolumes_;
+    }
+
+    // Const access to inverse cell volumes
+    inline const meshField<scalar,MeshType>& inverseCellVolumes() const
+    {
+        return inverseCellVolumes_;
     }
 
     // Const access to face deltas

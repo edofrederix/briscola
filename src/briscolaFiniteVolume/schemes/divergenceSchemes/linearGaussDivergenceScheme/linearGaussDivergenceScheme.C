@@ -95,8 +95,8 @@ linearGaussDivergenceScheme<Type,MeshType>::exDiv
     const meshField<faceScalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
-    const meshField<scalar,MeshType>& cv =
-        phi.fvMsh().template metrics<MeshType>().cellVolumes();
+    const meshField<scalar,MeshType>& icv =
+        phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
     forAllCells(Div, d, i, j, k)
     {
@@ -106,11 +106,13 @@ linearGaussDivergenceScheme<Type,MeshType>::exDiv
 
         for (label f = 0; f < 6; f++)
             Div(d,i,j,k) +=
-                (
-                    fwc(d,i,j,k)[f]*phi(d,i,j,k)[f]*field(d,i,j,k)
-                  + fwn(d,i,j,k)[f]*phi(d,i,j,k)[f]*field(d,neighbor(i,j,k,f))
-                )
-              / cv(d,i,j,k);
+                phi(d,i,j,k)[f]
+              * (
+                    fwc(d,i,j,k)[f]*field(d,i,j,k)
+                  + fwn(d,i,j,k)[f]*field(d,neighbor(i,j,k,f))
+                );
+
+        Div(d,i,j,k) *= icv(d,i,j,k);
     }
 
     return tDiv;

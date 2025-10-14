@@ -83,8 +83,8 @@ grad
     meshField<TypeR,MeshType>& Grad =
         tGrad.ref();
 
-    const meshField<scalar,MeshType>& cv =
-        field.fvMsh().template metrics<MeshType>().cellVolumes();
+    const meshField<scalar,MeshType>& icv =
+        field.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
     const meshField<faceVector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
@@ -97,11 +97,10 @@ grad
 
         for (int fd = 0; fd < 3; fd++)
             Grad(d,i,j,k) +=
-                (
-                    field(d,i,j,k)[fd*2  ]*fan(d,i,j,k)[fd*2  ]
-                  + field(d,i,j,k)[fd*2+1]*fan(d,i,j,k)[fd*2+1]
-                )
-              / cv(d,i,j,k);
+                field(d,i,j,k)[fd*2  ]*fan(d,i,j,k)[fd*2  ]
+              + field(d,i,j,k)[fd*2+1]*fan(d,i,j,k)[fd*2+1];
+
+        Grad(d,i,j,k) *= icv(d,i,j,k);
     }
 
     return tGrad;

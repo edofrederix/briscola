@@ -48,11 +48,10 @@ reconstruct
 
         for (int d = 0; d < 3; d++)
             Recon(i,j,k) +=
-                0.5
-              * (
-                  - fn(i,j,k)[d*2  ]*field(d,i,j,k)
-                  + fn(i,j,k)[d*2+1]*field(d,upperNeighbor(i,j,k,d))
-                );
+              - fn(i,j,k)[d*2  ]*field(d,i,j,k)
+              + fn(i,j,k)[d*2+1]*field(d,upperNeighbor(i,j,k,d));
+
+        Recon(i,j,k) *= 0.5;
     }
 
     return tRecon;
@@ -88,6 +87,9 @@ reconstruct
 )
 {
     typedef typename outerProduct<vector,Type>::type ReconType;
+    typedef meshField<tensor,MeshType> WeightFieldType;
+
+    const fvMesh& fvMsh = flux.fvMsh();
 
     tmp<meshField<ReconType,MeshType>> tRecon =
         meshField<ReconType,MeshType>::New
@@ -99,24 +101,57 @@ reconstruct
     meshField<ReconType,MeshType>& Recon = tRecon.ref();
 
     const meshField<faceVector,MeshType>& fn =
-        flux.fvMsh().template metrics<MeshType>().faceNormals();
+        fvMsh.template metrics<MeshType>().faceNormals();
 
-    const meshField<faceVector,MeshType>& fan =
-        flux.fvMsh().template metrics<MeshType>().faceAreaNormals();
+    // Create reconstruction weights and store
+
+    if (!fvMsh.db().foundObject<WeightFieldType>("reconstructionWeights"))
+    {
+        // Weight field
+
+        tmp<WeightFieldType> tWeights =
+            WeightFieldType::New
+            (
+                "reconstructionWeights",
+                fvMsh
+            );
+
+        WeightFieldType& weights = tWeights.ref();
+
+        const meshField<faceVector,MeshType>& fan =
+            flux.fvMsh().template metrics<MeshType>().faceAreaNormals();
+
+        // Compute weight matrix and invert
+
+        forAllCells(weights, d, i, j, k)
+        {
+            #ifdef NO_BLOCK_ZERO_INIT
+            weights(d,i,j,k) = Zero;
+            #endif
+
+            for (label f = 0; f < 6; f++)
+                weights(d,i,j,k) +=
+                    fn(d,i,j,k)[f]*fan(d,i,j,k)[f];
+
+            weights(d,i,j,k) = inv(weights(d,i,j,k));
+        }
+
+        // Store
+
+        fvMsh.db().objectRegistry::store(tWeights.ptr());
+    }
+
+    const WeightFieldType& weights =
+        fvMsh.db().lookupObject<WeightFieldType>("reconstructionWeights");
 
     forAllCells(Recon, d, i, j, k)
     {
-        tensor weight = Zero;
-
-        for (label f = 0; f < 6; f++)
-            weight += fn(d,i,j,k)[f]*fan(d,i,j,k)[f];
-
         ReconType sum = Zero;
 
         for (label f = 0; f < 6; f++)
             sum += fn(d,i,j,k)[f]*flux(d,i,j,k)[f];
 
-        Recon(i,j,k) = inv(weight) & sum;
+        Recon(d,i,j,k) = weights(d,i,j,k) & sum;
     }
 
     return tRecon;

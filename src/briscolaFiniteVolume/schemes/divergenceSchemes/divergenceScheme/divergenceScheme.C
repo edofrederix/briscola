@@ -79,8 +79,8 @@ tmp<meshField<Type,MeshType>> div
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 
-    const meshField<scalar,MeshType>& cv =
-        phi.fvMsh().template metrics<MeshType>().cellVolumes();
+    const meshField<scalar,MeshType>& icv =
+        phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
     forAllCells(phi, d, i, j, k)
     {
@@ -89,7 +89,9 @@ tmp<meshField<Type,MeshType>> div
         #endif
 
         for (int f = 0; f < 6; f++)
-            Div(d,i,j,k) += phi(d,i,j,k)[f]/cv(d,i,j,k);
+            Div(d,i,j,k) += phi(d,i,j,k)[f];
+
+        Div(d,i,j,k) *= icv(d,i,j,k);
     }
 
     return tDiv;
@@ -124,8 +126,8 @@ tmp<meshField<Type,colocated>> coloDiv
 
     meshField<Type,colocated>& Div = tDiv.ref();
 
-    const meshField<scalar,colocated>& cv =
-        field.fvMsh().template metrics<colocated>().cellVolumes();
+    const meshField<scalar,colocated>& icv =
+        field.fvMsh().template metrics<colocated>().inverseCellVolumes();
 
     const meshField<faceScalar,colocated>& fa =
         field.fvMsh().template metrics<colocated>().faceAreas();
@@ -138,11 +140,10 @@ tmp<meshField<Type,colocated>> coloDiv
 
         for (int fd = 0; fd < 3; fd++)
             Div(i,j,k) -=
-                (
-                    field(fd,i,j,k)*fa(i,j,k)[fd*2]
-                  - field(fd,upperNeighbor(i,j,k,fd))*fa(i,j,k)[fd*2+1]
-                )
-              / cv(i,j,k);
+                field(fd,i,j,k)*fa(i,j,k)[fd*2]
+              - field(fd,upperNeighbor(i,j,k,fd))*fa(i,j,k)[fd*2+1];
+
+        Div(i,j,k) *= icv(i,j,k);
     }
 
     return tDiv;

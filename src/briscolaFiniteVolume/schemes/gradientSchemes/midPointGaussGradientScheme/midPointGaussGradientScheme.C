@@ -40,8 +40,8 @@ midPointGaussGradientScheme<Type,MeshType>::grad
     const meshField<faceVector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
-    const meshField<scalar,MeshType>& cv =
-        field.fvMsh().template metrics<MeshType>().cellVolumes();
+    const meshField<scalar,MeshType>& icv =
+        field.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
     forAllCells(Grad, d, i, j, k)
     {
@@ -51,13 +51,13 @@ midPointGaussGradientScheme<Type,MeshType>::grad
 
         for (int f = 0; f < 6; f++)
             Grad(d,i,j,k) +=
-                0.5
+                fan(d,i,j,k)[f]
               * (
                     field(d,i,j,k)
                   + field(d,neighbor(i,j,k,f))
-                )
-              * fan(d,i,j,k)[f]
-              / cv(d,i,j,k);
+                );
+
+        Grad(d,i,j,k) *= 0.5*icv(d,i,j,k);
     }
 
     return tGrad;

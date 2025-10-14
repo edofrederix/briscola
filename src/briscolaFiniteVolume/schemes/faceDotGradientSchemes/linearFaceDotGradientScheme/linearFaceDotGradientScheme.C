@@ -22,7 +22,6 @@ void linearFaceDotGradientScheme<Type,colocated>::cache
 
     if (!fvMsh.db().foundObject<colocatedFaceVectorField>("faceDotGradDelta0"))
     {
-        Info<< "store" << endl;
         // Cache fields
 
         tmp<colocatedFaceVectorField> tDelta0 =

@@ -46,8 +46,9 @@ linearGaussGradientScheme<Type,MeshType>::grad
     const meshField<faceScalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
-    const meshField<scalar,MeshType>& cv =
-        field.fvMsh().template metrics<MeshType>().cellVolumes();
+    const meshField<scalar,MeshType>& icv =
+        field.fvMsh().template metrics<MeshType>().inverseCellVolumes();
+
 
     forAllCells(Grad, d, i, j, k)
     {
@@ -57,12 +58,13 @@ linearGaussGradientScheme<Type,MeshType>::grad
 
         for (int f = 0; f < 6; f++)
             Grad(d,i,j,k) +=
-                (
+                fan(d,i,j,k)[f]
+              * (
                     fwc(d,i,j,k)[f]*field(d,i,j,k)
                   + fwn(d,i,j,k)[f]*field(d,neighbor(i,j,k,f))
-                )
-              * fan(d,i,j,k)[f]
-              / cv(d,i,j,k);
+                );
+
+        Grad(d,i,j,k) *= icv(d,i,j,k);
     }
 
     return tGrad;

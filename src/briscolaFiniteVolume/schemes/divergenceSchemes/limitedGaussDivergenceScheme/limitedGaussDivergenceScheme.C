@@ -111,8 +111,8 @@ limitedGaussDivergenceScheme<Type,MeshType>::exDiv
     const meshField<faceScalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
-    const meshField<scalar,MeshType>& cv =
-        phi.fvMsh().template metrics<MeshType>().cellVolumes();
+    const meshField<scalar,MeshType>& icv =
+        phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
     const meshField<faceScalar,MeshType> psi(limiter_->psi(phi,field));
 
@@ -123,21 +123,26 @@ limitedGaussDivergenceScheme<Type,MeshType>::exDiv
         #endif
 
         for (label f = 0; f < 6; f++)
+        {
+            const scalar Psi = 1.0 - psi(d,i,j,k)[f];
+
             Div(d,i,j,k) +=
                 phi(d,i,j,k)[f]
               * (
                     field(d,i,j,k)
                   * (
                         psi(d,i,j,k)[f]*fwc(d,i,j,k)[f]
-                      + (1.0 - psi(d,i,j,k)[f])*(phi(d,i,j,k)[f] >= 0)
+                      + Psi*(phi(d,i,j,k)[f] >= 0)
                     )
                   + field(d,neighbor(i,j,k,f))
                   * (
                         psi(d,i,j,k)[f]*fwn(d,i,j,k)[f]
-                      + (1.0 - psi(d,i,j,k)[f])*(phi(d,i,j,k)[f] < 0)
+                      + Psi*(phi(d,i,j,k)[f] < 0)
                     )
-                )
-              / cv(d,i,j,k);
+                );
+        }
+
+        Div(d,i,j,k) *= icv(d,i,j,k);
     }
 
     return tDiv;

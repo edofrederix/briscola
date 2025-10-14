@@ -1,6 +1,8 @@
 #include "budgetPrimitivesStaggered.H"
 #include "Time.H"
 #include "addToRunTimeSelectionTable.H"
+#include "exSchemesGradient.H"
+#include "exSchemesReconstruction.H"
 
 namespace Foam
 {
