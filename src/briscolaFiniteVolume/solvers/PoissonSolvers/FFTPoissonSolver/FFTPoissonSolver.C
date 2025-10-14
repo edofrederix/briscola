@@ -1,6 +1,6 @@
 #include "FFTPoissonSolver.H"
 #include "rectilinearMesh.H"
-#include "exSchemes.H"
+#include "exSchemesFaceGradient.H"
 
 namespace Foam
 {

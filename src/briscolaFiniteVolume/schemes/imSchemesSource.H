@@ -21,8 +21,7 @@ namespace im
     inline tmp<linearSystem<diagStencil,Type,MeshType>> source
     (
         const meshField<scalar,MeshType>* lambdaPtr,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         if (lambdaPtr)
@@ -42,7 +41,7 @@ namespace im
         const meshField<scalar,MeshType>& cv =
             field.fvMsh().template metrics<MeshType>().cellVolumes();
 
-        sys.A() = factor*cv;
+        sys.A() = cv;
 
         if (lambdaPtr)
         {
@@ -67,11 +66,10 @@ namespace im
     inline tmp<linearSystem<diagStencil,Type,MeshType>> source
     (
         const meshField<scalar,MeshType>& lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
-        return source(&lambda, field, factor);
+        return source(&lambda, field);
     }
 
     // Coefficient as tmp
@@ -80,12 +78,11 @@ namespace im
     inline tmp<linearSystem<diagStencil,Type,MeshType>> source
     (
         const tmp<meshField<scalar,MeshType>>& tLambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         tmp<linearSystem<diagStencil,Type,MeshType>> tSource =
-            source(tLambda(), field, factor);
+            source(tLambda(), field);
 
         if (tLambda.isTmp())
             tLambda.clear();
@@ -99,11 +96,10 @@ namespace im
     inline tmp<linearSystem<diagStencil,Type,MeshType>> source
     (
         const scalar lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
-        return source(nullptr, field, factor*lambda);
+        return lambda*source(nullptr, field);
     }
 }
 

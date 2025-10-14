@@ -30,15 +30,13 @@ public:
     virtual tmp<linearSystem<diagStencil,Type,MeshType>> imDdt
     (
         const meshField<scalar,MeshType>* lambdaPtr,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     );
 
     virtual tmp<meshField<Type,MeshType>> exDdt
     (
         const meshField<scalar,MeshType>* lambdaPtr,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     );
 };
 

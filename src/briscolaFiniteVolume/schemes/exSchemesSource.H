@@ -21,8 +21,7 @@ namespace ex
     inline tmp<meshField<Type,MeshType>> source
     (
         const meshField<scalar,MeshType>* lambdaPtr,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         tmp<meshField<Type,MeshType>> tS =
@@ -38,11 +37,11 @@ namespace ex
 
         if (lambdaPtr)
         {
-            S = factor*(*lambdaPtr)*field;
+            S = (*lambdaPtr)*field;
         }
         else
         {
-            S = factor*field;
+            S = field;
         }
 
         return tS;
@@ -54,11 +53,10 @@ namespace ex
     inline tmp<meshField<Type,MeshType>> source
     (
         const meshField<scalar,MeshType>& lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
-        return source(&lambda, field, factor);
+        return source(&lambda, field);
     }
 
     // Coefficient as tmp
@@ -67,11 +65,10 @@ namespace ex
     inline tmp<meshField<Type,MeshType>> source
     (
         const tmp<meshField<scalar,MeshType>>& tLambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
-        tmp<meshField<Type,MeshType>> tS = source(tLambda(), field, factor);
+        tmp<meshField<Type,MeshType>> tS = source(tLambda(), field);
 
         if (tLambda.isTmp())
             tLambda.clear();
@@ -85,11 +82,10 @@ namespace ex
     inline tmp<meshField<Type,MeshType>> source
     (
         const scalar lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
-        return source(nullptr, field, factor*lambda);
+        return lambda*source(nullptr, field);
     }
 }
 

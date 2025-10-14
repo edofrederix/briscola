@@ -18,11 +18,10 @@ namespace fv
         laplacianScheme<SType,Type,MeshType>::imLaplacian
         (
             const meshField<faceScalar,MeshType>& lambda,
-            const meshField<Type,MeshType>& field,
-            const scalar factor
+            const meshField<Type,MeshType>& field
         )
         {
-            return this->imLaplacian(&lambda, field, factor);
+            return this->imLaplacian(&lambda, field);
         }
 
         // Coefficient as tmp
@@ -32,12 +31,11 @@ namespace fv
         laplacianScheme<SType,Type,MeshType>::imLaplacian
         (
             const tmp<meshField<faceScalar,MeshType>>& tLambda,
-            const meshField<Type,MeshType>& field,
-            const scalar factor
+            const meshField<Type,MeshType>& field
         )
         {
             tmp<linearSystem<SType,Type,MeshType>> tSys =
-                this->imLaplacian(&tLambda(), field, factor);
+                this->imLaplacian(&tLambda(), field);
 
             if (tLambda.isTmp())
                 tLambda.clear();
@@ -52,11 +50,10 @@ namespace fv
         laplacianScheme<SType,Type,MeshType>::imLaplacian
         (
             const scalar lambda,
-            const meshField<Type,MeshType>& field,
-            const scalar factor
+            const meshField<Type,MeshType>& field
         )
         {
-            return this->imLaplacian(nullptr, field, lambda*factor);
+            return lambda*this->imLaplacian(nullptr, field);
         }
 
         // No coefficient
@@ -65,11 +62,10 @@ namespace fv
         inline tmp<linearSystem<SType,Type,MeshType>>
         laplacianScheme<SType,Type,MeshType>::imLaplacian
         (
-            const meshField<Type,MeshType>& field,
-            const scalar factor
+            const meshField<Type,MeshType>& field
         )
         {
-            return this->imLaplacian(nullptr, field, factor);
+            return this->imLaplacian(nullptr, field);
         }
 
 // Explicit
@@ -83,11 +79,10 @@ namespace fv
         laplacianScheme<SType,Type,MeshType>::exLaplacian
         (
             const meshField<faceScalar,MeshType>& lambda,
-            const meshField<Type,MeshType>& field,
-            const scalar factor
+            const meshField<Type,MeshType>& field
         )
         {
-            return this->exLaplacian(&lambda, field, factor);
+            return this->exLaplacian(&lambda, field);
         }
 
         // Coefficient as tmp
@@ -97,12 +92,11 @@ namespace fv
         laplacianScheme<SType,Type,MeshType>::exLaplacian
         (
             const tmp<meshField<faceScalar,MeshType>>& tLambda,
-            const meshField<Type,MeshType>& field,
-            const scalar factor
+            const meshField<Type,MeshType>& field
         )
         {
             tmp<meshField<Type,MeshType>> tLap =
-                this->exLaplacian(&tLambda(), field, factor);
+                this->exLaplacian(&tLambda(), field);
 
             if (tLambda.isTmp())
                 tLambda.clear();
@@ -117,11 +111,10 @@ namespace fv
         laplacianScheme<SType,Type,MeshType>::exLaplacian
         (
             const scalar lambda,
-            const meshField<Type,MeshType>& field,
-            const scalar factor
+            const meshField<Type,MeshType>& field
         )
         {
-            return this->exLaplacian(nullptr, field, lambda*factor);
+            return lambda*this->exLaplacian(nullptr, field);
         }
 
         // No coefficient
@@ -130,11 +123,10 @@ namespace fv
         inline tmp<meshField<Type,MeshType>>
         laplacianScheme<SType,Type,MeshType>::exLaplacian
         (
-            const meshField<Type,MeshType>& field,
-            const scalar factor
+            const meshField<Type,MeshType>& field
         )
         {
-            return this->exLaplacian(nullptr, field, factor);
+            return this->exLaplacian(nullptr, field);
         }
 }
 

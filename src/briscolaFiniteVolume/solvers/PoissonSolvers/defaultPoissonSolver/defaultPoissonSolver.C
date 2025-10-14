@@ -73,7 +73,7 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
         sys += (*bPtr);
 
     if (ddt)
-        sys -= im::ddt(x, 1.0/dtFrac);
+        sys -= im::ddt(x)/dtFrac;
 
     const bool constMatrix = !ddt && !lambdaPtr;
 

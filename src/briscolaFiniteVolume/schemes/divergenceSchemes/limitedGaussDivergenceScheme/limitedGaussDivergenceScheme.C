@@ -25,8 +25,7 @@ tmp<linearSystem<stencil,Type,MeshType>>
 limitedGaussDivergenceScheme<Type,MeshType>::imDiv
 (
     const meshField<faceScalar,MeshType>& phi,
-    const meshField<Type,MeshType>& field,
-    const scalar factor
+    const meshField<Type,MeshType>& field
 )
 {
     phi.restrict();
@@ -60,14 +59,14 @@ limitedGaussDivergenceScheme<Type,MeshType>::imDiv
         for (label f = 0; f < 6; f++)
         {
             A(l,d,i,j,k)[f+1] =
-                factor*phi(l,d,i,j,k)[f]
+                phi(l,d,i,j,k)[f]
               * (
                     psi(l,d,i,j,k)[f]*fwn(l,d,i,j,k)[f]
                   + (1.0 - psi(l,d,i,j,k)[f])*(phi(l,d,i,j,k)[f] < 0)
                 );
 
             A(l,d,i,j,k)[0] +=
-                factor*phi(l,d,i,j,k)[f]
+                phi(l,d,i,j,k)[f]
               * (
                     psi(l,d,i,j,k)[f]*fwc(l,d,i,j,k)[f]
                   + (1.0 - psi(l,d,i,j,k)[f])*(phi(l,d,i,j,k)[f] >= 0)

@@ -25,8 +25,7 @@ tmp<linearSystem<stencil,Type,MeshType>>
 stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
 (
     const meshField<faceScalar,MeshType>* lambdaPtr,
-    const meshField<Type,MeshType>& field,
-    const scalar factor
+    const meshField<Type,MeshType>& field
 )
 {
     if (lambdaPtr)
@@ -60,7 +59,7 @@ stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
         for (int f = 0; f < 6; f++)
         {
             scalar coeff =
-                factor*fa(l,d,i,j,k)[f]*delta(l,d,i,j,k)[f];
+                fa(l,d,i,j,k)[f]*delta(l,d,i,j,k)[f];
 
             if (lambdaPtr)
                 coeff *= lambdaPtr->operator()(l,d,i,j,k)[f];

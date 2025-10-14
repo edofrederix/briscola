@@ -24,8 +24,7 @@ tmp<linearSystem<stencil,Type,MeshType>>
 midPointGaussDivergenceScheme<Type,MeshType>::imDiv
 (
     const meshField<faceScalar,MeshType>& phi,
-    const meshField<Type,MeshType>& field,
-    const scalar factor
+    const meshField<Type,MeshType>& field
 )
 {
     phi.restrict();
@@ -49,8 +48,8 @@ midPointGaussDivergenceScheme<Type,MeshType>::imDiv
 
         for (label f = 0; f < 6; f++)
         {
-            A(l,d,i,j,k)[f+1] = 0.5*factor*phi(l,d,i,j,k)[f];
-            A(l,d,i,j,k)[0] +=  0.5*factor*phi(l,d,i,j,k)[f];
+            A(l,d,i,j,k)[f+1] = 0.5*phi(l,d,i,j,k)[f];
+            A(l,d,i,j,k)[0] += A(l,d,i,j,k)[f+1];
         }
     }
 

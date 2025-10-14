@@ -59,15 +59,13 @@ public:
         virtual tmp<linearSystem<SType,Type,MeshType>> imLaplacian
         (
             const meshField<faceScalar,MeshType>* lambdaPtr,
-            const meshField<Type,MeshType>& field,
-            const scalar factor = 1.0
+            const meshField<Type,MeshType>& field
         ) = 0;
 
         virtual tmp<meshField<Type,MeshType>> exLaplacian
         (
             const meshField<faceScalar,MeshType>* lambdaPtr,
-            const meshField<Type,MeshType>& field,
-            const scalar factor = 1.0
+            const meshField<Type,MeshType>& field
         ) = 0;
 
     // Support functions relying on the pure virtual functions above
@@ -80,31 +78,27 @@ public:
                 inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
                 (
                     const meshField<faceScalar,MeshType>& lambda,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
+                    const meshField<Type,MeshType>& field
                 );
 
                 // Coefficient as tmp
                 inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
                 (
                     const tmp<meshField<faceScalar,MeshType>>& tLambda,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
+                    const meshField<Type,MeshType>& field
                 );
 
                 // Constant coefficient
                 inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
                 (
                     const scalar lambda,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
+                    const meshField<Type,MeshType>& field
                 );
 
                 // No coefficient
                 inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
                 (
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
+                    const meshField<Type,MeshType>& field
                 );
 
         // Explicit
@@ -115,31 +109,27 @@ public:
                 inline tmp<meshField<Type,MeshType>> exLaplacian
                 (
                     const meshField<faceScalar,MeshType>& lambda,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
+                    const meshField<Type,MeshType>& field
                 );
 
                 // Coefficient as tmp
                 inline tmp<meshField<Type,MeshType>> exLaplacian
                 (
                     const tmp<meshField<faceScalar,MeshType>>& tLambda,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
+                    const meshField<Type,MeshType>& field
                 );
 
                 // Constant coefficient
                 inline tmp<meshField<Type,MeshType>> exLaplacian
                 (
                     const scalar lambda,
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
+                    const meshField<Type,MeshType>& field
                 );
 
                 // No coefficient
                 inline tmp<meshField<Type,MeshType>> exLaplacian
                 (
-                    const meshField<Type,MeshType>& field,
-                    const scalar factor = 1.0
+                    const meshField<Type,MeshType>& field
                 );
 };
 

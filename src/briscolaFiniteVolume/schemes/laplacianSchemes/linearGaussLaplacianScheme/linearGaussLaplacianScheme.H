@@ -29,8 +29,7 @@ public:
     virtual tmp<meshField<Type,MeshType>> exLaplacian
     (
         const meshField<faceScalar,MeshType>* lambdaPtr,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     );
 };
 

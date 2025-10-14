@@ -58,8 +58,7 @@ public:
         virtual tmp<linearSystem<SType,Type,MeshType>> imDiv
         (
             const meshField<faceScalar,MeshType>& phi,
-            const meshField<Type,MeshType>& field,
-            const scalar factor = 1.0
+            const meshField<Type,MeshType>& field
         ) = 0;
 
         virtual tmp<meshField<Type,MeshType>> exDiv

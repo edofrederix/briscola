@@ -24,8 +24,7 @@ tmp<linearSystem<diagStencil,Type,MeshType>>
 EulerDdtScheme<Type,MeshType>::imDdt
 (
     const meshField<scalar,MeshType>* lambdaPtr,
-    const meshField<Type,MeshType>& field,
-    const scalar factor
+    const meshField<Type,MeshType>& field
 )
 {
     if (lambdaPtr)
@@ -46,8 +45,8 @@ EulerDdtScheme<Type,MeshType>::imDdt
     const meshField<scalar,MeshType>& cv =
         this->fvMsh().template metrics<MeshType>().cellVolumes();
 
-    Sys.A() = factor*cv/this->deltaT();
-    Sys.b() = factor*cv*field.oldTime()/this->deltaT();
+    Sys.A() = cv/this->deltaT();
+    Sys.b() = cv*field.oldTime()/this->deltaT();
 
     if (lambdaPtr)
     {
@@ -75,8 +74,7 @@ tmp<meshField<Type,MeshType>>
 EulerDdtScheme<Type,MeshType>::exDdt
 (
     const meshField<scalar,MeshType>* lambdaPtr,
-    const meshField<Type,MeshType>& field,
-    const scalar factor
+    const meshField<Type,MeshType>& field
 )
 {
     tmp<meshField<Type,MeshType>> tDdt =
@@ -93,8 +91,7 @@ EulerDdtScheme<Type,MeshType>::exDdt
     if (lambdaPtr)
     {
         ddt =
-            factor
-          * (
+            (
                 (*lambdaPtr)*field
               - lambdaPtr->oldTime()*field.oldTime()
             )
@@ -102,7 +99,7 @@ EulerDdtScheme<Type,MeshType>::exDdt
     }
     else
     {
-        ddt = factor*(field-field.oldTime())/this->deltaT();
+        ddt = field-field.oldTime()/this->deltaT();
     }
 
     return tDdt;

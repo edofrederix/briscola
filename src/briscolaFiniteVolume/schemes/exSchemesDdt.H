@@ -23,8 +23,7 @@ namespace ex
     inline tmp<meshField<Type,MeshType>> ddt
     (
         const meshField<scalar,MeshType>* lambdaPtr,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         return ddtScheme<Type,MeshType>::New
@@ -33,7 +32,7 @@ namespace ex
             lambdaPtr
           ? "ddt("+lambdaPtr->name()+","+field.name()+")"
           : "ddt("+field.name()+")"
-        )->exDdt(lambdaPtr,field,factor);
+        )->exDdt(lambdaPtr,field);
     }
 
     // Coefficient as reference
@@ -42,15 +41,14 @@ namespace ex
     inline tmp<meshField<Type,MeshType>> ddt
     (
         const meshField<scalar,MeshType>& lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         return ddtScheme<Type,MeshType>::New
         (
             field.fvMsh(),
             "ddt("+lambda.name()+","+field.name()+")"
-        )->exDdt(lambda,field,factor);
+        )->exDdt(lambda,field);
     }
 
     // Coefficient as tmp
@@ -59,15 +57,14 @@ namespace ex
     inline tmp<meshField<Type,MeshType>> ddt
     (
         const tmp<meshField<scalar,MeshType>>& tLambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         return ddtScheme<Type,MeshType>::New
         (
             field.fvMsh(),
             "ddt("+tLambda->name()+","+field.name()+")"
-        )->exDdt(tLambda,field,factor);
+        )->exDdt(tLambda,field);
     }
 
     // Constant coefficient
@@ -76,15 +73,14 @@ namespace ex
     inline tmp<meshField<Type,MeshType>> ddt
     (
         const scalar lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         return ddtScheme<Type,MeshType>::New
         (
             field.fvMsh(),
             "ddt(const,"+field.name()+")"
-        )->exDdt(lambda,field,factor);
+        )->exDdt(lambda,field);
     }
 
     // No coefficient
@@ -92,15 +88,14 @@ namespace ex
     template<class Type, class MeshType>
     inline tmp<meshField<Type,MeshType>> ddt
     (
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         return ddtScheme<Type,MeshType>::New
         (
             field.fvMsh(),
             "ddt("+field.name()+")"
-        )->exDdt(field,factor);
+        )->exDdt(field);
     }
 
 }
