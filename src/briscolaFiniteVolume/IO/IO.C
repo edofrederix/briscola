@@ -496,14 +496,14 @@ void IO::writeFields
 {
     typedef meshField<Type,MeshType> FieldType;
 
-    const wordList toc(fvMsh_.time().toc<FieldType>());
+    const wordList toc(fvMsh_.db().toc<FieldType>());
 
     label count = 0;
 
     forAll(toc, i)
     {
         const FieldType& field =
-            fvMsh_.time().lookupObject<FieldType>(toc[i]);
+            fvMsh_.db().lookupObject<FieldType>(toc[i]);
 
         if
         (
@@ -531,7 +531,7 @@ void IO::writeFields
         forAll(toc, i)
         {
             const FieldType& field =
-                fvMsh_.time().lookupObject<FieldType>(toc[i]);
+                fvMsh_.db().lookupObject<FieldType>(toc[i]);
 
             if
             (
@@ -572,6 +572,8 @@ void IO::readFields
             << endl << abort(FatalError);
     }
 
+    wordList typeFields;
+
     if (nf > 0)
     {
         word name;
@@ -584,10 +586,10 @@ void IO::readFields
             file>> name >> nComponents >> nCells;
             nextLine(file);
 
-            if (fvMsh_.time().foundObject<FieldType>(name))
+            if (fvMsh_.db().foundObject<FieldType>(name))
             {
                 FieldType& field =
-                    fvMsh_.time().lookupObjectRef<FieldType>(name);
+                    fvMsh_.db().lookupObjectRef<FieldType>(name);
 
                 if
                 (
@@ -599,7 +601,7 @@ void IO::readFields
                 )
                 {
                     readField(filePtr, ascii, field[l][d]);
-                    fields.append(field.name());
+                    typeFields.append(field.name());
                 }
                 else
                 {
@@ -629,15 +631,37 @@ void IO::readFields
             }
         }
     }
+
+    HashTable<const FieldType*> objects(fvMsh_.db().lookupClass<FieldType>());
+
+    if (l == 0)
+    {
+        forAllIter
+        (
+            typename HashTable<const FieldType*>,
+            objects,
+            iter
+        )
+        {
+            if (iter()->readOpt() == IOobject::MUST_READ)
+                if (findIndex(typeFields, iter()->name()) < 0)
+                    FatalErrorInFunction
+                        << "Count not read field " << iter()->name()
+                        << " of type " << FieldType::typeName
+                        << endl << abort(FatalError);
+        }
+    }
+
+    fields.append(typeFields);
 }
 
 template<class Type, class MeshType>
 void IO::correctBoundaryConditions(const word& fieldName, const label l)
 {
-    if (fvMsh_.time().foundObject<meshField<Type,MeshType>>(fieldName))
+    if (fvMsh_.db().foundObject<meshField<Type,MeshType>>(fieldName))
     {
         auto& field =
-            fvMsh_.time().lookupObjectRef<meshField<Type,MeshType>>(fieldName);
+            fvMsh_.db().lookupObjectRef<meshField<Type,MeshType>>(fieldName);
 
         field[l].correctBoundaryConditions();
     }

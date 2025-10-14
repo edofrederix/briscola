@@ -86,28 +86,6 @@ meshField<Type,MeshType>::meshField
     boundaryConditions_(),
     reSchemePtr_()
 {
-    if (!fvMsh.structured() && MeshType::numberOfDirections > 1)
-    {
-        FatalErrorInFunction
-            << "Cannot create a " << MeshType::typeName << " field on an "
-            << "unstructured mesh."
-            << endl << abort(FatalError);
-    }
-
-    if
-    (
-        (
-            r == IOobject::MUST_READ
-         || r == IOobject::MUST_READ_IF_MODIFIED
-        )
-     && !headerOk()
-    )
-    {
-        FatalErrorInFunction
-            << "Cannot read field from " << objectPath() << endl
-            << exit(FatalError);
-    }
-
     this->allocate(deep);
 }
 
@@ -127,28 +105,6 @@ meshField<Type,MeshType>::meshField
     boundaryConditions_(),
     reSchemePtr_()
 {
-    if (!fvMsh.structured() && MeshType::numberOfDirections > 1)
-    {
-        FatalErrorInFunction
-            << "Cannot create a " << MeshType::typeName << " field on an "
-            << "unstructured mesh."
-            << endl << abort(FatalError);
-    }
-
-    if
-    (
-        (
-            io.readOpt() == IOobject::MUST_READ
-         || io.readOpt() == IOobject::MUST_READ_IF_MODIFIED
-        )
-     && !headerOk()
-    )
-    {
-        FatalErrorInFunction
-            << "Cannot read field from " << objectPath() << endl
-            << exit(FatalError);
-    }
-
     this->allocate(deep);
 }
 
