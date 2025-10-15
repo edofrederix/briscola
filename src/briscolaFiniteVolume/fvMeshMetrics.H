@@ -3,6 +3,7 @@
 
 #include "immersedBoundaryFwd.H"
 #include "labelList.H"
+#include "FastPtrList.H"
 
 namespace Foam
 {
@@ -76,10 +77,99 @@ class fvMeshMetrics
     List<labelList> globalCellCounts_;
 
     // List of immersed boundaries (if any)
-    PtrList<immersedBoundary<MeshType>> immersedBoundaries_;
+    FastPtrList<immersedBoundary<MeshType>> immersedBoundaries_;
 
     // Global immersed boundary mask
     meshField<scalar,MeshType> mask_;
+
+public:
+
+    // Structure of Array (SoA) storage
+    class SoA
+    {
+        // Reference to the mesh metrics object
+        const fvMeshMetrics<MeshType>& metrics_;
+
+        // Face center fields
+        FastPtrList<meshField<vector,MeshType>> faceCenters_;
+
+        // Face outward normal fields
+        FastPtrList<meshField<vector,MeshType>> faceNormals_;
+
+        // Face area fields
+        FastPtrList<meshField<scalar,MeshType>> faceAreas_;
+
+        // Face outward normal with magnitude face area fields
+        FastPtrList<meshField<vector,MeshType>> faceAreaNormals_;
+
+        // Face delta coefficients
+        FastPtrList<meshField<scalar,MeshType>> faceDeltas_;
+
+        // Face interpolation weights for the cell center
+        FastPtrList<meshField<scalar,MeshType>> faceWeightsCenter_;
+
+        // Face interpolation weights for the neighbor
+        FastPtrList<meshField<scalar,MeshType>> faceWeightsNeighbor_;
+
+    public:
+
+        // Construct from fvMeshMetrics
+        SoA(const fvMeshMetrics<MeshType>&);
+
+        // Const access to face centers
+        inline const FastPtrList<meshField<vector,MeshType>>&
+        faceCenters() const
+        {
+            return faceCenters_;
+        }
+
+        // Const access to face outward normals
+        inline const FastPtrList<meshField<vector,MeshType>>&
+        faceNormals() const
+        {
+            return faceNormals_;
+        }
+
+        // Const access to face areas
+        inline const FastPtrList<meshField<scalar,MeshType>>&
+        faceAreas() const
+        {
+            return faceAreas_;
+        }
+
+        // Const access to face outward normal with area magnitude
+        inline const FastPtrList<meshField<vector,MeshType>>&
+        faceAreaNormals() const
+        {
+            return faceAreaNormals_;
+        }
+
+        // Const access to face deltas
+        inline const FastPtrList<meshField<scalar,MeshType>>&
+        faceDeltas() const
+        {
+            return faceDeltas_;
+        }
+
+        // Const access to face weights for the cell center
+        inline const FastPtrList<meshField<scalar,MeshType>>&
+        faceWeightsCenter() const
+        {
+            return faceWeightsCenter_;
+        }
+
+        // Const access to face weights for the neighbor
+        inline const FastPtrList<meshField<scalar,MeshType>>&
+        faceWeightsNeighbor() const
+        {
+            return faceWeightsNeighbor_;
+        }
+    };
+
+private:
+
+    // Structure of Array (SoA) storage of face metrics
+    autoPtr<SoA> soaPtr_;
 
     // Calculate vertex centers
     void calculateVertexCenters();
@@ -114,25 +204,19 @@ class fvMeshMetrics
     // Set the immersed boundary mask
     void setImmersedBoundaryMask();
 
-public:
+    // Set the Structure of Array (SoA) storage
+    void setSoA();
 
-    // Declare name of the class and its debug switch
-    ClassName("fvMeshMetrics");
+public:
 
     // Construct from fvMesh
     fvMeshMetrics(const fvMesh&);
 
-    // Destructor
-    ~fvMeshMetrics();
-
     // Const access to immersed boundaries
-    const PtrList<immersedBoundary<MeshType>>& immersedBoundaries() const
+    const FastPtrList<immersedBoundary<MeshType>>& immersedBoundaries() const
     {
         return immersedBoundaries_;
     }
-
-    // Disallow default bitwise assignment
-    void operator=(const fvMeshMetrics&);
 
     // Const access to fvMesh
     inline const fvMesh& fvMsh() const
@@ -240,6 +324,12 @@ public:
     inline tmp<meshField<scalar,MeshType>> solidMask() const
     {
         return mask_;
+    }
+
+    // Structure of Arrays (SoA) storage
+    inline const SoA& soa() const
+    {
+        return soaPtr_;
     }
 };
 

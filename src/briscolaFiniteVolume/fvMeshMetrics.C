@@ -446,6 +446,12 @@ void fvMeshMetrics<MeshType>::setImmersedBoundaryMask()
 }
 
 template<class MeshType>
+void fvMeshMetrics<MeshType>::setSoA()
+{
+    soaPtr_.reset(new SoA(*this));
+}
+
+template<class MeshType>
 fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
 :
     fvMsh_(fvMsh),
@@ -588,14 +594,87 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     setGlobalCellNumbers();
     setImmersedBoundaries();
     setImmersedBoundaryMask();
+    setSoA();
 }
 
-template<class MeshType>
-fvMeshMetrics<MeshType>::~fvMeshMetrics()
-{}
+// Structure of Array (SoA) storage class
 
-defineTemplateTypeNameAndDebug(fvMeshMetrics<colocated>, 0);
-defineTemplateTypeNameAndDebug(fvMeshMetrics<staggered>, 0);
+template<class MeshType>
+fvMeshMetrics<MeshType>::SoA::SoA
+(
+    const fvMeshMetrics<MeshType>& metrics
+)
+:
+    metrics_(metrics),
+    faceCenters_(3),
+    faceNormals_(3),
+    faceAreas_(3),
+    faceAreaNormals_(3),
+    faceDeltas_(3),
+    faceWeightsCenter_(3),
+    faceWeightsNeighbor_(3)
+{
+    const word faceNames[3] = {"x", "y", "z"};
+
+    typedef meshField<scalar,MeshType> ScalarType;
+    typedef meshField<vector,MeshType> VectorType;
+
+    #define ALLOCATEFIELD(TYPE,NAME)                                           \
+        for (int fd = 0; fd < 3; fd++)                                         \
+            NAME##_.set                                                        \
+            (                                                                  \
+                fd,                                                            \
+                new TYPE                                                       \
+                (                                                              \
+                    metrics.NAME().name() + "_" + faceNames[fd],               \
+                    metrics.fvMsh(),                                           \
+                    IOobject::NO_READ,                                         \
+                    IOobject::NO_WRITE,                                        \
+                    true,                                                      \
+                    true                                                       \
+                )                                                              \
+            );
+
+    // Set the cell-centered value as the lower face value. Use the forAllFaces
+    // iterator such that the upper ghost cell values receive the upper boundary
+    // face values.
+
+    #define CALCFIELD(NAME)                                                    \
+    {                                                                          \
+        auto& faceField = metrics.NAME();                                      \
+        forAllFaces(metrics.NAME(), l, d, fd, i, j, k)                         \
+            NAME##_[fd](l,d,i,j,k) = faceField(l,d,i,j,k)[fd*2];               \
+    }
+
+    #define SETFIELD(TYPE,NAME)                                                \
+        ALLOCATEFIELD(TYPE,NAME)                                               \
+        CALCFIELD(NAME)                                                        \
+
+    SETFIELD(VectorType,faceCenters)
+    SETFIELD(VectorType,faceNormals)
+    SETFIELD(ScalarType,faceAreas)
+    SETFIELD(VectorType,faceAreaNormals)
+    SETFIELD(ScalarType,faceDeltas)
+    SETFIELD(ScalarType,faceWeightsCenter)
+    SETFIELD(ScalarType,faceWeightsNeighbor)
+
+    // Update parallel/periodic boundary values for face deltas and weights
+
+    forAll(faceDeltas_, i)
+        faceDeltas_[i].correctCommsBoundaryConditions();
+
+    forAll(faceWeightsCenter_, i)
+        faceWeightsCenter_[i].correctCommsBoundaryConditions();
+
+    forAll(faceWeightsNeighbor_, i)
+        faceWeightsNeighbor_[i].correctCommsBoundaryConditions();
+
+    #undef ALLOCATEFIELD
+    #undef CALCFIELD
+    #undef SETFIELD
+}
+
+// Instantiate
 
 template class fvMeshMetrics<colocated>;
 template class fvMeshMetrics<staggered>;

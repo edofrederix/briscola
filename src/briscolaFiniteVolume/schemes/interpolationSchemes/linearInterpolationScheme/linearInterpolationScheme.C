@@ -35,11 +35,11 @@ linearInterpolationScheme<Type,MeshType>::interp
 
     meshField<FaceSpace<Type>,MeshType>& Interp = tInterp.ref();
 
-    const meshField<faceScalar,MeshType>& fwc =
-        field.fvMsh().template metrics<MeshType>().faceWeightsCenter();
+    const FastPtrList<meshField<scalar,MeshType>>& fwc =
+        field.fvMsh().template metrics<MeshType>().soa().faceWeightsCenter();
 
-    const meshField<faceScalar,MeshType>& fwn =
-        field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
+    const FastPtrList<meshField<scalar,MeshType>>& fwn =
+        field.fvMsh().template metrics<MeshType>().soa().faceWeightsNeighbor();
 
     forAllFaces(Interp, d, fd, i, j, k)
     {
@@ -47,8 +47,8 @@ linearInterpolationScheme<Type,MeshType>::interp
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
         Interp(d,ijk)[fd*2] =
-            field(d,ijk)*fwc(d,ijk)[fd*2]
-          + field(d,nei)*fwn(d,ijk)[fd*2];
+            field(d,ijk)*fwc[fd](d,ijk)
+          + field(d,nei)*fwn[fd](d,ijk);
 
         Interp(d,nei)[fd*2+1] = Interp(d,ijk)[fd*2];
     }

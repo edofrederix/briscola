@@ -25,11 +25,10 @@ void faceAreaWeightedRestrictionScheme<Type,colocated>::restrict
     this->errorNoScaling(scale);
 
     const labelVector R(coarse.mshPart().R());
+    const label l = fine.levelNum();
 
-    const meshDirection<faceScalar,colocated>& faf =
-        this->fvMsh().template
-        metrics<colocated>().faceAreas()
-        [fine.levelNum()][fine.directionNum()];
+    const FastPtrList<colocatedScalarField>& faf =
+        this->fvMsh().template metrics<colocated>().soa().faceAreas();
 
     // Face area weighted average of corresponding fine grid faces
 
@@ -51,10 +50,10 @@ void faceAreaWeightedRestrictionScheme<Type,colocated>::restrict
         for (o.y() = 0; o.y() < (fd == 1 ? 1 : R.y()); o.y()++)
         for (o.z() = 0; o.z() < (fd == 2 ? 1 : R.z()); o.z()++)
         {
-            coarse(ijk)[fd*2  ] += faf(fijk+o)[fd*2]*fine(fijk+o)[fd*2  ];
-            coarse(nei)[fd*2+1] += faf(fijk+o)[fd*2]*fine(fnei+o)[fd*2+1];
+            coarse(ijk)[fd*2  ] += faf[fd](l,0,fijk+o)*fine(fijk+o)[fd*2  ];
+            coarse(nei)[fd*2+1] += faf[fd](l,0,fijk+o)*fine(fnei+o)[fd*2+1];
 
-            area += faf(fijk+o)[fd*2];
+            area += faf[fd](l,0,fijk+o);
         }
 
         coarse(ijk)[fd*2  ] /= area;

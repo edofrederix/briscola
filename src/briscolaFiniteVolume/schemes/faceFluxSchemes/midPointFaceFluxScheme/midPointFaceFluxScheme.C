@@ -38,15 +38,15 @@ tmp
 
     returnType& Flux = tFlux.ref();
 
-    const colocatedFaceVectorField& fan =
-        this->fvMsh().metrics<colocated>().faceAreaNormals();
+    const FastPtrList<colocatedVectorField>& fan =
+        this->fvMsh().metrics<colocated>().soa().faceAreaNormals();
 
     forAllFaces(Flux, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        Flux(ijk)[fd*2  ] = (0.5*(field(ijk) + field(nei)) & fan(ijk)[fd*2]);
+        Flux(ijk)[fd*2  ] = (0.5*(field(ijk) + field(nei)) & fan[fd](ijk));
         Flux(nei)[fd*2+1] = -Flux(ijk)[fd*2];
     }
 
@@ -92,8 +92,8 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
 
     staggeredFaceScalarField& Flux = tFlux.ref();
 
-    const staggeredFaceScalarField& fa =
-        this->fvMsh().metrics<staggered>().faceAreas();
+    const FastPtrList<staggeredScalarField>& fa =
+        this->fvMsh().metrics<staggered>().soa().faceAreas();
 
     forAllFaces(Flux, d, fd, i, j, k)
     {
@@ -104,7 +104,7 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
         // fluxes in y-direction from the second, etc
 
         Flux(d,ijk)[fd*2] =
-          - fa(d,ijk)[fd*2]
+          - fa[fd](d,ijk)
           * (
                 0.5*field(fd,ijk)
               + 0.5*field(fd,lowerNeighbor(ijk,d))

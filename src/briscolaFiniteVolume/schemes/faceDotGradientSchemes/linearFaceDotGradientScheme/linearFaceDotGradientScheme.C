@@ -20,53 +20,53 @@ void linearFaceDotGradientScheme<Type,colocated>::cache
 {
     // Create coefficients and store
 
-    if (!fvMsh.db().foundObject<colocatedFaceVectorField>("faceDotGradDelta0"))
+    if (!fvMsh.db().foundObject<staggeredVectorField>("faceDotGradDelta0"))
     {
         // Cache fields
 
-        tmp<colocatedFaceVectorField> tDelta0 =
-            colocatedFaceVectorField::New
+        tmp<staggeredVectorField> tDelta0 =
+            staggeredVectorField::New
             (
                 "faceDotGradDelta0",
                 fvMsh
             );
 
-        tmp<colocatedFaceVectorField> tDelta1 =
-            colocatedFaceVectorField::New
+        tmp<staggeredVectorField> tDelta1 =
+            staggeredVectorField::New
             (
                 "faceDotGradDelta1",
                 fvMsh
             );
 
-        tmp<colocatedFaceVectorField> tDelta2 =
-            colocatedFaceVectorField::New
+        tmp<staggeredVectorField> tDelta2 =
+            staggeredVectorField::New
             (
                 "faceDotGradDelta2",
                 fvMsh
             );
 
-        colocatedFaceVectorDirection& delta0 = tDelta0.ref()[0][0];
-        colocatedFaceVectorDirection& delta1 = tDelta1.ref()[0][0];
-        colocatedFaceVectorDirection& delta2 = tDelta2.ref()[0][0];
+        staggeredVectorLevel& delta0 = tDelta0.ref()[0];
+        staggeredVectorLevel& delta1 = tDelta1.ref()[0];
+        staggeredVectorLevel& delta2 = tDelta2.ref()[0];
 
-        const meshDirection<faceVector,colocated>& fn =
-            fvMsh.template metrics<colocated>().faceNormals()[0][0];
+        const FastPtrList<colocatedVectorField>& fn =
+            fvMsh.template metrics<colocated>().soa().faceNormals();
 
-        const meshDirection<faceScalar,colocated>& delta =
-            fvMsh.template metrics<colocated>().faceDeltas()[0][0];
+        const FastPtrList<colocatedScalarField>& delta =
+            fvMsh.template metrics<colocated>().soa().faceDeltas();
 
-        const meshDirection<faceVector,colocated>& fc =
-            fvMsh.template metrics<colocated>().faceCenters()[0][0];
+        const FastPtrList<colocatedVectorField>& fc =
+            fvMsh.template metrics<colocated>().soa().faceCenters();
 
         // Normal direction coefficient. The minus sign is because the face
         // normal points in negative direction on the lower face
 
-        forAllFacesInDirection(delta0, fd, i, j, k)
-            delta0(i,j,k)[fd*2] = -delta(i,j,k)[fd*2]*fn(i,j,k)[fd*2];
+        forAllFacesInDirection(delta[0], fd, i, j, k)
+            delta0(fd,i,j,k) = -delta[fd](i,j,k)*fn[fd](i,j,k);
 
         // Tangential direction coefficients
 
-        forAllFacesInDirection(delta1, fd, i, j, k)
+        forAllFacesInDirection(delta[0], fd, i, j, k)
         {
             const labelVector ijk(i,j,k);
             const labelVector nei(lowerNeighbor(ijk,fd));
@@ -79,15 +79,15 @@ void linearFaceDotGradientScheme<Type,colocated>::cache
             // Tangential distances across the face
 
             const vector dist1 =
-                fc(upperNeighbor(ijk,a))[fd*2]
-              - fc(lowerNeighbor(ijk,a))[fd*2];
+                fc[fd](upperNeighbor(ijk,a))
+              - fc[fd](lowerNeighbor(ijk,a));
 
             const vector dist2 =
-                fc(upperNeighbor(ijk,b))[fd*2]
-              - fc(lowerNeighbor(ijk,b))[fd*2];
+                fc[fd](upperNeighbor(ijk,b))
+              - fc[fd](lowerNeighbor(ijk,b));
 
-            delta1(i,j,k)[fd*2] = dist1/Foam::magSqr(dist1);
-            delta2(i,j,k)[fd*2] = dist2/Foam::magSqr(dist2);
+            delta1(fd,i,j,k) = dist1/Foam::magSqr(dist1);
+            delta2(fd,i,j,k) = dist2/Foam::magSqr(dist2);
         }
 
         // Store
@@ -120,20 +120,17 @@ linearFaceDotGradientScheme<Type,colocated>::faceDotGrad
 
     cache(fvMsh);
 
-    const colocatedFaceVectorDirection& delta0 =
-        fvMsh.db()
-       .lookupObject<colocatedFaceVectorField>("faceDotGradDelta0")[0][0];
+    const staggeredVectorLevel& delta0 =
+        fvMsh.db().lookupObject<staggeredVectorField>("faceDotGradDelta0")[0];
 
-    const colocatedFaceVectorDirection& delta1 =
-        fvMsh.db()
-       .lookupObject<colocatedFaceVectorField>("faceDotGradDelta1")[0][0];
+    const staggeredVectorLevel& delta1 =
+        fvMsh.db().lookupObject<staggeredVectorField>("faceDotGradDelta1")[0];
 
-    const colocatedFaceVectorDirection& delta2 =
-        fvMsh.db()
-       .lookupObject<colocatedFaceVectorField>("faceDotGradDelta2")[0][0];
+    const staggeredVectorLevel& delta2 =
+        fvMsh.db().lookupObject<staggeredVectorField>("faceDotGradDelta2")[0];
 
-    const meshDirection<faceVector,colocated>& fan =
-        fvMsh.template metrics<colocated>().faceAreaNormals()[0][0];
+    const FastPtrList<colocatedVectorField>& fan =
+        fvMsh.template metrics<colocated>().soa().faceAreaNormals();
 
     // Compute face-dot gradient
 
@@ -164,9 +161,9 @@ linearFaceDotGradientScheme<Type,colocated>::faceDotGrad
 
         // Gradient contributions
 
-        grad(ijk)[fd*2] =  delta0(ijk)[fd*2]*(diff0 & fan(ijk)[fd*2]);
-        grad(ijk)[fd*2] += delta1(ijk)[fd*2]*(diff1 & fan(ijk)[fd*2]);
-        grad(ijk)[fd*2] += delta2(ijk)[fd*2]*(diff2 & fan(ijk)[fd*2]);
+        grad(ijk)[fd*2] =  delta0(fd,ijk)*(diff0 & fan[fd](ijk));
+        grad(ijk)[fd*2] += delta1(fd,ijk)*(diff1 & fan[fd](ijk));
+        grad(ijk)[fd*2] += delta2(fd,ijk)*(diff2 & fan[fd](ijk));
 
         // Copy to neighbor
 
@@ -196,11 +193,11 @@ linearFaceDotGradientScheme<Type,staggered>::faceDotGrad
 
     meshLevel<FaceSpace<Type>,staggered>& grad = tGrad.ref()[0];
 
-    const meshLevel<faceScalar,staggered>& delta =
-        fvMsh.template metrics<staggered>().faceDeltas()[0];
+    const FastPtrList<staggeredScalarField>& delta =
+        fvMsh.template metrics<staggered>().soa().faceDeltas();
 
-    const meshLevel<faceScalar,staggered>& fa =
-        fvMsh.template metrics<staggered>().faceAreas()[0];
+    const FastPtrList<staggeredScalarField>& fa =
+        fvMsh.template metrics<staggered>().soa().faceAreas();
 
     forAllFaces(grad, d, fd, i, j, k)
     {
@@ -210,7 +207,7 @@ linearFaceDotGradientScheme<Type,staggered>::faceDotGrad
         // The gradient in d-direction of fd-direction staggered components
 
         grad(d,ijk)[fd*2] =
-            delta(fd,ijk)[d*2]*fa(fd,ijk)[d*2]
+            delta[d](fd,ijk)*fa[d](fd,ijk)
           * (field(fd,lowerNeighbor(ijk,d)) - field(fd,ijk));
 
         grad(d,nei)[fd*2+1] = -grad(d,ijk)[fd*2];

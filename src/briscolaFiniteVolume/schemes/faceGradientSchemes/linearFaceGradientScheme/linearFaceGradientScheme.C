@@ -35,8 +35,8 @@ linearFaceGradientScheme<Type,MeshType>::faceGrad
 
     meshField<FaceSpace<Type>,MeshType>& Grad = tGrad.ref();
 
-    const meshField<faceScalar,MeshType>& delta =
-        field.fvMsh().template metrics<MeshType>().faceDeltas();
+    const FastPtrList<meshField<scalar,MeshType>>& delta =
+        field.fvMsh().template metrics<MeshType>().soa().faceDeltas();
 
     // The face gradient is defined along the outward normal, for consistency
     // with the flux.
@@ -46,7 +46,7 @@ linearFaceGradientScheme<Type,MeshType>::faceGrad
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        Grad(d,ijk)[fd*2  ] = (field(d,nei) - field(d,ijk))*delta(d,ijk)[fd*2];
+        Grad(d,ijk)[fd*2  ] = (field(d,nei) - field(d,ijk))*delta[fd](d,ijk);
         Grad(d,nei)[fd*2+1] = -Grad(d,ijk)[fd*2];
     }
 

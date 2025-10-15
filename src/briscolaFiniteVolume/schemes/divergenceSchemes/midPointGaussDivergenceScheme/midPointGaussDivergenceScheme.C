@@ -84,22 +84,23 @@ midPointGaussDivergenceScheme<Type,MeshType>::exDiv
     const meshField<scalar,MeshType>& icv =
         phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    forAllCells(Div, d, i, j, k)
+    #ifdef NO_BLOCK_ZERO_INIT
+    Div = Zero;
+    #endif
+
+    forAllFaces(Div, d, fd, i, j, k)
     {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Div(d,i,j,k) = Zero;
-        #endif
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        for (label f = 0; f < 6; f++)
-            Div(d,i,j,k) +=
-                phi(d,i,j,k)[f]
-              * (
-                    field(d,i,j,k)
-                  + field(d,neighbor(i,j,k,f))
-                );
+        const Type value =
+            phi(d,ijk)[fd]*(field(d,ijk) + field(d,nei));
 
-        Div(d,i,j,k) *= 0.5*icv(d,i,j,k);
+        Div(d,ijk) += 0.5*value;
+        Div(d,nei) -= 0.5*value;
     }
+
+    Div *= icv;
 
     return tDiv;
 }

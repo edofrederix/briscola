@@ -38,14 +38,14 @@ tmp
 
     returnType& Flux = tFlux.ref();
 
-    const colocatedFaceVectorField& fan =
-        this->fvMsh().metrics<colocated>().faceAreaNormals();
+    const FastPtrList<colocatedVectorField>& fan =
+        this->fvMsh().metrics<colocated>().soa().faceAreaNormals();
 
-    const colocatedFaceScalarField& fwc =
-        field.fvMsh().template metrics<colocated>().faceWeightsCenter();
+    const FastPtrList<colocatedScalarField>& fwc =
+        this->fvMsh().metrics<colocated>().soa().faceWeightsCenter();
 
-    const colocatedFaceScalarField& fwn =
-        field.fvMsh().template metrics<colocated>().faceWeightsNeighbor();
+    const FastPtrList<colocatedScalarField>& fwn =
+        this->fvMsh().metrics<colocated>().soa().faceWeightsNeighbor();
 
     forAllFaces(Flux, fd, i, j, k)
     {
@@ -55,10 +55,10 @@ tmp
         Flux(ijk)[fd*2] =
             (
                 (
-                    field(ijk)*fwc(ijk)[fd*2]
-                  + field(nei)*fwn(ijk)[fd*2]
+                    field(ijk)*fwc[fd](ijk)
+                  + field(nei)*fwn[fd](ijk)
                 )
-              & fan(ijk)[fd*2]
+              & fan[fd](ijk)
             );
 
         Flux(nei)[fd*2+1] = -Flux(ijk)[fd*2];
@@ -106,14 +106,14 @@ tmp<staggeredFaceScalarField> linearFaceFluxScheme::faceFlux
 
     staggeredFaceScalarField& Flux = tFlux.ref();
 
-    const staggeredFaceScalarField& fa =
-        this->fvMsh().metrics<staggered>().faceAreas();
+    const FastPtrList<staggeredScalarField>& fa =
+        this->fvMsh().metrics<staggered>().soa().faceAreas();
 
-    const staggeredFaceScalarField& fwc =
-        field.fvMsh().template metrics<staggered>().faceWeightsCenter();
+    const FastPtrList<staggeredScalarField>& fwc =
+        this->fvMsh().metrics<staggered>().soa().faceWeightsCenter();
 
-    const staggeredFaceScalarField& fwn =
-        field.fvMsh().template metrics<staggered>().faceWeightsNeighbor();
+    const FastPtrList<staggeredScalarField>& fwn =
+        this->fvMsh().metrics<staggered>().soa().faceWeightsNeighbor();
 
     forAllFaces(Flux, d, fd, i, j, k)
     {
@@ -124,10 +124,10 @@ tmp<staggeredFaceScalarField> linearFaceFluxScheme::faceFlux
         // fluxes in y-direction from the second, etc
 
         Flux(d,ijk)[fd*2] =
-          - fa(d,ijk)[fd*2]
+          - fa[fd](d,ijk)
           * (
-                fwc(fd,ijk)[d*2]*field(fd,ijk)
-              + fwn(fd,ijk)[d*2]*field(fd,lowerNeighbor(ijk,d))
+                fwc[d](fd,ijk)*field(fd,ijk)
+              + fwn[d](fd,ijk)*field(fd,lowerNeighbor(ijk,d))
             );
 
         Flux(d,nei)[fd*2+1] = -Flux(d,ijk)[fd*2];

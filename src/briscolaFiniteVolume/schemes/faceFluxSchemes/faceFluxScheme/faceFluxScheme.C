@@ -71,15 +71,15 @@ tmp<colocatedFaceScalarField> coloFaceFlux
 
     colocatedFaceScalarField& phi = tphi.ref();
 
-    const colocatedFaceScalarField& fa =
-        field.fvMsh().template metrics<colocated>().faceAreas();
+    const FastPtrList<colocatedScalarField>& fa =
+        field.fvMsh().template metrics<colocated>().soa().faceAreas();
 
     forAllFaces(phi, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        phi(ijk)[fd*2  ] = -field(fd,ijk)*fa(ijk)[fd*2];
+        phi(ijk)[fd*2  ] = -field(fd,ijk)*fa[fd](ijk);
         phi(nei)[fd*2+1] = -phi(ijk)[fd*2];
     }
 

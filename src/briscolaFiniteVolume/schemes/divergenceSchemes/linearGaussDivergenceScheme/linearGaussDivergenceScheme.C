@@ -89,31 +89,36 @@ linearGaussDivergenceScheme<Type,MeshType>::exDiv
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 
-    const meshField<faceScalar,MeshType>& fwc =
-        field.fvMsh().template metrics<MeshType>().faceWeightsCenter();
+    const FastPtrList<meshField<scalar,MeshType>>& fwc =
+        field.fvMsh().template metrics<MeshType>().soa().faceWeightsCenter();
 
-    const meshField<faceScalar,MeshType>& fwn =
-        field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
+    const FastPtrList<meshField<scalar,MeshType>>& fwn =
+        field.fvMsh().template metrics<MeshType>().soa().faceWeightsNeighbor();
 
     const meshField<scalar,MeshType>& icv =
         phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    forAllCells(Div, d, i, j, k)
+    #ifdef NO_BLOCK_ZERO_INIT
+    Div = Zero;
+    #endif
+
+    forAllFaces(Div, d, fd, i, j, k)
     {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Div(d,i,j,k) = Zero;
-        #endif
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        for (label f = 0; f < 6; f++)
-            Div(d,i,j,k) +=
-                phi(d,i,j,k)[f]
-              * (
-                    fwc(d,i,j,k)[f]*field(d,i,j,k)
-                  + fwn(d,i,j,k)[f]*field(d,neighbor(i,j,k,f))
-                );
+        const Type value =
+            phi(d,ijk)[fd]
+          * (
+                fwc[fd](d,ijk)*field(d,ijk)
+              + fwn[fd](d,ijk)*field(d,nei)
+            );
 
-        Div(d,i,j,k) *= icv(d,i,j,k);
+        Div(d,ijk) += value;
+        Div(d,nei) -= value;
     }
+
+    Div *= icv;
 
     return tDiv;
 }

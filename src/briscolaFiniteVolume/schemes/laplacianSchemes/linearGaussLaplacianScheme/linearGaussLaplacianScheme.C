@@ -38,29 +38,34 @@ linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
 
     meshField<Type,MeshType>& Lap = tLap.ref();
 
-    const meshField<faceScalar,MeshType>& fa =
-        field.fvMsh().template metrics<MeshType>().faceAreas();
+    const FastPtrList<meshField<scalar,MeshType>>& fa =
+        field.fvMsh().template metrics<MeshType>().soa().faceAreas();
 
-    const meshField<faceScalar,MeshType>& delta =
-        field.fvMsh().template metrics<MeshType>().faceDeltas();
+    const FastPtrList<meshField<scalar,MeshType>>& delta =
+        field.fvMsh().template metrics<MeshType>().soa().faceDeltas();
 
     const meshField<scalar,MeshType>& icv =
         field.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    forAllCells(Lap, d, i, j, k)
+    #ifdef NO_BLOCK_ZERO_INIT
+    Lap = Zero;
+    #endif
+
+    forAllFaces(Lap, d, fd, i, j, k)
     {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Lap(d,i,j,k) = Zero;
-        #endif
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        for (label f = 0; f < 6; f++)
-            Lap(d,i,j,k) +=
-                fa(d,i,j,k)[f]*delta(d,i,j,k)[f]
-              * (field(d,neighbor(i,j,k,f)) - field(d,i,j,k))
-              * (lambdaPtr ? lambdaPtr->operator()(d,i,j,k)[f] : 1.0);
+        const Type value =
+            fa[fd](d,ijk)*delta[fd](d,ijk)
+          * (field(d,nei) - field(d,ijk))
+          * (lambdaPtr ? lambdaPtr->operator()(d,ijk)[fd*2] : 1.0);
 
-        Lap(d,i,j,k) *= icv(d,i,j,k);
+        Lap(d,ijk) += value;
+        Lap(d,nei) -= value;
     }
+
+    Lap *= icv;
 
     return tLap;
 }
