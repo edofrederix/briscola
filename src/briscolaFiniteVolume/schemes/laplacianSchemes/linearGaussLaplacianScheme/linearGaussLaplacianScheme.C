@@ -38,10 +38,10 @@ linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
 
     meshField<Type,MeshType>& Lap = tLap.ref();
 
-    const FastPtrList<meshField<scalar,MeshType>>& fa =
+    const faceField<scalar,MeshType>& fa =
         field.fvMsh().template metrics<MeshType>().soa().faceAreas();
 
-    const FastPtrList<meshField<scalar,MeshType>>& delta =
+    const faceField<scalar,MeshType>& delta =
         field.fvMsh().template metrics<MeshType>().soa().faceDeltas();
 
     const meshField<scalar,MeshType>& icv =

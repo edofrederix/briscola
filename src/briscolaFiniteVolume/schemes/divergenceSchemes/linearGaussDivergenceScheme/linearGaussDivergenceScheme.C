@@ -89,10 +89,10 @@ linearGaussDivergenceScheme<Type,MeshType>::exDiv
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 
-    const FastPtrList<meshField<scalar,MeshType>>& fwc =
+    const faceField<scalar,MeshType>& fwc =
         field.fvMsh().template metrics<MeshType>().soa().faceWeightsCenter();
 
-    const FastPtrList<meshField<scalar,MeshType>>& fwn =
+    const faceField<scalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().soa().faceWeightsNeighbor();
 
     const meshField<scalar,MeshType>& icv =

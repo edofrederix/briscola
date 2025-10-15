@@ -27,7 +27,7 @@ void faceAreaWeightedRestrictionScheme<Type,colocated>::restrict
     const labelVector R(coarse.mshPart().R());
     const label l = fine.levelNum();
 
-    const FastPtrList<colocatedScalarField>& faf =
+    const colocatedScalarFaceField& faf =
         this->fvMsh().template metrics<colocated>().soa().faceAreas();
 
     // Face area weighted average of corresponding fine grid faces

@@ -1,9 +1,13 @@
 #ifndef fvMeshMetrics_H
 #define fvMeshMetrics_H
 
-#include "immersedBoundaryFwd.H"
 #include "labelList.H"
 #include "FastPtrList.H"
+
+#include "colocatedFieldsFwd.H"
+#include "staggeredFieldsFwd.H"
+#include "faceFieldsFwd.H"
+#include "immersedBoundaryFwd.H"
 
 namespace Foam
 {
@@ -91,25 +95,25 @@ public:
         const fvMeshMetrics<MeshType>& metrics_;
 
         // Face center fields
-        FastPtrList<meshField<vector,MeshType>> faceCenters_;
+        faceField<vector,MeshType> faceCenters_;
 
         // Face outward normal fields
-        FastPtrList<meshField<vector,MeshType>> faceNormals_;
+        faceField<vector,MeshType> faceNormals_;
 
         // Face area fields
-        FastPtrList<meshField<scalar,MeshType>> faceAreas_;
+        faceField<scalar,MeshType> faceAreas_;
 
         // Face outward normal with magnitude face area fields
-        FastPtrList<meshField<vector,MeshType>> faceAreaNormals_;
+        faceField<vector,MeshType> faceAreaNormals_;
 
         // Face delta coefficients
-        FastPtrList<meshField<scalar,MeshType>> faceDeltas_;
+        faceField<scalar,MeshType> faceDeltas_;
 
         // Face interpolation weights for the cell center
-        FastPtrList<meshField<scalar,MeshType>> faceWeightsCenter_;
+        faceField<scalar,MeshType> faceWeightsCenter_;
 
         // Face interpolation weights for the neighbor
-        FastPtrList<meshField<scalar,MeshType>> faceWeightsNeighbor_;
+        faceField<scalar,MeshType> faceWeightsNeighbor_;
 
     public:
 
@@ -117,50 +121,43 @@ public:
         SoA(const fvMeshMetrics<MeshType>&);
 
         // Const access to face centers
-        inline const FastPtrList<meshField<vector,MeshType>>&
-        faceCenters() const
+        inline const faceField<vector,MeshType>& faceCenters() const
         {
             return faceCenters_;
         }
 
         // Const access to face outward normals
-        inline const FastPtrList<meshField<vector,MeshType>>&
-        faceNormals() const
+        inline const faceField<vector,MeshType>& faceNormals() const
         {
             return faceNormals_;
         }
 
         // Const access to face areas
-        inline const FastPtrList<meshField<scalar,MeshType>>&
-        faceAreas() const
+        inline const faceField<scalar,MeshType>& faceAreas() const
         {
             return faceAreas_;
         }
 
         // Const access to face outward normal with area magnitude
-        inline const FastPtrList<meshField<vector,MeshType>>&
-        faceAreaNormals() const
+        inline const faceField<vector,MeshType>& faceAreaNormals() const
         {
             return faceAreaNormals_;
         }
 
         // Const access to face deltas
-        inline const FastPtrList<meshField<scalar,MeshType>>&
-        faceDeltas() const
+        inline const faceField<scalar,MeshType>& faceDeltas() const
         {
             return faceDeltas_;
         }
 
         // Const access to face weights for the cell center
-        inline const FastPtrList<meshField<scalar,MeshType>>&
-        faceWeightsCenter() const
+        inline const faceField<scalar,MeshType>& faceWeightsCenter() const
         {
             return faceWeightsCenter_;
         }
 
         // Const access to face weights for the neighbor
-        inline const FastPtrList<meshField<scalar,MeshType>>&
-        faceWeightsNeighbor() const
+        inline const faceField<scalar,MeshType>& faceWeightsNeighbor() const
         {
             return faceWeightsNeighbor_;
         }

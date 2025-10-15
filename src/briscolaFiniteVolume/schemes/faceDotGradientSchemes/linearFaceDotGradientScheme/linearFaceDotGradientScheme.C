@@ -49,13 +49,13 @@ void linearFaceDotGradientScheme<Type,colocated>::cache
         staggeredVectorLevel& delta1 = tDelta1.ref()[0];
         staggeredVectorLevel& delta2 = tDelta2.ref()[0];
 
-        const FastPtrList<colocatedVectorField>& fn =
+        const colocatedVectorFaceField& fn =
             fvMsh.template metrics<colocated>().soa().faceNormals();
 
-        const FastPtrList<colocatedScalarField>& delta =
+        const colocatedScalarFaceField& delta =
             fvMsh.template metrics<colocated>().soa().faceDeltas();
 
-        const FastPtrList<colocatedVectorField>& fc =
+        const colocatedVectorFaceField& fc =
             fvMsh.template metrics<colocated>().soa().faceCenters();
 
         // Normal direction coefficient. The minus sign is because the face
@@ -129,7 +129,7 @@ linearFaceDotGradientScheme<Type,colocated>::faceDotGrad
     const staggeredVectorLevel& delta2 =
         fvMsh.db().lookupObject<staggeredVectorField>("faceDotGradDelta2")[0];
 
-    const FastPtrList<colocatedVectorField>& fan =
+    const colocatedVectorFaceField& fan =
         fvMsh.template metrics<colocated>().soa().faceAreaNormals();
 
     // Compute face-dot gradient
@@ -193,10 +193,10 @@ linearFaceDotGradientScheme<Type,staggered>::faceDotGrad
 
     meshLevel<FaceSpace<Type>,staggered>& grad = tGrad.ref()[0];
 
-    const FastPtrList<staggeredScalarField>& delta =
+    const staggeredScalarFaceField& delta =
         fvMsh.template metrics<staggered>().soa().faceDeltas();
 
-    const FastPtrList<staggeredScalarField>& fa =
+    const staggeredScalarFaceField& fa =
         fvMsh.template metrics<staggered>().soa().faceAreas();
 
     forAllFaces(grad, d, fd, i, j, k)

@@ -2,9 +2,15 @@
 #define laplacianScheme_H
 
 #include "scheme.H"
+
 #include "linearSystem.H"
 #include "stencil.H"
 #include "ops.H"
+
+#include "faceFields.H"
+#include "meshFields.H"
+#include "meshLevels.H"
+#include "meshDirections.H"
 
 namespace Foam
 {

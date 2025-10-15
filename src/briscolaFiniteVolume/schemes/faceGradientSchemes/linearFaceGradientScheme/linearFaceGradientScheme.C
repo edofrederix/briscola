@@ -35,7 +35,7 @@ linearFaceGradientScheme<Type,MeshType>::faceGrad
 
     meshField<FaceSpace<Type>,MeshType>& Grad = tGrad.ref();
 
-    const FastPtrList<meshField<scalar,MeshType>>& delta =
+    const faceField<scalar,MeshType>& delta =
         field.fvMsh().template metrics<MeshType>().soa().faceDeltas();
 
     // The face gradient is defined along the outward normal, for consistency

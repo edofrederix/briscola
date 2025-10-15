@@ -38,7 +38,7 @@ tmp
 
     returnType& Flux = tFlux.ref();
 
-    const FastPtrList<colocatedVectorField>& fan =
+    const colocatedVectorFaceField& fan =
         this->fvMsh().metrics<colocated>().soa().faceAreaNormals();
 
     forAllFaces(Flux, fd, i, j, k)
@@ -92,7 +92,7 @@ tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
 
     staggeredFaceScalarField& Flux = tFlux.ref();
 
-    const FastPtrList<staggeredScalarField>& fa =
+    const staggeredScalarFaceField& fa =
         this->fvMsh().metrics<staggered>().soa().faceAreas();
 
     forAllFaces(Flux, d, fd, i, j, k)

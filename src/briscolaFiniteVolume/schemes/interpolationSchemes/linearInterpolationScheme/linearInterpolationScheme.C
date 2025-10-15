@@ -35,10 +35,10 @@ linearInterpolationScheme<Type,MeshType>::interp
 
     meshField<FaceSpace<Type>,MeshType>& Interp = tInterp.ref();
 
-    const FastPtrList<meshField<scalar,MeshType>>& fwc =
+    const faceField<scalar,MeshType>& fwc =
         field.fvMsh().template metrics<MeshType>().soa().faceWeightsCenter();
 
-    const FastPtrList<meshField<scalar,MeshType>>& fwn =
+    const faceField<scalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().soa().faceWeightsNeighbor();
 
     forAllFaces(Interp, d, fd, i, j, k)

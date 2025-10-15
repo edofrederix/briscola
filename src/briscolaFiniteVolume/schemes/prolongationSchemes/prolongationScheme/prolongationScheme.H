@@ -2,8 +2,13 @@
 #define prolongationScheme_H
 
 #include "scheme.H"
-#include "meshFields.H"
+
 #include "ops.H"
+
+#include "faceFields.H"
+#include "meshFields.H"
+#include "meshLevels.H"
+#include "meshDirections.H"
 
 namespace Foam
 {

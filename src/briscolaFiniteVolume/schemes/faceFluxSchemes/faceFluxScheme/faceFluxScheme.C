@@ -71,7 +71,7 @@ tmp<colocatedFaceScalarField> coloFaceFlux
 
     colocatedFaceScalarField& phi = tphi.ref();
 
-    const FastPtrList<colocatedScalarField>& fa =
+    const colocatedScalarFaceField& fa =
         field.fvMsh().template metrics<colocated>().soa().faceAreas();
 
     forAllFaces(phi, fd, i, j, k)

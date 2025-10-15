@@ -2,6 +2,7 @@
 
 #include "colocatedFields.H"
 #include "staggeredFields.H"
+#include "faceFields.H"
 
 #include "fvMesh.H"
 #include "immersedBoundary.H"
@@ -606,35 +607,70 @@ fvMeshMetrics<MeshType>::SoA::SoA
 )
 :
     metrics_(metrics),
-    faceCenters_(3),
-    faceNormals_(3),
-    faceAreas_(3),
-    faceAreaNormals_(3),
-    faceDeltas_(3),
-    faceWeightsCenter_(3),
-    faceWeightsNeighbor_(3)
+    faceCenters_
+    (
+        word(MeshType::typeName) + "FaceCenters",
+        metrics.fvMsh(),
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    faceNormals_
+    (
+        word(MeshType::typeName) + "FaceNormals",
+        metrics.fvMsh(),
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    faceAreas_
+    (
+        word(MeshType::typeName) + "FaceAreas",
+        metrics.fvMsh(),
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    faceAreaNormals_
+    (
+        word(MeshType::typeName) + "FaceAreaNormals",
+        metrics.fvMsh(),
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    faceDeltas_
+    (
+        word(MeshType::typeName) + "FaceDeltas",
+        metrics.fvMsh(),
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    faceWeightsCenter_
+    (
+        word(MeshType::typeName) + "FaceWeightsCenter",
+        metrics.fvMsh(),
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    faceWeightsNeighbor_
+    (
+        word(MeshType::typeName) + "FaceWeightsNeighbor",
+        metrics.fvMsh(),
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    )
 {
-    const word faceNames[3] = {"x", "y", "z"};
-
-    typedef meshField<scalar,MeshType> ScalarType;
-    typedef meshField<vector,MeshType> VectorType;
-
-    #define ALLOCATEFIELD(TYPE,NAME)                                           \
-        for (int fd = 0; fd < 3; fd++)                                         \
-            NAME##_.set                                                        \
-            (                                                                  \
-                fd,                                                            \
-                new TYPE                                                       \
-                (                                                              \
-                    metrics.NAME().name() + "_" + faceNames[fd],               \
-                    metrics.fvMsh(),                                           \
-                    IOobject::NO_READ,                                         \
-                    IOobject::NO_WRITE,                                        \
-                    true,                                                      \
-                    true                                                       \
-                )                                                              \
-            );
-
     // Set the cell-centered value as the lower face value. Use the forAllFaces
     // iterator such that the upper ghost cell values receive the upper boundary
     // face values.
@@ -646,17 +682,13 @@ fvMeshMetrics<MeshType>::SoA::SoA
             NAME##_[fd](l,d,i,j,k) = faceField(l,d,i,j,k)[fd*2];               \
     }
 
-    #define SETFIELD(TYPE,NAME)                                                \
-        ALLOCATEFIELD(TYPE,NAME)                                               \
-        CALCFIELD(NAME)                                                        \
-
-    SETFIELD(VectorType,faceCenters)
-    SETFIELD(VectorType,faceNormals)
-    SETFIELD(ScalarType,faceAreas)
-    SETFIELD(VectorType,faceAreaNormals)
-    SETFIELD(ScalarType,faceDeltas)
-    SETFIELD(ScalarType,faceWeightsCenter)
-    SETFIELD(ScalarType,faceWeightsNeighbor)
+    CALCFIELD(faceCenters)
+    CALCFIELD(faceNormals)
+    CALCFIELD(faceAreas)
+    CALCFIELD(faceAreaNormals)
+    CALCFIELD(faceDeltas)
+    CALCFIELD(faceWeightsCenter)
+    CALCFIELD(faceWeightsNeighbor)
 
     // Update parallel/periodic boundary values for face deltas and weights
 
@@ -669,9 +701,7 @@ fvMeshMetrics<MeshType>::SoA::SoA
     forAll(faceWeightsNeighbor_, i)
         faceWeightsNeighbor_[i].correctCommsBoundaryConditions();
 
-    #undef ALLOCATEFIELD
     #undef CALCFIELD
-    #undef SETFIELD
 }
 
 // Instantiate

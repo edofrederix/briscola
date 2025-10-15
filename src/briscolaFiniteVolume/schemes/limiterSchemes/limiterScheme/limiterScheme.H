@@ -2,7 +2,10 @@
 #define limiterScheme_H
 
 #include "scheme.H"
+#include "faceFields.H"
 #include "meshFields.H"
+#include "meshLevels.H"
+#include "meshDirections.H"
 
 namespace Foam
 {

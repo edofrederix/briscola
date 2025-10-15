@@ -38,13 +38,13 @@ tmp
 
     returnType& Flux = tFlux.ref();
 
-    const FastPtrList<colocatedVectorField>& fan =
+    const colocatedVectorFaceField& fan =
         this->fvMsh().metrics<colocated>().soa().faceAreaNormals();
 
-    const FastPtrList<colocatedScalarField>& fwc =
+    const colocatedScalarFaceField& fwc =
         this->fvMsh().metrics<colocated>().soa().faceWeightsCenter();
 
-    const FastPtrList<colocatedScalarField>& fwn =
+    const colocatedScalarFaceField& fwn =
         this->fvMsh().metrics<colocated>().soa().faceWeightsNeighbor();
 
     forAllFaces(Flux, fd, i, j, k)
@@ -106,13 +106,13 @@ tmp<staggeredFaceScalarField> linearFaceFluxScheme::faceFlux
 
     staggeredFaceScalarField& Flux = tFlux.ref();
 
-    const FastPtrList<staggeredScalarField>& fa =
+    const staggeredScalarFaceField& fa =
         this->fvMsh().metrics<staggered>().soa().faceAreas();
 
-    const FastPtrList<staggeredScalarField>& fwc =
+    const staggeredScalarFaceField& fwc =
         this->fvMsh().metrics<staggered>().soa().faceWeightsCenter();
 
-    const FastPtrList<staggeredScalarField>& fwn =
+    const staggeredScalarFaceField& fwn =
         this->fvMsh().metrics<staggered>().soa().faceWeightsNeighbor();
 
     forAllFaces(Flux, d, fd, i, j, k)
