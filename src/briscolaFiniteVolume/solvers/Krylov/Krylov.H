@@ -3,6 +3,7 @@
 
 #include "solver.H"
 #include <petscksp.h>
+#include "FastPtrList.H"
 
 namespace Foam
 {
@@ -25,10 +26,10 @@ protected:
     word solverType_;
 
     // PETSc matrices
-    PtrList<Mat> matrices_;
+    FastPtrList<Mat> matrices_;
 
     // PETSc solvers
-    PtrList<KSP> solvers_;
+    FastPtrList<KSP> solvers_;
 
     // Preparation bool
     bool prepared_;

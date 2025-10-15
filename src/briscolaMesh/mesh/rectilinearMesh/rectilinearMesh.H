@@ -3,6 +3,7 @@
 
 #include "structuredMesh.H"
 #include "PartialList.H"
+#include "FastPtrList.H"
 
 namespace Foam
 {
@@ -20,30 +21,30 @@ class rectilinearMesh
     // Cell sizes and points with ghosts
 
         // Local rectilinear cell sizes
-        PtrList<scalarList> localCellSizesData_;
+        FastPtrList<scalarList> localCellSizesData_;
 
         // Local rectilinear points
-        PtrList<scalarList> localPointsData_;
+        FastPtrList<scalarList> localPointsData_;
 
         // Global rectilinear cell sizes
-        PtrList<scalarList> globalCellSizesData_;
+        FastPtrList<scalarList> globalCellSizesData_;
 
         // Global rectilinear points
-        PtrList<scalarList> globalPointsData_;
+        FastPtrList<scalarList> globalPointsData_;
 
     // Cell sizes and points without ghosts as partial lists
 
         // Local rectilinear cell sizes
-        PtrList<PartialList<scalar>> localCellSizes_;
+        FastPtrList<PartialList<scalar>> localCellSizes_;
 
         // Local rectilinear points
-        PtrList<PartialList<scalar>> localPoints_;
+        FastPtrList<PartialList<scalar>> localPoints_;
 
         // Global rectilinear cell sizes
-        PtrList<PartialList<scalar>> globalCellSizes_;
+        FastPtrList<PartialList<scalar>> globalCellSizes_;
 
         // Global rectilinear points
-        PtrList<PartialList<scalar>> globalPoints_;
+        FastPtrList<PartialList<scalar>> globalPoints_;
 
     // Global cell starts for each processor part
     List<labelVector> globalStarts_;
@@ -84,25 +85,25 @@ public:
     // indexing (at -1 or N) is allowed.
 
     // Local cell sizes
-    inline const PtrList<PartialList<scalar>>& localCellSizes() const
+    inline const FastPtrList<PartialList<scalar>>& localCellSizes() const
     {
         return localCellSizes_;
     }
 
     // Local points
-    inline const PtrList<PartialList<scalar>>& localPoints() const
+    inline const FastPtrList<PartialList<scalar>>& localPoints() const
     {
         return localPoints_;
     }
 
     // Global cell sizes
-    inline const PtrList<PartialList<scalar>>& globalCellSizes() const
+    inline const FastPtrList<PartialList<scalar>>& globalCellSizes() const
     {
         return globalCellSizes_;
     }
 
     // Global points
-    inline const PtrList<PartialList<scalar>>& globalPoints() const
+    inline const FastPtrList<PartialList<scalar>>& globalPoints() const
     {
         return globalPoints_;
     }

@@ -67,7 +67,7 @@ meshField<Type,MeshType>::meshField
     const bool deep
 )
 :
-    PtrList<meshLevel<Type,MeshType>>(),
+    FastPtrList<meshLevel<Type,MeshType>>(),
     IOdictionary
     (
         IOobject
@@ -97,7 +97,7 @@ meshField<Type,MeshType>::meshField
     const bool deep
 )
 :
-    PtrList<meshLevel<Type,MeshType>>(),
+    FastPtrList<meshLevel<Type,MeshType>>(),
     IOdictionary(io),
     cachedRefCount(),
     fvMsh_(fvMsh),
@@ -118,7 +118,7 @@ meshField<Type,MeshType>::meshField
     const bool copyBCs
 )
 :
-    PtrList<meshLevel<Type,MeshType>>(field),
+    FastPtrList<meshLevel<Type,MeshType>>(field),
     IOdictionary
     (
         IOobject
@@ -160,7 +160,7 @@ meshField<Type,MeshType>::meshField
     const bool copyBCs
 )
 :
-    PtrList<meshLevel<Type,MeshType>>(field),
+    FastPtrList<meshLevel<Type,MeshType>>(field),
     IOdictionary
     (
         IOobject
@@ -183,7 +183,7 @@ meshField<Type,MeshType>::meshField
 
     if (copyBCs)
     {
-        PtrList<boundaryCondition<Type,MeshType>> list
+        FastPtrList<boundaryCondition<Type,MeshType>> list
         (
             field.boundaryConditions(),
             *this
@@ -201,7 +201,7 @@ meshField<Type,MeshType>::meshField
     const bool copyBCs
 )
 :
-    PtrList<meshLevel<Type,MeshType>>
+    FastPtrList<meshLevel<Type,MeshType>>
     (
         const_cast<meshField<Type,MeshType>&>(tField()),
         tField.isTmp() && tField->unique()
@@ -250,7 +250,7 @@ meshField<Type,MeshType>::meshField
     const bool copyBCs
 )
 :
-    PtrList<meshLevel<Type,MeshType>>
+    FastPtrList<meshLevel<Type,MeshType>>
     (
         const_cast<meshField<Type,MeshType>&>(tField()),
         tField.isTmp() && tField->unique()

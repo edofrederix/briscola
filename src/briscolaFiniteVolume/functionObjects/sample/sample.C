@@ -75,7 +75,7 @@ void sample::init()
 void sample::appendData
 (
     const word fieldName,
-    PtrList<scalarList>& data,
+    FastPtrList<scalarList>& data,
     wordList& headers
 )
 {
@@ -196,7 +196,7 @@ bool sample::execute()
 
 bool sample::write()
 {
-    PtrList<scalarList> data;
+    FastPtrList<scalarList> data;
     wordList headers;
 
     forAll(fields_, i)

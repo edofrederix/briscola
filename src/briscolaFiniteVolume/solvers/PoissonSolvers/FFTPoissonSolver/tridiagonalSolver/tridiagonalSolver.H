@@ -50,7 +50,7 @@ class tridiagonalSolver
     scalarList lambda2_;
 
     // Cell size arrays for each direction
-    const PtrList<PartialList<scalar>>& cellSizes_;
+    const FastPtrList<PartialList<scalar>>& cellSizes_;
 
     // Diagonals
     scalarBlock D_;

@@ -9,6 +9,7 @@
 #include "staggeredFields.H"
 #include "dictionary.H"
 #include "RungeKuttaScheme.H"
+#include "FastPtrList.H"
 
 namespace Foam
 {
@@ -41,7 +42,7 @@ protected:
 
     // Runge-Kutta stage solution cache which can be used by derived types as
     // initial guess to improve convergence
-    PtrList<meshField<Type,MeshType>> stages_;
+    FastPtrList<meshField<Type,MeshType>> stages_;
 
     // Function to initialize the flux field
     virtual void initFlux();
@@ -97,13 +98,13 @@ public:
     }
 
     // Access to the Runge-Kutta stage cache
-    inline PtrList<meshField<Type,MeshType>>& stages()
+    inline FastPtrList<meshField<Type,MeshType>>& stages()
     {
         return stages_;
     }
 
     // Return the Runge-Kutta stage cache
-    inline const PtrList<meshField<Type,MeshType>>& stages() const
+    inline const FastPtrList<meshField<Type,MeshType>>& stages() const
     {
         return stages_;
     }

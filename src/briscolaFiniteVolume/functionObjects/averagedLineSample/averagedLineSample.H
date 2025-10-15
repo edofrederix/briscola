@@ -4,6 +4,7 @@
 #include "sample.H"
 #include "List.H"
 #include "rectilinearMesh.H"
+#include "FastPtrList.H"
 
 namespace Foam
 {
@@ -39,7 +40,7 @@ protected:
     labelVector averagingDirections_;
 
     // Spatially averaged data
-    PtrList<scalarList> averagedData_;
+    FastPtrList<scalarList> averagedData_;
 
 public:
 

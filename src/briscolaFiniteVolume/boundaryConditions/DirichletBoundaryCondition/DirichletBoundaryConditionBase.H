@@ -2,6 +2,7 @@
 #define DirichletBoundaryConditionBase_H
 
 #include "boundaryCondition.H"
+#include "FastPtrList.H"
 
 namespace Foam
 {
@@ -20,7 +21,7 @@ class DirichletBoundaryConditionBase
 protected:
 
     // Flattened list of boundary values for each level and direction
-    PtrList<block<Type>> boundaryValues_;
+    FastPtrList<block<Type>> boundaryValues_;
 
     // Function to initialize boundary values from a list of uniform values for
     // each direction
@@ -48,7 +49,7 @@ public:
     (
         const meshField<Type,MeshType>&,
         const boundary&,
-        const PtrList<block<Type>>&
+        const FastPtrList<block<Type>>&
     );
 
     // Copy constructor
@@ -65,13 +66,13 @@ public:
     );
 
     // Access to the boundary values
-    PtrList<block<Type>>& boundaryValues()
+    FastPtrList<block<Type>>& boundaryValues()
     {
         return boundaryValues_;
     }
 
     // Const access to the boundary values
-    const PtrList<block<Type>>& boundaryValues() const
+    const FastPtrList<block<Type>>& boundaryValues() const
     {
         return boundaryValues_;
     }

@@ -61,12 +61,12 @@ autoPtr<RungeKuttaScheme> RungeKuttaScheme::New(const fvMesh& fvMsh)
 }
 
 template<class Type, class MeshType>
-PtrList<meshField<Type,MeshType>> RungeKuttaScheme::stageList
+FastPtrList<meshField<Type,MeshType>> RungeKuttaScheme::stageList
 (
     const word name
 ) const
 {
-    PtrList<meshField<Type,MeshType>> list(numberOfStages());
+    FastPtrList<meshField<Type,MeshType>> list(numberOfStages());
 
     forAll(list, stage)
     {
@@ -93,7 +93,7 @@ PtrList<meshField<Type,MeshType>> RungeKuttaScheme::stageList
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumA
 (
-    const PtrList<meshField<Type,MeshType>>& list
+    const FastPtrList<meshField<Type,MeshType>>& list
 ) const
 {
     tmp<meshField<Type,MeshType>> tF(a()[stage_-1][0]*list[0]);
@@ -109,7 +109,7 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumA
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumB
 (
-    const PtrList<meshField<Type,MeshType>>& list
+    const FastPtrList<meshField<Type,MeshType>>& list
 ) const
 {
     tmp<meshField<Type,MeshType>> tF(b()[stage_-1][0]*list[0]);
@@ -125,8 +125,8 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumB
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSum
 (
-    const PtrList<meshField<Type,MeshType>>& listA,
-    const PtrList<meshField<Type,MeshType>>& listB
+    const FastPtrList<meshField<Type,MeshType>>& listA,
+    const FastPtrList<meshField<Type,MeshType>>& listB
 ) const
 {
     return stageSumA(listA) + stageSumB(listB);
@@ -136,20 +136,22 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSum
 
 #define INSTANTIATE(TYPE,MESHTYPE)                                             \
                                                                                \
-template PtrList<meshField<TYPE,MESHTYPE>>                                     \
+template FastPtrList<meshField<TYPE,MESHTYPE>>                                 \
 RungeKuttaScheme::stageList(const word) const;                                 \
                                                                                \
 template tmp<meshField<TYPE,MESHTYPE>>                                         \
-RungeKuttaScheme::stageSumA(const PtrList<meshField<TYPE,MESHTYPE>>&) const;   \
+RungeKuttaScheme::stageSumA                                                    \
+(const FastPtrList<meshField<TYPE,MESHTYPE>>&) const;                          \
                                                                                \
 template tmp<meshField<TYPE,MESHTYPE>>                                         \
-RungeKuttaScheme::stageSumB(const PtrList<meshField<TYPE,MESHTYPE>>&) const;   \
+RungeKuttaScheme::stageSumB                                                    \
+(const FastPtrList<meshField<TYPE,MESHTYPE>>&) const;                          \
                                                                                \
 template tmp<meshField<TYPE,MESHTYPE>>                                         \
 RungeKuttaScheme::stageSum                                                     \
 (                                                                              \
-    const PtrList<meshField<TYPE,MESHTYPE>>&,                                  \
-    const PtrList<meshField<TYPE,MESHTYPE>>&                                   \
+    const FastPtrList<meshField<TYPE,MESHTYPE>>&,                              \
+    const FastPtrList<meshField<TYPE,MESHTYPE>>&                               \
 ) const;
 
 INSTANTIATE(scalar,colocated)

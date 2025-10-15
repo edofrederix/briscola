@@ -16,7 +16,7 @@ bool check
     const scalar deltaT
 )
 {
-    const PtrList<PartialList<scalar>>& cellSizes
+    const FastPtrList<PartialList<scalar>>& cellSizes
         = fvMsh.msh().cast<rectilinearMesh>().globalCellSizes();
 
     labelVector Si =

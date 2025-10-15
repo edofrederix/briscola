@@ -1,7 +1,7 @@
 #ifndef meshLevel_H
 #define meshLevel_H
 
-#include "PtrList.H"
+#include "FastPtrList.H"
 #include "List.H"
 
 #include "block.H"
@@ -28,7 +28,7 @@ class meshField;
 template<class Type, class MeshType>
 class meshLevel
 :
-    public PtrList<meshDirection<Type,MeshType>>,
+    public FastPtrList<meshDirection<Type,MeshType>>,
     public refCount
 {
 public:
@@ -65,7 +65,7 @@ public:
     typedef typename pTraits<Type>::cmptType cmptType;
 
     // List type
-    typedef PtrList<meshDirection<Type,MeshType>> listType;
+    typedef FastPtrList<meshDirection<Type,MeshType>> listType;
 
     // Main constructor: construct from owner field, mesh and level number
 
@@ -186,59 +186,38 @@ public:
     // perform any bounds checking which is expensive.
     inline meshDirection<Type,MeshType>& operator[](label d)
     {
-        #ifdef FULLDEBUG
-
-        if (d < 0 || d >= listType::size())
-            FatalErrorInFunction
-                << "Index " << d << " out of range 0 ... " << listType::size()-1
-                << endl << abort(FatalError);
-
-        #endif
-
-        return *const_cast<meshDirection<Type,MeshType>*>
-        (
-            listType::operator()(d)
-        );
+        return listType::operator[](d);
     }
 
     // Const access to the directions. Use the operator() for this because it
     // doesn't perform any bounds checking which is expensive.
     inline const meshDirection<Type,MeshType>& operator[](label d) const
     {
-        #ifdef FULLDEBUG
-
-        if (d < 0 || d >= listType::size())
-            FatalErrorInFunction
-                << "Index " << d << " out of range 0 ... " << listType::size()-1
-                << endl << abort(FatalError);
-
-        #endif
-
-        return *listType::operator()(d);
+        return listType::operator[](d);
     }
 
     // Alias access function
     inline meshDirection<Type,MeshType>& direction(const label d)
     {
-        return this->operator[](d);
+        return listType::operator[](d);
     }
 
     // Alias const access function
     inline const meshDirection<Type,MeshType>& direction(const label d) const
     {
-        return this->operator[](d);
+        return listType::operator[](d);
     }
 
     // Access the first direction
     inline meshDirection<Type,MeshType>& direction()
     {
-        return this->operator[](0);
+        return listType::operator[](0);
     }
 
     // Const access the first direction
     inline const meshDirection<Type,MeshType>& direction() const
     {
-        return this->operator[](0);
+        return listType::operator[](0);
     }
 
     // Number of directions

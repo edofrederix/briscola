@@ -145,7 +145,7 @@ void FFTPoissonSolver<SType>::solve
         {
             const labelVector bo = bcs[bci].offset();
 
-            const PtrList<PartialList<scalar>>& cellSizes =
+            const FastPtrList<PartialList<scalar>>& cellSizes =
                 fvMsh_.msh().cast<rectilinearMesh>().globalCellSizes();
 
             const labelVector S(fvMsh_.template S<colocated>(bo));

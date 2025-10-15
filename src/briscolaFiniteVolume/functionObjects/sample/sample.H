@@ -4,6 +4,7 @@
 #include "briscolaFunctionObject.H"
 #include "pointInterpolator.H"
 #include "fvMesh.H"
+#include "FastPtrList.H"
 
 namespace Foam
 {
@@ -36,7 +37,7 @@ protected:
     bool timeAverage_;
 
     // Time averaged data
-    PtrList<scalarList> timeAveragedData_;
+    FastPtrList<scalarList> timeAveragedData_;
 
     // Sampling start time
     scalar startTime_;
@@ -48,7 +49,7 @@ protected:
     void init();
 
     // Append to data array
-    void appendData(const word, PtrList<scalarList>&, wordList&);
+    void appendData(const word, FastPtrList<scalarList>&, wordList&);
 
     // Templated append function
 
@@ -56,7 +57,7 @@ protected:
     void appendData
     (
         const meshField<Type,colocated>&,
-        PtrList<scalarList>&,
+        FastPtrList<scalarList>&,
         wordList&
     );
 
@@ -64,7 +65,7 @@ protected:
     void appendScalarData
     (
         const meshField<Type,colocated>&,
-        PtrList<scalarList>&,
+        FastPtrList<scalarList>&,
         wordList&
     );
 
@@ -72,7 +73,7 @@ protected:
     void appendArrayData
     (
         const meshField<Type,colocated>&,
-        PtrList<scalarList>&,
+        FastPtrList<scalarList>&,
         wordList&
     );
 
@@ -80,7 +81,7 @@ protected:
     void appendArrayArrayData
     (
         const meshField<Type,colocated>&,
-        PtrList<scalarList>&,
+        FastPtrList<scalarList>&,
         wordList&
     );
 

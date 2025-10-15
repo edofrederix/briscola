@@ -3,6 +3,7 @@
 
 #include "meshField.H"
 #include "parallelBoundaryCondition.H"
+#include "FastPtrList.H"
 
 namespace Foam
 {
@@ -30,8 +31,8 @@ class boundaryExchange
     List<const parallelBoundaryCondition<Type,MeshType>*> boundaryPtrs_;
 
     // Buffers
-    PtrList<List<Type>> sendBuffers_;
-    PtrList<List<Type>> recvBuffers_;
+    FastPtrList<List<Type>> sendBuffers_;
+    FastPtrList<List<Type>> recvBuffers_;
 
     // MPI data type object
     autoPtr<pMPI<Type>> mpiDataTypePtr_;

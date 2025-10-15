@@ -2,6 +2,7 @@
 #define NeumannBoundaryConditionBase_H
 
 #include "boundaryCondition.H"
+#include "FastPtrList.H"
 
 namespace Foam
 {
@@ -20,7 +21,7 @@ class NeumannBoundaryConditionBase
 protected:
 
     // Flattened list of boundary gradients for each level and direction
-    PtrList<block<Type>> boundaryGradients_;
+    FastPtrList<block<Type>> boundaryGradients_;
 
     // Function to initialize boundary gradients from a list of uniform
     // gradients for each direction
@@ -48,7 +49,7 @@ public:
     (
         const meshField<Type,MeshType>&,
         const boundary&,
-        const PtrList<block<Type>>&
+        const FastPtrList<block<Type>>&
     );
 
     // Copy constructor
@@ -65,13 +66,13 @@ public:
     );
 
     // Access to the boundary gradients
-    PtrList<block<Type>>& boundaryGradients()
+    FastPtrList<block<Type>>& boundaryGradients()
     {
         return boundaryGradients_;
     }
 
     // Const access to the boundary gradients
-    const PtrList<block<Type>>& boundaryGradients() const
+    const FastPtrList<block<Type>>& boundaryGradients() const
     {
         return boundaryGradients_;
     }

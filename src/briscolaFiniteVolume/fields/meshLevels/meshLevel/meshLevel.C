@@ -64,7 +64,7 @@ meshLevel<Type,MeshType>::meshLevel
     const label l
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(),
+    FastPtrList<meshDirection<Type,MeshType>>(),
     refCount(),
     fvMsh_(mshField.fvMsh()),
     l_(l),
@@ -81,7 +81,7 @@ meshLevel<Type,MeshType>::meshLevel
     const meshLevel<Type,MeshType>& L
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(L),
+    FastPtrList<meshDirection<Type,MeshType>>(L),
     refCount(),
     fvMsh_(L.fvMsh_),
     l_(L.levelNum()),
@@ -97,7 +97,7 @@ meshLevel<Type,MeshType>::meshLevel
     const zero&
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(L, Zero),
+    FastPtrList<meshDirection<Type,MeshType>>(L, Zero),
     refCount(),
     fvMsh_(L.fvMsh_),
     l_(L.levelNum()),
@@ -113,7 +113,7 @@ meshLevel<Type,MeshType>::meshLevel
     const Type& v
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(L, v),
+    FastPtrList<meshDirection<Type,MeshType>>(L, v),
     refCount(),
     fvMsh_(L.fvMsh_),
     l_(L.levelNum()),
@@ -129,7 +129,7 @@ meshLevel<Type,MeshType>::meshLevel
     const List<Type>& v
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(L, v),
+    FastPtrList<meshDirection<Type,MeshType>>(L, v),
     refCount(),
     fvMsh_(L.fvMsh_),
     l_(L.levelNum()),
@@ -144,7 +144,7 @@ meshLevel<Type,MeshType>::meshLevel
     const tmp<meshLevel<Type,MeshType>>& tL
 )
 :
-    PtrList<meshDirection<Type,MeshType>>
+    FastPtrList<meshDirection<Type,MeshType>>
     (
         const_cast<meshLevel<Type,MeshType>&>(tL()),
         tL.isTmp()
@@ -166,7 +166,7 @@ meshLevel<Type,MeshType>::meshLevel
     const zero&
 )
 :
-    PtrList<meshDirection<Type,MeshType>>
+    FastPtrList<meshDirection<Type,MeshType>>
     (
         const_cast<meshLevel<Type,MeshType>&>(tL()),
         tL.isTmp()
@@ -189,7 +189,7 @@ meshLevel<Type,MeshType>::meshLevel
     const Type& v
 )
 :
-    PtrList<meshDirection<Type,MeshType>>
+    FastPtrList<meshDirection<Type,MeshType>>
     (
         const_cast<meshLevel<Type,MeshType>&>(tL()),
         tL.isTmp()
@@ -212,7 +212,7 @@ meshLevel<Type,MeshType>::meshLevel
     const List<Type>& v
 )
 :
-    PtrList<meshDirection<Type,MeshType>>
+    FastPtrList<meshDirection<Type,MeshType>>
     (
         const_cast<meshLevel<Type,MeshType>&>(tL()),
         tL.isTmp()
@@ -237,7 +237,7 @@ meshLevel<Type,MeshType>::meshLevel
     const label l
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(),
+    FastPtrList<meshDirection<Type,MeshType>>(),
     refCount(),
     fvMsh_(fvMsh),
     l_(l),
@@ -254,7 +254,7 @@ meshLevel<Type,MeshType>::meshLevel
     const zero&
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(),
+    FastPtrList<meshDirection<Type,MeshType>>(),
     refCount(),
     fvMsh_(fvMsh),
     l_(l),
@@ -272,7 +272,7 @@ meshLevel<Type,MeshType>::meshLevel
     const Type& v
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(),
+    FastPtrList<meshDirection<Type,MeshType>>(),
     refCount(),
     fvMsh_(fvMsh),
     l_(l),
@@ -290,7 +290,7 @@ meshLevel<Type,MeshType>::meshLevel
     const List<Type>& v
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(),
+    FastPtrList<meshDirection<Type,MeshType>>(),
     refCount(),
     fvMsh_(fvMsh),
     l_(l),

@@ -1,7 +1,6 @@
 #ifndef meshDirection_H
 #define meshDirection_H
 
-#include "PtrList.H"
 #include "List.H"
 
 #include "block.H"

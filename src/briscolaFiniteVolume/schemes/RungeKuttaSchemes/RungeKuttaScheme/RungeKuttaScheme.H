@@ -4,6 +4,7 @@
 #include "fvMesh.H"
 #include "meshField.H"
 #include "NamedEnum.H"
+#include "FastPtrList.H"
 
 // Based on the work of Edo Frederix and Jannes Hopman as implemented in
 // RKSymFoam, see https://github.com/janneshopman/RKSymFoam
@@ -71,11 +72,11 @@ public:
         // Generate and return a list of fields to store the intermediate stage
         // sources or solutions, with given field name
         template<class Type, class MeshType>
-        PtrList<meshField<Type,MeshType>> stageList(const word name) const;
+        FastPtrList<meshField<Type,MeshType>> stageList(const word name) const;
 
         // Helper function for field types
         template<class FieldType>
-        inline PtrList<FieldType> stageList(const word name) const
+        inline FastPtrList<FieldType> stageList(const word name) const
         {
             return
                 stageList
@@ -177,7 +178,7 @@ public:
             template<class Type, class MeshType>
             tmp<meshField<Type,MeshType>> stageSumA
             (
-                const PtrList<meshField<Type,MeshType>>& list
+                const FastPtrList<meshField<Type,MeshType>>& list
             ) const;
 
             // Sum the given list of fields for the current stage, weighted by
@@ -185,7 +186,7 @@ public:
             template<class Type, class MeshType>
             tmp<meshField<Type,MeshType>> stageSumB
             (
-                const PtrList<meshField<Type,MeshType>>& list
+                const FastPtrList<meshField<Type,MeshType>>& list
             ) const;
 
             // Sum the two given lists of fields for the current stage, weighted
@@ -193,8 +194,8 @@ public:
             template<class Type, class MeshType>
             tmp<meshField<Type,MeshType>> stageSum
             (
-                const PtrList<meshField<Type,MeshType>>& listA,
-                const PtrList<meshField<Type,MeshType>>& listB
+                const FastPtrList<meshField<Type,MeshType>>& listA,
+                const FastPtrList<meshField<Type,MeshType>>& listB
             ) const;
 
         // IO

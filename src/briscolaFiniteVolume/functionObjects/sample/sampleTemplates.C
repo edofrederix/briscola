@@ -16,7 +16,7 @@ template<class Type>
 void sample::appendScalarData
 (
     const meshField<Type,colocated>& field,
-    PtrList<scalarList>& data,
+    FastPtrList<scalarList>& data,
     wordList& headers
 )
 {
@@ -30,7 +30,7 @@ template<class Type>
 void sample::appendArrayData
 (
     const meshField<Type,colocated>& field,
-    PtrList<scalarList>& data,
+    FastPtrList<scalarList>& data,
     wordList& headers
 )
 {
@@ -59,7 +59,7 @@ template<class Type>
 void sample::appendArrayArrayData
 (
     const meshField<Type,colocated>& field,
-    PtrList<scalarList>& data,
+    FastPtrList<scalarList>& data,
     wordList& headers
 )
 {
@@ -99,7 +99,7 @@ template<>                                                                  \
 void sample::appendData                                                     \
 (                                                                           \
     const meshField<TYPE,colocated>& field,                                 \
-    PtrList<scalarList>& data,                                              \
+    FastPtrList<scalarList>& data,                                          \
     wordList& headers                                                       \
 )                                                                           \
 {                                                                           \
@@ -109,7 +109,7 @@ void sample::appendData                                                     \
 template void sample::FUNC                                                  \
 (                                                                           \
     const meshField<TYPE,colocated>& field,                                 \
-    PtrList<scalarList>& data,                                              \
+    FastPtrList<scalarList>& data,                                          \
     wordList& headers                                                       \
 );
 

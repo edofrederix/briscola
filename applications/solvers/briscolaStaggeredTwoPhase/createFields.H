@@ -118,12 +118,12 @@ Poisson->enableFlux();
 
 // Runge-Kutta stage sources
 
-PtrList<staggeredScalarField> stageSourcesA
+FastPtrList<staggeredScalarField> stageSourcesA
 (
     rk.stageList<staggeredScalarField>("A")
 );
 
-PtrList<staggeredScalarField> stageSourcesB
+FastPtrList<staggeredScalarField> stageSourcesB
 (
     rk.stageList<staggeredScalarField>("B")
 );

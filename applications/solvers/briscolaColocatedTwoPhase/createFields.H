@@ -94,12 +94,12 @@ Poisson->enableFlux();
 
 // Runge-Kutta stage sources
 
-PtrList<colocatedVectorField> stageSourcesA
+FastPtrList<colocatedVectorField> stageSourcesA
 (
     rk.stageList<colocatedVectorField>("A")
 );
 
-PtrList<colocatedVectorField> stageSourcesB
+FastPtrList<colocatedVectorField> stageSourcesB
 (
     rk.stageList<colocatedVectorField>("B")
 );

@@ -58,7 +58,7 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 (
     const meshField<Type,MeshType>& mshField,
     const boundary& b,
-    const PtrList<block<Type>>& boundaryGradients
+    const FastPtrList<block<Type>>& boundaryGradients
 )
 :
     boundaryCondition<Type,MeshType>(mshField, b),

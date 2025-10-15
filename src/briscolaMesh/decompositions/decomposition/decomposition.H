@@ -2,6 +2,7 @@
 #define decomposition_H
 
 #include "List.H"
+#include "FastPtrList.H"
 #include "labelVector.H"
 #include "block.H"
 #include "brickDecompositionInterface.H"
@@ -41,7 +42,7 @@ private:
     List<labelVector> partSizePerProc_;
 
     // List of processor topologies per brick
-    PtrList<labelBlock> procMapPerBrick_;
+    FastPtrList<labelBlock> procMapPerBrick_;
 
     // Global processor part start index
     List<labelVector> partSizePerBrick_;
@@ -155,7 +156,7 @@ public:
     }
 
     // Global processor topology per brick
-    inline const PtrList<labelBlock>& procMapPerBrick() const
+    inline const FastPtrList<labelBlock>& procMapPerBrick() const
     {
         return procMapPerBrick_;
     }

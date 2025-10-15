@@ -23,8 +23,8 @@ class EigenLinearSystem
     const linearSystem<SType,Type,MeshType>& sys_;
 
     // Row and column-major Eigen matrices
-    PtrList<EigenSolverBase::RowMajorMatrixType> rowMajorMatrices_;
-    PtrList<EigenSolverBase::ColMajorMatrixType> colMajorMatrices_;
+    FastPtrList<EigenSolverBase::RowMajorMatrixType> rowMajorMatrices_;
+    FastPtrList<EigenSolverBase::ColMajorMatrixType> colMajorMatrices_;
 
     // Level number
     const label l_;

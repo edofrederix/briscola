@@ -179,8 +179,8 @@ void partPoints::calcGhostPoints()
 
     const label Np = boundaryPtrs.size();
 
-    PtrList<vectorBlock> sendBuffers(Np);
-    PtrList<vectorBlock> recvBuffers(Np);
+    FastPtrList<vectorBlock> sendBuffers(Np);
+    FastPtrList<vectorBlock> recvBuffers(Np);
 
     forAll(boundaryPtrs, bi)
     {

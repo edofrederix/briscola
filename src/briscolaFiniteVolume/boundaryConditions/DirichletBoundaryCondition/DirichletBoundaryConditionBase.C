@@ -54,7 +54,7 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 (
     const meshField<Type,MeshType>& mshField,
     const boundary& b,
-    const PtrList<block<Type>>& boundaryValues
+    const FastPtrList<block<Type>>& boundaryValues
 )
 :
     boundaryCondition<Type,MeshType>(mshField, b),

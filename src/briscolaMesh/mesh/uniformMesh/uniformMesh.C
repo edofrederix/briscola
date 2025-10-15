@@ -61,7 +61,7 @@ labelVector uniformMesh::findCell(const vector& p, const label l) const
         )
     );
 
-    const PtrList<PartialList<scalar>>& x = localPoints();
+    const FastPtrList<PartialList<scalar>>& x = localPoints();
 
     // Check if the point is outside the domain boundaries
 

@@ -30,10 +30,10 @@ protected:
     label tag_;
 
     // Send buffers for each mesh direction
-    PtrList<block<Type>> sendBuffers_;
+    FastPtrList<block<Type>> sendBuffers_;
 
     // Receive buffers for each mesh direction
-    PtrList<block<Type>> recvBuffers_;
+    FastPtrList<block<Type>> recvBuffers_;
 
     // Outstanding send requests
     label outstandingSendRequest_;

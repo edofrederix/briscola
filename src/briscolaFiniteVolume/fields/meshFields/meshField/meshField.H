@@ -4,7 +4,7 @@
 #include "block.H"
 #include "IOdictionary.H"
 #include "autoPtr.H"
-#include "PtrList.H"
+#include "FastPtrList.H"
 
 #include "meshLevel.H"
 #include "boundaryCondition.H"
@@ -34,7 +34,7 @@ class boundaryExchange;
 template<class Type, class MeshType>
 class meshField
 :
-    public PtrList<meshLevel<Type,MeshType>>,
+    public FastPtrList<meshLevel<Type,MeshType>>,
     public IOdictionary,
     public cachedRefCount
 {
@@ -91,7 +91,7 @@ public:
     typedef typename pTraits<Type>::cmptType cmptType;
 
     // List type
-    typedef PtrList<meshLevel<Type,MeshType>> listType;
+    typedef FastPtrList<meshLevel<Type,MeshType>> listType;
 
     // Main constructor: construct from name and mesh with optional read and
     // write options, object registration and depth
@@ -175,83 +175,62 @@ public:
     // perform any bounds checking which is expensive.
     inline meshLevel<Type,MeshType>& operator[](label l)
     {
-        #ifdef FULLDEBUG
-
-        if (l < 0 || l >= listType::size())
-            FatalErrorInFunction
-                << "Index " << l << " out of range 0 ... " << listType::size()-1
-                << endl << abort(FatalError);
-
-        #endif
-
-        return *const_cast<meshLevel<Type,MeshType>*>
-        (
-            listType::operator()(l)
-        );
+        return listType::operator[](l);
     }
 
     // Const access to the levels. Use the operator() for this because it
     // doesn't perform any bounds checking which is expensive.
     inline const meshLevel<Type,MeshType>& operator[](label l) const
     {
-        #ifdef FULLDEBUG
-
-        if (l < 0 || l >= listType::size())
-            FatalErrorInFunction
-                << "Index " << l << " out of range 0 ... " << listType::size()-1
-                << endl << abort(FatalError);
-
-        #endif
-
-        return *listType::operator()(l);
+        return listType::operator[](l);
     }
 
     // Access to the first level
     inline meshLevel<Type,MeshType>& level()
     {
-        return this->operator[](0);
+        return listType::operator[](0);
     }
 
     // Const access to the first level
     inline const meshLevel<Type,MeshType>& level() const
     {
-        return this->operator[](0);
+        return listType::operator[](0);
     }
 
     // Alias access function
     inline meshLevel<Type,MeshType>& level(const int l)
     {
-        return this->operator[](l);
+        return listType::operator[](l);
     }
 
     // Alias access function
     inline const meshLevel<Type,MeshType>& level(const int l) const
     {
-        return this->operator[](l);
+        return listType::operator[](l);
     }
 
     // Access to the first direction of the first level
     inline meshDirection<Type,MeshType>& direction()
     {
-        return this->operator[](0)[0];
+        return listType::operator[](0)[0];
     }
 
     // Const access to the first direction of the first level
     inline const meshDirection<Type,MeshType>& direction() const
     {
-        return this->operator[](0)[0];
+        return listType::operator[](0)[0];
     }
 
     // Access to the given direction of the first level
     inline meshDirection<Type,MeshType>& direction(const int d)
     {
-        return this->operator[](0)[d];
+        return listType::operator[](0)[d];
     }
 
     // Const access to the given direction of the first level
     inline const meshDirection<Type,MeshType>& direction(const int d) const
     {
-        return this->operator[](0)[d];
+        return listType::operator[](0)[d];
     }
 
     // Access to the given direction and level
@@ -261,7 +240,7 @@ public:
         const int d
     )
     {
-        return this->operator[](l)[d];
+        return listType::operator[](l)[d];
     }
 
     // Const access to the given direction and level
@@ -271,7 +250,7 @@ public:
         const int d
     ) const
     {
-        return this->operator[](l)[d];
+        return listType::operator[](l)[d];
     }
 
     // Number of levels
