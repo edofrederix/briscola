@@ -1,7 +1,8 @@
 #ifndef faceFields_H
 #define faceFields_H
 
-#include "faceField.H"
+#include "faceFieldFwd.H"
+#include "meshFieldSet.H"
 #include "colocated.H"
 #include "staggered.H"
 

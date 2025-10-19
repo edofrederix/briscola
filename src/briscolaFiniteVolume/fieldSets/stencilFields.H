@@ -1,7 +1,8 @@
 #ifndef stencilFields_H
 #define stencilFields_H
 
-#include "stencilField.H"
+#include "stencilFieldFwd.H"
+#include "meshFieldSet.H"
 #include "colocated.H"
 #include "staggered.H"
 

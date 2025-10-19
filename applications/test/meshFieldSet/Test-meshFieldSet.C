@@ -39,25 +39,25 @@ void testConstructors(const fvMesh& fvMsh, const bool deep)
         deep
     );
 
-    // // Copy from m2 with same name
+    // Copy from m2 with same name
 
     SetType m3a(m2);
     SetType m3b(m2, true);
 
-    // // Copy from m2 with new name
+    // Copy from m2 with new name
 
     SetType m4a("m4a", m2);
     SetType m4b("m4b", m2, true);
 
-    // // Copy from tmp of m2 with same name
+    // Copy from tmp of m2 with same name
 
-    SetType m5a(2*m2);
-    SetType m5b(2*m2, true);
+    SetType m5a(2.0*m2);
+    SetType m5b(2.0*m2, true);
 
-    // // Copy from tmp m2 with new name
+    // Copy from tmp m2 with new name
 
-    SetType m6a("m6a", 2*m2);
-    SetType m6b("m6b", 2*m2, true);
+    SetType m6a("m6a", 2.0*m2);
+    SetType m6b("m6b", 2.0*m2, true);
 }
 
 template<class SetType>
@@ -127,6 +127,7 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
         !deep
     );
 
+    m2*2.0;
 
     m2 = m1;
     m2 = 1.0*m1;
@@ -184,6 +185,29 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
 
     m1 *= scalar(2);
     m1 /= scalar(2);
+
+    -m1;
+    -(2.0*m1);
+
+    m1+m2;
+    m1+(2.0*m2);
+    (2.0*m1)+m2;
+    (2.0*m1)+(2.0*m2);
+
+    m1-m2;
+    m1-(2.0*m2);
+    (2.0*m1)-m2;
+    (2.0*m1)-(2.0*m2);
+
+    m1*s1;
+    m1*(2.0*s1);
+    (2.0*m1)*s1;
+    (2.0*m1)*(2.0*s1);
+
+    m1/s1;
+    m1/(2.0*s1);
+    (2.0*m1)/s1;
+    (2.0*m1)/(2.0*s1);
 }
 
 int main(int argc, char *argv[])

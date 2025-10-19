@@ -1,7 +1,8 @@
 #ifndef diagStencilFields_H
 #define diagStencilFields_H
 
-#include "diagStencilField.H"
+#include "diagStencilFieldFwd.H"
+#include "meshFieldSet.H"
 #include "colocated.H"
 #include "staggered.H"
 

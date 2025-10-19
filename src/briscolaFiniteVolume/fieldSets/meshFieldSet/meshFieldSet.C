@@ -1,5 +1,3 @@
-#include "meshFieldSet.H"
-
 namespace Foam
 {
 
@@ -21,6 +19,9 @@ void meshFieldSet<Type,MeshType,N>::allocate
 
     for (direction s = 0; s < N; s++)
     {
+        // Fields are also registered if the set is registered. This is needed
+        // for IO, since IO occurs through the fields, not the set.
+
         listType::set
         (
             s,
@@ -65,7 +66,7 @@ meshFieldSet<Type,MeshType,N>::meshFieldSet
 )
 :
     FastPtrList<meshField<Type,MeshType>>(),
-    regIOobject
+    IOdictionary
     (
         IOobject
         (
@@ -92,13 +93,13 @@ meshFieldSet<Type,MeshType,N>::meshFieldSet
 )
 :
     FastPtrList<meshField<Type,MeshType>>(),
-    regIOobject
+    IOdictionary
     (
         IOobject
         (
             io.name(),
-            fvMsh.time().path()/"0",
-            fvMsh.db(),
+            io.instance(),
+            io.db(),
             IOobject::NO_READ,
             IOobject::NO_WRITE,
             io.registerObject()
@@ -120,7 +121,7 @@ meshFieldSet<Type,MeshType,N>::meshFieldSet
 )
 :
     FastPtrList<meshField<Type,MeshType>>(set),
-    regIOobject
+    IOdictionary
     (
         IOobject
         (
@@ -145,7 +146,7 @@ meshFieldSet<Type,MeshType,N>::meshFieldSet
 )
 :
     FastPtrList<meshField<Type,MeshType>>(set),
-    regIOobject
+    IOdictionary
     (
         IOobject
         (
@@ -175,7 +176,7 @@ meshFieldSet<Type,MeshType,N>::meshFieldSet
         const_cast<meshFieldSet<Type,MeshType,N>&>(tSet()),
         tSet.isTmp() && tSet->unique()
     ),
-    regIOobject
+    IOdictionary
     (
         IOobject
         (
@@ -207,7 +208,7 @@ meshFieldSet<Type,MeshType,N>::meshFieldSet
         const_cast<meshFieldSet<Type,MeshType,N>&>(tSet()),
         tSet.isTmp() && tSet->unique()
     ),
-    regIOobject
+    IOdictionary
     (
         IOobject
         (
@@ -231,185 +232,6 @@ meshFieldSet<Type,MeshType,N>::meshFieldSet
 template<class Type, class MeshType, direction N>
 meshFieldSet<Type,MeshType,N>::~meshFieldSet()
 {}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator=
-(
-    const meshFieldSet<Type,MeshType,N>& set
-)
-{
-    for (direction s = 0; s < N; s++)
-        listType::operator[](s) = set[s];
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator=
-(
-    const tmp<meshFieldSet<Type,MeshType,N>>& tSet
-)
-{
-    if (tSet.isTmp() && tSet->unique())
-    {
-        meshFieldSet<Type,MeshType,N>& set =
-            const_cast<meshFieldSet<Type,MeshType,N>&>(tSet());
-
-        transfer(set);
-
-        tSet.clear();
-    }
-    else
-    {
-        *this = tSet();
-    }
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator=
-(
-    const zero
-)
-{
-    for (direction s = 0; s < N; s++)
-        listType::operator[](s) = Zero;
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator=
-(
-    const Type& v
-)
-{
-    for (direction s = 0; s < N; s++)
-        listType::operator[](s) = v;
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator+=
-(
-    const Type& v
-)
-{
-    for (direction s = 0; s < N; s++)
-        listType::operator[](s) += v;
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator+=
-(
-    const meshFieldSet<Type,MeshType,N>& set
-)
-{
-    for (direction s = 0; s < N; s++)
-        listType::operator[](s) += set[s];
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator+=
-(
-    const tmp<meshFieldSet<Type,MeshType,N>>& tSet
-)
-{
-    *this += tSet();
-
-    if (tSet.isTmp())
-        tSet.clear();
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator-=
-(
-    const Type& v
-)
-{
-    for (direction s = 0; s < N; s++)
-        listType::operator[](s) -= v;
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator-=
-(
-    const meshFieldSet<Type,MeshType,N>& set
-)
-{
-    for (direction s = 0; s < N; s++)
-        listType::operator[](s) -= set[s];
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator-=
-(
-    const tmp<meshFieldSet<Type,MeshType,N>>& tSet
-)
-{
-    *this -= tSet();
-
-    if (tSet.isTmp())
-        tSet.clear();
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator*=
-(
-    const scalar s
-)
-{
-    for (direction s = 0; s < N; s++)
-        listType::operator[](s) *= s;
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator*=
-(
-    const meshFieldSet<scalar,MeshType,N>& set
-)
-{
-    for (direction s = 0; s < N; s++)
-        listType::operator[](s) *= set[s];
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator*=
-(
-    const tmp<meshFieldSet<scalar,MeshType,N>>& tSet
-)
-{
-    *this *= tSet();
-
-    if (tSet.isTmp())
-        tSet.clear();
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator/=
-(
-    const scalar s
-)
-{
-    for (direction s = 0; s < N; s++)
-        listType::operator[](s) /= s;
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator/=
-(
-    const meshFieldSet<scalar,MeshType,N>& set
-)
-{
-    for (direction s = 0; s < N; s++)
-        listType::operator[](s) /= set[s];
-}
-
-template<class Type, class MeshType, direction N>
-void meshFieldSet<Type,MeshType,N>::operator/=
-(
-    const tmp<meshFieldSet<scalar,MeshType,N>>& tSet
-)
-{
-    *this /= tSet();
-
-    if (tSet.isTmp())
-        tSet.clear();
-}
 
 }
 

@@ -10,24 +10,18 @@ namespace briscola
 namespace fv
 {
 
-template
-<
-    class Type,
-    class MeshType,
-    direction N
->
+template<class Type>
 class reuseSetTmp
 {
 public:
 
-    static tmp<meshFieldSet<Type,MeshType,N>> New
+    static tmp<Type> New
     (
-        const tmp<meshFieldSet<Type,MeshType,N>>& tSet1,
+        const tmp<Type>& tSet1,
         const word name
     )
     {
-        meshFieldSet<Type,MeshType,N>& set1 =
-            const_cast<meshFieldSet<Type,MeshType,N>&>(tSet1());
+        Type& set1 = const_cast<Type&>(tSet1());
 
         if (tSet1.isTmp())
         {
@@ -36,38 +30,25 @@ public:
         }
         else
         {
-            return
-                meshFieldSet<Type,MeshType,N>::New
-                (
-                    name,
-                    set1.fvMsh()
-                );
+            return Type::New(name, set1.fvMsh());
         }
     }
 };
 
-template
-<
-    class Type,
-    class MeshType,
-    direction N
->
+template<class Type>
 class reuseSetTmpTmp
 {
 public:
 
-    static tmp<meshFieldSet<Type,MeshType,N>> New
+    static tmp<Type> New
     (
-        const tmp<meshFieldSet<Type,MeshType,N>>& tSet1,
-        const tmp<meshFieldSet<Type,MeshType,N>>& tSet2,
+        const tmp<Type>& tSet1,
+        const tmp<Type>& tSet2,
         const word name
     )
     {
-        meshFieldSet<Type,MeshType,N>& set1 =
-            const_cast<meshFieldSet<Type,MeshType,N>&>(tSet1());
-
-        meshFieldSet<Type,MeshType,N>& set2 =
-            const_cast<meshFieldSet<Type,MeshType,N>&>(tSet2());
+        Type& set1 = const_cast<Type&>(tSet1());
+        Type& set2 = const_cast<Type&>(tSet2());
 
         if (tSet1.isTmp())
         {
@@ -81,12 +62,7 @@ public:
         }
         else
         {
-            return
-                meshFieldSet<Type,MeshType,N>::New
-                (
-                    name,
-                    set1.fvMsh()
-                );
+            return Type::New(name, set1.fvMsh());
         }
     }
 };

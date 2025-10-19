@@ -19,7 +19,7 @@ template<class Type, class MeshType, direction N>
 class meshFieldSet
 :
     public FastPtrList<meshField<Type,MeshType>>,
-    public regIOobject,
+    public IOdictionary,
     public cachedRefCount
 {
     // Reference to the mesh
@@ -105,13 +105,12 @@ public:
     static tmp<meshFieldSet<Type,MeshType,N>> New
     (
         const word& name,
-        const fvMesh& fvMsh,
-        const bool cached = false
+        const fvMesh& fvMsh
     )
     {
         tmp<meshFieldSet<Type,MeshType,N>> tSet =
             fvMsh.template
-            NewObject<meshFieldSet<Type,MeshType,N>>(name, cached);
+            NewObject<meshFieldSet<Type,MeshType,N>>(name);
 
         tSet.ref().rename(name);
 
@@ -139,34 +138,60 @@ public:
     // When renaming, make sure to also rename the fields in the set
     virtual void rename(const word& newName)
     {
-        IOobject::rename(newName);
+        IOdictionary::rename(newName);
 
-        for (direction s = 0; s < N; s++)
+        forAll(*this, s)
             listType::operator[](s).rename(newName + "_" + Foam::name(s));
     }
 
+    // Set restriction scheme
+    void setRestrictionScheme(const word scheme)
+    {
+        forAll(*this, s)
+            listType::operator[](s).setRestrictionScheme(scheme);
+    }
+
+    // Number of fields
+    inline label size() const { return listType::size(); }
+
+    // Access to the fields
+    inline meshField<Type,MeshType>& operator[](label s)
+    {
+        return listType::operator[](s);
+    }
+
+    // Const access to the fields
+    inline const meshField<Type,MeshType>& operator[](label s) const
+    {
+        return listType::operator[](s);
+    }
+
+    // Set maximum/minimum of field set and given value
+    inline void max(const Type&);
+    inline void min(const Type&);
+
     // Member Operators
 
-    void operator=(const meshFieldSet<Type,MeshType,N>&);
-    void operator=(const tmp<meshFieldSet<Type,MeshType,N>>&);
-    void operator=(const Type&);
-    void operator=(const zero);
+    inline void operator=(const meshFieldSet<Type,MeshType,N>&);
+    inline void operator=(const tmp<meshFieldSet<Type,MeshType,N>>&);
+    inline void operator=(const Type&);
+    inline void operator=(const zero);
 
-    void operator+=(const Type&);
-    void operator+=(const meshFieldSet<Type,MeshType,N>&);
-    void operator+=(const tmp<meshFieldSet<Type,MeshType,N>>&);
+    inline void operator+=(const Type&);
+    inline void operator+=(const meshFieldSet<Type,MeshType,N>&);
+    inline void operator+=(const tmp<meshFieldSet<Type,MeshType,N>>&);
 
-    void operator-=(const Type&);
-    void operator-=(const meshFieldSet<Type,MeshType,N>&);
-    void operator-=(const tmp<meshFieldSet<Type,MeshType,N>>&);
+    inline void operator-=(const Type&);
+    inline void operator-=(const meshFieldSet<Type,MeshType,N>&);
+    inline void operator-=(const tmp<meshFieldSet<Type,MeshType,N>>&);
 
-    void operator*=(const scalar);
-    void operator*=(const meshFieldSet<scalar,MeshType,N>&);
-    void operator*=(const tmp<meshFieldSet<scalar,MeshType,N>>&);
+    inline void operator*=(const scalar);
+    inline void operator*=(const meshFieldSet<scalar,MeshType,N>&);
+    inline void operator*=(const tmp<meshFieldSet<scalar,MeshType,N>>&);
 
-    void operator/=(const scalar);
-    void operator/=(const meshFieldSet<scalar,MeshType,N>&);
-    void operator/=(const tmp<meshFieldSet<scalar,MeshType,N>>&);
+    inline void operator/=(const scalar);
+    inline void operator/=(const meshFieldSet<scalar,MeshType,N>&);
+    inline void operator/=(const tmp<meshFieldSet<scalar,MeshType,N>>&);
 };
 
 }
@@ -175,10 +200,7 @@ public:
 
 }
 
+#include "meshFieldSet.C"
 #include "meshFieldSetI.H"
-
-#ifdef NoRepository
-    #include "meshFieldSet.C"
-#endif
 
 #endif
