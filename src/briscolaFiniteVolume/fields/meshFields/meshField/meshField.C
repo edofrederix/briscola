@@ -575,6 +575,20 @@ void meshField<Type,MeshType>::replace
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::max(const Type& v)
+{
+    forAll(*this, l)
+        listType::operator[](l).max(v);
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::min(const Type& v)
+{
+    forAll(*this, l)
+        listType::operator[](l).min(v);
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator=(const meshField<Type,MeshType>& F)
 {
     this->make(F.deep());

@@ -341,6 +341,10 @@ public:
     void replace(const label, const meshDirection<cmptType,MeshType>&);
     void replace(const label, const tmp<meshDirection<cmptType,MeshType>>&);
 
+    // Set maximum/minimum of direction and given value
+    void max(const Type&);
+    void min(const Type&);
+
     // Member operators
 
     void operator=(const meshDirection<Type,MeshType>&);

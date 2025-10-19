@@ -704,6 +704,20 @@ void meshLevel<Type,MeshType>::replace
 }
 
 template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::max(const Type& v)
+{
+    forAll(*this, d)
+        listType::operator[](d).max(v);
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::min(const Type& v)
+{
+    forAll(*this, d)
+        listType::operator[](d).min(v);
+}
+
+template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::operator=(const meshLevel<Type,MeshType>& L)
 {
     forAll(*this, d)

@@ -462,6 +462,10 @@ public:
     void replace(const label, const meshField<cmptType,MeshType>&);
     void replace(const label, const tmp<meshField<cmptType,MeshType>>&);
 
+    // Set maximum/minimum of field and given value
+    void max(const Type&);
+    void min(const Type&);
+
     // Member operators
 
     void operator=(const meshField<Type,MeshType>&);

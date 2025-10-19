@@ -412,6 +412,10 @@ public:
     void replace(const label, const block<cmptType>&);
     void replace(const label, const tmp<block<cmptType>>&);
 
+    // Set maximum/minimum of block and given value
+    void max(const Type&);
+    void min(const Type&);
+
     // Member operators
 
     inline void operator=(const block<Type>&);

@@ -1005,6 +1005,20 @@ void block<Type>::replace
 }
 
 template<class Type>
+void block<Type>::max(const Type& v)
+{
+    forAllBlockLinear(*this, i)
+        v_[i] = Foam::max(v_[i], v);
+}
+
+template<class Type>
+void block<Type>::min(const Type& v)
+{
+    forAllBlockLinear(*this, i)
+        v_[i] = Foam::min(v_[i], v);
+}
+
+template<class Type>
 Istream& operator>>(Istream& is, block<Type>& M)
 {
     List<List<List<Type>>> L;

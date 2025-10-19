@@ -322,6 +322,10 @@ public:
     void replace(const label, const meshLevel<cmptType,MeshType>&);
     void replace(const label, const tmp<meshLevel<cmptType,MeshType>>&);
 
+    // Set maximum/minimum of level and given value
+    void max(const Type&);
+    void min(const Type&);
+
     // Member operators
 
     void operator=(const meshLevel<Type,MeshType>&);

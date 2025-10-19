@@ -356,6 +356,18 @@ void meshDirection<Type,MeshType>::replace
 }
 
 template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::max(const Type& v)
+{
+    this->B().max(v);
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::min(const Type& v)
+{
+    this->B().min(v);
+}
+
+template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::operator=
 (
     const tmp<meshDirection<Type,MeshType>>& tD
