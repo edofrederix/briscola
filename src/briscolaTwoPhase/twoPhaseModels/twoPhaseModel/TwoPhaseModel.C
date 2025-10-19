@@ -70,13 +70,13 @@ autoPtr<TwoPhaseModel<MeshType>> TwoPhaseModel<MeshType>::New
 }
 
 template<>
-tmp<colocatedFaceScalarField> TwoPhaseModel<colocated>::faceAlpha() const
+tmp<colocatedScalarFaceField> TwoPhaseModel<colocated>::faceAlpha() const
 {
     return ex::interp(alpha_);
 }
 
 template<>
-tmp<staggeredFaceScalarField> TwoPhaseModel<staggered>::faceAlpha() const
+tmp<staggeredScalarFaceField> TwoPhaseModel<staggered>::faceAlpha() const
 {
     return ex::stagFaceInterp(alpha_);
 }
@@ -94,16 +94,16 @@ tmp<staggeredScalarField> TwoPhaseModel<staggered>::meshAlpha() const
 }
 
 template<>
-tmp<colocatedFaceScalarField>
+tmp<colocatedScalarFaceField>
 TwoPhaseModel<colocated>::coloFaceFlux() const
 {
     return
         fvMsh_.db().template
-            lookupObject<colocatedFaceScalarField>("phi");
+            lookupObject<colocatedScalarFaceField>("phi");
 }
 
 template<>
-tmp<colocatedFaceScalarField>
+tmp<colocatedScalarFaceField>
 TwoPhaseModel<staggered>::coloFaceFlux() const
 {
     return
@@ -131,19 +131,18 @@ scalar TwoPhaseModel<MeshType>::rhoMean() const
 template<>
 tmp<colocatedVectorField> TwoPhaseModel<colocated>::buoyancy() const
 {
-    tmp<colocatedVectorField> tBuoyancy
-    (
-        new colocatedVectorField("buoyancy", this->fvMsh_)
-    );
+    tmp<colocatedVectorField> tBuoyancy =
+        colocatedVectorField::New("buoyancy", this->fvMsh_);
 
-    colocatedVectorField& buoyancy = tBuoyancy.ref();
+    colocatedVectorDirection& buoyancy = tBuoyancy.ref()[0][0];
+    const colocatedScalarDirection& rho = this->rho()[0][0];
 
     #ifdef NO_BLOCK_ZERO_INIT
     buoyancy = Zero;
     #endif
 
     if (Foam::mag(this->g()) > 0.0)
-        buoyancy[0][0] = (this->rho()[0][0] - this->rhoMean())*this->g();
+        buoyancy = (rho - this->rhoMean())*this->g();
 
     return tBuoyancy;
 }
@@ -151,37 +150,39 @@ tmp<colocatedVectorField> TwoPhaseModel<colocated>::buoyancy() const
 template<>
 tmp<staggeredScalarField> TwoPhaseModel<staggered>::buoyancy() const
 {
-    tmp<staggeredScalarField> tBuoyancy
-    (
-        new staggeredScalarField("buoyancy", this->fvMsh_)
-    );
+    tmp<staggeredScalarField> tBuoyancy =
+        staggeredScalarField::New("buoyancy", this->fvMsh_);
 
-    staggeredScalarField& buoyancy = tBuoyancy.ref();
+    staggeredScalarLevel& buoyancy = tBuoyancy.ref()[0];
+    const staggeredScalarLevel& rho = this->rho()[0];
 
     #ifdef NO_BLOCK_ZERO_INIT
     buoyancy = Zero;
     #endif
 
+    // The gravity vector is assumed here to be defined in the staggered
+    // coordinate system
+
     if (Foam::mag(this->g()) > 0.0)
     {
         const scalar rhoMean(this->rhoMean());
 
-        forAll(buoyancy[0], l)
-            buoyancy[0][l] = (this->rho()[0][l] - rhoMean)*this->g()[l];
+        forAll(buoyancy, d)
+            buoyancy[d] = (rho[d] - rhoMean)*this->g()[d];
     }
 
     return tBuoyancy;
 }
 
 template<class MeshType>
-tmp<colocatedFaceScalarField> TwoPhaseModel<MeshType>::flux()
+tmp<colocatedScalarFaceField> TwoPhaseModel<MeshType>::flux()
 {
-    tmp<colocatedFaceScalarField> tFlux
+    tmp<colocatedScalarFaceField> tFlux
     (
-        new colocatedFaceScalarField("twoPhaseFlux", this->fvMsh_)
+        new colocatedScalarFaceField("twoPhaseFlux", this->fvMsh_)
     );
 
-    colocatedFaceScalarField& flux = tFlux.ref();
+    colocatedScalarFaceField& flux = tFlux.ref();
 
     #ifdef NO_BLOCK_ZERO_INIT
     flux = Zero;
@@ -189,7 +190,7 @@ tmp<colocatedFaceScalarField> TwoPhaseModel<MeshType>::flux()
 
     if (this->tension())
         flux +=
-            static_cast<colocatedFaceScalarField&>(this->surfaceTension());
+            static_cast<colocatedScalarFaceField&>(this->surfaceTension());
 
     return tFlux;
 }

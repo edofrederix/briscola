@@ -15,6 +15,10 @@
 #include "PtrList.H"
 #include "NamedEnum.H"
 
+#include "meshFieldFwd.H"
+#include "faceFieldFwd.H"
+#include "linearSystemFwd.H"
+
 namespace Foam
 {
 
@@ -25,12 +29,6 @@ namespace fv
 {
 
 class fvMesh;
-
-template<class Type, class MeshType>
-class meshField;
-
-template<class SType, class Type, class MeshType>
-class linearSystem;
 
 template<class Type, class MeshType>
 class boundaryCondition
@@ -197,13 +195,13 @@ public:
     labelVector N(const label l, const label d) const;
 
     // Access to the face centers of the field this BC belongs to
-    const meshField<faceVector,MeshType>& faceCenters() const;
+    const faceField<vector,MeshType>& faceCenters() const;
 
     // Access to the face normals of the field this BC belongs to
-    const meshField<faceVector,MeshType>& faceNormals() const;
+    const faceField<vector,MeshType>& faceNormals() const;
 
     // Access to the face areas of the field this BC belongs to
-    const meshField<faceScalar,MeshType>& faceAreas() const;
+    const faceField<scalar,MeshType>& faceAreas() const;
 
     // Access to the cell volumes of the field this BC belongs to
     const meshField<scalar,MeshType>& cellVolumes() const;
@@ -212,7 +210,7 @@ public:
     const meshField<vector,MeshType>& cellCenters() const;
 
     // Access to the face deltas of the field this BC belongs to
-    const meshField<faceScalar,MeshType>& faceDeltas() const;
+    const faceField<scalar,MeshType>& faceDeltas() const;
 
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const = 0;

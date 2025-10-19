@@ -26,6 +26,7 @@ template<class MeshType>
 class immersedBoundary
 {
 protected:
+
     // Reference to mesh
     const fvMesh& fvMsh_;
 
@@ -52,15 +53,15 @@ protected:
 
     // This wall distance field stores the wall distances from IB-adjacent cells
     // to the IB as faceScalars
-    meshField<faceScalar,MeshType> wallDistAdj_;
+    faceField<scalar,MeshType> wallDistAdj_;
 
     // This wall distance field stores the wall distances from ghost cells to
     // the IB as faceScalars
-    meshField<faceScalar,MeshType> wallDistGhost_;
+    faceField<scalar,MeshType> wallDistGhost_;
 
     // The neighbor distance field stores the distances to the second neighbor
     // fluid cell for the quadratic fit on non-uniform grids
-    meshField<faceScalar,MeshType> neighborDist_;
+    faceField<scalar,MeshType> neighborDist_;
 
     // Field containing the coordinates of the ghost mirror points stored in the
     // ghost cells
@@ -129,17 +130,17 @@ public:
         return wallAdjMask_;
     }
 
-    inline const meshField<faceScalar,MeshType>& wallDistAdj() const
+    inline const faceField<scalar,MeshType>& wallDistAdj() const
     {
         return wallDistAdj_;
     }
 
-    inline const meshField<faceScalar,MeshType>& wallDistGhost() const
+    inline const faceField<scalar,MeshType>& wallDistGhost() const
     {
         return wallDistGhost_;
     }
 
-    inline const meshField<faceScalar,MeshType>& neighborDist() const
+    inline const faceField<scalar,MeshType>& neighborDist() const
     {
         return neighborDist_;
     }

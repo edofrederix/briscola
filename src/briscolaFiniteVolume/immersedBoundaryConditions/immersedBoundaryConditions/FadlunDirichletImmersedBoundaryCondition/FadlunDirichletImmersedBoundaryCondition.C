@@ -37,9 +37,9 @@ FadlunDirichletImmersedBoundaryCondition
     {
         const labelVector ijk(i,j,k);
 
-        for (int dir = 0; dir < 3; dir++)
+        for (int f = 0; f < 3; f++)
         {
-            const labelVector fo = units[dir];
+            const labelVector fo = units[f];
 
             if
             (
@@ -78,7 +78,9 @@ void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
     meshDirection<Type,MeshType>& x = this->mshField_[l][d];
 
     const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
-    const meshDirection<faceScalar,MeshType>& y = this->ib_.wallDistAdj()[l][d];
+    const faceField<scalar,MeshType>& y = this->ib_.wallDistAdj();
+
+    // Todo: make face loop?
 
     forAllCells(x,i,j,k)
     {
@@ -89,19 +91,21 @@ void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
             scalar ximax = 0;
 
             // Loop over face number directions
-            for (int dir = 0; dir < 6; dir++)
+            for (int f = 0; f < 6; f++)
             {
-                if (y(ijk)[dir] > ximax)
-                {
-                    ximax = y(ijk)[dir];
+                const labelVector fo = faceOffsets[f];
+                const label fd = f/2;
 
-                    const scalar xic = 1.0 - y(ijk)[dir];
+                if (y[fd](upperFaceNeighbor(ijk,f)) > ximax)
+                {
+                    ximax = y[fd](ijk);
+
+                    const scalar xic = 1.0 - y[fd](ijk);
                     const scalar xinb = 1.0 + xic;
                     const scalar w = xic/xinb;
 
                     Type value =
-                        boundaryValues_[d]/xinb
-                      + w*x(ijk - faceOffsets[dir]);
+                        boundaryValues_[d]/xinb + w*x(ijk - fo);
 
                     x(ijk) = (1.0 - omega)*x(ijk) + omega*value;
                 }

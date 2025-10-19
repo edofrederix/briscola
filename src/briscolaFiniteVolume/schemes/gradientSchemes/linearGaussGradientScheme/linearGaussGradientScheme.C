@@ -37,35 +37,39 @@ linearGaussGradientScheme<Type,MeshType>::grad
 
     meshField<GradType,MeshType>& Grad = tGrad.ref();
 
-    const meshField<faceVector,MeshType>& fan =
+    const faceField<vector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
-    const meshField<faceScalar,MeshType>& fwc =
+    const faceField<scalar,MeshType>& fwc =
         field.fvMsh().template metrics<MeshType>().faceWeightsCenter();
 
-    const meshField<faceScalar,MeshType>& fwn =
+    const faceField<scalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
     const meshField<scalar,MeshType>& icv =
         field.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
+    #ifdef NO_BLOCK_ZERO_INIT
+    Grad = Zero;
+    #endif
 
-    forAllCells(Grad, d, i, j, k)
+    forAllFaces(fan, fd, d, i, j, k)
     {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Grad(d,i,j,k) = Zero;
-        #endif
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        for (int f = 0; f < 6; f++)
-            Grad(d,i,j,k) +=
-                fan(d,i,j,k)[f]
-              * (
-                    fwc(d,i,j,k)[f]*field(d,i,j,k)
-                  + fwn(d,i,j,k)[f]*field(d,neighbor(i,j,k,f))
-                );
+        const GradType value =
+            fan[fd](d,ijk)
+          * (
+                fwc[fd](d,ijk)*field(d,ijk)
+              + fwn[fd](d,ijk)*field(d,nei)
+            );
 
-        Grad(d,i,j,k) *= icv(d,i,j,k);
+        Grad(d,ijk) += value;
+        Grad(d,nei) -= value;
     }
+
+    Grad *= icv;
 
     return tGrad;
 }
@@ -84,18 +88,18 @@ linearGaussGradientScheme<Type,MeshType>::stagGrad
             field.fvMsh()
         );
 
-    meshField<Type,staggered>& Grad = tGrad.ref();
+    meshField<Type,staggered>& grad = tGrad.ref();
 
-    const meshField<faceScalar,colocated>& fd =
+    const faceField<scalar,colocated>& delta =
             field.fvMsh().template metrics<colocated>().faceDeltas();
 
-    forAllCells(Grad, d, i, j, k)
-        Grad(d,i,j,k) =
+    forAllCells(grad, d, i, j, k)
+        grad(d,i,j,k) =
             (
                 field(i,j,k)
               - field(lowerNeighbor(i,j,k,d))
             )
-          * fd(i,j,k)[d*2];
+          * delta[d](i,j,k);
 
     return tGrad;
 }

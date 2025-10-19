@@ -68,7 +68,7 @@ template<class Type, class MeshType>
 inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
 grad
 (
-    const meshField<FaceSpace<Type>,MeshType>& field
+    const faceField<Type,MeshType>& field
 )
 {
     typedef typename outerProduct<vector,Type>::type TypeR;
@@ -86,22 +86,26 @@ grad
     const meshField<scalar,MeshType>& icv =
         field.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    const meshField<faceVector,MeshType>& fan =
+    const faceField<vector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
-    forAllCells(Grad, d, i, j, k)
+    #ifdef NO_BLOCK_ZERO_INIT
+    Grad = Zero;
+    #endif
+
+    forAllFaces(fan, fd, d, i, j, k)
     {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Grad(d,i,j,k) = Zero;
-        #endif
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        for (int fd = 0; fd < 3; fd++)
-            Grad(d,i,j,k) +=
-                field(d,i,j,k)[fd*2  ]*fan(d,i,j,k)[fd*2  ]
-              + field(d,i,j,k)[fd*2+1]*fan(d,i,j,k)[fd*2+1];
+        const TypeR value =
+            field[fd](d,ijk)*fan[fd](d,ijk);
 
-        Grad(d,i,j,k) *= icv(d,i,j,k);
+        Grad(d,ijk) += value;
+        Grad(d,nei) -= value;
     }
+
+    Grad *= icv;
 
     return tGrad;
 }
@@ -110,7 +114,7 @@ template<class Type, class MeshType>
 tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
 grad
 (
-    const tmp<meshField<FaceSpace<Type>,MeshType>>& tField
+    const tmp<faceField<Type,MeshType>>& tField
 )
 {
     typedef typename outerProduct<vector,Type>::type TypeR;

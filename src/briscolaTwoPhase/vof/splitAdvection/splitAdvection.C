@@ -19,8 +19,8 @@ addToRunTimeSelectionTable(vof, splitAdvection, dictionary);
 
 void splitAdvection::updateFlux
 (
-    const colocatedFaceScalarField& phi,
-    const label d
+    const colocatedScalarFaceField& phi,
+    const label fd
 )
 {
     const colocatedVectorField& n = normal_;
@@ -32,15 +32,14 @@ void splitAdvection::updateFlux
 
     const scalar dt = fvMsh_.time().deltaT().value();
 
-    forAllFaces(phi, fd, i, j, k)
-    if (d == fd)
+    forAllSpecificFaces(phi, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,d));
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
         // Select the donating side
 
-        const scalar flux = phi(ijk)[d*2];
+        const scalar flux = phi[fd](ijk);
         const labelVector don(flux > 0 ? ijk : nei);
 
         const scalar frac = Foam::mag(flux)*dt/cv(don);
@@ -59,8 +58,8 @@ void splitAdvection::updateFlux
             {
                 const scalar C = lve_(alpha_(don),v(don),n(don));
 
-                const label l = flux > 0 ? d*2 : d*2+1;
-                const label u = flux < 0 ? d*2 : d*2+1;
+                const label l = flux > 0 ? fd*2 : fd*2+1;
+                const label u = flux < 0 ? fd*2 : fd*2+1;
 
                 vertexVector vertices(v(don));
 
@@ -120,8 +119,7 @@ void splitAdvection::updateFlux
                 #endif
             }
 
-            flux_(ijk)[d*2  ] = Foam::sign(flux)*fluxAlpha;
-            flux_(nei)[d*2+1] = -flux_(ijk)[d*2];
+            flux_[fd](ijk) = Foam::sign(flux)*fluxAlpha;
         }
     }
 }
@@ -163,7 +161,7 @@ splitAdvection::splitAdvection(const splitAdvection& vf)
 splitAdvection::~splitAdvection()
 {}
 
-void splitAdvection::solve(const colocatedFaceScalarField& phi)
+void splitAdvection::solve(const colocatedScalarFaceField& phi)
 {
     alpha_.setOldTime();
 
@@ -198,29 +196,26 @@ void splitAdvection::solve(const colocatedFaceScalarField& phi)
 
     for (int d = 0; d < 3; d++)
     {
-        const label dir = (ti + d) % 3;
+        const label fd = (ti + d) % 3;
 
         // Skip empty directions
 
-        if (!fvMsh_.msh().b(units[dir]).castable<emptyBoundary>())
+        if (!fvMsh_.msh().b(units[fd]).castable<emptyBoundary>())
         {
-            this->updateFlux(phi, dir);
+            this->updateFlux(phi,fd);
 
-            forAllCells(alpha_, i, j, k)
+            forAllSpecificFaces(phi, fd, i, j, k)
             {
                 const labelVector ijk(i,j,k);
+                const labelVector nei(lowerNeighbor(i,j,k,fd));
 
                 alpha_(ijk) +=
                     dt/cv(ijk)
-                  * (
-                        scalar(alphac(ijk))
-                      * (
-                            phi(ijk)[dir*2  ]
-                          + phi(ijk)[dir*2+1]
-                        )
-                      - flux_(ijk)[dir*2  ]
-                      - flux_(ijk)[dir*2+1]
-                    );
+                  * (scalar(alphac(ijk))*phi[fd](ijk) - flux_[fd](ijk));
+
+                alpha_(nei) -=
+                    dt/cv(nei)
+                  * (scalar(alphac(nei))*phi[fd](ijk) - flux_[fd](ijk));
             }
 
             // Correct the alpha field

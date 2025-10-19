@@ -24,10 +24,10 @@
 /* Instantiate the r-function */                                               \
                                                                                \
 template<>                                                                     \
-tmp<meshField<faceScalar,MESHTYPE>>                                            \
+tmp<faceField<scalar,MESHTYPE>>                                                \
 limiterScheme<TYPE,MESHTYPE>::r                                                \
 (                                                                              \
-    const meshField<faceScalar,MESHTYPE>& phi,                                 \
+    const faceField<scalar,MESHTYPE>& phi,                                     \
     const meshField<TYPE,MESHTYPE>& field                                      \
 )                                                                              \
 {                                                                              \

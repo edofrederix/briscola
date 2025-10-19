@@ -8,6 +8,7 @@
 #include "meshFields.H"
 #include "OFstream.H"
 #include "cachedRefCount.H"
+#include "restrict.H"
 
 namespace Foam
 {

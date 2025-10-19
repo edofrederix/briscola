@@ -67,15 +67,6 @@ int main(int argc, char *argv[])
     if (Pstream::parRun() && args.optionFound("parallelInfo"))
         parallelInfo(fvMsh);
 
-    checkInternalFaceCenters<colocated>(fvMsh);
-    checkInternalFaceDeltas<colocated>(fvMsh);
-
-    if (fvMsh.structured())
-    {
-        checkInternalFaceCenters<staggered>(fvMsh);
-        checkInternalFaceDeltas<staggered>(fvMsh);
-    }
-
     if (Pstream::parRun())
     {
         if (args.optionFound("parallelConnectivityInfo"))

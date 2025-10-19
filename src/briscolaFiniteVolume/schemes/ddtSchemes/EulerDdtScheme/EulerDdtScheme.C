@@ -1,4 +1,5 @@
 #include "EulerDdtScheme.H"
+#include "restrict.H"
 
 namespace Foam
 {
@@ -28,8 +29,7 @@ EulerDdtScheme<Type,MeshType>::imDdt
 )
 {
     if (lambdaPtr)
-        const_cast<meshField<scalar,MeshType>&>(*lambdaPtr)
-       .restrict();
+        restrict(*lambdaPtr);
 
     tmp<linearSystem<diagStencil,Type,MeshType>> tSys =
         linearSystem<diagStencil,Type,MeshType>::New
@@ -63,8 +63,7 @@ EulerDdtScheme<Type,MeshType>::imDdt
     }
 
     if (lambdaPtr)
-        const_cast<meshField<scalar,MeshType>&>(*lambdaPtr)
-       .makeShallow();
+        collapse(*lambdaPtr);
 
     return tSys;
 }

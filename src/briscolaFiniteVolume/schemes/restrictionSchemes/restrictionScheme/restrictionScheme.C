@@ -1,4 +1,6 @@
 #include "restrictionScheme.H"
+#include "meshFields.H"
+#include "faceFields.H"
 
 namespace Foam
 {
@@ -35,6 +37,25 @@ restrictionScheme<Type,MeshType>::~restrictionScheme()
 template<class Type, class MeshType>
 autoPtr<restrictionScheme<Type,MeshType>>
 restrictionScheme<Type,MeshType>::New
+(
+    const fvMesh& fvMsh,
+    const word fieldName
+)
+{
+    return restrictionScheme<Type,MeshType>::NewType
+    (
+        fvMsh,
+        fvMsh.restrictionDict().lookupOrDefault<word>
+        (
+            fieldName,
+            restrictionScheme<Type,MeshType>::defaultScheme
+        )
+    );
+}
+
+template<class Type, class MeshType>
+autoPtr<restrictionScheme<Type,MeshType>>
+restrictionScheme<Type,MeshType>::NewType
 (
     const fvMesh& fvMsh,
     const word restrictionSchemeType
@@ -110,8 +131,8 @@ void restrictionScheme<Type,MeshType>::restrict
     const bool scale
 )
 {
-    for (label l = 1; l < res.size(); l++)
-        restrict(res[l], f[l-1], scale);
+    for (label l = 0; l < res.size()-1; l++)
+        restrict(res[l+1], f[l], scale);
 }
 
 template<class Type, class MeshType>
@@ -138,8 +159,8 @@ void restrictionScheme<Type,MeshType>::restrict
     const bool scale
 )
 {
-    for (label l = 1; l < res.size(); l++)
-        restrict(res[l], res[l-1], scale);
+    for (label l = 0; l < res.size()-1; l++)
+        restrict(res[l+1], res[l], scale);
 }
 
 }

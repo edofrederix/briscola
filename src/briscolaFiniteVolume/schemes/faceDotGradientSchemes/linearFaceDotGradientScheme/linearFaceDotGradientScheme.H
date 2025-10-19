@@ -45,7 +45,7 @@ public:
     {}
 
     // Face-dot gradient multiplied by face area
-    virtual tmp<meshField<FaceSpace<Type>,colocated>> faceDotGrad
+    virtual tmp<faceField<Type,colocated>> faceDotGrad
     (
         const meshField<Type,colocated>&
     );
@@ -74,7 +74,7 @@ public:
     {}
 
     // Face-normal inner product gradient
-    virtual tmp<meshField<FaceSpace<Type>,staggered>> faceDotGrad
+    virtual tmp<faceField<Type,staggered>> faceDotGrad
     (
         const meshField<Type,staggered>&
     );

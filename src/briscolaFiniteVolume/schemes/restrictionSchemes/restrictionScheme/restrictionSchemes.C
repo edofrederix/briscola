@@ -6,11 +6,6 @@
 #include "volumeWeightedRestrictionScheme.H"
 #include "harmonicVolumeWeightedRestrictionScheme.H"
 
-#include "harmonicFaceAreaWeightedRestrictionScheme.H"
-#include "faceAreaWeightedRestrictionScheme.H"
-#include "faceAverageRestrictionScheme.H"
-#include "fluxRestrictionScheme.H"
-
 namespace Foam
 {
 
@@ -52,30 +47,6 @@ makeRestrictionScheme(volumeWeighted,tensor,staggered);
 
 makeRestrictionScheme(harmonicVolumeWeighted,scalar,colocated);
 makeRestrictionScheme(harmonicVolumeWeighted,scalar,staggered);
-
-// Face restriction schemes
-
-makeRestrictionSchemeBase(faceScalar,colocated,"faceAreaWeighted");
-makeRestrictionSchemeBase(faceVector,colocated,"faceAreaWeighted");
-
-makeRestrictionSchemeBase(faceScalar,staggered,"faceAreaWeighted");
-makeRestrictionSchemeBase(faceVector,staggered,"faceAreaWeighted");
-
-makeFaceRestrictionScheme(faceAverage,scalar,faceScalar,colocated);
-makeFaceRestrictionScheme(faceAverage,vector,faceVector,colocated);
-makeFaceRestrictionScheme(faceAverage,scalar,faceScalar,staggered);
-makeFaceRestrictionScheme(faceAverage,vector,faceVector,staggered);
-
-makeFaceRestrictionScheme(faceAreaWeighted,scalar,faceScalar,colocated);
-makeFaceRestrictionScheme(faceAreaWeighted,vector,faceVector,colocated);
-makeFaceRestrictionScheme(faceAreaWeighted,scalar,faceScalar,staggered);
-makeFaceRestrictionScheme(faceAreaWeighted,vector,faceVector,staggered);
-
-makeFaceRestrictionScheme(harmonicFaceAreaWeighted,scalar,faceScalar,colocated);
-makeFaceRestrictionScheme(harmonicFaceAreaWeighted,scalar,faceScalar,staggered);
-
-makeFaceRestrictionScheme(flux,scalar,faceScalar,colocated);
-makeFaceRestrictionScheme(flux,vector,faceVector,colocated);
 
 }
 

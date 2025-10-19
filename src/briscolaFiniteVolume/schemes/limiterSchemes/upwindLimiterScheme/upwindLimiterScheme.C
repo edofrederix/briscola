@@ -20,18 +20,19 @@ upwindLimiterScheme<Type,MeshType>::upwindLimiterScheme
 {}
 
 template<class Type, class MeshType>
-tmp<meshField<faceScalar,MeshType>> upwindLimiterScheme<Type,MeshType>::psi
+tmp<faceField<scalar,MeshType>> upwindLimiterScheme<Type,MeshType>::psi
 (
-    const meshField<faceScalar,MeshType>& phi,
+    const faceField<scalar,MeshType>& phi,
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<faceScalar,MeshType>> tPsi =
-        meshField<faceScalar,MeshType>::New("psi", field.fvMsh());
+    tmp<faceField<scalar,MeshType>> tPsi =
+        faceField<scalar,MeshType>::New("psi", field.fvMsh());
 
-    meshField<faceScalar,MeshType>& Psi = tPsi.ref();
+    faceField<scalar,MeshType>& Psi = tPsi.ref();
 
-    Psi.make(phi.deep() && field.deep());
+    forAll(Psi, fd)
+        Psi[fd].make(phi[fd].deep() && field.deep());
 
     Psi = Zero;
 

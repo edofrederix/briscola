@@ -24,16 +24,16 @@ class limiterScheme
 private:
 
     // Scalar helper function for the ratio of successive gradients
-    tmp<meshField<faceScalar,MeshType>> rType
+    tmp<faceField<scalar,MeshType>> rType
     (
-        const meshField<faceScalar,MeshType>& phi,
+        const faceField<scalar,MeshType>& phi,
         const meshField<scalar,MeshType>& field
     );
 
     // Vector helper function for the ratio of successive gradients
-    tmp<meshField<faceScalar,MeshType>> rType
+    tmp<faceField<scalar,MeshType>> rType
     (
-        const meshField<faceScalar,MeshType>& phi,
+        const faceField<scalar,MeshType>& phi,
         const meshField<vector,MeshType>& field
     );
 
@@ -79,16 +79,16 @@ public:
     virtual ~limiterScheme();
 
     // Compute the ratio of successive gradients at each face
-    virtual tmp<meshField<faceScalar,MeshType>> r
+    virtual tmp<faceField<scalar,MeshType>> r
     (
-        const meshField<faceScalar,MeshType>& phi,
+        const faceField<scalar,MeshType>& phi,
         const meshField<Type,MeshType>& field
     );
 
     // Return the limiter field
-    virtual tmp<meshField<faceScalar,MeshType>> psi
+    virtual tmp<faceField<scalar,MeshType>> psi
     (
-        const meshField<faceScalar,MeshType>& phi,
+        const faceField<scalar,MeshType>& phi,
         const meshField<Type,MeshType>& field
     ) = 0;
 };

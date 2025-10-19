@@ -89,6 +89,7 @@ schemes/laplacianSchemes/laplacianScheme/laplacianSchemes.C
 schemes/limiterSchemes/limiterScheme/limiterSchemes.C
 schemes/prolongationSchemes/prolongationScheme/prolongationSchemes.C
 schemes/restrictionSchemes/restrictionScheme/restrictionSchemes.C
+schemes/restrictionSchemes/faceRestrictionScheme/faceRestrictionSchemes.C
 
 schemes/RungeKuttaSchemes/RungeKuttaScheme/RungeKuttaScheme.C
 schemes/RungeKuttaSchemes/RungeKuttaScheme/RungeKuttaSchemes.C

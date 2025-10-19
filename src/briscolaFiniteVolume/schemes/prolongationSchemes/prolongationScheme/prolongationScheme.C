@@ -1,4 +1,6 @@
 #include "prolongationScheme.H"
+#include "meshFields.H"
+#include "faceFields.H"
 
 namespace Foam
 {
@@ -35,6 +37,25 @@ prolongationScheme<Type,MeshType>::~prolongationScheme()
 template<class Type, class MeshType>
 autoPtr<prolongationScheme<Type,MeshType>>
 prolongationScheme<Type,MeshType>::New
+(
+    const fvMesh& fvMsh,
+    const word fieldName
+)
+{
+    return prolongationScheme<Type,MeshType>::NewType
+    (
+        fvMsh,
+        fvMsh.prolongationDict().lookupOrDefault<word>
+        (
+            fieldName,
+            prolongationScheme<Type,MeshType>::defaultScheme
+        )
+    );
+}
+
+template<class Type, class MeshType>
+autoPtr<prolongationScheme<Type,MeshType>>
+prolongationScheme<Type,MeshType>::NewType
 (
     const fvMesh& fvMsh,
     const word prolongationSchemeType

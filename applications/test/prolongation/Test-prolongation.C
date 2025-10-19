@@ -17,7 +17,7 @@ void testConstantProlongation(const fvMesh& fvMsh, const word scheme)
 {
     autoPtr<prolongationScheme<Type,MeshType>> P
     (
-        prolongationScheme<Type,MeshType>::New
+        prolongationScheme<Type,MeshType>::NewType
         (
             fvMsh,
             scheme
@@ -51,7 +51,7 @@ void testOneLinearProlongation(const fvMesh& fvMsh, const word scheme)
 {
     autoPtr<prolongationScheme<Type,MeshType>> P
     (
-        prolongationScheme<Type,MeshType>::New
+        prolongationScheme<Type,MeshType>::NewType
         (
             fvMsh,
             scheme
@@ -108,7 +108,7 @@ void testTwoLinearProlongation(const fvMesh& fvMsh, const word scheme)\
 {
     autoPtr<prolongationScheme<Type,MeshType>> P
     (
-        prolongationScheme<Type,MeshType>::New
+        prolongationScheme<Type,MeshType>::NewType
         (
             fvMsh,
             scheme
@@ -170,7 +170,7 @@ void testThreeLinearProlongation(const fvMesh& fvMsh, const word scheme)
 {
     autoPtr<prolongationScheme<Type,MeshType>> P
     (
-        prolongationScheme<Type,MeshType>::New
+        prolongationScheme<Type,MeshType>::NewType
         (
             fvMsh,
             scheme

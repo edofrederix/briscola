@@ -34,7 +34,7 @@ harmonicViscosityMixture<BaseModel>::~harmonicViscosityMixture()
 template<class BaseModel>
 void harmonicViscosityMixture<BaseModel>::correctMixture()
 {
-    const meshField<faceScalar,typename BaseModel::meshType> alpha
+    const faceField<scalar,typename BaseModel::meshType> alpha
     (
         this->faceAlpha()
     );

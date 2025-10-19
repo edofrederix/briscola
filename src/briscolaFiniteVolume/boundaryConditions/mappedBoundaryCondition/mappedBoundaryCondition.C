@@ -24,14 +24,14 @@ mappedBoundaryCondition<Type,colocated>::mappedBoundaryCondition
     const vector mo(b.cast<mappedBoundary>().mappingOffset());
     const labelVector bo(this->offset());
     const label f = faceNumber(bo);
+    const label fd = f/2;
 
     // Set data exchanges
 
     this->exchanges_.clear();
     this->exchanges_.setSize(1);
 
-    const meshDirection<faceVector,colocated>& fc =
-        this->faceCenters()[0][0];
+    const faceField<vector,colocated>& fc = this->faceCenters();
 
     const labelVector S(this->S(0,0));
     const labelVector E(this->E(0,0));
@@ -48,7 +48,7 @@ mappedBoundaryCondition<Type,colocated>::mappedBoundaryCondition
     for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
     {
-        points[c++] = fc(ijk)[f] + mo;
+        points[c++] = fc[fd](upperFaceNeighbor(ijk,f)) + mo;
     }
 
     this->exchanges_.set
@@ -72,6 +72,7 @@ void mappedBoundaryCondition<Type,colocated>::prepare(const label l)
 
     const labelVector bo(this->offset());
     const label f = faceNumber(bo);
+    const label fd = f/2;
 
     meshField<Type,colocated>& field = this->mshField();
 
@@ -84,8 +85,7 @@ void mappedBoundaryCondition<Type,colocated>::prepare(const label l)
 
     if (this->setAverages_[0])
     {
-        const meshDirection<faceScalar,colocated>& fa =
-            this->faceAreas()[0][0];
+        const faceField<scalar,colocated>& fa = this->faceAreas();
 
         Type sum = Zero;
         scalar area = Zero;
@@ -96,7 +96,7 @@ void mappedBoundaryCondition<Type,colocated>::prepare(const label l)
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            const scalar a = fa(ijk-S)[f];
+            const scalar a = fa[fd](0,0,upperFaceNeighbor(ijk,f));
 
             area += a;
             sum += a*data[c++];
@@ -140,6 +140,7 @@ mappedBoundaryCondition<Type,staggered>::mappedBoundaryCondition
     const vector mo(b.cast<mappedBoundary>().mappingOffset());
     const labelVector bo(this->offset());
     const label f = faceNumber(bo);
+    const label fd = f/2;
 
     // Set data exchanges
 
@@ -148,8 +149,7 @@ mappedBoundaryCondition<Type,staggered>::mappedBoundaryCondition
 
     forAll(this->exchanges_, d)
     {
-        const meshDirection<faceVector,staggered>& fc =
-            this->faceCenters()[0][d];
+        const faceField<vector,staggered>& fc = this->faceCenters();
 
         const meshDirection<vector,staggered>& cc =
             this->cellCenters()[0][d];
@@ -171,7 +171,8 @@ mappedBoundaryCondition<Type,staggered>::mappedBoundaryCondition
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            points[c++] = (d == label(f/2) ? cc(ijk) : fc(ijk)[f]) + mo;
+            points[c++] =
+                (d == fd ? cc(ijk) : fc[fd](0,d,upperFaceNeighbor(ijk,f))) + mo;
         }
 
         this->exchanges_.set
@@ -196,6 +197,7 @@ void mappedBoundaryCondition<Type,staggered>::prepare(const label l)
 
     const labelVector bo(this->offset());
     const label f = faceNumber(bo);
+    const label fd = f/2;
 
     meshField<Type,staggered>& field = this->mshField();
 
@@ -212,12 +214,11 @@ void mappedBoundaryCondition<Type,staggered>::prepare(const label l)
         {
             // Colocated face areas needed for directions that are shifted into
             // the boundary
-            const meshDirection<faceScalar,colocated>& cfa =
-                this->fvMsh_.template metrics<colocated>().faceAreas()[0][0];
+            const colocatedScalarFaceField& cfa =
+                this->fvMsh_.template metrics<colocated>().faceAreas();
 
             // Staggered face areas
-            const meshDirection<faceScalar,staggered>& sfa =
-                this->faceAreas()[0][d];
+            const staggeredScalarFaceField& sfa = this->faceAreas();
 
             Type sum = Zero;
             scalar area = 0.0;
@@ -228,7 +229,10 @@ void mappedBoundaryCondition<Type,staggered>::prepare(const label l)
             for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
-                const scalar a = (d == label(f/2) ? cfa(ijk)[f] : sfa(ijk)[f]);
+                const labelVector upp(upperFaceNeighbor(ijk,f));
+
+                const scalar a =
+                    (d == fd ? cfa[fd](0,0,upp) : sfa[fd](0,d,upp));
 
                 area += a;
                 sum += a*data[c++];

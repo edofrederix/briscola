@@ -657,10 +657,8 @@ meshLevel<Type,MeshType>::component
     const label dir
 ) const
 {
-    tmp<meshLevel<cmptType,MeshType>> tL
-    (
-        new meshLevel<cmptType,MeshType>(this->fvMsh_, this->l_)
-    );
+    tmp<meshLevel<cmptType,MeshType>> tL =
+        meshLevel<cmptType,MeshType>::New(this->fvMsh_, this->l_);
 
     forAll(*this, d)
         tL.ref()[d] = listType::operator[](d).component(dir);

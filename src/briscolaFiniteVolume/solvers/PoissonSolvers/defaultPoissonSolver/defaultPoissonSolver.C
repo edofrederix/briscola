@@ -39,7 +39,7 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
 (
     meshField<Type,MeshType>& x,
     const meshField<Type,MeshType>* bPtr,
-    const meshField<faceScalar,MeshType>* lambdaPtr,
+    const faceField<scalar,MeshType>* lambdaPtr,
     const bool ddt,
     const scalar dtFrac
 )
@@ -95,7 +95,7 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
     {
         this->initFlux();
 
-        const meshField<faceScalar,MeshType>& fa =
+        const faceField<scalar,MeshType>& fa =
             x.fvMsh().template metrics<MeshType>().faceAreas();
 
         if (lambdaPtr)

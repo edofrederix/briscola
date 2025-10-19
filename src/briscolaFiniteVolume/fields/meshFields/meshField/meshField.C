@@ -83,8 +83,7 @@ meshField<Type,MeshType>::meshField
     cachedRefCount(),
     fvMsh_(fvMsh),
     oldTimePtr_(nullptr),
-    boundaryConditions_(),
-    reSchemePtr_()
+    boundaryConditions_()
 {
     this->allocate(deep);
 }
@@ -102,8 +101,7 @@ meshField<Type,MeshType>::meshField
     cachedRefCount(),
     fvMsh_(fvMsh),
     oldTimePtr_(nullptr),
-    boundaryConditions_(),
-    reSchemePtr_()
+    boundaryConditions_()
 {
     this->allocate(deep);
 }
@@ -134,8 +132,7 @@ meshField<Type,MeshType>::meshField
     cachedRefCount(),
     fvMsh_(field.fvMsh()),
     oldTimePtr_(nullptr),
-    boundaryConditions_(),
-    reSchemePtr_()
+    boundaryConditions_()
 {
     setFieldPointers();
 
@@ -176,8 +173,7 @@ meshField<Type,MeshType>::meshField
     cachedRefCount(),
     fvMsh_(field.fvMsh()),
     oldTimePtr_(nullptr),
-    boundaryConditions_(),
-    reSchemePtr_()
+    boundaryConditions_()
 {
     setFieldPointers();
 
@@ -221,8 +217,7 @@ meshField<Type,MeshType>::meshField
     cachedRefCount(),
     fvMsh_(tField->fvMsh_),
     oldTimePtr_(nullptr),
-    boundaryConditions_(),
-    reSchemePtr_()
+    boundaryConditions_()
 {
     setFieldPointers();
 
@@ -270,8 +265,7 @@ meshField<Type,MeshType>::meshField
     cachedRefCount(),
     fvMsh_(tField->fvMsh_),
     oldTimePtr_(nullptr),
-    boundaryConditions_(),
-    reSchemePtr_()
+    boundaryConditions_()
 {
     setFieldPointers();
 
@@ -491,47 +485,20 @@ void meshField<Type,MeshType>::makeShallow()
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::setRestrictionScheme(const word scheme)
-{
-    reSchemePtr_.reset
-    (
-        restrictionScheme<Type,MeshType>::New(fvMsh_, scheme).ptr()
-    );
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::restrict()
-{
-    if (reSchemePtr_.empty())
-        this->setRestrictionScheme
-        (
-            restrictionScheme<Type,MeshType>::defaultScheme
-        );
-
-    makeDeep();
-
-    reSchemePtr_->restrict(*this);
-}
-
-template<class Type, class MeshType>
 tmp<meshField<typename meshField<Type,MeshType>::cmptType,MeshType>>
 meshField<Type,MeshType>::component
 (
     const label dir
 ) const
 {
-    tmp<meshField<cmptType,MeshType>> tF
-    (
-        new meshField<cmptType,MeshType>
+    tmp<meshField<cmptType,MeshType>> tF =
+        meshField<cmptType,MeshType>::New
         (
             this->name() + ".component(" + Foam::name(dir) + ")",
-            this->fvMsh_,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            this->deep()
-        )
-    );
+            this->fvMsh_
+        );
+
+    tF.ref().make(deep());
 
     forAll(*this, l)
         tF.ref()[l] = listType::operator[](l).component(dir);

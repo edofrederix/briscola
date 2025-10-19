@@ -14,7 +14,7 @@ T.correctBoundaryConditions();
 
 // Diffusivity
 
-meshField<faceScalar,colocated> lambda
+colocatedScalarFaceField lambda
 (
     "lambda",
     fvMsh,
@@ -27,7 +27,7 @@ lambda = readScalar(solverDict.lookup("lambda"));
 
 // Source
 
-meshField<scalar,colocated> source
+colocatedScalarField source
 (
     "source",
     fvMsh,

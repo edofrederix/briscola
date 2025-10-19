@@ -1,4 +1,4 @@
-#include "linearSystem.H"
+#include "linearSystems.H"
 
 #include "stencil.H"
 #include "scalar.H"

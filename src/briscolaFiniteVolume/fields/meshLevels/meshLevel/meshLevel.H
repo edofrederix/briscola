@@ -1,6 +1,7 @@
 #ifndef meshLevel_H
 #define meshLevel_H
 
+#include "meshFieldFwd.H"
 #include "FastPtrList.H"
 #include "List.H"
 
@@ -21,9 +22,6 @@ namespace fv
 {
 
 class fvMesh;
-
-template<class Type, class MeshType>
-class meshField;
 
 template<class Type, class MeshType>
 class meshLevel
@@ -182,15 +180,13 @@ public:
     // Destructor
     virtual ~meshLevel();
 
-    // Access to the directions. Use the operator() for this because it doesn't
-    // perform any bounds checking which is expensive.
+    // Access to the directions
     inline meshDirection<Type,MeshType>& operator[](label d)
     {
         return listType::operator[](d);
     }
 
-    // Const access to the directions. Use the operator() for this because it
-    // doesn't perform any bounds checking which is expensive.
+    // Const access to the directions
     inline const meshDirection<Type,MeshType>& operator[](label d) const
     {
         return listType::operator[](d);

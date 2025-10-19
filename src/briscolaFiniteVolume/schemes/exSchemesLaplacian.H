@@ -24,7 +24,7 @@ namespace ex
         template<class SType, class Type, class MeshType>
         inline tmp<meshField<Type,MeshType>> laplacian
         (
-            const meshField<faceScalar,MeshType>* lambdaPtr,
+            const faceField<scalar,MeshType>* lambdaPtr,
             const meshField<Type,MeshType>& field
         )
         {
@@ -42,7 +42,7 @@ namespace ex
         template<class SType, class Type, class MeshType>
         inline tmp<meshField<Type,MeshType>> laplacian
         (
-            const meshField<faceScalar,MeshType>& lambda,
+            const faceField<scalar,MeshType>& lambda,
             const meshField<Type,MeshType>& field
         )
         {
@@ -58,7 +58,7 @@ namespace ex
         template<class SType, class Type, class MeshType>
         inline tmp<meshField<Type,MeshType>> laplacian
         (
-            const tmp<meshField<faceScalar,MeshType>>& tLambda,
+            const tmp<faceField<scalar,MeshType>>& tLambda,
             const meshField<Type,MeshType>& field
         )
         {
@@ -109,7 +109,7 @@ namespace ex
         template<class Type>
         inline tmp<meshField<Type,colocated>> laplacian
         (
-            const meshField<faceScalar,colocated>* lambdaPtr,
+            const faceField<scalar,colocated>* lambdaPtr,
             const meshField<Type,colocated>& field
         )
         {
@@ -121,7 +121,7 @@ namespace ex
         template<class Type>
         inline tmp<meshField<Type,colocated>> laplacian
         (
-            const meshField<faceScalar,colocated>& lambda,
+            const faceField<scalar,colocated>& lambda,
             const meshField<Type,colocated>& field
         )
         {
@@ -133,7 +133,7 @@ namespace ex
         template<class Type>
         inline tmp<meshField<Type,colocated>> laplacian
         (
-            const tmp<meshField<faceScalar,colocated>>& tLambda,
+            const tmp<faceField<scalar,colocated>>& tLambda,
             const meshField<Type,colocated>& field
         )
         {
@@ -172,7 +172,7 @@ namespace ex
         template<class Type>
         inline tmp<meshField<Type,staggered>> laplacian
         (
-            const meshField<faceScalar,staggered>* lambdaPtr,
+            const faceField<scalar,staggered>* lambdaPtr,
             const meshField<Type,staggered>& field
         )
         {
@@ -184,7 +184,7 @@ namespace ex
         template<class Type>
         inline tmp<meshField<Type,staggered>> laplacian
         (
-            const meshField<faceScalar,staggered>& lambda,
+            const faceField<scalar,staggered>& lambda,
             const meshField<Type,staggered>& field
         )
         {
@@ -196,7 +196,7 @@ namespace ex
         template<class Type>
         inline tmp<meshField<Type,staggered>> laplacian
         (
-            const tmp<meshField<faceScalar,staggered>>& tLambda,
+            const tmp<faceField<scalar,staggered>>& tLambda,
             const meshField<Type,staggered>& field
         )
         {

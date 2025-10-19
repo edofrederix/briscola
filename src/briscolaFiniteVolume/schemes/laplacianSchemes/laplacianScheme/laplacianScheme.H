@@ -64,13 +64,13 @@ public:
 
         virtual tmp<linearSystem<SType,Type,MeshType>> imLaplacian
         (
-            const meshField<faceScalar,MeshType>* lambdaPtr,
+            const faceField<scalar,MeshType>* lambdaPtr,
             const meshField<Type,MeshType>& field
         ) = 0;
 
         virtual tmp<meshField<Type,MeshType>> exLaplacian
         (
-            const meshField<faceScalar,MeshType>* lambdaPtr,
+            const faceField<scalar,MeshType>* lambdaPtr,
             const meshField<Type,MeshType>& field
         ) = 0;
 
@@ -83,14 +83,14 @@ public:
                 // Coefficient as reference
                 inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
                 (
-                    const meshField<faceScalar,MeshType>& lambda,
+                    const faceField<scalar,MeshType>& lambda,
                     const meshField<Type,MeshType>& field
                 );
 
                 // Coefficient as tmp
                 inline tmp<linearSystem<SType,Type,MeshType>> imLaplacian
                 (
-                    const tmp<meshField<faceScalar,MeshType>>& tLambda,
+                    const tmp<faceField<scalar,MeshType>>& tLambda,
                     const meshField<Type,MeshType>& field
                 );
 
@@ -114,14 +114,14 @@ public:
                 // Coefficient as reference
                 inline tmp<meshField<Type,MeshType>> exLaplacian
                 (
-                    const meshField<faceScalar,MeshType>& lambda,
+                    const faceField<scalar,MeshType>& lambda,
                     const meshField<Type,MeshType>& field
                 );
 
                 // Coefficient as tmp
                 inline tmp<meshField<Type,MeshType>> exLaplacian
                 (
-                    const tmp<meshField<faceScalar,MeshType>>& tLambda,
+                    const tmp<faceField<scalar,MeshType>>& tLambda,
                     const meshField<Type,MeshType>& field
                 );
 

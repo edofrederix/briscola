@@ -312,12 +312,10 @@ meshDirection<Type,MeshType>::component
     const label dir
 ) const
 {
-    tmp<meshDirection<cmptType,MeshType>> tD
-    (
-        new meshDirection<cmptType,MeshType>(this->fvMsh_, this->l_, this->d_)
-    );
+    tmp<meshDirection<cmptType,MeshType>> tD =
+        meshDirection<cmptType,MeshType>::New(this->fvMsh_, this->l_, this->d_);
 
-    tD->B() = this->B().component(dir);
+    tD.ref().B() = this->B().component(dir);
 
     return tD;
 }

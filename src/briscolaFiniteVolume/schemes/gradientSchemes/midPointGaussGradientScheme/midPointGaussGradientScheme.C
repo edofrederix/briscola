@@ -37,28 +37,29 @@ midPointGaussGradientScheme<Type,MeshType>::grad
 
     meshField<GradType,MeshType>& Grad = tGrad.ref();
 
-    const meshField<faceVector,MeshType>& fan =
+    const faceField<vector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
     const meshField<scalar,MeshType>& icv =
         field.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    forAllCells(Grad, d, i, j, k)
+    #ifdef NO_BLOCK_ZERO_INIT
+    Grad = Zero;
+    #endif
+
+    forAllFaces(fan, fd, d, i, j, k)
     {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Grad(d,i,j,k) = Zero;
-        #endif
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        for (int f = 0; f < 6; f++)
-            Grad(d,i,j,k) +=
-                fan(d,i,j,k)[f]
-              * (
-                    field(d,i,j,k)
-                  + field(d,neighbor(i,j,k,f))
-                );
+        const GradType value =
+            0.5*fan[fd](d,ijk)*(field(d,ijk) + field(d,nei));
 
-        Grad(d,i,j,k) *= 0.5*icv(d,i,j,k);
+        Grad(d,ijk) += value;
+        Grad(d,nei) -= value;
     }
+
+    Grad *= icv;
 
     return tGrad;
 }
@@ -77,14 +78,14 @@ midPointGaussGradientScheme<Type,MeshType>::stagGrad
             field.fvMsh()
         );
 
-    meshField<Type,staggered>& Grad = tGrad.ref();
+    meshField<Type,staggered>& grad = tGrad.ref();
 
-    const meshField<faceScalar,colocated>& fd =
+    const faceField<scalar,colocated>& delta =
             field.fvMsh().template metrics<colocated>().faceDeltas();
 
-    forAllCells(Grad, d, i, j, k)
-        Grad(d,i,j,k) =
-            (field(i,j,k) - field(lowerNeighbor(i,j,k,d)))*fd(i,j,k)[d*2];
+    forAllCells(grad, d, i, j, k)
+        grad(d,i,j,k) =
+            (field(i,j,k) - field(lowerNeighbor(i,j,k,d)))*delta[d](i,j,k);
 
     return tGrad;
 }

@@ -98,7 +98,7 @@ public:
     (
         colocatedScalarField& x,
         const colocatedScalarField* bPtr,
-        const colocatedFaceScalarField* lambdaPtr,
+        const colocatedScalarFaceField* lambdaPtr,
         const bool ddt = false,
         const scalar dtFrac = 1
     );

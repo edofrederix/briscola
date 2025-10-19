@@ -48,8 +48,15 @@ public:
     // Copy constructor
     prolongationScheme(const prolongationScheme<Type,MeshType>&);
 
-    // Selector
+    // Selector from field name
     static autoPtr<prolongationScheme<Type,MeshType>> New
+    (
+        const fvMesh&,
+        const word
+    );
+
+    // Selector from type name
+    static autoPtr<prolongationScheme<Type,MeshType>> NewType
     (
         const fvMesh&,
         const word
@@ -57,6 +64,9 @@ public:
 
     // Destructor
     virtual ~prolongationScheme();
+
+    // Default prolongation scheme for this mesh and type
+    static const word defaultScheme;
 
     // In-place prolongation from a coarse cell level to the adjacent fine cell
     // level, using the = operation

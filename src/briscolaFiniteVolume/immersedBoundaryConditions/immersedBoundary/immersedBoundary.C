@@ -18,38 +18,34 @@ void immersedBoundary<MeshType>::setMasks()
     wallAdjMask_ = Zero;
 
     // Cell centers
-    const meshField<vector,MeshType>& CC =
+    const meshField<vector,MeshType>& cc =
         fvMshMetrics_.cellCenters();
 
     // Set IB mask fields
-    forAllCells(mask_,l,d,i,j,k)
+    forAllCells(mask_, l, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
 
-        if (this->isInside(CC(l,d,i,j,k)))
+        if (this->isInside(cc(l,d,ijk)))
         {
-            mask_(l,d,i,j,k) = 1;
+            mask_(l,d,ijk) = 1;
 
-            for (int dir = 0; dir < 6; dir++)
+            for (int f = 0; f < 6; f++)
             {
-                const labelVector fo = faceOffsets[dir];
+                const labelVector fo = faceOffsets[f];
 
-                if (!this->isInside(CC[l][d](ijk+fo)))
-                {
-                    ghostMask_(l,d,i,j,k) = 1;
-                }
+                if (!this->isInside(cc[l][d](ijk+fo)))
+                    ghostMask_(l,d,ijk) = 1;
             }
         }
         else
         {
-            for (int dir = 0; dir < 6; dir++)
+            for (int f = 0; f < 6; f++)
             {
-                const labelVector fo = faceOffsets[dir];
+                const labelVector fo = faceOffsets[f];
 
-                if (this->isInside(CC[l][d](ijk+fo)))
-                {
+                if (this->isInside(cc[l][d](ijk+fo)))
                     wallAdjMask_(l,d,i,j,k) = 1;
-                }
             }
         }
     }
@@ -58,8 +54,6 @@ void immersedBoundary<MeshType>::setMasks()
 
     forAll(mask_, l)
     {
-        const labelVector N(fvMsh_[l].N());
-
         forAll(mask_[l], d)
         {
             labelVector bo;
@@ -78,7 +72,7 @@ void immersedBoundary<MeshType>::setMasks()
                 for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
                 for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
                 {
-                    if (this->isInside(CC(l,d,ijk+bo)))
+                    if (this->isInside(cc(l,d,ijk+bo)))
                     {
                         mask_(l,d,ijk+bo) = 1;
                     }
@@ -100,70 +94,76 @@ void immersedBoundary<MeshType>::calculateWallDistances()
     wallDistGhost_ = Zero;
 
     // Cell centers
-    const meshField<vector,MeshType>& CC =
+    const meshField<vector,MeshType>& cc =
         fvMshMetrics_.cellCenters();
 
+    // To-do: write as face loop
+
     // Set wall distance fields
-    forAllCells(mask_,l,d,i,j,k)
+    forAllCells(mask_, l, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        faceLabel I = this->fvMsh_.template I<MeshType>(l,d);
+        const faceLabel I = this->fvMsh_.template I<MeshType>(l,d);
 
-        if (!this->isInside(CC(l,d,i,j,k)))
+        if (!this->isInside(cc(l,d,ijk)))
         {
-            const vector c(CC(l,d,i,j,k));
+            const vector c(cc(l,d,ijk));
 
-            for (int dir = 0; dir < 6; dir++)
+            for (int f = 0; f < 6; f++)
             {
-                const labelVector fo = faceOffsets[dir];
+                const labelVector fo = faceOffsets[f];
+                const label fd = f/2;
 
-                if (this->isInside(CC[l][d](ijk+fo)))
+                if (this->isInside(cc[l][d](ijk+fo)))
                 {
                     // Neighbor cell in the IB
-                    const vector nb(CC[l][d](ijk+fo));
+                    const vector nb(cc[l][d](ijk+fo));
                     const scalar wd = this->wallDistance(c,nb);
                     const scalar xi = (Foam::mag(c-nb)-wd)/Foam::mag(c-nb);
 
-                    wallDistAdj_(l,d,i,j,k)[dir] = xi;
+                    wallDistAdj_[fd](l,d,upperFaceNeighbor(ijk,f)) = xi;
                 }
             }
         }
         else
         {
-            const vector gc(CC(l,d,i,j,k));
+            const vector gc(cc(l,d,ijk));
 
-            for (int dir = 0; dir < 6; dir++)
+            for (int f = 0; f < 6; f++)
             {
-                const labelVector fo = faceOffsets[dir];
+                const labelVector fo = faceOffsets[f];
+                const label fd = f/2;
 
-                if (!this->isInside(CC[l][d](ijk+fo)))
+                if (!this->isInside(cc[l][d](ijk+fo)))
                 {
                     // Wall-adjacent cell
-                    const vector wa(CC[l][d](ijk+fo));
+                    const vector wa(cc[l][d](ijk+fo));
                     const scalar wd = this->wallDistance(wa,gc);
                     const scalar xi = (Foam::mag(gc-wa)-wd)/Foam::mag(gc-wa);
 
-                    wallDistGhost_(l,d,i,j,k)[dir] = xi;
+                    const labelVector upp(upperFaceNeighbor(ijk,f));
+
+                    wallDistGhost_[fd](l,d,upp) = xi;
 
                     // Second neighbor
-                    vector sn(wa + (wa - CC[l][d](ijk)));
+                    vector sn(wa + (wa - cc[l][d](ijk)));
 
                     if
                     (
-                           (i+2*fo.x() >= I.left())
-                        && (i+2*fo.x() <= I.right())
-                        && (j+2*fo.y() >= I.bottom())
-                        && (j+2*fo.y() <= I.top())
-                        && (k+2*fo.z() >= I.aft())
-                        && (k+2*fo.z() <= I.fore())
+                           (i + 2*fo.x() >= I.left())
+                        && (i + 2*fo.x() <= I.right())
+                        && (j + 2*fo.y() >= I.bottom())
+                        && (j + 2*fo.y() <= I.top())
+                        && (k + 2*fo.z() >= I.aft())
+                        && (k + 2*fo.z() <= I.fore())
                     )
                     {
-                        sn = CC[l][d](ijk+2.0*fo);
+                        sn = cc[l][d](ijk + 2*fo);
                     }
 
                     const scalar xi2 = Foam::mag(gc-sn)/Foam::mag(gc-wa);
 
-                    neighborDist_(l,d,i,j,k)[dir] = xi2;
+                    neighborDist_[fd](l,d,upp) = xi2;
 
                     break;
                 }
@@ -171,16 +171,21 @@ void immersedBoundary<MeshType>::calculateWallDistances()
         }
     }
 
-    wallDistAdj_.correctCommsBoundaryConditions();
-    wallDistGhost_.correctCommsBoundaryConditions();
-    neighborDist_.correctCommsBoundaryConditions();
+    forAll(wallDistAdj_, fd)
+        wallDistAdj_[fd].correctCommsBoundaryConditions();
+
+    forAll(wallDistGhost_, fd)
+        wallDistGhost_[fd].correctCommsBoundaryConditions();
+
+    forAll(neighborDist_, fd)
+        neighborDist_[fd].correctCommsBoundaryConditions();
 }
 
 template<class MeshType>
 void immersedBoundary<MeshType>::setMirrorPoints()
 {
     // Cell centers
-    const meshField<vector,MeshType>& CC =
+    const meshField<vector,MeshType>& cc =
         fvMshMetrics_.cellCenters();
 
     // Mesh
@@ -188,44 +193,49 @@ void immersedBoundary<MeshType>::setMirrorPoints()
 
     scalar tol = 1e-10;
 
-    forAllCells(mirrorPoints_,l,d,i,j,k)
+    forAllCells(mirrorPoints_, l, d, i, j, k)
     {
-        if (ghostMask_(l,d,i,j,k))
+        const labelVector ijk(i,j,k);
+
+        if (ghostMask_(l,d,ijk))
         {
-            vector mp = mirrorPoint(CC(l,d,i,j,k));
+            vector mp = mirrorPoint(cc(l,d,ijk));
+
+            // To-do: what if the domain is not rectangular or not aligned with
+            // the coordinate system?
 
             // Fix situations where the mirror point is just outside of the mesh
             // bounding box due to rounding errors
 
-            for (int dir = 0; dir < 3; dir++)
+            for (int fd = 0; fd < 3; fd++)
             {
                 if
                 (
-                       (mp[dir] <= msh[l].boundingBox()[dir*2] + tol)
-                    && (mp[dir] >= msh[l].boundingBox()[dir*2] - tol)
+                    (mp[fd] <= msh[l].boundingBox()[fd*2] + tol)
+                 && (mp[fd] >= msh[l].boundingBox()[fd*2] - tol)
                 )
                 {
-                    mp[dir] += tol;
+                    mp[fd] += tol;
                 }
 
                 if
                 (
-                       (mp[dir] >= msh[l].boundingBox()[dir*2+1] - tol)
-                    && (mp[dir] <= msh[l].boundingBox()[dir*2+1] + tol)
+                    (mp[fd] >= msh[l].boundingBox()[fd*2+1] - tol)
+                 && (mp[fd] <= msh[l].boundingBox()[fd*2+1] + tol)
                 )
                 {
-                    mp[dir] -= tol;
+                    mp[fd] -= tol;
                 }
             }
 
-            mirrorPoints_(l,d,i,j,k) = mp;
+            mirrorPoints_(l,d,ijk) = mp;
         }
         else
         {
             // The vector (0,0,0) is still a valid coordinate so the
             // mirrorPoints_ field should only be evaluated at ghost cells
 
-            mirrorPoints_(l,d,i,j,k) = Zero;
+            mirrorPoints_(l,d,ijk) = Zero;
         }
     }
 
@@ -428,7 +438,7 @@ scalar immersedBoundary<MeshType>::wallNormalDistance
 
     for (int s = 0; s < shapes_.size(); s++)
     {
-        if (Foam::mag(dist+1) < 0.01)
+        if (Foam::mag(dist + 1.0) < 0.01)
         {
             dist = shapes_[s].wallNormalDistance(gc);
         }
@@ -509,17 +519,17 @@ template<class MeshType>
 void immersedBoundary<MeshType>::checkOverlap()
 {
     // Cell centers
-    const meshField<vector,MeshType>& CC =
+    const meshField<vector,MeshType>& cc =
         fvMshMetrics_.cellCenters();
 
-    forAllCells(CC,l,d,i,j,k)
+    forAllCells(cc,l,d,i,j,k)
     {
         Switch inside = false;
 
         // Check if xyz is inside any of the IB shapes
         for (int s = 0; s < shapes_.size(); s++)
         {
-            if(shapes_[s].isInside(CC(l,d,i,j,k)))
+            if(shapes_[s].isInside(cc(l,d,i,j,k)))
             {
                 if(inside == true)
                 {

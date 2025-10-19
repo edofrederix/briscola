@@ -1,4 +1,5 @@
 #include "linearSystemReuseFunctions.H"
+#include "restrict.H"
 
 namespace Foam
 {
@@ -154,7 +155,7 @@ operator*
     const linearSystem<SType,Type,MeshType>& sys
 )
 {
-    const_cast<meshField<scalar,MeshType>&>(s).restrict();
+    restrict(s);
 
     tmp<linearSystem<SType,Type,MeshType>> tRet =
         linearSystem<SType,Type,MeshType>::New
@@ -177,7 +178,7 @@ operator*
     forAllCells(b, l, d, i, j, k)
         b(l,d,i,j,k) *= s(l,d,i,j,k);
 
-    const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+    collapse(s);
 
     return tRet;
 }
@@ -190,7 +191,7 @@ operator*
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    const_cast<meshField<scalar,MeshType>&>(s).restrict();
+    restrict(s);
 
     tmp<linearSystem<SType,Type,MeshType>> tRet =
         reuseSysTmp<SType,SType,Type,MeshType>::New
@@ -214,7 +215,7 @@ operator*
     forAllCells(b, l, d, i, j, k)
         b(l,d,i,j,k) = bs(l,d,i,j,k)*s(l,d,i,j,k);
 
-    const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+    collapse(s);
 
     if (tSys.isTmp())
         tSys.clear();
@@ -262,7 +263,7 @@ operator*
     const meshField<scalar,MeshType>& s
 )
 {
-    const_cast<meshField<scalar,MeshType>&>(s).restrict();
+    restrict(s);
 
     tmp<linearSystem<SType,Type,MeshType>> tRet =
         linearSystem<SType,Type,MeshType>::New
@@ -285,7 +286,7 @@ operator*
     forAllCells(b, l, d, i, j, k)
         b(l,d,i,j,k) *= s(l,d,i,j,k);
 
-    const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+    collapse(s);
 
     return tRet;
 }
@@ -298,7 +299,7 @@ operator*
     const meshField<scalar,MeshType>& s
 )
 {
-    const_cast<meshField<scalar,MeshType>&>(s).restrict();
+    restrict(s);
 
     tmp<linearSystem<SType,Type,MeshType>> tRet =
         reuseSysTmp<SType,SType,Type,MeshType>::New
@@ -322,7 +323,7 @@ operator*
     forAllCells(b, l, d, i, j, k)
         b(l,d,i,j,k) = bs(l,d,i,j,k)*s(l,d,i,j,k);
 
-    const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+    collapse(s);
 
     if (tSys.isTmp())
         tSys.clear();
@@ -419,7 +420,7 @@ operator/
     const meshField<scalar,MeshType>& s
 )
 {
-    const_cast<meshField<scalar,MeshType>&>(s).restrict();
+    restrict(s);
 
     tmp<linearSystem<SType,Type,MeshType>> tRet =
         linearSystem<SType,Type,MeshType>::New
@@ -442,7 +443,7 @@ operator/
     forAllCells(b, l, d, i, j, k)
         b(l,d,i,j,k) /= s(l,d,i,j,k);
 
-    const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+    collapse(s);
 
     return tRet;
 }
@@ -455,7 +456,7 @@ operator/
     const meshField<scalar,MeshType>& s
 )
 {
-    const_cast<meshField<scalar,MeshType>&>(s).restrict();
+    restrict(s);
 
     tmp<linearSystem<SType,Type,MeshType>> tRet =
         reuseSysTmp<SType,SType,Type,MeshType>::New
@@ -479,7 +480,7 @@ operator/
     forAllCells(b, l, d, i, j, k)
         b(l,d,i,j,k) = bs(l,d,i,j,k)/s(l,d,i,j,k);
 
-    const_cast<meshField<scalar,MeshType>&>(s).makeShallow();
+    collapse(s);
 
     if (tSys.isTmp())
         tSys.clear();

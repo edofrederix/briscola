@@ -73,6 +73,9 @@ void incompressibleTwoPhaseModel<MeshType>::correctMixture()
     this->rho_ = rho2_*talpha() + rho1_*(1.0 - talpha());
     this->rho_.correctBoundaryConditions();
 
+    this->rho_.max(Foam::min(rho1_, rho2_));
+    this->rho_.min(Foam::max(rho1_, rho2_));
+
     TwoPhaseModel<MeshType>::correctMixture();
 }
 

@@ -64,130 +64,15 @@ void checkParallelPatches(const fvMesh& fvMsh)
 }
 
 template<class MeshType>
-void checkInternalFaceCenters(const fvMesh& fvMsh)
-{
-    const meshField<faceVector,MeshType>& fc =
-        fvMsh.metrics<MeshType>().faceCenters();
-
-    forAllCells(fc, l, d, i, j, k)
-    {
-        const labelVector N(fc.N(l,d));
-        const labelVector ijk0(i,j,k);
-
-        for (label face0 = 0; face0 < 6; face0++)
-        {
-            const labelVector offset(faceOffsets[face0]);
-            const labelVector ijk1(ijk0+offset);
-
-            const label face1 = faceNumber(-offset);
-
-            if
-            (
-                ijk1.x() >= 0 && ijk1.x() < N.x()
-             && ijk1.y() >= 0 && ijk1.y() < N.y()
-             && ijk1.z() >= 0 && ijk1.z() < N.z()
-            )
-            {
-                if
-                (
-                    Foam::mag
-                    (
-                        fc(l,d,ijk0)[face0]
-                      - fc(l,d,ijk1)[face1]
-                    )
-                  > 1e-12
-                )
-                {
-                    FatalErrorInFunction
-                        << "Found mismatch in face centers at "
-                        << "offset = " << offset << nl
-                        << "mesh type = " << MeshType::typeName << nl
-                        << "mesh direction = " << d << nl
-                        << "first cell face = " << fc(l,d,ijk0)[face0] << nl
-                        << "first cell faces = " << fc(l,d,ijk0) << nl
-                        << "second cell face = "
-                        << fc(l,d,ijk1)[face1] << nl
-                        << "second cell faces = " << fc(l,d,ijk1)<< nl
-                        << "level = " << l << nl
-                        << "first cell index = " << ijk0 << nl
-                        << "second cell index = " << ijk1 << nl
-                        << "direction size = " << fc.N(l,d) << endl
-                        << exit(FatalError);
-                }
-            }
-        }
-    }
-}
-
-template<class MeshType>
-void checkInternalFaceDeltas(const fvMesh& fvMsh)
-{
-    const meshField<faceScalar,MeshType>& fd =
-        fvMsh.metrics<MeshType>().faceDeltas();
-
-    forAllCells(fd, l, d, i, j, k)
-    {
-        const labelVector N(fd.N(l,d));
-
-        const labelVector ijk0(i,j,k);
-
-        for (label face0 = 0; face0 < 6; face0++)
-        {
-            const labelVector offset(faceOffsets[face0]);
-            const labelVector ijk1(ijk0+offset);
-
-            const label face1 = faceNumber(-offset);
-
-            if
-            (
-                ijk1.x() >= 0 && ijk1.x() < N.x()
-             && ijk1.y() >= 0 && ijk1.y() < N.y()
-             && ijk1.z() >= 0 && ijk1.z() < N.z()
-            )
-            {
-                if
-                (
-                    Foam::mag
-                    (
-                        1.0/fd(l,d,ijk0)[face0]
-                      - 1.0/fd(l,d,ijk1)[face1]
-                    )
-                  > 1e-12
-                )
-                {
-                    FatalErrorInFunction
-                        << "Found mismatch in face deltas at "
-                        << "offset = " << offset << nl
-                        << "mesh type = " << MeshType::typeName << nl
-                        << "mesh direction = " << d << nl
-                        << "first cell delta = "
-                        << fd(l,d,ijk0)[face0] << nl
-                        << "first cell deltas = " << fd(l,d,ijk0) << nl
-                        << "second cell delta = "
-                        << fd(l,d,ijk1)[face1] << nl
-                        << "second cell deltas = " << fd(l,d,ijk1)<< nl
-                        << "level = " << l << nl
-                        << "fist cell index = " << ijk0 << nl
-                        << "second cell index = " << ijk1 << nl
-                        << "direction size = " << fd.N(l,d) << endl
-                        << exit(FatalError);
-                }
-            }
-        }
-    }
-}
-
-template<class MeshType>
 void checkParallelFaceCenters(const fvMesh& fvMsh)
 {
     // We need to correct boundary conditions for this check, because by default
     // ghost cell face centers are zero
 
-    meshField<faceVector,MeshType>& fc =
-        const_cast<meshField<faceVector,MeshType>&>
-        (
-            fvMsh.metrics<MeshType>().faceCenters()
-        );
+    meshField<faceVector,MeshType> fc
+    (
+        fvMsh.metrics<MeshType>().aos().faceCenters()
+    );
 
     fc.correctBoundaryConditions();
 
@@ -270,11 +155,10 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
     // We need to correct boundary conditions for this check, because by default
     // ghost cell face deltas are zero
 
-    meshField<faceScalar,MeshType>& fd =
-        const_cast<meshField<faceScalar,MeshType>&>
-        (
-            fvMsh.metrics<MeshType>().faceDeltas()
-        );
+    meshField<faceScalar,MeshType> fd
+    (
+        fvMsh.metrics<MeshType>().aos().faceDeltas()
+    );
 
     fd.correctBoundaryConditions();
 

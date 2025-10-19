@@ -23,7 +23,7 @@ template<class SType, class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
 (
-    const meshField<faceScalar,MeshType>* lambdaPtr,
+    const faceField<scalar,MeshType>* lambdaPtr,
     const meshField<Type,MeshType>& field
 )
 {
@@ -39,10 +39,10 @@ linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
     meshField<Type,MeshType>& Lap = tLap.ref();
 
     const faceField<scalar,MeshType>& fa =
-        field.fvMsh().template metrics<MeshType>().soa().faceAreas();
+        field.fvMsh().template metrics<MeshType>().faceAreas();
 
     const faceField<scalar,MeshType>& delta =
-        field.fvMsh().template metrics<MeshType>().soa().faceDeltas();
+        field.fvMsh().template metrics<MeshType>().faceDeltas();
 
     const meshField<scalar,MeshType>& icv =
         field.fvMsh().template metrics<MeshType>().inverseCellVolumes();
@@ -51,7 +51,7 @@ linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
     Lap = Zero;
     #endif
 
-    forAllFaces(Lap, d, fd, i, j, k)
+    forAllFaces(fa, fd, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
@@ -59,7 +59,7 @@ linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
         const Type value =
             fa[fd](d,ijk)*delta[fd](d,ijk)
           * (field(d,nei) - field(d,ijk))
-          * (lambdaPtr ? lambdaPtr->operator()(d,ijk)[fd*2] : 1.0);
+          * (lambdaPtr ? lambdaPtr->operator[](fd)(d,ijk) : 1.0);
 
         Lap(d,ijk) += value;
         Lap(d,nei) -= value;

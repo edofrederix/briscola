@@ -36,7 +36,7 @@ volumeWeightedViscosityMixture<BaseModel>::~volumeWeightedViscosityMixture()
 template<class BaseModel>
 void volumeWeightedViscosityMixture<BaseModel>::correctMixture()
 {
-    const meshField<faceScalar,typename BaseModel::meshType> alpha
+    const faceField<scalar,typename BaseModel::meshType> alpha
     (
         this->faceAlpha()
     );

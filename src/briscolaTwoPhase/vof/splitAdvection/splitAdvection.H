@@ -19,7 +19,7 @@ class splitAdvection
 protected:
 
     // Flux field
-    colocatedFaceScalarField flux_;
+    colocatedScalarFaceField flux_;
 
     // Reset the flux
     inline void resetFlux()
@@ -30,7 +30,7 @@ protected:
     // Update the flux in given direction
     void updateFlux
     (
-        const colocatedFaceScalarField&,
+        const colocatedScalarFaceField&,
         const label
     );
 
@@ -66,7 +66,7 @@ public:
     ~splitAdvection();
 
     // Solve the Vof advection equation given a flux
-    void solve(const colocatedFaceScalarField&);
+    void solve(const colocatedScalarFaceField&);
 };
 
 }

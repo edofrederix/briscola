@@ -623,7 +623,7 @@ Vector<Type> flip(const Vector<Type>& v)
     return Vector<Type>(v[2],v[1],v[0]);
 }
 
-// Return index of the neighbor across given face
+// Return cell index of the neighbor across given face
 
 inline labelVector neighbor
 (
@@ -641,7 +641,7 @@ inline labelVector neighbor(const labelVector& ijk, const label& f)
     return neighbor(ijk.x(), ijk.y(), ijk.z(), f);
 }
 
-// Return index of lower neighbor across given face direction
+// Return cell index of the lower neighbor across given face direction
 
 inline labelVector lowerNeighbor
 (
@@ -659,7 +659,7 @@ inline labelVector lowerNeighbor(const labelVector& ijk, const label& fd)
     return lowerNeighbor(ijk.x(), ijk.y(), ijk.z(), fd);
 }
 
-// Return index of upper neighbor across given face
+// Return cell index of the upper neighbor across given face direction
 
 inline labelVector upperNeighbor
 (
@@ -677,7 +677,7 @@ inline labelVector upperNeighbor(const labelVector& ijk, const label& fd)
     return upperNeighbor(ijk.x(), ijk.y(), ijk.z(), fd);
 }
 
-// Return the index of the upper neighbor of the given face
+// Return the cell index of the upper neighbor of the given cell face
 
 inline labelVector upperFaceNeighbor
 (
@@ -699,7 +699,7 @@ inline labelVector upperFaceNeighbor
     return upperFaceNeighbor(ijk.x(), ijk.y(), ijk.z(), f);
 }
 
-// Return the index of the lower neighbor of the given face
+// Return the cell index of the lower neighbor of the given cell face
 
 inline labelVector lowerFaceNeighbor
 (

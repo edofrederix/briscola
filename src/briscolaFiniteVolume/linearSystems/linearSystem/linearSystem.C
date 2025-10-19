@@ -589,16 +589,14 @@ void linearSystem<SType,Type,MeshType>::setForcingMask()
     {
         forcingMask_.set
         (
-            new meshField<label,MeshType>
+            meshField<label,MeshType>::New
             (
                 IOobject::groupName(xPtr_->name(), "forcingMask"),
-                fvMsh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE,
-                true,
-                true
-            )
+                fvMsh_
+            ).ptr()
         );
+
+        forcingMask_->makeDeep();
 
         meshField<label,MeshType>& f = forcingMask_();
 
@@ -977,7 +975,7 @@ void linearSystem<SType,Type,MeshType>::operator*=
     const meshField<scalar,MeshType>& field
 )
 {
-    const_cast<meshField<scalar,MeshType>&>(field).restrict();
+    restrict(field);
 
     this->A() *= field;
     this->b() *= field;
@@ -985,7 +983,7 @@ void linearSystem<SType,Type,MeshType>::operator*=
     this->singular_.clear();
     this->diagonal_.clear();
 
-    const_cast<meshField<scalar,MeshType>&>(field).makeShallow();
+    collapse(field);
 }
 
 template<class SType, class Type, class MeshType>
@@ -1026,7 +1024,7 @@ void linearSystem<SType,Type,MeshType>::operator/=
     const meshField<scalar,MeshType>& field
 )
 {
-    const_cast<meshField<scalar,MeshType>&>(field).restrict();
+    restrict(field);
 
     this->A() /= field;
     this->b() /= field;
@@ -1034,7 +1032,7 @@ void linearSystem<SType,Type,MeshType>::operator/=
     this->singular_.clear();
     this->diagonal_.clear();
 
-    const_cast<meshField<scalar,MeshType>&>(field).makeShallow();
+    collapse(field);
 }
 
 template<class SType, class Type, class MeshType>

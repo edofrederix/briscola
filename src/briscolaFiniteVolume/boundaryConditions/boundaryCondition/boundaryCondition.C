@@ -298,21 +298,21 @@ inline labelVector boundaryCondition<Type,MeshType>::N
 }
 
 template<class Type, class MeshType>
-const meshField<faceVector,MeshType>&
+const faceField<vector,MeshType>&
 boundaryCondition<Type,MeshType>::faceCenters() const
 {
     return fvMsh_.template metrics<MeshType>().faceCenters();
 }
 
 template<class Type, class MeshType>
-const meshField<faceVector,MeshType>&
+const faceField<vector,MeshType>&
 boundaryCondition<Type,MeshType>::faceNormals() const
 {
     return fvMsh_.template metrics<MeshType>().faceNormals();
 }
 
 template<class Type, class MeshType>
-const meshField<faceScalar,MeshType>&
+const faceField<scalar,MeshType>&
 boundaryCondition<Type,MeshType>::faceAreas() const
 {
     return fvMsh_.template metrics<MeshType>().faceAreas();
@@ -333,7 +333,7 @@ boundaryCondition<Type,MeshType>::cellCenters() const
 }
 
 template<class Type, class MeshType>
-const meshField<faceScalar,MeshType>&
+const faceField<scalar,MeshType>&
 boundaryCondition<Type,MeshType>::faceDeltas() const
 {
     return fvMsh_.template metrics<MeshType>().faceDeltas();

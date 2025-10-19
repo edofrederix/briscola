@@ -1,4 +1,5 @@
 #include "midPointGaussDivergenceScheme.H"
+#include "restrict.H"
 
 namespace Foam
 {
@@ -23,11 +24,11 @@ template<class Type, class MeshType>
 tmp<linearSystem<stencil,Type,MeshType>>
 midPointGaussDivergenceScheme<Type,MeshType>::imDiv
 (
-    const meshField<faceScalar,MeshType>& phi,
+    const faceField<scalar,MeshType>& phi,
     const meshField<Type,MeshType>& field
 )
 {
-    phi.restrict();
+    restrict(phi);
 
     tmp<linearSystem<stencil,Type,MeshType>> tSys =
         linearSystem<stencil,Type,MeshType>::New
@@ -40,26 +41,29 @@ midPointGaussDivergenceScheme<Type,MeshType>::imDiv
 
     meshField<stencil,MeshType>& A = sys.A();
 
-    forAllCells(A, l, d, i, j, k)
-    {
-        #ifdef NO_BLOCK_ZERO_INIT
-        A(l,d,i,j,k)[0] = Zero;
-        #endif
+    #ifdef NO_BLOCK_ZERO_INIT
+    A = Zero;
+    #endif
 
-        for (label f = 0; f < 6; f++)
-        {
-            A(l,d,i,j,k)[f+1] = 0.5*phi(l,d,i,j,k)[f];
-            A(l,d,i,j,k)[0] += A(l,d,i,j,k)[f+1];
-        }
+    forAllFaces(phi, fd, l, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        const scalar value = 0.5*phi[fd](l,d,ijk);
+
+        A(l,d,ijk)[fd*2+1] =  value;
+        A(l,d,nei)[fd*2+2] = -value;
+
+        A(l,d,ijk)[0] += value;
+        A(l,d,nei)[0] -= value;
     }
 
     #ifdef NO_BLOCK_ZERO_INIT
-    meshField<Type,MeshType>& b = sys.b();
-    forAllCells(b, l, d, i, j, k)
-        b(l,d,i,j,k) = Zero;
+    sys.b() = Zero;
     #endif
 
-    phi.makeShallow();
+    collapse(phi);
 
     return tSys;
 }
@@ -68,7 +72,7 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 midPointGaussDivergenceScheme<Type,MeshType>::exDiv
 (
-    const meshField<faceScalar,MeshType>& phi,
+    const faceField<scalar,MeshType>& phi,
     const meshField<Type,MeshType>& field
 )
 {
@@ -88,16 +92,16 @@ midPointGaussDivergenceScheme<Type,MeshType>::exDiv
     Div = Zero;
     #endif
 
-    forAllFaces(Div, d, fd, i, j, k)
+    forAllFaces(phi, fd, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
         const Type value =
-            phi(d,ijk)[fd]*(field(d,ijk) + field(d,nei));
+            phi[fd](d,ijk)*0.5*(field(d,ijk) + field(d,nei));
 
-        Div(d,ijk) += 0.5*value;
-        Div(d,nei) -= 0.5*value;
+        Div(d,ijk) += value;
+        Div(d,nei) -= value;
     }
 
     Div *= icv;

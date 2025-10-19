@@ -165,8 +165,8 @@ bool initialCondition::read(const dictionary& dict)
 
         alpha.correctBoundaryConditions();
 
-        colocatedFaceScalarField& phi =
-            runTime_.lookupObjectRef<colocatedFaceScalarField>("phi");
+        colocatedScalarFaceField& phi =
+            runTime_.lookupObjectRef<colocatedScalarFaceField>("phi");
 
         U.correctBoundaryConditions();
 
@@ -220,8 +220,8 @@ bool initialCondition::execute()
 
     reduce(BoundError_, maxOp<scalar>());
 
-    colocatedFaceScalarField& phi =
-        runTime_.lookupObjectRef<colocatedFaceScalarField>("phi");
+    colocatedScalarFaceField& phi =
+        runTime_.lookupObjectRef<colocatedScalarFaceField>("phi");
 
     U.correctBoundaryConditions();
 

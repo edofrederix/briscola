@@ -87,7 +87,7 @@ void FFTPoissonSolver<SType>::solve
 (
     colocatedScalarField& x,
     const colocatedScalarField* bPtr,
-    const colocatedFaceScalarField* lambdaPtr,
+    const colocatedScalarFaceField* lambdaPtr,
     const bool ddt,
     const scalar dtFrac
 )
@@ -453,7 +453,7 @@ void FFTPoissonSolver<SType>::solve
     {
         this->initFlux();
 
-        const meshField<faceScalar,colocated>& fa =
+        const faceField<scalar,colocated>& fa =
             x.fvMsh().metrics<colocated>().faceAreas();
 
         this->fluxPtr_() = ex::faceGrad(x)*fa;

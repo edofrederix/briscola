@@ -38,7 +38,7 @@ void outflowBoundaryCondition<Type,staggered>::evaluate
 {
     const labelVector bo(this->offset());
 
-    meshDirection<Type,staggered>& fd = this->mshField_[l][d];
+    meshDirection<Type,staggered>& field = this->mshField_[l][d];
 
     const labelVector S(this->S(l,d));
     const labelVector E(this->E(l,d));
@@ -49,11 +49,11 @@ void outflowBoundaryCondition<Type,staggered>::evaluate
     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
     {
         // Set velocity to zero if reverse flow
-        if(Foam::mag(bo[d]) == 1 && fd(ijk)*bo[d] < 0)
-            fd(ijk) = Zero;
+        if(Foam::mag(bo[d]) == 1 && field(ijk)*bo[d] < 0)
+            field(ijk) = Zero;
 
         // Zero gradient
-        fd(ijk+bo) = fd(ijk);
+        field(ijk+bo) = field(ijk);
     }
 }
 

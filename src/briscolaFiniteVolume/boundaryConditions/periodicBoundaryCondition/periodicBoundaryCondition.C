@@ -63,8 +63,6 @@ void periodicBoundaryCondition<Type,MeshType>::prepare(const label l)
 
         forAll(field, d)
         {
-            meshDirection<Type,MeshType>& fd = field[d];
-
             // Source start and end point
 
             const labelVector Ss(this->S(l,d) - extension.lower());
@@ -84,7 +82,7 @@ void periodicBoundaryCondition<Type,MeshType>::prepare(const label l)
             for (ijk.y() = Ss.y(); ijk.y() < Es.y(); ijk.y()++)
             for (ijk.z() = Ss.z(); ijk.z() < Es.z(); ijk.z()++)
             {
-                fd(ijk-Ss+St-bo) = fd(ijk);
+                field(d,ijk-Ss+St-bo) = field(d,ijk);
             }
         }
     }

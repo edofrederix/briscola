@@ -58,7 +58,7 @@ void DirichletBoundaryCondition<Type,colocated>::evaluate
 
     const labelVector bo(this->offset());
 
-    meshDirection<Type,colocated>& fd = this->mshField_[l][d];
+    meshDirection<Type,colocated>& field = this->mshField_[l][d];
 
     const labelVector S(this->S(l,d));
     const labelVector E(this->E(l,d));
@@ -68,7 +68,8 @@ void DirichletBoundaryCondition<Type,colocated>::evaluate
     for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
     {
-        fd(ijk+bo) = H*2.0*this->boundaryValues_[l](ijk-S) - fd(ijk);
+        field(ijk+bo) =
+            H*2.0*this->boundaryValues_[l](ijk-S) - field(ijk);
     }
 }
 
@@ -85,7 +86,8 @@ void DirichletBoundaryCondition<Type,staggered>::eliminateGhosts
     const label c = l*3 + d;
 
     const labelVector bo(this->offset());
-    const label faceNum(faceNumber(bo));
+    const label f(faceNumber(bo));
+    const label fd = f/2;
 
     meshField<stencil,staggered>& A = sys.A();
     meshField<Type,staggered>& b = sys.b();
@@ -97,7 +99,7 @@ void DirichletBoundaryCondition<Type,staggered>::eliminateGhosts
 
     labelVector ijk;
 
-    if (faceNum/2 == d)
+    if (fd == d)
     {
         for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
@@ -115,10 +117,10 @@ void DirichletBoundaryCondition<Type,staggered>::eliminateGhosts
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            const scalar ghostCoeff = A(l,d,ijk)[faceNum+1];
+            const scalar ghostCoeff = A(l,d,ijk)[f+1];
 
             A(l,d,ijk)[0] -= ghostCoeff;
-            A(l,d,ijk)[faceNum+1] = Zero;
+            A(l,d,ijk)[f+1] = Zero;
 
             if (l == 0)
                 b(l,d,ijk) -= ghostCoeff*2.0*this->boundaryValues_[c](ijk-S);
@@ -136,24 +138,25 @@ void DirichletBoundaryCondition<Type,staggered>::evaluate
     const label c = l*3 + d;
 
     const labelVector bo(this->offset());
-    const label faceNum(faceNumber(bo));
+    const label f(faceNumber(bo));
+    const label fd = f/2;
 
     const scalar H = l == 0;
 
-    meshDirection<Type,staggered>& fd = this->mshField_[l][d];
+    meshDirection<Type,staggered>& field = this->mshField_[l][d];
 
     const labelVector S(this->S(l,d));
     const labelVector E(this->E(l,d));
 
     labelVector ijk;
 
-    if (faceNum/2 == d)
+    if (fd == d)
     {
         for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            fd(ijk+bo) = H*this->boundaryValues_[c](ijk-S);
+            field(ijk+bo) = H*this->boundaryValues_[c](ijk-S);
         }
     }
     else
@@ -162,7 +165,8 @@ void DirichletBoundaryCondition<Type,staggered>::evaluate
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            fd(ijk+bo) = H*2.0*this->boundaryValues_[c](ijk-S) - fd(ijk);
+            field(ijk+bo) =
+                H*2.0*this->boundaryValues_[c](ijk-S) - field(ijk);
         }
     }
 }

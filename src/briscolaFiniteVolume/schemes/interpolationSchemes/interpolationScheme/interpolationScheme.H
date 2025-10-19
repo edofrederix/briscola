@@ -56,12 +56,12 @@ public:
     virtual ~interpolationScheme();
 
     // Interpolation to the face
-    virtual tmp<meshField<FaceSpace<Type>,MeshType>> interp
+    virtual tmp<faceField<Type,MeshType>> interp
     (
         const meshField<Type,MeshType>&
     ) = 0;
 
-    virtual tmp<meshField<FaceSpace<Type>,MeshType>> interp
+    virtual tmp<faceField<Type,MeshType>> interp
     (
         const tmp<meshField<Type,MeshType>>& tField
     )
@@ -69,7 +69,7 @@ public:
         if (tField.isTmp())
             tField->correctBoundaryConditions();
 
-        tmp<meshField<FaceSpace<Type>,MeshType>> tInterp = interp(tField());
+        tmp<faceField<Type,MeshType>> tInterp = interp(tField());
 
         if (tField.isTmp())
             tField.clear();
@@ -95,13 +95,13 @@ tmp<meshField<Type,staggered>> stagInterp
 // Interpolation functions from colocated to staggered faces
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
+tmp<faceField<Type,staggered>> stagFaceInterp
 (
     const meshField<Type,colocated>&
 );
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
+tmp<faceField<Type,staggered>> stagFaceInterp
 (
     const tmp<meshField<Type,colocated>>&
 );
@@ -123,27 +123,27 @@ tmp<meshField<Type,colocated>> coloInterp
 // Interpolation function from staggered to colocated faces
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
+tmp<faceField<Type,colocated>> coloFaceInterp
 (
     const meshField<Type,staggered>&
 );
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
+tmp<faceField<Type,colocated>> coloFaceInterp
 (
     const tmp<meshField<Type,staggered>>&
 );
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
+tmp<faceField<Type,colocated>> coloFaceInterp
 (
-    const meshField<FaceSpace<Type>,staggered>&
+    const faceField<Type,staggered>&
 );
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
+tmp<faceField<Type,colocated>> coloFaceInterp
 (
-    const tmp<meshField<FaceSpace<Type>,staggered>>&
+    const tmp<faceField<Type,staggered>>&
 );
 
 }

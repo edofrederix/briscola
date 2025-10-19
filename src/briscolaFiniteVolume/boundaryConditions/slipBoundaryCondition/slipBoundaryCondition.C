@@ -23,11 +23,12 @@ void slipBoundaryCondition<Type,colocated>::evaluate
 )
 {
     const labelVector bo(this->offset());
-    const label faceNum(faceNumber(bo));
+    const label f(faceNumber(bo));
+    const label fd = f/2;
 
-    meshDirection<Type,colocated>& fd = this->mshField_[l][d];
+    meshDirection<Type,colocated>& field = this->mshField_[l][d];
 
-    const meshDirection<faceVector,colocated>& fn = this->faceNormals()[l][d];
+    const colocatedVectorFaceField& fn = this->faceNormals();
 
     const labelVector S(this->S(l,d));
     const labelVector E(this->E(l,d));
@@ -37,8 +38,10 @@ void slipBoundaryCondition<Type,colocated>::evaluate
     for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
     {
-        fd(ijk+bo) =
-            fd(ijk) - 2.0*(fn(ijk)[faceNum] & fd(ijk)) * fn(ijk)[faceNum];
+        const labelVector upp(upperFaceNeighbor(ijk,f));
+
+        field(ijk+bo) =
+            field(ijk) - 2.0*(fn[fd](l,d,upp) & field(ijk))*fn[fd](l,d,upp);
     }
 }
 
@@ -53,9 +56,10 @@ void slipBoundaryCondition<Type,staggered>::eliminateGhosts
 )
 {
     const labelVector bo(this->offset());
-    const label faceNum(faceNumber(bo));
+    const label f(faceNumber(bo));
+    const label fd = f/2;
 
-    if (faceNum/2 == d)
+    if (fd == d)
     {
         meshField<stencil,staggered>& A = sys.A();
         meshField<Type,staggered>& b = sys.b();
@@ -90,11 +94,12 @@ void slipBoundaryCondition<Type,staggered>::evaluate
 )
 {
     const labelVector bo(this->offset());
-    const label faceNum(faceNumber(bo));
+    const label f(faceNumber(bo));
+    const label fd = f/2;
 
-    if (faceNum/2 == d)
+    if (fd == d)
     {
-        meshDirection<Type,staggered>& fd = this->mshField_[l][d];
+        meshDirection<Type,staggered>& field = this->mshField_[l][d];
 
         const labelVector S(this->S(l,d));
         const labelVector E(this->E(l,d));
@@ -104,7 +109,7 @@ void slipBoundaryCondition<Type,staggered>::evaluate
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            fd(ijk+bo) = Zero;
+            field(ijk+bo) = Zero;
         }
     }
     else

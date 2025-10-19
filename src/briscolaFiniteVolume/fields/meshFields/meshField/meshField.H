@@ -26,9 +26,6 @@ template<class SType, class Type, class MeshType>
 class linearSystem;
 
 template<class Type, class MeshType>
-class restrictionScheme;
-
-template<class Type, class MeshType>
 class boundaryExchange;
 
 template<class Type, class MeshType>
@@ -58,9 +55,6 @@ private:
 
     // Immersed boundary condition
     PtrList<immersedBoundaryCondition<Type,MeshType>> immersedBoundaryConditions_;
-
-    // Restriction scheme associated with this field
-    autoPtr<restrictionScheme<Type,MeshType>> reSchemePtr_;
 
     // Boundary exchange
     autoPtr<boundaryExchange<Type,MeshType>> bExchangePtr_;
@@ -171,15 +165,13 @@ public:
     // Destructor
     ~meshField();
 
-    // Access to the levels. Use the operator() for this because it doesn't
-    // perform any bounds checking which is expensive.
+    // Access to the levels
     inline meshLevel<Type,MeshType>& operator[](label l)
     {
         return listType::operator[](l);
     }
 
-    // Const access to the levels. Use the operator() for this because it
-    // doesn't perform any bounds checking which is expensive.
+    // Const access to the levels
     inline const meshLevel<Type,MeshType>& operator[](label l) const
     {
         return listType::operator[](l);
@@ -437,16 +429,15 @@ public:
     }
 
     // Set the restriction operator that is associated with this field
-    void setRestrictionScheme(const word scheme);
-
-    // Restrict the field to lower levels. If no restriction scheme is set, set
-    // the default restriction scheme first. A shallow field will be made deep.
-    void restrict();
-
-    // Allow restriction on a const field
-    void restrict() const
+    void setRestrictionScheme(const word scheme)
     {
-        const_cast<meshField<Type,MeshType>*>(this)->restrict();
+        const_cast<fvMesh&>(fvMsh_).setRestrictionScheme(name(), scheme);
+    }
+
+    // Set the prolongation operator that is associated with this field
+    void setProlongationScheme(const word scheme)
+    {
+        const_cast<fvMesh&>(fvMsh_).setProlongationScheme(name(), scheme);
     }
 
     // Write data (not supported)

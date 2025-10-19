@@ -33,8 +33,8 @@ void test(const fvMesh& fvMsh)
     sys.singular();
     sys.diagonal();
 
-    sys.x().restrict();
-    sys.b().restrict();
+    restrict(sys.x());
+    restrict(sys.b());
 
     // Write all levels
 

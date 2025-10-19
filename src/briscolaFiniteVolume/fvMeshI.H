@@ -105,6 +105,8 @@ tmp<Type> fvMesh::NewObject(const word name, const bool cached) const
     }
     else
     {
+        // Return a new unregistered object
+
         return
             tmp<Type>
             (
@@ -114,7 +116,10 @@ tmp<Type> fvMesh::NewObject(const word name, const bool cached) const
                     (
                         name,
                         time().path()/"0",
-                        db()
+                        db(),
+                        IOobject::NO_READ,
+                        IOobject::NO_WRITE,
+                        false
                     ),
                     *this
                 )

@@ -20,9 +20,9 @@ class midPointFaceFluxScheme
     template<class Type>
     tmp
     <
-        meshField
+        faceField
         <
-            FaceSpace<typename innerProduct<Type,vector>::type>,
+            typename innerProduct<Type,vector>::type,
             colocated
         >
     > coloFaceFlux
@@ -39,19 +39,19 @@ public:
     midPointFaceFluxScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Face flux of a colocated scalar field
-    virtual tmp<colocatedFaceScalarField> faceFlux
+    virtual tmp<colocatedScalarFaceField> faceFlux
     (
         const colocatedVectorField&
     );
 
     // Face flux of a colocated tensor field
-    virtual tmp<colocatedFaceVectorField> faceFlux
+    virtual tmp<colocatedVectorFaceField> faceFlux
     (
         const colocatedTensorField&
     );
 
     // Face flux of a staggered scalar field
-    virtual tmp<staggeredFaceScalarField> faceFlux
+    virtual tmp<staggeredScalarFaceField> faceFlux
     (
         const staggeredScalarField&
     );

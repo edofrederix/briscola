@@ -36,15 +36,16 @@ blendedViscosityMixture<BaseModel>::~blendedViscosityMixture()
 template<class BaseModel>
 void blendedViscosityMixture<BaseModel>::correctMixture()
 {
-    const meshField<faceScalar,typename BaseModel::meshType> alpha
+    const faceField<scalar,typename BaseModel::meshType> alpha
     (
         this->faceAlpha()
     );
 
-    this->mu_ =
-        (this->mu2_ - this->mu1_)/2.0
-      * (tanh(C_*atanh((2.0*alpha - 1.0)*(1-1e-12))) - 1.0)
-      + this->mu2_;
+    forAll(this->mu_, fd)
+        this->mu_[fd] =
+            (this->mu2_ - this->mu1_)/2.0
+          * (tanh(C_*atanh((2.0*alpha[fd] - 1.0)*(1-1e-12))) - 1.0)
+          + this->mu2_;
 
     BaseModel::correctMixture();
 }

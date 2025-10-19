@@ -56,7 +56,7 @@ public:
     virtual ~faceDotGradientScheme();
 
     // Face-dot gradient multiplied by face area
-    virtual tmp<meshField<FaceSpace<Type>,MeshType>> faceDotGrad
+    virtual tmp<faceField<Type,MeshType>> faceDotGrad
     (
         const meshField<Type,MeshType>&
     ) = 0;

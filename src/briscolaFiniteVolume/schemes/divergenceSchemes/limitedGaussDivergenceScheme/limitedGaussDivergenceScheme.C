@@ -1,4 +1,5 @@
 #include "limitedGaussDivergenceScheme.H"
+#include "restrict.H"
 
 namespace Foam
 {
@@ -24,12 +25,12 @@ template<class Type, class MeshType>
 tmp<linearSystem<stencil,Type,MeshType>>
 limitedGaussDivergenceScheme<Type,MeshType>::imDiv
 (
-    const meshField<faceScalar,MeshType>& phi,
+    const faceField<scalar,MeshType>& phi,
     const meshField<Type,MeshType>& field
 )
 {
-    phi.restrict();
-    field.restrict();
+    restrict(phi);
+    restrict(field);
 
     tmp<linearSystem<stencil,Type,MeshType>> tSys =
         linearSystem<stencil,Type,MeshType>::New
@@ -42,48 +43,49 @@ limitedGaussDivergenceScheme<Type,MeshType>::imDiv
 
     meshField<stencil,MeshType>& A = sys.A();
 
-    const meshField<faceScalar,MeshType>& fwc =
+    const faceField<scalar,MeshType>& fwc =
         field.fvMsh().template metrics<MeshType>().faceWeightsCenter();
 
-    const meshField<faceScalar,MeshType>& fwn =
+    const faceField<scalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
-    const meshField<faceScalar,MeshType> psi(limiter_->psi(phi,field));
+    const faceField<scalar,MeshType> psi(limiter_->psi(phi,field));
 
     forAllCells(A, l, d, i, j, k)
     {
+        const labelVector ijk(i,j,k);
+
         #ifdef NO_BLOCK_ZERO_INIT
-        A(l,d,i,j,k)[0] = Zero;
+        A(l,d,ijk)[0] = Zero;
         #endif
 
         for (label f = 0; f < 6; f++)
         {
-            A(l,d,i,j,k)[f+1] =
-                phi(l,d,i,j,k)[f]
+            const labelVector upp(upperFaceNeighbor(ijk,f));
+            const label fd = f/2;
+
+            A(l,d,ijk)[f+1] =
+                phi[fd](l,d,upp)
               * (
-                    psi(l,d,i,j,k)[f]*fwn(l,d,i,j,k)[f]
-                  + (1.0 - psi(l,d,i,j,k)[f])*(phi(l,d,i,j,k)[f] < 0)
+                    psi[fd](l,d,upp)*fwn[fd](l,d,upp)
+                  + (1.0 - psi[fd](l,d,upp))*(phi[fd](l,d,upp) < 0)
                 );
 
-            A(l,d,i,j,k)[0] +=
-                phi(l,d,i,j,k)[f]
+            A(l,d,ijk)[0] +=
+                phi[fd](l,d,upp)
               * (
-                    psi(l,d,i,j,k)[f]*fwc(l,d,i,j,k)[f]
-                  + (1.0 - psi(l,d,i,j,k)[f])*(phi(l,d,i,j,k)[f] >= 0)
+                    psi[fd](l,d,upp)*fwc[fd](l,d,upp)
+                  + (1.0 - psi[fd](l,d,upp))*(phi[fd](l,d,upp) >= 0)
                 );
         }
     }
 
     #ifdef NO_BLOCK_ZERO_INIT
-
-    meshField<Type,MeshType>& b = sys.b();
-    forAllCells(b, l, d, i, j, k)
-        b(l,d,i,j,k) = Zero;
-
+    sys.b() = Zero;
     #endif
 
-    phi.makeShallow();
-    field.makeShallow();
+    collapse(phi);
+    collapse(field);
 
     return tSys;
 }
@@ -92,7 +94,7 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 limitedGaussDivergenceScheme<Type,MeshType>::exDiv
 (
-    const meshField<faceScalar,MeshType>& phi,
+    const faceField<scalar,MeshType>& phi,
     const meshField<Type,MeshType>& field
 )
 {
@@ -105,45 +107,46 @@ limitedGaussDivergenceScheme<Type,MeshType>::exDiv
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 
-    const meshField<faceScalar,MeshType>& fwc =
+    const faceField<scalar,MeshType>& fwc =
         field.fvMsh().template metrics<MeshType>().faceWeightsCenter();
 
-    const meshField<faceScalar,MeshType>& fwn =
+    const faceField<scalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
     const meshField<scalar,MeshType>& icv =
         phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    const meshField<faceScalar,MeshType> psi(limiter_->psi(phi,field));
+    const faceField<scalar,MeshType> psi(limiter_->psi(phi,field));
 
-    forAllCells(Div, d, i, j, k)
+    #ifdef NO_BLOCK_ZERO_INIT
+    Div = Zero;
+    #endif
+
+    forAllFaces(phi, fd, d, i, j, k)
     {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Div(d,i,j,k) = Zero;
-        #endif
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        for (label f = 0; f < 6; f++)
-        {
-            const scalar Psi = 1.0 - psi(d,i,j,k)[f];
-
-            Div(d,i,j,k) +=
-                phi(d,i,j,k)[f]
+        const Type value =
+            phi[fd](d,ijk)
+          * (
+                field(d,ijk)
               * (
-                    field(d,i,j,k)
-                  * (
-                        psi(d,i,j,k)[f]*fwc(d,i,j,k)[f]
-                      + Psi*(phi(d,i,j,k)[f] >= 0)
-                    )
-                  + field(d,neighbor(i,j,k,f))
-                  * (
-                        psi(d,i,j,k)[f]*fwn(d,i,j,k)[f]
-                      + Psi*(phi(d,i,j,k)[f] < 0)
-                    )
-                );
-        }
+                    psi[fd](d,ijk)*fwc[fd](d,ijk)
+                  + (1.0 - psi[fd](d,ijk))*(phi[fd](d,ijk) >= 0)
+                )
+              + field(d,nei)
+              * (
+                    psi[fd](d,ijk)*fwn[fd](d,ijk)
+                  + (1.0 - psi[fd](d,ijk))*(phi[fd](d,ijk) < 0)
+                )
+            );
 
-        Div(d,i,j,k) *= icv(d,i,j,k);
+        Div(d,ijk) += value;
+        Div(d,nei) -= value;
     }
+
+    Div *= icv;
 
     return tDiv;
 }

@@ -26,7 +26,7 @@ public:
     midPointInterpolationScheme(const fvMesh&, Istream& = scheme::nullStream);
 
     // Interpolation to the face
-    virtual tmp<meshField<FaceSpace<Type>,MeshType>> interp
+    virtual tmp<faceField<Type,MeshType>> interp
     (
         const meshField<Type,MeshType>&
     );

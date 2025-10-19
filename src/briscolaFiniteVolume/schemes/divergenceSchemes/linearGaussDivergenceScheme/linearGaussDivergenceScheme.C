@@ -1,4 +1,5 @@
 #include "linearGaussDivergenceScheme.H"
+#include "restrict.H"
 
 namespace Foam
 {
@@ -23,11 +24,11 @@ template<class Type, class MeshType>
 tmp<linearSystem<stencil,Type,MeshType>>
 linearGaussDivergenceScheme<Type,MeshType>::imDiv
 (
-    const meshField<faceScalar,MeshType>& phi,
+    const faceField<scalar,MeshType>& phi,
     const meshField<Type,MeshType>& field
 )
 {
-    phi.restrict();
+    restrict(phi);
 
     tmp<linearSystem<stencil,Type,MeshType>> tSys =
         linearSystem<stencil,Type,MeshType>::New
@@ -40,34 +41,36 @@ linearGaussDivergenceScheme<Type,MeshType>::imDiv
 
     meshField<stencil,MeshType>& A = sys.A();
 
-    const meshField<faceScalar,MeshType>& fwc =
+    const faceField<scalar,MeshType>& fwc =
         field.fvMsh().template metrics<MeshType>().faceWeightsCenter();
 
-    const meshField<faceScalar,MeshType>& fwn =
+    const faceField<scalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
-    forAllCells(A, l, d, i, j, k)
-    {
-        #ifdef NO_BLOCK_ZERO_INIT
-        A(l,d,i,j,k)[0] = Zero;
-        #endif
+    #ifdef NO_BLOCK_ZERO_INIT
+    A = Zero;
+    #endif
 
-        for (label f = 0; f < 6; f++)
-        {
-            A(l,d,i,j,k)[f+1] = phi(l,d,i,j,k)[f]*fwn(l,d,i,j,k)[f];
-            A(l,d,i,j,k)[0] += phi(l,d,i,j,k)[f]*fwc(l,d,i,j,k)[f];
-        }
+    forAllFaces(phi, fd, l, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        const scalar value1 = phi[fd](l,d,ijk)*fwn[fd](l,d,ijk);
+        const scalar value2 = phi[fd](l,d,ijk)*fwc[fd](l,d,ijk);
+
+        A(l,d,ijk)[fd*2+1] =  value1;
+        A(l,d,nei)[fd*2+2] = -value2;
+
+        A(l,d,ijk)[0] += value2;
+        A(l,d,nei)[0] -= value1;
     }
 
     #ifdef NO_BLOCK_ZERO_INIT
-
-    meshField<Type,MeshType>& b = sys.b();
-    forAllCells(b, l, d, i, j, k)
-        b(l,d,i,j,k) = Zero;
-
+    sys.b() = Zero;
     #endif
 
-    phi.makeShallow();
+    collapse(phi);
 
     return tSys;
 }
@@ -76,7 +79,7 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 linearGaussDivergenceScheme<Type,MeshType>::exDiv
 (
-    const meshField<faceScalar,MeshType>& phi,
+    const faceField<scalar,MeshType>& phi,
     const meshField<Type,MeshType>& field
 )
 {
@@ -90,10 +93,10 @@ linearGaussDivergenceScheme<Type,MeshType>::exDiv
     meshField<Type,MeshType>& Div = tDiv.ref();
 
     const faceField<scalar,MeshType>& fwc =
-        field.fvMsh().template metrics<MeshType>().soa().faceWeightsCenter();
+        field.fvMsh().template metrics<MeshType>().faceWeightsCenter();
 
     const faceField<scalar,MeshType>& fwn =
-        field.fvMsh().template metrics<MeshType>().soa().faceWeightsNeighbor();
+        field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
     const meshField<scalar,MeshType>& icv =
         phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
@@ -102,13 +105,13 @@ linearGaussDivergenceScheme<Type,MeshType>::exDiv
     Div = Zero;
     #endif
 
-    forAllFaces(Div, d, fd, i, j, k)
+    forAllFaces(phi, fd, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
         const Type value =
-            phi(d,ijk)[fd]
+            phi[fd](d,ijk)
           * (
                 fwc[fd](d,ijk)*field(d,ijk)
               + fwn[fd](d,ijk)*field(d,nei)

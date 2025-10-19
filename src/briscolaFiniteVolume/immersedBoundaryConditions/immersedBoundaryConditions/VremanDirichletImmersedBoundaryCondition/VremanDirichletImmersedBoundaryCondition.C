@@ -62,9 +62,9 @@ VremanDirichletImmersedBoundaryCondition
 
                 exchangePoints[c] = ijk;
 
-                for (int fi = 0; fi < 6; fi++)
+                for (int f = 0; f < 6; f++)
                 {
-                    const labelVector fo = faceOffsets[fi];
+                    const labelVector fo = faceOffsets[f];
 
                     if (!this->ib_.mask()[l][d](ijk + fo))
                     {
@@ -113,8 +113,7 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
 
     meshDirection<Type,MeshType>& x = this->mshField_[l][d];
     const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
-    const meshDirection<faceScalar,MeshType>& y =
-        this->ib_.wallDistGhost()[l][d];
+    const faceField<scalar,MeshType>& y = this->ib_.wallDistGhost();
 
     List<Type> data
     (
@@ -123,25 +122,28 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
 
     label c = 0;
 
+    // Todo: make face loop?
+
     forAllCells(x,i,j,k)
     {
-        if (mask(i,j,k))
-        {
-            const labelVector ijk(i,j,k);
+        const labelVector ijk(i,j,k);
 
-            for (int fi = 0; fi < 6; fi++)
+        if (mask(ijk))
+        {
+            for (int f = 0; f < 6; f++)
             {
-                const labelVector fo = faceOffsets[fi];
+                const labelVector fo = faceOffsets[f];
+                const label fd = f/2;
 
                 if (!this->ib_.mask()(ijk + fo))
                 {
-                    const scalar xi = y(i,j,k)[fi];
+                    const scalar xi = y[fd](l,d,upperFaceNeighbor(ijk,f));
 
                     scalar w1 =  2.0 - (2.0 - xi);
                     scalar w2 = -1.0 + (1.0 - xi);
 
-                    x(i,j,k) =
-                        (1.0 - omega)*x(i,j,k)
+                    x(ijk) =
+                        (1.0 - omega)*x(ijk)
                       + omega
                       * (
                             boundaryValues_[d]

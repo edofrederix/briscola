@@ -78,14 +78,14 @@ template<class Type, class MeshType>
 tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
 grad
 (
-    const meshField<FaceSpace<Type>,MeshType>&
+    const faceField<Type,MeshType>&
 );
 
 template<class Type, class MeshType>
 tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
 grad
 (
-    const tmp<meshField<FaceSpace<Type>,MeshType>>&
+    const tmp<faceField<Type,MeshType>>&
 );
 
 }

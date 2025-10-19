@@ -1,6 +1,8 @@
 #ifndef staggeredDirectionsFwd_H
 #define staggeredDirectionsFwd_H
 
+#include "meshDirectionFwd.H"
+
 #include "label.H"
 #include "scalar.H"
 #include "faceScalar.H"
@@ -27,9 +29,6 @@ namespace fv
 {
 
 class staggered;
-
-template<class Type, class MeshType>
-class meshDirection;
 
 typedef meshDirection<label,staggered> staggeredLabelDirection;
 typedef meshDirection<scalar,staggered> staggeredScalarDirection;

@@ -102,8 +102,6 @@ void parallelBoundaryCondition<Type,MeshType>::prepare
 
     forAll(field, d)
     {
-        const meshDirection<Type,MeshType>& fd = field[d];
-
         const labelVector S(this->S(l,d) - extension.lower());
         const labelVector E(this->E(l,d) + extension.upper());
 
@@ -119,7 +117,7 @@ void parallelBoundaryCondition<Type,MeshType>::prepare
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            sendBuffer(ijk-S) = fd(ijk);
+            sendBuffer(ijk-S) = field(d,ijk);
         }
 
         outstandingRecvRequest_ = UPstream::nRequests();
@@ -172,8 +170,6 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate(const label l)
 
     forAll(field, d)
     {
-        meshDirection<Type,MeshType>& fd = field[d];
-
         const labelVector S(this->S(l,d) - extension.lower());
         const labelVector E(this->E(l,d) + extension.upper());
 
@@ -190,7 +186,7 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate(const label l)
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            fd(ijk+bo) = data(ijk-S);
+            field(d,ijk+bo) = data(ijk-S);
         }
     }
 }

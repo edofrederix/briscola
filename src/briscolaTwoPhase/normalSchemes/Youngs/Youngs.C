@@ -65,7 +65,7 @@ void Youngs::correct()
                   + 0.25*alpha0(upperNeighbor(i,j,k,d));
     }
 
-    const colocatedFaceScalarField& fa =
+    const colocatedScalarFaceField& fa =
         fvMsh_.metrics<colocated>().faceAreas();
 
     n = ex::reconstruct(ex::faceGrad(alpha)*fa);

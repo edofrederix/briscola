@@ -17,7 +17,7 @@ namespace fv
         inline tmp<linearSystem<SType,Type,MeshType>>
         divergenceScheme<SType,Type,MeshType>::imDiv
         (
-            const tmp<meshField<faceScalar,MeshType>>& tPhi,
+            const tmp<faceField<scalar,MeshType>>& tPhi,
             const meshField<Type,MeshType>& field
         )
         {
@@ -40,7 +40,7 @@ namespace fv
         inline tmp<meshField<Type,MeshType>>
         divergenceScheme<SType,Type,MeshType>::exDiv
         (
-            const tmp<meshField<faceScalar,MeshType>>& tPhi,
+            const tmp<faceField<scalar,MeshType>>& tPhi,
             const meshField<Type,MeshType>& field
         )
         {

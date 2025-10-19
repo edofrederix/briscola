@@ -28,7 +28,7 @@ p.correctBoundaryConditions();
 
 // Flux
 
-colocatedFaceScalarField phi
+colocatedScalarFaceField phi
 (
     "phi",
     fvMsh,

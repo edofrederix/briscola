@@ -1,6 +1,8 @@
 #ifndef imSchemesSource_H
 #define imSchemesSource_H
 
+#include "restrict.H"
+
 namespace Foam
 {
 
@@ -25,7 +27,7 @@ namespace im
     )
     {
         if (lambdaPtr)
-            const_cast<meshField<scalar,MeshType>&>(*lambdaPtr).restrict();
+            restrict(*lambdaPtr);
 
         tmp<linearSystem<diagStencil,Type,MeshType>> tSys =
             linearSystem<diagStencil,Type,MeshType>::New
@@ -55,7 +57,7 @@ namespace im
         sys.b() = Zero;
 
         if (lambdaPtr)
-            const_cast<meshField<scalar,MeshType>&>(*lambdaPtr).makeShallow();
+            collapse(*lambdaPtr);
 
         return tSys;
     }

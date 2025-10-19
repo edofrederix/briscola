@@ -13,12 +13,12 @@ namespace briscola
 namespace fv
 {
 
-makeProlongationScheme(scalar,colocated);
-makeProlongationScheme(scalar,staggered);
-makeProlongationScheme(vector,colocated);
-makeProlongationScheme(vector,staggered);
-makeProlongationScheme(tensor,colocated);
-makeProlongationScheme(tensor,staggered);
+makeProlongationScheme(scalar,colocated,"linear");
+makeProlongationScheme(scalar,staggered,"linear");
+makeProlongationScheme(vector,colocated,"linear");
+makeProlongationScheme(vector,staggered,"linear");
+makeProlongationScheme(tensor,colocated,"linear");
+makeProlongationScheme(tensor,staggered,"linear");
 
 makeProlongationSchemeType(linear,scalar,colocated);
 makeProlongationSchemeType(linear,scalar,staggered);

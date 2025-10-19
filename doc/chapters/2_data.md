@@ -178,8 +178,8 @@ cascade of levels. The advantage of having levels built into fields is that
 any operation on the field can automatically be applied to all levels, as
 demonstrated by the following code:
 ```
-f.restrict();
-g.restrict()
+restrict(f);
+restrict(g);
 h = f*g;
 ```
 Here, we have three fields `f`, `g` and `h`. The first two are made deep and the
@@ -217,6 +217,24 @@ field, the short-hand type would be `colocatedScalarField`. Have a look at
 * `src/briscolaFiniteVolume/fields/staggeredFields/staggeredFieldsFwd.H`
 
 for all such types.
+
+## Mesh field sets
+
+In some cases we need collections of fields. For example, for faces or stencils.
+To this purpose, the `meshFieldSet` class was designed. This class is templated
+for the number `N` of fields that is contained by the set. Thus, the size of the
+set is fixed. For faces, having an x, y or z-orientation, a special
+`meshFieldSet` of size 3 is defined, named `faceField`. Also, a special face
+iterator called `forAllFaces` is defined:
+```
+forAllFaces(f, fd, l, d, i, j, k)
+{
+    f[fd](l,d,i,j,k) = ...
+}
+```
+which, with an outer loop, iterates over the three fields in the set. By
+definition, the value `f[fd](l,d,i,j,k)` is associated with the lower face in
+`fd`-direction of level `l` of direction `d` of cell `(i,j,k)`.
 
 [Back to the table of contents](./0_start.md)
 or [Next chapter: Making a mesh](./3_mesh.md)

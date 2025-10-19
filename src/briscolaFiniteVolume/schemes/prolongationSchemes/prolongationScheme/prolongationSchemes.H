@@ -3,10 +3,13 @@
 
 #include "prolongationScheme.H"
 
-#define makeProlongationScheme(TYPE,MESHTYPE)                                  \
+#define makeProlongationScheme(TYPE,MESHTYPE,DEFAULT)                          \
                                                                                \
     typedef prolongationScheme<TYPE,MESHTYPE>                                  \
         prolongationScheme##TYPE##MESHTYPE;                                    \
+                                                                               \
+    template<>                                                                 \
+    const word prolongationScheme##TYPE##MESHTYPE::defaultScheme = DEFAULT;    \
                                                                                \
     defineTemplateTypeNameAndDebugWithName                                     \
     (                                                                          \

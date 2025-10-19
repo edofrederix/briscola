@@ -73,7 +73,7 @@ FastPtrList<meshField<Type,MeshType>> RungeKuttaScheme::stageList
         list.set
         (
             stage,
-            new meshField<Type,MeshType>
+            meshField<Type,MeshType>::New
             (
                 IOobject::groupName
                 (

@@ -1,6 +1,8 @@
 #ifndef colocatedDirectionsFwd_H
 #define colocatedDirectionsFwd_H
 
+#include "meshDirectionFwd.H"
+
 #include "label.H"
 #include "scalar.H"
 #include "faceScalar.H"
@@ -27,9 +29,6 @@ namespace fv
 {
 
 class colocated;
-
-template<class Type, class MeshType>
-class meshDirection;
 
 typedef meshDirection<label,colocated> colocatedLabelDirection;
 typedef meshDirection<scalar,colocated> colocatedScalarDirection;

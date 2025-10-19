@@ -1,6 +1,7 @@
 #ifndef immersedBoundaryCondition_H
 #define immersedBoundaryCondition_H
 
+#include "meshFieldFwd.H"
 #include "immersedBoundaryConditionFwd.H"
 #include "immersedBoundaryFwd.H"
 
@@ -18,9 +19,6 @@ namespace fv
 {
 
 class fvMesh;
-
-template<class Type, class MeshType>
-class meshField;
 
 template<class Type, class MeshType>
 class immersedBoundaryCondition

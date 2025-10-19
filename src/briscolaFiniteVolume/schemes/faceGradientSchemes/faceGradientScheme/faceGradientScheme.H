@@ -56,7 +56,7 @@ public:
     virtual ~faceGradientScheme();
 
     // Face-normal gradient
-    virtual tmp<meshField<FaceSpace<Type>,MeshType>> faceGrad
+    virtual tmp<faceField<Type,MeshType>> faceGrad
     (
         const meshField<Type,MeshType>&
     ) = 0;

@@ -24,8 +24,6 @@ curvatureSchemes/CV/CV.C
 curvatureSchemes/SHF/SHF.C
 curvatureSchemes/parabolicFit/parabolicFit.C
 
-twoPhaseModels/twoPhaseViscosityModels/viscosityMixtures/blendedViscosityMixture/blendedViscosityMixtureRestrictionScheme/blendedViscosityMixtureRestrictionSchemes.C
-
 limiterSchemes/twoPhaseLimiterScheme/twoPhaseLimiterSchemes.C
 
 LIB = $(FOAM_USER_LIBBIN)/libbriscolaTwoPhase

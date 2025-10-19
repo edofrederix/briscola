@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 
                 // Pressure equation
 
-                colocatedFaceScalarField phiStar
+                colocatedScalarFaceField phiStar
                 (
                     ex::faceFlux(U)
                   + C*deltaT*twoPhase.flux()*vf

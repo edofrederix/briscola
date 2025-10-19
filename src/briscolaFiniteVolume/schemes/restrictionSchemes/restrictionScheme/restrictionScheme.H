@@ -1,11 +1,8 @@
 #ifndef restrictionScheme_H
 #define restrictionScheme_H
 
+#include "meshFieldFwd.H"
 #include "scheme.H"
-#include "faceFields.H"
-#include "meshFields.H"
-#include "meshLevels.H"
-#include "meshDirections.H"
 
 namespace Foam
 {
@@ -57,8 +54,15 @@ public:
     // Copy constructor
     restrictionScheme(const restrictionScheme<Type,MeshType>&);
 
-    // Selector
+    // Selector from field name
     static autoPtr<restrictionScheme<Type,MeshType>> New
+    (
+        const fvMesh&,
+        const word
+    );
+
+    // Selector from type name
+    static autoPtr<restrictionScheme<Type,MeshType>> NewType
     (
         const fvMesh&,
         const word

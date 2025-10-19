@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 
                 // Pressure equation
 
-                const colocatedFaceScalarField phiStar(ex::faceFlux(U));
+                const colocatedScalarFaceField phiStar(ex::faceFlux(U));
 
                 Poisson->solve(p, ex::div(phiStar)/(-C*deltaT));
 

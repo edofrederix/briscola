@@ -34,7 +34,7 @@ namespace ex
         template<class SType, class Type, class MeshType>
         inline tmp<meshField<Type,MeshType>> div
         (
-            const meshField<faceScalar,MeshType>& phi,
+            const faceField<scalar,MeshType>& phi,
             const meshField<Type,MeshType>& field
         )
         {
@@ -50,7 +50,7 @@ namespace ex
         template<class SType, class Type, class MeshType>
         inline tmp<meshField<Type,MeshType>> div
         (
-            const tmp<meshField<faceScalar,MeshType>>& tPhi,
+            const tmp<faceField<scalar,MeshType>>& tPhi,
             const meshField<Type,MeshType>& field
         )
         {
@@ -70,7 +70,7 @@ namespace ex
         template<class Type, class MeshType>
         inline tmp<meshField<Type,MeshType>> div
         (
-            const meshField<faceScalar,MeshType>& phi,
+            const faceField<scalar,MeshType>& phi,
             const meshField<Type,MeshType>& field
         )
         {
@@ -82,7 +82,7 @@ namespace ex
         template<class Type, class MeshType>
         inline tmp<meshField<Type,MeshType>> div
         (
-            const tmp<meshField<faceScalar,MeshType>>& tPhi,
+            const tmp<faceField<scalar,MeshType>>& tPhi,
             const meshField<Type,MeshType>& field
         )
         {

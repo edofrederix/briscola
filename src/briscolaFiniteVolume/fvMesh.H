@@ -58,6 +58,10 @@ class fvMesh
     // Staggered mesh metrics
     autoPtr<fvMeshMetrics<staggered>> staggeredMetrics_;
 
+    // Restriction and prolongation scheme dictionaries
+    dictionary restrictionDict_;
+    dictionary prolongationDict_;
+
     // Set the internal cell start and end indices
     template<class MeshType>
     void setInternalCells();
@@ -251,6 +255,22 @@ public:
     const PtrList<immersedBoundary<MeshType>>& immersedBoundaries() const
     {
         return metrics<MeshType>().immersedBoundaries();
+    }
+
+    // Restriction and prolongation scheme dictionaries
+    const dictionary& restrictionDict() const { return restrictionDict_; }
+    const dictionary& prolongationDict() const { return prolongationDict_; }
+
+    // Set restriction scheme for a field name
+    void setRestrictionScheme(const word name, const word scheme)
+    {
+        restrictionDict_.add(name, scheme, true);
+    }
+
+    // Set prolongation scheme for a field name
+    void setProlongationScheme(const word name, const word scheme)
+    {
+        prolongationDict_.add(name, scheme, true);
     }
 
     // Cell find function templated for the mesh type

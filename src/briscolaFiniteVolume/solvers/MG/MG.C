@@ -309,7 +309,7 @@ MG<SType,Type,MeshType>::MG
     coarseLevel_(dict.lookupOrDefault<label>("coarseLevel", 0)),
     proScheme_
     (
-        prolongationScheme<Type,MeshType>::New
+        prolongationScheme<Type,MeshType>::NewType
         (
             fvMsh,
             dict.lookupOrDefault<word>("prolong", "linear")
@@ -317,7 +317,7 @@ MG<SType,Type,MeshType>::MG
     ),
     reScheme_
     (
-        restrictionScheme<Type,MeshType>::New
+        restrictionScheme<Type,MeshType>::NewType
         (
             fvMsh,
             dict.lookupOrDefault<word>("restrict", "linear")

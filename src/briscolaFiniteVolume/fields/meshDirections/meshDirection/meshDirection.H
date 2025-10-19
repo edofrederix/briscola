@@ -1,13 +1,15 @@
 #ifndef meshDirection_H
 #define meshDirection_H
 
+#include "fvMesh.H"
+#include "meshFieldFwd.H"
+#include "meshLevelFwd.H"
+
 #include "List.H"
 
 #include "block.H"
 #include "Vector.H"
 #include "faceLabel.H"
-
-#include "fvMesh.H"
 
 namespace Foam
 {
@@ -17,12 +19,6 @@ namespace briscola
 
 namespace fv
 {
-
-template<class Type, class MeshType>
-class meshField;
-
-template<class Type, class MeshType>
-class meshLevel;
 
 template<class Type, class MeshType>
 class meshDirection

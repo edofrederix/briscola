@@ -2,6 +2,8 @@
 
 #include "colocated.H"
 #include "staggered.H"
+#include "meshFields.H"
+#include "faceFields.H"
 
 namespace Foam
 {

@@ -100,91 +100,30 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
 template<class MeshType>
 void fvMeshMetrics<MeshType>::calculateFaceCenters()
 {
-    const meshField<vertexVector,MeshType>& vc = vertexCenters_;
+    const meshField<faceVector,MeshType> fcAoS(aos().faceCenters());
 
-    meshField<faceVector,MeshType>& fc = faceCenters_;
+    faceField<vector,MeshType>& fc = faceCenters_;
 
-    fc = Zero;
-
-    forAll(fvMsh_, l)
-    {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
-            {
-                const hexa h(vc(l,d,ijk));
-
-                for (int fi = 0; fi < 6; fi++)
-                    fc(l,d,ijk)[fi] = h.faceCenter(fi);
-            }
-        }
-    }
-}
-
-template<class MeshType>
-void fvMeshMetrics<MeshType>::calculateEdgeCenters()
-{
-    const meshField<vertexVector,MeshType>& vc = vertexCenters_;
-
-    meshField<edgeVector,MeshType>& ec = edgeCenters_;
-
-    ec = Zero;
-
-    forAll(fvMsh_, l)
-    {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
-            {
-                for (int ei = 0; ei < 12; ei++)
-                    ec(l,d,ijk)[ei] = hexa(vc(l,d,ijk)).edgeCenter(ei);
-            }
-        }
-    }
+    forAllFaces(fc, fd, l, d, i, j, k)
+        fc[fd](l,d,i,j,k) = fcAoS(l,d,i,j,k)[fd*2];
 }
 
 template<class MeshType>
 void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
 {
-    const meshField<vertexVector,MeshType>& vc = vertexCenters_;
+    const meshField<faceVector,MeshType> fnAoS(aos().faceNormals());
+    const meshField<faceScalar,MeshType> faAoS(aos().faceAreas());
+    const meshField<faceVector,MeshType> fanAoS(aos().faceAreaNormals());
 
-    meshField<faceVector,MeshType>& fn = faceNormals_;
-    meshField<faceScalar,MeshType>& fa = faceAreas_;
-    meshField<faceVector,MeshType>& fan = faceAreaNormals_;
+    faceField<vector,MeshType>& fn = faceNormals_;
+    faceField<scalar,MeshType>& fa = faceAreas_;
+    faceField<vector,MeshType>& fan = faceAreaNormals_;
 
-    fn = Zero;
-    fa = Zero;
-    fan = Zero;
-
-    forAll(fvMsh_, l)
+    forAllFaces(fn, fd, l, d, i, j, k)
     {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
-            {
-                for (int fi = 0; fi < 6; fi++)
-                {
-                    fan(l,d,ijk)[fi] = hexa(vc(l,d,ijk)).faceAreaNormal(fi);
-                    fa(l,d,ijk)[fi] = Foam::mag(fan(l,d,ijk)[fi]);
-                    fn(l,d,ijk)[fi] = Foam::normalised(fan(l,d,ijk)[fi]);
-                }
-            }
-        }
+        fn[fd](l,d,i,j,k) = fnAoS(l,d,i,j,k)[fd*2];
+        fa[fd](l,d,i,j,k) = faAoS(l,d,i,j,k)[fd*2];
+        fan[fd](l,d,i,j,k) = fanAoS(l,d,i,j,k)[fd*2];
     }
 }
 
@@ -251,118 +190,43 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 template<class MeshType>
 void fvMeshMetrics<MeshType>::calculateFaceDeltas()
 {
-    meshField<faceScalar,MeshType>& delta = faceDeltas_;
+    const meshField<faceScalar,MeshType> deltaAoS(aos().faceDeltas());
 
-    const meshField<vector,MeshType>& cc = cellCenters_;
+    faceField<scalar,MeshType>& delta = faceDeltas_;
 
-    delta = Zero;
-
-    forAll(fvMsh_, l)
+    forAllFaces(delta, fd, l, d, i, j, k)
     {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = 0; ijk.x() < N.x(); ijk.x()++)
-            for (ijk.y() = 0; ijk.y() < N.y(); ijk.y()++)
-            for (ijk.z() = 0; ijk.z() < N.z(); ijk.z()++)
-            {
-                for (label f = 0; f < 6; f++)
-                {
-                    const labelVector nei(neighbor(ijk,f));
-
-                    delta(l,d,ijk)[f] =
-                        1.0/Foam::mag(cc(l,d,ijk) - cc(l,d,nei));
-
-                    // Assure that ghost cells also have the relevant face
-                    // values set
-
-                    delta(l,d,nei)[f%2 ? f-1 : f+1] = delta(l,d,ijk)[f];
-                }
-            }
-        }
+        delta[fd](l,d,i,j,k) = deltaAoS(l,d,i,j,k)[fd*2];
     }
 
     // Also set remaining ghost cell face values at processor interfaces
 
-    delta.correctCommsBoundaryConditions();
+    forAll(delta, fd)
+        delta[fd].correctCommsBoundaryConditions();
 }
 
 template<class MeshType>
 void fvMeshMetrics<MeshType>::calculateFaceWeights()
 {
-    meshField<faceScalar,MeshType>& fwc = faceWeightsCenter_;
-    meshField<faceScalar,MeshType>& fwn = faceWeightsNeighbor_;
+    const meshField<faceScalar,MeshType> fwcAoS(aos().faceWeightsCenter());
+    const meshField<faceScalar,MeshType> fwnAoS(aos().faceWeightsNeighbor());
 
-    const meshField<faceScalar,MeshType>& delta = faceDeltas_;
-    const meshField<vector,MeshType>& cc = cellCenters_;
-    const meshField<faceVector,MeshType>& fc = faceCenters_;
+    faceField<scalar,MeshType>& fwc = faceWeightsCenter_;
+    faceField<scalar,MeshType>& fwn = faceWeightsNeighbor_;
 
-    fwc = Zero;
-    fwn = Zero;
-
-    forAll(fvMsh_, l)
+    forAllFaces(fwc, fd, l, d, i, j, k)
     {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = 0; ijk.x() < N.x(); ijk.x()++)
-            for (ijk.y() = 0; ijk.y() < N.y(); ijk.y()++)
-            for (ijk.z() = 0; ijk.z() < N.z(); ijk.z()++)
-            {
-                for (label f = 0; f < 6; f++)
-                {
-                    const labelVector nei(neighbor(ijk,f));
-
-                    // Project the vector that connects the face center and
-                    // the cell center onto the cell-to-cell vector
-
-                    fwc(l,d,ijk)[f] =
-                        Foam::mag
-                        (
-                            (cc(l,d,nei) - fc(l,d,ijk)[f])
-                          & (cc(l,d,nei) - cc(l,d,ijk))
-                        )
-                      * Foam::sqr(delta(l,d,ijk)[f]);
-
-                    fwn(l,d,ijk)[f] =
-                        Foam::mag
-                        (
-                            (cc(l,d,ijk) - fc(l,d,ijk)[f])
-                          & (cc(l,d,nei) - cc(l,d,ijk))
-                        )
-                      * Foam::sqr(delta(l,d,ijk)[f]);
-
-                    // Assure that ghost cells also have the relevant face
-                    // values set
-
-                    fwc(l,d,nei)[f%2 ? f-1 : f+1] = fwn(l,d,ijk)[f];
-                    fwn(l,d,nei)[f%2 ? f-1 : f+1] = fwc(l,d,ijk)[f];
-
-                    // Check if the weights add up to unity up to some precision
-
-                    const scalar sum =
-                        round((fwc(l,d,ijk)[f] + fwn(l,d,ijk)[f])*1e12)/1e12;
-
-                    if (sum != 1.0)
-                        FatalErrorInFunction
-                            << "Face weights do not add up to unity at "
-                            << "level " << l
-                            << ", " << MeshType::typeName << " direction " << d
-                            << ", cell " << ijk
-                            << ", face " << f << endl << abort(FatalError);
-                }
-            }
-        }
+        fwc[fd](l,d,i,j,k) = fwcAoS(l,d,i,j,k)[fd*2];
+        fwn[fd](l,d,i,j,k) = fwnAoS(l,d,i,j,k)[fd*2];
     }
 
     // Also set remaining ghost cell face values at processor interfaces
 
-    fwc.correctCommsBoundaryConditions();
-    fwn.correctCommsBoundaryConditions();
+    forAll(fwc, fd)
+        fwc[fd].correctCommsBoundaryConditions();
+
+    forAll(fwn, fd)
+        fwn[fd].correctCommsBoundaryConditions();
 }
 
 template<class MeshType>
@@ -447,27 +311,12 @@ void fvMeshMetrics<MeshType>::setImmersedBoundaryMask()
 }
 
 template<class MeshType>
-void fvMeshMetrics<MeshType>::setSoA()
-{
-    soaPtr_.reset(new SoA(*this));
-}
-
-template<class MeshType>
 fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
 :
     fvMsh_(fvMsh),
     faceCenters_
     (
         word(MeshType::typeName) + "FaceCenters",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    edgeCenters_
-    (
-        word(MeshType::typeName) + "EdgeCenters",
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -582,11 +431,11 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
         IOobject::NO_WRITE,
         true,
         true
-    )
+    ),
+    aosPtr_(new AoS(*this))
 {
     calculateVertexCenters();
     calculateFaceCenters();
-    calculateEdgeCenters();
     calculateFaceAreasAndNormals();
     calculateCellCenters();
     calculateCellVolumes();
@@ -595,113 +444,404 @@ fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
     setGlobalCellNumbers();
     setImmersedBoundaries();
     setImmersedBoundaryMask();
-    setSoA();
 }
 
-// Structure of Array (SoA) storage class
+// On-demand Array of Structures (AoS) metrics class
 
 template<class MeshType>
-fvMeshMetrics<MeshType>::SoA::SoA
-(
-    const fvMeshMetrics<MeshType>& metrics
-)
-:
-    metrics_(metrics),
-    faceCenters_
-    (
-        word(MeshType::typeName) + "FaceCenters",
-        metrics.fvMsh(),
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    faceNormals_
-    (
-        word(MeshType::typeName) + "FaceNormals",
-        metrics.fvMsh(),
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    faceAreas_
-    (
-        word(MeshType::typeName) + "FaceAreas",
-        metrics.fvMsh(),
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    faceAreaNormals_
-    (
-        word(MeshType::typeName) + "FaceAreaNormals",
-        metrics.fvMsh(),
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    faceDeltas_
-    (
-        word(MeshType::typeName) + "FaceDeltas",
-        metrics.fvMsh(),
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    faceWeightsCenter_
-    (
-        word(MeshType::typeName) + "FaceWeightsCenter",
-        metrics.fvMsh(),
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    faceWeightsNeighbor_
-    (
-        word(MeshType::typeName) + "FaceWeightsNeighbor",
-        metrics.fvMsh(),
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    )
+tmp<meshField<faceVector,MeshType>>
+fvMeshMetrics<MeshType>::AoS::faceCenters() const
 {
-    // Set the cell-centered value as the lower face value. Use the forAllFaces
-    // iterator such that the upper ghost cell values receive the upper boundary
-    // face values.
+    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters_;
 
-    #define CALCFIELD(NAME)                                                    \
-    {                                                                          \
-        auto& faceField = metrics.NAME();                                      \
-        forAllFaces(metrics.NAME(), l, d, fd, i, j, k)                         \
-            NAME##_[fd](l,d,i,j,k) = faceField(l,d,i,j,k)[fd*2];               \
+    tmp<meshField<faceVector,MeshType>> tFc =
+        meshField<faceVector,MeshType>::New("faceCenters", metrics_.fvMsh_);
+
+    meshField<faceVector,MeshType>& fc = tFc.ref();
+    fc.makeDeep();
+
+    fc = Zero;
+
+    forAll(metrics_.fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = metrics_.fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                const hexa h(vc(l,d,ijk));
+
+                for (int fi = 0; fi < 6; fi++)
+                    fc(l,d,ijk)[fi] = h.faceCenter(fi);
+            }
+        }
     }
 
-    CALCFIELD(faceCenters)
-    CALCFIELD(faceNormals)
-    CALCFIELD(faceAreas)
-    CALCFIELD(faceAreaNormals)
-    CALCFIELD(faceDeltas)
-    CALCFIELD(faceWeightsCenter)
-    CALCFIELD(faceWeightsNeighbor)
+    return tFc;
+}
 
-    // Update parallel/periodic boundary values for face deltas and weights
+template<class MeshType>
+tmp<meshField<edgeVector,MeshType>>
+fvMeshMetrics<MeshType>::AoS::edgeCenters() const
+{
+    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters_;
 
-    forAll(faceDeltas_, i)
-        faceDeltas_[i].correctCommsBoundaryConditions();
+    tmp<meshField<edgeVector,MeshType>> tEc =
+        meshField<edgeVector,MeshType>::New("edgeCenters", metrics_.fvMsh_);
 
-    forAll(faceWeightsCenter_, i)
-        faceWeightsCenter_[i].correctCommsBoundaryConditions();
+    meshField<edgeVector,MeshType>& ec = tEc.ref();
+    ec.makeDeep();
 
-    forAll(faceWeightsNeighbor_, i)
-        faceWeightsNeighbor_[i].correctCommsBoundaryConditions();
+    ec = Zero;
 
-    #undef CALCFIELD
+    forAll(metrics_.fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = metrics_.fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                for (int ei = 0; ei < 12; ei++)
+                    ec(l,d,ijk)[ei] = hexa(vc(l,d,ijk)).edgeCenter(ei);
+            }
+        }
+    }
+
+    return tEc;
+}
+
+template<class MeshType>
+tmp<meshField<faceVector,MeshType>>
+fvMeshMetrics<MeshType>::AoS::faceNormals() const
+{
+    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters_;
+
+    tmp<meshField<faceVector,MeshType>> tFn =
+        meshField<faceVector,MeshType>::New("faceNormals", metrics_.fvMsh_);
+
+    meshField<faceVector,MeshType>& fn = tFn.ref();
+    fn.makeDeep();
+
+    fn = Zero;
+
+    forAll(metrics_.fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = metrics_.fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                for (int fi = 0; fi < 6; fi++)
+                {
+                    fn(l,d,ijk)[fi] =
+                        Foam::normalised(hexa(vc(l,d,ijk)).faceAreaNormal(fi));
+                }
+            }
+        }
+    }
+
+    return tFn;
+}
+
+template<class MeshType>
+tmp<meshField<faceScalar,MeshType>>
+fvMeshMetrics<MeshType>::AoS::faceAreas() const
+{
+    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters_;
+
+    tmp<meshField<faceScalar,MeshType>> tFa =
+        meshField<faceScalar,MeshType>::New("faceAreas", metrics_.fvMsh_);
+
+    meshField<faceScalar,MeshType>& fa = tFa.ref();
+    fa.makeDeep();
+
+    fa = Zero;
+
+    forAll(metrics_.fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = metrics_.fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                for (int fi = 0; fi < 6; fi++)
+                {
+                    fa(l,d,ijk)[fi] =
+                        Foam::mag(hexa(vc(l,d,ijk)).faceAreaNormal(fi));
+                }
+            }
+        }
+    }
+
+    return tFa;
+}
+
+template<class MeshType>
+tmp<meshField<faceVector,MeshType>>
+fvMeshMetrics<MeshType>::AoS::faceAreaNormals() const
+{
+    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters_;
+
+    tmp<meshField<faceVector,MeshType>> tFan =
+        meshField<faceVector,MeshType>::New("faceAreaNormals", metrics_.fvMsh_);
+
+    meshField<faceVector,MeshType>& fan = tFan.ref();
+    fan.makeDeep();
+
+    fan = Zero;
+
+    forAll(metrics_.fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = metrics_.fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                for (int fi = 0; fi < 6; fi++)
+                {
+                    fan(l,d,ijk)[fi] = hexa(vc(l,d,ijk)).faceAreaNormal(fi);
+                }
+            }
+        }
+    }
+
+    return tFan;
+}
+
+template<class MeshType>
+tmp<meshField<faceScalar,MeshType>>
+fvMeshMetrics<MeshType>::AoS::faceDeltas() const
+{
+    const meshField<vector,MeshType>& cc = metrics_.cellCenters_;
+
+    tmp<meshField<faceScalar,MeshType>> tDelta =
+        meshField<faceScalar,MeshType>::New("faceDeltas", metrics_.fvMsh_);
+
+    meshField<faceScalar,MeshType>& delta = tDelta.ref();
+    delta.makeDeep();
+
+    delta = Zero;
+
+    forAll(metrics_.fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = metrics_.fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = 0; ijk.x() < N.x(); ijk.x()++)
+            for (ijk.y() = 0; ijk.y() < N.y(); ijk.y()++)
+            for (ijk.z() = 0; ijk.z() < N.z(); ijk.z()++)
+            {
+                for (label f = 0; f < 6; f++)
+                {
+                    const labelVector nei(neighbor(ijk,f));
+
+                    delta(l,d,ijk)[f] =
+                        1.0/Foam::mag(cc(l,d,ijk) - cc(l,d,nei));
+
+                    // Assure that ghost cells also have the relevant face
+                    // values set
+
+                    delta(l,d,nei)[f%2 ? f-1 : f+1] = delta(l,d,ijk)[f];
+                }
+            }
+        }
+    }
+
+    // Also set remaining ghost cell face values at processor interfaces
+
+    delta.correctCommsBoundaryConditions();
+
+    return tDelta;
+}
+
+template<class MeshType>
+tmp<meshField<faceScalar,MeshType>>
+fvMeshMetrics<MeshType>::AoS::faceWeightsCenter() const
+{
+    const meshField<vector,MeshType>& cc = metrics_.cellCenters_;
+
+    const meshField<faceScalar,MeshType> delta(faceDeltas());
+    const meshField<faceVector,MeshType> fc(faceCenters());
+
+    tmp<meshField<faceScalar,MeshType>> tFwc =
+        meshField<faceScalar,MeshType>::New
+        (
+            "faceWeightsCenter",
+            metrics_.fvMsh_
+        );
+
+    meshField<faceScalar,MeshType>& fwc = tFwc.ref();
+    fwc.makeDeep();
+
+    fwc = Zero;
+
+    forAll(metrics_.fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = metrics_.fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = 0; ijk.x() < N.x(); ijk.x()++)
+            for (ijk.y() = 0; ijk.y() < N.y(); ijk.y()++)
+            for (ijk.z() = 0; ijk.z() < N.z(); ijk.z()++)
+            {
+                for (label f = 0; f < 6; f++)
+                {
+                    const labelVector nei(neighbor(ijk,f));
+
+                    // Project the vector that connects the face center and
+                    // the cell center onto the cell-to-cell vector
+
+                    fwc(l,d,ijk)[f] =
+                        Foam::mag
+                        (
+                            (cc(l,d,nei) - fc(l,d,ijk)[f])
+                          & (cc(l,d,nei) - cc(l,d,ijk))
+                        )
+                      * Foam::sqr(delta(l,d,ijk)[f]);
+
+                    const scalar fwn =
+                        Foam::mag
+                        (
+                            (cc(l,d,ijk) - fc(l,d,ijk)[f])
+                          & (cc(l,d,nei) - cc(l,d,ijk))
+                        )
+                      * Foam::sqr(delta(l,d,ijk)[f]);
+
+                    // Assure that ghost cells also have the relevant face
+                    // values set
+
+                    fwc(l,d,nei)[f%2 ? f-1 : f+1] = fwn;
+
+                    // Check if the weights add up to unity up to some precision
+
+                    const scalar sum =
+                        round((fwc(l,d,ijk)[f] + fwn)*1e12)/1e12;
+
+                    if (sum != 1.0)
+                        FatalErrorInFunction
+                            << "Face weights do not add up to unity at "
+                            << "level " << l
+                            << ", " << MeshType::typeName << " direction " << d
+                            << ", cell " << ijk
+                            << ", face " << f << endl << abort(FatalError);
+                }
+            }
+        }
+    }
+
+    // Also set remaining ghost cell face values at processor interfaces
+
+    fwc.correctCommsBoundaryConditions();
+
+    return tFwc;
+}
+
+template<class MeshType>
+tmp<meshField<faceScalar,MeshType>>
+fvMeshMetrics<MeshType>::AoS::faceWeightsNeighbor() const
+{
+    const meshField<vector,MeshType>& cc = metrics_.cellCenters_;
+
+    const meshField<faceScalar,MeshType> delta(faceDeltas());
+    const meshField<faceVector,MeshType> fc(faceCenters());
+
+    tmp<meshField<faceScalar,MeshType>> tFwn =
+        meshField<faceScalar,MeshType>::New
+        (
+            "faceWeightsNeighbor",
+            metrics_.fvMsh_
+        );
+
+    meshField<faceScalar,MeshType>& fwn = tFwn.ref();
+    fwn.makeDeep();
+
+    fwn = Zero;
+
+    forAll(metrics_.fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = metrics_.fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = 0; ijk.x() < N.x(); ijk.x()++)
+            for (ijk.y() = 0; ijk.y() < N.y(); ijk.y()++)
+            for (ijk.z() = 0; ijk.z() < N.z(); ijk.z()++)
+            {
+                for (label f = 0; f < 6; f++)
+                {
+                    const labelVector nei(neighbor(ijk,f));
+
+                    // Project the vector that connects the face center and
+                    // the cell center onto the cell-to-cell vector
+
+                    const scalar fwc =
+                        Foam::mag
+                        (
+                            (cc(l,d,nei) - fc(l,d,ijk)[f])
+                          & (cc(l,d,nei) - cc(l,d,ijk))
+                        )
+                      * Foam::sqr(delta(l,d,ijk)[f]);
+
+                    fwn(l,d,ijk)[f] =
+                        Foam::mag
+                        (
+                            (cc(l,d,ijk) - fc(l,d,ijk)[f])
+                          & (cc(l,d,nei) - cc(l,d,ijk))
+                        )
+                      * Foam::sqr(delta(l,d,ijk)[f]);
+
+                    // Assure that ghost cells also have the relevant face
+                    // values set
+
+                    fwn(l,d,nei)[f%2 ? f-1 : f+1] = fwc;
+
+                    // Check if the weights add up to unity up to some precision
+
+                    const scalar sum =
+                        round((fwc + fwn(l,d,ijk)[f])*1e12)/1e12;
+
+                    if (sum != 1.0)
+                        FatalErrorInFunction
+                            << "Face weights do not add up to unity at "
+                            << "level " << l
+                            << ", " << MeshType::typeName << " direction " << d
+                            << ", cell " << ijk
+                            << ", face " << f << endl << abort(FatalError);
+                }
+            }
+        }
+    }
+
+    // Also set remaining ghost cell face values at processor interfaces
+
+    fwn.correctCommsBoundaryConditions();
+
+    return tFwn;
 }
 
 // Instantiate
