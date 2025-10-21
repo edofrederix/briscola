@@ -362,7 +362,7 @@ void linearSystemAggregation<SType,Type,MeshType>::rhsSource
     {
         // Receive data
 
-        label c = b.size();
+        label q = b.size();
 
         for (label proc = 1; proc < nProcsPerPart_; proc++)
         {
@@ -372,13 +372,13 @@ void linearSystemAggregation<SType,Type,MeshType>::rhsSource
             (
                 Pstream::commsTypes::blocking,
                 proc,
-                reinterpret_cast<char*>(&rhs[c]),
+                reinterpret_cast<char*>(&rhs[q]),
                 size*sizeof(Type),
                 0,
                 partCommNum_
             );
 
-            c += size;
+            q += size;
         }
     }
     else
@@ -584,21 +584,21 @@ void linearSystemAggregation<SType,Type,MeshType>::distribute
     {
         // Receive and copy solution
 
-        List<Type> data(f.size());
+        List<Type> data2(f.size());
 
         UIPstream::read
         (
             Pstream::commsTypes::blocking,
             0,
-            reinterpret_cast<char*>(data.begin()),
-            data.byteSize(),
+            reinterpret_cast<char*>(data2.begin()),
+            data2.byteSize(),
             0,
             partCommNum_
         );
 
         label c = 0;
         forAllCells(f, i, j, k)
-            f(i,j,k) = data[c++];
+            f(i,j,k) = data2[c++];
     }
 }
 

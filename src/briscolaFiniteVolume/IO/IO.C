@@ -172,32 +172,31 @@ void IO::writeData(const word timeName, const label l)
                 forAll(shapes, p)
                 if (!partitioned_ || p == proc)
                 {
-                    const label l = shapes[p].x();
-                    const label m = shapes[p].y();
-                    const label n = shapes[p].z();
+                    const label ll = shapes[p].x();
+                    const label mm = shapes[p].y();
+                    const label nn = shapes[p].z();
 
-                    const label L = l+1;
-                    const label M = m+1;
-                    const label N = n+1;
+                    const label L = ll + 1;
+                    const label M = mm + 1;
+                    const label N = nn + 1;
 
                     labelList buffer(nStructured(shapes[p])*9);
 
-                    label c = 0;
-
-                    for(int i = 0; i < l; i++)
-                    for(int j = 0; j < m; j++)
-                    for(int k = 0; k < n; k++)
+                    label q = 0;
+                    for(int i = 0; i < ll; i++)
+                    for(int j = 0; j < mm; j++)
+                    for(int k = 0; k < nn; k++)
                     if (structured(i,j,k,shapes[p]))
                     {
-                        buffer[c++] = 8;
-                        buffer[c++] = (cursor + (i  )*M*N + (j  )*N+k);
-                        buffer[c++] = (cursor + (i+1)*M*N + (j  )*N+k);
-                        buffer[c++] = (cursor + (i+1)*M*N + (j+1)*N+k);
-                        buffer[c++] = (cursor + (i  )*M*N + (j+1)*N+k);
-                        buffer[c++] = (cursor + (i  )*M*N + (j  )*N+k+1);
-                        buffer[c++] = (cursor + (i+1)*M*N + (j  )*N+k+1);
-                        buffer[c++] = (cursor + (i+1)*M*N + (j+1)*N+k+1);
-                        buffer[c++] = (cursor + (i  )*M*N + (j+1)*N+k+1);
+                        buffer[q++] = 8;
+                        buffer[q++] = (cursor + (i  )*M*N + (j  )*N+k);
+                        buffer[q++] = (cursor + (i+1)*M*N + (j  )*N+k);
+                        buffer[q++] = (cursor + (i+1)*M*N + (j+1)*N+k);
+                        buffer[q++] = (cursor + (i  )*M*N + (j+1)*N+k);
+                        buffer[q++] = (cursor + (i  )*M*N + (j  )*N+k+1);
+                        buffer[q++] = (cursor + (i+1)*M*N + (j  )*N+k+1);
+                        buffer[q++] = (cursor + (i+1)*M*N + (j+1)*N+k+1);
+                        buffer[q++] = (cursor + (i  )*M*N + (j+1)*N+k+1);
                     }
 
                     if (ascii)
@@ -386,7 +385,6 @@ void IO::readData(const word timeName, const label l)
         }
         else
         {
-            word dummy;
             label nPoints;
 
             file>> dummy >> nPoints;
@@ -405,7 +403,6 @@ void IO::readData(const word timeName, const label l)
         }
         else
         {
-            word dummy;
             label n;
 
             file>> dummy >> dummy >> n;
@@ -424,7 +421,6 @@ void IO::readData(const word timeName, const label l)
         }
         else
         {
-            word dummy;
             label nCells;
 
             file>> dummy >> nCells;

@@ -163,9 +163,9 @@ bool averagedLineSample::end()
     {
         if (averagingDirections_.y())
         {
-            forAll(points, i)
+            forAll(points, j)
             {
-                points[i].y() = msh[0].boundingBox().bottom();
+                points[j].y() = msh[0].boundingBox().bottom();
             }
         }
 

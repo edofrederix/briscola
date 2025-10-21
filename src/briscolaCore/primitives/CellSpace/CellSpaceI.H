@@ -284,13 +284,13 @@ template<class Form, class Cmpt, direction Ncmpts>
 inline Form stabilise
 (
     const CellSpace<Form, Cmpt, Ncmpts>& cs,
-    const Cmpt& small
+    const Cmpt& sml
 )
 {
     Form r;
 
     for (label i = 0; i < Ncmpts; i++)
-        r.v_[i] = stabilise(cs.v_[i], small);
+        r.v_[i] = stabilise(cs.v_[i], sml);
 
     return r;
 }

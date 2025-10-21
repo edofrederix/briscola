@@ -1,7 +1,7 @@
 EXE_INC = \
-    -I./lnInclude \
-    -I$(LIB_SRC)/OpenFOAM/lnInclude \
-    -I$(LIB_SRC)/Pstream/mpi/lnInclude
+    -isystem $(LIB_SRC)/OpenFOAM/lnInclude \
+    -isystem $(LIB_SRC)/Pstream/mpi/lnInclude \
+    -Wshadow
 
 LIB_LIBS = \
     -lOpenFOAM

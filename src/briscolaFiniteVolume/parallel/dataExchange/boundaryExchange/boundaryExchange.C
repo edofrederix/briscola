@@ -179,8 +179,8 @@ void boundaryExchange<Type,MeshType>::correct
 
                     block<Type> B(N);
 
-                    forAllBlockLinear(B, i)
-                        B(i) = recvBuffer[c++];
+                    forAllBlockLinear(B, j)
+                        B(j) = recvBuffer[c++];
 
                     B.transform(T);
 

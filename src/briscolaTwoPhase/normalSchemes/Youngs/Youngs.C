@@ -51,7 +51,7 @@ void Youngs::correct()
 
     colocatedScalarField alpha(alpha_);
 
-    for (int i = 0; i < nSmooth_; i++)
+    for (int iter = 0; iter < nSmooth_; iter++)
     {
         // Jacobi sweep (Gauss-Seidel will make every cell interfacial)
 

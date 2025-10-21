@@ -26,16 +26,16 @@ midPointGaussGradientScheme<Type,MeshType>::grad
     const meshField<Type,MeshType>& field
 )
 {
-    typedef typename gradientScheme<Type,MeshType>::GradType GradType;
+    typedef typename gradientScheme<Type,MeshType>::GradType GType;
 
-    tmp<meshField<GradType,MeshType>> tGrad =
-        meshField<GradType,MeshType>::New
+    tmp<meshField<GType,MeshType>> tGrad =
+        meshField<GType,MeshType>::New
         (
             "grad("+field.name()+")",
             field.fvMsh()
         );
 
-    meshField<GradType,MeshType>& Grad = tGrad.ref();
+    meshField<GType,MeshType>& Grad = tGrad.ref();
 
     const faceField<vector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
@@ -52,7 +52,7 @@ midPointGaussGradientScheme<Type,MeshType>::grad
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        const GradType value =
+        const GType value =
             0.5*fan[fd](d,ijk)*(field(d,ijk) + field(d,nei));
 
         Grad(d,ijk) += value;

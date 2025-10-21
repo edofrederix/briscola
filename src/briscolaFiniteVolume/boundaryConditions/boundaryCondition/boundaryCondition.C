@@ -154,8 +154,8 @@ boundaryCondition<Type,MeshType>::globalBaseType
 
         labelList types(procs.size());
 
-        forAllBlockLinear(procs, i)
-        if (procs(i) == Pstream::myProcNo())
+        forAllBlockLinear(procs, j)
+        if (procs(j) == Pstream::myProcNo())
         {
             // Find type
 
@@ -177,9 +177,9 @@ boundaryCondition<Type,MeshType>::globalBaseType
                     << abort(FatalError);
             }
 
-            if (procs(i) == Pstream::masterNo())
+            if (procs(j) == Pstream::masterNo())
             {
-                types[i] = type;
+                types[j] = type;
             }
             else
             {
@@ -199,16 +199,16 @@ boundaryCondition<Type,MeshType>::globalBaseType
 
         if (Pstream::master())
         {
-            forAllBlockLinear(procs, i)
-            if (procs(i) != Pstream::masterNo())
+            forAllBlockLinear(procs, j)
+            if (procs(j) != Pstream::masterNo())
             {
                 IPstream recv
                 (
                     Pstream::commsTypes::blocking,
-                    procs(i)
+                    procs(j)
                 );
 
-                recv >> types[i];
+                recv >> types[j];
             }
         }
 
@@ -220,9 +220,9 @@ boundaryCondition<Type,MeshType>::globalBaseType
         {
             type = types[0];
 
-            for (int i = 1; i < types.size(); i++)
+            for (int j = 1; j < types.size(); j++)
             {
-                if (types[i] != type)
+                if (types[j] != type)
                 {
                     FatalErrorInFunction
                         << "Inconsistent boundary condition types for field "

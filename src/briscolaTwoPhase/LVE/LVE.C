@@ -41,26 +41,26 @@ scalar LVE::fluxVolumeLVE
     for (int i = 0; i < numberOfTets; i++)
     {
         vectorList w(3);
-        vectorList e(3);
+        vectorList E(3);
 
         for (int j = 0; j < 3; j++)
         {
             w[j] = x[tetDecomp[i][j]] - x[tetDecomp[i][3]];
-            e[j] = e[tetDecomp[i][j]] - e[tetDecomp[i][3]];
+            E[j] = E[tetDecomp[i][j]] - E[tetDecomp[i][3]];
         }
 
         alpha[0] += (w[0] & (w[1] ^ w[2]));
-        alpha[3] += (e[0] & (e[1] ^ e[2]));
+        alpha[3] += (E[0] & (E[1] ^ E[2]));
 
         alpha[1] +=
-            (e[0] & (w[1] ^ w[2]))
-          + (w[0] & (e[1] ^ w[2]))
-          + (w[0] & (w[1] ^ e[2]));
+            (E[0] & (w[1] ^ w[2]))
+          + (w[0] & (E[1] ^ w[2]))
+          + (w[0] & (w[1] ^ E[2]));
 
         alpha[2] +=
-            (w[0] & (e[1] ^ e[2]))
-          + (e[0] & (w[1] ^ e[2]))
-          + (e[0] & (e[1] ^ w[2]));
+            (w[0] & (E[1] ^ E[2]))
+          + (E[0] & (w[1] ^ E[2]))
+          + (E[0] & (E[1] ^ w[2]));
     }
 
     const scalar C =

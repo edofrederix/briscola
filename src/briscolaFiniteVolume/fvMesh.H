@@ -167,9 +167,9 @@ public:
 
         labelVector S(I.lower());
 
-        for (label d = 0; d < 3; d++)
-            if (bo[d] == 1)
-                S[d] = I.upper()[d]-1;
+        for (label e = 0; e < 3; e++)
+            if (bo[e] == 1)
+                S[e] = I.upper()[e]-1;
 
         return S;
     }
@@ -202,9 +202,9 @@ public:
 
         labelVector E(I.upper());
 
-        for (label d = 0; d < 3; d++)
-            if (bo[d] == -1)
-                E[d] = I.lower()[d]+1;
+        for (label e = 0; e < 3; e++)
+            if (bo[e] == -1)
+                E[e] = I.lower()[e]+1;
 
         return E;
     }
