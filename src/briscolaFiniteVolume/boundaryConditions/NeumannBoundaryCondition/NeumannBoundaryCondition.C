@@ -97,7 +97,7 @@ void NeumannBoundaryCondition<Type,staggered>::eliminateGhosts
     const label d
 )
 {
-    const label c = l*3 + d;
+    const label item = l*3 + d;
 
     const labelVector bo(this->offset());
     const label f(faceNumber(bo));
@@ -131,7 +131,7 @@ void NeumannBoundaryCondition<Type,staggered>::eliminateGhosts
 
             if (l == 0)
                 b(l,d,ijk) -=
-                    ghostCoeff*dx2*this->boundaryGradients_[c](ijk-S);
+                    ghostCoeff*dx2*this->boundaryGradients_[item](ijk-S);
         }
     }
     else
@@ -148,7 +148,7 @@ void NeumannBoundaryCondition<Type,staggered>::eliminateGhosts
             if (l == 0)
             {
                 b(l,d,ijk) -=
-                    ghostCoeff*this->boundaryGradients_[c](ijk-S)
+                    ghostCoeff*this->boundaryGradients_[item](ijk-S)
                   / delta[fd](l,d,upperFaceNeighbor(ijk,f));
             }
         }
@@ -162,7 +162,7 @@ void NeumannBoundaryCondition<Type,staggered>::evaluate
     const label d
 )
 {
-    const label c = l*3 + d;
+    const label item = l*3 + d;
 
     const labelVector bo(this->offset());
     const label f(faceNumber(bo));
@@ -191,7 +191,7 @@ void NeumannBoundaryCondition<Type,staggered>::evaluate
               + 1.0/delta[fd](l,d,upperFaceNeighbor(ijk,g));
 
             field(ijk+bo) =
-                field(ijk-bo) + H*dx2*this->boundaryGradients_[c](ijk-S);
+                field(ijk-bo) + H*dx2*this->boundaryGradients_[item](ijk-S);
         }
     }
     else
@@ -202,7 +202,7 @@ void NeumannBoundaryCondition<Type,staggered>::evaluate
         {
             field(ijk+bo) =
                 field(ijk)
-              + H*this->boundaryGradients_[c](ijk-S)
+              + H*this->boundaryGradients_[item](ijk-S)
               / delta[fd](l,d,upperFaceNeighbor(ijk,f));
         }
     }

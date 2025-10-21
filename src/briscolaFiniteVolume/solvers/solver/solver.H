@@ -22,6 +22,9 @@ class solver
 {
 public:
 
+    // Number of stencil components
+    static const direction N = SType::nCsComponents;
+
     // Base smoother class
 
     class smoother

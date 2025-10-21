@@ -6,6 +6,7 @@
 #include "autoPtr.H"
 #include "FastPtrList.H"
 
+#include "linearSystemFwd.H"
 #include "meshLevel.H"
 #include "boundaryCondition.H"
 #include "immersedBoundaryConditionFwd.H"
@@ -21,9 +22,6 @@ namespace fv
 {
 
 class fvMesh;
-
-template<class SType, class Type, class MeshType>
-class linearSystem;
 
 template<class Type, class MeshType>
 class boundaryExchange;

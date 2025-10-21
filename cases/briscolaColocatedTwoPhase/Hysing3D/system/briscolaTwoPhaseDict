@@ -17,7 +17,7 @@ mu2     1.0;
 
 normalScheme
 {
-    type    LSFIR;
+    type    LSGIR;
 }
 
 surfaceTensionScheme
@@ -26,7 +26,7 @@ surfaceTensionScheme
 
     curvatureScheme
     {
-        type    parabolicFit;
+        type    SHF;
     }
 
     sigma   24.5;

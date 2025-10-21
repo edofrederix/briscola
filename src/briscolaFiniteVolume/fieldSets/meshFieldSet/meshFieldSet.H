@@ -3,6 +3,7 @@
 
 #include "meshFieldSetFwd.H"
 #include "meshFields.H"
+#include "linearSystemFwd.H"
 #include "cachedRefCount.H"
 #include "direction.H"
 
@@ -192,6 +193,14 @@ public:
     inline void operator/=(const scalar);
     inline void operator/=(const meshFieldSet<scalar,MeshType,N>&);
     inline void operator/=(const tmp<meshFieldSet<scalar,MeshType,N>>&);
+
+    // Befriend linear system
+    template<class SType, class, class>
+    friend class linearSystem;
+
+    // Befriend mesh level
+    template<class, class>
+    friend class meshField;
 };
 
 }

@@ -11,7 +11,7 @@ const char* const faceLabelTensor::csType::componentNames[] =
     {"l", "r", "b", "t", "a", "f"};
 
 template<>
-const labelVector faceLabelTensor::csType::componentOffsets[] =
+const labelVector faceLabelTensor::csType::offsets[] =
     {
         briscola::faceOffset0,
         briscola::faceOffset1,

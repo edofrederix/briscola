@@ -67,7 +67,7 @@ linearSystemAggregation<SType,Type,MeshType>::linearSystemAggregation
 
     // Set column number lists
 
-    const labelVector* offsets = SType::componentOffsets;
+    const labelVector* offsets = SType::offsets;
 
     globalSizes_.setSize(MeshType::numberOfDirections);
 
@@ -225,7 +225,7 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
     const meshDirection<label,MeshType>& numbers =
         fvMsh_.template metrics<MeshType>().globalCellNumbers()[l][d];
 
-    const labelVector* offsets = SType::componentOffsets;
+    const labelVector* offsets = SType::offsets;
 
     // Prepare data
 
@@ -332,7 +332,7 @@ void linearSystemAggregation<SType,Type,MeshType>::rhsSource
     const meshDirection<label,MeshType>& numbers =
         fvMsh_.template metrics<MeshType>().globalCellNumbers()[l][d];
 
-    const labelVector* offsets = SType::componentOffsets;
+    const labelVector* offsets = SType::offsets;
 
     // Prepare data
 

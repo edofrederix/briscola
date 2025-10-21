@@ -673,7 +673,6 @@ operator+
         );
 
     tRet.ref() = sys;
-
     tRet.ref() += field;
 
     return tRet;
@@ -723,7 +722,6 @@ operator+
         );
 
     tRet.ref() = sys;
-
     tRet.ref() += tField();
 
     if (tField.isTmp())

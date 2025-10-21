@@ -15,6 +15,9 @@ class StencilSpace
 
 public:
 
+    // Number of stencil components
+    static const direction N = Ncmpts;
+
     // Stencil space type
     typedef StencilSpace<Form, Ncmpts> ssType;
 

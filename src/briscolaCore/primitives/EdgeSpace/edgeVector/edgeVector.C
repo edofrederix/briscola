@@ -11,7 +11,7 @@ const char* const edgeVector::csType::componentNames[] =
     {"ba", "ta", "bf", "tf", "la", "ra", "lf", "rf", "lb", "rb", "lt", "rt"};
 
 template<>
-const labelVector edgeVector::csType::componentOffsets[] =
+const labelVector edgeVector::csType::offsets[] =
     {
         briscola::edgeOffset0,
         briscola::edgeOffset1,

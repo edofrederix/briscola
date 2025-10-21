@@ -494,8 +494,8 @@ void linearSystem<SType,Type,MeshType>::evaluate
     const label l = eval.levelNum();
     const label d = eval.directionNum();
 
-    const meshDirection<scalar,MeshType>& cv =
-        fvMsh_.template metrics<MeshType>().cellVolumes()[l][d];
+    const meshDirection<scalar,MeshType>& icv =
+        fvMsh_.template metrics<MeshType>().inverseCellVolumes()[l][d];
 
     const meshDirection<SType,MeshType>& A = this->A()[l][d];
     const meshDirection<Type,MeshType>& x = this->x()[l][d];
@@ -504,12 +504,12 @@ void linearSystem<SType,Type,MeshType>::evaluate
     if (diagonal_.size() && diagonal_[d])
     {
         forAllCells(eval, i, j, k)
-            eval(i,j,k) = (A(i,j,k).center()*x(i,j,k) - b(i,j,k))/cv(i,j,k);
+            eval(i,j,k) = (A(i,j,k).center()*x(i,j,k) - b(i,j,k))*icv(i,j,k);
     }
     else
     {
         forAllCells(eval, i, j, k)
-            eval(i,j,k) = (rowProduct(A,x,i,j,k) - b(i,j,k))/cv(i,j,k);
+            eval(i,j,k) = (rowProduct(A,x,i,j,k) - b(i,j,k))*icv(i,j,k);
     }
 
     if (!NoMask && xPtr_->immersedBoundaryConditions().size())
@@ -801,6 +801,16 @@ void linearSystem<SType,Type,MeshType>::operator+=
 }
 
 template<class SType, class Type, class MeshType>
+template<class Type2>
+void linearSystem<SType,Type,MeshType>::operator+=
+(
+    const Type2& v
+)
+{
+    this->b() -= v;
+}
+
+template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator-=
 (
     const Type& v
@@ -849,6 +859,16 @@ void linearSystem<SType,Type,MeshType>::operator-=
 }
 
 template<class SType, class Type, class MeshType>
+template<class Type2>
+void linearSystem<SType,Type,MeshType>::operator-=
+(
+    const Type2& v
+)
+{
+    this->b() += v;
+}
+
+template<class SType, class Type, class MeshType>
 template<class SType2>
 void linearSystem<SType,Type,MeshType>::operator=
 (
@@ -879,16 +899,6 @@ template<class SType, class Type, class MeshType>
 template<class SType2>
 void linearSystem<SType,Type,MeshType>::operator+=
 (
-    const SType2& v
-)
-{
-    this->b() -= v;
-}
-
-template<class SType, class Type, class MeshType>
-template<class SType2>
-void linearSystem<SType,Type,MeshType>::operator+=
-(
     const linearSystem<SType2,Type,MeshType>& sys
 )
 {
@@ -910,16 +920,6 @@ void linearSystem<SType,Type,MeshType>::operator+=
 
     if (tSys.isTmp())
         tSys.clear();
-}
-
-template<class SType, class Type, class MeshType>
-template<class SType2>
-void linearSystem<SType,Type,MeshType>::operator-=
-(
-    const SType2& v
-)
-{
-    this->b() += v;
 }
 
 template<class SType, class Type, class MeshType>

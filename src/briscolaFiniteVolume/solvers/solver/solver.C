@@ -227,12 +227,9 @@ void solver<SType,Type,MeshType>::setSingularityConstraint
 
             forAllCells(A, i, j, k)
                 for (int s = 1; s < SType::nCsComponents; s++)
-                    if
-                    (
-                        A(i,j,k)[s] != 0
-                     && !numbers(labelVector(i,j,k)+SType::componentOffsets[s])
-                    )
-                        A(i,j,k)[s] = 0;
+                    if (A(i,j,k)[s] != 0)
+                        if(!numbers(labelVector(i,j,k) + SType::offsets[s]))
+                            A(i,j,k)[s] = 0;
         }
     }
 }

@@ -18,10 +18,14 @@ void DirichletBoundaryConditionBase<Type,MeshType>::init
     boundaryValues_.clear();
     boundaryValues_.resize(this->fvMsh_.size()*MeshType::numberOfDirections);
 
-    label c = 0;
+    label item = 0;
     forAll(this->fvMsh_, l)
         for (int d = 0; d < MeshType::numberOfDirections; d++)
-            boundaryValues_.set(c++, new block<Type>(this->N(l,d), values[d]));
+            boundaryValues_.set
+            (
+                item++,
+                new block<Type>(this->N(l,d), values[d])
+            );
 }
 
 template<class Type, class MeshType>

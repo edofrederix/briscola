@@ -80,7 +80,7 @@ public:
 
     static const char* const typeName;
     static const char* const componentNames[];
-    static const labelVector componentOffsets[];
+    static const labelVector offsets[];
     static const Form zero;
     static const Form one;
     static const Form max;

@@ -17,7 +17,7 @@ void Krylov<SType,Type,MeshType>::prepare
     linearSystem<SType,Type,MeshType>& sys
 )
 {
-    const labelVector* offsets = SType::componentOffsets;
+    const labelVector* offsets = SType::offsets;
 
     const MPI_Comm& comm =
         Pstream::parRun()
@@ -137,7 +137,7 @@ void Krylov<SType,Type,MeshType>::solve
     const label maxIter
 )
 {
-    const labelVector* offsets = SType::componentOffsets;
+    const labelVector* offsets = SType::offsets;
     const label nDir = MeshType::numberOfDirections;
 
     meshLevel<Type, MeshType>& x = sys.x()[0];
