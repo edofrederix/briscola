@@ -28,7 +28,7 @@ void restrict(const meshField<Type,MeshType>& field)
     return restrictionScheme<Type,MeshType>::New
     (
         field.fvMsh(),
-        field.name()
+        field.restrictionScheme()
     )->restrict(const_cast<meshField<Type,MeshType>&>(field));
 }
 
@@ -41,7 +41,7 @@ void restrict(const faceField<Type,MeshType>& field)
     return faceRestrictionScheme<Type,MeshType>::New
     (
         field.fvMsh(),
-        field.name()
+        field.restrictionScheme()
     )->restrict(const_cast<faceField<Type,MeshType>&>(field));
 }
 

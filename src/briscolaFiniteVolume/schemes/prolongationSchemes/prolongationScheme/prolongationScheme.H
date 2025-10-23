@@ -48,15 +48,8 @@ public:
     // Copy constructor
     prolongationScheme(const prolongationScheme<Type,MeshType>&);
 
-    // Selector from field name
-    static autoPtr<prolongationScheme<Type,MeshType>> New
-    (
-        const fvMesh&,
-        const word
-    );
-
     // Selector from type name
-    static autoPtr<prolongationScheme<Type,MeshType>> NewType
+    static autoPtr<prolongationScheme<Type,MeshType>> New
     (
         const fvMesh&,
         const word

@@ -129,4 +129,4 @@ colocatedScalarFaceField vf
     true
 );
 
-vf.setRestrictionScheme("faceAreaWeighted");
+vf.setRestrictionScheme("areaWeighted");

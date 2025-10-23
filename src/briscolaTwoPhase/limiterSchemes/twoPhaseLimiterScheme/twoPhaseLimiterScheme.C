@@ -44,7 +44,7 @@ tmp<faceField<scalar,MeshType>> twoPhaseLimiterScheme<Type,MeshType>::psi
 
     if (phi[0].deep() && field.deep())
     {
-        alpha.setRestrictionScheme("faceAreaWeighted");
+        alpha.setRestrictionScheme("areaWeighted");
         restrict(alpha);
     }
 

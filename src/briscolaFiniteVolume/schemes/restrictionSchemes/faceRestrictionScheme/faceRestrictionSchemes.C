@@ -16,11 +16,11 @@ namespace fv
 
 // Face restriction schemes
 
-makeFaceRestrictionSchemeBase(scalar,colocated,"areaWeighted");
-makeFaceRestrictionSchemeBase(vector,colocated,"areaWeighted");
+makeFaceRestrictionSchemeBase(scalar,colocated,"average");
+makeFaceRestrictionSchemeBase(vector,colocated,"average");
 
-makeFaceRestrictionSchemeBase(scalar,staggered,"areaWeighted");
-makeFaceRestrictionSchemeBase(vector,staggered,"areaWeighted");
+makeFaceRestrictionSchemeBase(scalar,staggered,"average");
+makeFaceRestrictionSchemeBase(vector,staggered,"average");
 
 makeFaceRestrictionScheme(average,scalar,colocated);
 makeFaceRestrictionScheme(average,vector,colocated);

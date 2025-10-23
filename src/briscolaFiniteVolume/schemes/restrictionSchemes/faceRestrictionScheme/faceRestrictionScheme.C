@@ -39,36 +39,21 @@ autoPtr<faceRestrictionScheme<Type,MeshType>>
 faceRestrictionScheme<Type,MeshType>::New
 (
     const fvMesh& fvMsh,
-    const word fieldName
-)
-{
-    return faceRestrictionScheme<Type,MeshType>::NewType
-    (
-        fvMsh,
-        fvMsh.restrictionDict().lookupOrDefault<word>
-        (
-            fieldName,
-            faceRestrictionScheme<Type,MeshType>::defaultScheme
-        )
-    );
-}
-
-template<class Type, class MeshType>
-autoPtr<faceRestrictionScheme<Type,MeshType>>
-faceRestrictionScheme<Type,MeshType>::NewType
-(
-    const fvMesh& fvMsh,
-    const word faceRestrictionSchemeType
+    const word type
 )
 {
     typename IstreamConstructorTable::iterator cstrIter =
-        IstreamConstructorTablePtr_->find(faceRestrictionSchemeType);
+        IstreamConstructorTablePtr_->find
+        (
+            type == word::null
+          ? faceRestrictionScheme<Type,MeshType>::defaultScheme
+          : type
+        );
 
     if (cstrIter == IstreamConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown face restriction scheme "
-            << faceRestrictionSchemeType << nl << nl
+            << "Unknown face restriction scheme " << type << nl << nl
             << "Valid face restriction schemes are:" << nl
             << IstreamConstructorTablePtr_->sortedToc()
             << exit(FatalError);

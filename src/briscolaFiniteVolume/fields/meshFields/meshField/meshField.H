@@ -57,6 +57,9 @@ private:
     // Boundary exchange
     autoPtr<boundaryExchange<Type,MeshType>> bExchangePtr_;
 
+    // Restriction scheme name
+    word restrictionScheme_;
+
 protected:
 
     // Allocate data and specify depth
@@ -426,17 +429,14 @@ public:
         return !deep();
     }
 
-    // Set the restriction operator that is associated with this field
+    // Set restriction scheme
     void setRestrictionScheme(const word scheme)
     {
-        const_cast<fvMesh&>(fvMsh_).setRestrictionScheme(name(), scheme);
+        restrictionScheme_ = scheme;
     }
 
-    // Set the prolongation operator that is associated with this field
-    void setProlongationScheme(const word scheme)
-    {
-        const_cast<fvMesh&>(fvMsh_).setProlongationScheme(name(), scheme);
-    }
+    // Return restriction scheme name
+    const word& restrictionScheme() const { return restrictionScheme_; }
 
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }

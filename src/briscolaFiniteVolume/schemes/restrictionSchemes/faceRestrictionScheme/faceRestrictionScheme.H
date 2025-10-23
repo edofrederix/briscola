@@ -42,15 +42,8 @@ public:
     // Copy constructor
     faceRestrictionScheme(const faceRestrictionScheme<Type,MeshType>&);
 
-    // Selector from field name
-    static autoPtr<faceRestrictionScheme<Type,MeshType>> New
-    (
-        const fvMesh&,
-        const word
-    );
-
     // Selector from type name
-    static autoPtr<faceRestrictionScheme<Type,MeshType>> NewType
+    static autoPtr<faceRestrictionScheme<Type,MeshType>> New
     (
         const fvMesh&,
         const word

@@ -26,6 +26,9 @@ class meshFieldSet
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
+    // Restriction scheme name
+    word restrictionScheme_;
+
     // Allocate data and specify field depth and read/write options
     void allocate
     (
@@ -148,9 +151,11 @@ public:
     // Set restriction scheme
     void setRestrictionScheme(const word scheme)
     {
-        forAll(*this, s)
-            listType::operator[](s).setRestrictionScheme(scheme);
+        restrictionScheme_ = scheme;
     }
+
+    // Return restriction scheme name
+    const word& restrictionScheme() const { return restrictionScheme_; }
 
     // Number of fields
     inline label size() const { return listType::size(); }

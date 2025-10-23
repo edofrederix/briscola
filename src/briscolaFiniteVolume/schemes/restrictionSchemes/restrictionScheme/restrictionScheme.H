@@ -54,15 +54,8 @@ public:
     // Copy constructor
     restrictionScheme(const restrictionScheme<Type,MeshType>&);
 
-    // Selector from field name
-    static autoPtr<restrictionScheme<Type,MeshType>> New
-    (
-        const fvMesh&,
-        const word
-    );
-
     // Selector from type name
-    static autoPtr<restrictionScheme<Type,MeshType>> NewType
+    static autoPtr<restrictionScheme<Type,MeshType>> New
     (
         const fvMesh&,
         const word
