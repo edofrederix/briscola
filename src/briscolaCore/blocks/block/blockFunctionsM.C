@@ -6,12 +6,7 @@
 TEMPLATE                                                                       \
 void Func(block<ReturnType>& res, const block<Type>& f)                        \
 {                                                                              \
-    checkMatrices(res,f,#Func);                                                \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = ::Foam::Func(f(i));                                           \
-    }                                                                          \
+    BFOR_ALL_F_OP_FUNC_F(ReturnType, res, =, ::Foam::Func, Type, f)            \
 }                                                                              \
                                                                                \
 TEMPLATE                                                                       \
@@ -36,12 +31,7 @@ tmp<block<ReturnType>> Func(const tmp<block<Type>>& tf)                        \
 TEMPLATE                                                                       \
 void OpFunc(block<ReturnType>& res, const block<Type>& f)                      \
 {                                                                              \
-    checkMatrices(res,f,#OpFunc);                                              \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = Op f(i);                                                      \
-    }                                                                          \
+    BFOR_ALL_F_OP_OP_F(ReturnType, res, =, Op, Type, f)                        \
 }                                                                              \
                                                                                \
 TEMPLATE                                                                       \
@@ -71,12 +61,10 @@ void Func                                                                      \
     const block<Type2>& f2                                                     \
 )                                                                              \
 {                                                                              \
-    checkMatrices(res,f1,f2,#Func);                                            \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = ::Foam::Func(f1(i),f2(i));                                    \
-    }                                                                          \
+    BFOR_ALL_F_OP_FUNC_F_F                                                     \
+    (                                                                          \
+        ReturnType, res, =, ::Foam::Func, Type1, f1, Type2, f2                 \
+    )                                                                          \
 }                                                                              \
                                                                                \
 TEMPLATE                                                                       \
@@ -142,12 +130,10 @@ void Func                                                                      \
     const block<Type2>& f2                                                     \
 )                                                                              \
 {                                                                              \
-    checkMatrices(res,f2,#Func);                                               \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = ::Foam::Func(s1,f2(i));                                       \
-    }                                                                          \
+    BFOR_ALL_F_OP_FUNC_S_F                                                     \
+    (                                                                          \
+        ReturnType, res, =, ::Foam::Func, Type1, s1, Type2, f2                 \
+    )                                                                          \
 }                                                                              \
                                                                                \
 TEMPLATE                                                                       \
@@ -185,12 +171,10 @@ void Func                                                                      \
     const Type2& s2                                                            \
 )                                                                              \
 {                                                                              \
-    checkMatrices(res,f1,#Func);                                               \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = ::Foam::Func(f1(i),s2);                                       \
-    }                                                                          \
+    BFOR_ALL_F_OP_FUNC_F_S                                                     \
+    (                                                                          \
+        ReturnType, res, =, ::Foam::Func, Type1, f1, Type2, s2                 \
+    )                                                                          \
 }                                                                              \
                                                                                \
 TEMPLATE                                                                       \
@@ -232,12 +216,7 @@ void OpFunc                                                                    \
     const block<Type2>& f2                                                     \
 )                                                                              \
 {                                                                              \
-    checkMatrices(res,f1,f2,#OpFunc);                                          \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = f1(i) Op f2(i);                                               \
-    }                                                                          \
+    BFOR_ALL_F_OP_F_OP_F(ReturnType, res, =, Type1, f1, Op, Type2, f2)         \
 }                                                                              \
                                                                                \
 TEMPLATE                                                                       \
@@ -303,12 +282,7 @@ void OpFunc                                                                    \
     const block<Type2>& f2                                                     \
 )                                                                              \
 {                                                                              \
-    checkMatrices(res,f2,#OpFunc);                                             \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = s1 Op f2(i);                                                  \
-    }                                                                          \
+    BFOR_ALL_F_OP_S_OP_F(ReturnType, res, =, Type1, s1, Op, Type2, f2)         \
 }                                                                              \
                                                                                \
 TEMPLATE                                                                       \
@@ -346,12 +320,7 @@ void OpFunc                                                                    \
     const Type2& s2                                                            \
 )                                                                              \
 {                                                                              \
-    checkMatrices(res,f1,#OpFunc);                                             \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = f1(i) Op s2;                                                  \
-    }                                                                          \
+    BFOR_ALL_F_OP_F_OP_S(ReturnType, res, =, Type1, f1, Op, Type2, s2)         \
 }                                                                              \
                                                                                \
 TEMPLATE                                                                       \
@@ -393,12 +362,8 @@ void OpFunc                                                                    \
     const block<Type2>& f2                                                     \
 )                                                                              \
 {                                                                              \
-    checkMatrices(res,f1,f2,#OpFunc);                                          \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = f1(i) Op f2(i);                                               \
-    }                                                                          \
+    typedef typename product<Type1, Type2>::type ReturnType;                   \
+    BFOR_ALL_F_OP_F_OP_F(ReturnType, res, =, Type1, f1, Op, Type2, f2)         \
 }                                                                              \
                                                                                \
 template<class Type1, class Type2>                                             \
@@ -462,12 +427,14 @@ void OpFunc                                                                    \
     const VectorSpace<Form,Cmpt,nCmpt>& vs                                     \
 )                                                                              \
 {                                                                              \
-    checkMatrices(res,f1,#OpFunc);                                             \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = f1(i) Op static_cast<const Form&>(vs);                        \
-    }                                                                          \
+    typedef typename product<Type, Form>::type ReturnType;                     \
+    checkBlocks(res, f1, "res = f1 " #Op " s");                                \
+    List_ACCESS(ReturnType, res, resP);                                        \
+    List_CONST_ACCESS(Type, f1, f1P);                                          \
+    List_FOR_ALL(res, i)                                                       \
+        List_ELEM(res, resP, i) =                                              \
+            List_ELEM(f1, f1P, i) Op static_cast<const Form&>(vs);             \
+    List_END_FOR_ALL                                                           \
 }                                                                              \
                                                                                \
 template                                                                       \
@@ -521,12 +488,14 @@ void OpFunc                                                                    \
     const block<Type>& f1                                                      \
 )                                                                              \
 {                                                                              \
-    checkMatrices(res,f1,#OpFunc);                                             \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = static_cast<const Form&>(vs) Op f1(i);                        \
-    }                                                                          \
+    typedef typename product<Form, Type>::type ReturnType;                     \
+    checkBlocks(res, f1, "res = s " #Op " f1");                                \
+    List_ACCESS(ReturnType, res, resP);                                        \
+    List_CONST_ACCESS(Type, f1, f1P);                                          \
+    List_FOR_ALL(res, i)                                                       \
+        List_ELEM(res, resP, i) =                                              \
+            static_cast<const Form&>(vs) Op List_ELEM(f1, f1P, i);             \
+    List_END_FOR_ALL                                                           \
 }                                                                              \
                                                                                \
 template                                                                       \
@@ -582,12 +551,14 @@ void OpFunc                                                                    \
     const CellSpace<Form,Cmpt,nCmpt>& vs                                       \
 )                                                                              \
 {                                                                              \
-    checkMatrices(res,f1,#OpFunc);                                             \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = f1(i) Op static_cast<const Form&>(vs);                        \
-    }                                                                          \
+    typedef typename product<Type, Form>::type ReturnType;                     \
+    checkBlocks(res, f1, "res = f1 " #Op " s");                                \
+    List_ACCESS(ReturnType, res, resP);                                        \
+    List_CONST_ACCESS(Type, f1, f1P);                                          \
+    List_FOR_ALL(res, i)                                                       \
+        List_ELEM(res, resP, i) =                                              \
+            List_ELEM(f1, f1P, i) Op static_cast<const Form&>(vs);             \
+    List_END_FOR_ALL                                                           \
 }                                                                              \
                                                                                \
 template                                                                       \
@@ -641,12 +612,14 @@ void OpFunc                                                                    \
     const block<Type>& f1                                                      \
 )                                                                              \
 {                                                                              \
-    checkMatrices(res,f1,#OpFunc);                                             \
-                                                                               \
-    forAllBlockLinear(res, i)                                                  \
-    {                                                                          \
-        res(i) = static_cast<const Form&>(vs) Op f1(i);                        \
-    }                                                                          \
+    typedef typename product<Form, Type>::type ReturnType;                     \
+    checkBlocks(res, f1, "res = s " #Op " f1");                                \
+    List_ACCESS(ReturnType, res, resP);                                        \
+    List_CONST_ACCESS(Type, f1, f1P);                                          \
+    List_FOR_ALL(res, i)                                                       \
+        List_ELEM(res, resP, i) =                                              \
+            static_cast<const Form&>(vs) Op List_ELEM(f1, f1P, i);             \
+    List_END_FOR_ALL                                                           \
 }                                                                              \
                                                                                \
 template                                                                       \

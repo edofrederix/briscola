@@ -209,7 +209,7 @@ void IO::writeCellSpaceField
                 if (structured(i-S.x(),j-S.y(),k-S.z(),N))
                     for (label ii = 0; ii < n; ii++)
                         for (label jj = 0; jj < m; jj++)
-                            data[c++] = component(D(i,j,k)[ii],jj);
+                            data[c++] = ::Foam::component(D(i,j,k)[ii],jj);
 
     const label tag =
         D.levelNum()*MeshType::numberOfDirections + D.directionNum();

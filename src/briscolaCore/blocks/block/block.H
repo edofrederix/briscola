@@ -12,6 +12,7 @@
 
 #include "blockFwd.H"
 #include "utils.H"
+#include "ListLoopM.H"
 
 // Uncomment the definition of the NO_BLOCK_ZERO_INIT variable to avoid
 // initialization of block memory to zero. Doing so could potentially speed up
@@ -42,12 +43,15 @@ Ostream& operator<<(Ostream&, const block<Type>&);
 template<class Type>
 class block
 :
-    public refCount
+    public tmp<block<Type>>::refCount
 {
     // Dimensions of the block
     int l_;
     int m_;
     int n_;
+
+    // Size (product of l, m and n)
+    int size_;
 
     // Row pointers
     Type* __restrict__ v_;
@@ -66,6 +70,7 @@ public:
         l_(0),
         m_(0),
         n_(0),
+        size_(0),
         v_(nullptr),
         T_(eye)
     {}
@@ -162,12 +167,14 @@ public:
 
     // Start of the array
     inline Type* begin() { return v_; }
+    inline const Type* begin() const { return v_; }
 
     // Const start of the array
     inline const Type* cbegin() const { return v_; }
 
     // End of the array
     inline Type* end() { return &v_[size()]; }
+    inline const Type* end() const { return &v_[size()]; }
 
     // Const end of the array
     inline const Type* cend() const { return &v_[size()]; }
@@ -181,11 +188,11 @@ public:
     // Check if given linear i index is within bounds
     inline void checkLineari(const int i) const
     {
-        if (i < 0 || i >= l_*m_*n_)
+        if (i < 0 || i >= size_)
         {
             FatalErrorInFunction
                 << "Linear index i = " << i << " out of range 0 ... "
-                << l_*m_*n_-1
+                << size_-1
                 << abort(FatalError);
         }
     }
@@ -226,7 +233,7 @@ public:
     #endif
 
     // Return the number of elements in the block
-    inline int size() const { return l_*m_*n_; }
+    inline int size() const { return size_; }
 
     // Return the shape of the block
     inline labelVector shape() const
