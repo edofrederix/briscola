@@ -31,6 +31,12 @@ public:
     {
     public:
 
+        // Number of ghost cells
+        static const label G = meshDirection<Type,MeshType>::ghosts;
+
+        // Number of stencil components
+        static const direction N = SType::nCsComponents;
+
         // Diagonal smooth at given level and direction
         static inline void smoothDiag
         (

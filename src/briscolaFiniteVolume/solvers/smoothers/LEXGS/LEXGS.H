@@ -2,6 +2,7 @@
 #define LEXGS_H
 
 #include "solver.H"
+#include "meshDirection.H"
 
 namespace Foam
 {
@@ -18,6 +19,18 @@ class LEXGS
     public solver<SType,Type,MeshType>::smoother
 {
 public:
+
+    using solver<SType,Type,MeshType>::smoother::G;
+    using solver<SType,Type,MeshType>::smoother::N;
+
+    // Static sweep function on a direction
+    static inline void Sweep
+    (
+        meshDirection<Type,MeshType>& x,
+        const meshDirection<SType,MeshType>& A,
+        const meshDirection<Type,MeshType>& b,
+        const meshDirection<label,MeshType>& f
+    );
 
     // Static smooth function
     static void Smooth

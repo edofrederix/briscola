@@ -1,4 +1,5 @@
 #include "JAC.H"
+#include "smootherFunctions.H"
 
 namespace Foam
 {
@@ -11,6 +12,112 @@ namespace fv
 
 template<class SType, class Type, class MeshType>
 const scalar JAC<SType,Type,MeshType>::JAC::omega_ = 0.8;
+
+template<class SType, class Type, class MeshType>
+inline void JAC<SType,Type,MeshType>::JAC::Sweep
+(
+    meshDirection<Type,MeshType>& x,
+    const meshDirection<SType,MeshType>& A,
+    const meshDirection<Type,MeshType>& b,
+    const meshDirection<label,MeshType>& f
+)
+{
+    block<Type>& B = x.B();
+    const labelVector shape = B.shape();
+
+    Type* const __restrict__ x_arr = B.begin();
+
+    const Type* const __restrict__ b_arr = b.B().begin();
+    const label* const __restrict__ f_arr = f.B().begin();
+
+    // Reinterpret the matrix as a contiguous array of scalars
+
+    const scalar* const __restrict__ A_arr =
+        reinterpret_cast<const scalar*>(A.B().begin());
+
+    const faceLabel I = x.I();
+
+    // Data in B is padded by ghosts
+
+    const labelVector S = I.lower() + G*unitXYZ;
+    const labelVector E = I.upper() + G*unitXYZ;
+    const labelVector M = E - S;
+
+    // Array to temporarily store solution
+
+    block<Type> y(M);
+
+    Type* const __restrict__ y_arr = y.begin();
+
+    // Strides in i and j (data is contiguous in k)
+
+    const label S_i = lin(S+unitX, shape) - lin(S, shape);
+    const label S_j = lin(S+unitY, shape) - lin(S, shape);
+    const label S_k = 1;
+
+    // Jump after each line in k and plane in (j,k)
+
+    const label J_k = lin(S+unitY, shape) - lin(S+unitZ*M.z(), shape);
+    const label J_j = lin(S+unitX, shape) - lin(S+unitY*M.y(), shape);
+
+    // Off-diagonal row product function
+
+    smootherFun::offDiagRowProduct<SType,Type> P;
+
+    // Sweep
+
+    int c = lin(S, shape);
+    int e = 0;
+
+    for (int i = 0; i < M.x(); i++)
+    {
+        for (int j = 0; j < M.y(); j++)
+        {
+            for (int k = 0; k < M.z(); k++)
+            {
+                if (!f_arr[c])
+                    y_arr[e] =
+                        (1.0 - omega_)*x_arr[c]
+                      + omega_
+                      * (
+                            b_arr[c]
+                          - P(A_arr, x_arr, c, S_i, S_j, S_k)
+                        )
+                      / A_arr[c*N];
+
+                // Jump to next cell
+                c++;
+                e++;
+            }
+
+            // Jump to next line
+            c += J_k;
+        }
+
+        // Jump to next plane
+        c += J_j;
+    }
+
+    // Copy back
+
+    c = lin(S, shape);
+    e = 0;
+
+    for (int i = 0; i < M.x(); i++)
+    {
+        for (int j = 0; j < M.y(); j++)
+        {
+            for (int k = 0; k < M.z(); k++)
+                x_arr[c++] = y_arr[e++];
+
+            // Jump to next line
+            c += J_k;
+        }
+
+        // Jump to next plane
+        c += J_j;
+    }
+}
 
 template<class SType, class Type, class MeshType>
 void JAC<SType,Type,MeshType>::JAC::Smooth
@@ -29,8 +136,6 @@ void JAC<SType,Type,MeshType>::JAC::Smooth
 
     const List<bool> diagonal(sys.diagonal());
 
-    meshLevel<Type,MeshType> y(x);
-
     for (label sweep = 0; sweep < sweeps; sweep++)
     {
         forAll(x, d)
@@ -42,31 +147,9 @@ void JAC<SType,Type,MeshType>::JAC::Smooth
             }
             else
             {
-                meshDirection<Type,MeshType>& yd = y[d];
-
-                const meshDirection<Type,MeshType>& xd = x[d];
-                const meshDirection<SType,MeshType>& Ad = A[d];
-                const meshDirection<Type,MeshType>& bd = b[d];
-                const meshDirection<label,MeshType>& fd = f[d];
-
-                forAllCells(xd, i, j, k)
-                {
-                    if (!fd(i,j,k))
-                    {
-                        yd(i,j,k) =
-                            yd(i,j,k)*(1.0-omega_)
-                          + omega_
-                          * (
-                                bd(i,j,k)
-                              - offDiagRowProduct(Ad,xd,i,j,k)
-                            )
-                          / Ad(i,j,k).center();
-                    }
-                }
+                Sweep(x[d], A[d], b[d], f[d]);
             }
         }
-
-        x = y;
 
         if (l==0)
             x.correctImmersedBoundaryConditions();

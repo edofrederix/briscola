@@ -19,6 +19,18 @@ class RBGS
 {
 public:
 
+    using solver<SType,Type,MeshType>::smoother::G;
+    using solver<SType,Type,MeshType>::smoother::N;
+
+    // Static sweep function on a direction
+    static inline void Sweep
+    (
+        meshDirection<Type,MeshType>& x,
+        const meshDirection<SType,MeshType>& A,
+        const meshDirection<Type,MeshType>& b,
+        const meshDirection<label,MeshType>& f
+    );
+
     // Static smooth function
     static void Smooth
     (
