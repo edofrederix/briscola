@@ -46,6 +46,15 @@ int main(int argc, char *argv[])
         vcf = ex::coloFaceInterp(v);
         vcf.max(1e-12);
 
+        // Explicit source
+
+        tmp<staggeredScalarField> tSource =
+            (
+                exSource
+              + ex::div(mu*ex::faceDotGrad(U))
+              + twoPhase.buoyancy()
+            )*v;
+
         while (rk.loop())
         {
             const label stage = rk.stage();
@@ -59,7 +68,7 @@ int main(int argc, char *argv[])
                 // Predictor
 
                 USys = im::ddt(U);
-                USys -= C*exSource*v;
+                USys -= C*tSource();
                 USys -= rk.stageSum(stageSourcesA, stageSourcesB);
 
                 if (rk.imStageA())
@@ -79,9 +88,6 @@ int main(int argc, char *argv[])
 
                     USys -= B*USysB;
                 }
-
-                USys -= C*ex::div(mu*ex::faceDotGrad(U))*v;
-                USys -= C*twoPhase.buoyancy()*v;
 
                 // Solve predictor
 
