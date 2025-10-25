@@ -52,7 +52,8 @@ private:
     PtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
 
     // Immersed boundary condition
-    PtrList<immersedBoundaryCondition<Type,MeshType>> immersedBoundaryConditions_;
+    FastPtrList<immersedBoundaryCondition<Type,MeshType>>
+        immersedBoundaryConditions_;
 
     // Boundary exchange
     autoPtr<boundaryExchange<Type,MeshType>> bExchangePtr_;
@@ -327,14 +328,14 @@ public:
     }
 
     // Access to the boundary conditions
-    inline PtrList<immersedBoundaryCondition<Type,MeshType>>&
+    inline FastPtrList<immersedBoundaryCondition<Type,MeshType>>&
     immersedBoundaryConditions()
     {
         return immersedBoundaryConditions_;
     }
 
     // Const access to the boundary conditions
-    inline const PtrList<immersedBoundaryCondition<Type,MeshType>>&
+    inline const FastPtrList<immersedBoundaryCondition<Type,MeshType>>&
     immersedBoundaryConditions() const
     {
         return immersedBoundaryConditions_;

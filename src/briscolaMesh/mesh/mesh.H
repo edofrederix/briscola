@@ -21,13 +21,13 @@ namespace briscola
 class mesh
 :
     public geometry,
-    public PtrList<part>
+    public FastPtrList<part>
 {
     // Mesh decomposition
     autoPtr<decomposition> decomp_;
 
     // This processor's boundaries
-    PtrList<boundary> boundaries_;
+    FastPtrList<boundary> boundaries_;
 
     // Mask to keep track of set boundaries
     labelBlock boundaryMask_;
@@ -177,7 +177,7 @@ public:
     }
 
     // Access to the boundaries
-    inline const PtrList<boundary>& boundaries() const
+    inline const FastPtrList<boundary>& boundaries() const
     {
         return boundaries_;
     }

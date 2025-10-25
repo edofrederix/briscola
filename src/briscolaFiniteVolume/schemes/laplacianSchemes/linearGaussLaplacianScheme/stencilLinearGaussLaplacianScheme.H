@@ -20,7 +20,11 @@ class stencilLinearGaussLaplacianScheme
 public:
 
     // Construct from stream and mesh
-    stencilLinearGaussLaplacianScheme(const fvMesh&, Istream& = scheme::nullStream);
+    stencilLinearGaussLaplacianScheme
+    (
+        const fvMesh&,
+        Istream& = scheme::nullStream
+    );
 
     // Implicit laplacian scheme
     virtual tmp<linearSystem<stencil,Type,MeshType>> imLaplacian

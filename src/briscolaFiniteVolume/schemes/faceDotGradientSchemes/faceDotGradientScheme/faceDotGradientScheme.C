@@ -51,9 +51,9 @@ faceDotGradientScheme<Type,MeshType>::New
     if (cstrIter == IstreamConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown face gradient scheme "
+            << "Unknown face-dot gradient scheme "
             << faceDotGradientSchemeType << nl << nl
-            << "Valid face gradient schemes are:" << nl
+            << "Valid face-dot gradient schemes are:" << nl
             << IstreamConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

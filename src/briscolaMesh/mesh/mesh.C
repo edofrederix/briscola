@@ -649,7 +649,7 @@ void mesh::generateLevels()
 mesh::mesh(const IOdictionary& dict)
 :
     geometry(dict),
-    PtrList<part>(0),
+    FastPtrList<part>(0),
     decomp_(decomposition::New(*this)),
     structured_(topology().structured()),
     rectilinear_(Zero),
@@ -705,7 +705,7 @@ mesh::mesh(const IOdictionary& dict)
 mesh::mesh(const mesh& msh)
 :
     geometry(msh),
-    PtrList<part>(msh),
+    FastPtrList<part>(msh),
     decomp_(msh.decomp_),
     boundaries_(msh.boundaries_),
     boundaryMask_(msh.boundaryMask_),
@@ -722,7 +722,7 @@ mesh::mesh(const mesh& msh)
 mesh::mesh(autoPtr<mesh>& mshPtr)
 :
     geometry(mshPtr()),
-    PtrList<part>(mshPtr(), true),
+    FastPtrList<part>(mshPtr(), true),
     decomp_(mshPtr->decomp_, true),
     boundaries_(mshPtr->boundaries_, true),
     boundaryMask_(mshPtr->boundaryMask_),

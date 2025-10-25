@@ -252,9 +252,9 @@ fvMesh::findCells<colocated>(const vectorList&, const label, const label) const;
 template List<labelVector>
 fvMesh::findCells<staggered>(const vectorList&, const label, const label) const;
 
-template const PtrList<immersedBoundary<staggered>>&
+template const FastPtrList<immersedBoundary<staggered>>&
 fvMesh::immersedBoundaries<staggered>() const;
-template const PtrList<immersedBoundary<colocated>>&
+template const FastPtrList<immersedBoundary<colocated>>&
 fvMesh::immersedBoundaries<colocated>() const;
 
 }

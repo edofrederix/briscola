@@ -249,7 +249,7 @@ public:
 
     // Const access to immersed boundaries
     template<class MeshType>
-    const PtrList<immersedBoundary<MeshType>>& immersedBoundaries() const
+    const FastPtrList<immersedBoundary<MeshType>>& immersedBoundaries() const
     {
         return metrics<MeshType>().immersedBoundaries();
     }
@@ -315,7 +315,7 @@ public:
         }
 
         // Const access to boundaries
-        inline const PtrList<boundary>& boundaries() const
+        inline const FastPtrList<boundary>& boundaries() const
         {
             return mshPtr_->boundaries();
         }
