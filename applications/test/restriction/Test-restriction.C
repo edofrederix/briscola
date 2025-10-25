@@ -17,7 +17,7 @@ void testConstantRestriction(const fvMesh& fvMsh, const word scheme)
 {
     autoPtr<restrictionScheme<Type,MeshType>> S
     (
-        restrictionScheme<Type,MeshType>::NewType
+        restrictionScheme<Type,MeshType>::New
         (
             fvMsh,
             scheme
@@ -46,7 +46,7 @@ void testOneLinearRestriction(const fvMesh& fvMsh, const word scheme)
 {
     autoPtr<restrictionScheme<Type,MeshType>> S
     (
-        restrictionScheme<Type,MeshType>::NewType
+        restrictionScheme<Type,MeshType>::New
         (
             fvMsh,
             scheme
@@ -90,7 +90,7 @@ void testTwoLinearRestriction(const fvMesh& fvMsh, const word scheme)
 {
     autoPtr<restrictionScheme<Type,MeshType>> S
     (
-        restrictionScheme<Type,MeshType>::NewType
+        restrictionScheme<Type,MeshType>::New
         (
             fvMsh,
             scheme
@@ -142,7 +142,7 @@ void testThreeLinearRestriction(const fvMesh& fvMsh, const word scheme)
 {
     autoPtr<restrictionScheme<Type,MeshType>> S
     (
-        restrictionScheme<Type,MeshType>::NewType
+        restrictionScheme<Type,MeshType>::New
         (
             fvMsh,
             scheme
