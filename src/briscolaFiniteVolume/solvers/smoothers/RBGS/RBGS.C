@@ -1,5 +1,5 @@
 #include "RBGS.H"
-#include "smootherFunctions.H"
+#include "linearSystemFunctions.H"
 
 namespace Foam
 {
@@ -21,6 +21,8 @@ inline void RBGS<SType,Type,MeshType>::RBGS::Sweep
 {
     block<Type>& B = x.B();
     const labelVector shape = B.shape();
+
+    // Restricted array pointers
 
     Type* const __restrict__ x_arr = B.begin();
 
@@ -53,7 +55,7 @@ inline void RBGS<SType,Type,MeshType>::RBGS::Sweep
 
     // Off-diagonal row product function
 
-    smootherFun::offDiagRowProduct<SType,Type> P;
+    linearSystemFun::offDiagRowProduct<SType,Type> P;
 
     // Forward even sweep
 

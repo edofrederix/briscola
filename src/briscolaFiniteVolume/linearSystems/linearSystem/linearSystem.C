@@ -1,5 +1,6 @@
 #include "linearSystem.H"
 #include "linearSystemAggregation.H"
+#include "linearSystemFunctions.H"
 
 namespace Foam
 {
@@ -384,33 +385,113 @@ void linearSystem<SType,Type,MeshType>::residual
     meshDirection<Type,MeshType>& res
 ) const
 {
+    setForcingMask();
+
     const label l = res.levelNum();
     const label d = res.directionNum();
 
-    const meshDirection<SType,MeshType>& A = this->A()[l][d];
-    const meshDirection<Type,MeshType>& x = this->x()[l][d];
-    const meshDirection<Type,MeshType>& b = this->b()[l][d];
+    block<Type>& B = res.B();
+    const labelVector shape = B.shape();
 
-    if (diagonal_.size() && diagonal_[d])
+    // Restricted array pointers
+
+    Type* const __restrict__ res_arr = B.begin();
+
+    const Type* const __restrict__ x_arr = this->x()[l][d].B().begin();
+    const Type* const __restrict__ b_arr = this->b()[l][d].B().begin();
+    const label* const __restrict__ f_arr =
+        this->forcingMask()[l][d].B().begin();
+
+    // Reinterpret the matrix as a contiguous array of scalars
+
+    const scalar* const __restrict__ A_arr =
+        reinterpret_cast<const scalar*>(this->A()[l][d].B().begin());
+
+    const faceLabel I = res.I();
+
+    // Data in B is padded by ghosts
+
+    const labelVector S = I.lower() + G*unitXYZ;
+    const labelVector E = I.upper() + G*unitXYZ;
+    const labelVector M = E - S;
+
+    // Strides in i and j (data is contiguous in k)
+
+    const label S_i = lin(S+unitX, shape) - lin(S, shape);
+    const label S_j = lin(S+unitY, shape) - lin(S, shape);
+    const label S_k = 1;
+
+    // Jump after each line in k and plane in (j,k)
+
+    const label J_k = lin(S+unitY, shape) - lin(S+unitZ*M.z(), shape);
+    const label J_j = lin(S+unitX, shape) - lin(S+unitY*M.y(), shape);
+
+    // Row product function
+
+    linearSystemFun::rowProduct<SType,Type> P;
+
+    // Compute residuals
+
+    int c = lin(S, shape);
+
+    if (NoMask || !this->x().immersedBoundaryConditions().size())
     {
-        forAllCells(res, i, j, k)
-            res(i,j,k) = b(i,j,k) - A(i,j,k).center()*x(i,j,k);
+        // Compute residual for each cell
+
+        for (int i = 0; i < M.x(); i++)
+        {
+            for (int j = 0; j < M.y(); j++)
+            {
+                for (int k = 0; k < M.z(); k++)
+                {
+                    res_arr[c] =
+                        b_arr[c]
+                      - P(A_arr, x_arr, c, S_i, S_j, S_k);
+
+                    // Jump to next cell
+                    c++;
+                }
+
+                // Jump to next line
+                c += J_k;
+            }
+
+            // Jump to next plane
+            c += J_j;
+        }
     }
     else
     {
-        forAllCells(res, i, j, k)
-            res(i,j,k) = b(i,j,k) - rowProduct(A,x,i,j,k);
-    }
+        // Compute residual for each unmasked cell
 
-    if (!NoMask && xPtr_->immersedBoundaryConditions().size())
-    {
-        setForcingMask();
+        for (int i = 0; i < M.x(); i++)
+        {
+            for (int j = 0; j < M.y(); j++)
+            {
+                for (int k = 0; k < M.z(); k++)
+                {
+                    if (f_arr[c])
+                    {
+                        res_arr[c] = Zero;
+                    }
+                    else
+                    {
+                        res_arr[c] =
+                            b_arr[c]
+                          - P(A_arr, x_arr, c, S_i, S_j, S_k);
+                    }
 
-        const meshDirection<label,MeshType>& f = forcingMask_()[l][d];
+                    // Jump to next cell
+                    c++;
+                }
 
-        forAllCells(res,i,j,k)
-            if (f(i,j,k))
-                res(i,j,k) = Zero;
+                // Jump to next line
+                c += J_k;
+            }
+
+            // Jump to next plane
+            c += J_j;
+        }
     }
 }
 
@@ -491,36 +572,123 @@ void linearSystem<SType,Type,MeshType>::evaluate
     meshDirection<Type,MeshType>& eval
 ) const
 {
+    setForcingMask();
+
     const label l = eval.levelNum();
     const label d = eval.directionNum();
 
-    const meshDirection<scalar,MeshType>& icv =
-        fvMsh_.template metrics<MeshType>().inverseCellVolumes()[l][d];
+    block<Type>& B = eval.B();
+    const labelVector shape = B.shape();
 
-    const meshDirection<SType,MeshType>& A = this->A()[l][d];
-    const meshDirection<Type,MeshType>& x = this->x()[l][d];
-    const meshDirection<Type,MeshType>& b = this->b()[l][d];
+    // Restricted array pointers
 
-    if (diagonal_.size() && diagonal_[d])
+    Type* const __restrict__ eval_arr = B.begin();
+
+    const Type* const __restrict__ x_arr = this->x()[l][d].B().begin();
+    const Type* const __restrict__ b_arr = this->b()[l][d].B().begin();
+    const label* const __restrict__ f_arr =
+        this->forcingMask()[l][d].B().begin();
+
+    const scalar* const __restrict__ icv_arr =
+        this->fvMsh_.template
+        metrics<MeshType>().inverseCellVolumes()[l][d].B().begin();
+
+    // Reinterpret the matrix as a contiguous array of scalars
+
+    const scalar* const __restrict__ A_arr =
+        reinterpret_cast<const scalar*>(this->A()[l][d].B().begin());
+
+    const faceLabel I = eval.I();
+
+    // Data in B is padded by ghosts
+
+    const labelVector S = I.lower() + G*unitXYZ;
+    const labelVector E = I.upper() + G*unitXYZ;
+    const labelVector M = E - S;
+
+    // Strides in i and j (data is contiguous in k)
+
+    const label S_i = lin(S+unitX, shape) - lin(S, shape);
+    const label S_j = lin(S+unitY, shape) - lin(S, shape);
+    const label S_k = 1;
+
+    // Jump after each line in k and plane in (j,k)
+
+    const label J_k = lin(S+unitY, shape) - lin(S+unitZ*M.z(), shape);
+    const label J_j = lin(S+unitX, shape) - lin(S+unitY*M.y(), shape);
+
+    // Row product function
+
+    linearSystemFun::rowProduct<SType,Type> P;
+
+    // Compute evaluations
+
+    int c = lin(S, shape);
+
+    if (NoMask || !this->x().immersedBoundaryConditions().size())
     {
-        forAllCells(eval, i, j, k)
-            eval(i,j,k) = (A(i,j,k).center()*x(i,j,k) - b(i,j,k))*icv(i,j,k);
+        // Compute evaluation for each cell
+
+        for (int i = 0; i < M.x(); i++)
+        {
+            for (int j = 0; j < M.y(); j++)
+            {
+                for (int k = 0; k < M.z(); k++)
+                {
+                    eval_arr[c] =
+                        (
+                            P(A_arr, x_arr, c, S_i, S_j, S_k)
+                          - b_arr[c]
+                        )
+                      * icv_arr[c];
+
+                    // Jump to next cell
+                    c++;
+                }
+
+                // Jump to next line
+                c += J_k;
+            }
+
+            // Jump to next plane
+            c += J_j;
+        }
     }
     else
     {
-        forAllCells(eval, i, j, k)
-            eval(i,j,k) = (rowProduct(A,x,i,j,k) - b(i,j,k))*icv(i,j,k);
-    }
+        // Compute evaluation for each unmasked cell
 
-    if (!NoMask && xPtr_->immersedBoundaryConditions().size())
-    {
-        setForcingMask();
+        for (int i = 0; i < M.x(); i++)
+        {
+            for (int j = 0; j < M.y(); j++)
+            {
+                for (int k = 0; k < M.z(); k++)
+                {
+                    if (f_arr[c])
+                    {
+                        eval_arr[c] = Zero;
+                    }
+                    else
+                    {
+                        eval_arr[c] =
+                            (
+                                P(A_arr, x_arr, c, S_i, S_j, S_k)
+                              - b_arr[c]
+                            )
+                          * icv_arr[c];
+                    }
 
-        const meshDirection<label,MeshType>& f = forcingMask_()[l][d];
+                    // Jump to next cell
+                    c++;
+                }
 
-        forAllCells(eval,i,j,k)
-            if (f(i,j,k))
-                eval(i,j,k) = Zero;
+                // Jump to next line
+                c += J_k;
+            }
+
+            // Jump to next plane
+            c += J_j;
+        }
     }
 }
 
