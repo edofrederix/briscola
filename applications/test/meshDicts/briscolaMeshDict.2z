@@ -45,6 +45,11 @@ vertices
     (2 2 2)
 );
 
+// Do not align bricks with data structure because some tests have local
+// coordinate systems hard-coded
+
+dataAlignment false;
+
 bricks
 (
     // Coordinate order z,y,x, brick position (0,0,0)

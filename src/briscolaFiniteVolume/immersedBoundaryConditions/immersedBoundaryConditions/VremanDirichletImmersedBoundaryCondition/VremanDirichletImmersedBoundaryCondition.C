@@ -21,7 +21,7 @@ VremanDirichletImmersedBoundaryCondition
 :
     immersedBoundaryCondition<Type,MeshType>(mshField, ib, &ib.ghostMask()),
     exchanges_(mshField.fvMsh().msh().size()),
-    boundaryValues_(this->dict().lookup("values"))
+    boundaryValues_(this->read("value"))
 {
     // Check shape overlap
 

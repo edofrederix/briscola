@@ -29,7 +29,7 @@ surfaceTensionScheme
         type    SHF;
     }
 
-    sigma   3;
+    sigma   24.5;
 }
 
 vof

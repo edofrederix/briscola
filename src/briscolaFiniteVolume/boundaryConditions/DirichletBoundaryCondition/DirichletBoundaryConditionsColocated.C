@@ -10,8 +10,9 @@ namespace briscola
 namespace fv
 {
 
-makeBoundaryConditionTypes(Dirichlet,Dirichlet,colocated)
-addBoundaryConditionTypes(Dirichlet,colocated)
+makeBoundaryConditionType(Dirichlet,Dirichlet,scalar,colocated)
+makeBoundaryConditionType(Dirichlet,Dirichlet,vector,colocated)
+makeBoundaryConditionType(Dirichlet,Dirichlet,tensor,colocated)
 
 }
 

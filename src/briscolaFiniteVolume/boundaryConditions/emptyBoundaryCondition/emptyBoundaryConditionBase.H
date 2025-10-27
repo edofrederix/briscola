@@ -1,7 +1,8 @@
 #ifndef emptyBoundaryConditionBase_H
 #define emptyBoundaryConditionBase_H
 
-#include "NeumannBoundaryCondition.H"
+#include "boundaryCondition.H"
+#include "FastPtrList.H"
 
 namespace Foam
 {
@@ -15,34 +16,38 @@ namespace fv
 template<class Type, class MeshType>
 class emptyBoundaryConditionBase
 :
-    public NeumannBoundaryCondition<Type,MeshType>
+    public boundaryCondition<Type,MeshType>
 {
 public:
 
-    // Use constructors from base
-    using NeumannBoundaryCondition<Type,MeshType>::
-        NeumannBoundaryCondition;
-
-    // Construct from components setting zero gradient
+    // Construct from components
     emptyBoundaryConditionBase
     (
-        const meshField<Type,MeshType>& mshField,
-        const boundary& b
-    )
-    :
-        NeumannBoundaryCondition<Type,MeshType>
-        (
-            mshField,
-            b,
-            List<Type>(MeshType::numberOfDirections, Zero)
-        )
-    {}
+        const meshField<Type,MeshType>&,
+        const boundary&
+    );
+
+    // Copy constructor
+    emptyBoundaryConditionBase
+    (
+        const emptyBoundaryConditionBase<Type,MeshType>&
+    );
+
+    // Copy constructor resetting field reference
+    emptyBoundaryConditionBase
+    (
+        const meshField<Type,MeshType>&,
+        const emptyBoundaryConditionBase<Type,MeshType>&
+    );
 
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const
     {
         return EMPTYBC;
     }
+
+    // Eliminated boundary condition
+    virtual bool eliminated() const { return true; }
 };
 
 }
@@ -50,5 +55,9 @@ public:
 }
 
 }
+
+#ifdef NoRepository
+    #include "emptyBoundaryConditionBase.C"
+#endif
 
 #endif

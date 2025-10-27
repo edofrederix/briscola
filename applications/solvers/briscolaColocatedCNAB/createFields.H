@@ -55,22 +55,9 @@ colocatedVectorField exSource
     true
 );
 
-colocatedScalarField imSourceCoeff
-(
-    "sourceCoeff",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::NO_WRITE,
-    true
-);
-
 exSource =
     fvMsh.metrics<colocated>().fluidMask()
   * vector(solverDict.lookupOrDefault("source", vector::zero));
-
-imSourceCoeff =
-    fvMsh.metrics<colocated>().fluidMask()
-  * scalar(solverDict.lookupOrDefault("sourceCoeff", 0.0));
 
 // Solvers
 

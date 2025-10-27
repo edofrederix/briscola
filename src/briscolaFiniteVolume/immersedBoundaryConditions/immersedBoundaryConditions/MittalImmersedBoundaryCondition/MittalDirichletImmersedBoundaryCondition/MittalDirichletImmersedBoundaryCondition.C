@@ -20,7 +20,7 @@ MittalDirichletImmersedBoundaryCondition
 )
 :
     MittalImmersedBoundaryCondition<Type,MeshType>(mshField, ib),
-    boundaryValues_(this->dict().lookup("values"))
+    boundaryValues_(this->read("value"))
 {}
 
 // Destructor

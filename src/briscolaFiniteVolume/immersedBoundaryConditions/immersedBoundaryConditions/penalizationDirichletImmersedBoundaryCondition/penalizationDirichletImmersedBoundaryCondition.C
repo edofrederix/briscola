@@ -21,7 +21,7 @@ penalizationDirichletImmersedBoundaryCondition
 )
 :
     immersedBoundaryCondition<Type,MeshType>(mshField, ib, &ib.mask()),
-    boundaryValues_(this->dict().lookup("values"))
+    boundaryValues_(this->read("value"))
 {}
 
 // Destructor

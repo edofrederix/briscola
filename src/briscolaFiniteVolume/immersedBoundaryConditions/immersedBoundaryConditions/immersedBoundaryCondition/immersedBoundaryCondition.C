@@ -15,6 +15,28 @@ namespace briscola
 namespace fv
 {
 
+template<class Type, class MeshType>
+List<Type> immersedBoundaryCondition<Type,MeshType>::read(const word entry)
+const
+{
+    typedef typename outerProduct<Type, typename MeshType::dimType>::type
+        physicalType;
+
+    const physicalType value = this->dict_.lookup<physicalType>(entry);
+
+    List<Type> values(MeshType::numberOfDirections);
+
+    tensor base(eye);
+
+    if (this->fvMsh_.msh().template castable<rectilinearMesh>())
+        base = this->fvMsh_.msh().template cast<rectilinearMesh>().base();
+
+    for (int d = 0; d < MeshType::numberOfDirections; d++)
+        values[d] = MeshType::project(value, d, base);
+
+    return values;
+}
+
 // Constructor
 
 template<class Type, class MeshType>

@@ -21,7 +21,7 @@ boundaryConditions
     sides
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 
     wall

@@ -299,36 +299,48 @@ void geometry::alignBricks()
 
     // Collect brick transformations first, because transforming them on the fly
     // invalidates the brick topology. Align bricks w.r.t. the orientation of
-    // the first brick. This means that all bricks will have a local coordinate
-    // system that is aligned with that of the first brick.
+    // the largest brick. This means that all bricks will have a local
+    // coordinate system that is aligned with that of the largest brick. This is
+    // the orientation that is most likely to have most cells in the third local
+    // direction, which gives the highest contiguous memory density.
 
-    List<labelTensor> transforms(bricks_.size()-1);
+    labelList sizes(bricks_.size());
 
-    for (int bricki = 1; bricki < bricks_.size(); bricki++)
+    forAll(bricks_, bricki)
+        sizes[bricki] = cmptProduct(bricks_[bricki].N());
+
+    const label largest = findMax(sizes);
+
+    List<labelTensor> transforms(bricks_.size());
+
+    forAll(bricks_, bricki)
     {
-        // Find path between the base brick and this brick
-
-        const labelList P = topology_->shortestFacePath(0, bricki);
-
-        labelTensor T = eye;
-
-        for (label i = P.size()-2; i >= 0; i--)
+        if (bricki != largest)
         {
-            const brickLinks& links = topology_->links()[P[i]];
-            const brickFaceLink& link = links.getFaceLink(P[i+1]);
+            // Find path between the largest brick and this brick
 
-            T = link.T() & T;
+            const labelList P = topology_->shortestFacePath(largest, bricki);
+
+            labelTensor T = eye;
+
+            for (label i = P.size()-2; i >= 0; i--)
+            {
+                const brickLinks& links = topology_->links()[P[i]];
+                const brickFaceLink& link = links.getFaceLink(P[i+1]);
+
+                T = link.T() & T;
+            }
+
+            transforms[bricki] = T;
         }
-
-        transforms[bricki-1] = T;
     }
 
     // Perform brick transform now that all transforms are known
 
     forAll(transforms, bricki)
-    {
-        bricks_[bricki+1].transform(transforms[bricki]);
-    }
+        if (bricki != largest)
+            if (transforms[bricki] != eye)
+                bricks_[bricki].transform(transforms[bricki]);
 
     createPatches();
     createPatchPairs();
@@ -348,7 +360,11 @@ geometry::geometry(const IOdictionary& dict)
     bricks_(),
     topology_(),
     patches_(),
-    patchPairs_()
+    patchPairs_(),
+    dataAlignment_
+    (
+        dict.lookupOrDefault<Switch>("dataAlignment", true)
+    )
 {
     createBricks();
     createPatches();
@@ -363,7 +379,8 @@ geometry::geometry(const IOdictionary& dict)
 geometry::geometry(const geometry& geo)
 :
     meshData(geo),
-    bricks_(geo.bricks_, *this)
+    bricks_(geo.bricks_, *this),
+    dataAlignment_(geo.dataAlignment_)
 {
     createPatches();
     createPatchPairs();

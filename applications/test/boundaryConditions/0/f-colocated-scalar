@@ -16,6 +16,6 @@ boundaryConditions
     default
     {
         type    Dirichlet;
-        values  (2);
+        value   0;
     }
 }

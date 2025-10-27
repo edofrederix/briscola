@@ -16,42 +16,42 @@ boundaryConditions
     default
     {
         type    Dirichlet;
-        values  (0);
+        value   0;
     }
 
     left
     {
         type    Dirichlet;
-        values  (1);
+        value   1;
     }
 
     right
     {
         type    Dirichlet;
-        values  (2);
+        value   2;
     }
 
     bottom
     {
         type    Neumann;
-        gradients  (3);
+        gradient   3;
     }
 
     top
     {
         type    Neumann;
-        gradients  (4);
+        gradient   4;
     }
 
     back
     {
         type    Neumann;
-        gradients  (5);
+        gradient   5;
     }
 
     front
     {
         type    Dirichlet;
-        values  (6);
+        value   6;
     }
 }

@@ -37,7 +37,7 @@ public:
         (
             mshField,
             b,
-            List<Type>(MeshType::numberOfDirections, Zero)
+            Zero
         )
     {}
 

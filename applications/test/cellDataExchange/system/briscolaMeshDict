@@ -19,6 +19,8 @@ vertices
     (1 1 1)
 );
 
+dataAlignment false;
+
 bricks
 (
     0

@@ -4,6 +4,7 @@
 #include "meshFieldFwd.H"
 #include "immersedBoundaryConditionFwd.H"
 #include "immersedBoundaryFwd.H"
+#include "rectilinearMesh.H"
 
 #include "List.H"
 #include "Switch.H"
@@ -51,6 +52,9 @@ protected:
             << "with " << typeName << " immersed boundary condition."
             << endl;
     }
+
+    // Function to read boundary value entry from the dictionary
+    List<Type> read(const word) const;
 
 public:
 

@@ -16,8 +16,8 @@ boundaryConditions
     inlet_mapped
     {
         type        mapped;
-        setAverages (true);
-        averages    ((1 0 0));
+        setAverage  true;
+        average     (1 0 0);
     }
 
     inlet
@@ -28,7 +28,7 @@ boundaryConditions
     outlet_mapped
     {
         type        Neumann;
-        gradients   ((0 0 0));
+        gradient    (0 0 0);
     }
 
     outlet
@@ -39,6 +39,6 @@ boundaryConditions
     ib
     {
         type        MittalDirichlet;
-        values      ((0 0 0));
+        value       (0 0 0);
     }
 }

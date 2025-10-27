@@ -11,31 +11,31 @@ boundaryConditions
     inlet
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 
     outlet
     {
         type        Dirichlet;
-        values      (0);
+        value       0;
     }
 
     wall
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 
     top
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 
     bottom
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 
     empties

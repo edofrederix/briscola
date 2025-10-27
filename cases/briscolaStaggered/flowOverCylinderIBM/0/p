@@ -16,19 +16,19 @@ boundaryConditions
     walls
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 
     inlet
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 
     outlet
     {
         type        Dirichlet;
-        values      (0);
+        value       0;
     }
 
     empties

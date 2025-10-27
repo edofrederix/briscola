@@ -11,7 +11,7 @@ boundaryConditions
     top
     {
         type        Dirichlet;
-        values      (1 0 0);
+        value       (1 0 0);
     }
 
     bottom

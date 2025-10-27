@@ -106,17 +106,22 @@ void SHF::correct()
         pBoundary[i] =
             fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
 
-    const labelVector& N = fvMsh_.template N<colocated>();
-    const faceLabel& I = fvMsh_.template I<colocated>();
+    const labelVector N = fvMsh_.template N<colocated>();
+    const faceLabel I = fvMsh_.template I<colocated>();
 
     colocatedLabelField marker("marker", fvMsh_);
     marker = Zero;
 
+    // Rectilinear mesh cell sizes (note: not necessarily aligned with the
+    // global coordinate system!)
+
     const rectilinearMesh& rMsh = fvMsh_.msh().cast<rectilinearMesh>();
 
-    const PartialList<scalar>& xSize = rMsh.localCellSizes()[0];
-    const PartialList<scalar>& ySize = rMsh.localCellSizes()[1];
-    const PartialList<scalar>& zSize = rMsh.localCellSizes()[2];
+    const PartialList<scalar>& size0 = rMsh.localCellSizes()[0];
+    const PartialList<scalar>& size1 = rMsh.localCellSizes()[1];
+    const PartialList<scalar>& size2 = rMsh.localCellSizes()[2];
+
+    const tensor base = rMsh.base();
 
     const labelVector& globalStart = rMsh.globalStarts()[Pstream::myProcNo()];
 
@@ -165,9 +170,14 @@ void SHF::correct()
          && (alpha_(ijk) < 1 - vof::threshold)
         )
         {
-            const vector m(cmptMag(normal_(ijk)));
+            // Normal projected onto the local coordinate system
 
-            // Determine the primary interfacial orientation
+            const vector n = (base & normal_(ijk));
+
+            // Determine the primary interfacial orientation in the local
+            // coordinate system
+
+            const vector m = cmptMag(n);
 
             const label p =
                 m.x() == cmptMax(m) ? 0
@@ -195,6 +205,8 @@ void SHF::correct()
                 f[ii*2 + 1] = d[ii]*2 + 1;
             }
 
+            // Cell sizes of the primary direction
+
             const PartialList<scalar>& gSizes = rMsh.globalCellSizes()[p];
 
             scalar minH = 0.0;
@@ -205,7 +217,7 @@ void SHF::correct()
             label upper = 0.0;
             label lower = 0.0;
 
-            label s = Foam::sign(normal_(ijk)[p]);
+            label s = Foam::sign(n[p]);
 
             const scalar gamma = m[p] > Foam::cos(0.8) ? 0.0 : 0.2;
 
@@ -230,7 +242,7 @@ void SHF::correct()
             {
                 sumNew = 0.0;
 
-                // Do not go beyond domain boundary ghost cells
+                // Do not go beyond the domain boundary ghost cells
 
                 if (ii + a > I[f.right()] && !pBoundary[f.right()])
                     break;
@@ -243,8 +255,8 @@ void SHF::correct()
                 if
                 (
                     s*(sumNew - sumPrev) >= 0.0
-                 && sumNew >       1.0e-12
-                 && sumNew < 9.0 - 1.0e-12
+                 && sumNew >       1e-12
+                 && sumNew < 9.0 - 1e-12
                 )
                 {
                     upper++;
@@ -278,8 +290,8 @@ void SHF::correct()
                 if
                 (
                     s*(sumNew - sumPrev) <= 0.0
-                 && sumNew >       1.0e-12
-                 && sumNew < 9.0 - 1.0e-12
+                 && sumNew >       1e-12
+                 && sumNew < 9.0 - 1e-12
                 )
                 {
                     lower++;
@@ -416,7 +428,7 @@ void SHF::correct()
                 // Limit kappa
 
                 const scalar kappaMax =
-                    1.0/cmptMin(vector(xSize[i], ySize[j], zSize[k]));
+                    1.0/cmptMin(vector(size0[i], size1[j], size2[k]));
 
                 if (Foam::mag(kappa(ijk)) > kappaMax)
                     kappa(ijk) = kappaMax * Foam::sign(kappa(ijk));

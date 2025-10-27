@@ -18,13 +18,19 @@ class mappedBoundaryConditionBase
 :
     public DirichletBoundaryCondition<Type,MeshType>
 {
+public:
+
+    // Physical type represented by Type on MeshType
+    typedef typename outerProduct<Type, typename MeshType::dimType>::type
+        physicalType;
+
 protected:
 
-    // List of switches to enable patch average enforcement
-    List<Switch> setAverages_;
+    // Enable patch average enforcement
+    Switch setAverage_;
 
-    // List of mean values to be set
-    List<Type> averages_;
+    // Average to be set, defined in physical space
+    physicalType average_;
 
     // Point data exchanges
     PtrList<pointDataExchange<MeshType>> exchanges_;

@@ -53,7 +53,6 @@ int main(int argc, char *argv[])
 
         USys = im::ddt(U);
 
-        USys -= im::source(imSourceCoeff,U)*v;
         USys -= exSource*v;
 
         USys -= 0.5*H;

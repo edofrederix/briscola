@@ -83,7 +83,7 @@ void mappedBoundaryCondition<Type,colocated>::prepare(const label l)
     const labelVector S(this->S(0,0));
     const labelVector E(this->E(0,0));
 
-    if (this->setAverages_[0])
+    if (this->setAverage_)
     {
         const faceField<scalar,colocated>& fa = this->faceAreas();
 
@@ -107,7 +107,7 @@ void mappedBoundaryCondition<Type,colocated>::prepare(const label l)
 
         const Type average = sum/area;
 
-        data += (this->averages_[0] - average);
+        data += (this->average_ - average);
     }
 
     block<Type>& bv = this->boundaryValues_[0];
@@ -201,6 +201,9 @@ void mappedBoundaryCondition<Type,staggered>::prepare(const label l)
 
     meshField<Type,staggered>& field = this->mshField();
 
+    const tensor base =
+        this->fvMsh_.msh().template cast<rectilinearMesh>().base();
+
     forAll(field[l], d)
     {
         pointDataExchange<staggered>& exchange = this->exchanges_[d];
@@ -210,7 +213,7 @@ void mappedBoundaryCondition<Type,staggered>::prepare(const label l)
         const labelVector S(this->S(0,d));
         const labelVector E(this->E(0,d));
 
-        if (this->setAverages_[d])
+        if (this->setAverage_)
         {
             // Colocated face areas needed for directions that are shifted into
             // the boundary
@@ -243,7 +246,7 @@ void mappedBoundaryCondition<Type,staggered>::prepare(const label l)
 
             const Type average = sum/area;
 
-            data += (this->averages_[d] - average);
+            data += (staggered::project(this->average_, d, base) - average);
         }
 
         block<Type>& bv = this->boundaryValues_[d];

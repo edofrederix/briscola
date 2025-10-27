@@ -72,10 +72,7 @@ int main(int argc, char *argv[])
 
                 if (rk.imStageB())
                 {
-                    USysB =
-                        im::laplacian(nu,U)
-                      + im::source(imSourceCoeff,U);
-
+                    USysB = im::laplacian(nu,U);
                     USys -= B*USysB;
                 }
 
@@ -110,7 +107,7 @@ int main(int argc, char *argv[])
                 stageSourcesB[stage-1] =
                     rk.solve() && rk.imStageB()
                   ? USysB.evaluate()
-                  : ex::laplacian(nu,U) + ex::source(imSourceCoeff,U);
+                  : ex::laplacian(nu,U);
         }
 
         io.write<colocated>();

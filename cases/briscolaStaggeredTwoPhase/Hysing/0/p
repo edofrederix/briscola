@@ -11,12 +11,12 @@ boundaryConditions
     bottomAndTop
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 
     sides
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 }

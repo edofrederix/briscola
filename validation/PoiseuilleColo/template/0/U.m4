@@ -16,8 +16,8 @@ boundaryConditions
     inlet_mapped
     {
         type        mapped;
-        setAverages (true);
-        averages    ((1 0 0));
+        setAverage  true;
+        average     (1 0 0);
     }
 
     inlet
@@ -38,6 +38,6 @@ boundaryConditions
     ib
     {
         type        VARIBMBC;
-        values      ((0 0 0));
+        value       (0 0 0);
     }
 }

@@ -21,8 +21,9 @@ mappedBoundaryConditionBase<Type,MeshType>::mappedBoundaryConditionBase
     (
         mshField,
         b,
-        List<Type>(MeshType::numberOfDirections, Zero)
-    )
+        Zero
+    ),
+    setAverage_(false)
 {
     // Check if boundary supports a mapped boundary condition
 
@@ -33,23 +34,11 @@ mappedBoundaryConditionBase<Type,MeshType>::mappedBoundaryConditionBase
 
     // Read averaging options
 
-    if (this->dict().found("setAverages"))
-    {
-        this->dict().lookup("setAverages") >> setAverages_;
-    }
-    else
-    {
-        setAverages_ =
-            List<Switch>(MeshType::numberOfDirections, Switch(false));
-    }
+    if (this->dict().found("setAverage"))
+        this->dict().lookup("setAverage") >> setAverage_;
 
-    forAll(setAverages_, i)
-    {
-        if (setAverages_[i])
-        {
-            this->dict().lookup("averages") >> averages_;
-        }
-    }
+    if (setAverage_)
+        this->dict().lookup("average") >> average_;
 }
 
 }

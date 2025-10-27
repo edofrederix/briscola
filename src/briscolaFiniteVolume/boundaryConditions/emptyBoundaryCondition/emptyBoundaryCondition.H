@@ -54,6 +54,17 @@ public:
             new emptyBoundaryCondition<Type,colocated>(field,*this)
         );
     }
+
+    // Eliminate ghosts from the linear system at given level and direction
+    virtual void eliminateGhosts
+    (
+        linearSystem<stencil,Type,colocated>&,
+        const label,
+        const label
+    );
+
+    // Evaluate the boundary condition for given level and direction
+    virtual void evaluate(const label, const label);
 };
 
 

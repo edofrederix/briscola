@@ -51,22 +51,9 @@ colocatedVectorField exSource
     true
 );
 
-colocatedScalarField imSourceCoeff
-(
-    "sourceCoeff",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::NO_WRITE,
-    true
-);
-
 exSource =
     fvMsh.metrics<colocated>().fluidMask()
   * vector(twoPhaseDict.lookupOrDefault("source", vector::zero));
-
-imSourceCoeff =
-    fvMsh.metrics<colocated>().fluidMask()
-  * scalar(twoPhaseDict.lookupOrDefault("sourceCoeff", 0.0));
 
 // Solvers
 

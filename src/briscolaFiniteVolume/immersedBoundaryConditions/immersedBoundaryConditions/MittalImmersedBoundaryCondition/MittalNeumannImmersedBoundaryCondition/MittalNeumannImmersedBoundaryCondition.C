@@ -20,7 +20,7 @@ MittalNeumannImmersedBoundaryCondition
 )
 :
     MittalImmersedBoundaryCondition<Type,MeshType>(mshField, ib),
-    boundaryGradients_(this->dict().lookup("gradients"))
+    boundaryGradients_(this->read("gradient"))
 {}
 
 // Destructor

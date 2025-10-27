@@ -25,30 +25,6 @@ protected:
     // Mixture dynamic viscosity
     faceField<scalar,MeshType> mu_;
 
-    // Cached g*h*A face field
-    autoPtr<colocatedScalarFaceField> ghAPtr_;
-
-    // Function to set the g*h*A field
-    void setGhA()
-    {
-        if (!ghAPtr_.valid())
-        {
-            const colocatedVectorFaceField& fc =
-                fvMsh_.template metrics<colocated>().faceCenters();
-
-            const colocatedScalarFaceField& fa =
-                fvMsh_.template metrics<colocated>().faceAreas();
-
-            tmp<colocatedScalarFaceField> tghA(fa);
-            colocatedScalarFaceField& ghA = tghA.ref();
-
-            forAllFaces(ghA, fd, i, j, k)
-                ghA[fd](i,j,k) *= -(this->g() & fc[fd](i,j,k));
-
-            ghAPtr_.set(tghA.ptr());
-        }
-    }
-
 private:
 
     // Disallow default bitwise assignment

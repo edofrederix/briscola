@@ -160,15 +160,19 @@ tmp<staggeredScalarField> TwoPhaseModel<staggered>::buoyancy() const
     buoyancy = Zero;
     #endif
 
-    // The gravity vector is assumed here to be defined in the staggered
-    // coordinate system
-
     if (Foam::mag(this->g()) > 0.0)
     {
         const scalar rhoMean(this->rhoMean());
 
+        // Project the gravity vector on the staggered base
+
+        const tensor base =
+            this->fvMsh_.msh().template cast<rectilinearMesh>().base();
+
+        const vector G = (base & this->g());
+
         forAll(buoyancy, d)
-            buoyancy[d] = (rho[d] - rhoMean)*this->g()[d];
+            buoyancy[d] = (rho[d] - rhoMean)*G[d];
     }
 
     return tBuoyancy;

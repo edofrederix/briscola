@@ -11,6 +11,6 @@ boundaryConditions
     walls
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 }

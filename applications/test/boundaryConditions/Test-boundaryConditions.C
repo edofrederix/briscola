@@ -13,8 +13,6 @@ using namespace fv;
 template<class Type, class MeshType>
 void testDirichlet(const fvMesh& fvMsh)
 {
-    Type value = 2.0*pTraits<Type>::one;
-
     meshField<Type,MeshType> field
     (
         "f-"
@@ -63,7 +61,7 @@ void testDirichlet(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (field(l,d,ijk+bo) != value)
+                    if (Foam::mag(field(l,d,ijk+bo)) > 1e-12)
                         FatalErrorInFunction
                             << "Test 1a failed" << endl << abort(FatalError);
                 }
@@ -76,7 +74,7 @@ void testDirichlet(const fvMesh& fvMsh)
                 {
                     labelVector ijk(i,j,k);
 
-                    if (field(l,d,ijk+bo) != 2.0*value - field(l,d,ijk))
+                    if (Foam::mag(field(l,d,ijk+bo) + field(l,d,ijk)) > 1e-12)
                         FatalErrorInFunction
                             << "Test 1b failed" << endl << abort(FatalError);
                 }
@@ -208,80 +206,16 @@ int main(int argc, char *argv[])
 
     testDirichlet<scalar,colocated>(fvMsh);
     testDirichlet<vector,colocated>(fvMsh);
-
     testDirichlet<tensor,colocated>(fvMsh);
-    testDirichlet<diagTensor,colocated>(fvMsh);
-    testDirichlet<symmTensor,colocated>(fvMsh);
-    testDirichlet<sphericalTensor,colocated>(fvMsh);
-
-    testDirichlet<stencil,colocated>(fvMsh);
-    testDirichlet<diagStencil,colocated>(fvMsh);
-
-    testDirichlet<faceScalar,colocated>(fvMsh);
-    testDirichlet<edgeScalar,colocated>(fvMsh);
-    testDirichlet<vertexScalar,colocated>(fvMsh);
-
-    testDirichlet<faceVector,colocated>(fvMsh);
-    testDirichlet<edgeVector,colocated>(fvMsh);
-    testDirichlet<vertexVector,colocated>(fvMsh);
-
 
     testDirichlet<scalar,staggered>(fvMsh);
     testDirichlet<vector,staggered>(fvMsh);
 
-    testDirichlet<tensor,staggered>(fvMsh);
-    testDirichlet<diagTensor,staggered>(fvMsh);
-    testDirichlet<symmTensor,staggered>(fvMsh);
-    testDirichlet<sphericalTensor,staggered>(fvMsh);
-
-    testDirichlet<stencil,staggered>(fvMsh);
-    testDirichlet<diagStencil,staggered>(fvMsh);
-
-    testDirichlet<faceScalar,staggered>(fvMsh);
-    testDirichlet<edgeScalar,staggered>(fvMsh);
-    testDirichlet<vertexScalar,staggered>(fvMsh);
-
-    testDirichlet<faceVector,staggered>(fvMsh);
-    testDirichlet<edgeVector,staggered>(fvMsh);
-    testDirichlet<vertexVector,staggered>(fvMsh);
-
 
     testNeumann<scalar,colocated>(fvMsh);
     testNeumann<vector,colocated>(fvMsh);
-
     testNeumann<tensor,colocated>(fvMsh);
-    testNeumann<diagTensor,colocated>(fvMsh);
-    testNeumann<symmTensor,colocated>(fvMsh);
-    testNeumann<sphericalTensor,colocated>(fvMsh);
-
-    testNeumann<stencil,colocated>(fvMsh);
-    testNeumann<diagStencil,colocated>(fvMsh);
-
-    testNeumann<faceScalar,colocated>(fvMsh);
-    testNeumann<edgeScalar,colocated>(fvMsh);
-    testNeumann<vertexScalar,colocated>(fvMsh);
-
-    testNeumann<faceVector,colocated>(fvMsh);
-    testNeumann<edgeVector,colocated>(fvMsh);
-    testNeumann<vertexVector,colocated>(fvMsh);
-
 
     testNeumann<scalar,staggered>(fvMsh);
     testNeumann<vector,staggered>(fvMsh);
-
-    testNeumann<tensor,staggered>(fvMsh);
-    testNeumann<diagTensor,staggered>(fvMsh);
-    testNeumann<symmTensor,staggered>(fvMsh);
-    testNeumann<sphericalTensor,staggered>(fvMsh);
-
-    testNeumann<stencil,staggered>(fvMsh);
-    testNeumann<diagStencil,staggered>(fvMsh);
-
-    testNeumann<faceScalar,staggered>(fvMsh);
-    testNeumann<edgeScalar,staggered>(fvMsh);
-    testNeumann<vertexScalar,staggered>(fvMsh);
-
-    testNeumann<faceVector,staggered>(fvMsh);
-    testNeumann<edgeVector,staggered>(fvMsh);
-    testNeumann<vertexVector,staggered>(fvMsh);
 }

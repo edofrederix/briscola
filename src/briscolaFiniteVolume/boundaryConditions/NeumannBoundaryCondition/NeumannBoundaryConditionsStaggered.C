@@ -10,8 +10,8 @@ namespace briscola
 namespace fv
 {
 
-makeBoundaryConditionTypes(Neumann,Neumann,staggered)
-addBoundaryConditionTypes(Neumann,staggered)
+makeBoundaryConditionType(Neumann,Neumann,scalar,staggered)
+makeBoundaryConditionType(Neumann,Neumann,vector,staggered)
 
 }
 

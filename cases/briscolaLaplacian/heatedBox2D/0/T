@@ -11,6 +11,6 @@ boundaryConditions
     walls
     {
         type        Dirichlet;
-        values      (0);
+        value       0;
     }
 }

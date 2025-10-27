@@ -18,14 +18,19 @@ class NeumannBoundaryConditionBase
 :
     public boundaryCondition<Type,MeshType>
 {
+public:
+
+    // Physical type represented by Type on MeshType
+    typedef typename outerProduct<Type, typename MeshType::dimType>::type
+        physicalType;
+
 protected:
 
     // Flattened list of boundary gradients for each level and direction
     FastPtrList<block<Type>> boundaryGradients_;
 
-    // Function to initialize boundary gradients from a list of uniform
-    // gradients for each direction
-    void init(const List<Type>&);
+    // Function to initialize uniform boundary gradients
+    void init(const physicalType&);
 
 public:
 
@@ -36,12 +41,20 @@ public:
         const boundary&
     );
 
-    // Construct from components and uniform boundary gradient list
+    // Construct from components and zero boundary gradient
     NeumannBoundaryConditionBase
     (
         const meshField<Type,MeshType>&,
         const boundary&,
-        const List<Type>&
+        const zero&
+    );
+
+    // Construct from components and uniform boundary gradient
+    NeumannBoundaryConditionBase
+    (
+        const meshField<Type,MeshType>&,
+        const boundary&,
+        const physicalType&
     );
 
     // Construct from components and boundary gradients

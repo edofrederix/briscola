@@ -11,18 +11,18 @@ boundaryConditions
     default
     {
         type        Dirichlet;
-        values      (0);
+        value       0;
     }
 
     inlet
     {
         type        Dirichlet;
-        values      (0);
+        value       0;
     }
 
     outlet
     {
         type        Dirichlet;
-        values      (0);
+        value       0;
     }
 }

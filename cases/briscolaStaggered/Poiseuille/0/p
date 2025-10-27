@@ -11,13 +11,13 @@ boundaryConditions
     walls
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 
     inlet_mapped
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 
     inlet
@@ -28,7 +28,7 @@ boundaryConditions
     outlet_mapped
     {
         type        Dirichlet;
-        values      (0);
+        value       0;
     }
 
     outlet

@@ -165,8 +165,8 @@ void splitAdvection::solve(const colocatedScalarFaceField& phi)
 {
     alpha_.setOldTime();
 
-    const colocatedScalarField& cv =
-        fvMsh_.template metrics<colocated>().cellVolumes();
+    const colocatedScalarField& icv =
+        fvMsh_.template metrics<colocated>().inverseCellVolumes();
 
     // If this is the first time step, the normal is probably not computed yet
     // so it needs to be updated
@@ -210,11 +210,11 @@ void splitAdvection::solve(const colocatedScalarFaceField& phi)
                 const labelVector nei(lowerNeighbor(i,j,k,fd));
 
                 alpha_(ijk) +=
-                    dt/cv(ijk)
+                    dt*icv(ijk)
                   * (scalar(alphac(ijk))*phi[fd](ijk) - flux_[fd](ijk));
 
                 alpha_(nei) -=
-                    dt/cv(nei)
+                    dt*icv(nei)
                   * (scalar(alphac(nei))*phi[fd](ijk) - flux_[fd](ijk));
             }
 

@@ -79,13 +79,7 @@ int main(int argc, char *argv[])
 
                 if (rk.imStageB())
                 {
-                    USysB =
-                        v
-                      * (
-                            im::laplacian(mu,U)
-                          + im::source(imSourceCoeff,U)
-                        );
-
+                    USysB = v*im::laplacian(mu,U);
                     USys -= B*USysB;
                 }
 
@@ -118,11 +112,7 @@ int main(int argc, char *argv[])
                 stageSourcesB[stage-1] =
                     rk.solve() && rk.imStageB()
                   ? USysB.evaluate()
-                  : v
-                  * (
-                        ex::laplacian(mu,U)
-                      + ex::source(imSourceCoeff,U)
-                    );
+                  : v*ex::laplacian(mu,U);
         }
 
         // Reconstruct the colocated velocity

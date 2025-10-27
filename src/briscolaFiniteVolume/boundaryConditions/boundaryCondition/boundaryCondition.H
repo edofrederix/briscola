@@ -14,6 +14,7 @@
 
 #include "PtrList.H"
 #include "NamedEnum.H"
+#include "products.H"
 
 #include "meshFieldFwd.H"
 #include "faceFieldFwd.H"

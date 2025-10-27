@@ -18,14 +18,19 @@ class DirichletBoundaryConditionBase
 :
     public boundaryCondition<Type,MeshType>
 {
+public:
+
+    // Physical type represented by Type on MeshType
+    typedef typename outerProduct<Type, typename MeshType::dimType>::type
+        physicalType;
+
 protected:
 
     // Flattened list of boundary values for each level and direction
     FastPtrList<block<Type>> boundaryValues_;
 
-    // Function to initialize boundary values from a list of uniform values for
-    // each direction
-    void init(const List<Type>&);
+    // Function to initialize uniform boundary values
+    void init(const physicalType&);
 
 public:
 
@@ -36,12 +41,20 @@ public:
         const boundary&
     );
 
-    // Construct from components and uniform boundary value list
+    // Construct from components and zero boundary value
     DirichletBoundaryConditionBase
     (
         const meshField<Type,MeshType>&,
         const boundary&,
-        const List<Type>&
+        const zero&
+    );
+
+    // Construct from components and uniform boundary value
+    DirichletBoundaryConditionBase
+    (
+        const meshField<Type,MeshType>&,
+        const boundary&,
+        const physicalType&
     );
 
     // Construct from components and boundary values

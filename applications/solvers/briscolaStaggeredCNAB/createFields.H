@@ -54,22 +54,14 @@ staggeredScalarField exSource
     true
 );
 
-staggeredScalarField imSourceCoeff
-(
-    "sourceCoeff",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::NO_WRITE,
-    true
-);
+// Project the source vector onto the local coordinate system
+
+const tensor base =
+    fvMsh.msh().cast<rectilinearMesh>().base();
 
 exSource =
     fvMsh.metrics<staggered>().fluidMask()
-  * scalarList(solverDict.lookup("source"));
-
-  imSourceCoeff =
-    fvMsh.metrics<staggered>().fluidMask()
-  * scalarList(solverDict.lookup("sourceCoeff"));
+  * list(base & solverDict.lookupOrDefault("source", vector::zero));
 
 // Solvers
 
