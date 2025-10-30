@@ -20,7 +20,7 @@ class Alexander3
     public RungeKuttaScheme
 {
     // Butcher tableau
-    List<scalarList> a_;
+    scalarSquareMatrix a_;
 
 public:
 
@@ -30,18 +30,14 @@ public:
     // Construct from mesh
     Alexander3(const fvMesh& fvMsh);
 
-    // Destructor
-    ~Alexander3()
-    {}
-
     // Return the Butcher tableau for source A
-    virtual const List<scalarList>& a() const
+    virtual const scalarSquareMatrix& a() const
     {
         return a_;
     }
 
     // Return the Butcher tableau for source B
-    virtual const List<scalarList>& b() const
+    virtual const scalarSquareMatrix& b() const
     {
         return a_;
     }

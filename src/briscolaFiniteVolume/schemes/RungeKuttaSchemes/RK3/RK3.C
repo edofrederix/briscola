@@ -14,18 +14,17 @@ namespace RungeKuttaSchemes
 
 RK3::RK3(const fvMesh& fvMsh)
 :
-    RungeKuttaScheme(fvMsh)
+    RungeKuttaScheme(fvMsh),
+    a_(4, Zero)
 {
-    a_.setSize(4, scalarList(4, 0.0));
+    a_(1,0) = 0.5;
 
-    a_[1][0] = 0.5;
+    a_(2,0) = -1.0;
+    a_(2,1) = 2.0;
 
-    a_[2][0] = -1.0;
-    a_[2][1] = 2.0;
-
-    a_[3][0] = 1.0/6.0;
-    a_[3][1] = 2.0/3.0;
-    a_[3][2] = 1.0/6.0;
+    a_(3,0) = 1.0/6.0;
+    a_(3,1) = 2.0/3.0;
+    a_(3,2) = 1.0/6.0;
 }
 
 }

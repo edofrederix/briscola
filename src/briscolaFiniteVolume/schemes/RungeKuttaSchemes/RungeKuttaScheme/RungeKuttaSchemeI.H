@@ -24,22 +24,26 @@ inline label RungeKuttaScheme::stage() const
 
 inline label RungeKuttaScheme::numberOfStages() const
 {
-    return a().size();
+    return a().m();
 }
 
 inline scalar RungeKuttaScheme::A() const
 {
-    return a()[stage_-1][stage_-1];
+    return a()(stage_-1,stage_-1);
 }
 
 inline scalar RungeKuttaScheme::B() const
 {
-    return b()[stage_-1][stage_-1];
+    return b()(stage_-1,stage_-1);
 }
 
 inline scalar RungeKuttaScheme::C() const
 {
-    return sum(a()[stage_-1]);
+    scalar sum = 0.0;
+    for (int j = 0; j < a().n(); j++)
+        sum += a()(stage_-1,j);
+
+    return sum;
 }
 
 inline Switch RungeKuttaScheme::exStageA() const
@@ -59,8 +63,8 @@ inline Switch RungeKuttaScheme::exStage() const
 
 inline Switch RungeKuttaScheme::exA() const
 {
-    forAll(a(), i)
-        if (a()[i][i])
+    for (int i = 0; i < a().m(); i++)
+        if (a()(i,i))
             return false;
 
     return true;
@@ -68,8 +72,8 @@ inline Switch RungeKuttaScheme::exA() const
 
 inline Switch RungeKuttaScheme::exB() const
 {
-    forAll(b(), i)
-        if (b()[i][i])
+    for (int i = 0; i < b().m(); i++)
+        if (b()(i,i))
             return false;
 
     return true;
@@ -123,7 +127,7 @@ inline Switch RungeKuttaScheme::lastStage() const
 inline Switch RungeKuttaScheme::storeStageA() const
 {
     for (label i = stage_+1; i <= numberOfStages(); i++)
-        if (a()[i-1][stage_-1])
+        if (a()(i-1,stage_-1))
             return true;
 
     return false;
@@ -132,7 +136,7 @@ inline Switch RungeKuttaScheme::storeStageA() const
 inline Switch RungeKuttaScheme::storeStageB() const
 {
     for (label i = stage_+1; i <= numberOfStages(); i++)
-        if (b()[i-1][stage_-1])
+        if (b()(i-1,stage_-1))
             return true;
 
     return false;

@@ -26,10 +26,6 @@ public:
 
     // Construct from mesh
     CrankNicolson(const fvMesh& fvMsh);
-
-    // Destructor
-    ~CrankNicolson()
-    {}
 };
 
 }

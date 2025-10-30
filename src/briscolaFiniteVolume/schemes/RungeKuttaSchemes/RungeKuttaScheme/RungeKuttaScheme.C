@@ -96,12 +96,12 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumA
     const FastPtrList<meshField<Type,MeshType>>& list
 ) const
 {
-    tmp<meshField<Type,MeshType>> tF(a()[stage_-1][0]*list[0]);
+    tmp<meshField<Type,MeshType>> tF(a()(stage_-1,0)*list[0]);
     meshField<Type,MeshType>& F = tF.ref();
 
-    for (int i = 2; i < stage_; i++)
-        if (a()[stage_-1][i-1] != 0.0)
-            F += a()[stage_-1][i-1]*list[i-1];
+    for (int j = 2; j < stage_; j++)
+        if (a()(stage_-1,j-1) != 0.0)
+            F += a()(stage_-1,j-1)*list[j-1];
 
     return tF;
 }
@@ -112,12 +112,12 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumB
     const FastPtrList<meshField<Type,MeshType>>& list
 ) const
 {
-    tmp<meshField<Type,MeshType>> tF(b()[stage_-1][0]*list[0]);
+    tmp<meshField<Type,MeshType>> tF(b()(stage_-1,0)*list[0]);
     meshField<Type,MeshType>& F = tF.ref();
 
-    for (int i = 2; i < stage_; i++)
-        if (b()[stage_-1][i-1] != 0.0)
-            F += b()[stage_-1][i-1]*list[i-1];
+    for (int j = 2; j < stage_; j++)
+        if (b()(stage_-1,j-1) != 0.0)
+            F += b()(stage_-1,j-1)*list[j-1];
 
     return tF;
 }

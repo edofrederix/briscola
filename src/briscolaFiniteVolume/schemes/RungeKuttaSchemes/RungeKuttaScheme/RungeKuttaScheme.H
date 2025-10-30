@@ -3,8 +3,8 @@
 
 #include "fvMesh.H"
 #include "meshField.H"
-#include "NamedEnum.H"
 #include "FastPtrList.H"
+#include "scalarMatrices.H"
 
 // Based on the work of Edo Frederix and Jannes Hopman as implemented in
 // RKSymFoam, see https://github.com/janneshopman/RKSymFoam
@@ -110,10 +110,10 @@ public:
             inline scalar C() const;
 
             // Return the Butcher tableau for source A
-            virtual const List<scalarList>& a() const = 0;
+            virtual const scalarSquareMatrix& a() const = 0;
 
             // Return the Butcher tableau for source B
-            virtual const List<scalarList>& b() const = 0;
+            virtual const scalarSquareMatrix& b() const = 0;
 
         // Switches
 

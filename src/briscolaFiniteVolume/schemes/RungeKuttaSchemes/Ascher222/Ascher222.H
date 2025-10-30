@@ -20,8 +20,8 @@ class Ascher222
     public RungeKuttaScheme
 {
     // Butcher tableaus
-    List<scalarList> a_;
-    List<scalarList> b_;
+    scalarSquareMatrix a_;
+    scalarSquareMatrix b_;
 
 public:
 
@@ -31,18 +31,14 @@ public:
     // Construct from mesh
     Ascher222(const fvMesh& fvMsh);
 
-    // Destructor
-    ~Ascher222()
-    {}
-
     // Return the Butcher tableau for source A
-    virtual const List<scalarList>& a() const
+    virtual const scalarSquareMatrix& a() const
     {
         return a_;
     }
 
     // Return the Butcher tableau for source B
-    virtual const List<scalarList>& b() const
+    virtual const scalarSquareMatrix& b() const
     {
         return b_;
     }
