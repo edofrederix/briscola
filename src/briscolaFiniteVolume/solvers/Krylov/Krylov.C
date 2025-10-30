@@ -1,5 +1,6 @@
 #include "Krylov.H"
 #include "diagonal.H"
+#include "diagonalSmoother.H"
 #include "PstreamGlobals.H"
 
 namespace Foam

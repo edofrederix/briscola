@@ -87,20 +87,10 @@ for M in "${!RKSCHEMES[@]}"; do
 
         ./prep.sh $MESH $NPROCX $NPROCY $MODE $PSOLVER $RKSCHEME
 
-        if [ "$RKSCHEME" == "CNAB" ]; then
-
-            SOLVER2=${SOLVER}CNAB
-
-        else
-
-            SOLVER2=$SOLVER
-
-        fi
-
         if [ "$NPROC" == "1" ]; then
-            srun --exclusive -n $NPROC $SOLVER2 > log.$SOLVER
+            srun --exclusive -n $NPROC $SOLVER > log.$SOLVER
         else
-            srun --exclusive -n $NPROC $SOLVER2 -parallel > log.$SOLVER
+            srun --exclusive -n $NPROC $SOLVER -parallel > log.$SOLVER
         fi
 
         ##

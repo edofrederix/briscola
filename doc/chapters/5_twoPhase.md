@@ -98,17 +98,17 @@ approach implemented in `SHF` or a parabolic fit method implemented in
 ## Two-phase solvers
 
 Briscola has dedicated two-phase solvers that are colocated or staggered and use
-Runge-Kutta or CNAB time integration (see [Chapter 4](./4_finiteVolume.md)). The
-solution algorithm in these solvers is the same. First, the volume fraction
-equation is solved as discussed above in the `twoPhase.correct()` function call.
-Given a new solution for $\alpha^{n+1}$, a new density field is computed and
-interpolated to faces, either staggered or colocated. Next, a momentum equation
-predictor is solved. However, as opposed to single-phase solvers, this momentum
-equation has a variable density that cannot be absorbed in the pressure and
-viscosity. Thus, the variable density remains as a coefficient in the right-hand
-side of the momentum equation, which is written in a 'non-conservative'
-formulation. Moreover, the density now also appears in the pressure equation
-which is of the form
+Runge-Kutta (supporting multi-step) time integration (see [Chapter
+4](./4_finiteVolume.md)). The solution algorithm in these solvers is the same.
+First, the volume fraction equation is solved as discussed above in the
+`twoPhase.correct()` function call. Given a new solution for $\alpha^{n+1}$, a
+new density field is computed and interpolated to faces, either staggered or
+colocated. Next, a momentum equation predictor is solved. However, as opposed to
+single-phase solvers, this momentum equation has a variable density that cannot
+be absorbed in the pressure and viscosity. Thus, the variable density remains as
+a coefficient in the right-hand side of the momentum equation, which is written
+in a 'non-conservative' formulation. Moreover, the density now also appears in
+the pressure equation which is of the form
 
 $\nabla\cdot\left(\frac{1}{\rho}\nabla p\right) =
     \frac{\nabla \cdot \mathbf{u^\star}}{\Delta t}$

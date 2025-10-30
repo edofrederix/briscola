@@ -53,8 +53,13 @@ protected:
 
     // Private Member Functions
 
+        // Return stage sources for given field type
         template<class FieldType>
         inline FastPtrList<FastPtrList<FieldType>>& stageSources();
+
+        // Cycle stage sources for given field type
+        template<class FieldType>
+        inline void cycle();
 
 public:
 

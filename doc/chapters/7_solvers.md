@@ -283,20 +283,17 @@ suggestions.
 Unlike the more recent versions of OpenFOAM (i.e., foundation version), Briscola
 does not use solver modules but still relies on dedicated applications. They are
 listed in `applications/solvers`, and can be used on cases to solve them. To
-keep things efficient, we have dedicated colocated and staggered
-solvers. For single phase flows, there are the `briscolaColocated` and
-`briscolaStaggered` solvers which use Runge-Kutta time integration. Instead, the
-`briscolaColocatedCNAB` and `briscolaStaggeredCNAB` solvers use the
-Crank-Nicolson/Adams-Bashforth (CNAB) IMEX scheme for time integration, see
-Ascher, U.M., Steven J.R., and Brian T.R.W. "Implicit-explicit methods for
-time-dependent partial differential equations." SIAM Journal on Numerical
-Analysis 32.3 (1995): 797-823. The `briscolaColocatedTwoPhase` and
-`briscolaStaggeredTwoPhase` solvers are designed for two-phase flow cases using
-Runge-Kutta integration while the `briscolaColocatedTwoPhaseCNAB` and
-`briscolaStaggeredTwoPhaseCNAB` solvers use the CNAB scheme again. Finally,
-there are the `briscolaLaplacian` and `briscolaVofAdvection` solvers, which are
-mostly simple test application for solving the Poisson equation and advecting a
-VOF field.
+keep things efficient, we have dedicated colocated and staggered solvers. For
+single phase flows, there are the `briscolaColocated` and `briscolaStaggered`
+solvers which use Runge-Kutta time integration that also support multi-step time
+integration such as the Crank-Nicolson/Adams-Bashforth IMEX scheme for time
+integration, see Ascher, U.M., Steven J.R., and Brian T.R.W. "Implicit-explicit
+methods for time-dependent partial differential equations." SIAM Journal on
+Numerical Analysis 32.3 (1995): 797-823. The `briscolaColocatedTwoPhase` and
+`briscolaStaggeredTwoPhase` solvers are designed for two-phase flow cases.
+Finally, there are the `briscolaLaplacian` and `briscolaVofAdvection` solvers,
+which are mostly simple test application for solving the Poisson equation and
+advecting a VOF field.
 
 [Back to the table of contents](./0_start.md)
 or [Next chapter: Testing and validation](./8_testing.md)

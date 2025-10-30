@@ -14,11 +14,7 @@ PYTHON="python3"
 
 # Simulation parameters
 
-SOLVERS=(\
-    briscolaColocatedTwoPhase \
-    briscolaColocatedTwoPhaseCNAB \
-    briscolaStaggeredTwoPhase \
-    briscolaStaggeredTwoPhaseCNAB)
+SOLVERS=(briscolaColocatedTwoPhase briscolaStaggeredTwoPhase)
 MESHES=(32 64)
 NPROCSPERBRICKSIDE=(2 4)
 PSOLVERS=(MG split)

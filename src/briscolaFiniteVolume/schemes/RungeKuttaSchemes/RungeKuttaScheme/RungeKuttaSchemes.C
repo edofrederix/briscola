@@ -26,6 +26,10 @@
 #include "Ascher232.H"
 #include "Ascher233.H"
 
+#include "AB2.H"
+#include "CNAB.H"
+#include "CNABM.H"
+
 namespace Foam
 {
 
@@ -72,6 +76,12 @@ makeRungeKuttaScheme(Ascher122);
 makeRungeKuttaScheme(Ascher222);
 makeRungeKuttaScheme(Ascher232);
 makeRungeKuttaScheme(Ascher233);
+
+// Multi-step schemes
+
+makeRungeKuttaScheme(AB2);
+makeRungeKuttaScheme(CNAB);
+makeRungeKuttaScheme(CNABM);
 
 }
 

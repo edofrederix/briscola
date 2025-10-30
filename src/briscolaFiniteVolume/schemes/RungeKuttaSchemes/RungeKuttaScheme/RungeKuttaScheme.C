@@ -87,7 +87,7 @@ FastPtrList<meshField<Type,MeshType>>& RungeKuttaScheme::newStageList
 
     for (int step = 0; step < nSteps_; step++)
     {
-        forAll(list, stage)
+        for (int stage = 0; stage < nStages_; stage++)
         {
             list.set
             (
@@ -101,7 +101,7 @@ FastPtrList<meshField<Type,MeshType>>& RungeKuttaScheme::newStageList
                       : IOobject::groupName
                         (
                             name,
-                            Foam::name(int(stage+1))
+                            Foam::name(stage)
                         )
                     ),
                     fvMsh_,
@@ -127,11 +127,17 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumA
     const FastPtrList<meshField<Type,MeshType>>& list
 ) const
 {
-    tmp<meshField<Type,MeshType>> tF(a()(stage_-1,0)*list[0]);
+    tmp<meshField<Type,MeshType>> tF =
+        meshField<Type,MeshType>::New("K", fvMsh_);
+
     meshField<Type,MeshType>& F = tF.ref();
 
-    for (int j = 1; j < a().n(); j++)
-        if (a()(stage_-1,j) != 0.0 && stage_-1 != j)
+    #ifdef NO_BLOCK_ZERO_INIT
+    F = Zero;
+    #endif
+
+    for (int j = 0; j < a().n(); j++)
+        if (a()(stage_-1,j) != 0.0 && (j < stage_-1 || j >= nStages_))
             F += a()(stage_-1,j)*list[j];
 
     return tF;
@@ -143,11 +149,17 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumB
     const FastPtrList<meshField<Type,MeshType>>& list
 ) const
 {
-    tmp<meshField<Type,MeshType>> tF(b()(stage_-1,0)*list[0]);
+    tmp<meshField<Type,MeshType>> tF =
+        meshField<Type,MeshType>::New("K", fvMsh_);
+
     meshField<Type,MeshType>& F = tF.ref();
 
-    for (int j = 1; j < b().n(); j++)
-        if (b()(stage_-1,j) != 0.0 && stage_-1 != j)
+    #ifdef NO_BLOCK_ZERO_INIT
+    F = Zero;
+    #endif
+
+    for (int j = 0; j < b().n(); j++)
+        if (b()(stage_-1,j) != 0.0 && (j < stage_-1 || j >= nStages_))
             F += b()(stage_-1,j)*list[j];
 
     return tF;

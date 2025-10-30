@@ -157,6 +157,43 @@ inline Switch RungeKuttaScheme::solve() const
     return !(firstStage() && exStage());
 }
 
+template<class FieldType>
+inline void RungeKuttaScheme::cycle()
+{
+    FastPtrList<FastPtrList<FieldType>>& sources =
+        stageSources<FieldType>();
+
+    // Move pointers forward by nStages and cycle
+
+    labelList oldToNew(nStages_*nSteps_);
+    forAll(oldToNew, i)
+        oldToNew[i] = (i + nStages_) % (nStages_*nSteps_);
+
+    forAll(sources, i)
+    {
+        PtrList<FieldType>& list = sources[i];
+
+        // Reorder
+
+        list.reorder(oldToNew);
+
+        // Rename
+
+        for (int step = 0; step < nSteps_; step++)
+            for (int stage = 0; stage < nStages_; stage++)
+                list[step*nStages_ + stage].rename
+                (
+                    step > 1
+                  ? word(list[(step - 1)*nStages_ + stage].name() + "_0")
+                  : word
+                    (
+                        IOobject::member(list[step*nStages_ + stage].name())
+                      + Foam::name(stage)
+                    )
+                );
+    }
+}
+
 inline Switch RungeKuttaScheme::loop()
 {
     stage_++;
@@ -169,6 +206,16 @@ inline Switch RungeKuttaScheme::loop()
     }
     else
     {
+        if (stage_ == 1 && nSteps_ > 1)
+        {
+            // For multi-step methods, cycle the sources
+
+            cycle<colocatedScalarField>();
+            cycle<colocatedVectorField>();
+            cycle<staggeredScalarField>();
+            cycle<staggeredVectorField>();
+        }
+
         return true;
     }
 }
