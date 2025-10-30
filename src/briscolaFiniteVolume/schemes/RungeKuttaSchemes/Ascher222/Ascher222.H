@@ -19,10 +19,6 @@ class Ascher222
 :
     public RungeKuttaScheme
 {
-    // Butcher tableaus
-    scalarSquareMatrix a_;
-    scalarSquareMatrix b_;
-
 public:
 
     // Runtime type information
@@ -30,18 +26,6 @@ public:
 
     // Construct from mesh
     Ascher222(const fvMesh& fvMsh);
-
-    // Return the Butcher tableau for source A
-    virtual const scalarSquareMatrix& a() const
-    {
-        return a_;
-    }
-
-    // Return the Butcher tableau for source B
-    virtual const scalarSquareMatrix& b() const
-    {
-        return b_;
-    }
 };
 
 }

@@ -7,24 +7,32 @@ namespace briscola
 namespace fv
 {
 
-inline const fvMesh& RungeKuttaScheme::fvMsh() const
+template<>
+inline FastPtrList<FastPtrList<colocatedScalarField>>&
+RungeKuttaScheme::stageSources<colocatedScalarField>()
 {
-    return fvMsh_;
+    return coloScalarStageSources_;
 }
 
-inline const dictionary& RungeKuttaScheme::dict() const
+template<>
+inline FastPtrList<FastPtrList<colocatedVectorField>>&
+RungeKuttaScheme::stageSources<colocatedVectorField>()
 {
-    return dict_;
+    return coloVectorStageSources_;
 }
 
-inline label RungeKuttaScheme::stage() const
+template<>
+inline FastPtrList<FastPtrList<staggeredScalarField>>&
+RungeKuttaScheme::stageSources<staggeredScalarField>()
 {
-    return stage_;
+    return stagScalarStageSources_;
 }
 
-inline label RungeKuttaScheme::numberOfStages() const
+template<>
+inline FastPtrList<FastPtrList<staggeredVectorField>>&
+RungeKuttaScheme::stageSources<staggeredVectorField>()
 {
-    return a().m();
+    return stagVectorStageSources_;
 }
 
 inline scalar RungeKuttaScheme::A() const
@@ -121,23 +129,25 @@ inline Switch RungeKuttaScheme::firstStage() const
 
 inline Switch RungeKuttaScheme::lastStage() const
 {
-    return stage_ == numberOfStages();
+    return stage_ == nStages_;
 }
 
 inline Switch RungeKuttaScheme::storeStageA() const
 {
-    for (label i = stage_+1; i <= numberOfStages(); i++)
-        if (a()(i-1,stage_-1))
-            return true;
+    for (int step = 0; step < nSteps_; step++)
+        for (label i = stage_; i < nStages_; i++)
+            if (a()(i,stage_-1+step*nStages_))
+                return true;
 
     return false;
 }
 
 inline Switch RungeKuttaScheme::storeStageB() const
 {
-    for (label i = stage_+1; i <= numberOfStages(); i++)
-        if (b()(i-1,stage_-1))
-            return true;
+    for (int step = 0; step < nSteps_; step++)
+        for (label i = stage_; i < nStages_; i++)
+            if (b()(i,stage_-1+step*nStages_))
+                return true;
 
     return false;
 }
@@ -151,7 +161,7 @@ inline Switch RungeKuttaScheme::loop()
 {
     stage_++;
 
-    if (stage_ > numberOfStages())
+    if (stage_ > nStages_)
     {
         stage_ = 0;
 

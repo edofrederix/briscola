@@ -14,8 +14,7 @@ namespace RungeKuttaSchemes
 
 Hairer5::Hairer5(const fvMesh& fvMsh)
 :
-    RungeKuttaScheme(fvMsh),
-    a_(5, Zero)
+    RungeKuttaScheme(fvMsh,5)
 {
     a_(0,0) = 0.25;
 
@@ -36,6 +35,8 @@ Hairer5::Hairer5(const fvMesh& fvMsh)
     a_(4,2) = 125.0/16.0;
     a_(4,3) = -85.0/12.0;
     a_(4,4) = 0.25;
+
+    b_ = a_;
 }
 
 }

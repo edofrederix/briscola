@@ -65,15 +65,11 @@ exSource =
 
 // Runge-Kutta stage sources
 
-FastPtrList<staggeredScalarField> stageSourcesA
-(
-    rk.stageList<staggeredScalarField>("A")
-);
+FastPtrList<staggeredScalarField>& stageSourcesA =
+    rk.newStageList<staggeredScalarField>("A");
 
-FastPtrList<staggeredScalarField> stageSourcesB
-(
-    rk.stageList<staggeredScalarField>("B")
-);
+FastPtrList<staggeredScalarField>& stageSourcesB =
+    rk.newStageList<staggeredScalarField>("B");
 
 linearSystem<stencil,scalar,staggered> USysA("A(U)", U);
 linearSystem<stencil,scalar,staggered> USysB("B(U)", U);

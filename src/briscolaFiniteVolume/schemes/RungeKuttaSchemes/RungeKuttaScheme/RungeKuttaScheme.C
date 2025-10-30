@@ -15,7 +15,12 @@ namespace fv
 defineTypeNameAndDebug(RungeKuttaScheme, 0);
 defineRunTimeSelectionTable(RungeKuttaScheme, dictionary);
 
-RungeKuttaScheme::RungeKuttaScheme(const fvMesh& fvMsh)
+RungeKuttaScheme::RungeKuttaScheme
+(
+    const fvMesh& fvMsh,
+    const label nStages,
+    const label nSteps
+)
 :
     regIOobject
     (
@@ -31,7 +36,11 @@ RungeKuttaScheme::RungeKuttaScheme(const fvMesh& fvMsh)
     ),
     fvMsh_(fvMsh),
     dict_(fvMsh.schemeDict().subDict("rkScheme")),
-    stage_(0)
+    stage_(0),
+    nStages_(nStages),
+    nSteps_(nSteps),
+    a_(nStages, nStages*nSteps, Zero),
+    b_(nStages, nStages*nSteps, Zero)
 {}
 
 RungeKuttaScheme::~RungeKuttaScheme()
@@ -61,30 +70,52 @@ autoPtr<RungeKuttaScheme> RungeKuttaScheme::New(const fvMesh& fvMsh)
 }
 
 template<class Type, class MeshType>
-FastPtrList<meshField<Type,MeshType>> RungeKuttaScheme::stageList
+FastPtrList<meshField<Type,MeshType>>& RungeKuttaScheme::newStageList
 (
     const word name
-) const
+)
 {
-    FastPtrList<meshField<Type,MeshType>> list(numberOfStages());
+    typedef meshField<Type,MeshType> FieldType;
 
-    forAll(list, stage)
+    FastPtrList<FastPtrList<FieldType>>& sources = stageSources<FieldType>();
+
+    sources.append(new FastPtrList<FieldType>(nStages_*nSteps_));
+
+    FastPtrList<FieldType>& list = sources.last();
+
+    label i = 0;
+
+    for (int step = 0; step < nSteps_; step++)
     {
-        list.set
-        (
-            stage,
-            meshField<Type,MeshType>::New
+        forAll(list, stage)
+        {
+            list.set
             (
-                IOobject::groupName
+                i,
+                new FieldType
                 (
-                    name,
-                    Foam::name(int(stage+1))
-                ),
-                fvMsh_
-            )
-        );
+                    word
+                    (
+                        step > 0
+                      ? list[i-nStages_].name() + "_0"
+                      : IOobject::groupName
+                        (
+                            name,
+                            Foam::name(int(stage+1))
+                        )
+                    ),
+                    fvMsh_,
+                    IOobject::READ_IF_PRESENT,
+                    (step < nSteps_ - 1)
+                  ? IOobject::AUTO_WRITE
+                  : IOobject::NO_WRITE
+                )
+            );
 
-        list[stage] = Zero;
+            list[stage] = Zero;
+
+            i++;
+        }
     }
 
     return list;
@@ -99,9 +130,9 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumA
     tmp<meshField<Type,MeshType>> tF(a()(stage_-1,0)*list[0]);
     meshField<Type,MeshType>& F = tF.ref();
 
-    for (int j = 2; j < stage_; j++)
-        if (a()(stage_-1,j-1) != 0.0)
-            F += a()(stage_-1,j-1)*list[j-1];
+    for (int j = 1; j < a().n(); j++)
+        if (a()(stage_-1,j) != 0.0 && stage_-1 != j)
+            F += a()(stage_-1,j)*list[j];
 
     return tF;
 }
@@ -115,9 +146,9 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumB
     tmp<meshField<Type,MeshType>> tF(b()(stage_-1,0)*list[0]);
     meshField<Type,MeshType>& F = tF.ref();
 
-    for (int j = 2; j < stage_; j++)
-        if (b()(stage_-1,j-1) != 0.0)
-            F += b()(stage_-1,j-1)*list[j-1];
+    for (int j = 1; j < b().n(); j++)
+        if (b()(stage_-1,j) != 0.0 && stage_-1 != j)
+            F += b()(stage_-1,j)*list[j];
 
     return tF;
 }
@@ -136,8 +167,8 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSum
 
 #define INSTANTIATE(TYPE,MESHTYPE)                                             \
                                                                                \
-template FastPtrList<meshField<TYPE,MESHTYPE>>                                 \
-RungeKuttaScheme::stageList(const word) const;                                 \
+template FastPtrList<meshField<TYPE,MESHTYPE>>&                                \
+RungeKuttaScheme::newStageList(const word);                                    \
                                                                                \
 template tmp<meshField<TYPE,MESHTYPE>>                                         \
 RungeKuttaScheme::stageSumA                                                    \
@@ -156,21 +187,8 @@ RungeKuttaScheme::stageSum                                                     \
 
 INSTANTIATE(scalar,colocated)
 INSTANTIATE(vector,colocated)
-INSTANTIATE(tensor,colocated)
-INSTANTIATE(sphericalTensor,colocated)
-INSTANTIATE(symmTensor,colocated)
-INSTANTIATE(diagTensor,colocated)
-INSTANTIATE(faceScalar,colocated)
-INSTANTIATE(faceVector,colocated)
-
 INSTANTIATE(scalar,staggered)
 INSTANTIATE(vector,staggered)
-INSTANTIATE(tensor,staggered)
-INSTANTIATE(sphericalTensor,staggered)
-INSTANTIATE(symmTensor,staggered)
-INSTANTIATE(diagTensor,staggered)
-INSTANTIATE(faceScalar,staggered)
-INSTANTIATE(faceVector,staggered)
 
 #undef INSTANTIATE
 

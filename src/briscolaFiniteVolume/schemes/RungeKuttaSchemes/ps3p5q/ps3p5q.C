@@ -14,8 +14,7 @@ namespace RungeKuttaSchemes
 
 ps3p5q::ps3p5q(const fvMesh& fvMsh)
 :
-    RungeKuttaScheme(fvMsh),
-    a_(5, Zero)
+    RungeKuttaScheme(fvMsh,5)
 {
     const scalar theta(readScalar(this->dict_.lookup("theta")));
 
@@ -33,6 +32,8 @@ ps3p5q::ps3p5q(const fvMesh& fvMsh)
     a_(4,1) = (4*theta-3)*(4*theta-3)/(12*(theta-1)*(2*theta-1));
     a_(4,2) = -a_(4,0)/(2*theta-1);
     a_(4,3) = (4*theta-3)*a_(4,0);
+
+    b_ = a_;
 }
 
 }

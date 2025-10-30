@@ -19,11 +19,11 @@ theta::theta(const fvMesh& fvMsh)
 
 theta::theta(const fvMesh& fvMsh, const scalar t)
 :
-    RungeKuttaScheme(fvMsh),
-    a_(2, Zero)
+    RungeKuttaScheme(fvMsh, 2)
 {
     a_(1,0) = (1.0 - t);
     a_(1,1) = t;
+    b_ = a_;
 }
 
 }

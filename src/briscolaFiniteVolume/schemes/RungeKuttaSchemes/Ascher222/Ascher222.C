@@ -14,9 +14,7 @@ namespace RungeKuttaSchemes
 
 Ascher222::Ascher222(const fvMesh& fvMsh)
 :
-    RungeKuttaScheme(fvMsh),
-    a_(3, Zero),
-    b_(3, Zero)
+    RungeKuttaScheme(fvMsh,3)
 {
     const scalar gamma(1.0 - Foam::sqrt(2.0)/2.0);
     const scalar delta(1.0 - 0.5/gamma);

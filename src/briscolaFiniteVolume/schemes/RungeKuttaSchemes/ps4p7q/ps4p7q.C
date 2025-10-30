@@ -14,8 +14,7 @@ namespace RungeKuttaSchemes
 
 ps4p7q::ps4p7q(const fvMesh& fvMsh)
 :
-    RungeKuttaScheme(fvMsh),
-    a_(7, Zero)
+    RungeKuttaScheme(fvMsh,7)
 {
     a_(1,0) = 0.23593376536651968050;
 
@@ -43,6 +42,8 @@ ps4p7q::ps4p7q(const fvMesh& fvMsh)
     a_(6,3) = a_(6,2);
     a_(6,4) = a_(6,1);
     a_(6,5) = a_(6,0);
+
+    b_ = a_;
 }
 
 }

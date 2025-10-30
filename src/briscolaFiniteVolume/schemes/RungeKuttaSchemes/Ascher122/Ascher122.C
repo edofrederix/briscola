@@ -14,9 +14,7 @@ namespace RungeKuttaSchemes
 
 Ascher122::Ascher122(const fvMesh& fvMsh)
 :
-    RungeKuttaScheme(fvMsh),
-    a_(3, Zero),
-    b_(3, Zero)
+    RungeKuttaScheme(fvMsh,3)
 {
     a_(1,0) = 0.5;
     a_(2,1) = 1.0;

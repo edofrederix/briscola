@@ -14,8 +14,7 @@ namespace RungeKuttaSchemes
 
 DIRK4::DIRK4(const fvMesh& fvMsh)
 :
-    RungeKuttaScheme(fvMsh),
-    a_(4, Zero)
+    RungeKuttaScheme(fvMsh,4)
 {
     a_(0,0) = 0.5;
 
@@ -30,6 +29,8 @@ DIRK4::DIRK4(const fvMesh& fvMsh)
     a_(3,1) = -3.0/2.0;
     a_(3,2) = 0.5;
     a_(3,3) = 0.5;
+
+    b_ = a_;
 }
 
 }

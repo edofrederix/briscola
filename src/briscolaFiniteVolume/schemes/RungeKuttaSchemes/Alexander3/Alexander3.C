@@ -14,8 +14,7 @@ namespace RungeKuttaSchemes
 
 Alexander3::Alexander3(const fvMesh& fvMsh)
 :
-    RungeKuttaScheme(fvMsh),
-    a_(3, Zero)
+    RungeKuttaScheme(fvMsh,3)
 {
     a_(0,0) = 0.435866521;
 
@@ -25,6 +24,8 @@ Alexander3::Alexander3(const fvMesh& fvMsh)
     a_(2,0) = 1.208496649;
     a_(2,1) = -0.644363171;
     a_(2,2) = 0.435866521;
+
+    b_ = a_;
 }
 
 }

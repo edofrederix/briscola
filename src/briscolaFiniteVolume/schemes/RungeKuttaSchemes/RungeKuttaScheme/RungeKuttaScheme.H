@@ -35,13 +35,26 @@ protected:
         // Runge-Kutta stage
         label stage_;
 
+        // Number of stages
+        label nStages_;
+
+        // Number of time steps
+        label nSteps_;
+
+        // Butcher tableaus
+        scalarRectangularMatrix a_;
+        scalarRectangularMatrix b_;
+
+        // Stage sources
+        FastPtrList<FastPtrList<colocatedScalarField>> coloScalarStageSources_;
+        FastPtrList<FastPtrList<colocatedVectorField>> coloVectorStageSources_;
+        FastPtrList<FastPtrList<staggeredScalarField>> stagScalarStageSources_;
+        FastPtrList<FastPtrList<staggeredVectorField>> stagVectorStageSources_;
+
     // Private Member Functions
 
-        // Disallow copy construct
-        RungeKuttaScheme(const RungeKuttaScheme&);
-
-        // Disallow default bitwise assignment
-        void operator=(const RungeKuttaScheme&);
+        template<class FieldType>
+        inline FastPtrList<FastPtrList<FieldType>>& stageSources();
 
 public:
 
@@ -59,10 +72,15 @@ public:
     );
 
     // Selector
-    static autoPtr<RungeKuttaScheme> New(const fvMesh& mesh);
+    static autoPtr<RungeKuttaScheme> New(const fvMesh& fvMsh);
 
-    // Construct from mesh
-    RungeKuttaScheme(const fvMesh& fvMsh);
+    // Construct from mesh and sizes
+    RungeKuttaScheme
+    (
+        const fvMesh& fvMsh,
+        const label nStages,
+        const label nSteps = 1
+    );
 
     // Destructor
     virtual ~RungeKuttaScheme();
@@ -72,14 +90,14 @@ public:
         // Generate and return a list of fields to store the intermediate stage
         // sources or solutions, with given field name
         template<class Type, class MeshType>
-        FastPtrList<meshField<Type,MeshType>> stageList(const word name) const;
+        FastPtrList<meshField<Type,MeshType>>& newStageList(const word name);
 
         // Helper function for field types
         template<class FieldType>
-        inline FastPtrList<FieldType> stageList(const word name) const
+        inline FastPtrList<FieldType>& newStageList(const word name)
         {
             return
-                stageList
+                newStageList
                 <
                     typename FieldType::dataType,
                     typename FieldType::meshType
@@ -89,16 +107,19 @@ public:
         // Access
 
             // Return the mesh
-            inline const fvMesh& fvMsh() const;
+            inline const fvMesh& fvMsh() const { return fvMsh_; }
 
             // Return the Runge-Kutta dictionary
-            inline const dictionary& dict() const;
+            inline const dictionary& dict() const { return dict_; }
 
             // Current stage level
-            inline label stage() const;
+            inline label stage() const { return stage_; }
 
             // Return the number of stages
-            inline label numberOfStages() const;
+            inline label nStages() const { return nStages_; }
+
+            // Number of time steps
+            inline label nSteps() const { return nSteps_; }
 
             // Current diagonal A coefficient
             inline scalar A() const;
@@ -110,10 +131,10 @@ public:
             inline scalar C() const;
 
             // Return the Butcher tableau for source A
-            virtual const scalarSquareMatrix& a() const = 0;
+            virtual const scalarRectangularMatrix& a() const { return a_; }
 
             // Return the Butcher tableau for source B
-            virtual const scalarSquareMatrix& b() const = 0;
+            virtual const scalarRectangularMatrix& b() const { return b_; }
 
         // Switches
 

@@ -61,15 +61,11 @@ exSource =
 
 // Runge-Kutta stage sources
 
-FastPtrList<colocatedVectorField> stageSourcesA
-(
-    rk.stageList<colocatedVectorField>("A")
-);
+FastPtrList<colocatedVectorField>& stageSourcesA =
+    rk.newStageList<colocatedVectorField>("A");
 
-FastPtrList<colocatedVectorField> stageSourcesB
-(
-    rk.stageList<colocatedVectorField>("B")
-);
+FastPtrList<colocatedVectorField>& stageSourcesB =
+    rk.newStageList<colocatedVectorField>("B");
 
 linearSystem<stencil,vector,colocated> USysA("A(U)", U);
 linearSystem<stencil,vector,colocated> USysB("B(U)", U);

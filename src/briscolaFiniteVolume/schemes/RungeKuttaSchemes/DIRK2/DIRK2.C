@@ -14,8 +14,7 @@ namespace RungeKuttaSchemes
 
 DIRK2::DIRK2(const fvMesh& fvMsh)
 :
-    RungeKuttaScheme(fvMsh),
-    a_(2, Zero)
+    RungeKuttaScheme(fvMsh,2)
 {
     const scalar gamma(1.0-Foam::sqrt(2.0)/2.0);
 
@@ -23,6 +22,8 @@ DIRK2::DIRK2(const fvMesh& fvMsh)
 
     a_(1,0) = 1.0-gamma;
     a_(1,1) = gamma;
+
+    b_ = a_;
 }
 
 }

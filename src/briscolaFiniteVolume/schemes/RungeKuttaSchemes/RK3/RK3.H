@@ -19,9 +19,6 @@ class RK3
 :
     public RungeKuttaScheme
 {
-    // Butcher tableau
-    scalarSquareMatrix a_;
-
 public:
 
     // Runtime type information
@@ -29,18 +26,6 @@ public:
 
     // Construct from mesh
     RK3(const fvMesh& fvMsh);
-
-    // Return the Butcher tableau for source A
-    virtual const scalarSquareMatrix& a() const
-    {
-        return a_;
-    }
-
-    // Return the Butcher tableau for source B
-    virtual const scalarSquareMatrix& b() const
-    {
-        return a_;
-    }
 };
 
 }
