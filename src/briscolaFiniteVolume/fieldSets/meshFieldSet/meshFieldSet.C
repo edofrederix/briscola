@@ -49,7 +49,11 @@ void meshFieldSet<Type,MeshType,N>::transfer
     meshFieldSet<Type,MeshType,N>& set
 )
 {
-    listType::transfer(set);
+    // Do not transfer the full list of fields as this would reset field name,
+    // registration etc.
+
+    forAll(*this, i)
+        listType::operator[](i).transfer(set[i]);
 }
 
 // Main constructors

@@ -32,13 +32,13 @@ colocatedScalarFaceField phi
 (
     "phi",
     fvMsh,
-    IOobject::NO_READ,
+    IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
     true
 );
 
+phi = Zero;
 phi.setRestrictionScheme("flux");
-phi = ex::faceFlux(U);
 
 // Viscosity
 

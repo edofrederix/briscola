@@ -11,6 +11,7 @@
 #include "boundaryCondition.H"
 #include "immersedBoundaryConditionFwd.H"
 #include "cachedRefCount.H"
+#include "direction.H"
 
 namespace Foam
 {
@@ -536,6 +537,10 @@ public:
     // Befriend mesh level
     template<class, class>
     friend class meshLevel;
+
+    // Befriend mesh field set
+    template<class, class, ::Foam::direction>
+    friend class meshFieldSet;
 
     #include "meshLevelFirstDirectionFunctions.H"
     #include "meshLevelDirectionFunctions.H"
