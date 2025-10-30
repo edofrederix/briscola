@@ -67,8 +67,10 @@ void IO::writeData(const word timeName, const label l)
                 std::ofstream& file = filePtrs[proc]();
 
                 file<< vtkHeader << std::endl
-                    << fvMsh_.time().caseName() << " "
-                    << (partitioned_ ? 1 : Pstream::nProcs()) << std::endl;
+                    << fvMsh_.time().caseName()
+                    << " " << (partitioned_ ? 1 : Pstream::nProcs())
+                    << " " << fvMsh_.time().deltaTValue()
+                    << std::endl;
 
                 if (ascii)
                 {
@@ -331,8 +333,10 @@ void IO::readData(const word timeName, const label l)
 
         word dummy;
         label nProcs;
+        scalar deltaT;
 
-        file>> dummy >> nProcs;
+        file>> dummy >> nProcs >> deltaT;
+
         nextLine(file);
 
         if
@@ -346,6 +350,13 @@ void IO::readData(const word timeName, const label l)
                 << "which is not compatible with the current number "
                 << "of processors (" << Pstream::nProcs() << ")"
                 << endl << abort(FatalError);
+
+        // Set time step
+
+        const_cast<Time&>(fvMsh_.time()).setDeltaT
+        (
+            dimensionedScalar(dimTime, deltaT)
+        );
 
         // Ascii or binary
 
