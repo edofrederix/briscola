@@ -97,7 +97,6 @@ tmp<staggeredScalarFaceField> midPointFaceFluxScheme::faceFlux
     forAllFaces(phi, fd, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
         // Fluxes in x-direction should receive from the first field direction,
         // fluxes in y-direction from the second, etc

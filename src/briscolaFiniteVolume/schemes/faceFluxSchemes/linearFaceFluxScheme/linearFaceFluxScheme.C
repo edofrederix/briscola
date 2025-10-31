@@ -116,7 +116,6 @@ tmp<staggeredScalarFaceField> linearFaceFluxScheme::faceFlux
     forAllFaces(phi, fd, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
         // Fluxes in x-direction should receive from the first field direction,
         // fluxes in y-direction from the second, etc
@@ -125,7 +124,7 @@ tmp<staggeredScalarFaceField> linearFaceFluxScheme::faceFlux
           - fa[fd](d,ijk)
           * (
                 fwc[d](fd,ijk)*field(fd,ijk)
-              + fwn[d](fd,ijk)*field(fd,nei)
+              + fwn[d](fd,ijk)*field(fd,lowerNeighbor(ijk,d))
             );
     }
 

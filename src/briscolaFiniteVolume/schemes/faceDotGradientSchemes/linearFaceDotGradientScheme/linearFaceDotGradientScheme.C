@@ -91,8 +91,8 @@ void linearFaceDotGradientScheme<Type,colocated>::cache
                 fc(upperNeighbor(ijk,b))[fd*2]
               - fc(lowerNeighbor(ijk,b))[fd*2];
 
-            delta1[fd](i,j,k) = dist1/Foam::magSqr(dist1);
-            delta2[fd](i,j,k) = dist2/Foam::magSqr(dist2);
+            delta1[fd](ijk) = dist1/Foam::magSqr(dist1);
+            delta2[fd](ijk) = dist2/Foam::magSqr(dist2);
         }
 
         // Store
@@ -142,7 +142,7 @@ linearFaceDotGradientScheme<Type,colocated>::faceDotGrad
     forAllFaces(grad, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,fd));
+        const labelVector nei(lowerNeighbor(ijk,fd));
 
         // Indices of the other two direction
 
@@ -209,7 +209,7 @@ linearFaceDotGradientScheme<Type,staggered>::faceDotGrad
 
         grad[fd](d,ijk) =
             delta[d](fd,ijk)*fa[d](fd,ijk)
-          * (field(fd,lowerNeighbor(i,j,k,d)) - field(fd,ijk));
+          * (field(fd,lowerNeighbor(ijk,d)) - field(fd,ijk));
     }
 
     return tGrad;
