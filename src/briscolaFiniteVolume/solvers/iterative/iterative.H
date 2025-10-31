@@ -2,7 +2,6 @@
 #define iterative_H
 
 #include "MG.H"
-#include "ticToc.H"
 
 namespace Foam
 {
@@ -30,8 +29,6 @@ class iterative
 {
 protected:
 
-    initTicTocHeader
-
     // Number of smoother sweeps in each smoother call before checking the
     // residual (defaults to 1)
     label nSweeps_;
@@ -54,11 +51,6 @@ public:
 
     // Construct from dictionary and mesh
     iterative(const dictionary&, const fvMesh&);
-
-    ~iterative()
-    {
-        printTicToc
-    }
 
     // Solve the given system with optional constant matrix indicator
     virtual void solve

@@ -30,11 +30,9 @@ void iterative<SType,Type,MeshType>::solve
 
     // Correct the boundary conditions
 
-tic(4)
     x[0].correctBoundaryConditions();
-toc(4)
+
     // Residual field
-tic(5)
 
     meshField<Type, MeshType> r
     (
@@ -51,8 +49,6 @@ tic(5)
     sys.residual(r[0]);
 
     // Residual normalization factors
-toc(5)
-tic(6)
 
     const List<Type> normFactors(this->normFactors(sys,r[0]));
 
@@ -75,7 +71,6 @@ tic(6)
         );
 
     label iter = 0;
-toc(6)
 
     while
     (
@@ -93,19 +88,14 @@ toc(6)
 
         // Smooth
 
-tic(7)
         this->Smooth(sys, 0, nSweeps, converged);
-toc(7)
 
         // Recompute the residual
 
-tic(8)
         forAll(x[0], d)
             if (!converged[d])
                 sys.residual(r[0][d]);
-toc(8)
 
-tic(9)
         currentResiduals =
             cmptDivide
             (
@@ -121,13 +111,12 @@ tic(9)
                 relTol,
                 absTol
             );
-toc(9)
 
         iter++;
     }
 
     // Print solver statistics
-tic(10)
+
     this->printSolverStats
     (
         this->typeName,
@@ -136,7 +125,6 @@ tic(10)
         currentResiduals,
         iter
     );
-toc(10)
 }
 
 template<class SType, class Type, class MeshType>
@@ -147,7 +135,6 @@ iterative<SType,Type,MeshType>::iterative
 )
 :
     MG<SType,Type,MeshType>(dict,fvMsh),
-    initTicTocConstructor(12),
     nSweeps_(dict.lookupOrDefault<label>("nSweeps", 1))
 {}
 
@@ -158,18 +145,13 @@ void iterative<SType,Type,MeshType>::solve
     const bool constMatrix
 )
 {
-tic(0)
     if (SType::nCsComponents > 1)
         sys.eliminateGhosts();
-toc(0)
-tic(1)
+
     sys.x().makeShallow();
     sys.b().makeShallow();
-toc(1)
 
-tic(2)
     sys.setForcingMask();
-toc(2)
 
     if
     (
@@ -196,9 +178,8 @@ toc(2)
     }
     else
     {
-tic(3)
         this->setSingularityConstraint(sys, 0);
-toc(3)
+
         this->solve
         (
             sys,
