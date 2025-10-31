@@ -158,12 +158,12 @@ inline Switch RungeKuttaScheme::solve() const
 }
 
 template<class FieldType>
-inline void RungeKuttaScheme::cycle()
+void RungeKuttaScheme::cycle()
 {
     FastPtrList<FastPtrList<FieldType>>& sources =
         stageSources<FieldType>();
 
-    // Move pointers forward by nStages and cycle
+    // Move pointers forward by nStages and recycle the oldest step
 
     labelList oldToNew(nStages_*nSteps_);
     forAll(oldToNew, i)
@@ -177,20 +177,39 @@ inline void RungeKuttaScheme::cycle()
 
         list.reorder(oldToNew);
 
-        // Rename
+        // Rename and reset write option
+
+        int j = 0;
 
         for (int step = 0; step < nSteps_; step++)
+        {
             for (int stage = 0; stage < nStages_; stage++)
-                list[step*nStages_ + stage].rename
-                (
-                    step > 1
-                  ? word(list[(step - 1)*nStages_ + stage].name() + "_0")
-                  : word
-                    (
-                        IOobject::member(list[step*nStages_ + stage].name())
-                      + Foam::name(stage)
-                    )
-                );
+            {
+                const word baseName = IOobject::member(list[j].name());
+
+                if (step == 0)
+                {
+                    list[j].rename(IOobject::groupName(baseName, "0"));
+                }
+                else
+                {
+                    list[j].rename(list[j-nStages_].name() + "_0");
+                }
+
+                // Write everything but the last step
+
+                if (step < nSteps_-1)
+                {
+                    list[j].writeOpt() = IOobject::AUTO_WRITE;
+                }
+                else
+                {
+                    list[j].writeOpt() = IOobject::NO_WRITE;
+                }
+
+                j++;
+            }
+        }
     }
 }
 

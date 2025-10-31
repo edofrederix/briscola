@@ -108,7 +108,8 @@ FastPtrList<meshField<Type,MeshType>>& RungeKuttaScheme::newStageList
                     IOobject::READ_IF_PRESENT,
                     (step < nSteps_ - 1)
                   ? IOobject::AUTO_WRITE
-                  : IOobject::NO_WRITE
+                  : IOobject::NO_WRITE,
+                    true
                 )
             );
 
