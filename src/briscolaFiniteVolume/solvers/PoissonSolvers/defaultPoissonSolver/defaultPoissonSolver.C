@@ -1,5 +1,7 @@
 #include "defaultPoissonSolver.H"
 #include "imSchemes.H"
+#include "RungeKuttaScheme.H"
+#include "exSchemesFaceGradient.H"
 
 namespace Foam
 {
@@ -44,6 +46,8 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
     const scalar dtFrac
 )
 {
+    const fvMesh& fvMsh = this->fvMsh_;
+
     if (sysPtr_.empty() || &sysPtr_->x() != &x)
     {
         sysPtr_.reset
@@ -61,9 +65,27 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
     // Initialize the Runge-Kutta stage solution list if we haven't done so yet
     // and if there's a Runge-Kutta scheme pointer
 
-    if (this->rkSchemePtr_ && !this->stages_.size())
-        this->stages_ =
-            this->rkSchemePtr_->template newStageList<Type,MeshType>(x.name());
+    const RungeKuttaScheme* rkSchemePtr = nullptr;
+
+    if (fvMsh.db().template foundObject<RungeKuttaScheme>("rkScheme"))
+        rkSchemePtr =
+            &fvMsh.db().template lookupObject<RungeKuttaScheme>("rkScheme");
+
+    if (rkSchemePtr && !this->stages_.size())
+    {
+        this->stages_.resize(rkSchemePtr->nStages());
+
+        forAll(this->stages_, i)
+            this->stages_.set
+            (
+                i,
+                meshField<Type,MeshType>::New
+                (
+                    x.name() + "_" + Foam::name(i),
+                    fvMsh
+                )
+            );
+    }
 
     linearSystem<SType,Type,MeshType>& sys = sysPtr_();
 
@@ -81,13 +103,13 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
     // as initial guess and store the solution for the next iteration. This
     // improves convergence.
 
-    if (this->rkSchemePtr_)
-        x = this->stages_[this->rkSchemePtr_->stage()-1];
+    if (rkSchemePtr)
+        x = this->stages_[rkSchemePtr->stage()-1];
 
     solverPtr_->solve(sys,constMatrix);
 
-    if (this->rkSchemePtr_)
-        this->stages_[this->rkSchemePtr_->stage()-1] = x;
+    if (rkSchemePtr)
+        this->stages_[rkSchemePtr->stage()-1] = x;
 
     // Compute the flux if needed
 

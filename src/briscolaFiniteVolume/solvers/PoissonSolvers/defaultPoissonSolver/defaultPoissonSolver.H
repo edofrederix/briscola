@@ -26,6 +26,9 @@ protected:
     // Cached linear system pointer
     autoPtr<linearSystem<SType,Type,MeshType>> sysPtr_;
 
+    // Runge-Kutta stage solution cache
+    FastPtrList<meshField<Type,MeshType>> stages_;
+
 public:
 
     // Runtime type information

@@ -131,6 +131,10 @@ solvers/externalSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolverBase.C
 solvers/externalSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolvers.C
 
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C
+
+solvers/PoissonSolvers/defaultPoissonSolver/defaultPoissonSolvers.C
+solvers/PoissonSolvers/splitPoissonSolver/splitPoissonSolvers.C
+
 solvers/PoissonSolvers/FFTPoissonSolver/FFTPoissonSolver.C
 solvers/PoissonSolvers/FFTPoissonSolver/planner/planner.C
 solvers/PoissonSolvers/FFTPoissonSolver/pencilDecomposer/pencilDecomposer.C
