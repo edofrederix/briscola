@@ -158,7 +158,7 @@ inline Switch RungeKuttaScheme::solve() const
 }
 
 template<class FieldType>
-void RungeKuttaScheme::cycle()
+inline void RungeKuttaScheme::cycle()
 {
     FastPtrList<FastPtrList<FieldType>>& sources =
         stageSources<FieldType>();
@@ -177,7 +177,12 @@ void RungeKuttaScheme::cycle()
 
         list.reorder(oldToNew);
 
-        // Rename and reset write option
+        // Checkout all fields to avoid renaming conflicts
+
+        forAll(list, k)
+            list[k].checkOut();
+
+        // Rename and update write option
 
         int j = 0;
 
@@ -189,7 +194,7 @@ void RungeKuttaScheme::cycle()
 
                 if (step == 0)
                 {
-                    list[j].rename(IOobject::groupName(baseName, "0"));
+                    list[j].rename(IOobject::groupName(baseName, Foam::name(stage)));
                 }
                 else
                 {
@@ -210,6 +215,11 @@ void RungeKuttaScheme::cycle()
                 j++;
             }
         }
+
+        // Checkin all fields again
+
+        forAll(list, k)
+            list[k].checkIn();
     }
 }
 

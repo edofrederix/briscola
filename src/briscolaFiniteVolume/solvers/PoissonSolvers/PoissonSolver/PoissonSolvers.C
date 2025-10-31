@@ -1,8 +1,5 @@
 #include "PoissonSolvers.H"
 
-#include "splitPoissonSolver.H"
-#include "defaultPoissonSolver.H"
-
 namespace Foam
 {
 
