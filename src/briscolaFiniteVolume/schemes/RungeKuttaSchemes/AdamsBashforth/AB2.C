@@ -1,0 +1,31 @@
+#include "AB2.H"
+
+namespace Foam
+{
+
+namespace briscola
+{
+
+namespace fv
+{
+
+namespace RungeKuttaSchemes
+{
+
+AB2::AB2(const fvMesh& fvMsh)
+:
+    RungeKuttaScheme(fvMsh,2,2)
+{
+    a_(1,0) = 1.5;
+    a_(1,2) = -0.5;
+
+    b_ = a_;
+}
+
+}
+
+}
+
+}
+
+}
