@@ -1,5 +1,5 @@
-#ifndef RBGS_H
-#define RBGS_H
+#ifndef rbgsSmoother_H
+#define rbgsSmoother_H
 
 #include "solver.H"
 
@@ -13,7 +13,7 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-class RBGS
+class rbgsSmoother
 :
     public solver<SType,Type,MeshType>::smoother
 {
@@ -23,12 +23,11 @@ public:
     using solver<SType,Type,MeshType>::smoother::N;
 
     // Static sweep function on a direction
-    static inline void Sweep
+    static void Sweep
     (
-        meshDirection<Type,MeshType>& x,
-        const meshDirection<SType,MeshType>& A,
-        const meshDirection<Type,MeshType>& b,
-        const meshDirection<label,MeshType>& f
+        linearSystem<SType,Type,MeshType>& sys,
+        const label l,
+        const label d
     );
 
     // Static smooth function
@@ -41,10 +40,10 @@ public:
     );
 
     // Runtime type information
-    TypeName("RBGS");
+    TypeName("rbgs");
 
     // Construct from dictionary and mesh
-    RBGS(const dictionary&, const fvMesh&);
+    rbgsSmoother(const dictionary&, const fvMesh&);
 
     // Smooth at given level
     virtual void smooth
@@ -63,7 +62,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "RBGS.C"
+    #include "rbgsSmoother.C"
 #endif
 
 #endif

@@ -1,7 +1,8 @@
-#ifndef JAC_H
-#define JAC_H
+#ifndef lexgsSmoother_H
+#define lexgsSmoother_H
 
 #include "solver.H"
+#include "meshDirection.H"
 
 namespace Foam
 {
@@ -13,7 +14,7 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-class JAC
+class lexgsSmoother
 :
     public solver<SType,Type,MeshType>::smoother
 {
@@ -23,16 +24,12 @@ public:
     using solver<SType,Type,MeshType>::smoother::N;
 
     // Static sweep function on a direction
-    static inline void Sweep
+    static void Sweep
     (
-        meshDirection<Type,MeshType>& x,
-        const meshDirection<SType,MeshType>& A,
-        const meshDirection<Type,MeshType>& b,
-        const meshDirection<label,MeshType>& f
+        linearSystem<SType,Type,MeshType>& sys,
+        const label l,
+        const label d
     );
-
-    // Relaxation factor
-    static const scalar omega_;
 
     // Static smooth function
     static void Smooth
@@ -44,10 +41,10 @@ public:
     );
 
     // Runtime type information
-    TypeName("JAC");
+    TypeName("lexgs");
 
     // Construct from dictionary and mesh
-    JAC(const dictionary&, const fvMesh&);
+    lexgsSmoother(const dictionary&, const fvMesh&);
 
     // Smooth at given level
     virtual void smooth
@@ -66,7 +63,7 @@ public:
 }
 
 #ifdef NoRepository
-    #include "JAC.C"
+    #include "lexgsSmoother.C"
 #endif
 
 #endif

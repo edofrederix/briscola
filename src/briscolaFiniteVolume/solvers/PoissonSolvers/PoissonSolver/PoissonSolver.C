@@ -1,4 +1,5 @@
 #include "PoissonSolver.H"
+#include "RungeKuttaScheme.H"
 
 namespace Foam
 {

@@ -1,5 +1,6 @@
-#include "LEXGS.H"
+#include "rbgsSmoother.H"
 #include "linearSystemFunctions.H"
+#include "diagonalSmoother.H"
 
 namespace Foam
 {
@@ -11,30 +12,29 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-inline void LEXGS<SType,Type,MeshType>::LEXGS::Sweep
+inline void rbgsSmoother<SType,Type,MeshType>::rbgsSmoother::Sweep
 (
-    meshDirection<Type,MeshType>& x,
-    const meshDirection<SType,MeshType>& A,
-    const meshDirection<Type,MeshType>& b,
-    const meshDirection<label,MeshType>& f
+    linearSystem<SType,Type,MeshType>& sys,
+    const label l,
+    const label d
 )
 {
-    block<Type>& B = x.B();
+    block<Type>& B = sys.x()[l][d].B();
     const labelVector shape = B.shape();
 
     // Restricted array pointers
 
     Type* const __restrict__ x_arr = B.begin();
 
-    const Type* const __restrict__ b_arr = b.B().begin();
-    const label* const __restrict__ f_arr = f.B().begin();
+    const Type* const __restrict__ b_arr = sys.b()[l][d].B().begin();
+    const label* const __restrict__ f_arr = sys.forcingMask()[l][d].B().begin();
 
     // Reinterpret the matrix as a contiguous array of scalars
 
     const scalar* const __restrict__ A_arr =
-        reinterpret_cast<const scalar*>(A.B().begin());
+        reinterpret_cast<const scalar*>(sys.A()[l][d].B().begin());
 
-    const faceLabel I = x.I();
+    const faceLabel I = sys.x()[l][d].I();
 
     // Data in B is padded by ghosts
 
@@ -57,7 +57,7 @@ inline void LEXGS<SType,Type,MeshType>::LEXGS::Sweep
 
     linearSystemFun::offDiagRowProduct<SType,Type> P;
 
-    // Forward sweep
+    // Forward even sweep
 
     int c = lin(S, shape);
 
@@ -67,7 +67,7 @@ inline void LEXGS<SType,Type,MeshType>::LEXGS::Sweep
         {
             for (int k = 0; k < M.z(); k++)
             {
-                if (!f_arr[c])
+                if (!f_arr[c] && even(i,j,k))
                     x_arr[c] =
                         (
                             b_arr[c]
@@ -87,7 +87,37 @@ inline void LEXGS<SType,Type,MeshType>::LEXGS::Sweep
         c += J_j;
     }
 
-    // Backward sweep
+    // Forward odd sweep
+
+    c = lin(S, shape);
+
+    for (int i = 0; i < M.x(); i++)
+    {
+        for (int j = 0; j < M.y(); j++)
+        {
+            for (int k = 0; k < M.z(); k++)
+            {
+                if (!f_arr[c] && odd(i,j,k))
+                    x_arr[c] =
+                        (
+                            b_arr[c]
+                          - P(A_arr, x_arr, c, S_i, S_j, S_k)
+                        )
+                      / A_arr[c*N];
+
+                // Jump to next cell
+                c++;
+            }
+
+            // Jump to next line
+            c += J_k;
+        }
+
+        // Jump to next plane
+        c += J_j;
+    }
+
+    // Backward even sweep
 
     c = lin(E-unitXYZ, shape);
 
@@ -97,7 +127,37 @@ inline void LEXGS<SType,Type,MeshType>::LEXGS::Sweep
         {
             for (int k = 0; k < M.z(); k++)
             {
-                if (!f_arr[c])
+                if (!f_arr[c] && even(i,j,k))
+                    x_arr[c] =
+                        (
+                            b_arr[c]
+                          - P(A_arr, x_arr, c, S_i, S_j, S_k)
+                        )
+                      / A_arr[c*N];
+
+                // Jump to next cell
+                c--;
+            }
+
+            // Jump to next line
+            c -= J_k;
+        }
+
+        // Jump to next plane
+        c -= J_j;
+    }
+
+    // Backward odd sweep
+
+    c = lin(E-unitXYZ, shape);
+
+    for (int i = 0; i < M.x(); i++)
+    {
+        for (int j = 0; j < M.y(); j++)
+        {
+            for (int k = 0; k < M.z(); k++)
+            {
+                if (!f_arr[c] && odd(i,j,k))
                     x_arr[c] =
                         (
                             b_arr[c]
@@ -119,7 +179,7 @@ inline void LEXGS<SType,Type,MeshType>::LEXGS::Sweep
 }
 
 template<class SType, class Type, class MeshType>
-void LEXGS<SType,Type,MeshType>::LEXGS::Smooth
+void rbgsSmoother<SType,Type,MeshType>::rbgsSmoother::Smooth
 (
     linearSystem<SType,Type,MeshType>& sys,
     const label l,
@@ -128,10 +188,6 @@ void LEXGS<SType,Type,MeshType>::LEXGS::Smooth
 )
 {
     meshLevel<Type,MeshType>& x = sys.x()[l];
-
-    const meshLevel<SType,MeshType>& A = sys.A()[l];
-    const meshLevel<Type,MeshType>& b = sys.b()[l];
-    const meshLevel<label,MeshType>& f = sys.forcingMask()[l];
 
     const List<bool> diagonal(sys.diagonal());
 
@@ -142,11 +198,11 @@ void LEXGS<SType,Type,MeshType>::LEXGS::Smooth
         {
             if (diagonal[d])
             {
-                solver<SType,Type,MeshType>::smoother::smoothDiag(sys, l, d);
+                diagonalSmoother<SType,Type,MeshType>::Sweep(sys, l, d);
             }
             else
             {
-                Sweep(x[d], A[d], b[d], f[d]);
+                Sweep(sys, l, d);
             }
         }
 
@@ -161,7 +217,7 @@ void LEXGS<SType,Type,MeshType>::LEXGS::Smooth
 }
 
 template<class SType, class Type, class MeshType>
-LEXGS<SType,Type,MeshType>::LEXGS
+rbgsSmoother<SType,Type,MeshType>::rbgsSmoother
 (
     const dictionary& dict,
     const fvMesh& fvMsh
@@ -171,7 +227,7 @@ LEXGS<SType,Type,MeshType>::LEXGS
 {}
 
 template<class SType, class Type, class MeshType>
-void LEXGS<SType,Type,MeshType>::LEXGS::smooth
+void rbgsSmoother<SType,Type,MeshType>::rbgsSmoother::smooth
 (
     linearSystem<SType,Type,MeshType>& sys,
     const label l,

@@ -63,7 +63,7 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
 
     if (this->rkSchemePtr_ && !this->stages_.size())
         this->stages_ =
-            this->rkSchemePtr_->template stageList<Type,MeshType>(x.name());
+            this->rkSchemePtr_->template newStageList<Type,MeshType>(x.name());
 
     linearSystem<SType,Type,MeshType>& sys = sysPtr_();
 

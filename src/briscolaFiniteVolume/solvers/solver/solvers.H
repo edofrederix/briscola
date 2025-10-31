@@ -2,6 +2,7 @@
 #define solvers_H
 
 #include "solver.H"
+#include "addToRunTimeSelectionTable.H"
 
 namespace Foam
 {
@@ -28,7 +29,7 @@ void solve(linearSystem<SType,Type,MeshType>& sys)
 
 }
 
-#define makeSolver(STYPE,TYPE,MESHTYPE)                                        \
+#define makeSolverBase(STYPE,TYPE,MESHTYPE)                                    \
                                                                                \
     typedef solver<STYPE,TYPE,MESHTYPE> solver##STYPE##TYPE##MESHTYPE;         \
                                                                                \
@@ -95,19 +96,19 @@ void solve(linearSystem<SType,Type,MeshType>& sys)
 
 #define makeSmootherType(SMOOTHER,STYPE,TYPE,MESHTYPE)                         \
                                                                                \
-    typedef SMOOTHER<STYPE,TYPE,MESHTYPE>                                      \
-        SMOOTHER##STYPE##TYPE##MESHTYPE;                                       \
+    typedef SMOOTHER##Smoother<STYPE,TYPE,MESHTYPE>                            \
+        SMOOTHER##Smoother##STYPE##TYPE##MESHTYPE;                             \
                                                                                \
     defineTemplateTypeNameAndDebugWithName                                     \
     (                                                                          \
-        SMOOTHER##STYPE##TYPE##MESHTYPE,                                       \
+        SMOOTHER##Smoother##STYPE##TYPE##MESHTYPE,                             \
         #SMOOTHER,                                                             \
         0                                                                      \
     );                                                                         \
                                                                                \
     solver<STYPE,TYPE,MESHTYPE>::smoother::                                    \
-        adddictionaryConstructorToTable<SMOOTHER##STYPE##TYPE##MESHTYPE>       \
-            add##SMOOTHER##STYPE##TYPE##MESHTYPE##ConstructorToTable_;
+    adddictionaryConstructorToTable<SMOOTHER##Smoother##STYPE##TYPE##MESHTYPE> \
+        add##SMOOTHER##Smoother##STYPE##TYPE##MESHTYPE##ConstructorToTable_;
 
 #define makeExternalSolverType(DIRECTSOLVER,STYPE,TYPE,MESHTYPE)               \
                                                                                \

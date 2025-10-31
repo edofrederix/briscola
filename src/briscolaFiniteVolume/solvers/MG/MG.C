@@ -1,9 +1,10 @@
 #include "MG.H"
 #include "diagonal.H"
 
-#include "RBGS.H"
-#include "LEXGS.H"
-#include "JAC.H"
+#include "diagonalSmoother.H"
+#include "rbgsSmoother.H"
+#include "lexgsSmoother.H"
+#include "jacSmoother.H"
 
 namespace Foam
 {
@@ -13,21 +14,6 @@ namespace briscola
 
 namespace fv
 {
-
-template<>
-const char* NamedEnum<MGCycleType,3>::names[] =
-{
-    "V",
-    "W",
-    "F"
-};
-
-template<>
-const char* NamedEnum<MGCoarseMode,2>::names[] =
-{
-    "smooth",
-    "direct"
-};
 
 template<class SType, class Type, class MeshType>
 void MG<SType,Type,MeshType>::cycle
@@ -304,7 +290,7 @@ MG<SType,Type,MeshType>::MG
     ),
     coarseMode_
     (
-        MGCoarseModeNames[dict.lookupOrDefault<word>("coarseMode", "direct")]
+        MGCoarseModeNames[dict.lookupOrDefault<word>("coarseMode", "smooth")]
     ),
     coarseLevel_(dict.lookupOrDefault<label>("coarseLevel", 0)),
     proScheme_
@@ -339,7 +325,7 @@ MG<SType,Type,MeshType>::MG
                 this->dict_.template lookupOrDefault<word>
                 (
                     "smoother",
-                    "RBGS"
+                    "rbgs"
                 ),
                 this->dict_,
                 fvMsh
@@ -353,11 +339,11 @@ MG<SType,Type,MeshType>::MG
         if
         (
             this->smoothPtr_->type()
-         == RBGS<SType,Type,MeshType>::typeName
+         == rbgsSmoother<SType,Type,MeshType>::typeName
         )
         {
             Smooth =
-                &dynamic_cast<RBGS<SType,Type,MeshType>*>
+                &dynamic_cast<rbgsSmoother<SType,Type,MeshType>*>
                 (
                     &this->smoothPtr_()
                 )->Smooth;
@@ -365,11 +351,11 @@ MG<SType,Type,MeshType>::MG
         else if
         (
             this->smoothPtr_->type()
-         == LEXGS<SType,Type,MeshType>::typeName
+         == lexgsSmoother<SType,Type,MeshType>::typeName
         )
         {
             Smooth =
-                &dynamic_cast<LEXGS<SType,Type,MeshType>*>
+                &dynamic_cast<lexgsSmoother<SType,Type,MeshType>*>
                 (
                     &this->smoothPtr_()
                 )->Smooth;
@@ -377,11 +363,11 @@ MG<SType,Type,MeshType>::MG
         else if
         (
             this->smoothPtr_->type()
-         == JAC<SType,Type,MeshType>::typeName
+         == jacSmoother<SType,Type,MeshType>::typeName
         )
         {
             Smooth =
-                &dynamic_cast<JAC<SType,Type,MeshType>*>
+                &dynamic_cast<jacSmoother<SType,Type,MeshType>*>
                 (
                     &this->smoothPtr_()
                 )->Smooth;
@@ -441,10 +427,13 @@ void MG<SType,Type,MeshType>::solve
         sys.x().makeShallow();
         sys.b().makeShallow();
 
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-            solver<SType,Type,MeshType>::smoother::smoothDiag(sys, 0, d);
-
-        sys.x().correctBoundaryConditions();
+        diagonalSmoother<SType,Type,MeshType>::Smooth
+        (
+            sys,
+            0,
+            1,
+            labelList(MeshType::numberOfDirections, 0)
+        );
 
         this->printSolverStats
         (

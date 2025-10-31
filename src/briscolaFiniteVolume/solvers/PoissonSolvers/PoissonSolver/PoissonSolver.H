@@ -8,7 +8,6 @@
 #include "colocatedFields.H"
 #include "staggeredFields.H"
 #include "dictionary.H"
-#include "RungeKuttaScheme.H"
 #include "FastPtrList.H"
 
 namespace Foam
@@ -19,6 +18,8 @@ namespace briscola
 
 namespace fv
 {
+
+class RungeKuttaScheme;
 
 template<class SType, class Type, class MeshType>
 class PoissonSolver

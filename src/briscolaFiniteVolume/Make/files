@@ -109,9 +109,20 @@ schemes/restrictionSchemes/faceRestrictionScheme/faceRestrictionSchemes.C
 schemes/RungeKuttaSchemes/RungeKuttaScheme/RungeKuttaScheme.C
 schemes/RungeKuttaSchemes/RungeKuttaScheme/RungeKuttaSchemes.C
 
+solvers/smoothers/diagonalSmoother/diagonalSmoothers.C
+solvers/smoothers/jacSmoother/jacSmoothers.C
+solvers/smoothers/lexgsSmoother/lexgsSmoothers.C
+solvers/smoothers/rbgsSmoother/rbgsSmoothers.C
+
 solvers/solver/solvers.C
-solvers/solver/solverSmoothers.C
-solvers/solver/solverExternalSolvers.C
+solvers/diagonal/diagonalSolvers.C
+solvers/iterative/iterativeSolvers.C
+solvers/Krylov/KrylovSolvers.C
+solvers/MG/MGSolvers.C
+solvers/MG/MGEnums.C
+
+solvers/externalSolvers/Eigen/Eigens.C
+solvers/externalSolvers/PETSc/PETScs.C
 
 solvers/externalSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolverBase.C
 solvers/externalSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolvers.C

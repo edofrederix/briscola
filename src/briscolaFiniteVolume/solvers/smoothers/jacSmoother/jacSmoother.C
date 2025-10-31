@@ -1,5 +1,6 @@
-#include "JAC.H"
+#include "jacSmoother.H"
 #include "linearSystemFunctions.H"
+#include "diagonalSmoother.H"
 
 namespace Foam
 {
@@ -11,33 +12,32 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-const scalar JAC<SType,Type,MeshType>::JAC::omega_ = 0.8;
+const scalar jacSmoother<SType,Type,MeshType>::jacSmoother::omega_ = 0.8;
 
 template<class SType, class Type, class MeshType>
-inline void JAC<SType,Type,MeshType>::JAC::Sweep
+inline void jacSmoother<SType,Type,MeshType>::jacSmoother::Sweep
 (
-    meshDirection<Type,MeshType>& x,
-    const meshDirection<SType,MeshType>& A,
-    const meshDirection<Type,MeshType>& b,
-    const meshDirection<label,MeshType>& f
+    linearSystem<SType,Type,MeshType>& sys,
+    const label l,
+    const label d
 )
 {
-    block<Type>& B = x.B();
+    block<Type>& B = sys.x()[l][d].B();
     const labelVector shape = B.shape();
 
     // Restricted array pointers
 
     Type* const __restrict__ x_arr = B.begin();
 
-    const Type* const __restrict__ b_arr = b.B().begin();
-    const label* const __restrict__ f_arr = f.B().begin();
+    const Type* const __restrict__ b_arr = sys.b()[l][d].B().begin();
+    const label* const __restrict__ f_arr = sys.forcingMask()[l][d].B().begin();
 
     // Reinterpret the matrix as a contiguous array of scalars
 
     const scalar* const __restrict__ A_arr =
-        reinterpret_cast<const scalar*>(A.B().begin());
+        reinterpret_cast<const scalar*>(sys.A()[l][d].B().begin());
 
-    const faceLabel I = x.I();
+    const faceLabel I = sys.x()[l][d].I();
 
     // Data in B is padded by ghosts
 
@@ -122,7 +122,7 @@ inline void JAC<SType,Type,MeshType>::JAC::Sweep
 }
 
 template<class SType, class Type, class MeshType>
-void JAC<SType,Type,MeshType>::JAC::Smooth
+void jacSmoother<SType,Type,MeshType>::jacSmoother::Smooth
 (
     linearSystem<SType,Type,MeshType>& sys,
     const label l,
@@ -131,10 +131,6 @@ void JAC<SType,Type,MeshType>::JAC::Smooth
 )
 {
     meshLevel<Type,MeshType>& x = sys.x()[l];
-
-    const meshLevel<SType,MeshType>& A = sys.A()[l];
-    const meshLevel<Type,MeshType>& b = sys.b()[l];
-    const meshLevel<label,MeshType>& f = sys.forcingMask()[l];
 
     const List<bool> diagonal(sys.diagonal());
 
@@ -145,11 +141,11 @@ void JAC<SType,Type,MeshType>::JAC::Smooth
         {
             if (diagonal[d])
             {
-                solver<SType,Type,MeshType>::smoother::smoothDiag(sys, l, d);
+                diagonalSmoother<SType,Type,MeshType>::Sweep(sys, l, d);
             }
             else
             {
-                Sweep(x[d], A[d], b[d], f[d]);
+                Sweep(sys, l, d);
             }
         }
 
@@ -164,7 +160,7 @@ void JAC<SType,Type,MeshType>::JAC::Smooth
 }
 
 template<class SType, class Type, class MeshType>
-JAC<SType,Type,MeshType>::JAC
+jacSmoother<SType,Type,MeshType>::jacSmoother
 (
     const dictionary& dict,
     const fvMesh& fvMsh
@@ -174,7 +170,7 @@ JAC<SType,Type,MeshType>::JAC
 {}
 
 template<class SType, class Type, class MeshType>
-void JAC<SType,Type,MeshType>::JAC::smooth
+void jacSmoother<SType,Type,MeshType>::jacSmoother::smooth
 (
     linearSystem<SType,Type,MeshType>& sys,
     const label l,
@@ -182,61 +178,7 @@ void JAC<SType,Type,MeshType>::JAC::smooth
     const labelList& converged
 )
 {
-    meshLevel<Type,MeshType>& x = sys.x()[l];
-
-    const meshLevel<SType,MeshType>& A = sys.A()[l];
-    const meshLevel<Type,MeshType>& b = sys.b()[l];
-    const meshLevel<label,MeshType>& f = sys.forcingMask()[l];
-
-    const List<bool> diagonal(sys.diagonal());
-
-    meshLevel<Type,MeshType> y(x);
-
-    for (label sweep = 0; sweep < sweeps; sweep++)
-    {
-        forAll(x, d)
-        if (!converged[d])
-        {
-            if (diagonal[d])
-            {
-                this->smoothDiag(sys, l, d);
-            }
-            else
-            {
-                meshDirection<Type,MeshType>& yd = y[d];
-
-                const meshDirection<Type,MeshType>& xd = x[d];
-                const meshDirection<SType,MeshType>& Ad = A[d];
-                const meshDirection<Type,MeshType>& bd = b[d];
-                const meshDirection<label,MeshType>& fd = f[d];
-
-                forAllCells(xd, i, j, k)
-                {
-                    if (!fd(i,j,k))
-                    {
-                        yd(i,j,k) =
-                            yd(i,j,k)*(1.0-omega_)
-                          + omega_
-                          * (
-                                bd(i,j,k)
-                              - lowerRowProduct(Ad,xd,i,j,k)
-                              - upperRowProduct(Ad,xd,i,j,k)
-                            )
-                          / Ad(i,j,k).center();
-                    }
-                }
-            }
-        }
-
-        x = y;
-
-        if (l==0)
-            x.correctImmersedBoundaryConditions();
-
-        x.correctNonEliminatedBoundaryConditions();
-    }
-
-    x.correctEliminatedBoundaryConditions();
+    this->Smooth(sys, l, sweeps, converged);
 }
 
 }

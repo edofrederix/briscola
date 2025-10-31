@@ -1,4 +1,5 @@
 #include "diagonal.H"
+#include "diagonalSmoother.H"
 
 namespace Foam
 {
@@ -46,10 +47,13 @@ void diagonal<SType,Type,MeshType>::solve
                     << abort(FatalError);
     }
 
-    for (int d = 0; d < MeshType::numberOfDirections; d++)
-        solver<SType,Type,MeshType>::smoother::smoothDiag(sys, 0, d);
-
-    sys.x().correctBoundaryConditions();
+    diagonalSmoother<SType,Type,MeshType>::Smooth
+    (
+        sys,
+        0,
+        1,
+        labelList(MeshType::numberOfDirections, 0)
+    );
 
     this->printSolverStats
     (
@@ -57,7 +61,7 @@ void diagonal<SType,Type,MeshType>::solve
         sys.x().name(),
         List<Type>(MeshType::numberOfDirections, pTraits<Type>::one),
         List<Type>(MeshType::numberOfDirections, Zero),
-        0
+        1
     );
 }
 

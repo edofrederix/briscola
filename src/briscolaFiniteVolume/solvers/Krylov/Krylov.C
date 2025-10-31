@@ -372,10 +372,13 @@ void Krylov<SType,Type,MeshType>::solve
         sys.x().makeShallow();
         sys.b().makeShallow();
 
-        for (int d = 0; d < nDir; d++)
-            solver<SType,Type,MeshType>::smoother::smoothDiag(sys, 0, d);
-
-        sys.x().correctBoundaryConditions();
+        diagonalSmoother<SType,Type,MeshType>::Smooth
+        (
+            sys,
+            0,
+            1,
+            labelList(MeshType::numberOfDirections, 0)
+        );
 
         this->printSolverStats
         (
