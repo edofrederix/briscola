@@ -1023,8 +1023,10 @@ template<class Type>
 void block<Type>::max(const Type& v)
 {
     List_ACCESS(Type, (*this), vp);
+    List_CONST_ACCESS(Type, (*this), va);
     List_FOR_ALL((*this), i)
-        ::Foam::max(List_ELEM((*this), vp, i), v);
+        List_ELEM((*this), vp, i) =
+            ::Foam::max(List_ELEM((*this), va, i), v);
     List_END_FOR_ALL
 }
 
@@ -1032,8 +1034,10 @@ template<class Type>
 void block<Type>::min(const Type& v)
 {
     List_ACCESS(Type, (*this), vp);
+    List_CONST_ACCESS(Type, (*this), va);
     List_FOR_ALL((*this), i)
-        ::Foam::min(List_ELEM((*this), vp, i), v);
+        List_ELEM((*this), vp, i) =
+            ::Foam::min(List_ELEM((*this), va, i), v);
     List_END_FOR_ALL
 }
 
