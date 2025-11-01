@@ -349,10 +349,6 @@ void mesh::generatePatchBoundaries()
 
         if (count > 1)
         {
-            forAll(boundaries_, j)
-                Info<< boundaries_[j].offset() << endl;
-
-            std::exit(-1);
             FatalErrorInFunction
                 << "Face " << facei << " is associated with "
                 << count << " boundaries." << endl << abort(FatalError);

@@ -19,7 +19,7 @@ planner::planner
     const fvMesh& fvMsh
 )
 :
-    I_(fvMsh.msh().decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ),
+    I_(fvMsh.msh().decomp().map().shape()),
     N_(fvMsh.msh().cast<rectilinearMesh>().N())
 {
     // Identify initial decomposition type
