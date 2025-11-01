@@ -104,6 +104,8 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 
     faceField<vector,MeshType>& fc = faceCenters_;
 
+    fc = Zero;
+
     forAllFaces(fc, fd, l, d, i, j, k)
         fc[fd](l,d,i,j,k) = fcAoS(l,d,i,j,k)[fd*2];
 }
@@ -118,6 +120,10 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
     faceField<vector,MeshType>& fn = faceNormals_;
     faceField<scalar,MeshType>& fa = faceAreas_;
     faceField<vector,MeshType>& fan = faceAreaNormals_;
+
+    fn = Zero;
+    fa = Zero;
+    fan = Zero;
 
     forAllFaces(fn, fd, l, d, i, j, k)
     {
@@ -161,6 +167,8 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 
     meshField<scalar,MeshType>& cv = cellVolumes_;
 
+    cv = Zero;
+
     forAll(fvMsh_, l)
     {
         for (int d = 0; d < MeshType::numberOfDirections; d++)
@@ -194,15 +202,12 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
 
     faceField<scalar,MeshType>& delta = faceDeltas_;
 
+    delta = Zero;
+
     forAllFaces(delta, fd, l, d, i, j, k)
     {
         delta[fd](l,d,i,j,k) = deltaAoS(l,d,i,j,k)[fd*2];
     }
-
-    // Also set remaining ghost cell face values at processor interfaces
-
-    forAll(delta, fd)
-        delta[fd].correctCommsBoundaryConditions();
 }
 
 template<class MeshType>
@@ -214,19 +219,16 @@ void fvMeshMetrics<MeshType>::calculateFaceWeights()
     faceField<scalar,MeshType>& fwc = faceWeightsCenter_;
     faceField<scalar,MeshType>& fwn = faceWeightsNeighbor_;
 
+    // Initialize weights as 50/50
+
+    fwc = 0.5;
+    fwn = 0.5;
+
     forAllFaces(fwc, fd, l, d, i, j, k)
     {
         fwc[fd](l,d,i,j,k) = fwcAoS(l,d,i,j,k)[fd*2];
         fwn[fd](l,d,i,j,k) = fwnAoS(l,d,i,j,k)[fd*2];
     }
-
-    // Also set remaining ghost cell face values at processor interfaces
-
-    forAll(fwc, fd)
-        fwc[fd].correctCommsBoundaryConditions();
-
-    forAll(fwn, fd)
-        fwn[fd].correctCommsBoundaryConditions();
 }
 
 template<class MeshType>
@@ -669,10 +671,6 @@ fvMeshMetrics<MeshType>::AoS::faceDeltas() const
         }
     }
 
-    // Also set remaining ghost cell face values at processor interfaces
-
-    delta.correctCommsBoundaryConditions();
-
     return tDelta;
 }
 
@@ -695,7 +693,7 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsCenter() const
     meshField<faceScalar,MeshType>& fwc = tFwc.ref();
     fwc.makeDeep();
 
-    fwc = Zero;
+    fwc = 0.5;
 
     forAll(metrics_.fvMsh_, l)
     {
@@ -753,10 +751,6 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsCenter() const
         }
     }
 
-    // Also set remaining ghost cell face values at processor interfaces
-
-    fwc.correctCommsBoundaryConditions();
-
     return tFwc;
 }
 
@@ -779,7 +773,7 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsNeighbor() const
     meshField<faceScalar,MeshType>& fwn = tFwn.ref();
     fwn.makeDeep();
 
-    fwn = Zero;
+    fwn = 0.5;
 
     forAll(metrics_.fvMsh_, l)
     {
@@ -836,10 +830,6 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsNeighbor() const
             }
         }
     }
-
-    // Also set remaining ghost cell face values at processor interfaces
-
-    fwn.correctCommsBoundaryConditions();
 
     return tFwn;
 }

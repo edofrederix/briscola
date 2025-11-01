@@ -127,6 +127,50 @@ grad
     return tGrad;
 }
 
+template<class Type, class MeshType>
+tmp<meshField<Type,staggered>>
+stagGrad
+(
+    const meshField<Type,colocated>& field
+)
+{
+    tmp<meshField<Type,staggered>> tGrad =
+        meshField<Type,staggered>::New
+        (
+            "stagGrad("+field.name()+")",
+            field.fvMsh()
+        );
+
+    meshField<Type,staggered>& grad = tGrad.ref();
+
+    const faceField<scalar,colocated>& delta =
+            field.fvMsh().template metrics<colocated>().faceDeltas();
+
+    forAllCells(grad, d, i, j, k)
+        grad(d,i,j,k) =
+            (field(i,j,k) - field(lowerNeighbor(i,j,k,d)))*delta[d](i,j,k);
+
+    return tGrad;
+}
+
+template<class Type>
+tmp<meshField<Type,staggered>>
+stagGrad
+(
+    const tmp<meshField<Type,colocated>>& tField
+)
+{
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
+    tmp<meshField<Type,staggered>> tStagGrad = stagGrad(tField());
+
+    if (tField.isTmp())
+        tField.clear();
+
+    return tStagGrad;
+}
+
 }
 
 }

@@ -38,13 +38,6 @@ public:
     (
         const meshField<Type,MeshType>&
     );
-
-    // Staggered gradient of a colocated field, where each mesh direction holds
-    // a component of the gradient
-    virtual tmp<meshField<Type,staggered>> stagGrad
-    (
-        const meshField<Type,colocated>&
-    );
 };
 
 }

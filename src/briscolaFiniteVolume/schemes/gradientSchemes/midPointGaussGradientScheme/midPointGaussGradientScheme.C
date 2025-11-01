@@ -64,32 +64,6 @@ midPointGaussGradientScheme<Type,MeshType>::grad
     return tGrad;
 }
 
-template<class Type, class MeshType>
-tmp<meshField<Type,staggered>>
-midPointGaussGradientScheme<Type,MeshType>::stagGrad
-(
-    const meshField<Type,colocated>& field
-)
-{
-    tmp<meshField<Type,staggered>> tGrad =
-        meshField<Type,staggered>::New
-        (
-            "stagGrad("+field.name()+")",
-            field.fvMsh()
-        );
-
-    meshField<Type,staggered>& grad = tGrad.ref();
-
-    const faceField<scalar,colocated>& delta =
-            field.fvMsh().template metrics<colocated>().faceDeltas();
-
-    forAllCells(grad, d, i, j, k)
-        grad(d,i,j,k) =
-            (field(i,j,k) - field(lowerNeighbor(i,j,k,d)))*delta[d](i,j,k);
-
-    return tGrad;
-}
-
 }
 
 }
