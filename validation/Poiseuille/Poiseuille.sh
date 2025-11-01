@@ -10,15 +10,15 @@ NTASKS="${SLURM_NTASKS:-16}"
 RUNDIR="runs"
 CSV="results.csv"
 TEMPLATE="template"
-SOLVER="briscolaColocated"
 
 # Simulation parameters
 
 MESHES=(32 64)
-MODES=(normal mapped penalization Vreman Fadlun Mittal)
+MODES=(mapped penalization Vreman Fadlun Mittal)
 NPROCSPERBRICKSIDE=(1 2 4)
 PSOLVERS=(MG FFT Krylov)
 RKSCHEMES=(RK3 Ascher222 CNAB)
+SOLVERS=(briscolaColocated briscolaStaggered)
 
 ##
 
@@ -30,10 +30,6 @@ if [ -z "$BRISCOLA" ]; then
 fi
 
 CURR=$(pwd)
-
-cd $TEMPLATE
-wmake -silent code
-cd $CURR
 
 if [ -d "$RUNDIR" ]; then
     rm -fr $RUNDIR
@@ -47,6 +43,7 @@ echo \
     "Mode," \
     "Pressure solver," \
     "Time scheme," \
+    "Solver," \
     "Error [%]," \
     "Test," \
     "Number of time steps," \
@@ -60,6 +57,7 @@ for J in "${!MODES[@]}"; do
 for K in "${!NPROCSPERBRICKSIDE[@]}"; do
 for L in "${!PSOLVERS[@]}"; do
 for M in "${!RKSCHEMES[@]}"; do
+for N in "${!SOLVERS[@]}"; do
 
     sleep 1
 
@@ -68,6 +66,7 @@ for M in "${!RKSCHEMES[@]}"; do
     NPROCPERBRICKSIDE=${NPROCSPERBRICKSIDE[$K]}
     PSOLVER=${PSOLVERS[$L]}
     RKSCHEME=${RKSCHEMES[$M]}
+    SOLVER=${SOLVERS[$N]}
 
     NPROCX=$NPROCPERBRICKSIDE
     NPROCY=$NPROCPERBRICKSIDE
@@ -109,6 +108,7 @@ for M in "${!RKSCHEMES[@]}"; do
             "$MODE," \
             "$PSOLVER," \
             "$RKSCHEME," \
+            "$SOLVER," \
             "$E," \
             "$P," \
             "$NDT," \
@@ -124,6 +124,7 @@ for M in "${!RKSCHEMES[@]}"; do
 
     store_procs $NPROC $!
 
+done
 done
 done
 done

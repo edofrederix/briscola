@@ -19,7 +19,7 @@ elif [ "$MODE" == "mapped" ]; then
     MESHX=$MESH
     MESHY=$MESH
     MESHFILE=briscolaMeshDict.mapped
-    SOURCE=0
+    SOURCE=0.0
 
 else
 
@@ -45,7 +45,6 @@ VARS="\
 m4 $VARS system/$MESHFILE.m4 > system/briscolaMeshDict
 m4 $VARS system/briscolaSolverDict.m4 > system/briscolaSolverDict
 m4 $VARS system/briscolaSchemeDict.m4 > system/briscolaSchemeDict
+m4 $VARS system/briscolaColocatedDict.m4 > system/briscolaColocatedDict
 m4 $VARS system/briscolaStaggeredDict.m4 > system/briscolaStaggeredDict
 m4 $VARS 0/U.m4 > 0/U
-
-wmake -silent code > log.wmake 2>&1

@@ -48,12 +48,14 @@ void sample::init()
         {
             size += 3;
         }
+        #ifdef FULLDEBUG
         else
         {
             WarningInFunction
                 << "Field " << fields_[i] << " requested for sampling by "
                 << name_ << " but not found in registry." << endl;
         }
+        #endif
     }
 
     timeAveragedData_.setSize(timeAverage_*size);
@@ -153,12 +155,14 @@ void sample::appendData
             headers
         );
     }
+    #ifdef FULLDEBUG
     else
     {
         WarningInFunction
             << "Field " << fieldName << " requested for sampling by "
             << name_ << " but not found in registry." << endl;
     }
+    #endif
 }
 
 sample::sample

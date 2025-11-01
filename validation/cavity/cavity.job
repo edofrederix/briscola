@@ -1,4 +1,4 @@
 #!/bin/bash
 #SBATCH -n 64
 
-./PoiseuilleColo.sh
+./cavity.sh

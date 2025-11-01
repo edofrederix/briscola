@@ -35,17 +35,9 @@ adjustTimeStep  true;
 
 maxCo           0.5;
 
-libs
-(
-    "code/libcode.so"
-);
-
 functions
 {
-    init
-    {
-        type    initialCondition;
-    }
+    // Sample both U and Uc to handle both colocated and staggered solvers
 
     y
     {
@@ -54,6 +46,6 @@ functions
         start           (4 -1 0.05);
         end             (4  1 0.05);
         N               100;
-        fields          (p Uc);
+        fields          (p U Uc);
     }
 }

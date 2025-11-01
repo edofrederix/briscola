@@ -10,19 +10,19 @@ NTASKS="${SLURM_NTASKS:-16}"
 RUNDIR="runs"
 CSV="results.csv"
 TEMPLATE="template"
-SOLVER="briscolaStaggered"
 PYTHON="python3"
 
 # Simulation parameters
 
-MESHES=(uniform graded)
-NBRICKS=(1 4)
+MESHES=(uniform graded edgeGraded)
+NBRICKS=(1 4 4)
 NPROCSPERBRICKSIDE=(1 2)
 LSCHEMES=(linearGauss)
 DSCHEMES=(linearGauss midPointGauss)
 RES=(400 1000)
 COARSEMODES=(smooth direct)
-RKSCHEMES=(forwardEuler RK3 Ascher222 CNAB)
+RKSCHEMES=(forwardEuler RK3 Ascher222 CNAB AB2)
+SOLVERS=(briscolaColocated briscolaStaggered)
 
 ##
 
@@ -34,8 +34,6 @@ if [ -z "$BRISCOLA" ]; then
 fi
 
 CURR=$(pwd)
-
-##
 
 if [ -d "$RUNDIR" ]; then
     rm -fr $RUNDIR
@@ -50,7 +48,8 @@ echo \
     "divergence scheme," \
     "Re," \
     "coarse mode," \
-    "Time scheme," \
+    "time scheme," \
+    "solver," \
     "error 1 [%]," \
     "error 2 [%]," \
     "test 1," \
@@ -69,6 +68,7 @@ for L in "${!DSCHEMES[@]}"; do
 for M in "${!RES[@]}"; do
 for N in "${!COARSEMODES[@]}"; do
 for O in "${!RKSCHEMES[@]}"; do
+for P in "${!SOLVERS[@]}"; do
 
     sleep 1
 
@@ -80,6 +80,13 @@ for O in "${!RKSCHEMES[@]}"; do
     RE=${RES[$M]}
     COARSEMODE=${COARSEMODES[$N]}
     RKSCHEME=${RKSCHEMES[$O]}
+    SOLVER=${SOLVERS[$P]}
+
+    # Edge grading doesn't work with staggered
+
+    if [[ "$MESH" == "edgeGraded" && "$SOLVER" == "briscolaStaggered" ]]; then
+        continue
+    fi
 
     NPROCX=$NPROCPERBRICKSIDE
     NPROCY=$NPROCPERBRICKSIDE
@@ -88,7 +95,7 @@ for O in "${!RKSCHEMES[@]}"; do
 
     NU=$(echo "print(1.0/$RE)" | python)
 
-    CASE="$MESH-$NPROC-$LSCHEME-$DSCHEME-$RE-$COARSEMODE-$RKSCHEME"
+    CASE="$MESH-$NPROC-$LSCHEME-$DSCHEME-$RE-$COARSEMODE-$RKSCHEME-$SOLVER"
 
     wait_for_procs $NPROC $NTASKS
 
@@ -128,6 +135,7 @@ for O in "${!RKSCHEMES[@]}"; do
             "$RE," \
             "$COARSEMODE," \
             "$RKSCHEME," \
+            "$SOLVER," \
             "$E1," \
             "$E2," \
             "$P1," \
@@ -145,6 +153,7 @@ for O in "${!RKSCHEMES[@]}"; do
 
     store_procs $NPROC $!
 
+done
 done
 done
 done
