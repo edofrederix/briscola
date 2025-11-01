@@ -366,7 +366,7 @@ void Krylov<SType,Type,MeshType>::solve
     if
     (
         SType::nCsComponents == 1
-     || sum(sys.diagonal()) == nDir
+     || sum(labelList(sys.diagonal())) == nDir
     )
     {
         sys.x().makeShallow();

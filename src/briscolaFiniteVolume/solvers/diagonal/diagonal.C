@@ -61,7 +61,7 @@ void diagonal<SType,Type,MeshType>::solve
         sys.x().name(),
         List<Type>(MeshType::numberOfDirections, pTraits<Type>::one),
         List<Type>(MeshType::numberOfDirections, Zero),
-        1
+        0
     );
 }
 

@@ -421,7 +421,7 @@ void MG<SType,Type,MeshType>::solve
     if
     (
         SType::nCsComponents == 1
-     || sum(sys.diagonal()) == MeshType::numberOfDirections
+     || sum(labelList(sys.diagonal())) == MeshType::numberOfDirections
     )
     {
         sys.x().makeShallow();
