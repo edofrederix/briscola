@@ -1,9 +1,5 @@
 #include "stratifiedFlow.H"
-#include "Time.H"
 #include "addToRunTimeSelectionTable.H"
-#include "exSchemes.H"
-#include <fstream>
-
 #include "meshFields.H"
 
 namespace Foam

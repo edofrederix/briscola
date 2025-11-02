@@ -25,7 +25,10 @@ GS=4.0
 
 ##
 
-[ ! -f "code/libcode.so" ] && wmake -a -s code
+cp -r $BRISCOLA/cases/singlePhase/flowOverCylinder/code .
+wmake -a -s code 2>&1 > log.wmake
+
+##
 
 R=$(echo "print($D/2.0)" | python)
 D2=$(echo "print($D*$F)" | python)

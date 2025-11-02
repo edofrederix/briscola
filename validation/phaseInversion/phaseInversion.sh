@@ -34,17 +34,6 @@ fi
 
 CURR=$(pwd)
 
-for I in "${!SOLVERS[@]}"; do
-
-    SOLVER=${SOLVERS[$I]}
-
-    cd $TEMPLATE
-    wmake -silent code.$SOLVER
-
-    cd $CURR
-
-done
-
 ##
 
 if [ -d "$RUNDIR" ]; then

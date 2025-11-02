@@ -1,8 +1,5 @@
 #include "flowOverCylinder.H"
-#include "Time.H"
 #include "addToRunTimeSelectionTable.H"
-#include <fstream>
-
 #include "meshFields.H"
 
 namespace Foam

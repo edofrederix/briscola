@@ -41,13 +41,6 @@ mkdir -p $RUNDIR
 
 ##
 
-cd $TEMPLATE
-wmake -s code
-cd $CURR
-
-##
-
-
 echo \
     "Mesh," \
     "divergence scheme," \
