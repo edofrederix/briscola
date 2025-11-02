@@ -119,6 +119,12 @@ public:
         return *tpmPtr;
     }
 
+    template<class Model>
+    inline const Model& cast() const
+    {
+        return const_cast<twoPhaseModel&>(*this).cast<Model>();
+    }
+
     // Return const access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 

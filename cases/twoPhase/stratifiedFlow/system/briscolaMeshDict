@@ -1,0 +1,155 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      briscolaMeshDict;
+}
+
+vertices
+(
+    (0      -0.05   0)
+    (0.4    -0.05   0)
+    (0      -0.025  0)
+    (0.4    -0.025  0)
+    (0       0      0)
+    (0.4     0      0)
+    (0       0.025  0)
+    (0.4     0.025  0)
+    (0       0.05   0)
+    (0.4     0.05   0)
+
+    (0      -0.05   0.2)
+    (0.4    -0.05   0.2)
+    (0      -0.025  0.2)
+    (0.4    -0.025  0.2)
+    (0       0      0.2)
+    (0.4     0      0.2)
+    (0       0.025  0.2)
+    (0.4     0.025  0.2)
+    (0       0.05   0.2)
+    (0.4     0.05   0.2)
+);
+
+bricks
+(
+    0
+    {
+        vertices    (0 10 2 12 1 11 3 13);
+        N           (64 32 32);
+        grading     geometric (1 1 1);
+    }
+    1
+    {
+        vertices    (2 12 4 14 3 13 5 15);
+        N           (64 32 32);
+        grading     geometric (1 1 1);
+    }
+    2
+    {
+        vertices    (4 14 6 16 5 15 7 17);
+        N           (64 32 32);
+        grading     geometric (1 1 1);
+    }
+    3
+    {
+        vertices    (6 16 8 18 7 17 9 19);
+        N           (64 32 32);
+        grading     geometric (1 1 1);
+    }
+);
+
+edges
+();
+
+patches
+(
+    inlet
+    {
+        type        periodic;
+        neighbor    outlet;
+
+        faces
+        (
+            (0 2 10 12)
+            (2 4 12 14)
+            (4 6 14 16)
+            (6 8 16 18)
+        );
+    }
+
+    outlet
+    {
+        type        periodic;
+        neighbor    inlet;
+
+        faces
+        (
+            (1 3 11 13)
+            (3 5 13 15)
+            (5 7 15 17)
+            (7 9 17 19)
+        );
+    }
+
+    aft
+    {
+        type        periodic;
+        neighbor    fore;
+
+        faces
+        (
+            (0 1 2 3)
+            (2 3 4 5)
+            (4 5 6 7)
+            (6 7 8 9)
+        );
+    }
+
+    fore
+    {
+        type        periodic;
+        neighbor    aft;
+
+        faces
+        (
+            (10 11 12 13)
+            (12 13 14 15)
+            (14 15 16 17)
+            (16 17 18 19)
+        );
+    }
+
+    top
+    {
+        type    patch;
+
+        faces
+        (
+            (8 9 18 19)
+        );
+    }
+
+    bottom
+    {
+        type    patch;
+
+        faces
+        (
+            (0 1 10 11)
+        );
+    }
+);
+
+decomposition
+{
+    type    manual;
+
+    brickDecompositions
+    (
+        (4 1 1)
+        (4 1 1)
+        (4 1 1)
+        (4 1 1)
+    );
+}

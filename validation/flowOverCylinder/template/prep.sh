@@ -72,7 +72,7 @@ m4  -DVARD=$D \
     -DVARGSi=$GSi \
     system/briscolaMeshDict.m4 > system/briscolaMeshDict
 
-m4  -DVARNU=$NU system/briscolaColocatedDict.m4 > system/briscolaColocatedDict
+m4  -DVARNU=$NU system/briscolaSinglePhaseDict.m4 > system/briscolaSinglePhaseDict
 
 m4  -DVARGRADSCHEME=$GRADSCHEME \
     -DVARDSCHEME=$DSCHEME \

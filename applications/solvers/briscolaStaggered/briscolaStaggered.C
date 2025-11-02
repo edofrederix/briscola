@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 {
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
-    #include "createBriscolaMesh.H"
+    #include "createBriscolaStaggeredMesh.H"
     #include "createRungeKuttaScheme.H"
     #include "createTimeControls.H"
 
@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     (
         IOobject
         (
-            "briscolaStaggeredDict",
+            "briscolaSinglePhaseDict",
             fvMsh.time().system(),
             fvMsh.time(),
             IOobject::MUST_READ,

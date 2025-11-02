@@ -6,11 +6,6 @@ FoamFile
     object      f;
 }
 
-initialCondition
-{
-
-}
-
 boundaryConditions
 {
     default

@@ -41,10 +41,10 @@ public:
     virtual ~incompressibleTwoPhaseModel();
 
     // Mass density of the first phase
-    virtual scalar rho1() { return rho1_; }
+    virtual scalar rho1() const { return rho1_; }
 
     // Mass density of the second phase
-    virtual scalar rho2() { return rho2_; }
+    virtual scalar rho2() const { return rho2_; }
 
     // Return the colocated mass density
     virtual tmp<colocatedScalarField> coloRho() const;

@@ -7,6 +7,6 @@ wclean code
 cleanCase
 
 rm -f briscola*.vtk.series system/briscolaMeshDict *.txt *.pdf \
-    system/briscolaColocatedDict \
+    system/briscolaSinglePhaseDict \
     system/briscolaSchemeDict \
     code/libcode.so

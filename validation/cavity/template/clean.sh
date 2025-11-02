@@ -8,5 +8,5 @@ rm -f briscola*.vtk.series *.pdf \
     system/briscolaMeshDict.m4 \
     system/briscolaMeshDict \
     system/briscolaSchemeDict \
-    system/briscolaColocatedDict \
+    system/briscolaSinglePhaseDict \
     system/briscolaSolverDict

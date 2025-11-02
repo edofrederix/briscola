@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     (
         IOobject
         (
-            "briscolaColocatedDict",
+            "briscolaSinglePhaseDict",
             fvMsh.time().system(),
             fvMsh.time(),
             IOobject::MUST_READ,

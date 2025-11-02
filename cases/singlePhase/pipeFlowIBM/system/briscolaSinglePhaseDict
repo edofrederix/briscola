@@ -1,0 +1,10 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      briscolaSinglePhaseDict;
+}
+
+nu      0.005555;
+source  (2 0 0);

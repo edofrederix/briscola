@@ -45,6 +45,5 @@ VARS="\
 m4 $VARS system/$MESHFILE.m4 > system/briscolaMeshDict
 m4 $VARS system/briscolaSolverDict.m4 > system/briscolaSolverDict
 m4 $VARS system/briscolaSchemeDict.m4 > system/briscolaSchemeDict
-m4 $VARS system/briscolaColocatedDict.m4 > system/briscolaColocatedDict
-m4 $VARS system/briscolaStaggeredDict.m4 > system/briscolaStaggeredDict
+m4 $VARS system/briscolaSinglePhaseDict.m4 > system/briscolaSinglePhaseDict
 m4 $VARS 0/U.m4 > 0/U

@@ -1,0 +1,11 @@
+EXE_INC = \
+    -I$(BRISCOLA)/src/briscolaCore/lnInclude \
+    -I$(BRISCOLA)/src/briscolaMesh/lnInclude \
+    -I$(BRISCOLA)/src/briscolaFiniteVolume/lnInclude \
+    -I$(BRISCOLA)/src/briscolaTwoPhase/lnInclude \
+    -I$(LIB_SRC)/OpenFOAM/lnInclude
+
+LIB_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lbriscolaFiniteVolume \
+    -lbriscolaTwoPhase

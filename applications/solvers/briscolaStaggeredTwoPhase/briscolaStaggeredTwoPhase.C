@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 {
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
-    #include "createBriscolaMesh.H"
+    #include "createBriscolaStaggeredMesh.H"
     #include "createRungeKuttaScheme.H"
     #include "createBriscolaStaggeredTwoPhase.H"
     #include "createTimeControls.H"
