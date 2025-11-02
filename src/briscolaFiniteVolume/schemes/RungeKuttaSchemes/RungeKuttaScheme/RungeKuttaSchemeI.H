@@ -165,9 +165,9 @@ inline void RungeKuttaScheme::cycle()
 
     // Move pointers forward by nStages and recycle the oldest step
 
-    labelList oldToNew(nStages_*nSteps_);
+    labelList oldToNew((nStages_-1)*nSteps_);
     forAll(oldToNew, i)
-        oldToNew[i] = (i + nStages_) % (nStages_*nSteps_);
+        oldToNew[i] = (i + (nStages_-1)) % ((nStages_-1)*nSteps_);
 
     forAll(sources, i)
     {
@@ -188,17 +188,20 @@ inline void RungeKuttaScheme::cycle()
 
         for (int step = 0; step < nSteps_; step++)
         {
-            for (int stage = 0; stage < nStages_; stage++)
+            for (int stage = 0; stage < nStages_-1; stage++)
             {
                 const word baseName = IOobject::member(list[j].name());
 
                 if (step == 0)
                 {
-                    list[j].rename(IOobject::groupName(baseName, Foam::name(stage)));
+                    list[j].rename
+                    (
+                        IOobject::groupName(baseName, Foam::name(stage))
+                    );
                 }
                 else
                 {
-                    list[j].rename(list[j-nStages_].name() + "_0");
+                    list[j].rename(list[j-(nStages_-1)].name() + "_0");
                 }
 
                 // Write everything but the last step

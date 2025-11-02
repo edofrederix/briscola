@@ -93,7 +93,8 @@ public:
     // Member Functions
 
         // Generate and return a list of fields to store the intermediate stage
-        // sources or solutions, with given field name
+        // sources or solutions, with given field name. The list stores all but
+        // the last stage in each step.
         template<class Type, class MeshType>
         FastPtrList<meshField<Type,MeshType>>& newStageList(const word name);
 

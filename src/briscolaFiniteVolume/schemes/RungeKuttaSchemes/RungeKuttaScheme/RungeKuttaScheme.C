@@ -79,7 +79,9 @@ FastPtrList<meshField<Type,MeshType>>& RungeKuttaScheme::newStageList
 
     FastPtrList<FastPtrList<FieldType>>& sources = stageSources<FieldType>();
 
-    sources.append(new FastPtrList<FieldType>(nStages_*nSteps_));
+    // Append a list that stores all but the last stage in each step
+
+    sources.append(new FastPtrList<FieldType>((nStages_ - 1)*nSteps_));
 
     FastPtrList<FieldType>& list = sources.last();
 
@@ -87,7 +89,7 @@ FastPtrList<meshField<Type,MeshType>>& RungeKuttaScheme::newStageList
 
     for (int step = 0; step < nSteps_; step++)
     {
-        for (int stage = 0; stage < nStages_; stage++)
+        for (int stage = 0; stage < nStages_-1; stage++)
         {
             list.set
             (
@@ -97,10 +99,10 @@ FastPtrList<meshField<Type,MeshType>>& RungeKuttaScheme::newStageList
                     word
                     (
                         step > 0
-                      ? list[i-nStages_].name() + "_0"
+                      ? list[i-(nStages_-1)].name() + "_0"
                       : IOobject::groupName
                         (
-                            name,
+                            "RK:" + name,
                             Foam::name(stage)
                         )
                     ),
@@ -113,7 +115,7 @@ FastPtrList<meshField<Type,MeshType>>& RungeKuttaScheme::newStageList
                 )
             );
 
-            list[stage] = Zero;
+            list[i] = Zero;
 
             i++;
         }
@@ -137,9 +139,21 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumA
     F = Zero;
     #endif
 
-    for (int j = 0; j < a().n(); j++)
-        if (a()(stage_-1,j) != 0.0 && (j < stage_-1 || j >= nStages_))
-            F += a()(stage_-1,j)*list[j];
+    label j = 0;
+
+    for (int step = 0; step < nSteps_; step++)
+    {
+        for (int stage = 0; stage < nStages_-1; stage++)
+        {
+            const label k = stage + step*nStages_;
+
+            if (a()(stage_-1,k) != 0.0)
+                if (k < stage_-1 || step > 0)
+                    F += a()(stage_-1,k)*list[j];
+
+            j++;
+        }
+    }
 
     return tF;
 }
@@ -159,9 +173,21 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumB
     F = Zero;
     #endif
 
-    for (int j = 0; j < b().n(); j++)
-        if (b()(stage_-1,j) != 0.0 && (j < stage_-1 || j >= nStages_))
-            F += b()(stage_-1,j)*list[j];
+    label j = 0;
+
+    for (int step = 0; step < nSteps_; step++)
+    {
+        for (int stage = 0; stage < nStages_-1; stage++)
+        {
+            const label k = stage + step*nStages_;
+
+            if (b()(stage_-1,k) != 0.0)
+                if (k < stage_-1 || step > 0)
+                    F += b()(stage_-1,k)*list[j];
+
+            j++;
+        }
+    }
 
     return tF;
 }

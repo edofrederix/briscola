@@ -75,16 +75,10 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
     {
         this->stages_.resize(rkSchemePtr->nStages());
 
+        // Initialize stages as the current solution
+
         forAll(this->stages_, i)
-            this->stages_.set
-            (
-                i,
-                meshField<Type,MeshType>::New
-                (
-                    x.name() + "_" + Foam::name(i),
-                    fvMsh
-                )
-            );
+            this->stages_.set(i, 1.0*x);
     }
 
     linearSystem<SType,Type,MeshType>& sys = sysPtr_();
