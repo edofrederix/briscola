@@ -13,12 +13,12 @@ laplacianSchemes
 
 divergenceSchemes
 {
-    default midPointGauss;
+    default linearGauss;
 }
 
 gradientSchemes
 {
-    default midPointGauss;
+    default linearGauss;
 }
 
 faceGradientSchemes
@@ -28,10 +28,10 @@ faceGradientSchemes
 
 faceFluxSchemes
 {
-    default midPoint;
+    default linear;
 }
 
 rkScheme
 {
-    scheme CNABM;
+    scheme ARK3;
 }

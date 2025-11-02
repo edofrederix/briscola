@@ -27,6 +27,7 @@
 #include "Ascher233.H"
 
 #include "AB2.H"
+#include "ARK3.H"
 #include "CNAB.H"
 #include "CNABM.H"
 
@@ -80,6 +81,7 @@ makeRungeKuttaScheme(Ascher233);
 // Multi-step schemes
 
 makeRungeKuttaScheme(AB2);
+makeRungeKuttaScheme(ARK3);
 makeRungeKuttaScheme(CNAB);
 makeRungeKuttaScheme(CNABM);
 

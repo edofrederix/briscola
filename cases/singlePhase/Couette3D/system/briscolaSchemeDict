@@ -33,5 +33,5 @@ faceFluxSchemes
 
 rkScheme
 {
-    scheme CNABM;
+    scheme ARK3;
 }
