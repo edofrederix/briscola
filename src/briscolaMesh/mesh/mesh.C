@@ -670,7 +670,7 @@ mesh::mesh(const IOdictionary& dict)
             rectilinear_[d] =
                 returnReduce(p.rectilinear()[d], minOp<label>());
 
-            // Mesh is uniform in a direction of all parts are uniform in that
+            // Mesh is uniform in a direction if all parts are uniform in that
             // direction
 
             uniform_[d] =

@@ -39,7 +39,7 @@ void FFTPoissonSolver<SType>::checkMesh(const fvMesh& fvMsh)
     if (cmptSum(mesh.globalUniform()) < 2)
     {
         FatalErrorInFunction
-            << "At least two mesh directions must be uniform "
+            << "At least two mesh directions must be globally uniform "
             << "for the " << this->type() << " solver." << endl
             << abort(FatalError);
     }
