@@ -135,9 +135,6 @@ void FFTPoissonSolver<SType>::solve
     const PtrList<boundaryCondition<scalar,colocated>>& bcs =
         x.boundaryConditions();
 
-    // Correct boundaries to evaluate boundary values
-    x.correctBoundaryConditions();
-
     // Correct RHS for inhomogeneous BC's
     forAll(bcs, bci)
     {

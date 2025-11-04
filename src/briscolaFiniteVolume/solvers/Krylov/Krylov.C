@@ -155,10 +155,6 @@ void Krylov<SType,Type,MeshType>::solve
 
     const label n = list(pTraits<Type>::one).size();
 
-    // Correct the boundary conditions
-
-    x.correctBoundaryConditions();
-
     // Buffer
 
     meshLevel<Type, MeshType> buffer(sys.fvMsh(), 0);

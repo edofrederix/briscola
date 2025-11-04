@@ -157,10 +157,6 @@ void MG<SType,Type,MeshType>::solve
 {
     meshField<Type, MeshType>& x = sys.x();
 
-    // Correct the boundary conditions
-
-    x[0].correctBoundaryConditions();
-
     // Residual field
 
     meshField<Type, MeshType> r
