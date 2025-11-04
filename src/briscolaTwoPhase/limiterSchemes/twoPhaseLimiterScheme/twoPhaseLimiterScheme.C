@@ -48,7 +48,7 @@ tmp<faceField<scalar,MeshType>> twoPhaseLimiterScheme<Type,MeshType>::psi
         restrict(alpha);
     }
 
-    // Set psi values to zero for non-interfacial faces
+    // Set psi values to one for non-interfacial faces
 
     forAllFaces(psi, fd, l, d, i, j, k)
         if
@@ -56,7 +56,7 @@ tmp<faceField<scalar,MeshType>> twoPhaseLimiterScheme<Type,MeshType>::psi
             alpha[fd](l,d,i,j,k) < vof::threshold
          || alpha[fd](l,d,i,j,k) > 1.0 - vof::threshold
         )
-            psi[fd](l,d,i,j,k) = 0.0;
+            psi[fd](l,d,i,j,k) = 1.0;
 
     return tPsi;
 }
