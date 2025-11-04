@@ -13,7 +13,7 @@ laplacianSchemes
 
 divergenceSchemes
 {
-    default limitedGauss vanLeer;
+    default limitedGauss twoPhase vanLeer;
 }
 
 gradientSchemes
@@ -50,4 +50,3 @@ rkScheme
 {
     scheme CNABM;
 }
-

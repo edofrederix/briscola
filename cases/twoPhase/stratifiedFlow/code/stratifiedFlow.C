@@ -61,11 +61,11 @@ bool stratifiedFlow::read(const dictionary& dict)
                     1.5
                   * (
                         1.5*(1.0 - Foam::sqr(c.y()/0.05))
-                      + 0.25*Foam::sin(4.0*pi*c.z()/0.2)
+                      + 0.5*Foam::sin(4.0*pi*c.z()/0.2)
                     );
 
                 U(i,j,k).z() =
-                    1.5*0.25*Foam::sin(2.0*pi*c.x()/0.4);
+                    1.5*0.5*Foam::sin(8.0*pi*c.x()/0.4);
             }
 
             U.correctBoundaryConditions();
@@ -92,10 +92,10 @@ bool stratifiedFlow::read(const dictionary& dict)
                     1.5
                   * (
                         1.5*(1.0 - Foam::sqr(c.y()/0.05))
-                      + 0.25*Foam::sin(4.0*pi*c.z()/0.2)
+                      + 0.5*Foam::sin(4.0*pi*c.z()/0.2)
                     ),
                     0,
-                    1.5*0.25*Foam::sin(2.0*pi*c.x()/0.4)
+                    1.5*0.5*Foam::sin(8.0*pi*c.x()/0.4)
                 );
 
                 U(d,i,j,k) = (base & u)[d];
