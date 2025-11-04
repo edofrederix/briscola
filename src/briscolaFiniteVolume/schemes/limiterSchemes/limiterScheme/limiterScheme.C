@@ -1,7 +1,7 @@
 #include "limiterScheme.H"
 #include "colocated.H"
 #include "staggered.H"
-#include "exSchemesGradient.H"
+#include "midPointGaussGradientScheme.H"
 
 namespace Foam
 {
@@ -11,6 +11,9 @@ namespace briscola
 
 namespace fv
 {
+
+using ::Foam::mag;
+using ::Foam::sign;
 
 template<class Type, class MeshType>
 limiterScheme<Type,MeshType>::limiterScheme
@@ -107,16 +110,11 @@ tmp<faceField<scalar,MeshType>> limiterScheme<Type,MeshType>::rType
     forAll(R, fd)
         R[fd].make(phi[fd].deep() && field.deep());
 
-    meshField<vector,MeshType> grad
-    (
-        gradientScheme<scalar,MeshType>::New
-        (
-            field.fvMsh(),
-            "grad("+field.name()+")"
-        )->grad(field)
-    );
+    tmp<meshField<vector,MeshType>> tGrad =
+        midPointGaussGradientScheme<scalar,MeshType>(field.fvMsh()).grad(field);
 
-    grad.correctBoundaryConditions();
+    meshField<vector,MeshType>& grad = tGrad.ref();
+    grad.correctCommsBoundaryConditions();
 
     if (R[0].deep())
         restrict(grad);
@@ -133,13 +131,26 @@ tmp<faceField<scalar,MeshType>> limiterScheme<Type,MeshType>::rType
 
         const vector dist = cc(l,d,nei) - cc(l,d,ijk);
         const scalar gradf = field(l,d,nei) - field(l,d,ijk);
-        const scalar gradc =
-            dist & (phi[fd](l,d,ijk) > 0 ? grad(l,d,ijk) : grad(l,d,nei));
 
-        R[fd](l,d,ijk) =
-            Foam::mag(gradc) >= 1000*Foam::mag(gradf)
-          ? 2*1000*Foam::sign(gradc)*Foam::sign(gradf) - 1
-          : 2*(gradc/gradf) - 1;
+        scalar gradc;
+
+        if (phi[fd](l,d,ijk) > 0)
+        {
+            gradc = dist & grad(l,d,ijk);
+        }
+        else
+        {
+            gradc = dist & grad(l,d,nei);
+        }
+
+        if (mag(gradc) >= 1000*mag(gradf))
+        {
+            R[fd](l,d,ijk) = 2*1000*sign(gradc)*sign(gradf) - 1;
+        }
+        else
+        {
+            R[fd](l,d,ijk) = 2*gradc/gradf - 1;
+        }
     }
 
     return tR;
@@ -160,16 +171,11 @@ tmp<faceField<scalar,MeshType>> limiterScheme<Type,MeshType>::rType
     forAll(R, fd)
         R[fd].make(phi[fd].deep() && field.deep());
 
-    meshField<tensor,MeshType> grad
-    (
-        gradientScheme<vector,MeshType>::New
-        (
-            field.fvMsh(),
-            "grad("+field.name()+")"
-        )->grad(field)
-    );
+    tmp<meshField<tensor,MeshType>> tGrad =
+        midPointGaussGradientScheme<vector,MeshType>(field.fvMsh()).grad(field);
 
-    grad.correctBoundaryConditions();
+    meshField<tensor,MeshType>& grad = tGrad.ref();
+    grad.correctCommsBoundaryConditions();
 
     if (R[0].deep())
         restrict(grad);
@@ -189,21 +195,25 @@ tmp<faceField<scalar,MeshType>> limiterScheme<Type,MeshType>::rType
         const vector gradfv = field(l,d,nei) - field(l,d,ijk);
         const scalar gradf = gradfv & gradfv;
 
-        const scalar gradc =
-            gradfv
-          & (
-                dist
-              & (
-                    phi[fd](l,d,ijk) > 0
-                  ? grad(l,d,ijk)
-                  : grad(l,d,nei)
-                )
-            );
+        scalar gradc;
 
-        R[fd](l,d,ijk) =
-            Foam::mag(gradc) >= 1000*Foam::mag(gradf)
-          ? 2*1000*Foam::sign(gradc)*Foam::sign(gradf) - 1
-          : 2*(gradc/gradf) - 1;
+        if (phi[fd](l,d,ijk) > 0)
+        {
+            gradc = gradfv & (dist & grad(l,d,ijk));
+        }
+        else
+        {
+            gradc = gradfv & (dist & grad(l,d,nei));
+        }
+
+        if (mag(gradc) >= 1000*mag(gradf))
+        {
+            R[fd](l,d,ijk) = 2*1000*sign(gradc)*sign(gradf) - 1;
+        }
+        else
+        {
+            R[fd](l,d,ijk) = 2*gradc/gradf - 1;
+        }
     }
 
     return tR;
