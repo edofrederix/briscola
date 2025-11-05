@@ -46,11 +46,9 @@ staggeredScalarFaceField phi
     "phi",
     fvMsh,
     IOobject::NO_READ,
-    IOobject::AUTO_WRITE,
+    IOobject::NO_WRITE,
     true
 );
-
-phi = ex::faceFlux(U);
 
 // Sources
 
@@ -120,13 +118,13 @@ staggeredScalarField v
 
 v.setRestrictionScheme("harmonicVolumeWeighted");
 
-colocatedScalarFaceField vcf
+colocatedScalarFaceField vf
 (
-    "vcf",
+    "vf",
     fvMsh,
     IOobject::NO_READ,
     IOobject::NO_WRITE,
     true
 );
 
-vcf.setRestrictionScheme("areaWeighted");
+vf.setRestrictionScheme("areaWeighted");

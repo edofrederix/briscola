@@ -39,6 +39,17 @@ colocatedScalarField p
 p = Zero;
 p.correctBoundaryConditions();
 
+// Flux
+
+staggeredScalarFaceField phi
+(
+    "phi",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
 // Viscosity
 
 const scalar nu = readScalar(solverDict.lookup("nu"));
@@ -97,7 +108,3 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
 );
 
 Poisson->enableFlux();
-
-staggeredScalarFaceField phi("phi", fvMsh);
-
-phi = ex::faceFlux(U);

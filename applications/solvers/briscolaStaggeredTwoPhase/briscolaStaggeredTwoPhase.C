@@ -43,8 +43,8 @@ int main(int argc, char *argv[])
         twoPhase.correct();
 
         v = 1.0/rho;
-        vcf = ex::coloFaceInterp(v);
-        vcf.max(1e-12);
+        vf = ex::coloFaceInterp(v);
+        vf.max(1e-12);
 
         // Explicit source
 
@@ -87,16 +87,26 @@ int main(int argc, char *argv[])
 
                 USolve->solve(USys);
 
-                U += C*deltaT*ex::stagReconstruct(twoPhase.flux())*v;
-                U.correctBoundaryConditions();
-
                 // Pressure equation
 
-                Poisson->solve(p, ex::coloDiv(U)/(-C*deltaT), vcf);
+                colocatedScalarFaceField phiStar
+                (
+                    ex::coloFaceFlux(U)
+                  + C*deltaT*twoPhase.flux()*vf
+                );
+
+                Poisson->solve(p, ex::div(phiStar)/(-C*deltaT), vf);
 
                 // Correct velocity
 
-                U -= C*deltaT*ex::stagReconstruct(Poisson->flux()/vcf)*v;
+                U -=
+                    C*deltaT
+                  * ex::stagReconstruct
+                    (
+                        Poisson->flux()/vf
+                      - twoPhase.flux()
+                    )*v;
+
                 U.correctBoundaryConditions();
             }
 
