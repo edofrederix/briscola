@@ -43,5 +43,5 @@ interpolationSchemes
 
 rkScheme
 {
-    scheme  Ascher222;
+    scheme  VARRKSCHEME;
 }

@@ -3,8 +3,8 @@ from matplotlib import pyplot as plt
 import os, sys
 import re
 
-maxError_y = 5
-maxError_u = 5
+maxError_y = 1.2
+maxError_u = 1.2
 
 BRISCOLA = os.environ.get('BRISCOLA')
 
