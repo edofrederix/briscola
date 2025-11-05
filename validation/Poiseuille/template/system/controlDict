@@ -15,7 +15,7 @@ stopAt          endTime;
 
 endTime         200;
 
-deltaT          1e-2;
+deltaT          1e-3;
 
 writeControl    adjustableRunTime;
 
@@ -47,5 +47,18 @@ functions
         end             (4  1 0.05);
         N               100;
         fields          (p U Uc);
+    }
+}
+
+libs
+(
+    "code/libcode.so"
+);
+
+functions
+{
+    init
+    {
+        type    Poiseuille;
     }
 }

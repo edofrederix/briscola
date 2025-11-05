@@ -28,3 +28,5 @@ case "$MODE" in
         exit
 
 esac
+
+wmake -silent code

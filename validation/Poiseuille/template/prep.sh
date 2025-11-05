@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ -z "$BRISCOLA" ]; then
+
+    echo "BRISCOLA environment variable not set"
+    exit
+
+fi
+
 MESH=$1
 NPROCX=$2
 NPROCY=$3
@@ -29,6 +36,9 @@ else
     SOURCE=0.03
 
 fi
+
+cp -r $BRISCOLA/cases/singlePhase/Poiseuille/code .
+wmake -a -s code 2>&1 > log.wmake
 
 IBMBC=${MODE}Dirichlet
 

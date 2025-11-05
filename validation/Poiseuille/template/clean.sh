@@ -4,9 +4,9 @@ source $FOAM_SRC/../bin/tools/CleanFunctions
 
 cleanCase
 
-wclean code
+rm -fr code
 
-rm -f briscola*.vtk.series *.pdf *.txt code/libcode.so \
+rm -f briscola*.vtk.series *.pdf *.txt \
     system/briscolaMeshDict \
     system/briscolaSolverDict \
     system/briscolaSchemeDict \
