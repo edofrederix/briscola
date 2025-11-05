@@ -89,17 +89,26 @@ void immersedBoundary<MeshType>::setMasks()
 template<class MeshType>
 void immersedBoundary<MeshType>::calculateWallDistances()
 {
-    // Initialize wall distances to zero
-    wallDistAdj_ = Zero;
-    wallDistGhost_ = Zero;
-
     // Cell centers
+
     const meshField<vector,MeshType>& cc =
         fvMshMetrics_.cellCenters();
 
-    // To-do: write as face loop
+    // Calculate wall distances as AoS storage, then correct the parallel
+    // boundary conditions and finally copy to SoA storage.
 
-    // Set wall distance fields
+    meshField<faceScalar,MeshType> wallDistAdj("wallDistAdj", this->fvMsh_);
+    meshField<faceScalar,MeshType> wallDistGhost("wallDistGhost", this->fvMsh_);
+    meshField<faceScalar,MeshType> neighborDist("neighborDist", this->fvMsh_);
+
+    wallDistAdj.makeDeep();
+    wallDistGhost.makeDeep();
+    neighborDist.makeDeep();
+
+    wallDistAdj = Zero;
+    wallDistGhost = Zero;
+    neighborDist = Zero;
+
     forAllCells(mask_, l, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
@@ -112,7 +121,6 @@ void immersedBoundary<MeshType>::calculateWallDistances()
             for (int f = 0; f < 6; f++)
             {
                 const labelVector fo = faceOffsets[f];
-                const label fd = f/2;
 
                 if (this->isInside(cc[l][d](ijk+fo)))
                 {
@@ -121,7 +129,7 @@ void immersedBoundary<MeshType>::calculateWallDistances()
                     const scalar wd = this->wallDistance(c,nb);
                     const scalar xi = (Foam::mag(c-nb)-wd)/Foam::mag(c-nb);
 
-                    wallDistAdj_[fd](l,d,upperFaceNeighbor(ijk,f)) = xi;
+                    wallDistAdj(l,d,ijk)[f] = xi;
                 }
             }
         }
@@ -132,7 +140,6 @@ void immersedBoundary<MeshType>::calculateWallDistances()
             for (int f = 0; f < 6; f++)
             {
                 const labelVector fo = faceOffsets[f];
-                const label fd = f/2;
 
                 if (!this->isInside(cc[l][d](ijk+fo)))
                 {
@@ -141,9 +148,7 @@ void immersedBoundary<MeshType>::calculateWallDistances()
                     const scalar wd = this->wallDistance(wa,gc);
                     const scalar xi = (Foam::mag(gc-wa)-wd)/Foam::mag(gc-wa);
 
-                    const labelVector upp(upperFaceNeighbor(ijk,f));
-
-                    wallDistGhost_[fd](l,d,upp) = xi;
+                    wallDistGhost(l,d,ijk)[f] = xi;
 
                     // Second neighbor
                     vector sn(wa + (wa - cc[l][d](ijk)));
@@ -163,7 +168,7 @@ void immersedBoundary<MeshType>::calculateWallDistances()
 
                     const scalar xi2 = Foam::mag(gc-sn)/Foam::mag(gc-wa);
 
-                    neighborDist_[fd](l,d,upp) = xi2;
+                    neighborDist(l,d,ijk)[f] = xi2;
 
                     break;
                 }
@@ -171,14 +176,32 @@ void immersedBoundary<MeshType>::calculateWallDistances()
         }
     }
 
-    forAll(wallDistAdj_, fd)
-        wallDistAdj_[fd].correctCommsBoundaryConditions();
+    wallDistAdj.correctCommsBoundaryConditions();
+    wallDistGhost.correctCommsBoundaryConditions();
+    neighborDist.correctCommsBoundaryConditions();
 
-    forAll(wallDistGhost_, fd)
-        wallDistGhost_[fd].correctCommsBoundaryConditions();
+    // Copy from AoS to SoA storage. Use a cell loop that also traverses ghost
+    // cells. We cannot use a boundary correction on SoA storage because face
+    // directions may not be aligned across processor boundaries.
 
-    forAll(neighborDist_, fd)
-        neighborDist_[fd].correctCommsBoundaryConditions();
+    for (int fd = 0; fd < 3; fd++)
+    forAll(this->fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = this->fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                wallDistAdj_[fd](l,d,ijk) = wallDistAdj(l,d,ijk)[fd*2];
+                wallDistGhost_[fd](l,d,ijk) = wallDistGhost(l,d,ijk)[fd*2];
+                neighborDist_[fd](l,d,ijk) = neighborDist(l,d,ijk)[fd*2];
+            }
+        }
+    }
 }
 
 template<class MeshType>
