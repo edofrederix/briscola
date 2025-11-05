@@ -106,8 +106,26 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
 
     fc = Zero;
 
-    forAllFaces(fc, fd, l, d, i, j, k)
-        fc[fd](l,d,i,j,k) = fcAoS(l,d,i,j,k)[fd*2];
+    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
+    // correction on SoA storage because face directions may not be aligned
+    // across processor boundaries.
+
+    for (int fd = 0; fd < 3; fd++)
+    forAll(fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                fc[fd](l,d,ijk) = fcAoS(l,d,ijk)[fd*2];
+            }
+        }
+    }
 }
 
 template<class MeshType>
@@ -125,11 +143,27 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
     fa = Zero;
     fan = Zero;
 
-    forAllFaces(fn, fd, l, d, i, j, k)
+    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
+    // correction on SoA storage because face directions may not be aligned
+    // across processor boundaries.
+
+    for (int fd = 0; fd < 3; fd++)
+    forAll(fvMsh_, l)
     {
-        fn[fd](l,d,i,j,k) = fnAoS(l,d,i,j,k)[fd*2];
-        fa[fd](l,d,i,j,k) = faAoS(l,d,i,j,k)[fd*2];
-        fan[fd](l,d,i,j,k) = fanAoS(l,d,i,j,k)[fd*2];
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                fn[fd](l,d,ijk) = fnAoS(l,d,ijk)[fd*2];
+                fa[fd](l,d,ijk) = faAoS(l,d,ijk)[fd*2];
+                fan[fd](l,d,ijk) = fanAoS(l,d,ijk)[fd*2];
+            }
+        }
     }
 }
 
@@ -204,9 +238,25 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
 
     delta = Zero;
 
-    forAllFaces(delta, fd, l, d, i, j, k)
+    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
+    // correction on SoA storage because face directions may not be aligned
+    // across processor boundaries.
+
+    for (int fd = 0; fd < 3; fd++)
+    forAll(fvMsh_, l)
     {
-        delta[fd](l,d,i,j,k) = deltaAoS(l,d,i,j,k)[fd*2];
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                delta[fd](l,d,ijk) = deltaAoS(l,d,ijk)[fd*2];
+            }
+        }
     }
 }
 
@@ -224,10 +274,26 @@ void fvMeshMetrics<MeshType>::calculateFaceWeights()
     fwc = 0.5;
     fwn = 0.5;
 
-    forAllFaces(fwc, fd, l, d, i, j, k)
+    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
+    // correction on SoA storage because face directions may not be aligned
+    // across processor boundaries.
+
+    for (int fd = 0; fd < 3; fd++)
+    forAll(fvMsh_, l)
     {
-        fwc[fd](l,d,i,j,k) = fwcAoS(l,d,i,j,k)[fd*2];
-        fwn[fd](l,d,i,j,k) = fwnAoS(l,d,i,j,k)[fd*2];
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                fwc[fd](l,d,ijk) = fwcAoS(l,d,ijk)[fd*2];
+                fwn[fd](l,d,ijk) = fwnAoS(l,d,ijk)[fd*2];
+            }
+        }
     }
 }
 
@@ -671,6 +737,10 @@ fvMeshMetrics<MeshType>::AoS::faceDeltas() const
         }
     }
 
+    // Also set remaining ghost cell face values at processor interfaces
+
+    delta.correctCommsBoundaryConditions();
+
     return tDelta;
 }
 
@@ -751,6 +821,10 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsCenter() const
         }
     }
 
+    // Also set remaining ghost cell face values at processor interfaces
+
+    fwc.correctCommsBoundaryConditions();
+
     return tFwc;
 }
 
@@ -830,6 +904,10 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsNeighbor() const
             }
         }
     }
+
+    // Also set remaining ghost cell face values at processor interfaces
+
+    fwn.correctCommsBoundaryConditions();
 
     return tFwn;
 }
