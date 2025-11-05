@@ -73,7 +73,7 @@ for N in "${!SOLVERS[@]}"; do
 
     NPROC=$(echo "print(int($NPROCX*$NPROCY))" | python)
 
-    CASE="$MESH-$NPROC-$MODE-$PSOLVER-$RKSCHEME"
+    CASE="$MESH-$NPROC-$MODE-$PSOLVER-$RKSCHEME-$SOLVER"
 
     wait_for_procs $NPROC $NTASKS
 
