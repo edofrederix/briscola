@@ -208,7 +208,7 @@ linearFaceDotGradientScheme<Type,staggered>::faceDotGrad
         // The gradient in d-direction of fd-direction staggered components
 
         grad[fd](d,ijk) =
-            delta[d](fd,ijk)*fa[d](fd,ijk)
+            delta[d](fd,ijk)*fa[fd](d,ijk)
           * (field(fd,lowerNeighbor(ijk,d)) - field(fd,ijk));
     }
 
