@@ -94,20 +94,9 @@ void immersedBoundary<MeshType>::calculateWallDistances()
     const meshField<vector,MeshType>& cc =
         fvMshMetrics_.cellCenters();
 
-    // Calculate wall distances as AoS storage, then correct the parallel
-    // boundary conditions and finally copy to SoA storage.
-
-    meshField<faceScalar,MeshType> wallDistAdj("wallDistAdj", this->fvMsh_);
-    meshField<faceScalar,MeshType> wallDistGhost("wallDistGhost", this->fvMsh_);
-    meshField<faceScalar,MeshType> neighborDist("neighborDist", this->fvMsh_);
-
-    wallDistAdj.makeDeep();
-    wallDistGhost.makeDeep();
-    neighborDist.makeDeep();
-
-    wallDistAdj = Zero;
-    wallDistGhost = Zero;
-    neighborDist = Zero;
+    wallDistAdj_ = Zero;
+    wallDistGhost_ = Zero;
+    neighborDist_ = Zero;
 
     forAllCells(mask_, l, d, i, j, k)
     {
@@ -129,7 +118,7 @@ void immersedBoundary<MeshType>::calculateWallDistances()
                     const scalar wd = this->wallDistance(c,nb);
                     const scalar xi = (Foam::mag(c-nb)-wd)/Foam::mag(c-nb);
 
-                    wallDistAdj(l,d,ijk)[f] = xi;
+                    wallDistAdj_(l,d,ijk)[f] = xi;
                 }
             }
         }
@@ -148,7 +137,7 @@ void immersedBoundary<MeshType>::calculateWallDistances()
                     const scalar wd = this->wallDistance(wa,gc);
                     const scalar xi = (Foam::mag(gc-wa)-wd)/Foam::mag(gc-wa);
 
-                    wallDistGhost(l,d,ijk)[f] = xi;
+                    wallDistGhost_(l,d,ijk)[f] = xi;
 
                     // Second neighbor
                     vector sn(wa + (wa - cc[l][d](ijk)));
@@ -168,7 +157,7 @@ void immersedBoundary<MeshType>::calculateWallDistances()
 
                     const scalar xi2 = Foam::mag(gc-sn)/Foam::mag(gc-wa);
 
-                    neighborDist(l,d,ijk)[f] = xi2;
+                    neighborDist_(l,d,ijk)[f] = xi2;
 
                     break;
                 }
@@ -176,32 +165,9 @@ void immersedBoundary<MeshType>::calculateWallDistances()
         }
     }
 
-    wallDistAdj.correctCommsBoundaryConditions();
-    wallDistGhost.correctCommsBoundaryConditions();
-    neighborDist.correctCommsBoundaryConditions();
-
-    // Copy from AoS to SoA storage. Use a cell loop that also traverses ghost
-    // cells. We cannot use a boundary correction on SoA storage because face
-    // directions may not be aligned across processor boundaries.
-
-    for (int fd = 0; fd < 3; fd++)
-    forAll(this->fvMsh_, l)
-    {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = this->fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
-            {
-                wallDistAdj_[fd](l,d,ijk) = wallDistAdj(l,d,ijk)[fd*2];
-                wallDistGhost_[fd](l,d,ijk) = wallDistGhost(l,d,ijk)[fd*2];
-                neighborDist_[fd](l,d,ijk) = neighborDist(l,d,ijk)[fd*2];
-            }
-        }
-    }
+    wallDistAdj_.correctCommsBoundaryConditions();
+    wallDistGhost_.correctCommsBoundaryConditions();
+    neighborDist_.correctCommsBoundaryConditions();
 }
 
 template<class MeshType>

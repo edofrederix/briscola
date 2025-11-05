@@ -53,15 +53,15 @@ protected:
 
     // This wall distance field stores the wall distances from IB-adjacent cells
     // to the IB as faceScalars
-    faceField<scalar,MeshType> wallDistAdj_;
+    meshField<faceScalar,MeshType> wallDistAdj_;
 
     // This wall distance field stores the wall distances from ghost cells to
     // the IB as faceScalars
-    faceField<scalar,MeshType> wallDistGhost_;
+    meshField<faceScalar,MeshType> wallDistGhost_;
 
     // The neighbor distance field stores the distances to the second neighbor
     // fluid cell for the quadratic fit on non-uniform grids
-    faceField<scalar,MeshType> neighborDist_;
+    meshField<faceScalar,MeshType> neighborDist_;
 
     // Field containing the coordinates of the ghost mirror points stored in the
     // ghost cells
@@ -130,17 +130,17 @@ public:
         return wallAdjMask_;
     }
 
-    inline const faceField<scalar,MeshType>& wallDistAdj() const
+    inline const meshField<faceScalar,MeshType>& wallDistAdj() const
     {
         return wallDistAdj_;
     }
 
-    inline const faceField<scalar,MeshType>& wallDistGhost() const
+    inline const meshField<faceScalar,MeshType>& wallDistGhost() const
     {
         return wallDistGhost_;
     }
 
-    inline const faceField<scalar,MeshType>& neighborDist() const
+    inline const meshField<faceScalar,MeshType>& neighborDist() const
     {
         return neighborDist_;
     }

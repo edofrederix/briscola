@@ -78,9 +78,7 @@ void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
     meshDirection<Type,MeshType>& x = this->mshField_[l][d];
 
     const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
-    const faceField<scalar,MeshType>& y = this->ib_.wallDistAdj();
-
-    // Todo: make face loop?
+    const meshDirection<faceScalar,MeshType>& y = this->ib_.wallDistAdj()[l][d];
 
     forAllCells(x,i,j,k)
     {
@@ -94,13 +92,12 @@ void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
             for (int f = 0; f < 6; f++)
             {
                 const labelVector fo = faceOffsets[f];
-                const label fd = f/2;
 
-                if (y[fd](upperFaceNeighbor(ijk,f)) > ximax)
+                if (y(ijk)[f] > ximax)
                 {
-                    ximax = y[fd](ijk);
+                    ximax = y(ijk)[f];
 
-                    const scalar xic = 1.0 - y[fd](ijk);
+                    const scalar xic = 1.0 - ximax;
                     const scalar xinb = 1.0 + xic;
                     const scalar w = xic/xinb;
 
