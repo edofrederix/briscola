@@ -146,7 +146,11 @@ void twoPhaseMultiVof<BaseModel>::addAlphaField()
         )
     );
 
+    #ifdef FULLDEBUG
+
     Info << "Alpha field added" << endl;
+
+    #endif
 }
 
 template<class BaseModel>
@@ -178,7 +182,7 @@ void twoPhaseMultiVof<BaseModel>::computeGlobalN()
         globalN_ += CCL_[c].n();
     }
 
-    Info << "Global total number of bubbles: " << globalN_
+    Info << "Total number of connected components: " << globalN_
          << " in: " << CCL_.size() << " alpha fields" << endl;
 }
 
@@ -276,25 +280,6 @@ void twoPhaseMultiVof<BaseModel>::setConnectivityMatrix()
             reduce(connectivityMatrix_[i][j], orOp<bool>());
         }
     }
-
-    // Info << "    ";
-
-    // forAll(connectivityMatrix_,i)
-    // {
-    //     Info << (i+1) << (i < 9 ? "  " : " ");
-    // }
-
-    // Info << endl;
-
-    // forAll(connectivityMatrix_, i)
-    // {
-    //     Info << (i+1) << (i < 9 ? "   " : "  ");
-    //     forAll(connectivityMatrix_[i], j)
-    //     {
-    //         Info << int(connectivityMatrix_[i][j]) << "  ";
-    //     }
-    //     Info << endl;
-    // }
 }
 
 template<class BaseModel>
@@ -357,8 +342,12 @@ void twoPhaseMultiVof<BaseModel>::moveFields()
                     targetAlpha = alphas_.size() - 1;
                 }
 
+                #ifdef FULLDEBUG
+
                 Info << "Moving bubble " << i+1 << " from field "
                      << phi_[i] << " to field " << targetAlpha << endl;
+
+                #endif
 
                 // Move the particle from the source interface to the target interface
 

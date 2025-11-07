@@ -32,6 +32,9 @@ protected:
     // reset after each tag() call
     label n_;
 
+    // Minimum size of components (number of cells)
+    label minSize_;
+
     // Tag the binary field
     virtual void tag() = 0;
 

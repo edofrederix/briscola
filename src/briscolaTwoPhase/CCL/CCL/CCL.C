@@ -18,8 +18,6 @@ void CCL::removeSmallComponents()
 {
     colocatedLabelField& m = *this;
 
-    const label minSize = 9;
-
     labelList sizes(n_, Zero);
 
     forAllCells(m,i,j,k)
@@ -37,7 +35,7 @@ void CCL::removeSmallComponents()
 
     forAllCells(m,i,j,k)
     {
-        if (m(i,j,k) && sizes[m(i,j,k) - 1] < minSize)
+        if (m(i,j,k) && sizes[m(i,j,k) - 1] < minSize_)
         {
             m(i,j,k) = Zero;
             alpha_(i,j,k) = Zero;
@@ -64,7 +62,8 @@ CCL::CCL
     fvMsh_(fvMsh),
     dict_(dict),
     alpha_(alpha),
-    n_(-1)
+    n_(-1),
+    minSize_(dict.lookupOrDefault<label>("minSize", 27))
 {
     // Initialize the label field to zero
 
@@ -77,7 +76,8 @@ CCL::CCL(const CCL& s)
     fvMsh_(s.fvMsh_),
     dict_(s.dict_),
     alpha_(s.alpha_),
-    n_(s.n_)
+    n_(s.n_),
+    minSize_(s.minSize_)
 {}
 
 CCL::~CCL()
