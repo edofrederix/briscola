@@ -107,49 +107,43 @@ tmp<faceField<scalar,MeshType>> limiterScheme<Type,MeshType>::rType
 
     faceField<scalar,MeshType>& R = tR.ref();
 
-    forAll(R, fd)
-        R[fd].make(phi[fd].deep() && field.deep());
-
     tmp<meshField<vector,MeshType>> tGrad =
         midPointGaussGradientScheme<scalar,MeshType>(field.fvMsh()).grad(field);
 
     meshField<vector,MeshType>& grad = tGrad.ref();
     grad.correctCommsBoundaryConditions();
 
-    if (R[0].deep())
-        restrict(grad);
-
     const meshField<vector,MeshType>& cc =
         field.fvMsh().template metrics<MeshType>().cellCenters();
 
-    forAllFaces(R, fd, l, d, i, j, k)
+    forAllFaces(R, fd, d, i, j, k)
     {
         // OpenFOAM's way (see NVDTVD.H)
 
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        const vector dist = cc(l,d,nei) - cc(l,d,ijk);
-        const scalar gradf = field(l,d,nei) - field(l,d,ijk);
+        const vector dist = cc(d,nei) - cc(d,ijk);
+        const scalar gradf = field(d,nei) - field(d,ijk);
 
         scalar gradc;
 
-        if (phi[fd](l,d,ijk) > 0)
+        if (phi[fd](d,ijk) > 0)
         {
-            gradc = dist & grad(l,d,ijk);
+            gradc = dist & grad(d,ijk);
         }
         else
         {
-            gradc = dist & grad(l,d,nei);
+            gradc = dist & grad(d,nei);
         }
 
         if (mag(gradc) >= 1000*mag(gradf))
         {
-            R[fd](l,d,ijk) = 2*1000*sign(gradc)*sign(gradf) - 1;
+            R[fd](d,ijk) = 2*1000*sign(gradc)*sign(gradf) - 1;
         }
         else
         {
-            R[fd](l,d,ijk) = 2*gradc/gradf - 1;
+            R[fd](d,ijk) = 2*gradc/gradf - 1;
         }
     }
 
@@ -168,51 +162,45 @@ tmp<faceField<scalar,MeshType>> limiterScheme<Type,MeshType>::rType
 
     faceField<scalar,MeshType>& R = tR.ref();
 
-    forAll(R, fd)
-        R[fd].make(phi[fd].deep() && field.deep());
-
     tmp<meshField<tensor,MeshType>> tGrad =
         midPointGaussGradientScheme<vector,MeshType>(field.fvMsh()).grad(field);
 
     meshField<tensor,MeshType>& grad = tGrad.ref();
     grad.correctCommsBoundaryConditions();
 
-    if (R[0].deep())
-        restrict(grad);
-
     const meshField<vector,MeshType>& cc =
         field.fvMsh().template metrics<MeshType>().cellCenters();
 
-    forAllFaces(R, fd, l, d, i, j, k)
+    forAllFaces(R, fd, d, i, j, k)
     {
         // OpenFOAM's way (see NVDTVDV.H)
 
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        const vector dist = cc(l,d,nei) - cc(l,d,ijk);
+        const vector dist = cc(d,nei) - cc(d,ijk);
 
-        const vector gradfv = field(l,d,nei) - field(l,d,ijk);
+        const vector gradfv = field(d,nei) - field(d,ijk);
         const scalar gradf = gradfv & gradfv;
 
         scalar gradc;
 
-        if (phi[fd](l,d,ijk) > 0)
+        if (phi[fd](d,ijk) > 0)
         {
-            gradc = gradfv & (dist & grad(l,d,ijk));
+            gradc = gradfv & (dist & grad(d,ijk));
         }
         else
         {
-            gradc = gradfv & (dist & grad(l,d,nei));
+            gradc = gradfv & (dist & grad(d,nei));
         }
 
         if (mag(gradc) >= 1000*mag(gradf))
         {
-            R[fd](l,d,ijk) = 2*1000*sign(gradc)*sign(gradf) - 1;
+            R[fd](d,ijk) = 2*1000*sign(gradc)*sign(gradf) - 1;
         }
         else
         {
-            R[fd](l,d,ijk) = 2*gradc/gradf - 1;
+            R[fd](d,ijk) = 2*gradc/gradf - 1;
         }
     }
 

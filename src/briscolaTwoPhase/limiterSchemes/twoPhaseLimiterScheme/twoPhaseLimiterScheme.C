@@ -40,23 +40,17 @@ tmp<faceField<scalar,MeshType>> twoPhaseLimiterScheme<Type,MeshType>::psi
     tmp<faceField<scalar,MeshType>> tPsi = limiter_->psi(phi,field);
     faceField<scalar,MeshType>& psi = tPsi.ref();
 
-    faceField<scalar,MeshType> alpha(model.faceAlpha());
-
-    if (phi[0].deep() && field.deep())
-    {
-        alpha.setRestrictionScheme("areaWeighted");
-        restrict(alpha);
-    }
+    const faceField<scalar,MeshType> alpha(model.faceAlpha());
 
     // Set psi values to one for non-interfacial faces
 
-    forAllFaces(psi, fd, l, d, i, j, k)
+    forAllFaces(psi, fd, d, i, j, k)
         if
         (
-            alpha[fd](l,d,i,j,k) < vof::threshold
-         || alpha[fd](l,d,i,j,k) > 1.0 - vof::threshold
+            alpha[fd](d,i,j,k) < vof::threshold
+         || alpha[fd](d,i,j,k) > 1.0 - vof::threshold
         )
-            psi[fd](l,d,i,j,k) = 1.0;
+            psi[fd](d,i,j,k) = 1.0;
 
     return tPsi;
 }

@@ -29,12 +29,9 @@ tmp<faceField<scalar,MeshType>> upwindLimiterScheme<Type,MeshType>::psi
     tmp<faceField<scalar,MeshType>> tPsi =
         faceField<scalar,MeshType>::New("psi", field.fvMsh());
 
-    faceField<scalar,MeshType>& Psi = tPsi.ref();
-
-    forAll(Psi, fd)
-        Psi[fd].make(phi[fd].deep() && field.deep());
-
-    Psi = Zero;
+    #ifdef NO_BLOCK_ZERO_INIT
+    tPsi.ref() = Zero;
+    #endif
 
     return tPsi;
 }

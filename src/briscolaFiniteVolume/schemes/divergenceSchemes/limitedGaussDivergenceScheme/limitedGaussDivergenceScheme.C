@@ -51,6 +51,8 @@ limitedGaussDivergenceScheme<Type,MeshType>::imDiv
 
     const faceField<scalar,MeshType> psi(limiter_->psi(phi,field));
 
+    restrict(psi);
+
     forAllCells(A, l, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
