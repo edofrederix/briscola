@@ -768,14 +768,19 @@ void linearSystem<SType,Type,MeshType>::setForcingMask()
 
         meshField<label,MeshType>& f = forcingMask_();
 
+        #ifdef NO_BLOCK_ZERO_INIT
         f = Zero;
+        #endif
 
-        forAll(xPtr_->immersedBoundaryConditions(), i)
-            if (xPtr_->immersedBoundaryConditions()[i].forcingMaskPtr())
-                f += xPtr_->immersedBoundaryConditions()[i].forcingMask();
+        if (xPtr_->immersedBoundaryConditions().size())
+        {
+            forAll(xPtr_->immersedBoundaryConditions(), i)
+                if (xPtr_->immersedBoundaryConditions()[i].forcingMaskPtr())
+                    f += xPtr_->immersedBoundaryConditions()[i].forcingMask();
 
-        f = min(f,1);
-        f.correctBoundaryConditions();
+            f = min(f,1);
+            f.correctBoundaryConditions();
+        }
     }
 }
 
