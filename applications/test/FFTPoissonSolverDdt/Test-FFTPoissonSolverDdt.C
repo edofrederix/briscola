@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
 
     FFTPoissonSolver<stencil> solver(fvMsh);
 
+    x.correctBoundaryConditions();
     solver.solve(x, b, true);
 
     const scalar deltaT = runTime.deltaTValue();

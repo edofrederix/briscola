@@ -156,6 +156,7 @@ int main(int argc, char *argv[])
 
     for (int r = 0; r < 1; r++)
     {
+        p.correctBoundaryConditions();
         solver.solve(p,f);
         Info << "Run number " << r+1 << " completed." << endl;
     }
