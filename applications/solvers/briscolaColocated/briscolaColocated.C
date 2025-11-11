@@ -66,14 +66,14 @@ int main(int argc, char *argv[])
 
                 if (rk.imStageA())
                 {
-                    USysA = -im::div(phi,U);
-                    USys -= A*USysA;
+                    tUSysA = -im::div(phi,U);
+                    USys -= A*tUSysA.ref();
                 }
 
                 if (rk.imStageB())
                 {
-                    USysB = im::laplacian(nu,U);
-                    USys -= B*USysB;
+                    tUSysB = im::laplacian(nu,U);
+                    USys -= B*tUSysB.ref();
                 }
 
                 // Solve predictor
@@ -100,13 +100,13 @@ int main(int argc, char *argv[])
             if (rk.storeStageA())
                 stageSourcesA[stage-1] =
                     rk.solve() && rk.imStageA()
-                  ? USysA.evaluate()
+                  ? tUSysA->evaluate()
                   : -ex::div(phi,U);
 
             if (rk.storeStageB())
                 stageSourcesB[stage-1] =
                     rk.solve() && rk.imStageB()
-                  ? USysB.evaluate()
+                  ? tUSysB->evaluate()
                   : ex::laplacian(nu,U);
         }
 

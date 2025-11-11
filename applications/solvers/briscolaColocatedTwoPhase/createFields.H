@@ -87,8 +87,8 @@ FastPtrList<colocatedVectorField>& stageSourcesA =
 FastPtrList<colocatedVectorField>& stageSourcesB =
     rk.newStageList<colocatedVectorField>("B");
 
-linearSystem<stencil,vector,colocated> USysA("A(U)", U);
-linearSystem<stencil,vector,colocated> USysB("B(U)", U);
+tmp<colocatedVectorSystem> tUSysA;
+tmp<colocatedVectorSystem> tUSysB;
 
 // Specific volumes
 

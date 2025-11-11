@@ -49,11 +49,7 @@ int main(int argc, char *argv[])
         // Explicit source
 
         tmp<staggeredScalarField> tSource =
-            (
-                exSource
-              + ex::div(mu*ex::faceDotGrad(U))
-              + twoPhase.buoyancy()
-            )*v;
+            (exSource + twoPhase.buoyancy())*v;
 
         while (rk.loop())
         {
@@ -73,14 +69,19 @@ int main(int argc, char *argv[])
 
                 if (rk.imStageA())
                 {
-                    USysA = -im::div(phi,U);
-                    USys -= A*USysA;
+                    tUSysA = -im::div(phi,U);
+                    USys -= A*tUSysA.ref();
                 }
 
                 if (rk.imStageB())
                 {
-                    USysB = v*im::laplacian(mu,U);
-                    USys -= B*USysB;
+                    tUSysB =
+                        (
+                            im::laplacian(mu,U)
+                          + ex::div(mu*ex::faceDotGrad(U))
+                        )*v;
+
+                    USys -= B*tUSysB.ref();
                 }
 
                 // Solve predictor
@@ -115,14 +116,14 @@ int main(int argc, char *argv[])
             if (rk.storeStageA())
                 stageSourcesA[stage-1] =
                     rk.solve() && rk.imStageA()
-                  ? USysA.evaluate()
+                  ? tUSysA->evaluate()
                   : -ex::div(phi,U);
 
             if (rk.storeStageB())
                 stageSourcesB[stage-1] =
                     rk.solve() && rk.imStageB()
-                  ? USysB.evaluate()
-                  : v*ex::laplacian(mu,U);
+                  ? tUSysB->evaluate()
+                  : v*(ex::laplacian(mu,U) + ex::div(mu*ex::faceDotGrad(U)));
         }
 
         // Reconstruct the colocated velocity
