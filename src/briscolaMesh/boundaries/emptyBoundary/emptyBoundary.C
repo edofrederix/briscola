@@ -14,11 +14,7 @@ addToRunTimeSelectionTable(boundary, emptyBoundary, dictionary);
 emptyBoundary::emptyBoundary(const mesh& msh, const dictionary& dict)
 :
     boundary(msh, dict)
-{
-    // Empty patches are extended patches
-
-    this->extend();
-}
+{}
 
 emptyBoundary::emptyBoundary(const emptyBoundary& pp)
 :

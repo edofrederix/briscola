@@ -98,9 +98,6 @@ class mesh
     // inconsistent communication.
     void setCommTags();
 
-    // Set boundary extension labels
-    void setBoundaryExtension();
-
     // Set the list of empty boundary offsets
     void setEmptyBoundaryOffsets();
 

@@ -23,12 +23,10 @@ void boundaryExchange<Type,MeshType>::initBuffers(const label l)
         const parallelBoundaryCondition<Type,MeshType>& bc =
             *this->boundaryPtrs_[i];
 
-        const faceLabel extension(bc.extension());
-
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
-            const labelVector S(bc.S(l,d) - extension.lower());
-            const labelVector E(bc.E(l,d) + extension.upper());
+            const labelVector S(bc.S(l,d));
+            const labelVector E(bc.E(l,d));
 
             size += cmptProduct(E-S);
         }
@@ -70,12 +68,10 @@ void boundaryExchange<Type,MeshType>::correct
 
         if (baseType == -1 || bc.baseType() == baseType)
         {
-            const faceLabel extension(bc.extension());
-
             for (int d = 0; d < MeshType::numberOfDirections; d++)
             {
-                const labelVector S(bc.S(l,d) - extension.lower());
-                const labelVector E(bc.E(l,d) + extension.upper());
+                const labelVector S(bc.S(l,d));
+                const labelVector E(bc.E(l,d));
 
                 labelVector ijk;
                 for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
@@ -147,7 +143,6 @@ void boundaryExchange<Type,MeshType>::correct
 
         if (baseType == -1 || bc.baseType() == baseType)
         {
-            const faceLabel extension(bc.extension());
             const labelVector bo(bc.offset());
             const labelTensor T(bc.T());
 
@@ -155,8 +150,8 @@ void boundaryExchange<Type,MeshType>::correct
             {
                 for (int d = 0; d < MeshType::numberOfDirections; d++)
                 {
-                    const labelVector S(bc.S(l,d) - extension.lower());
-                    const labelVector E(bc.E(l,d) + extension.upper());
+                    const labelVector S(bc.S(l,d));
+                    const labelVector E(bc.E(l,d));
 
                     labelVector ijk;
                     for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
@@ -173,8 +168,8 @@ void boundaryExchange<Type,MeshType>::correct
 
                 for (int d = 0; d < MeshType::numberOfDirections; d++)
                 {
-                    const labelVector S(bc.S(l,d) - extension.lower());
-                    const labelVector E(bc.E(l,d) + extension.upper());
+                    const labelVector S(bc.S(l,d));
+                    const labelVector E(bc.E(l,d));
                     const labelVector N(cmptMag(T.T() & (E-S)));
 
                     block<Type> B(N);

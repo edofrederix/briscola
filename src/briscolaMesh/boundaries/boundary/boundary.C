@@ -10,21 +10,13 @@ namespace briscola
 defineTypeNameAndDebug(boundary, 0);
 defineRunTimeSelectionTable(boundary, dictionary);
 
-void boundary::extend()
-{
-    for (int i = 0; i < 6; i++)
-        if (offset_[i/2] == 0)
-            extension_[i] = 1;
-}
-
 boundary::boundary(const mesh& msh, const dictionary& dict)
 :
     dict_(dict),
     name_(dict.lookup("name")),
     offset_(dict.lookup("offset")),
     offsetDegree_(cmptSum(cmptMag(offset_))),
-    master_(true),
-    extension_(Zero)
+    master_(true)
 {}
 
 boundary::boundary
@@ -36,8 +28,7 @@ boundary::boundary
     name_(b.name_),
     offset_(b.offset_),
     offsetDegree_(b.offsetDegree_),
-    master_(b.master_),
-    extension_(Zero)
+    master_(b.master_)
 {}
 
 boundary::~boundary()

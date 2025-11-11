@@ -605,7 +605,7 @@ void mesh::setDistributedCommGraph()
             neighbors.begin(),
             weights.begin(),
             MPI_INFO_NULL,
-            false,
+            true,
             &this->comm_
         );
     }

@@ -39,17 +39,12 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     // be shallow at this point)
 
     const labelTensor T(this->T());
-    const faceLabel extension(this->extension());
 
     forAll(this->fvMsh_, l)
     {
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
-            const labelVector NSend =
-                this->N(l,d)
-              + extension.lower()
-              + extension.upper();
-
+            const labelVector NSend = this->N(l,d);
             const labelVector NRecv = cmptMag(T.T() & NSend);
 
             sendBuffers_.append(new block<Type>(NSend));
@@ -98,12 +93,11 @@ void parallelBoundaryCondition<Type,MeshType>::prepare
     const meshLevel<Type,MeshType>& field = this->mshField()[l];
 
     const labelVector bo(this->offset());
-    const faceLabel extension(this->extension());
 
     forAll(field, d)
     {
-        const labelVector S(this->S(l,d) - extension.lower());
-        const labelVector E(this->E(l,d) + extension.upper());
+        const labelVector S(this->S(l,d));
+        const labelVector E(this->E(l,d));
 
         block<Type>& sendBuffer =
             sendBuffers_[l*field.size()+d];
@@ -166,12 +160,11 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate(const label l)
 
     const labelTensor T(this->T());
     const labelVector bo(this->offset());
-    const faceLabel extension(this->extension());
 
     forAll(field, d)
     {
-        const labelVector S(this->S(l,d) - extension.lower());
-        const labelVector E(this->E(l,d) + extension.upper());
+        const labelVector S(this->S(l,d));
+        const labelVector E(this->E(l,d));
 
         block<Type>& recvBuffer = recvBuffers_[l*field.size()+d];
 

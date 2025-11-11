@@ -180,12 +180,6 @@ public:
         return b_.offsetDegree();
     }
 
-    // Boundary extension
-    inline const faceLabel& extension() const
-    {
-        return b_.extension();
-    }
-
     // Return the start point of the internal cell boundary
     labelVector S(const label l, const label d) const;
 

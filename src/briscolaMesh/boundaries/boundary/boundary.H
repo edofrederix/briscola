@@ -37,12 +37,6 @@ protected:
     // classes.
     bool master_;
 
-    // Extension of the boundary into other boundaries
-    faceLabel extension_;
-
-    // Function to make the boundary an extended one
-    void extend();
-
 public:
 
     // Runtime type information
@@ -134,13 +128,6 @@ public:
     // Master bool
     inline bool master() const { return master_; }
     inline bool slave() const { return !master_; }
-
-    // Access to the extension face label
-    inline faceLabel& extension() { return extension_; }
-    inline const faceLabel& extension() const { return extension_; }
-
-    // Check if the boundary is extended
-    inline bool extended() const { return extension_ != faceLabel::zero; }
 
     // Neighbor processor number
     virtual label neighborProcNum() const { return -1; }
