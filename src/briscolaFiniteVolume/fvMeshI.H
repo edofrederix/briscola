@@ -34,10 +34,6 @@ tmp<Type> fvMesh::NewObject(const word name, const bool cached) const
                 FatalErrorInFunction
                     << "Object " << name << " is in cache but is already in use"
                     << abort(FatalError);
-
-            #ifndef NO_BLOCK_ZERO_INIT
-            *objPtr = Zero;
-            #endif
         }
         else
         {
@@ -60,10 +56,6 @@ tmp<Type> fvMesh::NewObject(const word name, const bool cached) const
 
                     objPtr = const_cast<Type*>(iter());
                     objPtr->rename(name);
-
-                    #ifndef NO_BLOCK_ZERO_INIT
-                    *objPtr = Zero;
-                    #endif
                 }
             }
 

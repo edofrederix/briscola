@@ -11,7 +11,7 @@ inline void block<Type>::allocate()
     {
         v_ = new Type[size_];
 
-        #ifndef NO_BLOCK_ZERO_INIT
+        #ifdef ZERO_INIT
         *this = Zero;
         #endif
     }

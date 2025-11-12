@@ -53,13 +53,11 @@ limitedGaussDivergenceScheme<Type,MeshType>::imDiv
 
     restrict(psi);
 
+    A = Zero;
+
     forAllCells(A, l, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
-
-        #ifdef NO_BLOCK_ZERO_INIT
-        A(l,d,ijk)[0] = Zero;
-        #endif
 
         for (label f = 0; f < 6; f++)
         {
@@ -82,9 +80,7 @@ limitedGaussDivergenceScheme<Type,MeshType>::imDiv
         }
     }
 
-    #ifdef NO_BLOCK_ZERO_INIT
     sys.b() = Zero;
-    #endif
 
     collapse(phi);
     collapse(field);
@@ -120,9 +116,7 @@ limitedGaussDivergenceScheme<Type,MeshType>::exDiv
 
     const faceField<scalar,MeshType> psi(limiter_->psi(phi,field));
 
-    #ifdef NO_BLOCK_ZERO_INIT
     Div = Zero;
-    #endif
 
     forAllFaces(phi, fd, d, i, j, k)
     {

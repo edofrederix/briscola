@@ -70,9 +70,7 @@ tmp<colocatedScalarField> ibmCorr
         const colocatedScalarField& icv =
             fvMsh.metrics<colocated>().inverseCellVolumes();
 
-        #ifdef NO_BLOCK_ZERO_INIT
         coloDivU = Zero;
-        #endif
 
         forAllFaces(fa, fd, i, j, k)
         {

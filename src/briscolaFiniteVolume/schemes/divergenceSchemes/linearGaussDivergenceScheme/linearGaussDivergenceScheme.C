@@ -47,9 +47,7 @@ linearGaussDivergenceScheme<Type,MeshType>::imDiv
     const faceField<scalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     A = Zero;
-    #endif
 
     forAllFaces(phi, fd, l, d, i, j, k)
     {
@@ -66,9 +64,7 @@ linearGaussDivergenceScheme<Type,MeshType>::imDiv
         A(l,d,nei)[0] -= value1;
     }
 
-    #ifdef NO_BLOCK_ZERO_INIT
     sys.b() = Zero;
-    #endif
 
     collapse(phi);
 
@@ -101,9 +97,7 @@ linearGaussDivergenceScheme<Type,MeshType>::exDiv
     const meshField<scalar,MeshType>& icv =
         phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     Div = Zero;
-    #endif
 
     forAllFaces(phi, fd, d, i, j, k)
     {

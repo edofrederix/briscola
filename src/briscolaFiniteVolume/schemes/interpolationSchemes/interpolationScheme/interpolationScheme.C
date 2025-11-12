@@ -175,9 +175,7 @@ tmp<meshField<Type,colocated>> coloInterp
 
     meshField<Type,colocated>& interp = tInterp.ref();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     interp = Zero;
-    #endif
 
     forAllCells(field, d, i, j, k)
         interp(i,j,k) +=

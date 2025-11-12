@@ -36,12 +36,13 @@ volumeWeightedViscosityMixture<BaseModel>::~volumeWeightedViscosityMixture()
 template<class BaseModel>
 void volumeWeightedViscosityMixture<BaseModel>::correctMixture()
 {
-    const faceField<scalar,typename BaseModel::meshType> alpha
-    (
-        this->faceAlpha()
-    );
+    const auto tAlpha = this->faceAlpha();
+    const auto& alpha = tAlpha();
 
-    this->mu_ = alpha*this->mu2_ + (1.0-alpha)*this->mu1_;
+    forAllFaces(this->mu_, fd, d, i, j, k)
+        this->mu_[fd](d,i,j,k) =
+            alpha[fd](d,i,j,k)*this->mu2_
+          + (1.0 - alpha[fd](d,i,j,k))*this->mu1_;
 
     BaseModel::correctMixture();
 }

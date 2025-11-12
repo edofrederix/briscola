@@ -20,9 +20,6 @@ class TaylorBubble
 :
     public briscolaFunctionObject
 {
-    // IBM forcing mask
-    autoPtr<colocatedScalarField> forcingMask_;
-
 public:
 
     // Runtime type information

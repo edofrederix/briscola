@@ -49,9 +49,7 @@ linearGaussGradientScheme<Type,MeshType>::grad
     const meshField<scalar,MeshType>& icv =
         field.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     Grad = Zero;
-    #endif
 
     forAllFaces(fan, fd, d, i, j, k)
     {

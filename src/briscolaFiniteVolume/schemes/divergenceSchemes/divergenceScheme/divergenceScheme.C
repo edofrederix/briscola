@@ -82,9 +82,7 @@ tmp<meshField<Type,MeshType>> div
     const meshField<scalar,MeshType>& icv =
         phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     Div = Zero;
-    #endif
 
     forAllFaces(phi, fd, d, i, j, k)
     {
@@ -135,9 +133,7 @@ tmp<meshField<Type,colocated>> coloDiv
     const faceField<scalar,colocated>& fa =
         field.fvMsh().template metrics<colocated>().faceAreas();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     Div = Zero;
-    #endif
 
     forAllFaces(fa, fd, i, j, k)
     {

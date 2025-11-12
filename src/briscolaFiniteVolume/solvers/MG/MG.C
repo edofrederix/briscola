@@ -70,15 +70,9 @@ void MG<SType,Type,MeshType>::cycle
             // repetition
 
             if (rep > 0 || l > 0)
-            {
                 forAll(xl, d)
-                {
                     if (!converged[d])
-                    {
                         sys.residual(rl[d]);
-                    }
-                }
-            }
 
             // Restrict the current level residual to coarse level
 
@@ -232,12 +226,8 @@ void MG<SType,Type,MeshType>::solve
         // Recompute the residual
 
         forAll(x[0], d)
-        {
             if (!converged[d])
-            {
                 sys.residual(r[0][d]);
-            }
-        }
 
         currentResiduals =
             cmptDivide

@@ -16,8 +16,7 @@ boundaryConditions
 
     outlet
     {
-        type        Neumann;
-        gradient    (0 0 0);
+        type        outflow;
     }
 
     wall

@@ -61,6 +61,7 @@ void testDataExchange(const fvMesh& fvMsh)
 
     meshField<Type,MeshType> f("f", fvMsh);
     f.makeDeep();
+    f = Zero;
 
     const faceScalar bb(fvMsh.msh().boundingBox());
 

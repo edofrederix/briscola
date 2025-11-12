@@ -47,9 +47,7 @@ linearGaussLaplacianScheme<SType,Type,MeshType>::exLaplacian
     const meshField<scalar,MeshType>& icv =
         field.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     Lap = Zero;
-    #endif
 
     forAllFaces(fa, fd, d, i, j, k)
     {

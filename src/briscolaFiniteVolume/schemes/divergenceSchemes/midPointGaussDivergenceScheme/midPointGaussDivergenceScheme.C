@@ -41,9 +41,7 @@ midPointGaussDivergenceScheme<Type,MeshType>::imDiv
 
     meshField<stencil,MeshType>& A = sys.A();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     A = Zero;
-    #endif
 
     forAllFaces(phi, fd, l, d, i, j, k)
     {
@@ -59,9 +57,7 @@ midPointGaussDivergenceScheme<Type,MeshType>::imDiv
         A(l,d,nei)[0] -= value;
     }
 
-    #ifdef NO_BLOCK_ZERO_INIT
     sys.b() = Zero;
-    #endif
 
     collapse(phi);
 
@@ -88,9 +84,7 @@ midPointGaussDivergenceScheme<Type,MeshType>::exDiv
     const meshField<scalar,MeshType>& icv =
         phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     Div = Zero;
-    #endif
 
     forAllFaces(phi, fd, d, i, j, k)
     {

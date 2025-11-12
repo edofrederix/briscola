@@ -29,9 +29,7 @@ tmp<faceField<scalar,MeshType>> upwindLimiterScheme<Type,MeshType>::psi
     tmp<faceField<scalar,MeshType>> tPsi =
         faceField<scalar,MeshType>::New("psi", field.fvMsh());
 
-    #ifdef NO_BLOCK_ZERO_INIT
     tPsi.ref() = Zero;
-    #endif
 
     return tPsi;
 }

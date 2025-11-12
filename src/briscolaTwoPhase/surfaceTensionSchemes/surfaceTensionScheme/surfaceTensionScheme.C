@@ -55,7 +55,10 @@ surfaceTensionScheme::surfaceTensionScheme
         ).ptr()
       : nullptr
     )
-{}
+{
+    static_cast<colocatedScalarFaceField&>(*this) = Zero;
+    sigma_ = Zero;
+}
 
 surfaceTensionScheme::surfaceTensionScheme(const surfaceTensionScheme& s)
 :

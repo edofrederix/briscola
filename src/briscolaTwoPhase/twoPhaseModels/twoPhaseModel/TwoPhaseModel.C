@@ -39,7 +39,10 @@ TwoPhaseModel<MeshType>::TwoPhaseModel
         true,
         false
     )
-{}
+{
+    rho_ = Zero;
+    mu_ = Zero;
+}
 
 template<class MeshType>
 TwoPhaseModel<MeshType>::TwoPhaseModel(const TwoPhaseModel& tpm)
@@ -137,9 +140,7 @@ tmp<colocatedVectorField> TwoPhaseModel<colocated>::buoyancy() const
     colocatedVectorDirection& buoyancy = tBuoyancy.ref()[0][0];
     const colocatedScalarDirection& rho = this->rho()[0][0];
 
-    #ifdef NO_BLOCK_ZERO_INIT
     buoyancy = Zero;
-    #endif
 
     if (Foam::mag(this->g()) > 0.0)
         buoyancy = (rho - this->rhoMean())*this->g();
@@ -156,9 +157,7 @@ tmp<staggeredScalarField> TwoPhaseModel<staggered>::buoyancy() const
     staggeredScalarLevel& buoyancy = tBuoyancy.ref()[0];
     const staggeredScalarLevel& rho = this->rho()[0];
 
-    #ifdef NO_BLOCK_ZERO_INIT
     buoyancy = Zero;
-    #endif
 
     if (Foam::mag(this->g()) > 0.0)
     {
@@ -188,9 +187,7 @@ tmp<colocatedScalarFaceField> TwoPhaseModel<MeshType>::flux()
 
     colocatedScalarFaceField& flux = tFlux.ref();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     flux = Zero;
-    #endif
 
     if (this->tension())
         flux +=

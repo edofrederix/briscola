@@ -50,6 +50,9 @@ staggeredScalarFaceField phi
     true
 );
 
+phi = Zero;
+// phi.setRestrictionScheme("flux");
+
 // Sources
 
 staggeredScalarField exSource
@@ -117,6 +120,7 @@ staggeredScalarField v
 );
 
 v.setRestrictionScheme("harmonicVolumeWeighted");
+v = Zero;
 
 colocatedScalarFaceField vf
 (
@@ -128,3 +132,4 @@ colocatedScalarFaceField vf
 );
 
 vf.setRestrictionScheme("areaWeighted");
+vf = Zero;

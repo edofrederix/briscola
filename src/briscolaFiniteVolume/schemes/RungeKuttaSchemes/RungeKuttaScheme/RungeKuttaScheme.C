@@ -135,9 +135,7 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumA
 
     meshField<Type,MeshType>& F = tF.ref();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     F = Zero;
-    #endif
 
     label j = 0;
 
@@ -169,9 +167,7 @@ tmp<meshField<Type,MeshType>> RungeKuttaScheme::stageSumB
 
     meshField<Type,MeshType>& F = tF.ref();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     F = Zero;
-    #endif
 
     label j = 0;
 

@@ -182,6 +182,8 @@ void immersedBoundary<MeshType>::setMirrorPoints()
 
     scalar tol = 1e-10;
 
+    mirrorPoints_ = Zero;
+
     forAllCells(mirrorPoints_, l, d, i, j, k)
     {
         const labelVector ijk(i,j,k);

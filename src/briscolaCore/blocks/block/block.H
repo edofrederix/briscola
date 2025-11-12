@@ -14,17 +14,10 @@
 #include "utils.H"
 #include "ListLoopM.H"
 
-// Uncomment the definition of the NO_BLOCK_ZERO_INIT variable to avoid
-// initialization of block memory to zero. Doing so could potentially speed up
-// things, but also carries the risk of accidentally using non-initialized
-// memory, particularly in ghost cells, for example when doing global field
-// operations. Also, when the FOAM_SIGFPE environment variable is set, not
-// zeroing data will give sigFpe errors, thus making debugging with FOAM_SIGFPE
-// useless. Some tests showed that zeroing data has a mean overhead of about 2%,
-// which is a small penalty. It is thus recommended to define the
-// NO_BLOCK_ZERO_INIT macro variable only for expensive production runs.
+// Define the ZERO_INIT macro variable to enable automatic data zeroing. This
+// can be useful when debugging with the FOAM_SIGFPE environment variable set.
 
-// #define NO_BLOCK_ZERO_INIT
+// #define ZERO_INIT
 
 namespace Foam
 {

@@ -142,7 +142,9 @@ splitAdvection::splitAdvection
         true,
         false
     )
-{}
+{
+    flux_ = Zero;
+}
 
 splitAdvection::splitAdvection(const splitAdvection& vf)
 :
@@ -156,7 +158,9 @@ splitAdvection::splitAdvection(const splitAdvection& vf)
         true,
         false
     )
-{}
+{
+    flux_ = Zero;
+}
 
 splitAdvection::~splitAdvection()
 {}

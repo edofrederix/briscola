@@ -25,6 +25,9 @@ void restrict(const meshField<Type,MeshType>& field)
 {
     const_cast<meshField<Type,MeshType>&>(field).makeDeep();
 
+    for (int l = 1; l < field.size(); l++)
+        const_cast<meshField<Type,MeshType>&>(field)[l] = Zero;
+
     return restrictionScheme<Type,MeshType>::New
     (
         field.fvMsh(),
@@ -37,6 +40,10 @@ void restrict(const faceField<Type,MeshType>& field)
 {
     forAll(field, fd)
         const_cast<meshField<Type,MeshType>&>(field[fd]).makeDeep();
+
+    forAll(field, fd)
+        for (int l = 1; l < field[fd].size(); l++)
+            const_cast<meshField<Type,MeshType>&>(field[fd])[l] = Zero;
 
     return faceRestrictionScheme<Type,MeshType>::New
     (

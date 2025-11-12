@@ -27,8 +27,7 @@ boundaryConditions
 
     outlet_mapped
     {
-        type        Neumann;
-        gradient    (0 0 0);
+        type        outflow;
     }
 
     outlet

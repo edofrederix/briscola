@@ -40,9 +40,7 @@ reconstruct
     const colocatedVectorFaceField& fn =
         field.fvMsh().template metrics<colocated>().faceNormals();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     Recon = Zero;
-    #endif
 
     forAllFaces(fn, fd, i, j, k)
     {
@@ -122,9 +120,7 @@ reconstruct
         const faceField<vector,MeshType>& fan =
             flux.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
-        #ifdef NO_BLOCK_ZERO_INIT
         weights = Zero;
-        #endif
 
         forAllFaces(fn, fd, d, i, j, k)
         {
@@ -148,9 +144,7 @@ reconstruct
     const WeightFieldType& weights =
         fvMsh.db().lookupObject<WeightFieldType>("reconstructionWeights");
 
-    #ifdef NO_BLOCK_ZERO_INIT
     recon = Zero;
-    #endif
 
     forAllFaces(fn, fd, d, i, j, k)
     {
@@ -205,6 +199,9 @@ inline tmp<meshField<Type,staggered>> stagReconstruct
 
     const faceField<scalar,colocated>& fa =
         flux.fvMsh().template metrics<colocated>().faceAreas();
+
+    // Important in order not to set invalid staggered ghost cells
+    recon = Zero;
 
     forAllCells(recon, d, i, j, k)
         recon(d,i,j,k) = -flux[d](i,j,k)/fa[d](i,j,k);

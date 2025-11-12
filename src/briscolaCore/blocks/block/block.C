@@ -87,12 +87,10 @@ block<Type>::block(const labelVector& d, const zero)
 
     if (v_)
     {
-        #ifdef NO_BLOCK_ZERO_INIT
         List_ACCESS(Type, (*this), vp);
         List_FOR_ALL((*this), i)
             List_ELEM((*this), vp, i) = Zero;
         List_END_FOR_ALL
-        #endif
     }
 }
 
@@ -272,12 +270,10 @@ block<Type>::block(const block<Type>& M, const zero&)
     {
         allocate();
 
-        #ifdef NO_BLOCK_ZERO_INIT
         List_ACCESS(Type, (*this), vp);
         List_FOR_ALL((*this), i)
             List_ELEM((*this), vp, i) = Zero;
         List_END_FOR_ALL
-        #endif
     }
 }
 

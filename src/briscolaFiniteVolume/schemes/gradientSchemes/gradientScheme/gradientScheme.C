@@ -89,9 +89,7 @@ grad
     const faceField<vector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     Grad = Zero;
-    #endif
 
     forAllFaces(fan, fd, d, i, j, k)
     {

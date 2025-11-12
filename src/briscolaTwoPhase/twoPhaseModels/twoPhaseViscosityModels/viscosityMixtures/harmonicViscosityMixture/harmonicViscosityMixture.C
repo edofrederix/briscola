@@ -34,12 +34,16 @@ harmonicViscosityMixture<BaseModel>::~harmonicViscosityMixture()
 template<class BaseModel>
 void harmonicViscosityMixture<BaseModel>::correctMixture()
 {
-    const faceField<scalar,typename BaseModel::meshType> alpha
-    (
-        this->faceAlpha()
-    );
+    const auto tAlpha = this->faceAlpha();
+    const auto& alpha = tAlpha();
 
-    this->mu_ = 1.0/(alpha/this->mu2_ + (1.0 - alpha)/this->mu1_);
+    forAllFaces(this->mu_, fd, d, i, j, k)
+        this->mu_[fd](d,i,j,k) =
+            1.0
+          / (
+                alpha[fd](d,i,j,k)/this->mu2_
+              + (1.0 - alpha[fd](d,i,j,k))/this->mu1_
+            );
 
     BaseModel::correctMixture();
 }

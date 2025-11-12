@@ -70,11 +70,15 @@ void averageFaceRestrictionScheme<Type,staggered>::restrict
 
     FastPtrList<meshDirection<Type,colocated>> coloFine(3);
     forAll(coloFine, fd)
+    {
         coloFine.set
         (
             fd,
             meshDirection<Type,colocated>::New(field.fvMsh(),l,0)
         );
+
+        coloFine[fd] = Zero;
+    }
 
     forAll(coloFine, fd)
     for (int i = coloFine[fd].I()[0]; i < coloFine[fd].I()[1] + (fd == 0); i++)

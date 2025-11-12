@@ -50,6 +50,9 @@ staggeredScalarFaceField phi
     true
 );
 
+phi = Zero;
+// phi.setRestrictionScheme("flux");
+
 // Viscosity
 
 const scalar nu = readScalar(solverDict.lookup("nu"));

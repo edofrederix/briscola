@@ -768,9 +768,7 @@ void linearSystem<SType,Type,MeshType>::setForcingMask()
 
         meshField<label,MeshType>& f = forcingMask_();
 
-        #ifdef NO_BLOCK_ZERO_INIT
         f = Zero;
-        #endif
 
         if (xPtr_->immersedBoundaryConditions().size())
         {

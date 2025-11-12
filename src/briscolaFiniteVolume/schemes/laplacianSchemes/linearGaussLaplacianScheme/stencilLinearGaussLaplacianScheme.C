@@ -51,9 +51,7 @@ stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
     const faceField<scalar,MeshType>& delta =
         field.fvMsh().template metrics<MeshType>().faceDeltas();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     A = Zero;
-    #endif
 
     forAllFaces(delta, fd, l, d, i, j, k)
     {
@@ -72,9 +70,7 @@ stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
         A(l,d,nei)[0] -= value;
     }
 
-    #ifdef NO_BLOCK_ZERO_INIT
     sys.b() = Zero;
-    #endif
 
     if (lambdaPtr)
         collapse(*lambdaPtr);
