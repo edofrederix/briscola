@@ -137,6 +137,7 @@ int main(int argc, char *argv[])
 
     FFTPoissonSolver<stencil> solver(fvMsh);
 
+    p.correctBoundaryConditions();
     solver.solve(p,f);
 
     if(check(p, f, fvMsh))
