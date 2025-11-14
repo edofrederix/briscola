@@ -70,6 +70,9 @@ public:
 
     // Non-eliminated boundary conditione
     virtual bool eliminated() const { return false; }
+
+    // Evaluate the boundary condition for given level and direction
+    virtual void evaluate(const label, const label);
 };
 
 }

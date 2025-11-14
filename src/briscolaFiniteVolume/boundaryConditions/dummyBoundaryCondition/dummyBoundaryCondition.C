@@ -43,6 +43,32 @@ dummyBoundaryCondition<Type,MeshType>::dummyBoundaryCondition
     boundaryCondition<Type,MeshType>(field, bc)
 {}
 
+template<class Type, class MeshType>
+void dummyBoundaryCondition<Type,MeshType>::evaluate
+(
+    const label l,
+    const label d
+)
+{
+    const labelVector bo(this->offset());
+
+    meshDirection<Type,MeshType>& field = this->mshField_[l][d];
+
+    const labelVector S(this->S(l,d));
+    const labelVector E(this->E(l,d));
+
+    labelVector ijk;
+
+    // Set the ghost equal to the closest inner cell value
+
+    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+    {
+        field(ijk+bo) = field(ijk);
+    }
+}
+
 }
 
 }
