@@ -360,8 +360,32 @@ void meshField<Type,MeshType>::correctBoundaryConditions()
 {
     addBoundaryConditions();
 
+    #ifdef BOUNDARYEXCHANGE
+
+    // Manually call the level boundary condition correction functions, except
+    // for the parallel/periodic one for which we can call a collective update.
+    // This is much more efficient than sending separate messages on each level.
+
+    forAll(*this, l)
+    {
+        if (l == 0)
+            listType::operator[](l).correctImmersedBoundaryConditions();
+
+        listType::operator[](l).correctUnsetBoundaryConditions();
+        listType::operator[](l).correctPatchBoundaryConditions();
+    }
+
+    this->correctCommsBoundaryConditions();
+
+    forAll(*this, l)
+        listType::operator[](l).correctEmptyBoundaryConditions();
+
+    #else
+
     forAll(*this, l)
         listType::operator[](l).correctBoundaryConditions();
+
+    #endif
 }
 
 template<class Type, class MeshType>
@@ -387,8 +411,16 @@ void meshField<Type,MeshType>::correctCommsBoundaryConditions()
 {
     addBoundaryConditions();
 
+    #ifdef BOUNDARYEXCHANGE
+
+    bExchangePtr_->correct(-1);
+
+    #else
+
     forAll(*this, l)
         listType::operator[](l).correctCommsBoundaryConditions();
+
+    #endif
 }
 
 template<class Type, class MeshType>

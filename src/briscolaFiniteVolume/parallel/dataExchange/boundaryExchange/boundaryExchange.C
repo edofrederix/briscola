@@ -12,17 +12,20 @@ namespace fv
 {
 
 template<class Type, class MeshType>
-void boundaryExchange<Type,MeshType>::initBuffers(const label l)
+void boundaryExchange<Type,MeshType>::initBuffers()
 {
     int size = 0;
 
-    labelList neighbors;
+    // Allocate for all levels and directions. Buffers may only be used
+    // partially, depending on which levels are corrected. The overhead of
+    // having multiple levels is relatively small.
 
     forAll(this->boundaryPtrs_, i)
     {
         const parallelBoundaryCondition<Type,MeshType>& bc =
             *this->boundaryPtrs_[i];
 
+        for (int l = 0; l < fvMsh_.size(); l++)
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
             const labelVector S(bc.S(l,d));
@@ -30,12 +33,10 @@ void boundaryExchange<Type,MeshType>::initBuffers(const label l)
 
             size += cmptProduct(E-S);
         }
-
-        neighbors.append(bc.mshBoundary().neighborProcNum());
     }
 
-    sendBuffers_.set(l, new List<Type>(size));
-    recvBuffers_.set(l, new List<Type>(size));
+    sendBuffers_.resize(size);
+    recvBuffers_.resize(size);
 }
 
 template<class Type, class MeshType>
@@ -45,13 +46,8 @@ void boundaryExchange<Type,MeshType>::correct
     const label baseType
 )
 {
-    if (!sendBuffers_.set(l))
-        this->initBuffers(l);
-
-    List<Type>& sendBuffer = sendBuffers_[l];
-    List<Type>& recvBuffer = recvBuffers_[l];
-
-    meshLevel<Type,MeshType>& field = field_[l];
+    if (!sendBuffers_.size())
+        this->initBuffers();
 
     labelList counts(this->boundaryPtrs_.size(), 0);
     labelList displacements(this->boundaryPtrs_.size());
@@ -68,20 +64,29 @@ void boundaryExchange<Type,MeshType>::correct
 
         if (baseType == -1 || bc.baseType() == baseType)
         {
-            for (int d = 0; d < MeshType::numberOfDirections; d++)
+            forAll(field_, L)
             {
-                const labelVector S(bc.S(l,d));
-                const labelVector E(bc.E(l,d));
+                // Only for the selected level, unless all levels are selected
+                // (negative l value).
 
-                labelVector ijk;
-                for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-                for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-                for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                if (L == l || l < 0)
                 {
-                    sendBuffer[c++] = field(d,ijk);
-                }
+                    for (int d = 0; d < MeshType::numberOfDirections; d++)
+                    {
+                        const labelVector S(bc.S(L,d));
+                        const labelVector E(bc.E(L,d));
 
-                counts[i] += cmptProduct(E-S);
+                        labelVector ijk;
+                        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                        {
+                            sendBuffers_[c++] = field_[L](d,ijk);
+                        }
+
+                        counts[i] += cmptProduct(E-S);
+                    }
+                }
             }
         }
     }
@@ -92,11 +97,11 @@ void boundaryExchange<Type,MeshType>::correct
     {
         MPI_Neighbor_alltoallv
         (
-            sendBuffer.begin(),
+            sendBuffers_.begin(),
             counts.begin(),
             displacements.begin(),
             mpiDataTypePtr_->type,
-            recvBuffer.begin(),
+            recvBuffers_.begin(),
             counts.begin(),
             displacements.begin(),
             mpiDataTypePtr_->type,
@@ -126,9 +131,13 @@ void boundaryExchange<Type,MeshType>::correct
                 // Find opposite boundary and copy
 
                 if (bo1 == -bo2)
+                {
                     for (int k = 0; k < counts[i]; k++)
-                        recvBuffer[displacements[j]+k] =
-                            sendBuffer[displacements[i]+k];
+                        recvBuffers_[displacements[j]+k] =
+                            sendBuffers_[displacements[i]+k];
+
+                    break;
+                }
             }
         }
     }
@@ -146,45 +155,54 @@ void boundaryExchange<Type,MeshType>::correct
             const labelVector bo(bc.offset());
             const labelTensor T(bc.T());
 
-            if (T == eye)
+            forAll(field_, L)
             {
-                for (int d = 0; d < MeshType::numberOfDirections; d++)
-                {
-                    const labelVector S(bc.S(l,d));
-                    const labelVector E(bc.E(l,d));
+                // Only for the selected level, unless all levels are selected
+                // (negative l value).
 
-                    labelVector ijk;
-                    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-                    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-                    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                if (L == l || l < 0)
+                {
+                    if (T == eye)
                     {
-                        field(d,ijk+bo) = recvBuffer[c++];
+                        for (int d = 0; d < MeshType::numberOfDirections; d++)
+                        {
+                            const labelVector S(bc.S(L,d));
+                            const labelVector E(bc.E(L,d));
+
+                            labelVector ijk;
+                            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                            {
+                                field_[L](d,ijk+bo) = recvBuffers_[c++];
+                            }
+                        }
                     }
-                }
-            }
-            else
-            {
-                // Store in intermediate block to transform the data
-
-                for (int d = 0; d < MeshType::numberOfDirections; d++)
-                {
-                    const labelVector S(bc.S(l,d));
-                    const labelVector E(bc.E(l,d));
-                    const labelVector N(cmptMag(T.T() & (E-S)));
-
-                    block<Type> B(N);
-
-                    forAllBlockLinear(B, j)
-                        B(j) = recvBuffer[c++];
-
-                    B.transform(T);
-
-                    labelVector ijk;
-                    for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-                    for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-                    for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                    else
                     {
-                        field(d,ijk+bo) = B(ijk-S);
+                        // Store in intermediate block to transform the data
+
+                        for (int d = 0; d < MeshType::numberOfDirections; d++)
+                        {
+                            const labelVector S(bc.S(L,d));
+                            const labelVector E(bc.E(L,d));
+                            const labelVector N(cmptMag(T.T() & (E-S)));
+
+                            block<Type> B(N);
+
+                            forAllBlockLinear(B, j)
+                                B(j) = recvBuffers_[c++];
+
+                            B.transform(T);
+
+                            labelVector ijk;
+                            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                            {
+                                field_[L](d,ijk+bo) = B(ijk-S);
+                            }
+                        }
                     }
                 }
             }
@@ -200,8 +218,8 @@ boundaryExchange<Type,MeshType>::boundaryExchange
 :
     field_(field),
     fvMsh_(field.fvMsh_),
-    sendBuffers_(fvMsh_.size()),
-    recvBuffers_(fvMsh_.size()),
+    sendBuffers_(0),
+    recvBuffers_(0),
     mpiDataTypePtr_(new pMPI<Type>())
 {
     typedef parallelBoundaryCondition<Type,MeshType> pbcType;
