@@ -12,28 +12,17 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
+template<class ViscosityModel>
 class blendedViscosityMixture
 :
-    public BaseModel
+    public ViscosityModel
 {
 protected:
 
     // Blending factor (defaults to 8)
     const scalar C_;
 
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const blendedViscosityMixture&);
-
 public:
-
-    // Return the instantiated type name
-    static word typeName()
-    {
-        return "blendedViscosityMixture<" + word(BaseModel::typeName) + '>';
-    }
 
     // Construct from IOdictionary
     blendedViscosityMixture(const fvMesh&, const IOdictionary&);
@@ -41,14 +30,11 @@ public:
     // Copy constructor
     blendedViscosityMixture(const blendedViscosityMixture&);
 
-    // Destructor
-    virtual ~blendedViscosityMixture();
-
     // Blending factor
     virtual scalar C() const { return C_; }
 
-    // Correct the two-phase mixture
-    virtual void correctMixture();
+    // Correct the two-phase model
+    virtual void correct();
 };
 
 }

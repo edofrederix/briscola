@@ -12,6 +12,8 @@ namespace briscola
 namespace fv
 {
 
+// Mesh-dependent part of the two-phase model
+
 template<class MeshType>
 class TwoPhaseModel
 :
@@ -19,16 +21,17 @@ class TwoPhaseModel
 {
 protected:
 
-    // Mixture mass density
-    meshField<scalar,MeshType> rho_;
+    // Face volume fraction
+    faceField<scalar,MeshType> faceAlpha_;
 
     // Mixture dynamic viscosity
     faceField<scalar,MeshType> mu_;
 
-private:
+    // Return the mesh-dependent colocated face flux
+    virtual tmp<colocatedScalarFaceField> coloFaceFlux() const;
 
-    // Disallow default bitwise assignment
-    void operator=(const TwoPhaseModel&);
+    // Correct the face volume fraction
+    virtual void correctFaceAlpha();
 
 public:
 
@@ -44,9 +47,6 @@ public:
     // Copy constructor
     TwoPhaseModel(const TwoPhaseModel&);
 
-    // Destructor
-    virtual ~TwoPhaseModel();
-
     // Selector returning templated type
     static autoPtr<TwoPhaseModel<MeshType>> New
     (
@@ -54,11 +54,11 @@ public:
         const IOdictionary&
     );
 
-    // Return access to the mixture mass density
-    meshField<scalar,MeshType>& rho() { return rho_; }
+    // Return access to the face volume fraction
+    faceField<scalar,MeshType>& faceAlpha() { return faceAlpha_; }
 
-    // Return const access to the mixture mass density
-    const meshField<scalar,MeshType>& rho() const { return rho_; }
+    // Return const access to the face volume fraction
+    const faceField<scalar,MeshType>& faceAlpha() const { return faceAlpha_; }
 
     // Return access to the mixture dynamic viscosity
     faceField<scalar,MeshType>& mu() { return mu_; }
@@ -66,26 +66,14 @@ public:
     // Return const access to the mixture dynamic viscosity
     const faceField<scalar,MeshType>& mu() const { return mu_; }
 
-    // Return an interpolated value of the volume fraction
-    virtual tmp<faceField<scalar,MeshType>> faceAlpha() const;
-
-    // Return the volume fraction for the templated mesh type
-    virtual tmp<meshField<scalar,MeshType>> meshAlpha() const;
-
-    // Return the colocated face flux
-    virtual tmp<colocatedScalarFaceField> coloFaceFlux() const;
-
     // Return the colocated mass density
-    virtual tmp<colocatedScalarField> coloRho() const = 0;
+    virtual tmp<colocatedScalarField> coloRho() const;
 
-    // Compute the mean mixture mass density
-    virtual scalar rhoMean() const;
+    // Return the staggered mass density (not defined for colocated mesh type)
+    virtual tmp<staggeredScalarField> stagRho() const;
 
     // Return the buoyancy term defined as (rho - rhoMean)*g
     virtual tmp<meshField<MeshVectorType,MeshType>> buoyancy() const;
-
-    // Return the interfacial flux
-    tmp<colocatedScalarFaceField> flux();
 };
 
 }

@@ -162,9 +162,6 @@ splitAdvection::splitAdvection(const splitAdvection& vf)
     flux_ = Zero;
 }
 
-splitAdvection::~splitAdvection()
-{}
-
 void splitAdvection::solve(const colocatedScalarFaceField& phi)
 {
     alpha_.setOldTime();

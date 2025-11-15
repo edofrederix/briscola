@@ -10,34 +10,31 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
-NewtonianViscosity<BaseModel>::NewtonianViscosity
+template<class DensityModel>
+NewtonianViscosity<DensityModel>::NewtonianViscosity
 (
     const fvMesh& fvMsh,
     const IOdictionary& dict
 )
 :
-    BaseModel(fvMsh, dict),
+    DensityModel(fvMsh, dict),
     mu1_(readScalar(dict.lookup("mu1"))),
     mu2_(readScalar(dict.lookup("mu2")))
 {}
 
-template<class BaseModel>
-NewtonianViscosity<BaseModel>::NewtonianViscosity(const NewtonianViscosity& tpm)
+template<class DensityModel>
+NewtonianViscosity<DensityModel>::
+NewtonianViscosity(const NewtonianViscosity& tpm)
 :
-    BaseModel(tpm),
+    DensityModel(tpm),
     mu1_(tpm.mu1_),
     mu2_(tpm.mu2_)
 {}
 
-template<class BaseModel>
-NewtonianViscosity<BaseModel>::~NewtonianViscosity()
-{}
-
-template<class BaseModel>
-void NewtonianViscosity<BaseModel>::correctMixture()
+template<class DensityModel>
+void NewtonianViscosity<DensityModel>::correct()
 {
-    BaseModel::correctMixture();
+    DensityModel::correct();
 }
 
 }

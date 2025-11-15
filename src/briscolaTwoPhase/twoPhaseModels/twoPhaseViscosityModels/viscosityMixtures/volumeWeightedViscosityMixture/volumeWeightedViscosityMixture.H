@@ -12,16 +12,11 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
+template<class ViscosityModel>
 class volumeWeightedViscosityMixture
 :
-    public BaseModel
+    public ViscosityModel
 {
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const volumeWeightedViscosityMixture&);
-
 public:
 
     // Construct from IOdictionary
@@ -30,11 +25,8 @@ public:
     // Copy constructor
     volumeWeightedViscosityMixture(const volumeWeightedViscosityMixture&);
 
-    // Destructor
-    virtual ~volumeWeightedViscosityMixture();
-
-    // Correct the two-phase mixture
-    virtual void correctMixture();
+    // Correct the two-phase model
+    virtual void correct();
 };
 
 }

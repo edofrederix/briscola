@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
     #include "createBriscolaColocatedTwoPhase.H"
     #include "createTimeControls.H"
 
-    #include "createRefs.H"
     #include "createFields.H"
     #include "createBriscolaIO.H"
     #include "initContinuityErrors.H"
@@ -41,7 +40,7 @@ int main(int argc, char *argv[])
 
         twoPhase.correct();
 
-        v = 1.0/rho;
+        v = 1.0/twoPhase.coloRho();
         vf = ex::interp(v);
         vf.max(1e-12);
 

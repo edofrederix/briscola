@@ -10,48 +10,45 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
-blendedViscosityMixture<BaseModel>::blendedViscosityMixture
+template<class ViscosityModel>
+blendedViscosityMixture<ViscosityModel>::blendedViscosityMixture
 (
     const fvMesh& fvMsh,
     const IOdictionary& dict
 )
 :
-    BaseModel(fvMsh, dict),
+    ViscosityModel(fvMsh, dict),
     C_(dict.lookupOrDefault<scalar>("C", 8))
 {}
 
-template<class BaseModel>
-blendedViscosityMixture<BaseModel>::
+template<class ViscosityModel>
+blendedViscosityMixture<ViscosityModel>::
 blendedViscosityMixture(const blendedViscosityMixture& tpm)
 :
-    BaseModel(tpm),
+    ViscosityModel(tpm),
     C_(tpm.C_)
 {}
 
-template<class BaseModel>
-blendedViscosityMixture<BaseModel>::~blendedViscosityMixture()
-{}
-
-template<class BaseModel>
-void blendedViscosityMixture<BaseModel>::correctMixture()
+template<class ViscosityModel>
+void blendedViscosityMixture<ViscosityModel>::correct()
 {
-    const auto tAlpha = this->faceAlpha();
-    const auto& alpha = tAlpha();
+    forAllFaces(this->mu_, fd, l, d, i, j, k)
+    {
+        const scalar alpha = this->faceAlpha_[fd](l,d,i,j,k);
 
-    forAllFaces(this->mu_, fd, d, i, j, k)
-        this->mu_[fd](d,i,j,k) =
+        this->mu_[fd](l,d,i,j,k) =
             (this->mu2_ - this->mu1_)/2.0
           * (
                 Foam::tanh
                 (
-                    C_*Foam::atanh((2.0*alpha[fd](d,i,j,k) - 1.0)*(1-1e-12))
+                    C_*Foam::atanh((2.0*alpha - 1.0)*(1-1e-12))
                 )
               - 1.0
             )
           + this->mu2_;
+    }
 
-    BaseModel::correctMixture();
+    ViscosityModel::correct();
 }
 
 }

@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
     #include "createBriscolaStaggeredTwoPhase.H"
     #include "createTimeControls.H"
 
-    #include "createRefs.H"
     #include "createFields.H"
     #include "createBriscolaIO.H"
 
@@ -42,7 +41,7 @@ int main(int argc, char *argv[])
 
         twoPhase.correct();
 
-        v = 1.0/rho;
+        v = 1.0/twoPhase.stagRho();
         vf = ex::coloFaceInterp(v);
         vf.max(1e-12);
 

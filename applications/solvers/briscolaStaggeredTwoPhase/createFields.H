@@ -119,7 +119,6 @@ staggeredScalarField v
     true
 );
 
-v.setRestrictionScheme("harmonicVolumeWeighted");
 v = Zero;
 
 colocatedScalarFaceField vf
@@ -133,3 +132,7 @@ colocatedScalarFaceField vf
 
 vf.setRestrictionScheme("areaWeighted");
 vf = Zero;
+
+// Reference to the viscosity
+
+const staggeredScalarFaceField& mu = twoPhase.mu();

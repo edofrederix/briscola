@@ -34,11 +34,6 @@ protected:
         const label
     );
 
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const splitAdvection&);
-
 public:
 
     // Runtime type information
@@ -61,9 +56,6 @@ public:
     {
         return autoPtr<vof>(new splitAdvection(*this));
     }
-
-    // Destructor
-    ~splitAdvection();
 
     // Solve the Vof advection equation given a flux
     void solve(const colocatedScalarFaceField&);

@@ -12,20 +12,15 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
+template<class ViscosityModel>
 class twoPhaseVof
 :
-    public BaseModel
+    public ViscosityModel
 {
 protected:
 
     // The Vof model
     autoPtr<vof> vfPtr_;
-
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const twoPhaseVof&);
 
 public:
 
@@ -43,9 +38,6 @@ public:
     {
         return autoPtr<twoPhaseModel>(new twoPhaseVof(*this));
     }
-
-    // Destructor
-    virtual ~twoPhaseVof();
 
     // Return access to the Vof model
     inline vof& vf() { return vfPtr_(); }

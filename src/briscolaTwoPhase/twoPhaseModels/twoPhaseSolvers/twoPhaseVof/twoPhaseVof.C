@@ -13,36 +13,38 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
-twoPhaseVof<BaseModel>::twoPhaseVof
+template<class ViscosityModel>
+twoPhaseVof<ViscosityModel>::twoPhaseVof
 (
     const fvMesh& fvMsh,
     const IOdictionary& dict
 )
 :
-    BaseModel(fvMsh, dict),
+    ViscosityModel(fvMsh, dict),
     vfPtr_(vof::New(*this, dict.subDict("vof")))
 {}
 
-template<class BaseModel>
-twoPhaseVof<BaseModel>::twoPhaseVof(const twoPhaseVof& tpm)
+template<class ViscosityModel>
+twoPhaseVof<ViscosityModel>::twoPhaseVof(const twoPhaseVof& tpm)
 :
-    BaseModel(tpm),
+    ViscosityModel(tpm),
     vfPtr_(tpm.vf().clone())
 {
     this->normalSchemePtr_->correct();
-    BaseModel::correctMixture();
+    ViscosityModel::correct();
 }
 
-template<class BaseModel>
-twoPhaseVof<BaseModel>::~twoPhaseVof()
-{}
-
-template<class BaseModel>
-void twoPhaseVof<BaseModel>::correct()
+template<class ViscosityModel>
+void twoPhaseVof<ViscosityModel>::correct()
 {
+    // Correct the volume fraction
     vfPtr_->solve(this->coloFaceFlux()());
-    BaseModel::correctMixture();
+
+    // Correct the mesh-specific face volume fraction
+    ViscosityModel::correctFaceAlpha();
+
+    // Correct the base model
+    ViscosityModel::correct();
 }
 
 }

@@ -32,11 +32,6 @@ protected:
     // Reference to the volume fraction field
     colocatedScalarField& alpha_;
 
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const vof&);
-
 public:
 
     // Void fraction threshold
@@ -84,9 +79,6 @@ public:
         normalScheme&,
         colocatedScalarField&
     );
-
-    // Destructor
-    virtual ~vof();
 
     // Check if cast to derived type is possible
     template<class VofType>

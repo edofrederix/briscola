@@ -51,9 +51,6 @@ vof::vof(const vof& vf)
     alpha_(vf.alpha_)
 {}
 
-vof::~vof()
-{}
-
 autoPtr<vof> vof::New
 (
     twoPhaseModel& tpm,
@@ -90,24 +87,30 @@ autoPtr<vof> vof::New
 
 void vof::correct()
 {
+    // Restrict alpha so that derived properties can be computed on all levels
+
+    restrict(alpha_);
     alpha_.correctBoundaryConditions();
 
     // Apply the alpha correction after the boundary correction and at block
     // level, such that also boundary values are properly set
 
-    scalarBlock& alpha = alpha_.B();
+    forAll(alpha_, l)
+    {
+        scalarBlock& alpha = alpha_[l].B();
 
-    forAllBlockLinear(alpha, i)
-        alpha(i) =
-            Foam::min
-            (
-                Foam::max
+        forAllBlockLinear(alpha, i)
+            alpha(i) =
+                Foam::min
                 (
-                    round(0.5*alpha(i)/threshold)*2.0*threshold,
-                    0.0
-                ),
-                1.0
-            );
+                    Foam::max
+                    (
+                        round(0.5*alpha(i)/threshold)*2.0*threshold,
+                        0.0
+                    ),
+                    1.0
+                );
+    }
 }
 
 }

@@ -24,11 +24,6 @@ protected:
     const scalar rho1_;
     const scalar rho2_;
 
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const incompressibleTwoPhaseModel&);
-
 public:
 
     // Construct from IOdictionary
@@ -37,20 +32,14 @@ public:
     // Copy constructor
     incompressibleTwoPhaseModel(const incompressibleTwoPhaseModel&);
 
-    // Destructor
-    virtual ~incompressibleTwoPhaseModel();
-
     // Mass density of the first phase
     virtual scalar rho1() const { return rho1_; }
 
     // Mass density of the second phase
     virtual scalar rho2() const { return rho2_; }
 
-    // Return the colocated mass density
-    virtual tmp<colocatedScalarField> coloRho() const;
-
-    // Correct the two-phase mixture
-    virtual void correctMixture();
+    // Correct the two-phase model
+    virtual void correct();
 };
 
 }

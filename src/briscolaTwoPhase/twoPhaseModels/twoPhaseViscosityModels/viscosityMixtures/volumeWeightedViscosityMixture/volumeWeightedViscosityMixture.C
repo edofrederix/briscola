@@ -10,41 +10,37 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
-volumeWeightedViscosityMixture<BaseModel>::volumeWeightedViscosityMixture
+template<class ViscosityModel>
+volumeWeightedViscosityMixture<ViscosityModel>::volumeWeightedViscosityMixture
 (
     const fvMesh& fvMsh,
     const IOdictionary& dict
 )
 :
-    BaseModel(fvMsh, dict)
+    ViscosityModel(fvMsh, dict)
 {}
 
-template<class BaseModel>
-volumeWeightedViscosityMixture<BaseModel>::volumeWeightedViscosityMixture
+template<class ViscosityModel>
+volumeWeightedViscosityMixture<ViscosityModel>::volumeWeightedViscosityMixture
 (
     const volumeWeightedViscosityMixture& tpm
 )
 :
-    BaseModel(tpm)
+    ViscosityModel(tpm)
 {}
 
-template<class BaseModel>
-volumeWeightedViscosityMixture<BaseModel>::~volumeWeightedViscosityMixture()
-{}
-
-template<class BaseModel>
-void volumeWeightedViscosityMixture<BaseModel>::correctMixture()
+template<class ViscosityModel>
+void volumeWeightedViscosityMixture<ViscosityModel>::correct()
 {
-    const auto tAlpha = this->faceAlpha();
-    const auto& alpha = tAlpha();
+    forAllFaces(this->mu_, fd, l, d, i, j, k)
+    {
+        const scalar alpha = this->faceAlpha_[fd](l,d,i,j,k);
 
-    forAllFaces(this->mu_, fd, d, i, j, k)
-        this->mu_[fd](d,i,j,k) =
-            alpha[fd](d,i,j,k)*this->mu2_
-          + (1.0 - alpha[fd](d,i,j,k))*this->mu1_;
+        this->mu_[fd](l,d,i,j,k) =
+            alpha*this->mu2_ + (1.0 - alpha)*this->mu1_;
+    }
 
-    BaseModel::correctMixture();
+    ViscosityModel::correct();
 }
 
 }

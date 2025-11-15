@@ -1,5 +1,5 @@
 #include "TwoPhaseModel.H"
-#include "exSchemes.H"
+#include "exSchemesFaceFlux.H"
 
 #include "colocated.H"
 #include "staggered.H"
@@ -12,89 +12,6 @@ namespace briscola
 
 namespace fv
 {
-
-template<class MeshType>
-TwoPhaseModel<MeshType>::TwoPhaseModel
-(
-    const fvMesh& fvMsh,
-    const IOdictionary& dict
-)
-:
-    twoPhaseModel(fvMsh, dict),
-    rho_
-    (
-        "rho",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        false
-    ),
-    mu_
-    (
-        "mu",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        false
-    )
-{
-    rho_ = Zero;
-    mu_ = Zero;
-}
-
-template<class MeshType>
-TwoPhaseModel<MeshType>::TwoPhaseModel(const TwoPhaseModel& tpm)
-:
-    twoPhaseModel(tpm),
-    rho_(tpm.rho_),
-    mu_(tpm.mu_)
-{}
-
-template<class MeshType>
-TwoPhaseModel<MeshType>::~TwoPhaseModel()
-{}
-
-template<class MeshType>
-autoPtr<TwoPhaseModel<MeshType>> TwoPhaseModel<MeshType>::New
-(
-    const fvMesh& fvMsh,
-    const IOdictionary& dict
-)
-{
-    return autoPtr<TwoPhaseModel<MeshType>>
-    (
-        dynamic_cast<TwoPhaseModel<MeshType>*>
-        (
-            twoPhaseModel::New<MeshType>(fvMsh, dict).ptr()
-        )
-    );
-}
-
-template<>
-tmp<colocatedScalarFaceField> TwoPhaseModel<colocated>::faceAlpha() const
-{
-    return ex::interp(alpha_);
-}
-
-template<>
-tmp<staggeredScalarFaceField> TwoPhaseModel<staggered>::faceAlpha() const
-{
-    return ex::stagFaceInterp(alpha_);
-}
-
-template<>
-tmp<colocatedScalarField> TwoPhaseModel<colocated>::meshAlpha() const
-{
-    return alpha_;
-}
-
-template<>
-tmp<staggeredScalarField> TwoPhaseModel<staggered>::meshAlpha() const
-{
-    return stagInterp(alpha_);
-}
 
 template<>
 tmp<colocatedScalarFaceField>
@@ -118,17 +35,155 @@ TwoPhaseModel<staggered>::coloFaceFlux() const
 }
 
 template<class MeshType>
-scalar TwoPhaseModel<MeshType>::rhoMean() const
-{
-    const colocatedScalarDirection& cv =
-        fvMsh_.template metrics<colocated>().cellVolumes()[0][0];
-
-    const colocatedScalarDirection mask
+TwoPhaseModel<MeshType>::TwoPhaseModel
+(
+    const fvMesh& fvMsh,
+    const IOdictionary& dict
+)
+:
+    twoPhaseModel(fvMsh, dict),
+    faceAlpha_
     (
-        fvMsh_.template metrics<colocated>().fluidMask()()[0][0]
-    );
+        "alpha",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    mu_
+    (
+        "mu",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    )
+{
+    faceAlpha_ = Zero;
+    mu_ = Zero;
+}
 
-    return gSum(mask*this->coloRho()()[0][0]*cv)/gSum(mask*cv);
+template<>
+void TwoPhaseModel<colocated>::correctFaceAlpha()
+{
+    const colocatedScalarFaceField& fwc =
+        this->fvMsh_.template metrics<colocated>().faceWeightsCenter();
+
+    const colocatedScalarFaceField& fwn =
+        this->fvMsh_.template metrics<colocated>().faceWeightsNeighbor();
+
+    const colocatedScalarField& alpha = this->alpha_;
+
+    forAllFaces(faceAlpha_, fd, l, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        faceAlpha_[fd](l,d,ijk) =
+            alpha(l,d,ijk)*fwc[fd](l,d,ijk)
+          + alpha(l,d,nei)*fwn[fd](l,d,ijk);
+    }
+}
+
+template<>
+void TwoPhaseModel<staggered>::correctFaceAlpha()
+{
+    const colocatedScalarField& alpha = this->alpha_;
+
+    forAllFaces(faceAlpha_, fd, l, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,d));
+
+        if (d == fd)
+        {
+            faceAlpha_[fd](l,d,ijk) = alpha(l,0,nei);
+        }
+        else
+        {
+            faceAlpha_[fd](l,d,ijk) =
+                0.25
+              * (
+                    alpha(l,0,ijk)
+                  + alpha(l,0,lowerNeighbor(ijk,fd))
+                  + alpha(l,0,nei)
+                  + alpha(l,0,lowerNeighbor(nei,fd))
+                );
+        }
+    }
+}
+
+template<class MeshType>
+TwoPhaseModel<MeshType>::TwoPhaseModel(const TwoPhaseModel& tpm)
+:
+    twoPhaseModel(tpm),
+    faceAlpha_(tpm.faceAlpha_),
+    mu_(tpm.mu_)
+{}
+
+template<class MeshType>
+autoPtr<TwoPhaseModel<MeshType>> TwoPhaseModel<MeshType>::New
+(
+    const fvMesh& fvMsh,
+    const IOdictionary& dict
+)
+{
+    return autoPtr<TwoPhaseModel<MeshType>>
+    (
+        dynamic_cast<TwoPhaseModel<MeshType>*>
+        (
+            twoPhaseModel::New<MeshType>(fvMsh, dict).ptr()
+        )
+    );
+}
+
+template<>
+tmp<colocatedScalarField> TwoPhaseModel<colocated>::coloRho() const
+{
+    return rho_;
+}
+
+template<>
+tmp<colocatedScalarField> TwoPhaseModel<staggered>::coloRho() const
+{
+    return rho_;
+}
+
+template<>
+tmp<staggeredScalarField> TwoPhaseModel<colocated>::stagRho() const
+{
+    NotImplemented;
+    return staggeredScalarField::New("rho", this->fvMsh_);
+}
+
+template<>
+tmp<staggeredScalarField> TwoPhaseModel<staggered>::stagRho() const
+{
+    tmp<staggeredScalarField> tRho =
+        staggeredScalarField::New("rho", this->fvMsh_);
+
+    staggeredScalarField& rho = tRho.ref();
+    rho.makeDeep();
+
+    // Set rho to a small value to avoid division by zero when computing the
+    // specific volume
+
+    rho = 1e-12;
+
+    forAllCells(rho, l, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,d));
+
+        rho(l,d,i,j,k) =
+            0.5*(this->rho_(l,0,ijk) + this->rho_(l,0,nei));
+    }
+
+    rho.correctBoundaryConditions();
+
+    return tRho;
 }
 
 template<>
@@ -137,13 +192,12 @@ tmp<colocatedVectorField> TwoPhaseModel<colocated>::buoyancy() const
     tmp<colocatedVectorField> tBuoyancy =
         colocatedVectorField::New("buoyancy", this->fvMsh_);
 
-    colocatedVectorDirection& buoyancy = tBuoyancy.ref()[0][0];
-    const colocatedScalarDirection& rho = this->rho()[0][0];
+    colocatedVectorField& buoyancy = tBuoyancy.ref();
 
     buoyancy = Zero;
 
     if (Foam::mag(this->g()) > 0.0)
-        buoyancy = (rho - this->rhoMean())*this->g();
+        buoyancy = (rho_ - this->rhoMean())*this->g();
 
     return tBuoyancy;
 }
@@ -154,10 +208,12 @@ tmp<staggeredScalarField> TwoPhaseModel<staggered>::buoyancy() const
     tmp<staggeredScalarField> tBuoyancy =
         staggeredScalarField::New("buoyancy", this->fvMsh_);
 
-    staggeredScalarLevel& buoyancy = tBuoyancy.ref()[0];
-    const staggeredScalarLevel& rho = this->rho()[0];
+    staggeredScalarField& buoyancy = tBuoyancy.ref();
 
     buoyancy = Zero;
+
+    const tmp<staggeredScalarField> tRho = this->stagRho();
+    const staggeredScalarField& rho = tRho();
 
     if (Foam::mag(this->g()) > 0.0)
     {
@@ -170,30 +226,11 @@ tmp<staggeredScalarField> TwoPhaseModel<staggered>::buoyancy() const
 
         const vector G = (base & this->g());
 
-        forAll(buoyancy, d)
-            buoyancy[d] = (rho[d] - rhoMean)*G[d];
+        forAllCells(buoyancy, d, i, j, k)
+            buoyancy(d,i,j,k) = (rho(d,i,j,k) - rhoMean)*G[d];
     }
 
     return tBuoyancy;
-}
-
-template<class MeshType>
-tmp<colocatedScalarFaceField> TwoPhaseModel<MeshType>::flux()
-{
-    tmp<colocatedScalarFaceField> tFlux
-    (
-        new colocatedScalarFaceField("twoPhaseFlux", this->fvMsh_)
-    );
-
-    colocatedScalarFaceField& flux = tFlux.ref();
-
-    flux = Zero;
-
-    if (this->tension())
-        flux +=
-            static_cast<colocatedScalarFaceField&>(this->surfaceTension());
-
-    return tFlux;
 }
 
 // Instantiate

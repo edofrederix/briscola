@@ -31,6 +31,9 @@ protected:
     // Volume fraction field
     colocatedScalarField alpha_;
 
+    // Mixture mass density
+    colocatedScalarField rho_;
+
     // Normal scheme
     autoPtr<normalScheme> normalSchemePtr_;
 
@@ -42,11 +45,6 @@ protected:
 
     // Surface tension switch to check if surface tension is active
     Switch tension_;
-
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const twoPhaseModel&);
 
 public:
 
@@ -92,9 +90,6 @@ public:
     template<class MeshType>
     static autoPtr<twoPhaseModel> New(const fvMesh&, const IOdictionary&);
 
-    // Destructor
-    virtual ~twoPhaseModel();
-
     // Check if cast to derived model is possible
     template<class Model>
     inline bool castable() const
@@ -137,6 +132,12 @@ public:
     // Return const access to the volume fraction
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
+    // Return access to the mixture mass density
+    colocatedScalarField& rho() { return rho_; }
+
+    // Return const access to the mixture mass density
+    const colocatedScalarField& rho() const { return rho_; }
+
     // Return access the normal scheme
     normalScheme& normal() { return normalSchemePtr_(); }
 
@@ -161,11 +162,14 @@ public:
     // Return the surface tension switch
     Switch tension() const { return tension_; }
 
-    // Correct the two-phase mixture
-    virtual void correctMixture() = 0;
+    // Compute the mean mixture mass density
+    virtual scalar rhoMean() const;
+
+    // Return the interfacial flux
+    tmp<colocatedScalarFaceField> flux();
 
     // Correct the two-phase model
-    virtual void correct() = 0;
+    virtual void correct();
 
     // Needed by regIOobject
     virtual bool writeData(Ostream&) const { return true; }

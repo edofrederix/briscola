@@ -2,6 +2,7 @@
 #include "addToRunTimeSelectionTable.H"
 #include "normalScheme.H"
 #include "surfaceTensionScheme.H"
+#include "exSchemesInterpolation.H"
 
 #include "colocated.H"
 #include "staggered.H"
@@ -36,7 +37,16 @@ twoPhaseModel::twoPhaseModel
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
         true,
-        false
+        true
+    ),
+    rho_
+    (
+        "rho",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
     ),
     normalSchemePtr_
     (
@@ -54,7 +64,9 @@ twoPhaseModel::twoPhaseModel
     tension_(surfaceTensionSchemePtr_->type() != "none")
 {
     alpha_.setRestrictionScheme("volumeWeighted");
+
     alpha_ = Zero;
+    rho_ = Zero;
 }
 
 twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
@@ -63,6 +75,7 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
     fvMsh_(tpm.fvMsh_),
     dict_(tpm.dict_),
     alpha_(tpm.alpha_),
+    rho_(tpm.rho_),
     normalSchemePtr_(tpm.normalSchemePtr_, false),
     surfaceTensionSchemePtr_(tpm.surfaceTensionSchemePtr_, false),
     g_(tpm.g_),
@@ -70,9 +83,6 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
 {
     alpha_.setRestrictionScheme("volumeWeighted");
 }
-
-twoPhaseModel::~twoPhaseModel()
-{}
 
 template<>
 autoPtr<twoPhaseModel> twoPhaseModel::New<colocated>
@@ -122,7 +132,36 @@ autoPtr<twoPhaseModel> twoPhaseModel::New<staggered>
     return autoPtr<twoPhaseModel>(cstrIter()(fvMsh, dict));
 }
 
-void twoPhaseModel::correctMixture()
+scalar twoPhaseModel::rhoMean() const
+{
+    const colocatedScalarField& cv =
+        fvMsh_.template metrics<colocated>().cellVolumes();
+
+    const tmp<colocatedScalarField> tMask =
+        fvMsh_.template metrics<colocated>().fluidMask();
+
+    return gSum(tMask()*rho_*cv)[0]/gSum(tMask()*cv)[0];
+}
+
+tmp<colocatedScalarFaceField> twoPhaseModel::flux()
+{
+    tmp<colocatedScalarFaceField> tFlux
+    (
+        new colocatedScalarFaceField("twoPhaseFlux", this->fvMsh_)
+    );
+
+    colocatedScalarFaceField& flux = tFlux.ref();
+
+    flux = Zero;
+
+    if (this->tension())
+        flux +=
+            static_cast<colocatedScalarFaceField&>(this->surfaceTension());
+
+    return tFlux;
+}
+
+void twoPhaseModel::correct()
 {
     surfaceTensionSchemePtr_->correct();
 }
