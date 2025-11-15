@@ -103,6 +103,49 @@ tmp<meshField<Type,staggered>> stagInterp
 }
 
 template<class Type>
+tmp<meshField<Type,staggered>> stagInterp
+(
+    const faceField<Type,colocated>& field
+)
+{
+    tmp<meshField<Type,staggered>> tInterp =
+        meshField<Type,staggered>::New
+        (
+            "stagInterp("+field.name()+")",
+            field.fvMsh()
+        );
+
+    meshField<Type,staggered>& interp = tInterp.ref();
+
+    // interp = Zero;
+
+    // Colocated faces in the first direction are staggered cell centers in the
+    // first staggered direction, etc.
+
+    forAllCells(interp, d, i, j, k)
+        interp(d,i,j,k) = field[d](i,j,k);
+
+    return tInterp;
+}
+
+template<class Type>
+tmp<meshField<Type,staggered>> stagInterp
+(
+    const tmp<faceField<Type,colocated>>& tField
+)
+{
+    // No need to correct boundary conditions of the tmp because this
+    // interpolation doesn't use any ghosts
+
+    tmp<meshField<Type,staggered>> tInterp = stagInterp(tField());
+
+    if (tField.isTmp())
+        tField.clear();
+
+    return tInterp;
+}
+
+template<class Type>
 tmp<faceField<Type,staggered>> stagFaceInterp
 (
     const meshField<Type,colocated>& field
@@ -175,11 +218,9 @@ tmp<meshField<Type,colocated>> coloInterp
 
     meshField<Type,colocated>& interp = tInterp.ref();
 
-    interp = Zero;
-
     forAllCells(field, d, i, j, k)
         interp(i,j,k) +=
-            0.5/3.0*(field(d,i,j,k) + field(upperNeighbor(i,j,k,d)));
+            0.5/3.0*(field(d,i,j,k) + field(d,upperNeighbor(i,j,k,d)));
 
     return tInterp;
 }
@@ -200,7 +241,6 @@ tmp<meshField<Type,colocated>> coloInterp
 
     return tInterp;
 }
-
 
 template<class Type>
 tmp<faceField<Type,colocated>> coloFaceInterp

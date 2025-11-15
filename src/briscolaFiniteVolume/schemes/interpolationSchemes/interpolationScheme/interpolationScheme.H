@@ -92,6 +92,20 @@ tmp<meshField<Type,staggered>> stagInterp
     const tmp<meshField<Type,colocated>>&
 );
 
+// Interpolation function from colocated faces to staggered
+
+template<class Type>
+tmp<meshField<Type,staggered>> stagInterp
+(
+    const faceField<Type,colocated>&
+);
+
+template<class Type>
+tmp<meshField<Type,staggered>> stagInterp
+(
+    const tmp<faceField<Type,colocated>>&
+);
+
 // Interpolation functions from colocated to staggered faces
 
 template<class Type>
