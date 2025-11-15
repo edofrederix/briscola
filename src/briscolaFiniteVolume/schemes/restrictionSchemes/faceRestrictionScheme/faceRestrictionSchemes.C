@@ -34,6 +34,8 @@ makeFaceRestrictionScheme(areaWeighted,vector,staggered);
 
 makeFaceRestrictionScheme(flux,scalar,colocated);
 makeFaceRestrictionScheme(flux,vector,colocated);
+makeFaceRestrictionScheme(flux,scalar,staggered);
+makeFaceRestrictionScheme(flux,vector,staggered);
 
 }
 

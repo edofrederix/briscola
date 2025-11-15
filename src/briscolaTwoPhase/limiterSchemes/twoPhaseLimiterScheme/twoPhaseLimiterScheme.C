@@ -29,7 +29,8 @@ template<class Type, class MeshType>
 tmp<faceField<scalar,MeshType>> twoPhaseLimiterScheme<Type,MeshType>::psi
 (
     const faceField<scalar,MeshType>& phi,
-    const meshField<Type,MeshType>& field
+    const meshField<Type,MeshType>& field,
+    const bool deep
 )
 {
     const TwoPhaseModel<MeshType>& model =
@@ -37,7 +38,7 @@ tmp<faceField<scalar,MeshType>> twoPhaseLimiterScheme<Type,MeshType>::psi
        .template lookupObjectRef<twoPhaseModel>("briscolaTwoPhaseDict")
        .template cast<TwoPhaseModel<MeshType>>();
 
-    tmp<faceField<scalar,MeshType>> tPsi = limiter_->psi(phi,field);
+    tmp<faceField<scalar,MeshType>> tPsi = limiter_->psi(phi,field,deep);
     faceField<scalar,MeshType>& psi = tPsi.ref();
 
     const faceField<scalar,MeshType>& faceAlpha = model.faceAlpha();

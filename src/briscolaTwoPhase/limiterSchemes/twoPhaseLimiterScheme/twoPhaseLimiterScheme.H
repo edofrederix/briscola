@@ -32,7 +32,8 @@ public:
     virtual tmp<faceField<scalar,MeshType>> psi
     (
         const faceField<scalar,MeshType>& phi,
-        const meshField<Type,MeshType>& field
+        const meshField<Type,MeshType>& field,
+        const bool deep
     );
 };
 

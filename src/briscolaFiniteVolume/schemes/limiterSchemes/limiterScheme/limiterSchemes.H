@@ -28,10 +28,11 @@ tmp<faceField<scalar,MESHTYPE>>                                                \
 limiterScheme<TYPE,MESHTYPE>::r                                                \
 (                                                                              \
     const faceField<scalar,MESHTYPE>& phi,                                     \
-    const meshField<TYPE,MESHTYPE>& field                                      \
+    const meshField<TYPE,MESHTYPE>& field,                                     \
+    const bool deep                                                            \
 )                                                                              \
 {                                                                              \
-    return limiterScheme<TYPE,MESHTYPE>::rType(phi,field);                     \
+    return limiterScheme<TYPE,MESHTYPE>::rType(phi,field,deep);                \
 }
 
 #define makeLimiterSchemeType(SCHEME,TYPE,MESHTYPE)                            \

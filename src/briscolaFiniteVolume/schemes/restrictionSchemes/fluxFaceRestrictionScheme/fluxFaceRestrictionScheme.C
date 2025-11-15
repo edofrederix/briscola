@@ -45,6 +45,20 @@ void fluxFaceRestrictionScheme<Type,colocated>::restrict
     }
 }
 
+
+// Staggered
+
+template<class Type>
+void fluxFaceRestrictionScheme<Type,staggered>::restrict
+(
+    faceField<Type,staggered>& field,
+    const label l,
+    const label
+)
+{
+    NotImplemented;
+}
+
 }
 
 }

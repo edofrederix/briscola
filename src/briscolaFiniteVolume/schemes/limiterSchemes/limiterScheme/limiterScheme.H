@@ -27,14 +27,16 @@ private:
     tmp<faceField<scalar,MeshType>> rType
     (
         const faceField<scalar,MeshType>& phi,
-        const meshField<scalar,MeshType>& field
+        const meshField<scalar,MeshType>& field,
+        const bool deep
     );
 
     // Vector helper function for the ratio of successive gradients
     tmp<faceField<scalar,MeshType>> rType
     (
         const faceField<scalar,MeshType>& phi,
-        const meshField<vector,MeshType>& field
+        const meshField<vector,MeshType>& field,
+        const bool deep
     );
 
 public:
@@ -82,14 +84,16 @@ public:
     virtual tmp<faceField<scalar,MeshType>> r
     (
         const faceField<scalar,MeshType>& phi,
-        const meshField<Type,MeshType>& field
+        const meshField<Type,MeshType>& field,
+        const bool deep
     );
 
     // Return the limiter field
     virtual tmp<faceField<scalar,MeshType>> psi
     (
         const faceField<scalar,MeshType>& phi,
-        const meshField<Type,MeshType>& field
+        const meshField<Type,MeshType>& field,
+        const bool deep
     ) = 0;
 };
 

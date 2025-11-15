@@ -38,6 +38,9 @@ tmp
 
     returnType& phi = tPhi.ref();
 
+    // We need to handle deep fields properly
+    phi.make(field.deep());
+
     const colocatedVectorFaceField& fan =
         this->fvMsh().metrics<colocated>().faceAreaNormals();
 
@@ -47,18 +50,18 @@ tmp
     const colocatedScalarFaceField& fwn =
         this->fvMsh().metrics<colocated>().faceWeightsNeighbor();
 
-    forAllFaces(phi, fd, i, j, k)
+    forAllFaces(phi, fd, l, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        phi[fd](ijk) =
+        phi[fd](l,d,ijk) =
             (
                 (
-                    field(ijk)*fwc[fd](ijk)
-                  + field(nei)*fwn[fd](ijk)
+                    field(l,d,ijk)*fwc[fd](l,d,ijk)
+                  + field(l,d,nei)*fwn[fd](l,d,ijk)
                 )
-              & fan[fd](ijk)
+              & fan[fd](l,d,ijk)
             );
     }
 
@@ -104,6 +107,9 @@ tmp<staggeredScalarFaceField> linearFaceFluxScheme::faceFlux
 
     staggeredScalarFaceField& phi = tPhi.ref();
 
+    // We need to handle deep fields properly
+    phi.make(field.deep());
+
     const staggeredScalarFaceField& fa =
         this->fvMsh().metrics<staggered>().faceAreas();
 
@@ -113,18 +119,19 @@ tmp<staggeredScalarFaceField> linearFaceFluxScheme::faceFlux
     const staggeredScalarFaceField& fwn =
         this->fvMsh().metrics<staggered>().faceWeightsNeighbor();
 
-    forAllFaces(phi, fd, d, i, j, k)
+    forAllFaces(phi, fd, l, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,d));
 
         // Fluxes in x-direction should receive from the first field direction,
         // fluxes in y-direction from the second, etc
 
-        phi[fd](d,ijk) =
-          - fa[fd](d,ijk)
+        phi[fd](l,d,ijk) =
+          - fa[fd](l,d,ijk)
           * (
-                fwc[d](fd,ijk)*field(fd,ijk)
-              + fwn[d](fd,ijk)*field(fd,lowerNeighbor(ijk,d))
+                fwc[d](l,fd,ijk)*field(l,fd,ijk)
+              + fwn[d](l,fd,ijk)*field(l,fd,nei)
             );
     }
 

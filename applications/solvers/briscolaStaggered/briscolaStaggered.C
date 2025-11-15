@@ -34,6 +34,11 @@ int main(int argc, char *argv[])
     #include "createFields.H"
     #include "createBriscolaIO.H"
 
+    if (rk.imA())
+        restrict(U);
+
+    U.correctBoundaryConditions();
+
     while (runTime.run())
     {
         #include "staggeredCourantNo.H"
@@ -89,6 +94,10 @@ int main(int argc, char *argv[])
                 // Correction
 
                 U -= C*deltaT*ex::stagReconstruct(Poisson->flux());
+
+                if (rk.imA())
+                    restrict(U);
+
                 U.correctBoundaryConditions();
             }
 

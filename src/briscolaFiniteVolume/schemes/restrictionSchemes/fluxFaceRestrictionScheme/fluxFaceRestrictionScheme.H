@@ -43,6 +43,32 @@ public:
     );
 };
 
+
+// Staggered
+
+template<class Type>
+class fluxFaceRestrictionScheme<Type,staggered>
+:
+    public faceRestrictionScheme<Type,staggered>
+{
+public:
+
+    // Runtime type information
+    TypeName("flux");
+
+    // Use constructors from base
+    using faceRestrictionScheme<Type,staggered>::faceRestrictionScheme;
+
+    // In-place restriction from a fine face level to an adjacent coarse face
+    // level
+    virtual void restrict
+    (
+        faceField<Type,staggered>&,
+        const label l,
+        const label d
+    );
+};
+
 }
 
 }

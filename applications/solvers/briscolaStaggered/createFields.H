@@ -10,7 +10,6 @@ staggeredScalarField U
 );
 
 U = Zero;
-U.correctBoundaryConditions();
 
 // Reconstructed colocated velocity
 
@@ -37,7 +36,6 @@ colocatedScalarField p
 );
 
 p = Zero;
-p.correctBoundaryConditions();
 
 // Flux
 
@@ -51,7 +49,6 @@ staggeredScalarFaceField phi
 );
 
 phi = Zero;
-// phi.setRestrictionScheme("flux");
 
 // Viscosity
 

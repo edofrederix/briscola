@@ -55,41 +55,40 @@ limitedGaussDivergenceScheme<Type,MeshType>::imDiv
     const faceField<scalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
-    const faceField<scalar,MeshType> psi(limiter_->psi(phi,field));
-
-    restrict(psi);
+    faceField<scalar,MeshType> psi(limiter_->psi(phi,field,true));
 
     A = Zero;
 
-    forAllCells(A, l, d, i, j, k)
+    forAllFaces(phi, fd, l, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        for (label f = 0; f < 6; f++)
-        {
-            const labelVector upp(upperFaceNeighbor(ijk,f));
-            const label fd = f/2;
+        const scalar w1 = psi[fd](l,d,ijk);
+        const scalar w2 = (1.0 - w1);
 
-            A(l,d,ijk)[f+1] =
-                phi[fd](l,d,upp)
-              * (
-                    psi[fd](l,d,upp)*fwn[fd](l,d,upp)
-                  + (1.0 - psi[fd](l,d,upp))*(phi[fd](l,d,upp) < 0)
-                );
+        const scalar flux = phi[fd](l,d,ijk);
 
-            A(l,d,ijk)[0] +=
-                phi[fd](l,d,upp)
-              * (
-                    psi[fd](l,d,upp)*fwc[fd](l,d,upp)
-                  + (1.0 - psi[fd](l,d,upp))*(phi[fd](l,d,upp) >= 0)
-                );
-        }
+        const scalar value1 =
+            flux*(w1*fwn[fd](l,d,ijk) + w2*(flux < 0));
+
+        const scalar value2 =
+            flux*(w1*fwc[fd](l,d,ijk) + w2*(flux >= 0));
+
+        A(l,d,ijk)[fd*2+1] =  value1;
+        A(l,d,nei)[fd*2+2] = -value2;
+
+        A(l,d,ijk)[0] += value2;
+        A(l,d,nei)[0] -= value1;
     }
 
     sys.b() = Zero;
 
-    collapse(phi);
-    collapse(field);
+    if (shallowPhi)
+        collapse(phi);
+
+    if (shallowField)
+        collapse(field);
 
     return tSys;
 }
@@ -120,7 +119,7 @@ limitedGaussDivergenceScheme<Type,MeshType>::exDiv
     const meshField<scalar,MeshType>& icv =
         phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    const faceField<scalar,MeshType> psi(limiter_->psi(phi,field));
+    const faceField<scalar,MeshType> psi(limiter_->psi(phi,field,false));
 
     Div = Zero;
 
@@ -129,19 +128,16 @@ limitedGaussDivergenceScheme<Type,MeshType>::exDiv
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
+        const scalar w1 = psi[fd](d,ijk);
+        const scalar w2 = (1.0 - w1);
+
+        const scalar flux = phi[fd](d,ijk);
+
         const Type value =
-            phi[fd](d,ijk)
+            flux
           * (
-                field(d,ijk)
-              * (
-                    psi[fd](d,ijk)*fwc[fd](d,ijk)
-                  + (1.0 - psi[fd](d,ijk))*(phi[fd](d,ijk) >= 0)
-                )
-              + field(d,nei)
-              * (
-                    psi[fd](d,ijk)*fwn[fd](d,ijk)
-                  + (1.0 - psi[fd](d,ijk))*(phi[fd](d,ijk) < 0)
-                )
+                field(d,ijk)*(w1*fwc[fd](d,ijk) + w2*(flux >= 0))
+              + field(d,nei)*(w1*fwn[fd](d,ijk) + w2*(flux < 0))
             );
 
         Div(d,ijk) += value;
