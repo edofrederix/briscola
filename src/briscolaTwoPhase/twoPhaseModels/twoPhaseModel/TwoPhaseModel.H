@@ -24,11 +24,20 @@ protected:
     // Face volume fraction
     faceField<scalar,MeshType> faceAlpha_;
 
+    // Mixture mass density
+    meshField<scalar,MeshType> rho_;
+
+    // Mean mixture mass density
+    scalar rhoMean_;
+
     // Mixture dynamic viscosity
     faceField<scalar,MeshType> mu_;
 
     // Return the mesh-dependent colocated face flux
     virtual tmp<colocatedScalarFaceField> coloFaceFlux() const;
+
+    // Return the volume fraction for this mesh type
+    virtual tmp<meshField<scalar,MeshType>> meshTypeAlpha() const;
 
     // Correct the face volume fraction
     virtual void correctFaceAlpha();
@@ -60,17 +69,20 @@ public:
     // Return const access to the face volume fraction
     const faceField<scalar,MeshType>& faceAlpha() const { return faceAlpha_; }
 
+    // Return access to the mixture mass density
+    meshField<scalar,MeshType>& rho() { return rho_; }
+
+    // Return const access to the mixture mass density
+    const meshField<scalar,MeshType>& rho() const { return rho_; }
+
+    // Mean mixture mass density
+    scalar rhoMean() const { return rhoMean_; }
+
     // Return access to the mixture dynamic viscosity
     faceField<scalar,MeshType>& mu() { return mu_; }
 
     // Return const access to the mixture dynamic viscosity
     const faceField<scalar,MeshType>& mu() const { return mu_; }
-
-    // Return the colocated mass density
-    virtual tmp<colocatedScalarField> coloRho() const;
-
-    // Return the staggered mass density (not defined for colocated mesh type)
-    virtual tmp<staggeredScalarField> stagRho() const;
 
     // Return the buoyancy term defined as (rho - rhoMean)*g
     virtual tmp<meshField<MeshVectorType,MeshType>> buoyancy() const;

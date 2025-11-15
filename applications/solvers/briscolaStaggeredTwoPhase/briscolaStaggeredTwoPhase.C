@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 
         twoPhase.correct();
 
-        v = 1.0/twoPhase.stagRho();
+        v = 1.0/twoPhase.rho();
         vf = ex::coloFaceInterp(v);
         vf.max(1e-12);
 

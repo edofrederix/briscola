@@ -34,35 +34,33 @@ TwoPhaseModel<staggered>::coloFaceFlux() const
         );
 }
 
-template<class MeshType>
-TwoPhaseModel<MeshType>::TwoPhaseModel
-(
-    const fvMesh& fvMsh,
-    const IOdictionary& dict
-)
-:
-    twoPhaseModel(fvMsh, dict),
-    faceAlpha_
-    (
-        "alpha",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    mu_
-    (
-        "mu",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    )
+template<>
+tmp<colocatedScalarField> TwoPhaseModel<colocated>::meshTypeAlpha() const
 {
-    faceAlpha_ = Zero;
-    mu_ = Zero;
+    return alpha_;
+}
+
+template<>
+tmp<staggeredScalarField> TwoPhaseModel<staggered>::meshTypeAlpha() const
+{
+    tmp<staggeredScalarField> tAlpha =
+        staggeredScalarField::New("alpha", this->fvMsh_);
+
+    staggeredScalarField& alpha = tAlpha.ref();
+    alpha.makeDeep();
+
+    forAllCells(alpha, l, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,d));
+
+        alpha(l,d,i,j,k) =
+            0.5*(this->alpha_(l,0,ijk) + this->alpha_(l,0,nei));
+    }
+
+    alpha.correctBoundaryConditions();
+
+    return tAlpha;
 }
 
 template<>
@@ -116,10 +114,54 @@ void TwoPhaseModel<staggered>::correctFaceAlpha()
 }
 
 template<class MeshType>
+TwoPhaseModel<MeshType>::TwoPhaseModel
+(
+    const fvMesh& fvMsh,
+    const IOdictionary& dict
+)
+:
+    twoPhaseModel(fvMsh, dict),
+    faceAlpha_
+    (
+        "alpha",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    rho_
+    (
+        "rho",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    rhoMean_(0.0),
+    mu_
+    (
+        "mu",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    )
+{
+    faceAlpha_ = Zero;
+    rho_ = Zero;
+    mu_ = Zero;
+}
+
+template<class MeshType>
 TwoPhaseModel<MeshType>::TwoPhaseModel(const TwoPhaseModel& tpm)
 :
     twoPhaseModel(tpm),
     faceAlpha_(tpm.faceAlpha_),
+    rho_(tpm.rho_),
+    rhoMean_(tpm.rhoMean_),
     mu_(tpm.mu_)
 {}
 
@@ -140,53 +182,6 @@ autoPtr<TwoPhaseModel<MeshType>> TwoPhaseModel<MeshType>::New
 }
 
 template<>
-tmp<colocatedScalarField> TwoPhaseModel<colocated>::coloRho() const
-{
-    return rho_;
-}
-
-template<>
-tmp<colocatedScalarField> TwoPhaseModel<staggered>::coloRho() const
-{
-    return rho_;
-}
-
-template<>
-tmp<staggeredScalarField> TwoPhaseModel<colocated>::stagRho() const
-{
-    NotImplemented;
-    return staggeredScalarField::New("rho", this->fvMsh_);
-}
-
-template<>
-tmp<staggeredScalarField> TwoPhaseModel<staggered>::stagRho() const
-{
-    tmp<staggeredScalarField> tRho =
-        staggeredScalarField::New("rho", this->fvMsh_);
-
-    staggeredScalarField& rho = tRho.ref();
-    rho.makeDeep();
-
-    // Set rho to a small value to avoid division by zero when computing the
-    // specific volume
-
-    rho = 1e-12;
-
-    forAllCells(rho, l, d, i, j, k)
-    {
-        const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,d));
-
-        rho(l,d,i,j,k) =
-            0.5*(this->rho_(l,0,ijk) + this->rho_(l,0,nei));
-    }
-
-    rho.correctBoundaryConditions();
-
-    return tRho;
-}
-
-template<>
 tmp<colocatedVectorField> TwoPhaseModel<colocated>::buoyancy() const
 {
     tmp<colocatedVectorField> tBuoyancy =
@@ -197,7 +192,8 @@ tmp<colocatedVectorField> TwoPhaseModel<colocated>::buoyancy() const
     buoyancy = Zero;
 
     if (Foam::mag(this->g()) > 0.0)
-        buoyancy = (rho_ - this->rhoMean())*this->g();
+        forAllCells(buoyancy, i, j, k)
+            buoyancy(i,j,k) = (rho_(i,j,k) - rhoMean_)*this->g();
 
     return tBuoyancy;
 }
@@ -212,13 +208,8 @@ tmp<staggeredScalarField> TwoPhaseModel<staggered>::buoyancy() const
 
     buoyancy = Zero;
 
-    const tmp<staggeredScalarField> tRho = this->stagRho();
-    const staggeredScalarField& rho = tRho();
-
     if (Foam::mag(this->g()) > 0.0)
     {
-        const scalar rhoMean(this->rhoMean());
-
         // Project the gravity vector on the staggered base
 
         const tensor base =
@@ -227,7 +218,7 @@ tmp<staggeredScalarField> TwoPhaseModel<staggered>::buoyancy() const
         const vector G = (base & this->g());
 
         forAllCells(buoyancy, d, i, j, k)
-            buoyancy(d,i,j,k) = (rho(d,i,j,k) - rhoMean)*G[d];
+            buoyancy(d,i,j,k) = (rho_(d,i,j,k) - rhoMean_)*G[d];
     }
 
     return tBuoyancy;

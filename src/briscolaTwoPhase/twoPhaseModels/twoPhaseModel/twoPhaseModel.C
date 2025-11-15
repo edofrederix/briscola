@@ -39,15 +39,6 @@ twoPhaseModel::twoPhaseModel
         true,
         true
     ),
-    rho_
-    (
-        "rho",
-        fvMsh_,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
     normalSchemePtr_
     (
         normalScheme::New(*this, dict.subDict("normalScheme")).ptr()
@@ -64,9 +55,7 @@ twoPhaseModel::twoPhaseModel
     tension_(surfaceTensionSchemePtr_->type() != "none")
 {
     alpha_.setRestrictionScheme("volumeWeighted");
-
     alpha_ = Zero;
-    rho_ = Zero;
 }
 
 twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
@@ -75,7 +64,6 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
     fvMsh_(tpm.fvMsh_),
     dict_(tpm.dict_),
     alpha_(tpm.alpha_),
-    rho_(tpm.rho_),
     normalSchemePtr_(tpm.normalSchemePtr_, false),
     surfaceTensionSchemePtr_(tpm.surfaceTensionSchemePtr_, false),
     g_(tpm.g_),
@@ -130,17 +118,6 @@ autoPtr<twoPhaseModel> twoPhaseModel::New<staggered>
     }
 
     return autoPtr<twoPhaseModel>(cstrIter()(fvMsh, dict));
-}
-
-scalar twoPhaseModel::rhoMean() const
-{
-    const colocatedScalarField& cv =
-        fvMsh_.template metrics<colocated>().cellVolumes();
-
-    const tmp<colocatedScalarField> tMask =
-        fvMsh_.template metrics<colocated>().fluidMask();
-
-    return gSum(tMask()*rho_*cv)[0]/gSum(tMask()*cv)[0];
 }
 
 tmp<colocatedScalarFaceField> twoPhaseModel::flux()

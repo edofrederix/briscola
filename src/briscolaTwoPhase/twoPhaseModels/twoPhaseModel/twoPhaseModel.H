@@ -31,9 +31,6 @@ protected:
     // Volume fraction field
     colocatedScalarField alpha_;
 
-    // Mixture mass density
-    colocatedScalarField rho_;
-
     // Normal scheme
     autoPtr<normalScheme> normalSchemePtr_;
 
@@ -132,12 +129,6 @@ public:
     // Return const access to the volume fraction
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
-    // Return access to the mixture mass density
-    colocatedScalarField& rho() { return rho_; }
-
-    // Return const access to the mixture mass density
-    const colocatedScalarField& rho() const { return rho_; }
-
     // Return access the normal scheme
     normalScheme& normal() { return normalSchemePtr_(); }
 
@@ -162,10 +153,7 @@ public:
     // Return the surface tension switch
     Switch tension() const { return tension_; }
 
-    // Compute the mean mixture mass density
-    virtual scalar rhoMean() const;
-
-    // Return the interfacial flux
+    // Return the interfacial momentum flux
     tmp<colocatedScalarFaceField> flux();
 
     // Correct the two-phase model

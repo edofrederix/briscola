@@ -24,6 +24,12 @@ protected:
     const scalar rho1_;
     const scalar rho2_;
 
+    // Correct the mixture mass density
+    virtual void correctRho();
+
+    // Correct the mean mixture mass density
+    virtual void correctMeanRho();
+
 public:
 
     // Construct from IOdictionary

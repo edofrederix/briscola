@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
         twoPhase.correct();
 
-        v = 1.0/twoPhase.coloRho();
+        v = 1.0/twoPhase.rho();
         vf = ex::interp(v);
         vf.max(1e-12);
 
