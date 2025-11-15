@@ -38,8 +38,7 @@ void restrict(const meshField<Type,MeshType>& field)
 template<class Type, class MeshType>
 void restrict(const faceField<Type,MeshType>& field)
 {
-    forAll(field, fd)
-        const_cast<meshField<Type,MeshType>&>(field[fd]).makeDeep();
+    const_cast<faceField<Type,MeshType>&>(field).makeDeep();
 
     forAll(field, fd)
         for (int l = 1; l < field[fd].size(); l++)
@@ -63,8 +62,7 @@ void collapse(const meshField<Type,MeshType>& field)
 template<class Type, class MeshType>
 void collapse(const faceField<Type,MeshType>& field)
 {
-    forAll(field, s)
-        collapse(field[s]);
+    const_cast<faceField<Type,MeshType>&>(field).makeShallow();
 }
 
 }

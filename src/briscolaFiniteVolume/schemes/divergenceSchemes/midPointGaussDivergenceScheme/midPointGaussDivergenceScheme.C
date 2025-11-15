@@ -28,7 +28,10 @@ midPointGaussDivergenceScheme<Type,MeshType>::imDiv
     const meshField<Type,MeshType>& field
 )
 {
-    restrict(phi);
+    const bool shallow = phi.shallow();
+
+    if (shallow)
+        restrict(phi);
 
     tmp<linearSystem<stencil,Type,MeshType>> tSys =
         linearSystem<stencil,Type,MeshType>::New
@@ -59,7 +62,8 @@ midPointGaussDivergenceScheme<Type,MeshType>::imDiv
 
     sys.b() = Zero;
 
-    collapse(phi);
+    if (shallow)
+        collapse(phi);
 
     return tSys;
 }

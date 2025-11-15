@@ -144,9 +144,6 @@ void iterative<SType,Type,MeshType>::solve
     if (SType::nCsComponents > 1)
         sys.eliminateGhosts();
 
-    sys.x().makeShallow();
-    sys.b().makeShallow();
-
     sys.setForcingMask();
 
     if

@@ -29,8 +29,14 @@ limitedGaussDivergenceScheme<Type,MeshType>::imDiv
     const meshField<Type,MeshType>& field
 )
 {
-    restrict(phi);
-    restrict(field);
+    const bool shallowPhi = phi.shallow();
+    const bool shallowField = field.shallow();
+
+    if (shallowPhi)
+        restrict(phi);
+
+    if (shallowField)
+        restrict(field);
 
     tmp<linearSystem<stencil,Type,MeshType>> tSys =
         linearSystem<stencil,Type,MeshType>::New

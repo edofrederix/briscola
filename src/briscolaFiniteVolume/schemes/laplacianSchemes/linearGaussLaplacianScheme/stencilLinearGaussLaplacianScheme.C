@@ -29,8 +29,13 @@ stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
     const meshField<Type,MeshType>& field
 )
 {
-    if (lambdaPtr)
+    bool shallow = false;
+
+    if (lambdaPtr && lambdaPtr->shallow())
+    {
+        shallow = true;
         restrict(*lambdaPtr);
+    }
 
     tmp<linearSystem<stencil,Type,MeshType>> tSys =
         linearSystem<stencil,Type,MeshType>::New
@@ -72,7 +77,7 @@ stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
 
     sys.b() = Zero;
 
-    if (lambdaPtr)
+    if (lambdaPtr && shallow)
         collapse(*lambdaPtr);
 
     return tSys;

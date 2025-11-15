@@ -32,9 +32,6 @@ void diagonal<SType,Type,MeshType>::solve
 
     sys.setForcingMask();
 
-    sys.x().makeShallow();
-    sys.b().makeShallow();
-
     if (SType::nCsComponents > 1)
     {
         List<bool> diag = sys.diagonal();

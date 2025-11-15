@@ -30,7 +30,11 @@ public:
         }
         else
         {
-            return Type::New(name, set1.fvMsh());
+            tmp<Type> tSet = Type::New(name, set1.fvMsh());
+
+            tSet->make(set1.deep());
+
+            return tSet;
         }
     }
 };
@@ -52,17 +56,25 @@ public:
 
         if (tSet1.isTmp())
         {
+            if (set1.shallow() || set2.shallow())
+                set1.makeShallow();
             set1.rename(name);
             return tSet1;
         }
         else if (tSet2.isTmp())
         {
+            if (set1.shallow() || set2.shallow())
+                set2.makeShallow();
             set2.rename(name);
             return tSet2;
         }
         else
         {
-            return Type::New(name, set1.fvMsh());
+            tmp<Type> tSet = Type::New(name, set1.fvMsh());
+
+            tSet->make(set1.deep() && set2.deep());
+
+            return tSet;
         }
     }
 };

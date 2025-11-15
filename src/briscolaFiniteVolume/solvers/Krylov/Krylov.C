@@ -365,9 +365,6 @@ void Krylov<SType,Type,MeshType>::solve
      || sum(labelList(sys.diagonal())) == nDir
     )
     {
-        sys.x().makeShallow();
-        sys.b().makeShallow();
-
         diagonalSmoother<SType,Type,MeshType>::Smooth
         (
             sys,

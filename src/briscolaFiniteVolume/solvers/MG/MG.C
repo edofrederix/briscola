@@ -410,9 +410,6 @@ void MG<SType,Type,MeshType>::solve
      || sum(labelList(sys.diagonal())) == MeshType::numberOfDirections
     )
     {
-        sys.x().makeShallow();
-        sys.b().makeShallow();
-
         diagonalSmoother<SType,Type,MeshType>::Smooth
         (
             sys,
@@ -436,8 +433,14 @@ void MG<SType,Type,MeshType>::solve
 
         this->setSingularityConstraint(sys, coarseLevel);
 
-        sys.x().makeDeep();
-        sys.b().makeDeep();
+        const bool shallowUnknown = sys.x().shallow();
+        const bool shallowSource = sys.b().shallow();
+
+        if (shallowUnknown)
+            sys.x().makeDeep();
+
+        if (shallowSource)
+            sys.b().makeDeep();
 
         if
         (
@@ -463,8 +466,11 @@ void MG<SType,Type,MeshType>::solve
             coarseLevel
         );
 
-        sys.x().makeShallow();
-        sys.b().makeShallow();
+        if (shallowUnknown)
+            sys.x().makeShallow();
+
+        if (shallowSource)
+            sys.b().makeShallow();
     }
 }
 

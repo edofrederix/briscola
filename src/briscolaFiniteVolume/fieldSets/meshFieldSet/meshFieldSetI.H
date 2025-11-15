@@ -572,9 +572,7 @@ inline tmp<meshFieldSet<scalar,MeshType,N>> operator*
         );
 
     if (&tRet() != &tSet2())
-    {
         tRet.ref() = tSet2;
-    }
 
     tRet.ref() *= set1;
 
@@ -707,6 +705,7 @@ inline tmp<meshFieldSet<Type,MeshType,N>> operator/
             set.fvMsh()
         );
 
+    tRet.ref().make(set.deep());
     tRet.ref() = s;
     tRet.ref() /= set;
 
@@ -727,6 +726,7 @@ inline tmp<meshFieldSet<Type,MeshType,N>> operator/
             tSet->fvMsh()
         );
 
+    tRet.ref().make(tSet->deep());
     tRet.ref() = s;
     tRet.ref() /= tSet;
 

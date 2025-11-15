@@ -26,8 +26,13 @@ namespace im
         const meshField<Type,MeshType>& field
     )
     {
-        if (lambdaPtr)
+        bool shallow = false;
+
+        if (lambdaPtr && lambdaPtr->shallow())
+        {
+            shallow = true;
             restrict(*lambdaPtr);
+        }
 
         tmp<linearSystem<diagStencil,Type,MeshType>> tSys =
             linearSystem<diagStencil,Type,MeshType>::New
@@ -56,7 +61,7 @@ namespace im
 
         sys.b() = Zero;
 
-        if (lambdaPtr)
+        if (lambdaPtr && shallow)
             collapse(*lambdaPtr);
 
         return tSys;

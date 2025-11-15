@@ -148,6 +148,63 @@ public:
             listType::operator[](s).rename(newName + "_" + Foam::name(s));
     }
 
+    // Make the field set deep
+    inline void makeDeep()
+    {
+        forAll(*this, s)
+            listType::operator[](s).makeDeep();
+    }
+
+    // Allow a const field to be made deep
+    inline void makeDeep() const
+    {
+        const_cast<meshFieldSet<Type,MeshType,N>*>(this)->makeDeep();
+    }
+
+    // Make the field shallow
+    inline void makeShallow()
+    {
+        forAll(*this, s)
+            listType::operator[](s).makeShallow();
+    }
+
+    // Allow a const field to be made shallow
+    inline void makeShallow() const
+    {
+        const_cast<meshFieldSet<Type,MeshType,N>*>(this)->makeShallow();
+    }
+
+    // Make the field deep or shallow
+    inline void make(const bool deep)
+    {
+        if (deep)
+            makeDeep();
+        else
+            makeShallow();
+    }
+
+    // Allow a const field to be made deep or shallow
+    inline void make(const bool deep) const
+    {
+        const_cast<meshFieldSet<Type,MeshType,N>*>(this)->make(deep);
+    }
+
+    // The field set is deep if all fields are deep
+    inline bool deep() const
+    {
+        forAll(*this, s)
+            if (listType::operator[](s).shallow())
+                return false;
+
+        return true;
+    }
+
+    // Shallow if not deep
+    inline bool shallow() const
+    {
+        return !deep();
+    }
+
     // Set restriction scheme
     void setRestrictionScheme(const word scheme)
     {

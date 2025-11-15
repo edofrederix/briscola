@@ -1146,7 +1146,10 @@ void linearSystem<SType,Type,MeshType>::operator*=
     const meshField<scalar,MeshType>& field
 )
 {
-    restrict(field);
+    const bool shallow = field.shallow();
+
+    if (shallow)
+        restrict(field);
 
     this->A() *= field;
     this->b() *= field;
@@ -1154,7 +1157,8 @@ void linearSystem<SType,Type,MeshType>::operator*=
     this->singular_.clear();
     this->diagonal_.clear();
 
-    collapse(field);
+    if (shallow)
+        collapse(field);
 }
 
 template<class SType, class Type, class MeshType>
@@ -1195,7 +1199,10 @@ void linearSystem<SType,Type,MeshType>::operator/=
     const meshField<scalar,MeshType>& field
 )
 {
-    restrict(field);
+    const bool shallow = field.shallow();
+
+    if (shallow)
+        restrict(field);
 
     this->A() /= field;
     this->b() /= field;
@@ -1203,7 +1210,8 @@ void linearSystem<SType,Type,MeshType>::operator/=
     this->singular_.clear();
     this->diagonal_.clear();
 
-    collapse(field);
+    if (shallow)
+        collapse(field);
 }
 
 template<class SType, class Type, class MeshType>
