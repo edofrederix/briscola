@@ -20,7 +20,7 @@ void linearSystem<SType,Type,MeshType>::transfer
     A_.transfer(sys.A_);
     b_.transfer(sys.b_);
 
-    singular_ = sys.singular_;
+    symmetric_ = sys.symmetric_;
     diagonal_ = sys.diagonal_;
 }
 
@@ -62,7 +62,9 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    )
+    ),
+    symmetric_(true),
+    diagonal_(true)
 {}
 
 template<class SType, class Type, class MeshType>
@@ -91,7 +93,9 @@ linearSystem<SType,Type,MeshType>::linearSystem
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE
-    )
+    ),
+    symmetric_(true),
+    diagonal_(true)
 {}
 
 template<class SType, class Type, class MeshType>
@@ -291,70 +295,6 @@ linearSystem<SType,Type,MeshType>::linearSystem
 template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::~linearSystem()
 {}
-
-template<class SType, class Type, class MeshType>
-List<bool> linearSystem<SType,Type,MeshType>::singular(const bool clearCache)
-{
-    if (singular_.size() == 0 || clearCache)
-    {
-        singular_.setSize(MeshType::numberOfDirections);
-        singular_ = true;
-
-        forAll(singular_, d)
-        {
-            // We prefer a level with at least three cells in one direction to
-            // avoid looking at only constrained cells
-
-            label l = A_.size() - 1;
-            while (l > 0 && cmptMax(A_[l][d].N()) < 3) l--;
-
-            const meshDirection<SType,MeshType>& A = A_[l][d];
-
-            forAllCells(A, i, j, k)
-                if (Foam::mag(rowSum(A,i,j,k)) > 1e-8)
-                    goto nope;
-
-            continue;
-            nope: singular_[d] = false;
-        }
-
-        reduce(singular_, andOp<List<bool>>());
-    }
-
-    return singular_;
-}
-
-template<class SType, class Type, class MeshType>
-List<bool> linearSystem<SType,Type,MeshType>::diagonal(const bool clearCache)
-{
-    if (diagonal_.size() == 0 || clearCache)
-    {
-        diagonal_.setSize(MeshType::numberOfDirections);
-        diagonal_ = true;
-
-        forAll(diagonal_, d)
-        {
-            // We prefer a level with at least three cells in one direction to
-            // avoid looking at only constrained cells
-
-            label l = A_.size() - 1;
-            while (l > 0 && cmptMax(A_[l][d].N()) < 3) l--;
-
-            const meshDirection<SType,MeshType>& A = A_[l][d];
-
-            forAllCells(A, i, j, k)
-                if (A(i,j,k) != SType(diagStencil(A(i,j,k).center())))
-                    goto nope;
-
-            continue;
-            nope: diagonal_[d] = false;
-        }
-
-        reduce(diagonal_, andOp<List<bool>>());
-    }
-
-    return diagonal_;
-}
 
 template<class SType, class Type, class MeshType>
 template<bool NoMask>
@@ -563,7 +503,6 @@ void linearSystem<SType,Type,MeshType>::evaluate
     forAll(eval, d)
         this->evaluate<NoMask>(eval[d]);
 }
-
 
 template<class SType, class Type, class MeshType>
 template<bool NoMask>
@@ -791,7 +730,7 @@ void linearSystem<SType,Type,MeshType>::operator=
     this->A() = sys.A();
     this->b() = sys.b();
 
-    this->singular_ = sys.singular();
+    this->symmetric_ = sys.symmetric();
     this->diagonal_ = sys.diagonal();
 }
 
@@ -825,8 +764,8 @@ void linearSystem<SType,Type,MeshType>::operator+=
     this->A() += sys.A();
     this->b() += sys.b();
 
-    this->singular_.clear();
-    this->diagonal_.clear();
+    symmetric_ = symmetric_ && sys.symmetric();
+    diagonal_ = diagonal_ && sys.diagonal();
 }
 
 template<class SType, class Type, class MeshType>
@@ -850,8 +789,8 @@ void linearSystem<SType,Type,MeshType>::operator-=
     this->A() -= sys.A();
     this->b() -= sys.b();
 
-    this->singular_.clear();
-    this->diagonal_.clear();
+    symmetric_ = symmetric_ && sys.symmetric();
+    diagonal_ = diagonal_ && sys.diagonal();
 }
 
 template<class SType, class Type, class MeshType>
@@ -875,8 +814,8 @@ void linearSystem<SType,Type,MeshType>::operator=
     this->A() = Zero;
     this->b() = Zero;
 
-    this->singular_.clear();
-    this->diagonal_.clear();
+    symmetric_ = true;
+    diagonal_ = true;
 }
 
 template<class SType, class Type, class MeshType>
@@ -888,11 +827,11 @@ void linearSystem<SType,Type,MeshType>::operator=
     const meshField<scalar,MeshType>& cv =
         fvMsh_.template metrics<MeshType>().cellVolumes();
 
-    this->A() = diagStencil(0.0);
+    this->A() = Zero;
     this->b() = -cv*v;
 
-    this->singular_.clear();
-    this->diagonal_.clear();
+    symmetric_ = true;
+    diagonal_ = true;
 }
 
 template<class SType, class Type, class MeshType>
@@ -904,11 +843,11 @@ void linearSystem<SType,Type,MeshType>::operator=
     const meshField<scalar,MeshType>& cv =
         fvMsh_.template metrics<MeshType>().cellVolumes();
 
-    this->A() = diagStencil(0.0);
+    this->A() = Zero;
     this->b() = -cv*field;
 
-    singular_.clear();
-    diagonal_.clear();
+    symmetric_ = true;
+    diagonal_ = true;
 }
 
 template<class SType, class Type, class MeshType>
@@ -1049,8 +988,8 @@ void linearSystem<SType,Type,MeshType>::operator=
     this->A() = sys.A();
     this->b() = sys.b();
 
-    this->singular_.clear();
-    this->diagonal_.clear();
+    symmetric_ = sys.symmetric();
+    diagonal_ = sys.diagonal();
 }
 
 template<class SType, class Type, class MeshType>
@@ -1076,8 +1015,8 @@ void linearSystem<SType,Type,MeshType>::operator+=
     this->A() += sys.A();
     this->b() += sys.b();
 
-    this->singular_.clear();
-    this->diagonal_.clear();
+    symmetric_ = symmetric_ && sys.symmetric();
+    diagonal_ = diagonal_ && sys.diagonal();
 }
 
 template<class SType, class Type, class MeshType>
@@ -1103,8 +1042,8 @@ void linearSystem<SType,Type,MeshType>::operator-=
     this->A() -= sys.A();
     this->b() -= sys.b();
 
-    this->singular_.clear();
-    this->diagonal_.clear();
+    symmetric_ = symmetric_ && sys.symmetric();
+    diagonal_ = diagonal_ && sys.diagonal();
 }
 
 template<class SType, class Type, class MeshType>
@@ -1153,9 +1092,6 @@ void linearSystem<SType,Type,MeshType>::operator*=
 
     this->A() *= field;
     this->b() *= field;
-
-    this->singular_.clear();
-    this->diagonal_.clear();
 
     if (shallow)
         collapse(field);
@@ -1206,9 +1142,6 @@ void linearSystem<SType,Type,MeshType>::operator/=
 
     this->A() /= field;
     this->b() /= field;
-
-    this->singular_.clear();
-    this->diagonal_.clear();
 
     if (shallow)
         collapse(field);

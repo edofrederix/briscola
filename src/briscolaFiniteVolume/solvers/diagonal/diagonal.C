@@ -34,14 +34,10 @@ void diagonal<SType,Type,MeshType>::solve
 
     if (SType::nCsComponents > 1)
     {
-        List<bool> diag = sys.diagonal();
-
-        forAll(diag, i)
-            if (!diag[i])
-                FatalErrorInFunction
-                    << "Direction " << i << " of " << sys.name()
-                    << " is not diagonal." << endl
-                    << abort(FatalError);
+        if (!sys.diagonal())
+            FatalErrorInFunction
+                << "System is not diagonal" << endl
+                << abort(FatalError);
     }
 
     diagonalSmoother<SType,Type,MeshType>::Smooth

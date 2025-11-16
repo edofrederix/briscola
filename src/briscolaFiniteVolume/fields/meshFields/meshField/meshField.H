@@ -52,6 +52,9 @@ private:
     // Boundary conditions
     PtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
 
+    // Singular boundary condition bool (set when adding boundary conditions)
+    bool singular_;
+
     // Immersed boundary condition
     FastPtrList<immersedBoundaryCondition<Type,MeshType>>
         immersedBoundaryConditions_;
@@ -290,8 +293,7 @@ public:
     }
 
     // Access to the boundary conditions
-    inline PtrList<boundaryCondition<Type,MeshType>>&
-    boundaryConditions()
+    inline PtrList<boundaryCondition<Type,MeshType>>& boundaryConditions()
     {
         return boundaryConditions_;
     }
@@ -381,6 +383,14 @@ public:
 
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();
+
+    // Check if the boundary conditions make this field singular
+    bool singular() const
+    {
+        const_cast<meshField<Type,MeshType>*>(this)->addBoundaryConditions();
+
+        return singular_;
+    }
 
     // Set the old time field. Works recursively, so if the old time field has
     // an old time field too, it will be set as well.

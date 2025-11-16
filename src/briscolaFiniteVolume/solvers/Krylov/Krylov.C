@@ -30,8 +30,6 @@ void Krylov<SType,Type,MeshType>::prepare
     const meshLevel<label,MeshType>& numbers =
         sys.fvMsh().template metrics<MeshType>().globalCellNumbers()[0];
 
-    const List<bool> diagonal(sys.diagonal());
-
     forAll(solvers_, i)
         if (solvers_.set(i))
             KSPDestroy(&solvers_[i]);
@@ -40,8 +38,8 @@ void Krylov<SType,Type,MeshType>::prepare
         if (matrices_.set(i))
             MatDestroy(&matrices_[i]);
 
+    if (!sys.diagonal())
     forAll(A, d)
-    if (!diagonal[d])
     {
         const label m = A[d].size();
         const label M = returnReduce(m, sumOp<label>());
@@ -359,11 +357,7 @@ void Krylov<SType,Type,MeshType>::solve
 
     sys.setForcingMask();
 
-    if
-    (
-        SType::nCsComponents == 1
-     || sum(labelList(sys.diagonal())) == nDir
-    )
+    if (sys.diagonal())
     {
         diagonalSmoother<SType,Type,MeshType>::Smooth
         (

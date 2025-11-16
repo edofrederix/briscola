@@ -304,6 +304,8 @@ void meshField<Type,MeshType>::addBoundaryConditions()
     {
         boundaryConditions_.setSize(fvMsh_.boundaries().size());
 
+        singular_ = true;
+
         forAll(fvMsh_.boundaries(), i)
         {
             boundaryConditions_.set
@@ -315,7 +317,15 @@ void meshField<Type,MeshType>::addBoundaryConditions()
                     fvMsh_.boundaries()[i]
                 )
             );
+
+            const boundaryConditionBaseType bcType =
+                boundaryConditions_[i].baseType();
+
+            if (bcType == DIRICHLETBC || bcType == ROBINBC)
+                singular_ = false;
         }
+
+        reduce(singular_, andOp<bool>());
     }
 
     #ifdef BOUNDARYEXCHANGE

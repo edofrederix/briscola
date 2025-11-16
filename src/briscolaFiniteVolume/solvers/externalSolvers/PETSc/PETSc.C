@@ -83,16 +83,14 @@ void PETSc<SType,Type,MeshType>::prepare
         );
     }
 
-    const List<bool> diagonal(sys.diagonal());
-
     const MPI_Comm& comm =
         Pstream::parRun()
       ? PstreamGlobals::lsaGetComm(APtr_->masterCommNum())
       : PETSC_COMM_SELF;
 
-    forAll(solverPtrs_, d)
+    if (!sys.diagonal())
     {
-        if (!diagonal[d])
+        forAll(solverPtrs_, d)
         {
             APtr_->prepare(d);
 
@@ -126,15 +124,13 @@ void PETSc<SType,Type,MeshType>::solve
 
     const label n = list(pTraits<Type>::one).size();
 
-    const List<bool> diagonal(sys.diagonal());
-
     meshLevel<Type,MeshType>& x = sys.x()[this->l_];
     const meshLevel<Type,MeshType>& b = sys.b()[this->l_];
     const meshLevel<SType,MeshType>& A = sys.A()[this->l_];
 
     for (int d = 0; d < MeshType::numberOfDirections; d++)
     {
-        if (diagonal[d])
+        if (sys.diagonal())
         {
             forAllCells(x[d], i, j, k)
                 x[d](i,j,k) = b[d](i,j,k)/A[d](i,j,k).center();

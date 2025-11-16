@@ -146,11 +146,7 @@ void iterative<SType,Type,MeshType>::solve
 
     sys.setForcingMask();
 
-    if
-    (
-        SType::nCsComponents == 1
-     || sum(labelList(sys.diagonal())) == MeshType::numberOfDirections
-    )
+    if (sys.diagonal())
     {
         diagonalSmoother<SType,Type,MeshType>::Smooth
         (

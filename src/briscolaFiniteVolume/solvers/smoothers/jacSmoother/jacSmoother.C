@@ -132,14 +132,12 @@ void jacSmoother<SType,Type,MeshType>::jacSmoother::Smooth
 {
     meshLevel<Type,MeshType>& x = sys.x()[l];
 
-    const List<bool> diagonal(sys.diagonal());
-
     for (label sweep = 0; sweep < sweeps; sweep++)
     {
         forAll(x, d)
         if (!converged[d])
         {
-            if (diagonal[d])
+            if (sys.diagonal())
             {
                 diagonalSmoother<SType,Type,MeshType>::Sweep(sys, l, d);
             }

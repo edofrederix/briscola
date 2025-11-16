@@ -47,11 +47,9 @@ private:
     // Right-hand side source which is shallow by default
     meshField<Type,MeshType> b_;
 
-    // Singularity bools
-    List<bool> singular_;
-
-    // Diagonal bools
-    List<bool> diagonal_;
+    // Symmetry and diagonal bools
+    bool symmetric_;
+    bool diagonal_;
 
     // IBM forcing mask
     autoPtr<meshField<label,MeshType>> forcingMask_;
@@ -162,17 +160,20 @@ public:
         return forcingMask_();
     }
 
-    // A linear system is said to be singular if all matrix row sums at the
-    // coarsest level  are zero. See Remark 5.6.5 in "Multigrid", U. Trottenberg
-    // et al., (2000). Result is cached.
-    List<bool> singular(const bool clearCache = false);
+    // Return symmetry and diagonal bools
+    bool symmetric() const { return symmetric_; }
+    bool diagonal() const { return diagonal_; }
 
-    // Check if the linear system is diagonal. Result is cached.
-    List<bool> diagonal(const bool clearCache = false);
+    // Access to the symmetry and diagonal bools
+    bool& symmetric() { return symmetric_; }
+    bool& diagonal() { return diagonal_; }
 
-    // Return const access to the singular and diagonal lists
-    const List<bool>& singular() const { return singular_; }
-    const List<bool>& diagonal() const { return diagonal_; }
+    // A linear system is said to be singular if the matrix is symmetric,
+    // non-diagonal and if the boundary conditions of the unknown are singular
+    bool singular() const
+    {
+        return symmetric_ && !diagonal_ && xPtr_->singular();
+    }
 
     // Compute the residual b-Ax and store in given object. Optionally apply no
     // forcing mask. This is determined via a template parameter instead of an

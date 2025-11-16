@@ -46,8 +46,10 @@ operator-
             "-" + tSys->name()
         );
 
-    tRet->A() = -tSys->A();
-    tRet->b() = -tSys->b();
+    if (&tRet() != &tSys())
+        tRet.ref() = tSys;
+
+    tRet.ref() *= -1;
 
     if (tSys.isTmp())
         tSys.clear();
@@ -93,8 +95,10 @@ operator*
             "(" + Foam::name(s) + "*" + tSys->name() + ")"
         );
 
-    tRet->A() = s*tSys->A();
-    tRet->b() = s*tSys->b();
+    if (&tRet() != &tSys())
+        tRet.ref() = tSys;
+
+    tRet.ref() *= s;
 
     if (tSys.isTmp())
         tSys.clear();
@@ -138,8 +142,10 @@ operator*
             "(" + tSys->name() + "*" + Foam::name(s) + ")"
         );
 
-    tRet->A() = tRet->A()*s;
-    tRet->b() = tRet->b()*s;
+    if (&tRet() != &tSys())
+        tRet.ref() = tSys;
+
+    tRet.ref() *= s;
 
     if (tSys.isTmp())
         tSys.clear();
@@ -207,20 +213,20 @@ operator*
             "(" + s.name() + "*" + tSys->name() + ")"
         );
 
+    if (&tRet() != &tSys())
+        tRet.ref() = tSys;
+
     // The restricted field has undefined ghosts. Manually implement operation
-    // to avoid segmentation faults.
+    // to avoid segmentation errors.
 
-    meshField<SType,MeshType>& A = tRet->A();
-    meshField<Type,MeshType>& b = tRet->b();
-
-    const meshField<SType,MeshType>& As = tSys->A();
-    const meshField<Type,MeshType>& bs = tSys->b();
+    meshField<SType,MeshType>& A = tRet.ref().A();
+    meshField<Type,MeshType>& b = tRet.ref().b();
 
     forAllCells(A, l, d, i, j, k)
-        A(l,d,i,j,k) = As(l,d,i,j,k)*s(l,d,i,j,k);
+        A(l,d,i,j,k) *= s(l,d,i,j,k);
 
     forAllCells(b, l, d, i, j, k)
-        b(l,d,i,j,k) = bs(l,d,i,j,k)*s(l,d,i,j,k);
+        b(l,d,i,j,k) *= s(l,d,i,j,k);
 
     if (shallow)
         collapse(s);
@@ -323,20 +329,20 @@ operator*
             "(" + tSys->name() + "*" + s.name() + ")"
         );
 
+    if (&tRet() != &tSys())
+        tRet.ref() = tSys;
+
     // The restricted field has undefined ghosts. Manually implement operation
     // to avoid segmentation errors.
 
-    meshField<SType,MeshType>& A = tRet->A();
-    meshField<Type,MeshType>& b = tRet->b();
-
-    const meshField<SType,MeshType>& As = tSys->A();
-    const meshField<Type,MeshType>& bs = tSys->b();
+    meshField<SType,MeshType>& A = tRet.ref().A();
+    meshField<Type,MeshType>& b = tRet.ref().b();
 
     forAllCells(A, l, d, i, j, k)
-        A(l,d,i,j,k) = As(l,d,i,j,k)*s(l,d,i,j,k);
+        A(l,d,i,j,k) *= s(l,d,i,j,k);
 
     forAllCells(b, l, d, i, j, k)
-        b(l,d,i,j,k) = bs(l,d,i,j,k)*s(l,d,i,j,k);
+        b(l,d,i,j,k) *= s(l,d,i,j,k);
 
     if (shallow)
         collapse(s);
@@ -419,8 +425,10 @@ operator/
             "(" + tSys->name() + "/" + Foam::name(s) + ")"
         );
 
-    tRet->A() = tSys->A()/s;
-    tRet->b() = tSys->b()/s;
+    if (&tRet() != &tSys())
+        tRet.ref() = tSys;
+
+    tRet.ref() /= s;
 
     if (tSys.isTmp())
         tSys.clear();
@@ -488,20 +496,20 @@ operator/
             "(" + tSys->name() + "/" + s.name() + ")"
         );
 
+    if (&tRet() != &tSys())
+        tRet.ref() = tSys;
+
     // The restricted field has undefined ghosts. Manually implement operation
     // to avoid segmentation errors.
 
-    meshField<SType,MeshType>& A = tRet->A();
-    meshField<Type,MeshType>& b = tRet->b();
-
-    const meshField<SType,MeshType>& As = tSys->A();
-    const meshField<Type,MeshType>& bs = tSys->b();
+    meshField<SType,MeshType>& A = tRet.ref().A();
+    meshField<Type,MeshType>& b = tRet.ref().b();
 
     forAllCells(A, l, d, i, j, k)
-        A(l,d,i,j,k) = As(l,d,i,j,k)/s(l,d,i,j,k);
+        A(l,d,i,j,k) /= s(l,d,i,j,k);
 
     forAllCells(b, l, d, i, j, k)
-        b(l,d,i,j,k) = bs(l,d,i,j,k)/s(l,d,i,j,k);
+        b(l,d,i,j,k) /= s(l,d,i,j,k);
 
     if (shallow)
         collapse(s);
@@ -619,6 +627,7 @@ operator+
 
     if (static_cast<const void*>(&tRet()) != static_cast<const void*>(&tSys2()))
         tRet.ref() = tSys2;
+
     tRet.ref() += sys1;
 
     if (tSys2.isTmp())
@@ -652,8 +661,7 @@ operator+
     }
     else if
     (
-        static_cast<const void*>(&tRet())
-     == static_cast<const void*>(&tSys2())
+        static_cast<const void*>(&tRet()) == static_cast<const void*>(&tSys2())
     )
     {
         tRet.ref() += tSys1;
@@ -710,16 +718,14 @@ operator+
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
         reuseSysTmp<SType,SType,Type,MeshType>::New
         (
             tSys,
             "(" + tSys->name() + "+" + field.name() + ")"
-        )
-    );
+        );
 
-    if (static_cast<const void*>(&tRet()) != &tSys())
+    if (&tRet() != &tSys())
         tRet.ref() = tSys;
 
     tRet.ref() += field;
@@ -762,16 +768,14 @@ operator+
     const tmp<meshField<Type,MeshType>>& tField
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
         reuseSysTmp<SType,SType,Type,MeshType>::New
         (
             tSys,
             "(" + tSys->name() + "+" + tField->name() + ")"
-        )
-    );
+        );
 
-    if (static_cast<const void*>(&tRet()) != &tSys())
+    if (&tRet() != &tSys())
         tRet.ref() = tSys;
 
     tRet.ref() += tField();
@@ -814,16 +818,14 @@ operator+
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
         reuseSysTmp<SType,SType,Type,MeshType>::New
         (
             tSys,
             "(" + field.name() + "+" + tSys->name() + ")"
-        )
-    );
+        );
 
-    if (static_cast<const void*>(&tRet()) != &tSys())
+    if (&tRet() != &tSys())
         tRet.ref() = tSys;
 
     tRet.ref() += field;
@@ -866,16 +868,14 @@ operator+
     const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    tmp<linearSystem<SType,Type,MeshType>> tRet
-    (
+    tmp<linearSystem<SType,Type,MeshType>> tRet =
         reuseSysTmp<SType,SType,Type,MeshType>::New
         (
             tSys,
             "(" + tField->name() + "+" + tSys->name() + ")"
-        )
-    );
+        );
 
-    if (static_cast<const void*>(&tRet()) != &tSys())
+    if (&tRet() != &tSys())
         tRet.ref() = tSys;
 
     tRet.ref() += tField();
@@ -926,14 +926,12 @@ operator-
     typedef typename typeOfSum<SType1,SType2>::type STypeR;
     typedef linearSystem<STypeR,Type,MeshType> SysType;
 
-    tmp<SysType> tRet
-    (
+    tmp<SysType> tRet =
         reuseSysTmp<STypeR,SType1,Type,MeshType>::New
         (
             tSys1,
             "(" + tSys1->name() + "-" + sys2.name() + ")"
-        )
-    );
+        );
 
     if (static_cast<const void*>(&tRet()) != static_cast<const void*>(&tSys1()))
         tRet.ref() = tSys1;
@@ -957,14 +955,12 @@ operator-
     typedef typename typeOfSum<SType1,SType2>::type STypeR;
     typedef linearSystem<STypeR,Type,MeshType> SysType;
 
-    tmp<SysType> tRet
-    (
+    tmp<SysType> tRet =
         reuseSysTmp<STypeR,SType1,Type,MeshType>::New
         (
             tSys2,
             "(" + sys1.name() + "-" + tSys2->name() + ")"
-        )
-    );
+        );
 
     if (static_cast<const void*>(&tRet()) != static_cast<const void*>(&tSys2()))
         tRet.ref() = tSys2;
@@ -1003,8 +999,7 @@ operator-
     }
     else if
     (
-        static_cast<const void*>(&tRet())
-     == static_cast<const void*>(&tSys2())
+        static_cast<const void*>(&tRet()) == static_cast<const void*>(&tSys2())
     )
     {
         tRet.ref() *= -1;
@@ -1061,7 +1056,7 @@ operator-
             "(" + tSys->name() + "-" + field.name() + ")"
         );
 
-    if (static_cast<const void*>(&tRet()) != &tSys())
+    if (&tRet() != &tSys())
         tRet.ref() = tSys;
 
     tRet.ref() -= field;
@@ -1111,7 +1106,7 @@ operator-
             "(" + tSys->name() + "-" + tField->name() + ")"
         );
 
-    if (static_cast<const void*>(&tRet()) != &tSys())
+    if (&tRet() != &tSys())
         tRet.ref() = tSys;
 
     tRet.ref() -= tField();
@@ -1162,7 +1157,7 @@ operator-
             "(" + field.name() + "-" + tSys->name() + ")"
         );
 
-    if (static_cast<const void*>(&tRet()) != &tSys())
+    if (&tRet() != &tSys())
         tRet.ref() = tSys;
 
     tRet.ref() *= -1;
@@ -1214,7 +1209,7 @@ operator-
             "(" + tField->name() + "-" + tSys->name() + ")"
         );
 
-    if (static_cast<const void*>(&tRet()) != &tSys())
+    if (&tRet() != &tSys())
         tRet.ref() = tSys;
 
     tRet.ref() *= -1;

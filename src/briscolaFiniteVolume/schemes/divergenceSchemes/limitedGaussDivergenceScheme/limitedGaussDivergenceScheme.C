@@ -47,6 +47,9 @@ limitedGaussDivergenceScheme<Type,MeshType>::imDiv
 
     linearSystem<stencil,Type,MeshType>& sys = tSys.ref();
 
+    sys.symmetric() = false;
+    sys.diagonal() = false;
+
     meshField<stencil,MeshType>& A = sys.A();
 
     const faceField<scalar,MeshType>& fwc =

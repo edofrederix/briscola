@@ -48,6 +48,8 @@ stencilLinearGaussLaplacianScheme<Type,MeshType>::imLaplacian
 
     linearSystem<stencil,Type,MeshType>& sys = tSys.ref();
 
+    sys.diagonal() = false;
+
     meshField<stencil,MeshType>& A = sys.A();
 
     const faceField<scalar,MeshType>& fa =

@@ -34,11 +34,10 @@ void MG<SType,Type,MeshType>::cycle
     // On the coarsest level force the first global cell to zero for a
     // singular matrix
 
-    List<bool> singular(sys.singular());
-
-    forAll(singular, d)
-        if (l == coarseLevel && singular[d] && Pstream::master())
-            sys.b()[l][d](0,0,0) = Zero;
+    if (sys.singular())
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+            if (l == coarseLevel && Pstream::master())
+                sys.b()[l][d](0,0,0) = Zero;
 
     // Initialize defects to zero
 
@@ -404,11 +403,7 @@ void MG<SType,Type,MeshType>::solve
 
     sys.setForcingMask();
 
-    if
-    (
-        SType::nCsComponents == 1
-     || sum(labelList(sys.diagonal())) == MeshType::numberOfDirections
-    )
+    if (sys.diagonal())
     {
         diagonalSmoother<SType,Type,MeshType>::Smooth
         (
