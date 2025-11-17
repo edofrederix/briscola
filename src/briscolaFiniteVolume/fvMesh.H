@@ -67,10 +67,16 @@ class fvMesh
     template<class MeshType>
     faceLabel& I(const label l, const label d);
 
+    // Set the distributed communication graph
+    void setDistributedCommGraph();
+
     // Disallow default bitwise assignment
     void operator=(const fvMesh&);
 
 public:
+
+    // Old OpenFOAM communicator
+    static MPI_Comm MPI_COMM_FOAM_OLD;
 
     // Declare name of the class and its debug switch
     ClassName("fvMesh");

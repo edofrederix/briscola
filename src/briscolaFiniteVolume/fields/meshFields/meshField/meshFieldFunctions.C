@@ -593,7 +593,7 @@ template<class Type, class MeshType>                                           \
 List<ReturnType>                                                               \
 gFunc(const tmp<meshField<Type,MeshType>>& tf, const label comm)               \
 {                                                                              \
-    List<ReturnType> ret(gFunc(tf->operator[](0),comm));                       \
+    List<ReturnType> ret(gFunc(tf(),comm));                                    \
     if (tf.isTmp()) tf.clear();                                                \
     return ret;                                                                \
 }

@@ -105,7 +105,7 @@ void boundaryExchange<Type,MeshType>::correct
             counts.begin(),
             displacements.begin(),
             mpiDataTypePtr_->type,
-            fvMsh_.msh().comm()
+            PstreamGlobals::MPI_COMM_FOAM
         );
     }
     else

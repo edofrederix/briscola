@@ -574,8 +574,7 @@ List<ReturnType> gFunc                                                         \
 )                                                                              \
 {                                                                              \
     List<ReturnType> res(Func(f));                                             \
-    forAll(res, d)                                                             \
-        reduce(res[d], rFunc##Op<ReturnType>(), Pstream::msgType(), comm);     \
+    reduce(res, rFunc##Op<List<ReturnType>>(), Pstream::msgType(), comm);      \
     return res;                                                                \
 }                                                                              \
                                                                                \

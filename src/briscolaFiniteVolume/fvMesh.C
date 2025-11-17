@@ -4,6 +4,9 @@
 #include "staggeredFields.H"
 #include "immersedBoundary.H"
 
+#include "PstreamGlobals.H"
+#include "parallelBoundary.H"
+
 namespace Foam
 {
 
@@ -52,6 +55,55 @@ faceLabel& fvMesh::I<staggered>(const label l, const label d)
     return Is_[l][d];
 }
 
+void fvMesh::setDistributedCommGraph()
+{
+    if (Pstream::parRun() && MPI_COMM_FOAM_OLD == MPI_COMM_NULL)
+    {
+        labelList neighbors, weights;
+
+        forAll(mshPtr_->boundaries(), i)
+        if (mshPtr_->boundaries()[i].castable<parallelBoundary>())
+        {
+            const parallelBoundary& b =
+                mshPtr_->boundaries()[i].cast<parallelBoundary>();
+
+            const labelVector bo(b.offset());
+            const labelVector N(mshPtr_->operator[](0).N());
+
+            neighbors.append(b.neighborProcNum());
+
+            label weight = 1;
+
+            for (int d = 0; d < 3; d++)
+                if (bo[d] == 0)
+                    weight *= N[d];
+
+            weights.append(weight);
+        }
+
+        // Overwrite the default OpenFOAM communicator with a neighbor graph
+        // communicator, which can be used by MPI neighbor exchange functions.
+        // This new and optimized communicator is then automatically used by all
+        // operations including reductions and gFunctions.
+
+        MPI_COMM_FOAM_OLD = PstreamGlobals::MPI_COMM_FOAM;
+
+        MPI_Dist_graph_create_adjacent
+        (
+            MPI_COMM_FOAM_OLD,
+            neighbors.size(),
+            neighbors.begin(),
+            weights.begin(),
+            neighbors.size(),
+            neighbors.begin(),
+            weights.begin(),
+            MPI_INFO_NULL,
+            true,
+            &PstreamGlobals::MPI_COMM_FOAM
+        );
+    }
+}
+
 fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
 :
     regIOobject(dict, true),
@@ -86,6 +138,8 @@ fvMesh::fvMesh(const IOdictionary& dict, const Time& time)
     setInternalCells<colocated>();
     setInternalCells<staggered>();
 
+    setDistributedCommGraph();
+
     colocatedMetrics_ = new fvMeshMetrics<colocated>(*this);
 
     // Only generate staggered metrics when the brick topology is structured
@@ -114,7 +168,10 @@ fvMesh::fvMesh(const fvMesh& fvMsh)
 }
 
 fvMesh::~fvMesh()
-{}
+{
+    if (MPI_COMM_FOAM_OLD != MPI_COMM_NULL)
+        MPI_Comm_free(&MPI_COMM_FOAM_OLD);
+}
 
 template<>
 const faceLabel& fvMesh::I<colocated>(const label l, const label d) const
@@ -256,6 +313,8 @@ template const FastPtrList<immersedBoundary<staggered>>&
 fvMesh::immersedBoundaries<staggered>() const;
 template const FastPtrList<immersedBoundary<colocated>>&
 fvMesh::immersedBoundaries<colocated>() const;
+
+MPI_Comm fvMesh::MPI_COMM_FOAM_OLD = MPI_COMM_NULL;
 
 }
 

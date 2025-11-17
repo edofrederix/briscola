@@ -48,9 +48,6 @@ class mesh
     // Bounding box
     faceScalar boundingBox_;
 
-    // Distributed communication graph
-    MPI_Comm comm_;
-
     // Add a boundary to the list of boundaries
     void addBoundary
     (
@@ -100,9 +97,6 @@ class mesh
 
     // Set the list of empty boundary offsets
     void setEmptyBoundaryOffsets();
-
-    // Set the distributed communication graph
-    void setDistributedCommGraph();
 
     // Generate mesh part levels
     void generateLevels();
@@ -221,9 +215,6 @@ public:
 
     // Bounding box
     inline faceScalar boundingBox() const { return boundingBox_; }
-
-    // Access to the distributed communicator graph
-    const MPI_Comm& comm() const { return comm_; }
 
     // Find the cell index of the given point at given mesh level. Return
     // -unitXYZ if it is not found. Tree search, but should be overloaded by
