@@ -448,17 +448,10 @@ void FFTPoissonSolver<SType>::solve
 
     if (this->computeFlux())
     {
-        this->initFlux();
-
         const faceField<scalar,colocated>& fa =
             x.fvMsh().metrics<colocated>().faceAreas();
 
-        this->fluxPtr_() = ex::faceGrad(x)*fa;
-        this->fluxPtr_->rename
-        (
-            "*faceGrad(" + x.name() + ")"
-          + "*" + fa.name()
-        );
+        this->fluxPtr_ = ex::faceGrad(x)*fa;
     }
 }
 

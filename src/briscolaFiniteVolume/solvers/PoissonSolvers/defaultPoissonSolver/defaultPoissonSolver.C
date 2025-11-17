@@ -109,31 +109,16 @@ void defaultPoissonSolver<SType,Type,MeshType>::solve
 
     if (this->computeFlux())
     {
-        this->initFlux();
-
         const faceField<scalar,MeshType>& fa =
             x.fvMsh().template metrics<MeshType>().faceAreas();
 
         if (lambdaPtr)
         {
-            this->fluxPtr_() = (*lambdaPtr)*ex::faceGrad(x)*fa;
-
-            this->fluxPtr_->rename
-            (
-                lambdaPtr->name()
-              + "*faceGrad(" + x.name() + ")"
-              + "*" + fa.name()
-            );
+            this->fluxPtr_ = (*lambdaPtr)*ex::faceGrad(x)*fa;
         }
         else
         {
-            this->fluxPtr_() = ex::faceGrad(x)*fa;
-
-            this->fluxPtr_->rename
-            (
-                "*faceGrad(" + x.name() + ")"
-              + "*" + fa.name()
-            );
+            this->fluxPtr_ = ex::faceGrad(x)*fa;
         }
     }
 }

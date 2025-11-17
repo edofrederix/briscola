@@ -93,7 +93,9 @@ void splitPoissonSolver<SType,Type,MeshType>::solve
     scalar lambda0 = 0.0;
 
     forAll(lambda, s)
-        lambda0 = Foam::max(lambda0, max(gMax(lambda[s])));
+        lambda0 = Foam::max(lambda0, max(max(lambda[s])));
+
+    reduce(lambda0, maxOp<scalar>());
 
     // Modified source
 
@@ -112,8 +114,6 @@ void splitPoissonSolver<SType,Type,MeshType>::solve
                 x.fvMsh()
             ).ptr()
         );
-
-        bHatPtr_() = Zero;
     }
 
     meshField<Type,MeshType>& bHat = bHatPtr_();
@@ -144,12 +144,7 @@ void splitPoissonSolver<SType,Type,MeshType>::solve
         // Compute the flux if needed
 
         if (this->computeFlux() && corr == nCorr_-1)
-        {
-            this->initFlux();
-
-            this->fluxPtr_() = solverPtr_->flux() + phi;
-            this->fluxPtr_() *= lambda0;
-        }
+            this->fluxPtr_ = lambda0*(solverPtr_->flux() + phi);
     }
 }
 

@@ -33,13 +33,10 @@ protected:
     const fvMesh& fvMsh_;
 
     // Flux field
-    autoPtr<faceField<Type,MeshType>> fluxPtr_;
+    tmp<faceField<Type,MeshType>> fluxPtr_;
 
     // Switch to compute the flux (defaults to false)
     Switch computeFlux_;
-
-    // Function to initialize the flux field
-    virtual void initFlux();
 
 public:
 

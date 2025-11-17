@@ -10,20 +10,6 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-void PoissonSolver<SType,Type,MeshType>::initFlux()
-{
-    if (fluxPtr_.empty())
-        fluxPtr_.reset
-        (
-            new faceField<Type,MeshType>
-            (
-                "PoissonFlux",
-                fvMsh_
-            )
-        );
-}
-
-template<class SType, class Type, class MeshType>
 PoissonSolver<SType,Type,MeshType>::PoissonSolver
 (
     const dictionary& dict,
