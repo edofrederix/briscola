@@ -118,14 +118,25 @@ for P in "${!SOLVERS[@]}"; do
 
         $PYTHON post.py $RE log.$SOLVER
 
-        E1=$(sed -n '1p' < result.txt)
-        E2=$(sed -n '2p' < result.txt)
+        E1=0
+        E2=0
+        P1=failed
+        P2=failed
+        NDT=0
+        NITER=0
 
-        P1=$(sed -n '3p' < result.txt)
-        P2=$(sed -n '4p' < result.txt)
+        if [ -f "result.txt" ]; then
 
-        NDT=$(sed -n '5p' < result.txt)
-        NITER=$(sed -n '6p' < result.txt)
+            E1=$(sed -n '1p' < result.txt)
+            E2=$(sed -n '2p' < result.txt)
+
+            P1=$(sed -n '3p' < result.txt)
+            P2=$(sed -n '4p' < result.txt)
+
+            NDT=$(sed -n '5p' < result.txt)
+            NITER=$(sed -n '6p' < result.txt)
+
+        fi
 
         echo \
             "$MESH," \

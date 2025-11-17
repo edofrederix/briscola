@@ -96,11 +96,20 @@ for N in "${!SOLVERS[@]}"; do
 
         $PYTHON post.py log.$SOLVER
 
-        E=$(sed -n '1p' < result.txt)
-        P=$(sed -n '2p' < result.txt)
+        E=0
+        P=failed
+        NDT=0
+        NITER=0
 
-        NDT=$(sed -n '3p' < result.txt)
-        NITER=$(sed -n '4p' < result.txt)
+        if [ -f "result.txt" ]; then
+
+            E=$(sed -n '1p' < result.txt)
+            P=$(sed -n '2p' < result.txt)
+
+            NDT=$(sed -n '3p' < result.txt)
+            NITER=$(sed -n '4p' < result.txt)
+
+        fi
 
         echo \
             "$MESH," \

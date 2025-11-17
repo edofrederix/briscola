@@ -60,8 +60,10 @@ for line in log:
 
 rf = open('result.txt', 'w')
 
-rf.write(str(e) + '\n')
-rf.write('failed\n' if e > maxError else 'passed\n')
+rf.write(f"{e:.6g}\n")
+
+rf.write('failed\n' if np.isnan(e) or e > maxError else 'passed\n')
+
 rf.write(str(timeStepCount) + '\n')
 rf.write(str(np.round(float(nIters)/timeStepCount*1000)/1000) + '\n')
 

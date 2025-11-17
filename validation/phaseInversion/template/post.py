@@ -67,14 +67,16 @@ for line in log:
 
 rf = open('result.txt', 'w')
 
-rf.write(str(ek1) + '\n')
-rf.write(str(ek2) + '\n')
-rf.write(str(ep1) + '\n')
-rf.write(str(ep2) + '\n')
-rf.write('failed\n' if ek1 > maxError_ke1 else 'passed\n')
-rf.write('failed\n' if ek2 > maxError_ke2 else 'passed\n')
-rf.write('failed\n' if ep1 > maxError_pe1 else 'passed\n')
-rf.write('failed\n' if ep2 > maxError_pe2 else 'passed\n')
+rf.write(f"{ek1:.6g}\n")
+rf.write(f"{ek2:.6g}\n")
+rf.write(f"{ep1:.6g}\n")
+rf.write(f"{ep2:.6g}\n")
+
+rf.write('failed\n' if np.isnan(ek1) or ek1 > maxError_ke1 else 'passed\n')
+rf.write('failed\n' if np.isnan(ek2) or ek2 > maxError_ke2 else 'passed\n')
+rf.write('failed\n' if np.isnan(ep1) or ep1 > maxError_pe1 else 'passed\n')
+rf.write('failed\n' if np.isnan(ep2) or ep2 > maxError_pe2 else 'passed\n')
+
 rf.write(str(timeStepCount) + '\n')
 rf.write(str(np.round(float(nIters)/timeStepCount*1000)/1000) + '\n')
 

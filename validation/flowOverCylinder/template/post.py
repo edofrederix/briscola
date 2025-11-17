@@ -42,9 +42,6 @@ power = np.abs(fft)**2
 i_max = np.argmax(power)
 freq_max_power = freqs[i_max]
 
-print(freq_max_power)
-print('failed' if freq_max_power < freq_min or freq_max_power > freq_max else 'passed')
-
 ##
 
 log = open(logFile, 'r')
@@ -63,5 +60,21 @@ for line in log:
     if r:
         nIters += int(r.group(1))
 
-print(timeStepCount)
-print(nIters/timeStepCount)
+##
+
+rf = open('result.txt', 'w')
+
+rf.write(f"{freq_max_power:.6g}\n")
+
+rf.write(
+    'failed\n'
+    if np.isnan(freq_max_power)
+    or freq_max_power < freq_min
+    or freq_max_power > freq_max
+    else 'passed\n'
+)
+
+rf.write(str(timeStepCount) + '\n')
+rf.write(str(np.round(float(nIters)/timeStepCount*1000)/1000) + '\n')
+
+rf.close()
