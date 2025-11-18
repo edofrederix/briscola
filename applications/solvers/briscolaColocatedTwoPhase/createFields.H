@@ -111,7 +111,7 @@ colocatedScalarFaceField vf
 );
 
 vf.setRestrictionScheme("areaWeighted");
-v = Zero;
+vf = Zero;
 
 // Reference to the viscosity
 
