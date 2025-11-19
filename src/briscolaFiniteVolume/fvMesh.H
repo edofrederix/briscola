@@ -78,6 +78,14 @@ public:
     // Old OpenFOAM communicator
     static MPI_Comm MPI_COMM_FOAM_OLD;
 
+    // Neighbors
+    static labelList MPI_neighbors_recv;
+    static labelList MPI_neighbors_send;
+
+    // Neighbor maps
+    static List<labelList> MPI_neighbors_recv_map;
+    static List<labelList> MPI_neighbors_send_map;
+
     // Declare name of the class and its debug switch
     ClassName("fvMesh");
 

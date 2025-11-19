@@ -89,6 +89,12 @@ public:
         );
     }
 
+    // Neighbor processor number
+    label neighborProcNum() const { return neighborProcNum_; }
+
+    // Tag number
+    label tag() const { return tag_; }
+
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const
     {

@@ -574,7 +574,12 @@ List<ReturnType> gFunc                                                         \
 )                                                                              \
 {                                                                              \
     List<ReturnType> res(Func(f));                                             \
-    reduce(res, rFunc##Op<List<ReturnType>>(), Pstream::msgType(), comm);      \
+                                                                               \
+    /* We need to communicate per direction, because not all functions are */  \
+    /* defined for lists */                                                    \
+                                                                               \
+    forAll(res, i)                                                             \
+        reduce(res[i], rFunc##Op<ReturnType>(), Pstream::msgType(), comm);     \
     return res;                                                                \
 }                                                                              \
                                                                                \

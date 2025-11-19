@@ -26,9 +26,9 @@ class boundaryExchange
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
-    // Pointers to parallel/periodic boundaries. Periodic boundaries are derived
-    // from parallel ones.
-    DynamicList<const parallelBoundaryCondition<Type,MeshType>*> boundaryPtrs_;
+    // Pointers to parallel/periodic boundaries. Nullptr entries are
+    // non-parallel and can be skipped.
+    List<parallelBoundaryCondition<Type,MeshType>*> boundaryPtrs_;
 
     // Buffers
     List<Type> sendBuffers_;

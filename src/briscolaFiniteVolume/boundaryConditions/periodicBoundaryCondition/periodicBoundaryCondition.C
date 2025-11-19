@@ -47,8 +47,15 @@ template<class Type, class MeshType>
 void periodicBoundaryCondition<Type,MeshType>::prepare(const label l)
 {
     if (this->neighborProcNum_ != Pstream::myProcNo())
-    {
         parallelBoundaryCondition<Type,MeshType>::prepare(l);
+}
+
+template<class Type, class MeshType>
+void periodicBoundaryCondition<Type,MeshType>::evaluate(const label l)
+{
+    if (this->neighborProcNum_ != Pstream::myProcNo())
+    {
+        parallelBoundaryCondition<Type,MeshType>::evaluate(l);
     }
     else
     {
@@ -80,15 +87,6 @@ void periodicBoundaryCondition<Type,MeshType>::prepare(const label l)
                 field(d,ijk-Ss+St-bo) = field(d,ijk);
             }
         }
-    }
-}
-
-template<class Type, class MeshType>
-void periodicBoundaryCondition<Type,MeshType>::evaluate(const label l)
-{
-    if (this->neighborProcNum_ != Pstream::myProcNo())
-    {
-        parallelBoundaryCondition<Type,MeshType>::evaluate(l);
     }
 }
 

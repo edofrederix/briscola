@@ -26,7 +26,7 @@ surfaceTensionScheme
 
     curvatureScheme
     {
-        type    CV;
+        type    SHF;
     }
 
     sigma   0.07;
