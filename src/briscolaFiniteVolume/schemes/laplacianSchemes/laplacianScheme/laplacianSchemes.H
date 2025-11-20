@@ -21,10 +21,9 @@
         Istream                                                                \
     );
 
-
 #define makeLaplacianSchemeType(SCHEME,STYPE,TYPE,MESHTYPE)                    \
                                                                                \
-    typedef SCHEME##LaplacianScheme<STYPE,TYPE,MESHTYPE>                       \
+    typedef SCHEME##LaplacianScheme<TYPE,MESHTYPE>                             \
         SCHEME##LaplacianScheme##STYPE##TYPE##MESHTYPE;                        \
                                                                                \
     defineTemplateTypeNameAndDebugWithName                                     \
@@ -32,12 +31,7 @@
         SCHEME##LaplacianScheme##STYPE##TYPE##MESHTYPE,                        \
         #SCHEME,                                                               \
         0                                                                      \
-    );
-
-#define addSpecificLaplacianSchemeType(SCHEME,STYPE,TYPE,MESHTYPE)             \
-                                                                               \
-    typedef SCHEME##LaplacianScheme<TYPE,MESHTYPE>                             \
-        SCHEME##LaplacianScheme##STYPE##TYPE##MESHTYPE;                        \
+    );                                                                         \
                                                                                \
     laplacianScheme<STYPE,TYPE,MESHTYPE>::                                     \
     addIstreamConstructorToTable                                               \

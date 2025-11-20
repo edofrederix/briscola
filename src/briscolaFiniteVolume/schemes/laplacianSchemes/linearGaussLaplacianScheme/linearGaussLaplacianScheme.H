@@ -12,10 +12,10 @@ namespace briscola
 namespace fv
 {
 
-template<class SType, class Type, class MeshType>
+template<class Type, class MeshType>
 class linearGaussLaplacianScheme
 :
-    public laplacianScheme<SType,Type,MeshType>
+    public laplacianScheme<stencil,Type,MeshType>
 {
 public:
 
@@ -24,6 +24,13 @@ public:
 
     // Construct from stream and mesh
     linearGaussLaplacianScheme(const fvMesh&, Istream& = scheme::nullStream);
+
+    // Implicit laplacian scheme
+    virtual tmp<linearSystem<stencil,Type,MeshType>> imLaplacian
+    (
+        const faceField<scalar,MeshType>* lambdaPtr,
+        const meshField<Type,MeshType>& field
+    );
 
     // Explicit laplacian schemes
     virtual tmp<meshField<Type,MeshType>> exLaplacian
