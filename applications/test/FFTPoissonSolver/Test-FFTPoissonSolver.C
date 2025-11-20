@@ -132,6 +132,9 @@ int main(int argc, char *argv[])
         true
     );
 
+    f = Zero;
+    p = Zero;
+
     labelVector N(fvMsh.msh().cast<rectilinearMesh>().N());
 
     Info << "Mesh size: " << N << endl;
