@@ -14,13 +14,22 @@ namespace FFT
 
 void pencilDecomposer::decompInit(label decompType)
 {
-
     // Initial decomposition
 
     checkDecomp(I_);
 
-    Ni_ = fvMsh_.msh().decomp().partSizePerProc();
-    Si_ = fvMsh_.msh().decomp().globalStartPerProc();
+    const decompositionMap& map = fvMsh_.msh().decomp().map();
+
+    Ni_.setSize(map.legend().size());
+    Si_.setSize(map.legend().size());
+
+    forAll(map.legend(), i)
+    {
+        const labelVector ijk(map.legend()[i]);
+
+        Ni_[i] = map.shapes()(ijk);
+        Si_[i] = map.starts()(ijk);
+    }
 
     // Pencil decompositions
 

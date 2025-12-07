@@ -7,62 +7,6 @@ namespace briscola
 namespace fv
 {
 
-void checkParallelPatches(const fvMesh& fvMsh)
-{
-    const mesh& msh = fvMsh.msh();
-    const decomposition& decomp = msh.decomp();
-
-    const faceLabel& faceNeighbors =
-        decomp.faceNeighborsPerProc()[Pstream::myProcNo()];
-
-    const edgeLabel& edgeNeighbors =
-        decomp.edgeNeighborsPerProc()[Pstream::myProcNo()];
-
-    const vertexLabel& vertexNeighbors =
-        decomp.vertexNeighborsPerProc()[Pstream::myProcNo()];
-
-    forAll(msh.boundaries(), i)
-    {
-        const boundary& b = msh.boundaries()[i];
-
-        if (b.castable<parallelBoundary>())
-        {
-            const labelVector bo = b.offset();
-
-            if (b.offsetDegree() == 1)
-            {
-                const label faceNum = faceNumber(bo);
-
-                if (faceNeighbors[faceNum] != b.neighborProcNum())
-                    FatalErrorInFunction
-                        << "Mismatch in face boundary neighbor "
-                        << "processor number."
-                        << endl << exit(FatalError);
-            }
-            else if (b.offsetDegree() == 2)
-            {
-                const label edgeNum = edgeNumber(bo);
-
-                if (edgeNeighbors[edgeNum] != b.neighborProcNum())
-                    FatalErrorInFunction
-                        << "Mismatch in edge boundary neighbor "
-                        << "processor number."
-                        << endl << exit(FatalError);
-            }
-            else
-            {
-                const label vertexNum = vertexNumber(bo);
-
-                if (vertexNeighbors[vertexNum] != b.neighborProcNum())
-                    FatalErrorInFunction
-                        << "Mismatch in vertex boundary neighbor "
-                        << "processor number."
-                        << endl << exit(FatalError);
-            }
-        }
-    }
-}
-
 template<class MeshType>
 void checkParallelFaceCenters(const fvMesh& fvMsh)
 {

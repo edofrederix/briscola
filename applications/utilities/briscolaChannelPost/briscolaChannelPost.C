@@ -136,6 +136,8 @@ int briscolaChannelPost(arguments args)
             // Global spatially averaged line
             autoPtr<List<Type>> globalAvgValsLine;
 
+            const decompositionMap& map = fvMsh.msh().decomp().map();
+
             // Global lists only needed on master proc
             if (Pstream::master())
             {
@@ -144,7 +146,7 @@ int briscolaChannelPost(arguments args)
                 for (int p = 0; p < Pstream::nProcs(); p++)
                 {
                     globalListSize +=
-                        fvMsh.msh().decomp().partSizePerProc()[p][lineDir];
+                        map.shapes()(map.legend()[p])[lineDir];
 
                     if
                     (
@@ -183,8 +185,7 @@ int briscolaChannelPost(arguments args)
             forAll(rs, p)
             {
                 rd[p] = displacement;
-                rs[p] = fvMsh.msh().decomp()
-                    .partSizePerProc()[p][lineDir]*sizeof(Type);
+                rs[p] = map.shapes()(map.legend()[p])[lineDir]*sizeof(Type);
 
                 if
                 (
@@ -228,7 +229,7 @@ int briscolaChannelPost(arguments args)
                 {
                     // processor p starting index
                     label startIndex =
-                        fvMsh.msh().decomp().globalStartPerProc()[p][lineDir];
+                        map.starts()(map.legend()[p])[lineDir];
 
                     scalar s = rs[p];
 

@@ -55,8 +55,9 @@ void mesh::generateBrickInternalBoundaries()
 {
     // Add parallel brick-internal boundaries
 
-    const labelVector myBrickDecomp(decomp().myBrickDecomp());
-    const labelVector myBrickPart(decomp().myBrickPart());
+    const label myBrickNum = decomp().myBrickNum();
+    const labelVector myBrickDecomp = decomp().myBrickDecomp();
+    const labelVector myBrickPart = decomp().myBrickPart();
 
     if (cmptProduct(myBrickDecomp) > 1)
     {
@@ -64,25 +65,22 @@ void mesh::generateBrickInternalBoundaries()
         // Even if the bricks are unstructured, within a brick we can add edge
         // and vertex boundaries anyway.
 
-        labelVector bo;
+        const labelVector S =
+            cmptMax(myBrickPart - unitXYZ, zeroXYZ);
 
-        for (bo.x() = -1; bo.x() < 2; bo.x()++)
-        for (bo.y() = -1; bo.y() < 2; bo.y()++)
-        for (bo.z() = -1; bo.z() < 2; bo.z()++)
-        if (cmptSum(cmptMag(bo)) != 0)
+        const labelVector E =
+            cmptMin(myBrickPart + unitXYZ, myBrickDecomp);
+
+        labelVector nei;
+        for (nei.x() = S.x(); nei.x() < E.x(); nei.x()++)
+        for (nei.y() = S.y(); nei.y() < E.y(); nei.y()++)
+        for (nei.z() = S.z(); nei.z() < E.z(); nei.z()++)
+        if (nei != myBrickPart)
         {
-            labelVector neighbor(myBrickPart + bo);
+            const labelVector bo = nei - myBrickPart;
 
-            const label neighborProcNum
-            (
-                decomp().getProcNum
-                (
-                    neighbor,
-                    decomp().myBrickNum()
-                )
-            );
-
-            if (neighborProcNum == -1) continue;
+            const label neighborProcNum =
+                decomp().brickProcMaps()[myBrickNum](nei);
 
             // Add to boundaries
 

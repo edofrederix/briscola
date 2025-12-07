@@ -12,20 +12,22 @@ void brickDecompositionInterface::setSlices()
     const labelVector offset = link_.offset();
     const labelTensor T = link_.T();
 
-    // Processor topology of both bricks
-
-    labelBlock procNums0(msh_.decomp().procMapPerBrick()[b0_.num()]);
-    labelBlock procNums1(msh_.decomp().procMapPerBrick()[b1_.num()]);
-
-    // Part sizes of both bricks
-
-    labelVector partN0(msh_.decomp().partSizePerBrick()[b0_.num()]);
-    labelVector partN1(msh_.decomp().partSizePerBrick()[b1_.num()]);
-
     // Sizes of both bricks
 
     labelVector Nb0 = b0_.N();
     labelVector Nb1 = b1_.N();
+
+    // Processor topology of both bricks
+
+    labelBlock procNums0 = msh_.decomp().brickProcMaps()[b0_.num()];
+    labelBlock procNums1 = msh_.decomp().brickProcMaps()[b1_.num()];
+
+    // Part sizes of both bricks
+
+    labelVector partN0 =
+        cmptDivide(Nb0, msh_.decomp().brickDecomps()[b0_.num()]);
+    labelVector partN1 =
+        cmptDivide(Nb1, msh_.decomp().brickDecomps()[b1_.num()]);
 
     // Transform data of the second brick to oppose the first brick
 

@@ -16,19 +16,14 @@ class manualDecomp
 :
     public decomposition
 {
-    // Decomposition per brick
-    List<labelVector> decompPerBrick_;
-
-    // The number of the brick of which this processor contains (part of) the
-    // mesh
+    // This processor's brick number
     label myBrickNum_;
 
-    // The index which points to the part of this processor's brick which is
-    // contained by this processor
-    labelVector myBrickPart_;
+    // This processor's brick decomposition
+    labelVector myBrickDecomp_;
 
-    // Disallow default bitwise assignment
-    void operator=(const manualDecomp&);
+    // This processor's brick part
+    labelVector myBrickPart_;
 
 public:
 
@@ -47,16 +42,16 @@ public:
         return autoPtr<decomposition>(new manualDecomp(*this));
     }
 
-    // Number of parts per brick
-    virtual const List<labelVector>& decompPerBrick() const
-    {
-        return decompPerBrick_;
-    }
-
     // This processor's brick number
     virtual label myBrickNum() const
     {
         return myBrickNum_;
+    }
+
+    // This processor's brick decomposition
+    virtual labelVector myBrickDecomp() const
+    {
+        return myBrickDecomp_;
     }
 
     // This processor's part index of its brick

@@ -11,23 +11,34 @@ namespace Foam
 namespace briscola
 {
 
+class decomposition;
+
 class decompositionMap
 :
     public labelBlock
 {
+    // Reference to the decomposition
+    const decomposition& decomp_;
+
     // Brick legend
     List<labelVector> legend_;
 
-    // Reset and calculate legend from map
-    void calcLegend();
+    // Part shapes
+    labelVectorBlock shapes_;
+
+    // Part starts
+    labelVectorBlock starts_;
 
 public:
 
-    // Null constructor
-    decompositionMap();
+    // Construct from decomposition
+    decompositionMap(const decomposition&);
 
-    // Construct from map
-    decompositionMap(const labelBlock&);
+    // Copy constructor
+    decompositionMap(const decompositionMap&);
+
+    // Disallow null constructor
+    decompositionMap() = delete;
 
     // Destructor
     virtual ~decompositionMap();
@@ -35,8 +46,11 @@ public:
     // Access to the brick legend
     const List<labelVector>& legend() const { return legend_; }
 
-    // Set data from map and calculate legend
-    void setData(const labelBlock&);
+    // Part shapes
+    const labelVectorBlock& shapes() const { return shapes_; }
+
+    // Part starts
+    const labelVectorBlock& starts() const { return starts_; }
 };
 
 }

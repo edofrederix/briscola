@@ -18,88 +18,67 @@ manualDecomp::manualDecomp(mesh& msh)
 :
     decomposition(msh)
 {
-    decompPerBrick_ =
-        List<labelVector>(dict_.lookup("brickDecompositions"));
+    List<labelVector> brickDecomps(dict_.lookup("brickDecompositions"));
 
     // Check if all bricks are specified
 
-    if (decompPerBrick_.size() != msh.bricks().size())
-    {
-        FatalError
-            << "The number of manualDecomp vectors should be equal "
-            << "to the number of bricks" << endl;
-        FatalError.exit();
-    }
+    if (brickDecomps.size() != msh.bricks().size())
+        FatalErrorInFunction
+            << "The number of manual brick decomposition vectors should be "
+            << "equal to the number of bricks" << abort(FatalError);
 
     // Check if the total number of processors matches
 
     label nProcs(0);
 
-    forAll(decompPerBrick_, bricki)
+    forAll(brickDecomps, bricki)
     {
-        const label nProcsi = cmptProduct(decompPerBrick_[bricki]);
+        const label nProcsi = cmptProduct(brickDecomps[bricki]);
 
         if (nProcsi < 1)
-        {
-            FatalError
-                << "Incorrect decomposition given for " << bricki << endl;
-            FatalError.exit();
-        }
+            FatalErrorInFunction
+                << "Incorrect decomposition given for " << bricki << endl
+                << abort(FatalError);
 
         nProcs += nProcsi;
     }
 
     if (nProcs != Pstream::nProcs())
-    {
-        FatalError
+        FatalErrorInFunction
             << "Mismatch between the specified number of processors ("
             << nProcs << ") and the actual number of processors ("
             << Pstream::nProcs() << ")" << endl;
-        FatalError.exit();
-    }
 
     // Transform decompositions according to the brick's transformation
 
-    forAll(decompPerBrick_, i)
-    {
-        const brick& b = msh.bricks()[i];
-
-        decompPerBrick_[i] = cmptMag(b.T() & decompPerBrick_[i]);
-    }
+    forAll(brickDecomps, i)
+        brickDecomps[i] = cmptMag(msh.bricks()[i].T() & brickDecomps[i]);
 
     // Check if the decompositions are feasible
 
-    forAll(msh.bricks(), bricki)
+    forAll(msh.bricks(), i)
     {
-        const brick& b = msh.bricks()[bricki];
-
-        const labelVector N = b.N();
-        const labelVector D = decompPerBrick_[bricki];
+        const labelVector N = msh.bricks()[i].N();
+        const labelVector D = brickDecomps[i];
 
         for (label dir = 0; dir < 3; dir++)
         {
             if (N[dir] % D[dir] != 0)
-            {
-                FatalError
-                    << "Brick " << bricki << " has " << N[dir]
-                    << " cells in the " << dir
-                    << " direction but this is incompatible with a decomposition of "
-                    << D[dir] << " processors along this direction"
-                    << endl;
-                FatalError.exit();
-            }
+                FatalErrorInFunction
+                    << "Brick " << i << " has " << N[dir] << " cells in the "
+                    << dir << " direction but this is incompatible with a "
+                    << "decomposition of " << D[dir] << " processors along "
+                    << "this direction" << endl << abort(FatalError);
 
             label Nd = N[dir]/D[dir];
 
             if (!Nd || ((Nd & (Nd-1)) != 0 && ((Nd/3) & ((Nd/3)-1)) != 0))
-            {
-                FatalError
-                    << "The number of cells (" << Nd << ") of "
-                    << "the mesh part that results from the decomposition of brick "
-                    << bricki << " in the " << dir << " direction "
-                    << "is not a power of 2 nor a triple of a power of 2" << endl;
-                FatalError.exit();
-            }
+                FatalErrorInFunction
+                    << "The number of cells (" << Nd << ") of the mesh part "
+                    << "that results from the decomposition of brick " << i
+                    << " in the " << dir << " direction is not a power of 2 "
+                    << "nor a triple of a power of 2" << endl
+                    << abort(FatalError);
         }
     }
 
@@ -121,8 +100,8 @@ manualDecomp::manualDecomp(mesh& msh)
             const label facei = link.f0().num();
             const label facej = link.f1().num();
 
-            labelVector Ni = decompPerBrick_[bricki];
-            labelVector Nj = decompPerBrick_[brickj];
+            labelVector Ni = brickDecomps[bricki];
+            labelVector Nj = brickDecomps[brickj];
 
             Ni[facei/2] = 1;
             Nj[facej/2] = 1;
@@ -130,13 +109,11 @@ manualDecomp::manualDecomp(mesh& msh)
             Nj = cmptMag(link.T() & Nj);
 
             if (Ni != Nj && Pstream::master())
-            {
                 FatalErrorInFunction
                     << "Inconsistent decomposition between brick " << bricki
                     << " on face " << facei << " and brick " << brickj
                     << " on face " << facej << endl
                     << abort(FatalError);
-            }
         }
     }
 
@@ -146,7 +123,7 @@ manualDecomp::manualDecomp(mesh& msh)
 
     forAll(msh.bricks(), bricki)
     {
-        const labelVector& decomp = decompPerBrick_[bricki];
+        const labelVector& decomp = brickDecomps[bricki];
 
         for (label i = 0; i < decomp.x(); i++)
         {
@@ -166,14 +143,14 @@ manualDecomp::manualDecomp(mesh& msh)
         }
     }
 
-    updateGlobalData(msh);
+    init();
 }
 
 manualDecomp::manualDecomp(const manualDecomp& decomp)
 :
     decomposition(decomp),
-    decompPerBrick_(decomp.decompPerBrick_),
     myBrickNum_(decomp.myBrickNum_),
+    myBrickDecomp_(decomp.myBrickDecomp_),
     myBrickPart_(decomp.myBrickPart_)
 {}
 

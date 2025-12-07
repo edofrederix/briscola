@@ -138,7 +138,7 @@ void brickInfo(const fvMesh& fvMsh)
         if (Pstream::parRun())
         {
             Info<< "        Decomposition vector = "
-                << fvMsh.msh().decomp().decompPerBrick()[bricki] << endl;
+                << fvMsh.msh().decomp().brickDecomps()[bricki] << endl;
         }
     }
 }
@@ -226,16 +226,16 @@ void parallelInfo(const fvMesh& fvMsh)
     if (Pstream::master())
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
     {
-        const label brickNum(fvMsh.msh().decomp().brickNumPerProc()[proc]);
+        const label brickNum(fvMsh.msh().decomp().procBrickNums()[proc]);
 
         const labelVector brickPart
         (
-            fvMsh.msh().decomp().brickPartPerProc()[proc]
+            fvMsh.msh().decomp().procBrickParts()[proc]
         );
 
         const labelVector brickDecomp
         (
-            fvMsh.msh().decomp().decompPerBrick()[brickNum]
+            fvMsh.msh().decomp().brickDecomps()[brickNum]
         );
 
         const dictionary& pDict = pDicts[proc];

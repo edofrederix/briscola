@@ -15,10 +15,15 @@ void part::calcPoints(const mesh& msh, const part* l)
 
     if (l_ == 0)
     {
-        const labelVector start = msh.decomp().myBrickPartStart();
-
         const brick& b = msh.bricks()[msh.decomp().myBrickNum()];
         const labelVector Nb = b.N();
+
+        const labelVector start =
+            cmptMultiply
+            (
+                cmptDivide(Nb, msh.decomp().myBrickDecomp()),
+                msh.decomp().myBrickPart()
+            );
 
         // Normalized coordinates of the points in this processor's part of the
         // brick
@@ -67,7 +72,13 @@ part::part(const mesh& msh, const part* l)
 {
     if (l == nullptr)
     {
-        N_ = msh.decomp().myPartN();
+        N_ =
+            cmptDivide
+            (
+                msh.bricks()[msh.decomp().myBrickNum()].N(),
+                msh.decomp().myBrickDecomp()
+            );
+
         R_ = zeroXYZ;
     }
     else
