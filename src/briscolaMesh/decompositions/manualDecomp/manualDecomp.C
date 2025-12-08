@@ -134,6 +134,7 @@ manualDecomp::manualDecomp(mesh& msh)
                     if (proc == Pstream::myProcNo())
                     {
                         myBrickNum_ = bricki;
+                        myBrickDecomp_ = decomp;
                         myBrickPart_ = labelVector(i,j,k);
                     }
 

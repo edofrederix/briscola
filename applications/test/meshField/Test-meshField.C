@@ -1680,10 +1680,7 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
 
     forAll(m1.level(), d)
         if (sumCmptProd(m1, m1)[d] != m1m1scp[d])
-        {
-            Pout<< sumCmptProd(m1, m1)[d] << " " << m1m1scp[d] << endl;
             FatalErrorInFunction << "test 32a failed" << abort(FatalError);
-        }
 
     forAll(m1.level(), d)
         if (sumCmptProd(2*m1, m1)[d] != 2*m1m1scp[d])

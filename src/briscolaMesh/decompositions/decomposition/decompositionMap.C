@@ -21,8 +21,8 @@ decompositionMap::decompositionMap(const decomposition& decomp)
 
     forAll(N, dir)
     {
-        N.set(dir, new labelList(brickMap.shape()[dir]));
-        M.set(dir, new labelList(brickMap.shape()[dir]));
+        N.set(dir, new labelList(brickMap.shape()[dir], 0));
+        M.set(dir, new labelList(brickMap.shape()[dir], 0));
     }
 
     forAllBlock(brickMap, i, j, k)
@@ -49,15 +49,17 @@ decompositionMap::decompositionMap(const decomposition& decomp)
         }
     }
 
-    const labelVector shape(sum(N[0]), sum(N[1]), sum(N[2]));
+    const labelVector S(sum(N[0]), sum(N[1]), sum(N[2]));
+
+    // Set map, shapes and starts
 
     labelBlock& map = *this;
 
-    map.setSize(shape);
+    map.setSize(S);
     map = -1;
 
-    shapes_.setSize(shape);
-    starts_.setSize(shape);
+    shapes_.setSize(S);
+    starts_.setSize(S);
     starts_ = zeroXYZ;
 
     labelVector cursor(zeroXYZ);
@@ -94,8 +96,8 @@ decompositionMap::decompositionMap(const decomposition& decomp)
                     for (int dir = 0; dir < 3; dir++)
                         if (ijk[dir]-1 >= 0)
                             starts_(ijk)[dir] =
-                                starts_(ijk - units[dir])[dir]
-                              + M[dir][ijk[dir]-1];
+                                starts_(ijk[dir]-1)[dir]
+                              + shapes_(ijk[dir]-1)[dir];
                 }
 
                 cursor.z() += N[2][k];

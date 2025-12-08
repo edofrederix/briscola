@@ -51,6 +51,18 @@ public:
 
     // Part starts
     const labelVectorBlock& starts() const { return starts_; }
+
+    // This processor's part shape
+    labelVector myBrickPartShape() const
+    {
+        return shapes_(legend_[Pstream::myProcNo()]);
+    }
+
+    // This processor's part start
+    labelVector myBrickPartStart() const
+    {
+        return starts_(legend_[Pstream::myProcNo()]);
+    }
 };
 
 }

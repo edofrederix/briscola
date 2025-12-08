@@ -230,9 +230,11 @@ boundaryExchange<Type,MeshType>::boundaryExchange
     field_(field),
     fvMsh_(field.fvMsh_),
     sendBuffers_(0),
-    recvBuffers_(0),
-    mpiDataTypePtr_(new pMPI<Type>())
+    recvBuffers_(0)
 {
+    if (Pstream::parRun())
+        mpiDataTypePtr_.reset(new pMPI<Type>());
+
     typedef parallelBoundaryCondition<Type,MeshType> pbcType;
 
     if (!field_.boundaryConditions().size())
@@ -264,9 +266,11 @@ boundaryExchange<Type,MeshType>::boundaryExchange
     fvMsh_(s.fvMsh_),
     boundaryPtrs_(s.boundaryPtrs_),
     sendBuffers_(s.sendBuffers_),
-    recvBuffers_(s.recvBuffers_),
-    mpiDataTypePtr_(new pMPI<Type>())
-{}
+    recvBuffers_(s.recvBuffers_)
+{
+    if (Pstream::parRun())
+        mpiDataTypePtr_.reset(new pMPI<Type>());
+}
 
 template<class Type, class MeshType>
 boundaryExchange<Type,MeshType>::~boundaryExchange()

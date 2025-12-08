@@ -61,20 +61,19 @@ void mesh::generateBrickInternalBoundaries()
 
     if (cmptProduct(myBrickDecomp) > 1)
     {
-        // Try all boundary offset vectors, including faces, edges and vertices.
-        // Even if the bricks are unstructured, within a brick we can add edge
-        // and vertex boundaries anyway.
+        // Try all boundary offset vectors. Even if the bricks are unstructured,
+        // within a brick we can add edge and vertex boundaries anyway.
 
         const labelVector S =
             cmptMax(myBrickPart - unitXYZ, zeroXYZ);
 
         const labelVector E =
-            cmptMin(myBrickPart + unitXYZ, myBrickDecomp);
+            cmptMin(myBrickPart + unitXYZ, myBrickDecomp - unitXYZ);
 
         labelVector nei;
-        for (nei.x() = S.x(); nei.x() < E.x(); nei.x()++)
-        for (nei.y() = S.y(); nei.y() < E.y(); nei.y()++)
-        for (nei.z() = S.z(); nei.z() < E.z(); nei.z()++)
+        for (nei.x() = S.x(); nei.x() <= E.x(); nei.x()++)
+        for (nei.y() = S.y(); nei.y() <= E.y(); nei.y()++)
+        for (nei.z() = S.z(); nei.z() <= E.z(); nei.z()++)
         if (nei != myBrickPart)
         {
             const labelVector bo = nei - myBrickPart;

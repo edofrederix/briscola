@@ -77,6 +77,7 @@ decomposition::decomposition
     procBrickNums_(d.procBrickNums_),
     procBrickDecomps_(d.procBrickDecomps_),
     procBrickParts_(d.procBrickParts_),
+    brickDecomps_(d.brickDecomps_),
     brickProcMaps_(d.brickProcMaps_),
     mapPtr_()
 {

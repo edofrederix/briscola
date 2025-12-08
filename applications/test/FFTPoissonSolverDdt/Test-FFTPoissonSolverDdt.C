@@ -19,8 +19,8 @@ bool check
     const FastPtrList<PartialList<scalar>>& cellSizes
         = fvMsh.msh().cast<rectilinearMesh>().globalCellSizes();
 
-    labelVector Si =
-        fvMsh.msh().decomp().globalStartPerProc()[Pstream::myProcNo()];
+    const labelVector Si =
+        fvMsh.msh().decomp().map().myBrickPartStart();
 
     scalarList dx2 = sqr(cellSizes[0]);
     scalarList dy2 = sqr(cellSizes[1]);
