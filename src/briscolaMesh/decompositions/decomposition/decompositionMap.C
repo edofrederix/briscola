@@ -74,7 +74,8 @@ decompositionMap::decompositionMap(const decomposition& decomp)
 
             for (int k = 0; k < brickMap.n(); k++)
             {
-                const label brick = brickMap(i,j,k);
+                const labelVector ijk(i,j,k);
+                const label brick = brickMap(ijk);
 
                 // Set processor numbers
 
@@ -83,21 +84,35 @@ decompositionMap::decompositionMap(const decomposition& decomp)
                         map(cursor + labelVector(a,b,c)) =
                             decomp_.brickProcMaps()[brick](a,b,c);
 
+                // Part shape in this brick
+
+                const labelVector shape(M[0][i], M[1][j], M[2][k]);
+
+                // Brick decomposition shape
+
+                const labelVector brickDecompShape(N[0][i], N[1][j], N[2][k]);
+
+                // Start
+
+                labelVector start;
+
+                for (int dir = 0; dir < 3; dir++)
+                    start[dir] =
+                        ijk[dir] > 0
+                      ? starts_(ijk-units[dir])[dir]
+                      + shapes_(ijk-units[dir])[dir]
+                      : 0;
+
                 // Set shapes and starts
 
-                for (int a = 0; a < N[0][i]; a++)
-                for (int b = 0; b < N[1][j]; b++)
-                for (int c = 0; c < N[2][k]; c++)
+                for (int a = 0; a < brickDecompShape.x(); a++)
+                for (int b = 0; b < brickDecompShape.y(); b++)
+                for (int c = 0; c < brickDecompShape.z(); c++)
                 {
-                    const labelVector ijk(cursor + labelVector(a,b,c));
+                    const labelVector abc(a,b,c);
 
-                    shapes_(ijk) = labelVector(M[0][i], M[1][j], M[2][k]);
-
-                    for (int dir = 0; dir < 3; dir++)
-                        if (ijk[dir]-1 >= 0)
-                            starts_(ijk)[dir] =
-                                starts_(ijk[dir]-1)[dir]
-                              + shapes_(ijk[dir]-1)[dir];
+                    shapes_(cursor + abc) = shape;
+                    starts_(cursor + abc) = start + cmptMultiply(abc, shape);
                 }
 
                 cursor.z() += N[2][k];
