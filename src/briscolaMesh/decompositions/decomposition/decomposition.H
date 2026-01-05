@@ -21,6 +21,22 @@ namespace Foam
 namespace briscola
 {
 
+/**
+
+@brief Decomposition class
+
+This is the base class defining the decomposition of the mesh. This base class
+handles general collection of data. The actual decomposition must be defined by
+a derived type, by means of the myBrickNum(), myBrickDecomp() and myBrickPart()
+pure virtual functions. On each processor, these functions return the brick
+number to which the processor belongs, the decomposition of that brick and the
+brick part of that brick to which the processor belongs. Based on this
+information, the decomposition class fills some general data arrays. This is
+done in the init() function which is automatically called in the selector. If
+the selector is not used, then the init() function must be called manually.
+
+*/
+
 class mesh;
 
 class decomposition
@@ -35,28 +51,27 @@ protected:
 
 private:
 
-    // Processor brick numbers
-    labelList procBrickNums_;
+    // Data for each processor
 
-    // Processor brick decompositions
-    List<labelVector> procBrickDecomps_;
+        // Processor brick numbers
+        labelList procBrickNums_;
 
-    // Processor brick parts
-    List<labelVector> procBrickParts_;
+        // Processor brick decompositions
+        List<labelVector> procBrickDecomps_;
 
-    // Brick decompositions
-    List<labelVector> brickDecomps_;
+        // Processor brick parts
+        List<labelVector> procBrickParts_;
 
-    // Brick processor topologies
-    FastPtrList<labelBlock> brickProcMaps_;
+    // Data for each brick
 
-    // Global processor topology map, only set on structured brick topologies
+        // Brick decompositions
+        List<labelVector> brickDecomps_;
+
+        // Brick processor topologies
+        FastPtrList<labelBlock> brickProcMaps_;
+
+    // Structured processor topology map (only set on structured meshes)
     autoPtr<decompositionMap> mapPtr_;
-
-protected:
-
-    // Initialize
-    void init();
 
 public:
 
@@ -138,14 +153,19 @@ public:
         return mapPtr_();
     }
 
-    // This processor's brick number
-    virtual label myBrickNum() const = 0;
+    // Initialize
+    void init();
 
-    // This processor's brick decomposition
-    virtual labelVector myBrickDecomp() const = 0;
+    // Pure virtual functions to be defined by derived types
 
-    // This processor's part index of its brick
-    virtual labelVector myBrickPart() const = 0;
+        // This processor's brick number
+        virtual label myBrickNum() const = 0;
+
+        // This processor's brick decomposition
+        virtual labelVector myBrickDecomp() const = 0;
+
+        // This processor's part index of its brick
+        virtual labelVector myBrickPart() const = 0;
 };
 
 }

@@ -143,8 +143,6 @@ manualDecomp::manualDecomp(mesh& msh)
             }
         }
     }
-
-    init();
 }
 
 manualDecomp::manualDecomp(const manualDecomp& decomp)

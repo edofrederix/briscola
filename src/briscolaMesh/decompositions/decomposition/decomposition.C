@@ -10,6 +10,59 @@ namespace briscola
 defineTypeNameAndDebug(decomposition, 0);
 defineRunTimeSelectionTable(decomposition, dictionary);
 
+decomposition::decomposition(mesh& msh)
+:
+    msh_(msh),
+    dict_(msh.dict().subDict("decomposition"))
+{}
+
+decomposition::decomposition
+(
+    const decomposition& d
+)
+:
+    msh_(d.msh_),
+    dict_(d.dict_),
+    procBrickNums_(d.procBrickNums_),
+    procBrickDecomps_(d.procBrickDecomps_),
+    procBrickParts_(d.procBrickParts_),
+    brickDecomps_(d.brickDecomps_),
+    brickProcMaps_(d.brickProcMaps_),
+    mapPtr_()
+{
+    if (d.mapPtr_.valid())
+        mapPtr_.reset(new decompositionMap(d.map()));
+}
+
+decomposition::~decomposition()
+{}
+
+autoPtr<decomposition> decomposition::New(mesh& msh)
+{
+    const word decompType
+    (
+        msh.dict().subDict("decomposition").lookup("type")
+    );
+
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(decompType);
+
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    {
+        FatalErrorInFunction
+            << "Unknown decomposition type " << decompType
+            << ". Valid decomposition types are" << endl
+            << dictionaryConstructorTablePtr_->sortedToc()
+            << exit(FatalError);
+    }
+
+    autoPtr<decomposition> ptr(cstrIter()(msh));
+
+    ptr->init();
+
+    return ptr;
+}
+
 void decomposition::init()
 {
     // Collect processor values
@@ -59,55 +112,6 @@ void decomposition::init()
 
     if (msh_.topology().structured())
         mapPtr_.reset(new decompositionMap(*this));
-}
-
-decomposition::decomposition(mesh& msh)
-:
-    msh_(msh),
-    dict_(msh.dict().subDict("decomposition"))
-{}
-
-decomposition::decomposition
-(
-    const decomposition& d
-)
-:
-    msh_(d.msh_),
-    dict_(d.dict_),
-    procBrickNums_(d.procBrickNums_),
-    procBrickDecomps_(d.procBrickDecomps_),
-    procBrickParts_(d.procBrickParts_),
-    brickDecomps_(d.brickDecomps_),
-    brickProcMaps_(d.brickProcMaps_),
-    mapPtr_()
-{
-    if (d.mapPtr_.valid())
-        mapPtr_.reset(new decompositionMap(d.map()));
-}
-
-decomposition::~decomposition()
-{}
-
-autoPtr<decomposition> decomposition::New(mesh& msh)
-{
-    const word decompType
-    (
-        msh.dict().subDict("decomposition").lookup("type")
-    );
-
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(decompType);
-
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
-    {
-        FatalErrorInFunction
-            << "Unknown decomposition type " << decompType
-            << ". Valid decomposition types are" << endl
-            << dictionaryConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
-    }
-
-    return autoPtr<decomposition>(cstrIter()(msh));
 }
 
 }

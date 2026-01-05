@@ -12,6 +12,17 @@ namespace briscola
 namespace decompositions
 {
 
+/**
+
+@brief Manual decomposition
+
+This derived decomposition class requires a manual brick decomposition to be
+provided by the user. For each brick the decomposition is to be specified in the
+mesh dictionary. The processor distribution across bricks is then automatically
+chosen by traversing the brick parts.
+
+*/
+
 class manualDecomp
 :
     public decomposition
