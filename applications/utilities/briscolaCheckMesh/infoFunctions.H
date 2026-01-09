@@ -200,15 +200,14 @@ void parallelInfo(const fvMesh& fvMsh)
     List<List<dictionary>> bDicts(Pstream::nProcs(), List<dictionary>(0));
     List<labelList> masterPatch(Pstream::nProcs(), labelList(0));
 
-    const part& p = fvMsh[0];
+    const level& lvl = fvMsh[0];
 
-    pDicts[Pstream::myProcNo()].add("rectilinear", p.rectilinear());
-    pDicts[Pstream::myProcNo()].add("uniform", p.uniform());
+    pDicts[Pstream::myProcNo()].add("rectilinear", lvl.rectilinear());
+    pDicts[Pstream::myProcNo()].add("uniform", lvl.uniform());
 
-
-    forAll(fvMsh.boundaries(), bi)
+    forAll(lvl.boundaries(), bi)
     {
-        const boundary& b = fvMsh.boundaries()[bi];
+        const boundary& b = lvl.boundaries()[bi];
 
         bDicts[Pstream::myProcNo()].append(b.dict());
         masterPatch[Pstream::myProcNo()].append
@@ -226,16 +225,16 @@ void parallelInfo(const fvMesh& fvMsh)
     if (Pstream::master())
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
     {
-        const label brickNum(fvMsh.msh().decomp().procBrickNums()[proc]);
+        const label brickNum(lvl.decomp().procBrickNums()[proc]);
 
         const labelVector brickPart
         (
-            fvMsh.msh().decomp().procBrickParts()[proc]
+            lvl.decomp().procBrickParts()[proc]
         );
 
         const labelVector brickDecomp
         (
-            fvMsh.msh().decomp().brickDecomps()[brickNum]
+            lvl.decomp().brickDecomps()[brickNum]
         );
 
         const dictionary& pDict = pDicts[proc];
@@ -292,9 +291,9 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
 
     List<List<dictionary>> bDicts(Pstream::nProcs());
 
-    forAll(fvMsh.boundaries(), bi)
+    forAll(fvMsh.msh().boundaries(), bi)
     {
-        const boundary& b = fvMsh.boundaries()[bi];
+        const boundary& b = fvMsh.msh().boundaries()[bi];
 
         if (b.castable<parallelBoundary>())
         {

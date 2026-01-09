@@ -16,22 +16,19 @@ namespace fv
 // Colocated
 
 template<class Type>
-void slipBoundaryCondition<Type,colocated>::evaluate
-(
-    const label l,
-    const label d
-)
+void slipBoundaryCondition<Type,colocated>::evaluate(const label d)
 {
     const labelVector bo(this->offset());
     const label f(faceNumber(bo));
+    const label l(this->l_);
     const label fd = f/2;
 
-    meshDirection<Type,colocated>& field = this->mshField_[l][d];
+    meshDirection<Type,colocated>& field = this->level_[d];
 
     const colocatedVectorFaceField& fn = this->faceNormals();
 
-    const labelVector S(this->S(l,d));
-    const labelVector E(this->E(l,d));
+    const labelVector S(this->S(d));
+    const labelVector E(this->E(d));
 
     labelVector ijk;
     for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
@@ -51,12 +48,12 @@ template<class Type>
 void slipBoundaryCondition<Type,staggered>::eliminateGhosts
 (
     linearSystem<stencil,Type,staggered>& sys,
-    const label l,
     const label d
 )
 {
     const labelVector bo(this->offset());
     const label f(faceNumber(bo));
+    const label l(this->l_);
     const label fd = f/2;
 
     if (fd == d)
@@ -66,8 +63,8 @@ void slipBoundaryCondition<Type,staggered>::eliminateGhosts
 
         const meshField<scalar,staggered>& cv = this->cellVolumes();
 
-        const labelVector S(this->S(l,d));
-        const labelVector E(this->E(l,d));
+        const labelVector S(this->S(d));
+        const labelVector E(this->E(d));
 
         labelVector ijk;
         for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
@@ -82,16 +79,12 @@ void slipBoundaryCondition<Type,staggered>::eliminateGhosts
     }
     else
     {
-        NeumannBoundaryCondition<Type,staggered>::eliminateGhosts(sys,l,d);
+        NeumannBoundaryCondition<Type,staggered>::eliminateGhosts(sys,d);
     }
 }
 
 template<class Type>
-void slipBoundaryCondition<Type,staggered>::evaluate
-(
-    const label l,
-    const label d
-)
+void slipBoundaryCondition<Type,staggered>::evaluate(const label d)
 {
     const labelVector bo(this->offset());
     const label f(faceNumber(bo));
@@ -99,10 +92,10 @@ void slipBoundaryCondition<Type,staggered>::evaluate
 
     if (fd == d)
     {
-        meshDirection<Type,staggered>& field = this->mshField_[l][d];
+        meshDirection<Type,staggered>& field = this->level_[d];
 
-        const labelVector S(this->S(l,d));
-        const labelVector E(this->E(l,d));
+        const labelVector S(this->S(d));
+        const labelVector E(this->E(d));
 
         labelVector ijk;
         for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
@@ -114,7 +107,7 @@ void slipBoundaryCondition<Type,staggered>::evaluate
     }
     else
     {
-        NeumannBoundaryCondition<Type,staggered>::evaluate(l,d);
+        NeumannBoundaryCondition<Type,staggered>::evaluate(d);
     }
 }
 

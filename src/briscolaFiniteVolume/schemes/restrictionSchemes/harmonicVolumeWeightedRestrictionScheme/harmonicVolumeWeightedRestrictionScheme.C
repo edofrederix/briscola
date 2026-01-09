@@ -22,7 +22,7 @@ void harmonicVolumeWeightedRestrictionScheme<Type,MeshType>::restrict
 {
     this->errorNoScaling(scale);
 
-    const labelVector R(coarse.mshPart().R());
+    const labelVector R(coarse.level().lvl().R());
     const vector shift(MeshType::shift[coarse.directionNum()]);
 
     const labelVector R2

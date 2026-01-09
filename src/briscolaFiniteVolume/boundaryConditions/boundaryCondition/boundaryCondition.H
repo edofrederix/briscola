@@ -41,8 +41,11 @@ protected:
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
-    // Reference to the mesh field
-    meshField<Type,MeshType>& mshField_;
+    // Reference to the mesh level
+    meshLevel<Type,MeshType>& level_;
+
+    // Level number to which this boundary condition belongs
+    label l_;
 
     // Reference to the base boundary
     const boundary& b_;
@@ -62,42 +65,36 @@ public:
         boundaryCondition,
         dictionary,
         (
-            const meshField<Type,MeshType>& mshField,
+            const meshLevel<Type,MeshType>& level,
             const boundary& b
         ),
-        (mshField, b)
+        (level, b)
     );
 
     // Construct from components
     boundaryCondition
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&
     );
 
     // Copy constructor
     boundaryCondition(const boundaryCondition<Type,MeshType>&);
 
-    // Copy constructor resetting field reference
+    // Copy constructor for an alternative level
     boundaryCondition
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundaryCondition<Type,MeshType>&
     );
 
     // Construct and return a clone
     virtual tmp<boundaryCondition<Type,MeshType>> clone() const = 0;
 
-    // Construct and return a clone setting field reference
-    virtual tmp<boundaryCondition<Type,MeshType>> clone
-    (
-        const meshField<Type,MeshType>& field
-    ) const = 0;
-
     // Selector which determines type based on the provided boundary type
     static autoPtr<boundaryCondition<Type,MeshType>> New
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&
     );
 
@@ -135,12 +132,12 @@ public:
           ->cast<BoundaryType>();
     }
 
-    // Determine a field's boundary condition base type for a global boundary
-    // offset. Works only on rectilinear meshes. Gives error for inconistent
+    // Determine a level's boundary condition base type for a global boundary
+    // offset. Works only on rectilinear meshes. Gives error for inconsistent
     // boundaries.
     static boundaryConditionBaseType globalBaseType
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const labelVector
     );
 
@@ -150,20 +147,23 @@ public:
     // Return the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
-    // Access to the mesh field
-    inline meshField<Type,MeshType>& mshField()
+    // Access to the mesh level
+    inline meshField<Type,MeshType>& level()
     {
-        return mshField_;
+        return level_;
     }
 
-    // Const access to the mesh field
-    inline const meshField<Type,MeshType>& mshField() const
+    // Const access to the mesh level
+    inline const meshField<Type,MeshType>& level() const
     {
-        return mshField_;
+        return level_;
     }
+
+    // Level number
+    inline label levelNum() const { return l_; }
 
     // Access to the base boundary
-    inline const boundary& mshBoundary() const { return b_; }
+    inline const boundary& b() const { return b_; }
 
     // Access to the dictionary
     inline const dictionary& dict() const { return dict_; }
@@ -181,13 +181,13 @@ public:
     }
 
     // Return the start point of the internal cell boundary
-    labelVector S(const label l, const label d) const;
+    labelVector S(const label d) const;
 
     // Return the end point of the internal cell boundary
-    labelVector E(const label l, const label d) const;
+    labelVector E(const label d) const;
 
     // Return the shape of the internal cell boundary
-    labelVector N(const label l, const label d) const;
+    labelVector N(const label d) const;
 
     // Access to the face centers of the field this BC belongs to
     const faceField<vector,MeshType>& faceCenters() const;
@@ -213,46 +213,43 @@ public:
     // Eliminated boundary condition
     virtual bool eliminated() const = 0;
 
-    // Eliminate ghosts from the linear system at given level. Cannot be
+    // Eliminate ghosts from the linear system at this BC's level. Cannot be
     // templated because of virtual functions.
 
     virtual void eliminateGhosts
     (
-        linearSystem<stencil,Type,MeshType>&,
-        const label
+        linearSystem<stencil,Type,MeshType>&
     );
 
     virtual void eliminateGhosts
     (
-        linearSystem<diagStencil,Type,MeshType>&,
-        const label
+        linearSystem<diagStencil,Type,MeshType>&
     );
 
-    // Eliminate ghosts from the linear system at given level and direction.
+    // Eliminate ghosts from the linear system at this BC's level and direction.
     // Cannot be templated because of virtual functions.
 
     virtual void eliminateGhosts
     (
         linearSystem<stencil,Type,MeshType>&,
-        const label,
         const label
     );
 
     virtual void eliminateGhosts
     (
         linearSystem<diagStencil,Type,MeshType>&,
-        const label,
         const label
     );
 
-    // Prepare the evaluation of the boundary condition for given level and
-    // direction
+    // Prepare the evaluation of the boundary condition at this BC's level and
+    // optionally at given direction
+    virtual void prepare();
     virtual void prepare(const label);
-    virtual void prepare(const label, const label);
 
-    // Evaluate the boundary condition for given level and direction
+    // Evaluate the boundary condition at this BC's level and optionally at
+    // given direction
+    virtual void evaluate();
     virtual void evaluate(const label);
-    virtual void evaluate(const label, const label);
 };
 
 // Helper function for global boundary condition type
@@ -260,11 +257,11 @@ public:
 template<class Type, class MeshType>
 boundaryConditionBaseType globalBoundaryConditionBaseType
 (
-    const meshField<Type,MeshType>& field,
+    const meshLevel<Type,MeshType>& level,
     const labelVector bo
 )
 {
-    return boundaryCondition<Type,MeshType>::globalBaseType(field,bo);
+    return boundaryCondition<Type,MeshType>::globalBaseType(level,bo);
 }
 
 }

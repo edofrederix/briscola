@@ -1,4 +1,4 @@
-#include "brickDecompositionInterface.H"
+#include "decompositionInterface.H"
 #include "mesh.H"
 
 namespace Foam
@@ -7,7 +7,7 @@ namespace Foam
 namespace briscola
 {
 
-void brickDecompositionInterface::setSlices()
+void decompositionInterface::setSlices()
 {
     const labelVector offset = link_.offset();
     const labelTensor T = link_.T();
@@ -19,15 +19,15 @@ void brickDecompositionInterface::setSlices()
 
     // Processor topology of both bricks
 
-    labelBlock procNums0 = msh_.decomp().brickProcMaps()[b0_.num()];
-    labelBlock procNums1 = msh_.decomp().brickProcMaps()[b1_.num()];
+    labelBlock procNums0 = lvl_.decomp().brickProcMaps()[b0_.num()];
+    labelBlock procNums1 = lvl_.decomp().brickProcMaps()[b1_.num()];
 
     // Part sizes of both bricks
 
     labelVector partN0 =
-        cmptDivide(Nb0, msh_.decomp().brickDecomps()[b0_.num()]);
+        cmptDivide(Nb0, lvl_.decomp().brickDecomps()[b0_.num()]);
     labelVector partN1 =
-        cmptDivide(Nb1, msh_.decomp().brickDecomps()[b1_.num()]);
+        cmptDivide(Nb1, lvl_.decomp().brickDecomps()[b1_.num()]);
 
     // Transform data of the second brick to oppose the first brick
 
@@ -111,7 +111,7 @@ void brickDecompositionInterface::setSlices()
         slices_.set
         (
             l,
-            new brickDecompositionSlice
+            new decompositionSlice
             (
                 procNum0,
                 procNum1,
@@ -126,16 +126,16 @@ void brickDecompositionInterface::setSlices()
     }
 }
 
-brickDecompositionInterface::brickDecompositionInterface
+decompositionInterface::decompositionInterface
 (
     const brickLink& link,
-    const mesh& msh
+    const level& lvl
 )
 :
+    lvl_(lvl),
     link_(link),
     b0_(link.b0()),
-    b1_(link.b1()),
-    msh_(msh)
+    b1_(link.b1())
 {
     if (link.offset() != zeroXYZ)
     {
@@ -143,7 +143,7 @@ brickDecompositionInterface::brickDecompositionInterface
     }
 }
 
-brickDecompositionInterface::~brickDecompositionInterface()
+decompositionInterface::~decompositionInterface()
 {}
 
 }

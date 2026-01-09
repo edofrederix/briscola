@@ -37,7 +37,7 @@ public:
     // Construct from components
     mappedBoundaryCondition
     (
-        const meshField<Type,colocated>&,
+        const meshLevel<Type,colocated>&,
         const boundary&
     );
 
@@ -50,20 +50,8 @@ public:
         );
     }
 
-    // Construct and return a clone setting field reference
-    virtual tmp<boundaryCondition<Type,colocated>> clone
-    (
-        const meshField<Type,colocated>& field
-    ) const
-    {
-        return tmp<boundaryCondition<Type,colocated>>
-        (
-            new mappedBoundaryCondition<Type,colocated>(field,*this)
-        );
-    }
-
-    // Prepare the evaluation of the boundary condition for given level
-    virtual void prepare(const label);
+    // Prepare the evaluation of the boundary condition
+    virtual void prepare();
 };
 
 
@@ -86,7 +74,7 @@ public:
     // Construct from components
     mappedBoundaryCondition
     (
-        const meshField<Type,staggered>&,
+        const meshLevel<Type,staggered>&,
         const boundary&
     );
 
@@ -99,20 +87,8 @@ public:
         );
     }
 
-    // Construct and return a clone setting field reference
-    virtual tmp<boundaryCondition<Type,staggered>> clone
-    (
-        const meshField<Type,staggered>& field
-    ) const
-    {
-        return tmp<boundaryCondition<Type,staggered>>
-        (
-            new mappedBoundaryCondition<Type,staggered>(field,*this)
-        );
-    }
-
-    // Prepare the evaluation of the boundary condition for given level
-    virtual void prepare(const label);
+    // Prepare the evaluation of the boundary condition
+    virtual void prepare();
 };
 
 }

@@ -172,7 +172,7 @@ public:
     // non-diagonal and if the boundary conditions of the unknown are singular
     bool singular() const
     {
-        return symmetric_ && !diagonal_ && xPtr_->singular();
+        return symmetric_ && !diagonal_ && xPtr_->operator[](0).singular();
     }
 
     // Compute the residual b-Ax and store in given object. Optionally apply no

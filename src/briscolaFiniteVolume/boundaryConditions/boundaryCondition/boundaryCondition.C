@@ -2,7 +2,7 @@
 
 #include "colocated.H"
 #include "staggered.H"
-#include "meshField.H"
+#include "meshLevel.H"
 #include "linearSystem.H"
 #include "patchBoundary.H"
 
@@ -18,23 +18,30 @@ namespace fv
 template<class Type, class MeshType>
 boundaryCondition<Type,MeshType>::boundaryCondition
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b
 )
 :
     refCount(),
-    fvMsh_(mshField.fvMsh()),
-    mshField_(const_cast<meshField<Type,MeshType>&>(mshField)),
+    fvMsh_(level.fvMsh()),
+    level_(const_cast<meshLevel<Type,MeshType>&>(level)),
+    l_(level_.levelNum()),
     b_(b),
-    dict_
-    (
-        mshField_.found("boundaryConditions")
-     && mshField_.subDict("boundaryConditions").found(IOobject::member(b_.name()))
-      ? mshField_.subDict("boundaryConditions").subDict(IOobject::member(b_.name()))
-      : dictionary::null
-    )
-{}
+    dict_(dictionary::null)
+{
+    meshField<Type,MeshType>& field = level_.field();
 
+    const word name(IOobject::member(b_.name()));
+
+    if
+    (
+        field.found("boundaryConditions")
+     && field.subDict("boundaryConditions").found(name)
+    )
+    {
+        dict_ = field.subDict("boundaryConditions").subDict(name);
+    }
+}
 
 template<class Type, class MeshType>
 boundaryCondition<Type,MeshType>::boundaryCondition
@@ -44,7 +51,8 @@ boundaryCondition<Type,MeshType>::boundaryCondition
 :
     refCount(),
     fvMsh_(bc.fvMsh_),
-    mshField_(bc.mshField_),
+    level_(bc.level_),
+    l_(bc.l_),
     b_(bc.b_),
     dict_(bc.dict_)
 {}
@@ -52,14 +60,15 @@ boundaryCondition<Type,MeshType>::boundaryCondition
 template<class Type, class MeshType>
 boundaryCondition<Type,MeshType>::boundaryCondition
 (
-    const meshField<Type,MeshType>& field,
+    const meshLevel<Type,MeshType>& level,
     const boundaryCondition<Type,MeshType>& bc
 )
 :
     refCount(),
     fvMsh_(bc.fvMsh_),
-    mshField_(const_cast<meshField<Type,MeshType>&>(field)),
-    b_(bc.b_),
+    level_(const_cast<meshLevel<Type,MeshType>&>(level)),
+    l_(level.levelNum()),
+    b_(level.lvl().boundaries().find(bc.b_.name())),
     dict_(bc.dict_)
 {}
 
@@ -70,7 +79,7 @@ boundaryCondition<Type,MeshType>::~boundaryCondition()
 template<class Type, class MeshType>
 autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b
 )
 {
@@ -79,10 +88,10 @@ autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
     if (b.castable<patchBoundary>())
     {
         boundaryConditionType =
-            mshField.found("boundaryConditions")
+            level.field().found("boundaryConditions")
           ? word
             (
-                mshField.subDict("boundaryConditions")
+                level.field().subDict("boundaryConditions")
                .subDict(IOobject::member(b.name())).lookup("type")
             )
           : word("dummy");
@@ -107,7 +116,7 @@ autoPtr<boundaryCondition<Type,MeshType>> boundaryCondition<Type,MeshType>::New
 
     return autoPtr<boundaryCondition<Type,MeshType>>
     (
-        cstrIter()(mshField, b)
+        cstrIter()(level, b)
     );
 }
 
@@ -115,13 +124,13 @@ template<class Type, class MeshType>
 boundaryConditionBaseType
 boundaryCondition<Type,MeshType>::globalBaseType
 (
-    const meshField<Type,MeshType>& field,
+    const meshLevel<Type,MeshType>& level,
     const labelVector bo
 )
 {
     // Global BCs only exist on rectilinear brick topologies
 
-    const fvMesh& fvMsh = field.fvMsh();
+    const fvMesh& fvMsh = level.fvMsh();
 
     if (!fvMsh.msh().topology().rectilinear())
     {
@@ -133,7 +142,7 @@ boundaryCondition<Type,MeshType>::globalBaseType
     }
     else
     {
-        const decompositionMap& map = fvMsh.msh().decomp().map();
+        const decompositionMap& map = level.lvl().decomp().map();
 
         const label facei = faceNumber(bo);
         const label dir = facei/2;
@@ -141,12 +150,12 @@ boundaryCondition<Type,MeshType>::globalBaseType
 
         // Make sure that the boundary conditions are set
 
-        if (!field.boundaryConditions().size())
-            const_cast<meshField<Type,MeshType>&>(field)
+        if (!level.boundaryConditions().size())
+            const_cast<meshLevel<Type,MeshType>&>(level)
                 .addBoundaryConditions();
 
         const PtrList<boundaryCondition<Type,MeshType>>& bcs =
-            field.boundaryConditions();
+            level.boundaryConditions();
 
         // Block of processors at the requested face
 
@@ -225,9 +234,9 @@ boundaryCondition<Type,MeshType>::globalBaseType
                 if (types[j] != type)
                 {
                     FatalErrorInFunction
-                        << "Inconsistent boundary condition types for field "
-                        << field.name() << " at boundary offset " << bo << endl
-                        << abort(FatalError);
+                        << "Inconsistent boundary condition types for level "
+                        << level.levelNum() << " at boundary offset "
+                        << bo << endl << abort(FatalError);
                 }
             }
 
@@ -259,42 +268,30 @@ boundaryCondition<Type,MeshType>::globalBaseType
 }
 
 template<class Type, class MeshType>
-inline labelVector boundaryCondition<Type,MeshType>::S
-(
-    const label l,
-    const label d
-) const
+inline labelVector boundaryCondition<Type,MeshType>::S(const label d) const
 {
     return
         this->offset() == zeroXYZ
       ? zeroXYZ
-      : this->fvMsh_.template S<MeshType>(l,d,this->offset());
+      : this->fvMsh_.template S<MeshType>(l_,d,this->offset());
 }
 
 template<class Type, class MeshType>
-inline labelVector boundaryCondition<Type,MeshType>::E
-(
-    const label l,
-    const label d
-) const
+inline labelVector boundaryCondition<Type,MeshType>::E(const label d) const
 {
     return
         this->offset() == zeroXYZ
       ? zeroXYZ
-      : this->fvMsh_.template E<MeshType>(l,d,this->offset());
+      : this->fvMsh_.template E<MeshType>(l_,d,this->offset());
 }
 
 template<class Type, class MeshType>
-inline labelVector boundaryCondition<Type,MeshType>::N
-(
-    const label l,
-    const label d
-) const
+inline labelVector boundaryCondition<Type,MeshType>::N(const label d) const
 {
     return
         this->offset() == zeroXYZ
       ? zeroXYZ
-      : this->fvMsh_.template N<MeshType>(l,d,this->offset());
+      : this->fvMsh_.template N<MeshType>(l_,d,this->offset());
 }
 
 template<class Type, class MeshType>
@@ -344,25 +341,23 @@ boundaryCondition<Type,MeshType>::faceDeltas() const
 template<class Type, class MeshType>
 void boundaryCondition<Type,MeshType>::eliminateGhosts
 (
-    linearSystem<stencil,Type,MeshType>& sys,
-    const label l
+    linearSystem<stencil,Type,MeshType>& sys
 )
 {
     if (this->eliminated())
         for (int d = 0; d < MeshType::numberOfDirections; d++)
-            eliminateGhosts(sys, l, d);
+            eliminateGhosts(sys, d);
 }
 
 template<class Type, class MeshType>
 void boundaryCondition<Type,MeshType>::eliminateGhosts
 (
-    linearSystem<diagStencil,Type,MeshType>& sys,
-    const label l
+    linearSystem<diagStencil,Type,MeshType>& sys
 )
 {
     if (this->eliminated())
         for (int d = 0; d < MeshType::numberOfDirections; d++)
-            eliminateGhosts(sys, l, d);
+            eliminateGhosts(sys, d);
 }
 
 // Direction ghost eliminate
@@ -371,7 +366,6 @@ template<class Type, class MeshType>
 void boundaryCondition<Type,MeshType>::eliminateGhosts
 (
     linearSystem<stencil,Type,MeshType>&,
-    const label,
     const label
 )
 {
@@ -382,7 +376,6 @@ template<class Type, class MeshType>
 void boundaryCondition<Type,MeshType>::eliminateGhosts
 (
     linearSystem<diagStencil,Type,MeshType>&,
-    const label,
     const label
 )
 {
@@ -392,27 +385,27 @@ void boundaryCondition<Type,MeshType>::eliminateGhosts
 // Prepare
 
 template<class Type, class MeshType>
-void boundaryCondition<Type,MeshType>::prepare(const label l)
+void boundaryCondition<Type,MeshType>::prepare()
 {
-    forAll(this->mshField_[l], d)
-        prepare(l,d);
+    forAll(this->level_, d)
+        prepare(d);
 }
 
 template<class Type, class MeshType>
-void boundaryCondition<Type,MeshType>::prepare(const label l, const label d)
+void boundaryCondition<Type,MeshType>::prepare(const label d)
 {}
 
 // Evaluate
 
 template<class Type, class MeshType>
-void boundaryCondition<Type,MeshType>::evaluate(const label l)
+void boundaryCondition<Type,MeshType>::evaluate()
 {
-    forAll(this->mshField_[l], d)
-        evaluate(l,d);
+    forAll(this->level_, d)
+        evaluate(d);
 }
 
 template<class Type, class MeshType>
-void boundaryCondition<Type,MeshType>::evaluate(const label l, const label d)
+void boundaryCondition<Type,MeshType>::evaluate(const label d)
 {}
 
 }

@@ -88,7 +88,7 @@ void testDirichlet(const fvMesh& fvMsh)
     {
         const labelVector bo = faceOffsets[i];
 
-        if(globalBoundaryConditionBaseType(field, bo) != DIRICHLETBC)
+        if(globalBoundaryConditionBaseType(field[0], bo) != DIRICHLETBC)
         {
             FatalErrorInFunction
                 << "Test 1b failed" << endl
@@ -177,7 +177,7 @@ void testNeumann(const fvMesh& fvMsh)
     {
         const labelVector bo = faceOffsets[i];
 
-        if(globalBoundaryConditionBaseType(field, bo) != NEUMANNBC)
+        if(globalBoundaryConditionBaseType(field[0], bo) != NEUMANNBC)
         {
             FatalErrorInFunction
                 << "Test 2c failed" << endl << abort(FatalError);

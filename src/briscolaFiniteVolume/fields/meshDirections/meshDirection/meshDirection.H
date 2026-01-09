@@ -49,7 +49,7 @@ private:
     faceLabel I_;
 
     // Pointer to the mesh level, if any
-    meshLevel<Type,MeshType>* mshLevelPtr_;
+    meshLevel<Type,MeshType>* levelPtr_;
 
     // Allocate data
     void allocate();
@@ -85,7 +85,7 @@ public:
 
     meshDirection
     (
-        meshLevel<Type,MeshType>& mshLevel,
+        meshLevel<Type,MeshType>& level,
         const label d
     );
 
@@ -175,14 +175,14 @@ public:
 
     static tmp<meshDirection<Type,MeshType>> New
     (
-        meshLevel<Type,MeshType>& mshLevel,
+        meshLevel<Type,MeshType>& level,
         const label d
     )
     {
         return
             tmp<meshDirection<Type,MeshType>>
             (
-                new meshDirection<Type,MeshType>(mshLevel,d)
+                new meshDirection<Type,MeshType>(level,d)
             );
     }
 
@@ -244,21 +244,21 @@ public:
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
     // Mesh level pointer
-    inline const meshLevel<Type,MeshType>* mshLevelPtr() const
+    inline const meshLevel<Type,MeshType>* levelPtr() const
     {
-        return mshLevelPtr_;
+        return levelPtr_;
     }
 
     // Const reference to the mesh level (unchecked!)
-    inline const meshLevel<Type,MeshType>& mshLevel() const
+    inline const meshLevel<Type,MeshType>& level() const
     {
-        return *mshLevelPtr_;
+        return *levelPtr_;
     }
 
     // Access to the mesh level (unchecked!)
-    inline meshLevel<Type,MeshType>& mshLevel()
+    inline meshLevel<Type,MeshType>& level()
     {
-        return *mshLevelPtr_;
+        return *levelPtr_;
     }
 
     // Level number
@@ -266,9 +266,6 @@ public:
 
     // Direction number
     inline label directionNum() const { return d_; }
-
-    // Mesh part
-    inline const part& mshPart() const { return fvMsh_[l_]; }
 
     // Access to base block
     inline block<Type>& B() { return *this; }

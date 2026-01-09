@@ -19,18 +19,18 @@ template<class Type>
 void DirichletBoundaryCondition<Type,colocated>::eliminateGhosts
 (
     linearSystem<stencil,Type,colocated>& sys,
-    const label l,
     const label d
 )
 {
     const labelVector bo(this->offset());
     const label f(faceNumber(bo));
+    const label l(this->l_);
 
     meshField<stencil,colocated>& A = sys.A();
     meshField<Type,colocated>& b = sys.b();
 
-    const labelVector S(this->S(l,d));
-    const labelVector E(this->E(l,d));
+    const labelVector S(this->S(d));
+    const labelVector E(this->E(d));
 
     labelVector ijk;
     for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
@@ -43,25 +43,22 @@ void DirichletBoundaryCondition<Type,colocated>::eliminateGhosts
         A(l,d,ijk)[f+1] = Zero;
 
         if (l == 0)
-            b(l,d,ijk) -= ghostCoeff*2.0*this->boundaryValues_[l](ijk-S);
+            b(l,d,ijk) -= ghostCoeff*2.0*this->boundaryValues_[d](ijk-S);
     }
 }
 
 template<class Type>
-void DirichletBoundaryCondition<Type,colocated>::evaluate
-(
-    const label l,
-    const label d
-)
+void DirichletBoundaryCondition<Type,colocated>::evaluate(const label d)
 {
+    const label l(this->l_);
     const scalar H = l == 0;
 
     const labelVector bo(this->offset());
 
-    meshDirection<Type,colocated>& field = this->mshField_[l][d];
+    meshDirection<Type,colocated>& field = this->level_[d];
 
-    const labelVector S(this->S(l,d));
-    const labelVector E(this->E(l,d));
+    const labelVector S(this->S(d));
+    const labelVector E(this->E(d));
 
     labelVector ijk;
     for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
@@ -69,7 +66,7 @@ void DirichletBoundaryCondition<Type,colocated>::evaluate
     for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
     {
         field(ijk+bo) =
-            H*2.0*this->boundaryValues_[l](ijk-S) - field(ijk);
+            H*2.0*this->boundaryValues_[d](ijk-S) - field(ijk);
     }
 }
 
@@ -79,14 +76,12 @@ template<class Type>
 void DirichletBoundaryCondition<Type,staggered>::eliminateGhosts
 (
     linearSystem<stencil,Type,staggered>& sys,
-    const label l,
     const label d
 )
 {
-    const label item = l*3 + d;
-
     const labelVector bo(this->offset());
     const label f(faceNumber(bo));
+    const label l(this->l_);
     const label fd = f/2;
 
     meshField<stencil,staggered>& A = sys.A();
@@ -94,8 +89,8 @@ void DirichletBoundaryCondition<Type,staggered>::eliminateGhosts
 
     const meshField<scalar,staggered>& cv = this->cellVolumes();
 
-    const labelVector S(this->S(l,d));
-    const labelVector E(this->E(l,d));
+    const labelVector S(this->S(d));
+    const labelVector E(this->E(d));
 
     labelVector ijk;
 
@@ -109,7 +104,7 @@ void DirichletBoundaryCondition<Type,staggered>::eliminateGhosts
 
             if (l == 0)
                 b(l,d,ijk) =
-                    this->boundaryValues_[item](ijk-S)*cv(l,d,ijk);
+                    this->boundaryValues_[d](ijk-S)*cv(l,d,ijk);
         }
     }
     else
@@ -125,30 +120,25 @@ void DirichletBoundaryCondition<Type,staggered>::eliminateGhosts
 
             if (l == 0)
                 b(l,d,ijk) -=
-                    ghostCoeff*2.0*this->boundaryValues_[item](ijk-S);
+                    ghostCoeff*2.0*this->boundaryValues_[d](ijk-S);
         }
     }
 }
 
 template<class Type>
-void DirichletBoundaryCondition<Type,staggered>::evaluate
-(
-    const label l,
-    const label d
-)
+void DirichletBoundaryCondition<Type,staggered>::evaluate(const label d)
 {
-    const label item = l*3 + d;
-
     const labelVector bo(this->offset());
     const label f(faceNumber(bo));
+    const label l(this->l_);
     const label fd = f/2;
 
     const scalar H = l == 0;
 
-    meshDirection<Type,staggered>& field = this->mshField_[l][d];
+    meshDirection<Type,staggered>& field = this->level_[d];
 
-    const labelVector S(this->S(l,d));
-    const labelVector E(this->E(l,d));
+    const labelVector S(this->S(d));
+    const labelVector E(this->E(d));
 
     labelVector ijk;
 
@@ -158,7 +148,7 @@ void DirichletBoundaryCondition<Type,staggered>::evaluate
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            field(ijk+bo) = H*this->boundaryValues_[item](ijk-S);
+            field(ijk+bo) = H*this->boundaryValues_[d](ijk-S);
         }
     }
     else
@@ -168,7 +158,7 @@ void DirichletBoundaryCondition<Type,staggered>::evaluate
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
             field(ijk+bo) =
-                H*2.0*this->boundaryValues_[item](ijk-S) - field(ijk);
+                H*2.0*this->boundaryValues_[d](ijk-S) - field(ijk);
         }
     }
 }

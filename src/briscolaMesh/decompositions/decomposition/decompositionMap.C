@@ -14,7 +14,7 @@ decompositionMap::decompositionMap(const decomposition& decomp)
 {
     // Determine map shape
 
-    const labelBlock& brickMap = decomp_.msh().topology().map();
+    const labelBlock& brickMap = decomp_.lvl().msh().topology().map();
 
     PtrList<labelList> N(3);
     PtrList<labelList> M(3);
@@ -34,7 +34,7 @@ decompositionMap::decompositionMap(const decomposition& decomp)
         {
             const labelVector D = decomp_.brickDecomps()[brick];
             const labelVector P =
-                cmptDivide(decomp_.msh().bricks()[brick].N(), D);
+                cmptDivide(decomp_.lvl().msh().bricks()[brick].N(), D);
 
             for (int dir = 0; dir < 3; dir++)
             {

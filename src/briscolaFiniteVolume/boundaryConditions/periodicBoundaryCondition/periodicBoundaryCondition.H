@@ -28,17 +28,17 @@ public:
     // Construct from components
     periodicBoundaryCondition
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&
     );
 
     // Copy constructor
     periodicBoundaryCondition(const periodicBoundaryCondition<Type,MeshType>&);
 
-    // Copy constructor resetting field reference
+    // Copy constructor resetting level reference
     periodicBoundaryCondition
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const periodicBoundaryCondition<Type,MeshType>&
     );
 
@@ -51,29 +51,17 @@ public:
         );
     }
 
-    // Construct and return a clone setting field reference
-    virtual tmp<boundaryCondition<Type,MeshType>> clone
-    (
-        const meshField<Type,MeshType>& field
-    ) const
-    {
-        return tmp<boundaryCondition<Type,MeshType>>
-        (
-            new periodicBoundaryCondition<Type,MeshType>(field,*this)
-        );
-    }
-
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const
     {
         return PERIODICBC;
     }
 
-    // Prepare the evaluation of the boundary condition for given level
-    virtual void prepare(const label);
+    // Prepare the evaluation of the boundary condition
+    virtual void prepare();
 
-    // Evaluate the boundary condition for given level
-    virtual void evaluate(const label);
+    // Evaluate the boundary condition
+    virtual void evaluate();
 };
 
 }

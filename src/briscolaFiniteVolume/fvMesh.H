@@ -67,24 +67,7 @@ class fvMesh
     template<class MeshType>
     faceLabel& I(const label l, const label d);
 
-    // Set the distributed communication graph
-    void setDistributedCommGraph();
-
-    // Disallow default bitwise assignment
-    void operator=(const fvMesh&);
-
 public:
-
-    // Old OpenFOAM communicator
-    static MPI_Comm MPI_COMM_FOAM_OLD;
-
-    // Neighbors
-    static labelList MPI_neighbors_recv;
-    static labelList MPI_neighbors_send;
-
-    // Neighbor maps
-    static List<labelList> MPI_neighbors_recv_map;
-    static List<labelList> MPI_neighbors_send_map;
 
     // Declare name of the class and its debug switch
     ClassName("fvMesh");
@@ -310,14 +293,14 @@ public:
 
     //~ Member functions that pass directly to the mesh object
 
-        // Access to the mesh part
-        inline part& operator[](const label i)
+        // Access to the mesh level
+        inline level& operator[](const label i)
         {
             return mshPtr_->operator[](i);
         }
 
-        // Const access to the mesh part
-        inline const part& operator[](const label i) const
+        // Const access to the mesh level
+        inline const level& operator[](const label i) const
         {
             return mshPtr_->operator[](i);
         }
@@ -326,12 +309,6 @@ public:
         inline label size() const
         {
             return mshPtr_->size();
-        }
-
-        // Const access to boundaries
-        inline const FastPtrList<boundary>& boundaries() const
-        {
-            return mshPtr_->boundaries();
         }
 
         // Structured mesh bool

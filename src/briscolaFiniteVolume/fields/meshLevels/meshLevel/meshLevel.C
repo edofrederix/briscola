@@ -10,6 +10,8 @@
 #include "periodicBoundary.H"
 #include "emptyBoundary.H"
 
+#include "boundaryExchange.H"
+
 namespace Foam
 {
 
@@ -38,7 +40,7 @@ template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::setLevelPointers()
 {
     forAll(*this, d)
-        listType::operator[](d).mshLevelPtr_ = this;
+        listType::operator[](d).levelPtr_ = this;
 }
 
 template<class Type, class MeshType>
@@ -49,8 +51,8 @@ void meshLevel<Type,MeshType>::transfer
 {
     listType::transfer(L);
 
-    mshFieldPtr_ = L.mshFieldPtr_;
-    L.mshFieldPtr_ = nullptr;
+    fieldPtr_ = L.fieldPtr_;
+    L.fieldPtr_ = nullptr;
 
     setLevelPointers();
 }
@@ -60,15 +62,15 @@ void meshLevel<Type,MeshType>::transfer
 template<class Type, class MeshType>
 meshLevel<Type,MeshType>::meshLevel
 (
-    meshField<Type,MeshType>& mshField,
+    meshField<Type,MeshType>& field,
     const label l
 )
 :
     FastPtrList<meshDirection<Type,MeshType>>(),
     refCount(),
-    fvMsh_(mshField.fvMsh()),
+    fvMsh_(field.fvMsh()),
     l_(l),
-    mshFieldPtr_(&mshField)
+    fieldPtr_(&field)
 {
     allocate();
 }
@@ -85,7 +87,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(L.fvMsh_),
     l_(L.levelNum()),
-    mshFieldPtr_(nullptr)
+    fieldPtr_(nullptr)
 {
     setLevelPointers();
 }
@@ -101,7 +103,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(L.fvMsh_),
     l_(L.levelNum()),
-    mshFieldPtr_(nullptr)
+    fieldPtr_(nullptr)
 {
     setLevelPointers();
 }
@@ -117,7 +119,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(L.fvMsh_),
     l_(L.levelNum()),
-    mshFieldPtr_(nullptr)
+    fieldPtr_(nullptr)
 {
     setLevelPointers();
 }
@@ -133,7 +135,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(L.fvMsh_),
     l_(L.levelNum()),
-    mshFieldPtr_(nullptr)
+    fieldPtr_(nullptr)
 {
     setLevelPointers();
 }
@@ -152,7 +154,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(tL->fvMsh_),
     l_(tL->levelNum()),
-    mshFieldPtr_(nullptr)
+    fieldPtr_(nullptr)
 {
     setLevelPointers();
     if (tL.isTmp())
@@ -174,7 +176,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(tL->fvMsh_),
     l_(tL->levelNum()),
-    mshFieldPtr_(nullptr)
+    fieldPtr_(nullptr)
 {
     setLevelPointers();
     *this = Zero;
@@ -197,7 +199,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(tL->fvMsh_),
     l_(tL->levelNum()),
-    mshFieldPtr_(nullptr)
+    fieldPtr_(nullptr)
 {
     setLevelPointers();
     *this = v;
@@ -220,7 +222,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(tL->fvMsh_),
     l_(tL->levelNum()),
-    mshFieldPtr_(nullptr)
+    fieldPtr_(nullptr)
 {
     setLevelPointers();
     *this = v;
@@ -241,7 +243,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(fvMsh),
     l_(l),
-    mshFieldPtr_(nullptr)
+    fieldPtr_(nullptr)
 {
     allocate();
 }
@@ -258,7 +260,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(fvMsh),
     l_(l),
-    mshFieldPtr_(nullptr)
+    fieldPtr_(nullptr)
 {
     allocate();
     *this = Zero;
@@ -276,7 +278,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(fvMsh),
     l_(l),
-    mshFieldPtr_(nullptr)
+    fieldPtr_(nullptr)
 {
     allocate();
     *this = v;
@@ -294,7 +296,7 @@ meshLevel<Type,MeshType>::meshLevel
     refCount(),
     fvMsh_(fvMsh),
     l_(l),
-    mshFieldPtr_(nullptr)
+    fieldPtr_(nullptr)
 {
     allocate();
     *this = v;
@@ -305,9 +307,48 @@ meshLevel<Type,MeshType>::~meshLevel()
 {}
 
 template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::addBoundaryConditions()
+{
+    if (boundaryConditions_.empty())
+    {
+        boundaryConditions_.setSize(lvl().boundaries().size());
+
+        singular_ = true;
+
+        forAll(lvl().boundaries(), i)
+        {
+            boundaryConditions_.set
+            (
+                i,
+                boundaryCondition<Type,MeshType>::New
+                (
+                    *this,
+                    lvl().boundaries()[i]
+                )
+            );
+
+            const boundaryConditionBaseType bcType =
+                boundaryConditions_[i].baseType();
+
+            if (bcType == DIRICHLETBC || bcType == ROBINBC)
+                singular_ = false;
+        }
+
+        reduce(singular_, andOp<bool>());
+    }
+
+    #ifdef BOUNDARYEXCHANGE
+
+    if (bExchangePtr_.empty())
+        bExchangePtr_.reset(new boundaryExchange<Type,MeshType>(*this));
+
+    #endif
+}
+
+template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctBoundaryConditions()
 {
-    if (mshFieldPtr_)
+    if (fieldPtr_)
     {
         this->addBoundaryConditions();
 
@@ -319,7 +360,7 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions()
         // explicitly on that level.
 
         if (l_ == 0)
-            this->correctImmersedBoundaryConditions();
+            fieldPtr_->correctImmersedBoundaryConditions();
 
         this->correctUnsetBoundaryConditions();
         this->correctPatchBoundaryConditions();
@@ -335,8 +376,8 @@ void meshLevel<Type,MeshType>::correctUnsetBoundaryConditions()
     {
         meshDirection<Type,MeshType>& field = listType::operator[](d);
 
-        forAllBlock(fvMsh_.msh().boundaryMask(), i, j, k)
-        if (!fvMsh_.msh().boundaryMask()(i,j,k))
+        forAllBlock(this->lvl().boundaries().mask(), i, j, k)
+        if (!this->lvl().boundaries().mask()(i,j,k))
         {
             if (labelVector(i,j,k) == unitXYZ)
                 continue;
@@ -361,21 +402,18 @@ void meshLevel<Type,MeshType>::correctUnsetBoundaryConditions()
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctPatchBoundaryConditions()
 {
-    if (mshFieldPtr_)
+    if (fieldPtr_)
     {
         this->addBoundaryConditions();
 
-        forAll(mshFieldPtr_->boundaryConditions(), i)
+        forAll(boundaryConditions_, i)
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
+            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
 
-            const boundary& b = bc.mshBoundary();
-
-            if (b.castable<patchBoundary>())
+            if (bc.b().template castable<patchBoundary>())
             {
-                bc.prepare(l_);
-                bc.evaluate(l_);
+                bc.prepare();
+                bc.evaluate();
             }
         }
     }
@@ -384,21 +422,18 @@ void meshLevel<Type,MeshType>::correctPatchBoundaryConditions()
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctEmptyBoundaryConditions()
 {
-    if (mshFieldPtr_)
+    if (fieldPtr_)
     {
         this->addBoundaryConditions();
 
-        forAll(mshFieldPtr_->boundaryConditions(), i)
+        forAll(boundaryConditions_, i)
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
+            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
 
-            const boundary& b = bc.mshBoundary();
-
-            if (b.castable<emptyBoundary>())
+            if (bc.b().template castable<emptyBoundary>())
             {
-                bc.prepare(l_);
-                bc.evaluate(l_);
+                bc.prepare();
+                bc.evaluate();
             }
         }
     }
@@ -407,28 +442,25 @@ void meshLevel<Type,MeshType>::correctEmptyBoundaryConditions()
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctCommsBoundaryConditions()
 {
-    if (mshFieldPtr_)
+    if (fieldPtr_)
     {
         this->addBoundaryConditions();
 
         #ifdef BOUNDARYEXCHANGE
 
-        this->mshFieldPtr_->bExchangePtr_->correct(l_);
+        this->bExchangePtr_->correct();
 
         #else
 
         const label nReq = Pstream::nRequests();
 
-        forAll(mshFieldPtr_->boundaryConditions(), i)
+        forAll(boundaryConditions_, i)
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
+            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
 
-            const boundary& b = bc.mshBoundary();
-
-            if (b.castable<parallelBoundary>())
+            if (bc.b().template castable<parallelBoundary>())
             {
-                bc.prepare(l_);
+                bc.prepare();
             }
         }
 
@@ -437,16 +469,13 @@ void meshLevel<Type,MeshType>::correctCommsBoundaryConditions()
             Pstream::waitRequests(nReq);
         }
 
-        forAll(mshFieldPtr_->boundaryConditions(), i)
+        forAll(boundaryConditions_, i)
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
+            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
 
-            const boundary& b = bc.mshBoundary();
-
-            if (b.castable<parallelBoundary>())
+            if (bc.b().template castable<parallelBoundary>())
             {
-                bc.evaluate(l_);
+                bc.evaluate();
             }
         }
 
@@ -457,32 +486,29 @@ void meshLevel<Type,MeshType>::correctCommsBoundaryConditions()
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
 {
-    if (mshFieldPtr_ && Pstream::parRun())
+    if (fieldPtr_ && Pstream::parRun())
     {
         this->addBoundaryConditions();
 
         #ifdef BOUNDARYEXCHANGE
 
-        this->mshFieldPtr_->bExchangePtr_->correctParallel(l_);
+        this->bExchangePtr_->correctParallel();
 
         #else
 
         const label nReq = Pstream::nRequests();
 
-        forAll(mshFieldPtr_->boundaryConditions(), i)
+        forAll(boundaryConditions_, i)
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
-
-            const boundary& b = bc.mshBoundary();
+            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
 
             if
             (
-                b.castable<parallelBoundary>()
-            && !b.castable<periodicBoundary>()
+                bc.b().template castable<parallelBoundary>()
+            && !bc.b().template castable<periodicBoundary>()
             )
             {
-                bc.prepare(l_);
+                bc.prepare();
             }
         }
 
@@ -491,20 +517,17 @@ void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
             Pstream::waitRequests(nReq);
         }
 
-        forAll(mshFieldPtr_->boundaryConditions(), i)
+        forAll(boundaryConditions_, i)
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
-
-            const boundary& b = bc.mshBoundary();
+            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
 
             if
             (
-                b.castable<parallelBoundary>()
-            && !b.castable<periodicBoundary>()
+                bc.b().template castable<parallelBoundary>()
+            && !bc.b().template castable<periodicBoundary>()
             )
             {
-                bc.evaluate(l_);
+                bc.evaluate();
             }
         }
 
@@ -515,28 +538,25 @@ void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
 {
-    if (mshFieldPtr_)
+    if (fieldPtr_)
     {
         this->addBoundaryConditions();
 
         #ifdef BOUNDARYEXCHANGE
 
-        this->mshFieldPtr_->bExchangePtr_->correctPeriodic(l_);
+        this->bExchangePtr_->correctPeriodic();
 
         #else
 
         const label nReq = Pstream::nRequests();
 
-        forAll(mshFieldPtr_->boundaryConditions(), i)
+        forAll(boundaryConditions_, i)
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
+            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
 
-            const boundary& b = bc.mshBoundary();
-
-            if (b.castable<periodicBoundary>())
+            if (bc.b().template castable<periodicBoundary>())
             {
-                bc.prepare(l_);
+                bc.prepare();
             }
         }
 
@@ -545,16 +565,13 @@ void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
             Pstream::waitRequests(nReq);
         }
 
-        forAll(mshFieldPtr_->boundaryConditions(), i)
+        forAll(boundaryConditions_, i)
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
+            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
 
-            const boundary& b = bc.mshBoundary();
-
-            if (b.castable<periodicBoundary>())
+            if (bc.b().template castable<periodicBoundary>())
             {
-                bc.evaluate(l_);
+                bc.evaluate();
             }
         }
 
@@ -565,23 +582,20 @@ void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctNonEliminatedBoundaryConditions()
 {
-    if (mshFieldPtr_)
+    if (fieldPtr_)
     {
         this->addBoundaryConditions();
 
         // First non-eliminated patch boundaries
 
-        forAll(mshFieldPtr_->boundaryConditions(), i)
+        forAll(boundaryConditions_, i)
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
+            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
 
-            const boundary& b = bc.mshBoundary();
-
-            if (!bc.eliminated() && b.castable<patchBoundary>())
+            if (!bc.eliminated() && bc.b().template castable<patchBoundary>())
             {
-                bc.prepare(l_);
-                bc.evaluate(l_);
+                bc.prepare();
+                bc.evaluate();
             }
         }
 
@@ -591,22 +605,19 @@ void meshLevel<Type,MeshType>::correctNonEliminatedBoundaryConditions()
 
         // Finally the other non-eliminated boundaries
 
-        forAll(mshFieldPtr_->boundaryConditions(), i)
+        forAll(boundaryConditions_, i)
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
-
-            const boundary& b = bc.mshBoundary();
+            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
 
             if
             (
                 !bc.eliminated()
-             && !b.castable<patchBoundary>()
-             && !b.castable<parallelBoundary>()
+             && !bc.b().template castable<patchBoundary>()
+             && !bc.b().template castable<parallelBoundary>()
             )
             {
-                bc.prepare(l_);
-                bc.evaluate(l_);
+                bc.prepare();
+                bc.evaluate();
             }
         }
     }
@@ -615,19 +626,18 @@ void meshLevel<Type,MeshType>::correctNonEliminatedBoundaryConditions()
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctEliminatedBoundaryConditions()
 {
-    if (mshFieldPtr_)
+    if (fieldPtr_)
     {
         this->addBoundaryConditions();
 
-        forAll(mshFieldPtr_->boundaryConditions(), i)
+        forAll(boundaryConditions_, i)
         {
-            boundaryCondition<Type,MeshType>& bc =
-                mshFieldPtr_->boundaryConditions()[i];
+            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
 
             if (bc.eliminated())
             {
-                bc.prepare(l_);
-                bc.evaluate(l_);
+                bc.prepare();
+                bc.evaluate();
             }
         }
     }
@@ -636,14 +646,14 @@ void meshLevel<Type,MeshType>::correctEliminatedBoundaryConditions()
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::correctImmersedBoundaryConditions()
 {
-    if (mshFieldPtr_ && fvMsh_.immersedBoundaries<MeshType>().size())
+    if (fieldPtr_ && fvMsh_.immersedBoundaries<MeshType>().size())
     {
         this->addImmersedBoundaryConditions();
 
-        forAll(mshFieldPtr_->immersedBoundaryConditions(), i)
+        forAll(fieldPtr_->immersedBoundaryConditions(), i)
         {
             immersedBoundaryCondition<Type,MeshType>& ibc =
-                mshFieldPtr_->immersedBoundaryConditions()[i];
+                fieldPtr_->immersedBoundaryConditions()[i];
 
             ibc.evaluate(l_);
         }

@@ -16,11 +16,11 @@ template<class Type, class MeshType>
 penalizationDirichletImmersedBoundaryCondition<Type,MeshType>::
 penalizationDirichletImmersedBoundaryCondition
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshField<Type,MeshType>& field,
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField, ib, &ib.mask()),
+    immersedBoundaryCondition<Type,MeshType>(field, ib, &ib.mask()),
     boundaryValues_(this->read("value"))
 {}
 
@@ -40,7 +40,7 @@ void penalizationDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
 {
     const scalar omega = this->omega_;
 
-    meshDirection<Type,MeshType>& x = this->mshField_[l][d];
+    meshDirection<Type,MeshType>& x = this->field_[l][d];
     const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
 
     forAllCells(x,i,j,k)

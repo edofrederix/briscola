@@ -1,4 +1,4 @@
-#include "partPoints.H"
+#include "levelPoints.H"
 #include "mesh.H"
 
 #include "parallelBoundary.H"
@@ -12,27 +12,92 @@ namespace Foam
 namespace briscola
 {
 
-partPoints::partPoints(const mesh& msh)
+levelPoints::levelPoints(const level& lvl)
 :
     vectorBlock(),
-    msh_(msh)
-{}
+    lvl_(lvl)
+{
+    setSizeFromCells(lvl_.N());
 
-partPoints::partPoints(const partPoints& points)
+    // Reference needs to be of levelPoints type to account for ghost point
+    // padding
+
+    levelPoints& points = *this;
+
+    if (lvl_.levelNum() == 0)
+    {
+        const brick& b = lvl_.msh().bricks()[lvl_.decomp().myBrickNum()];
+        const labelVector Nb = b.N();
+
+        const labelVector start =
+            cmptMultiply
+            (
+                cmptDivide(Nb, lvl_.decomp().myBrickDecomp()),
+                lvl_.decomp().myBrickPart()
+            );
+
+        // Normalized coordinates of the points in this processor's part of the
+        // brick
+
+        scalarField xi(lvl_.N().x()+1);
+        scalarField eta(lvl_.N().y()+1);
+        scalarField zeta(lvl_.N().z()+1);
+
+        forAll(xi, i)
+            xi[i] = scalar(start.x()+i)/Nb.x();
+
+        forAll(eta, j)
+            eta[j] = scalar(start.y()+j)/Nb.y();
+
+        forAll(zeta, k)
+            zeta[k] = scalar(start.z()+k)/Nb.z();
+
+        const vectorBlock tfi(b.TFI(xi,eta,zeta));
+
+        forAllBlock(tfi, i, j, k)
+            points(i,j,k) = tfi(i,j,k);
+    }
+    else
+    {
+        // Sample parent level points
+
+        const level& parent = lvl_.parent();
+        const labelVector R = lvl_.R();
+
+        forAllBlock(points, i, j, k)
+            points(i,j,k) = parent.points()(i*R.x(), j*R.y(), k*R.z());
+    }
+
+    // Set ghost points
+
+    calcGhostPoints();
+
+    // Remove round-off errors
+
+    clean();
+}
+
+levelPoints::levelPoints(const levelPoints& points)
 :
     vectorBlock(points),
-    msh_(points.msh_)
+    lvl_(points.lvl_)
 {}
 
-partPoints::~partPoints()
+levelPoints::levelPoints(const levelPoints& points, const level& lvl)
+:
+    vectorBlock(points),
+    lvl_(lvl)
 {}
 
-void partPoints::clear()
+levelPoints::~levelPoints()
+{}
+
+void levelPoints::clear()
 {
     vectorBlock::clear();
 }
 
-void partPoints::setSizeFromCells(const labelVector& size)
+void levelPoints::setSizeFromCells(const labelVector& size)
 {
     // On each face of the block a layer of ghost points, plus one additional
     // layer because these are points, not cells.
@@ -43,7 +108,7 @@ void partPoints::setSizeFromCells(const labelVector& size)
     points = Zero;
 }
 
-void partPoints::calcGhostPoints()
+void levelPoints::calcGhostPoints()
 {
     vectorBlock& points = *this;
 
@@ -172,10 +237,10 @@ void partPoints::calcGhostPoints()
     List<const boundary*> boundaryPtrs(0);
 
     for (int deg = 1; deg < 3; deg++)
-        forAll(msh_.boundaries(), bi)
-            if (msh_.boundaries()[bi].castable<parallelBoundary>())
-                if (msh_.boundaries()[bi].offsetDegree() == deg)
-                    boundaryPtrs.append(&msh_.boundaries()[bi]);
+        forAll(lvl_.boundaries(), bi)
+            if (lvl_.boundaries()[bi].castable<parallelBoundary>())
+                if (lvl_.boundaries()[bi].offsetDegree() == deg)
+                    boundaryPtrs.append(&lvl_.boundaries()[bi]);
 
     const label Np = boundaryPtrs.size();
 
@@ -193,7 +258,7 @@ void partPoints::calcGhostPoints()
         labelVector S(start(bo,N));
         labelVector E(end(bo,N));
 
-        if (msh_.structured())
+        if (lvl_.msh().structured())
         {
             labelVector expansion(unitXYZ);
 
@@ -312,7 +377,7 @@ void partPoints::calcGhostPoints()
         labelVector S(start(bo,N));
         labelVector E(end(bo,N));
 
-        if (msh_.structured())
+        if (lvl_.msh().structured())
         {
             labelVector expansion(unitXYZ);
 
@@ -359,7 +424,7 @@ void partPoints::calcGhostPoints()
     }
 }
 
-void partPoints::clean()
+void levelPoints::clean()
 {
     vectorBlock& points = *this;
 

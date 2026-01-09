@@ -36,25 +36,21 @@ void testConstructors(const fvMesh& fvMsh, const bool deep)
 
     meshField<Type,MeshType> m3a(m2);
     meshField<Type,MeshType> m3b(m2, true);
-    meshField<Type,MeshType> m3c(m2, true, true);
 
     // Copy from m2 with new name
 
     meshField<Type,MeshType> m4a("m4a", m2);
     meshField<Type,MeshType> m4b("m4b", m2, true);
-    meshField<Type,MeshType> m4c("m4c", m2, true, true);
 
     // Copy from tmp of m2 with same name
 
     meshField<Type,MeshType> m5a(2*m2);
     meshField<Type,MeshType> m5b(2*m2, true);
-    meshField<Type,MeshType> m5c(2*m2, true, true);
 
     // Copy from tmp m2 with new name
 
     meshField<Type,MeshType> m6a("m6a", 2*m2);
     meshField<Type,MeshType> m6b("m6b", 2*m2, true);
-    meshField<Type,MeshType> m6c("m6c", 2*m2, true, true);
 }
 
 template<class Type, class MeshType>

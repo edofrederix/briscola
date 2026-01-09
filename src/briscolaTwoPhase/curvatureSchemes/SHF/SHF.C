@@ -21,7 +21,8 @@ void SHF::setCommunication()
     faceLabel pBoundary;
     for (int i = 0; i < 6; i++)
         pBoundary[i] =
-            fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
+            fvMsh_.msh().boundaries().find(faceOffsets[i])
+           .castable<parallelBoundary>();
 
     const faceLabel I = fvMsh_.template I<colocated>();
 
@@ -104,7 +105,8 @@ void SHF::correct()
     faceLabel pBoundary;
     for (int i = 0; i < 6; i++)
         pBoundary[i] =
-            fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
+            fvMsh_.msh().boundaries().find(faceOffsets[i])
+           .castable<parallelBoundary>();
 
     const labelVector N = fvMsh_.template N<colocated>();
     const faceLabel I = fvMsh_.template I<colocated>();

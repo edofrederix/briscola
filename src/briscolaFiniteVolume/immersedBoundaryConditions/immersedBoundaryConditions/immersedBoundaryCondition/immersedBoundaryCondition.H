@@ -30,7 +30,7 @@ protected:
     const fvMesh& fvMsh_;
 
     // Reference to the mesh field
-    meshField<Type,MeshType>& mshField_;
+    meshField<Type,MeshType>& field_;
 
     // Reference to immersed boundary
     const immersedBoundary<MeshType>& ib_;
@@ -68,16 +68,16 @@ public:
         immersedBoundaryCondition,
         dictionary,
         (
-            const meshField<Type,MeshType>& mshField,
+            const meshField<Type,MeshType>& field,
             const immersedBoundary<MeshType>& ib
         ),
-        (mshField, ib)
+        (field, ib)
     );
 
     // Construct from field, immersed boundary and mask pointer
     immersedBoundaryCondition
     (
-        const meshField<Type,MeshType>& mshField,
+        const meshField<Type,MeshType>& field,
         const immersedBoundary<MeshType>& ib,
         const meshField<label,MeshType>* maskPtr
     );
@@ -85,7 +85,7 @@ public:
     // Selector from dictionary
     static autoPtr<immersedBoundaryCondition<Type,MeshType>> New
     (
-        const meshField<Type,MeshType>& mshField,
+        const meshField<Type,MeshType>& field,
         const immersedBoundary<MeshType>& ib
     );
 
@@ -100,9 +100,9 @@ public:
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
     // Access to the mesh field
-    inline const meshField<Type,MeshType>& mshField() const
+    inline const meshField<Type,MeshType>& field() const
     {
-        return mshField_;
+        return field_;
     }
 
     // Access to the immersed boundary

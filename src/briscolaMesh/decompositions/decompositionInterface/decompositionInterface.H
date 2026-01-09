@@ -1,10 +1,10 @@
-#ifndef brickDecompositionInterface_H
-#define brickDecompositionInterface_H
+#ifndef decompositionInterface_H
+#define decompositionInterface_H
 
 #include "brickLink.H"
 #include "labelVector.H"
 #include "labelTensor.H"
-#include "brickDecompositionSlice.H"
+#include "decompositionSlice.H"
 
 namespace Foam
 {
@@ -12,17 +12,20 @@ namespace Foam
 namespace briscola
 {
 
-class mesh;
+class level;
 
-class brickDecompositionInterface
+class decompositionInterface
 {
     // Copy constructor
-    brickDecompositionInterface(const brickDecompositionInterface&);
+    decompositionInterface(const decompositionInterface&);
 
     // Disallow default bitwise assignment
-    void operator=(const brickDecompositionInterface&);
+    void operator=(const decompositionInterface&);
 
 protected:
+
+    // Reference to the level
+    const level& lvl_;
 
     // Brick link
     brickLink link_;
@@ -33,11 +36,8 @@ protected:
     // Reference to the second brick
     const brick& b1_;
 
-    // Reference to the mesh
-    const mesh& msh_;
-
     // List of processor interface slices accross this brick interface
-    PtrList<brickDecompositionSlice> slices_;
+    PtrList<decompositionSlice> slices_;
 
     // Slice topology
     labelBlock map_;
@@ -50,17 +50,17 @@ protected:
 
 public:
 
-    // Construct from brick link and mesh
-    brickDecompositionInterface(const brickLink&, const mesh&);
+    // Construct from brick link and level
+    decompositionInterface(const brickLink&, const level&);
 
     // Destructor
-    virtual ~brickDecompositionInterface();
+    virtual ~decompositionInterface();
 
     // Return access the brick link
     inline const brickLink& link() const { return link_; }
 
     // Return access to the list of slices
-    const PtrList<brickDecompositionSlice>& slices() const { return slices_; }
+    const PtrList<decompositionSlice>& slices() const { return slices_; }
 
     // Return access to the slice topology
     const labelBlock& map() const { return map_; }

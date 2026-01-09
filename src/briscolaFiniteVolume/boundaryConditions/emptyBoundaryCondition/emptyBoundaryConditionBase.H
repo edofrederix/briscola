@@ -23,7 +23,7 @@ public:
     // Construct from components
     emptyBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&
     );
 
@@ -33,10 +33,10 @@ public:
         const emptyBoundaryConditionBase<Type,MeshType>&
     );
 
-    // Copy constructor resetting field reference
+    // Copy constructor resetting level reference
     emptyBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const emptyBoundaryConditionBase<Type,MeshType>&
     );
 

@@ -26,7 +26,7 @@ public:
 
 protected:
 
-    // Flattened list of boundary values for each level and direction
+    // List of boundary values for each direction
     FastPtrList<block<Type>> boundaryValues_;
 
     // Function to initialize uniform boundary values
@@ -37,14 +37,14 @@ public:
     // Construct from components
     DirichletBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&
     );
 
     // Construct from components and zero boundary value
     DirichletBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&,
         const zero&
     );
@@ -52,7 +52,7 @@ public:
     // Construct from components and uniform boundary value
     DirichletBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&,
         const physicalType&
     );
@@ -60,7 +60,7 @@ public:
     // Construct from components and boundary values
     DirichletBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&,
         const FastPtrList<block<Type>>&
     );
@@ -71,10 +71,10 @@ public:
         const DirichletBoundaryConditionBase<Type,MeshType>&
     );
 
-    // Copy constructor resetting field reference
+    // Copy constructor resetting level reference
     DirichletBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const DirichletBoundaryConditionBase<Type,MeshType>&
     );
 

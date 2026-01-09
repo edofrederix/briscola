@@ -27,17 +27,17 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
 
     forAll(fvMsh_, l)
     {
-        const partPoints& points = fvMsh_[l].points();
+        const levelPoints& points = fvMsh_[l].points();
 
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
             const labelVector N = fvMsh_.N<MeshType>(l,d);
             const vector shift = MeshType::shift[d];
 
-            // Create vertices from a partPoints object, which consistently
+            // Create vertices from a levelPoints object, which consistently
             // generates ghost points
 
-            partPoints p(fvMsh_.msh());
+            levelPoints p(fvMsh_[l]);
 
             p.clear();
             p.setSizeFromCells(N);

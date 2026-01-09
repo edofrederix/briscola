@@ -1,4 +1,5 @@
 #include "decomposition.H"
+#include "level.H"
 #include "mesh.H"
 
 namespace Foam
@@ -10,10 +11,10 @@ namespace briscola
 defineTypeNameAndDebug(decomposition, 0);
 defineRunTimeSelectionTable(decomposition, dictionary);
 
-decomposition::decomposition(mesh& msh)
+decomposition::decomposition(const level& lvl)
 :
-    msh_(msh),
-    dict_(msh.dict().subDict("decomposition"))
+    lvl_(lvl),
+    dict_(lvl.msh().dict().subDict("decomposition"))
 {}
 
 decomposition::decomposition
@@ -21,7 +22,7 @@ decomposition::decomposition
     const decomposition& d
 )
 :
-    msh_(d.msh_),
+    lvl_(d.lvl_),
     dict_(d.dict_),
     procBrickNums_(d.procBrickNums_),
     procBrickDecomps_(d.procBrickDecomps_),
@@ -37,11 +38,11 @@ decomposition::decomposition
 decomposition::~decomposition()
 {}
 
-autoPtr<decomposition> decomposition::New(mesh& msh)
+autoPtr<decomposition> decomposition::New(const level& lvl)
 {
     const word decompType
     (
-        msh.dict().subDict("decomposition").lookup("type")
+        lvl.msh().dict().subDict("decomposition").lookup("type")
     );
 
     dictionaryConstructorTable::iterator cstrIter =
@@ -56,7 +57,7 @@ autoPtr<decomposition> decomposition::New(mesh& msh)
             << exit(FatalError);
     }
 
-    autoPtr<decomposition> ptr(cstrIter()(msh));
+    autoPtr<decomposition> ptr(cstrIter()(lvl));
 
     ptr->init();
 
@@ -85,7 +86,7 @@ void decomposition::init()
 
     // Store brick decompositions
 
-    brickDecomps_.setSize(msh_.bricks().size());
+    brickDecomps_.setSize(lvl_.msh().bricks().size());
 
     forAll(procBrickNums_, proc)
         brickDecomps_[procBrickNums_[proc]] =
@@ -93,7 +94,7 @@ void decomposition::init()
 
     // Make brick processor map
 
-    brickProcMaps_.setSize(msh_.bricks().size());
+    brickProcMaps_.setSize(lvl_.msh().bricks().size());
 
     forAll(brickDecomps_, b)
         brickProcMaps_.set(b, new labelBlock(brickDecomps_[b], -1));
@@ -110,7 +111,7 @@ void decomposition::init()
 
     // Set the global processor map if the brick topology is structured
 
-    if (msh_.topology().structured())
+    if (lvl_.msh().topology().structured())
         mapPtr_.reset(new decompositionMap(*this));
 }
 

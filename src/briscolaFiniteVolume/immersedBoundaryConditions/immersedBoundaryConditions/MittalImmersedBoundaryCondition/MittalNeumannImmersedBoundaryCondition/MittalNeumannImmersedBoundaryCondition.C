@@ -15,11 +15,11 @@ template<class Type, class MeshType>
 MittalNeumannImmersedBoundaryCondition<Type,MeshType>::
 MittalNeumannImmersedBoundaryCondition
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshField<Type,MeshType>& field,
     const immersedBoundary<MeshType>& ib
 )
 :
-    MittalImmersedBoundaryCondition<Type,MeshType>(mshField, ib),
+    MittalImmersedBoundaryCondition<Type,MeshType>(field, ib),
     boundaryGradients_(this->read("gradient"))
 {}
 
@@ -39,13 +39,13 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>::evaluate
 {
     const scalar omega = this->omega_;
 
-    meshDirection<Type,MeshType>& x = this->mshField_[l][d];
+    meshDirection<Type,MeshType>& x = this->field_[l][d];
 
     const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
     const meshDirection<vector,MeshType>& cc =
         this->fvMsh_.template metrics<MeshType>().cellCenters()[l][d];
 
-    List<Type> data(move(this->exchanges_[l][d](this->mshField_)));
+    List<Type> data(move(this->exchanges_[l][d](this->field_)));
 
     const vectorList& mps = this->exchanges_[l][d].interp().points();
 

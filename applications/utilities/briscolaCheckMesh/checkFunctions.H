@@ -35,9 +35,8 @@ void checkParallelFaceCenters(const fvMesh& fvMsh)
             if (bc.offset() == bo && bc.baseType() == PARALLELBC)
             {
                 found = true;
-                slave =
-                    bc.mshBoundary().template
-                    cast<parallelBoundary>().slave();
+                slave = bc.b().template cast<parallelBoundary>().slave();
+
                 break;
             }
         }
@@ -128,9 +127,8 @@ void checkParallelFaceDeltas(const fvMesh& fvMsh)
             )
             {
                 found = true;
-                slave =
-                    bc.mshBoundary().template
-                    cast<parallelBoundary>().slave();
+                slave = bc.b().template cast<parallelBoundary>().slave();
+
                 break;
             }
         }

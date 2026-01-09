@@ -14,12 +14,12 @@ namespace fv
 template<class Type, class MeshType>
 MittalImmersedBoundaryCondition<Type,MeshType>::MittalImmersedBoundaryCondition
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshField<Type,MeshType>& field,
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField, ib, &ib.ghostMask()),
-    exchanges_(mshField.fvMsh().msh().size())
+    immersedBoundaryCondition<Type,MeshType>(field, ib, &ib.ghostMask()),
+    exchanges_(field.fvMsh().msh().size())
 {
     // Check shape overlap
 

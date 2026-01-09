@@ -13,9 +13,9 @@ addToRunTimeSelectionTable(mesh, rectilinearMesh, dictionary);
 
 void rectilinearMesh::setMetrics()
 {
-    const decompositionMap& map = decomp().map();
-    const part& p = this->operator[](0);
-    const partPoints& points = p.points();
+    const level& lvl = this->operator[](0);
+    const decompositionMap& map = lvl.decomp().map();
+    const levelPoints& points = lvl.points();
 
     // Base vectors
 
@@ -45,8 +45,8 @@ void rectilinearMesh::setMetrics()
 
     for (int d = 0; d < 3; d++)
     {
-        localCellSizesData_.set(d, new scalarList(p.N()[d]+2));
-        localPointsData_.set(d, new scalarList(p.N()[d]+3));
+        localCellSizesData_.set(d, new scalarList(lvl.N()[d]+2));
+        localPointsData_.set(d, new scalarList(lvl.N()[d]+3));
 
         scalarList& localCellSizesData = localCellSizesData_[d];
         scalarList& localPointsData = localPointsData_[d];
@@ -350,6 +350,9 @@ labelVector rectilinearMesh::findCell(const vector& p, const label l) const
 
     const PtrList<PartialList<scalar>>& x = localPoints_;
 
+    const level& lvl = this->operator[](l);
+    const level& lvl0 = this->operator[](0);
+
     // Check if the point is outside the domain boundaries
 
     for (label d = 0; d < 3; d++)
@@ -362,23 +365,19 @@ labelVector rectilinearMesh::findCell(const vector& p, const label l) const
 
     for (label d = 0; d < 3; d++)
         if (q[d] >= x[d].last() && q[d] <= x[d].last() + 1e-12)
-            if (b(units[d]).castable<parallelBoundary>())
+            if (lvl0.boundaries().find(units[d]).castable<parallelBoundary>())
                 return -unitXYZ;
 
     for (label d = 0; d < 3; d++)
         if (q[d] < x[d].first() && q[d] >= x[d].first() - 1e-12)
-            if (b(-units[d]).castable<parallelBoundary>())
+            if (lvl0.boundaries().find(-units[d]).castable<parallelBoundary>())
                 return -unitXYZ;
 
     // Binary search. Use <= operator so that at faces points belong to the
     // upper cell. Assign points that are on the upper boundary to the nearest
     // internal cell.
 
-    const labelVector N(this->operator[](0).N());
-    const labelVector R
-    (
-        cmptDivide(N, this->operator[](l).N())
-    );
+    const labelVector N = lvl0.N();
 
     labelVector ijk;
 
@@ -394,7 +393,7 @@ labelVector rectilinearMesh::findCell(const vector& p, const label l) const
                 N[d]-1
             );
 
-    return cmptDivide(ijk, R);
+    return cmptDivide(ijk, cmptDivide(N, lvl.N()));
 }
 
 }

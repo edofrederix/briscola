@@ -1,5 +1,5 @@
 #include "boundary.H"
-#include "mesh.H"
+#include "level.H"
 
 namespace Foam
 {
@@ -10,8 +10,9 @@ namespace briscola
 defineTypeNameAndDebug(boundary, 0);
 defineRunTimeSelectionTable(boundary, dictionary);
 
-boundary::boundary(const mesh& msh, const dictionary& dict)
+boundary::boundary(const level& lvl, const dictionary& dict)
 :
+    lvl_(lvl),
     dict_(dict),
     name_(dict.lookup("name")),
     offset_(dict.lookup("offset")),
@@ -19,11 +20,19 @@ boundary::boundary(const mesh& msh, const dictionary& dict)
     master_(true)
 {}
 
-boundary::boundary
-(
-    const boundary& b
-)
+boundary::boundary(const boundary& b)
 :
+    lvl_(b.lvl_),
+    dict_(b.dict_),
+    name_(b.name_),
+    offset_(b.offset_),
+    offsetDegree_(b.offsetDegree_),
+    master_(b.master_)
+{}
+
+boundary::boundary(const boundary& b, const level& lvl)
+:
+    lvl_(lvl),
     dict_(b.dict_),
     name_(b.name_),
     offset_(b.offset_),
@@ -36,7 +45,7 @@ boundary::~boundary()
 
 autoPtr<boundary> boundary::New
 (
-    const mesh& msh,
+    const level& lvl,
     const dictionary& dict
 )
 {
@@ -54,7 +63,7 @@ autoPtr<boundary> boundary::New
             << exit(FatalError);
     }
 
-    return autoPtr<boundary>(cstrIter()(msh, dict));
+    return autoPtr<boundary>(cstrIter()(lvl, dict));
 }
 
 }

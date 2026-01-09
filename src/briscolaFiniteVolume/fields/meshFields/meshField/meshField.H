@@ -8,7 +8,6 @@
 
 #include "linearSystemFwd.H"
 #include "meshLevel.H"
-#include "boundaryCondition.H"
 #include "immersedBoundaryConditionFwd.H"
 #include "cachedRefCount.H"
 #include "direction.H"
@@ -23,9 +22,6 @@ namespace fv
 {
 
 class fvMesh;
-
-template<class Type, class MeshType>
-class boundaryExchange;
 
 template<class Type, class MeshType>
 class meshField
@@ -49,18 +45,9 @@ private:
     // construction from another field that has the old time field pointer set.
     meshField<Type,MeshType>* oldTimePtr_;
 
-    // Boundary conditions
-    PtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
-
-    // Singular boundary condition bool (set when adding boundary conditions)
-    bool singular_;
-
     // Immersed boundary condition
     FastPtrList<immersedBoundaryCondition<Type,MeshType>>
         immersedBoundaryConditions_;
-
-    // Boundary exchange
-    autoPtr<boundaryExchange<Type,MeshType>> bExchangePtr_;
 
     // Restriction scheme name
     word restrictionScheme_;
@@ -119,31 +106,27 @@ public:
     meshField
     (
         const meshField<Type,MeshType>& field,
-        const bool registerObject = false,
-        const bool copyBCs = false
+        const bool registerObject = false
     );
 
     meshField
     (
         const word& name,
         const meshField<Type,MeshType>& field,
-        const bool registerObject = false,
-        const bool copyBCs = false
+        const bool registerObject = false
     );
 
     meshField
     (
         const tmp<meshField<Type,MeshType>>& field,
-        const bool registerObject = false,
-        const bool copyBCs = false
+        const bool registerObject = false
     );
 
     meshField
     (
         const word& name,
         const tmp<meshField<Type,MeshType>>& field,
-        const bool registerObject = false,
-        const bool copyBCs = false
+        const bool registerObject = false
     );
 
     // Temporary field constructor
@@ -293,44 +276,6 @@ public:
     }
 
     // Access to the boundary conditions
-    inline PtrList<boundaryCondition<Type,MeshType>>& boundaryConditions()
-    {
-        return boundaryConditions_;
-    }
-
-    // Const access to the boundary conditions
-    inline const PtrList<boundaryCondition<Type,MeshType>>&
-    boundaryConditions() const
-    {
-        return boundaryConditions_;
-    }
-
-    // Get boundary condition from offset vector
-    inline boundaryCondition<Type,MeshType>& boundary
-    (
-        const labelVector& bo
-    )
-    {
-        forAll(boundaryConditions_, i)
-            if (boundaryConditions_[i].offset() == bo)
-                return boundaryConditions_[i];
-
-        FatalErrorInFunction
-            << "Invalid boundary condition offset" << endl << abort(FatalError);
-
-        return boundaryConditions_[0];
-    }
-
-    // Get const reference to boundary condition from offset vector
-    inline const boundaryCondition<Type,MeshType>& boundary
-    (
-        const labelVector& bo
-    ) const
-    {
-        return const_cast<meshField<Type,MeshType>*>(this)->boundary(bo);
-    }
-
-    // Access to the boundary conditions
     inline FastPtrList<immersedBoundaryCondition<Type,MeshType>>&
     immersedBoundaryConditions()
     {
@@ -342,6 +287,19 @@ public:
     immersedBoundaryConditions() const
     {
         return immersedBoundaryConditions_;
+    }
+
+    // Access to the boundary conditions of the first level
+    inline FastPtrList<boundaryCondition<Type,MeshType>>& boundaryConditions()
+    {
+        return level().boundaryConditions();
+    }
+
+    // Access to the boundary conditions of the first level
+    inline const FastPtrList<boundaryCondition<Type,MeshType>>&
+    boundaryConditions() const
+    {
+        return level().boundaryConditions();
     }
 
     // Add boundary conditions
@@ -383,14 +341,6 @@ public:
 
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();
-
-    // Check if the boundary conditions make this field singular
-    bool singular() const
-    {
-        const_cast<meshField<Type,MeshType>*>(this)->addBoundaryConditions();
-
-        return singular_;
-    }
 
     // Set the old time field. Works recursively, so if the old time field has
     // an old time field too, it will be set as well.
@@ -539,10 +489,6 @@ public:
     // Befriend linear system
     template<class SType, class, class>
     friend class linearSystem;
-
-    // Befriend parallel exchange
-    template<class, class>
-    friend class boundaryExchange;
 
     // Befriend mesh level
     template<class, class>

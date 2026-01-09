@@ -1,5 +1,5 @@
-#ifndef brickDecompositionSlice_H
-#define brickDecompositionSlice_H
+#ifndef decompositionSlice_H
+#define decompositionSlice_H
 
 #include "label.H"
 #include "labelVector.H"
@@ -12,7 +12,7 @@ namespace briscola
 
 class decomposition;
 
-class brickDecompositionSlice
+class decompositionSlice
 {
     // Processor number in the first brick
     const label procNum0_;
@@ -33,12 +33,12 @@ class brickDecompositionSlice
     const labelVector N1_;
 
     // Disallow default bitwise assignment
-    void operator=(const brickDecompositionSlice&);
+    void operator=(const decompositionSlice&);
 
 public:
 
     // Construct from components
-    brickDecompositionSlice
+    decompositionSlice
     (
         const label,
         const label,
@@ -49,10 +49,10 @@ public:
     );
 
     // Copy constructor
-    brickDecompositionSlice(const brickDecompositionSlice&);
+    decompositionSlice(const decompositionSlice&);
 
     // Destructor
-    virtual ~brickDecompositionSlice();
+    virtual ~decompositionSlice();
 
     // Return the processor numbers
     inline label procNum0() const { return procNum0_; }

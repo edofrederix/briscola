@@ -1,4 +1,4 @@
-#include "brickDecompositionSlice.H"
+#include "decompositionSlice.H"
 
 namespace Foam
 {
@@ -6,7 +6,7 @@ namespace Foam
 namespace briscola
 {
 
-brickDecompositionSlice::brickDecompositionSlice
+decompositionSlice::decompositionSlice
 (
     const label procNum0,
     const label procNum1,
@@ -24,7 +24,7 @@ brickDecompositionSlice::brickDecompositionSlice
     N1_(N1)
 {}
 
-brickDecompositionSlice::~brickDecompositionSlice()
+decompositionSlice::~decompositionSlice()
 {}
 
 }

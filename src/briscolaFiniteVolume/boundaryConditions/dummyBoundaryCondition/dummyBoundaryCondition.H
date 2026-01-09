@@ -27,17 +27,17 @@ public:
     // Construct from components
     dummyBoundaryCondition
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&
     );
 
     // Copy constructor
     dummyBoundaryCondition(const dummyBoundaryCondition<Type,MeshType>&);
 
-    // Copy constructor resetting field reference
+    // Copy constructor resetting level reference
     dummyBoundaryCondition
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const dummyBoundaryCondition<Type,MeshType>&
     );
 
@@ -50,18 +50,6 @@ public:
         );
     }
 
-    // Construct and return a clone setting field reference
-    virtual tmp<boundaryCondition<Type,MeshType>> clone
-    (
-        const meshField<Type,MeshType>& field
-    ) const
-    {
-        return tmp<boundaryCondition<Type,MeshType>>
-        (
-            new dummyBoundaryCondition<Type,MeshType>(field,*this)
-        );
-    }
-
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const
     {
@@ -71,8 +59,8 @@ public:
     // Non-eliminated boundary conditione
     virtual bool eliminated() const { return false; }
 
-    // Evaluate the boundary condition for given level and direction
-    virtual void evaluate(const label, const label);
+    // Evaluate the boundary condition for given direction
+    virtual void evaluate(const label);
 };
 
 }

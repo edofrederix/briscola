@@ -28,7 +28,7 @@ public:
     // Construct
     MittalDirichletImmersedBoundaryCondition
     (
-        const meshField<Type,MeshType>& mshField,
+        const meshField<Type,MeshType>& field,
         const immersedBoundary<MeshType>& ib
     );
 

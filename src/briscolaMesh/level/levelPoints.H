@@ -1,5 +1,5 @@
-#ifndef partPoints_H
-#define partPoints_H
+#ifndef levelPoints_H
+#define levelPoints_H
 
 // Wrapper around vectorBlock, which adds ghost cell padding useful for periodic
 // or parallel boundaries. The base vector block is kept private.
@@ -13,14 +13,14 @@ namespace Foam
 namespace briscola
 {
 
-class mesh;
+class level;
 
-class partPoints
+class levelPoints
 :
     private vectorBlock
 {
-    // Reference to the mesh
-    const mesh& msh_;
+    // Reference to the level
+    const level& lvl_;
 
     // Boundary point start given offset and shape
     inline labelVector start
@@ -56,14 +56,20 @@ class partPoints
 
 public:
 
-    // Constructor
-    partPoints(const mesh&);
+    // Constructor from level
+    levelPoints(const level&);
 
-    // Copy concustrctor
-    partPoints(const partPoints&);
+    // Copy constructor
+    levelPoints(const levelPoints&);
+
+    // Copy constructor with alternative level reference
+    levelPoints(const levelPoints&, const level&);
 
     // Destructor
-    ~partPoints();
+    ~levelPoints();
+
+    // Return the level
+    const level& lvl() const { return lvl_; }
 
     // Clear the point level
     void clear();

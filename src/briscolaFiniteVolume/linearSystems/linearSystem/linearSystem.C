@@ -681,12 +681,16 @@ linearSystem<SType,Type,MeshType>::evaluate
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::eliminateGhosts()
 {
-    if (!xPtr_->boundaryConditions().size())
-        xPtr_->addBoundaryConditions();
+    meshField<Type,MeshType>& x = *xPtr_;
 
-    forAll(A_, l)
-        forAll(xPtr_->boundaryConditions(), i)
-            xPtr_->boundaryConditions()[i].eliminateGhosts(*this, l);
+    x.addBoundaryConditions();
+
+    // Loop over the levels of x, so that if x is shallow, only the top level is
+    // handled.
+
+    forAll(x, l)
+        forAll(x[l].boundaryConditions(), i)
+            x[l].boundaryConditions()[i].eliminateGhosts(*this);
 }
 
 template<class SType, class Type, class MeshType>

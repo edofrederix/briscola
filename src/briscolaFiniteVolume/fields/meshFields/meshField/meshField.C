@@ -7,7 +7,6 @@
 #include "emptyBoundary.H"
 
 #include "restrictionScheme.H"
-#include "boundaryExchange.H"
 
 #include "immersedBoundaryCondition.H"
 
@@ -41,7 +40,7 @@ template<class Type, class MeshType>
 void meshField<Type,MeshType>::setFieldPointers()
 {
     forAll(*this, l)
-        listType::operator[](l).mshFieldPtr_ = this;
+        listType::operator[](l).fieldPtr_ = this;
 }
 
 template<class Type, class MeshType>
@@ -82,8 +81,7 @@ meshField<Type,MeshType>::meshField
     ),
     cachedRefCount(),
     fvMsh_(fvMsh),
-    oldTimePtr_(nullptr),
-    boundaryConditions_()
+    oldTimePtr_(nullptr)
 {
     this->allocate(deep);
 }
@@ -100,8 +98,7 @@ meshField<Type,MeshType>::meshField
     IOdictionary(io),
     cachedRefCount(),
     fvMsh_(fvMsh),
-    oldTimePtr_(nullptr),
-    boundaryConditions_()
+    oldTimePtr_(nullptr)
 {
     this->allocate(deep);
 }
@@ -112,8 +109,7 @@ template<class Type, class MeshType>
 meshField<Type,MeshType>::meshField
 (
     const meshField<Type,MeshType>& field,
-    const bool registerObject,
-    const bool copyBCs
+    const bool registerObject
 )
 :
     FastPtrList<meshLevel<Type,MeshType>>(field),
@@ -131,21 +127,9 @@ meshField<Type,MeshType>::meshField
     ),
     cachedRefCount(),
     fvMsh_(field.fvMsh()),
-    oldTimePtr_(nullptr),
-    boundaryConditions_()
+    oldTimePtr_(nullptr)
 {
     setFieldPointers();
-
-    if (copyBCs)
-    {
-        PtrList<boundaryCondition<Type,MeshType>> list
-        (
-            field.boundaryConditions(),
-            *this
-        );
-
-        boundaryConditions_.transfer(list);
-    }
 }
 
 template<class Type, class MeshType>
@@ -153,8 +137,7 @@ meshField<Type,MeshType>::meshField
 (
     const word& name,
     const meshField<Type,MeshType>& field,
-    const bool registerObject,
-    const bool copyBCs
+    const bool registerObject
 )
 :
     FastPtrList<meshLevel<Type,MeshType>>(field),
@@ -172,29 +155,16 @@ meshField<Type,MeshType>::meshField
     ),
     cachedRefCount(),
     fvMsh_(field.fvMsh()),
-    oldTimePtr_(nullptr),
-    boundaryConditions_()
+    oldTimePtr_(nullptr)
 {
     setFieldPointers();
-
-    if (copyBCs)
-    {
-        FastPtrList<boundaryCondition<Type,MeshType>> list
-        (
-            field.boundaryConditions(),
-            *this
-        );
-
-        boundaryConditions_.transfer(list);
-    }
 }
 
 template<class Type, class MeshType>
 meshField<Type,MeshType>::meshField
 (
     const tmp<meshField<Type,MeshType>>& tField,
-    const bool registerObject,
-    const bool copyBCs
+    const bool registerObject
 )
 :
     FastPtrList<meshLevel<Type,MeshType>>
@@ -216,21 +186,9 @@ meshField<Type,MeshType>::meshField
     ),
     cachedRefCount(),
     fvMsh_(tField->fvMsh_),
-    oldTimePtr_(nullptr),
-    boundaryConditions_()
+    oldTimePtr_(nullptr)
 {
     setFieldPointers();
-
-    if (copyBCs)
-    {
-        PtrList<boundaryCondition<Type,MeshType>> list
-        (
-            tField->boundaryConditions(),
-            *this
-        );
-
-        boundaryConditions_.transfer(list);
-    }
 
     if (tField.isTmp())
         tField.clear();
@@ -241,8 +199,7 @@ meshField<Type,MeshType>::meshField
 (
     const word& name,
     const tmp<meshField<Type,MeshType>>& tField,
-    const bool registerObject,
-    const bool copyBCs
+    const bool registerObject
 )
 :
     FastPtrList<meshLevel<Type,MeshType>>
@@ -264,21 +221,9 @@ meshField<Type,MeshType>::meshField
     ),
     cachedRefCount(),
     fvMsh_(tField->fvMsh_),
-    oldTimePtr_(nullptr),
-    boundaryConditions_()
+    oldTimePtr_(nullptr)
 {
     setFieldPointers();
-
-    if (copyBCs)
-    {
-        PtrList<boundaryCondition<Type,MeshType>> list
-        (
-            tField->boundaryConditions(),
-            *this
-        );
-
-        boundaryConditions_.transfer(list);
-    }
 
     if (tField.isTmp())
         tField.clear();
@@ -300,40 +245,8 @@ meshField<Type,MeshType>::~meshField()
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::addBoundaryConditions()
 {
-    if (boundaryConditions_.size() == 0)
-    {
-        boundaryConditions_.setSize(fvMsh_.boundaries().size());
-
-        singular_ = true;
-
-        forAll(fvMsh_.boundaries(), i)
-        {
-            boundaryConditions_.set
-            (
-                i,
-                boundaryCondition<Type,MeshType>::New
-                (
-                    *this,
-                    fvMsh_.boundaries()[i]
-                )
-            );
-
-            const boundaryConditionBaseType bcType =
-                boundaryConditions_[i].baseType();
-
-            if (bcType == DIRICHLETBC || bcType == ROBINBC)
-                singular_ = false;
-        }
-
-        reduce(singular_, andOp<bool>());
-    }
-
-    #ifdef BOUNDARYEXCHANGE
-
-    if (bExchangePtr_.empty())
-        bExchangePtr_.reset(new boundaryExchange<Type,MeshType>(*this));
-
-    #endif
+    forAll(*this, i)
+        this->operator[](i).addBoundaryConditions();
 }
 
 template<class Type, class MeshType>
@@ -370,32 +283,8 @@ void meshField<Type,MeshType>::correctBoundaryConditions()
 {
     addBoundaryConditions();
 
-    #ifdef BOUNDARYEXCHANGE
-
-    // Manually call the level boundary condition correction functions, except
-    // for the parallel/periodic one for which we can call a collective update.
-    // This is much more efficient than sending separate messages on each level.
-
-    forAll(*this, l)
-    {
-        if (l == 0)
-            listType::operator[](l).correctImmersedBoundaryConditions();
-
-        listType::operator[](l).correctUnsetBoundaryConditions();
-        listType::operator[](l).correctPatchBoundaryConditions();
-    }
-
-    this->correctCommsBoundaryConditions();
-
-    forAll(*this, l)
-        listType::operator[](l).correctEmptyBoundaryConditions();
-
-    #else
-
     forAll(*this, l)
         listType::operator[](l).correctBoundaryConditions();
-
-    #endif
 }
 
 template<class Type, class MeshType>
@@ -421,16 +310,8 @@ void meshField<Type,MeshType>::correctCommsBoundaryConditions()
 {
     addBoundaryConditions();
 
-    #ifdef BOUNDARYEXCHANGE
-
-    bExchangePtr_->correct(-1);
-
-    #else
-
     forAll(*this, l)
         listType::operator[](l).correctCommsBoundaryConditions();
-
-    #endif
 }
 
 template<class Type, class MeshType>

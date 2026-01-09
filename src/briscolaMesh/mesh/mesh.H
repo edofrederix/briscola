@@ -3,14 +3,10 @@
 
 #include "decomposition.H"
 #include "geometry.H"
-#include "part.H"
+#include "level.H"
 #include "faceLabel.H"
 #include "edgeLabel.H"
 #include "vertexLabel.H"
-
-// Forward declaration of MPI communicator
-struct ompi_communicator_t;
-typedef ompi_communicator_t* MPI_Comm;
 
 namespace Foam
 {
@@ -21,20 +17,8 @@ namespace briscola
 class mesh
 :
     public geometry,
-    public FastPtrList<part>
+    public FastPtrList<level>
 {
-    // Mesh decomposition
-    autoPtr<decomposition> decomp_;
-
-    // This processor's boundaries
-    FastPtrList<boundary> boundaries_;
-
-    // Mask to keep track of set boundaries
-    labelBlock boundaryMask_;
-
-    // Mask to keep track of parallel/periodic boundaries
-    labelBlock pBoundaryMask_;
-
     // Bool to check if mesh is structured or unstructured. If the brick
     // topology is structured, so is the mesh.
     bool structured_;
@@ -48,57 +32,7 @@ class mesh
     // Bounding box
     faceScalar boundingBox_;
 
-    // Add a boundary to the list of boundaries
-    void addBoundary
-    (
-        const word name,
-        const word type,
-        const labelTensor T,
-        const labelVector offset,
-        const vector mappedOffset = vector::zero,
-        const labelVector neighborOffset = zeroXYZ,
-        const label neighborProcNum = -1
-    );
-
-    // Generate brick-internal boundaries
-    void generateBrickInternalBoundaries();
-
-    // Generate brick-external boundary
-    void generateBrickExternalBoundaries();
-
-    // Generate link boundaries from brick link
-    void generateLinkBoundaries(const brickLink&);
-
-    // Generate patch boundaries
-    void generatePatchBoundaries();
-
-    // Generate boundaries
-    void generateBoundaries();
-
-    // Set boundary mask
-    void setBoundaryMask();
-
-    // Reorder boundaries in the order:
-    //
-    //  1) patch/mapped boundaries,
-    //  2) parallel/periodic faces,
-    //  3) parallel/periodic edges,
-    //  4) parallel/periodic vertices and
-    //  5) empty boundaries.
-    //
-    //  This order is important, so that parallel boundary conditions can copy
-    //  patch/mapped boundaries and empty boundaries can copy both patch/mapped
-    //  and parallel/periodic boundaries.
-    void reorderBoundaries();
-
-    // Set communication tags in parallel and periodic boundaries. Tags avoid
-    // inconsistent communication.
-    void setCommTags();
-
-    // Set the list of empty boundary offsets
-    void setEmptyBoundaryOffsets();
-
-    // Generate mesh part levels
+    // Generate mesh levels
     void generateLevels();
 
 public:
@@ -161,49 +95,6 @@ public:
         return *mshPtr;
     }
 
-    // Mesh decomposition
-    inline const decomposition& decomp() const
-    {
-        return decomp_;
-    }
-
-    // Access to the boundaries
-    inline const FastPtrList<boundary>& boundaries() const
-    {
-        return boundaries_;
-    }
-
-    // Get boundary from offset vector
-    inline boundary& b(const labelVector& bo)
-    {
-        forAll(boundaries_, i)
-            if (boundaries_[i].offset() == bo)
-                return boundaries_[i];
-
-        FatalErrorInFunction
-            << "Invalid boundary offset" << endl << abort(FatalError);
-
-        return boundaries_[0];
-    }
-
-    // Get const reference to boundary from offset vector
-    inline const boundary& b(const labelVector& bo) const
-    {
-        return const_cast<mesh*>(this)->b(bo);
-    }
-
-    // Return the set boundary mask
-    inline const labelBlock& boundaryMask() const
-    {
-        return boundaryMask_;
-    }
-
-    // Return the parallel boundary mask
-    inline const labelBlock& pBoundaryMask() const
-    {
-        return pBoundaryMask_;
-    }
-
     // Structured mesh bool
     inline bool structured() const { return structured_; }
 
@@ -216,6 +107,30 @@ public:
     // Bounding box
     inline faceScalar boundingBox() const { return boundingBox_; }
 
+    // Decomposition of the first level
+    inline const decomposition& decomp() const
+    {
+        return this->operator[](0).decomp();
+    }
+
+    // Boundaries of the first level
+    inline const levelBoundaries& boundaries() const
+    {
+        return this->operator[](0).boundaries();
+    }
+
+    // Communicators of the first level
+    inline const levelComms& comms() const
+    {
+        return this->operator[](0).comms();
+    }
+
+    // Points of the first level
+    inline const levelPoints& points() const
+    {
+        return this->operator[](0).points();
+    }
+
     // Find the cell index of the given point at given mesh level. Return
     // -unitXYZ if it is not found. Tree search, but should be overloaded by
     // mesh specializations for better performance.
@@ -223,13 +138,6 @@ public:
 
     // Find the cell indices of the given list of points at given mesh level
     virtual List<labelVector> findCells(const vectorList&, const label) const;
-
-    // Given a part size, compute its coarsened child size subject to this
-    // mesh's properties
-    labelVector coarsen(const labelVector) const;
-
-    // Disallow default bitwise assignment
-    void operator=(const mesh&);
 };
 
 }

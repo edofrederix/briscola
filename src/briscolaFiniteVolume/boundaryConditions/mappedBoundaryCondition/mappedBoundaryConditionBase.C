@@ -13,13 +13,13 @@ namespace fv
 template<class Type, class MeshType>
 mappedBoundaryConditionBase<Type,MeshType>::mappedBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b
 )
 :
     DirichletBoundaryCondition<Type,MeshType>
     (
-        mshField,
+        level,
         b,
         Zero
     ),

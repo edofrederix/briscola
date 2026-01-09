@@ -398,13 +398,13 @@ void MG<SType,Type,MeshType>::solve
     const bool constMatrix
 )
 {
-    if (SType::nCsComponents > 1)
-        sys.eliminateGhosts();
-
-    sys.setForcingMask();
-
     if (sys.diagonal())
     {
+        if (SType::nCsComponents > 1)
+            sys.eliminateGhosts();
+
+        sys.setForcingMask();
+
         diagonalSmoother<SType,Type,MeshType>::Smooth
         (
             sys,
@@ -436,6 +436,11 @@ void MG<SType,Type,MeshType>::solve
 
         if (shallowSource)
             sys.b().makeDeep();
+
+        if (SType::nCsComponents > 1)
+            sys.eliminateGhosts();
+
+        sys.setForcingMask();
 
         if
         (

@@ -14,11 +14,11 @@ namespace fv
 template<class Type, class MeshType>
 emptyImmersedBoundaryCondition<Type,MeshType>::emptyImmersedBoundaryCondition
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshField<Type,MeshType>& field,
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField, ib, nullptr)
+    immersedBoundaryCondition<Type,MeshType>(field, ib, nullptr)
 {}
 
 // Destructor

@@ -41,8 +41,8 @@ public:
     // Runtime type information
     TypeName("manual");
 
-    // Construct from mesh
-    manualDecomp(mesh&);
+    // Construct from level
+    manualDecomp(const level&);
 
     // Copy constructor
     manualDecomp(const manualDecomp&);
@@ -65,7 +65,7 @@ public:
         return myBrickDecomp_;
     }
 
-    // This processor's part index of its brick
+    // This processor's brick part index of its brick
     virtual labelVector myBrickPart() const
     {
         return myBrickPart_;

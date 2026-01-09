@@ -32,15 +32,24 @@ public:
     TypeName("parallel");
 
     // Construct from components
-    parallelBoundary(const mesh& msh, const dictionary& dict);
+    parallelBoundary(const level& lvl, const dictionary& dict);
 
     // Copy constructor
     parallelBoundary(const parallelBoundary&);
+
+    // Copy constructor with alternative level reference
+    parallelBoundary(const parallelBoundary&, const level&);
 
     // Clone boundary
     virtual autoPtr<boundary> clone() const
     {
         return autoPtr<boundary>(new parallelBoundary(*this));
+    }
+
+    // Clone boundary with alternative level reference
+    virtual autoPtr<boundary> clone(const level& lvl) const
+    {
+        return autoPtr<boundary>(new parallelBoundary(*this, lvl));
     }
 
     // Rotation of the neighbor

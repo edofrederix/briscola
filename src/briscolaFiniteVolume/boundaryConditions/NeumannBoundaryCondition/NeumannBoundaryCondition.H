@@ -43,28 +43,15 @@ public:
         );
     }
 
-    // Construct and return a clone setting field reference
-    virtual tmp<boundaryCondition<Type,colocated>> clone
-    (
-        const meshField<Type,colocated>& field
-    ) const
-    {
-        return tmp<boundaryCondition<Type,colocated>>
-        (
-            new NeumannBoundaryCondition<Type,colocated>(field,*this)
-        );
-    }
-
-    // Eliminate ghosts from the linear system at given level and direction
+    // Eliminate ghosts from the linear system at given direction
     virtual void eliminateGhosts
     (
         linearSystem<stencil,Type,colocated>&,
-        const label,
         const label
     );
 
-    // Evaluate the boundary condition for given level and direction
-    virtual void evaluate(const label, const label);
+    // Evaluate the boundary condition for given direction
+    virtual void evaluate(const label);
 };
 
 
@@ -93,28 +80,15 @@ public:
         );
     }
 
-    // Construct and return a clone setting field reference
-    virtual tmp<boundaryCondition<Type,staggered>> clone
-    (
-        const meshField<Type,staggered>& field
-    ) const
-    {
-        return tmp<boundaryCondition<Type,staggered>>
-        (
-            new NeumannBoundaryCondition<Type,staggered>(field,*this)
-        );
-    }
-
-    // Eliminate ghosts from the linear system at given level and direction
+    // Eliminate ghosts from the linear system at given direction
     virtual void eliminateGhosts
     (
         linearSystem<stencil,Type,staggered>&,
-        const label,
         const label
     );
 
-    // Evaluate the boundary condition for given level and direction
-    virtual void evaluate(const label, const label);
+    // Evaluate the boundary condition for given direction
+    virtual void evaluate(const label);
 };
 
 }

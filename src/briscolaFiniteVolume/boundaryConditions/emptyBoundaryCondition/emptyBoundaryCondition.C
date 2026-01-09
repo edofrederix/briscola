@@ -20,17 +20,17 @@ template<class Type>
 void emptyBoundaryCondition<Type,colocated>::eliminateGhosts
 (
     linearSystem<stencil,Type,colocated>& sys,
-    const label l,
     const label d
 )
 {
     const labelVector bo(this->offset());
     const label f(faceNumber(bo));
+    const label l(this->l_);
 
     meshField<stencil,colocated>& A = sys.A();
 
-    const labelVector S(this->S(l,d));
-    const labelVector E(this->E(l,d));
+    const labelVector S(this->S(d));
+    const labelVector E(this->E(d));
 
     labelVector ijk;
     for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
@@ -45,18 +45,14 @@ void emptyBoundaryCondition<Type,colocated>::eliminateGhosts
 }
 
 template<class Type>
-void emptyBoundaryCondition<Type,colocated>::evaluate
-(
-    const label l,
-    const label d
-)
+void emptyBoundaryCondition<Type,colocated>::evaluate(const label d)
 {
     const labelVector bo(this->offset());
 
-    meshDirection<Type,colocated>& field = this->mshField_[l][d];
+    meshDirection<Type,colocated>& field = this->level_[d];
 
-    const labelVector S(this->S(l,d));
-    const labelVector E(this->E(l,d));
+    const labelVector S(this->S(d));
+    const labelVector E(this->E(d));
 
     labelVector ijk;
     for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
@@ -73,12 +69,12 @@ template<class Type>
 void emptyBoundaryCondition<Type,staggered>::eliminateGhosts
 (
     linearSystem<stencil,Type,staggered>& sys,
-    const label l,
     const label d
 )
 {
     const labelVector bo(this->offset());
     const label f(faceNumber(bo));
+    const label l(this->l_);
     const label fd = f/2;
 
     meshField<stencil,staggered>& A = sys.A();
@@ -86,8 +82,8 @@ void emptyBoundaryCondition<Type,staggered>::eliminateGhosts
 
     const meshField<scalar,staggered>& cv = this->cellVolumes();
 
-    const labelVector S(this->S(l,d));
-    const labelVector E(this->E(l,d));
+    const labelVector S(this->S(d));
+    const labelVector E(this->E(d));
 
     labelVector ijk;
 
@@ -119,20 +115,16 @@ void emptyBoundaryCondition<Type,staggered>::eliminateGhosts
 }
 
 template<class Type>
-void emptyBoundaryCondition<Type,staggered>::evaluate
-(
-    const label l,
-    const label d
-)
+void emptyBoundaryCondition<Type,staggered>::evaluate(const label d)
 {
     const labelVector bo(this->offset());
     const label f(faceNumber(bo));
     const label fd = f/2;
 
-    meshDirection<Type,staggered>& field = this->mshField_[l][d];
+    meshDirection<Type,staggered>& field = this->level_[d];
 
-    const labelVector S(this->S(l,d));
-    const labelVector E(this->E(l,d));
+    const labelVector S(this->S(d));
+    const labelVector E(this->E(d));
 
     labelVector ijk;
 

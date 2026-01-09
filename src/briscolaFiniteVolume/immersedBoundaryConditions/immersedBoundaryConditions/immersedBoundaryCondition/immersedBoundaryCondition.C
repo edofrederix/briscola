@@ -42,20 +42,20 @@ const
 template<class Type, class MeshType>
 immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshField<Type,MeshType>& field,
     const immersedBoundary<MeshType>& ib,
     const meshField<label,MeshType>* maskPtr
 )
 :
-    fvMsh_(mshField.fvMsh()),
-    mshField_(const_cast<meshField<Type,MeshType>&>(mshField)),
+    fvMsh_(field.fvMsh()),
+    field_(const_cast<meshField<Type,MeshType>&>(field)),
     ib_(ib),
     forcingMaskPtr_(maskPtr),
     dict_
     (
-        mshField.found("boundaryConditions")
-     && mshField.subDict("boundaryConditions").found(ib_.name())
-      ? mshField.subDict("boundaryConditions").subDict(ib_.name())
+        field.found("boundaryConditions")
+     && field.subDict("boundaryConditions").found(ib_.name())
+      ? field.subDict("boundaryConditions").subDict(ib_.name())
       : dictionary::null
     ),
     omega_
@@ -72,7 +72,7 @@ template<class Type, class MeshType>
 autoPtr<immersedBoundaryCondition<Type,MeshType>>
 immersedBoundaryCondition<Type,MeshType>::New
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshField<Type,MeshType>& field,
     const immersedBoundary<MeshType>& ib
 )
 {
@@ -80,11 +80,11 @@ immersedBoundaryCondition<Type,MeshType>::New
     // boundary condition must be specified. For other fields an empty immersed
     // boundary condition is returned.
 
-    if (mshField.found("boundaryConditions"))
+    if (field.found("boundaryConditions"))
     {
         dictionary ibmDict
         (
-            mshField.subDict("boundaryConditions").subDict(ib.name())
+            field.subDict("boundaryConditions").subDict(ib.name())
         );
 
         const word ibcType(ibmDict.lookup("type"));
@@ -104,7 +104,7 @@ immersedBoundaryCondition<Type,MeshType>::New
 
         return autoPtr<immersedBoundaryCondition<Type,MeshType>>
         (
-            cstrIter()(mshField, ib)
+            cstrIter()(field, ib)
         );
     }
     else
@@ -117,7 +117,7 @@ immersedBoundaryCondition<Type,MeshType>::New
 
         return autoPtr<immersedBoundaryCondition<Type,MeshType>>
         (
-            cstrIter()(mshField, ib)
+            cstrIter()(field, ib)
         );
     }
 }
@@ -125,7 +125,7 @@ immersedBoundaryCondition<Type,MeshType>::New
 template<class Type, class MeshType>
 void immersedBoundaryCondition<Type,MeshType>::evaluate(const label l)
 {
-    forAll(mshField_[l], d)
+    forAll(field_[l], d)
         this->evaluate(l,d);
 }
 

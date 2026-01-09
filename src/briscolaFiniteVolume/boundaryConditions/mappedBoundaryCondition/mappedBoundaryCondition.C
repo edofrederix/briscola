@@ -15,11 +15,11 @@ namespace fv
 template<class Type>
 mappedBoundaryCondition<Type,colocated>::mappedBoundaryCondition
 (
-    const meshField<Type,colocated>& mshField,
+    const meshLevel<Type,colocated>& level,
     const boundary& b
 )
 :
-    mappedBoundaryConditionBase<Type,colocated>(mshField,b)
+    mappedBoundaryConditionBase<Type,colocated>(level,b)
 {
     const vector mo(b.cast<mappedBoundary>().mappingOffset());
     const labelVector bo(this->offset());
@@ -33,9 +33,9 @@ mappedBoundaryCondition<Type,colocated>::mappedBoundaryCondition
 
     const faceField<vector,colocated>& fc = this->faceCenters();
 
-    const labelVector S(this->S(0,0));
-    const labelVector E(this->E(0,0));
-    const labelVector N(this->N(0,0));
+    const labelVector S(this->S(0));
+    const labelVector E(this->E(0));
+    const labelVector N(this->N(0));
 
     vectorList points(cmptProduct(N));
 
@@ -58,30 +58,31 @@ mappedBoundaryCondition<Type,colocated>::mappedBoundaryCondition
         (
             points,
             this->fvMsh_,
-            0,
+            this->l_,
             0
         )
     );
 }
 
 template<class Type>
-void mappedBoundaryCondition<Type,colocated>::prepare(const label l)
+void mappedBoundaryCondition<Type,colocated>::prepare()
 {
+    const labelVector bo(this->offset());
+    const label f = faceNumber(bo);
+    const label l = this->l_;
+    const label fd = f/2;
+
     if (l > 0)
         return;
 
-    const labelVector bo(this->offset());
-    const label f = faceNumber(bo);
-    const label fd = f/2;
-
-    meshField<Type,colocated>& field = this->mshField();
+    meshField<Type,colocated>& field = this->level_.field();
 
     pointDataExchange<colocated>& exchange = this->exchanges_[0];
 
     Field<Type> data(move(exchange(field)));
 
-    const labelVector S(this->S(0,0));
-    const labelVector E(this->E(0,0));
+    const labelVector S(this->S(0));
+    const labelVector E(this->E(0));
 
     if (this->setAverage_)
     {
@@ -131,11 +132,11 @@ void mappedBoundaryCondition<Type,colocated>::prepare(const label l)
 template<class Type>
 mappedBoundaryCondition<Type,staggered>::mappedBoundaryCondition
 (
-    const meshField<Type,staggered>& mshField,
+    const meshLevel<Type,staggered>& level,
     const boundary& b
 )
 :
-    mappedBoundaryConditionBase<Type,staggered>(mshField,b)
+    mappedBoundaryConditionBase<Type,staggered>(level,b)
 {
     const vector mo(b.cast<mappedBoundary>().mappingOffset());
     const labelVector bo(this->offset());
@@ -154,9 +155,9 @@ mappedBoundaryCondition<Type,staggered>::mappedBoundaryCondition
         const meshDirection<vector,staggered>& cc =
             this->cellCenters()[0][d];
 
-        const labelVector S(this->S(0,d));
-        const labelVector E(this->E(0,d));
-        const labelVector N(this->N(0,d));
+        const labelVector S(this->S(d));
+        const labelVector E(this->E(d));
+        const labelVector N(this->N(d));
 
         vectorList points(cmptProduct(N));
 
@@ -182,7 +183,7 @@ mappedBoundaryCondition<Type,staggered>::mappedBoundaryCondition
             (
                 points,
                 this->fvMsh_,
-                0,
+                this->l_,
                 d
             )
         );
@@ -190,16 +191,17 @@ mappedBoundaryCondition<Type,staggered>::mappedBoundaryCondition
 }
 
 template<class Type>
-void mappedBoundaryCondition<Type,staggered>::prepare(const label l)
+void mappedBoundaryCondition<Type,staggered>::prepare()
 {
+    const labelVector bo(this->offset());
+    const label f = faceNumber(bo);
+    const label l = this->l_;
+    const label fd = f/2;
+
     if (l > 0)
         return;
 
-    const labelVector bo(this->offset());
-    const label f = faceNumber(bo);
-    const label fd = f/2;
-
-    meshField<Type,staggered>& field = this->mshField();
+    meshField<Type,staggered>& field = this->level_.field();
 
     const tensor base =
         this->fvMsh_.msh().template cast<rectilinearMesh>().base();
@@ -210,8 +212,8 @@ void mappedBoundaryCondition<Type,staggered>::prepare(const label l)
 
         Field<Type> data(move(exchange(field)));
 
-        const labelVector S(this->S(0,d));
-        const labelVector E(this->E(0,d));
+        const labelVector S(this->S(d));
+        const labelVector E(this->E(d));
 
         if (this->setAverage_)
         {

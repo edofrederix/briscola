@@ -1,5 +1,6 @@
 #include "manualDecomp.H"
 #include "addToRunTimeSelectionTable.H"
+#include "level.H"
 #include "mesh.H"
 
 namespace Foam
@@ -14,15 +15,15 @@ namespace decompositions
 defineTypeNameAndDebug(manualDecomp, 0);
 addToRunTimeSelectionTable(decomposition, manualDecomp, dictionary);
 
-manualDecomp::manualDecomp(mesh& msh)
+manualDecomp::manualDecomp(const level& lvl)
 :
-    decomposition(msh)
+    decomposition(lvl)
 {
     List<labelVector> brickDecomps(dict_.lookup("brickDecompositions"));
 
     // Check if all bricks are specified
 
-    if (brickDecomps.size() != msh.bricks().size())
+    if (brickDecomps.size() != lvl.msh().bricks().size())
         FatalErrorInFunction
             << "The number of manual brick decomposition vectors should be "
             << "equal to the number of bricks" << abort(FatalError);
@@ -52,13 +53,13 @@ manualDecomp::manualDecomp(mesh& msh)
     // Transform decompositions according to the brick's transformation
 
     forAll(brickDecomps, i)
-        brickDecomps[i] = cmptMag(msh.bricks()[i].T() & brickDecomps[i]);
+        brickDecomps[i] = cmptMag(lvl.msh().bricks()[i].T() & brickDecomps[i]);
 
     // Check if the decompositions are feasible
 
-    forAll(msh.bricks(), i)
+    forAll(lvl.msh().bricks(), i)
     {
-        const labelVector N = msh.bricks()[i].N();
+        const labelVector N = lvl.msh().bricks()[i].N();
         const labelVector D = brickDecomps[i];
 
         for (label dir = 0; dir < 3; dir++)
@@ -74,7 +75,7 @@ manualDecomp::manualDecomp(mesh& msh)
 
             if (!Nd || ((Nd & (Nd-1)) != 0 && ((Nd/3) & ((Nd/3)-1)) != 0))
                 FatalErrorInFunction
-                    << "The number of cells (" << Nd << ") of the mesh part "
+                    << "The number of cells (" << Nd << ") of the brick part "
                     << "that results from the decomposition of brick " << i
                     << " in the " << dir << " direction is not a power of 2 "
                     << "nor a triple of a power of 2" << endl
@@ -84,9 +85,9 @@ manualDecomp::manualDecomp(mesh& msh)
 
     // Check if decompositions agree across brick face links
 
-    const brickTopology& topo = msh.topology();
+    const brickTopology& topo = lvl.msh().topology();
 
-    forAll(msh.bricks(), bricki)
+    forAll(lvl.msh().bricks(), bricki)
     {
         const brickLinks& links = topo.links()[bricki];
 
@@ -121,7 +122,7 @@ manualDecomp::manualDecomp(mesh& msh)
 
     label proc(0);
 
-    forAll(msh.bricks(), bricki)
+    forAll(lvl.msh().bricks(), bricki)
     {
         const labelVector& decomp = brickDecomps[bricki];
 

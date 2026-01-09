@@ -16,7 +16,7 @@ void NeumannBoundaryConditionBase<Type,MeshType>::init
 )
 {
     boundaryGradients_.clear();
-    boundaryGradients_.resize(this->fvMsh_.size()*MeshType::numberOfDirections);
+    boundaryGradients_.resize(MeshType::numberOfDirections);
 
     tensor base(eye);
 
@@ -25,28 +25,26 @@ void NeumannBoundaryConditionBase<Type,MeshType>::init
         base = this->fvMsh_.msh().template cast<rectilinearMesh>().base();
     }
 
-    label item = 0;
-    forAll(this->fvMsh_, l)
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-            boundaryGradients_.set
+    for (int d = 0; d < MeshType::numberOfDirections; d++)
+        boundaryGradients_.set
+        (
+            d,
+            new block<Type>
             (
-                item++,
-                new block<Type>
-                (
-                    this->N(l,d),
-                    MeshType::project(gradient, d, base)
-                )
-            );
+                this->N(d),
+                MeshType::project(gradient, d, base)
+            )
+        );
 }
 
 template<class Type, class MeshType>
 NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b)
+    boundaryCondition<Type,MeshType>(level, b)
 {
     init(this->dict().template lookup<physicalType>("gradient"));
 }
@@ -54,12 +52,12 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 template<class Type, class MeshType>
 NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b,
     const zero&
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b)
+    boundaryCondition<Type,MeshType>(level, b)
 {
     init(pTraits<physicalType>::zero);
 }
@@ -67,12 +65,12 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 template<class Type, class MeshType>
 NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b,
     const physicalType& gradient
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b)
+    boundaryCondition<Type,MeshType>(level, b)
 {
     init(gradient);
 }
@@ -80,12 +78,12 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 template<class Type, class MeshType>
 NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b,
     const FastPtrList<block<Type>>& boundaryGradients
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b),
+    boundaryCondition<Type,MeshType>(level, b),
     boundaryGradients_(boundaryGradients)
 {}
 
@@ -102,11 +100,11 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 template<class Type, class MeshType>
 NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& field,
+    const meshLevel<Type,MeshType>& level,
     const NeumannBoundaryConditionBase<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc),
+    boundaryCondition<Type,MeshType>(level, bc),
     boundaryGradients_(bc.boundaryGradients_)
 {}
 

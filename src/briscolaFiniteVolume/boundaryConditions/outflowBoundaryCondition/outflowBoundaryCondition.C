@@ -19,29 +19,24 @@ template<class Type>
 void outflowBoundaryCondition<Type,staggered>::eliminateGhosts
 (
     linearSystem<stencil,Type,staggered>& sys,
-    const label l,
     const label d
 )
 {
     // Eliminate only for non-shifted boundaries
 
     if (faceNumber(this->offset())/2 != d)
-        NeumannBoundaryCondition<Type,staggered>::eliminateGhosts(sys,l,d);
+        NeumannBoundaryCondition<Type,staggered>::eliminateGhosts(sys,d);
 }
 
 template<class Type>
-void outflowBoundaryCondition<Type,staggered>::evaluate
-(
-    const label l,
-    const label d
-)
+void outflowBoundaryCondition<Type,staggered>::evaluate(const label d)
 {
     const labelVector bo(this->offset());
 
-    meshDirection<Type,staggered>& field = this->mshField_[l][d];
+    meshDirection<Type,staggered>& field = this->level_[d];
 
-    const labelVector S(this->S(l,d));
-    const labelVector E(this->E(l,d));
+    const labelVector S(this->S(d));
+    const labelVector E(this->E(d));
 
     labelVector ijk;
     for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)

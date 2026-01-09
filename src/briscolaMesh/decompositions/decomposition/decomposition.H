@@ -5,7 +5,6 @@
 #include "FastPtrList.H"
 #include "labelVector.H"
 #include "block.H"
-#include "brickDecompositionInterface.H"
 #include "decompositionMap.H"
 
 #include "faceLabel.H"
@@ -25,7 +24,7 @@ namespace briscola
 
 @brief Decomposition class
 
-This is the base class defining the decomposition of the mesh. This base class
+This is the base class defining the decomposition of the level. This base class
 handles general collection of data. The actual decomposition must be defined by
 a derived type, by means of the myBrickNum(), myBrickDecomp() and myBrickPart()
 pure virtual functions. On each processor, these functions return the brick
@@ -37,14 +36,14 @@ the selector is not used, then the init() function must be called manually.
 
 */
 
-class mesh;
+class level;
 
 class decomposition
 {
 protected:
 
-    // Reference to the mesh
-    const mesh& msh_;
+    // Reference to the level
+    const level& lvl_;
 
     // Reference to the decomposition dictionary
     const dictionary& dict_;
@@ -84,14 +83,12 @@ public:
         autoPtr,
         decomposition,
         dictionary,
-        (
-            mesh& msh
-        ),
-        (msh)
+        (const level& lvl),
+        (lvl)
     );
 
-    // Construct from mesh
-    decomposition(mesh&);
+    // Construct from level
+    decomposition(const level&);
 
     // Copy constructor
     decomposition(const decomposition&);
@@ -100,15 +97,15 @@ public:
     virtual autoPtr<decomposition> clone() const = 0;
 
     // Selector
-    static autoPtr<decomposition> New(mesh&);
+    static autoPtr<decomposition> New(const level&);
 
     // Destructor
     virtual ~decomposition();
 
-    // Mesh
-    inline const mesh& msh() const
+    // Level
+    inline const level& lvl() const
     {
-        return msh_;
+        return lvl_;
     }
 
     // Decomposition dictionary
