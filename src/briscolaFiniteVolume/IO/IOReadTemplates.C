@@ -18,13 +18,14 @@ void IO::readList
     autoPtr<std::ifstream>& filePtr,
     List<floatScalar>& data,
     const bool ascii,
-    const label tag
+    const label tag,
+    const label comm
 ) const
 {
     labelList sizes(Pstream::nProcs());
     sizes[Pstream::myProcNo()] = data.size();
-    Pstream::gatherList(sizes);
-    Pstream::scatterList(sizes);
+    Pstream::gatherList(sizes, Pstream::msgType(), comm);
+    Pstream::scatterList(sizes, Pstream::msgType(), comm);
 
     std::ifstream& file = filePtr();
 
@@ -108,7 +109,8 @@ void IO::readScalarField
         filePtr,
         data,
         ascii,
-        tag
+        tag,
+        D.lvl().comms()
     );
 
     label c = 0;
@@ -144,7 +146,8 @@ void IO::readVectorSpaceField
         filePtr,
         data,
         ascii,
-        tag
+        tag,
+        D.lvl().comms()
     );
 
     label c = 0;
@@ -182,7 +185,8 @@ void IO::readCellSpaceField
         filePtr,
         data,
         ascii,
-        tag
+        tag,
+        D.lvl().comms()
     );
 
     label c = 0;

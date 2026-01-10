@@ -246,8 +246,11 @@ public:
         return MeshType::numberOfDirections;
     }
 
-    // Return the mesh
+    // Return the finite volume mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
+
+    // Return the mesh
+    inline const mesh& msh() const { return fvMsh_.msh(); }
 
     // Old time field pointer
     inline meshField<Type,MeshType>* oldTimePtr() const

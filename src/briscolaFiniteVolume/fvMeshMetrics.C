@@ -317,8 +317,8 @@ void fvMeshMetrics<MeshType>::setGlobalCellNumbers()
             sizes[Pstream::myProcNo()] =
                 cmptProduct(fvMsh_.N<MeshType>(l,d));
 
-            Pstream::gatherList(sizes);
-            Pstream::scatterList(sizes);
+            Pstream::gatherList(sizes, Pstream::msgType(), fvMsh_[l].comms());
+            Pstream::scatterList(sizes, Pstream::msgType(), fvMsh_[l].comms());
 
             label start = 0;
 

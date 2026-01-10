@@ -54,6 +54,9 @@ public:
     // Level communicator number
     label comm() const { return comm_; }
 
+    // Implicit conversion to the communicator number
+    operator label() const { return comm_; }
+
     // Return const reference to the level communicator
     const MPI_Comm& communicator() const;
 

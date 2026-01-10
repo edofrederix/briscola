@@ -245,6 +245,9 @@ public:
     // Return the finite volume mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
+    // Return the mesh
+    inline const mesh& msh() const { return fvMsh_.msh(); }
+
     // Pointer to the mesh field
     inline const meshField<Type,MeshType>* fieldPtr() const
     {

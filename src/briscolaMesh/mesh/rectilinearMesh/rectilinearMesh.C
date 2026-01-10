@@ -171,7 +171,10 @@ void rectilinearMesh::setMetrics()
                     OPstream send
                     (
                         Pstream::commsTypes::blocking,
-                        Pstream::masterNo()
+                        Pstream::masterNo(),
+                        0,
+                        UPstream::msgType(),
+                        lvl.comms()
                     );
 
                     send << localCellSizesData;
@@ -188,7 +191,10 @@ void rectilinearMesh::setMetrics()
                 IPstream recv
                 (
                     Pstream::commsTypes::blocking,
-                    proc
+                    proc,
+                    0,
+                    UPstream::msgType(),
+                    lvl.comms()
                 );
 
                 recv >> localCellSizesData;
@@ -211,8 +217,8 @@ void rectilinearMesh::setMetrics()
 
         // Send back to slaves
 
-        Pstream::scatter(globalCellSizes);
-        Pstream::scatter(globalPoints);
+        Pstream::scatter(globalCellSizes, Pstream::msgType(), lvl.comms());
+        Pstream::scatter(globalPoints, Pstream::msgType(), lvl.comms());
 
         if (Pstream::master())
         {
@@ -222,7 +228,10 @@ void rectilinearMesh::setMetrics()
                 OPstream send
                 (
                     Pstream::commsTypes::blocking,
-                    proc
+                    proc,
+                    0,
+                    UPstream::msgType(),
+                    lvl.comms()
                 );
 
                 send << starts[d];
@@ -233,7 +242,10 @@ void rectilinearMesh::setMetrics()
             IPstream recv
             (
                 Pstream::commsTypes::blocking,
-                Pstream::masterNo()
+                Pstream::masterNo(),
+                0,
+                UPstream::msgType(),
+                lvl.comms()
             );
 
             recv >> starts[d];

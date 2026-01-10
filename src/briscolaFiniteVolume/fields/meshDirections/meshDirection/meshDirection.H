@@ -240,8 +240,11 @@ public:
     // Destructor
     virtual ~meshDirection();
 
-    // Return the mesh
+    // Return the finite volume mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
+
+    // Return the mesh
+    inline const mesh& msh() const { return fvMsh_.msh(); }
 
     // Mesh level pointer
     inline const meshLevel<Type,MeshType>* levelPtr() const
@@ -266,6 +269,9 @@ public:
 
     // Direction number
     inline label directionNum() const { return d_; }
+
+    // Return the mesh level
+    inline const ::Foam::briscola::level& lvl() const { return fvMsh_[l_]; }
 
     // Access to base block
     inline block<Type>& B() { return *this; }

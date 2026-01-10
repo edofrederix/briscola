@@ -629,23 +629,16 @@ Type sumCmptMag(const tmp<meshDirection<Type,MeshType>>& tD)
 #define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                       \
                                                                                \
 template<class Type, class MeshType>                                           \
-ReturnType gFunc                                                               \
-(                                                                              \
-    const meshDirection<Type,MeshType>& D,                                     \
-    const label comm                                                           \
-)                                                                              \
+ReturnType gFunc(const meshDirection<Type,MeshType>& D)                        \
 {                                                                              \
     ReturnType res(Func(D));                                                   \
+    const label comm = D.lvl().comms();                                        \
     reduce(res, rFunc##Op<ReturnType>(), Pstream::msgType(), comm);            \
     return res;                                                                \
 }                                                                              \
                                                                                \
 template<class Type, class MeshType>                                           \
-ReturnType gFunc                                                               \
-(                                                                              \
-    const tmp<meshDirection<Type,MeshType>>& tD,                               \
-    const label comm                                                           \
-)                                                                              \
+ReturnType gFunc(const tmp<meshDirection<Type,MeshType>>& tD)                  \
 {                                                                              \
     ReturnType ret(gFunc(tD()));                                               \
     if (tD.isTmp()) tD.clear();                                                \
@@ -663,15 +656,11 @@ G_UNARY_FUNCTION(Type, gSumCmptMag, sumCmptMag, sum)
 #undef G_UNARY_FUNCTION
 
 template<class Type, class MeshType>
-Type gAverage
-(
-    const meshDirection<Type,MeshType>& D,
-    const label comm
-)
+Type gAverage(const meshDirection<Type,MeshType>& D)
 {
     label n = D.size();
     Type s = sum(D);
-    sumReduce(s, n, Pstream::msgType(), comm);
+    sumReduce(s, n, Pstream::msgType(), D.lvl().comms());
 
     if (n > 0)
     {
@@ -684,11 +673,7 @@ Type gAverage
 }
 
 template<class Type, class MeshType>
-Type gAverage
-(
-    const tmp<meshDirection<Type,MeshType>>& tD,
-    const label comm
-)
+Type gAverage(const tmp<meshDirection<Type,MeshType>>& tD)
 {
     Type ret(gAverage(tD()));
     if (tD.isTmp())

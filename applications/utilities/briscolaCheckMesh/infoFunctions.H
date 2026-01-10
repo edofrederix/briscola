@@ -179,7 +179,7 @@ void levelInfo(const fvMesh& fvMsh)
 
         List<labelVector> Ns(Pstream::nProcs(),N);
 
-        Pstream::gatherList(Ns);
+        Pstream::gatherList(Ns, Pstream::msgType(), fvMsh[l].comms());
 
         Info<< "    Level " << l << ":" << endl;
 
@@ -218,9 +218,9 @@ void parallelInfo(const fvMesh& fvMsh)
         );
     }
 
-    Pstream::gatherList(pDicts);
-    Pstream::gatherList(bDicts);
-    Pstream::gatherList(masterPatch);
+    Pstream::gatherList(pDicts, Pstream::msgType(), fvMsh.msh().comms());
+    Pstream::gatherList(bDicts, Pstream::msgType(), fvMsh.msh().comms());
+    Pstream::gatherList(masterPatch, Pstream::msgType(), fvMsh.msh().comms());
 
     if (Pstream::master())
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
@@ -309,7 +309,7 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
         }
     }
 
-    Pstream::gatherList(bDicts);
+    Pstream::gatherList(bDicts, fvMsh.msh().comms());
 
     label count = 0;
 

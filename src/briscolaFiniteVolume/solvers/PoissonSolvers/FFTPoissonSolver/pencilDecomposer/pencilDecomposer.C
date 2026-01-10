@@ -561,7 +561,7 @@ void pencilDecomposer::transpose
             reinterpret_cast<char*>(recvBuffer.begin()),
             recvCount,
             recvDisplacement,
-            UPstream::worldComm
+            fvMsh_.msh().comms()
         );
 
         // Unpack data

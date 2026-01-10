@@ -213,7 +213,7 @@ int briscolaChannelPost(arguments args)
                 ),
                 rs,
                 rd,
-                UPstream::worldComm
+                fvMsh.msh().comm()
             );
 
             if (Pstream::master())

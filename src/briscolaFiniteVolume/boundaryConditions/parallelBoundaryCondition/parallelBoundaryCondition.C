@@ -113,7 +113,7 @@ void parallelBoundaryCondition<Type,MeshType>::prepare()
             reinterpret_cast<char*>(recvBuffer.begin()),
             recvBuffer.byteSize(),
             tag_,
-            UPstream::worldComm
+            level.lvl().comms()
         );
 
         outstandingSendRequest_ = UPstream::nRequests();
@@ -125,7 +125,7 @@ void parallelBoundaryCondition<Type,MeshType>::prepare()
             reinterpret_cast<char*>(sendBuffer.begin()),
             sendBuffer.byteSize(),
             tag_,
-            UPstream::worldComm
+            level.lvl().comms()
         );
     }
 }

@@ -41,8 +41,19 @@ pointInterpolator<MeshType>::pointInterpolator
         List<vectorList> globalPoints(Pstream::nProcs());
         globalPoints[Pstream::myProcNo()] = points;
 
-        Pstream::gatherList(globalPoints);
-        Pstream::scatterList(globalPoints);
+        Pstream::gatherList
+        (
+            globalPoints,
+            Pstream::msgType(),
+            fvMsh[l].comms()
+        );
+
+        Pstream::scatterList
+        (
+            globalPoints,
+            Pstream::msgType(),
+            fvMsh[l].comms()
+        );
 
         int nPoints = 0;
         forAll(globalPoints, i)
@@ -158,7 +169,10 @@ vectorList pointInterpolator<MeshType>::missingPoints() const
             OPstream send
             (
                 Pstream::commsTypes::blocking,
-                proc
+                proc,
+                0,
+                UPstream::msgType(),
+                fvMsh_[l_].comms()
             );
 
             send << missing;
@@ -169,7 +183,10 @@ vectorList pointInterpolator<MeshType>::missingPoints() const
         IPstream recv
         (
             Pstream::commsTypes::blocking,
-            Pstream::masterNo()
+            Pstream::masterNo(),
+            0,
+            UPstream::msgType(),
+            fvMsh_[l_].comms()
         );
 
         recv >> missing;

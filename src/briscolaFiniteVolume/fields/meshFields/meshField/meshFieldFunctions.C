@@ -584,16 +584,16 @@ sumCmptMag(const tmp<meshField<Type,MeshType>>& tf)
                                                                                \
 template<class Type, class MeshType>                                           \
 List<ReturnType>                                                               \
-gFunc(const meshField<Type,MeshType>& f, const label comm)                     \
+gFunc(const meshField<Type,MeshType>& f)                                       \
 {                                                                              \
-    return gFunc(f[0], comm);                                                  \
+    return gFunc(f[0]);                                                        \
 }                                                                              \
                                                                                \
 template<class Type, class MeshType>                                           \
 List<ReturnType>                                                               \
-gFunc(const tmp<meshField<Type,MeshType>>& tf, const label comm)               \
+gFunc(const tmp<meshField<Type,MeshType>>& tf)                                 \
 {                                                                              \
-    List<ReturnType> ret(gFunc(tf(),comm));                                    \
+    List<ReturnType> ret(gFunc(tf()));                                         \
     if (tf.isTmp()) tf.clear();                                                \
     return ret;                                                                \
 }

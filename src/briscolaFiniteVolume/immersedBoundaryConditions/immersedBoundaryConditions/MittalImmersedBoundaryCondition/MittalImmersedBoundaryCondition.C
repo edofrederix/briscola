@@ -19,7 +19,7 @@ MittalImmersedBoundaryCondition<Type,MeshType>::MittalImmersedBoundaryCondition
 )
 :
     immersedBoundaryCondition<Type,MeshType>(field, ib, &ib.ghostMask()),
-    exchanges_(field.fvMsh().msh().size())
+    exchanges_(field.msh().size())
 {
     // Check shape overlap
 

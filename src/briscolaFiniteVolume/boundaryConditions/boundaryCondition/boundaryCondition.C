@@ -197,7 +197,10 @@ boundaryCondition<Type,MeshType>::globalBaseType
                 OPstream send
                 (
                     Pstream::commsTypes::blocking,
-                    Pstream::masterNo()
+                    Pstream::masterNo(),
+                    0,
+                    UPstream::msgType(),
+                    level.lvl().comms()
                 );
 
                 send << type;
@@ -214,7 +217,10 @@ boundaryCondition<Type,MeshType>::globalBaseType
                 IPstream recv
                 (
                     Pstream::commsTypes::blocking,
-                    procs(j)
+                    procs(j),
+                    0,
+                    UPstream::msgType(),
+                    level.lvl().comms()
                 );
 
                 recv >> types[j];
@@ -246,7 +252,10 @@ boundaryCondition<Type,MeshType>::globalBaseType
                 OPstream send
                 (
                     Pstream::commsTypes::blocking,
-                    proc
+                    proc,
+                    0,
+                    UPstream::msgType(),
+                    level.lvl().comms()
                 );
 
                 send << type;
@@ -257,7 +266,10 @@ boundaryCondition<Type,MeshType>::globalBaseType
             IPstream recv
             (
                 Pstream::commsTypes::blocking,
-                Pstream::masterNo()
+                Pstream::masterNo(),
+                0,
+                UPstream::msgType(),
+                level.lvl().comms()
             );
 
             recv >> type;

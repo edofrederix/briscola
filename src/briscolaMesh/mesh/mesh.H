@@ -125,6 +125,12 @@ public:
         return this->operator[](0).comms();
     }
 
+    // Communicator number of the first level
+    inline label comm() const
+    {
+        return this->operator[](0).comms();
+    }
+
     // Points of the first level
     inline const levelPoints& points() const
     {

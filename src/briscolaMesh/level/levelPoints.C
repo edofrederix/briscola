@@ -330,7 +330,7 @@ void levelPoints::calcGhostPoints()
                 reinterpret_cast<char*>(recvBuffers[bi].begin()),
                 recvBuffers[bi].byteSize(),
                 tag,
-                UPstream::worldComm
+                lvl_.comms()
             );
 
             UOPstream::write
@@ -340,7 +340,7 @@ void levelPoints::calcGhostPoints()
                 reinterpret_cast<char*>(sendBuffers[bi].begin()),
                 sendBuffers[bi].byteSize(),
                 tag,
-                UPstream::worldComm
+                lvl_.comms()
             );
         }
         else

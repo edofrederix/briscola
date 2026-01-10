@@ -90,7 +90,8 @@ class IO
     // Write
 
     // Basic float data list writer for a file stream, list of floats, field
-    // name, number of components, ascii bool, tag number and write header bool.
+    // name, number of components, ascii bool, tag number, communicator and
+    // write header bool.
     void writeList
     (
         List<autoPtr<std::ofstream>>&,
@@ -98,6 +99,7 @@ class IO
         const word,
         const label,
         const bool,
+        const label,
         const label,
         const bool = true
     ) const;
@@ -137,12 +139,13 @@ class IO
     // Read
 
     // Basic float data list reader for a file stream, list of floats, ascii
-    // bool and tag number
+    // bool, tag number and communicator
     void readList
     (
         autoPtr<std::ifstream>&,
         List<floatScalar>&,
         const bool,
+        const label,
         const label
     ) const;
 

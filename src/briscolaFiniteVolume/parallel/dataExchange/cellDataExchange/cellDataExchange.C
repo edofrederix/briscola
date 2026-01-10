@@ -194,8 +194,8 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
         }
     }
 
-    Pstream::gatherList(globalData);
-    Pstream::scatterList(globalData);
+    Pstream::gatherList(globalData, Pstream::msgType(), lvl.comms());
+    Pstream::scatterList(globalData, Pstream::msgType(), lvl.comms());
 
     // Collect
 
@@ -250,7 +250,7 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
                     reinterpret_cast<char*>(cellsToSend_[i].begin()),
                     cellsToSend_[i].size()*sizeof(labelVector),
                     sendTags_[i],
-                    UPstream::worldComm
+                    lvl.comms()
                 );
 
         forAll(cellsToRecv_, i)
@@ -262,7 +262,7 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
                     reinterpret_cast<char*>(cellsToRecv_[i].begin()),
                     cellsToRecv_[i].size()*sizeof(labelVector),
                     i,
-                    UPstream::worldComm
+                    lvl.comms()
                 );
 
         Pstream::waitRequests();
@@ -365,7 +365,7 @@ List<Type> cellDataExchange<MeshType>::dataFunc
                     reinterpret_cast<char*>(recvData[i].begin()),
                     recvData[i].byteSize(),
                     i,
-                    UPstream::worldComm
+                    field[this->l_].lvl().comms()
                 );
 
         // Send
@@ -379,7 +379,7 @@ List<Type> cellDataExchange<MeshType>::dataFunc
                     reinterpret_cast<char*>(sendData[i].begin()),
                     sendData[i].byteSize(),
                     sendTags_[i],
-                    UPstream::worldComm
+                    field[this->l_].lvl().comms()
                 );
 
         Pstream::waitRequests();

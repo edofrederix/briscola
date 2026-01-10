@@ -280,18 +280,10 @@ sumCmptMag(const tmp<meshField<Type,MeshType>>&);
 #define G_UNARY_FUNCTION(ReturnType, gFunc)                                    \
                                                                                \
 template<class Type, class MeshType>                                           \
-List<ReturnType> gFunc                                                         \
-(                                                                              \
-    const meshField<Type,MeshType>&,                                           \
-    const label comm = UPstream::worldComm                                     \
-);                                                                             \
+List<ReturnType> gFunc(const meshField<Type,MeshType>&);                       \
                                                                                \
 template<class Type, class MeshType>                                           \
-List<ReturnType> gFunc                                                         \
-(                                                                              \
-    const tmp<meshField<Type,MeshType>>&,                                      \
-    const label comm = UPstream::worldComm                                     \
-);                                                                             \
+List<ReturnType> gFunc(const tmp<meshField<Type,MeshType>>&);
 
 G_UNARY_FUNCTION(Type, gMax)
 G_UNARY_FUNCTION(Type, gMin)
