@@ -45,6 +45,11 @@ vertices
     (2 2 2)
 );
 
+// Do not align bricks with data structure because some tests have local
+// coordinate systems hard-coded
+
+dataAlignment false;
+
 bricks
 (
     // Note: some brick's local coordinates are intentionally misaligned with

@@ -95,7 +95,7 @@ public:
         (
             mshField,
             b,
-            List<Type>(staggered::numberOfDirections, Zero)
+            Zero
         )
     {}
 

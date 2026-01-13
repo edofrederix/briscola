@@ -53,12 +53,12 @@ int main(int argc, char *argv[])
 
     rm(fileName);
 
-    if (h6.component(0) != v1) FatalErrorInFunction << "test 1a failed" << abort(FatalError);
-    if (h6.component(1) != v2) FatalErrorInFunction << "test 1b failed" << abort(FatalError);
-    if (h6.component(2) != v3) FatalErrorInFunction << "test 1c failed" << abort(FatalError);
-    if (h6.component(3) != v4) FatalErrorInFunction << "test 1d failed" << abort(FatalError);
-    if (h6.component(4) != v5) FatalErrorInFunction << "test 1e failed" << abort(FatalError);
-    if (h6.component(5) != v6) FatalErrorInFunction << "test 1f failed" << abort(FatalError);
+    if (h6[0] != v1) FatalErrorInFunction << "test 1a failed" << abort(FatalError);
+    if (h6[1] != v2) FatalErrorInFunction << "test 1b failed" << abort(FatalError);
+    if (h6[2] != v3) FatalErrorInFunction << "test 1c failed" << abort(FatalError);
+    if (h6[3] != v4) FatalErrorInFunction << "test 1d failed" << abort(FatalError);
+    if (h6[4] != v5) FatalErrorInFunction << "test 1e failed" << abort(FatalError);
+    if (h6[5] != v6) FatalErrorInFunction << "test 1f failed" << abort(FatalError);
 
     if (h6.left()   != v1) FatalErrorInFunction << "test 1a failed" << abort(FatalError);
     if (h6.right()  != v2) FatalErrorInFunction << "test 1b failed" << abort(FatalError);
@@ -69,12 +69,12 @@ int main(int argc, char *argv[])
 
     scalar v7, v8, v9, v10, v11, v12;
 
-    h5.component(v7, 0);
-    h5.component(v8, 1);
-    h5.component(v9, 2);
-    h5.component(v10, 3);
-    h5.component(v11, 4);
-    h5.component(v12, 5);
+    v7 = h5[0];
+    v8 = h5[1];
+    v9 = h5[2];
+    v10 = h5[3];
+    v11 = h5[4];
+    v12 = h5[5];
 
     if (v7 != v1) FatalErrorInFunction << "test 2a failed" << abort(FatalError);
     if (v8 != v2) FatalErrorInFunction << "test 2b failed" << abort(FatalError);
@@ -83,19 +83,19 @@ int main(int argc, char *argv[])
     if (v11 != v5) FatalErrorInFunction << "test 2e failed" << abort(FatalError);
     if (v12 != v6) FatalErrorInFunction << "test 2f failed" << abort(FatalError);
 
-    h5.replace(0, v6);
-    h5.replace(1, v5);
-    h5.replace(2, v4);
-    h5.replace(3, v3);
-    h5.replace(4, v2);
-    h5.replace(5, v1);
+    h5[0] = v6;
+    h5[1] = v5;
+    h5[2] = v4;
+    h5[3] = v3;
+    h5[4] = v2;
+    h5[5] = v1;
 
-    if (h5.component(0) != v6) FatalErrorInFunction << "test 3a failed" << abort(FatalError);
-    if (h5.component(1) != v5) FatalErrorInFunction << "test 3b failed" << abort(FatalError);
-    if (h5.component(2) != v4) FatalErrorInFunction << "test 3c failed" << abort(FatalError);
-    if (h5.component(3) != v3) FatalErrorInFunction << "test 3d failed" << abort(FatalError);
-    if (h5.component(4) != v2) FatalErrorInFunction << "test 3e failed" << abort(FatalError);
-    if (h5.component(5) != v1) FatalErrorInFunction << "test 3f failed" << abort(FatalError);
+    if (h5[0] != v6) FatalErrorInFunction << "test 3a failed" << abort(FatalError);
+    if (h5[1] != v5) FatalErrorInFunction << "test 3b failed" << abort(FatalError);
+    if (h5[2] != v4) FatalErrorInFunction << "test 3c failed" << abort(FatalError);
+    if (h5[3] != v3) FatalErrorInFunction << "test 3d failed" << abort(FatalError);
+    if (h5[4] != v2) FatalErrorInFunction << "test 3e failed" << abort(FatalError);
+    if (h5[5] != v1) FatalErrorInFunction << "test 3f failed" << abort(FatalError);
 
     if (h6.left()    != h6[0]) FatalErrorInFunction << "test 5a failed" << abort(FatalError);
     if (h6.right()   != h6[1]) FatalErrorInFunction << "test 5b failed" << abort(FatalError);

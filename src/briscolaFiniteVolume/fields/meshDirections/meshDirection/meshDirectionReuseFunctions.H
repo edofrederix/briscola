@@ -13,42 +13,6 @@ namespace fv
 template
 <
     class TypeR,
-    class MeshType
->
-tmp<meshDirection<TypeR,MeshType>> New
-(
-    const tmp<meshDirection<TypeR,MeshType>>& tf1,
-    const bool initRet = false
-)
-{
-    if (tf1.isTmp())
-    {
-        return tf1;
-    }
-    else
-    {
-        tmp<meshDirection<TypeR,MeshType>> rtf
-        (
-            new meshDirection<TypeR,MeshType>
-            (
-                tf1().fvMsh(),
-                tf1().levelNum(),
-                tf1().directionNum()
-            )
-        );
-
-        if (initRet)
-        {
-            rtf.ref() = tf1();
-        }
-
-        return rtf;
-    }
-}
-
-template
-<
-    class TypeR,
     class Type1,
     class MeshType
 >
@@ -61,15 +25,13 @@ public:
         const tmp<meshDirection<Type1,MeshType>>& tf1
     )
     {
-        return tmp<meshDirection<TypeR,MeshType>>
-        (
-            new meshDirection<TypeR,MeshType>
+        return
+            meshDirection<TypeR,MeshType>::New
             (
                 tf1().fvMsh(),
                 tf1().levelNum(),
                 tf1().directionNum()
-            )
-        );
+            );
     }
 };
 
@@ -93,15 +55,13 @@ public:
         }
         else
         {
-            return tmp<meshDirection<TypeR,MeshType>>
-            (
-                new meshDirection<TypeR,MeshType>
+            return
+                meshDirection<TypeR,MeshType>::New
                 (
                     tf1->fvMsh(),
                     tf1->levelNum(),
                     tf1->directionNum()
-                )
-            );
+                );
         }
     }
 };
@@ -124,15 +84,13 @@ public:
         const tmp<meshDirection<Type2,MeshType>>& tf2
     )
     {
-        return tmp<meshDirection<TypeR,MeshType>>
-        (
-            new meshDirection<TypeR,MeshType>
+        return
+            meshDirection<TypeR,MeshType>::New
             (
                 tf1->fvMsh(),
                 tf1->levelNum(),
                 tf1->directionNum()
-            )
-        );
+            );
     }
 };
 
@@ -159,15 +117,13 @@ public:
         }
         else
         {
-            return tmp<meshDirection<TypeR,MeshType>>
-            (
-                new meshDirection<TypeR,MeshType>
+            return
+                meshDirection<TypeR,MeshType>::New
                 (
                     tf1->fvMsh(),
                     tf1->levelNum(),
                     tf1->directionNum()
-                )
-            );
+                );
         }
     }
 };
@@ -195,15 +151,13 @@ public:
         }
         else
         {
-            return tmp<meshDirection<TypeR,MeshType>>
-            (
-                new meshDirection<TypeR,MeshType>
+            return
+                meshDirection<TypeR,MeshType>::New
                 (
                     tf1->fvMsh(),
                     tf1->levelNum(),
                     tf1->directionNum()
-                )
-            );
+                );
         }
     }
 };
@@ -234,15 +188,13 @@ public:
         }
         else
         {
-            return tmp<meshDirection<TypeR,MeshType>>
-            (
-                new meshDirection<TypeR,MeshType>
+            return
+                meshDirection<TypeR,MeshType>::New
                 (
                     tf1->fvMsh(),
                     tf1->levelNum(),
                     tf1->directionNum()
-                )
-            );
+                );
         }
     }
 };

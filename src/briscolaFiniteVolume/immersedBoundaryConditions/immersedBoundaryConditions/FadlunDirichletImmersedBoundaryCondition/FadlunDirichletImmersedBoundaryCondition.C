@@ -21,7 +21,7 @@ FadlunDirichletImmersedBoundaryCondition
 )
 :
     immersedBoundaryCondition<Type,MeshType>(mshField, ib, &ib.wallAdjMask()),
-    boundaryValues_(this->dict().lookup("values"))
+    boundaryValues_(this->read("value"))
 {
     // Check shape overlap
 
@@ -37,9 +37,9 @@ FadlunDirichletImmersedBoundaryCondition
     {
         const labelVector ijk(i,j,k);
 
-        for (int dir = 0; dir < 3; dir++)
+        for (int f = 0; f < 3; f++)
         {
-            const labelVector fo = units[dir];
+            const labelVector fo = units[f];
 
             if
             (
@@ -89,19 +89,20 @@ void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
             scalar ximax = 0;
 
             // Loop over face number directions
-            for (int dir = 0; dir < 6; dir++)
+            for (int f = 0; f < 6; f++)
             {
-                if (y(ijk)[dir] > ximax)
-                {
-                    ximax = y(ijk)[dir];
+                const labelVector fo = faceOffsets[f];
 
-                    const scalar xic = 1.0 - y(ijk)[dir];
+                if (y(ijk)[f] > ximax)
+                {
+                    ximax = y(ijk)[f];
+
+                    const scalar xic = 1.0 - ximax;
                     const scalar xinb = 1.0 + xic;
                     const scalar w = xic/xinb;
 
                     Type value =
-                        boundaryValues_[d]/xinb
-                      + w*x(ijk - faceOffsets[dir]);
+                        boundaryValues_[d]/xinb + w*x(ijk - fo);
 
                     x(ijk) = (1.0 - omega)*x(ijk) + omega*value;
                 }

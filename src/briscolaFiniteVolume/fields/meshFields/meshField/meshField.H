@@ -4,11 +4,14 @@
 #include "block.H"
 #include "IOdictionary.H"
 #include "autoPtr.H"
-#include "PtrList.H"
+#include "FastPtrList.H"
 
+#include "linearSystemFwd.H"
 #include "meshLevel.H"
 #include "boundaryCondition.H"
 #include "immersedBoundaryConditionFwd.H"
+#include "cachedRefCount.H"
+#include "direction.H"
 
 namespace Foam
 {
@@ -21,21 +24,15 @@ namespace fv
 
 class fvMesh;
 
-template<class SType, class Type, class MeshType>
-class linearSystem;
-
-template<class Type, class MeshType>
-class restrictionScheme;
-
 template<class Type, class MeshType>
 class boundaryExchange;
 
 template<class Type, class MeshType>
 class meshField
 :
-    public PtrList<meshLevel<Type,MeshType>>,
+    public FastPtrList<meshLevel<Type,MeshType>>,
     public IOdictionary,
-    public refCount
+    public cachedRefCount
 {
 public:
 
@@ -55,14 +52,18 @@ private:
     // Boundary conditions
     PtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
 
-    // Immersed boundary condition
-    PtrList<immersedBoundaryCondition<Type,MeshType>> immersedBoundaryConditions_;
+    // Singular boundary condition bool (set when adding boundary conditions)
+    bool singular_;
 
-    // Restriction scheme associated with this field
-    autoPtr<restrictionScheme<Type,MeshType>> reSchemePtr_;
+    // Immersed boundary condition
+    FastPtrList<immersedBoundaryCondition<Type,MeshType>>
+        immersedBoundaryConditions_;
 
     // Boundary exchange
     autoPtr<boundaryExchange<Type,MeshType>> bExchangePtr_;
+
+    // Restriction scheme name
+    word restrictionScheme_;
 
 protected:
 
@@ -74,20 +75,6 @@ protected:
 
     // Transfer data from other mesh field
     void transfer(meshField<Type,MeshType>&);
-
-    // Check if the given field's depth is compatible with this field's depth to
-    // execute a member operator
-    template<class Type2>
-    inline void checkMemberOperatorArgDepth
-    (
-        const meshField<Type2,MeshType>& F
-    ) const
-    {
-        if (this->deep() && F.shallow())
-            FatalErrorInFunction
-                << "Member operator with a shallow field argument on a deep "
-                << "field is not supported." << endl << abort(FatalError);
-    }
 
 public:
 
@@ -104,7 +91,7 @@ public:
     typedef typename pTraits<Type>::cmptType cmptType;
 
     // List type
-    typedef PtrList<meshLevel<Type,MeshType>> listType;
+    typedef FastPtrList<meshLevel<Type,MeshType>> listType;
 
     // Main constructor: construct from name and mesh with optional read and
     // write options, object registration and depth
@@ -116,6 +103,13 @@ public:
         const IOobject::readOption r = NO_READ,
         const IOobject::writeOption w = NO_WRITE,
         const bool registerObject = false,
+        const bool deep = false
+    );
+
+    meshField
+    (
+        const IOobject& io,
+        const fvMesh& fvMsh,
         const bool deep = false
     );
 
@@ -152,6 +146,19 @@ public:
         const bool copyBCs = false
     );
 
+    // Temporary field constructor
+    static tmp<meshField<Type,MeshType>> New
+    (
+        const word& name,
+        const fvMesh& fvMsh,
+        const bool cached = false
+    )
+    {
+        return
+            fvMsh.template
+            NewObject<meshField<Type,MeshType>>(name, cached);
+    }
+
     // Clone
     inline autoPtr<meshField<Type,MeshType>> clone() const
     {
@@ -164,87 +171,64 @@ public:
     // Destructor
     ~meshField();
 
-    // Access to the levels. Use the operator() for this because it doesn't
-    // perform any bounds checking which is expensive.
+    // Access to the levels
     inline meshLevel<Type,MeshType>& operator[](label l)
     {
-        #ifdef FULLDEBUG
-
-        if (l < 0 || l >= listType::size())
-            FatalErrorInFunction
-                << "Index " << l << " out of range 0 ... " << listType::size()-1
-                << endl << abort(FatalError);
-
-        #endif
-
-        return *const_cast<meshLevel<Type,MeshType>*>
-        (
-            listType::operator()(l)
-        );
+        return listType::operator[](l);
     }
 
-    // Const access to the levels. Use the operator() for this because it
-    // doesn't perform any bounds checking which is expensive.
+    // Const access to the levels
     inline const meshLevel<Type,MeshType>& operator[](label l) const
     {
-        #ifdef FULLDEBUG
-
-        if (l < 0 || l >= listType::size())
-            FatalErrorInFunction
-                << "Index " << l << " out of range 0 ... " << listType::size()-1
-                << endl << abort(FatalError);
-
-        #endif
-
-        return *listType::operator()(l);
+        return listType::operator[](l);
     }
 
     // Access to the first level
     inline meshLevel<Type,MeshType>& level()
     {
-        return this->operator[](0);
+        return listType::operator[](0);
     }
 
     // Const access to the first level
     inline const meshLevel<Type,MeshType>& level() const
     {
-        return this->operator[](0);
+        return listType::operator[](0);
     }
 
     // Alias access function
     inline meshLevel<Type,MeshType>& level(const int l)
     {
-        return this->operator[](l);
+        return listType::operator[](l);
     }
 
     // Alias access function
     inline const meshLevel<Type,MeshType>& level(const int l) const
     {
-        return this->operator[](l);
+        return listType::operator[](l);
     }
 
     // Access to the first direction of the first level
     inline meshDirection<Type,MeshType>& direction()
     {
-        return this->operator[](0)[0];
+        return listType::operator[](0)[0];
     }
 
     // Const access to the first direction of the first level
     inline const meshDirection<Type,MeshType>& direction() const
     {
-        return this->operator[](0)[0];
+        return listType::operator[](0)[0];
     }
 
     // Access to the given direction of the first level
     inline meshDirection<Type,MeshType>& direction(const int d)
     {
-        return this->operator[](0)[d];
+        return listType::operator[](0)[d];
     }
 
     // Const access to the given direction of the first level
     inline const meshDirection<Type,MeshType>& direction(const int d) const
     {
-        return this->operator[](0)[d];
+        return listType::operator[](0)[d];
     }
 
     // Access to the given direction and level
@@ -254,7 +238,7 @@ public:
         const int d
     )
     {
-        return this->operator[](l)[d];
+        return listType::operator[](l)[d];
     }
 
     // Const access to the given direction and level
@@ -264,7 +248,7 @@ public:
         const int d
     ) const
     {
-        return this->operator[](l)[d];
+        return listType::operator[](l)[d];
     }
 
     // Number of levels
@@ -309,8 +293,7 @@ public:
     }
 
     // Access to the boundary conditions
-    inline PtrList<boundaryCondition<Type,MeshType>>&
-    boundaryConditions()
+    inline PtrList<boundaryCondition<Type,MeshType>>& boundaryConditions()
     {
         return boundaryConditions_;
     }
@@ -348,14 +331,14 @@ public:
     }
 
     // Access to the boundary conditions
-    inline PtrList<immersedBoundaryCondition<Type,MeshType>>&
+    inline FastPtrList<immersedBoundaryCondition<Type,MeshType>>&
     immersedBoundaryConditions()
     {
         return immersedBoundaryConditions_;
     }
 
     // Const access to the boundary conditions
-    inline const PtrList<immersedBoundaryCondition<Type,MeshType>>&
+    inline const FastPtrList<immersedBoundaryCondition<Type,MeshType>>&
     immersedBoundaryConditions() const
     {
         return immersedBoundaryConditions_;
@@ -400,6 +383,14 @@ public:
 
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();
+
+    // Check if the boundary conditions make this field singular
+    bool singular() const
+    {
+        const_cast<meshField<Type,MeshType>*>(this)->addBoundaryConditions();
+
+        return singular_;
+    }
 
     // Set the old time field. Works recursively, so if the old time field has
     // an old time field too, it will be set as well.
@@ -450,21 +441,31 @@ public:
         return !deep();
     }
 
-    // Set the restriction operator that is associated with this field
-    void setRestrictionScheme(const word scheme);
-
-    // Restrict the field to lower levels. If no restriction scheme is set, set
-    // the default restriction scheme first. A shallow field will be made deep.
-    void restrict();
-
-    // Allow restriction on a const field
-    void restrict() const
+    // Set restriction scheme
+    void setRestrictionScheme(const word scheme)
     {
-        const_cast<meshField<Type,MeshType>*>(this)->restrict();
+        restrictionScheme_ = scheme;
     }
+
+    // Return restriction scheme name
+    const word& restrictionScheme() const { return restrictionScheme_; }
 
     // Write data (not supported)
     bool writeData(Ostream& os) const { return os; }
+
+    // Return a component
+    tmp<meshField<cmptType,MeshType>> component(const label) const;
+
+    // Set a component from a directional list of values
+    void replace(const label, const List<cmptType>&);
+
+    // Set a component from a component field
+    void replace(const label, const meshField<cmptType,MeshType>&);
+    void replace(const label, const tmp<meshField<cmptType,MeshType>>&);
+
+    // Set maximum/minimum of field and given value
+    void max(const Type&);
+    void min(const Type&);
 
     // Member operators
 
@@ -546,6 +547,10 @@ public:
     // Befriend mesh level
     template<class, class>
     friend class meshLevel;
+
+    // Befriend mesh field set
+    template<class, class, ::Foam::direction>
+    friend class meshFieldSet;
 
     #include "meshLevelFirstDirectionFunctions.H"
     #include "meshLevelDirectionFunctions.H"

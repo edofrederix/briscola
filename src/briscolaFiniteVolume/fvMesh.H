@@ -6,6 +6,7 @@
 #include "regIOobject.H"
 #include "autoPtr.H"
 #include "Time.H"
+#include "HashTable.H"
 
 #include "fvMeshMetrics.H"
 
@@ -66,10 +67,24 @@ class fvMesh
     template<class MeshType>
     faceLabel& I(const label l, const label d);
 
+    // Set the distributed communication graph
+    void setDistributedCommGraph();
+
     // Disallow default bitwise assignment
     void operator=(const fvMesh&);
 
 public:
+
+    // Old OpenFOAM communicator
+    static MPI_Comm MPI_COMM_FOAM_OLD;
+
+    // Neighbors
+    static labelList MPI_neighbors_recv;
+    static labelList MPI_neighbors_send;
+
+    // Neighbor maps
+    static List<labelList> MPI_neighbors_recv_map;
+    static List<labelList> MPI_neighbors_send_map;
 
     // Declare name of the class and its debug switch
     ClassName("fvMesh");
@@ -163,9 +178,9 @@ public:
 
         labelVector S(I.lower());
 
-        for (label d = 0; d < 3; d++)
-            if (bo[d] == 1)
-                S[d] = I.upper()[d]-1;
+        for (label e = 0; e < 3; e++)
+            if (bo[e] == 1)
+                S[e] = I.upper()[e]-1;
 
         return S;
     }
@@ -198,9 +213,9 @@ public:
 
         labelVector E(I.upper());
 
-        for (label d = 0; d < 3; d++)
-            if (bo[d] == -1)
-                E[d] = I.lower()[d]+1;
+        for (label e = 0; e < 3; e++)
+            if (bo[e] == -1)
+                E[e] = I.lower()[e]+1;
 
         return E;
     }
@@ -248,7 +263,7 @@ public:
 
     // Const access to immersed boundaries
     template<class MeshType>
-    const PtrList<immersedBoundary<MeshType>>& immersedBoundaries() const
+    const FastPtrList<immersedBoundary<MeshType>>& immersedBoundaries() const
     {
         return metrics<MeshType>().immersedBoundaries();
     }
@@ -277,6 +292,19 @@ public:
     // Solver dictionary
     inline const dictionary& solverDict() const { return solverDict_; }
 
+    // Object registry
+    const objectRegistry& db() const { return time(); }
+
+    // Field cache object registry
+    const objectRegistry& cache() const
+    {
+        return db().subRegistry("cache", true);
+    }
+
+    // New fvMesh-based object from name with optional caching
+    template<class Type>
+    tmp<Type> NewObject(const word name, const bool cached = false) const;
+
     // Needed by regIOobject
     virtual bool writeData(Ostream&) const { return true; }
 
@@ -301,7 +329,7 @@ public:
         }
 
         // Const access to boundaries
-        inline const PtrList<boundary>& boundaries() const
+        inline const FastPtrList<boundary>& boundaries() const
         {
             return mshPtr_->boundaries();
         }
@@ -330,5 +358,7 @@ public:
 }
 
 }
+
+#include "fvMeshI.H"
 
 #endif

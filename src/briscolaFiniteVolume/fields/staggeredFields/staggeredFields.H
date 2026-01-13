@@ -21,14 +21,12 @@ inline tmp<staggeredVectorField> stagT(const staggeredVectorField& f)
 {
     f.correctBoundaryConditions();
 
-    tmp<staggeredVectorField> tT
-    (
-        new staggeredVectorField
+    tmp<staggeredVectorField> tT =
+        staggeredVectorField::New
         (
             "T("+f.name()+")",
             f.fvMsh()
-        )
-    );
+        );
 
     staggeredVectorField& T = tT.ref();
 

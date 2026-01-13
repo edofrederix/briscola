@@ -24,7 +24,7 @@ List<Type> solver<SType,Type,MeshType>::normFactors
     List<Type> y(gAverage(sys.x()[l]));
     List<Type> f(MeshType::numberOfDirections, Zero);
 
-    const List<bool> diagonal(sys.diagonal());
+    const bool diagonal = sys.diagonal();
 
     forAll(f, d)
     {
@@ -35,9 +35,7 @@ List<Type> solver<SType,Type,MeshType>::normFactors
         forAllCells(b, i, j, k)
         {
             Type Ay =
-                diagonal[d]
-              ? A(i,j,k).center()*y[d]
-              : rowSum(A,i,j,k)*y[d];
+                diagonal ? A(i,j,k).center()*y[d] : rowSum(A,i,j,k)*y[d];
 
             f[d] +=
                 Foam::cmptSqr
@@ -206,11 +204,9 @@ void solver<SType,Type,MeshType>::setSingularityConstraint
     const label l
 ) const
 {
-    const List<bool> singular(sys.singular());
-
-    forAll(singular, d)
+    if (sys.singular())
     {
-        if (singular[d])
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
             meshDirection<SType,MeshType>& A = sys.A()[l][d];
 
@@ -226,13 +222,10 @@ void solver<SType,Type,MeshType>::setSingularityConstraint
             // This means we can remove any dependence on the first cell value
 
             forAllCells(A, i, j, k)
-                for (int s = 1; s < SType::nComponents; s++)
-                    if
-                    (
-                        A(i,j,k)[s] != 0
-                     && !numbers(labelVector(i,j,k)+SType::componentOffsets[s])
-                    )
-                        A(i,j,k)[s] = 0;
+                for (int s = 1; s < SType::nCsComponents; s++)
+                    if (A(i,j,k)[s] != 0)
+                        if(!numbers(labelVector(i,j,k) + SType::offsets[s]))
+                            A(i,j,k)[s] = 0;
         }
     }
 }

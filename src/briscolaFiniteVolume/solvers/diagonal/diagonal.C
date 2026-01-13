@@ -1,4 +1,5 @@
 #include "diagonal.H"
+#include "diagonalSmoother.H"
 
 namespace Foam
 {
@@ -26,30 +27,26 @@ void diagonal<SType,Type,MeshType>::solve
     const bool constMatrix
 )
 {
-    if (SType::nComponents > 1)
+    if (SType::nCsComponents > 1)
         sys.eliminateGhosts();
 
     sys.setForcingMask();
 
-    sys.x().makeShallow();
-    sys.b().makeShallow();
-
-    if (SType::nComponents > 1)
+    if (SType::nCsComponents > 1)
     {
-        List<bool> diag = sys.diagonal();
-
-        forAll(diag, i)
-            if (!diag[i])
-                FatalErrorInFunction
-                    << "Direction " << i << " of " << sys.name()
-                    << " is not diagonal." << endl
-                    << abort(FatalError);
+        if (!sys.diagonal())
+            FatalErrorInFunction
+                << "System is not diagonal" << endl
+                << abort(FatalError);
     }
 
-    for (int d = 0; d < MeshType::numberOfDirections; d++)
-        solver<SType,Type,MeshType>::smoother::smoothDiag(sys, 0, d);
-
-    sys.x().correctBoundaryConditions();
+    diagonalSmoother<SType,Type,MeshType>::Smooth
+    (
+        sys,
+        0,
+        1,
+        labelList(MeshType::numberOfDirections, 0)
+    );
 
     this->printSolverStats
     (

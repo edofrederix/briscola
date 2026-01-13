@@ -14,12 +14,12 @@ namespace RungeKuttaSchemes
 
 midPoint::midPoint(const fvMesh& fvMsh)
 :
-    RungeKuttaScheme(fvMsh)
+    RungeKuttaScheme(fvMsh,2)
 {
-    a_.setSize(2, scalarList(2, 0.0));
+    a_(0,0) = 0.5;
+    a_(1,0) = 1.0;
 
-    a_[0][0] = 0.5;
-    a_[1][0] = 1.0;
+    b_ = a_;
 }
 
 }

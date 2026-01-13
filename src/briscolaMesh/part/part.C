@@ -83,7 +83,7 @@ part::part(const mesh& msh, const part* l)
     // Check if part directions are rectilinear, which is true if all left,
     // bottom and aft face vectors are aligned
 
-    const scalar tol = 1e-12;
+    const scalar tol = 1e-9;
 
     vector x = zeroXYZ;
     vector y = zeroXYZ;

@@ -7,39 +7,51 @@ namespace briscola
 namespace fv
 {
 
-inline const fvMesh& RungeKuttaScheme::fvMsh() const
+template<>
+inline FastPtrList<FastPtrList<colocatedScalarField>>&
+RungeKuttaScheme::stageSources<colocatedScalarField>()
 {
-    return fvMsh_;
+    return coloScalarStageSources_;
 }
 
-inline const dictionary& RungeKuttaScheme::dict() const
+template<>
+inline FastPtrList<FastPtrList<colocatedVectorField>>&
+RungeKuttaScheme::stageSources<colocatedVectorField>()
 {
-    return dict_;
+    return coloVectorStageSources_;
 }
 
-inline label RungeKuttaScheme::stage() const
+template<>
+inline FastPtrList<FastPtrList<staggeredScalarField>>&
+RungeKuttaScheme::stageSources<staggeredScalarField>()
 {
-    return stage_;
+    return stagScalarStageSources_;
 }
 
-inline label RungeKuttaScheme::numberOfStages() const
+template<>
+inline FastPtrList<FastPtrList<staggeredVectorField>>&
+RungeKuttaScheme::stageSources<staggeredVectorField>()
 {
-    return a().size();
+    return stagVectorStageSources_;
 }
 
 inline scalar RungeKuttaScheme::A() const
 {
-    return a()[stage_-1][stage_-1];
+    return a()(stage_-1,stage_-1);
 }
 
 inline scalar RungeKuttaScheme::B() const
 {
-    return b()[stage_-1][stage_-1];
+    return b()(stage_-1,stage_-1);
 }
 
 inline scalar RungeKuttaScheme::C() const
 {
-    return sum(a()[stage_-1]);
+    scalar sum = 0.0;
+    for (int j = 0; j < a().n(); j++)
+        sum += a()(stage_-1,j);
+
+    return sum;
 }
 
 inline Switch RungeKuttaScheme::exStageA() const
@@ -59,8 +71,8 @@ inline Switch RungeKuttaScheme::exStage() const
 
 inline Switch RungeKuttaScheme::exA() const
 {
-    forAll(a(), i)
-        if (a()[i][i])
+    for (int i = 0; i < a().m(); i++)
+        if (a()(i,i))
             return false;
 
     return true;
@@ -68,8 +80,8 @@ inline Switch RungeKuttaScheme::exA() const
 
 inline Switch RungeKuttaScheme::exB() const
 {
-    forAll(b(), i)
-        if (b()[i][i])
+    for (int i = 0; i < b().m(); i++)
+        if (b()(i,i))
             return false;
 
     return true;
@@ -117,23 +129,25 @@ inline Switch RungeKuttaScheme::firstStage() const
 
 inline Switch RungeKuttaScheme::lastStage() const
 {
-    return stage_ == numberOfStages();
+    return stage_ == nStages_;
 }
 
 inline Switch RungeKuttaScheme::storeStageA() const
 {
-    for (label i = stage_+1; i <= numberOfStages(); i++)
-        if (a()[i-1][stage_-1])
-            return true;
+    for (int step = 0; step < nSteps_; step++)
+        for (label i = stage_; i < nStages_; i++)
+            if (a()(i,stage_-1+step*nStages_))
+                return true;
 
     return false;
 }
 
 inline Switch RungeKuttaScheme::storeStageB() const
 {
-    for (label i = stage_+1; i <= numberOfStages(); i++)
-        if (b()[i-1][stage_-1])
-            return true;
+    for (int step = 0; step < nSteps_; step++)
+        for (label i = stage_; i < nStages_; i++)
+            if (b()(i,stage_-1+step*nStages_))
+                return true;
 
     return false;
 }
@@ -143,11 +157,80 @@ inline Switch RungeKuttaScheme::solve() const
     return !(firstStage() && exStage());
 }
 
+template<class FieldType>
+inline void RungeKuttaScheme::cycle()
+{
+    FastPtrList<FastPtrList<FieldType>>& sources =
+        stageSources<FieldType>();
+
+    // Move pointers forward by nStages and recycle the oldest step
+
+    labelList oldToNew((nStages_-1)*nSteps_);
+    forAll(oldToNew, i)
+        oldToNew[i] = (i + (nStages_-1)) % ((nStages_-1)*nSteps_);
+
+    forAll(sources, i)
+    {
+        PtrList<FieldType>& list = sources[i];
+
+        // Reorder
+
+        list.reorder(oldToNew);
+
+        // Checkout all fields to avoid renaming conflicts
+
+        forAll(list, k)
+            list[k].checkOut();
+
+        // Rename and update write option
+
+        int j = 0;
+
+        for (int step = 0; step < nSteps_; step++)
+        {
+            for (int stage = 0; stage < nStages_-1; stage++)
+            {
+                const word baseName = IOobject::member(list[j].name());
+
+                if (step == 0)
+                {
+                    list[j].rename
+                    (
+                        IOobject::groupName(baseName, Foam::name(stage))
+                    );
+                }
+                else
+                {
+                    list[j].rename(list[j-(nStages_-1)].name() + "_0");
+                }
+
+                // Write everything but the last step
+
+                if (step < nSteps_-1)
+                {
+                    list[j].writeOpt() = IOobject::AUTO_WRITE;
+                }
+                else
+                {
+                    list[j].writeOpt() = IOobject::NO_WRITE;
+                }
+
+                j++;
+            }
+        }
+
+        // Checkin all fields again
+
+        forAll(list, k)
+            list[k].checkIn();
+    }
+}
+
 inline Switch RungeKuttaScheme::loop()
 {
     stage_++;
 
-    if (stage_ > numberOfStages())
+    if (stage_ > nStages_)
     {
         stage_ = 0;
 
@@ -155,6 +238,16 @@ inline Switch RungeKuttaScheme::loop()
     }
     else
     {
+        if (stage_ == 1 && nSteps_ > 1)
+        {
+            // For multi-step methods, cycle the sources
+
+            cycle<colocatedScalarField>();
+            cycle<colocatedVectorField>();
+            cycle<staggeredScalarField>();
+            cycle<staggeredVectorField>();
+        }
+
         return true;
     }
 }

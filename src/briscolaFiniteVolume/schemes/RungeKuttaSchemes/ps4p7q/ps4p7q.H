@@ -19,9 +19,6 @@ class ps4p7q
 :
     public RungeKuttaScheme
 {
-    // Butcher tableau
-    List<scalarList> a_;
-
 public:
 
     // Runtime type information
@@ -29,22 +26,6 @@ public:
 
     // Construct from mesh
     ps4p7q(const fvMesh& fvMsh);
-
-    // Destructor
-    ~ps4p7q()
-    {}
-
-    // Return the Butcher tableau for source A
-    virtual const List<scalarList>& a() const
-    {
-        return a_;
-    }
-
-    // Return the Butcher tableau for source B
-    virtual const List<scalarList>& b() const
-    {
-        return a_;
-    }
 };
 
 }

@@ -18,7 +18,7 @@ namespace ex
 // Interpolation to the faces
 
 template<class Type, class MeshType>
-inline tmp<meshField<FaceSpace<Type>,MeshType>> interp
+inline tmp<faceField<Type,MeshType>> interp
 (
     const meshField<Type,MeshType>& field
 )
@@ -31,7 +31,7 @@ inline tmp<meshField<FaceSpace<Type>,MeshType>> interp
 }
 
 template<class Type, class MeshType>
-inline tmp<meshField<FaceSpace<Type>,MeshType>> interp
+inline tmp<faceField<Type,MeshType>> interp
 (
     const tmp<meshField<Type,MeshType>>& tField
 )
@@ -39,10 +39,7 @@ inline tmp<meshField<FaceSpace<Type>,MeshType>> interp
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<FaceSpace<Type>,MeshType>> tInterp
-    (
-        interp(tField())
-    );
+    tmp<faceField<Type,MeshType>> tInterp = interp(tField());
 
     if (tField.isTmp())
         tField.clear();

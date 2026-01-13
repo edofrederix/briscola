@@ -14,11 +14,10 @@ namespace RungeKuttaSchemes
 
 backwardEuler::backwardEuler(const fvMesh& fvMsh)
 :
-    RungeKuttaScheme(fvMsh)
+    RungeKuttaScheme(fvMsh,1)
 {
-    a_.setSize(1, scalarList(1, 0.0));
-
-    a_[0][0] = 1.0;
+    a_(0,0) = 1.0;
+    b_ = a_;
 }
 
 }

@@ -10,7 +10,7 @@ template<>
 const char* const diagStencil::csType::componentNames[] = {"c"};
 
 template<>
-const labelVector diagStencil::csType::componentOffsets[] =
+const labelVector diagStencil::csType::offsets[] =
     {
         briscola::zeroXYZ
     };

@@ -302,8 +302,8 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
         const labelTensor T = neighborTs[i];
         const faceLabel J = pTransform<faceLabel>(T,I);
 
-        const labelVector L = briscola::cmptMin(J.lower(), J.upper());
-        const labelVector U = briscola::cmptMax(J.lower(), J.upper());
+        const labelVector LL = briscola::cmptMin(J.lower(), J.upper());
+        const labelVector UU = briscola::cmptMax(J.lower(), J.upper());
 
         const labelVector bo = (T & neighborOffsets_[i]);
 
@@ -313,14 +313,14 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
             for (int k = 0; k < 3; k++)
                 if (bo[k] != 0)
-                    index[k] += index[k] > 0 ? (L[k]-1) : U[k];
+                    index[k] += index[k] > 0 ? (LL[k]-1) : UU[k];
 
             // Transform back
 
             index = (T.T() & index);
 
             for (int k = 0; k < 3; k++)
-                index[k] += index[k] < 0 ? U[k] : 0;
+                index[k] += index[k] < 0 ? UU[k] : 0;
         }
     }
 }

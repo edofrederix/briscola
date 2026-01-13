@@ -1,6 +1,7 @@
 #ifndef colocatedLevelsFwd_H
 #define colocatedLevelsFwd_H
 
+#include "meshLevelFwd.H"
 #include "colocatedDirectionsFwd.H"
 
 #include "label.H"
@@ -29,9 +30,6 @@ namespace fv
 {
 
 class colocated;
-
-template<class Type, class MeshType>
-class meshLevel;
 
 typedef meshLevel<label,colocated> colocatedLabelLevel;
 typedef meshLevel<scalar,colocated> colocatedScalarLevel;

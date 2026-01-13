@@ -2,8 +2,13 @@
 #define prolongationScheme_H
 
 #include "scheme.H"
-#include "meshFields.H"
+
 #include "ops.H"
+
+#include "faceFields.H"
+#include "meshFields.H"
+#include "meshLevels.H"
+#include "meshDirections.H"
 
 namespace Foam
 {
@@ -43,7 +48,7 @@ public:
     // Copy constructor
     prolongationScheme(const prolongationScheme<Type,MeshType>&);
 
-    // Selector
+    // Selector from type name
     static autoPtr<prolongationScheme<Type,MeshType>> New
     (
         const fvMesh&,
@@ -52,6 +57,9 @@ public:
 
     // Destructor
     virtual ~prolongationScheme();
+
+    // Default prolongation scheme for this mesh and type
+    static const word defaultScheme;
 
     // In-place prolongation from a coarse cell level to the adjacent fine cell
     // level, using the = operation

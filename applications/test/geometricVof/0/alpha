@@ -11,6 +11,6 @@ boundaryConditions
     default
     {
         type        Neumann;
-        gradients   (0);
+        gradient    0;
     }
 }

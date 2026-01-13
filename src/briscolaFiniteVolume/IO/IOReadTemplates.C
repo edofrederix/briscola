@@ -121,7 +121,7 @@ void IO::readScalarField
 }
 
 template<class Type, class MeshType>
-void IO::readArrayField
+void IO::readVectorSpaceField
 (
     autoPtr<std::ifstream>& filePtr,
     const bool ascii,
@@ -154,19 +154,19 @@ void IO::readArrayField
             for (int k = S.z(); k < E.z(); k++)
                 if (structured(i-S.x(),j-S.y(),k-S.z(),N))
                     for (int ii = 0; ii < n; ii++)
-                        D(i,j,k)[ii] = data[c++];
+                        setComponent(D(i,j,k),ii) = data[c++];
 }
 
 template<class Type, class MeshType>
-void IO::readArrayArrayField
+void IO::readCellSpaceField
 (
     autoPtr<std::ifstream>& filePtr,
     const bool ascii,
     meshDirection<Type,MeshType>& D
 ) const
 {
-    const label n(Type::nComponents);
-    const label m(pTraits<typename Type::cmpt>::nComponents);
+    const label n(Type::nCsComponents);
+    const label m(Type::nComponents);
 
     const labelVector S = D.I().lower()-unitXYZ*label(ghosts_)*D.ghosts;
     const labelVector E = D.I().upper()+unitXYZ*label(ghosts_)*D.ghosts;
@@ -193,7 +193,7 @@ void IO::readArrayArrayField
                 if (structured(i-S.x(),j-S.y(),k-S.z(),N))
                     for (int ii = 0; ii < n; ii++)
                         for (int jj = 0; jj < m; jj++)
-                            D(i,j,k)[ii][jj] = data[c++];
+                            setComponent(D(i,j,k)[ii],jj) = data[c++];
 }
 
 // Instantiate
@@ -220,31 +220,31 @@ template void IO::FUNC                                                         \
 
 READTYPEFIELD(readScalarField,scalar,colocated)
 READTYPEFIELD(readScalarField,label,colocated)
-READTYPEFIELD(readArrayField,vector,colocated)
-READTYPEFIELD(readArrayField,tensor,colocated)
-READTYPEFIELD(readArrayField,diagTensor,colocated)
-READTYPEFIELD(readArrayField,symmTensor,colocated)
-READTYPEFIELD(readArrayField,sphericalTensor,colocated)
-READTYPEFIELD(readArrayField,faceScalar,colocated)
-READTYPEFIELD(readArrayField,edgeScalar,colocated)
-READTYPEFIELD(readArrayField,vertexScalar,colocated)
-READTYPEFIELD(readArrayArrayField,faceVector,colocated)
-READTYPEFIELD(readArrayArrayField,edgeVector,colocated)
-READTYPEFIELD(readArrayArrayField,vertexVector,colocated)
+READTYPEFIELD(readVectorSpaceField,vector,colocated)
+READTYPEFIELD(readVectorSpaceField,tensor,colocated)
+READTYPEFIELD(readVectorSpaceField,diagTensor,colocated)
+READTYPEFIELD(readVectorSpaceField,symmTensor,colocated)
+READTYPEFIELD(readVectorSpaceField,sphericalTensor,colocated)
+READTYPEFIELD(readCellSpaceField,faceScalar,colocated)
+READTYPEFIELD(readCellSpaceField,edgeScalar,colocated)
+READTYPEFIELD(readCellSpaceField,vertexScalar,colocated)
+READTYPEFIELD(readCellSpaceField,faceVector,colocated)
+READTYPEFIELD(readCellSpaceField,edgeVector,colocated)
+READTYPEFIELD(readCellSpaceField,vertexVector,colocated)
 
 READTYPEFIELD(readScalarField,scalar,staggered)
 READTYPEFIELD(readScalarField,label,staggered)
-READTYPEFIELD(readArrayField,vector,staggered)
-READTYPEFIELD(readArrayField,tensor,staggered)
-READTYPEFIELD(readArrayField,diagTensor,staggered)
-READTYPEFIELD(readArrayField,symmTensor,staggered)
-READTYPEFIELD(readArrayField,sphericalTensor,staggered)
-READTYPEFIELD(readArrayField,faceScalar,staggered)
-READTYPEFIELD(readArrayField,edgeScalar,staggered)
-READTYPEFIELD(readArrayField,vertexScalar,staggered)
-READTYPEFIELD(readArrayArrayField,faceVector,staggered)
-READTYPEFIELD(readArrayArrayField,edgeVector,staggered)
-READTYPEFIELD(readArrayArrayField,vertexVector,staggered)
+READTYPEFIELD(readVectorSpaceField,vector,staggered)
+READTYPEFIELD(readVectorSpaceField,tensor,staggered)
+READTYPEFIELD(readVectorSpaceField,diagTensor,staggered)
+READTYPEFIELD(readVectorSpaceField,symmTensor,staggered)
+READTYPEFIELD(readVectorSpaceField,sphericalTensor,staggered)
+READTYPEFIELD(readCellSpaceField,faceScalar,staggered)
+READTYPEFIELD(readCellSpaceField,edgeScalar,staggered)
+READTYPEFIELD(readCellSpaceField,vertexScalar,staggered)
+READTYPEFIELD(readCellSpaceField,faceVector,staggered)
+READTYPEFIELD(readCellSpaceField,edgeVector,staggered)
+READTYPEFIELD(readCellSpaceField,vertexVector,staggered)
 
 #undef READTYPEFIELD
 

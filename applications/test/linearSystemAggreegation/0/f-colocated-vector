@@ -11,18 +11,18 @@ boundaryConditions
     walls
     {
         type        Neumann;
-        gradients   ((0 0 0));
+        gradient    (0 0 0);
     }
 
     inlet
     {
         type        Dirichlet;
-        values      ((1 1 0));
+        value       (1 1 0);
     }
 
     outlet
     {
         type        Dirichlet;
-        values      ((0 0 0));
+        value       (0 0 0);
     }
 }

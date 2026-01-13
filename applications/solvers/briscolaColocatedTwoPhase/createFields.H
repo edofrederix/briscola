@@ -10,7 +10,6 @@ colocatedVectorField U
 );
 
 U = Zero;
-U.correctBoundaryConditions();
 
 // Pressure
 
@@ -24,21 +23,20 @@ colocatedScalarField p
 );
 
 p = Zero;
-p.correctBoundaryConditions();
 
 // Flux
 
-colocatedFaceScalarField phi
+colocatedScalarFaceField phi
 (
     "phi",
     fvMsh,
-    IOobject::NO_READ,
+    IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
     true
 );
 
+phi = Zero;
 phi.setRestrictionScheme("flux");
-phi = ex::faceFlux(U);
 
 // Source
 
@@ -51,22 +49,9 @@ colocatedVectorField exSource
     true
 );
 
-colocatedScalarField imSourceCoeff
-(
-    "sourceCoeff",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::NO_WRITE,
-    true
-);
-
 exSource =
     fvMsh.metrics<colocated>().fluidMask()
   * vector(twoPhaseDict.lookupOrDefault("source", vector::zero));
-
-imSourceCoeff =
-    fvMsh.metrics<colocated>().fluidMask()
-  * scalar(twoPhaseDict.lookupOrDefault("sourceCoeff", 0.0));
 
 // Solvers
 
@@ -94,18 +79,14 @@ Poisson->enableFlux();
 
 // Runge-Kutta stage sources
 
-PtrList<colocatedVectorField> stageSourcesA
-(
-    rk.stageList<colocatedVectorField>("A")
-);
+FastPtrList<colocatedVectorField>& stageSourcesA =
+    rk.newStageList<colocatedVectorField>("A");
 
-PtrList<colocatedVectorField> stageSourcesB
-(
-    rk.stageList<colocatedVectorField>("B")
-);
+FastPtrList<colocatedVectorField>& stageSourcesB =
+    rk.newStageList<colocatedVectorField>("B");
 
-linearSystem<stencil,vector,colocated> USysA("A(U)", U);
-linearSystem<stencil,vector,colocated> USysB("B(U)", U);
+tmp<colocatedVectorSystem> tUSysA;
+tmp<colocatedVectorSystem> tUSysB;
 
 // Specific volumes
 
@@ -118,9 +99,9 @@ colocatedScalarField v
     true
 );
 
-v.setRestrictionScheme("harmonicVolumeWeighted");
+v = Zero;
 
-colocatedFaceScalarField vf
+colocatedScalarFaceField vf
 (
     "vf",
     fvMsh,
@@ -129,4 +110,9 @@ colocatedFaceScalarField vf
     true
 );
 
-vf.setRestrictionScheme("faceAreaWeighted");
+vf.setRestrictionScheme("areaWeighted");
+vf = Zero;
+
+// Reference to the viscosity
+
+const colocatedScalarFaceField& mu = twoPhase.mu();

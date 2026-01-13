@@ -34,15 +34,13 @@ rowProduct
 {
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
-    tmp<meshDirection<productType,MeshType>> tRes
-    (
-        new meshDirection<productType,MeshType>
+    tmp<meshDirection<productType,MeshType>> tRes =
+        meshDirection<productType,MeshType>::New
         (
             f1.fvMsh(),
             f1.levelNum(),
             f1.directionNum()
-        )
-    );
+        );
 
     rowProduct(tRes.ref(), f1, f2);
 
@@ -132,15 +130,13 @@ rowProduct(const meshDirection<Type,MeshType>& f1, const Form& s)
 {
     typedef typename stencilProduct<Type,Form>::type productType;
 
-    tmp<meshDirection<productType,MeshType>> tRes
-    (
-        new meshDirection<productType,MeshType>
+    tmp<meshDirection<productType,MeshType>> tRes =
+        meshDirection<productType,MeshType>::New
         (
             f1.fvMsh(),
             f1.levelNum(),
             f1.directionNum()
-        )
-    );
+        );
 
     rowProduct(tRes.ref(), f1, s);
 
@@ -206,15 +202,13 @@ template<class Type, class MeshType>
 tmp<meshDirection<scalar,MeshType>>
 rowSum(const meshDirection<Type,MeshType>& f)
 {
-    tmp<meshDirection<scalar,MeshType>> tRes
-    (
-        new meshDirection<scalar,MeshType>
+    tmp<meshDirection<scalar,MeshType>> tRes =
+        meshDirection<scalar,MeshType>::New
         (
             f.fvMsh(),
             f.levelNum(),
             f.directionNum()
-        )
-    );
+        );
 
     rowSum(tRes.ref(), f);
 
@@ -225,15 +219,13 @@ template<class Type, class MeshType>
 tmp<meshDirection<scalar,MeshType>>
 rowSum(const tmp<meshDirection<Type,MeshType>>& tf)
 {
-    tmp<meshDirection<scalar,MeshType>> tRes
-    (
-        new meshDirection<scalar,MeshType>
+    tmp<meshDirection<scalar,MeshType>> tRes =
+        meshDirection<scalar,MeshType>::New
         (
             tf->fvMsh(),
             tf->levelNum(),
             tf->directionNum()
-        )
-    );
+        );
 
     rowSum(tRes.ref(), tf());
 

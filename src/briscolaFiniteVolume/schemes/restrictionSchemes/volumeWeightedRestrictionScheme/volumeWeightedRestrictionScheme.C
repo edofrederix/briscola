@@ -32,9 +32,9 @@ void volumeWeightedRestrictionScheme<Type,MeshType>::restrict
         shift.z() != 0.0 ? 1 : R.z()
     );
 
-    const meshDirection<scalar,MeshType>& cvc =
+    const meshDirection<scalar,MeshType>& icvc =
         this->fvMsh().template
-        metrics<MeshType>().cellVolumes()
+        metrics<MeshType>().inverseCellVolumes()
         [coarse.levelNum()][coarse.directionNum()];
 
     const meshDirection<scalar,MeshType>& cvf =
@@ -53,7 +53,7 @@ void volumeWeightedRestrictionScheme<Type,MeshType>::restrict
             coarse(i,j,k) += fine(ii,jj,kk)*cvf(ii,jj,kk);
         }
 
-        coarse(i,j,k) /= cvc(i,j,k);
+        coarse(i,j,k) *= icvc(i,j,k);
     }
 }
 

@@ -106,16 +106,16 @@ Type average(const tmp<block<Type>>&);
 
 
 template<class Type>
-SCALARPRODTYPE maxMagSqr(const block<Type>&);
+Type maxMagSqr(const block<Type>& f);
 
 template<class Type>
-SCALARPRODTYPE maxMagSqr(const tmp<block<Type>>&);
+Type maxMagSqr(const tmp<block<Type>>& f);
 
 template<class Type>
-SCALARPRODTYPE minMagSqr(const block<Type>&);
+Type minMagSqr(const block<Type>& f);
 
 template<class Type>
-SCALARPRODTYPE minMagSqr(const tmp<block<Type>>&);
+Type minMagSqr(const tmp<block<Type>>& f);
 
 template<class Type>
 SCALARPRODTYPE sumProd(const block<Type>&, const block<Type>&);
@@ -160,28 +160,28 @@ Type sumCmptMag(const block<Type>&);
 template<class Type>
 Type sumCmptMag(const tmp<block<Type>>&);
 
-#define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                        \
-                                                                                \
-template<class Type>                                                            \
-ReturnType gFunc                                                                \
-(                                                                               \
-    const block<Type>&,                                                         \
-    const label comm = UPstream::worldComm                                      \
-);                                                                              \
-                                                                                \
-template<class Type>                                                            \
-ReturnType gFunc                                                                \
-(                                                                               \
-    const tmp<block<Type>>&,                                                    \
-    const label comm = UPstream::worldComm                                      \
+#define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                       \
+                                                                               \
+template<class Type>                                                           \
+ReturnType gFunc                                                               \
+(                                                                              \
+    const block<Type>&,                                                        \
+    const label comm = UPstream::worldComm                                     \
+);                                                                             \
+                                                                               \
+template<class Type>                                                           \
+ReturnType gFunc                                                               \
+(                                                                              \
+    const tmp<block<Type>>&,                                                   \
+    const label comm = UPstream::worldComm                                     \
 );
 
 G_UNARY_FUNCTION(Type, gMax, max, max)
 G_UNARY_FUNCTION(Type, gMin, min, min)
 G_UNARY_FUNCTION(Type, gSum, sum, sum)
 G_UNARY_FUNCTION(Type, gAverage, average, average)
-G_UNARY_FUNCTION(SCALARPRODTYPE, gMaxMagSqr, maxMagSqr, maxMagSqr)
-G_UNARY_FUNCTION(SCALARPRODTYPE, gMinMagSqr, minMagSqr, minMagSqr)
+G_UNARY_FUNCTION(Type, gMaxMagSqr, maxMagSqr, maxMagSqr)
+G_UNARY_FUNCTION(Type, gMinMagSqr, minMagSqr, minMagSqr)
 G_UNARY_FUNCTION(SCALARPRODTYPE, gSumMag, sumMag, sum)
 G_UNARY_FUNCTION(Type, gSumCmptMag, sumCmptMag, sum)
 

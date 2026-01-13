@@ -53,12 +53,12 @@ void rectilinearMesh::setMetrics()
 
         const labelVector dir = units[d];
 
-        const vector base =
+        const vector base2 =
             d == 0 ? base_.x() : d == 1 ? base_.y() : base_.z();
 
         forAll(localPointsData, i)
         {
-            localPointsData[i] = trimPrecision(points(dir*(i-1)) & base);
+            localPointsData[i] = trimPrecision(points(dir*(i-1)) & base2);
         }
 
         forAll(localCellSizesData, i)
@@ -129,7 +129,7 @@ void rectilinearMesh::setMetrics()
         scalarList& globalCellSizes = globalCellSizesData_[d];
         scalarList& globalPoints = globalPointsData_[d];
 
-        const labelVector base = units[d];
+        const labelVector base2 = units[d];
 
         label cursor = 0;
 
@@ -137,7 +137,7 @@ void rectilinearMesh::setMetrics()
 
         for (int i = 0; i < map.shape()[d]; i++)
         {
-            const label proc = map(base*i);
+            const label proc = map(base2*i);
 
             if (proc == Pstream::myProcNo())
             {

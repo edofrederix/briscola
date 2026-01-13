@@ -4,7 +4,6 @@
 #include "timeSelector.H"
 #include "OSspecific.H"
 #include "OFstream.H"
-#include "PtrList.H"
 
 #include "fv.H"
 #include "fvMesh.H"

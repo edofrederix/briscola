@@ -2,6 +2,7 @@
 #include "blockM.H"
 
 #include "pTransform.H"
+#include "replace.H"
 
 namespace Foam
 {
@@ -18,6 +19,7 @@ block<Type>::block(const int l, const int m, const int n)
     l_(l),
     m_(m),
     n_(n),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(eye)
 {
@@ -31,6 +33,7 @@ block<Type>::block(const int l, const int m, const int n, const zero)
     l_(l),
     m_(m),
     n_(n),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(eye)
 {
@@ -46,6 +49,7 @@ block<Type>::block(const int l, const int m, const int n, const Type& s)
     l_(l),
     m_(m),
     n_(n),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(eye)
 {
@@ -61,6 +65,7 @@ block<Type>::block(const labelVector& d)
     l_(d[0]),
     m_(d[1]),
     n_(d[2]),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(eye)
 {
@@ -74,12 +79,19 @@ block<Type>::block(const labelVector& d, const zero)
     l_(d[0]),
     m_(d[1]),
     n_(d[2]),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(eye)
 {
     allocate();
 
-    *this = Zero;
+    if (v_)
+    {
+        List_ACCESS(Type, (*this), vp);
+        List_FOR_ALL((*this), i)
+            List_ELEM((*this), vp, i) = Zero;
+        List_END_FOR_ALL
+    }
 }
 
 template<class Type>
@@ -89,6 +101,7 @@ block<Type>::block(const labelVector& d, const Type& s)
     l_(d[0]),
     m_(d[1]),
     n_(d[2]),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(eye)
 {
@@ -110,13 +123,14 @@ block<Type>::block
     l_(l),
     m_(m),
     n_(n),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(eye)
 {
-    if (l_*m_*n_ != v.size())
+    if (size_ != v.size())
     {
         FatalErrorInFunction
-            << "Cannot create block with size " << l_*m_*n_
+            << "Cannot create block with size " << size_
             << " from list with size " << v.size() << endl
             << abort(FatalError);
     }
@@ -126,17 +140,11 @@ block<Type>::block
 
         if (v_)
         {
-            if (contiguous<Type>())
-            {
-                memcpy(v_, v.cdata(), this->byteSize());
-            }
-            else
-            {
-                forAllBlockLinear(*this, i)
-                {
-                    v_[i] = v[i];
-                }
-            }
+            List_ACCESS(Type, (*this), vp);
+            List_CONST_ACCESS(Type, (v), va);
+            List_FOR_ALL((*this), i)
+                List_ELEM((*this), vp, i) = List_ELEM((v), va, i);
+            List_END_FOR_ALL
         }
     }
 }
@@ -154,6 +162,7 @@ block<Type>::block
     l_(l),
     m_(m),
     n_(n),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(eye)
 {
@@ -161,17 +170,10 @@ block<Type>::block
 
     if (v_)
     {
-        if (contiguous<Type>())
-        {
-            memcpy(v_, v, this->byteSize());
-        }
-        else
-        {
-            forAllBlockLinear(*this, i)
-            {
-                v_[i] = v[i];
-            }
-        }
+        List_ACCESS(Type, (*this), vp);
+        List_FOR_ALL((*this), i)
+            List_ELEM((*this), vp, i) = v[i];
+        List_END_FOR_ALL
     }
 }
 
@@ -182,13 +184,14 @@ block<Type>::block(const labelVector& d, const List<Type>& v)
     l_(d[0]),
     m_(d[1]),
     n_(d[2]),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(eye)
 {
-    if (l_*m_*n_ != v.size())
+    if (size_ != v.size())
     {
         FatalErrorInFunction
-            << "Cannot create block with size " << l_*m_*n_
+            << "Cannot create block with size " << size_
             << " from list with size " << v.size() << endl
             << abort(FatalError);
     }
@@ -198,17 +201,11 @@ block<Type>::block(const labelVector& d, const List<Type>& v)
 
         if (v_)
         {
-            if (contiguous<Type>())
-            {
-                memcpy(v_, v.cdata(), this->byteSize());
-            }
-            else
-            {
-                forAllBlockLinear(*this, i)
-                {
-                    v_[i] = v[i];
-                }
-            }
+            List_ACCESS(Type, (*this), vp);
+            List_CONST_ACCESS(Type, (v), va);
+            List_FOR_ALL((*this), i)
+                List_ELEM((*this), vp, i) = List_ELEM(v, va, i);
+            List_END_FOR_ALL
         }
     }
 }
@@ -220,6 +217,7 @@ block<Type>::block(const labelVector& d, const Type* v)
     l_(d[0]),
     m_(d[1]),
     n_(d[2]),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(eye)
 {
@@ -227,17 +225,10 @@ block<Type>::block(const labelVector& d, const Type* v)
 
     if (v_)
     {
-        if (contiguous<Type>())
-        {
-            memcpy(v_, v, this->byteSize());
-        }
-        else
-        {
-            forAllBlockLinear(*this, i)
-            {
-                v_[i] = v[i];
-            }
-        }
+        List_ACCESS(Type, (*this), vp);
+        List_FOR_ALL((*this), i)
+            List_ELEM((*this), vp, i) = v[i];
+        List_END_FOR_ALL
     }
 }
 
@@ -248,6 +239,7 @@ block<Type>::block(const block<Type>& M)
     l_(M.l()),
     m_(M.m()),
     n_(M.n()),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(M.T())
 {
@@ -255,10 +247,11 @@ block<Type>::block(const block<Type>& M)
     {
         allocate();
 
-        forAllBlockLinear(*this, i)
-        {
-            v_[i] = M.v()[i];
-        }
+        List_ACCESS(Type, (*this), vp);
+        List_CONST_ACCESS(Type, (M), va);
+        List_FOR_ALL((*this), i)
+            List_ELEM((*this), vp, i) = List_ELEM(M, va, i);
+        List_END_FOR_ALL
     }
 }
 
@@ -269,6 +262,7 @@ block<Type>::block(const block<Type>& M, const zero&)
     l_(M.l()),
     m_(M.m()),
     n_(M.n()),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(M.T())
 {
@@ -276,10 +270,10 @@ block<Type>::block(const block<Type>& M, const zero&)
     {
         allocate();
 
-        forAllBlockLinear(*this, i)
-        {
-            v_[i] = Zero;
-        }
+        List_ACCESS(Type, (*this), vp);
+        List_FOR_ALL((*this), i)
+            List_ELEM((*this), vp, i) = Zero;
+        List_END_FOR_ALL
     }
 }
 
@@ -290,6 +284,7 @@ block<Type>::block(const block<Type>& M, const Type& v)
     l_(M.l()),
     m_(M.m()),
     n_(M.n()),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(M.T())
 {
@@ -297,10 +292,10 @@ block<Type>::block(const block<Type>& M, const Type& v)
     {
         allocate();
 
-        forAllBlockLinear(*this, i)
-        {
-            v_[i] = v;
-        }
+        List_ACCESS(Type, (*this), vp);
+        List_FOR_ALL((*this), i)
+            List_ELEM((*this), vp, i) = v;
+        List_END_FOR_ALL
     }
 }
 
@@ -311,6 +306,7 @@ block<Type>::block(const tmp<block<Type>>& tM)
     l_(tM->l()),
     m_(tM->m()),
     n_(tM->n()),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(tM->T())
 {
@@ -336,6 +332,7 @@ block<Type>::block(const tmp<block<Type>>& tM, const zero&)
     l_(tM->l()),
     m_(tM->m()),
     n_(tM->n()),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(tM->T())
 {
@@ -362,6 +359,7 @@ block<Type>::block(const tmp<block<Type>>& tM, const Type& v)
     l_(tM->l()),
     m_(tM->m()),
     n_(tM->n()),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(tM->T())
 {
@@ -388,6 +386,7 @@ block<Type>::block(const label reuse, block<Type>& M)
     l_(M.l()),
     m_(M.m()),
     n_(M.n()),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(M.T())
 {
@@ -409,6 +408,7 @@ block<Type>::block(const label reuse, block<Type>& M, const zero&)
     l_(M.l()),
     m_(M.m()),
     n_(M.n()),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(M.T())
 {
@@ -431,6 +431,7 @@ block<Type>::block(const label reuse, block<Type>& M, const Type& v)
     l_(M.l()),
     m_(M.m()),
     n_(M.n()),
+    size_(l_*m_*n_),
     v_(nullptr),
     T_(M.T())
 {
@@ -453,6 +454,7 @@ block<Type>::block(Istream& is)
     l_(0),
     m_(0),
     n_(0),
+    size_(0),
     v_(nullptr),
     T_(eye)
 {
@@ -945,6 +947,97 @@ Type block<Type>::interp(const vector ijk) const
 }
 
 template<class Type>
+tmp<block<typename block<Type>::cmptType>>
+block<Type>::component(const label dir) const
+{
+    tmp<block<cmptType>> tD
+    (
+        new block<cmptType>(l_,m_,n_)
+    );
+
+    block<cmptType>& D = tD.ref();
+
+    List_ACCESS(cmptType, D, vp);
+    List_CONST_ACCESS(Type, (*this), va);
+    List_FOR_ALL((*this), i)
+        List_ELEM(D, vp, i) =
+            ::Foam::component(List_ELEM((*this), va, i), dir);
+    List_END_FOR_ALL
+
+    return tD;
+}
+
+template<class Type>
+void block<Type>::replace
+(
+    const label dir,
+    const cmptType& v
+)
+{
+    // We need to use a custom replace function here that handles CellSpace
+    // types too. The default setComponent method will not work for such types
+    // because it relies on a reference.
+
+    List_ACCESS(Type, (*this), vp);
+    List_FOR_ALL((*this), i)
+        ::Foam::replace(List_ELEM((*this), vp, i), dir, v);
+    List_END_FOR_ALL
+}
+
+template<class Type>
+void block<Type>::replace
+(
+    const label dir,
+    const block<cmptType>& D
+)
+{
+    // We need to use a custom replace function here that handles CellSpace
+    // types too. The default setComponent method will not work for such types
+    // because it relies on a reference.
+
+    List_ACCESS(Type, (*this), vp);
+    List_CONST_ACCESS(cmptType, D, va);
+    List_FOR_ALL((*this), i)
+        ::Foam::replace(List_ELEM((*this), vp, i), dir, List_ELEM(D, va, i));
+    List_END_FOR_ALL
+}
+
+template<class Type>
+void block<Type>::replace
+(
+    const label dir,
+    const tmp<block<cmptType>>& tD
+)
+{
+    this->replace(dir,tD());
+
+    if (tD.isTmp())
+        tD.clear();
+}
+
+template<class Type>
+void block<Type>::max(const Type& v)
+{
+    List_ACCESS(Type, (*this), vp);
+    List_CONST_ACCESS(Type, (*this), va);
+    List_FOR_ALL((*this), i)
+        List_ELEM((*this), vp, i) =
+            ::Foam::max(List_ELEM((*this), va, i), v);
+    List_END_FOR_ALL
+}
+
+template<class Type>
+void block<Type>::min(const Type& v)
+{
+    List_ACCESS(Type, (*this), vp);
+    List_CONST_ACCESS(Type, (*this), va);
+    List_FOR_ALL((*this), i)
+        List_ELEM((*this), vp, i) =
+            ::Foam::min(List_ELEM((*this), va, i), v);
+    List_END_FOR_ALL
+}
+
+template<class Type>
 Istream& operator>>(Istream& is, block<Type>& M)
 {
     List<List<List<Type>>> L;
@@ -986,6 +1079,7 @@ Istream& operator>>(Istream& is, block<Type>& M)
     M.l_ = l;
     M.m_ = m;
     M.n_ = n;
+    M.size_ = l*m*n;
 
     M.allocate();
 

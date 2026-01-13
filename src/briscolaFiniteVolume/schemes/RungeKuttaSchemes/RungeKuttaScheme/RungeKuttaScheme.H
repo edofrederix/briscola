@@ -3,7 +3,8 @@
 
 #include "fvMesh.H"
 #include "meshField.H"
-#include "NamedEnum.H"
+#include "FastPtrList.H"
+#include "scalarMatrices.H"
 
 // Based on the work of Edo Frederix and Jannes Hopman as implemented in
 // RKSymFoam, see https://github.com/janneshopman/RKSymFoam
@@ -34,13 +35,31 @@ protected:
         // Runge-Kutta stage
         label stage_;
 
+        // Number of stages
+        label nStages_;
+
+        // Number of time steps
+        label nSteps_;
+
+        // Butcher tableaus
+        scalarRectangularMatrix a_;
+        scalarRectangularMatrix b_;
+
+        // Stage sources
+        FastPtrList<FastPtrList<colocatedScalarField>> coloScalarStageSources_;
+        FastPtrList<FastPtrList<colocatedVectorField>> coloVectorStageSources_;
+        FastPtrList<FastPtrList<staggeredScalarField>> stagScalarStageSources_;
+        FastPtrList<FastPtrList<staggeredVectorField>> stagVectorStageSources_;
+
     // Private Member Functions
 
-        // Disallow copy construct
-        RungeKuttaScheme(const RungeKuttaScheme&);
+        // Return stage sources for given field type
+        template<class FieldType>
+        inline FastPtrList<FastPtrList<FieldType>>& stageSources();
 
-        // Disallow default bitwise assignment
-        void operator=(const RungeKuttaScheme&);
+        // Cycle stage sources for given field type
+        template<class FieldType>
+        inline void cycle();
 
 public:
 
@@ -58,10 +77,15 @@ public:
     );
 
     // Selector
-    static autoPtr<RungeKuttaScheme> New(const fvMesh& mesh);
+    static autoPtr<RungeKuttaScheme> New(const fvMesh& fvMsh);
 
-    // Construct from mesh
-    RungeKuttaScheme(const fvMesh& fvMsh);
+    // Construct from mesh and sizes
+    RungeKuttaScheme
+    (
+        const fvMesh& fvMsh,
+        const label nStages,
+        const label nSteps = 1
+    );
 
     // Destructor
     virtual ~RungeKuttaScheme();
@@ -69,16 +93,17 @@ public:
     // Member Functions
 
         // Generate and return a list of fields to store the intermediate stage
-        // sources or solutions, with given field name
+        // sources or solutions, with given field name. The list stores all but
+        // the last stage in each step.
         template<class Type, class MeshType>
-        PtrList<meshField<Type,MeshType>> stageList(const word name) const;
+        FastPtrList<meshField<Type,MeshType>>& newStageList(const word name);
 
         // Helper function for field types
         template<class FieldType>
-        inline PtrList<FieldType> stageList(const word name) const
+        inline FastPtrList<FieldType>& newStageList(const word name)
         {
             return
-                stageList
+                newStageList
                 <
                     typename FieldType::dataType,
                     typename FieldType::meshType
@@ -88,16 +113,19 @@ public:
         // Access
 
             // Return the mesh
-            inline const fvMesh& fvMsh() const;
+            inline const fvMesh& fvMsh() const { return fvMsh_; }
 
             // Return the Runge-Kutta dictionary
-            inline const dictionary& dict() const;
+            inline const dictionary& dict() const { return dict_; }
 
             // Current stage level
-            inline label stage() const;
+            inline label stage() const { return stage_; }
 
             // Return the number of stages
-            inline label numberOfStages() const;
+            inline label nStages() const { return nStages_; }
+
+            // Number of time steps
+            inline label nSteps() const { return nSteps_; }
 
             // Current diagonal A coefficient
             inline scalar A() const;
@@ -109,10 +137,10 @@ public:
             inline scalar C() const;
 
             // Return the Butcher tableau for source A
-            virtual const List<scalarList>& a() const = 0;
+            virtual const scalarRectangularMatrix& a() const { return a_; }
 
             // Return the Butcher tableau for source B
-            virtual const List<scalarList>& b() const = 0;
+            virtual const scalarRectangularMatrix& b() const { return b_; }
 
         // Switches
 
@@ -177,7 +205,7 @@ public:
             template<class Type, class MeshType>
             tmp<meshField<Type,MeshType>> stageSumA
             (
-                const PtrList<meshField<Type,MeshType>>& list
+                const FastPtrList<meshField<Type,MeshType>>& list
             ) const;
 
             // Sum the given list of fields for the current stage, weighted by
@@ -185,7 +213,7 @@ public:
             template<class Type, class MeshType>
             tmp<meshField<Type,MeshType>> stageSumB
             (
-                const PtrList<meshField<Type,MeshType>>& list
+                const FastPtrList<meshField<Type,MeshType>>& list
             ) const;
 
             // Sum the two given lists of fields for the current stage, weighted
@@ -193,8 +221,8 @@ public:
             template<class Type, class MeshType>
             tmp<meshField<Type,MeshType>> stageSum
             (
-                const PtrList<meshField<Type,MeshType>>& listA,
-                const PtrList<meshField<Type,MeshType>>& listB
+                const FastPtrList<meshField<Type,MeshType>>& listA,
+                const FastPtrList<meshField<Type,MeshType>>& listB
             ) const;
 
         // IO

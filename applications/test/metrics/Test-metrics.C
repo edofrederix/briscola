@@ -84,7 +84,7 @@ void testCellVolumes(const fvMesh& fvMsh)
 template<class MeshType>
 void testFaceCenters(const fvMesh& fvMsh)
 {
-    const meshField<faceVector,MeshType>& c =
+    const faceField<vector,MeshType>& fc =
         fvMsh.metrics<MeshType>().faceCenters();
 
     const vector Lp
@@ -92,8 +92,7 @@ void testFaceCenters(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAllCells(c, l, d, i, j, k)
-    for (label o = 0; o < 6; o++)
+    forAllFaces(fc, fd, l, d, i, j, k)
     {
         const vector cc
         (
@@ -103,7 +102,7 @@ void testFaceCenters(const fvMesh& fvMsh)
                 (
                     vector(i+0.5, j+0.5, k+0.5)
                   + MeshType::shift[d]
-                  + vector(faceOffsets[o])*0.5,
+                  + vector(faceOffsets[fd*2])*0.5,
                     vector(fvMsh[l].N())
                 )
               + vector(fvMsh.msh().decomp().myBrickPart()),
@@ -111,7 +110,7 @@ void testFaceCenters(const fvMesh& fvMsh)
             )
         );
 
-        if (mag(c(l,d,i,j,k)[o] - cc)/mag(L) > 1e-12)
+        if (mag(fc[fd](l,d,i,j,k) - cc)/mag(L) > 1e-12)
             FatalErrorInFunction
                 << "test 3a failed" << abort(FatalError);
     }
@@ -120,15 +119,17 @@ void testFaceCenters(const fvMesh& fvMsh)
 template<class MeshType>
 void testEdgeCenters(const fvMesh& fvMsh)
 {
-    const meshField<edgeVector,MeshType>& c =
-        fvMsh.metrics<MeshType>().edgeCenters();
+    const meshField<edgeVector,MeshType> ec
+    (
+        fvMsh.metrics<MeshType>().aos().edgeCenters()
+    );
 
     const vector Lp
     (
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAllCells(c, l, d, i, j, k)
+    forAllCells(ec, l, d, i, j, k)
     for (label o = 0; o < 12; o++)
     {
         const vector cc
@@ -147,7 +148,7 @@ void testEdgeCenters(const fvMesh& fvMsh)
             )
         );
 
-        if (mag(c(l,d,i,j,k)[o] - cc)/mag(L) > 1e-12)
+        if (mag(ec(l,d,i,j,k)[o] - cc)/mag(L) > 1e-12)
             FatalErrorInFunction
                 << "test 3b failed" << abort(FatalError);
     }
@@ -192,7 +193,7 @@ void testVertexCenters(const fvMesh& fvMsh)
 template<class MeshType>
 void testFaceAreas(const fvMesh& fvMsh)
 {
-    const meshField<faceScalar,MeshType>& a =
+    const faceField<scalar,MeshType>& fa =
         fvMsh.metrics<MeshType>().faceAreas();
 
     const vector Lp
@@ -200,7 +201,7 @@ void testFaceAreas(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAllCells(a, l, d, i, j, k)
+    forAllFaces(fa, fd, l, d, i, j, k)
     {
         const vector A
         (
@@ -209,25 +210,21 @@ void testFaceAreas(const fvMesh& fvMsh)
             Lp.x()/fvMsh[l].N().x() * Lp.y()/fvMsh[l].N().y()
         );
 
-        for (label o = 0; o < 6; o++)
-            if (mag(a(l,d,i,j,k)[o] - A[o/2])/A[o/2] > 1e-12)
-                FatalErrorInFunction
-                    << "test 4 failed" << abort(FatalError);
+        if (mag(fa[fd](l,d,i,j,k) - A[fd])/A[fd] > 1e-12)
+            FatalErrorInFunction
+                << "test 4 failed" << abort(FatalError);
     }
 }
 
 template<class MeshType>
 void testFaceNormals(const fvMesh& fvMsh)
 {
-    const meshField<faceVector,MeshType>& fn =
+    const faceField<vector,MeshType>& fn =
         fvMsh.metrics<MeshType>().faceNormals();
 
-    forAllCells(fn, l, d, i, j, k)
-    for (label o = 0; o < 6; o++)
+    forAllFaces(fn, fd, l, d, i, j, k)
     {
-        label lr = 2*(o%2)-1;
-
-        if (mag(fn(l,d,i,j,k)[o] - lr*vector(briscola::units[o/2])) > 1e-12)
+        if (mag(fn[fd](l,d,i,j,k) + vector(briscola::units[fd])) > 1e-12)
             FatalErrorInFunction
                 << "test 5 failed" << abort(FatalError);
     }
@@ -237,14 +234,13 @@ void testFaceNormals(const fvMesh& fvMsh)
     const meshField<vector,MeshType>& cc =
         fvMsh.metrics<MeshType>().cellCenters();
 
-    const meshField<faceVector,MeshType>& fc =
+    const faceField<vector,MeshType>& fc =
         fvMsh.metrics<MeshType>().faceCenters();
 
-    forAllCells(fn, l, d, i, j, k)
-    for (label o = 0; o < 6; o++)
+    forAllFaces(fn, fd, l, d, i, j, k)
     {
-        vector f = fc(l,d,i,j,k)[o] - cc(l,d,i,j,k);
-        vector n = fn(l,d,i,j,k)[o];
+        vector f = fc[fd](l,d,i,j,k) - cc(l,d,i,j,k);
+        vector n = fn[fd](l,d,i,j,k);
 
         if ((f & n) < 0)
             FatalErrorInFunction
@@ -255,7 +251,7 @@ void testFaceNormals(const fvMesh& fvMsh)
 template<class MeshType>
 void testFaceAreaNormals(const fvMesh& fvMsh)
 {
-    const meshField<faceVector,MeshType>& fan =
+    const faceField<vector,MeshType>& fan =
         fvMsh.metrics<MeshType>().faceAreaNormals();
 
     const vector Lp
@@ -263,7 +259,7 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAllCells(fan, l, d, i, j, k)
+    forAllFaces(fan, fd, l, d, i, j, k)
     {
         const vector A
         (
@@ -272,20 +268,15 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
             Lp.x()/fvMsh[l].N().x() * Lp.y()/fvMsh[l].N().y()
         );
 
-        for (label o = 0; o < 6; o++)
+        if
+        (
+            mag(fan[fd](l,d,i,j,k) + A[fd]*vector(briscola::units[fd]))
+          / A[fd]
+          > 1e-12
+        )
         {
-            label lr = 2*(o%2)-1;
-
-            if
-            (
-                mag(fan(l,d,i,j,k)[o] - lr*A[o/2]*vector(briscola::units[o/2]))
-              / A[o/2]
-              > 1e-12
-            )
-            {
-                FatalErrorInFunction
-                    << "test 7 failed" << abort(FatalError);
-            }
+            FatalErrorInFunction
+                << "test 7 failed" << abort(FatalError);
         }
     }
 
@@ -294,14 +285,13 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
     const meshField<vector,MeshType>& cc =
         fvMsh.metrics<MeshType>().cellCenters();
 
-    const meshField<faceVector,MeshType>& fc =
+    const faceField<vector,MeshType>& fc =
         fvMsh.metrics<MeshType>().faceCenters();
 
-    forAllCells(fan, l, d, i, j, k)
-    for (label o = 0; o < 6; o++)
+    forAllFaces(fan, fd, l, d, i, j, k)
     {
-        vector f = fc(l,d,i,j,k)[o] - cc(l,d,i,j,k);
-        vector n = fan(l,d,i,j,k)[o];
+        vector f = fc[fd](l,d,i,j,k) - cc(l,d,i,j,k);
+        vector n = fan[fd](l,d,i,j,k);
 
         if ((f & n) < 0)
             FatalErrorInFunction
@@ -312,7 +302,7 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
 template<class MeshType>
 void testFaceDeltas(const fvMesh& fvMsh)
 {
-    const meshField<faceScalar,MeshType>& fd =
+    const faceField<scalar,MeshType>& delta =
         fvMsh.metrics<MeshType>().faceDeltas();
 
     const vector Lp
@@ -320,7 +310,7 @@ void testFaceDeltas(const fvMesh& fvMsh)
         cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
     );
 
-    forAllCells(fd, l, d, i, j, k)
+    forAllFaces(delta, fd, l, d, i, j, k)
     {
         const vector D
         (
@@ -329,10 +319,9 @@ void testFaceDeltas(const fvMesh& fvMsh)
             1.0/(Lp.z()/fvMsh[l].N().z())
         );
 
-        for (label o = 0; o < 6; o++)
-            if (mag(fd(l,d,i,j,k)[o] - D[o/2])/D[o/2] > 1e-12)
-                FatalErrorInFunction
-                    << "test 9 failed" << abort(FatalError);
+        if (mag(delta[fd](l,d,i,j,k) - D[fd])/D[fd] > 1e-12)
+            FatalErrorInFunction
+                << "test 9 failed" << abort(FatalError);
     }
 }
 

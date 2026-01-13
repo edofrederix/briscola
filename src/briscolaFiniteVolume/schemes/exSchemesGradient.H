@@ -41,10 +41,9 @@ grad
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>> tGrad
-    (
-        grad(tField())
-    );
+    typedef typename outerProduct<vector,Type>::type GradType;
+
+    tmp<meshField<GradType,MeshType>> tGrad = grad(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -58,40 +57,7 @@ using ::Foam::briscola::fv::grad;
 
 // Staggered gradient from a colocated field
 
-template<class Type>
-inline tmp<meshField<Type,staggered>>
-stagGrad
-(
-    const meshField<Type,colocated>& field
-)
-{
-    return gradientScheme<Type,colocated>::New
-    (
-        field.fvMsh(),
-        "stagGrad("+field.name()+")"
-    )->stagGrad(field);
-}
-
-template<class Type>
-inline tmp<meshField<Type,staggered>>
-stagGrad
-(
-    const tmp<meshField<Type,colocated>>& tField
-)
-{
-    if (tField.isTmp())
-        tField->correctBoundaryConditions();
-
-    tmp<meshField<Type,staggered>> tStagGrad
-    (
-        stagGrad(tField())
-    );
-
-    if (tField.isTmp())
-        tField.clear();
-
-    return tStagGrad;
-}
+using ::Foam::briscola::fv::stagGrad;
 
 }
 

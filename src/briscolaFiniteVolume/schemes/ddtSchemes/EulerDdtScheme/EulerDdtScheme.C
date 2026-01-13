@@ -1,4 +1,5 @@
 #include "EulerDdtScheme.H"
+#include "restrict.H"
 
 namespace Foam
 {
@@ -24,32 +25,33 @@ tmp<linearSystem<diagStencil,Type,MeshType>>
 EulerDdtScheme<Type,MeshType>::imDdt
 (
     const meshField<scalar,MeshType>* lambdaPtr,
-    const meshField<Type,MeshType>& field,
-    const scalar factor
+    const meshField<Type,MeshType>& field
 )
 {
-    if (lambdaPtr)
-        const_cast<meshField<scalar,MeshType>&>(*lambdaPtr)
-       .restrict();
+    bool shallow = false;
 
-    tmp<linearSystem<diagStencil,Type,MeshType>> tSys
-    (
-        new linearSystem<diagStencil,Type,MeshType>
+    if (lambdaPtr && lambdaPtr->shallow())
+    {
+        shallow = true;
+        restrict(*lambdaPtr);
+    }
+
+    tmp<linearSystem<diagStencil,Type,MeshType>> tSys =
+        linearSystem<diagStencil,Type,MeshType>::New
         (
             lambdaPtr
           ? word("ddt("+lambdaPtr->name()+","+field.name()+")")
           : word("ddt("+field.name()+")"),
             const_cast<meshField<Type,MeshType>&>(field)
-        )
-    );
+        );
 
     linearSystem<diagStencil,Type,MeshType>& Sys = tSys.ref();
 
     const meshField<scalar,MeshType>& cv =
         this->fvMsh().template metrics<MeshType>().cellVolumes();
 
-    Sys.A() = factor*cv/this->deltaT();
-    Sys.b() = factor*cv*field.oldTime()/this->deltaT();
+    Sys.A() = cv/this->deltaT();
+    Sys.b() = cv*field.oldTime()/this->deltaT();
 
     if (lambdaPtr)
     {
@@ -65,9 +67,8 @@ EulerDdtScheme<Type,MeshType>::imDdt
             Sys.b()[l][d](i,j,k) *= lambdaOld[l][d](i,j,k);
     }
 
-    if (lambdaPtr)
-        const_cast<meshField<scalar,MeshType>&>(*lambdaPtr)
-       .makeShallow();
+    if (lambdaPtr && shallow)
+        collapse(*lambdaPtr);
 
     return tSys;
 }
@@ -77,28 +78,24 @@ tmp<meshField<Type,MeshType>>
 EulerDdtScheme<Type,MeshType>::exDdt
 (
     const meshField<scalar,MeshType>* lambdaPtr,
-    const meshField<Type,MeshType>& field,
-    const scalar factor
+    const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<Type,MeshType>> tDdt
-    (
-        new meshField<Type,MeshType>
+    tmp<meshField<Type,MeshType>> tDdt =
+        meshField<Type,MeshType>::New
         (
             lambdaPtr
           ? "ddt("+lambdaPtr->name()+","+field.name()+")"
           : "ddt("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,MeshType>& ddt = tDdt.ref();
 
     if (lambdaPtr)
     {
         ddt =
-            factor
-          * (
+            (
                 (*lambdaPtr)*field
               - lambdaPtr->oldTime()*field.oldTime()
             )
@@ -106,7 +103,7 @@ EulerDdtScheme<Type,MeshType>::exDdt
     }
     else
     {
-        ddt = factor*(field-field.oldTime())/this->deltaT();
+        ddt = field-field.oldTime()/this->deltaT();
     }
 
     return tDdt;

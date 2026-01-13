@@ -16,7 +16,7 @@ template<class Type>
 void sample::appendScalarData
 (
     const meshField<Type,colocated>& field,
-    PtrList<scalarList>& data,
+    FastPtrList<scalarList>& data,
     wordList& headers
 )
 {
@@ -30,7 +30,7 @@ template<class Type>
 void sample::appendArrayData
 (
     const meshField<Type,colocated>& field,
-    PtrList<scalarList>& data,
+    FastPtrList<scalarList>& data,
     wordList& headers
 )
 {
@@ -59,7 +59,7 @@ template<class Type>
 void sample::appendArrayArrayData
 (
     const meshField<Type,colocated>& field,
-    PtrList<scalarList>& data,
+    FastPtrList<scalarList>& data,
     wordList& headers
 )
 {
@@ -67,8 +67,8 @@ void sample::appendArrayArrayData
 
     List<Type> interpData(move(interp(field)));
 
-    const label n(Type::nComponents);
-    const label m(pTraits<typename Type::cmpt>::nComponents);
+    const label n(Type::nCsComponents);
+    const label m(Type::nComponents);
 
     for (int i = 0; i < n; i++)
     for (int j = 0; j < m; j++)
@@ -99,7 +99,7 @@ template<>                                                                  \
 void sample::appendData                                                     \
 (                                                                           \
     const meshField<TYPE,colocated>& field,                                 \
-    PtrList<scalarList>& data,                                              \
+    FastPtrList<scalarList>& data,                                          \
     wordList& headers                                                       \
 )                                                                           \
 {                                                                           \
@@ -109,7 +109,7 @@ void sample::appendData                                                     \
 template void sample::FUNC                                                  \
 (                                                                           \
     const meshField<TYPE,colocated>& field,                                 \
-    PtrList<scalarList>& data,                                              \
+    FastPtrList<scalarList>& data,                                          \
     wordList& headers                                                       \
 );
 

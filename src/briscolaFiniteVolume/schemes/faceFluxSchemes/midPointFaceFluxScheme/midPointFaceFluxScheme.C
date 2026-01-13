@@ -12,9 +12,9 @@ namespace fv
 template<class Type>
 tmp
 <
-    meshField
+    faceField
     <
-        FaceSpace<typename innerProduct<Type,vector>::type>,
+        typename innerProduct<Type,vector>::type,
         colocated
     >
 > midPointFaceFluxScheme::coloFaceFlux
@@ -23,36 +23,37 @@ tmp
 )
 {
     typedef
-        meshField
+        faceField
         <
-            FaceSpace<typename innerProduct<Type,vector>::type>,
+            typename innerProduct<Type,vector>::type,
             colocated
         > returnType;
 
-    tmp<returnType> tFlux
-    (
-        new returnType
+    tmp<returnType> tPhi =
+        returnType::New
         (
             "faceFlux("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
-    returnType& Flux = tFlux.ref();
+    returnType& phi = tPhi.ref();
 
-    const colocatedFaceVectorField& fan =
+    // We need to handle deep fields properly
+    phi.make(field.deep());
+
+    const colocatedVectorFaceField& fan =
         this->fvMsh().metrics<colocated>().faceAreaNormals();
 
-    forAllFaces(Flux, fd, i, j, k)
+    forAllFaces(phi, fd, l, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        Flux(ijk)[fd*2  ] = (0.5*(field(ijk) + field(nei)) & fan(ijk)[fd*2]);
-        Flux(nei)[fd*2+1] = -Flux(ijk)[fd*2];
+        phi[fd](l,d,ijk) =
+            0.5*((field(l,d,ijk) + field(l,d,nei)) & fan[fd](l,d,ijk));
     }
 
-    return tFlux;
+    return tPhi;
 }
 
 midPointFaceFluxScheme::midPointFaceFluxScheme
@@ -64,7 +65,7 @@ midPointFaceFluxScheme::midPointFaceFluxScheme
     faceFluxScheme(fvMsh, is)
 {}
 
-tmp<colocatedFaceScalarField> midPointFaceFluxScheme::faceFlux
+tmp<colocatedScalarFaceField> midPointFaceFluxScheme::faceFlux
 (
     const colocatedVectorField& field
 )
@@ -72,7 +73,7 @@ tmp<colocatedFaceScalarField> midPointFaceFluxScheme::faceFlux
     return this->coloFaceFlux(field);
 }
 
-tmp<colocatedFaceVectorField> midPointFaceFluxScheme::faceFlux
+tmp<colocatedVectorFaceField> midPointFaceFluxScheme::faceFlux
 (
     const colocatedTensorField& field
 )
@@ -80,44 +81,39 @@ tmp<colocatedFaceVectorField> midPointFaceFluxScheme::faceFlux
     return this->coloFaceFlux(field);
 }
 
-tmp<staggeredFaceScalarField> midPointFaceFluxScheme::faceFlux
+tmp<staggeredScalarFaceField> midPointFaceFluxScheme::faceFlux
 (
     const staggeredScalarField& field
 )
 {
-    tmp<staggeredFaceScalarField> tFlux
-    (
-        new staggeredFaceScalarField
+    tmp<staggeredScalarFaceField> tPhi =
+        staggeredScalarFaceField::New
         (
             "faceFlux("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
-    staggeredFaceScalarField& Flux = tFlux.ref();
+    staggeredScalarFaceField& phi = tPhi.ref();
 
-    const staggeredFaceScalarField& fa =
+    // We need to handle deep fields properly
+    phi.make(field.deep());
+
+    const staggeredScalarFaceField& fa =
         this->fvMsh().metrics<staggered>().faceAreas();
 
-    forAllFaces(Flux, d, fd, i, j, k)
+    forAllFaces(phi, fd, l, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,fd));
+        const labelVector nei(lowerNeighbor(i,j,k,d));
 
         // Fluxes in x-direction should receive from the first field direction,
         // fluxes in y-direction from the second, etc
 
-        Flux(d,ijk)[fd*2] =
-          - fa(d,ijk)[fd*2]
-          * (
-                0.5*field(fd,ijk)
-              + 0.5*field(fd,lowerNeighbor(ijk,d))
-            );
-
-        Flux(d,nei)[fd*2+1] = -Flux(d,ijk)[fd*2];
+        phi[fd](l,d,ijk) =
+          - 0.5*fa[fd](l,d,ijk)*(field(l,fd,ijk) + field(l,fd,nei));
     }
 
-    return tFlux;
+    return tPhi;
 }
 
 }

@@ -3,6 +3,7 @@
 
 #include "meshField.H"
 #include "parallelBoundaryCondition.H"
+#include "DynamicList.H"
 
 namespace Foam
 {
@@ -25,22 +26,25 @@ class boundaryExchange
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
-    // Pointers to parallel/periodic boundaries. Periodic boundaries are derived
-    // from parallel ones.
-    List<const parallelBoundaryCondition<Type,MeshType>*> boundaryPtrs_;
+    // Pointers to parallel/periodic boundaries. Nullptr entries are
+    // non-parallel and can be skipped.
+    List<parallelBoundaryCondition<Type,MeshType>*> boundaryPtrs_;
 
     // Buffers
-    PtrList<List<Type>> sendBuffers_;
-    PtrList<List<Type>> recvBuffers_;
+    List<Type> sendBuffers_;
+    List<Type> recvBuffers_;
 
     // MPI data type object
     autoPtr<pMPI<Type>> mpiDataTypePtr_;
 
-    // Initialize the buffers of given level
-    void initBuffers(const label);
+    // Initialize buffers such that they are large enough the handle an
+    // all-level boundary exchange for deep fields
+    void initBuffers();
 
-    // Correct the boundaries at given level and of given type. If baseType is
-    // -1 then all types (periodic and parallel) are corrected.
+    // Correct the boundaries at given level and of given type. If the level is
+    // negative then all field levels (which is one for shallow fields) are
+    // corrected. If baseType is -1 then all types (periodic and parallel) are
+    // corrected.
     void correct(const label l, const label baseType);
 
 public:

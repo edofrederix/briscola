@@ -12,8 +12,6 @@ namespace briscola
 namespace fv
 {
 
-defineTypeNameAndDebug(geometricVof, 0);
-
 geometricVof::geometricVof
 (
     const fvMesh& fvMsh,
@@ -32,9 +30,6 @@ geometricVof::geometricVof(const geometricVof& vf)
     vof(vf),
     rectilinear_(vf.rectilinear_),
     lve_(rectilinear_)
-{}
-
-geometricVof::~geometricVof()
 {}
 
 }

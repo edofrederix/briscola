@@ -1,6 +1,7 @@
 #ifndef staggeredLevelsFwd_H
 #define staggeredLevelsFwd_H
 
+#include "meshLevelFwd.H"
 #include "staggeredDirectionsFwd.H"
 
 #include "label.H"
@@ -29,9 +30,6 @@ namespace fv
 {
 
 class staggered;
-
-template<class Type, class MeshType>
-class meshLevel;
 
 typedef meshLevel<label,staggered> staggeredLabelLevel;
 typedef meshLevel<scalar,staggered> staggeredScalarLevel;

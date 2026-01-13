@@ -10,8 +10,9 @@ namespace briscola
 namespace fv
 {
 
-makeBoundaryConditionTypes(Neumann,Neumann,colocated)
-addBoundaryConditionTypes(Neumann,colocated)
+makeBoundaryConditionType(Neumann,Neumann,scalar,colocated)
+makeBoundaryConditionType(Neumann,Neumann,vector,colocated)
+makeBoundaryConditionType(Neumann,Neumann,tensor,colocated)
 
 }
 

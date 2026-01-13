@@ -10,7 +10,6 @@ boundaryConditions
 {
     default
     {
-        type    Dirichlet;
-        values  ((1 2 3));
+        type    dummy;
     }
 }

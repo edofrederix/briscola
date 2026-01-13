@@ -11,7 +11,6 @@ namespace fv
 {
 
 makeBoundaryConditionType(outflow,outflow,vector,colocated)
-addBoundaryConditionType(outflow,vector,colocated)
 
 }
 

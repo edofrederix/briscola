@@ -2,6 +2,7 @@
 #define NeumannBoundaryConditionBase_H
 
 #include "boundaryCondition.H"
+#include "FastPtrList.H"
 
 namespace Foam
 {
@@ -17,14 +18,19 @@ class NeumannBoundaryConditionBase
 :
     public boundaryCondition<Type,MeshType>
 {
+public:
+
+    // Physical type represented by Type on MeshType
+    typedef typename outerProduct<Type, typename MeshType::dimType>::type
+        physicalType;
+
 protected:
 
     // Flattened list of boundary gradients for each level and direction
-    PtrList<block<Type>> boundaryGradients_;
+    FastPtrList<block<Type>> boundaryGradients_;
 
-    // Function to initialize boundary gradients from a list of uniform
-    // gradients for each direction
-    void init(const List<Type>&);
+    // Function to initialize uniform boundary gradients
+    void init(const physicalType&);
 
 public:
 
@@ -35,12 +41,20 @@ public:
         const boundary&
     );
 
-    // Construct from components and uniform boundary gradient list
+    // Construct from components and zero boundary gradient
     NeumannBoundaryConditionBase
     (
         const meshField<Type,MeshType>&,
         const boundary&,
-        const List<Type>&
+        const zero&
+    );
+
+    // Construct from components and uniform boundary gradient
+    NeumannBoundaryConditionBase
+    (
+        const meshField<Type,MeshType>&,
+        const boundary&,
+        const physicalType&
     );
 
     // Construct from components and boundary gradients
@@ -48,7 +62,7 @@ public:
     (
         const meshField<Type,MeshType>&,
         const boundary&,
-        const PtrList<block<Type>>&
+        const FastPtrList<block<Type>>&
     );
 
     // Copy constructor
@@ -65,13 +79,13 @@ public:
     );
 
     // Access to the boundary gradients
-    PtrList<block<Type>>& boundaryGradients()
+    FastPtrList<block<Type>>& boundaryGradients()
     {
         return boundaryGradients_;
     }
 
     // Const access to the boundary gradients
-    const PtrList<block<Type>>& boundaryGradients() const
+    const FastPtrList<block<Type>>& boundaryGradients() const
     {
         return boundaryGradients_;
     }

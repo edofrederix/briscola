@@ -24,14 +24,15 @@
 /* Instantiate the r-function */                                               \
                                                                                \
 template<>                                                                     \
-tmp<meshField<faceScalar,MESHTYPE>>                                            \
+tmp<faceField<scalar,MESHTYPE>>                                                \
 limiterScheme<TYPE,MESHTYPE>::r                                                \
 (                                                                              \
-    const meshField<faceScalar,MESHTYPE>& phi,                                 \
-    const meshField<TYPE,MESHTYPE>& field                                      \
+    const faceField<scalar,MESHTYPE>& phi,                                     \
+    const meshField<TYPE,MESHTYPE>& field,                                     \
+    const bool deep                                                            \
 )                                                                              \
 {                                                                              \
-    return limiterScheme<TYPE,MESHTYPE>::rType(phi,field);                     \
+    return limiterScheme<TYPE,MESHTYPE>::rType(phi,field,deep);                \
 }
 
 #define makeLimiterSchemeType(SCHEME,TYPE,MESHTYPE)                            \

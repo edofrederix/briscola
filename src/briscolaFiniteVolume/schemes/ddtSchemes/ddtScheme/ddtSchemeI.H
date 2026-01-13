@@ -16,11 +16,10 @@ namespace fv
     ddtScheme<Type,MeshType>::imDdt
     (
         const meshField<scalar,MeshType>& lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor
+        const meshField<Type,MeshType>& field
     )
     {
-        return this->imDdt(&lambda, field, factor);
+        return this->imDdt(&lambda, field);
     }
 
     // Coefficient as tmp
@@ -30,14 +29,11 @@ namespace fv
     ddtScheme<Type,MeshType>::imDdt
     (
         const tmp<meshField<scalar,MeshType>>& tLambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor
+        const meshField<Type,MeshType>& field
     )
     {
-        tmp<linearSystem<diagStencil,Type,MeshType>> tSys
-        (
-            this->imDdt(&tLambda(), field, factor)
-        );
+        tmp<linearSystem<diagStencil,Type,MeshType>> tSys =
+            this->imDdt(&tLambda(), field);
 
         if (tLambda.isTmp())
             tLambda.clear();
@@ -52,11 +48,10 @@ namespace fv
     ddtScheme<Type,MeshType>::imDdt
     (
         const scalar lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor
+        const meshField<Type,MeshType>& field
     )
     {
-        return this->imDdt(nullptr, field, lambda*factor);
+        return lambda*this->imDdt(nullptr, field);
     }
 
     // No coefficient
@@ -65,11 +60,10 @@ namespace fv
     inline tmp<linearSystem<diagStencil,Type,MeshType>>
     ddtScheme<Type,MeshType>::imDdt
     (
-        const meshField<Type,MeshType>& field,
-        const scalar factor
+        const meshField<Type,MeshType>& field
     )
     {
-        return this->imDdt(nullptr, field, factor);
+        return this->imDdt(nullptr, field);
     }
 
 // Explicit
@@ -81,11 +75,10 @@ namespace fv
     ddtScheme<Type,MeshType>::exDdt
     (
         const meshField<scalar,MeshType>& lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor
+        const meshField<Type,MeshType>& field
     )
     {
-        return this->exDdt(&lambda, field, factor);
+        return this->exDdt(&lambda, field);
     }
 
     // Coefficient as tmp
@@ -95,14 +88,11 @@ namespace fv
     ddtScheme<Type,MeshType>::exDdt
     (
         const tmp<meshField<scalar,MeshType>>& tLambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor
+        const meshField<Type,MeshType>& field
     )
     {
-        tmp<meshField<Type,MeshType>> tDdt
-        (
-            this->exDdt(&tLambda(), field, factor)
-        );
+        tmp<meshField<Type,MeshType>> tDdt =
+            this->exDdt(&tLambda(), field);
 
         if (tLambda.isTmp())
             tLambda.clear();
@@ -117,11 +107,10 @@ namespace fv
     ddtScheme<Type,MeshType>::exDdt
     (
         const scalar lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor
+        const meshField<Type,MeshType>& field
     )
     {
-        return this->exDdt(nullptr, field, lambda*factor);
+        return lambda*this->exDdt(nullptr, field);
     }
 
     // No coefficient
@@ -130,11 +119,10 @@ namespace fv
     inline tmp<meshField<Type,MeshType>>
     ddtScheme<Type,MeshType>::exDdt
     (
-        const meshField<Type,MeshType>& field,
-        const scalar factor
+        const meshField<Type,MeshType>& field
     )
     {
-        return this->exDdt(nullptr, field, factor);
+        return this->exDdt(nullptr, field);
     }
 }
 

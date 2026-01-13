@@ -41,13 +41,6 @@ mkdir -p $RUNDIR
 
 ##
 
-cd $TEMPLATE
-wmake -s code
-cd $CURR
-
-##
-
-
 echo \
     "Mesh," \
     "divergence scheme," \
@@ -92,31 +85,30 @@ for M in "${!RKSCHEMES[@]}"; do
 
         ./prep.sh $MESH $DSCHEME $GRADSCHEME $NU $RKSCHEME
 
-        if [ "$RKSCHEME" == "CNAB" ]; then
-
-            SOLVER2=${SOLVER}CNAB
-
-        else
-
-            SOLVER2=$SOLVER
-
-        fi
-
         if [ "$NPROC" == "1" ]; then
-            srun --exclusive -n $NPROC $SOLVER2 > log.$SOLVER
+            srun --exclusive -n $NPROC $SOLVER > log.$SOLVER
         else
-            srun --exclusive -n $NPROC $SOLVER2 -parallel > log.$SOLVER
+            srun --exclusive -n $NPROC $SOLVER -parallel > log.$SOLVER
         fi
 
         ##
 
-        $PYTHON post.py log.$SOLVER > result.txt
+        $PYTHON post.py log.$SOLVER
 
-        E=$(sed -n '1p' < result.txt)
-        P=$(sed -n '2p' < result.txt)
+        E=0
+        P=failed
+        NDT=0
+        NITER=0
 
-        NDT=$(sed -n '3p' < result.txt)
-        NITER=$(sed -n '4p' < result.txt)
+        if [ -f "result.txt" ]; then
+
+            E=$(sed -n '1p' < result.txt)
+            P=$(sed -n '2p' < result.txt)
+
+            NDT=$(sed -n '3p' < result.txt)
+            NITER=$(sed -n '4p' < result.txt)
+
+        fi
 
         echo \
             "$MESH," \

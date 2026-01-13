@@ -34,8 +34,8 @@ void test(const fvMesh& fvMsh, const label nParts)
     sys.singular();
     sys.diagonal();
 
-    sys.x().restrict();
-    sys.b().restrict();
+    restrict(sys.x());
+    restrict(sys.b());
 
     forAll(fvMsh.msh(), l)
     {

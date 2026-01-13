@@ -11,7 +11,7 @@ namespace fv
 {
 
 makeBoundaryConditionType(noSlip,noSlip,scalar,staggered)
-addBoundaryConditionType(noSlip,scalar,staggered)
+makeBoundaryConditionType(noSlip,noSlip,vector,staggered)
 
 }
 

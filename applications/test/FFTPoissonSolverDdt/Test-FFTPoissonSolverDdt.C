@@ -16,7 +16,7 @@ bool check
     const scalar deltaT
 )
 {
-    const PtrList<PartialList<scalar>>& cellSizes
+    const FastPtrList<PartialList<scalar>>& cellSizes
         = fvMsh.msh().cast<rectilinearMesh>().globalCellSizes();
 
     labelVector Si =
@@ -102,6 +102,9 @@ int main(int argc, char *argv[])
         true
     );
 
+    b = Zero;
+    x = Zero;
+
     labelVector N(fvMsh.msh().cast<rectilinearMesh>().N());
 
     Info << "Mesh size: " << N << endl;
@@ -119,6 +122,7 @@ int main(int argc, char *argv[])
 
     FFTPoissonSolver<stencil> solver(fvMsh);
 
+    x.correctBoundaryConditions();
     solver.solve(x, b, true);
 
     const scalar deltaT = runTime.deltaTValue();

@@ -11,7 +11,6 @@ namespace fv
 {
 
 makeBoundaryConditionType(outflow,outflow,scalar,staggered)
-addBoundaryConditionType(outflow,scalar,staggered)
 
 }
 

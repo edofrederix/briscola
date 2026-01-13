@@ -57,23 +57,21 @@ autoPtr<faceFluxScheme> faceFluxScheme::New
     return autoPtr<faceFluxScheme>(cstrIter()(fvMsh, is));
 }
 
-tmp<colocatedFaceScalarField> coloFaceFlux
+tmp<colocatedScalarFaceField> coloFaceFlux
 (
     const staggeredScalarField& field
 )
 {
-    tmp<colocatedFaceScalarField> tphi
-    (
-        new colocatedFaceScalarField
+    tmp<colocatedScalarFaceField> tphi =
+        colocatedScalarFaceField::New
         (
             "coloFaceFlux("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
-    colocatedFaceScalarField& phi = tphi.ref();
+    colocatedScalarFaceField& phi = tphi.ref();
 
-    const colocatedFaceScalarField& fa =
+    const colocatedScalarFaceField& fa =
         field.fvMsh().template metrics<colocated>().faceAreas();
 
     forAllFaces(phi, fd, i, j, k)
@@ -81,14 +79,13 @@ tmp<colocatedFaceScalarField> coloFaceFlux
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        phi(ijk)[fd*2  ] = -field(fd,ijk)*fa(ijk)[fd*2];
-        phi(nei)[fd*2+1] = -phi(ijk)[fd*2];
+        phi[fd](ijk) = -field(fd,ijk)*fa[fd](ijk);
     }
 
     return tphi;
 }
 
-tmp<colocatedFaceScalarField> coloFaceFlux
+tmp<colocatedScalarFaceField> coloFaceFlux
 (
     const tmp<staggeredScalarField>& tField
 )
@@ -96,7 +93,7 @@ tmp<colocatedFaceScalarField> coloFaceFlux
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<colocatedFaceScalarField> tColoFaceFlux
+    tmp<colocatedScalarFaceField> tColoFaceFlux
     (
         coloFaceFlux(tField())
     );

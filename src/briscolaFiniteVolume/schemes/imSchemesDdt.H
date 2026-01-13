@@ -22,8 +22,7 @@ namespace im
     inline tmp<linearSystem<diagStencil,Type,MeshType>> ddt
     (
         const meshField<scalar,MeshType>* lambdaPtr,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         return ddtScheme<Type,MeshType>::New
@@ -32,7 +31,7 @@ namespace im
             lambdaPtr
           ? "ddt("+lambdaPtr->name()+","+field.name()+")"
           : "ddt("+field.name()+")"
-        )->imDdt(lambdaPtr,field,factor);
+        )->imDdt(lambdaPtr,field);
     }
 
     // Coefficient as reference
@@ -40,15 +39,14 @@ namespace im
     inline tmp<linearSystem<diagStencil,Type,MeshType>> ddt
     (
         const meshField<scalar,MeshType>& lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         return ddtScheme<Type,MeshType>::New
         (
             field.fvMsh(),
             "ddt("+lambda.name()+","+field.name()+")"
-        )->imDdt(lambda,field,factor);
+        )->imDdt(lambda,field);
     }
 
     // Coefficient as tmp
@@ -56,15 +54,14 @@ namespace im
     inline tmp<linearSystem<diagStencil,Type,MeshType>> ddt
     (
         const tmp<meshField<scalar,MeshType>>& tLambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         return ddtScheme<Type,MeshType>::New
         (
             field.fvMsh(),
             "ddt("+tLambda->name()+","+field.name()+")"
-        )->imDdt(tLambda,field,factor);
+        )->imDdt(tLambda,field);
     }
 
     // Constant coefficient
@@ -72,30 +69,28 @@ namespace im
     inline tmp<linearSystem<diagStencil,Type,MeshType>> ddt
     (
         const scalar lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         return ddtScheme<Type,MeshType>::New
         (
             field.fvMsh(),
             "ddt(const,"+field.name()+")"
-        )->imDdt(lambda,field,factor);
+        )->imDdt(lambda,field);
     }
 
     // No coefficient
     template<class Type, class MeshType>
     inline tmp<linearSystem<diagStencil,Type,MeshType>> ddt
     (
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
         return ddtScheme<Type,MeshType>::New
         (
             field.fvMsh(),
             "ddt("+field.name()+")"
-        )->imDdt(field,factor);
+        )->imDdt(field);
     }
 }
 

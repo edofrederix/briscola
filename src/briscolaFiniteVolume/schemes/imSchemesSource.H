@@ -1,6 +1,8 @@
 #ifndef imSchemesSource_H
 #define imSchemesSource_H
 
+#include "restrict.H"
+
 namespace Foam
 {
 
@@ -21,30 +23,32 @@ namespace im
     inline tmp<linearSystem<diagStencil,Type,MeshType>> source
     (
         const meshField<scalar,MeshType>* lambdaPtr,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
-        if (lambdaPtr)
-            const_cast<meshField<scalar,MeshType>&>(*lambdaPtr).restrict();
+        bool shallow = false;
 
-        tmp<linearSystem<diagStencil,Type,MeshType>> tSys
-        (
-            new linearSystem<diagStencil,Type,MeshType>
+        if (lambdaPtr && lambdaPtr->shallow())
+        {
+            shallow = true;
+            restrict(*lambdaPtr);
+        }
+
+        tmp<linearSystem<diagStencil,Type,MeshType>> tSys =
+            linearSystem<diagStencil,Type,MeshType>::New
             (
                 lambdaPtr
               ? word("source("+lambdaPtr->name()+","+field.name()+")")
               : word("source("+field.name()+")"),
                 const_cast<meshField<Type,MeshType>&>(field)
-            )
-        );
+            );
 
         linearSystem<diagStencil,Type,MeshType>& sys = tSys.ref();
 
         const meshField<scalar,MeshType>& cv =
             field.fvMsh().template metrics<MeshType>().cellVolumes();
 
-        sys.A() = factor*cv;
+        sys.A() = cv;
 
         if (lambdaPtr)
         {
@@ -57,8 +61,8 @@ namespace im
 
         sys.b() = Zero;
 
-        if (lambdaPtr)
-            const_cast<meshField<scalar,MeshType>&>(*lambdaPtr).makeShallow();
+        if (lambdaPtr && shallow)
+            collapse(*lambdaPtr);
 
         return tSys;
     }
@@ -69,11 +73,10 @@ namespace im
     inline tmp<linearSystem<diagStencil,Type,MeshType>> source
     (
         const meshField<scalar,MeshType>& lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
-        return source(&lambda, field, factor);
+        return source(&lambda, field);
     }
 
     // Coefficient as tmp
@@ -82,14 +85,11 @@ namespace im
     inline tmp<linearSystem<diagStencil,Type,MeshType>> source
     (
         const tmp<meshField<scalar,MeshType>>& tLambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
-        tmp<linearSystem<diagStencil,Type,MeshType>> tSource
-        (
-            source(tLambda(), field, factor)
-        );
+        tmp<linearSystem<diagStencil,Type,MeshType>> tSource =
+            source(tLambda(), field);
 
         if (tLambda.isTmp())
             tLambda.clear();
@@ -103,11 +103,10 @@ namespace im
     inline tmp<linearSystem<diagStencil,Type,MeshType>> source
     (
         const scalar lambda,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     )
     {
-        return source(nullptr, field, factor*lambda);
+        return lambda*source(nullptr, field);
     }
 }
 

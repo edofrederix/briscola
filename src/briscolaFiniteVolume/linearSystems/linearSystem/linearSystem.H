@@ -7,6 +7,8 @@
 #include "fvMesh.H"
 #include "meshFields.H"
 #include "OFstream.H"
+#include "cachedRefCount.H"
+#include "restrict.H"
 
 namespace Foam
 {
@@ -21,13 +23,23 @@ template<class SType, class Type, class MeshType>
 class linearSystem
 :
     public regIOobject,
-    public refCount
+    public cachedRefCount
 {
+public:
+
+    // Number of ghost cells
+    static const label G = meshDirection<Type,MeshType>::ghosts;
+
+    // Number of stencil components
+    static const direction N = SType::nCsComponents;
+
+private:
+
     // Reference to the mesh
     const fvMesh& fvMsh_;
 
-    // Reference to the unknown
-    meshField<Type,MeshType>& x_;
+    // Pointer to the unknown
+    meshField<Type,MeshType>* xPtr_;
 
     // The stencil matrix which is deep by default
     meshField<SType,MeshType> A_;
@@ -35,11 +47,9 @@ class linearSystem
     // Right-hand side source which is shallow by default
     meshField<Type,MeshType> b_;
 
-    // Singularity bools
-    List<bool> singular_;
-
-    // Diagonal bools
-    List<bool> diagonal_;
+    // Symmetry and diagonal bools
+    bool symmetric_;
+    bool diagonal_;
 
     // IBM forcing mask
     autoPtr<meshField<label,MeshType>> forcingMask_;
@@ -58,6 +68,13 @@ public:
         const word name,
         meshField<Type,MeshType>& x,
         const bool registerObject = false
+    );
+
+    // Construct from IOobject and mesh, without unknown
+    linearSystem
+    (
+        const IOobject& io,
+        const fvMesh& fvMsh
     );
 
     // Copy constructors
@@ -90,15 +107,38 @@ public:
         const bool registerObject = false
     );
 
+    // Temporary linear system constructor
+    static tmp<linearSystem<SType,Type,MeshType>> New
+    (
+        const word& name,
+        meshField<Type,MeshType>& x,
+        const bool cached = false
+    )
+    {
+        tmp<linearSystem<SType,Type,MeshType>> tSys =
+            x.fvMsh().template
+            NewObject<linearSystem<SType,Type,MeshType>>(name, cached);
+
+        tSys->setUnknown(x);
+
+        return tSys;
+    }
+
     // Destructor
     virtual ~linearSystem();
 
     // Return the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
-    // Return the unknown
-    inline meshField<Type,MeshType>& x() { return x_; }
-    inline const meshField<Type,MeshType>& x() const { return x_; }
+    // Set the unknown
+    inline void setUnknown(meshField<Type,MeshType>& x)
+    {
+        xPtr_ = &x;
+    }
+
+    // Return the unknown (unchecked!)
+    inline meshField<Type,MeshType>& x() { return *xPtr_; }
+    inline const meshField<Type,MeshType>& x() const { return *xPtr_; }
 
     // Return the stencil matrix
     inline meshField<SType,MeshType>& A() { return A_; }
@@ -120,17 +160,20 @@ public:
         return forcingMask_();
     }
 
-    // A linear system is said to be singular if all matrix row sums at the
-    // coarsest level  are zero. See Remark 5.6.5 in "Multigrid", U. Trottenberg
-    // et al., (2000). Result is cached.
-    List<bool> singular(const bool clearCache = false);
+    // Return symmetry and diagonal bools
+    bool symmetric() const { return symmetric_; }
+    bool diagonal() const { return diagonal_; }
 
-    // Check if the linear system is diagonal. Result is cached.
-    List<bool> diagonal(const bool clearCache = false);
+    // Access to the symmetry and diagonal bools
+    bool& symmetric() { return symmetric_; }
+    bool& diagonal() { return diagonal_; }
 
-    // Return const access to the singular and diagonal lists
-    const List<bool>& singular() const { return singular_; }
-    const List<bool>& diagonal() const { return diagonal_; }
+    // A linear system is said to be singular if the matrix is symmetric,
+    // non-diagonal and if the boundary conditions of the unknown are singular
+    bool singular() const
+    {
+        return symmetric_ && !diagonal_ && xPtr_->singular();
+    }
 
     // Compute the residual b-Ax and store in given object. Optionally apply no
     // forcing mask. This is determined via a template parameter instead of an
@@ -216,6 +259,7 @@ public:
     void operator-=(const tmp<linearSystem<SType,Type,MeshType>>&);
 
     void operator=(const Type&);
+    void operator=(const zero);
     void operator=(const meshField<Type,MeshType>&);
     void operator=(const tmp<meshField<Type,MeshType>>&);
 
@@ -223,11 +267,15 @@ public:
     void operator+=(const List<Type>&);
     void operator+=(const meshField<Type,MeshType>&);
     void operator+=(const tmp<meshField<Type,MeshType>>&);
+    template<class Type2> void operator+=(const Type2&);
 
     void operator-=(const Type&);
     void operator-=(const List<Type>&);
     void operator-=(const meshField<Type,MeshType>&);
     void operator-=(const tmp<meshField<Type,MeshType>>&);
+    template<class Type2> void operator-=(const Type2&);
+
+    // Mixed stencil type operations
 
     template<class SType2>
     void operator=(const linearSystem<SType2,Type,MeshType>&);
@@ -235,14 +283,10 @@ public:
     void operator=(const tmp<linearSystem<SType2,Type,MeshType>>&);
 
     template<class SType2>
-    void operator+=(const SType2&);
-    template<class SType2>
     void operator+=(const linearSystem<SType2,Type,MeshType>&);
     template<class SType2>
     void operator+=(const tmp<linearSystem<SType2,Type,MeshType>>&);
 
-    template<class SType2>
-    void operator-=(const SType2&);
     template<class SType2>
     void operator-=(const linearSystem<SType2,Type,MeshType>&);
     template<class SType2>
@@ -257,6 +301,10 @@ public:
     void operator/=(const scalarList&);
     void operator/=(const meshField<scalar,MeshType>&);
     void operator/=(const tmp<meshField<scalar,MeshType>>&);
+
+    // Befriend solver
+    template<class, class, class>
+    friend class solver;
 };
 
 }

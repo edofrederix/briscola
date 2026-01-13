@@ -22,30 +22,20 @@ class solver
 {
 public:
 
+    // Number of stencil components
+    static const direction N = SType::nCsComponents;
+
     // Base smoother class
 
     class smoother
     {
     public:
 
-        // Diagonal smooth at given level and direction
-        static inline void smoothDiag
-        (
-            linearSystem<SType,Type,MeshType>& sys,
-            const label l,
-            const label d
-        )
-        {
-            meshDirection<Type,MeshType>& x = sys.x()[l][d];
+        // Number of ghost cells
+        static const label G = meshDirection<Type,MeshType>::ghosts;
 
-            const meshDirection<SType,MeshType>& A = sys.A()[l][d];
-            const meshDirection<Type,MeshType>& b = sys.b()[l][d];
-            const meshDirection<label,MeshType>& f = sys.forcingMask()[l][d];
-
-            forAllCells(x, i, j, k)
-                if (!f(i,j,k))
-                    x(i,j,k) = b(i,j,k)/A(i,j,k).center();
-        }
+        // Number of stencil components
+        static const direction N = SType::nCsComponents;
 
     protected:
 

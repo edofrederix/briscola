@@ -26,6 +26,11 @@ faceGradientSchemes
     default linear;
 }
 
+faceDotGradientSchemes
+{
+    default linear;
+}
+
 faceFluxSchemes
 {
     default linear;
@@ -38,5 +43,5 @@ interpolationSchemes
 
 rkScheme
 {
-    scheme  Ascher222;
+    scheme  VARRKSCHEME;
 }

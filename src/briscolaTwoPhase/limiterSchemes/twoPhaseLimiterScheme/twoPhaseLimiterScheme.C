@@ -26,10 +26,11 @@ twoPhaseLimiterScheme<Type,MeshType>::twoPhaseLimiterScheme
 {}
 
 template<class Type, class MeshType>
-tmp<meshField<faceScalar,MeshType>> twoPhaseLimiterScheme<Type,MeshType>::psi
+tmp<faceField<scalar,MeshType>> twoPhaseLimiterScheme<Type,MeshType>::psi
 (
-    const meshField<faceScalar,MeshType>& phi,
-    const meshField<Type,MeshType>& field
+    const faceField<scalar,MeshType>& phi,
+    const meshField<Type,MeshType>& field,
+    const bool deep
 )
 {
     const TwoPhaseModel<MeshType>& model =
@@ -37,21 +38,24 @@ tmp<meshField<faceScalar,MeshType>> twoPhaseLimiterScheme<Type,MeshType>::psi
        .template lookupObjectRef<twoPhaseModel>("briscolaTwoPhaseDict")
        .template cast<TwoPhaseModel<MeshType>>();
 
-    const meshField<faceScalar,MeshType> psi(limiter_->psi(phi,field));
+    tmp<faceField<scalar,MeshType>> tPsi = limiter_->psi(phi,field,deep);
+    faceField<scalar,MeshType>& psi = tPsi.ref();
 
-    meshField<faceScalar,MeshType> alpha(model.faceAlpha());
+    const faceField<scalar,MeshType>& faceAlpha = model.faceAlpha();
 
-    if (phi.deep() && field.deep())
+    // Set psi values to one for non-interfacial faces
+
+    forAllFaces(psi, fd, l, d, i, j, k)
     {
-        alpha.setRestrictionScheme("faceAreaWeighted");
-        alpha.restrict();
+        const scalar alpha = faceAlpha[fd](l,d,i,j,k);
+
+        if (alpha < vof::threshold || alpha > 1.0 - vof::threshold)
+        {
+            psi[fd](l,d,i,j,k) = 1.0;
+        }
     }
 
-    return
-        1.0
-      - (1.0 - psi)
-      * pos(alpha - vof::threshold)
-      * pos(1.0 - vof::threshold - alpha);
+    return tPsi;
 }
 
 }

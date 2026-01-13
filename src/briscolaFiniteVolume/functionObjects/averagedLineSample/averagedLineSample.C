@@ -112,7 +112,7 @@ bool averagedLineSample::end()
     const mesh& msh = this->fvMsh_.msh();
 
     // Cell sizes
-    const PtrList<PartialList<scalar>>& cellSizes
+    const FastPtrList<PartialList<scalar>>& cellSizes
         = msh.cast<rectilinearMesh>().globalCellSizes();
 
     vectorList points = this->points();
@@ -163,9 +163,9 @@ bool averagedLineSample::end()
     {
         if (averagingDirections_.y())
         {
-            forAll(points, i)
+            forAll(points, j)
             {
-                points[i].y() = msh[0].boundingBox().bottom();
+                points[j].y() = msh[0].boundingBox().bottom();
             }
         }
 
@@ -191,7 +191,7 @@ bool averagedLineSample::end()
                     ).ptr()
                 );
 
-                PtrList<scalarList> data;
+                FastPtrList<scalarList> data;
                 wordList headers;
 
                 forAll(fields_, l)

@@ -13,14 +13,14 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
-twoPhaseVof<BaseModel>::twoPhaseVof
+template<class ViscosityModel>
+twoPhaseVof<ViscosityModel>::twoPhaseVof
 (
     const fvMesh& fvMsh,
     const IOdictionary& dict
 )
 :
-    BaseModel(fvMsh, dict),
+    ViscosityModel(fvMsh, dict),
     normalSchemePtr_
     (
         normalScheme::New(*this, dict.subDict("normalScheme")).ptr()
@@ -47,10 +47,10 @@ twoPhaseVof<BaseModel>::twoPhaseVof
     )
 {}
 
-template<class BaseModel>
-twoPhaseVof<BaseModel>::twoPhaseVof(const twoPhaseVof& tpm)
+template<class ViscosityModel>
+twoPhaseVof<ViscosityModel>::twoPhaseVof(const twoPhaseVof& tpm)
 :
-    BaseModel(tpm),
+    ViscosityModel(tpm),
     normalSchemePtr_(tpm.normalSchemePtr_, false),
     surfaceTensionSchemePtr_(tpm.surfaceTensionSchemePtr_, false),
     vfPtr_(tpm.vf().clone())
@@ -58,20 +58,17 @@ twoPhaseVof<BaseModel>::twoPhaseVof(const twoPhaseVof& tpm)
     normalSchemePtr_->correct();
     surfaceTensionSchemePtr_->correct();
 
-    BaseModel::correctMixture();
+    ViscosityModel::correct();
 }
 
-template<class BaseModel>
-twoPhaseVof<BaseModel>::~twoPhaseVof()
-{}
-
-template<class BaseModel>
-void twoPhaseVof<BaseModel>::correct()
+template<class ViscosityModel>
+void twoPhaseVof<ViscosityModel>::correct()
 {
+    // Correct the volume fraction
     vfPtr_->solve(this->coloFaceFlux()());
     surfaceTensionSchemePtr_->correct();
 
-    BaseModel::correctMixture();
+    ViscosityModel::correct();
 }
 
 }

@@ -22,7 +22,7 @@ surfaceTensionScheme::surfaceTensionScheme
     const colocatedScalarField& alpha
 )
 :
-    colocatedFaceScalarField
+    colocatedScalarFaceField
     (
         "surfaceTension",
         fvMsh
@@ -48,11 +48,14 @@ surfaceTensionScheme::surfaceTensionScheme
         ).ptr()
       : nullptr
     )
-{}
+{
+    static_cast<colocatedScalarFaceField&>(*this) = Zero;
+    sigma_ = Zero;
+}
 
 surfaceTensionScheme::surfaceTensionScheme(const surfaceTensionScheme& s)
 :
-    colocatedFaceScalarField(s),
+    colocatedScalarFaceField(s),
     fvMsh_(s.fvMsh_),
     dict_(s.dict_),
     normal_(s.normal_),

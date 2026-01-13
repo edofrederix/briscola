@@ -3,7 +3,6 @@
 
 #include "briscolaFunctionObject.H"
 #include "meshFields.H"
-#include "exSchemes.H"
 
 namespace Foam
 {

@@ -67,32 +67,33 @@ divergenceScheme<SType,Type,MeshType>::New
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> div
 (
-    const meshField<FaceSpace<Type>,MeshType>& phi
+    const faceField<Type,MeshType>& phi
 )
 {
-    tmp<meshField<Type,MeshType>> tDiv
-    (
-        new meshField<Type,MeshType>
+    tmp<meshField<Type,MeshType>> tDiv =
+        meshField<Type,MeshType>::New
         (
             "div("+phi.name()+")",
             phi.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 
-    const meshField<scalar,MeshType>& cv =
-        phi.fvMsh().template metrics<MeshType>().cellVolumes();
+    const meshField<scalar,MeshType>& icv =
+        phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    forAllCells(phi, d, i, j, k)
+    Div = Zero;
+
+    forAllFaces(phi, fd, d, i, j, k)
     {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Div(d,i,j,k) = Zero;
-        #endif
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        for (int f = 0; f < 6; f++)
-            Div(d,i,j,k) += phi(d,i,j,k)[f]/cv(d,i,j,k);
+        Div(d,ijk) += phi[fd](d,ijk);
+        Div(d,nei) -= phi[fd](d,ijk);
     }
+
+    Div *= icv;
 
     return tDiv;
 }
@@ -100,13 +101,10 @@ tmp<meshField<Type,MeshType>> div
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> div
 (
-    const tmp<meshField<FaceSpace<Type>,MeshType>>& tPhi
+    const tmp<faceField<Type,MeshType>>& tPhi
 )
 {
-    tmp<meshField<Type,MeshType>> tDiv
-    (
-        div(tPhi())
-    );
+    tmp<meshField<Type,MeshType>> tDiv = div(tPhi());
 
     if (tPhi.isTmp())
         tPhi.clear();
@@ -120,37 +118,35 @@ tmp<meshField<Type,colocated>> coloDiv
     const meshField<Type,staggered>& field
 )
 {
-    tmp<meshField<Type,colocated>> tDiv
-    (
-        new meshField<Type,colocated>
+    tmp<meshField<Type,colocated>> tDiv =
+        meshField<Type,colocated>::New
         (
             "coloDiv("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,colocated>& Div = tDiv.ref();
 
-    const meshField<scalar,colocated>& cv =
-        field.fvMsh().template metrics<colocated>().cellVolumes();
+    const meshField<scalar,colocated>& icv =
+        field.fvMsh().template metrics<colocated>().inverseCellVolumes();
 
-    const meshField<faceScalar,colocated>& fa =
+    const faceField<scalar,colocated>& fa =
         field.fvMsh().template metrics<colocated>().faceAreas();
 
-    forAllCells(Div, i, j, k)
-    {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Div(i,j,k) = Zero;
-        #endif
+    Div = Zero;
 
-        for (int fd = 0; fd < 3; fd++)
-            Div(i,j,k) -=
-                (
-                    field(fd,i,j,k)*fa(i,j,k)[fd*2]
-                  - field(fd,upperNeighbor(i,j,k,fd))*fa(i,j,k)[fd*2+1]
-                )
-              / cv(i,j,k);
+    forAllFaces(fa, fd, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        const Type value = field(fd,ijk)*fa[fd](ijk);
+
+        Div(ijk) -= value;
+        Div(nei) += value;
     }
+
+    Div *= icv;
 
     return tDiv;
 }
@@ -164,10 +160,7 @@ tmp<meshField<Type,colocated>> coloDiv
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<Type,colocated>> tColoDiv
-    (
-        coloDiv(tField())
-    );
+    tmp<meshField<Type,colocated>> tColoDiv = coloDiv(tField());
 
     if (tField.isTmp())
         tField.clear();

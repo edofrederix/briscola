@@ -10,7 +10,6 @@ staggeredScalarField U
 );
 
 U = Zero;
-U.correctBoundaryConditions();
 
 // Reconstructed colocated velocity
 
@@ -37,20 +36,19 @@ colocatedScalarField p
 );
 
 p = Zero;
-p.correctBoundaryConditions();
 
 // Flux
 
-staggeredFaceScalarField phi
+staggeredScalarFaceField phi
 (
     "phi",
     fvMsh,
     IOobject::NO_READ,
-    IOobject::AUTO_WRITE,
+    IOobject::NO_WRITE,
     true
 );
 
-phi = ex::faceFlux(U);
+phi = Zero;
 
 // Sources
 
@@ -63,34 +61,14 @@ staggeredScalarField exSource
     true
 );
 
-staggeredScalarField imSourceCoeff
-(
-    "sourceCoeff",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::NO_WRITE,
-    true
-);
+// Project the source vector onto the local coordinate system
+
+const tensor base =
+    fvMsh.msh().cast<rectilinearMesh>().base();
 
 exSource =
-    scalarList
-    (
-        twoPhaseDict.lookupOrDefault
-        (
-            "source",
-            scalarList(3, 0.0)
-        )
-    );
-
-imSourceCoeff =
-    scalarList
-    (
-        twoPhaseDict.lookupOrDefault
-        (
-            "sourceCoeff",
-            scalarList(3, 0.0)
-        )
-    );
+    fvMsh.metrics<staggered>().fluidMask()
+  * list(base & twoPhaseDict.lookupOrDefault("source", vector::zero));
 
 // Solvers
 
@@ -118,18 +96,14 @@ Poisson->enableFlux();
 
 // Runge-Kutta stage sources
 
-PtrList<staggeredScalarField> stageSourcesA
-(
-    rk.stageList<staggeredScalarField>("A")
-);
+FastPtrList<staggeredScalarField>& stageSourcesA =
+    rk.newStageList<staggeredScalarField>("A");
 
-PtrList<staggeredScalarField> stageSourcesB
-(
-    rk.stageList<staggeredScalarField>("B")
-);
+FastPtrList<staggeredScalarField>& stageSourcesB =
+    rk.newStageList<staggeredScalarField>("B");
 
-linearSystem<stencil,scalar,staggered> USysA("A(U)", U);
-linearSystem<stencil,scalar,staggered> USysB("B(U)", U);
+tmp<staggeredScalarSystem> tUSysA;
+tmp<staggeredScalarSystem> tUSysB;
 
 // Specific volumes
 
@@ -142,15 +116,20 @@ staggeredScalarField v
     true
 );
 
-v.setRestrictionScheme("harmonicVolumeWeighted");
+v = Zero;
 
-colocatedFaceScalarField vcf
+colocatedScalarFaceField vf
 (
-    "vcf",
+    "vf",
     fvMsh,
     IOobject::NO_READ,
     IOobject::NO_WRITE,
     true
 );
 
-vcf.setRestrictionScheme("faceAreaWeighted");
+vf.setRestrictionScheme("areaWeighted");
+vf = Zero;
+
+// Reference to the viscosity
+
+const staggeredScalarFaceField& mu = twoPhase.mu();

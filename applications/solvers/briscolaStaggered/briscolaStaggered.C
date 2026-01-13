@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 {
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
-    #include "createBriscolaMesh.H"
+    #include "createBriscolaStaggeredMesh.H"
     #include "createRungeKuttaScheme.H"
     #include "createTimeControls.H"
 
@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     (
         IOobject
         (
-            "briscolaStaggeredDict",
+            "briscolaSinglePhaseDict",
             fvMsh.time().system(),
             fvMsh.time(),
             IOobject::MUST_READ,
@@ -33,6 +33,11 @@ int main(int argc, char *argv[])
 
     #include "createFields.H"
     #include "createBriscolaIO.H"
+
+    if (rk.imA())
+        restrict(U);
+
+    U.correctBoundaryConditions();
 
     while (runTime.run())
     {
@@ -68,17 +73,14 @@ int main(int argc, char *argv[])
 
                 if (rk.imStageA())
                 {
-                    USysA = -im::div(phi,U);
-                    USys -= A*USysA;
+                    tUSysA = -im::div(phi,U);
+                    USys -= A*tUSysA.ref();
                 }
 
                 if (rk.imStageB())
                 {
-                    USysB =
-                        im::laplacian(nu,U)
-                      + im::source(imSourceCoeff,U);
-
-                    USys -= B*USysB;
+                    tUSysB = im::laplacian(nu,U);
+                    USys -= B*tUSysB.ref();
                 }
 
                 // Solve predictor
@@ -92,6 +94,10 @@ int main(int argc, char *argv[])
                 // Correction
 
                 U -= C*deltaT*ex::stagReconstruct(Poisson->flux());
+
+                if (rk.imA())
+                    restrict(U);
+
                 U.correctBoundaryConditions();
             }
 
@@ -100,14 +106,14 @@ int main(int argc, char *argv[])
             if (rk.storeStageA())
                 stageSourcesA[stage-1] =
                     rk.solve() && rk.imStageA()
-                  ? USysA.evaluate()
+                  ? tUSysA->evaluate()
                   : -ex::div(phi,U);
 
             if (rk.storeStageB())
                 stageSourcesB[stage-1] =
                     rk.solve() && rk.imStageB()
-                  ? USysB.evaluate()
-                  : ex::laplacian(nu,U) + ex::source(imSourceCoeff,U);
+                  ? tUSysB->evaluate()
+                  : ex::laplacian(nu,U);
         }
 
         // Reconstruct the colocated velocity

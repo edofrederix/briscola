@@ -1,4 +1,6 @@
 #include "restrictionScheme.H"
+#include "meshFields.H"
+#include "faceFields.H"
 
 namespace Foam
 {
@@ -37,17 +39,21 @@ autoPtr<restrictionScheme<Type,MeshType>>
 restrictionScheme<Type,MeshType>::New
 (
     const fvMesh& fvMsh,
-    const word restrictionSchemeType
+    const word type
 )
 {
     typename IstreamConstructorTable::iterator cstrIter =
-        IstreamConstructorTablePtr_->find(restrictionSchemeType);
+        IstreamConstructorTablePtr_->find
+        (
+            type == word::null
+          ? restrictionScheme<Type,MeshType>::defaultScheme
+          : type
+        );
 
     if (cstrIter == IstreamConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown restriction scheme "
-            << restrictionSchemeType << nl << nl
+            << "Unknown restriction scheme "  << type << nl << nl
             << "Valid restriction schemes are:" << nl
             << IstreamConstructorTablePtr_->sortedToc()
             << exit(FatalError);
@@ -110,8 +116,8 @@ void restrictionScheme<Type,MeshType>::restrict
     const bool scale
 )
 {
-    for (label l = 1; l < res.size(); l++)
-        restrict(res[l], f[l-1], scale);
+    for (label l = 0; l < res.size()-1; l++)
+        restrict(res[l+1], f[l], scale);
 }
 
 template<class Type, class MeshType>
@@ -138,8 +144,8 @@ void restrictionScheme<Type,MeshType>::restrict
     const bool scale
 )
 {
-    for (label l = 1; l < res.size(); l++)
-        restrict(res[l], res[l-1], scale);
+    for (label l = 0; l < res.size()-1; l++)
+        restrict(res[l+1], res[l], scale);
 }
 
 }

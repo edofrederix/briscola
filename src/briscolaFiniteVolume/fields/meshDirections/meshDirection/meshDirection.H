@@ -1,14 +1,15 @@
 #ifndef meshDirection_H
 #define meshDirection_H
 
-#include "PtrList.H"
+#include "fvMesh.H"
+#include "meshFieldFwd.H"
+#include "meshLevelFwd.H"
+
 #include "List.H"
 
 #include "block.H"
 #include "Vector.H"
 #include "faceLabel.H"
-
-#include "fvMesh.H"
 
 namespace Foam
 {
@@ -18,12 +19,6 @@ namespace briscola
 
 namespace fv
 {
-
-template<class Type, class MeshType>
-class meshField;
-
-template<class Type, class MeshType>
-class meshLevel;
 
 template<class Type, class MeshType>
 class meshDirection
@@ -67,6 +62,12 @@ public:
     // Runtime type information
     TypeName("meshDirection");
 
+    // Data type
+    typedef Type dataType;
+
+    // Mesh type
+    typedef MeshType meshType;
+
     // Component type
     typedef typename pTraits<Type>::cmptType cmptType;
 
@@ -85,8 +86,6 @@ public:
     meshDirection
     (
         meshLevel<Type,MeshType>& mshLevel,
-        const fvMesh& fvMsh,
-        const label l,
         const label d
     );
 
@@ -171,6 +170,35 @@ public:
         const label d,
         const List<Type>& v
     );
+
+    // Temporary direction constructors
+
+    static tmp<meshDirection<Type,MeshType>> New
+    (
+        meshLevel<Type,MeshType>& mshLevel,
+        const label d
+    )
+    {
+        return
+            tmp<meshDirection<Type,MeshType>>
+            (
+                new meshDirection<Type,MeshType>(mshLevel,d)
+            );
+    }
+
+    static tmp<meshDirection<Type,MeshType>> New
+    (
+        const fvMesh& fvMsh,
+        const label l,
+        const label d
+    )
+    {
+        return
+            tmp<meshDirection<Type,MeshType>>
+            (
+                new meshDirection<Type,MeshType>(fvMsh,l,d)
+            );
+    }
 
     // Clone
 
@@ -304,6 +332,20 @@ public:
     {
         return blockType::operator()(ijk + ghosts*unitXYZ);
     }
+
+    // Return a component
+    tmp<meshDirection<cmptType,MeshType>> component(const label) const;
+
+    // Set a component from a value
+    void replace(const label, const cmptType&);
+
+    // Set a component from a component direction
+    void replace(const label, const meshDirection<cmptType,MeshType>&);
+    void replace(const label, const tmp<meshDirection<cmptType,MeshType>>&);
+
+    // Set maximum/minimum of direction and given value
+    void max(const Type&);
+    void min(const Type&);
 
     // Member operators
 

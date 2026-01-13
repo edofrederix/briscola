@@ -22,7 +22,7 @@ class PETScLinearSystem
     const linearSystem<SType,Type,MeshType>& sys_;
 
     // PETSc matrices
-    PtrList<Mat> matrices_;
+    FastPtrList<Mat> matrices_;
 
     // Level number
     const label l_;

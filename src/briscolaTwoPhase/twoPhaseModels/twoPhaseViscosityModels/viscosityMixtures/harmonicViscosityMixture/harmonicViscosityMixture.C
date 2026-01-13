@@ -10,42 +10,35 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
-harmonicViscosityMixture<BaseModel>::harmonicViscosityMixture
+template<class ViscosityModel>
+harmonicViscosityMixture<ViscosityModel>::harmonicViscosityMixture
 (
     const fvMesh& fvMsh,
     const IOdictionary& dict
 )
 :
-    BaseModel(fvMsh, dict)
-{
-    this->mu_.setRestrictionScheme("harmonicFaceAreaWeighted");
-}
-
-template<class BaseModel>
-harmonicViscosityMixture<BaseModel>::
-harmonicViscosityMixture(const harmonicViscosityMixture& tpm)
-:
-    BaseModel(tpm)
-{
-    this->mu_.setRestrictionScheme("harmonicFaceAreaWeighted");
-}
-
-template<class BaseModel>
-harmonicViscosityMixture<BaseModel>::~harmonicViscosityMixture()
+    ViscosityModel(fvMsh, dict)
 {}
 
-template<class BaseModel>
-void harmonicViscosityMixture<BaseModel>::correctMixture()
+template<class ViscosityModel>
+harmonicViscosityMixture<ViscosityModel>::
+harmonicViscosityMixture(const harmonicViscosityMixture& tpm)
+:
+    ViscosityModel(tpm)
+{}
+
+template<class ViscosityModel>
+void harmonicViscosityMixture<ViscosityModel>::correct()
 {
-    const meshField<faceScalar,typename BaseModel::meshType> alpha
-    (
-        this->faceAlpha()
-    );
+    forAllFaces(this->mu_, fd, l, d, i, j, k)
+    {
+        const scalar alpha = this->faceAlpha_[fd](l,d,i,j,k);
 
-    this->mu_ = 1.0/(alpha/this->mu2_ + (1.0 - alpha)/this->mu1_);
+        this->mu_[fd](l,d,i,j,k) =
+            1.0/(alpha/this->mu2_ + (1.0 - alpha)/this->mu1_);
+    }
 
-    BaseModel::correctMixture();
+    ViscosityModel::correct();
 }
 
 }

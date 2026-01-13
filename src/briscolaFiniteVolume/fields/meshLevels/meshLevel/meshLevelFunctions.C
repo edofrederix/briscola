@@ -26,14 +26,13 @@ void mag(meshLevel<SCALARPRODTYPE,MeshType>& res, const meshLevel<Type,MeshType>
 template<class Type, class MeshType>
 tmp<meshLevel<SCALARPRODTYPE,MeshType>> mag(const meshLevel<Type,MeshType>& f)
 {
-    tmp<meshLevel<SCALARPRODTYPE,MeshType>> tRes
-    (
-        new meshLevel<SCALARPRODTYPE,MeshType>
+    tmp<meshLevel<SCALARPRODTYPE,MeshType>> tRes =
+        meshLevel<SCALARPRODTYPE,MeshType>::New
         (
             f.fvMsh(),
             f.levelNum()
-        )
-    );
+        );
+
     mag(tRes.ref(), f);
     return tRes;
 }
@@ -66,14 +65,13 @@ tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
 cmptMax(const meshLevel<Type,MeshType>& f)
 {
     typedef typename meshLevel<Type,MeshType>::cmptType cmptType;
-    tmp<meshLevel<cmptType,MeshType>> tRes
-    (
-        new meshLevel<cmptType,MeshType>
+    tmp<meshLevel<cmptType,MeshType>> tRes =
+        meshLevel<cmptType,MeshType>::New
         (
             f.fvMsh(),
             f.levelNum()
-        )
-    );
+        );
+
     cmptMax(tRes.ref(), f);
     return tRes;
 }
@@ -108,14 +106,13 @@ tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
 cmptMin(const meshLevel<Type,MeshType>& f)
 {
     typedef typename meshLevel<Type,MeshType>::cmptType cmptType;
-    tmp<meshLevel<cmptType,MeshType>> tRes
-    (
-        new meshLevel<cmptType,MeshType>
+    tmp<meshLevel<cmptType,MeshType>> tRes =
+        meshLevel<cmptType,MeshType>::New
         (
             f.fvMsh(),
             f.levelNum()
-        )
-    );
+        );
+
     cmptMin(tRes.ref(), f);
     return tRes;
 }
@@ -150,14 +147,13 @@ tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
 cmptAv(const meshLevel<Type,MeshType>& f)
 {
     typedef typename meshLevel<Type,MeshType>::cmptType cmptType;
-    tmp<meshLevel<cmptType,MeshType>> tRes
-    (
-        new meshLevel<cmptType,MeshType>
+    tmp<meshLevel<cmptType,MeshType>> tRes =
+        meshLevel<cmptType,MeshType>::New
         (
             f.fvMsh(),
             f.levelNum()
-        )
-    );
+        );
+
     cmptAv(tRes.ref(), f);
     return tRes;
 }
@@ -186,14 +182,13 @@ void cmptMag(meshLevel<Type,MeshType>& res, const meshLevel<Type,MeshType>& f)
 template<class Type, class MeshType>
 tmp<meshLevel<Type,MeshType>> cmptMag(const meshLevel<Type,MeshType>& f)
 {
-    tmp<meshLevel<Type,MeshType>> tRes
-    (
-        new meshLevel<Type,MeshType>
+    tmp<meshLevel<Type,MeshType>> tRes =
+        meshLevel<Type,MeshType>::New
         (
             f.fvMsh(),
             f.levelNum()
-        )
-    );
+        );
+
     cmptMag(tRes.ref(), f);
     return tRes;
 }
@@ -201,7 +196,8 @@ tmp<meshLevel<Type,MeshType>> cmptMag(const meshLevel<Type,MeshType>& f)
 template<class Type, class MeshType>
 tmp<meshLevel<Type,MeshType>> cmptMag(const tmp<meshLevel<Type,MeshType>>& tf)
 {
-    tmp<meshLevel<Type,MeshType>> tRes = New(tf);
+    tmp<meshLevel<Type,MeshType>> tRes =
+        reuseLevelTmp<Type,Type,MeshType>::New(tf);
 
     cmptMag(tRes.ref(), tf());
     if (tf.isTmp())
@@ -219,14 +215,13 @@ void cmptSqr(meshLevel<Type,MeshType>& res, const meshLevel<Type,MeshType>& f)
 template<class Type, class MeshType>
 tmp<meshLevel<Type,MeshType>> cmptSqr(const meshLevel<Type,MeshType>& f)
 {
-    tmp<meshLevel<Type,MeshType>> tRes
-    (
-        new meshLevel<Type,MeshType>
+    tmp<meshLevel<Type,MeshType>> tRes =
+        meshLevel<Type,MeshType>::New
         (
             f.fvMsh(),
             f.levelNum()
-        )
-    );
+        );
+
     cmptSqr(tRes.ref(), f);
     return tRes;
 }
@@ -234,7 +229,8 @@ tmp<meshLevel<Type,MeshType>> cmptSqr(const meshLevel<Type,MeshType>& f)
 template<class Type, class MeshType>
 tmp<meshLevel<Type,MeshType>> cmptSqr(const tmp<meshLevel<Type,MeshType>>& tf)
 {
-    tmp<meshLevel<Type,MeshType>> tRes = New(tf);
+    tmp<meshLevel<Type,MeshType>> tRes =
+        reuseLevelTmp<Type,Type,MeshType>::New(tf);
 
     cmptSqr(tRes.ref(), tf());
     if (tf.isTmp())
@@ -252,14 +248,13 @@ void cmptSqrt(meshLevel<Type,MeshType>& res, const meshLevel<Type,MeshType>& f)
 template<class Type, class MeshType>
 tmp<meshLevel<Type,MeshType>> cmptSqrt(const meshLevel<Type,MeshType>& f)
 {
-    tmp<meshLevel<Type,MeshType>> tRes
-    (
-        new meshLevel<Type,MeshType>
+    tmp<meshLevel<Type,MeshType>> tRes =
+        meshLevel<Type,MeshType>::New
         (
             f.fvMsh(),
             f.levelNum()
-        )
-    );
+        );
+
     cmptSqrt(tRes.ref(), f);
     return tRes;
 }
@@ -267,7 +262,8 @@ tmp<meshLevel<Type,MeshType>> cmptSqrt(const meshLevel<Type,MeshType>& f)
 template<class Type, class MeshType>
 tmp<meshLevel<Type,MeshType>> cmptSqrt(const tmp<meshLevel<Type,MeshType>>& tf)
 {
-    tmp<meshLevel<Type,MeshType>> tRes = New(tf);
+    tmp<meshLevel<Type,MeshType>> tRes =
+        reuseLevelTmp<Type,Type,MeshType>::New(tf);
 
     cmptSqrt(tRes.ref(), tf());
     if (tf.isTmp())
@@ -578,8 +574,12 @@ List<ReturnType> gFunc                                                         \
 )                                                                              \
 {                                                                              \
     List<ReturnType> res(Func(f));                                             \
-    forAll(res, d)                                                             \
-        reduce(res[d], rFunc##Op<ReturnType>(), Pstream::msgType(), comm);     \
+                                                                               \
+    /* We need to communicate per direction, because not all functions are */  \
+    /* defined for lists */                                                    \
+                                                                               \
+    forAll(res, i)                                                             \
+        reduce(res[i], rFunc##Op<ReturnType>(), Pstream::msgType(), comm);     \
     return res;                                                                \
 }                                                                              \
                                                                                \

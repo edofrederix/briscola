@@ -29,13 +29,7 @@ void meshLevel<Type,MeshType>::allocate()
         listType::set
         (
             d,
-            new meshDirection<Type,MeshType>
-            (
-                *this,
-                fvMsh_,
-                l_,
-                d
-            )
+            new meshDirection<Type,MeshType>(*this, d)
         );
     }
 }
@@ -67,13 +61,12 @@ template<class Type, class MeshType>
 meshLevel<Type,MeshType>::meshLevel
 (
     meshField<Type,MeshType>& mshField,
-    const fvMesh& fvMsh,
     const label l
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(),
+    FastPtrList<meshDirection<Type,MeshType>>(),
     refCount(),
-    fvMsh_(fvMsh),
+    fvMsh_(mshField.fvMsh()),
     l_(l),
     mshFieldPtr_(&mshField)
 {
@@ -88,7 +81,7 @@ meshLevel<Type,MeshType>::meshLevel
     const meshLevel<Type,MeshType>& L
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(L),
+    FastPtrList<meshDirection<Type,MeshType>>(L),
     refCount(),
     fvMsh_(L.fvMsh_),
     l_(L.levelNum()),
@@ -104,7 +97,7 @@ meshLevel<Type,MeshType>::meshLevel
     const zero&
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(L, Zero),
+    FastPtrList<meshDirection<Type,MeshType>>(L, Zero),
     refCount(),
     fvMsh_(L.fvMsh_),
     l_(L.levelNum()),
@@ -120,7 +113,7 @@ meshLevel<Type,MeshType>::meshLevel
     const Type& v
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(L, v),
+    FastPtrList<meshDirection<Type,MeshType>>(L, v),
     refCount(),
     fvMsh_(L.fvMsh_),
     l_(L.levelNum()),
@@ -136,7 +129,7 @@ meshLevel<Type,MeshType>::meshLevel
     const List<Type>& v
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(L, v),
+    FastPtrList<meshDirection<Type,MeshType>>(L, v),
     refCount(),
     fvMsh_(L.fvMsh_),
     l_(L.levelNum()),
@@ -151,7 +144,7 @@ meshLevel<Type,MeshType>::meshLevel
     const tmp<meshLevel<Type,MeshType>>& tL
 )
 :
-    PtrList<meshDirection<Type,MeshType>>
+    FastPtrList<meshDirection<Type,MeshType>>
     (
         const_cast<meshLevel<Type,MeshType>&>(tL()),
         tL.isTmp()
@@ -173,7 +166,7 @@ meshLevel<Type,MeshType>::meshLevel
     const zero&
 )
 :
-    PtrList<meshDirection<Type,MeshType>>
+    FastPtrList<meshDirection<Type,MeshType>>
     (
         const_cast<meshLevel<Type,MeshType>&>(tL()),
         tL.isTmp()
@@ -196,7 +189,7 @@ meshLevel<Type,MeshType>::meshLevel
     const Type& v
 )
 :
-    PtrList<meshDirection<Type,MeshType>>
+    FastPtrList<meshDirection<Type,MeshType>>
     (
         const_cast<meshLevel<Type,MeshType>&>(tL()),
         tL.isTmp()
@@ -219,7 +212,7 @@ meshLevel<Type,MeshType>::meshLevel
     const List<Type>& v
 )
 :
-    PtrList<meshDirection<Type,MeshType>>
+    FastPtrList<meshDirection<Type,MeshType>>
     (
         const_cast<meshLevel<Type,MeshType>&>(tL()),
         tL.isTmp()
@@ -244,7 +237,7 @@ meshLevel<Type,MeshType>::meshLevel
     const label l
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(),
+    FastPtrList<meshDirection<Type,MeshType>>(),
     refCount(),
     fvMsh_(fvMsh),
     l_(l),
@@ -261,7 +254,7 @@ meshLevel<Type,MeshType>::meshLevel
     const zero&
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(),
+    FastPtrList<meshDirection<Type,MeshType>>(),
     refCount(),
     fvMsh_(fvMsh),
     l_(l),
@@ -279,7 +272,7 @@ meshLevel<Type,MeshType>::meshLevel
     const Type& v
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(),
+    FastPtrList<meshDirection<Type,MeshType>>(),
     refCount(),
     fvMsh_(fvMsh),
     l_(l),
@@ -297,7 +290,7 @@ meshLevel<Type,MeshType>::meshLevel
     const List<Type>& v
 )
 :
-    PtrList<meshDirection<Type,MeshType>>(),
+    FastPtrList<meshDirection<Type,MeshType>>(),
     refCount(),
     fvMsh_(fvMsh),
     l_(l),
@@ -655,6 +648,71 @@ void meshLevel<Type,MeshType>::correctImmersedBoundaryConditions()
             ibc.evaluate(l_);
         }
     }
+}
+
+template<class Type, class MeshType>
+tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
+meshLevel<Type,MeshType>::component
+(
+    const label dir
+) const
+{
+    tmp<meshLevel<cmptType,MeshType>> tL =
+        meshLevel<cmptType,MeshType>::New(this->fvMsh_, this->l_);
+
+    forAll(*this, d)
+        tL.ref()[d] = listType::operator[](d).component(dir);
+
+    return tL;
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::replace
+(
+    const label dir,
+    const List<cmptType>& values
+)
+{
+    forAll(*this, d)
+        listType::operator[](d).replace(dir,values[d]);
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::replace
+(
+    const label dir,
+    const meshLevel<cmptType,MeshType>& L
+)
+{
+    forAll(*this, d)
+        listType::operator[](d).replace(dir,L[d]);
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::replace
+(
+    const label dir,
+    const tmp<meshLevel<cmptType,MeshType>>& tL
+)
+{
+    this->replace(dir,tL());
+
+    if (tL.isTmp())
+        tL.clear();
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::max(const Type& v)
+{
+    forAll(*this, d)
+        listType::operator[](d).max(v);
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::min(const Type& v)
+{
+    forAll(*this, d)
+        listType::operator[](d).min(v);
 }
 
 template<class Type, class MeshType>

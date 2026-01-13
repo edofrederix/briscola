@@ -2,6 +2,7 @@
 #define immersedBoundaryConditions_H
 
 #include "immersedBoundaryCondition.H"
+#include "addToRunTimeSelectionTable.H"
 
 #define makeImmersedBoundaryConditionBase(TYPE,MESHTYPE)                       \
                                                                                \

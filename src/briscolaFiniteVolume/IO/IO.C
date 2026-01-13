@@ -67,8 +67,10 @@ void IO::writeData(const word timeName, const label l)
                 std::ofstream& file = filePtrs[proc]();
 
                 file<< vtkHeader << std::endl
-                    << fvMsh_.time().caseName() << " "
-                    << (partitioned_ ? 1 : Pstream::nProcs()) << std::endl;
+                    << fvMsh_.time().caseName()
+                    << " " << (partitioned_ ? 1 : Pstream::nProcs())
+                    << " " << fvMsh_.time().deltaTValue()
+                    << std::endl;
 
                 if (ascii)
                 {
@@ -172,32 +174,31 @@ void IO::writeData(const word timeName, const label l)
                 forAll(shapes, p)
                 if (!partitioned_ || p == proc)
                 {
-                    const label l = shapes[p].x();
-                    const label m = shapes[p].y();
-                    const label n = shapes[p].z();
+                    const label ll = shapes[p].x();
+                    const label mm = shapes[p].y();
+                    const label nn = shapes[p].z();
 
-                    const label L = l+1;
-                    const label M = m+1;
-                    const label N = n+1;
+                    const label L = ll + 1;
+                    const label M = mm + 1;
+                    const label N = nn + 1;
 
                     labelList buffer(nStructured(shapes[p])*9);
 
-                    label c = 0;
-
-                    for(int i = 0; i < l; i++)
-                    for(int j = 0; j < m; j++)
-                    for(int k = 0; k < n; k++)
+                    label q = 0;
+                    for(int i = 0; i < ll; i++)
+                    for(int j = 0; j < mm; j++)
+                    for(int k = 0; k < nn; k++)
                     if (structured(i,j,k,shapes[p]))
                     {
-                        buffer[c++] = 8;
-                        buffer[c++] = (cursor + (i  )*M*N + (j  )*N+k);
-                        buffer[c++] = (cursor + (i+1)*M*N + (j  )*N+k);
-                        buffer[c++] = (cursor + (i+1)*M*N + (j+1)*N+k);
-                        buffer[c++] = (cursor + (i  )*M*N + (j+1)*N+k);
-                        buffer[c++] = (cursor + (i  )*M*N + (j  )*N+k+1);
-                        buffer[c++] = (cursor + (i+1)*M*N + (j  )*N+k+1);
-                        buffer[c++] = (cursor + (i+1)*M*N + (j+1)*N+k+1);
-                        buffer[c++] = (cursor + (i  )*M*N + (j+1)*N+k+1);
+                        buffer[q++] = 8;
+                        buffer[q++] = (cursor + (i  )*M*N + (j  )*N+k);
+                        buffer[q++] = (cursor + (i+1)*M*N + (j  )*N+k);
+                        buffer[q++] = (cursor + (i+1)*M*N + (j+1)*N+k);
+                        buffer[q++] = (cursor + (i  )*M*N + (j+1)*N+k);
+                        buffer[q++] = (cursor + (i  )*M*N + (j  )*N+k+1);
+                        buffer[q++] = (cursor + (i+1)*M*N + (j  )*N+k+1);
+                        buffer[q++] = (cursor + (i+1)*M*N + (j+1)*N+k+1);
+                        buffer[q++] = (cursor + (i  )*M*N + (j+1)*N+k+1);
                     }
 
                     if (ascii)
@@ -332,8 +333,10 @@ void IO::readData(const word timeName, const label l)
 
         word dummy;
         label nProcs;
+        scalar deltaT;
 
-        file>> dummy >> nProcs;
+        file>> dummy >> nProcs >> deltaT;
+
         nextLine(file);
 
         if
@@ -347,6 +350,13 @@ void IO::readData(const word timeName, const label l)
                 << "which is not compatible with the current number "
                 << "of processors (" << Pstream::nProcs() << ")"
                 << endl << abort(FatalError);
+
+        // Set time step
+
+        const_cast<Time&>(fvMsh_.time()).setDeltaT
+        (
+            dimensionedScalar(dimTime, deltaT)
+        );
 
         // Ascii or binary
 
@@ -386,7 +396,6 @@ void IO::readData(const word timeName, const label l)
         }
         else
         {
-            word dummy;
             label nPoints;
 
             file>> dummy >> nPoints;
@@ -405,7 +414,6 @@ void IO::readData(const word timeName, const label l)
         }
         else
         {
-            word dummy;
             label n;
 
             file>> dummy >> dummy >> n;
@@ -424,7 +432,6 @@ void IO::readData(const word timeName, const label l)
         }
         else
         {
-            word dummy;
             label nCells;
 
             file>> dummy >> nCells;
@@ -496,14 +503,14 @@ void IO::writeFields
 {
     typedef meshField<Type,MeshType> FieldType;
 
-    const wordList toc(fvMsh_.time().toc<FieldType>());
+    const wordList toc(fvMsh_.db().toc<FieldType>());
 
     label count = 0;
 
     forAll(toc, i)
     {
         const FieldType& field =
-            fvMsh_.time().lookupObject<FieldType>(toc[i]);
+            fvMsh_.db().lookupObject<FieldType>(toc[i]);
 
         if
         (
@@ -531,7 +538,7 @@ void IO::writeFields
         forAll(toc, i)
         {
             const FieldType& field =
-                fvMsh_.time().lookupObject<FieldType>(toc[i]);
+                fvMsh_.db().lookupObject<FieldType>(toc[i]);
 
             if
             (
@@ -572,6 +579,8 @@ void IO::readFields
             << endl << abort(FatalError);
     }
 
+    wordList typeFields;
+
     if (nf > 0)
     {
         word name;
@@ -584,10 +593,10 @@ void IO::readFields
             file>> name >> nComponents >> nCells;
             nextLine(file);
 
-            if (fvMsh_.time().foundObject<FieldType>(name))
+            if (fvMsh_.db().foundObject<FieldType>(name))
             {
                 FieldType& field =
-                    fvMsh_.time().lookupObjectRef<FieldType>(name);
+                    fvMsh_.db().lookupObjectRef<FieldType>(name);
 
                 if
                 (
@@ -599,7 +608,7 @@ void IO::readFields
                 )
                 {
                     readField(filePtr, ascii, field[l][d]);
-                    fields.append(field.name());
+                    typeFields.append(field.name());
                 }
                 else
                 {
@@ -629,15 +638,37 @@ void IO::readFields
             }
         }
     }
+
+    HashTable<const FieldType*> objects(fvMsh_.db().lookupClass<FieldType>());
+
+    if (l == 0)
+    {
+        forAllIter
+        (
+            typename HashTable<const FieldType*>,
+            objects,
+            iter
+        )
+        {
+            if (iter()->readOpt() == IOobject::MUST_READ)
+                if (findIndex(typeFields, iter()->name()) < 0)
+                    FatalErrorInFunction
+                        << "Count not read field " << iter()->name()
+                        << " of type " << FieldType::typeName
+                        << endl << abort(FatalError);
+        }
+    }
+
+    fields.append(typeFields);
 }
 
 template<class Type, class MeshType>
 void IO::correctBoundaryConditions(const word& fieldName, const label l)
 {
-    if (fvMsh_.time().foundObject<meshField<Type,MeshType>>(fieldName))
+    if (fvMsh_.db().foundObject<meshField<Type,MeshType>>(fieldName))
     {
         auto& field =
-            fvMsh_.time().lookupObjectRef<meshField<Type,MeshType>>(fieldName);
+            fvMsh_.db().lookupObjectRef<meshField<Type,MeshType>>(fieldName);
 
         field[l].correctBoundaryConditions();
     }

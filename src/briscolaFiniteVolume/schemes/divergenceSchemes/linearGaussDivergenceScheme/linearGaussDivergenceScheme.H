@@ -28,15 +28,14 @@ public:
     // Implicit divergence scheme
     virtual tmp<linearSystem<stencil,Type,MeshType>> imDiv
     (
-        const meshField<faceScalar,MeshType>& phi,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const faceField<scalar,MeshType>& phi,
+        const meshField<Type,MeshType>& field
     );
 
     // Explicit divergence scheme
     virtual tmp<meshField<Type,MeshType>> exDiv
     (
-        const meshField<faceScalar,MeshType>& phi,
+        const faceField<scalar,MeshType>& phi,
         const meshField<Type,MeshType>& field
     );
 };

@@ -1,4 +1,5 @@
 #include "midPointGaussDivergenceScheme.H"
+#include "restrict.H"
 
 namespace Foam
 {
@@ -23,46 +24,49 @@ template<class Type, class MeshType>
 tmp<linearSystem<stencil,Type,MeshType>>
 midPointGaussDivergenceScheme<Type,MeshType>::imDiv
 (
-    const meshField<faceScalar,MeshType>& phi,
-    const meshField<Type,MeshType>& field,
-    const scalar factor
+    const faceField<scalar,MeshType>& phi,
+    const meshField<Type,MeshType>& field
 )
 {
-    phi.restrict();
+    const bool shallow = phi.shallow();
 
-    tmp<linearSystem<stencil,Type,MeshType>> tSys
-    (
-        new linearSystem<stencil,Type,MeshType>
+    if (shallow)
+        restrict(phi);
+
+    tmp<linearSystem<stencil,Type,MeshType>> tSys =
+        linearSystem<stencil,Type,MeshType>::New
         (
             word("div(" + phi.name() + "," + field.name() + ")"),
             const_cast<meshField<Type,MeshType>&>(field)
-        )
-    );
+        );
 
     linearSystem<stencil,Type,MeshType>& sys = tSys.ref();
 
+    sys.symmetric() = false;
+    sys.diagonal() = false;
+
     meshField<stencil,MeshType>& A = sys.A();
 
-    forAllCells(A, l, d, i, j, k)
-    {
-        #ifdef NO_BLOCK_ZERO_INIT
-        A(l,d,i,j,k)[0] = Zero;
-        #endif
+    A = Zero;
 
-        for (label f = 0; f < 6; f++)
-        {
-            A(l,d,i,j,k)[f+1] = 0.5*factor*phi(l,d,i,j,k)[f];
-            A(l,d,i,j,k)[0] +=  0.5*factor*phi(l,d,i,j,k)[f];
-        }
+    forAllFaces(phi, fd, l, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        const scalar value = 0.5*phi[fd](l,d,ijk);
+
+        A(l,d,ijk)[fd*2+1] =  value;
+        A(l,d,nei)[fd*2+2] = -value;
+
+        A(l,d,ijk)[0] += value;
+        A(l,d,nei)[0] -= value;
     }
 
-    #ifdef NO_BLOCK_ZERO_INIT
-    meshField<Type,MeshType>& b = sys.b();
-    forAllCells(b, l, d, i, j, k)
-        b(l,d,i,j,k) = Zero;
-    #endif
+    sys.b() = Zero;
 
-    phi.makeShallow();
+    if (shallow)
+        collapse(phi);
 
     return tSys;
 }
@@ -71,38 +75,37 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 midPointGaussDivergenceScheme<Type,MeshType>::exDiv
 (
-    const meshField<faceScalar,MeshType>& phi,
+    const faceField<scalar,MeshType>& phi,
     const meshField<Type,MeshType>& field
 )
 {
-    tmp<meshField<Type,MeshType>> tDiv
-    (
-        new meshField<Type,MeshType>
+    tmp<meshField<Type,MeshType>> tDiv =
+        meshField<Type,MeshType>::New
         (
             "div("+phi.name()+","+field.name()+")",
             phi.fvMsh()
-        )
-    );
+        );
 
     meshField<Type,MeshType>& Div = tDiv.ref();
 
-    const meshField<scalar,MeshType>& cv =
-        phi.fvMsh().template metrics<MeshType>().cellVolumes();
+    const meshField<scalar,MeshType>& icv =
+        phi.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    forAllCells(Div, d, i, j, k)
+    Div = Zero;
+
+    forAllFaces(phi, fd, d, i, j, k)
     {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Div(d,i,j,k) = Zero;
-        #endif
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        for (label f = 0; f < 6; f++)
-            Div(d,i,j,k) +=
-                (
-                    0.5*phi(d,i,j,k)[f]*field(d,i,j,k)
-                  + 0.5*phi(d,i,j,k)[f]*field(d,neighbor(i,j,k,f))
-                )
-              / cv(d,i,j,k);
+        const Type value =
+            phi[fd](d,ijk)*0.5*(field(d,ijk) + field(d,nei));
+
+        Div(d,ijk) += value;
+        Div(d,nei) -= value;
     }
+
+    Div *= icv;
 
     return tDiv;
 }

@@ -10,20 +10,6 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-void PoissonSolver<SType,Type,MeshType>::initFlux()
-{
-    if (fluxPtr_.empty())
-        fluxPtr_.reset
-        (
-            new meshField<FaceSpace<Type>,MeshType>
-            (
-                "PoissonFlux",
-                fvMsh_
-            )
-        );
-}
-
-template<class SType, class Type, class MeshType>
 PoissonSolver<SType,Type,MeshType>::PoissonSolver
 (
     const dictionary& dict,
@@ -32,13 +18,8 @@ PoissonSolver<SType,Type,MeshType>::PoissonSolver
 :
     dict_(dict),
     fvMsh_(fvMsh),
-    computeFlux_(false),
-    rkSchemePtr_(nullptr)
-{
-    if (fvMsh.db().foundObject<RungeKuttaScheme>("rkScheme"))
-        rkSchemePtr_ =
-            &fvMsh.db().lookupObjectRef<RungeKuttaScheme>("rkScheme");
-}
+    computeFlux_(false)
+{}
 
 template<class SType, class Type, class MeshType>
 PoissonSolver<SType,Type,MeshType>::~PoissonSolver()

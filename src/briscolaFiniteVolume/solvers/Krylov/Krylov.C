@@ -1,5 +1,6 @@
 #include "Krylov.H"
 #include "diagonal.H"
+#include "diagonalSmoother.H"
 #include "PstreamGlobals.H"
 
 namespace Foam
@@ -17,7 +18,7 @@ void Krylov<SType,Type,MeshType>::prepare
     linearSystem<SType,Type,MeshType>& sys
 )
 {
-    const labelVector* offsets = SType::componentOffsets;
+    const labelVector* offsets = SType::offsets;
 
     const MPI_Comm& comm =
         Pstream::parRun()
@@ -29,8 +30,6 @@ void Krylov<SType,Type,MeshType>::prepare
     const meshLevel<label,MeshType>& numbers =
         sys.fvMsh().template metrics<MeshType>().globalCellNumbers()[0];
 
-    const List<bool> diagonal(sys.diagonal());
-
     forAll(solvers_, i)
         if (solvers_.set(i))
             KSPDestroy(&solvers_[i]);
@@ -39,12 +38,12 @@ void Krylov<SType,Type,MeshType>::prepare
         if (matrices_.set(i))
             MatDestroy(&matrices_[i]);
 
+    if (!sys.diagonal())
     forAll(A, d)
-    if (!diagonal[d])
     {
         const label m = A[d].size();
         const label M = returnReduce(m, sumOp<label>());
-        const label nz = Foam::min(label(SType::nComponents),M);
+        const label nz = Foam::min(label(SType::nCsComponents),M);
 
         // Create matrix
 
@@ -73,7 +72,7 @@ void Krylov<SType,Type,MeshType>::prepare
 
             SType coeffs = A[d](ijk);
 
-            labelList colNums(SType::nComponents);
+            labelList colNums(SType::nCsComponents);
 
             forAll(colNums, s)
                 colNums[s] = numbers(d, ijk+offsets[s]);
@@ -137,7 +136,7 @@ void Krylov<SType,Type,MeshType>::solve
     const label maxIter
 )
 {
-    const labelVector* offsets = SType::componentOffsets;
+    const labelVector* offsets = SType::offsets;
     const label nDir = MeshType::numberOfDirections;
 
     meshLevel<Type, MeshType>& x = sys.x()[0];
@@ -153,10 +152,6 @@ void Krylov<SType,Type,MeshType>::solve
       : PETSC_COMM_SELF;
 
     const label n = list(pTraits<Type>::one).size();
-
-    // Correct the boundary conditions
-
-    x.correctBoundaryConditions();
 
     // Buffer
 
@@ -207,7 +202,7 @@ void Krylov<SType,Type,MeshType>::solve
 
             const SType coeffs = A[d](ijk);
 
-            labelList colNums(SType::nComponents);
+            labelList colNums(SType::nCsComponents);
 
             forAll(colNums, s)
                 colNums[s] = numbers[d](ijk + offsets[s]);
@@ -357,24 +352,20 @@ void Krylov<SType,Type,MeshType>::solve
 {
     const label nDir = MeshType::numberOfDirections;
 
-    if (SType::nComponents > 1)
+    if (SType::nCsComponents > 1)
         sys.eliminateGhosts();
 
     sys.setForcingMask();
 
-    if
-    (
-        SType::nComponents == 1
-     || sum(sys.diagonal()) == nDir
-    )
+    if (sys.diagonal())
     {
-        sys.x().makeShallow();
-        sys.b().makeShallow();
-
-        for (int d = 0; d < nDir; d++)
-            solver<SType,Type,MeshType>::smoother::smoothDiag(sys, 0, d);
-
-        sys.x().correctBoundaryConditions();
+        diagonalSmoother<SType,Type,MeshType>::Smooth
+        (
+            sys,
+            0,
+            1,
+            labelList(MeshType::numberOfDirections, 0)
+        );
 
         this->printSolverStats
         (

@@ -6,16 +6,10 @@ FoamFile
     object      f;
 }
 
-initialCondition
-{
-
-}
-
 boundaryConditions
 {
     default
     {
-        type    Dirichlet;
-        values  (1 1 1);
+        type    dummy;
     }
 }

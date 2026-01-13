@@ -11,7 +11,7 @@ const char* const vertexVector::csType::componentNames[] =
     {"v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7"};
 
 template<>
-const labelVector vertexVector::csType::componentOffsets[] =
+const labelVector vertexVector::csType::offsets[] =
     {
         briscola::vertexOffset0,
         briscola::vertexOffset1,

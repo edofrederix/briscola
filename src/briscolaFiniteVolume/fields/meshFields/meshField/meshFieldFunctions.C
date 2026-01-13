@@ -30,18 +30,14 @@ template<class Type, class MeshType>
 tmp<meshField<SCALARPRODTYPE,MeshType>>
 mag(const meshField<Type,MeshType>& f)
 {
-    tmp<meshField<SCALARPRODTYPE,MeshType>> tRes
-    (
-        new meshField<SCALARPRODTYPE,MeshType>
+    tmp<meshField<SCALARPRODTYPE,MeshType>> tRes =
+        meshField<SCALARPRODTYPE,MeshType>::New
         (
             "mag("+f.name()+")",
-            f.fvMsh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            f.deep()
-        )
-    );
+            f.fvMsh()
+        );
+
+    tRes->make(f.deep());
 
     mag(tRes.ref(), f);
 
@@ -82,18 +78,14 @@ template<class Type, class MeshType>
 tmp<meshField<typename meshField<Type,MeshType>::cmptType,MeshType>>
 cmptMax(const meshField<Type,MeshType>& f)
 {
-    tmp<meshField<typename meshField<Type,MeshType>::cmptType,MeshType>> tRes
-    (
-        new meshField<typename meshField<Type,MeshType>::cmptType,MeshType>
+    tmp<meshField<typename meshField<Type,MeshType>::cmptType,MeshType>> tRes =
+        meshField<typename meshField<Type,MeshType>::cmptType,MeshType>::New
         (
             "cmptMax("+f.name()+")",
-            f.fvMsh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            f.deep()
-        )
-    );
+            f.fvMsh()
+        );
+
+    tRes->make(f.deep());
 
     cmptMax(tRes.ref(), f);
 
@@ -106,7 +98,11 @@ cmptMax(const tmp<meshField<Type,MeshType>>& tf)
 {
     typedef typename meshField<Type,MeshType>::cmptType cmptType;
     tmp<meshField<cmptType,MeshType>> tRes =
-        reuseFieldTmp<cmptType,Type,MeshType>::New(tf,"cmptMax("+tf->name()+")");
+        reuseFieldTmp<cmptType,Type,MeshType>::New
+        (
+            tf,
+            "cmptMax("+tf->name()+")"
+        );
 
     cmptMax(tRes.ref(), tf());
 
@@ -131,18 +127,14 @@ template<class Type, class MeshType>
 tmp<meshField<typename meshField<Type,MeshType>::cmptType,MeshType>>
 cmptMin(const meshField<Type,MeshType>& f)
 {
-    tmp<meshField<typename meshField<Type,MeshType>::cmptType,MeshType>> tRes
-    (
-        new meshField<typename meshField<Type,MeshType>::cmptType,MeshType>
+    tmp<meshField<typename meshField<Type,MeshType>::cmptType,MeshType>> tRes =
+        meshField<typename meshField<Type,MeshType>::cmptType,MeshType>::New
         (
             "cmptMin("+f.name()+")",
-            f.fvMsh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            f.deep()
-        )
-    );
+            f.fvMsh()
+        );
+
+    tRes->make(f.deep());
 
     cmptMin(tRes.ref(), f);
 
@@ -155,8 +147,11 @@ cmptMin(const tmp<meshField<Type,MeshType>>& tf)
 {
     typedef typename meshField<Type,MeshType>::cmptType cmptType;
     tmp<meshField<cmptType,MeshType>> tRes =
-        reuseFieldTmp<cmptType,Type,MeshType>::
-        New(tf,"cmptMin("+tf->name()+")");
+        reuseFieldTmp<cmptType,Type,MeshType>::New
+        (
+            tf,
+            "cmptMin("+tf->name()+")"
+        );
 
     cmptMin(tRes.ref(), tf());
 
@@ -181,18 +176,14 @@ template<class Type, class MeshType>
 tmp<meshField<typename meshField<Type,MeshType>::cmptType,MeshType>>
 cmptAv(const meshField<Type,MeshType>& f)
 {
-    tmp<meshField<typename meshField<Type,MeshType>::cmptType,MeshType>> tRes
-    (
-        new meshField<typename meshField<Type,MeshType>::cmptType,MeshType>
+    tmp<meshField<typename meshField<Type,MeshType>::cmptType,MeshType>> tRes =
+        meshField<typename meshField<Type,MeshType>::cmptType,MeshType>::New
         (
             "cmptAv("+f.name()+")",
-            f.fvMsh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            f.deep()
-        )
-    );
+            f.fvMsh()
+        );
+
+    tRes->make(f.deep());
 
     cmptAv(tRes.ref(), f);
 
@@ -230,18 +221,14 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 cmptMag(const meshField<Type,MeshType>& f)
 {
-    tmp<meshField<Type,MeshType>> tRes
-    (
-        new meshField<Type,MeshType>
+    tmp<meshField<Type,MeshType>> tRes =
+        meshField<Type,MeshType>::New
         (
             "cmptMag("+f.name()+")",
-            f.fvMsh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            f.deep()
-        )
-    );
+            f.fvMsh()
+        );
+
+    tRes->make(f.deep());
 
     cmptMag(tRes.ref(), f);
 
@@ -252,7 +239,8 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 cmptMag(const tmp<meshField<Type,MeshType>>& tf)
 {
-    tmp<meshField<Type,MeshType>> tRes = New(tf,"cmptMag("+tf->name()+")");
+    tmp<meshField<Type,MeshType>> tRes =
+        reuseFieldTmp<Type,Type,MeshType>::New(tf,"cmptMag("+tf->name()+")");
 
     cmptMag(tRes.ref(), tf());
 
@@ -277,18 +265,14 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 cmptSqr(const meshField<Type,MeshType>& f)
 {
-    tmp<meshField<Type,MeshType>> tRes
-    (
-        new meshField<Type,MeshType>
+    tmp<meshField<Type,MeshType>> tRes =
+        meshField<Type,MeshType>::New
         (
             "cmptSqr("+f.name()+")",
-            f.fvMsh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            f.deep()
-        )
-    );
+            f.fvMsh()
+        );
+
+    tRes->make(f.deep());
 
     cmptSqr(tRes.ref(), f);
 
@@ -299,7 +283,8 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 cmptSqr(const tmp<meshField<Type,MeshType>>& tf)
 {
-    tmp<meshField<Type,MeshType>> tRes = New(tf,"cmptSqr("+tf->name()+")");
+    tmp<meshField<Type,MeshType>> tRes =
+        reuseFieldTmp<Type,Type,MeshType>::New(tf,"cmptSqr("+tf->name()+")");
 
     cmptSqr(tRes.ref(), tf());
 
@@ -324,18 +309,14 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 cmptSqrt(const meshField<Type,MeshType>& f)
 {
-    tmp<meshField<Type,MeshType>> tRes
-    (
-        new meshField<Type,MeshType>
+    tmp<meshField<Type,MeshType>> tRes =
+        meshField<Type,MeshType>::New
         (
             "cmptSqrt("+f.name()+")",
-            f.fvMsh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            f.deep()
-        )
-    );
+            f.fvMsh()
+        );
+
+    tRes->make(f.deep());
 
     cmptSqrt(tRes.ref(), f);
 
@@ -346,7 +327,8 @@ template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>>
 cmptSqrt(const tmp<meshField<Type,MeshType>>& tf)
 {
-    tmp<meshField<Type,MeshType>> tRes = New(tf,"cmptSqrt("+tf->name()+")");
+    tmp<meshField<Type,MeshType>> tRes =
+        reuseFieldTmp<Type,Type,MeshType>::New(tf,"cmptSqrt("+tf->name()+")");
 
     cmptSqrt(tRes.ref(), tf());
 
@@ -611,7 +593,7 @@ template<class Type, class MeshType>                                           \
 List<ReturnType>                                                               \
 gFunc(const tmp<meshField<Type,MeshType>>& tf, const label comm)               \
 {                                                                              \
-    List<ReturnType> ret(gFunc(tf->operator[](0),comm));                       \
+    List<ReturnType> ret(gFunc(tf(),comm));                                    \
     if (tf.isTmp()) tf.clear();                                                \
     return ret;                                                                \
 }

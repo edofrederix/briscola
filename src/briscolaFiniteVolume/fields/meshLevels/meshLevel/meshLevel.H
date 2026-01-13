@@ -1,7 +1,8 @@
 #ifndef meshLevel_H
 #define meshLevel_H
 
-#include "PtrList.H"
+#include "meshFieldFwd.H"
+#include "FastPtrList.H"
 #include "List.H"
 
 #include "block.H"
@@ -9,7 +10,7 @@
 
 #include "meshDirection.H"
 
-// #define BOUNDARYEXCHANGE 1
+#define BOUNDARYEXCHANGE 1
 
 namespace Foam
 {
@@ -23,12 +24,9 @@ namespace fv
 class fvMesh;
 
 template<class Type, class MeshType>
-class meshField;
-
-template<class Type, class MeshType>
 class meshLevel
 :
-    public PtrList<meshDirection<Type,MeshType>>,
+    public FastPtrList<meshDirection<Type,MeshType>>,
     public refCount
 {
 public:
@@ -61,18 +59,23 @@ public:
     // Runtime type information
     TypeName("meshLevel");
 
+    // Data type
+    typedef Type dataType;
+
+    // Mesh type
+    typedef MeshType meshType;
+
     // Component type
     typedef typename pTraits<Type>::cmptType cmptType;
 
     // List type
-    typedef PtrList<meshDirection<Type,MeshType>> listType;
+    typedef FastPtrList<meshDirection<Type,MeshType>> listType;
 
     // Main constructor: construct from owner field, mesh and level number
 
     meshLevel
     (
         meshField<Type,MeshType>& mshField,
-        const fvMesh& fvMsh,
         const label l
     );
 
@@ -118,6 +121,34 @@ public:
         const List<Type>& v
     );
 
+    // Temporary level constructors
+
+    static tmp<meshLevel<Type,MeshType>> New
+    (
+        meshField<Type,MeshType>& mshField,
+        const label l
+    )
+    {
+        return
+            tmp<meshLevel<Type,MeshType>>
+            (
+                new meshLevel<Type,MeshType>(mshField,l)
+            );
+    }
+
+    static tmp<meshLevel<Type,MeshType>> New
+    (
+        const fvMesh& fvMsh,
+        const label l
+    )
+    {
+        return
+            tmp<meshLevel<Type,MeshType>>
+            (
+                new meshLevel<Type,MeshType>(fvMsh,l)
+            );
+    }
+
     // Clone
 
     inline autoPtr<meshLevel<Type,MeshType>> clone() const
@@ -155,63 +186,40 @@ public:
     // Destructor
     virtual ~meshLevel();
 
-    // Access to the directions. Use the operator() for this because it doesn't
-    // perform any bounds checking which is expensive.
+    // Access to the directions
     inline meshDirection<Type,MeshType>& operator[](label d)
     {
-        #ifdef FULLDEBUG
-
-        if (d < 0 || d >= listType::size())
-            FatalErrorInFunction
-                << "Index " << d << " out of range 0 ... " << listType::size()-1
-                << endl << abort(FatalError);
-
-        #endif
-
-        return *const_cast<meshDirection<Type,MeshType>*>
-        (
-            listType::operator()(d)
-        );
+        return listType::operator[](d);
     }
 
-    // Const access to the directions. Use the operator() for this because it
-    // doesn't perform any bounds checking which is expensive.
+    // Const access to the directions
     inline const meshDirection<Type,MeshType>& operator[](label d) const
     {
-        #ifdef FULLDEBUG
-
-        if (d < 0 || d >= listType::size())
-            FatalErrorInFunction
-                << "Index " << d << " out of range 0 ... " << listType::size()-1
-                << endl << abort(FatalError);
-
-        #endif
-
-        return *listType::operator()(d);
+        return listType::operator[](d);
     }
 
     // Alias access function
     inline meshDirection<Type,MeshType>& direction(const label d)
     {
-        return this->operator[](d);
+        return listType::operator[](d);
     }
 
     // Alias const access function
     inline const meshDirection<Type,MeshType>& direction(const label d) const
     {
-        return this->operator[](d);
+        return listType::operator[](d);
     }
 
     // Access the first direction
     inline meshDirection<Type,MeshType>& direction()
     {
-        return this->operator[](0);
+        return listType::operator[](0);
     }
 
     // Const access the first direction
     inline const meshDirection<Type,MeshType>& direction() const
     {
-        return this->operator[](0);
+        return listType::operator[](0);
     }
 
     // Number of directions
@@ -305,6 +313,20 @@ public:
 
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();
+
+    // Return a component
+    tmp<meshLevel<cmptType,MeshType>> component(const label) const;
+
+    // Set a component from a directional list of values
+    void replace(const label, const List<cmptType>&);
+
+    // Set a component from a component level
+    void replace(const label, const meshLevel<cmptType,MeshType>&);
+    void replace(const label, const tmp<meshLevel<cmptType,MeshType>>&);
+
+    // Set maximum/minimum of level and given value
+    void max(const Type&);
+    void min(const Type&);
 
     // Member operators
 

@@ -10,7 +10,6 @@ colocatedVectorField U
 );
 
 U = Zero;
-U.correctBoundaryConditions();
 
 // Pressure
 
@@ -24,21 +23,20 @@ colocatedScalarField p
 );
 
 p = Zero;
-p.correctBoundaryConditions();
 
 // Flux
 
-colocatedFaceScalarField phi
+colocatedScalarFaceField phi
 (
     "phi",
     fvMsh,
-    IOobject::NO_READ,
+    IOobject::READ_IF_PRESENT,
     IOobject::AUTO_WRITE,
     true
 );
 
+phi = Zero;
 phi.setRestrictionScheme("flux");
-phi = ex::faceFlux(U);
 
 // Viscosity
 
@@ -55,37 +53,20 @@ colocatedVectorField exSource
     true
 );
 
-colocatedScalarField imSourceCoeff
-(
-    "sourceCoeff",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::NO_WRITE,
-    true
-);
-
 exSource =
     fvMsh.metrics<colocated>().fluidMask()
-  * vector(solverDict.lookupOrDefault("source", vector::zero));
-
-imSourceCoeff =
-    fvMsh.metrics<colocated>().fluidMask()
-  * scalar(solverDict.lookupOrDefault("sourceCoeff", 0.0));
+  * solverDict.lookupOrDefault("source", vector::zero);
 
 // Runge-Kutta stage sources
 
-PtrList<colocatedVectorField> stageSourcesA
-(
-    rk.stageList<colocatedVectorField>("A")
-);
+FastPtrList<colocatedVectorField>& stageSourcesA =
+    rk.newStageList<colocatedVectorField>("A");
 
-PtrList<colocatedVectorField> stageSourcesB
-(
-    rk.stageList<colocatedVectorField>("B")
-);
+FastPtrList<colocatedVectorField>& stageSourcesB =
+    rk.newStageList<colocatedVectorField>("B");
 
-linearSystem<stencil,vector,colocated> USysA("A(U)", U);
-linearSystem<stencil,vector,colocated> USysB("B(U)", U);
+tmp<colocatedVectorSystem> tUSysA;
+tmp<colocatedVectorSystem> tUSysB;
 
 // Solvers
 

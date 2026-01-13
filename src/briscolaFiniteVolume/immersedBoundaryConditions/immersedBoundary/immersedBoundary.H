@@ -26,6 +26,7 @@ template<class MeshType>
 class immersedBoundary
 {
 protected:
+
     // Reference to mesh
     const fvMesh& fvMsh_;
 
@@ -67,7 +68,7 @@ protected:
     meshField<vector,MeshType> mirrorPoints_;
 
     // List of shapes making up the immersed boundary
-    PtrList<immersedBoundaryShape> shapes_;
+    FastPtrList<immersedBoundaryShape> shapes_;
 
     // Set mask fields
     void setMasks();

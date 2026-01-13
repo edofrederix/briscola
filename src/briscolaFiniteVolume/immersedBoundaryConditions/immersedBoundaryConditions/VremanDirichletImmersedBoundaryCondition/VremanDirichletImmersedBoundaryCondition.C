@@ -21,7 +21,7 @@ VremanDirichletImmersedBoundaryCondition
 :
     immersedBoundaryCondition<Type,MeshType>(mshField, ib, &ib.ghostMask()),
     exchanges_(mshField.fvMsh().msh().size()),
-    boundaryValues_(this->dict().lookup("values"))
+    boundaryValues_(this->read("value"))
 {
     // Check shape overlap
 
@@ -62,9 +62,9 @@ VremanDirichletImmersedBoundaryCondition
 
                 exchangePoints[c] = ijk;
 
-                for (int fi = 0; fi < 6; fi++)
+                for (int f = 0; f < 6; f++)
                 {
-                    const labelVector fo = faceOffsets[fi];
+                    const labelVector fo = faceOffsets[f];
 
                     if (!this->ib_.mask()[l][d](ijk + fo))
                     {
@@ -116,32 +116,29 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
     const meshDirection<faceScalar,MeshType>& y =
         this->ib_.wallDistGhost()[l][d];
 
-    List<Type> data
-    (
-        move(exchanges_[l][d].dataFunc(this->mshField_))
-    );
+    List<Type> data(move(exchanges_[l][d](this->mshField_)));
 
     label c = 0;
 
     forAllCells(x,i,j,k)
     {
-        if (mask(i,j,k))
-        {
-            const labelVector ijk(i,j,k);
+        const labelVector ijk(i,j,k);
 
-            for (int fi = 0; fi < 6; fi++)
+        if (mask(ijk))
+        {
+            for (int f = 0; f < 6; f++)
             {
-                const labelVector fo = faceOffsets[fi];
+                const labelVector fo = faceOffsets[f];
 
                 if (!this->ib_.mask()(ijk + fo))
                 {
-                    const scalar xi = y(i,j,k)[fi];
+                    const scalar xi = y(ijk)[f];
 
                     scalar w1 =  2.0 - (2.0 - xi);
                     scalar w2 = -1.0 + (1.0 - xi);
 
-                    x(i,j,k) =
-                        (1.0 - omega)*x(i,j,k)
+                    x(ijk) =
+                        (1.0 - omega)*x(ijk)
                       + omega
                       * (
                             boundaryValues_[d]

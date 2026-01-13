@@ -26,10 +26,11 @@ public:
     vanLeerLimiterScheme(const fvMesh&, Istream& is);
 
     // Return the limiter field
-    virtual tmp<meshField<faceScalar,MeshType>> psi
+    virtual tmp<faceField<scalar,MeshType>> psi
     (
-        const meshField<faceScalar,MeshType>& phi,
-        const meshField<Type,MeshType>& field
+        const faceField<scalar,MeshType>& phi,
+        const meshField<Type,MeshType>& field,
+        const bool deep
     );
 };
 

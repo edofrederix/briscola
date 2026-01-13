@@ -2,7 +2,7 @@
 #define faceFluxScheme_H
 
 #include "scheme.H"
-#include "FaceSpace.H"
+#include "faceFields.H"
 #include "meshFields.H"
 #include "meshLevels.H"
 #include "meshDirections.H"
@@ -51,19 +51,19 @@ public:
     virtual ~faceFluxScheme();
 
     // Face flux of a colocated vector field
-    virtual tmp<colocatedFaceScalarField> faceFlux
+    virtual tmp<colocatedScalarFaceField> faceFlux
     (
         const colocatedVectorField&
     ) = 0;
 
     // Face flux of a colocated tensor field
-    virtual tmp<colocatedFaceVectorField> faceFlux
+    virtual tmp<colocatedVectorFaceField> faceFlux
     (
         const colocatedTensorField&
     ) = 0;
 
     // Face flux of a staggered scalar field
-    virtual tmp<staggeredFaceScalarField> faceFlux
+    virtual tmp<staggeredScalarFaceField> faceFlux
     (
         const staggeredScalarField&
     ) = 0;
@@ -71,12 +71,12 @@ public:
 
 // Reconstruct colocated flux field from staggered velocity
 
-tmp<colocatedFaceScalarField> coloFaceFlux
+tmp<colocatedScalarFaceField> coloFaceFlux
 (
     const staggeredScalarField&
 );
 
-tmp<colocatedFaceScalarField> coloFaceFlux
+tmp<colocatedScalarFaceField> coloFaceFlux
 (
     const tmp<staggeredScalarField>&
 );

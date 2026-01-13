@@ -11,7 +11,7 @@ const char* const faceVector::csType::componentNames[] =
     {"l", "r", "b", "t", "a", "f"};
 
 template<>
-const labelVector faceVector::csType::componentOffsets[] =
+const labelVector faceVector::csType::offsets[] =
     {
         briscola::faceOffset0,
         briscola::faceOffset1,

@@ -13,8 +13,8 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
-void twoPhaseMultiVof<BaseModel>::initAlphas()
+template<class ViscosityModel>
+void twoPhaseMultiVof<ViscosityModel>::initAlphas()
 {
     alphas_.clear();
 
@@ -84,8 +84,8 @@ void twoPhaseMultiVof<BaseModel>::initAlphas()
     );
 }
 
-template<class BaseModel>
-void twoPhaseMultiVof<BaseModel>::addAlphaField()
+template<class ViscosityModel>
+void twoPhaseMultiVof<ViscosityModel>::addAlphaField()
 {
     alphas_.append
     (
@@ -153,8 +153,8 @@ void twoPhaseMultiVof<BaseModel>::addAlphaField()
     #endif
 }
 
-template<class BaseModel>
-void twoPhaseMultiVof<BaseModel>::computeGlobalCCL()
+template<class ViscosityModel>
+void twoPhaseMultiVof<ViscosityModel>::computeGlobalCCL()
 {
     globalCCL_ = Zero;
 
@@ -172,8 +172,8 @@ void twoPhaseMultiVof<BaseModel>::computeGlobalCCL()
     }
 }
 
-template<class BaseModel>
-void twoPhaseMultiVof<BaseModel>::computeGlobalN()
+template<class ViscosityModel>
+void twoPhaseMultiVof<ViscosityModel>::computeGlobalN()
 {
     globalN_ = Zero;
 
@@ -187,8 +187,8 @@ void twoPhaseMultiVof<BaseModel>::computeGlobalN()
 }
 
 
-template<class BaseModel>
-void twoPhaseMultiVof<BaseModel>::setPhi()
+template<class ViscosityModel>
+void twoPhaseMultiVof<ViscosityModel>::setPhi()
 {
     phi_.clear();
 
@@ -202,8 +202,8 @@ void twoPhaseMultiVof<BaseModel>::setPhi()
 }
 
 
-template<class BaseModel>
-void twoPhaseMultiVof<BaseModel>::overwriteTagsWithIDs()
+template<class ViscosityModel>
+void twoPhaseMultiVof<ViscosityModel>::overwriteTagsWithIDs()
 {
     int Np = 0;
 
@@ -221,8 +221,8 @@ void twoPhaseMultiVof<BaseModel>::overwriteTagsWithIDs()
     }
 }
 
-template<class BaseModel>
-void twoPhaseMultiVof<BaseModel>::setConnectivityMatrix()
+template<class ViscosityModel>
+void twoPhaseMultiVof<ViscosityModel>::setConnectivityMatrix()
 {
     connectivityMatrix_.setSize(globalN_);
 
@@ -282,8 +282,8 @@ void twoPhaseMultiVof<BaseModel>::setConnectivityMatrix()
     }
 }
 
-template<class BaseModel>
-void twoPhaseMultiVof<BaseModel>::moveFields()
+template<class ViscosityModel>
+void twoPhaseMultiVof<ViscosityModel>::moveFields()
 {
     for (int i = 0; i < connectivityMatrix_.size()-1; i++)
     {
@@ -392,14 +392,14 @@ void twoPhaseMultiVof<BaseModel>::moveFields()
     }
 }
 
-template<class BaseModel>
-twoPhaseMultiVof<BaseModel>::twoPhaseMultiVof
+template<class ViscosityModel>
+twoPhaseMultiVof<ViscosityModel>::twoPhaseMultiVof
 (
     const fvMesh& fvMsh,
     const IOdictionary& dict
 )
 :
-    BaseModel(fvMsh, dict),
+    ViscosityModel(fvMsh, dict),
     alphas_(),
     normalSchemes_(),
     surfaceTensionSchemes_(),
@@ -430,13 +430,13 @@ twoPhaseMultiVof<BaseModel>::twoPhaseMultiVof
     globalCCL_ = Zero;
 }
 
-template<class BaseModel>
-twoPhaseMultiVof<BaseModel>::twoPhaseMultiVof
+template<class ViscosityModel>
+twoPhaseMultiVof<ViscosityModel>::twoPhaseMultiVof
 (
     const twoPhaseMultiVof& tpm
 )
 :
-    BaseModel(tpm),
+    ViscosityModel(tpm),
     alphas_(tpm.alphas_),
     normalSchemes_(tpm.normalSchemes_),
     surfaceTensionSchemes_(tpm.surfaceTensionSchemes_),
@@ -458,23 +458,19 @@ twoPhaseMultiVof<BaseModel>::twoPhaseMultiVof
         surfaceTensionSchemes_[i].correct();
     }
 
-    BaseModel::correctMixture();
+    ViscosityModel::correct();
 }
 
-template<class BaseModel>
-twoPhaseMultiVof<BaseModel>::~twoPhaseMultiVof()
-{}
-
-template<class BaseModel>
-tmp<colocatedFaceScalarField>
-twoPhaseMultiVof<BaseModel>::surfaceTensionFlux()
+template<class ViscosityModel>
+tmp<colocatedScalarFaceField>
+twoPhaseMultiVof<ViscosityModel>::flux()
 {
-    tmp<colocatedFaceScalarField> tSurfaceTensionFlux
+    tmp<colocatedScalarFaceField> tSurfaceTensionFlux
     (
-        new colocatedFaceScalarField("surfaceTensionFlux", this->fvMsh_)
+        new colocatedScalarFaceField("surfaceTensionFlux", this->fvMsh_)
     );
 
-    colocatedFaceScalarField& flux = tSurfaceTensionFlux.ref();
+    colocatedScalarFaceField& flux = tSurfaceTensionFlux.ref();
 
     #ifdef NO_BLOCK_ZERO_INIT
     flux = Zero;
@@ -482,7 +478,7 @@ twoPhaseMultiVof<BaseModel>::surfaceTensionFlux()
 
     forAll(surfaceTensionSchemes_, i)
     {
-        flux += static_cast<colocatedFaceScalarField&>
+        flux += static_cast<colocatedScalarFaceField&>
             (
                 surfaceTensionSchemes_[i]
             );
@@ -491,8 +487,8 @@ twoPhaseMultiVof<BaseModel>::surfaceTensionFlux()
     return tSurfaceTensionFlux;
 }
 
-template<class BaseModel>
-void twoPhaseMultiVof<BaseModel>::correct()
+template<class ViscosityModel>
+void twoPhaseMultiVof<ViscosityModel>::correct()
 {
     if (alphas_.empty())
     {
@@ -569,7 +565,7 @@ void twoPhaseMultiVof<BaseModel>::correct()
         normalSchemes_[i].correct();
     }
 
-    BaseModel::correctMixture();
+    ViscosityModel::correct();
 }
 
 }

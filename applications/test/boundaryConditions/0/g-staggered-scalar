@@ -6,16 +6,11 @@ FoamFile
     object      g;
 }
 
-initialCondition
-{
-
-}
-
 boundaryConditions
 {
     default
     {
         type        Neumann;
-        gradients   (0 0 0);
+        gradient    (0 0 0);
     }
 }

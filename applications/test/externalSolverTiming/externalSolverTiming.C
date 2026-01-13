@@ -1,7 +1,7 @@
 #include "arguments.H"
 #include "Time.H"
 #include "fvMesh.H"
-#include "linearSystem.H"
+#include "linearSystems.H"
 #include "imSchemes.H"
 #include "solver.H"
 #include "ticToc.H"
@@ -58,8 +58,8 @@ int main(int argc, char *argv[])
     colocatedScalarSystem sys(im::laplacian(f));
     sys -= im::ddt(f);
 
-    sys.x().restrict();
-    sys.b().restrict();
+    restrict(sys.x());
+    restrict(sys.b());
 
     sys.eliminateGhosts();
     sys.singular();

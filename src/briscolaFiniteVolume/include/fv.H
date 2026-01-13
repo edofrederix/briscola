@@ -1,7 +1,7 @@
 #include "fvMesh.H"
 #include "IO.H"
 #include "meshFields.H"
-#include "linearSystem.H"
+#include "linearSystems.H"
 #include "immersedBoundary.H"
 #include "solvers.H"
 #include "PoissonSolvers.H"

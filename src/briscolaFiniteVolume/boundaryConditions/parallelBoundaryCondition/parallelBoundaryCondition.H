@@ -30,10 +30,10 @@ protected:
     label tag_;
 
     // Send buffers for each mesh direction
-    PtrList<block<Type>> sendBuffers_;
+    FastPtrList<block<Type>> sendBuffers_;
 
     // Receive buffers for each mesh direction
-    PtrList<block<Type>> recvBuffers_;
+    FastPtrList<block<Type>> recvBuffers_;
 
     // Outstanding send requests
     label outstandingSendRequest_;
@@ -88,6 +88,12 @@ public:
             new parallelBoundaryCondition<Type,MeshType>(field,*this)
         );
     }
+
+    // Neighbor processor number
+    label neighborProcNum() const { return neighborProcNum_; }
+
+    // Tag number
+    label tag() const { return tag_; }
 
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const

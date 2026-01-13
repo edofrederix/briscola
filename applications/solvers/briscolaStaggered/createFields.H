@@ -10,7 +10,6 @@ staggeredScalarField U
 );
 
 U = Zero;
-U.correctBoundaryConditions();
 
 // Reconstructed colocated velocity
 
@@ -37,7 +36,19 @@ colocatedScalarField p
 );
 
 p = Zero;
-p.correctBoundaryConditions();
+
+// Flux
+
+staggeredScalarFaceField phi
+(
+    "phi",
+    fvMsh,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE,
+    true
+);
+
+phi = Zero;
 
 // Viscosity
 
@@ -54,37 +65,25 @@ staggeredScalarField exSource
     true
 );
 
-staggeredScalarField imSourceCoeff
-(
-    "sourceCoeff",
-    fvMsh,
-    IOobject::NO_READ,
-    IOobject::NO_WRITE,
-    true
-);
+// Project the source vector onto the local coordinate system
+
+const tensor base =
+    fvMsh.msh().cast<rectilinearMesh>().base();
 
 exSource =
     fvMsh.metrics<staggered>().fluidMask()
-  * scalarList(solverDict.lookup("source"));
-
-imSourceCoeff =
-    fvMsh.metrics<staggered>().fluidMask()
-  * scalarList(solverDict.lookup("sourceCoeff"));
+  * list(base & solverDict.lookupOrDefault("source", vector::zero));
 
 // Runge-Kutta stage sources
 
-PtrList<staggeredScalarField> stageSourcesA
-(
-    rk.stageList<staggeredScalarField>("A")
-);
+FastPtrList<staggeredScalarField>& stageSourcesA =
+    rk.newStageList<staggeredScalarField>("A");
 
-PtrList<staggeredScalarField> stageSourcesB
-(
-    rk.stageList<staggeredScalarField>("B")
-);
+FastPtrList<staggeredScalarField>& stageSourcesB =
+    rk.newStageList<staggeredScalarField>("B");
 
-linearSystem<stencil,scalar,staggered> USysA("A(U)", U);
-linearSystem<stencil,scalar,staggered> USysB("B(U)", U);
+tmp<staggeredScalarSystem> tUSysA;
+tmp<staggeredScalarSystem> tUSysB;
 
 // Solvers
 
@@ -109,7 +108,3 @@ autoPtr<PoissonSolver<stencil,scalar,colocated>> Poisson
 );
 
 Poisson->enableFlux();
-
-staggeredFaceScalarField phi("phi", fvMsh);
-
-phi = ex::faceFlux(U);

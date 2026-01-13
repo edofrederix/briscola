@@ -77,7 +77,7 @@ protected:
     );
 
     // Solve system and provide parameters
-    virtual void solve
+    void solve
     (
         linearSystem<SType,Type,MeshType>& sys,
         const scalar relTol,
@@ -90,7 +90,7 @@ protected:
     );
 
     // Multigrid cycle for given mesh level
-    virtual void cycle
+    void cycle
     (
         linearSystem<SType,Type,MeshType>& sys,
         meshField<Type,MeshType>& r,
@@ -100,21 +100,6 @@ protected:
         const label nSweepsPre,
         const label nSweepsPost,
         const label coarseLevel
-    );
-
-public:
-
-    // Runtime type information
-    TypeName("MG");
-
-    // Construct from dictionary and mesh
-    MG(const dictionary&, const fvMesh&);
-
-    // Solve the given system with optional constant matrix indicator
-    virtual void solve
-    (
-        linearSystem<SType,Type,MeshType>& sys,
-        const bool constMatrix = false
     );
 
     // Number of level repetitions
@@ -137,6 +122,21 @@ public:
             return 1 + (l > 0 && visits[l] == 0);
         }
     }
+
+public:
+
+    // Runtime type information
+    TypeName("MG");
+
+    // Construct from dictionary and mesh
+    MG(const dictionary&, const fvMesh&);
+
+    // Solve the given system with optional constant matrix indicator
+    virtual void solve
+    (
+        linearSystem<SType,Type,MeshType>& sys,
+        const bool constMatrix = false
+    );
 };
 
 }

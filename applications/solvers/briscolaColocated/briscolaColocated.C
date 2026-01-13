@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     (
         IOobject
         (
-            "briscolaColocatedDict",
+            "briscolaSinglePhaseDict",
             fvMsh.time().system(),
             fvMsh.time(),
             IOobject::MUST_READ,
@@ -66,17 +66,14 @@ int main(int argc, char *argv[])
 
                 if (rk.imStageA())
                 {
-                    USysA = -im::div(phi,U);
-                    USys -= A*USysA;
+                    tUSysA = -im::div(phi,U);
+                    USys -= A*tUSysA.ref();
                 }
 
                 if (rk.imStageB())
                 {
-                    USysB =
-                        im::laplacian(nu,U)
-                      + im::source(imSourceCoeff,U);
-
-                    USys -= B*USysB;
+                    tUSysB = im::laplacian(nu,U);
+                    USys -= B*tUSysB.ref();
                 }
 
                 // Solve predictor
@@ -85,7 +82,7 @@ int main(int argc, char *argv[])
 
                 // Pressure equation
 
-                const colocatedFaceScalarField phiStar(ex::faceFlux(U));
+                const colocatedScalarFaceField phiStar(ex::faceFlux(U));
 
                 Poisson->solve(p, ex::div(phiStar)/(-C*deltaT));
 
@@ -103,14 +100,14 @@ int main(int argc, char *argv[])
             if (rk.storeStageA())
                 stageSourcesA[stage-1] =
                     rk.solve() && rk.imStageA()
-                  ? USysA.evaluate()
+                  ? tUSysA->evaluate()
                   : -ex::div(phi,U);
 
             if (rk.storeStageB())
                 stageSourcesB[stage-1] =
                     rk.solve() && rk.imStageB()
-                  ? USysB.evaluate()
-                  : ex::laplacian(nu,U) + ex::source(imSourceCoeff,U);
+                  ? tUSysB->evaluate()
+                  : ex::laplacian(nu,U);
         }
 
         io.write<colocated>();

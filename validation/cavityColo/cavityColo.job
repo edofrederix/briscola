@@ -1,4 +1,0 @@
-#!/bin/bash
-#SBATCH -n 64
-
-./cavityColo.sh

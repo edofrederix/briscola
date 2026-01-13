@@ -2,6 +2,7 @@
 #include "addToRunTimeSelectionTable.H"
 #include "normalScheme.H"
 #include "surfaceTensionScheme.H"
+#include "exSchemesInterpolation.H"
 
 #include "colocated.H"
 #include "staggered.H"
@@ -56,9 +57,6 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
 {
     alpha_.setRestrictionScheme("volumeWeighted");
 }
-
-twoPhaseModel::~twoPhaseModel()
-{}
 
 template<>
 autoPtr<twoPhaseModel> twoPhaseModel::New<colocated>

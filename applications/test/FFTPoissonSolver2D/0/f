@@ -6,41 +6,36 @@ FoamFile
     object      f;
 }
 
-initialCondition
-{
-
-}
-
 boundaryConditions
 {
     default
     {
         type    Dirichlet;
-        values  (0);
+        value   0;
     }
 
     left
     {
         type    Dirichlet;
-        values  (0);
+        value   0;
     }
 
     right
     {
         type    Dirichlet;
-        values  (0);
+        value   0;
     }
 
     bottom
     {
         type    Neumann;
-        gradients  (0);
+        gradient   0;
     }
 
     top
     {
         type    Neumann;
-        gradients  (0);
+        gradient   0;
     }
 
     back

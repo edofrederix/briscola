@@ -47,8 +47,15 @@ template<class Type, class MeshType>
 void periodicBoundaryCondition<Type,MeshType>::prepare(const label l)
 {
     if (this->neighborProcNum_ != Pstream::myProcNo())
-    {
         parallelBoundaryCondition<Type,MeshType>::prepare(l);
+}
+
+template<class Type, class MeshType>
+void periodicBoundaryCondition<Type,MeshType>::evaluate(const label l)
+{
+    if (this->neighborProcNum_ != Pstream::myProcNo())
+    {
+        parallelBoundaryCondition<Type,MeshType>::evaluate(l);
     }
     else
     {
@@ -59,24 +66,17 @@ void periodicBoundaryCondition<Type,MeshType>::prepare(const label l)
         meshLevel<Type,MeshType>& field = this->mshField()[l];
 
         const labelVector bo(this->offset());
-        const faceLabel extension(this->extension());
 
         forAll(field, d)
         {
-            meshDirection<Type,MeshType>& fd = field[d];
-
             // Source start and end point
 
-            const labelVector Ss(this->S(l,d) - extension.lower());
-            const labelVector Es(this->E(l,d) + extension.upper());
+            const labelVector Ss(this->S(l,d));
+            const labelVector Es(this->E(l,d));
 
             // Target start point
 
-            const labelVector St
-            (
-                this->fvMsh_.template S<MeshType>(l,d,-bo)
-              - extension.lower()
-            );
+            const labelVector St(this->fvMsh_.template S<MeshType>(l,d,-bo));
 
             labelVector ijk;
 
@@ -84,18 +84,9 @@ void periodicBoundaryCondition<Type,MeshType>::prepare(const label l)
             for (ijk.y() = Ss.y(); ijk.y() < Es.y(); ijk.y()++)
             for (ijk.z() = Ss.z(); ijk.z() < Es.z(); ijk.z()++)
             {
-                fd(ijk-Ss+St-bo) = fd(ijk);
+                field(d,ijk-Ss+St-bo) = field(d,ijk);
             }
         }
-    }
-}
-
-template<class Type, class MeshType>
-void periodicBoundaryCondition<Type,MeshType>::evaluate(const label l)
-{
-    if (this->neighborProcNum_ != Pstream::myProcNo())
-    {
-        parallelBoundaryCondition<Type,MeshType>::evaluate(l);
     }
 }
 

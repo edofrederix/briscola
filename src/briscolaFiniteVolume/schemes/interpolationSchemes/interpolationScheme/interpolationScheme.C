@@ -69,19 +69,17 @@ tmp<meshField<Type,staggered>> stagInterp
     const meshField<Type,colocated>& field
 )
 {
-    tmp<meshField<Type,staggered>> tInterp
-    (
-        new meshField<Type,staggered>
+    tmp<meshField<Type,staggered>> tInterp =
+        meshField<Type,staggered>::New
         (
             "stagInterp("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
-    meshField<Type,staggered>& Interp = tInterp.ref();
+    meshField<Type,staggered>& interp = tInterp.ref();
 
-    forAllCells(Interp, d, i, j, k)
-        Interp(d,i,j,k) =
+    forAllCells(interp, d, i, j, k)
+        interp(d,i,j,k) =
             0.5*(field(i,j,k) + field(lowerNeighbor(i,j,k,d)));
 
     return tInterp;
@@ -96,10 +94,7 @@ tmp<meshField<Type,staggered>> stagInterp
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<Type,staggered>> tInterp
-    (
-        stagInterp(tField())
-    );
+    tmp<meshField<Type,staggered>> tInterp = stagInterp(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -108,34 +103,75 @@ tmp<meshField<Type,staggered>> stagInterp
 }
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
+tmp<meshField<Type,staggered>> stagInterp
+(
+    const faceField<Type,colocated>& field
+)
+{
+    tmp<meshField<Type,staggered>> tInterp =
+        meshField<Type,staggered>::New
+        (
+            "stagInterp("+field.name()+")",
+            field.fvMsh()
+        );
+
+    meshField<Type,staggered>& interp = tInterp.ref();
+
+    // interp = Zero;
+
+    // Colocated faces in the first direction are staggered cell centers in the
+    // first staggered direction, etc.
+
+    forAllCells(interp, d, i, j, k)
+        interp(d,i,j,k) = field[d](i,j,k);
+
+    return tInterp;
+}
+
+template<class Type>
+tmp<meshField<Type,staggered>> stagInterp
+(
+    const tmp<faceField<Type,colocated>>& tField
+)
+{
+    // No need to correct boundary conditions of the tmp because this
+    // interpolation doesn't use any ghosts
+
+    tmp<meshField<Type,staggered>> tInterp = stagInterp(tField());
+
+    if (tField.isTmp())
+        tField.clear();
+
+    return tInterp;
+}
+
+template<class Type>
+tmp<faceField<Type,staggered>> stagFaceInterp
 (
     const meshField<Type,colocated>& field
 )
 {
-    tmp<meshField<FaceSpace<Type>,staggered>> tInterp
-    (
-        new meshField<FaceSpace<Type>,staggered>
+    tmp<faceField<Type,staggered>> tInterp =
+        faceField<Type,staggered>::New
         (
             "stagFaceInterp("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
-    meshField<FaceSpace<Type>,staggered>& Interp = tInterp.ref();
+    faceField<Type,staggered>& interp = tInterp.ref();
 
-    forAllFaces(Interp, d, fd, i, j, k)
+    forAllFaces(interp, fd, d, i, j, k)
     {
         const labelVector ijk(i,j,k);
         const labelVector nei(lowerNeighbor(i,j,k,d));
 
         if (d == fd)
         {
-            Interp(d,ijk)[fd*2] = field(nei);
+            interp[fd](d,ijk) = field(nei);
         }
         else
         {
-            Interp(d,ijk)[fd*2] =
+            interp[fd](d,ijk) =
                 0.25
               * (
                     field(ijk)
@@ -144,15 +180,13 @@ tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
                   + field(lowerNeighbor(nei,fd))
                 );
         }
-
-        Interp(d,lowerNeighbor(i,j,k,fd))[fd*2+1] = Interp(d,ijk)[fd*2];
     }
 
     return tInterp;
 }
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
+tmp<faceField<Type,staggered>> stagFaceInterp
 (
     const tmp<meshField<Type,colocated>>& tField
 )
@@ -160,10 +194,8 @@ tmp<meshField<FaceSpace<Type>,staggered>> stagFaceInterp
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<FaceSpace<Type>,staggered>> tInterp
-    (
-        stagFaceInterp(tField())
-    );
+    tmp<faceField<Type,staggered>> tInterp =
+        stagFaceInterp(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -177,27 +209,18 @@ tmp<meshField<Type,colocated>> coloInterp
     const meshField<Type,staggered>& field
 )
 {
-    tmp<meshField<Type,colocated>> tInterp
-    (
-        new meshField<Type,colocated>
+    tmp<meshField<Type,colocated>> tInterp =
+        meshField<Type,colocated>::New
         (
             "coloInterp("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
-    meshField<Type,colocated>& Interp = tInterp.ref();
+    meshField<Type,colocated>& interp = tInterp.ref();
 
-    forAllCells(Interp, i, j, k)
-    {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Interp(i,j,k) = Zero;
-        #endif
-
-        for (int d = 0; d < 3; d++)
-            Interp(i,j,k) +=
-                0.5/3.0*(field(d,i,j,k) + field(upperNeighbor(i,j,k,d)));
-    }
+    forAllCells(field, d, i, j, k)
+        interp(i,j,k) +=
+            0.5/3.0*(field(d,i,j,k) + field(d,upperNeighbor(i,j,k,d)));
 
     return tInterp;
 }
@@ -211,10 +234,7 @@ tmp<meshField<Type,colocated>> coloInterp
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<Type,colocated>> tInterp
-    (
-        stagInterp(tField())
-    );
+    tmp<meshField<Type,colocated>> tInterp = stagInterp(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -222,38 +242,29 @@ tmp<meshField<Type,colocated>> coloInterp
     return tInterp;
 }
 
-
 template<class Type>
-tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
+tmp<faceField<Type,colocated>> coloFaceInterp
 (
     const meshField<Type,staggered>& field
 )
 {
-    tmp<meshField<FaceSpace<Type>,colocated>> tInterp
-    (
-        new meshField<FaceSpace<Type>,colocated>
+    tmp<faceField<Type,colocated>> tInterp =
+        faceField<Type,colocated>::New
         (
             "coloFaceInterp("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
-    meshField<FaceSpace<Type>,colocated>& Interp = tInterp.ref();
+    faceField<Type,colocated>& interp = tInterp.ref();
 
-    forAllFaces(Interp, fd, i, j, k)
-    {
-        const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,fd));
-
-        Interp(ijk)[fd*2  ] = field(fd,i,j,k);
-        Interp(nei)[fd*2+1] = Interp(ijk)[fd*2];
-    }
+    forAllFaces(interp, fd, i, j, k)
+        interp[fd](i,j,k) = field(fd,i,j,k);
 
     return tInterp;
 }
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
+tmp<faceField<Type,colocated>> coloFaceInterp
 (
     const tmp<meshField<Type,staggered>>& tField
 )
@@ -261,10 +272,8 @@ tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<FaceSpace<Type>,colocated>> tInterp
-    (
-        coloFaceInterp(tField())
-    );
+    tmp<faceField<Type,colocated>> tInterp =
+        coloFaceInterp(tField());
 
     if (tField.isTmp())
         tField.clear();
@@ -273,49 +282,43 @@ tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
 }
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
+tmp<faceField<Type,colocated>> coloFaceInterp
 (
-    const meshField<FaceSpace<Type>,staggered>& field
+    const faceField<Type,staggered>& field
 )
 {
-    tmp<meshField<FaceSpace<Type>,colocated>> tInterp
-    (
-        new meshField<FaceSpace<Type>,colocated>
+    tmp<faceField<Type,colocated>> tInterp =
+        faceField<Type,colocated>::New
         (
             "coloFaceInterp("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
-    meshField<FaceSpace<Type>,colocated>& Interp = tInterp.ref();
+    faceField<Type,colocated>& interp = tInterp.ref();
 
-    forAllFaces(Interp, fd, i, j, k)
+    forAllFaces(interp, fd, i, j, k)
     {
         const labelVector ijk(i,j,k);
-        const labelVector nei(lowerNeighbor(i,j,k,fd));
+        const labelVector nei(upperNeighbor(i,j,k,fd));
 
-        Interp(ijk)[fd*2  ] =
-            0.5*(field(fd,i,j,k)[fd*2] + field(fd,i,j,k)[fd*2+1]);
-
-        Interp(nei)[fd*2+1] = Interp(ijk)[fd*2];
+        interp[fd](ijk) =
+            0.5*(field[fd](fd,ijk) + field[fd](fd,nei));
     }
 
     return tInterp;
 }
 
 template<class Type>
-tmp<meshField<FaceSpace<Type>,colocated>> coloFaceInterp
+tmp<faceField<Type,colocated>> coloFaceInterp
 (
-    const tmp<meshField<FaceSpace<Type>,staggered>>& tField
+    const tmp<faceField<Type,staggered>>& tField
 )
 {
     if (tField.isTmp())
         tField->correctBoundaryConditions();
 
-    tmp<meshField<FaceSpace<Type>,colocated>> tInterp
-    (
-        coloFaceInterp(tField())
-    );
+    tmp<faceField<Type,colocated>> tInterp =
+        coloFaceInterp(tField());
 
     if (tField.isTmp())
         tField.clear();

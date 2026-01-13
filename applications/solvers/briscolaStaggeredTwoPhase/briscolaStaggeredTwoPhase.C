@@ -13,14 +13,18 @@ int main(int argc, char *argv[])
 {
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
-    #include "createBriscolaMesh.H"
+    #include "createBriscolaStaggeredMesh.H"
     #include "createRungeKuttaScheme.H"
     #include "createBriscolaStaggeredTwoPhase.H"
     #include "createTimeControls.H"
 
-    #include "createRefs.H"
     #include "createFields.H"
     #include "createBriscolaIO.H"
+
+    if (rk.imA())
+        restrict(U);
+
+    U.correctBoundaryConditions();
 
     while (runTime.run())
     {
@@ -42,8 +46,14 @@ int main(int argc, char *argv[])
 
         twoPhase.correct();
 
-        v = 1.0/rho;
-        vcf = max(ex::coloFaceInterp(v), 1e-12);
+        v = 1.0/twoPhase.rho();
+        vf = ex::coloFaceInterp(v);
+        vf.max(1e-12);
+
+        // Explicit source
+
+        tmp<staggeredScalarField> tSource =
+            (exSource + twoPhase.buoyancy())*v;
 
         while (rk.loop())
         {
@@ -58,44 +68,53 @@ int main(int argc, char *argv[])
                 // Predictor
 
                 USys = im::ddt(U);
-                USys -= C*exSource*v;
+                USys -= C*tSource();
                 USys -= rk.stageSum(stageSourcesA, stageSourcesB);
 
                 if (rk.imStageA())
                 {
-                    USysA = -im::div(phi,U);
-                    USys -= A*USysA;
+                    tUSysA = -im::div(phi,U);
+                    USys -= A*tUSysA.ref();
                 }
 
                 if (rk.imStageB())
                 {
-                    USysB =
-                        v
-                      * (
+                    tUSysB =
+                        (
                             im::laplacian(mu,U)
-                          + (ex::grad(mu) & stagT(ex::grad(U)))
-                          + im::source(imSourceCoeff,U)
-                        );
+                          + ex::div(mu*ex::faceDotGrad(U))
+                        )*v;
 
-                    USys -= B*USysB;
+                    USys -= B*tUSysB.ref();
                 }
-
-                USys -= C*twoPhase.buoyancy()*v;
 
                 // Solve predictor
 
                 USolve->solve(USys);
 
-                U += C*deltaT*ex::stagReconstruct(twoPhase.flux())*v;
-                U.correctBoundaryConditions();
-
                 // Pressure equation
 
-                Poisson->solve(p, ex::coloDiv(U)/(-C*deltaT), vcf);
+                colocatedScalarFaceField phiStar
+                (
+                    ex::coloFaceFlux(U)
+                  + C*deltaT*twoPhase.flux()*vf
+                );
+
+                Poisson->solve(p, ex::div(phiStar)/(-C*deltaT), vf);
 
                 // Correct velocity
 
-                U -= C*deltaT*ex::stagReconstruct(Poisson->flux()/vcf)*v;
+                U -=
+                    C*deltaT
+                  * ex::stagReconstruct
+                    (
+                        Poisson->flux()/vf
+                      - twoPhase.flux()
+                    )*v;
+
+                if (rk.imA())
+                    restrict(U);
+
                 U.correctBoundaryConditions();
             }
 
@@ -104,19 +123,14 @@ int main(int argc, char *argv[])
             if (rk.storeStageA())
                 stageSourcesA[stage-1] =
                     rk.solve() && rk.imStageA()
-                  ? USysA.evaluate()
+                  ? tUSysA->evaluate()
                   : -ex::div(phi,U);
 
             if (rk.storeStageB())
                 stageSourcesB[stage-1] =
                     rk.solve() && rk.imStageB()
-                  ? USysB.evaluate()
-                  : v
-                  * (
-                        ex::laplacian(mu,U)
-                      + (ex::grad(mu) & stagT(ex::grad(U)))
-                      + ex::source(imSourceCoeff,U)
-                    );
+                  ? tUSysB->evaluate()
+                  : v*(ex::laplacian(mu,U) + ex::div(mu*ex::faceDotGrad(U)));
         }
 
         // Reconstruct the colocated velocity

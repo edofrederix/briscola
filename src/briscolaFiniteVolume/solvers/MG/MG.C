@@ -1,9 +1,10 @@
 #include "MG.H"
 #include "diagonal.H"
 
-#include "RBGS.H"
-#include "LEXGS.H"
-#include "JAC.H"
+#include "diagonalSmoother.H"
+#include "rbgsSmoother.H"
+#include "lexgsSmoother.H"
+#include "jacSmoother.H"
 
 namespace Foam
 {
@@ -13,21 +14,6 @@ namespace briscola
 
 namespace fv
 {
-
-template<>
-const char* NamedEnum<MGCycleType,3>::names[] =
-{
-    "V",
-    "W",
-    "F"
-};
-
-template<>
-const char* NamedEnum<MGCoarseMode,2>::names[] =
-{
-    "smooth",
-    "direct"
-};
 
 template<class SType, class Type, class MeshType>
 void MG<SType,Type,MeshType>::cycle
@@ -48,11 +34,10 @@ void MG<SType,Type,MeshType>::cycle
     // On the coarsest level force the first global cell to zero for a
     // singular matrix
 
-    List<bool> singular(sys.singular());
-
-    forAll(singular, d)
-        if (l == coarseLevel && singular[d] && Pstream::master())
-            sys.b()[l][d](0,0,0) = Zero;
+    if (sys.singular())
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+            if (l == coarseLevel && Pstream::master())
+                sys.b()[l][d](0,0,0) = Zero;
 
     // Initialize defects to zero
 
@@ -84,15 +69,9 @@ void MG<SType,Type,MeshType>::cycle
             // repetition
 
             if (rep > 0 || l > 0)
-            {
                 forAll(xl, d)
-                {
                     if (!converged[d])
-                    {
                         sys.residual(rl[d]);
-                    }
-                }
-            }
 
             // Restrict the current level residual to coarse level
 
@@ -171,10 +150,6 @@ void MG<SType,Type,MeshType>::solve
 {
     meshField<Type, MeshType>& x = sys.x();
 
-    // Correct the boundary conditions
-
-    x[0].correctBoundaryConditions();
-
     // Residual field
 
     meshField<Type, MeshType> r
@@ -250,12 +225,8 @@ void MG<SType,Type,MeshType>::solve
         // Recompute the residual
 
         forAll(x[0], d)
-        {
             if (!converged[d])
-            {
                 sys.residual(r[0][d]);
-            }
-        }
 
         currentResiduals =
             cmptDivide
@@ -304,7 +275,7 @@ MG<SType,Type,MeshType>::MG
     ),
     coarseMode_
     (
-        MGCoarseModeNames[dict.lookupOrDefault<word>("coarseMode", "direct")]
+        MGCoarseModeNames[dict.lookupOrDefault<word>("coarseMode", "smooth")]
     ),
     coarseLevel_(dict.lookupOrDefault<label>("coarseLevel", 0)),
     proScheme_
@@ -331,7 +302,7 @@ MG<SType,Type,MeshType>::MG
 
     // Set the smoother of choice only if the stencil is not diagonal
 
-    if (SType::nComponents > 1)
+    if (SType::nCsComponents > 1)
         this->smoothPtr_.reset
         (
             solver<SType,Type,MeshType>::smoother::New
@@ -339,7 +310,7 @@ MG<SType,Type,MeshType>::MG
                 this->dict_.template lookupOrDefault<word>
                 (
                     "smoother",
-                    "RBGS"
+                    "rbgs"
                 ),
                 this->dict_,
                 fvMsh
@@ -353,11 +324,11 @@ MG<SType,Type,MeshType>::MG
         if
         (
             this->smoothPtr_->type()
-         == RBGS<SType,Type,MeshType>::typeName
+         == rbgsSmoother<SType,Type,MeshType>::typeName
         )
         {
             Smooth =
-                &dynamic_cast<RBGS<SType,Type,MeshType>*>
+                &dynamic_cast<rbgsSmoother<SType,Type,MeshType>*>
                 (
                     &this->smoothPtr_()
                 )->Smooth;
@@ -365,11 +336,11 @@ MG<SType,Type,MeshType>::MG
         else if
         (
             this->smoothPtr_->type()
-         == LEXGS<SType,Type,MeshType>::typeName
+         == lexgsSmoother<SType,Type,MeshType>::typeName
         )
         {
             Smooth =
-                &dynamic_cast<LEXGS<SType,Type,MeshType>*>
+                &dynamic_cast<lexgsSmoother<SType,Type,MeshType>*>
                 (
                     &this->smoothPtr_()
                 )->Smooth;
@@ -377,11 +348,11 @@ MG<SType,Type,MeshType>::MG
         else if
         (
             this->smoothPtr_->type()
-         == JAC<SType,Type,MeshType>::typeName
+         == jacSmoother<SType,Type,MeshType>::typeName
         )
         {
             Smooth =
-                &dynamic_cast<JAC<SType,Type,MeshType>*>
+                &dynamic_cast<jacSmoother<SType,Type,MeshType>*>
                 (
                     &this->smoothPtr_()
                 )->Smooth;
@@ -396,7 +367,7 @@ MG<SType,Type,MeshType>::MG
     // Set the coarse level solver if requested to do so, and only if the
     // stencil is not diagonal
 
-    if (coarseMode_ == DIRECT && SType::nComponents > 1)
+    if (coarseMode_ == DIRECT && SType::nCsComponents > 1)
     {
         if (!this->dict_.found("coarseSolver"))
             this->dict_.add("coarseSolver", dictionary());
@@ -427,24 +398,20 @@ void MG<SType,Type,MeshType>::solve
     const bool constMatrix
 )
 {
-    if (SType::nComponents > 1)
+    if (SType::nCsComponents > 1)
         sys.eliminateGhosts();
 
     sys.setForcingMask();
 
-    if
-    (
-        SType::nComponents == 1
-     || sum(sys.diagonal()) == MeshType::numberOfDirections
-    )
+    if (sys.diagonal())
     {
-        sys.x().makeShallow();
-        sys.b().makeShallow();
-
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-            solver<SType,Type,MeshType>::smoother::smoothDiag(sys, 0, d);
-
-        sys.x().correctBoundaryConditions();
+        diagonalSmoother<SType,Type,MeshType>::Smooth
+        (
+            sys,
+            0,
+            1,
+            labelList(MeshType::numberOfDirections, 0)
+        );
 
         this->printSolverStats
         (
@@ -461,8 +428,14 @@ void MG<SType,Type,MeshType>::solve
 
         this->setSingularityConstraint(sys, coarseLevel);
 
-        sys.x().makeDeep();
-        sys.b().makeDeep();
+        const bool shallowUnknown = sys.x().shallow();
+        const bool shallowSource = sys.b().shallow();
+
+        if (shallowUnknown)
+            sys.x().makeDeep();
+
+        if (shallowSource)
+            sys.b().makeDeep();
 
         if
         (
@@ -488,8 +461,11 @@ void MG<SType,Type,MeshType>::solve
             coarseLevel
         );
 
-        sys.x().makeShallow();
-        sys.b().makeShallow();
+        if (shallowUnknown)
+            sys.x().makeShallow();
+
+        if (shallowSource)
+            sys.b().makeShallow();
     }
 }
 

@@ -3,7 +3,7 @@
 
 #include "briscolaFunctionObject.H"
 #include "meshFields.H"
-#include "exSchemes.H"
+#include "FastPtrList.H"
 
 namespace Foam
 {
@@ -28,10 +28,10 @@ class colocatedReconstruction
     wordList fields_;
 
     // Reconstructed vectors
-    PtrList<colocatedVectorField> vectorFields_;
+    FastPtrList<colocatedVectorField> vectorFields_;
 
     // Reconstructed tensors
-    PtrList<colocatedTensorField> tensorFields_;
+    FastPtrList<colocatedTensorField> tensorFields_;
 
     // Initialize
     void init();

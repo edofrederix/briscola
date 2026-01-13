@@ -21,13 +21,13 @@ namespace briscola
 class mesh
 :
     public geometry,
-    public PtrList<part>
+    public FastPtrList<part>
 {
     // Mesh decomposition
     autoPtr<decomposition> decomp_;
 
     // This processor's boundaries
-    PtrList<boundary> boundaries_;
+    FastPtrList<boundary> boundaries_;
 
     // Mask to keep track of set boundaries
     labelBlock boundaryMask_;
@@ -47,9 +47,6 @@ class mesh
 
     // Bounding box
     faceScalar boundingBox_;
-
-    // Distributed communication graph
-    MPI_Comm comm_;
 
     // Add a boundary to the list of boundaries
     void addBoundary
@@ -98,14 +95,8 @@ class mesh
     // inconsistent communication.
     void setCommTags();
 
-    // Set boundary extension labels
-    void setBoundaryExtension();
-
     // Set the list of empty boundary offsets
     void setEmptyBoundaryOffsets();
-
-    // Set the distributed communication graph
-    void setDistributedCommGraph();
 
     // Generate mesh part levels
     void generateLevels();
@@ -177,7 +168,7 @@ public:
     }
 
     // Access to the boundaries
-    inline const PtrList<boundary>& boundaries() const
+    inline const FastPtrList<boundary>& boundaries() const
     {
         return boundaries_;
     }
@@ -224,9 +215,6 @@ public:
 
     // Bounding box
     inline faceScalar boundingBox() const { return boundingBox_; }
-
-    // Access to the distributed communicator graph
-    const MPI_Comm& comm() const { return comm_; }
 
     // Find the cell index of the given point at given mesh level. Return
     // -unitXYZ if it is not found. Tree search, but should be overloaded by

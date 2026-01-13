@@ -4,9 +4,14 @@
     const meshField<scalar,colocated>& cv =
         fvMsh.metrics<colocated>().cellVolumes();
 
-    forAllCells(contError, i, j, k)
-        for (int f = 0; f < 6; f++)
-            contError(i,j,k) += phi(i,j,k)[f];
+    forAllFaces(phi, fd, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        contError(ijk) += phi[fd](ijk);
+        contError(nei) -= phi[fd](ijk);
+    }
 
     scalar sumLocalContError = 0.0;
     scalar globalContError = 0.0;

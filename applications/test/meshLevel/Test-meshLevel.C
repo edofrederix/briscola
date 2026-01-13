@@ -355,6 +355,7 @@ void testScalarFunctions(const fvMesh& fvMsh)
     pow5(m1);
     pow6(m1);
     pow025(m1);
+    sqr(m1);
     sqrt(m1);
     cbrt(m1);
     sign(m1);

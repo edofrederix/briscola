@@ -27,6 +27,11 @@ vertices
     (0.7071068 0.7071068 15.707963)
 );
 
+// Do not align bricks with data structure because some tests have local
+// coordinate systems hard-coded
+
+dataAlignment false;
+
 bricks
 (
     0

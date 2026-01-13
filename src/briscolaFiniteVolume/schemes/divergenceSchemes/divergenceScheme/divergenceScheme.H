@@ -2,8 +2,14 @@
 #define divergenceScheme_H
 
 #include "scheme.H"
+
 #include "linearSystem.H"
 #include "stencil.H"
+
+#include "faceFields.H"
+#include "meshFields.H"
+#include "meshLevels.H"
+#include "meshDirections.H"
 
 namespace Foam
 {
@@ -57,14 +63,13 @@ public:
 
         virtual tmp<linearSystem<SType,Type,MeshType>> imDiv
         (
-            const meshField<faceScalar,MeshType>& phi,
-            const meshField<Type,MeshType>& field,
-            const scalar factor = 1.0
+            const faceField<scalar,MeshType>& phi,
+            const meshField<Type,MeshType>& field
         ) = 0;
 
         virtual tmp<meshField<Type,MeshType>> exDiv
         (
-            const meshField<faceScalar,MeshType>& phi,
+            const faceField<scalar,MeshType>& phi,
             const meshField<Type,MeshType>& field
         ) = 0;
 
@@ -77,7 +82,7 @@ public:
                 // Flux as tmp
                 inline tmp<linearSystem<SType,Type,MeshType>> imDiv
                 (
-                    const tmp<meshField<faceScalar,MeshType>>& tPhi,
+                    const tmp<faceField<scalar,MeshType>>& tPhi,
                     const meshField<Type,MeshType>& field
                 );
 
@@ -88,7 +93,7 @@ public:
                 // Flux as tmp
                 inline tmp<meshField<Type,MeshType>> exDiv
                 (
-                    const tmp<meshField<faceScalar,MeshType>>& tPhi,
+                    const tmp<faceField<scalar,MeshType>>& tPhi,
                     const meshField<Type,MeshType>& field
                 );
 };
@@ -96,13 +101,13 @@ public:
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> div
 (
-    const meshField<FaceSpace<Type>,MeshType>&
+    const faceField<Type,MeshType>&
 );
 
 template<class Type, class MeshType>
 tmp<meshField<Type,MeshType>> div
 (
-    const tmp<meshField<FaceSpace<Type>,MeshType>>&
+    const tmp<faceField<Type,MeshType>>&
 );
 
 template<class Type>

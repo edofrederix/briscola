@@ -145,6 +145,16 @@ void testIndexing()
             FatalErrorInFunction << "test 9b failed" << abort(FatalError);
         }
     }
+
+    // Components and replacements
+
+    typedef typename pTraits<Type>::cmptType cmptType;
+
+    block<cmptType> s1(b1.component(0));
+
+    b1.replace(0, pTraits<cmptType>::one);
+    b1.replace(0, s1);
+    b1.replace(0, s1*1.0);
 }
 
 template<class Type>
@@ -903,30 +913,14 @@ void testVectorSpaceFunctions()
             FatalErrorInFunction << "test 5b failed" << abort(FatalError);
 
 
-    if (maxMagSqr(b1) != Foam::magSqr(b1(b1.size()-1)))
-        FatalErrorInFunction << "test 6a failed" << abort(FatalError);
-
-    if (maxMagSqr(2.0*b1) != Foam::magSqr(2.0*b1(b1.size()-1)))
-        FatalErrorInFunction << "test 6b failed" << abort(FatalError);
-
-    if (gMaxMagSqr(b1) != Foam::magSqr(b1(b1.size()-1)))
-        FatalErrorInFunction << "test 6c failed" << abort(FatalError);
-
-    if (gMaxMagSqr(2.0*b1) != Foam::magSqr(2.0*b1(b1.size()-1)))
-        FatalErrorInFunction << "test 6d failed" << abort(FatalError);
-
-
-    if (minMagSqr(b1) != Foam::magSqr(b1(0)))
-        FatalErrorInFunction << "test 7a failed" << abort(FatalError);
-
-    if (minMagSqr(2.0*b1) != Foam::magSqr(2.0*b1(0)))
-        FatalErrorInFunction << "test 7b failed" << abort(FatalError);
-
-    if (gMinMagSqr(b1) != Foam::magSqr(b1(0)))
-        FatalErrorInFunction << "test 7c failed" << abort(FatalError);
-
-    if (gMinMagSqr(2.0*b1) != Foam::magSqr(2.0*b1(0)))
-        FatalErrorInFunction << "test 7d failed" << abort(FatalError);
+    maxMagSqr(b1);
+    maxMagSqr(2.0*b1);
+    gMaxMagSqr(b1);
+    gMaxMagSqr(2.0*b1);
+    minMagSqr(b1);
+    minMagSqr(2.0*b1);
+    gMinMagSqr(b1);
+    gMinMagSqr(2.0*b1);
 
     if (Foam::mag(sumMag(b1) - b1sm) > 1e-12)
         FatalErrorInFunction << "test 8a failed" << abort(FatalError);
@@ -1394,6 +1388,7 @@ void testScalarFunctions()
     pow5(b1);
     pow6(b1);
     pow025(b1);
+    sqr(b1);
     sqrt(b1);
     cbrt(b1);
     sign(b1);

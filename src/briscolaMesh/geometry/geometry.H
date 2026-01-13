@@ -29,6 +29,13 @@ class geometry
     // List of patch pairs
     PtrList<patchPair> patchPairs_;
 
+    // Switch to automatically align bricks with data structure, meaning that
+    // local coordinate systems will be rotated in such a way that the largest
+    // mesh direction aligns with the third local coordinate and the second
+    // largest mesh direction aligns with the second local coordinate (defaults
+    // to true)
+    Switch dataAlignment_;
+
     // Create bricks
     void createBricks();
 
@@ -51,8 +58,8 @@ class geometry
     // Check consistency of the geometry
     void checkPatchConsistency() const;
 
-    // Align bricks w.r.t. the first in the topology map. Only possible for
-    // structured topologies.
+    // Align bricks w.r.t. the largest brick in the topology map. Only possible
+    // for structured topologies.
     void alignBricks();
 
 public:
@@ -94,6 +101,12 @@ public:
     const PtrList<patchPair>& patchPairs() const
     {
         return patchPairs_;
+    }
+
+    // Brick alignment with data switch
+    Switch dataAlignment() const
+    {
+        return dataAlignment_;
     }
 };
 

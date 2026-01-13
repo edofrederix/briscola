@@ -1,0 +1,176 @@
+#!/bin/bash
+
+# By default 16 cores are used. Simulations are sequentially started only when
+# resources are available. Output is written to results.csv.
+
+NTASKS="${SLURM_NTASKS:-16}"
+
+# Some parameters
+
+RUNDIR="runs"
+CSV="results.csv"
+TEMPLATE="template"
+PYTHON="python3"
+
+# Simulation parameters
+
+MESHES=(uniform graded edgeGraded)
+NBRICKS=(1 4 4)
+NPROCSPERBRICKSIDE=(1 2)
+LSCHEMES=(linearGauss)
+DSCHEMES=(linearGauss midPointGauss)
+RES=(400 1000)
+COARSEMODES=(smooth direct)
+RKSCHEMES=(forwardEuler RK3 Ascher222 CNAB AB2)
+SOLVERS=(briscolaColocated briscolaStaggered)
+
+##
+
+if [ -z "$BRISCOLA" ]; then
+
+    echo "BRISCOLA environment variable not set"
+    exit
+
+fi
+
+CURR=$(pwd)
+
+if [ -d "$RUNDIR" ]; then
+    rm -fr $RUNDIR
+fi
+
+mkdir -p $RUNDIR
+
+echo \
+    "Mesh," \
+    "Nprocs," \
+    "laplacian scheme," \
+    "divergence scheme," \
+    "Re," \
+    "coarse mode," \
+    "time scheme," \
+    "solver," \
+    "error 1 [%]," \
+    "error 2 [%]," \
+    "test 1," \
+    "test 2," \
+    "number of time steps," \
+    "mean number of pressure iters" > $CURR/$CSV
+
+##
+
+source ../procManagement.sh
+
+for I in "${!MESHES[@]}"; do
+for J in "${!NPROCSPERBRICKSIDE[@]}"; do
+for K in "${!LSCHEMES[@]}"; do
+for L in "${!DSCHEMES[@]}"; do
+for M in "${!RES[@]}"; do
+for N in "${!COARSEMODES[@]}"; do
+for O in "${!RKSCHEMES[@]}"; do
+for P in "${!SOLVERS[@]}"; do
+
+    sleep 1
+
+    MESH=${MESHES[$I]}
+    NBRICK=${NBRICKS[$I]}
+    NPROCPERBRICKSIDE=${NPROCSPERBRICKSIDE[$J]}
+    LSCHEME=${LSCHEMES[$K]}
+    DSCHEME=${DSCHEMES[$L]}
+    RE=${RES[$M]}
+    COARSEMODE=${COARSEMODES[$N]}
+    RKSCHEME=${RKSCHEMES[$O]}
+    SOLVER=${SOLVERS[$P]}
+
+    # Edge grading doesn't work with staggered
+
+    if [[ "$MESH" == "edgeGraded" && "$SOLVER" == "briscolaStaggered" ]]; then
+        continue
+    fi
+
+    NPROCX=$NPROCPERBRICKSIDE
+    NPROCY=$NPROCPERBRICKSIDE
+
+    NPROC=$(echo "print(int($NPROCX*$NPROCY*$NBRICK))" | python)
+
+    NU=$(echo "print(1.0/$RE)" | python)
+
+    CASE="$MESH-$NPROC-$LSCHEME-$DSCHEME-$RE-$COARSEMODE-$RKSCHEME-$SOLVER"
+
+    wait_for_procs $NPROC $NTASKS
+
+    (
+        echo "Starting $CASE"
+
+        cp -r $TEMPLATE $RUNDIR/$CASE
+
+        cd $RUNDIR/$CASE
+
+        ./prep.sh $MESH $NPROCX $NPROCY $LSCHEME $DSCHEME $NU $COARSEMODE $RKSCHEME
+
+        if [ "$NPROC" == "1" ]; then
+            srun --exclusive -n $NPROC $SOLVER > log.$SOLVER
+        else
+            srun --exclusive -n $NPROC $SOLVER -parallel > log.$SOLVER
+        fi
+
+        ##
+
+        $PYTHON post.py $RE log.$SOLVER
+
+        E1=0
+        E2=0
+        P1=failed
+        P2=failed
+        NDT=0
+        NITER=0
+
+        if [ -f "result.txt" ]; then
+
+            E1=$(sed -n '1p' < result.txt)
+            E2=$(sed -n '2p' < result.txt)
+
+            P1=$(sed -n '3p' < result.txt)
+            P2=$(sed -n '4p' < result.txt)
+
+            NDT=$(sed -n '5p' < result.txt)
+            NITER=$(sed -n '6p' < result.txt)
+
+        fi
+
+        echo \
+            "$MESH," \
+            "$NPROC," \
+            "$LSCHEME," \
+            "$DSCHEME," \
+            "$RE," \
+            "$COARSEMODE," \
+            "$RKSCHEME," \
+            "$SOLVER," \
+            "$E1," \
+            "$E2," \
+            "$P1," \
+            "$P2," \
+            "$NDT," \
+            "$NITER" \ >> $CURR/$CSV
+
+        ##
+
+        cd $CURR
+
+        echo "Finished $CASE"
+
+    ) &
+
+    store_procs $NPROC $!
+
+done
+done
+done
+done
+done
+done
+done
+done
+
+wait

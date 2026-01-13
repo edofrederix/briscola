@@ -2,7 +2,10 @@
 #define gradientScheme_H
 
 #include "scheme.H"
+#include "faceFields.H"
 #include "meshFields.H"
+#include "meshLevels.H"
+#include "meshDirections.H"
 
 namespace Foam
 {
@@ -60,13 +63,6 @@ public:
     (
         const meshField<Type,MeshType>&
     ) = 0;
-
-    // Staggered gradient of a colocated field, where each mesh direction in the
-    // staggered field holds a component of the gradient
-    virtual tmp<meshField<Type,staggered>> stagGrad
-    (
-        const meshField<Type,colocated>&
-    ) = 0;
 };
 
 // Gradient of a face field
@@ -75,14 +71,29 @@ template<class Type, class MeshType>
 tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
 grad
 (
-    const meshField<FaceSpace<Type>,MeshType>&
+    const faceField<Type,MeshType>&
 );
 
 template<class Type, class MeshType>
 tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
 grad
 (
-    const tmp<meshField<FaceSpace<Type>,MeshType>>&
+    const tmp<faceField<Type,MeshType>>&
+);
+
+// Staggered gradient of a colocated field, where each mesh direction in the
+// staggered field holds a component of the gradient
+
+template<class Type, class MeshType>
+tmp<meshField<Type,staggered>> stagGrad
+(
+    const meshField<Type,colocated>&
+);
+
+template<class Type, class MeshType>
+tmp<meshField<Type,staggered>> stagGrad
+(
+    const tmp<meshField<Type,colocated>>&
 );
 
 }

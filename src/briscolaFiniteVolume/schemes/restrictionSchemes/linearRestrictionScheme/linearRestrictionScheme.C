@@ -120,9 +120,9 @@ void linearRestrictionScheme<Type,MeshType>::restrict
             metrics<MeshType>().cellVolumes()
             [coarse.levelNum()][coarse.directionNum()];
 
-        const meshDirection<scalar,MeshType>& cvf =
+        const meshDirection<scalar,MeshType>& icvf =
             this->fvMsh().template
-            metrics<MeshType>().cellVolumes()
+            metrics<MeshType>().inverseCellVolumes()
             [fine.levelNum()][fine.directionNum()];
 
         forAllCells(coarse, i, j, k)
@@ -146,7 +146,7 @@ void linearRestrictionScheme<Type,MeshType>::restrict
                                     j*R.y() + b*oy,
                                     k*R.z() + c*oz
                                 )
-                              / cvf
+                              * icvf
                                 (
                                     i*R.x() + a*ox,
                                     j*R.y() + b*oy,

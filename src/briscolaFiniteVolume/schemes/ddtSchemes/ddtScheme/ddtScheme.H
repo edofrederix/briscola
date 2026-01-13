@@ -2,8 +2,14 @@
 #define ddtScheme_H
 
 #include "scheme.H"
+
 #include "linearSystem.H"
 #include "diagStencil.H"
+
+#include "faceFields.H"
+#include "meshFields.H"
+#include "meshLevels.H"
+#include "meshDirections.H"
 
 namespace Foam
 {
@@ -57,15 +63,13 @@ public:
     virtual tmp<linearSystem<diagStencil,Type,MeshType>> imDdt
     (
         const meshField<scalar,MeshType>* lambdaPtr,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     ) = 0;
 
     virtual tmp<meshField<Type,MeshType>> exDdt
     (
         const meshField<scalar,MeshType>* lambdaPtr,
-        const meshField<Type,MeshType>& field,
-        const scalar factor = 1.0
+        const meshField<Type,MeshType>& field
     ) = 0;
 
     // Support functions relying on the pure virtual functions above
@@ -76,31 +80,27 @@ public:
             inline tmp<linearSystem<diagStencil,Type,MeshType>> imDdt
             (
                 const meshField<scalar,MeshType>& lambda,
-                const meshField<Type,MeshType>& field,
-                const scalar factor = 1.0
+                const meshField<Type,MeshType>& field
             );
 
             // Coefficient as tmp
             inline tmp<linearSystem<diagStencil,Type,MeshType>> imDdt
             (
                 const tmp<meshField<scalar,MeshType>>& tLambda,
-                const meshField<Type,MeshType>& field,
-                const scalar factor = 1.0
+                const meshField<Type,MeshType>& field
             );
 
             // Constant coefficient
             inline tmp<linearSystem<diagStencil,Type,MeshType>> imDdt
             (
                 const scalar lambda,
-                const meshField<Type,MeshType>& field,
-                const scalar factor = 1.0
+                const meshField<Type,MeshType>& field
             );
 
             // No coefficient
             inline tmp<linearSystem<diagStencil,Type,MeshType>> imDdt
             (
-                const meshField<Type,MeshType>& field,
-                const scalar factor = 1.0
+                const meshField<Type,MeshType>& field
             );
 
         // Explicit
@@ -109,31 +109,27 @@ public:
             inline tmp<meshField<Type,MeshType>> exDdt
             (
                 const meshField<scalar,MeshType>& lambda,
-                const meshField<Type,MeshType>& field,
-                const scalar factor = 1.0
+                const meshField<Type,MeshType>& field
             );
 
             // Coefficient as tmp
             inline tmp<meshField<Type,MeshType>> exDdt
             (
                 const tmp<meshField<scalar,MeshType>>& tLambda,
-                const meshField<Type,MeshType>& field,
-                const scalar factor = 1.0
+                const meshField<Type,MeshType>& field
             );
 
             // Constant coefficient
             inline tmp<meshField<Type,MeshType>> exDdt
             (
                 const scalar lambda,
-                const meshField<Type,MeshType>& field,
-                const scalar factor = 1.0
+                const meshField<Type,MeshType>& field
             );
 
             // No coefficient
             inline tmp<meshField<Type,MeshType>> exDdt
             (
-                const meshField<Type,MeshType>& field,
-                const scalar factor = 1.0
+                const meshField<Type,MeshType>& field
             );
 };
 

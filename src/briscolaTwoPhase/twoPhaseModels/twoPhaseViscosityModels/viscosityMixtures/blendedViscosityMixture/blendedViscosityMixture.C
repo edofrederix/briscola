@@ -10,47 +10,45 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
-blendedViscosityMixture<BaseModel>::blendedViscosityMixture
+template<class ViscosityModel>
+blendedViscosityMixture<ViscosityModel>::blendedViscosityMixture
 (
     const fvMesh& fvMsh,
     const IOdictionary& dict
 )
 :
-    BaseModel(fvMsh, dict),
+    ViscosityModel(fvMsh, dict),
     C_(dict.lookupOrDefault<scalar>("C", 8))
-{
-    this->mu_.setRestrictionScheme("blendedViscosityMixture");
-}
+{}
 
-template<class BaseModel>
-blendedViscosityMixture<BaseModel>::
+template<class ViscosityModel>
+blendedViscosityMixture<ViscosityModel>::
 blendedViscosityMixture(const blendedViscosityMixture& tpm)
 :
-    BaseModel(tpm),
+    ViscosityModel(tpm),
     C_(tpm.C_)
 {}
 
-template<class BaseModel>
-blendedViscosityMixture<BaseModel>::~blendedViscosityMixture()
+template<class ViscosityModel>
+void blendedViscosityMixture<ViscosityModel>::correct()
 {
-    this->mu_.setRestrictionScheme("blendedViscosityMixture");
-}
+    forAllFaces(this->mu_, fd, l, d, i, j, k)
+    {
+        const scalar alpha = this->faceAlpha_[fd](l,d,i,j,k);
 
-template<class BaseModel>
-void blendedViscosityMixture<BaseModel>::correctMixture()
-{
-    const meshField<faceScalar,typename BaseModel::meshType> alpha
-    (
-        this->faceAlpha()
-    );
+        this->mu_[fd](l,d,i,j,k) =
+            (this->mu2_ - this->mu1_)/2.0
+          * (
+                Foam::tanh
+                (
+                    C_*Foam::atanh((2.0*alpha - 1.0)*(1-1e-12))
+                )
+              - 1.0
+            )
+          + this->mu2_;
+    }
 
-    this->mu_ =
-        (this->mu2_ - this->mu1_)/2.0
-      * (tanh(C_*atanh((2.0*alpha - 1.0)*(1-1e-12))) - 1.0)
-      + this->mu2_;
-
-    BaseModel::correctMixture();
+    ViscosityModel::correct();
 }
 
 }

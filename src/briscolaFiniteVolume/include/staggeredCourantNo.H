@@ -7,9 +7,14 @@ scalar meanCoNum = 0.0;
 
     staggeredScalarLevel sumPhi(fvMsh,0,Zero);
 
-    forAllCells(sumPhi, d, i, j, k)
-        for (int f = 0; f < 6; f++)
-            sumPhi(d,i,j,k) += mag(phi(d,i,j,k)[f]);
+    forAllFaces(phi, fd, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        sumPhi(d,ijk) += mag(phi[fd](d,ijk));
+        sumPhi(d,nei) += mag(phi[fd](d,ijk));
+    }
 
     CoNum = max(0.5*gMax(sumPhi/cvl)*runTime.deltaTValue());
 

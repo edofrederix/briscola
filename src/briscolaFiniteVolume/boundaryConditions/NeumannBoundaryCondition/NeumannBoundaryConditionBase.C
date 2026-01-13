@@ -12,19 +12,30 @@ namespace fv
 template<class Type, class MeshType>
 void NeumannBoundaryConditionBase<Type,MeshType>::init
 (
-    const List<Type>& gradients
+    const physicalType& gradient
 )
 {
     boundaryGradients_.clear();
     boundaryGradients_.resize(this->fvMsh_.size()*MeshType::numberOfDirections);
 
-    label c = 0;
+    tensor base(eye);
+
+    if (this->fvMsh_.msh().template castable<rectilinearMesh>())
+    {
+        base = this->fvMsh_.msh().template cast<rectilinearMesh>().base();
+    }
+
+    label item = 0;
     forAll(this->fvMsh_, l)
         for (int d = 0; d < MeshType::numberOfDirections; d++)
             boundaryGradients_.set
             (
-                c++,
-                new block<Type>(this->N(l,d), gradients[d])
+                item++,
+                new block<Type>
+                (
+                    this->N(l,d),
+                    MeshType::project(gradient, d, base)
+                )
             );
 }
 
@@ -37,7 +48,7 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 :
     boundaryCondition<Type,MeshType>(mshField, b)
 {
-    init(List<Type>(this->dict().lookup("gradients")));
+    init(this->dict().template lookup<physicalType>("gradient"));
 }
 
 template<class Type, class MeshType>
@@ -45,12 +56,12 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 (
     const meshField<Type,MeshType>& mshField,
     const boundary& b,
-    const List<Type>& gradients
+    const zero&
 )
 :
     boundaryCondition<Type,MeshType>(mshField, b)
 {
-    init(gradients);
+    init(pTraits<physicalType>::zero);
 }
 
 template<class Type, class MeshType>
@@ -58,7 +69,20 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 (
     const meshField<Type,MeshType>& mshField,
     const boundary& b,
-    const PtrList<block<Type>>& boundaryGradients
+    const physicalType& gradient
+)
+:
+    boundaryCondition<Type,MeshType>(mshField, b)
+{
+    init(gradient);
+}
+
+template<class Type, class MeshType>
+NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
+(
+    const meshField<Type,MeshType>& mshField,
+    const boundary& b,
+    const FastPtrList<block<Type>>& boundaryGradients
 )
 :
     boundaryCondition<Type,MeshType>(mshField, b),

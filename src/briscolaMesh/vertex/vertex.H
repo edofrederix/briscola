@@ -2,7 +2,6 @@
 #define vertex_H
 
 #include "meshObject.H"
-#include "PtrList.H"
 #include "vector.H"
 
 namespace Foam

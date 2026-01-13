@@ -68,41 +68,42 @@ template<class Type, class MeshType>
 inline tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
 grad
 (
-    const meshField<FaceSpace<Type>,MeshType>& field
+    const faceField<Type,MeshType>& field
 )
 {
-    tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>> tGrad
-    (
-        new meshField<typename outerProduct<vector,Type>::type,MeshType>
+    typedef typename outerProduct<vector,Type>::type TypeR;
+
+    tmp<meshField<TypeR,MeshType>> tGrad =
+        meshField<TypeR,MeshType>::New
         (
             "grad("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
-    meshField<typename outerProduct<vector,Type>::type,MeshType>& Grad =
+    meshField<TypeR,MeshType>& Grad =
         tGrad.ref();
 
-    const meshField<scalar,MeshType>& cv =
-        field.fvMsh().template metrics<MeshType>().cellVolumes();
+    const meshField<scalar,MeshType>& icv =
+        field.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    const meshField<faceVector,MeshType>& fan =
+    const faceField<vector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
-    forAllCells(Grad, d, i, j, k)
-    {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Grad(d,i,j,k) = Zero;
-        #endif
+    Grad = Zero;
 
-        for (int fd = 0; fd < 3; fd++)
-            Grad(d,i,j,k) +=
-                (
-                    field(d,i,j,k)[fd*2  ]*fan(d,i,j,k)[fd*2  ]
-                  + field(d,i,j,k)[fd*2+1]*fan(d,i,j,k)[fd*2+1]
-                )
-              / cv(d,i,j,k);
+    forAllFaces(fan, fd, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        const TypeR value =
+            field[fd](d,ijk)*fan[fd](d,ijk);
+
+        Grad(d,ijk) += value;
+        Grad(d,nei) -= value;
     }
+
+    Grad *= icv;
 
     return tGrad;
 }
@@ -111,18 +112,61 @@ template<class Type, class MeshType>
 tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>>
 grad
 (
-    const tmp<meshField<FaceSpace<Type>,MeshType>>& tField
+    const tmp<faceField<Type,MeshType>>& tField
 )
 {
-    tmp<meshField<typename outerProduct<vector,Type>::type,MeshType>> tGrad
-    (
-        grad(tField())
-    );
+    typedef typename outerProduct<vector,Type>::type TypeR;
+
+    tmp<meshField<TypeR,MeshType>> tGrad = grad(tField());
 
     if (tField.isTmp())
         tField.clear();
 
     return tGrad;
+}
+
+template<class Type, class MeshType>
+tmp<meshField<Type,staggered>>
+stagGrad
+(
+    const meshField<Type,colocated>& field
+)
+{
+    tmp<meshField<Type,staggered>> tGrad =
+        meshField<Type,staggered>::New
+        (
+            "stagGrad("+field.name()+")",
+            field.fvMsh()
+        );
+
+    meshField<Type,staggered>& grad = tGrad.ref();
+
+    const faceField<scalar,colocated>& delta =
+            field.fvMsh().template metrics<colocated>().faceDeltas();
+
+    forAllCells(grad, d, i, j, k)
+        grad(d,i,j,k) =
+            (field(i,j,k) - field(lowerNeighbor(i,j,k,d)))*delta[d](i,j,k);
+
+    return tGrad;
+}
+
+template<class Type>
+tmp<meshField<Type,staggered>>
+stagGrad
+(
+    const tmp<meshField<Type,colocated>>& tField
+)
+{
+    if (tField.isTmp())
+        tField->correctBoundaryConditions();
+
+    tmp<meshField<Type,staggered>> tStagGrad = stagGrad(tField());
+
+    if (tField.isTmp())
+        tField.clear();
+
+    return tStagGrad;
 }
 
 }

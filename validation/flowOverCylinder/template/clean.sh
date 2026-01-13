@@ -2,11 +2,10 @@
 
 source $FOAM_SRC/../bin/tools/CleanFunctions
 
-wclean code
-
 cleanCase
 
+rm -fr code
+
 rm -f briscola*.vtk.series system/briscolaMeshDict *.txt *.pdf \
-    system/briscolaColocatedDict \
-    system/briscolaSchemeDict \
-    code/libcode.so
+    system/briscolaSinglePhaseDict \
+    system/briscolaSchemeDict

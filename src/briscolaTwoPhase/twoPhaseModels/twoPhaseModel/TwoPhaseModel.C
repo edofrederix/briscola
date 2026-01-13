@@ -1,5 +1,5 @@
 #include "TwoPhaseModel.H"
-#include "exSchemes.H"
+#include "exSchemesFaceFlux.H"
 
 #include "colocated.H"
 #include "staggered.H"
@@ -13,6 +13,106 @@ namespace briscola
 namespace fv
 {
 
+template<>
+tmp<colocatedScalarFaceField>
+TwoPhaseModel<colocated>::coloFaceFlux() const
+{
+    return
+        fvMsh_.db().template
+            lookupObject<colocatedScalarFaceField>("phi");
+}
+
+template<>
+tmp<colocatedScalarFaceField>
+TwoPhaseModel<staggered>::coloFaceFlux() const
+{
+    return
+        ex::coloFaceFlux
+        (
+            fvMsh_.db().template
+                lookupObject<staggeredScalarField>("U")
+        );
+}
+
+template<>
+tmp<colocatedScalarField> TwoPhaseModel<colocated>::meshTypeAlpha() const
+{
+    return alpha_;
+}
+
+template<>
+tmp<staggeredScalarField> TwoPhaseModel<staggered>::meshTypeAlpha() const
+{
+    tmp<staggeredScalarField> tAlpha =
+        staggeredScalarField::New("alpha", this->fvMsh_);
+
+    staggeredScalarField& alpha = tAlpha.ref();
+    alpha.makeDeep();
+
+    forAllCells(alpha, l, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,d));
+
+        alpha(l,d,i,j,k) =
+            0.5*(this->alpha_(l,0,ijk) + this->alpha_(l,0,nei));
+    }
+
+    alpha.correctBoundaryConditions();
+
+    return tAlpha;
+}
+
+template<>
+void TwoPhaseModel<colocated>::correctFaceAlpha()
+{
+    const colocatedScalarFaceField& fwc =
+        this->fvMsh_.template metrics<colocated>().faceWeightsCenter();
+
+    const colocatedScalarFaceField& fwn =
+        this->fvMsh_.template metrics<colocated>().faceWeightsNeighbor();
+
+    const colocatedScalarField& alpha = this->alpha_;
+
+    forAllFaces(faceAlpha_, fd, l, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
+
+        faceAlpha_[fd](l,d,ijk) =
+            alpha(l,d,ijk)*fwc[fd](l,d,ijk)
+          + alpha(l,d,nei)*fwn[fd](l,d,ijk);
+    }
+}
+
+template<>
+void TwoPhaseModel<staggered>::correctFaceAlpha()
+{
+    const colocatedScalarField& alpha = this->alpha_;
+
+    forAllFaces(faceAlpha_, fd, l, d, i, j, k)
+    {
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,d));
+
+        if (d == fd)
+        {
+            faceAlpha_[fd](l,d,ijk) = alpha(l,0,nei);
+        }
+        else
+        {
+            faceAlpha_[fd](l,d,ijk) =
+                0.25
+              * (
+                    alpha(l,0,ijk)
+                  + alpha(l,0,lowerNeighbor(ijk,fd))
+                  + alpha(l,0,nei)
+                  + alpha(l,0,lowerNeighbor(nei,fd))
+                );
+        }
+    }
+}
+
 template<class MeshType>
 TwoPhaseModel<MeshType>::TwoPhaseModel
 (
@@ -21,6 +121,15 @@ TwoPhaseModel<MeshType>::TwoPhaseModel
 )
 :
     twoPhaseModel(fvMsh, dict),
+    faceAlpha_
+    (
+        "alpha",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
     rho_
     (
         "rho",
@@ -28,8 +137,9 @@ TwoPhaseModel<MeshType>::TwoPhaseModel
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        false
+        true
     ),
+    rhoMean_(0.0),
     mu_
     (
         "mu",
@@ -37,20 +147,22 @@ TwoPhaseModel<MeshType>::TwoPhaseModel
         IOobject::NO_READ,
         IOobject::NO_WRITE,
         true,
-        false
+        true
     )
-{}
+{
+    faceAlpha_ = Zero;
+    rho_ = Zero;
+    mu_ = Zero;
+}
 
 template<class MeshType>
 TwoPhaseModel<MeshType>::TwoPhaseModel(const TwoPhaseModel& tpm)
 :
     twoPhaseModel(tpm),
+    faceAlpha_(tpm.faceAlpha_),
     rho_(tpm.rho_),
+    rhoMean_(tpm.rhoMean_),
     mu_(tpm.mu_)
-{}
-
-template<class MeshType>
-TwoPhaseModel<MeshType>::~TwoPhaseModel()
 {}
 
 template<class MeshType>
@@ -70,80 +182,18 @@ autoPtr<TwoPhaseModel<MeshType>> TwoPhaseModel<MeshType>::New
 }
 
 template<>
-tmp<colocatedFaceScalarField> TwoPhaseModel<colocated>::faceAlpha() const
-{
-    return ex::interp(alpha_);
-}
-
-template<>
-tmp<staggeredFaceScalarField> TwoPhaseModel<staggered>::faceAlpha() const
-{
-    return ex::stagFaceInterp(alpha_);
-}
-
-template<>
-tmp<colocatedScalarField> TwoPhaseModel<colocated>::meshAlpha() const
-{
-    return alpha_;
-}
-
-template<>
-tmp<staggeredScalarField> TwoPhaseModel<staggered>::meshAlpha() const
-{
-    return stagInterp(alpha_);
-}
-
-template<>
-tmp<colocatedFaceScalarField>
-TwoPhaseModel<colocated>::coloFaceFlux() const
-{
-    return
-        fvMsh_.db().template
-            lookupObject<colocatedFaceScalarField>("phi");
-}
-
-template<>
-tmp<colocatedFaceScalarField>
-TwoPhaseModel<staggered>::coloFaceFlux() const
-{
-    return
-        ex::coloFaceFlux
-        (
-            fvMsh_.db().template
-                lookupObject<staggeredScalarField>("U")
-        );
-}
-
-template<class MeshType>
-scalar TwoPhaseModel<MeshType>::rhoMean() const
-{
-    const colocatedScalarDirection& cv =
-        fvMsh_.template metrics<colocated>().cellVolumes()[0][0];
-
-    const colocatedScalarDirection mask
-    (
-        fvMsh_.template metrics<colocated>().fluidMask()()[0][0]
-    );
-
-    return gSum(mask*this->coloRho()()[0][0]*cv)/gSum(mask*cv);
-}
-
-template<>
 tmp<colocatedVectorField> TwoPhaseModel<colocated>::buoyancy() const
 {
-    tmp<colocatedVectorField> tBuoyancy
-    (
-        new colocatedVectorField("buoyancy", this->fvMsh_)
-    );
+    tmp<colocatedVectorField> tBuoyancy =
+        colocatedVectorField::New("buoyancy", this->fvMsh_);
 
     colocatedVectorField& buoyancy = tBuoyancy.ref();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     buoyancy = Zero;
-    #endif
 
     if (Foam::mag(this->g()) > 0.0)
-        buoyancy[0][0] = (this->rho()[0][0] - this->rhoMean())*this->g();
+        forAllCells(buoyancy, i, j, k)
+            buoyancy(i,j,k) = (rho_(i,j,k) - rhoMean_)*this->g();
 
     return tBuoyancy;
 }
@@ -151,46 +201,27 @@ tmp<colocatedVectorField> TwoPhaseModel<colocated>::buoyancy() const
 template<>
 tmp<staggeredScalarField> TwoPhaseModel<staggered>::buoyancy() const
 {
-    tmp<staggeredScalarField> tBuoyancy
-    (
-        new staggeredScalarField("buoyancy", this->fvMsh_)
-    );
+    tmp<staggeredScalarField> tBuoyancy =
+        staggeredScalarField::New("buoyancy", this->fvMsh_);
 
     staggeredScalarField& buoyancy = tBuoyancy.ref();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     buoyancy = Zero;
-    #endif
 
     if (Foam::mag(this->g()) > 0.0)
     {
-        const scalar rhoMean(this->rhoMean());
+        // Project the gravity vector on the staggered base
 
-        forAll(buoyancy[0], l)
-            buoyancy[0][l] = (this->rho()[0][l] - rhoMean)*this->g()[l];
+        const tensor base =
+            this->fvMsh_.msh().template cast<rectilinearMesh>().base();
+
+        const vector G = (base & this->g());
+
+        forAllCells(buoyancy, d, i, j, k)
+            buoyancy(d,i,j,k) = (rho_(d,i,j,k) - rhoMean_)*G[d];
     }
 
     return tBuoyancy;
-}
-
-template<class MeshType>
-tmp<colocatedFaceScalarField> TwoPhaseModel<MeshType>::flux()
-{
-    tmp<colocatedFaceScalarField> tFlux
-    (
-        new colocatedFaceScalarField("twoPhaseFlux", this->fvMsh_)
-    );
-
-    colocatedFaceScalarField& flux = tFlux.ref();
-
-    #ifdef NO_BLOCK_ZERO_INIT
-    flux = Zero;
-    #endif
-
-    if (this->tension())
-        flux += this->surfaceTensionFlux();
-
-    return tFlux;
 }
 
 // Instantiate

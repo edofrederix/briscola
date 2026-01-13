@@ -199,20 +199,20 @@ List<Type> sumCmptMag(const meshLevel<Type,MeshType>&);
 template<class Type, class MeshType>
 List<Type> sumCmptMag(const tmp<meshLevel<Type,MeshType>>&);
 
-#define G_UNARY_FUNCTION(ReturnType, gFunc)                                     \
-                                                                                \
-template<class Type, class MeshType>                                            \
-List<ReturnType> gFunc                                                          \
-(                                                                               \
-    const meshLevel<Type,MeshType>&,                                            \
-    const label comm = UPstream::worldComm                                      \
-);                                                                              \
-                                                                                \
-template<class Type, class MeshType>                                            \
-List<ReturnType> gFunc                                                          \
-(                                                                               \
-    const tmp<meshLevel<Type,MeshType>>&,                                       \
-    const label comm = UPstream::worldComm                                      \
+#define G_UNARY_FUNCTION(ReturnType, gFunc)                                    \
+                                                                               \
+template<class Type, class MeshType>                                           \
+List<ReturnType> gFunc                                                         \
+(                                                                              \
+    const meshLevel<Type,MeshType>&,                                           \
+    const label comm = UPstream::worldComm                                     \
+);                                                                             \
+                                                                               \
+template<class Type, class MeshType>                                           \
+List<ReturnType> gFunc                                                         \
+(                                                                              \
+    const tmp<meshLevel<Type,MeshType>>&,                                      \
+    const label comm = UPstream::worldComm                                     \
 );
 
 G_UNARY_FUNCTION(Type, gMax)

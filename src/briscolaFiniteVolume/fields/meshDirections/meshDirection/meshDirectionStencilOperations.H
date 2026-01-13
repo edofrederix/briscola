@@ -24,7 +24,7 @@ inline scalar rowSum
 {
     scalar r(st(ijk).center());
 
-    for (int c = 1; c < stencil::nComponents; c++)
+    for (int c = 1; c < stencil::nCsComponents; c++)
         r += st(ijk)[c];
 
     return r;

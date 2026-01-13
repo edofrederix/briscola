@@ -1,6 +1,7 @@
 #include "colocatedReconstruction.H"
 #include "Time.H"
 #include "addToRunTimeSelectionTable.H"
+#include "exSchemesReconstruction.H"
 
 namespace Foam
 {

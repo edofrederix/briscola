@@ -19,9 +19,6 @@ class theta
 :
     public RungeKuttaScheme
 {
-    // Butcher tableau
-    List<scalarList> a_;
-
 public:
 
     // Runtime type information
@@ -31,23 +28,11 @@ public:
     theta(const fvMesh& fvMsh);
 
     // Construct from mesh and theta value
-    theta(const fvMesh& fvMsh, const scalar theta);
-
-    // Destructor
-    ~theta()
-    {}
-
-    // Return the Butcher tableau for source A
-    virtual const List<scalarList>& a() const
-    {
-        return a_;
-    }
-
-    // Return the Butcher tableau for source B
-    virtual const List<scalarList>& b() const
-    {
-        return a_;
-    }
+    theta
+    (
+        const fvMesh& fvMsh,
+        const scalar theta
+    );
 };
 
 }

@@ -2,18 +2,16 @@
 
 EXE_INC = \
     $(PFLAGS) $(PINC) \
-    -I./lnInclude \
     -I../briscolaCore/lnInclude \
     -I../briscolaMesh/lnInclude \
-    -I$(LIB_SRC)/OpenFOAM/lnInclude \
     -I$(LIB_SRC)/Pstream/mpi/lnInclude \
-    $(if $(FFTW_HOME),-I$(FFTW_HOME)/include,$(shell pkg-config --cflags fftw3)) \
-    $(if $(EIGEN_HOME),-I$(EIGEN_HOME)/include/eigen3,$(shell pkg-config --cflags eigen3)) \
-    $(if $(PETSC_HOME),-I$(PETSC_HOME)/include,$(shell pkg-config --cflags petsc)) \
-    $(if $(SUPERLU_HOME),-DSUPERLU -I$(SUPERLU_HOME)/include,$(if $(shell pkg-config --exists superlu && echo 1),-DSUPERLU $(shell pkg-config --cflags superlu),)) \
-    $(if $(SUPERLU_DIST_HOME),-DSUPERLU_DIST -I$(SUPERLU_DIST_HOME)/include,$(if $(shell pkg-config --exists superlu_dist && echo 1),-DSUPERLU_DIST $(shell pkg-config --cflags superlu_dist),)) \
-    -Wno-old-style-cast \
-    -Wno-unknown-pragmas
+    -isystem $(LIB_SRC)/OpenFOAM/lnInclude \
+    $(if $(FFTW_HOME),-isystem $(FFTW_HOME)/include,$(shell pkg-config --cflags fftw3)) \
+    $(if $(EIGEN_HOME),-isystem $(EIGEN_HOME)/include/eigen3,$(shell pkg-config --cflags eigen3)) \
+    $(if $(PETSC_HOME),-isystem $(PETSC_HOME)/include,$(shell pkg-config --cflags petsc)) \
+    $(if $(SUPERLU_HOME),-DSUPERLU -isystem $(SUPERLU_HOME)/include,$(if $(shell pkg-config --exists superlu && echo 1),-DSUPERLU $(shell pkg-config --cflags superlu),)) \
+    $(if $(SUPERLU_DIST_HOME),-DSUPERLU_DIST -isystem $(SUPERLU_DIST_HOME)/include,$(if $(shell pkg-config --exists superlu_dist && echo 1),-DSUPERLU_DIST $(shell pkg-config --cflags superlu_dist),)) \
+    -Wshadow
 
 LIB_LIBS = \
     -L$(FOAM_USER_LIBBIN) \

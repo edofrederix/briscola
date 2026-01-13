@@ -11,7 +11,7 @@ const char* const stencil::csType::componentNames[] =
     {"c", "l", "r", "b", "t", "a", "f"};
 
 template<>
-const labelVector stencil::csType::componentOffsets[] =
+const labelVector stencil::csType::offsets[] =
     {
         briscola::zeroXYZ,
         briscola::faceOffset0,

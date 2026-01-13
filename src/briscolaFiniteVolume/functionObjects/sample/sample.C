@@ -48,12 +48,14 @@ void sample::init()
         {
             size += 3;
         }
+        #ifdef FULLDEBUG
         else
         {
             WarningInFunction
                 << "Field " << fields_[i] << " requested for sampling by "
                 << name_ << " but not found in registry." << endl;
         }
+        #endif
     }
 
     timeAveragedData_.setSize(timeAverage_*size);
@@ -75,7 +77,7 @@ void sample::init()
 void sample::appendData
 (
     const word fieldName,
-    PtrList<scalarList>& data,
+    FastPtrList<scalarList>& data,
     wordList& headers
 )
 {
@@ -153,12 +155,14 @@ void sample::appendData
             headers
         );
     }
+    #ifdef FULLDEBUG
     else
     {
         WarningInFunction
             << "Field " << fieldName << " requested for sampling by "
             << name_ << " but not found in registry." << endl;
     }
+    #endif
 }
 
 sample::sample
@@ -196,7 +200,7 @@ bool sample::execute()
 
 bool sample::write()
 {
-    PtrList<scalarList> data;
+    FastPtrList<scalarList> data;
     wordList headers;
 
     forAll(fields_, i)

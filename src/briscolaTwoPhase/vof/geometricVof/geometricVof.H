@@ -26,15 +26,7 @@ protected:
     // Local volume enforcement problem solver
     LVE lve_;
 
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const geometricVof&);
-
 public:
-
-    // Runtime type information
-    TypeName("geometricVof");
 
     // Construct from components
     geometricVof
@@ -47,9 +39,6 @@ public:
 
     // Copy constructor
     geometricVof(const geometricVof&);
-
-    // Destructor
-    ~geometricVof();
 
     // Reference to the LVE solver
     inline const LVE& lve() const { return lve_; }

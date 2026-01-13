@@ -32,12 +32,7 @@ void meshField<Type,MeshType>::allocate(const bool deep)
         listType::set
         (
             l,
-            new meshLevel<Type,MeshType>
-            (
-                *this,
-                fvMsh_,
-                l
-            )
+            new meshLevel<Type,MeshType>(*this, l)
         );
     }
 }
@@ -72,47 +67,42 @@ meshField<Type,MeshType>::meshField
     const bool deep
 )
 :
-    PtrList<meshLevel<Type,MeshType>>(),
+    FastPtrList<meshLevel<Type,MeshType>>(),
     IOdictionary
     (
         IOobject
         (
             name,
             fvMsh.time().path()/"0",
-            fvMsh.time(),
+            fvMsh.db(),
             r,
             w,
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(fvMsh),
     oldTimePtr_(nullptr),
-    boundaryConditions_(),
-    reSchemePtr_()
+    boundaryConditions_()
 {
-    if (!fvMsh.structured() && MeshType::numberOfDirections > 1)
-    {
-        FatalErrorInFunction
-            << "Cannot create a " << MeshType::typeName << " field on an "
-            << "unstructured mesh."
-            << endl << abort(FatalError);
-    }
+    this->allocate(deep);
+}
 
-    if
-    (
-        (
-            r == IOobject::MUST_READ
-         || r == IOobject::MUST_READ_IF_MODIFIED
-        )
-     && !headerOk()
-    )
-    {
-        FatalErrorInFunction
-            << "Cannot read field from " << objectPath() << endl
-            << exit(FatalError);
-    }
-
+template<class Type, class MeshType>
+meshField<Type,MeshType>::meshField
+(
+    const IOobject& io,
+    const fvMesh& fvMsh,
+    const bool deep
+)
+:
+    FastPtrList<meshLevel<Type,MeshType>>(),
+    IOdictionary(io),
+    cachedRefCount(),
+    fvMsh_(fvMsh),
+    oldTimePtr_(nullptr),
+    boundaryConditions_()
+{
     this->allocate(deep);
 }
 
@@ -126,7 +116,7 @@ meshField<Type,MeshType>::meshField
     const bool copyBCs
 )
 :
-    PtrList<meshLevel<Type,MeshType>>(field),
+    FastPtrList<meshLevel<Type,MeshType>>(field),
     IOdictionary
     (
         IOobject
@@ -139,11 +129,10 @@ meshField<Type,MeshType>::meshField
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(field.fvMsh()),
     oldTimePtr_(nullptr),
-    boundaryConditions_(),
-    reSchemePtr_()
+    boundaryConditions_()
 {
     setFieldPointers();
 
@@ -168,7 +157,7 @@ meshField<Type,MeshType>::meshField
     const bool copyBCs
 )
 :
-    PtrList<meshLevel<Type,MeshType>>(field),
+    FastPtrList<meshLevel<Type,MeshType>>(field),
     IOdictionary
     (
         IOobject
@@ -181,17 +170,16 @@ meshField<Type,MeshType>::meshField
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(field.fvMsh()),
     oldTimePtr_(nullptr),
-    boundaryConditions_(),
-    reSchemePtr_()
+    boundaryConditions_()
 {
     setFieldPointers();
 
     if (copyBCs)
     {
-        PtrList<boundaryCondition<Type,MeshType>> list
+        FastPtrList<boundaryCondition<Type,MeshType>> list
         (
             field.boundaryConditions(),
             *this
@@ -209,10 +197,10 @@ meshField<Type,MeshType>::meshField
     const bool copyBCs
 )
 :
-    PtrList<meshLevel<Type,MeshType>>
+    FastPtrList<meshLevel<Type,MeshType>>
     (
         const_cast<meshField<Type,MeshType>&>(tField()),
-        tField.isTmp()
+        tField.isTmp() && tField->unique()
     ),
     IOdictionary
     (
@@ -226,11 +214,10 @@ meshField<Type,MeshType>::meshField
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(tField->fvMsh_),
     oldTimePtr_(nullptr),
-    boundaryConditions_(),
-    reSchemePtr_()
+    boundaryConditions_()
 {
     setFieldPointers();
 
@@ -258,10 +245,10 @@ meshField<Type,MeshType>::meshField
     const bool copyBCs
 )
 :
-    PtrList<meshLevel<Type,MeshType>>
+    FastPtrList<meshLevel<Type,MeshType>>
     (
         const_cast<meshField<Type,MeshType>&>(tField()),
-        tField.isTmp()
+        tField.isTmp() && tField->unique()
     ),
     IOdictionary
     (
@@ -275,11 +262,10 @@ meshField<Type,MeshType>::meshField
             registerObject
         )
     ),
-    refCount(),
+    cachedRefCount(),
     fvMsh_(tField->fvMsh_),
     oldTimePtr_(nullptr),
-    boundaryConditions_(),
-    reSchemePtr_()
+    boundaryConditions_()
 {
     setFieldPointers();
 
@@ -318,6 +304,8 @@ void meshField<Type,MeshType>::addBoundaryConditions()
     {
         boundaryConditions_.setSize(fvMsh_.boundaries().size());
 
+        singular_ = true;
+
         forAll(fvMsh_.boundaries(), i)
         {
             boundaryConditions_.set
@@ -329,7 +317,15 @@ void meshField<Type,MeshType>::addBoundaryConditions()
                     fvMsh_.boundaries()[i]
                 )
             );
+
+            const boundaryConditionBaseType bcType =
+                boundaryConditions_[i].baseType();
+
+            if (bcType == DIRICHLETBC || bcType == ROBINBC)
+                singular_ = false;
         }
+
+        reduce(singular_, andOp<bool>());
     }
 
     #ifdef BOUNDARYEXCHANGE
@@ -374,8 +370,32 @@ void meshField<Type,MeshType>::correctBoundaryConditions()
 {
     addBoundaryConditions();
 
+    #ifdef BOUNDARYEXCHANGE
+
+    // Manually call the level boundary condition correction functions, except
+    // for the parallel/periodic one for which we can call a collective update.
+    // This is much more efficient than sending separate messages on each level.
+
+    forAll(*this, l)
+    {
+        if (l == 0)
+            listType::operator[](l).correctImmersedBoundaryConditions();
+
+        listType::operator[](l).correctUnsetBoundaryConditions();
+        listType::operator[](l).correctPatchBoundaryConditions();
+    }
+
+    this->correctCommsBoundaryConditions();
+
+    forAll(*this, l)
+        listType::operator[](l).correctEmptyBoundaryConditions();
+
+    #else
+
     forAll(*this, l)
         listType::operator[](l).correctBoundaryConditions();
+
+    #endif
 }
 
 template<class Type, class MeshType>
@@ -401,8 +421,16 @@ void meshField<Type,MeshType>::correctCommsBoundaryConditions()
 {
     addBoundaryConditions();
 
+    #ifdef BOUNDARYEXCHANGE
+
+    bExchangePtr_->correct(-1);
+
+    #else
+
     forAll(*this, l)
         listType::operator[](l).correctCommsBoundaryConditions();
+
+    #endif
 }
 
 template<class Type, class MeshType>
@@ -485,12 +513,7 @@ void meshField<Type,MeshType>::makeDeep()
             listType::set
             (
                 l,
-                new meshLevel<Type,MeshType>
-                (
-                    *this,
-                    fvMsh_,
-                    l
-                )
+                new meshLevel<Type,MeshType>(*this, l)
             );
         }
     }
@@ -504,26 +527,74 @@ void meshField<Type,MeshType>::makeShallow()
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::setRestrictionScheme(const word scheme)
+tmp<meshField<typename meshField<Type,MeshType>::cmptType,MeshType>>
+meshField<Type,MeshType>::component
+(
+    const label dir
+) const
 {
-    reSchemePtr_.reset
-    (
-        restrictionScheme<Type,MeshType>::New(fvMsh_, scheme).ptr()
-    );
+    tmp<meshField<cmptType,MeshType>> tF =
+        meshField<cmptType,MeshType>::New
+        (
+            this->name() + ".component(" + Foam::name(dir) + ")",
+            this->fvMsh_
+        );
+
+    tF.ref().make(deep());
+
+    forAll(*this, l)
+        tF.ref()[l] = listType::operator[](l).component(dir);
+
+    return tF;
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::restrict()
+void meshField<Type,MeshType>::replace
+(
+    const label dir,
+    const List<cmptType>& values
+)
 {
-    if (reSchemePtr_.empty())
-        this->setRestrictionScheme
-        (
-            restrictionScheme<Type,MeshType>::defaultScheme
-        );
+    forAll(*this, l)
+        listType::operator[](l).replace(dir,values);
+}
 
-    makeDeep();
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::replace
+(
+    const label dir,
+    const meshField<cmptType,MeshType>& F
+)
+{
+    forAll(*this, l)
+        listType::operator[](l).replace(dir,F[l]);
+}
 
-    reSchemePtr_->restrict(*this);
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::replace
+(
+    const label dir,
+    const tmp<meshField<cmptType,MeshType>>& tF
+)
+{
+    this->replace(dir,tF());
+
+    if (tF.isTmp())
+        tF.clear();
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::max(const Type& v)
+{
+    forAll(*this, l)
+        listType::operator[](l).max(v);
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::min(const Type& v)
+{
+    forAll(*this, l)
+        listType::operator[](l).min(v);
 }
 
 template<class Type, class MeshType>
@@ -540,7 +611,7 @@ void meshField<Type,MeshType>::operator=
     const tmp<meshField<Type,MeshType>>& tF
 )
 {
-    if (tF.isTmp())
+    if (tF.isTmp() && tF->unique())
     {
         meshField<Type,MeshType>& F =
             const_cast<meshField<Type,MeshType>&>(tF());
@@ -581,7 +652,9 @@ void meshField<Type,MeshType>::operator=(const zero)
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator+=(const meshField<Type,MeshType>& F)
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) += F[l];
 }
@@ -592,7 +665,9 @@ void meshField<Type,MeshType>::operator+=
     const tmp<meshField<Type,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this += tF();
     if (tF.isTmp())
         tF.clear();
@@ -601,7 +676,9 @@ void meshField<Type,MeshType>::operator+=
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator-=(const meshField<Type,MeshType>& F)
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) -= F[l];
 }
@@ -612,7 +689,9 @@ void meshField<Type,MeshType>::operator-=
     const tmp<meshField<Type,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this -= tF();
     if (tF.isTmp())
         tF.clear();
@@ -621,7 +700,9 @@ void meshField<Type,MeshType>::operator-=
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator*=(const meshField<scalar,MeshType>& F)
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) *= F[l];
 }
@@ -632,7 +713,9 @@ void meshField<Type,MeshType>::operator*=
     const tmp<meshField<scalar,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this *= tF();
     if (tF.isTmp())
         tF.clear();
@@ -641,7 +724,9 @@ void meshField<Type,MeshType>::operator*=
 template<class Type, class MeshType>
 void meshField<Type,MeshType>::operator/=(const meshField<scalar,MeshType>& F)
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) /= F[l];
 }
@@ -652,7 +737,9 @@ void meshField<Type,MeshType>::operator/=
     const tmp<meshField<scalar,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this /= tF();
     if (tF.isTmp())
         tF.clear();
@@ -746,7 +833,9 @@ void meshField<Type,MeshType>::operator+=
     const meshField<Type2,MeshType>& F
 )
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) += F[l];
 }
@@ -758,7 +847,9 @@ void meshField<Type,MeshType>::operator+=
     const tmp<meshField<Type2,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this += tF();
     if (tF.isTmp())
         tF.clear();
@@ -771,7 +862,9 @@ void meshField<Type,MeshType>::operator-=
     const meshField<Type2,MeshType>& F
 )
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) -= F[l];
 }
@@ -783,7 +876,9 @@ void meshField<Type,MeshType>::operator-=
     const tmp<meshField<Type2,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this -= tF();
     if (tF.isTmp())
         tF.clear();
@@ -796,7 +891,9 @@ void meshField<Type,MeshType>::operator*=
     const meshField<Type2,MeshType>& F
 )
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) *= F[l];
 }
@@ -808,7 +905,9 @@ void meshField<Type,MeshType>::operator*=
     const tmp<meshField<Type2,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this *= tF();
     if (tF.isTmp())
         tF.clear();
@@ -821,7 +920,9 @@ void meshField<Type,MeshType>::operator/=
     const meshField<Type2,MeshType>& F
 )
 {
-    checkMemberOperatorArgDepth(F);
+    if (F.shallow())
+        makeShallow();
+
     forAll(*this, l)
         listType::operator[](l) /= F[l];
 }
@@ -833,7 +934,9 @@ void meshField<Type,MeshType>::operator/=
     const tmp<meshField<Type2,MeshType>>& tF
 )
 {
-    checkMemberOperatorArgDepth(tF());
+    if (tF->shallow())
+        makeShallow();
+
     *this /= tF();
     if (tF.isTmp())
         tF.clear();

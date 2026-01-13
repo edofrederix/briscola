@@ -1,7 +1,7 @@
 #include "limiterScheme.H"
 #include "colocated.H"
 #include "staggered.H"
-#include "exSchemesGradient.H"
+#include "midPointGaussGradientScheme.H"
 
 namespace Foam
 {
@@ -11,6 +11,9 @@ namespace briscola
 
 namespace fv
 {
+
+using ::Foam::mag;
+using ::Foam::sign;
 
 template<class Type, class MeshType>
 limiterScheme<Type,MeshType>::limiterScheme
@@ -93,45 +96,34 @@ limiterScheme<Type,MeshType>::New
 }
 
 template<class Type, class MeshType>
-tmp<meshField<faceScalar,MeshType>> limiterScheme<Type,MeshType>::rType
+tmp<faceField<scalar,MeshType>> limiterScheme<Type,MeshType>::rType
 (
-    const meshField<faceScalar,MeshType>& phi,
-    const meshField<scalar,MeshType>& field
+    const faceField<scalar,MeshType>& phi,
+    const meshField<scalar,MeshType>& field,
+    const bool deep
 )
 {
-    tmp<meshField<faceScalar,MeshType>> tR
-    (
-        new meshField<faceScalar,MeshType>
-        (
-            "r",
-            field.fvMsh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            phi.deep() && field.deep()
-        )
-    );
+    tmp<faceField<scalar,MeshType>> tR =
+        faceField<scalar,MeshType>::New("r", field.fvMsh());
 
-    meshField<faceScalar,MeshType>& R = tR.ref();
+    faceField<scalar,MeshType>& R = tR.ref();
 
-    meshField<vector,MeshType> grad
-    (
-        gradientScheme<scalar,MeshType>::New
-        (
-            field.fvMsh(),
-            "grad("+field.name()+")"
-        )->grad(field)
-    );
+    R.make(deep);
+
+    tmp<meshField<vector,MeshType>> tGrad =
+        midPointGaussGradientScheme<scalar,MeshType>(field.fvMsh()).grad(field);
+
+    meshField<vector,MeshType>& grad = tGrad.ref();
+
+    if (deep)
+        restrict(grad);
 
     grad.correctBoundaryConditions();
-
-    if (R.deep())
-        grad.restrict();
 
     const meshField<vector,MeshType>& cc =
         field.fvMsh().template metrics<MeshType>().cellCenters();
 
-    forAllFaces(R, l, d, fd, i, j, k)
+    forAllFaces(R, fd, l, d, i, j, k)
     {
         // OpenFOAM's way (see NVDTVD.H)
 
@@ -140,60 +132,60 @@ tmp<meshField<faceScalar,MeshType>> limiterScheme<Type,MeshType>::rType
 
         const vector dist = cc(l,d,nei) - cc(l,d,ijk);
         const scalar gradf = field(l,d,nei) - field(l,d,ijk);
-        const scalar gradc =
-            dist & (phi(l,d,ijk)[fd*2] > 0 ? grad(l,d,ijk) : grad(l,d,nei));
 
-        R(l,d,ijk)[fd*2] =
-            Foam::mag(gradc) >= 1000*Foam::mag(gradf)
-          ? 2*1000*Foam::sign(gradc)*Foam::sign(gradf) - 1
-          : 2*(gradc/gradf) - 1;
+        scalar gradc;
 
-        R(l,d,nei)[fd*2+1] = R(l,d,ijk)[fd*2];
+        if (phi[fd](l,d,ijk) > 0)
+        {
+            gradc = dist & grad(l,d,ijk);
+        }
+        else
+        {
+            gradc = dist & grad(l,d,nei);
+        }
+
+        if (mag(gradc) >= 1000*mag(gradf))
+        {
+            R[fd](l,d,ijk) = 2*1000*sign(gradc)*sign(gradf) - 1;
+        }
+        else
+        {
+            R[fd](l,d,ijk) = 2*gradc/gradf - 1;
+        }
     }
 
     return tR;
 }
 
 template<class Type, class MeshType>
-tmp<meshField<faceScalar,MeshType>> limiterScheme<Type,MeshType>::rType
+tmp<faceField<scalar,MeshType>> limiterScheme<Type,MeshType>::rType
 (
-    const meshField<faceScalar,MeshType>& phi,
-    const meshField<vector,MeshType>& field
+    const faceField<scalar,MeshType>& phi,
+    const meshField<vector,MeshType>& field,
+    const bool deep
 )
 {
-    tmp<meshField<faceScalar,MeshType>> tR
-    (
-        new meshField<faceScalar,MeshType>
-        (
-            "r",
-            field.fvMsh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false,
-            phi.deep() && field.deep()
-        )
-    );
+    tmp<faceField<scalar,MeshType>> tR =
+        faceField<scalar,MeshType>::New("r", field.fvMsh());
 
-    meshField<faceScalar,MeshType>& R = tR.ref();
+    faceField<scalar,MeshType>& R = tR.ref();
 
-    meshField<tensor,MeshType> grad
-    (
-        gradientScheme<vector,MeshType>::New
-        (
-            field.fvMsh(),
-            "grad("+field.name()+")"
-        )->grad(field)
-    );
+    R.make(deep);
+
+    tmp<meshField<tensor,MeshType>> tGrad =
+        midPointGaussGradientScheme<vector,MeshType>(field.fvMsh()).grad(field);
+
+    meshField<tensor,MeshType>& grad = tGrad.ref();
+
+    if (deep)
+        restrict(grad);
 
     grad.correctBoundaryConditions();
-
-    if (R.deep())
-        grad.restrict();
 
     const meshField<vector,MeshType>& cc =
         field.fvMsh().template metrics<MeshType>().cellCenters();
 
-    forAllFaces(R, l, d, fd, i, j, k)
+    forAllFaces(R, fd, l, d, i, j, k)
     {
         // OpenFOAM's way (see NVDTVDV.H)
 
@@ -205,23 +197,25 @@ tmp<meshField<faceScalar,MeshType>> limiterScheme<Type,MeshType>::rType
         const vector gradfv = field(l,d,nei) - field(l,d,ijk);
         const scalar gradf = gradfv & gradfv;
 
-        const scalar gradc =
-            gradfv
-          & (
-                dist
-              & (
-                    phi(l,d,ijk)[fd*2] > 0
-                  ? grad(l,d,ijk)
-                  : grad(l,d,nei)
-                )
-            );
+        scalar gradc;
 
-        R(l,d,ijk)[fd*2] =
-            Foam::mag(gradc) >= 1000*Foam::mag(gradf)
-          ? 2*1000*Foam::sign(gradc)*Foam::sign(gradf) - 1
-          : 2*(gradc/gradf) - 1;
+        if (phi[fd](l,d,ijk) > 0)
+        {
+            gradc = gradfv & (dist & grad(l,d,ijk));
+        }
+        else
+        {
+            gradc = gradfv & (dist & grad(l,d,nei));
+        }
 
-        R(l,d,nei)[fd*2+1] = R(l,d,ijk)[fd*2];
+        if (mag(gradc) >= 1000*mag(gradf))
+        {
+            R[fd](l,d,ijk) = 2*1000*sign(gradc)*sign(gradf) - 1;
+        }
+        else
+        {
+            R[fd](l,d,ijk) = 2*gradc/gradf - 1;
+        }
     }
 
     return tR;

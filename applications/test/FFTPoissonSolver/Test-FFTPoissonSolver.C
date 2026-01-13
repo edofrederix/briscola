@@ -15,7 +15,7 @@ bool check
     const fvMesh& fvMsh
 )
 {
-    const PtrList<PartialList<scalar>>& cellSizes
+    const FastPtrList<PartialList<scalar>>& cellSizes
         = fvMsh.msh().cast<rectilinearMesh>().globalCellSizes();
 
     labelVector Si =
@@ -132,6 +132,9 @@ int main(int argc, char *argv[])
         true
     );
 
+    f = Zero;
+    p = Zero;
+
     labelVector N(fvMsh.msh().cast<rectilinearMesh>().N());
 
     Info << "Mesh size: " << N << endl;
@@ -156,6 +159,7 @@ int main(int argc, char *argv[])
 
     for (int r = 0; r < 1; r++)
     {
+        p.correctBoundaryConditions();
         solver.solve(p,f);
         Info << "Run number " << r+1 << " completed." << endl;
     }

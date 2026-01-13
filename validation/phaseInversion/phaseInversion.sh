@@ -14,11 +14,7 @@ PYTHON="python3"
 
 # Simulation parameters
 
-SOLVERS=(\
-    briscolaColocatedTwoPhase \
-    briscolaColocatedTwoPhaseCNAB \
-    briscolaStaggeredTwoPhase \
-    briscolaStaggeredTwoPhaseCNAB)
+SOLVERS=(briscolaColocatedTwoPhase briscolaStaggeredTwoPhase)
 MESHES=(64 128)
 NPROCSPERBRICKSIDE=(2 4)
 PSOLVERS=(MG split)
@@ -37,17 +33,6 @@ fi
 ##
 
 CURR=$(pwd)
-
-for I in "${!SOLVERS[@]}"; do
-
-    SOLVER=${SOLVERS[$I]}
-
-    cd $TEMPLATE
-    wmake -silent code.$SOLVER
-
-    cd $CURR
-
-done
 
 ##
 
@@ -127,6 +112,19 @@ for M in "${!CURVATURESCHEMES[@]}"; do
         ##
 
         $PYTHON post.py log.$SOLVER
+
+        E1=0
+        E2=0
+        E3=0
+        E4=0
+
+        P1=failed
+        P2=failed
+        P3=failed
+        P4=failed
+
+        NDT=0
+        NITER=0
 
         if [ -f "result.txt" ]; then
 

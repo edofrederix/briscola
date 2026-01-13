@@ -19,10 +19,6 @@ class Ascher121
 :
     public RungeKuttaScheme
 {
-    // Butcher tableaus
-    List<scalarList> a_;
-    List<scalarList> b_;
-
 public:
 
     // Runtime type information
@@ -30,22 +26,6 @@ public:
 
     // Construct from mesh
     Ascher121(const fvMesh& fvMsh);
-
-    // Destructor
-    ~Ascher121()
-    {}
-
-    // Return the Butcher tableau for source A
-    virtual const List<scalarList>& a() const
-    {
-        return a_;
-    }
-
-    // Return the Butcher tableau for source B
-    virtual const List<scalarList>& b() const
-    {
-        return b_;
-    }
 };
 
 }

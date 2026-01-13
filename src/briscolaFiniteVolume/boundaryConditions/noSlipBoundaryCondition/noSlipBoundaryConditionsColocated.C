@@ -10,8 +10,9 @@ namespace briscola
 namespace fv
 {
 
+makeBoundaryConditionType(noSlip,noSlip,scalar,colocated)
 makeBoundaryConditionType(noSlip,noSlip,vector,colocated)
-addBoundaryConditionType(noSlip,vector,colocated)
+makeBoundaryConditionType(noSlip,noSlip,tensor,colocated)
 
 }
 

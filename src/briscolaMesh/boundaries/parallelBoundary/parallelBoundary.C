@@ -51,10 +51,6 @@ parallelBoundary::parallelBoundary(const mesh& msh, const dictionary& dict)
     {
         master_ = Pstream::myProcNo() < neighborProcNum_;
     }
-
-    // Parallel patches are extended patches
-
-    this->extend();
 }
 
 parallelBoundary::parallelBoundary(const parallelBoundary& b)

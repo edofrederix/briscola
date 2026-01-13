@@ -1,0 +1,21 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      U;
+}
+
+boundaryConditions
+{
+    walls
+    {
+        type        noSlip;
+    }
+
+    movingWall
+    {
+        type        Dirichlet;
+        value       (1 0 0);
+    }
+}

@@ -14,16 +14,13 @@ PYTHON="python3"
 
 # Simulation parameters
 
-SOLVERS=(\
-    briscolaColocatedTwoPhase \
-    briscolaColocatedTwoPhaseCNAB \
-    briscolaStaggeredTwoPhase \
-    briscolaStaggeredTwoPhaseCNAB)
+SOLVERS=(briscolaColocatedTwoPhase briscolaStaggeredTwoPhase)
 MESHES=(32 64)
 NPROCSPERBRICKSIDE=(2 4)
 PSOLVERS=(MG split)
-NORMALSCHEMES=(Youngs MYC LSGIR)
+NORMALSCHEMES=(MYC LSGIR)
 CURVATURESCHEMES=(SHF CV)
+RKSCHEMES=(Ascher222 CNABM)
 
 ##
 
@@ -37,17 +34,6 @@ fi
 ##
 
 CURR=$(pwd)
-
-for I in "${!SOLVERS[@]}"; do
-
-    SOLVER=${SOLVERS[$I]}
-
-    cd $TEMPLATE
-    wmake -silent code.$SOLVER
-
-    cd $CURR
-
-done
 
 ##
 
@@ -64,6 +50,7 @@ echo \
     "pressure solver," \
     "normal scheme," \
     "curvature scheme," \
+    "Runge-Kutta scheme," \
     "error 1 [%]," \
     "error 2 [%]," \
     "test 1," \
@@ -81,6 +68,7 @@ for K in "${!NPROCSPERBRICKSIDE[@]}"; do
 for L in "${!PSOLVERS[@]}"; do
 for M in "${!NORMALSCHEMES[@]}"; do
 for N in "${!CURVATURESCHEMES[@]}"; do
+for O in "${!RKSCHEMES[@]}"; do
 
     sleep 1
 
@@ -90,6 +78,7 @@ for N in "${!CURVATURESCHEMES[@]}"; do
     PSOLVER=${PSOLVERS[$L]}
     NORMALSCHEME=${NORMALSCHEMES[$M]}
     CURVATURESCHEME=${CURVATURESCHEMES[$N]}
+    RKSCHEME=${RKSCHEMES[$O]}
 
     NPROCX=$NPROCPERBRICKSIDE
     NPROCY=$NPROCPERBRICKSIDE
@@ -99,7 +88,7 @@ for N in "${!CURVATURESCHEMES[@]}"; do
     MESHX=$MESH
     MESHY=$(echo "print(int(2*$MESH))" | python)
 
-    CASE="$SOLVER-$MESH-$NPROC-$PSOLVER-$NORMALSCHEME-$CURVATURESCHEME"
+    CASE="$SOLVER-$MESH-$NPROC-$PSOLVER-$NORMALSCHEME-$CURVATURESCHEME-$RKSCHEME"
 
     wait_for_procs $NPROC $NTASKS
 
@@ -118,7 +107,8 @@ for N in "${!CURVATURESCHEMES[@]}"; do
             $NPROCY \
             $PSOLVER \
             $NORMALSCHEME \
-            $CURVATURESCHEME
+            $CURVATURESCHEME \
+            $RKSCHEME
 
         if [ "$NPROC" == "1" ]; then
             srun --exclusive -n $NPROC $SOLVER > log.$SOLVER
@@ -129,6 +119,13 @@ for N in "${!CURVATURESCHEMES[@]}"; do
         ##
 
         $PYTHON post.py log.$SOLVER
+
+        E1=0
+        E2=0
+        P1=failed
+        P2=failed
+        NDT=0
+        NITER=0
 
         if [ -f "result.txt" ]; then
 
@@ -150,6 +147,7 @@ for N in "${!CURVATURESCHEMES[@]}"; do
             "$PSOLVER," \
             "$NORMALSCHEME," \
             "$CURVATURESCHEME," \
+            "$RKSCHEME," \
             "$E1," \
             "$E2," \
             "$P1," \
@@ -167,6 +165,7 @@ for N in "${!CURVATURESCHEMES[@]}"; do
 
     store_procs $NPROC $!
 
+done
 done
 done
 done

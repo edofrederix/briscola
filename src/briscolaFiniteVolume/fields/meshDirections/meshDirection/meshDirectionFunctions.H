@@ -209,20 +209,20 @@ Type sumCmptMag(const meshDirection<Type,MeshType>&);
 template<class Type, class MeshType>
 Type sumCmptMag(const tmp<meshDirection<Type,MeshType>>&);
 
-#define G_UNARY_FUNCTION(ReturnType, gFunc)                                     \
-                                                                                \
-template<class Type, class MeshType>                                            \
-ReturnType gFunc                                                                \
-(                                                                               \
-    const meshDirection<Type,MeshType>&,                                        \
-    const label comm = UPstream::worldComm                                      \
-);                                                                              \
-                                                                                \
-template<class Type, class MeshType>                                            \
-ReturnType gFunc                                                                \
-(                                                                               \
-    const tmp<meshDirection<Type,MeshType>>&,                                   \
-    const label comm = UPstream::worldComm                                      \
+#define G_UNARY_FUNCTION(ReturnType, gFunc)                                    \
+                                                                               \
+template<class Type, class MeshType>                                           \
+ReturnType gFunc                                                               \
+(                                                                              \
+    const meshDirection<Type,MeshType>&,                                       \
+    const label comm = UPstream::worldComm                                     \
+);                                                                             \
+                                                                               \
+template<class Type, class MeshType>                                           \
+ReturnType gFunc                                                               \
+(                                                                              \
+    const tmp<meshDirection<Type,MeshType>>&,                                  \
+    const label comm = UPstream::worldComm                                     \
 );
 
 G_UNARY_FUNCTION(Type, gMax)

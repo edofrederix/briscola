@@ -45,7 +45,7 @@ public:
         (
             mshField,
             b,
-            List<Type>(colocated::numberOfDirections, Zero)
+            Zero
         )
     {}
 
@@ -99,7 +99,7 @@ public:
         (
             mshField,
             b,
-            List<Type>(staggered::numberOfDirections, Zero)
+            Zero
         )
     {}
 

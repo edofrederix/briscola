@@ -146,19 +146,25 @@ void brickTopology::setEdgeAndVertexLinks()
                     const label facej3 =
                         faceNumber(link23.T().T() & faceOffsets[facej2]);
                     const label facek0 =
-                        faceNumber(link01.T() & link12.T() & faceOffsets[facek2]);
+                        faceNumber
+                        (
+                            link01.T() & link12.T() & faceOffsets[facek2]
+                        );
 
-                    const labelTensor T = (link01.T() & link12.T() & link23.T());
+                    const labelTensor T2 =
+                        (link01.T() & link12.T() & link23.T());
 
-                    const vertex& v0 = b0.v(sharedVertexNumber(facei0,facej0,facek0));
-                    const vertex& v1 = b3.v(sharedVertexNumber(facei3,facej3,facek3));
+                    const vertex& v0 =
+                        b0.v(sharedVertexNumber(facei0,facej0,facek0));
+                    const vertex& v1 =
+                        b3.v(sharedVertexNumber(facei3,facej3,facek3));
 
                     if (!links_[bricki].vertexLinks().set(v0.num()))
                     {
                         links_[bricki].vertexLinks().set
                         (
                             v0.num(),
-                            new brickVertexLink(v0, v1, T, v0 != v1)
+                            new brickVertexLink(v0, v1, T2, v0 != v1)
                         );
                     }
                 }
@@ -388,11 +394,11 @@ labelList brickTopology::shortestFacePath
 
             if (!skip[v])
             {
-                label d = dist[u] + 1;
+                label e = dist[u] + 1;
 
-                if (d < dist[v])
+                if (e < dist[v])
                 {
-                    dist[v] = d;
+                    dist[v] = e;
                     prev[v] = u;
                 }
             }

@@ -179,8 +179,8 @@ void partPoints::calcGhostPoints()
 
     const label Np = boundaryPtrs.size();
 
-    PtrList<vectorBlock> sendBuffers(Np);
-    PtrList<vectorBlock> recvBuffers(Np);
+    FastPtrList<vectorBlock> sendBuffers(Np);
+    FastPtrList<vectorBlock> recvBuffers(Np);
 
     forAll(boundaryPtrs, bi)
     {
@@ -284,9 +284,9 @@ void partPoints::calcGhostPoints()
             // neighbor is assumed to be on the opposing face/edge/vertex. Copy
             // buffers directly.
 
-            const boundary& b = *boundaryPtrs[bi];
+            const boundary& b2 = *boundaryPtrs[bi];
 
-            const labelVector bo(b.offset());
+            const labelVector bo(b2.offset());
 
             forAll(boundaryPtrs, bj)
             if (boundaryPtrs[bj]->offset() == -bo)

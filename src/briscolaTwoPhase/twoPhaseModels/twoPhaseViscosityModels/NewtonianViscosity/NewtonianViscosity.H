@@ -12,10 +12,10 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
+template<class DensityModel>
 class NewtonianViscosity
 :
-    public BaseModel
+    public DensityModel
 {
 protected:
 
@@ -23,18 +23,7 @@ protected:
     const scalar mu1_;
     const scalar mu2_;
 
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const NewtonianViscosity&);
-
 public:
-
-    // Return the instantiated type name
-    static word typeName()
-    {
-        return "NewtonianViscosity<" + word(BaseModel::typeName) + '>';
-    }
 
     // Construct from IOdictionary
     NewtonianViscosity(const fvMesh&, const IOdictionary&);
@@ -42,17 +31,14 @@ public:
     // Copy constructor
     NewtonianViscosity(const NewtonianViscosity&);
 
-    // Destructor
-    virtual ~NewtonianViscosity();
-
     // Dynamic viscosity of the first phase
     virtual scalar mu1() const { return mu1_; }
 
     // Dynamic viscosity of the second phase
     virtual scalar mu2() const { return mu2_; }
 
-    // Correct the two-phase mixture
-    virtual void correctMixture();
+    // Correct the two-phase model
+    virtual void correct();
 };
 
 }

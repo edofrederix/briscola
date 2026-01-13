@@ -2,7 +2,10 @@
 #define limiterScheme_H
 
 #include "scheme.H"
+#include "faceFields.H"
 #include "meshFields.H"
+#include "meshLevels.H"
+#include "meshDirections.H"
 
 namespace Foam
 {
@@ -21,17 +24,19 @@ class limiterScheme
 private:
 
     // Scalar helper function for the ratio of successive gradients
-    tmp<meshField<faceScalar,MeshType>> rType
+    tmp<faceField<scalar,MeshType>> rType
     (
-        const meshField<faceScalar,MeshType>& phi,
-        const meshField<scalar,MeshType>& field
+        const faceField<scalar,MeshType>& phi,
+        const meshField<scalar,MeshType>& field,
+        const bool deep
     );
 
     // Vector helper function for the ratio of successive gradients
-    tmp<meshField<faceScalar,MeshType>> rType
+    tmp<faceField<scalar,MeshType>> rType
     (
-        const meshField<faceScalar,MeshType>& phi,
-        const meshField<vector,MeshType>& field
+        const faceField<scalar,MeshType>& phi,
+        const meshField<vector,MeshType>& field,
+        const bool deep
     );
 
 public:
@@ -76,17 +81,19 @@ public:
     virtual ~limiterScheme();
 
     // Compute the ratio of successive gradients at each face
-    virtual tmp<meshField<faceScalar,MeshType>> r
+    virtual tmp<faceField<scalar,MeshType>> r
     (
-        const meshField<faceScalar,MeshType>& phi,
-        const meshField<Type,MeshType>& field
+        const faceField<scalar,MeshType>& phi,
+        const meshField<Type,MeshType>& field,
+        const bool deep
     );
 
     // Return the limiter field
-    virtual tmp<meshField<faceScalar,MeshType>> psi
+    virtual tmp<faceField<scalar,MeshType>> psi
     (
-        const meshField<faceScalar,MeshType>& phi,
-        const meshField<Type,MeshType>& field
+        const faceField<scalar,MeshType>& phi,
+        const meshField<Type,MeshType>& field,
+        const bool deep
     ) = 0;
 };
 

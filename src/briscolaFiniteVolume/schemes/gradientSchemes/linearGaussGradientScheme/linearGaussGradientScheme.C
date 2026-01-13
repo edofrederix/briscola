@@ -26,78 +26,48 @@ linearGaussGradientScheme<Type,MeshType>::grad
     const meshField<Type,MeshType>& field
 )
 {
-    typedef typename gradientScheme<Type,MeshType>::GradType GradType;
+    typedef typename gradientScheme<Type,MeshType>::GradType GType;
 
-    tmp<meshField<GradType,MeshType>> tGrad
-    (
-        new meshField<GradType,MeshType>
+    tmp<meshField<GType,MeshType>> tGrad =
+        meshField<GType,MeshType>::New
         (
             "grad("+field.name()+")",
             field.fvMsh()
-        )
-    );
+        );
 
-    meshField<GradType,MeshType>& Grad = tGrad.ref();
+    meshField<GType,MeshType>& Grad = tGrad.ref();
 
-    const meshField<faceVector,MeshType>& fan =
+    const faceField<vector,MeshType>& fan =
         field.fvMsh().template metrics<MeshType>().faceAreaNormals();
 
-    const meshField<faceScalar,MeshType>& fwc =
+    const faceField<scalar,MeshType>& fwc =
         field.fvMsh().template metrics<MeshType>().faceWeightsCenter();
 
-    const meshField<faceScalar,MeshType>& fwn =
+    const faceField<scalar,MeshType>& fwn =
         field.fvMsh().template metrics<MeshType>().faceWeightsNeighbor();
 
-    const meshField<scalar,MeshType>& cv =
-        field.fvMsh().template metrics<MeshType>().cellVolumes();
+    const meshField<scalar,MeshType>& icv =
+        field.fvMsh().template metrics<MeshType>().inverseCellVolumes();
 
-    forAllCells(Grad, d, i, j, k)
+    Grad = Zero;
+
+    forAllFaces(fan, fd, d, i, j, k)
     {
-        #ifdef NO_BLOCK_ZERO_INIT
-        Grad(d,i,j,k) = Zero;
-        #endif
+        const labelVector ijk(i,j,k);
+        const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-        for (int f = 0; f < 6; f++)
-            Grad(d,i,j,k) +=
-                (
-                    fwc(d,i,j,k)[f]*field(d,i,j,k)
-                  + fwn(d,i,j,k)[f]*field(d,neighbor(i,j,k,f))
-                )
-              * fan(d,i,j,k)[f]
-              / cv(d,i,j,k);
+        const GType value =
+            fan[fd](d,ijk)
+          * (
+                fwc[fd](d,ijk)*field(d,ijk)
+              + fwn[fd](d,ijk)*field(d,nei)
+            );
+
+        Grad(d,ijk) += value;
+        Grad(d,nei) -= value;
     }
 
-    return tGrad;
-}
-
-template<class Type, class MeshType>
-tmp<meshField<Type,staggered>>
-linearGaussGradientScheme<Type,MeshType>::stagGrad
-(
-    const meshField<Type,colocated>& field
-)
-{
-    tmp<meshField<Type,staggered>> tGrad
-    (
-        new meshField<Type,staggered>
-        (
-            "stagGrad("+field.name()+")",
-            field.fvMsh()
-        )
-    );
-
-    meshField<Type,staggered>& Grad = tGrad.ref();
-
-    const meshField<faceScalar,colocated>& fd =
-            field.fvMsh().template metrics<colocated>().faceDeltas();
-
-    forAllCells(Grad, d, i, j, k)
-        Grad(d,i,j,k) =
-            (
-                field(i,j,k)
-              - field(lowerNeighbor(i,j,k,d))
-            )
-          * fd(i,j,k)[d*2];
+    Grad *= icv;
 
     return tGrad;
 }

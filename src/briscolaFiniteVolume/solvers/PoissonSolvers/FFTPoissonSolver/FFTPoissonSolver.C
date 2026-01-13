@@ -1,6 +1,6 @@
 #include "FFTPoissonSolver.H"
 #include "rectilinearMesh.H"
-#include "exSchemes.H"
+#include "exSchemesFaceGradient.H"
 
 namespace Foam
 {
@@ -39,7 +39,7 @@ void FFTPoissonSolver<SType>::checkMesh(const fvMesh& fvMsh)
     if (cmptSum(mesh.globalUniform()) < 2)
     {
         FatalErrorInFunction
-            << "At least two mesh directions must be uniform "
+            << "At least two mesh directions must be globally uniform "
             << "for the " << this->type() << " solver." << endl
             << abort(FatalError);
     }
@@ -87,7 +87,7 @@ void FFTPoissonSolver<SType>::solve
 (
     colocatedScalarField& x,
     const colocatedScalarField* bPtr,
-    const colocatedFaceScalarField* lambdaPtr,
+    const colocatedScalarFaceField* lambdaPtr,
     const bool ddt,
     const scalar dtFrac
 )
@@ -135,9 +135,6 @@ void FFTPoissonSolver<SType>::solve
     const PtrList<boundaryCondition<scalar,colocated>>& bcs =
         x.boundaryConditions();
 
-    // Correct boundaries to evaluate boundary values
-    x.correctBoundaryConditions();
-
     // Correct RHS for inhomogeneous BC's
     forAll(bcs, bci)
     {
@@ -145,7 +142,7 @@ void FFTPoissonSolver<SType>::solve
         {
             const labelVector bo = bcs[bci].offset();
 
-            const PtrList<PartialList<scalar>>& cellSizes =
+            const FastPtrList<PartialList<scalar>>& cellSizes =
                 fvMsh_.msh().cast<rectilinearMesh>().globalCellSizes();
 
             const labelVector S(fvMsh_.template S<colocated>(bo));
@@ -451,17 +448,10 @@ void FFTPoissonSolver<SType>::solve
 
     if (this->computeFlux())
     {
-        this->initFlux();
-
-        const meshField<faceScalar,colocated>& fa =
+        const faceField<scalar,colocated>& fa =
             x.fvMsh().metrics<colocated>().faceAreas();
 
-        this->fluxPtr_() = ex::faceGrad(x)*fa;
-        this->fluxPtr_->rename
-        (
-            "*faceGrad(" + x.name() + ")"
-          + "*" + fa.name()
-        );
+        this->fluxPtr_ = ex::faceGrad(x)*fa;
     }
 }
 

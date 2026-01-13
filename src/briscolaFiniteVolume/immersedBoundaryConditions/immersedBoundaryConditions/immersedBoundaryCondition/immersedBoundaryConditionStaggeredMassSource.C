@@ -10,7 +10,7 @@ namespace fv
 {
 
 // Return colocated mass source term to be added to the Poisson equation given a
-// staggered velocity field. The source term corrects for unphysical fluxes
+// staggered velocity field. The source term corrects for non-physical fluxes
 // across the immersed boundary that can occur in methods that use velocity
 // forcing.
 
@@ -64,27 +64,27 @@ tmp<colocatedScalarField> ibmCorr
             }
         }
 
-        const colocatedFaceScalarField& fa =
+        const colocatedScalarFaceField& fa =
             fvMsh.metrics<colocated>().faceAreas();
 
-        const colocatedScalarField& cv =
-            fvMsh.metrics<colocated>().cellVolumes();
+        const colocatedScalarField& icv =
+            fvMsh.metrics<colocated>().inverseCellVolumes();
 
-        forAllCells(coloDivU, i, j, k)
+        coloDivU = Zero;
+
+        forAllFaces(fa, fd, i, j, k)
         {
             const labelVector ijk(i,j,k);
+            const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-            for (int d = 0; d < 3; d++)
-            {
-                const labelVector nei(upperNeighbor(ijk,d));
+            const scalar value =
+                ghostMask(fd,ijk)*field(fd,ijk)*fa[fd](ijk);
 
-                coloDivU(ijk) +=
-                    (
-                        ghostMask(ijk)*field(ijk)*fa(ijk)[d*2]
-                      - ghostMask(nei)*field(nei)*fa(ijk)[d*2+1]
-                    ) / cv(ijk);
-            }
+            coloDivU(ijk) += value;
+            coloDivU(nei) -= value;
         }
+
+        coloDivU *= icv;
     }
 
     return tColoDivU;

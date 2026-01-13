@@ -262,7 +262,7 @@ pencilDecomposer::pencilDecomposer
 :
     fvMsh_(fvMsh),
     N_(fvMsh_.msh().cast<rectilinearMesh>().N()),
-    I_(fvMsh_.msh().decomp().map().legend()[Pstream::nProcs() - 1] + unitXYZ),
+    I_(fvMsh_.msh().decomp().map().shape()),
     Ni_(Pstream::nProcs(), Zero),
     Nx_(Pstream::nProcs(), Zero),
     Ny_(Pstream::nProcs(), Zero),

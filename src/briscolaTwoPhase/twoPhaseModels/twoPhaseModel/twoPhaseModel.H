@@ -37,11 +37,6 @@ protected:
     // Surface tension switch to check if surface tension is active
     Switch tension_;
 
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const twoPhaseModel&);
-
 public:
 
     // Runtime type information
@@ -86,9 +81,6 @@ public:
     template<class MeshType>
     static autoPtr<twoPhaseModel> New(const fvMesh&, const IOdictionary&);
 
-    // Destructor
-    virtual ~twoPhaseModel();
-
     // Check if cast to derived model is possible
     template<class Model>
     inline bool castable() const
@@ -113,6 +105,12 @@ public:
         return *tpmPtr;
     }
 
+    template<class Model>
+    inline const Model& cast() const
+    {
+        return const_cast<twoPhaseModel&>(*this).cast<Model>();
+    }
+
     // Return const access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
@@ -125,17 +123,14 @@ public:
     // Return const access to the volume fraction
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
-    // Return surface tension flux
-    virtual tmp<colocatedFaceScalarField> surfaceTensionFlux() = 0;
-
     // Gravitational acceleration
     const vector& g() const { return g_; }
 
     // Return the surface tension switch
     Switch tension() const { return tension_; }
 
-    // Correct the two-phase mixture
-    virtual void correctMixture() = 0;
+    // Return the interfacial momentum flux
+    virtual tmp<colocatedScalarFaceField> flux() = 0;
 
     // Correct the two-phase model
     virtual void correct() = 0;

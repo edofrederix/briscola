@@ -1,0 +1,28 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      T;
+}
+
+boundaryConditions
+{
+    default
+    {
+        type        Dirichlet;
+        value       0;
+    }
+
+    inlet
+    {
+        type        Dirichlet;
+        value       0;
+    }
+
+    outlet
+    {
+        type        Dirichlet;
+        value       0;
+    }
+}

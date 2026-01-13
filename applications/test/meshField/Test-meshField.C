@@ -127,6 +127,37 @@ void testIndexing(const fvMesh& fvMsh, const bool deep)
         if (m1.direction()(i,j,k) != m1(labelVector(i,j,k)))
             FatalErrorInFunction << "test 1g failed" << abort(FatalError);
     }
+
+    typedef typename pTraits<Type>::cmptType cmptType;
+
+    meshField<cmptType,MeshType> s1(m1.component(0));
+
+    const List<cmptType> list
+    (
+        MeshType::numberOfDirections,
+        pTraits<cmptType>::one*3
+    );
+
+    for (label dir = 0; dir < pTraits<Type>::nComponents; dir++)
+    {
+        m1.replace(dir, list);
+
+        forAllCells(m1, l, d, i, j, k)
+            if (component(m1(l,d,i,j,k), dir) != list[d])
+                FatalErrorInFunction << "test 1h failed" << abort(FatalError);
+
+        m1.replace(dir, s1);
+
+        forAllCells(m1, l, d, i, j, k)
+            if (component(m1(l,d,i,j,k), dir) != s1(l,d,i,j,k))
+                FatalErrorInFunction << "test 1i failed" << abort(FatalError);
+
+        m1.replace(dir, s1*2.0);
+
+        forAllCells(m1, l, d, i, j, k)
+            if (component(m1(l,d,i,j,k), dir) != s1(l,d,i,j,k)*2)
+                FatalErrorInFunction << "test 1i failed" << abort(FatalError);
+    }
 }
 
 template<class Type, class MeshType>
@@ -1995,6 +2026,7 @@ void testScalarFunctions(const fvMesh& fvMsh, const bool deep)
     pow5(m1);
     pow6(m1);
     pow025(m1);
+    sqr(m1);
     sqrt(m1);
     cbrt(m1);
     sign(m1);

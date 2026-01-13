@@ -138,6 +138,20 @@ inline bool isStencil<stencil>()
     return true;
 }
 
+// Replace function specialization
+
+template<>
+inline void replace
+(
+    stencil& s,
+    const direction dir,
+    const typename stencil::cmptType& v
+)
+{
+    for (label i = 0; i < stencil::nCsComponents; i++)
+        setComponent(s[i], dir) = v[i];
+}
+
 }
 
 #include "stencilProducts.H"

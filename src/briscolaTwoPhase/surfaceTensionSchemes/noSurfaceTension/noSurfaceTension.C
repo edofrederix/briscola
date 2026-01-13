@@ -22,7 +22,7 @@ noSurfaceTension<SigmaModel>::noSurfaceTension
 :
     SigmaModel(fvMsh, dict, normal, alpha)
 {
-    colocatedFaceScalarField::operator=(Zero);
+    colocatedScalarFaceField::operator=(Zero);
 }
 
 template<class SigmaModel>
@@ -30,7 +30,7 @@ noSurfaceTension<SigmaModel>::noSurfaceTension(const noSurfaceTension& sts)
 :
     SigmaModel(sts)
 {
-    colocatedFaceScalarField::operator=(Zero);
+    colocatedScalarFaceField::operator=(Zero);
 }
 
 template<class SigmaModel>

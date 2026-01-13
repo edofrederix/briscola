@@ -69,6 +69,33 @@ brick::brick(const geometry& g, const label num, const dictionary& dict)
         FatalErrorInFunction
             << *this << " is left-handed. Bricks should be right-handed."
             << exit(FatalError);
+
+    if (g.dataAlignment())
+    {
+        // Rotate brick so that the largest cell count is in the third
+        // direction, the second largest cell count in the second direction and
+        // the lowest cell number in the first direction. This is efficient
+        // because data is stored with the third direction as inner most loop.
+
+        const label min = cmptMin(N_);
+        const label max = cmptMax(N_);
+
+        label dirMax = (N_.z() == max ? 2 : N_.y() == max ? 1 : 0);
+        label dirMin = (N_.x() == min ? 0 : N_.y() == min ? 1 : 2);
+        label dirMid = ((dirMin+1)%3 == dirMax ? (dirMin+2)%3 : (dirMin+1)%3);
+
+        if (dirMax != 2)
+        {
+            label axis = dirMax == 0 ? 1 : 0;
+
+            this->transform(rotations[axis][1]);
+
+            dirMid = dirMid == 2 ? dirMax : dirMid;
+
+            if (dirMid != 1)
+                this->transform(rotations[2][1]);
+        }
+    }
 }
 
 brick::brick(const brick& b)
@@ -77,7 +104,7 @@ brick::brick(const brick& b)
     dict_(b.dict_),
     v_(b.v_),
     N_(b.N_),
-    grading_(grading::New(*this)),
+    grading_(b.grading_, false),
     faces_(b.faces_, *this)
 {}
 
@@ -87,7 +114,7 @@ brick::brick(const brick& b, const geometry& geo)
     dict_(b.dict_),
     v_(b.v_),
     N_(b.N_),
-    grading_(grading::New(*this)),
+    grading_(b.grading_, false),
     faces_(b.faces_, *this)
 {}
 

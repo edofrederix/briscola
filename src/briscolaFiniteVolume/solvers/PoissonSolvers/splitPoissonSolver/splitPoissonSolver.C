@@ -1,5 +1,6 @@
 #include "splitPoissonSolver.H"
-#include "exSchemes.H"
+#include "exSchemesDivergence.H"
+#include "exSchemesFaceGradient.H"
 
 namespace Foam
 {
@@ -54,7 +55,7 @@ void splitPoissonSolver<SType,Type,MeshType>::solve
 (
     meshField<Type,MeshType>& x,
     const meshField<Type,MeshType>* bPtr,
-    const meshField<faceScalar,MeshType>* lambdaPtr,
+    const faceField<scalar,MeshType>* lambdaPtr,
     const bool ddt,
     const scalar dtFrac
 )
@@ -87,19 +88,14 @@ void splitPoissonSolver<SType,Type,MeshType>::solve
 
     // Modified coefficient
 
-    const meshField<faceScalar,MeshType>& lambda = *lambdaPtr;
+    const faceField<scalar,MeshType>& lambda = *lambdaPtr;
 
-    const faceScalar lambda0f = max(gMax(lambda));
-    const scalar lambda0 =
-        Foam::max
-        (
-            Foam::max
-            (
-                lambda0f.left(),
-                lambda0f.bottom()
-            ),
-            lambda0f.aft()
-        );
+    scalar lambda0 = 0.0;
+
+    forAll(lambda, s)
+        lambda0 = Foam::max(lambda0, max(max(lambda[s])));
+
+    reduce(lambda0, maxOp<scalar>());
 
     // Modified source
 
@@ -112,19 +108,17 @@ void splitPoissonSolver<SType,Type,MeshType>::solve
 
         bHatPtr_.reset
         (
-            new meshField<Type,MeshType>
+            meshField<Type,MeshType>::New
             (
                 bName + "Hat",
                 x.fvMsh()
-            )
+            ).ptr()
         );
-
-        bHatPtr_() = Zero;
     }
 
     meshField<Type,MeshType>& bHat = bHatPtr_();
 
-    const meshField<faceScalar,MeshType>& fa =
+    const faceField<scalar,MeshType>& fa =
         x.fvMsh().template metrics<MeshType>().faceAreas();
 
     for (int corr = 0; corr < nCorr_; corr++)
@@ -138,7 +132,7 @@ void splitPoissonSolver<SType,Type,MeshType>::solve
             bHat = Zero;
         }
 
-        const meshField<FaceSpace<Type>,MeshType> phi
+        const faceField<Type,MeshType> phi
         (
             (lambda/lambda0 - 1.0)*ex::faceGrad(x)*fa
         );
@@ -150,12 +144,7 @@ void splitPoissonSolver<SType,Type,MeshType>::solve
         // Compute the flux if needed
 
         if (this->computeFlux() && corr == nCorr_-1)
-        {
-            this->initFlux();
-
-            this->fluxPtr_() = solverPtr_->flux() + phi;
-            this->fluxPtr_() *= lambda0;
-        }
+            this->fluxPtr_ = lambda0*(solverPtr_->flux() + phi);
     }
 }
 

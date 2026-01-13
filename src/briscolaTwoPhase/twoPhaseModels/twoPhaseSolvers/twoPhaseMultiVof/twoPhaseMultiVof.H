@@ -96,11 +96,8 @@ public:
         return autoPtr<twoPhaseModel>(new twoPhaseMultiVof(*this));
     }
 
-    // Destructor
-    virtual ~twoPhaseMultiVof();
-
     // Return surface tension flux
-    virtual tmp<colocatedFaceScalarField> surfaceTensionFlux();
+    virtual tmp<colocatedScalarFaceField> flux();
 
     // Correct the two-phase model
     virtual void correct();

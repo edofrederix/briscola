@@ -169,30 +169,18 @@ These solver applications can be found in `applications/solvers`. They are
 briefly described here:
 * `briscolaColocated`: Colocated single-phase flow solver using Runge-Kutta time
 discretization.
-* `briscolaColocatedCNAB`: Colocated single-phase flow solver using
-Crank-Nicolson discretization for the viscous term and Adams-Bashforth
-discretization for the convective term.
 * `briscolaColocatedTwoPhase`: Colocated two-phase flow solver using Runge-Kutta
 time discretization and the Volume-of-Fluid (VOF) method for the two-phase
 interface. More details on two-phase solvers are given in
 [Chapter 5](./5_twoPhase.md).
-* `briscolaColocatedTwoPhaseCNAB`: Colocated two-phase flow solver using
-Crank-Nicolson discretization for the viscous term and Adams-Bashforth
-discretization for the convective term.
 * `briscolaLaplacian`: Colocated solver for a heat conduction equation of the
 form $\partial T/\partial t=\nabla \cdot  (\alpha \nabla T) + S$, with temperature
 $T$, diffusivity $\alpha$ and heat source $S$. The solver may also be used for
 any other equation with the same form.
 * `briscolaStaggered`: Staggered single-phase flow solver using Runge-Kutta time
 discretization.
-* `briscolaStaggeredCNAB`: Staggered single-phase flow solver using
-Crank-Nicolson discretization for the viscous term and Adams-Bashforth
-discretization for the convective term.
 * `briscolaStaggeredTwoPhase`: Staggered two-phase flow solver using Runge-Kutta
 time discretization.
-* `briscolaStaggeredTwoPhaseCNAB`: Staggered two-phase flow solver using
-Crank-Nicolson discretization for the viscous term and Adams-Bashforth
-discretization for the convective term.
 * `briscolaVofAdvection`: Colocated VOF advection solver without coupling to a
 Navier-Stokes equation. Mainly used for verification test cases of VOF advection
 under pre-defined velocity fields.

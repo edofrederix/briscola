@@ -59,18 +59,18 @@ int main(int argc, char *argv[])
 
     rm(fileName);
 
-    if (h6.component(0) != v1) FatalErrorInFunction << "test 1a failed" << abort(FatalError);
-    if (h6.component(1) != v2) FatalErrorInFunction << "test 1b failed" << abort(FatalError);
-    if (h6.component(2) != v3) FatalErrorInFunction << "test 1c failed" << abort(FatalError);
-    if (h6.component(3) != v4) FatalErrorInFunction << "test 1d failed" << abort(FatalError);
-    if (h6.component(4) != v5) FatalErrorInFunction << "test 1e failed" << abort(FatalError);
-    if (h6.component(5) != v6) FatalErrorInFunction << "test 1f failed" << abort(FatalError);
-    if (h6.component(6) != v7) FatalErrorInFunction << "test 1g failed" << abort(FatalError);
-    if (h6.component(7) != v8) FatalErrorInFunction << "test 1h failed" << abort(FatalError);
-    if (h6.component(8) != v9) FatalErrorInFunction << "test 1i failed" << abort(FatalError);
-    if (h6.component(9) != v10) FatalErrorInFunction << "test 1j failed" << abort(FatalError);
-    if (h6.component(10) != v11) FatalErrorInFunction << "test 1k failed" << abort(FatalError);
-    if (h6.component(11) != v12) FatalErrorInFunction << "test 1l failed" << abort(FatalError);
+    if (h6[0] != v1) FatalErrorInFunction << "test 1a failed" << abort(FatalError);
+    if (h6[1] != v2) FatalErrorInFunction << "test 1b failed" << abort(FatalError);
+    if (h6[2] != v3) FatalErrorInFunction << "test 1c failed" << abort(FatalError);
+    if (h6[3] != v4) FatalErrorInFunction << "test 1d failed" << abort(FatalError);
+    if (h6[4] != v5) FatalErrorInFunction << "test 1e failed" << abort(FatalError);
+    if (h6[5] != v6) FatalErrorInFunction << "test 1f failed" << abort(FatalError);
+    if (h6[6] != v7) FatalErrorInFunction << "test 1g failed" << abort(FatalError);
+    if (h6[7] != v8) FatalErrorInFunction << "test 1h failed" << abort(FatalError);
+    if (h6[8] != v9) FatalErrorInFunction << "test 1i failed" << abort(FatalError);
+    if (h6[9] != v10) FatalErrorInFunction << "test 1j failed" << abort(FatalError);
+    if (h6[10] != v11) FatalErrorInFunction << "test 1k failed" << abort(FatalError);
+    if (h6[11] != v12) FatalErrorInFunction << "test 1l failed" << abort(FatalError);
 
     if (h6.ba() != v1) FatalErrorInFunction << "test 1a failed" << abort(FatalError);
     if (h6.ta() != v2) FatalErrorInFunction << "test 1b failed" << abort(FatalError);

@@ -12,10 +12,10 @@ namespace briscola
 namespace fv
 {
 
-template<class BaseModel>
+template<class ViscosityModel>
 class twoPhaseVof
 :
-    public BaseModel
+    public ViscosityModel
 {
 protected:
 
@@ -27,11 +27,6 @@ protected:
 
     // The Vof model
     autoPtr<vof> vfPtr_;
-
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const twoPhaseVof&);
 
 public:
 
@@ -50,15 +45,12 @@ public:
         return autoPtr<twoPhaseModel>(new twoPhaseVof(*this));
     }
 
-    // Destructor
-    virtual ~twoPhaseVof();
-
     // Return surface tension flux
-    virtual tmp<colocatedFaceScalarField> surfaceTensionFlux()
+    virtual tmp<colocatedScalarFaceField> flux()
     {
-        return tmp<colocatedFaceScalarField>
+        return tmp<colocatedScalarFaceField>
             (
-                static_cast<colocatedFaceScalarField&>
+                static_cast<colocatedScalarFaceField&>
                 (
                     surfaceTensionSchemePtr_()
                 )

@@ -20,7 +20,7 @@ MittalDirichletImmersedBoundaryCondition
 )
 :
     MittalImmersedBoundaryCondition<Type,MeshType>(mshField, ib),
-    boundaryValues_(this->dict().lookup("values"))
+    boundaryValues_(this->read("value"))
 {}
 
 // Destructor
@@ -42,10 +42,7 @@ void MittalDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
     meshDirection<Type,MeshType>& x = this->mshField_[l][d];
     const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
 
-    List<Type> data
-    (
-        move(this->exchanges_[l][d].dataFunc(this->mshField_))
-    );
+    List<Type> data(move(this->exchanges_[l][d](this->mshField_)));
 
     label c = 0;
 
