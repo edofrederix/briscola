@@ -66,9 +66,15 @@ void twoPhaseVof<ViscosityModel>::correct()
 {
     // Correct the volume fraction
     vfPtr_->solve(this->coloFaceFlux()());
-    surfaceTensionSchemePtr_->correct();
 
+    // Correct the mesh-specific face volume fraction
+    ViscosityModel::correctFaceAlpha();
+
+    // Correct the base model
     ViscosityModel::correct();
+
+    // Correct the surface tension
+    surfaceTensionSchemePtr_->correct();
 }
 
 }

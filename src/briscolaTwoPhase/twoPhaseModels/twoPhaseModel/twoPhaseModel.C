@@ -37,7 +37,7 @@ twoPhaseModel::twoPhaseModel
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
         true,
-        false
+        true
     ),
     g_(dict.lookup("g")),
     tension_(dict.subDict("surfaceTensionScheme").lookup("type") != "none")

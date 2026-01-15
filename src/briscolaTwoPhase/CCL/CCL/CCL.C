@@ -55,7 +55,7 @@ CCL::CCL
         "m",
         fvMsh,
         IOobject::NO_READ,
-        IOobject::NO_WRITE,
+        IOobject::AUTO_WRITE,
         false,
         false
     ),

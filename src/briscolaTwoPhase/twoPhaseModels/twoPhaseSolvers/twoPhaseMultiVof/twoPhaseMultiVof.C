@@ -146,11 +146,11 @@ void twoPhaseMultiVof<ViscosityModel>::addAlphaField()
         )
     );
 
-    #ifdef FULLDEBUG
+    // #ifdef FULLDEBUG
 
     Info << "Alpha field added" << endl;
 
-    #endif
+    // #endif
 }
 
 template<class ViscosityModel>
@@ -342,12 +342,12 @@ void twoPhaseMultiVof<ViscosityModel>::moveFields()
                     targetAlpha = alphas_.size() - 1;
                 }
 
-                #ifdef FULLDEBUG
+                // #ifdef FULLDEBUG
 
                 Info << "Moving bubble " << i+1 << " from field "
                      << phi_[i] << " to field " << targetAlpha << endl;
 
-                #endif
+                // #endif
 
                 // Move the particle from the source interface to the target interface
 
@@ -553,6 +553,12 @@ void twoPhaseMultiVof<ViscosityModel>::correct()
                 1.0
             );
 
+    // Correct the mesh-specific face volume fraction
+    ViscosityModel::correctFaceAlpha();
+
+    // Correct the base model
+    ViscosityModel::correct();
+
     // Correct surface tensions
     forAll(surfaceTensionSchemes_,i)
     {
@@ -560,12 +566,10 @@ void twoPhaseMultiVof<ViscosityModel>::correct()
     }
 
     // Correct interface normals
-    forAll(normalSchemes_,i)
-    {
-        normalSchemes_[i].correct();
-    }
-
-    ViscosityModel::correct();
+    // forAll(normalSchemes_,i)
+    // {
+    //     normalSchemes_[i].correct();
+    // }
 }
 
 }
