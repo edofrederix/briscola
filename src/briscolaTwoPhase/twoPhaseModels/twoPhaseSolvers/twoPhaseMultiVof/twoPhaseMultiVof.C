@@ -146,11 +146,11 @@ void twoPhaseMultiVof<ViscosityModel>::addAlphaField()
         )
     );
 
-    // #ifdef FULLDEBUG
+    #ifdef FULLDEBUG
 
     Info << "Alpha field added" << endl;
 
-    // #endif
+    #endif
 }
 
 template<class ViscosityModel>
@@ -342,12 +342,12 @@ void twoPhaseMultiVof<ViscosityModel>::moveFields()
                     targetAlpha = alphas_.size() - 1;
                 }
 
-                // #ifdef FULLDEBUG
+                #ifdef FULLDEBUG
 
                 Info << "Moving bubble " << i+1 << " from field "
                      << phi_[i] << " to field " << targetAlpha << endl;
 
-                // #endif
+                #endif
 
                 // Move the particle from the source interface to the target interface
 
@@ -410,7 +410,7 @@ twoPhaseMultiVof<ViscosityModel>::twoPhaseMultiVof
         "m",
         fvMsh,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
+        IOobject::NO_WRITE,
         true,
         false
     ),
@@ -419,7 +419,7 @@ twoPhaseMultiVof<ViscosityModel>::twoPhaseMultiVof
         "colors",
         fvMsh,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
+        IOobject::NO_WRITE,
         true,
         false
     ),
@@ -472,9 +472,7 @@ twoPhaseMultiVof<ViscosityModel>::flux()
 
     colocatedScalarFaceField& flux = tSurfaceTensionFlux.ref();
 
-    #ifdef NO_BLOCK_ZERO_INIT
     flux = Zero;
-    #endif
 
     forAll(surfaceTensionSchemes_, i)
     {
@@ -539,19 +537,22 @@ void twoPhaseMultiVof<ViscosityModel>::correct()
 
     this->alpha_.correctBoundaryConditions();
 
-    scalarBlock& alpha = this->alpha_.B();
+    forAll(this->alpha_, l)
+    {
+        scalarBlock& alpha = this->alpha_[l].B();
 
-    forAllBlockLinear(alpha, i)
-        alpha(i) =
-            Foam::min
-            (
-                Foam::max
+        forAllBlockLinear(alpha, i)
+            alpha(i) =
+                Foam::min
                 (
-                    round(0.5*alpha(i)/vof::threshold)*2.0*vof::threshold,
-                    0.0
-                ),
-                1.0
-            );
+                    Foam::max
+                    (
+                        round(0.5*alpha(i)/vof::threshold)*2.0*vof::threshold,
+                        0.0
+                    ),
+                    1.0
+                );
+    }
 
     // Correct the mesh-specific face volume fraction
     ViscosityModel::correctFaceAlpha();
