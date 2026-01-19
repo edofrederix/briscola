@@ -176,14 +176,20 @@ template<class ViscosityModel>
 void twoPhaseMultiVof<ViscosityModel>::computeGlobalN()
 {
     globalN_ = Zero;
+    scalar removedVol = Zero;
 
     forAll(CCL_, c)
     {
         globalN_ += CCL_[c].n();
+        removedVol += CCL_[c].removedVol();
     }
 
+    reduce(removedVol, sumOp<scalar>());
+
     Info << "Total number of connected components: " << globalN_
-         << " in: " << CCL_.size() << " alpha fields" << endl;
+         << " in " << CCL_.size() << " alpha fields. "
+         << "Total volume of small components removed: "
+         << removedVol << endl;
 }
 
 
@@ -565,12 +571,6 @@ void twoPhaseMultiVof<ViscosityModel>::correct()
     {
         surfaceTensionSchemes_[i].correct();
     }
-
-    // Correct interface normals
-    // forAll(normalSchemes_,i)
-    // {
-    //     normalSchemes_[i].correct();
-    // }
 }
 
 }

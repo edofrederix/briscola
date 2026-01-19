@@ -20,6 +20,9 @@ void CCL::removeSmallComponents()
 
     labelList sizes(n_, Zero);
 
+    const colocatedScalarField& cv =
+        fvMsh_.template metrics<colocated>().cellVolumes();
+
     forAllCells(m,i,j,k)
     {
         if (m(i,j,k))
@@ -37,6 +40,8 @@ void CCL::removeSmallComponents()
     {
         if (m(i,j,k) && sizes[m(i,j,k) - 1] < minSize_)
         {
+            removedVol_ += alpha_(i,j,k) * cv(i,j,k);
+
             m(i,j,k) = Zero;
             alpha_(i,j,k) = Zero;
         }
@@ -63,7 +68,8 @@ CCL::CCL
     dict_(dict),
     alpha_(alpha),
     n_(-1),
-    minSize_(dict.lookupOrDefault<label>("minSize", 27))
+    minSize_(dict.lookupOrDefault<label>("minSize", 27)),
+    removedVol_(Zero)
 {
     // Initialize the label field to zero
 
@@ -77,7 +83,8 @@ CCL::CCL(const CCL& s)
     dict_(s.dict_),
     alpha_(s.alpha_),
     n_(s.n_),
-    minSize_(s.minSize_)
+    minSize_(s.minSize_),
+    removedVol_(s.removedVol_)
 {}
 
 CCL::~CCL()

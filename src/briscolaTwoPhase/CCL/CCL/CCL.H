@@ -35,6 +35,9 @@ protected:
     // Minimum size of components (number of cells)
     label minSize_;
 
+    // Total volume of removed alpha
+    scalar removedVol_;
+
     // Tag the binary field
     virtual void tag() = 0;
 
@@ -96,6 +99,9 @@ public:
 
     // Access the number of connected components
     inline label n() { return n_; }
+
+    // Access to total removed small component volume
+    inline scalar removedVol() const { return removedVol_; }
 
     // Correct the CCL field
     void correct();
