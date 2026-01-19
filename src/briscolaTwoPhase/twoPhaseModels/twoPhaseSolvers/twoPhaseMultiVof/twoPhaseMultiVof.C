@@ -184,7 +184,7 @@ void twoPhaseMultiVof<ViscosityModel>::computeGlobalN()
         removedVol += CCL_[c].removedVol();
     }
 
-    reduce(removedVol, sumOp<scalar>());
+    Pstream::gather(removedVol, sumOp<scalar>());
 
     Info << "Total number of connected components: " << globalN_
          << " in " << CCL_.size() << " alpha fields. "
