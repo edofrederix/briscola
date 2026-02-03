@@ -1,5 +1,5 @@
-#ifndef CCL_H
-#define CCL_H
+#ifndef tagAlgorithm_H
+#define tagAlgorithm_H
 
 #include "dictionary.H"
 #include "colocatedFields.H"
@@ -13,7 +13,7 @@ namespace briscola
 namespace fv
 {
 
-class CCL
+class tagAlgorithm
 :
     public colocatedLabelField
 {
@@ -28,11 +28,11 @@ protected:
     // Reference to the void fraction
     colocatedScalarField& alpha_;
 
-    // Number of connected components,
+    // Number of particles,
     // reset after each tag() call
     label n_;
 
-    // Minimum size of components (number of cells)
+    // Minimum size of particles (number of cells)
     label minSize_;
 
     // Total volume of removed alpha
@@ -41,19 +41,19 @@ protected:
     // Tag the binary field
     virtual void tag() = 0;
 
-    // Remove small droplets or bubbles
-    void removeSmallComponents();
+    // Remove small particles
+    void removeSmallParticles();
 
 public:
 
     // Runtime type information
-    TypeName("CCL");
+    TypeName("tagAlgorithm");
 
     // Declare run-time constructor selection tables
     declareRunTimeSelectionTable
     (
         autoPtr,
-        CCL,
+        tagAlgorithm,
         dictionary,
         (
             const fvMesh& fvMsh,
@@ -64,7 +64,7 @@ public:
     );
 
     // Construct from components
-    CCL
+    tagAlgorithm
     (
         const fvMesh&,
         const dictionary&,
@@ -72,13 +72,13 @@ public:
     );
 
     // Copy constructor
-    CCL(const CCL&);
+    tagAlgorithm(const tagAlgorithm&);
 
-    // Clone normalScheme
-    virtual autoPtr<CCL> clone() const = 0;
+    // Clone tag algorithm
+    virtual autoPtr<tagAlgorithm> clone() const = 0;
 
     // Selector from components
-    static autoPtr<CCL> New
+    static autoPtr<tagAlgorithm> New
     (
         const fvMesh&,
         const dictionary&,
@@ -86,7 +86,7 @@ public:
     );
 
     // Destructor
-    virtual ~CCL();
+    virtual ~tagAlgorithm();
 
     // Return const access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
@@ -97,13 +97,13 @@ public:
     // Access to the volume fraction
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
-    // Access the number of connected components
+    // Access the number of particles
     inline label n() { return n_; }
 
-    // Access to total removed small component volume
+    // Access to total removed small particles volume
     inline scalar removedVol() const { return removedVol_; }
 
-    // Correct the CCL field
+    // Correct the tag field
     void correct();
 
     // Assign binary field values

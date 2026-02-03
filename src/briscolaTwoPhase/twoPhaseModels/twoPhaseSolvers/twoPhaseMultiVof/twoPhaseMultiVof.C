@@ -20,66 +20,10 @@ void twoPhaseMultiVof<ViscosityModel>::initAlphas()
 
     alphas_.append
     (
-        new colocatedScalarField
+        new vofField
         (
-            "alpha0",
             this->alpha_,
-            true,
-            true
-        )
-    );
-
-    alphas_[0].setRestrictionScheme("volumeWeighted");
-
-    normalSchemes_.clear();
-
-    normalSchemes_.append
-    (
-        normalScheme::New
-        (
-            this->fvMsh(),
-            this->dict().subDict("normalScheme"),
-            alphas_[0]
-        )
-    );
-
-    surfaceTensionSchemes_.clear();
-
-    surfaceTensionSchemes_.append
-    (
-        surfaceTensionScheme::New
-        (
-            this->fvMsh(),
-            this->dict().subDict("surfaceTensionScheme"),
-            normalSchemes_[0],
-            alphas_[0]
-        )
-    );
-
-    vofs_.clear();
-
-    vofs_.append
-    (
-        vof::New
-        (
-            this->fvMsh(),
-            this->dict().subDict("vof"),
-            normalSchemes_[0],
-            alphas_[0]
-        )
-    );
-
-    CCL_.clear();
-
-    CCL_.append
-    (
-        CCL::New
-        (
-            this->fvMsh(),
-            this->dict().found("CCL")
-            ? this->dict().subDict("CCL")
-            : dictionary::null,
-            alphas_[0]
+            this->dict()
         )
     );
 }
@@ -89,60 +33,11 @@ void twoPhaseMultiVof<ViscosityModel>::addAlphaField()
 {
     alphas_.append
     (
-        new colocatedScalarField
+        new vofField
         (
-            "alpha"+Foam::name(alphas_.size()),
             this->alpha_,
-            true,
+            this->dict(),
             true
-        )
-    );
-
-    alphas_.last() = Zero;
-
-    alphas_.last().setRestrictionScheme("volumeWeighted");
-
-    normalSchemes_.append
-    (
-        normalScheme::New
-        (
-            this->fvMsh(),
-            this->dict().subDict("normalScheme"),
-            alphas_.last()
-        )
-    );
-
-    surfaceTensionSchemes_.append
-    (
-        surfaceTensionScheme::New
-        (
-            this->fvMsh(),
-            this->dict().subDict("surfaceTensionScheme"),
-            normalSchemes_.last(),
-            alphas_.last()
-        )
-    );
-
-    vofs_.append
-    (
-        vof::New
-        (
-            this->fvMsh(),
-            this->dict().subDict("vof"),
-            normalSchemes_.last(),
-            alphas_.last()
-        )
-    );
-
-    CCL_.append
-    (
-        CCL::New
-        (
-            this->fvMsh(),
-            this->dict().found("CCL")
-            ? this->dict().subDict("CCL")
-            : dictionary::null,
-            alphas_.last()
         )
     );
 
@@ -154,17 +49,17 @@ void twoPhaseMultiVof<ViscosityModel>::addAlphaField()
 }
 
 template<class ViscosityModel>
-void twoPhaseMultiVof<ViscosityModel>::computeGlobalCCL()
+void twoPhaseMultiVof<ViscosityModel>::computeGlobaltagAlgorithm()
 {
-    globalCCL_ = Zero;
+    tags_ = Zero;
 
-    forAllCells(globalCCL_, i,j,k)
+    forAllCells(tags_, i,j,k)
     {
-        forAll(CCL_,c)
+        forAll(alphas_, a)
         {
-            if (CCL_[c](i,j,k))
+            if (alphas_[a].tag()(i,j,k))
             {
-                globalCCL_(i,j,k) = CCL_[c](i,j,k);
+                tags_(i,j,k) = alphas_[a].tag()(i,j,k);
 
                 break;
             }
@@ -175,20 +70,20 @@ void twoPhaseMultiVof<ViscosityModel>::computeGlobalCCL()
 template<class ViscosityModel>
 void twoPhaseMultiVof<ViscosityModel>::computeGlobalN()
 {
-    globalN_ = Zero;
+    N_ = Zero;
     scalar removedVol = Zero;
 
-    forAll(CCL_, c)
+    forAll(alphas_, a)
     {
-        globalN_ += CCL_[c].n();
-        removedVol += CCL_[c].removedVol();
+        N_ += alphas_[a].tag().n();
+        removedVol += alphas_[a].tag().removedVol();
     }
 
     Pstream::gather(removedVol, sumOp<scalar>());
 
-    Info << "Total number of connected components: " << globalN_
-         << " in " << CCL_.size() << " alpha fields. "
-         << "Total volume of small components removed: "
+    Info << "Total number of particles: " << N_
+         << " in " << alphas_.size() << " alpha fields. "
+         << "Total volume of small particles removed: "
          << removedVol << endl;
 }
 
@@ -200,7 +95,7 @@ void twoPhaseMultiVof<ViscosityModel>::setPhi()
 
     forAll(alphas_, a)
     {
-        for (int i = 0; i < CCL_[a].n(); i++)
+        for (int i = 0; i < alphas_[a].tag().n(); i++)
         {
             phi_.append(a);
         }
@@ -213,28 +108,28 @@ void twoPhaseMultiVof<ViscosityModel>::overwriteTagsWithIDs()
 {
     int Np = 0;
 
-    forAll(CCL_,c)
+    forAll(alphas_, a)
     {
-        forAllCells(CCL_[c],i,j,k)
+        forAllCells(alphas_[a].tag(),i,j,k)
         {
-            if (CCL_[c](i,j,k))
+            if (alphas_[a].tag()(i,j,k))
             {
-                CCL_[c](i,j,k) += Np;
+                alphas_[a].tag()(i,j,k) += Np;
             }
         }
 
-        Np += CCL_[c].n();
+        Np += alphas_[a].tag().n();
     }
 }
 
 template<class ViscosityModel>
 void twoPhaseMultiVof<ViscosityModel>::setConnectivityMatrix()
 {
-    connectivityMatrix_.setSize(globalN_);
+    connectivityMatrix_.setSize(N_);
 
     forAll(connectivityMatrix_, i)
     {
-        connectivityMatrix_[i].setSize(globalN_);
+        connectivityMatrix_[i].setSize(N_);
 
         forAll(connectivityMatrix_[i], j)
         {
@@ -242,7 +137,7 @@ void twoPhaseMultiVof<ViscosityModel>::setConnectivityMatrix()
         }
     }
 
-    forAllCells(globalCCL_, i,j,k)
+    forAllCells(tags_, i,j,k)
     {
         labelList tagNums(0);
 
@@ -252,7 +147,7 @@ void twoPhaseMultiVof<ViscosityModel>::setConnectivityMatrix()
             {
                 for (int dk = -1; dk <= 1; dk++)
                 {
-                    label tagNum = globalCCL_(i + di, j + dj, k + dk);
+                    label tagNum = tags_(i + di, j + dj, k + dk);
 
                     if (tagNum)
                     {
@@ -309,7 +204,7 @@ void twoPhaseMultiVof<ViscosityModel>::moveFields()
                 // Fields that have particles that are connected to the current
                 // one are ineligible too
 
-                for (int m = 0; m < globalN_; m++)
+                for (int m = 0; m < N_; m++)
                 {
                     label phi = phi_[m];
 
@@ -350,7 +245,7 @@ void twoPhaseMultiVof<ViscosityModel>::moveFields()
 
                 #ifdef FULLDEBUG
 
-                Info << "Moving bubble " << i+1 << " from field "
+                Info << "Moving particle " << i+1 << " from field "
                      << phi_[i] << " to field " << targetAlpha << endl;
 
                 #endif
@@ -359,10 +254,10 @@ void twoPhaseMultiVof<ViscosityModel>::moveFields()
 
                 forAllCells(alphas_[phi_[i]],x,y,z)
                 {
-                    if (CCL_[phi_[i]](x,y,z) == i+1)
+                    if (alphas_[phi_[i]].tag()(x,y,z) == i+1)
                     {
-                        CCL_[targetAlpha](x,y,z) = i+1;
-                        CCL_[phi_[i]](x,y,z) = 0;
+                        alphas_[targetAlpha].tag()(x,y,z) = i+1;
+                        alphas_[phi_[i]].tag()(x,y,z) = 0;
 
                         alphas_[targetAlpha](x,y,z) = Foam::min
                             (
@@ -407,11 +302,7 @@ twoPhaseMultiVof<ViscosityModel>::twoPhaseMultiVof
 :
     ViscosityModel(fvMsh, dict),
     alphas_(),
-    normalSchemes_(),
-    surfaceTensionSchemes_(),
-    vofs_(),
-    CCL_(),
-    globalCCL_
+    tags_
     (
         "m",
         fvMsh,
@@ -429,11 +320,11 @@ twoPhaseMultiVof<ViscosityModel>::twoPhaseMultiVof
         true,
         false
     ),
-    globalN_(-1),
+    N_(-1),
     phi_(),
     connectivityMatrix_()
 {
-    globalCCL_ = Zero;
+    tags_ = Zero;
 }
 
 template<class ViscosityModel>
@@ -444,24 +335,16 @@ twoPhaseMultiVof<ViscosityModel>::twoPhaseMultiVof
 :
     ViscosityModel(tpm),
     alphas_(tpm.alphas_),
-    normalSchemes_(tpm.normalSchemes_),
-    surfaceTensionSchemes_(tpm.surfaceTensionSchemes_),
-    vofs_(tpm.vofs_),
-    CCL_(tpm.CCL_),
-    globalCCL_(tpm.globalCCL_),
+    tags_(tpm.tags_),
     colors_(tpm.colors_),
-    globalN_(tpm.globalN_),
+    N_(tpm.N_),
     phi_(tpm.phi_),
     connectivityMatrix_(tpm.connectivityMatrix_)
 {
-    forAll(normalSchemes_,i)
+    forAll(alphas_, a)
     {
-        normalSchemes_[i].correct();
-    }
-
-    forAll(surfaceTensionSchemes_,i)
-    {
-        surfaceTensionSchemes_[i].correct();
+        alphas_[a].normal().correct();
+        alphas_[a].surfaceTension().correct();
     }
 
     ViscosityModel::correct();
@@ -480,11 +363,11 @@ twoPhaseMultiVof<ViscosityModel>::flux()
 
     flux = Zero;
 
-    forAll(surfaceTensionSchemes_, i)
+    forAll(alphas_, a)
     {
         flux += static_cast<colocatedScalarFaceField&>
             (
-                surfaceTensionSchemes_[i]
+                alphas_[a].surfaceTension()
             );
     }
 
@@ -500,21 +383,21 @@ void twoPhaseMultiVof<ViscosityModel>::correct()
     }
 
     // Tag alpha fields
-    forAll(CCL_,i)
+    forAll(alphas_, a)
     {
-        CCL_[i].correct();
+        alphas_[a].tag().correct();
     }
 
     // Coalescence suppression
     computeGlobalN();
     setPhi();
     overwriteTagsWithIDs();
-    computeGlobalCCL();
+    computeGlobaltagAlgorithm();
     setConnectivityMatrix();
     moveFields();
 
     // Set colors field
-    colors_ = globalCCL_;
+    colors_ = tags_;
 
     forAllCells(colors_,i,j,k)
     {
@@ -525,18 +408,18 @@ void twoPhaseMultiVof<ViscosityModel>::correct()
     }
 
     // Correct multiple marker fields
-    forAll(vofs_,i)
+    forAll(alphas_, a)
     {
-        vofs_[i].solve(this->coloFaceFlux()());
+        alphas_[a].vf().solve(this->coloFaceFlux()());
     }
 
     // Compute summed alpha field
 
     this->alpha_ = Zero;
 
-    forAll(alphas_,i)
+    forAll(alphas_, a)
     {
-        this->alpha_ += alphas_[i];
+        this->alpha_ += static_cast<colocatedScalarField&>(alphas_[a]);
     }
 
     // Set bounds for summed alpha field
@@ -567,9 +450,9 @@ void twoPhaseMultiVof<ViscosityModel>::correct()
     ViscosityModel::correct();
 
     // Correct surface tensions
-    forAll(surfaceTensionSchemes_,i)
+    forAll(alphas_, a)
     {
-        surfaceTensionSchemes_[i].correct();
+        alphas_[a].surfaceTension().correct();
     }
 }
 

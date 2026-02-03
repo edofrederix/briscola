@@ -1,7 +1,7 @@
 #ifndef twoPass_H
 #define twoPass_H
 
-#include "CCL.H"
+#include "tagAlgorithm.H"
 
 namespace Foam
 {
@@ -14,7 +14,7 @@ namespace fv
 
 class twoPass
 :
-    public CCL
+    public tagAlgorithm
 {
 private:
 
@@ -22,16 +22,16 @@ private:
     HashTable<label,label> unionTable_;
 
     // Find root tag in union table
-    int find(label);
+    label find(const label);
 
     // Find root tag in table
-    int find(label, HashTable<label,label>&);
+    label find(const label, HashTable<label,label>&);
 
     // Unite tags in union table
-    void uniteTags(label,label);
+    void uniteTags(const label, const label);
 
     // Unite tags in table
-    void uniteTags(label,label,HashTable<label,label>&);
+    void uniteTags(HashTable<label,label>&, const label, const label);
 
     // Parallel reduction
     void parallelReduce();
@@ -60,10 +60,10 @@ public:
     // Destructor
     virtual ~twoPass();
 
-    // Clone CCL
-    virtual autoPtr<CCL> clone() const
+    // Clone tagAlgorithm
+    virtual autoPtr<tagAlgorithm> clone() const
     {
-        return autoPtr<CCL>(new twoPass(*this));
+        return autoPtr<tagAlgorithm>(new twoPass(*this));
     }
 
 };

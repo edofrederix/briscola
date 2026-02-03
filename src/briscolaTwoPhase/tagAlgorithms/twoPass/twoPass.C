@@ -11,14 +11,14 @@ namespace fv
 {
 
 defineTypeNameAndDebug(twoPass, 0);
-addToRunTimeSelectionTable(CCL, twoPass, dictionary);
+addToRunTimeSelectionTable(tagAlgorithm, twoPass, dictionary);
 
-int twoPass::find(label x)
+label twoPass::find(const label x)
 {
     return find(x, unionTable_);
 }
 
-int twoPass::find(label x, HashTable<label,label>& table)
+label twoPass::find(const label x, HashTable<label,label>& table)
 {
     if (!table.found(x))
     {
@@ -33,12 +33,17 @@ int twoPass::find(label x, HashTable<label,label>& table)
     return table[x];
 }
 
-void twoPass::uniteTags(label x, label y)
+void twoPass::uniteTags(const label x, const label y)
 {
-    uniteTags(x,y,unionTable_);
+    uniteTags(unionTable_,x,y);
 }
 
-void twoPass::uniteTags(label x, label y, HashTable<label,label>& table)
+void twoPass::uniteTags
+(
+    HashTable<label,label>& table,
+    const label x,
+    const label y
+)
 {
     label xRoot = find(x,table);
     label yRoot = find(y,table);
@@ -65,34 +70,21 @@ void twoPass::parallelReduce()
 
     forAllCells(m,i,j,k)
     {
-        if (m(i,j,k))
-        {
-            neighbors.clear();
+        const labelVector ijk(i,j,k);
 
-            if (m(i-1,j,k))
-            {
-                neighbors.append(m(i-1,j,k));
-            }
-            if (m(i,j-1,k))
-            {
-                neighbors.append(m(i,j-1,k));
-            }
-            if (m(i,j,k-1))
-            {
-                neighbors.append(m(i,j,k-1));
-            }
-            if (m(i+1,j,k))
-            {
-                neighbors.append(m(i+1,j,k));
-            }
-            if (m(i,j+1,k))
-            {
-                neighbors.append(m(i,j+1,k));
-            }
-            if (m(i,j,k+1))
-            {
-                neighbors.append(m(i,j,k+1));
-            }
+        if (m(ijk))
+        {
+            // Initialize to maximum number of neighbors
+            neighbors.setSize(6, Zero);
+
+            label cursor = 0;
+
+            for (int f = 0; f < 6; f++)
+                if (m(ijk + faceOffsets[f]))
+                    neighbors[cursor++] = m(ijk + faceOffsets[f]);
+
+            // Resize to real number of neighbors
+            neighbors.resize(cursor);
 
             if (neighbors.size() != 0)
             {
@@ -139,9 +131,9 @@ void twoPass::parallelReduce()
             {
                 uniteTags
                 (
+                    mergedTable,
                     localTable.toc()[e],
-                    localTable[localTable.toc()[e]],
-                    mergedTable
+                    localTable[localTable.toc()[e]]
                 );
             }
         }
@@ -210,22 +202,21 @@ void twoPass::tag()
     // First pass
     forAllCells(m, i,j,k)
     {
-        if (m(i,j,k))
-        {
-            neighbors.clear();
+        const labelVector ijk(i,j,k);
 
-            if (m(i-1,j,k))
-            {
-                neighbors.append(m(i-1,j,k));
-            }
-            if (m(i,j-1,k))
-            {
-                neighbors.append(m(i,j-1,k));
-            }
-            if (m(i,j,k-1))
-            {
-                neighbors.append(m(i,j,k-1));
-            }
+        if (m(ijk))
+        {
+            // Initialize to maximum number of lower neighbors
+            neighbors.setSize(3, Zero);
+
+            label cursor = 0;
+
+            for (int f = 0; f < 3; f++)
+                if (m(ijk + lowerFaceOffsets[f]))
+                    neighbors[cursor++] = m(ijk + lowerFaceOffsets[f]);
+
+            // Resize to real number of neighbors
+            neighbors.resize(cursor);
 
             if (neighbors.size() == 0)
             {
@@ -265,12 +256,12 @@ twoPass::twoPass
     colocatedScalarField& alpha
 )
 :
-    CCL(fvMsh, dict, alpha)
+    tagAlgorithm(fvMsh, dict, alpha)
 {}
 
 twoPass::twoPass(const twoPass& s)
 :
-    CCL(s)
+    tagAlgorithm(s)
 {}
 
 twoPass::~twoPass()

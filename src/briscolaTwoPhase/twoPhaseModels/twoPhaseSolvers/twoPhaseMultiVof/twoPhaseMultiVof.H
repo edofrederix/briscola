@@ -1,8 +1,7 @@
 #ifndef twoPhaseMultiVof_H
 #define twoPhaseMultiVof_H
 
-#include "vof.H"
-#include "CCL.H"
+#include "vofField.H"
 
 namespace Foam
 {
@@ -21,28 +20,16 @@ class twoPhaseMultiVof
 protected:
 
     // Multiple marker fields
-    PtrList<colocatedScalarField> alphas_;
+    PtrList<vofField> alphas_;
 
-    // Normal schemes
-    PtrList<normalScheme> normalSchemes_;
-
-    // Surface tension schemes
-    PtrList<surfaceTensionScheme> surfaceTensionSchemes_;
-
-    // The Vof models
-    PtrList<vof> vofs_;
-
-    // Connected Component Labeling
-    PtrList<CCL> CCL_;
-
-    // Global CCL field
-    colocatedLabelField globalCCL_;
+    // Global tag field
+    colocatedLabelField tags_;
 
     // Colors field (for visualisation only)
     colocatedLabelField colors_;
 
-    // Global total number of bubbles
-    label globalN_;
+    // Global total number of particles
+    label N_;
 
     // To which alpha field does the tag belong to
     labelList phi_;
@@ -61,10 +48,10 @@ private:
     // Create new alpha field
     void addAlphaField();
 
-    // Compute global CCL field
-    void computeGlobalCCL();
+    // Compute global tagAlgorithm field
+    void computeGlobaltagAlgorithm();
 
-    // Compute global total number of bubbles
+    // Compute global total number of particles
     void computeGlobalN();
 
     // Set phi

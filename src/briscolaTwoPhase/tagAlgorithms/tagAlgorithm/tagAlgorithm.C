@@ -1,4 +1,4 @@
-#include "CCL.H"
+#include "tagAlgorithm.H"
 #include "addToRunTimeSelectionTable.H"
 #include "vof.H"
 
@@ -11,10 +11,10 @@ namespace briscola
 namespace fv
 {
 
-defineTypeNameAndDebug(CCL, 0);
-defineRunTimeSelectionTable(CCL, dictionary);
+defineTypeNameAndDebug(tagAlgorithm, 0);
+defineRunTimeSelectionTable(tagAlgorithm, dictionary);
 
-void CCL::removeSmallComponents()
+void tagAlgorithm::removeSmallParticles()
 {
     colocatedLabelField& m = *this;
 
@@ -48,7 +48,7 @@ void CCL::removeSmallComponents()
     }
 }
 
-CCL::CCL
+tagAlgorithm::tagAlgorithm
 (
     const fvMesh& fvMsh,
     const dictionary& dict,
@@ -76,7 +76,7 @@ CCL::CCL
     static_cast<colocatedLabelField&>(*this) = Zero;
 }
 
-CCL::CCL(const CCL& s)
+tagAlgorithm::tagAlgorithm(const tagAlgorithm& s)
 :
     colocatedLabelField(s),
     fvMsh_(s.fvMsh_),
@@ -87,17 +87,17 @@ CCL::CCL(const CCL& s)
     removedVol_(s.removedVol_)
 {}
 
-CCL::~CCL()
+tagAlgorithm::~tagAlgorithm()
 {}
 
-autoPtr<CCL> CCL::New
+autoPtr<tagAlgorithm> tagAlgorithm::New
 (
     const fvMesh& fvMsh,
     const dictionary& dict,
     colocatedScalarField& alpha
 )
 {
-    const word CCLType
+    const word tagAlgorithmType
     (
         dict.isNull()
       ? word("twoPass")
@@ -105,33 +105,33 @@ autoPtr<CCL> CCL::New
     );
 
     dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(CCLType);
+        dictionaryConstructorTablePtr_->find(tagAlgorithmType);
 
     if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown CCL algorithm type " << CCLType
-            << ". Valid CCL algorithm are" << endl
+            << "Unknown tag algorithm type " << tagAlgorithmType
+            << ". Valid tag algorithms are" << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
-    return autoPtr<CCL>
+    return autoPtr<tagAlgorithm>
     (
         cstrIter()(fvMsh, dict, alpha)
     );
 }
 
-void CCL::correct()
+void tagAlgorithm::correct()
 {
     binaryTag();
 
     this->tag();
 
-    removeSmallComponents();
+    removeSmallParticles();
 }
 
-void CCL::binaryTag()
+void tagAlgorithm::binaryTag()
 {
     colocatedLabelField& m = *this;
 
