@@ -129,13 +129,13 @@ splitAdvection::splitAdvection
     const fvMesh& fvMsh,
     const dictionary& dict,
     normalScheme& normal,
-    colocatedScalarField& alpha
+    vofField& alpha
 )
 :
     geometricVof(fvMsh, dict, normal, alpha),
     flux_
     (
-        IOobject::groupName("flux", alpha.name()),
+        IOobject::groupName("flux", alpha.colocatedScalarField::name()),
         fvMsh,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -151,7 +151,7 @@ splitAdvection::splitAdvection(const splitAdvection& vf)
     geometricVof(vf),
     flux_
     (
-        IOobject::groupName("flux", vf.alpha().name()),
+        IOobject::groupName("flux", vf.alpha().colocatedScalarField::name()),
         vf.fvMsh(),
         IOobject::NO_READ,
         IOobject::NO_WRITE,

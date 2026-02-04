@@ -2,6 +2,7 @@
 #define twoPhaseMultiVof_H
 
 #include "vofField.H"
+#include "SquareMatrix.H"
 
 namespace Foam
 {
@@ -35,7 +36,7 @@ protected:
     labelList phi_;
 
     // Connectivity matrix
-    List<List<Switch>> connectivityMatrix_;
+    SquareMatrix<Switch> connectivityMatrix_;
 
 private:
 

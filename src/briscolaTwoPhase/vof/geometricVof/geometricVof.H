@@ -34,7 +34,7 @@ public:
         const fvMesh&,
         const dictionary&,
         normalScheme&,
-        colocatedScalarField&
+        vofField&
     );
 
     // Copy constructor

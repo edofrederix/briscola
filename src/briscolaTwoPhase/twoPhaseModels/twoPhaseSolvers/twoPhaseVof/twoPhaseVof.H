@@ -17,17 +17,6 @@ class twoPhaseVof
 :
     public ViscosityModel
 {
-protected:
-
-    // Normal scheme
-    autoPtr<normalScheme> normalSchemePtr_;
-
-    // Surface tension scheme
-    autoPtr<surfaceTensionScheme> surfaceTensionSchemePtr_;
-
-    // The Vof model
-    autoPtr<vof> vfPtr_;
-
 public:
 
     // Runtime type information
@@ -52,16 +41,10 @@ public:
             (
                 static_cast<colocatedScalarFaceField&>
                 (
-                    surfaceTensionSchemePtr_()
+                    this->alpha_.surfaceTension()
                 )
             );
     }
-
-    // Return access to the Vof model
-    inline vof& vf() { return vfPtr_(); }
-
-    // Return const access to the Vof model
-    inline const vof& vf() const { return vfPtr_; }
 
     // Correct the two-phase model
     virtual void correct();

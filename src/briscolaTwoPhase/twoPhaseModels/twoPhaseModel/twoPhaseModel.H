@@ -6,6 +6,7 @@
 #include "regIOobject.H"
 #include "normalScheme.H"
 #include "surfaceTensionScheme.H"
+#include "vofField.H"
 
 namespace Foam
 {
@@ -29,7 +30,7 @@ protected:
     const IOdictionary& dict_;
 
     // Volume fraction field
-    colocatedScalarField alpha_;
+    vofField alpha_;
 
     // Gravitational acceleration
     vector g_;

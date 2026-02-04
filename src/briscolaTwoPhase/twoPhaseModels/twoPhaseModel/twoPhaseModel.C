@@ -30,21 +30,10 @@ twoPhaseModel::twoPhaseModel
     regIOobject(dict, true),
     fvMsh_(fvMsh),
     dict_(dict),
-    alpha_
-    (
-        "alpha",
-        fvMsh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE,
-        true,
-        true
-    ),
+    alpha_(fvMsh),
     g_(dict.lookup("g")),
     tension_(dict.subDict("surfaceTensionScheme").lookup("type") != "none")
-{
-    alpha_.setRestrictionScheme("volumeWeighted");
-    alpha_ = Zero;
-}
+{}
 
 twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
 :
@@ -54,9 +43,7 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
     alpha_(tpm.alpha_),
     g_(tpm.g_),
     tension_(tpm.tension_)
-{
-    alpha_.setRestrictionScheme("volumeWeighted");
-}
+{}
 
 template<>
 autoPtr<twoPhaseModel> twoPhaseModel::New<colocated>

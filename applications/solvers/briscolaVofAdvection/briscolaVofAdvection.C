@@ -3,7 +3,8 @@
 #include "Time.H"
 
 #include "fv.H"
-#include "vof.H"
+#include "vofField.H"
+#include "curvatureScheme.H"
 
 using namespace Foam;
 using namespace briscola;

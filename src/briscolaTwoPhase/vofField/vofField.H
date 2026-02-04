@@ -21,13 +21,15 @@ class vofField
 :
     public colocatedScalarField
 {
+public:
+
+    // Needed to be able to use vofField = Zero
+    using colocatedScalarField::operator=;
+
 protected:
 
     // Reference to the mesh
     const fvMesh& fvMsh_;
-
-    // Reference to the dictionary
-    const dictionary& dict_;
 
     // Normal scheme
     autoPtr<normalScheme> normalSchemePtr_;
@@ -54,6 +56,9 @@ public:
         bool initToZero = false
     );
 
+    // Construct for global alpha field
+    vofField(const fvMesh& fvMsh);
+
     // Copy constructor
     vofField(const vofField&);
 
@@ -66,11 +71,23 @@ public:
     // Destructor
     virtual ~vofField();
 
+    // Correct boundary conditions and set bounds on alpha field
+    void correctAlpha();
+
+    // Set normal scheme
+    void setNormalScheme(const dictionary& dict);
+
+    // Set surface tension scheme
+    void setSurfaceTensionScheme(const dictionary& dict);
+
+    // Set vof solver
+    void setVof(const dictionary& dict);
+
+    // Set tag algorithm
+    void setTagAlgorithm(const dictionary& dict);
+
     // Return const access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
-
-    // Access to the dictionary
-    inline const dictionary& dict() const { return dict_; }
 
     // Return access to the normal scheme
     inline normalScheme& normal() { return normalSchemePtr_(); }

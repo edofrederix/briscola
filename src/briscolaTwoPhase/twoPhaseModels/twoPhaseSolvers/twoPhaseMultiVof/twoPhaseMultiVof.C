@@ -127,15 +127,9 @@ void twoPhaseMultiVof<ViscosityModel>::setConnectivityMatrix()
 {
     connectivityMatrix_.setSize(N_);
 
-    forAll(connectivityMatrix_, i)
-    {
-        connectivityMatrix_[i].setSize(N_);
-
-        forAll(connectivityMatrix_[i], j)
-        {
-            connectivityMatrix_[i][j] = false;
-        }
-    }
+    for (int i = 0; i < connectivityMatrix_.m(); i++)
+        for (int j = 0; j < connectivityMatrix_.n(); j++)
+            connectivityMatrix_(i,j) = false;
 
     forAllCells(tags_, i,j,k)
     {
@@ -166,31 +160,27 @@ void twoPhaseMultiVof<ViscosityModel>::setConnectivityMatrix()
                     label first = tagNums[m];
                     label second = tagNums[n];
 
-                    connectivityMatrix_[first-1][second-1] = true;
-                    connectivityMatrix_[second-1][first-1] = true;
+                    connectivityMatrix_(first-1, second-1) = true;
+                    connectivityMatrix_(second-1, first-1) = true;
 
                 }
             }
         }
     }
 
-    forAll(connectivityMatrix_, i)
-    {
-        forAll(connectivityMatrix_[i], j)
-        {
-            reduce(connectivityMatrix_[i][j], orOp<bool>());
-        }
-    }
+    for (int i = 0; i < connectivityMatrix_.m(); i++)
+        for (int j = 0; j < connectivityMatrix_.n(); j++)
+            reduce(connectivityMatrix_(i,j), orOp<bool>());
 }
 
 template<class ViscosityModel>
 void twoPhaseMultiVof<ViscosityModel>::moveFields()
 {
-    for (int i = 0; i < connectivityMatrix_.size()-1; i++)
+    for (int i = 0; i < connectivityMatrix_.m()-1; i++)
     {
-        for (int j = i+1; j < connectivityMatrix_[i].size(); j++)
+        for (int j = i+1; j < connectivityMatrix_.n(); j++)
         {
-            if (connectivityMatrix_[i][j] && phi_[i] == phi_[j])
+            if (connectivityMatrix_(i,j) && phi_[i] == phi_[j])
             {
                 // Create ineligible interface array. This array identifies
                 // which interfaces are ineligible for hosting the particle.
@@ -208,7 +198,7 @@ void twoPhaseMultiVof<ViscosityModel>::moveFields()
                 {
                     label phi = phi_[m];
 
-                    if (phi != phi_[i] && connectivityMatrix_[i][m])
+                    if (phi != phi_[i] && connectivityMatrix_(i,m))
                     {
                         ineligibleAlphas[phi] = true;
                     }
@@ -283,7 +273,7 @@ void twoPhaseMultiVof<ViscosityModel>::moveFields()
                 // other particle, so the i's row and column in the connectivity
                 // matrix should be false.
 
-                forAll(connectivityMatrix_, m)
+                for (int m = 0; m < connectivityMatrix_.m(); m++)
                 {
                     connectivityMatrix_[i][m] = false;
                     connectivityMatrix_[m][i] = false;
@@ -423,25 +413,7 @@ void twoPhaseMultiVof<ViscosityModel>::correct()
     }
 
     // Set bounds for summed alpha field
-
-    this->alpha_.correctBoundaryConditions();
-
-    forAll(this->alpha_, l)
-    {
-        scalarBlock& alpha = this->alpha_[l].B();
-
-        forAllBlockLinear(alpha, i)
-            alpha(i) =
-                Foam::min
-                (
-                    Foam::max
-                    (
-                        round(0.5*alpha(i)/vof::threshold)*2.0*vof::threshold,
-                        0.0
-                    ),
-                    1.0
-                );
-    }
+    this->alpha_.correctAlpha();
 
     // Correct the mesh-specific face volume fraction
     ViscosityModel::correctFaceAlpha();

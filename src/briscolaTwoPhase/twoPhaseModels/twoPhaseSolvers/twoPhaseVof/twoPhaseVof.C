@@ -20,43 +20,20 @@ twoPhaseVof<ViscosityModel>::twoPhaseVof
     const IOdictionary& dict
 )
 :
-    ViscosityModel(fvMsh, dict),
-    normalSchemePtr_
-    (
-        normalScheme::New(*this, dict.subDict("normalScheme")).ptr()
-    ),
-    surfaceTensionSchemePtr_
-    (
-        surfaceTensionScheme::New
-        (
-            fvMsh,
-            dict.subDict("surfaceTensionScheme"),
-            normalSchemePtr_(),
-            this->alpha()
-        ).ptr()
-    ),
-    vfPtr_
-    (
-        vof::New
-        (
-            fvMsh,
-            dict.subDict("vof"),
-            normalSchemePtr_(),
-            this->alpha()
-        )
-    )
-{}
+    ViscosityModel(fvMsh, dict)
+{
+    this->alpha_.setNormalScheme(dict);
+    this->alpha_.setSurfaceTensionScheme(dict);
+    this->alpha_.setVof(dict);
+}
 
 template<class ViscosityModel>
 twoPhaseVof<ViscosityModel>::twoPhaseVof(const twoPhaseVof& tpm)
 :
-    ViscosityModel(tpm),
-    normalSchemePtr_(tpm.normalSchemePtr_, false),
-    surfaceTensionSchemePtr_(tpm.surfaceTensionSchemePtr_, false),
-    vfPtr_(tpm.vf().clone())
+    ViscosityModel(tpm)
 {
-    normalSchemePtr_->correct();
-    surfaceTensionSchemePtr_->correct();
+    this->alpha_.normal().correct();
+    this->alpha_.surfaceTension().correct();
 
     ViscosityModel::correct();
 }
@@ -65,7 +42,7 @@ template<class ViscosityModel>
 void twoPhaseVof<ViscosityModel>::correct()
 {
     // Correct the volume fraction
-    vfPtr_->solve(this->coloFaceFlux()());
+    this->alpha_.vf().solve(this->coloFaceFlux()());
 
     // Correct the mesh-specific face volume fraction
     ViscosityModel::correctFaceAlpha();
@@ -74,7 +51,7 @@ void twoPhaseVof<ViscosityModel>::correct()
     ViscosityModel::correct();
 
     // Correct the surface tension
-    surfaceTensionSchemePtr_->correct();
+    this->alpha_.surfaceTension().correct();
 }
 
 }

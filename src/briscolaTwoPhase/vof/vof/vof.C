@@ -3,6 +3,8 @@
 #include "addToRunTimeSelectionTable.H"
 #include "faceFluxScheme.H"
 
+#include "vofField.H"
+
 namespace Foam
 {
 
@@ -22,7 +24,7 @@ vof::vof
     const fvMesh& fvMsh,
     const dictionary& dict,
     normalScheme& normal,
-    colocatedScalarField& alpha
+    vofField& alpha
 )
 :
     regIOobject
@@ -56,7 +58,7 @@ autoPtr<vof> vof::New
     const fvMesh& fvMsh,
     const dictionary& dict,
     normalScheme& normal,
-    colocatedScalarField& alpha
+    vofField& alpha
 )
 {
     const word vofType(dict.lookup("type"));
@@ -79,29 +81,10 @@ autoPtr<vof> vof::New
 void vof::correct()
 {
     // Restrict alpha so that derived properties can be computed on all levels
-
     restrict(alpha_);
-    alpha_.correctBoundaryConditions();
 
-    // Apply the alpha correction after the boundary correction and at block
-    // level, such that also boundary values are properly set
-
-    forAll(alpha_, l)
-    {
-        scalarBlock& alpha = alpha_[l].B();
-
-        forAllBlockLinear(alpha, i)
-            alpha(i) =
-                Foam::min
-                (
-                    Foam::max
-                    (
-                        round(0.5*alpha(i)/threshold)*2.0*threshold,
-                        0.0
-                    ),
-                    1.0
-                );
-    }
+    // Correct boundary conditions and set value bounds
+    alpha_.correctAlpha();
 }
 
 }
