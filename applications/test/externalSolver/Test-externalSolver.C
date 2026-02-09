@@ -128,10 +128,13 @@ int main(int argc, char *argv[])
 
     wordList solverTypes;
 
+    solverTypes.append("APLU");
     solverTypes.append("PETSc");
     solverTypes.append("Eigen");
 
     List<wordList> subTypes(solverTypes.size());
+
+    subTypes[findIndex(solverTypes,"APLU")].append("APLU");
 
     subTypes[findIndex(solverTypes,"PETSc")].append("PCLU");
     subTypes[findIndex(solverTypes,"PETSc")].append("KSPBCGS");

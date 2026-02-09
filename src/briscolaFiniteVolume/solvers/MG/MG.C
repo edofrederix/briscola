@@ -388,7 +388,7 @@ MG<SType,Type,MeshType>::MG
 
         dictionary& subDict = this->dict_.subDict("coarseSolver");
 
-        subDict.lookupOrAddDefault("type", word("Eigen"));
+        subDict.lookupOrAddDefault("type", word("APLU"));
 
         const label coarseLevel = fvMsh.msh().size() - coarseLevel_ - 1;
 

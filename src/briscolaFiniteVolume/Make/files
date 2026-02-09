@@ -121,6 +121,7 @@ solvers/Krylov/KrylovSolvers.C
 solvers/MG/MGSolvers.C
 solvers/MG/MGEnums.C
 
+solvers/externalSolvers/APLU/APLUs.C
 solvers/externalSolvers/Eigen/Eigens.C
 solvers/externalSolvers/PETSc/PETScs.C
 
