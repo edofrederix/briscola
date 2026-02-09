@@ -13,6 +13,7 @@ defineTypeNameAndDebug(vofField, 0);
 
 vofField::vofField
 (
+    const word& name,
     const colocatedScalarField& alpha,
     const dictionary& dict,
     bool initToZero
@@ -20,9 +21,9 @@ vofField::vofField
 :
     colocatedScalarField
     (
-        "alpha",
+        name,
         alpha,
-        false,
+        true,
         true
     ),
     fvMsh_(alpha.fvMsh()),
@@ -67,6 +68,8 @@ vofField::vofField
         )
     )
 {
+    IOobject::writeOpt() = IOobject::AUTO_WRITE;
+
     colocatedScalarField::setRestrictionScheme("volumeWeighted");
 
     // Initialize the label field to zero if needed

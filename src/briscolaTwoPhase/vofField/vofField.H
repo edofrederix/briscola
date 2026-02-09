@@ -51,6 +51,7 @@ public:
     // Construct from components
     vofField
     (
+        const word&,
         const colocatedScalarField&,
         const dictionary&,
         bool initToZero = false

@@ -18,14 +18,67 @@ void twoPhaseMultiVof<ViscosityModel>::initAlphas()
 {
     alphas_.clear();
 
-    alphas_.append
+    label index = 0;
+
+    if
     (
-        new vofField
+        this->fvMsh().db().template foundObject<colocatedScalarField>
         (
-            this->alpha_,
-            this->dict()
+            "alpha.0"
         )
-    );
+    )
+    {
+        while
+        (
+            this->fvMsh().db().template foundObject<colocatedScalarField>
+            (
+                "alpha."
+                +Foam::name(index)
+            )
+        )
+        {
+            colocatedScalarField& alpha = this->fvMsh().db().template
+                lookupObjectRef<colocatedScalarField>
+                (
+                    "alpha."
+                    +Foam::name(index)
+                );
+
+            // Create tmp copy of alpha field
+            tmp<colocatedScalarField> tAlpha(new colocatedScalarField(alpha));
+
+            // Release and delete old alpha field
+            alpha.regIOobject::release();
+            delete &alpha;
+
+            // Create new vofField with tmp alpha field
+            alphas_.append
+            (
+                new vofField
+                (
+                    "alpha."+Foam::name(index),
+                    tAlpha(),
+                    this->dict(),
+                    false
+                )
+            );
+
+            index++;
+        }
+    }
+    else
+    {
+        alphas_.append
+        (
+            new vofField
+            (
+                "alpha.0",
+                this->alpha_,
+                this->dict()
+            )
+        );
+    }
+
 }
 
 template<class ViscosityModel>
@@ -35,6 +88,7 @@ void twoPhaseMultiVof<ViscosityModel>::addAlphaField()
     (
         new vofField
         (
+            "alpha."+Foam::name(alphas_.size()),
             this->alpha_,
             this->dict(),
             true
@@ -294,10 +348,10 @@ twoPhaseMultiVof<ViscosityModel>::twoPhaseMultiVof
     alphas_(),
     tags_
     (
-        "m",
+        "tags",
         fvMsh,
         IOobject::NO_READ,
-        IOobject::NO_WRITE,
+        IOobject::AUTO_WRITE,
         true,
         false
     ),
@@ -306,7 +360,7 @@ twoPhaseMultiVof<ViscosityModel>::twoPhaseMultiVof
         "colors",
         fvMsh,
         IOobject::NO_READ,
-        IOobject::NO_WRITE,
+        IOobject::AUTO_WRITE,
         true,
         false
     ),
