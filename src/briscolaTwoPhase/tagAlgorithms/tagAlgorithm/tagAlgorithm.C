@@ -60,7 +60,7 @@ tagAlgorithm::tagAlgorithm
         "m",
         fvMsh,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
+        IOobject::NO_WRITE,
         false,
         false
     ),
