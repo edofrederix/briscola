@@ -15,12 +15,25 @@ void uniformMesh::setMetrics()
 {
     // Take the first value of the rectilinear cell size arrays
 
-    cellSize_ = vector
-    (
-        localCellSizes()[0][0],
-        localCellSizes()[1][0],
-        localCellSizes()[2][0]
-    );
+    cellSizes_.setSize(this->size());
+
+    forAll(cellSizes_, l)
+    {
+        if (this->operator[](l).empty())
+        {
+            cellSizes_[l] = Zero;
+        }
+        else
+        {
+            cellSizes_[l] =
+                vector
+                (
+                    localCellSizes(l)[0][0],
+                    localCellSizes(l)[1][0],
+                    localCellSizes(l)[2][0]
+                );
+        }
+    }
 }
 
 uniformMesh::uniformMesh(const IOdictionary& dict)
@@ -40,7 +53,7 @@ uniformMesh::uniformMesh(autoPtr<mesh>& mshPtr)
 uniformMesh::uniformMesh(const uniformMesh& msh)
 :
     rectilinearMesh(msh),
-    cellSize_(msh.cellSize_)
+    cellSizes_(msh.cellSizes_)
 {}
 
 uniformMesh::~uniformMesh()
@@ -61,10 +74,14 @@ labelVector uniformMesh::findCell(const vector& p, const label l) const
         )
     );
 
-    const FastPtrList<PartialList<scalar>>& x = localPoints();
+    const FastPtrList<PartialList<scalar>>& x = localPoints(l);
 
     const level& lvl = this->operator[](l);
-    const level& lvl0 = this->operator[](0);
+
+    // On empty levels there's nothing to search
+
+    if (lvl.empty())
+        return -unitXYZ;
 
     // Check if the point is outside the domain boundaries
 
@@ -78,18 +95,18 @@ labelVector uniformMesh::findCell(const vector& p, const label l) const
 
     for (label d = 0; d < 3; d++)
         if (q[d] >= x[d].last() && q[d] <= x[d].last() + 1e-12)
-            if (lvl0.boundaries().find(units[d]).castable<parallelBoundary>())
+            if (lvl.boundaries().find(units[d]).castable<parallelBoundary>())
                 return -unitXYZ;
 
     for (label d = 0; d < 3; d++)
         if (q[d] < x[d].first() && q[d] >= x[d].first() - 1e-12)
-            if (lvl0.boundaries().find(-units[d]).castable<parallelBoundary>())
+            if (lvl.boundaries().find(-units[d]).castable<parallelBoundary>())
                 return -unitXYZ;
 
     // Algebraic relation. Cast to label automatically applies floor. Assign
     // points that are on the upper boundary to the nearest internal cell.
 
-    const labelVector N = lvl0.N();
+    const labelVector N = lvl.N();
 
     labelVector ijk;
 
@@ -105,7 +122,7 @@ labelVector uniformMesh::findCell(const vector& p, const label l) const
                 N[d]-1
             );
 
-    return cmptDivide(ijk, cmptDivide(N, lvl.N()));
+    return ijk;
 }
 
 

@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
                 dict.add("nAggregationParts", nParts);
 
                 forAll(sys.x(), l)
+                if (nParts <= fvMsh[l].decomp().members().size())
                 {
                     Info<< "Solver = " << solverType
                         << ", sub-solver = " << subType

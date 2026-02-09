@@ -68,6 +68,15 @@ private:
     // Transfer data from other mesh level
     void transfer(meshLevel<Type,MeshType>&);
 
+    // Check if the given mesh level matches our level
+    template<class Type2>
+    void checkLevel(const meshLevel<Type2,MeshType>& L) const
+    {
+        if (L.levelNum() != l_)
+            FatalErrorInFunction
+                << "Invalid level" << endl << abort(FatalError);
+    }
+
 public:
 
     // Runtime type information
@@ -362,6 +371,9 @@ public:
 
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();
+
+    // Correct agglomeration data, optionally for a specific direction
+    void correctAggData(const label = -1);
 
     // Check if the boundary conditions make this level singular
     bool singular() const

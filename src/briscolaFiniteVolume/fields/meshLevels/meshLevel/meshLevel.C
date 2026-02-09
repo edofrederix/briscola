@@ -334,7 +334,7 @@ void meshLevel<Type,MeshType>::addBoundaryConditions()
                 singular_ = false;
         }
 
-        reduce(singular_, andOp<bool>());
+        reduce(singular_, andOp<bool>(), Pstream::msgType(), lvl().comms());
     }
 
     #ifdef BOUNDARYEXCHANGE
@@ -661,6 +661,221 @@ void meshLevel<Type,MeshType>::correctImmersedBoundaryConditions()
 }
 
 template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::correctAggData(const label D)
+{
+    const decomposition& decomp = lvl().decomp();
+
+    List<Type> buffer;
+    List<labelVector> N(MeshType::numberOfDirections);
+
+    // On agglomerate levels the slaves need to receive from master
+
+    if (decomp.agglomerated())
+    {
+        const labelBlock& map = decomp.aggProcMap();
+
+        // Prepare buffer. On master we should not account for agglomerate data
+        // but on slaves we should.
+
+        label size = 0;
+        forAll(N, d)
+        {
+            N[d] = listType::operator[](d).dataShape(!decomp.aggMaster());
+
+            if (D < 0 || D == d)
+                size += cmptProduct(N[d]);
+        }
+
+        buffer.resize(size);
+
+        // Communicate
+
+        if (decomp.aggMaster())
+        {
+            // Copy data to buffer
+
+            label cursor = 0;
+            forAll(*this, d)
+                if (D < 0 || D == d)
+                for (int i = 0; i < N[d].x(); i++)
+                for (int j = 0; j < N[d].y(); j++)
+                for (int k = 0; k < N[d].z(); k++)
+                    buffer[cursor++] =
+                        listType::operator[](d).B()(i,j,k);
+
+            // Send to slaves
+
+            forAllBlockLinear(map, proc)
+                if (proc > 0)
+                    UOPstream::write
+                    (
+                        Pstream::commsTypes::blocking,
+                        proc,
+                        reinterpret_cast<char*>(buffer.begin()),
+                        buffer.byteSize(),
+                        0,
+                        lvl().comms().agg()
+                    );
+        }
+        else
+        {
+            // Receive from master
+
+            UIPstream::read
+            (
+                Pstream::commsTypes::blocking,
+                0,
+                reinterpret_cast<char*>(buffer.begin()),
+                buffer.byteSize(),
+                0,
+                lvl().comms().agg()
+            );
+
+            // Copy data from buffer
+
+            label cursor = 0;
+            forAll(*this, d)
+                if (D < 0 || D == d)
+                for (int i = 0; i < N[d].x(); i++)
+                for (int j = 0; j < N[d].y(); j++)
+                for (int k = 0; k < N[d].z(); k++)
+                    listType::operator[](d).B()(i,j,k) =
+                        buffer[cursor++];
+        }
+    }
+
+    // On agglomerate parent levels the slaves need to send to master
+
+    if (decomp.aggParent())
+    {
+        const decomposition& childDecomp = lvl().child().decomp();
+        const labelBlock& map = childDecomp.aggProcMap();
+
+        // Prepare buffer
+
+        label size = 0;
+        forAll(N, d)
+        {
+            N[d] = listType::operator[](d).dataShape();
+
+            if (D < 0 || D == d)
+                size += cmptProduct(N[d]);
+        }
+
+        buffer.resize(size);
+
+        // Communicate
+
+        if (childDecomp.aggSlave())
+        {
+            // Copy data to buffer
+
+            label cursor = 0;
+            forAll(*this, d)
+                if (D < 0 || D == d)
+                for (int i = 0; i < N[d].x(); i++)
+                for (int j = 0; j < N[d].y(); j++)
+                for (int k = 0; k < N[d].z(); k++)
+                    buffer[cursor++] =
+                        listType::operator[](d).B()(i,j,k);
+
+            // Send to master
+
+            UOPstream::write
+            (
+                Pstream::commsTypes::blocking,
+                0,
+                reinterpret_cast<char*>(buffer.begin()),
+                buffer.byteSize(),
+                0,
+                lvl().child().comms().agg()
+            );
+        }
+        else
+        {
+            // Receive from slaves
+
+            label proc = 0;
+            forAllBlock(map, i, j, k)
+            {
+                if (proc > 0)
+                {
+                    const labelVector ijk(i,j,k);
+
+                    UIPstream::read
+                    (
+                        Pstream::commsTypes::blocking,
+                        proc,
+                        reinterpret_cast<char*>(buffer.begin()),
+                        buffer.byteSize(),
+                        0,
+                        lvl().child().comms().agg()
+                    );
+
+                    // Store
+
+                    label cursor = 0;
+                    forAll(*this, d)
+                    if (D < 0 || D == d)
+                    {
+                        meshDirection<Type,MeshType>& dir =
+                            listType::operator[](d);
+
+                        // Copy from buffer to block
+
+                        block<Type> B(N[d]);
+
+                        for (int a = 0; a < N[d].x(); a++)
+                        for (int b = 0; b < N[d].y(); b++)
+                        for (int c = 0; c < N[d].z(); c++)
+                            B(a,b,c) =
+                                buffer[cursor++];
+
+                        // Start index for the block (offset by ghosts)
+
+                        labelVector Sb(unitXYZ);
+
+                        // Start and end indices for the direction
+
+                        labelVector S(briscola::cmptMultiply(ijk, lvl().N()));
+                        labelVector E(S + lvl().N() + MeshType::padding[d]);
+
+                        // Extend into upper ghosts
+
+                        for (int e = 0; e < 3; e++)
+                            if (ijk[e] == map.shape()[e]-1)
+                                E[e]++;
+
+                        // Extend into lower ghosts
+
+                        for (int e = 0; e < 3; e++)
+                        {
+                            if (ijk[e] == 0)
+                            {
+                                S[e]--;
+                                Sb[e]--;
+                            }
+                        }
+
+                        // Copy to direction
+
+                        labelVector abc;
+                        for (abc.x() = S.x(); abc.x() < E.x(); abc.x()++)
+                        for (abc.y() = S.y(); abc.y() < E.y(); abc.y()++)
+                        for (abc.z() = S.z(); abc.z() < E.z(); abc.z()++)
+                        {
+                            dir(abc) = B(abc-S+Sb);
+                        }
+                    }
+                }
+
+                proc++;
+            }
+        }
+    }
+}
+
+template<class Type, class MeshType>
 tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
 meshLevel<Type,MeshType>::component
 (
@@ -728,6 +943,10 @@ void meshLevel<Type,MeshType>::min(const Type& v)
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::operator=(const meshLevel<Type,MeshType>& L)
 {
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
     forAll(*this, d)
         listType::operator[](d) = L[d];
 }
@@ -738,6 +957,10 @@ void meshLevel<Type,MeshType>::operator=
     const tmp<meshLevel<Type,MeshType>>& tL
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(tL());
+    #endif
+
     if (tL.isTmp())
     {
         meshLevel<Type,MeshType>& L =
@@ -778,6 +1001,10 @@ void meshLevel<Type,MeshType>::operator=(const zero)
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::operator+=(const meshLevel<Type,MeshType>& L)
 {
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
     forAll(*this, d)
         listType::operator[](d) += L[d];
 }
@@ -788,6 +1015,10 @@ void meshLevel<Type,MeshType>::operator+=
     const tmp<meshLevel<Type,MeshType>>& tL
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(tL());
+    #endif
+
     *this += tL();
     if (tL.isTmp())
         tL.clear();
@@ -796,6 +1027,10 @@ void meshLevel<Type,MeshType>::operator+=
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::operator-=(const meshLevel<Type,MeshType>& L)
 {
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
     forAll(*this, d)
         listType::operator[](d) -= L[d];
 }
@@ -806,6 +1041,10 @@ void meshLevel<Type,MeshType>::operator-=
     const tmp<meshLevel<Type,MeshType>>& tL
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(tL());
+    #endif
+
     *this -= tL();
     if (tL.isTmp())
         tL.clear();
@@ -814,6 +1053,10 @@ void meshLevel<Type,MeshType>::operator-=
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::operator*=(const meshLevel<scalar,MeshType>& L)
 {
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
     forAll(*this, d)
         listType::operator[](d) *= L[d];
 }
@@ -824,6 +1067,10 @@ void meshLevel<Type,MeshType>::operator*=
     const tmp<meshLevel<scalar,MeshType>>& tL
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(tL());
+    #endif
+
     *this *= tL();
     if (tL.isTmp())
         tL.clear();
@@ -832,6 +1079,10 @@ void meshLevel<Type,MeshType>::operator*=
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::operator/=(const meshLevel<scalar,MeshType>& L)
 {
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
     forAll(*this, d)
         listType::operator[](d) /= L[d];
 }
@@ -842,6 +1093,10 @@ void meshLevel<Type,MeshType>::operator/=
     const tmp<meshLevel<scalar,MeshType>>& tL
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(tL());
+    #endif
+
     *this /= tL();
     if (tL.isTmp())
         tL.clear();
@@ -910,6 +1165,10 @@ void meshLevel<Type,MeshType>::operator=
     const meshLevel<Type2,MeshType>& L
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
     forAll(*this, d)
         listType::operator[](d) = L[d];
 }
@@ -921,6 +1180,10 @@ void meshLevel<Type,MeshType>::operator=
     const tmp<meshLevel<Type2,MeshType>>& tL
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(tL());
+    #endif
+
     *this = tL();
     if (tL.isTmp())
         tL.clear();
@@ -933,6 +1196,10 @@ void meshLevel<Type,MeshType>::operator+=
     const meshLevel<Type2,MeshType>& L
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
     forAll(*this, d)
         listType::operator[](d) += L[d];
 }
@@ -944,6 +1211,10 @@ void meshLevel<Type,MeshType>::operator+=
     const tmp<meshLevel<Type2,MeshType>>& tL
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(tL());
+    #endif
+
     *this += tL();
     if (tL.isTmp())
         tL.clear();
@@ -956,6 +1227,10 @@ void meshLevel<Type,MeshType>::operator-=
     const meshLevel<Type2,MeshType>& L
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
     forAll(*this, d)
         listType::operator[](d) -= L[d];
 }
@@ -967,6 +1242,10 @@ void meshLevel<Type,MeshType>::operator-=
     const tmp<meshLevel<Type2,MeshType>>& tL
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(tL());
+    #endif
+
     *this -= tL();
     if (tL.isTmp())
         tL.clear();
@@ -979,6 +1258,10 @@ void meshLevel<Type,MeshType>::operator*=
     const meshLevel<Type2,MeshType>& L
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
     forAll(*this, d)
         listType::operator[](d) *= L[d];
 }
@@ -990,6 +1273,10 @@ void meshLevel<Type,MeshType>::operator*=
     const tmp<meshLevel<Type2,MeshType>>& tL
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(tL());
+    #endif
+
     *this *= tL();
     if (tL.isTmp())
         tL.clear();
@@ -1002,6 +1289,10 @@ void meshLevel<Type,MeshType>::operator/=
     const meshLevel<Type2,MeshType>& L
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
     forAll(*this, d)
         listType::operator[](d) /= L[d];
 }
@@ -1013,6 +1304,10 @@ void meshLevel<Type,MeshType>::operator/=
     const tmp<meshLevel<Type2,MeshType>>& tL
 )
 {
+    #ifdef FULLDEBUG
+    checkLevel(tL());
+    #endif
+
     *this /= tL();
     if (tL.isTmp())
         tL.clear();

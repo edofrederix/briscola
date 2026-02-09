@@ -6,7 +6,7 @@
 #include "parallelBoundary.H"
 #include "periodicBoundary.H"
 #include "emptyBoundary.H"
-#include "PstreamGlobalsLsa.H"
+#include "PstreamSplit.H"
 
 namespace Foam
 {
@@ -28,155 +28,177 @@ linearSystemAggregation<SType,Type,MeshType>::linearSystemAggregation
     fvMsh_(sys.fvMsh()),
     l_(l),
     nParts_(nParts),
-    partStarts_(MeshType::numberOfDirections),
-    partEnds_(MeshType::numberOfDirections),
-    colNums_(MeshType::numberOfDirections)
+    partNum_(-1),
+    myProcNum_(-1),
+    masterProcNum_(-1),
+    nProcsPerPart_(0),
+    sizes_(MeshType::numberOfDirections, 0),
+    starts_(MeshType::numberOfDirections, 0),
+    ends_(MeshType::numberOfDirections, 0),
+    colNums_(MeshType::numberOfDirections),
+    masterCommNum_(-1)
 {
-    if (nParts_ > Pstream::nProcs())
-        FatalErrorInFunction
-            << "More parts than processors" << endl << abort(FatalError);
+    const level& lvl = fvMsh_[l];
 
-    partNum_ = scalar(Pstream::myProcNo()*nParts_)/Pstream::nProcs();
-    partMasterNum_ = ceil(scalar(partNum_*Pstream::nProcs())/nParts_);
-    nProcsPerPart_ =
-        ceil(scalar((partNum_+1)*Pstream::nProcs())/nParts_)
-      - partMasterNum_;
-
-    // Pout<< nParts_ << " "
-    //     << partNum_ << " "
-    //     << partMasterNum_ << " "
-    //     << nProcsPerPart_ << " "
-    //     << this->master() << " "
-    //     << l_ << " "
-    //     << d_ << endl;
-
-    // Set LSA communicator
-
-    partCommNum_ =
-        PstreamGlobals::lsaSetComms
-        (
-            nParts_,
-            partNum_,
-            Pstream::myProcNo() - partMasterNum_
-        );
-
-    // Set LSA master communicator
-
-    masterCommNum_ =
-        PstreamGlobals::lsaSetComms(nParts_, master() ? 0 : -1, partNum_, true);
-
-    // Set column number lists
-
-    const labelVector* offsets = SType::offsets;
-
-    globalSizes_.setSize(MeshType::numberOfDirections);
-
-    for (int d = 0; d < MeshType::numberOfDirections; d++)
+    if (!lvl.empty())
     {
-        List<List<FixedList<label,SType::nCsComponents>>>& colNums =
-            colNums_[d];
+        const labelList& members = lvl.decomp().members();
 
-        colNums.setSize(nProcsPerPart_);
+        const label nProcs = members.size();
 
-        List<FixedList<label,SType::nCsComponents>>& myColNums =
-            colNums[Pstream::myProcNo() - partMasterNum_];
+        if (nParts_ > nProcs)
+            FatalErrorInFunction
+                << "More parts than member processors"
+                << endl << abort(FatalError);
 
-        const meshDirection<label,MeshType>& numbers =
-            fvMsh_.template metrics<MeshType>().globalCellNumbers()[l_][d];
-
-        myColNums.setSize(numbers.size());
-
-        int c = 0;
-        forAllCells(numbers, i, j, k)
+        if (nProcs < Pstream::nProcs())
         {
-            for(int s = 0; s < SType::nCsComponents; s++)
-            {
-                myColNums[c][s] =
-                    numbers(labelVector(i,j,k) + offsets[s]);
-            }
+            forAll(members, i)
+                if (members[i] == Pstream::myProcNo())
+                    myProcNum_ = i;
 
-            c++;
-        }
-
-        // Send/receive column numbers
-
-        if (this->master())
-        {
-            // Part master, receive from slaves
-
-            for (label proc = 1; proc < nProcsPerPart_; proc++)
-            {
-                IPstream recv
-                (
-                    Pstream::commsTypes::blocking,
-                    proc,
-                    0,
-                    0,
-                    partCommNum_
-                );
-
-                recv >> colNums[proc];
-            }
+            if (myProcNum_ < 0)
+                FatalErrorInFunction
+                    << "Could not determine local processor number"
+                    << abort(FatalError);
         }
         else
         {
-            // Part slave, send to master
-
-            OPstream send
-            (
-                Pstream::commsTypes::blocking,
-                0,
-                0,
-                0,
-                partCommNum_
-            );
-
-            send << myColNums;
+            myProcNum_ = Pstream::myProcNo();
         }
 
-        // Send/receive global start and end
+        partNum_ = scalar(myProcNum_*nParts)/nProcs;
+        masterProcNum_ = ceil(scalar(partNum_*nProcs)/nParts_);
+        nProcsPerPart_ =
+            ceil(scalar((partNum_+1)*nProcs)/nParts_)
+          - masterProcNum_;
 
-        if (this->master())
+        // Set column number lists
+
+        const labelVector* offsets = SType::offsets;
+
+        sizes_.setSize(MeshType::numberOfDirections);
+
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
-            // Part master, send to slave
+            List<List<FixedList<label,SType::nCsComponents>>>& colNums =
+                colNums_[d];
 
-            partStarts_[d] = numbers(0,0,0);
-            partEnds_[d] = colNums[nProcsPerPart_-1].last()[0] + 1;
+            colNums.setSize(nProcsPerPart_);
 
-            for (label proc = 1; proc < nProcsPerPart_; proc++)
+            List<FixedList<label,SType::nCsComponents>>& myColNums =
+                colNums[myProcNum_ - masterProcNum_];
+
+            const meshDirection<label,MeshType>& numbers =
+                fvMsh_.template metrics<MeshType>().globalCellNumbers()[l_][d];
+
+            myColNums.setSize(numbers.size());
+
+            int c = 0;
+            forAllCells(numbers, i, j, k)
             {
+                for(int s = 0; s < SType::nCsComponents; s++)
+                    myColNums[c][s] =
+                        numbers(labelVector(i,j,k) + offsets[s]);
+
+                c++;
+            }
+
+            // Send/receive column numbers
+
+            if (this->master())
+            {
+                // Part master, receive from slaves
+
+                for (label proc = 1; proc < nProcsPerPart_; proc++)
+                {
+                    IPstream recv
+                    (
+                        Pstream::commsTypes::blocking,
+                        members[masterProcNum_ + proc],
+                        0,
+                        0,
+                        lvl.comms()
+                    );
+
+                    recv >> colNums[proc];
+                }
+            }
+            else
+            {
+                // Part slave, send to master
+
                 OPstream send
                 (
                     Pstream::commsTypes::blocking,
-                    proc,
+                    members[masterProcNum_],
                     0,
                     0,
-                    partCommNum_
+                    lvl.comms()
                 );
 
-                send << partStarts_[d];
-                send << partEnds_[d];
+                send << myColNums;
             }
+
+            // Send/receive global start and end
+
+            if (this->master())
+            {
+                // Part master, send to slave
+
+                starts_[d] = numbers(0,0,0);
+                ends_[d] = colNums[nProcsPerPart_-1].last()[0] + 1;
+
+                for (label proc = 1; proc < nProcsPerPart_; proc++)
+                {
+                    OPstream send
+                    (
+                        Pstream::commsTypes::blocking,
+                        members[masterProcNum_ + proc],
+                        0,
+                        0,
+                        lvl.comms()
+                    );
+
+                    send << starts_[d];
+                    send << ends_[d];
+                }
+            }
+            else
+            {
+                // Part slave, send to master
+
+                IPstream recv
+                (
+                    Pstream::commsTypes::blocking,
+                    members[masterProcNum_],
+                    0,
+                    0,
+                    lvl.comms()
+                );
+
+                recv >> starts_[d];
+                recv >> ends_[d];
+            }
+
+            sizes_[d] = numbers.size();
         }
-        else
-        {
-            // Part slave, send to master
-
-            IPstream recv
-            (
-                Pstream::commsTypes::blocking,
-                0,
-                0,
-                0,
-                partCommNum_
-            );
-
-            recv >> partStarts_[d];
-            recv >> partEnds_[d];
-        }
-
-        globalSizes_[d] = returnReduce(numbers.size(), sumOp<label>());
     }
+
+    // Sum global sizes (needs all processors)
+
+    reduce
+    (
+        sizes_,
+        ListOp<sumOp<label>>(),
+        Pstream::msgType(),
+        lvl.comms()
+    );
+
+    // Create master communicator
+
+    masterCommNum_ =
+        PstreamGlobals::split(master());
 }
 
 template<class SType, class Type, class MeshType>
@@ -189,13 +211,13 @@ linearSystemAggregation<SType,Type,MeshType>::linearSystemAggregation
     l_(lsa.l_),
     nParts_(lsa.nParts_),
     partNum_(lsa.partNum_),
-    partMasterNum_(lsa.partMasterNum_),
+    myProcNum_(lsa.myProcNum_),
+    masterProcNum_(lsa.masterProcNum_),
     nProcsPerPart_(lsa.nProcsPerPart_),
-    globalSizes_(lsa.globalSizes_),
-    partStarts_(lsa.partStarts_),
-    partEnds_(lsa.partEnds_),
+    sizes_(lsa.sizes_),
+    starts_(lsa.starts_),
+    ends_(lsa.ends_),
     colNums_(lsa.colNums_),
-    partCommNum_(lsa.partCommNum_),
     masterCommNum_(lsa.masterCommNum_)
 {}
 
@@ -212,15 +234,17 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
 ) const
 {
     const label l = this->l_;
+    const level& lvl = fvMsh_[l];
+
+    if (lvl.empty())
+        return;
+
+    const labelList& members = lvl.decomp().members();
+
     const meshDirection<SType,MeshType>& A = sys.A()[l][d];
 
     const List<List<FixedList<label,SType::nCsComponents>>>& colNums =
         colNums_[d];
-
-    if (l != l_)
-        FatalErrorInFunction
-            << "Mesh direction is of invalid level"
-            << abort(FatalError);
 
     const meshDirection<label,MeshType>& numbers =
         fvMsh_.template metrics<MeshType>().globalCellNumbers()[l][d];
@@ -230,7 +254,7 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
     // Prepare data
 
     const List<FixedList<label,SType::nCsComponents>>& myColNums =
-        colNums_[d][Pstream::myProcNo() - partMasterNum_];
+        colNums_[d][myProcNum_ - masterProcNum_];
 
     List<SType> myRows(A.size());
 
@@ -247,7 +271,7 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
             if
             (
                 numbers(ijk + offsets[s]) < 0
-             || numbers(ijk + offsets[s]) >= globalSizes_[d]
+             || numbers(ijk + offsets[s]) >= sizes_[d]
             )
                 myRows[c][s] = 0;
 
@@ -282,11 +306,11 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
             UIPstream::read
             (
                 Pstream::commsTypes::blocking,
-                proc,
+                members[masterProcNum_ + proc],
                 reinterpret_cast<char*>(rows[proc].begin()),
                 rows[proc].byteSize(),
                 0,
-                partCommNum_
+                lvl.comms()
             );
         }
     }
@@ -299,11 +323,11 @@ void linearSystemAggregation<SType,Type,MeshType>::rowCoeffs
         UOPstream::write
         (
             Pstream::commsTypes::blocking,
-            0,
+            members[masterProcNum_],
             reinterpret_cast<char*>(myRows.begin()),
             myRows.byteSize(),
             0,
-            partCommNum_
+            lvl.comms()
         );
     }
 }
@@ -317,6 +341,13 @@ void linearSystemAggregation<SType,Type,MeshType>::rhsSource
 ) const
 {
     const label l = this->l_;
+    const level& lvl = fvMsh_[l];
+
+    if (lvl.empty())
+        return;
+
+    const labelList& members = lvl.decomp().members();
+
     const meshDirection<SType,MeshType>& A = sys.A()[l][d];
     const meshDirection<Type,MeshType>& x = sys.x()[l][d];
     const meshDirection<Type,MeshType>& b = sys.b()[l][d];
@@ -351,7 +382,7 @@ void linearSystemAggregation<SType,Type,MeshType>::rhsSource
             if
             (
                 numbers(ijk + offsets[s]) < 0
-             || numbers(ijk + offsets[s]) >= globalSizes_[d]
+             || numbers(ijk + offsets[s]) >= sizes_[d]
             )
                 rhs[c] -= A(ijk)[s]*x(ijk + offsets[s]);
 
@@ -371,11 +402,11 @@ void linearSystemAggregation<SType,Type,MeshType>::rhsSource
             UIPstream::read
             (
                 Pstream::commsTypes::blocking,
-                proc,
+                members[masterProcNum_ + proc],
                 reinterpret_cast<char*>(&rhs[q]),
                 size*sizeof(Type),
                 0,
-                partCommNum_
+                lvl.comms()
             );
 
             q += size;
@@ -388,11 +419,11 @@ void linearSystemAggregation<SType,Type,MeshType>::rhsSource
         UOPstream::write
         (
             Pstream::commsTypes::blocking,
-            0,
+            members[masterProcNum_],
             reinterpret_cast<char*>(rhs.begin()),
             rhs.byteSize(),
             0,
-            partCommNum_
+            lvl.comms()
         );
 
         rhs.clear();
@@ -411,16 +442,15 @@ void linearSystemAggregation<SType,Type,MeshType>::compressedRowFormat
 ) const
 {
     const label l = this->l_;
+    const level& lvl = fvMsh_[l];
 
-    const label globalStart = partStarts_[d];
+    if (lvl.empty())
+        return;
+
+    const label globalStart = starts_[d];
 
     const List<List<FixedList<label,SType::nCsComponents>>>& colNums =
         colNums_[d];
-
-    if (l != l_)
-        FatalErrorInFunction
-            << "Mesh direction is of invalid level"
-            << abort(FatalError);
 
     List<List<SType>> rows;
     this->rowCoeffs(rows, sys, d);
@@ -495,6 +525,12 @@ void linearSystemAggregation<SType,Type,MeshType>::collect
 ) const
 {
     const label d = f.directionNum();
+    const level& lvl = fvMsh_[l_];
+
+    if (lvl.empty())
+        return;
+
+    const labelList& members = lvl.decomp().members();
 
     const List<List<FixedList<label,SType::nCsComponents>>>& colNums =
         colNums_[d];
@@ -518,11 +554,11 @@ void linearSystemAggregation<SType,Type,MeshType>::collect
             UIPstream::read
             (
                 Pstream::commsTypes::blocking,
-                proc,
+                members[masterProcNum_ + proc],
                 reinterpret_cast<char*>(&data[c]),
                 size*sizeof(Type),
                 0,
-                partCommNum_
+                lvl.comms()
             );
 
             c += size;
@@ -535,11 +571,11 @@ void linearSystemAggregation<SType,Type,MeshType>::collect
         UOPstream::write
         (
             Pstream::commsTypes::blocking,
-            0,
+            members[masterProcNum_],
             reinterpret_cast<char*>(data.begin()),
             data.byteSize(),
             0,
-            partCommNum_
+            lvl.comms()
         );
 
         data.clear();
@@ -554,6 +590,12 @@ void linearSystemAggregation<SType,Type,MeshType>::distribute
 ) const
 {
     const label d = f.directionNum();
+    const level& lvl = fvMsh_[l_];
+
+    if (lvl.empty())
+        return;
+
+    const labelList& members = lvl.decomp().members();
 
     if (master())
     {
@@ -570,11 +612,11 @@ void linearSystemAggregation<SType,Type,MeshType>::distribute
             UOPstream::write
             (
                 Pstream::commsTypes::blocking,
-                proc,
+                members[masterProcNum_ + proc],
                 reinterpret_cast<const char*>(&data[c]),
                 size*sizeof(Type),
                 0,
-                partCommNum_
+                lvl.comms()
             );
 
             c += size;
@@ -589,11 +631,11 @@ void linearSystemAggregation<SType,Type,MeshType>::distribute
         UIPstream::read
         (
             Pstream::commsTypes::blocking,
-            0,
+            members[masterProcNum_],
             reinterpret_cast<char*>(data2.begin()),
             data2.byteSize(),
             0,
-            partCommNum_
+            lvl.comms()
         );
 
         label c = 0;

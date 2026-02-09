@@ -28,6 +28,11 @@ public:
         MPI_Type_contiguous(pTraits<Type>::nComponents, MPI_DOUBLE, &type);
         MPI_Type_commit(&type);
     }
+
+    ~pMPI()
+    {
+        MPI_Type_free(&type);
+    }
 };
 
 // Label specialization
@@ -43,6 +48,11 @@ public:
     {
         MPI_Type_contiguous(1, MPI_INT, &type);
         MPI_Type_commit(&type);
+    }
+
+    ~pMPI()
+    {
+        MPI_Type_free(&type);
     }
 };
 
@@ -64,6 +74,11 @@ public:
             &type
         );
         MPI_Type_commit(&type);
+    }
+
+    ~csMPI()
+    {
+        MPI_Type_free(&type);
     }
 };
 

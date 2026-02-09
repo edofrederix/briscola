@@ -38,7 +38,7 @@ void BiCGSTABEigenSolver::solve(RhsType& x, const RhsType& b)
 
         solverPtr_->setMaxIterations(maxIter_);
 
-        x = solverPtr_->solveWithGuess(b, x);
+        x = solverPtr_->solve(b);
     }
     else
     {

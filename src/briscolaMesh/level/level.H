@@ -5,6 +5,7 @@
 #include "levelBoundaries.H"
 #include "levelComms.H"
 #include "decomposition.H"
+#include "labelPair.H"
 
 namespace Foam
 {
@@ -19,11 +20,11 @@ class level
     // Reference to the mesh
     const mesh& msh_;
 
-    // Decomposition
-    autoPtr<decomposition> decomp_;
-
     // Level number
     label l_;
+
+    // Decomposition
+    autoPtr<decomposition> decomp_;
 
     // Size of this mesh level
     labelVector N_;
@@ -49,10 +50,24 @@ class level
     // Bounding box
     faceScalar boundingBox_;
 
+    // Agglomerate mesh size, which can be non-zero in two situations:
+    //  1) If we are an agglomerate slave, then the agglomerate mesh size is
+    //     that of the agglomerate master. This is needed for the slaves to hold
+    //     a copy of the master data.
+    //  2) If we are an agglomerate parent and if our child is an agglomerate
+    //     master, then the agglomerate mesh size is the sum of all agglomerate
+    //     parents. This is needed for the master to hold a copy of the
+    //     neighboring data at parent level. This situation is handled by the
+    //     child level.
+    labelVector Na_;
+
+    // Function to compute this level's N and R from parent pointer
+    Pair<labelVector> NandR(const level*);
+
 public:
 
     // Construct from mesh and parent level (if any)
-    level(const mesh&, const level*);
+    level(const mesh&, const level* = nullptr);
 
     // Copy constructor
     level(const level&);
@@ -81,7 +96,7 @@ public:
     // Decomposition
     inline const decomposition& decomp() const
     {
-        return decomp_;
+        return decomp_();
     }
 
     // Level number
@@ -123,14 +138,55 @@ public:
     // Return the bounding box
     inline faceScalar boundingBox() const { return boundingBox_; }
 
-    // Global check if this level is coarsenable
-    bool coarsenable() const;
+    // Mesh size of the agglomerate
+    inline labelVector Na() const { return Na_; }
 
-    // Compute this level's coarsened child size
-    labelVector coarseN() const;
+    // Check if this level is coarsenable
+    inline bool coarsenable() const
+    {
+        return N_ != coarsen(N_);
+    }
+
+    // Check if level has parent
+    inline bool hasParent() const
+    {
+        return l_ > 0;
+    }
 
     // Return parent level if it exists
     const level& parent() const;
+
+    // Check if level has child
+    bool hasChild() const;
+
+    // Return child level if it exists
+    const level& child() const;
+
+    // A level is empty if it is not a member of the decomposition
+    inline bool empty() const { return !decomp_->member(); }
+
+    // A level is a leaf if it is not empty and either it's on the last level or
+    // its child is empty
+    inline bool leaf() const
+    {
+        return !empty() && (!hasChild() || child().empty());
+    }
+
+    // Agglomerate parent data offset. When we are an agglomerate slave then we
+    // receive a copy of the master's data. The agglomerate parent offset gives
+    // the offset to this data which is part of the parent domain.
+    inline labelVector aggParentOffset() const
+    {
+        if (decomp_->aggSlave())
+        {
+            const labelVector N(cmptDivide(Na_, decomp_->aggProcMap().shape()));
+            return cmptMultiply(decomp_->myAggPart(), N);
+        }
+        else
+        {
+            return zeroXYZ;
+        }
+    }
 };
 
 }

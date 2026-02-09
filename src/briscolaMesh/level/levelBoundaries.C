@@ -47,6 +47,41 @@ void levelBoundaries::add
     this->append(boundary::New(lvl_, dict));
 }
 
+void levelBoundaries::generateEmptyBoundaries()
+{
+    for (int f = 0; f < 6; f++)
+        add
+        (
+            word
+            (
+                "empty-"
+               + Foam::name(Pstream::myProcNo())
+               + "-" + Foam::name(f)
+            ),
+            emptyBoundary::typeName,
+            eye,
+            faceOffsets[f]
+        );
+
+    // Also add dummy patch boundaries so that collective parallel operations
+    // work. Not needed for periodic patches.
+
+    forAll(lvl_.msh().patches(), patchi)
+    if (!lvl_.msh().patches()[patchi].castable<periodicPatch>())
+    {
+        const patch& p = lvl_.msh().patches()[patchi];
+
+        add
+        (
+            p.name(),
+            p.type(),
+            eye,
+            zeroXYZ,
+            p.dict().lookupOrDefault("offset",vector::zero)
+        );
+    }
+}
+
 void levelBoundaries::generateBrickInternalBoundaries()
 {
     // Add parallel brick-internal boundaries
@@ -134,7 +169,7 @@ void levelBoundaries::generateLinkBoundaries(const brickLink& link)
     const decompositionInterface interface(link, lvl_);
 
     const labelBlock& map = interface.map();
-    const PtrList<decompositionSlice>& slices = interface.slices();
+    const PtrList<labelPair>& slices = interface.slices();
 
     const labelVector bo = link.offset();
     const labelTensor T = link.T();
@@ -142,25 +177,25 @@ void levelBoundaries::generateLinkBoundaries(const brickLink& link)
     // Only add slices if they belong to this processor
 
     forAllBlock(map, i, j, k)
-    if (slices[map(i,j,k)].procNum0() == Pstream::myProcNo())
+    if (slices[map(i,j,k)].first() == Pstream::myProcNo())
     {
         const labelVector ijk(i,j,k);
-        const decompositionSlice& slice = slices[map(ijk)];
+        const labelPair& slice = slices[map(ijk)];
 
         add
         (
             word
             (
                 word(link.periodic() ? "periodic" : "parallel")
-              + "-" + Foam::name(slice.procNum0())
-              + "to" + Foam::name(slice.procNum1())
+              + "-" + Foam::name(slice.first())
+              + "to" + Foam::name(slice.second())
             ),
             link.periodic() ? "periodic" : "parallel",
             T,
             bo,
             vector::zero,
           - (T.T() & bo),
-            slice.procNum1()
+            slice.second()
         );
 
         // Add internal edges and vertices of face boundaries
@@ -189,22 +224,22 @@ void levelBoundaries::generateLinkBoundaries(const brickLink& link)
                  && ijk2.z() < map.n()
                 )
                 {
-                    const decompositionSlice& slice2 = slices[map(ijk2)];
+                    const labelPair& slice2 = slices[map(ijk2)];
 
                     add
                     (
                         word
                         (
                             word(link.periodic() ? "periodic" : "parallel")
-                          + "-" + Foam::name(slice.procNum0())
-                          + "to" + Foam::name(slice2.procNum1())
+                          + "-" + Foam::name(slice.first())
+                          + "to" + Foam::name(slice2.second())
                         ),
                         link.periodic() ? "periodic" : "parallel",
                         T,
                         bo2,
                         vector::zero,
                       - (T.T() & bo2),
-                        slice2.procNum1()
+                        slice2.second()
                     );
                 }
             }
@@ -233,22 +268,22 @@ void levelBoundaries::generateLinkBoundaries(const brickLink& link)
                  && ijk2.z() < map.n()
                 )
                 {
-                    const decompositionSlice& slice2 = slices[map(ijk2)];
+                    const labelPair& slice2 = slices[map(ijk2)];
 
                     add
                     (
                         word
                         (
                             word(link.periodic() ? "periodic" : "parallel")
-                          + "-" + Foam::name(slice.procNum0())
-                          + "to" + Foam::name(slice2.procNum1())
+                          + "-" + Foam::name(slice.first())
+                          + "to" + Foam::name(slice2.second())
                         ),
                         link.periodic() ? "periodic" : "parallel",
                         T,
                         bo2,
                         vector::zero,
                       - (T.T() & bo2),
-                        slice2.procNum1()
+                        slice2.second()
                     );
                 }
             }
@@ -302,7 +337,7 @@ void levelBoundaries::generatePatchBoundaries()
                     add
                     (
                         p.name(),
-                        lvl_.msh().patches()[patchi].type(),
+                        p.type(),
                         eye,
                         faceOffsets[facei],
                         p.dict().lookupOrDefault("offset", vector::zero)
@@ -313,42 +348,44 @@ void levelBoundaries::generatePatchBoundaries()
             }
         }
 
+        // Set fake patch with zero boundary offset
+
         if (!found)
         {
             add
             (
                 p.name(),
-                lvl_.msh().patches()[patchi].type(),
+                p.type(),
                 eye,
                 zeroXYZ,
                 p.dict().lookupOrDefault("offset",vector::zero)
             );
         }
     }
+}
 
-    // By now, all faces must have one and only one boundary associated with
-    // them. Check.
+void levelBoundaries::checkFaceBoundaries()
+{
+    const FastPtrList<boundary>& boundaries = *this;
 
-    forAll(b.faces(), facei)
+    for (int f = 0; f < 6; f++)
     {
         label count = 0;
         forAll(boundaries, j)
-            if (faceOffsets[facei] == boundaries[j].offset())
+            if (faceOffsets[f] == boundaries[j].offset())
                 count++;
 
         if (count < 1)
-        {
             FatalErrorInFunction
-                << "Could not find the patch to which face " << facei
-                << " belongs." << endl << abort(FatalError);
-        }
+                << "Could not find the patch to which face " << f
+                << " belongs on level " << lvl_.levelNum() << endl
+                << abort(FatalError);
 
         if (count > 1)
-        {
             FatalErrorInFunction
-                << "Face " << facei << " is associated with "
-                << count << " boundaries." << endl << abort(FatalError);
-        }
+                << "Face " << f << " is associated with "
+                << count << " boundaries on level " << lvl_.levelNum()
+                << endl << abort(FatalError);
     }
 }
 
@@ -362,17 +399,8 @@ void levelBoundaries::setCommTags()
     List<List<dictionary>> bDicts(n, List<dictionary>(0));
 
     forAll(boundaries, bi)
-    {
-        const boundary& b = boundaries[bi];
-
-        if (b.castable<parallelBoundary>())
-        {
-            bDicts[m].append
-            (
-                dictionary(b.dict())
-            );
-        }
-    }
+        if (boundaries[bi].castable<parallelBoundary>())
+            bDicts[m].append(dictionary(boundaries[bi].dict()));
 
     Pstream::gatherList(bDicts);
 
@@ -564,11 +592,19 @@ levelBoundaries::levelBoundaries(const level& lvl)
     FastPtrList<boundary>(0),
     lvl_(lvl)
 {
-    generateBrickInternalBoundaries();
-    generateBrickExternalBoundaries();
-    generatePatchBoundaries();
+    if (lvl_.empty())
+    {
+        generateEmptyBoundaries();
+    }
+    else
+    {
+        generateBrickInternalBoundaries();
+        generateBrickExternalBoundaries();
+        generatePatchBoundaries();
+        reorder();
+    }
 
-    reorder();
+    checkFaceBoundaries();
 
     setCommTags();
     setMask();

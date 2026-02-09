@@ -69,6 +69,20 @@ private:
         // Brick processor topologies
         FastPtrList<labelBlock> brickProcMaps_;
 
+    // Agglomerate data (if this is an agglomerate member)
+
+        // Our agglomerate processor map
+        labelBlock aggProcMap_;
+
+        // Our agglomerate part
+        labelVector myAggPart_;
+
+        // Our agglomerate processor number
+        label myAggProcNo_;
+
+    // Members of this decomposition
+    labelList members_;
+
     // Structured processor topology map (only set on structured meshes)
     autoPtr<decompositionMap> mapPtr_;
 
@@ -92,6 +106,9 @@ public:
 
     // Copy constructor
     decomposition(const decomposition&);
+
+    // Copy constructor with alternative level reference
+    decomposition(const decomposition&, const level&);
 
     // Clone decomposition
     virtual autoPtr<decomposition> clone() const = 0;
@@ -144,6 +161,24 @@ public:
         return brickProcMaps_;
     }
 
+    // Our agglomerate map
+    const labelBlock& aggProcMap() const
+    {
+        return aggProcMap_;
+    }
+
+    // Our agglomerate part
+    labelVector myAggPart() const
+    {
+        return myAggPart_;
+    }
+
+    // Our agglomerate processor number (local value)
+    label myAggProcNo() const
+    {
+        return myAggProcNo_;
+    }
+
     // Global processor topology, only set on structured brick topologies
     inline const decompositionMap& map() const
     {
@@ -152,6 +187,10 @@ public:
 
     // Initialize
     void init();
+
+    // Check if decomposition is coarsenable, which is true if we have a
+    // non-unity decomposition and if the agglomerate mesh can be coarsened
+    bool coarsenable() const;
 
     // Pure virtual functions to be defined by derived types
 
@@ -163,6 +202,43 @@ public:
 
         // This processor's part index of its brick
         virtual labelVector myBrickPart() const = 0;
+
+    // Function to check whether this processor is member of the decomposition
+    inline bool member() const
+    {
+        return myBrickPart() != -unitXYZ;
+    }
+
+    // Return list of member processors
+    inline const labelList& members() const { return members_; }
+
+    // Agglomeration ratio
+    inline labelVector R() const
+    {
+        return cmptMax(aggProcMap_.shape(), unitXYZ);
+    }
+
+    // A decomposition is agglomerated if there is a non-unity agglomeration
+    // ratio and if we are a member of the parent decomposition
+    bool agglomerated() const;
+
+    // A level is an agglomerate master if it is agglomerated and a member of
+    // this level's decomposition
+    inline bool aggMaster() const
+    {
+        return agglomerated() && member();
+    }
+
+    // A level is an agglomerate slave if it is agglomerated and not a member of
+    // this level's decomposition
+    inline bool aggSlave() const
+    {
+        return agglomerated() && !member();
+    }
+
+    // A level is an agglomerate parent if its child decomposition is either an
+    // agglomerate master of slave
+    bool aggParent() const;
 };
 
 }

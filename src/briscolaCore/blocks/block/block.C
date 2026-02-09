@@ -896,6 +896,17 @@ tmp<block<Type>> block<Type>::sliceVertex(const label v) const
 }
 
 template<class Type>
+List<Type> block<Type>::flatten() const
+{
+    List<Type> L(size());
+
+    forAllBlockLinear(*this, i)
+        L[i] = (*this)(i);
+
+    return L;
+}
+
+template<class Type>
 labelVector block<Type>::find(const Type& v) const
 {
     forAllBlock(*this, i, j, k)

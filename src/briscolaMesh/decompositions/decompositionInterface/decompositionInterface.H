@@ -4,7 +4,7 @@
 #include "brickLink.H"
 #include "labelVector.H"
 #include "labelTensor.H"
-#include "decompositionSlice.H"
+#include "labelPair.H"
 
 namespace Foam
 {
@@ -16,12 +16,6 @@ class level;
 
 class decompositionInterface
 {
-    // Copy constructor
-    decompositionInterface(const decompositionInterface&);
-
-    // Disallow default bitwise assignment
-    void operator=(const decompositionInterface&);
-
 protected:
 
     // Reference to the level
@@ -36,8 +30,8 @@ protected:
     // Reference to the second brick
     const brick& b1_;
 
-    // List of processor interface slices accross this brick interface
-    PtrList<decompositionSlice> slices_;
+    // List of processor interface slices across this brick interface
+    PtrList<labelPair> slices_;
 
     // Slice topology
     labelBlock map_;
@@ -54,13 +48,14 @@ public:
     decompositionInterface(const brickLink&, const level&);
 
     // Destructor
-    virtual ~decompositionInterface();
+    virtual ~decompositionInterface()
+    {}
 
     // Return access the brick link
     inline const brickLink& link() const { return link_; }
 
     // Return access to the list of slices
-    const PtrList<decompositionSlice>& slices() const { return slices_; }
+    const PtrList<labelPair>& slices() const { return slices_; }
 
     // Return access to the slice topology
     const labelBlock& map() const { return map_; }

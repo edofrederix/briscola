@@ -28,16 +28,24 @@ void mesh::generateLevels()
 
         parent = this->operator()(l);
 
-        const labelVector P(parent->N());
-        const labelVector C(parent->coarseN());
+        bool coarsenable = parent->coarsenable();
 
-        label nProcsCoarsen = (P != C);
+        reduce(coarsenable, andOp<bool>());
 
-        reduce(nProcsCoarsen, sumOp<label>());
-
-        if (nProcsCoarsen != Pstream::nProcs())
+        if (!coarsenable)
         {
-            add = false;
+            // Not all levels are coarsenable. Check if we can coarsen the
+            // decomposition. Empty levels are always coarsenable.
+
+            coarsenable =
+                parent->empty() || parent->decomp().coarsenable();
+
+            reduce(coarsenable, andOp<bool>());
+
+            // Stop if also the decomposition cannot be coarsened
+
+            if (!coarsenable)
+                add = false;
         }
 
         l++;
@@ -60,7 +68,7 @@ mesh::mesh(const IOdictionary& dict)
 
     if (structured_)
     {
-        const level& p = this->operator[](0);
+        const level& lvl = this->operator[](0);
 
         for (int d = 0; d < 3; d++)
         {
@@ -68,13 +76,13 @@ mesh::mesh(const IOdictionary& dict)
             // in that direction
 
             rectilinear_[d] =
-                returnReduce(p.rectilinear()[d], minOp<label>());
+                returnReduce(lvl.rectilinear()[d], minOp<label>());
 
             // Mesh is uniform in a direction if all levels are uniform in that
             // direction
 
             uniform_[d] =
-                returnReduce(p.uniform()[d], minOp<label>());
+                returnReduce(lvl.uniform()[d], minOp<label>());
         }
     }
 
@@ -163,28 +171,28 @@ mesh::~mesh()
 
 labelVector mesh::findCell(const vector& point, const label l) const
 {
-    const level& p = this->operator[](l);
+    const level& lvl = this->operator[](l);
 
     if
     (
-        point.x() < p.boundingBox().left()
-     || point.x() > p.boundingBox().right()
-     || point.y() < p.boundingBox().bottom()
-     || point.y() > p.boundingBox().top()
-     || point.z() < p.boundingBox().aft()
-     || point.z() > p.boundingBox().fore()
+        point.x() < lvl.boundingBox().left()
+     || point.x() > lvl.boundingBox().right()
+     || point.y() < lvl.boundingBox().bottom()
+     || point.y() > lvl.boundingBox().top()
+     || point.z() < lvl.boundingBox().aft()
+     || point.z() > lvl.boundingBox().fore()
     )
     {
         // Not in bounding box of level
 
         return -unitXYZ;
     }
-    else if (l == this->size()-1)
+    else if (lvl.leaf() || lvl.decomp().aggParent())
     {
-        // Final level, linear search
+        // Linear search on leaf or agglomerate parent levels
 
-        forAllBlock(p, i, j, k)
-            if (p.points().pointInCell(point, i, j, k))
+        forAllBlock(lvl, i, j, k)
+            if (lvl.points().pointInCell(point, i, j, k))
                 return labelVector(i,j,k);
 
         return -unitXYZ;
@@ -192,7 +200,7 @@ labelVector mesh::findCell(const vector& point, const label l) const
     else
     {
         const labelVector coarse = this->findCell(point, l+1);
-        const labelVector R = this->operator[](l+1).R();
+        const labelVector R = lvl.child().R();
 
         if (coarse == -unitXYZ)
         {
@@ -200,12 +208,10 @@ labelVector mesh::findCell(const vector& point, const label l) const
             // search if the mesh is not rectilinear. In this case it may be on
             // an edge.
 
-            if (cmptProduct(p.rectilinear()) == 0)
-            {
-                forAllBlock(p, i, j, k)
-                    if (p.points().pointInCell(point, i, j, k))
+            if (cmptProduct(lvl.rectilinear()) == 0)
+                forAllBlock(lvl, i, j, k)
+                    if (lvl.points().pointInCell(point, i, j, k))
                         return labelVector(i,j,k);
-            }
 
             return -unitXYZ;
         }
@@ -213,24 +219,24 @@ labelVector mesh::findCell(const vector& point, const label l) const
         {
             // Found on coarse level. Search enclosed cells only.
 
-            labelVector S = cmptMultiply(coarse,R);
-            labelVector E = cmptMultiply(coarse,R) + R;
+            labelVector S = cmptMax(cmptMultiply(coarse,R), zeroXYZ);
+            labelVector E = cmptMin(S + R, lvl.N());
 
             for (int i = S.x(); i < E.x(); i++)
             for (int j = S.y(); j < E.y(); j++)
             for (int k = S.z(); k < E.z(); k++)
-                if (p.points().pointInCell(point, i, j, k))
+                if (lvl.points().pointInCell(point, i, j, k))
                     return labelVector(i,j,k);
 
             // Otherwise, search in the vicinity too.
 
-            S = cmptMax(S-unitXYZ, zeroXYZ);
-            E = cmptMin(E+unitXYZ, p.points().shape()-unitXYZ);
+            S = cmptMax(S - unitXYZ, zeroXYZ);
+            E = cmptMin(E + unitXYZ, lvl.N());
 
             for (int i = S.x(); i < E.x(); i++)
             for (int j = S.y(); j < E.y(); j++)
             for (int k = S.z(); k < E.z(); k++)
-                if (p.points().pointInCell(point, i, j, k))
+                if (lvl.points().pointInCell(point, i, j, k))
                     return labelVector(i,j,k);
 
             // Otherwise, there is something wrong

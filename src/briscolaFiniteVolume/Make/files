@@ -80,7 +80,7 @@ linearSystems/staggeredVectorDiagSystem.C
 linearSystems/staggeredVectorSystem.C
 
 parallel/linearSystemAggregation/linearSystemAggregation.C
-parallel/linearSystemAggregation/PstreamGlobalsLsa.C
+parallel/linearSystemAggregation/PstreamSplit.C
 
 parallel/pointInterpolators/pointInterpolator/pointInterpolator.C
 parallel/pointInterpolators/linearPointInterpolator/linearPointInterpolator.C

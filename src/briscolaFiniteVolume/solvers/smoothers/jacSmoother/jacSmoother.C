@@ -22,6 +22,9 @@ inline void jacSmoother<SType,Type,MeshType>::jacSmoother::Sweep
     const label d
 )
 {
+    if (sys.fvMsh()[l].empty())
+        return;
+
     block<Type>& B = sys.x()[l][d].B();
     const labelVector shape = B.shape();
 

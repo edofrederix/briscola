@@ -18,14 +18,18 @@ void injectionProlongationScheme<Type,MeshType>::prolong
     const OpType<Type>& bop
 )
 {
-    const labelVector R(coarse.level().lvl().R());
+    const labelVector R(coarse.lvl().R());
+    const labelVector offset(coarse.lvl().aggParentOffset());
+    const label d = fine.directionNum();
+
+    const_cast<meshLevel<Type,MeshType>&>(coarse.level()).correctAggData(d);
 
     forAllCells(fine, i, j, k)
     {
         bop
         (
             fine(i,j,k),
-            coarse(briscola::cmptDivide(labelVector(i,j,k),R))
+            coarse(briscola::cmptDivide(labelVector(i,j,k),R) + offset)
         );
     }
 }

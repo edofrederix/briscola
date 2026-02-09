@@ -61,11 +61,98 @@ levelPoints::levelPoints(const level& lvl)
     {
         // Sample parent level points
 
+        const decomposition& decomp = lvl_.decomp();
         const level& parent = lvl_.parent();
+        const levelPoints parentPoints = parent.points();
         const labelVector R = lvl_.R();
 
-        forAllBlock(points, i, j, k)
-            points(i,j,k) = parent.points()(i*R.x(), j*R.y(), k*R.z());
+        // Collect parent points, possibly from an agglomerate
+
+        if (decomp.agglomerated())
+        {
+            const labelVector N = parent.N();
+            const labelBlock& map = decomp.aggProcMap();
+
+            vectorBlock buffer(N + unitXYZ);
+
+            if (decomp.aggSlave())
+            {
+                // Send to master
+
+                forAllBlock(parentPoints, i, j, k)
+                    buffer(i,j,k) = parentPoints(i,j,k);
+
+                UOPstream::write
+                (
+                    Pstream::commsTypes::blocking,
+                    0,
+                    reinterpret_cast<const char*>(buffer.begin()),
+                    buffer.byteSize(),
+                    0,
+                    lvl_.comms().agg()
+                );
+
+                forAllBlock(points, i, j, k)
+                    points(i,j,k) = Zero;
+            }
+            else
+            {
+                vectorBlock aggParentPoints
+                (
+                    cmptMultiply(N, map.shape())
+                  + unitXYZ
+                );
+
+                // Copy master's points
+
+                forAllBlock(parentPoints, i, j, k)
+                    aggParentPoints(i,j,k) = parentPoints(i,j,k);
+
+                // Receive from slaves
+
+                label proc = 0;
+                forAllBlock(map, i, j, k)
+                {
+                    if (proc > 0)
+                    {
+                        const labelVector ijk(i,j,k);
+
+                        UIPstream::read
+                        (
+                            Pstream::commsTypes::blocking,
+                            proc,
+                            reinterpret_cast<char*>(buffer.begin()),
+                            buffer.byteSize(),
+                            0,
+                            lvl_.comms().agg()
+                        );
+
+                        const labelVector S(cmptMultiply(ijk, N));
+                        const labelVector E(S + N + unitXYZ);
+
+                        // Store
+
+                        labelVector abc;
+                        for (abc.x() = S.x(); abc.x() < E.x(); abc.x()++)
+                        for (abc.y() = S.y(); abc.y() < E.y(); abc.y()++)
+                        for (abc.z() = S.z(); abc.z() < E.z(); abc.z()++)
+                        {
+                            aggParentPoints(abc) = buffer(abc-S);
+                        }
+                    }
+
+                    proc++;
+                }
+
+                forAllBlock(points, i, j, k)
+                    points(i,j,k) = aggParentPoints(i*R.x(), j*R.y(), k*R.z());
+            }
+        }
+        else
+        {
+            forAllBlock(points, i, j, k)
+                points(i,j,k) = parentPoints(i*R.x(), j*R.y(), k*R.z());
+        }
     }
 
     // Set ghost points
@@ -127,101 +214,106 @@ void levelPoints::calcGhostPoints()
     {
         nIter++;
 
-        // Face ghost points
-
-        for (int fi = 0; fi < 6; fi++)
-        {
-            const labelVector bo(faceOffsets[fi]);
-
-            const labelVector S(start(bo,N));
-            const labelVector E(end(bo,N));
-
-            labelVector ijk;
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                points(ijk+bo) =
-                    points(ijk) + dist*(points(ijk) - points(ijk-bo));
-            }
-        }
-
-        // Edge ghost points
-
-        for (int ei = 0; ei < 12; ei++)
-        {
-            const labelVector bo(edgeOffsets[ei]);
-            const label dir = ei/4;
-
-            const labelVector S(start(bo,N));
-            const labelVector E(end(bo,N));
-
-            const labelVector bo1(dir == 0 ? bo.y()*unitY : bo.x()*unitX);
-            const labelVector bo2(dir == 2 ? bo.y()*unitY : bo.z()*unitZ);
-
-            labelVector ijk;
-            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-            {
-                // Sum of the two outward ghost vertex vectors at the edge
-
-                points(ijk+bo) =
-                    points(ijk+bo1) + points(ijk+bo2) - points(ijk);
-            }
-        }
-
-        // Vertex ghost point
-
-        for (int vi = 0; vi < 8; vi++)
-        {
-            const labelVector bo(vertexOffsets[vi]);
-
-            const labelVector ijk(start(bo,N));
-
-            const labelVector bo1(bo.x()*unitX);
-            const labelVector bo2(bo.y()*unitY);
-            const labelVector bo3(bo.z()*unitZ);
-
-            // Sum of the three outward vertex vectors
-
-            points(ijk+bo) =
-                points(ijk+bo1)
-              + points(ijk+bo2)
-              + points(ijk+bo3)
-              - points(ijk)*2.0;
-        }
-
-        // Check cell validity
-
         bool valid = true;
 
-        const labelVector S(start(-unitXYZ,N)-unitXYZ);
-        const labelVector E(end(unitXYZ,N));
-
-        labelVector ijk;
-        for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
-        for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
-        for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
-        if (valid)
+        if (!lvl_.empty())
         {
-            const hexa h
-            (
-                points(ijk),
-                points(ijk + unitX),
-                points(ijk + unitY),
-                points(ijk + unitXY),
-                points(ijk + unitZ),
-                points(ijk + unitXZ),
-                points(ijk + unitYZ),
-                points(ijk + unitXYZ)
-            );
+            // Face ghost points
 
-            if (!h.valid())
-                valid = false;
+            for (int fi = 0; fi < 6; fi++)
+            {
+                const labelVector bo(faceOffsets[fi]);
+
+                const labelVector S(start(bo,N));
+                const labelVector E(end(bo,N));
+
+                labelVector ijk;
+                for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                {
+                    points(ijk+bo) =
+                        points(ijk) + dist*(points(ijk) - points(ijk-bo));
+                }
+            }
+
+            // Edge ghost points
+
+            for (int ei = 0; ei < 12; ei++)
+            {
+                const labelVector bo(edgeOffsets[ei]);
+                const label dir = ei/4;
+
+                const labelVector S(start(bo,N));
+                const labelVector E(end(bo,N));
+
+                const labelVector bo1(dir == 0 ? bo.y()*unitY : bo.x()*unitX);
+                const labelVector bo2(dir == 2 ? bo.y()*unitY : bo.z()*unitZ);
+
+                labelVector ijk;
+                for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+                for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+                for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+                {
+                    // Sum of the two outward ghost vertex vectors at the edge
+
+                    points(ijk+bo) =
+                        points(ijk+bo1) + points(ijk+bo2) - points(ijk);
+                }
+            }
+
+            // Vertex ghost point
+
+            for (int vi = 0; vi < 8; vi++)
+            {
+                const labelVector bo(vertexOffsets[vi]);
+
+                const labelVector ijk(start(bo,N));
+
+                const labelVector bo1(bo.x()*unitX);
+                const labelVector bo2(bo.y()*unitY);
+                const labelVector bo3(bo.z()*unitZ);
+
+                // Sum of the three outward vertex vectors
+
+                points(ijk+bo) =
+                    points(ijk+bo1)
+                + points(ijk+bo2)
+                + points(ijk+bo3)
+                - points(ijk)*2.0;
+            }
+
+            // Check cell validity
+
+            const labelVector S(start(-unitXYZ,N)-unitXYZ);
+            const labelVector E(end(unitXYZ,N));
+
+            labelVector ijk;
+            for (ijk.x() = S.x(); ijk.x() < E.x(); ijk.x()++)
+            for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
+            for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
+            if (valid)
+            {
+                const hexa h
+                (
+                    points(ijk),
+                    points(ijk + unitX),
+                    points(ijk + unitY),
+                    points(ijk + unitXY),
+                    points(ijk + unitZ),
+                    points(ijk + unitXZ),
+                    points(ijk + unitYZ),
+                    points(ijk + unitXYZ)
+                );
+
+                if (!h.valid())
+                    valid = false;
+            }
         }
 
-        if (returnReduce(valid, andOp<bool>())) break;
+        reduce(valid, andOp<bool>(), Pstream::msgType(), lvl_.comms());
+
+        if (valid) break;
 
         dist = dist/2.0;
 

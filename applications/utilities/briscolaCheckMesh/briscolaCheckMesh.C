@@ -25,6 +25,10 @@ int main(int argc, char *argv[])
     arguments::addBoolOption("patchInfo", "Show patch info");
     arguments::addBoolOption("levelInfo", "Show level info");
     arguments::addBoolOption("parallelInfo", "Show parallel info");
+    arguments::addBoolOption("aggInfo", "Show level agglomerate info");
+
+    arguments::addBoolOption("v", "Verbose info");
+
     arguments::addBoolOption
     (
         "parallelConnectivityInfo",
@@ -53,24 +57,29 @@ int main(int argc, char *argv[])
 
     fvMesh fvMsh(meshDict, runTime);
 
-    generalInfo(fvMsh);
+    const bool verbose = args.optionFound("v");
+
+    generalInfo(fvMsh, verbose);
 
     if (args.optionFound("brickInfo"))
-        brickInfo(fvMsh);
+        brickInfo(fvMsh, verbose);
 
     if (args.optionFound("patchInfo"))
-        patchInfo(fvMsh);
+        patchInfo(fvMsh, verbose);
 
     if (args.optionFound("levelInfo"))
-        levelInfo(fvMsh);
+        levelInfo(fvMsh, verbose);
 
     if (Pstream::parRun() && args.optionFound("parallelInfo"))
-        parallelInfo(fvMsh);
+        parallelInfo(fvMsh, verbose);
+
+    if (Pstream::parRun() && args.optionFound("aggInfo"))
+        aggInfo(fvMsh, verbose);
 
     if (Pstream::parRun())
     {
         if (args.optionFound("parallelConnectivityInfo"))
-            parallelConnectivityInfo(fvMsh);
+            parallelConnectivityInfo(fvMsh, verbose);
 
         returnReduce(0, sumOp<label>());
 

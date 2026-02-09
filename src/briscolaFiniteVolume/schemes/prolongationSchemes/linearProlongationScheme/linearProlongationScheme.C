@@ -21,6 +21,7 @@ void linearProlongationScheme<Type,MeshType>::setWeightsAndIndices()
     for (label l = 0; l < this->fvMsh().size()-1; l++)
     {
         const labelVector R(this->fvMsh()[l+1].R());
+        const labelVector offset(this->fvMsh()[l+1].aggParentOffset());
 
         weights_[l].setSize(MeshType::numberOfDirections);
         indices_[l].setSize(MeshType::numberOfDirections);
@@ -52,7 +53,8 @@ void linearProlongationScheme<Type,MeshType>::setWeightsAndIndices()
                     k%2 ? 1 : -1
                 );
 
-                // Set the indices
+                // Set the indices accounting for possible aggregate parent
+                // offset
 
                 int v = 0;
                 labelVector abc;
@@ -61,7 +63,8 @@ void linearProlongationScheme<Type,MeshType>::setWeightsAndIndices()
                         for (abc.x() = 0; abc.x() < 2; abc.x()++)
                             indices[c][v++] =
                                 briscola::cmptDivide(ijk,R)
-                              + briscola::cmptMultiply(abc,off);
+                              + briscola::cmptMultiply(abc,off)
+                              + offset;
 
                 // Interpolation cell vertices
 
@@ -115,11 +118,15 @@ void linearProlongationScheme<Type,MeshType>::prolong
     const OpType<Type>& bop
 )
 {
+    const label d = fine.directionNum();
+
     const List<FixedList<scalar,8>>& weights =
         weights_[fine.levelNum()][fine.directionNum()];
 
     const List<FixedList<labelVector,8>>& indices =
         indices_[fine.levelNum()][fine.directionNum()];
+
+    const_cast<meshLevel<Type,MeshType>&>(coarse.level()).correctAggData(d);
 
     label c = 0;
     forAllCells(fine, i, j, k)

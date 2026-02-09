@@ -15,7 +15,7 @@ namespace decompositions
 defineTypeNameAndDebug(manualDecomp, 0);
 addToRunTimeSelectionTable(decomposition, manualDecomp, dictionary);
 
-manualDecomp::manualDecomp(const level& lvl)
+manualDecomp::manualDecomp(const level& lvl, const bool coarsen)
 :
     decomposition(lvl)
 {
@@ -48,7 +48,24 @@ manualDecomp::manualDecomp(const level& lvl)
         FatalErrorInFunction
             << "Mismatch between the specified number of processors ("
             << nProcs << ") and the actual number of processors ("
-            << Pstream::nProcs() << ")" << endl;
+            << Pstream::nProcs() << ")" << endl << abort(FatalError);
+
+    // Check if decomposition components are factors of two or a triple factor
+    // of two
+
+    forAll(brickDecomps, bricki)
+    {
+        for (label d = 0; d < 3; d++)
+        {
+            label Nd = brickDecomps[bricki][d];
+
+            if (!powerOfTwo(Nd) && ((Nd % 3) || !powerOfTwo(Nd/3)))
+                FatalErrorInFunction
+                    << "The decomposition of brick " << bricki << "in the "
+                    << d << " direction is not a power of 2 nor a triple of "
+                    << "a power of 2" << endl << abort(FatalError);
+        }
+    }
 
     // Transform decompositions according to the brick's transformation
 
@@ -73,7 +90,7 @@ manualDecomp::manualDecomp(const level& lvl)
 
             label Nd = N[dir]/D[dir];
 
-            if (!Nd || ((Nd & (Nd-1)) != 0 && ((Nd/3) & ((Nd/3)-1)) != 0))
+            if (!powerOfTwo(Nd) && ((Nd % 3) || !powerOfTwo(Nd/3)))
                 FatalErrorInFunction
                     << "The number of cells (" << Nd << ") of the brick part "
                     << "that results from the decomposition of brick " << i
@@ -118,30 +135,77 @@ manualDecomp::manualDecomp(const level& lvl)
         }
     }
 
+    // Coarsen the brick decomposition if needed, which is the case when the
+    // parent level is not coarsenable
+
+    const List<labelVector> brickDecomps0(brickDecomps);
+
+    if (lvl_.hasParent() && !lvl_.parent().coarsenable())
+    {
+        // Use parent brick decompositions
+
+        brickDecomps = lvl_.parent().decomp().brickDecomps();
+
+        // Coarsen brick decomposition components. If a value is 3, then the
+        // division by 2 gives 1 through integer cast.
+
+        forAll(brickDecomps, bricki)
+            for (int d = 0; d < 3; d++)
+                brickDecomps[bricki][d] =
+                    Foam::max(brickDecomps[bricki][d]/2, 1);
+
+        // Check coarsened decompositions: the coarsened brick decomposition
+        // needs to be an integer fraction of the set brick decomposition
+
+        forAll(brickDecomps, bricki)
+            for (int d = 0; d < 3; d++)
+                if (brickDecomps0[bricki][d] % brickDecomps[bricki][d])
+                    FatalErrorInFunction
+                        << "Invalid decomposition coarsening"
+                        << abort(FatalError);
+    }
+
     // Distribute brick parts
 
-    label proc(0);
+    myBrickPart_ = -unitXYZ;
 
+    label proc = 0;
     forAll(lvl.msh().bricks(), bricki)
     {
         const labelVector& decomp = brickDecomps[bricki];
+        const labelVector& decomp0 = brickDecomps0[bricki];
+        const labelVector R = cmptDivide(decomp0, decomp);
 
-        for (label i = 0; i < decomp.x(); i++)
+        // Create map without coarsening
+
+        labelBlock map(decomp0);
+        labelVector ijk;
+
+        for (ijk.x() = 0; ijk.x() < decomp0.x(); ijk.x()++)
+        for (ijk.y() = 0; ijk.y() < decomp0.y(); ijk.y()++)
+        for (ijk.z() = 0; ijk.z() < decomp0.z(); ijk.z()++)
         {
-            for (label j = 0; j < decomp.y(); j++)
-            {
-                for (label k = 0; k < decomp.z(); k++)
-                {
-                    if (proc == Pstream::myProcNo())
-                    {
-                        myBrickNum_ = bricki;
-                        myBrickDecomp_ = decomp;
-                        myBrickPart_ = labelVector(i,j,k);
-                    }
+            map(ijk) = proc;
 
-                    proc++;
-                }
+            if (proc == Pstream::myProcNo())
+            {
+                myBrickNum_ = bricki;
+                myBrickDecomp_ = decomp;
             }
+
+            proc++;
+        }
+
+        // Sample map, possibly with coarsening
+
+        for (ijk.x() = 0; ijk.x() < decomp.x(); ijk.x()++)
+        for (ijk.y() = 0; ijk.y() < decomp.y(); ijk.y()++)
+        for (ijk.z() = 0; ijk.z() < decomp.z(); ijk.z()++)
+        {
+            const labelVector ijkR(cmptMultiply(ijk, R));
+
+            if (map(ijkR) == Pstream::myProcNo())
+                myBrickPart_ = ijk;
         }
     }
 }

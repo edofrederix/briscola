@@ -48,6 +48,11 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
             p.calcGhostPoints();
             p.clean();
 
+            // Nothing to do on empty levels
+
+            if (fvMsh_[l].empty())
+                continue;
+
             // For each cell, copy points into vertex vectors
 
             labelVector ijk;
@@ -95,6 +100,8 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
             }
         }
     }
+
+    vc.correctAggData();
 }
 
 template<class MeshType>
@@ -126,6 +133,9 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
             }
         }
     }
+
+    for (int fd = 0; fd < 3; fd++)
+        fc[fd].correctAggData();
 }
 
 template<class MeshType>
@@ -165,6 +175,13 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
             }
         }
     }
+
+    for (int fd = 0; fd < 3; fd++)
+    {
+        fn[fd].correctAggData();
+        fa[fd].correctAggData();
+        fan[fd].correctAggData();
+    }
 }
 
 template<class MeshType>
@@ -192,6 +209,8 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
             }
         }
     }
+
+    cc.correctAggData();
 }
 
 template<class MeshType>
@@ -224,6 +243,7 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 
     // Small number to avoid division by zero in unset/invalid ghost cells
     cv = max(cv, 1e-16);
+    cv.correctAggData();
 
     // Compute at store the inverse cell volumes
     inverseCellVolumes_ = 1.0/cv;
@@ -258,6 +278,9 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
             }
         }
     }
+
+    for (int fd = 0; fd < 3; fd++)
+        delta[fd].correctAggData();
 }
 
 template<class MeshType>
@@ -294,6 +317,12 @@ void fvMeshMetrics<MeshType>::calculateFaceWeights()
                 fwn[fd](l,d,ijk) = fwnAoS(l,d,ijk)[fd*2];
             }
         }
+    }
+
+    for (int fd = 0; fd < 3; fd++)
+    {
+        fwc[fd].correctAggData();
+        fwn[fd].correctAggData();
     }
 }
 
@@ -549,6 +578,8 @@ fvMeshMetrics<MeshType>::AoS::faceCenters() const
         }
     }
 
+    fc.correctAggData();
+
     return tFc;
 }
 
@@ -582,6 +613,8 @@ fvMeshMetrics<MeshType>::AoS::edgeCenters() const
             }
         }
     }
+
+    ec.correctAggData();
 
     return tEc;
 }
@@ -620,6 +653,8 @@ fvMeshMetrics<MeshType>::AoS::faceNormals() const
         }
     }
 
+    fn.correctAggData();
+
     return tFn;
 }
 
@@ -657,6 +692,8 @@ fvMeshMetrics<MeshType>::AoS::faceAreas() const
         }
     }
 
+    fa.correctAggData();
+
     return tFa;
 }
 
@@ -692,6 +729,8 @@ fvMeshMetrics<MeshType>::AoS::faceAreaNormals() const
             }
         }
     }
+
+    fan.correctAggData();
 
     return tFan;
 }
@@ -740,6 +779,7 @@ fvMeshMetrics<MeshType>::AoS::faceDeltas() const
     // Also set remaining ghost cell face values at processor interfaces
 
     delta.correctCommsBoundaryConditions();
+    delta.correctAggData();
 
     return tDelta;
 }
@@ -824,6 +864,7 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsCenter() const
     // Also set remaining ghost cell face values at processor interfaces
 
     fwc.correctCommsBoundaryConditions();
+    fwc.correctAggData();
 
     return tFwc;
 }
@@ -908,6 +949,7 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsNeighbor() const
     // Also set remaining ghost cell face values at processor interfaces
 
     fwn.correctCommsBoundaryConditions();
+    fwn.correctAggData();
 
     return tFwn;
 }

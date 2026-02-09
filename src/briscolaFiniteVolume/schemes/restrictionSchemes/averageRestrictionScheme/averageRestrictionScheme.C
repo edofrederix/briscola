@@ -22,8 +22,11 @@ void averageRestrictionScheme<Type,MeshType>::restrict
     const bool scale
 )
 {
-    const labelVector R(coarse.level().lvl().R());
+    const labelVector R(coarse.lvl().R());
+    const label d = coarse.directionNum();
     const vector shift(MeshType::shift[coarse.directionNum()]);
+
+    const_cast<meshLevel<Type,MeshType>&>(fine.level()).correctAggData(d);
 
     // In a shifted direction, coarse grid and fine grid cell centers have the
     // same coordinate in that direction. So in shifted directions, no

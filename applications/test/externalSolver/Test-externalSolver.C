@@ -21,6 +21,7 @@ void test(const fvMesh& fvMsh, const word solverType, const word subType)
         fvMsh,
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE,
+        true,
         true
     );
 
@@ -29,77 +30,93 @@ void test(const fvMesh& fvMsh, const word solverType, const word subType)
     linearSystem<SType,Type,MeshType> sys(im::laplacian<SType>(f));
     sys -= im::ddt(f);
 
+    restrict(sys.b());
+
     sys.eliminateGhosts();
     sys.singular();
     sys.diagonal();
 
-    // Write the system to a file
-
-    const word fileName
-    (
-        f.name() + "_" +
-        SType::typeName + "_" +
-        solverType + "_" +
-        subType
-    );
-
-    Info<< "Writing to " << fileName << endl;
-
-    OFstream os(fileName);
-    sys.writeLevel(os);
-
-    // Prepare solver and compute solution
-
-    for (int nParts = 1; nParts <= Pstream::nProcs(); nParts++)
+    forAll(fvMsh, l)
     {
-        sys.x() = Zero;
+        // Write the system to a file
 
-        dictionary dict;
-
-        dict.add(word(solverType + "Solver"), subType);
-
-        dict.add("maxIter", 100);
-        dict.add("relTol", 1e-12);
-        dict.add("tolerance", 1e-12);
-        dict.add("printStats", false);
-        dict.add("nAggregationParts", nParts);
-
-        autoPtr<typename solver<SType,Type,MeshType>::externalSolver> solverPtr
+        const word fileName
         (
-            solver<SType,Type,MeshType>::externalSolver::New
-            (
-                solverType,
-                dict,
-                fvMsh
-            ).ptr()
+            f.name() + "_" +
+            SType::typeName + "_" +
+            solverType + "_" +
+            subType + "_" +
+            Foam::name(l)
         );
 
-        solverPtr->prepare(sys);
-        solverPtr->solve(sys);
-    }
+        Info<< "Writing to " << fileName << endl;
 
-    // Write last solution
+        OFstream os(fileName);
+        sys.writeLevel(os, l);
 
-    OFstream oss(word(fileName + "_solution"));
+        // Prepare solver and compute solution
 
-    for (int d = 0; d < MeshType::numberOfDirections; d++)
-    {
-        List<List<Type>> data(Pstream::nProcs());
-        data[Pstream::myProcNo()].setSize(cmptProduct(fvMsh.N<MeshType>(d)));
+        const label nProcs = fvMsh[l].decomp().members().size();
 
-        int l = 0;
-        forAllCells(sys.x().direction(d), i, j, k)
-            data[Pstream::myProcNo()][l++] =
-                sys.x().direction(d)(i,j,k);
+        for (int nParts = 1; nParts <= nProcs; nParts++)
+        {
+            sys.x() = Zero;
 
-        Pstream::gatherList(data);
+            dictionary dict;
 
-        if (Pstream::master())
-            forAll(data, proc)
-                forAll(data[proc], j)
-                    for (int i = 0; i < pTraits<Type>::nComponents; i++)
-                        oss << scalar_cast(&data[proc][j])[i]
-                            << (i == pTraits<Type>::nComponents-1 ? nl : ' ');
+            dict.add(word(solverType + "Solver"), subType);
+
+            dict.add("maxIter", 100);
+            dict.add("relTol", 1e-12);
+            dict.add("tolerance", 1e-12);
+            dict.add("printStats", false);
+            // dict.add("nAggregationParts", nParts);
+
+            autoPtr<typename solver<SType,Type,MeshType>::externalSolver> solverPtr
+            (
+                solver<SType,Type,MeshType>::externalSolver::New
+                (
+                    solverType,
+                    dict,
+                    fvMsh,
+                    l
+                ).ptr()
+            );
+
+            solverPtr->prepare(sys);
+            solverPtr->solve(sys);
+        }
+
+        // Write last solution
+
+        OFstream oss(word(fileName + "_solution"));
+
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            List<List<Type>> data(Pstream::nProcs());
+            data[Pstream::myProcNo()].setSize
+            (
+                cmptProduct(fvMsh.N<MeshType>(l,d))
+            );
+
+            int cursor = 0;
+            forAllCells(sys.x()[l][d], i, j, k)
+                data[Pstream::myProcNo()][cursor++] =
+                    sys.x()(l,d,i,j,k);
+
+            Pstream::gatherList(data);
+
+            if (Pstream::master())
+                forAll(data, proc)
+                    forAll(data[proc], j)
+                        for (int i = 0; i < pTraits<Type>::nComponents; i++)
+                            oss << scalar_cast(&data[proc][j])[i]
+                                <<  (
+                                        i == pTraits<Type>::nComponents-1
+                                      ? nl
+                                      : ' '
+                                    );
+        }
     }
 }
 

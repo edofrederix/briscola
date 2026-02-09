@@ -345,6 +345,9 @@ public:
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();
 
+    // Correct agglomeration data
+    void correctAggData();
+
     // Set the old time field. Works recursively, so if the old time field has
     // an old time field too, it will be set as well.
     void setOldTime();

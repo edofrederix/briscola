@@ -15,15 +15,7 @@ namespace fv
 template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::allocate()
 {
-    // Allocate a block of its level shape with mesh type padding and ghost cell
-    // layers on both sides
-
-    blockType::reAllocate
-    (
-        fvMsh_[l_].N()
-      + MeshType::padding[d_]
-      + 2*ghosts*unitXYZ
-    );
+    blockType::reAllocate(dataShape(true));
 }
 
 template<class Type, class MeshType>
@@ -302,6 +294,10 @@ void meshDirection<Type,MeshType>::operator=
     const meshDirection<Type,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() = D.B();
 }
 
@@ -371,6 +367,10 @@ void meshDirection<Type,MeshType>::operator=
     const tmp<meshDirection<Type,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     if (tD.isTmp())
     {
         meshDirection<Type,MeshType>& D =
@@ -405,6 +405,10 @@ void meshDirection<Type,MeshType>::operator+=
     const meshDirection<Type,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() += D.B();
 }
 
@@ -414,6 +418,10 @@ void meshDirection<Type,MeshType>::operator+=
     const tmp<meshDirection<Type,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this += tD();
     if (tD.isTmp())
         tD.clear();
@@ -425,6 +433,10 @@ void meshDirection<Type,MeshType>::operator-=
     const meshDirection<Type,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() -= D.B();
 }
 
@@ -434,6 +446,10 @@ void meshDirection<Type,MeshType>::operator-=
     const tmp<meshDirection<Type,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this -= tD();
     if (tD.isTmp())
         tD.clear();
@@ -445,6 +461,10 @@ void meshDirection<Type,MeshType>::operator*=
     const meshDirection<scalar,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() *= D.B();
 }
 
@@ -454,6 +474,10 @@ void meshDirection<Type,MeshType>::operator*=
     const tmp<meshDirection<scalar,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this *= tD();
     if (tD.isTmp())
         tD.clear();
@@ -465,6 +489,10 @@ void meshDirection<Type,MeshType>::operator/=
     const meshDirection<scalar,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() /= D.B();
 }
 
@@ -474,6 +502,10 @@ void meshDirection<Type,MeshType>::operator/=
     const tmp<meshDirection<scalar,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this /= tD();
     if (tD.isTmp())
         tD.clear();
@@ -510,6 +542,10 @@ void meshDirection<Type,MeshType>::operator=
     const meshDirection<Type2,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() = D.B();
 }
 
@@ -520,6 +556,10 @@ void meshDirection<Type,MeshType>::operator=
     const tmp<meshDirection<Type2,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this = tD();
     if (tD.isTmp())
         tD.clear();
@@ -532,6 +572,10 @@ void meshDirection<Type,MeshType>::operator+=
     const meshDirection<Type2,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() += D.B();
 }
 
@@ -542,6 +586,10 @@ void meshDirection<Type,MeshType>::operator+=
     const tmp<meshDirection<Type2,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this += tD();
     if (tD.isTmp())
         tD.clear();
@@ -554,6 +602,10 @@ void meshDirection<Type,MeshType>::operator-=
     const meshDirection<Type2,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() -= D.B();
 }
 
@@ -564,6 +616,10 @@ void meshDirection<Type,MeshType>::operator-=
     const tmp<meshDirection<Type2,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this -= tD();
     if (tD.isTmp())
         tD.clear();
@@ -576,6 +632,10 @@ void meshDirection<Type,MeshType>::operator*=
     const meshDirection<Type2,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() *= D.B();
 }
 
@@ -586,6 +646,10 @@ void meshDirection<Type,MeshType>::operator*=
     const tmp<meshDirection<Type2,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this *= tD();
     if (tD.isTmp())
         tD.clear();
@@ -598,6 +662,10 @@ void meshDirection<Type,MeshType>::operator/=
     const meshDirection<Type2,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() /= D.B();
 }
 
@@ -608,6 +676,10 @@ void meshDirection<Type,MeshType>::operator/=
     const tmp<meshDirection<Type2,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this /= tD();
     if (tD.isTmp())
         tD.clear();

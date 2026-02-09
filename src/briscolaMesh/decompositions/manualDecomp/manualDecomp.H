@@ -41,8 +41,8 @@ public:
     // Runtime type information
     TypeName("manual");
 
-    // Construct from level
-    manualDecomp(const level&);
+    // Construct from level and optionally coarsen parent
+    manualDecomp(const level&, const bool = false);
 
     // Copy constructor
     manualDecomp(const manualDecomp&);

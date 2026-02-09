@@ -2,6 +2,7 @@
 #define levelComms_H
 
 #include "labelList.H"
+#include "labelBlock.H"
 
 // Forward declaration of MPI communicator
 struct ompi_communicator_t;
@@ -20,19 +21,31 @@ class levelComms
     // Level to which these boundaries belong
     const level& lvl_;
 
-    // Level communicator number
-    label comm_;
+    // Level communication member data
 
-    // Neighbors
-    labelList recvNeighbors_;
-    labelList sendNeighbors_;
+        // Level communicator number
+        label comm_;
 
-    // Neighbor maps
-    List<labelList> recvMap_;
-    List<labelList> sendMap_;
+        // Neighbors
+        labelList recvNeighbors_;
+        labelList sendNeighbors_;
+
+        // Neighbor maps
+        List<labelList> recvMap_;
+        List<labelList> sendMap_;
+
+    // Agglomerate communicator number which is defined on the agglomerated
+    // level
+    label agg_;
 
     // Access to the level communicator
     MPI_Comm& communicator();
+
+    // Initialize the level communicator
+    void initLevelComm();
+
+    // Initialize the agglomerate communicator
+    void initAgglomerateComm();
 
 public:
 
@@ -60,6 +73,9 @@ public:
     // Return const reference to the level communicator
     const MPI_Comm& communicator() const;
 
+    // Return const reference to the agglomerate communicator
+    const MPI_Comm& aggCommunicator() const;
+
     // Receive neighbors
     const labelList& recvNeighbors() const { return recvNeighbors_; }
 
@@ -71,6 +87,9 @@ public:
 
     // Send neighbors
     const List<labelList>& sendMap() const { return sendMap_; }
+
+    // Agglomerate communicator number
+    label agg() const { return agg_; }
 };
 
 }

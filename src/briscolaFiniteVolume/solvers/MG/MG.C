@@ -271,11 +271,25 @@ MG<SType,Type,MeshType>::MG
     nSweepsPost_(dict.lookupOrDefault<label>("nSweepsPost", 2)),
     cycleType_
     (
-        MGCycleTypeNames[dict.lookupOrDefault<word>("cycleType", "F")]
+        MGCycleTypeNames
+        [
+            dict.lookupOrDefault<word>
+            (
+                "cycleType",
+                word(MGCycleTypeNames[MGCycleType::FCYCLE])
+            )
+        ]
     ),
     coarseMode_
     (
-        MGCoarseModeNames[dict.lookupOrDefault<word>("coarseMode", "smooth")]
+        MGCoarseModeNames
+        [
+            dict.lookupOrDefault<word>
+            (
+                "coarseMode",
+                word(MGCoarseModeNames[MGCoarseMode::DIRECT])
+            )
+        ]
     ),
     coarseLevel_(dict.lookupOrDefault<label>("coarseLevel", 0)),
     proScheme_
@@ -374,8 +388,7 @@ MG<SType,Type,MeshType>::MG
 
         dictionary& subDict = this->dict_.subDict("coarseSolver");
 
-        subDict.lookupOrAddDefault("type", word("PETSc"));
-        subDict.lookupOrAddDefault("relTol", scalar(1e-3));
+        subDict.lookupOrAddDefault("type", word("Eigen"));
 
         const label coarseLevel = fvMsh.msh().size() - coarseLevel_ - 1;
 

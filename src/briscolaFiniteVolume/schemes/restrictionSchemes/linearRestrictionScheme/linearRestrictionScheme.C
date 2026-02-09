@@ -108,17 +108,20 @@ void linearRestrictionScheme<Type,MeshType>::restrict
     const bool scale
 )
 {
-    const labelVector R(coarse.level().lvl().R());
+    const labelVector R(coarse.lvl().R());
+    const label d = coarse.directionNum();
 
     meshDirection<vertexScalar,MeshType>& weights =
-        weights_[coarse.levelNum()][coarse.directionNum()];
+        weights_[coarse.levelNum()][d];
+
+    const_cast<meshLevel<Type,MeshType>&>(fine.level()).correctAggData(d);
 
     if (scale)
     {
         const meshDirection<scalar,MeshType>& cvc =
             this->fvMsh().template
             metrics<MeshType>().cellVolumes()
-            [coarse.levelNum()][coarse.directionNum()];
+            [coarse.levelNum()][d];
 
         const meshDirection<scalar,MeshType>& icvf =
             this->fvMsh().template

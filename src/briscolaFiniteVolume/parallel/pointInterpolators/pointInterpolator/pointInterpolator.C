@@ -153,7 +153,13 @@ vectorList pointInterpolator<MeshType>::missingPoints() const
     forAll(indices_, i)
         found[i] = (indices_[i] != -unitXYZ);
 
-    Pstream::listCombineGather(found, plusEqOp<label>());
+    Pstream::listCombineGather
+    (
+        found,
+        plusEqOp<label>(),
+        Pstream::msgType(),
+        fvMsh_[l_].comms()
+    );
 
     DynamicList<vector> missing;
 

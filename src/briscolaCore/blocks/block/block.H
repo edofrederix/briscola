@@ -304,6 +304,9 @@ public:
     // Slice block at given vertex number
     tmp<block<Type>> sliceVertex(const label) const;
 
+    // Flatten block by returning a list
+    List<Type> flatten() const;
+
     // Find the position of given value in the block. Linear search, so not a
     // good idea to use on large blocks
     labelVector find(const Type&) const;

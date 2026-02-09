@@ -33,25 +33,24 @@ class linearSystemAggregation
     // This processor's part number
     label partNum_;
 
+    // This processor's local processor number
+    label myProcNum_;
+
     // This processor's part master number
-    label partMasterNum_;
+    label masterProcNum_;
 
     // Number of processor's per part
     label nProcsPerPart_;
 
-    // Global size of the matrix
-    labelList globalSizes_;
+    // Global sizes of the matrix for each direction
+    labelList sizes_;
 
-    // Global row/column start and end indices for each direction
-    labelList partStarts_;
-    labelList partEnds_;
+    // Global row start and end indices for each direction
+    labelList starts_;
+    labelList ends_;
 
     // Column numbers for each processor's row in this part, for each direction.
-    // Construct for a full stencil type and not a symmetric one.
     List<List<List<FixedList<label,SType::nCsComponents>>>> colNums_;
-
-    // Part communicator number
-    label partCommNum_;
 
     // Master communicator number
     label masterCommNum_;
@@ -82,11 +81,12 @@ public:
     inline label levelNum() const { return l_; }
     inline label nParts() const { return nParts_; }
     inline label partNum() const { return partNum_; }
-    inline label partMasterNum() const { return partMasterNum_; }
+    inline label myProcNum() const { return myProcNum_; }
+    inline label masterProcNum() const { return masterProcNum_; }
     inline label nProcsPerPart() const { return nProcsPerPart_; }
-    inline const labelList& globalSizes() const { return globalSizes_; }
-    inline const labelList& globalStart() const { return partStarts_; }
-    inline const labelList& globalEnd() const { return partEnds_; }
+    inline const labelList& sizes() const { return sizes_; }
+    inline const labelList& starts() const { return starts_; }
+    inline const labelList& ends() const { return ends_; }
 
     // Return reference to the column number data
     inline const List<List<List<FixedList<label,SType::nCsComponents>>>>&
@@ -98,35 +98,32 @@ public:
     // Return the global matrix size of the given direction
     inline label globalSize(const label d) const
     {
-        return globalSizes_[d];
+        return sizes_[d];
     }
 
     // Return the aggregated part size of the given direction
     inline label partSize(const label d) const
     {
-        return partEnds_[d] - partStarts_[d];
+        return ends_[d] - starts_[d];
     }
 
     // Return the aggregated part start of the given direction
     inline label partStart(const label d) const
     {
-        return partStarts_[d];
+        return starts_[d];
     }
 
     // Return the aggregated part end of the given direction
     inline label partEnd(const label d) const
     {
-        return partEnds_[d];
+        return ends_[d];
     }
 
     // Return true if this processor is master
     inline bool master() const
     {
-        return Pstream::myProcNo() == partMasterNum_;
+        return myProcNum_ > -1 && myProcNum_ == masterProcNum_;
     }
-
-    // Aggregated part communicator number
-    inline label partCommNum() const { return partCommNum_; }
 
     // Master communicator number
     inline label masterCommNum() const { return masterCommNum_; }

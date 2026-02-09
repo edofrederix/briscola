@@ -57,6 +57,15 @@ private:
     // Transfer data from other mesh direction
     void transfer(meshDirection<Type,MeshType>& D);
 
+    // Check if the given mesh direction matches our direction and level
+    template<class Type2>
+    void checkDirection(const meshDirection<Type2,MeshType>& D) const
+    {
+        if (D.levelNum() != l_ || D.directionNum() != d_)
+            FatalErrorInFunction
+                << "Invalid direction" << endl << abort(FatalError);
+    }
+
 public:
 
     // Runtime type information
@@ -287,6 +296,18 @@ public:
 
     // Return the number of internal cells
     inline int size() const { return cmptProduct(N()); }
+
+    // Data shape, optionally accounting for agglomerate data
+    inline labelVector dataShape(bool includeAggData = false) const
+    {
+        return
+            (
+                includeAggData && lvl().Na() != zeroXYZ
+              ? lvl().Na()
+              : lvl().N()
+            )
+          + MeshType::padding[d_] + 2*ghosts*unitXYZ;
+    }
 
     // Linear element access operator will not work efficiently due to
     // ghost cells, so let's prevent its use

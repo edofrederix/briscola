@@ -37,7 +37,6 @@ decompositions/decomposition/decompositionMap.C
 decompositions/manualDecomp/manualDecomp.C
 
 decompositions/decompositionInterface/decompositionInterface.C
-decompositions/decompositionInterface/decompositionSlice.C
 
 boundaries/boundary/boundary.C
 boundaries/parallelBoundary/parallelBoundary.C

@@ -8,31 +8,179 @@ namespace Foam
 namespace briscola
 {
 
-level::level(const mesh& msh, const level* parent)
+Pair<labelVector> level::NandR(const level* parent)
+{
+    labelVector N, R;
+
+    if (parent == nullptr)
+    {
+        // Top level, just divide the brick's N by the brick decomposition
+
+        N =
+            cmptDivide
+            (
+                decomp_->lvl().msh().bricks()[decomp_->myBrickNum()].N(),
+                decomp_->myBrickDecomp()
+            );
+
+        R = zeroXYZ;
+    }
+    else
+    {
+        if (decomp_->agglomerated())
+        {
+            const labelVector NR = cmptMultiply(parent->N(), decomp_->R());
+
+            N = coarsen(NR);
+            R = cmptDivide(NR, N);
+
+            if (decomp_->aggSlave())
+                N = Zero;
+        }
+        else if (decomp_->member())
+        {
+            N = coarsen(parent->N());
+            R = cmptDivide(parent->N(), N);
+        }
+        else
+        {
+            N = Zero;
+            R = Zero;
+        }
+    }
+
+    return Pair<labelVector>(N,R);
+}
+
+level::level(const mesh& msh, const level* parentPtr)
 :
     msh_(msh),
+    l_(parentPtr == nullptr ? 0 : parentPtr->levelNum()+1),
     decomp_(decomposition::New(*this)),
-    l_(parent == nullptr ? 0 : parent->levelNum()+1),
-    N_
-    (
-        parent == nullptr
-      ? cmptDivide
-        (
-            msh.bricks()[decomp_->myBrickNum()].N(),
-            decomp_->myBrickDecomp()
-        )
-      : parent->coarseN()
-    ),
-    R_
-    (
-        parent == nullptr
-      ? zeroXYZ
-      : cmptDivide(parent->N(),parent->coarseN())
-    ),
+    N_(this->NandR(parentPtr).first()),
+    R_(this->NandR(parentPtr).second()),
     boundaries_(*this),
     comms_(*this),
-    points_(*this)
+    points_(*this),
+    rectilinear_(Zero),
+    uniform_(Zero),
+    boundingBox_(Zero),
+    Na_(Zero)
 {
+    // The agglomerate mesh size is non-zero if we are an agglomerate slave.
+    // Receive from master.
+
+    if (decomp_->aggSlave())
+    {
+        // Receive from master
+
+        IPstream fromMaster
+        (
+            Pstream::commsTypes::blocking,
+            0,
+            0,
+            Pstream::msgType(),
+            comms_.agg()
+        );
+
+        fromMaster >> Na_;
+    }
+    else if (decomp_->aggMaster())
+    {
+        // Send to slaves
+
+        forAllBlockLinear(decomp_->aggProcMap(), proc)
+        {
+            if (proc > 0)
+            {
+                OPstream toSlave
+                (
+                    Pstream::commsTypes::blocking,
+                    proc,
+                    0,
+                    Pstream::msgType(),
+                    comms_.agg()
+                );
+
+                toSlave << N_;
+            }
+        }
+    }
+
+    // If we are an agglomerate member, then our parent is an agglomerate
+    // parent. In that case the master process has an agglomerate parent mesh
+    // size which is the sum of all agglomerate parent mesh sizes. We modify the
+    // parent. This is done by the child because upon construction of the parent
+    // there's no child information available yet.
+
+    if (decomp_->aggSlave())
+    {
+        // Send to master
+
+        OPstream toMaster
+        (
+            Pstream::commsTypes::blocking,
+            0,
+            0,
+            Pstream::msgType(),
+            comms_.agg()
+        );
+
+        toMaster << parent().N();
+    }
+    else if (decomp_->aggMaster())
+    {
+        // Receive from slaves
+
+        level& parent = const_cast<level&>(*parentPtr);
+
+        labelVectorBlock Ns(decomp_->aggProcMap().shape());
+        Ns(0,0,0) = parent.N();
+
+        label proc = 0;
+        forAllBlock(Ns, i, j, k)
+        {
+            if (proc != 0)
+            {
+                IPstream fromSlave
+                (
+                    Pstream::commsTypes::blocking,
+                    proc,
+                    0,
+                    Pstream::msgType(),
+                    comms_.agg()
+                );
+
+                labelVector Na;
+                fromSlave >> Na;
+
+                Ns(i,j,k) = Na;
+            }
+
+            proc++;
+        }
+
+        // Sum sizes and store in parent
+
+        parent.Na_ = Zero;
+
+        for (int d = 0; d < 3; d++)
+            for (int i = 0; i < Ns.shape()[d]; i++)
+                parent.Na_[d] += Ns(units[d]*i)[d];
+
+        if (cmptProduct(parent.N_) >= cmptProduct(parent.Na_))
+            FatalErrorInFunction
+                << "Invalid agglomerate size for parent. "
+                << "Parent size = " << parent.N_ << ", "
+                << "Agglomerate size = " << parent.Na_ << endl
+                << abort(FatalError);
+    }
+
+    // No need to further initialize empty levels
+
+    if (empty())
+        return;
+
     // Check if level directions are rectilinear, which is true if all left,
     // bottom and aft face vectors are aligned
 
@@ -97,6 +245,22 @@ level::level(const mesh& msh, const level* parent)
         }
         else
         {
+            #ifdef FULLDEBUG
+
+            if
+            (
+                Foam::mag(x) < VSMALL
+             || Foam::mag(y) < VSMALL
+             || Foam::mag(z) < VSMALL
+            )
+            {
+                FatalErrorInFunction
+                    << "Degenerate cell detected at " << ijk
+                    << abort(FatalError);
+            }
+
+            #endif
+
             if (Foam::mag(x ^ left)/Foam::mag(x) > tol)
             {
                 rectilinear_.x() = 0;
@@ -162,8 +326,8 @@ level::level(const mesh& msh, const level* parent)
 level::level(const level& lvl)
 :
     msh_(lvl.msh_),
-    decomp_(lvl.decomp_),
     l_(lvl.l_),
+    decomp_(decomposition::New(*this)),
     N_(lvl.N_),
     R_(lvl.R_),
     boundaries_(lvl.boundaries_, *this),
@@ -171,14 +335,15 @@ level::level(const level& lvl)
     points_(lvl.points_, *this),
     rectilinear_(lvl.rectilinear_),
     uniform_(lvl.uniform_),
-    boundingBox_(lvl.boundingBox_)
+    boundingBox_(lvl.boundingBox_),
+    Na_(lvl.Na_)
 {}
 
 level::level(const level& lvl, const mesh& msh)
 :
     msh_(msh),
-    decomp_(lvl.decomp_),
     l_(lvl.l_),
+    decomp_(decomposition::New(*this)),
     N_(lvl.N_),
     R_(lvl.R_),
     boundaries_(lvl.boundaries_, *this),
@@ -186,70 +351,40 @@ level::level(const level& lvl, const mesh& msh)
     points_(lvl.points_, *this),
     rectilinear_(lvl.rectilinear_),
     uniform_(lvl.uniform_),
-    boundingBox_(lvl.boundingBox_)
+    boundingBox_(lvl.boundingBox_),
+    Na_(lvl.Na_)
 {}
 
 level::~level()
 {}
 
-labelVector level::coarseN() const
-{
-    if (!msh().topology().structured() || !Pstream::parRun())
-    {
-        // Keep at least two cells in each direction on unstructured meshes, to
-        // avoid heavy distortion
-
-        return labelVector
-        (
-            N_.x() <= 3 ? N_.x() : N_.x()/2,
-            N_.y() <= 3 ? N_.y() : N_.y()/2,
-            N_.z() <= 3 ? N_.z() : N_.z()/2
-        );
-    }
-    else
-    {
-        // Refine until one or three cells in each direction
-
-        labelVector Q
-        (
-            (N_.x() == 1 || N_.x() == 3) ? N_.x() : N_.x()/2,
-            (N_.y() == 1 || N_.y() == 3) ? N_.y() : N_.y()/2,
-            (N_.z() == 1 || N_.z() == 3) ? N_.z() : N_.z()/2
-        );
-
-        // Avoid having one cell in a periodic direction
-
-        for (int d = 0; d < 3; d++)
-        {
-            const boundary& b1 = boundaries_.find(faceOffsets[2*d  ]);
-            const boundary& b2 = boundaries_.find(faceOffsets[2*d+1]);
-
-            if
-            (
-                Q[d] < 2
-             && b1.castable<periodicBoundary>()
-             && b2.castable<periodicBoundary>()
-            )
-            {
-                Q[d] = 2;
-            }
-        }
-
-        return Q;
-    }
-}
-
 const level& level::parent() const
 {
     #ifdef FULLDEBUG
 
-    if (this->l_ == 0)
+    if (!hasParent())
         FatalErrorInFunction
             << "Level has no parent" << abort(FatalError);
 
     #endif
 
     return msh_[l_-1];
+}
+
+bool level::hasChild() const
+{
+    return l_ < msh_.size() - 1;
+}
+
+const level& level::child() const
+{
+    #ifdef FULLDEBUG
+    if (l_ == msh_.size()-1)
+        FatalErrorInFunction
+            << "Level has no child" << abort(FatalError);
+    #endif
+
+    return msh_[l_+1];
 }
 
 }

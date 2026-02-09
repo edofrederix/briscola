@@ -39,6 +39,9 @@ class levelBoundaries
         const label neighborProcNum = -1
     );
 
+    // For empty levels generate empty boundaries
+    void generateEmptyBoundaries();
+
     // Generate brick-internal boundaries
     void generateBrickInternalBoundaries();
 
@@ -50,6 +53,9 @@ class levelBoundaries
 
     // Generate patch boundaries
     void generatePatchBoundaries();
+
+    // Check if all faces have boundaries
+    void checkFaceBoundaries();
 
     // Set boundary mask
     void setMask();

@@ -360,6 +360,13 @@ void meshField<Type,MeshType>::correctImmersedBoundaryConditions()
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctAggData()
+{
+    forAll(*this, l)
+        listType::operator[](l).correctAggData();
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::setOldTime()
 {
     if (oldTimePtr_ == nullptr)
