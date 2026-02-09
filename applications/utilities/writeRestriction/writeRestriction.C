@@ -25,8 +25,14 @@ void restrict(meshField<Type,MeshType>& field, const word scheme)
     );
 
     for (int l = 0; l < field.fvMsh().size()-1; l++)
+    {
         for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
             schemePtr->restrict(field[l+1][d], field[l][d]);
+        }
+
+        field[l+1].correctBoundaryConditions();
+    }
 }
 
 int main(int argc, char *argv[])
