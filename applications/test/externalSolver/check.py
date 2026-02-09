@@ -5,16 +5,14 @@ meshTypes = ['colocated', 'staggered']
 dataTypes = ['scalar', 'vector']
 stencilTypes = ['stencil']
 solverTypes = [
+    'APLU_APLU',
     'Eigen_PartialPivLU',
     'Eigen_BiCGSTAB',
-    'Eigen_SuperLU',
     'PETSc_KSPBCGS',
     'PETSc_KSPIBCGS',
     'PETSc_KSPGMRES',
     'PETSc_KSPFGMRES',
     'PETSc_PCLU',
-    'PETSc_SuperLU',
-    'PETSc_SuperLUDist',
 ]
 
 for meshType in meshTypes:

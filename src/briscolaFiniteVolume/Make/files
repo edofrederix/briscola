@@ -125,10 +125,7 @@ solvers/externalSolvers/APLU/APLUs.C
 solvers/externalSolvers/Eigen/Eigens.C
 solvers/externalSolvers/PETSc/PETScs.C
 
-solvers/externalSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolverBase.C
 solvers/externalSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolvers.C
-
-solvers/externalSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolverBase.C
 solvers/externalSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolvers.C
 
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C

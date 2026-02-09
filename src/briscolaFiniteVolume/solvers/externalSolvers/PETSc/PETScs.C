@@ -1,3 +1,5 @@
+#ifdef PETSC
+
 #include "solvers.H"
 #include "PETSc.H"
 
@@ -20,3 +22,5 @@ makeExternalSolverType(PETSc,stencil,vector,staggered);
 }
 
 }
+
+#endif

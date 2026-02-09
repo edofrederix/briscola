@@ -3,8 +3,8 @@ EXE_INC = \
     -I../../../src/briscolaMesh/lnInclude \
     -I../../../src/briscolaFiniteVolume/lnInclude \
     -I$(LIB_SRC)/OpenFOAM/lnInclude \
-    $(if $(SUPERLU_HOME),-DSUPERLU,$(if $(shell pkg-config --exists superlu && echo 1),-DSUPERLU,)) \
-    $(if $(SUPERLU_DIST_HOME),-DSUPERLU_DIST,$(if $(shell pkg-config --exists superlu_dist && echo 1),-DSUPERLU_DIST,)) \
+    $(if $(PETSC_HOME),-DPETSC,$(if $(shell pkg-config --exists petsc && echo 1),-DPETSC,)) \
+    $(if $(EIGEN_HOME),-DEIGEN,$(if $(shell pkg-config --exists eigen3 && echo 1),-DEIGEN,)) \
     -DFULLDEBUG -g -O0
 
 EXE_LIBS = \

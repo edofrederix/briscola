@@ -251,30 +251,30 @@ From practical experience, it was found that the standard split Poisson solver
 instabilities when used for the pressure equation in two-phase problems with
 large density ratios.
 
-## Eigen, PETSc, and SuperLU
+## Eigen and PETSc
 
-Solvers from these external libraries can also be used in Briscola. From PETSc,
-the different Krylov solvers can be accessed with the `Krylov` class (see
-`src/briscolaFiniteVolume/solvers/Krylov`). More details on PETSc's Krylov
-solvers can be found [here](https://petsc.org/main/manualpages/KSP/KSPType/).
+Optionally, solvers from the Eigen and PETSc external libraries can also be used
+in Briscola. From PETSc, the different Krylov solvers can be accessed with the
+`Krylov` class (see `src/briscolaFiniteVolume/solvers/Krylov`). More details on
+PETSc's Krylov solvers can be found
+[here](https://petsc.org/main/manualpages/KSP/KSPType/).
 
 A number of direct solvers are also available through the Eigen and PETSc
 libraries. These solvers can be found in
 `src/briscolaFiniteVolume/solvers/externalSolvers/Eigen/EigenSolvers` and
 `src/briscolaFiniteVolume/solvers/externalSolvers/PETSc/PETScSolvers`,
-respectively. If SuperLU is also installed when compiling Briscola, its direct
-solvers become available through its Eigen and PETSc interfaces.
+respectively.
 
-By default, the multigrid solver uses a direct solver for the coarsest level.
+By default, the multigrid solver uses a direct solver on the coarsest level.
 Particularly on a large number of processors, this may be beneficial, because
 the coarsest mesh level may then still contain a large number of cells globally,
 thus exhibiting poor convergence rates due to errors with large wave numbers
-spanning across processor boundaries. By default, PETSc's PCLU solver is used.
-However, since this solver is not parallel, it requires aggregation of the
-linear system to one processor, after which the solution can be computed and
-distributed back to all processors. The aggregation may be costly. For large
-problems, it may be worthwhile to tune the solver settings. For example, see the
-`system/briscolaSolverDict` file in the
+spanning across processor boundaries. By default, OpenFOAM's default dense
+matrix LU decomposition solver is used. However, since this solver is not
+parallel, it requires aggregation of the linear system to one processor, after
+which the solution can be computed and distributed back to all processors. The
+aggregation may be costly. For large problems, it may be worthwhile to tune the
+solver settings. For example, see the `system/briscolaSolverDict` file in the
 `cases/briscolaColocated/flowOverCylinder` case for some (commented)
 suggestions.
 

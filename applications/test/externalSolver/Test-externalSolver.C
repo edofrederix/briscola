@@ -127,14 +127,21 @@ int main(int argc, char *argv[])
     #include "createBriscolaMesh.H"
 
     wordList solverTypes;
+    List<wordList> subTypes;
+
+    // APLU
 
     solverTypes.append("APLU");
-    solverTypes.append("PETSc");
-    solverTypes.append("Eigen");
-
-    List<wordList> subTypes(solverTypes.size());
+    subTypes.append(wordList());
 
     subTypes[findIndex(solverTypes,"APLU")].append("APLU");
+
+    // PETSc
+
+    #ifdef PETSC
+
+    solverTypes.append("PETSc");
+    subTypes.append(wordList());
 
     subTypes[findIndex(solverTypes,"PETSc")].append("PCLU");
     subTypes[findIndex(solverTypes,"PETSc")].append("KSPBCGS");
@@ -142,17 +149,19 @@ int main(int argc, char *argv[])
     subTypes[findIndex(solverTypes,"PETSc")].append("KSPGMRES");
     subTypes[findIndex(solverTypes,"PETSc")].append("KSPFGMRES");
 
+    #endif
+
+    // Eigen
+
+    #ifdef EIGEN
+
+    solverTypes.append("Eigen");
+    subTypes.append(wordList());
+
     subTypes[findIndex(solverTypes,"Eigen")].append("SparseLU");
     subTypes[findIndex(solverTypes,"Eigen")].append("PartialPivLU");
     subTypes[findIndex(solverTypes,"Eigen")].append("BiCGSTAB");
 
-    #ifdef SUPERLU
-    subTypes[findIndex(solverTypes,"PETSc")].append("SuperLU");
-    subTypes[findIndex(solverTypes,"Eigen")].append("SuperLU");
-    #endif
-
-    #ifdef SUPERLU_DIST
-    subTypes[findIndex(solverTypes,"PETSc")].append("SuperLUDist");
     #endif
 
     forAll(solverTypes, i)
