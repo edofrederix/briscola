@@ -22,9 +22,7 @@ twoPhaseVof<ViscosityModel>::twoPhaseVof
 :
     ViscosityModel(fvMsh, dict)
 {
-    this->alpha_.setNormalScheme(dict);
-    this->alpha_.setSurfaceTensionScheme(dict);
-    this->alpha_.setVof(dict);
+    this->alpha_.init(dict);
 }
 
 template<class ViscosityModel>

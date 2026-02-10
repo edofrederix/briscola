@@ -1,4 +1,5 @@
 #include "vofField.H"
+#include "twoPhaseModel.H"
 
 namespace Foam
 {
@@ -11,97 +12,27 @@ namespace fv
 
 defineTypeNameAndDebug(vofField, 0);
 
-vofField::vofField
-(
-    const word& name,
-    const colocatedScalarField& alpha,
-    const dictionary& dict,
-    bool initToZero
-)
+vofField::vofField(const fvMesh& fvMsh, const word name)
 :
     colocatedScalarField
     (
-        name,
-        alpha,
-        true,
-        true
-    ),
-    fvMsh_(alpha.fvMsh()),
-    normalSchemePtr_
-    (
-        normalScheme::New
-        (
-            fvMsh_,
-            dict.subDict("normalScheme"),
-            *this
-        )
-    ),
-    surfaceTensionSchemePtr_
-    (
-        surfaceTensionScheme::New
-        (
-            fvMsh_,
-            dict.subDict("surfaceTensionScheme"),
-            normalSchemePtr_(),
-            *this
-        )
-    ),
-    vfPtr_
-    (
-        vof::New
-        (
-            fvMsh_,
-            dict.subDict("vof"),
-            normalSchemePtr_(),
-            *this
-        )
-    ),
-    tagAlgorithmPtr_
-    (
-        tagAlgorithm::New
-        (
-            fvMsh_,
-            dict.found("tagAlgorithm")
-            ? dict.subDict("tagAlgorithm")
-            : dictionary::null,
-            *this
-        )
-    )
-{
-    IOobject::writeOpt() = IOobject::AUTO_WRITE;
-
-    colocatedScalarField::setRestrictionScheme("volumeWeighted");
-
-    // Initialize the label field to zero if needed
-    if (initToZero)
-        static_cast<colocatedScalarField&>(*this) = Zero;
-}
-
-vofField::vofField(const fvMesh& fvMsh)
-:
-    colocatedScalarField
-    (
-        "alpha",
+        name == word::null ? "alpha" : name,
         fvMsh,
-        IOobject::MUST_READ,
+        IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE,
         true,
         true
     ),
-    fvMsh_(fvMsh),
-    normalSchemePtr_(),
-    surfaceTensionSchemePtr_(),
-    vfPtr_(),
-    tagAlgorithmPtr_()
+    fvMsh_(fvMsh)
 {
     colocatedScalarField::setRestrictionScheme("volumeWeighted");
 
-    static_cast<colocatedScalarField&>(*this) = Zero;
+    *this = Zero;
 }
 
 vofField::vofField(const vofField& s)
 :
-    colocatedScalarField(s),
+    colocatedScalarField(s, s.registered(), true),
     fvMsh_(s.fvMsh_),
     normalSchemePtr_(s.normalSchemePtr_),
     surfaceTensionSchemePtr_(s.surfaceTensionSchemePtr_),
@@ -134,7 +65,7 @@ void vofField::correctAlpha()
     }
 }
 
-void vofField::setNormalScheme(const dictionary& dict)
+void vofField::init(const dictionary& dict)
 {
     normalSchemePtr_.set
     (
@@ -145,10 +76,7 @@ void vofField::setNormalScheme(const dictionary& dict)
             *this
         ).ptr()
     );
-}
 
-void vofField::setSurfaceTensionScheme(const dictionary& dict)
-{
     surfaceTensionSchemePtr_.set
     (
         surfaceTensionScheme::New
@@ -159,10 +87,7 @@ void vofField::setSurfaceTensionScheme(const dictionary& dict)
             *this
         ).ptr()
     );
-}
 
-void vofField::setVof(const dictionary& dict)
-{
     vfPtr_.set
     (
         vof::New
@@ -173,18 +98,15 @@ void vofField::setVof(const dictionary& dict)
             *this
         ).ptr()
     );
-}
 
-void vofField::setTagAlgorithm(const dictionary& dict)
-{
     tagAlgorithmPtr_.set
     (
         tagAlgorithm::New
         (
             fvMsh_,
             dict.found("tagAlgorithm")
-            ? dict.subDict("tagAlgorithm")
-            : dictionary::null,
+          ? dict.subDict("tagAlgorithm")
+          : dictionary::null,
             *this
         ).ptr()
     );

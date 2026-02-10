@@ -3,6 +3,7 @@
 #include "addToRunTimeSelectionTable.H"
 #include "exSchemes.H"
 #include "interpolationScheme.H"
+#include "ListOps.H"
 
 namespace Foam
 {
@@ -18,67 +19,45 @@ void twoPhaseMultiVof<ViscosityModel>::initAlphas()
 {
     alphas_.clear();
 
-    label index = 0;
+    const objectRegistry& db = this->fvMsh().db();
 
-    if
-    (
-        this->fvMsh().db().template foundObject<colocatedScalarField>
-        (
-            "alpha.0"
-        )
-    )
+    label index = 0;
+    word name(IOobject::groupName(this->alpha_.name(), "0"));
+
+    if (db.foundObject<colocatedScalarField>(name))
     {
-        while
-        (
-            this->fvMsh().db().template foundObject<colocatedScalarField>
-            (
-                "alpha."
-                +Foam::name(index)
-            )
-        )
+        while (db.foundObject<colocatedScalarField>(name))
         {
-            colocatedScalarField& alpha = this->fvMsh().db().template
-                lookupObjectRef<colocatedScalarField>
-                (
-                    "alpha."
-                    +Foam::name(index)
-                );
+            colocatedScalarField& alpha =
+                db.lookupObjectRef<colocatedScalarField>(name);
 
             // Create tmp copy of alpha field
-            tmp<colocatedScalarField> tAlpha(new colocatedScalarField(alpha));
+            tmp<colocatedScalarField> tAlpha
+            (
+                new colocatedScalarField(alpha, false, true)
+            );
 
             // Release and delete old alpha field
             alpha.regIOobject::release();
             delete &alpha;
 
             // Create new vofField with tmp alpha field
-            alphas_.append
-            (
-                new vofField
-                (
-                    "alpha."+Foam::name(index),
-                    tAlpha(),
-                    this->dict(),
-                    false
-                )
-            );
+            alphas_.append(new vofField(this->fvMsh(), name));
 
-            index++;
+            alphas_[index] = tAlpha();
+            alphas_[index].init(this->dict());
+
+            name =
+                IOobject::groupName(this->alpha_.name(), Foam::name(++index));
         }
     }
     else
     {
-        alphas_.append
-        (
-            new vofField
-            (
-                "alpha.0",
-                this->alpha_,
-                this->dict()
-            )
-        );
-    }
+        alphas_.append(new vofField(this->fvMsh(), name));
 
+        alphas_[0] = this->alpha();
+        alphas_[0].init(this->dict());
+    }
 }
 
 template<class ViscosityModel>
@@ -88,18 +67,20 @@ void twoPhaseMultiVof<ViscosityModel>::addAlphaField()
     (
         new vofField
         (
-            "alpha."+Foam::name(alphas_.size()),
-            this->alpha_,
-            this->dict(),
-            true
+            this->fvMsh(),
+            IOobject::groupName
+            (
+                this->alpha_.name(),
+                Foam::name(alphas_.size())
+            )
         )
     );
 
-    #ifdef FULLDEBUG
+    alphas_.last() = Zero;
+    alphas_.last().init(this->dict());
 
-    Info << "Alpha field added" << endl;
-
-    #endif
+    if (twoPhaseMultiVof::debug)
+        Info << "Alpha field added" << endl;
 }
 
 template<class ViscosityModel>
@@ -180,12 +161,9 @@ template<class ViscosityModel>
 void twoPhaseMultiVof<ViscosityModel>::setConnectivityMatrix()
 {
     connectivityMatrix_.setSize(N_);
+    connectivityMatrix_ = Zero;
 
-    for (int i = 0; i < connectivityMatrix_.m(); i++)
-        for (int j = 0; j < connectivityMatrix_.n(); j++)
-            connectivityMatrix_(i,j) = false;
-
-    forAllCells(tags_, i,j,k)
+    forAllCells(tags_, i, j, k)
     {
         labelList tagNums(0);
 
@@ -216,15 +194,23 @@ void twoPhaseMultiVof<ViscosityModel>::setConnectivityMatrix()
 
                     connectivityMatrix_(first-1, second-1) = true;
                     connectivityMatrix_(second-1, first-1) = true;
-
                 }
             }
         }
     }
 
-    for (int i = 0; i < connectivityMatrix_.m(); i++)
-        for (int j = 0; j < connectivityMatrix_.n(); j++)
-            reduce(connectivityMatrix_(i,j), orOp<bool>());
+    // Reduce connectivity matrix by using a temporary list to enable collective
+    // parallel operation
+
+    List<Switch> data(connectivityMatrix_.size());
+
+    forAll(data, i)
+        data[i] = connectivityMatrix_.v()[i];
+
+    reduce(data, ListOp<orOp<Switch>>());
+
+    forAll(data, i)
+        connectivityMatrix_.v()[i] = data[i];
 }
 
 template<class ViscosityModel>
@@ -239,7 +225,7 @@ void twoPhaseMultiVof<ViscosityModel>::moveFields()
                 // Create ineligible interface array. This array identifies
                 // which interfaces are ineligible for hosting the particle.
 
-                List<bool> ineligibleAlphas(alphas_.size(), false);
+                List<Switch> ineligibleAlphas(alphas_.size(), false);
 
                 // The current interface number is ineligible, by definition
 
@@ -258,12 +244,10 @@ void twoPhaseMultiVof<ViscosityModel>::moveFields()
                     }
                 }
 
-                // Communicate the ineligible array by a collective 'or' operation
+                // Communicate the ineligible array by a collective 'or'
+                // operation
 
-                forAll(ineligibleAlphas, a)
-                {
-                    reduce(ineligibleAlphas[a], orOp<bool>());
-                }
+                reduce(ineligibleAlphas, ListOp<orOp<Switch>>());
 
                 // Find eligible interface
 
@@ -287,14 +271,12 @@ void twoPhaseMultiVof<ViscosityModel>::moveFields()
                     targetAlpha = alphas_.size() - 1;
                 }
 
-                #ifdef FULLDEBUG
+                if (twoPhaseMultiVof::debug)
+                    Info<< "Moving particle " << i+1 << " from field "
+                        << phi_[i] << " to field " << targetAlpha << endl;
 
-                Info << "Moving particle " << i+1 << " from field "
-                     << phi_[i] << " to field " << targetAlpha << endl;
-
-                #endif
-
-                // Move the particle from the source interface to the target interface
+                // Move the particle from the source interface to the target
+                // interface
 
                 forAllCells(alphas_[phi_[i]],x,y,z)
                 {
@@ -459,9 +441,9 @@ void twoPhaseMultiVof<ViscosityModel>::correct()
 
     // Compute summed alpha field
 
-    this->alpha_ = Zero;
+    this->alpha_ = static_cast<colocatedScalarField&>(alphas_[0]);
 
-    forAll(alphas_, a)
+    for (int a = 1; a < alphas_.size(); a++)
     {
         this->alpha_ += static_cast<colocatedScalarField&>(alphas_[a]);
     }

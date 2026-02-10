@@ -31,10 +31,7 @@ void tagAlgorithm::removeSmallParticles()
         }
     }
 
-    forAll(sizes, i)
-    {
-        reduce(sizes[i], sumOp<label>());
-    }
+    reduce(sizes, ListOp<sumOp<label>>());
 
     forAllCells(m,i,j,k)
     {
@@ -60,9 +57,7 @@ tagAlgorithm::tagAlgorithm
         "m",
         fvMsh,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE,
-        false,
-        false
+        IOobject::AUTO_WRITE
     ),
     fvMsh_(fvMsh),
     dict_(dict),
@@ -137,8 +132,8 @@ void tagAlgorithm::binaryTag()
 
     m = Zero;
 
-    forAllCells(m,l,d,i,j,k)
-        m(l,d,i,j,k) = alpha_(l,d,i,j,k) > 1e-3;
+    forAllCells(m,i,j,k)
+        m(i,j,k) = alpha_(i,j,k) > 1e-3;
 }
 
 }

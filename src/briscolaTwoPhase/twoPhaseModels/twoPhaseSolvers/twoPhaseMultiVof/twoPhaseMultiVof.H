@@ -40,9 +40,6 @@ protected:
 
 private:
 
-    // Disallow default bitwise assignment
-    void operator=(const twoPhaseMultiVof&);
-
     // Initialize PtrLists
     void initAlphas();
 

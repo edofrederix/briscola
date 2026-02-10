@@ -21,11 +21,6 @@ class vofField
 :
     public colocatedScalarField
 {
-public:
-
-    // Needed to be able to use vofField = Zero
-    using colocatedScalarField::operator=;
-
 protected:
 
     // Reference to the mesh
@@ -48,17 +43,8 @@ public:
     // Runtime type information
     TypeName("vofField");
 
-    // Construct from components
-    vofField
-    (
-        const word&,
-        const colocatedScalarField&,
-        const dictionary&,
-        bool initToZero = false
-    );
-
-    // Construct for global alpha field
-    vofField(const fvMesh& fvMsh);
+    // Construct from mesh and optional name
+    vofField(const fvMesh&, const word = word::null);
 
     // Copy constructor
     vofField(const vofField&);
@@ -72,20 +58,8 @@ public:
     // Destructor
     virtual ~vofField();
 
-    // Correct boundary conditions and set bounds on alpha field
-    void correctAlpha();
-
-    // Set normal scheme
-    void setNormalScheme(const dictionary& dict);
-
-    // Set surface tension scheme
-    void setSurfaceTensionScheme(const dictionary& dict);
-
-    // Set vof solver
-    void setVof(const dictionary& dict);
-
-    // Set tag algorithm
-    void setTagAlgorithm(const dictionary& dict);
+    // Allow assignment on the volume fraction field
+    using colocatedScalarField::operator=;
 
     // Return const access to the mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
@@ -94,7 +68,10 @@ public:
     inline normalScheme& normal() { return normalSchemePtr_(); }
 
     // Return access to the surface tension sheme
-    inline surfaceTensionScheme& surfaceTension() { return surfaceTensionSchemePtr_(); }
+    inline surfaceTensionScheme& surfaceTension()
+    {
+        return surfaceTensionSchemePtr_();
+    }
 
     // Return access to the Vof model
     inline vof& vf() { return vfPtr_(); }
@@ -102,6 +79,11 @@ public:
     // Return access to the tag algorithm
     inline tagAlgorithm& tag() { return tagAlgorithmPtr_(); }
 
+    // Initialize schemes from dictionary
+    void init(const dictionary&);
+
+    // Correct boundary conditions and set bounds on alpha field
+    void correctAlpha();
 };
 
 }
