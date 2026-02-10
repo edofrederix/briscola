@@ -18,7 +18,9 @@ vofField::vofField(const fvMesh& fvMsh, const word name)
     (
         name == word::null ? "alpha" : name,
         fvMsh,
-        IOobject::READ_IF_PRESENT,
+        name == word::null ?
+          IOobject::MUST_READ
+        : IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE,
         true,
         true
