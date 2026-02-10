@@ -19,7 +19,7 @@ deltaT          1e-6;
 
 writeControl    adjustableRunTime;
 
-writeInterval   0.1;
+writeInterval   0.05;
 
 writeFormat     binary;
 
@@ -33,7 +33,7 @@ runTimeModifiable true;
 
 adjustTimeStep  true;
 
-maxCo           0.2;
+maxCo           0.5;
 
 libs
 (
