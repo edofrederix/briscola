@@ -14,11 +14,13 @@ defineTypeNameAndDebug(constantSigma, 0);
 
 constantSigma::constantSigma
 (
-    const twoPhaseModel& tpm,
-    const dictionary& dict
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const normalScheme& normal,
+    const colocatedScalarField& alpha
 )
 :
-    surfaceTensionScheme(tpm, dict)
+    surfaceTensionScheme(fvMsh, dict, normal, alpha)
 {
     this->sigma_ = readScalar(dict.lookup("sigma"));
 }

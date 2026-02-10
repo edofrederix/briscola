@@ -24,8 +24,10 @@ public:
     // Construct from components
     zeroSigma
     (
-        const twoPhaseModel&,
-        const dictionary&
+        const fvMesh&,
+        const dictionary&,
+        const normalScheme&,
+        const colocatedScalarField&
     );
 
     // Copy constructor

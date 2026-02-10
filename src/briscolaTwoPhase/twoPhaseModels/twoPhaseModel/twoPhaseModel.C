@@ -30,33 +30,10 @@ twoPhaseModel::twoPhaseModel
     regIOobject(dict, true),
     fvMsh_(fvMsh),
     dict_(dict),
-    alpha_
-    (
-        "alpha",
-        fvMsh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE,
-        true,
-        true
-    ),
-    normalSchemePtr_
-    (
-        normalScheme::New(*this, dict.subDict("normalScheme")).ptr()
-    ),
-    surfaceTensionSchemePtr_
-    (
-        surfaceTensionScheme::New
-        (
-            *this,
-            dict.subDict("surfaceTensionScheme")
-        ).ptr()
-    ),
+    alpha_(fvMsh),
     g_(dict.lookup("g")),
-    tension_(surfaceTensionSchemePtr_->type() != "none")
-{
-    alpha_.setRestrictionScheme("volumeWeighted");
-    alpha_ = Zero;
-}
+    tension_(dict.subDict("surfaceTensionScheme").lookup("type") != "none")
+{}
 
 twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
 :
@@ -64,13 +41,9 @@ twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
     fvMsh_(tpm.fvMsh_),
     dict_(tpm.dict_),
     alpha_(tpm.alpha_),
-    normalSchemePtr_(tpm.normalSchemePtr_, false),
-    surfaceTensionSchemePtr_(tpm.surfaceTensionSchemePtr_, false),
     g_(tpm.g_),
     tension_(tpm.tension_)
-{
-    alpha_.setRestrictionScheme("volumeWeighted");
-}
+{}
 
 template<>
 autoPtr<twoPhaseModel> twoPhaseModel::New<colocated>
@@ -118,29 +91,6 @@ autoPtr<twoPhaseModel> twoPhaseModel::New<staggered>
     }
 
     return autoPtr<twoPhaseModel>(cstrIter()(fvMsh, dict));
-}
-
-tmp<colocatedScalarFaceField> twoPhaseModel::flux()
-{
-    tmp<colocatedScalarFaceField> tFlux
-    (
-        new colocatedScalarFaceField("twoPhaseFlux", this->fvMsh_)
-    );
-
-    colocatedScalarFaceField& flux = tFlux.ref();
-
-    flux = Zero;
-
-    if (this->tension())
-        flux +=
-            static_cast<colocatedScalarFaceField&>(this->surfaceTension());
-
-    return tFlux;
-}
-
-void twoPhaseModel::correct()
-{
-    surfaceTensionSchemePtr_->correct();
 }
 
 }

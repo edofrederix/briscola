@@ -17,7 +17,7 @@ geometricVof::geometricVof
     const fvMesh& fvMsh,
     const dictionary& dict,
     normalScheme& normal,
-    colocatedScalarField& alpha
+    vofField& alpha
 )
 :
     vof(fvMsh, dict, normal, alpha),

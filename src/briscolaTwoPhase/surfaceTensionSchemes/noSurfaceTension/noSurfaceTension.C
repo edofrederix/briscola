@@ -14,11 +14,13 @@ namespace fv
 template<class SigmaModel>
 noSurfaceTension<SigmaModel>::noSurfaceTension
 (
-    const twoPhaseModel& tpm,
-    const dictionary& dict
+    const fvMesh& fvMsh,
+    const dictionary& dict,
+    const normalScheme& normal,
+    const colocatedScalarField& alpha
 )
 :
-    SigmaModel(tpm, dict)
+    SigmaModel(fvMsh, dict, normal, alpha)
 {
     colocatedScalarFaceField::operator=(Zero);
 }

@@ -94,7 +94,6 @@ void incompressibleTwoPhaseModel<MeshType>::correct()
 {
     correctRho();
     correctMeanRho();
-    TwoPhaseModel<MeshType>::correct();
 }
 
 }

@@ -2,6 +2,11 @@ vof/vof/vof.C
 vof/geometricVof/geometricVof.C
 vof/splitAdvection/splitAdvection.C
 
+tagAlgorithms/tagAlgorithm/tagAlgorithm.C
+tagAlgorithms/twoPass/twoPass.C
+
+vofField/vofField.C
+
 LVE/LVE.C
 
 normalSchemes/normalScheme/normalScheme.C
