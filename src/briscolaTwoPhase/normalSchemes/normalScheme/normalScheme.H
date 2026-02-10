@@ -51,7 +51,12 @@ public:
     );
 
     // Construct from components
-    normalScheme(const fvMesh&, const dictionary&, const colocatedScalarField&);
+    normalScheme
+    (
+        const fvMesh&,
+        const dictionary&,
+        const colocatedScalarField&
+    );
 
     // Copy constructor
     normalScheme(const normalScheme&);

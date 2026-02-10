@@ -17,11 +17,6 @@ class twoPhaseVof
 :
     public ViscosityModel
 {
-protected:
-
-    // The Vof model
-    autoPtr<vof> vfPtr_;
-
 public:
 
     // Runtime type information
@@ -39,11 +34,17 @@ public:
         return autoPtr<twoPhaseModel>(new twoPhaseVof(*this));
     }
 
-    // Return access to the Vof model
-    inline vof& vf() { return vfPtr_(); }
-
-    // Return const access to the Vof model
-    inline const vof& vf() const { return vfPtr_; }
+    // Return surface tension flux
+    virtual tmp<colocatedScalarFaceField> flux()
+    {
+        return tmp<colocatedScalarFaceField>
+            (
+                static_cast<colocatedScalarFaceField&>
+                (
+                    this->alpha_.surfaceTension()
+                )
+            );
+    }
 
     // Correct the two-phase model
     virtual void correct();

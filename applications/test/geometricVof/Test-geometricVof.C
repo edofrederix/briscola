@@ -1,6 +1,7 @@
 #include "arguments.H"
 #include "Time.H"
 #include "fvMesh.H"
+#include "twoPhaseModel.H"
 #include "geometricVof.H"
 #include "geometricObjects.H"
 #include "SortableList.H"

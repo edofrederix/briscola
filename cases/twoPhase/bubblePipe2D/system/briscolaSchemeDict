@@ -1,0 +1,53 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      briscolaSchemesDict;
+}
+
+rkScheme
+{
+    scheme CNAB;
+}
+
+laplacianSchemes
+{
+    default linearGauss;
+}
+
+divergenceSchemes
+{
+    // default linearGauss;
+    div(phi,U) limitedGauss twoPhase vanLeer;
+}
+
+gradientSchemes
+{
+    default linearGauss;
+}
+
+faceGradientSchemes
+{
+    default linear;
+}
+
+faceDotGradientSchemes
+{
+    default linear;
+}
+
+faceFluxSchemes
+{
+    default midPoint;
+}
+
+reconstructionSchemes
+{
+    default linear;
+}
+
+interpolationSchemes
+{
+    default midPoint;
+}

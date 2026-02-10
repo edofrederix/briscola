@@ -6,6 +6,7 @@
 #include "regIOobject.H"
 #include "normalScheme.H"
 #include "surfaceTensionScheme.H"
+#include "vofField.H"
 
 namespace Foam
 {
@@ -29,13 +30,7 @@ protected:
     const IOdictionary& dict_;
 
     // Volume fraction field
-    colocatedScalarField alpha_;
-
-    // Normal scheme
-    autoPtr<normalScheme> normalSchemePtr_;
-
-    // Surface tension scheme
-    autoPtr<surfaceTensionScheme> surfaceTensionSchemePtr_;
+    vofField alpha_;
 
     // Gravitational acceleration
     vector g_;
@@ -129,24 +124,6 @@ public:
     // Return const access to the volume fraction
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
-    // Return access the normal scheme
-    normalScheme& normal() { return normalSchemePtr_(); }
-
-    // Return const access to the normal scheme
-    const normalScheme& normal() const { return normalSchemePtr_(); }
-
-    // Return access the surface tension scheme
-    surfaceTensionScheme& surfaceTension()
-    {
-        return surfaceTensionSchemePtr_();
-    }
-
-    // Return const access to the surface tension scheme
-    const surfaceTensionScheme& surfaceTension() const
-    {
-        return surfaceTensionSchemePtr_();
-    }
-
     // Gravitational acceleration
     const vector& g() const { return g_; }
 
@@ -154,10 +131,10 @@ public:
     Switch tension() const { return tension_; }
 
     // Return the interfacial momentum flux
-    tmp<colocatedScalarFaceField> flux();
+    virtual tmp<colocatedScalarFaceField> flux() = 0;
 
     // Correct the two-phase model
-    virtual void correct();
+    virtual void correct() = 0;
 
     // Needed by regIOobject
     virtual bool writeData(Ostream&) const { return true; }

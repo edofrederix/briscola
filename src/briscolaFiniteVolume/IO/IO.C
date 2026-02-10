@@ -625,16 +625,34 @@ void IO::readFields
             }
             else
             {
-                // Ignore. Alternatively we could create a field and store in
-                // the registry.
-
-                if (ascii)
+                if (l == 0)
                 {
-                    nextLine(file);
+                    FieldType* fieldPtr = new FieldType
+                    (
+                        name,
+                        fvMsh_,
+                        IOobject::READ_IF_PRESENT,
+                        IOobject::AUTO_WRITE,
+                        true,
+                        false
+                    );
+
+                    readField(filePtr, ascii, fieldPtr->operator[](l)[d]);
+                    typeFields.append(fieldPtr->name());
+
+                    // Give ownership to objectRegistry
+                    fvMsh_.db().store(fieldPtr);
                 }
                 else
                 {
-                    file.ignore(nCells*nComponents*sizeof(floatScalar));
+                    if (ascii)
+                    {
+                        nextLine(file);
+                    }
+                    else
+                    {
+                        file.ignore(nCells*nComponents*sizeof(floatScalar));
+                    }
                 }
             }
         }

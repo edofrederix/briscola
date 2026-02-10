@@ -24,11 +24,7 @@ normalScheme::normalScheme
     colocatedVectorField
     (
         "normal",
-        fvMsh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::AUTO_WRITE,
-        true,
-        false
+        fvMsh
     ),
     fvMsh_(fvMsh),
     dict_(dict),

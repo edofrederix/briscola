@@ -1,7 +1,6 @@
 #ifndef vof_H
 #define vof_H
 
-#include "twoPhaseModel.H"
 #include "meshFields.H"
 #include "normalScheme.H"
 
@@ -13,6 +12,8 @@ namespace briscola
 
 namespace fv
 {
+
+class vofField;
 
 class vof
 :
@@ -30,7 +31,7 @@ protected:
     normalScheme& normal_;
 
     // Reference to the volume fraction field
-    colocatedScalarField& alpha_;
+    vofField& alpha_;
 
 public:
 
@@ -50,13 +51,13 @@ public:
             const fvMesh& fvMsh,
             const dictionary& dict,
             normalScheme& normal,
-            colocatedScalarField& alpha
+            vofField& alpha
         ),
         (fvMsh, dict, normal, alpha)
     );
 
     // Construct from dictionary
-    vof(const fvMesh&, const dictionary&, normalScheme&, colocatedScalarField&);
+    vof(const fvMesh&, const dictionary&, normalScheme&, vofField&);
 
     // Copy constructor
     vof(const vof&);
@@ -64,20 +65,13 @@ public:
     // Clone vof
     virtual autoPtr<vof> clone() const = 0;
 
-    // Selector from two-phase model
-    static autoPtr<vof> New
-    (
-        twoPhaseModel&,
-        const dictionary&
-    );
-
     // Selector from components
     static autoPtr<vof> New
     (
         const fvMesh&,
         const dictionary&,
         normalScheme&,
-        colocatedScalarField&
+        vofField&
     );
 
     // Check if cast to derived type is possible
@@ -120,10 +114,10 @@ public:
     inline const normalScheme& normal() const { return normal_; }
 
     // Access to the volume fraction field
-    inline colocatedScalarField& alpha() { return alpha_; }
+    inline vofField& alpha() { return alpha_; }
 
     // Const access to the volume fraction field
-    inline const colocatedScalarField& alpha() const { return alpha_; }
+    inline const vofField& alpha() const { return alpha_; }
 
     // Solve the Vof advection equation given a flux field
     virtual void solve(const colocatedScalarFaceField&) = 0;

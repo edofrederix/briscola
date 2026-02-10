@@ -19,8 +19,8 @@ libOSspecific header files and libraries.
 ## Developers
 
 Briscola is developed by [Edo Frederix](mailto:edofrederix@gmail.com), [Victor
-Habiyaremye](mailto:habiyaremye@nrg.eu) and [Gonzalo
-Bonilla](mailto:bonillamoreno@nrg.eu) at NRG Pallas, the Netherlands.
+Habiyaremye](mailto:victor.habiyaremye@nrgpallas.com) and Gonzalo
+Bonilla at NRG PALLAS, the Netherlands.
 
 ## License
 

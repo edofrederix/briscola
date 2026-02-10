@@ -1,12 +1,4 @@
-colocatedScalarField alpha
-(
-    "alpha",
-    fvMsh,
-    IOobject::MUST_READ,
-    IOobject::AUTO_WRITE,
-    true,
-    false
-);
+vofField alpha(fvMsh);
 
 IOdictionary vofDict
 (
