@@ -100,6 +100,8 @@ void twoPhaseMultiVof<ViscosityModel>::computeGlobaltagAlgorithm()
             }
         }
     }
+
+    tags_.correctCommsBoundaryConditions();
 }
 
 template<class ViscosityModel>
