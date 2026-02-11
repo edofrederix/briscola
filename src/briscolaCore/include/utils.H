@@ -7,7 +7,11 @@
 #include "diagTensor.H"
 #include "vector.H"
 #include "scalarList.H"
-#include <signal.h>
+#include "sigFpe.H"
+
+#ifdef LINUX_GNUC
+#include <fenv.h>
+#endif
 
 namespace Foam
 {
@@ -1160,12 +1164,27 @@ inline labelVector coarsen(const labelVector N)
         );
 }
 
+#ifdef LINUX_GNUC
+
 inline bool sigFpeEnabled()
 {
-    struct sigaction action;
-    sigaction(SIGFPE, nullptr, &action);
-    return action.sa_handler != SIG_DFL;
+    int enabled = fegetexcept();
+
+    return
+        (enabled & FE_DIVBYZERO)
+     || (enabled & FE_INVALID)
+     || (enabled & FE_OVERFLOW);
+
 }
+
+#else
+
+inline bool sigFpeEnabled()
+{
+    return false;
+}
+
+#endif
 
 }
 
