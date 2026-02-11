@@ -35,6 +35,9 @@ linearFaceGradientScheme<Type,MeshType>::faceGrad
 
     faceField<Type,MeshType>& grad = tGrad.ref();
 
+    if (sigFpeEnabled())
+        grad = Zero;
+
     const faceField<scalar,MeshType>& delta =
         field.fvMsh().template metrics<MeshType>().faceDeltas();
 

@@ -7,6 +7,7 @@
 #include "diagTensor.H"
 #include "vector.H"
 #include "scalarList.H"
+#include <signal.h>
 
 namespace Foam
 {
@@ -1130,6 +1131,13 @@ word name(const List<Type>& l)
     buf << ')';
 
     return buf.str();
+}
+
+inline bool sigFpeEnabled()
+{
+    struct sigaction action;
+    sigaction(SIGFPE, nullptr, &action);
+    return action.sa_handler != SIG_DFL;
 }
 
 }
