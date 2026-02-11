@@ -7,6 +7,7 @@
 #include "diagTensor.H"
 #include "vector.H"
 #include "scalarList.H"
+#include <signal.h>
 
 namespace Foam
 {
@@ -1157,6 +1158,13 @@ inline labelVector coarsen(const labelVector N)
             N.y() <= 3 ? N.y() : N.y()/2,
             N.z() <= 3 ? N.z() : N.z()/2
         );
+}
+
+inline bool sigFpeEnabled()
+{
+    struct sigaction action;
+    sigaction(SIGFPE, nullptr, &action);
+    return action.sa_handler != SIG_DFL;
 }
 
 }

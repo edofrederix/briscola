@@ -44,6 +44,6 @@ functions
 {
     init
     {
-        type    initialCondition;
+        type    bubblePipe2D;
     }
 }

@@ -1,9 +1,7 @@
-#ifndef functionObjects_initialCondition_H
-#define functionObjects_initialCondition_H
+#ifndef functionObjects_bubblePipe2D_H
+#define functionObjects_bubblePipe2D_H
 
 #include "briscolaFunctionObject.H"
-#include "OFstream.H"
-#include "IOdictionary.H"
 #include "meshFields.H"
 
 namespace Foam
@@ -18,7 +16,7 @@ namespace fv
 namespace functionObjects
 {
 
-class initialCondition
+class bubblePipe2D
 :
     public briscolaFunctionObject
 {
@@ -28,10 +26,10 @@ class initialCondition
 public:
 
     // Runtime type information
-    TypeName("initialCondition");
+    TypeName("bubblePipe2D");
 
     // Construct from time and dictionary
-    initialCondition
+    bubblePipe2D
     (
         const word& name,
         const Time& runTime,
@@ -39,10 +37,10 @@ public:
     );
 
     // Disallow default bitwise copy construction
-    initialCondition(const initialCondition&) = delete;
+    bubblePipe2D(const bubblePipe2D&) = delete;
 
     // Destructor
-    virtual ~initialCondition();
+    virtual ~bubblePipe2D();
 
     // Read the dictionary. Called at construction.
     virtual bool read(const dictionary&);
@@ -57,7 +55,7 @@ public:
     virtual bool end() { return true; }
 
     // Disallow default bitwise assignment
-    void operator=(const initialCondition&) = delete;
+    void operator=(const bubblePipe2D&) = delete;
 };
 
 }

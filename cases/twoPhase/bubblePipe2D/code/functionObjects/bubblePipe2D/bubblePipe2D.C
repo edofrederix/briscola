@@ -1,4 +1,4 @@
-#include "initialCondition.H"
+#include "bubblePipe2D.H"
 #include "addToRunTimeSelectionTable.H"
 #include "List.H"
 #include "PstreamReduceOps.H"
@@ -17,16 +17,16 @@ namespace fv
 namespace functionObjects
 {
 
-defineTypeNameAndDebug(initialCondition, 0);
+defineTypeNameAndDebug(bubblePipe2D, 0);
 
 addToRunTimeSelectionTable
 (
     functionObject,
-    initialCondition,
+    bubblePipe2D,
     dictionary
 );
 
-initialCondition::initialCondition
+bubblePipe2D::bubblePipe2D
 (
     const word& name,
     const Time& runTime,
@@ -39,11 +39,13 @@ initialCondition::initialCondition
     read(dict);
 }
 
-initialCondition::~initialCondition()
+bubblePipe2D::~bubblePipe2D()
 {}
 
-bool initialCondition::read(const dictionary& dict)
+bool bubblePipe2D::read(const dictionary& dict)
 {
+    const vector u(0, 0.2, 0);
+
     if (runTime_.time().value() == 0.0)
     {
         if (runTime_.foundObject<staggeredScalarField>("U"))
@@ -56,12 +58,8 @@ bool initialCondition::read(const dictionary& dict)
             const tensor base =
                 U.fvMsh().msh().cast<rectilinearMesh>().base();
 
-            forAllCells(U,l,d,i,j,k)
-            {
-                const vector u(0, 0.2, 0);
-
-                U(l,d,i,j,k) = (base & u)[d];
-            }
+            forAllCells(U,d,i,j,k)
+                U(d,i,j,k) = (base & u)[d];
 
             U.correctBoundaryConditions();
         }
@@ -72,10 +70,8 @@ bool initialCondition::read(const dictionary& dict)
 
             U = Zero;
 
-            forAllCells(U,l,d,i,j,k)
-            {
-                U(l,d,i,j,k) = vector(0, 0.2, 0);
-            }
+            forAllCells(U,i,j,k)
+                U(i,j,k) = u;
 
             U.correctBoundaryConditions();
         }
@@ -86,7 +82,7 @@ bool initialCondition::read(const dictionary& dict)
         alpha = Zero;
 
         const colocatedVertexVectorField& v =
-            alpha.fvMsh().metrics<colocated>().vertexCenters();
+            fvMsh_.metrics<colocated>().vertexCenters();
 
         vectorList bubbleCenters(0);
 
@@ -103,9 +99,15 @@ bool initialCondition::read(const dictionary& dict)
         {
             while (bubbleCenters.size() < nBubbles)
             {
-                scalar x = (2.0 * std::rand() / RAND_MAX - 1.0) * (pipeRadius-bubbleRadius);
+                scalar x =
+                    (2.0*std::rand()/RAND_MAX - 1.0)
+                  * (pipeRadius-bubbleRadius);
+
                 scalar y = 0.0;
-                scalar z = bubbleRadius + std::rand() / (double)RAND_MAX * (pipeLength - 2.0 * bubbleRadius);
+                scalar z =
+                    bubbleRadius
+                  + std::rand()/(double)RAND_MAX
+                  * (pipeLength - 2.0 * bubbleRadius);
 
                 vector newBubble(x,y,z);
 
@@ -114,7 +116,7 @@ bool initialCondition::read(const dictionary& dict)
                 // Check overlap with other bubbles
                 forAll(bubbleCenters, i)
                 {
-                    scalar distance = mag(bubbleCenters[i]-newBubble);
+                    scalar distance = mag(bubbleCenters[i] - newBubble);
 
                     if (distance < 2.0*bubbleRadius + 1e-3)
                     {
@@ -124,21 +126,25 @@ bool initialCondition::read(const dictionary& dict)
                 }
 
                 if (!overlap)
-                {
                     bubbleCenters.append(newBubble);
-                }
             }
         }
 
-        Pstream::template scatter<vectorList>(bubbleCenters);
+        Pstream::scatter(bubbleCenters);
 
         forAllCells(alpha, i, j, k)
             for (int vi = 0; vi < 8; vi++)
                 forAll(bubbleCenters, b)
                     alpha(i,j,k) +=
                         0.125
-                        *
-                        (mag(vector(v(i,j,k)[vi].x(), 0.0, v(i,j,k)[vi].z()) - bubbleCenters[b]) <= bubbleRadius);
+                      * (
+                            mag
+                            (
+                                vector(v(i,j,k)[vi].x(), 0.0, v(i,j,k)[vi].z())
+                              - bubbleCenters[b]
+                            )
+                         <= bubbleRadius
+                        );
 
         alpha.correctBoundaryConditions();
     }
