@@ -162,6 +162,9 @@ void MG<SType,Type,MeshType>::solve
         true
     );
 
+    if (sigFpeEnabled())
+        r = Zero;
+
     // Initial residual
 
     sys.residual(r[0]);
