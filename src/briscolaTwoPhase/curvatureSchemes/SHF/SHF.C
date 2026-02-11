@@ -249,6 +249,9 @@ void SHF::correct()
                 if (ii + a > I[f.right()] && !pBoundary[f.right()])
                     break;
 
+                if (globalStart[p] + ii + a >= gSizes.size())
+                    break;
+
                 for (int b = -1; b <= 1; b++)
                     for (int c = -1; c <= 1; c++)
                         sumNew +=
@@ -282,6 +285,9 @@ void SHF::correct()
                 // Do not go beyond domain boundary ghost cells
 
                 if (ii - a < (I[f.left()] - 1) && !pBoundary[f.left()])
+                    break;
+
+                if (globalStart[p] + ii - a < 0)
                     break;
 
                 for (int b = -1; b <= 1; b++)
