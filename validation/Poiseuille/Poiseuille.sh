@@ -16,9 +16,14 @@ TEMPLATE="template"
 MESHES=(32 64)
 MODES=(mapped penalization Vreman Fadlun Mittal)
 NPROCSPERBRICKSIDE=(1 2 4)
-PSOLVERS=(MG FFT Krylov)
 RKSCHEMES=(RK3 Ascher222 CNAB)
 SOLVERS=(briscolaColocated briscolaStaggered)
+
+if [ -z "$PETSC_HOME" ]; then
+    PSOLVERS=(MG FFT)
+else
+    PSOLVERS=(MG FFT Krylov)
+fi
 
 ##
 
