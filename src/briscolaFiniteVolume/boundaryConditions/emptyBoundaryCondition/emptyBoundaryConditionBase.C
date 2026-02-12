@@ -31,11 +31,11 @@ emptyBoundaryConditionBase<Type,MeshType>::emptyBoundaryConditionBase
 template<class Type, class MeshType>
 emptyBoundaryConditionBase<Type,MeshType>::emptyBoundaryConditionBase
 (
-    const meshLevel<Type,MeshType>& level,
-    const emptyBoundaryConditionBase<Type,MeshType>& bc
+    const emptyBoundaryConditionBase<Type,MeshType>& bc,
+    const meshLevel<Type,MeshType>& level
 )
 :
-    boundaryCondition<Type,MeshType>(level, bc)
+    boundaryCondition<Type,MeshType>(bc, level)
 {}
 
 }

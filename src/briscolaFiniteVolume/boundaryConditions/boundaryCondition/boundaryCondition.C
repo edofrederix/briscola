@@ -60,8 +60,8 @@ boundaryCondition<Type,MeshType>::boundaryCondition
 template<class Type, class MeshType>
 boundaryCondition<Type,MeshType>::boundaryCondition
 (
-    const meshLevel<Type,MeshType>& level,
-    const boundaryCondition<Type,MeshType>& bc
+    const boundaryCondition<Type,MeshType>& bc,
+    const meshLevel<Type,MeshType>& level
 )
 :
     refCount(),

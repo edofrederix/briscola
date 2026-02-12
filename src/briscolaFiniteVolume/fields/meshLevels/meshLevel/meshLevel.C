@@ -78,10 +78,7 @@ meshLevel<Type,MeshType>::meshLevel
 // Copy constructors
 
 template<class Type, class MeshType>
-meshLevel<Type,MeshType>::meshLevel
-(
-    const meshLevel<Type,MeshType>& L
-)
+meshLevel<Type,MeshType>::meshLevel(const meshLevel<Type,MeshType>& L)
 :
     FastPtrList<meshDirection<Type,MeshType>>(L),
     refCount(),
@@ -90,61 +87,11 @@ meshLevel<Type,MeshType>::meshLevel
     fieldPtr_(nullptr)
 {
     setLevelPointers();
+    transferBoundaryConditions(L);
 }
 
 template<class Type, class MeshType>
-meshLevel<Type,MeshType>::meshLevel
-(
-    const meshLevel<Type,MeshType>& L,
-    const zero&
-)
-:
-    FastPtrList<meshDirection<Type,MeshType>>(L, Zero),
-    refCount(),
-    fvMsh_(L.fvMsh_),
-    l_(L.levelNum()),
-    fieldPtr_(nullptr)
-{
-    setLevelPointers();
-}
-
-template<class Type, class MeshType>
-meshLevel<Type,MeshType>::meshLevel
-(
-    const meshLevel<Type,MeshType>& L,
-    const Type& v
-)
-:
-    FastPtrList<meshDirection<Type,MeshType>>(L, v),
-    refCount(),
-    fvMsh_(L.fvMsh_),
-    l_(L.levelNum()),
-    fieldPtr_(nullptr)
-{
-    setLevelPointers();
-}
-
-template<class Type, class MeshType>
-meshLevel<Type,MeshType>::meshLevel
-(
-    const meshLevel<Type,MeshType>& L,
-    const List<Type>& v
-)
-:
-    FastPtrList<meshDirection<Type,MeshType>>(L, v),
-    refCount(),
-    fvMsh_(L.fvMsh_),
-    l_(L.levelNum()),
-    fieldPtr_(nullptr)
-{
-    setLevelPointers();
-}
-
-template<class Type, class MeshType>
-meshLevel<Type,MeshType>::meshLevel
-(
-    const tmp<meshLevel<Type,MeshType>>& tL
-)
+meshLevel<Type,MeshType>::meshLevel(const tmp<meshLevel<Type,MeshType>>& tL)
 :
     FastPtrList<meshDirection<Type,MeshType>>
     (
@@ -157,75 +104,8 @@ meshLevel<Type,MeshType>::meshLevel
     fieldPtr_(nullptr)
 {
     setLevelPointers();
-    if (tL.isTmp())
-        tL.clear();
-}
+    transferBoundaryConditions(tL());
 
-template<class Type, class MeshType>
-meshLevel<Type,MeshType>::meshLevel
-(
-    const tmp<meshLevel<Type,MeshType>>& tL,
-    const zero&
-)
-:
-    FastPtrList<meshDirection<Type,MeshType>>
-    (
-        const_cast<meshLevel<Type,MeshType>&>(tL()),
-        tL.isTmp()
-    ),
-    refCount(),
-    fvMsh_(tL->fvMsh_),
-    l_(tL->levelNum()),
-    fieldPtr_(nullptr)
-{
-    setLevelPointers();
-    *this = Zero;
-    if (tL.isTmp())
-        tL.clear();
-}
-
-template<class Type, class MeshType>
-meshLevel<Type,MeshType>::meshLevel
-(
-    const tmp<meshLevel<Type,MeshType>>& tL,
-    const Type& v
-)
-:
-    FastPtrList<meshDirection<Type,MeshType>>
-    (
-        const_cast<meshLevel<Type,MeshType>&>(tL()),
-        tL.isTmp()
-    ),
-    refCount(),
-    fvMsh_(tL->fvMsh_),
-    l_(tL->levelNum()),
-    fieldPtr_(nullptr)
-{
-    setLevelPointers();
-    *this = v;
-    if (tL.isTmp())
-        tL.clear();
-}
-
-template<class Type, class MeshType>
-meshLevel<Type,MeshType>::meshLevel
-(
-    const tmp<meshLevel<Type,MeshType>>& tL,
-    const List<Type>& v
-)
-:
-    FastPtrList<meshDirection<Type,MeshType>>
-    (
-        const_cast<meshLevel<Type,MeshType>&>(tL()),
-        tL.isTmp()
-    ),
-    refCount(),
-    fvMsh_(tL->fvMsh_),
-    l_(tL->levelNum()),
-    fieldPtr_(nullptr)
-{
-    setLevelPointers();
-    *this = v;
     if (tL.isTmp())
         tL.clear();
 }
@@ -343,6 +223,26 @@ void meshLevel<Type,MeshType>::addBoundaryConditions()
         bExchangePtr_.reset(new boundaryExchange<Type,MeshType>(*this));
 
     #endif
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::transferBoundaryConditions
+(
+    const meshLevel<Type,MeshType>& L
+)
+{
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
+    PtrList<boundaryCondition<Type,MeshType>> list
+    (
+        L.boundaryConditions(),
+        *this
+    );
+
+    boundaryConditions_.clear();
+    boundaryConditions_.transfer(list);
 }
 
 template<class Type, class MeshType>

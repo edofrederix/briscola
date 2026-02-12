@@ -95,54 +95,17 @@ public:
     typedef FastPtrList<meshDirection<Type,MeshType>> listType;
 
     // Main constructor: construct from owner field, mesh and level number
+    meshLevel(meshField<Type,MeshType>& field, const label l);
 
-    meshLevel
-    (
-        meshField<Type,MeshType>& field,
-        const label l
-    );
-
-    // Copy constructors: construct from mesh level, tmp or mesh
-
+    // Copy constructors from level
     meshLevel(const meshLevel<Type,MeshType>& L);
-    meshLevel(const meshLevel<Type,MeshType>& L, const zero&);
-    meshLevel(const meshLevel<Type,MeshType>& L, const Type&);
-    meshLevel(const meshLevel<Type,MeshType>& L, const List<Type>&);
+    meshLevel(const tmp<meshLevel<Type,MeshType>>&);
 
-    meshLevel(const tmp<meshLevel<Type,MeshType>>& tL);
-    meshLevel(const tmp<meshLevel<Type,MeshType>>& tL, const zero&);
-    meshLevel(const tmp<meshLevel<Type,MeshType>>& tL, const Type&);
-    meshLevel(const tmp<meshLevel<Type,MeshType>>& tL, const List<Type>&);
-
-    // Standalone constructors: construct without parent field with optional
-    // ghost layers
-
-    meshLevel
-    (
-        const fvMesh& fvMsh,
-        const label l
-    );
-
-    meshLevel
-    (
-        const fvMesh& fvMsh,
-        const label l,
-        const zero&
-    );
-
-    meshLevel
-    (
-        const fvMesh& fvMsh,
-        const label l,
-        const Type& v
-    );
-
-    meshLevel
-    (
-        const fvMesh& fvMsh,
-        const label l,
-        const List<Type>& v
-    );
+    // Standalone constructors: construct without parent field
+    meshLevel(const fvMesh& fvMsh, const label l);
+    meshLevel(const fvMesh& fvMsh, const label l, const zero&);
+    meshLevel(const fvMesh& fvMsh, const label l, const Type& v);
+    meshLevel(const fvMesh& fvMsh, const label l, const List<Type>& v);
 
     // Temporary level constructors
 
@@ -173,36 +136,11 @@ public:
     }
 
     // Clone
-
     inline autoPtr<meshLevel<Type,MeshType>> clone() const
     {
         return autoPtr<meshLevel<Type,MeshType>>
         (
             new meshLevel<Type,MeshType>(*this)
-        );
-    }
-
-    inline autoPtr<meshLevel<Type,MeshType>> clone(const zero&) const
-    {
-        return autoPtr<meshLevel<Type,MeshType>>
-        (
-            new meshLevel<Type,MeshType>(*this, Zero)
-        );
-    }
-
-    inline autoPtr<meshLevel<Type,MeshType>> clone(const Type& v) const
-    {
-        return autoPtr<meshLevel<Type,MeshType>>
-        (
-            new meshLevel<Type,MeshType>(*this, v)
-        );
-    }
-
-    inline autoPtr<meshLevel<Type,MeshType>> clone(const List<Type>& v) const
-    {
-        return autoPtr<meshLevel<Type,MeshType>>
-        (
-            new meshLevel<Type,MeshType>(*this, v)
         );
     }
 
@@ -334,6 +272,9 @@ public:
             fieldPtr_->addImmersedBoundaryConditions();
         }
     }
+
+    // Transfer boundary conditions from another level
+    void transferBoundaryConditions(const meshLevel<Type,MeshType>&);
 
     // Correct boundary conditions
     void correctBoundaryConditions();

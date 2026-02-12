@@ -42,6 +42,18 @@ public:
         );
     }
 
+    // Construct and return a clone for alternative level
+    virtual tmp<boundaryCondition<Type,colocated>> clone
+    (
+        const meshLevel<Type,colocated>& level
+    ) const
+    {
+        return tmp<boundaryCondition<Type,colocated>>
+        (
+            new slipBoundaryCondition<Type,colocated>(*this, level)
+        );
+    }
+
     // Boundary condition base type
     virtual boundaryConditionBaseType baseType() const
     {
@@ -96,8 +108,19 @@ public:
         );
     }
 
-    // Eliminate ghosts from the linear system at given direction
+    // Construct and return a clone for alternative level
+    virtual tmp<boundaryCondition<Type,staggered>> clone
+    (
+        const meshLevel<Type,staggered>& level
+    ) const
+    {
+        return tmp<boundaryCondition<Type,staggered>>
+        (
+            new slipBoundaryCondition<Type,staggered>(*this, level)
+        );
+    }
 
+    // Eliminate ghosts from the linear system at given direction
     virtual void eliminateGhosts
     (
         linearSystem<stencil,Type,staggered>&,

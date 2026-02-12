@@ -23,6 +23,8 @@ class fvMesh;
 
 template<class Type, class MeshType>
 class immersedBoundaryCondition
+:
+    public refCount
 {
 protected:
 
@@ -82,6 +84,19 @@ public:
         const meshField<label,MeshType>* maskPtr
     );
 
+    // Copy constructor
+    immersedBoundaryCondition
+    (
+        const immersedBoundaryCondition&
+    );
+
+    // Copy constructor with alternative field
+    immersedBoundaryCondition
+    (
+        const immersedBoundaryCondition&,
+        const meshField<Type,MeshType>& field
+    );
+
     // Selector from dictionary
     static autoPtr<immersedBoundaryCondition<Type,MeshType>> New
     (
@@ -91,6 +106,15 @@ public:
 
     // Destructor
     virtual ~immersedBoundaryCondition();
+
+    // Construct and return a clone
+    virtual tmp<immersedBoundaryCondition<Type,MeshType>> clone() const = 0;
+
+    // Construct and return a clone for alternative field
+    virtual tmp<immersedBoundaryCondition<Type,MeshType>> clone
+    (
+        const meshField<Type,MeshType>&
+    ) const = 0;
 
     // Evaluate the immersed boundary condition for given level and direction
     virtual void evaluate(const label);

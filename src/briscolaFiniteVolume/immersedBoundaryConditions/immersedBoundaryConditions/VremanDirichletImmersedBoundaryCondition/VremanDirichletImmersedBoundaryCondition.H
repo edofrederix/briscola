@@ -29,15 +29,53 @@ public:
     // Runtime type information
     TypeName("VremanDirichlet");
 
-    // Construct
+    // Constructor
     VremanDirichletImmersedBoundaryCondition
     (
         const meshField<Type,MeshType>& field,
         const immersedBoundary<MeshType>& ib
     );
 
+    // Copy constructor
+    VremanDirichletImmersedBoundaryCondition
+    (
+        const VremanDirichletImmersedBoundaryCondition&
+    );
+
+    // Copy constructor with alternative field
+    VremanDirichletImmersedBoundaryCondition
+    (
+        const VremanDirichletImmersedBoundaryCondition&,
+        const meshField<Type,MeshType>& field
+    );
+
     // Destructor
     virtual ~VremanDirichletImmersedBoundaryCondition();
+
+    // Construct and return a clone
+    virtual tmp<immersedBoundaryCondition<Type,MeshType>> clone() const
+    {
+        return tmp<immersedBoundaryCondition<Type,MeshType>>
+        (
+            new VremanDirichletImmersedBoundaryCondition<Type,MeshType>(*this)
+        );
+    }
+
+    // Construct and return a clone for alternative field
+    virtual tmp<immersedBoundaryCondition<Type,MeshType>> clone
+    (
+        const meshField<Type,MeshType>& field
+    ) const
+    {
+        return tmp<immersedBoundaryCondition<Type,MeshType>>
+        (
+            new VremanDirichletImmersedBoundaryCondition<Type,MeshType>
+            (
+                *this,
+                field
+            )
+        );
+    }
 
     // Evaluate the immersed boundary condition for given level and direction
     virtual void evaluate(const label, const label);

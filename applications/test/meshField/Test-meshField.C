@@ -32,6 +32,9 @@ void testConstructors(const fvMesh& fvMsh, const bool deep)
         deep
     );
 
+    m2.correctBoundaryConditions();
+    m2.correctImmersedBoundaryConditions();
+
     // Copy from m2 with same name
 
     meshField<Type,MeshType> m3a(m2);

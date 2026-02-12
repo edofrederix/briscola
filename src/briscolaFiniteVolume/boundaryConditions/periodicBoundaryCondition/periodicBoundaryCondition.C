@@ -36,11 +36,11 @@ periodicBoundaryCondition<Type,MeshType>::periodicBoundaryCondition
 template<class Type, class MeshType>
 periodicBoundaryCondition<Type,MeshType>::periodicBoundaryCondition
 (
-    const meshLevel<Type,MeshType>& level,
-    const periodicBoundaryCondition<Type,MeshType>& bc
+    const periodicBoundaryCondition<Type,MeshType>& bc,
+    const meshLevel<Type,MeshType>& level
 )
 :
-    parallelBoundaryCondition<Type,MeshType>(level, bc)
+    parallelBoundaryCondition<Type,MeshType>(bc, level)
 {}
 
 template<class Type, class MeshType>

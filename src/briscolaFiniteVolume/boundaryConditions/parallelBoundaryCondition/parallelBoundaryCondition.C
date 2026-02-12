@@ -67,11 +67,11 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
 template<class Type, class MeshType>
 parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
 (
-    const meshLevel<Type,MeshType>& level,
-    const parallelBoundaryCondition<Type,MeshType>& bc
+    const parallelBoundaryCondition<Type,MeshType>& bc,
+    const meshLevel<Type,MeshType>& level
 )
 :
-    boundaryCondition<Type,MeshType>(level, bc),
+    boundaryCondition<Type,MeshType>(bc, level),
     neighborProcNum_(bc.neighborProcNum_),
     tag_(bc.tag_),
     sendBuffers_(bc.sendBuffers_),

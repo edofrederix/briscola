@@ -49,6 +49,18 @@ public:
             new noSlipBoundaryCondition<Type,MeshType>(*this)
         );
     }
+
+    // Construct and return a clone for alternative level
+    virtual tmp<boundaryCondition<Type,MeshType>> clone
+    (
+        const meshLevel<Type,MeshType>& level
+    ) const
+    {
+        return tmp<boundaryCondition<Type,MeshType>>
+        (
+            new noSlipBoundaryCondition<Type,MeshType>(*this, level)
+        );
+    }
 };
 
 }

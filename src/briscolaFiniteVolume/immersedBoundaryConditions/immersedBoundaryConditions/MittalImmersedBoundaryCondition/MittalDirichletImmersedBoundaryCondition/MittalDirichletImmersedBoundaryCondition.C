@@ -9,7 +9,7 @@ namespace briscola
 namespace fv
 {
 
-// Constructor
+// Constructors
 
 template<class Type, class MeshType>
 MittalDirichletImmersedBoundaryCondition<Type,MeshType>::
@@ -21,6 +21,29 @@ MittalDirichletImmersedBoundaryCondition
 :
     MittalImmersedBoundaryCondition<Type,MeshType>(field, ib),
     boundaryValues_(this->read("value"))
+{}
+
+template<class Type, class MeshType>
+MittalDirichletImmersedBoundaryCondition<Type,MeshType>::
+MittalDirichletImmersedBoundaryCondition
+(
+    const MittalDirichletImmersedBoundaryCondition<Type,MeshType>& ibc
+)
+:
+    MittalImmersedBoundaryCondition<Type,MeshType>(ibc),
+    boundaryValues_(ibc.boundaryValues_)
+{}
+
+template<class Type, class MeshType>
+MittalDirichletImmersedBoundaryCondition<Type,MeshType>::
+MittalDirichletImmersedBoundaryCondition
+(
+    const MittalDirichletImmersedBoundaryCondition<Type,MeshType>& ibc,
+    const meshField<Type,MeshType>& field
+)
+:
+    MittalImmersedBoundaryCondition<Type,MeshType>(ibc, field),
+    boundaryValues_(ibc.boundaryValues_)
 {}
 
 // Destructor

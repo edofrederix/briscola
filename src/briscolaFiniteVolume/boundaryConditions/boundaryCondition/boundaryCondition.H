@@ -84,12 +84,18 @@ public:
     // Copy constructor for an alternative level
     boundaryCondition
     (
-        const meshLevel<Type,MeshType>&,
-        const boundaryCondition<Type,MeshType>&
+        const boundaryCondition<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&
     );
 
     // Construct and return a clone
     virtual tmp<boundaryCondition<Type,MeshType>> clone() const = 0;
+
+    // Construct and return a clone for alternative level
+    virtual tmp<boundaryCondition<Type,MeshType>> clone
+    (
+        const meshLevel<Type,MeshType>&
+    ) const = 0;
 
     // Selector which determines type based on the provided boundary type
     static autoPtr<boundaryCondition<Type,MeshType>> New

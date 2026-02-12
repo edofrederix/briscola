@@ -74,8 +74,8 @@ public:
     // Copy constructor resetting level reference
     DirichletBoundaryConditionBase
     (
-        const meshLevel<Type,MeshType>&,
-        const DirichletBoundaryConditionBase<Type,MeshType>&
+        const DirichletBoundaryConditionBase<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&
     );
 
     // Access to the boundary values

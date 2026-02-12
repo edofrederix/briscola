@@ -279,6 +279,32 @@ void meshField<Type,MeshType>::addImmersedBoundaryConditions()
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::transferBoundaryConditions
+(
+    const meshField<Type,MeshType>& field
+)
+{
+    forAll(*this, i)
+        this->operator[](i).transferBoundaryConditions(field[i]);
+}
+
+template<class Type, class MeshType>
+void meshField<Type,MeshType>::transferImmersedBoundaryConditions
+(
+    const meshField<Type,MeshType>& F
+)
+{
+    PtrList<immersedBoundaryCondition<Type,MeshType>> list
+    (
+        F.immersedBoundaryConditions(),
+        *this
+    );
+
+    immersedBoundaryConditions_.clear();
+    immersedBoundaryConditions_.transfer(list);
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::correctBoundaryConditions()
 {
     addBoundaryConditions();

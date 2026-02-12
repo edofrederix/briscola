@@ -10,7 +10,7 @@ namespace briscola
 namespace fv
 {
 
-// Constructor
+// Constructors
 
 template<class Type, class MeshType>
 penalizationDirichletImmersedBoundaryCondition<Type,MeshType>::
@@ -22,6 +22,29 @@ penalizationDirichletImmersedBoundaryCondition
 :
     immersedBoundaryCondition<Type,MeshType>(field, ib, &ib.mask()),
     boundaryValues_(this->read("value"))
+{}
+
+template<class Type, class MeshType>
+penalizationDirichletImmersedBoundaryCondition<Type,MeshType>::
+penalizationDirichletImmersedBoundaryCondition
+(
+    const penalizationDirichletImmersedBoundaryCondition<Type,MeshType>& ibc
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc),
+    boundaryValues_(ibc.boundaryValues_)
+{}
+
+template<class Type, class MeshType>
+penalizationDirichletImmersedBoundaryCondition<Type,MeshType>::
+penalizationDirichletImmersedBoundaryCondition
+(
+    const penalizationDirichletImmersedBoundaryCondition<Type,MeshType>& ibc,
+    const meshField<Type,MeshType>& field
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc, field),
+    boundaryValues_(ibc.boundaryValues_)
 {}
 
 // Destructor

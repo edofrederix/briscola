@@ -311,6 +311,12 @@ public:
     // Add immersed boundary conditions
     void addImmersedBoundaryConditions();
 
+    // Transfer boundary conditions from another field
+    void transferBoundaryConditions(const meshField<Type,MeshType>&);
+
+    // Transfer immersed boundary conditions from another field
+    void transferImmersedBoundaryConditions(const meshField<Type,MeshType>&);
+
     // Correct boundary conditions
     void correctBoundaryConditions();
 

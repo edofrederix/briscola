@@ -74,8 +74,8 @@ public:
     // Copy constructor resetting level reference
     NeumannBoundaryConditionBase
     (
-        const meshLevel<Type,MeshType>&,
-        const NeumannBoundaryConditionBase<Type,MeshType>&
+        const NeumannBoundaryConditionBase<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&
     );
 
     // Access to the boundary gradients

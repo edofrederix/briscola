@@ -100,11 +100,11 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 template<class Type, class MeshType>
 DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 (
-    const meshLevel<Type,MeshType>& level,
-    const DirichletBoundaryConditionBase<Type,MeshType>& bc
+    const DirichletBoundaryConditionBase<Type,MeshType>& bc,
+    const meshLevel<Type,MeshType>& level
 )
 :
-    boundaryCondition<Type,MeshType>(level, bc),
+    boundaryCondition<Type,MeshType>(bc, level),
     boundaryValues_(bc.boundaryValues_)
 {}
 

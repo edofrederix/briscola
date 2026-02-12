@@ -36,11 +36,11 @@ dummyBoundaryCondition<Type,MeshType>::dummyBoundaryCondition
 template<class Type, class MeshType>
 dummyBoundaryCondition<Type,MeshType>::dummyBoundaryCondition
 (
-    const meshLevel<Type,MeshType>& level,
-    const dummyBoundaryCondition<Type,MeshType>& bc
+    const dummyBoundaryCondition<Type,MeshType>& bc,
+    const meshLevel<Type,MeshType>& level
 )
 :
-    boundaryCondition<Type,MeshType>(level, bc)
+    boundaryCondition<Type,MeshType>(bc, level)
 {}
 
 template<class Type, class MeshType>

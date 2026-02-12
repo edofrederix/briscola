@@ -85,6 +85,39 @@ MittalImmersedBoundaryCondition<Type,MeshType>::MittalImmersedBoundaryCondition
     }
 }
 
+template<class Type, class MeshType>
+MittalImmersedBoundaryCondition<Type,MeshType>::MittalImmersedBoundaryCondition
+(
+    const MittalImmersedBoundaryCondition<Type,MeshType>& ibc
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc),
+    exchanges_(this->field_.msh().size())
+{
+    forAll(exchanges_, i)
+    {
+        PtrList<pointDataExchange<MeshType>> copy(ibc.exchanges_[i]);
+        exchanges_[i].transfer(copy);
+    }
+}
+
+template<class Type, class MeshType>
+MittalImmersedBoundaryCondition<Type,MeshType>::MittalImmersedBoundaryCondition
+(
+    const MittalImmersedBoundaryCondition<Type,MeshType>& ibc,
+    const meshField<Type,MeshType>& field
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc, field),
+    exchanges_(this->field_.msh().size())
+{
+    forAll(exchanges_, i)
+    {
+        PtrList<pointDataExchange<MeshType>> copy(ibc.exchanges_[i]);
+        exchanges_[i].transfer(copy);
+    }
+}
+
 // Destructor
 
 template<class Type, class MeshType>

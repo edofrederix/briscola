@@ -38,8 +38,8 @@ public:
     // Copy constructor resetting level reference
     periodicBoundaryCondition
     (
-        const meshLevel<Type,MeshType>&,
-        const periodicBoundaryCondition<Type,MeshType>&
+        const periodicBoundaryCondition<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&
     );
 
     // Construct and return a clone
@@ -48,6 +48,18 @@ public:
         return tmp<boundaryCondition<Type,MeshType>>
         (
             new periodicBoundaryCondition<Type,MeshType>(*this)
+        );
+    }
+
+    // Construct and return a clone for alternative level
+    virtual tmp<boundaryCondition<Type,MeshType>> clone
+    (
+        const meshLevel<Type,MeshType>& level
+    ) const
+    {
+        return tmp<boundaryCondition<Type,MeshType>>
+        (
+            new periodicBoundaryCondition<Type,MeshType>(*this, level)
         );
     }
 

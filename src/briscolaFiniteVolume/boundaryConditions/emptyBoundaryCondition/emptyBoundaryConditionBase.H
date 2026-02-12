@@ -36,8 +36,8 @@ public:
     // Copy constructor resetting level reference
     emptyBoundaryConditionBase
     (
-        const meshLevel<Type,MeshType>&,
-        const emptyBoundaryConditionBase<Type,MeshType>&
+        const emptyBoundaryConditionBase<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&
     );
 
     // Boundary condition base type

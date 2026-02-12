@@ -64,8 +64,8 @@ public:
     // Copy constructor resetting level reference
     parallelBoundaryCondition
     (
-        const meshLevel<Type,MeshType>&,
-        const parallelBoundaryCondition<Type,MeshType>&
+        const parallelBoundaryCondition<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&
     );
 
     // Construct and return a clone
@@ -74,6 +74,18 @@ public:
         return tmp<boundaryCondition<Type,MeshType>>
         (
             new parallelBoundaryCondition<Type,MeshType>(*this)
+        );
+    }
+
+    // Construct and return a clone for alternative level
+    virtual tmp<boundaryCondition<Type,MeshType>> clone
+    (
+        const meshLevel<Type,MeshType>& level
+    ) const
+    {
+        return tmp<boundaryCondition<Type,MeshType>>
+        (
+            new parallelBoundaryCondition<Type,MeshType>(*this, level)
         );
     }
 

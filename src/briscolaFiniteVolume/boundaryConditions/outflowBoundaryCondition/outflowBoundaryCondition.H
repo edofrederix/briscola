@@ -57,6 +57,18 @@ public:
             new outflowBoundaryCondition<Type,colocated>(*this)
         );
     }
+
+    // Construct and return a clone for alternative level
+    virtual tmp<boundaryCondition<Type,colocated>> clone
+    (
+        const meshLevel<Type,colocated>& level
+    ) const
+    {
+        return tmp<boundaryCondition<Type,colocated>>
+        (
+            new outflowBoundaryCondition<Type,colocated>(*this, level)
+        );
+    }
 };
 
 
@@ -97,6 +109,18 @@ public:
         return tmp<boundaryCondition<Type,staggered>>
         (
             new outflowBoundaryCondition<Type,staggered>(*this)
+        );
+    }
+
+    // Construct and return a clone for alternative level
+    virtual tmp<boundaryCondition<Type,staggered>> clone
+    (
+        const meshLevel<Type,staggered>& level
+    ) const
+    {
+        return tmp<boundaryCondition<Type,staggered>>
+        (
+            new outflowBoundaryCondition<Type,staggered>(*this, level)
         );
     }
 

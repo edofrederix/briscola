@@ -100,11 +100,11 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 template<class Type, class MeshType>
 NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
 (
-    const meshLevel<Type,MeshType>& level,
-    const NeumannBoundaryConditionBase<Type,MeshType>& bc
+    const NeumannBoundaryConditionBase<Type,MeshType>& bc,
+    const meshLevel<Type,MeshType>& level
 )
 :
-    boundaryCondition<Type,MeshType>(level, bc),
+    boundaryCondition<Type,MeshType>(bc, level),
     boundaryGradients_(bc.boundaryGradients_)
 {}
 

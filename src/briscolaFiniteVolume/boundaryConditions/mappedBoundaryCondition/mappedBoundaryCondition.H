@@ -50,6 +50,18 @@ public:
         );
     }
 
+    // Construct and return a clone for alternative level
+    virtual tmp<boundaryCondition<Type,colocated>> clone
+    (
+        const meshLevel<Type,colocated>& level
+    ) const
+    {
+        return tmp<boundaryCondition<Type,colocated>>
+        (
+            new mappedBoundaryCondition<Type,colocated>(*this, level)
+        );
+    }
+
     // Prepare the evaluation of the boundary condition
     virtual void prepare();
 };
@@ -84,6 +96,18 @@ public:
         return tmp<boundaryCondition<Type,staggered>>
         (
             new mappedBoundaryCondition<Type,staggered>(*this)
+        );
+    }
+
+    // Construct and return a clone for alternative level
+    virtual tmp<boundaryCondition<Type,staggered>> clone
+    (
+        const meshLevel<Type,staggered>& level
+    ) const
+    {
+        return tmp<boundaryCondition<Type,staggered>>
+        (
+            new mappedBoundaryCondition<Type,staggered>(*this, level)
         );
     }
 

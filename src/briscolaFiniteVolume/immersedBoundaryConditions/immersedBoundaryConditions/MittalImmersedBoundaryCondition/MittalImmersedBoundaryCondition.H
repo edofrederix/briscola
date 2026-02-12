@@ -25,11 +25,24 @@ protected:
 
 public:
 
-    // Construct
+    // Constructor
     MittalImmersedBoundaryCondition
     (
         const meshField<Type,MeshType>& field,
         const immersedBoundary<MeshType>& ib
+    );
+
+    // Copy constructor
+    MittalImmersedBoundaryCondition
+    (
+        const MittalImmersedBoundaryCondition&
+    );
+
+    // Copy constructor with alternative field
+    MittalImmersedBoundaryCondition
+    (
+        const MittalImmersedBoundaryCondition&,
+        const meshField<Type,MeshType>& field
     );
 
     // Destructor

@@ -37,7 +37,7 @@ const
     return values;
 }
 
-// Constructor
+// Constructors
 
 template<class Type, class MeshType>
 immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
@@ -47,6 +47,7 @@ immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
     const meshField<label,MeshType>* maskPtr
 )
 :
+    refCount(),
     fvMsh_(field.fvMsh()),
     field_(const_cast<meshField<Type,MeshType>&>(field)),
     ib_(ib),
@@ -62,6 +63,37 @@ immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
     (
         dict_.lookupOrDefault<scalar>("omega", 0.8)
     )
+{}
+
+template<class Type, class MeshType>
+immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
+(
+    const immersedBoundaryCondition<Type,MeshType>& ibc
+)
+:
+    refCount(),
+    fvMsh_(ibc.fvMsh_),
+    field_(ibc.field_),
+    ib_(ibc.ib_),
+    forcingMaskPtr_(ibc.forcingMaskPtr_),
+    dict_(ibc.dict_),
+    omega_(ibc.omega_)
+{}
+
+template<class Type, class MeshType>
+immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
+(
+    const immersedBoundaryCondition<Type,MeshType>& ibc,
+    const meshField<Type,MeshType>& field
+)
+:
+    refCount(),
+    fvMsh_(ibc.fvMsh_),
+    field_(const_cast<meshField<Type,MeshType>&>(field)),
+    ib_(ibc.ib_),
+    forcingMaskPtr_(ibc.forcingMaskPtr_),
+    dict_(ibc.dict_),
+    omega_(ibc.omega_)
 {}
 
 template<class Type, class MeshType>

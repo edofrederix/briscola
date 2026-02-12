@@ -9,7 +9,7 @@ namespace briscola
 namespace fv
 {
 
-// Constructor
+// Constructors
 
 template<class Type, class MeshType>
 VremanDirichletImmersedBoundaryCondition<Type,MeshType>::
@@ -92,6 +92,43 @@ VremanDirichletImmersedBoundaryCondition
                 )
             );
         }
+    }
+}
+
+template<class Type, class MeshType>
+VremanDirichletImmersedBoundaryCondition<Type,MeshType>::
+VremanDirichletImmersedBoundaryCondition
+(
+    const VremanDirichletImmersedBoundaryCondition<Type,MeshType>& ibc
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc),
+    exchanges_(ibc.exchanges_.size()),
+    boundaryValues_(ibc.boundaryValues_)
+{
+    forAll(exchanges_, i)
+    {
+        PtrList<cellDataExchange<MeshType>> copy(ibc.exchanges_[i]);
+        exchanges_[i].transfer(copy);
+    }
+}
+
+template<class Type, class MeshType>
+VremanDirichletImmersedBoundaryCondition<Type,MeshType>::
+VremanDirichletImmersedBoundaryCondition
+(
+    const VremanDirichletImmersedBoundaryCondition<Type,MeshType>& ibc,
+    const meshField<Type,MeshType>& field
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc, field),
+    exchanges_(ibc.exchanges_.size()),
+    boundaryValues_(ibc.boundaryValues_)
+{
+    forAll(exchanges_, i)
+    {
+        PtrList<cellDataExchange<MeshType>> copy(ibc.exchanges_[i]);
+        exchanges_[i].transfer(copy);
     }
 }
 

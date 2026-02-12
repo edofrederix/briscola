@@ -10,7 +10,7 @@ namespace briscola
 namespace fv
 {
 
-// Constructor
+// Constructors
 
 template<class Type, class MeshType>
 FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::
@@ -58,6 +58,29 @@ FadlunDirichletImmersedBoundaryCondition
         }
     }
 }
+
+template<class Type, class MeshType>
+FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::
+FadlunDirichletImmersedBoundaryCondition
+(
+    const FadlunDirichletImmersedBoundaryCondition<Type,MeshType>& ibc
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc),
+    boundaryValues_(ibc.boundaryValues_)
+{}
+
+template<class Type, class MeshType>
+FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::
+FadlunDirichletImmersedBoundaryCondition
+(
+    const FadlunDirichletImmersedBoundaryCondition<Type,MeshType>& ibc,
+    const meshField<Type,MeshType>& field
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc, field),
+    boundaryValues_(ibc.boundaryValues_)
+{}
 
 // Destructor
 
