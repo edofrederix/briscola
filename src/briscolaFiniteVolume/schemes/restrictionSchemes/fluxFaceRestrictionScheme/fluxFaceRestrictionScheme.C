@@ -24,6 +24,9 @@ void fluxFaceRestrictionScheme<Type,colocated>::restrict
 {
     const labelVector R(field.fvMsh()[l+1].R());
 
+    for (int fd = 0; fd < 3; fd++)
+        field[fd][l].correctAggData(0);
+
     // Sum fluxes from corresponding fine grid faces
 
     forAllFacesInSpecificDirection(field, fd, l+1, 0, i, j, k)

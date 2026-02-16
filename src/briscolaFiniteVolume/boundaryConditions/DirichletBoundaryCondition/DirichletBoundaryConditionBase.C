@@ -16,7 +16,7 @@ void DirichletBoundaryConditionBase<Type,MeshType>::init
 )
 {
     boundaryValues_.clear();
-    boundaryValues_.resize(this->fvMsh_.size()*MeshType::numberOfDirections);
+    boundaryValues_.resize(MeshType::numberOfDirections);
 
     tensor base(eye);
 
@@ -25,28 +25,26 @@ void DirichletBoundaryConditionBase<Type,MeshType>::init
         base = this->fvMsh_.msh().template cast<rectilinearMesh>().base();
     }
 
-    label item = 0;
-    forAll(this->fvMsh_, l)
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-            boundaryValues_.set
+    for (int d = 0; d < MeshType::numberOfDirections; d++)
+        boundaryValues_.set
+        (
+            d,
+            new block<Type>
             (
-                item++,
-                new block<Type>
-                (
-                    this->N(l,d),
-                    MeshType::project(value, d, base)
-                )
-            );
+                this->N(d),
+                MeshType::project(value, d, base)
+            )
+        );
 }
 
 template<class Type, class MeshType>
 DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b)
+    boundaryCondition<Type,MeshType>(level, b)
 {
     init(this->dict().template lookup<physicalType>("value"));
 }
@@ -54,12 +52,12 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 template<class Type, class MeshType>
 DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b,
     const zero&
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b)
+    boundaryCondition<Type,MeshType>(level, b)
 {
     init(pTraits<physicalType>::zero);
 }
@@ -67,12 +65,12 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 template<class Type, class MeshType>
 DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b,
     const physicalType& value
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b)
+    boundaryCondition<Type,MeshType>(level, b)
 {
     init(value);
 }
@@ -80,12 +78,12 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 template<class Type, class MeshType>
 DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b,
     const FastPtrList<block<Type>>& boundaryValues
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b),
+    boundaryCondition<Type,MeshType>(level, b),
     boundaryValues_(boundaryValues)
 {}
 
@@ -102,11 +100,11 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 template<class Type, class MeshType>
 DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& field,
-    const DirichletBoundaryConditionBase<Type,MeshType>& bc
+    const DirichletBoundaryConditionBase<Type,MeshType>& bc,
+    const meshLevel<Type,MeshType>& level
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc),
+    boundaryCondition<Type,MeshType>(bc, level),
     boundaryValues_(bc.boundaryValues_)
 {}
 
@@ -115,4 +113,3 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
 }
 
 }
-

@@ -1,6 +1,6 @@
 #include "parallelBoundary.H"
 #include "addToRunTimeSelectionTable.H"
-#include "mesh.H"
+#include "level.H"
 
 namespace Foam
 {
@@ -11,9 +11,9 @@ namespace briscola
 defineTypeNameAndDebug(parallelBoundary, 0);
 addToRunTimeSelectionTable(boundary, parallelBoundary, dictionary);
 
-parallelBoundary::parallelBoundary(const mesh& msh, const dictionary& dict)
+parallelBoundary::parallelBoundary(const level& lvl, const dictionary& dict)
 :
-    boundary(msh, dict),
+    boundary(lvl, dict),
     neighborProcNum_(readLabel(dict.lookup("neighborProcNum"))),
     T_(dict.lookupOrDefault<labelTensor>("T", eye)),
     tag_(0)
@@ -56,6 +56,14 @@ parallelBoundary::parallelBoundary(const mesh& msh, const dictionary& dict)
 parallelBoundary::parallelBoundary(const parallelBoundary& b)
 :
     boundary(b),
+    neighborProcNum_(b.neighborProcNum_),
+    T_(b.T_),
+    tag_(b.tag_)
+{}
+
+parallelBoundary::parallelBoundary(const parallelBoundary& b, const level& lvl)
+:
+    boundary(b, lvl),
     neighborProcNum_(b.neighborProcNum_),
     T_(b.T_),
     tag_(b.tag_)

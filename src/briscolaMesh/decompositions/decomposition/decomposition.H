@@ -5,7 +5,6 @@
 #include "FastPtrList.H"
 #include "labelVector.H"
 #include "block.H"
-#include "brickDecompositionInterface.H"
 #include "decompositionMap.H"
 
 #include "faceLabel.H"
@@ -21,55 +20,71 @@ namespace Foam
 namespace briscola
 {
 
-class mesh;
+/**
+
+@brief Decomposition class
+
+This is the base class defining the decomposition of the level. This base class
+handles general collection of data. The actual decomposition must be defined by
+a derived type, by means of the myBrickNum(), myBrickDecomp() and myBrickPart()
+pure virtual functions. On each processor, these functions return the brick
+number to which the processor belongs, the decomposition of that brick and the
+brick part of that brick to which the processor belongs. Based on this
+information, the decomposition class fills some general data arrays. This is
+done in the init() function which is automatically called in the selector. If
+the selector is not used, then the init() function must be called manually.
+
+*/
+
+class level;
 
 class decomposition
 {
 protected:
+
+    // Reference to the level
+    const level& lvl_;
 
     // Reference to the decomposition dictionary
     const dictionary& dict_;
 
 private:
 
-    // List of brick numbers per processor
-    List<label> brickNumPerProc_;
+    // Data for each processor
 
-    // List of part indices per processor
-    List<labelVector> brickPartPerProc_;
+        // Processor brick numbers
+        labelList procBrickNums_;
 
-    // List of part sizes per processor
-    List<labelVector> partSizePerProc_;
+        // Processor brick decompositions
+        List<labelVector> procBrickDecomps_;
 
-    // List of processor topologies per brick
-    FastPtrList<labelBlock> procMapPerBrick_;
+        // Processor brick parts
+        List<labelVector> procBrickParts_;
 
-    // Global processor part start index
-    List<labelVector> partSizePerBrick_;
+    // Data for each brick
 
-    // Global processor topology map, only set on structured brick topologies
-    decompositionMap map_;
+        // Brick decompositions
+        List<labelVector> brickDecomps_;
 
-    // List of part sizes per brick
-    List<labelVector> globalStartPerProc_;
+        // Brick processor topologies
+        FastPtrList<labelBlock> brickProcMaps_;
 
-    // Lists of neighbor processor numbers per processor
-    List<faceLabel> faceNeighborsPerProc_;
-    List<edgeLabel> edgeNeighborsPerProc_;
-    List<vertexLabel> vertexNeighborsPerProc_;
+    // Agglomerate data (if this is an agglomerate member)
 
-    // Lists of neighbor transformation tensors per processor
-    List<faceLabelTensor> faceTsPerProc_;
-    List<edgeLabelTensor> edgeTsPerProc_;
-    List<vertexLabelTensor> vertexTsPerProc_;
+        // Our agglomerate processor map
+        labelBlock aggProcMap_;
 
-    // Disallow default bitwise assignment
-    void operator=(const decomposition&);
+        // Our agglomerate part
+        labelVector myAggPart_;
 
-protected:
+        // Our agglomerate processor number
+        label myAggProcNo_;
 
-    // Update global data
-    void updateGlobalData(const mesh&);
+    // Members of this decomposition
+    labelList members_;
+
+    // Structured processor topology map (only set on structured meshes)
+    autoPtr<decompositionMap> mapPtr_;
 
 public:
 
@@ -82,26 +97,33 @@ public:
         autoPtr,
         decomposition,
         dictionary,
-        (
-            mesh& msh
-        ),
-        (msh)
+        (const level& lvl),
+        (lvl)
     );
 
-    // Construct from mesh
-    decomposition(mesh&);
+    // Construct from level
+    decomposition(const level&);
 
     // Copy constructor
     decomposition(const decomposition&);
+
+    // Copy constructor with alternative level reference
+    decomposition(const decomposition&, const level&);
 
     // Clone decomposition
     virtual autoPtr<decomposition> clone() const = 0;
 
     // Selector
-    static autoPtr<decomposition> New(mesh&);
+    static autoPtr<decomposition> New(const level&);
 
     // Destructor
     virtual ~decomposition();
+
+    // Level
+    inline const level& lvl() const
+    {
+        return lvl_;
+    }
 
     // Decomposition dictionary
     inline const dictionary& dict() const
@@ -109,127 +131,114 @@ public:
         return dict_;
     }
 
-    // Number of parts per brick, to be determined by derived class
-    virtual const List<labelVector>& decompPerBrick() const = 0;
-
-    // This processor's brick number, to be determined by derived class
-    virtual label myBrickNum() const = 0;
-
-    // This processor's part index of its brick, to be determined by derived
-    // class
-    virtual labelVector myBrickPart() const = 0;
-
-    // This processor's part's shape
-    labelVector myPartN() const
+    // Processor brick numbers
+    inline const labelList& procBrickNums() const
     {
-        return partSizePerBrick_[myBrickNum()];
+        return procBrickNums_;
     }
 
-    // This processor's part start index within its brick
-    inline labelVector myBrickPartStart() const
+    // Processor brick decompositions
+    inline const List<labelVector>& procBrickDecomps() const
     {
-        return cmptMultiply(myBrickPart(), partSizePerBrick_[myBrickNum()]);
+        return procBrickDecomps_;
     }
 
-    // This processor's brick's number of parts
-    inline labelVector myBrickDecomp() const
+    // Processor brick parts
+    inline const List<labelVector>& procBrickParts() const
     {
-        return decompPerBrick()[myBrickNum()];
+        return procBrickParts_;
     }
 
-    // Brick numbers per processor
-    inline const List<label>& brickNumPerProc() const
+    // Brick decompositions
+    inline const List<labelVector>& brickDecomps() const
     {
-        return brickNumPerProc_;
+        return brickDecomps_;
     }
 
-    // Brick part per processor
-    inline const List<labelVector>& brickPartPerProc() const
+    // Brick processor topologies
+    inline const FastPtrList<labelBlock>& brickProcMaps() const
     {
-        return brickPartPerProc_;
+        return brickProcMaps_;
     }
 
-    // Part sizes per processor
-    inline const List<labelVector>& partSizePerProc() const
+    // Our agglomerate map
+    const labelBlock& aggProcMap() const
     {
-        return partSizePerProc_;
+        return aggProcMap_;
     }
 
-    // Global processor topology per brick
-    inline const FastPtrList<labelBlock>& procMapPerBrick() const
+    // Our agglomerate part
+    labelVector myAggPart() const
     {
-        return procMapPerBrick_;
+        return myAggPart_;
     }
 
-    // Global processor part start index
-    inline const List<labelVector>& globalStartPerProc() const
+    // Our agglomerate processor number (local value)
+    label myAggProcNo() const
     {
-        return globalStartPerProc_;
+        return myAggProcNo_;
     }
 
     // Global processor topology, only set on structured brick topologies
     inline const decompositionMap& map() const
     {
-        return map_;
+        return mapPtr_();
     }
 
-    // Global list of part sizes per brick
-    inline const List<labelVector>& partSizePerBrick() const
+    // Initialize
+    void init();
+
+    // Check if decomposition is coarsenable, which is true if we have a
+    // non-unity decomposition and if the agglomerate mesh can be coarsened
+    bool coarsenable() const;
+
+    // Pure virtual functions to be defined by derived types
+
+        // This processor's brick number
+        virtual label myBrickNum() const = 0;
+
+        // This processor's brick decomposition
+        virtual labelVector myBrickDecomp() const = 0;
+
+        // This processor's part index of its brick
+        virtual labelVector myBrickPart() const = 0;
+
+    // Function to check whether this processor is member of the decomposition
+    inline bool member() const
     {
-        return partSizePerBrick_;
+        return myBrickPart() != -unitXYZ;
     }
 
-    // Given a part index and brick number, return the processor number
-    inline label getProcNum(const labelVector p, const label b) const
+    // Return list of member processors
+    inline const labelList& members() const { return members_; }
+
+    // Agglomeration ratio
+    inline labelVector R() const
     {
-        forAll(brickPartPerProc_, proci)
-        {
-            if
-            (
-                brickPartPerProc_[proci] == p
-             && brickNumPerProc_[proci] == b
-            )
-            {
-                return proci;
-            }
-        }
-
-        return -1;
+        return cmptMax(aggProcMap_.shape(), unitXYZ);
     }
 
-    // Lists of neighbor processor numbers per processor
+    // A decomposition is agglomerated if there is a non-unity agglomeration
+    // ratio and if we are a member of the parent decomposition
+    bool agglomerated() const;
 
-    inline const List<faceLabel>& faceNeighborsPerProc() const
+    // A level is an agglomerate master if it is agglomerated and a member of
+    // this level's decomposition
+    inline bool aggMaster() const
     {
-        return faceNeighborsPerProc_;
+        return agglomerated() && member();
     }
 
-    inline const List<edgeLabel>& edgeNeighborsPerProc() const
+    // A level is an agglomerate slave if it is agglomerated and not a member of
+    // this level's decomposition
+    inline bool aggSlave() const
     {
-        return edgeNeighborsPerProc_;
+        return agglomerated() && !member();
     }
 
-    inline const List<vertexLabel>& vertexNeighborsPerProc() const
-    {
-        return vertexNeighborsPerProc_;
-    }
-
-    // Lists of neighbor transformation tensors per processor
-
-    inline const List<faceLabelTensor>& faceTsPerProc() const
-    {
-        return faceTsPerProc_;
-    }
-
-    inline const List<edgeLabelTensor>& edgeTsPerProc() const
-    {
-        return edgeTsPerProc_;
-    }
-
-    inline const List<vertexLabelTensor>& vertexTsPerProc() const
-    {
-        return vertexTsPerProc_;
-    }
+    // A level is an agglomerate parent if its child decomposition is either an
+    // agglomerate master of slave
+    bool aggParent() const;
 };
 
 }

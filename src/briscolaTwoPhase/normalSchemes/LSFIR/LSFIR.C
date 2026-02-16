@@ -304,7 +304,7 @@ void LSFIR::correct()
                      && cmptMax(ijk + o - I.upper()) <  0;
 
                     const bool pBoundary =
-                        fvMsh_.msh().pBoundaryMask()(o + unitXYZ);
+                        fvMsh_.msh().boundaries().parallelMask()(o + unitXYZ);
 
                     const bool interface =
                         alpha_(ijk + o) > vof::threshold

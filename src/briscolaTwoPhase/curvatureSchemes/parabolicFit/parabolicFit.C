@@ -22,7 +22,8 @@ void parabolicFit::createBoundaryTypes()
     faceLabel pBoundary;
     for (int i = 0; i < 6; i++)
         pBoundary[i] =
-            fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
+            fvMsh_.msh().boundaries().find(faceOffsets[i])
+           .castable<parallelBoundary>();
 
     boundaryType_.setSize(3,3,3);
     boundaryType_ = Zero;

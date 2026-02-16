@@ -1,7 +1,7 @@
 #ifndef boundaryExchange_H
 #define boundaryExchange_H
 
-#include "meshField.H"
+#include "meshLevel.H"
 #include "parallelBoundaryCondition.H"
 #include "DynamicList.H"
 
@@ -20,8 +20,8 @@ namespace fv
 template<class Type, class MeshType>
 class boundaryExchange
 {
-    // Reference to the field
-    meshField<Type,MeshType>& field_;
+    // Reference to the level
+    meshLevel<Type,MeshType>& level_;
 
     // Reference to the mesh
     const fvMesh& fvMsh_;
@@ -37,23 +37,20 @@ class boundaryExchange
     // MPI data type object
     autoPtr<pMPI<Type>> mpiDataTypePtr_;
 
-    // Initialize buffers such that they are large enough the handle an
-    // all-level boundary exchange for deep fields
+    // Initialize buffers
     void initBuffers();
 
-    // Correct the boundaries at given level and of given type. If the level is
-    // negative then all field levels (which is one for shallow fields) are
-    // corrected. If baseType is -1 then all types (periodic and parallel) are
-    // corrected.
-    void correct(const label l, const label baseType);
+    // Correct the boundaries of given type. If baseType is -1 then all types
+    // (periodic and parallel) are corrected.
+    void correct(const label baseType);
 
 public:
 
     // Runtime type information
     TypeName("boundaryExchange");
 
-    // Construct from field
-    boundaryExchange(meshField<Type,MeshType>&);
+    // Construct from level
+    boundaryExchange(meshLevel<Type,MeshType>&);
 
     // Copy constructor
     boundaryExchange(boundaryExchange&);
@@ -61,28 +58,28 @@ public:
     // Destructor
     virtual ~boundaryExchange();
 
-    // Access to the field
-    inline meshField<Type,MeshType>& field() { return field_; }
+    // Access to the level
+    inline meshLevel<Type,MeshType>& level() { return level_; }
 
-    // Const access to the field
-    inline const meshField<Type,MeshType>& field() const { return field_; }
+    // Const access to the level
+    inline const meshLevel<Type,MeshType>& level() const { return level_; }
 
-    // Correct both parallel and periodic boundaries of the given level
-    inline void correct(const label l = 0)
+    // Correct both parallel and periodic boundaries
+    inline void correct()
     {
-        this->correct(l,-1);
+        this->correct(-1);
     }
 
-    // Correct only parallel boundaries of the given level
-    inline void correctParallel(const label l = 0)
+    // Correct only parallel boundaries
+    inline void correctParallel()
     {
-        this->correct(l,PARALLELBC);
+        this->correct(PARALLELBC);
     }
 
-    // Correct only periodic boundaries of the given level
-    inline void correctPeriodic(const label l = 0)
+    // Correct only periodic boundaries
+    inline void correctPeriodic()
     {
-        this->correct(l,PERIODICBC);
+        this->correct(PERIODICBC);
     }
 };
 

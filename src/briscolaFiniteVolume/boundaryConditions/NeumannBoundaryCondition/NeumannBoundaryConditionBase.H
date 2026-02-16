@@ -26,7 +26,7 @@ public:
 
 protected:
 
-    // Flattened list of boundary gradients for each level and direction
+    // List of boundary gradients for each direction
     FastPtrList<block<Type>> boundaryGradients_;
 
     // Function to initialize uniform boundary gradients
@@ -37,14 +37,14 @@ public:
     // Construct from components
     NeumannBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&
     );
 
     // Construct from components and zero boundary gradient
     NeumannBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&,
         const zero&
     );
@@ -52,7 +52,7 @@ public:
     // Construct from components and uniform boundary gradient
     NeumannBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&,
         const physicalType&
     );
@@ -60,7 +60,7 @@ public:
     // Construct from components and boundary gradients
     NeumannBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&,
         const FastPtrList<block<Type>>&
     );
@@ -71,11 +71,11 @@ public:
         const NeumannBoundaryConditionBase<Type,MeshType>&
     );
 
-    // Copy constructor resetting field reference
+    // Copy constructor resetting level reference
     NeumannBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
-        const NeumannBoundaryConditionBase<Type,MeshType>&
+        const NeumannBoundaryConditionBase<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&
     );
 
     // Access to the boundary gradients

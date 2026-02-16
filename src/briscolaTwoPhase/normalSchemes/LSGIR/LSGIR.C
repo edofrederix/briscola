@@ -76,7 +76,11 @@ void LSGIR::correct()
                     cmptMin(ijk + o - I.lower()) > -1
                  && cmptMax(ijk + o - I.upper()) <  0;
 
-                if (internal || fvMsh_.msh().pBoundaryMask()(o+unitXYZ))
+                if
+                (
+                    internal
+                 || fvMsh_.msh().boundaries().parallelMask()(o + unitXYZ)
+                )
                 {
                     const scalar weight =
                         1.0/Foam::pow(mag(cc(ijk) - cc(ijk+o)), beta_);

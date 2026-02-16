@@ -7,6 +7,11 @@
 #include "diagTensor.H"
 #include "vector.H"
 #include "scalarList.H"
+#include "sigFpe.H"
+
+#ifdef LINUX_GNUC
+#include <fenv.h>
+#endif
 
 namespace Foam
 {
@@ -733,6 +738,12 @@ inline bool even(const label i, const label j, const label k)
     return !odd(i,j,k);
 }
 
+// Check if the given number is a power of two
+inline bool powerOfTwo(const label num)
+{
+    return num > 0 && (num & (num-1)) == 0;
+}
+
 // Return the shift tensor given a rotation tensor
 inline labelTensor shift(const labelTensor& R)
 {
@@ -1131,6 +1142,49 @@ word name(const List<Type>& l)
 
     return buf.str();
 }
+
+// Given a mesh size vector compute the coarsened mesh size using 2^3
+// coarsening. Don't coarsen below 4 cells.
+inline labelVector coarsen(const labelVector N)
+{
+    #ifdef FULLDEBUG
+    for (int d = 0; d < 3; d++)
+        if (N[d] > 3 && N[d]%2)
+            FatalErrorInFunction
+                << "Non-coarsenable vector " << N << endl
+                << abort(FatalError);
+    #endif
+
+    return
+        labelVector
+        (
+            N.x() <= 3 ? N.x() : N.x()/2,
+            N.y() <= 3 ? N.y() : N.y()/2,
+            N.z() <= 3 ? N.z() : N.z()/2
+        );
+}
+
+#ifdef LINUX_GNUC
+
+inline bool sigFpeEnabled()
+{
+    int enabled = fegetexcept();
+
+    return
+        (enabled & FE_DIVBYZERO)
+     || (enabled & FE_INVALID)
+     || (enabled & FE_OVERFLOW);
+
+}
+
+#else
+
+inline bool sigFpeEnabled()
+{
+    return false;
+}
+
+#endif
 
 }
 

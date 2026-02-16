@@ -27,11 +27,17 @@ void testCellCenters(const fvMesh& fvMsh)
     );
 
     forAll(c, l)
+    if (!fvMsh.msh()[l].empty())
     forAll(c[l], d)
     for (label i = c.I(l,d).left()  -1; i < c.I(l,d).right()+1; i++)
     for (label j = c.I(l,d).bottom()-1; j < c.I(l,d).top()  +1; j++)
     for (label k = c.I(l,d).aft()   -1; k < c.I(l,d).fore() +1; k++)
     {
+        const vector Lp
+        (
+            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+        );
+
         const vector cc
         (
             cmptMultiply
@@ -59,13 +65,13 @@ void testCellVolumes(const fvMesh& fvMsh)
     const meshField<scalar,MeshType>& v =
         fvMsh.metrics<MeshType>().cellVolumes();
 
-    const vector Lp
-    (
-        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
-    );
-
     forAllCells(v, l, d, i, j, k)
     {
+        const vector Lp
+        (
+            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+        );
+
         const scalar V
         (
             Lp.x()/fvMsh[l].N().x()
@@ -87,13 +93,13 @@ void testFaceCenters(const fvMesh& fvMsh)
     const faceField<vector,MeshType>& fc =
         fvMsh.metrics<MeshType>().faceCenters();
 
-    const vector Lp
-    (
-        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
-    );
-
     forAllFaces(fc, fd, l, d, i, j, k)
     {
+        const vector Lp
+        (
+            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+        );
+
         const vector cc
         (
             cmptMultiply
@@ -124,14 +130,14 @@ void testEdgeCenters(const fvMesh& fvMsh)
         fvMsh.metrics<MeshType>().aos().edgeCenters()
     );
 
-    const vector Lp
-    (
-        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
-    );
-
     forAllCells(ec, l, d, i, j, k)
     for (label o = 0; o < 12; o++)
     {
+        const vector Lp
+        (
+            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+        );
+
         const vector cc
         (
             cmptMultiply
@@ -160,14 +166,14 @@ void testVertexCenters(const fvMesh& fvMsh)
     const meshField<vertexVector,MeshType>& c =
         fvMsh.metrics<MeshType>().vertexCenters();
 
-    const vector Lp
-    (
-        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
-    );
-
     forAllCells(c, l, d, i, j, k)
     for (label o = 0; o < 8; o++)
     {
+        const vector Lp
+        (
+            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+        );
+
         const vector cc
         (
             cmptMultiply
@@ -196,13 +202,13 @@ void testFaceAreas(const fvMesh& fvMsh)
     const faceField<scalar,MeshType>& fa =
         fvMsh.metrics<MeshType>().faceAreas();
 
-    const vector Lp
-    (
-        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
-    );
-
     forAllFaces(fa, fd, l, d, i, j, k)
     {
+        const vector Lp
+        (
+            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+        );
+
         const vector A
         (
             Lp.y()/fvMsh[l].N().y() * Lp.z()/fvMsh[l].N().z(),
@@ -254,13 +260,13 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
     const faceField<vector,MeshType>& fan =
         fvMsh.metrics<MeshType>().faceAreaNormals();
 
-    const vector Lp
-    (
-        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
-    );
-
     forAllFaces(fan, fd, l, d, i, j, k)
     {
+        const vector Lp
+        (
+            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+        );
+
         const vector A
         (
             Lp.y()/fvMsh[l].N().y() * Lp.z()/fvMsh[l].N().z(),
@@ -305,13 +311,14 @@ void testFaceDeltas(const fvMesh& fvMsh)
     const faceField<scalar,MeshType>& delta =
         fvMsh.metrics<MeshType>().faceDeltas();
 
-    const vector Lp
-    (
-        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
-    );
-
     forAllFaces(delta, fd, l, d, i, j, k)
     {
+
+        const vector Lp
+        (
+            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+        );
+
         const vector D
         (
             1.0/(Lp.x()/fvMsh[l].N().x()),

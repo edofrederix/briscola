@@ -112,8 +112,8 @@ bool averagedLineSample::end()
     const mesh& msh = this->fvMsh_.msh();
 
     // Cell sizes
-    const FastPtrList<PartialList<scalar>>& cellSizes
-        = msh.cast<rectilinearMesh>().globalCellSizes();
+    const FastPtrList<PartialList<scalar>>& cellSizes =
+        msh.cast<rectilinearMesh>().globalCellSizes();
 
     vectorList points = this->points();
 

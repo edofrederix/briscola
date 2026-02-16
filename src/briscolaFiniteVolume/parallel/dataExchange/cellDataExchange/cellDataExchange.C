@@ -57,13 +57,13 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
     const labelVector U = I.upper();
     const labelVector L = I.lower();
 
-    const mesh& msh = this->fvMsh_.msh();
+    const level& lvl = this->fvMsh_[this->l_];
 
     // Set neighboring processor numbers, offsets and transformations. The first
     // one is us.
 
     neighbors_.clear();
-    neighbors_.setSize(msh.boundaries().size()+1,-1);
+    neighbors_.setSize(lvl.boundaries().size()+1,-1);
     neighbors_[0] = Pstream::myProcNo();
 
     neighborOffsets_.clear();
@@ -71,12 +71,12 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
     List<labelTensor> neighborTs(neighbors_.size(), eye);
 
-    forAll(msh.boundaries(), i)
+    forAll(lvl.boundaries(), i)
     {
-        if (msh.boundaries()[i].castable<parallelBoundary>())
+        if (lvl.boundaries()[i].castable<parallelBoundary>())
         {
             const parallelBoundary& b =
-                msh.boundaries()[i].cast<parallelBoundary>();
+                lvl.boundaries()[i].cast<parallelBoundary>();
 
             neighbors_[i+1] = b.neighborProcNum();
             neighborOffsets_[i+1] = b.offset();
@@ -87,7 +87,7 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
     // Collect the required cells and store per neighbor processor
 
     cellsToRecv_.clear();
-    cellsToRecv_.setSize(msh.boundaries().size()+1);
+    cellsToRecv_.setSize(lvl.boundaries().size()+1);
 
     map_.clear();
     map_.setSize(indices.size());
@@ -140,8 +140,8 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
 
             if
             (
-                msh.boundaries()[bNum-1].castable<patchBoundary>()
-             || msh.boundaries()[bNum-1].castable<emptyBoundary>()
+                lvl.boundaries()[bNum-1].castable<patchBoundary>()
+             || lvl.boundaries()[bNum-1].castable<emptyBoundary>()
             )
                 FatalErrorInFunction
                     << "Cannot exchange cell data across a domain boundary "
@@ -194,16 +194,16 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
         }
     }
 
-    Pstream::gatherList(globalData);
-    Pstream::scatterList(globalData);
+    Pstream::gatherList(globalData, Pstream::msgType(), lvl.comms());
+    Pstream::scatterList(globalData, Pstream::msgType(), lvl.comms());
 
     // Collect
 
     cellsToSend_.clear();
-    cellsToSend_.setSize(msh.boundaries().size()+1);
+    cellsToSend_.setSize(lvl.boundaries().size()+1);
 
     sendTags_.clear();
-    sendTags_.setSize(msh.boundaries().size()+1, -1);
+    sendTags_.setSize(lvl.boundaries().size()+1, -1);
 
     forAll(globalData, proc)
     forAll(globalData[proc], i)
@@ -250,7 +250,7 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
                     reinterpret_cast<char*>(cellsToSend_[i].begin()),
                     cellsToSend_[i].size()*sizeof(labelVector),
                     sendTags_[i],
-                    UPstream::worldComm
+                    lvl.comms()
                 );
 
         forAll(cellsToRecv_, i)
@@ -262,7 +262,7 @@ void cellDataExchange<MeshType>::init(const List<labelVector>& indices)
                     reinterpret_cast<char*>(cellsToRecv_[i].begin()),
                     cellsToRecv_[i].size()*sizeof(labelVector),
                     i,
-                    UPstream::worldComm
+                    lvl.comms()
                 );
 
         Pstream::waitRequests();
@@ -365,7 +365,7 @@ List<Type> cellDataExchange<MeshType>::dataFunc
                     reinterpret_cast<char*>(recvData[i].begin()),
                     recvData[i].byteSize(),
                     i,
-                    UPstream::worldComm
+                    field[this->l_].lvl().comms()
                 );
 
         // Send
@@ -379,7 +379,7 @@ List<Type> cellDataExchange<MeshType>::dataFunc
                     reinterpret_cast<char*>(sendData[i].begin()),
                     sendData[i].byteSize(),
                     sendTags_[i],
-                    UPstream::worldComm
+                    field[this->l_].lvl().comms()
                 );
 
         Pstream::waitRequests();

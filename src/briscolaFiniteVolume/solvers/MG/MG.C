@@ -162,6 +162,9 @@ void MG<SType,Type,MeshType>::solve
         true
     );
 
+    if (sigFpeEnabled())
+        r = Zero;
+
     // Initial residual
 
     sys.residual(r[0]);
@@ -271,11 +274,25 @@ MG<SType,Type,MeshType>::MG
     nSweepsPost_(dict.lookupOrDefault<label>("nSweepsPost", 2)),
     cycleType_
     (
-        MGCycleTypeNames[dict.lookupOrDefault<word>("cycleType", "F")]
+        MGCycleTypeNames
+        [
+            dict.lookupOrDefault<word>
+            (
+                "cycleType",
+                word(MGCycleTypeNames[MGCycleType::FCYCLE])
+            )
+        ]
     ),
     coarseMode_
     (
-        MGCoarseModeNames[dict.lookupOrDefault<word>("coarseMode", "smooth")]
+        MGCoarseModeNames
+        [
+            dict.lookupOrDefault<word>
+            (
+                "coarseMode",
+                word(MGCoarseModeNames[MGCoarseMode::DIRECT])
+            )
+        ]
     ),
     coarseLevel_(dict.lookupOrDefault<label>("coarseLevel", 0)),
     proScheme_
@@ -374,8 +391,7 @@ MG<SType,Type,MeshType>::MG
 
         dictionary& subDict = this->dict_.subDict("coarseSolver");
 
-        subDict.lookupOrAddDefault("type", word("PETSc"));
-        subDict.lookupOrAddDefault("relTol", scalar(1e-3));
+        subDict.lookupOrAddDefault("type", word("APLU"));
 
         const label coarseLevel = fvMsh.msh().size() - coarseLevel_ - 1;
 
@@ -398,13 +414,13 @@ void MG<SType,Type,MeshType>::solve
     const bool constMatrix
 )
 {
-    if (SType::nCsComponents > 1)
-        sys.eliminateGhosts();
-
-    sys.setForcingMask();
-
     if (sys.diagonal())
     {
+        if (SType::nCsComponents > 1)
+            sys.eliminateGhosts();
+
+        sys.setForcingMask();
+
         diagonalSmoother<SType,Type,MeshType>::Smooth
         (
             sys,
@@ -436,6 +452,11 @@ void MG<SType,Type,MeshType>::solve
 
         if (shallowSource)
             sys.b().makeDeep();
+
+        if (SType::nCsComponents > 1)
+            sys.eliminateGhosts();
+
+        sys.setForcingMask();
 
         if
         (

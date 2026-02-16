@@ -132,7 +132,7 @@ void FFTPoissonSolver<SType>::solve
 
     const labelVector N(fvMsh_.msh().cast<rectilinearMesh>().N());
 
-    const PtrList<boundaryCondition<scalar,colocated>>& bcs =
+    const FastPtrList<boundaryCondition<scalar,colocated>>& bcs =
         x.boundaryConditions();
 
     // Correct RHS for inhomogeneous BC's

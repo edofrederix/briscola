@@ -54,18 +54,18 @@ public:
     // Construct from components
     parallelBoundaryCondition
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&
     );
 
     // Copy constructor
     parallelBoundaryCondition(const parallelBoundaryCondition<Type,MeshType>&);
 
-    // Copy constructor resetting field reference
+    // Copy constructor resetting level reference
     parallelBoundaryCondition
     (
-        const meshField<Type,MeshType>&,
-        const parallelBoundaryCondition<Type,MeshType>&
+        const parallelBoundaryCondition<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&
     );
 
     // Construct and return a clone
@@ -77,15 +77,15 @@ public:
         );
     }
 
-    // Construct and return a clone setting field reference
+    // Construct and return a clone for alternative level
     virtual tmp<boundaryCondition<Type,MeshType>> clone
     (
-        const meshField<Type,MeshType>& field
+        const meshLevel<Type,MeshType>& level
     ) const
     {
         return tmp<boundaryCondition<Type,MeshType>>
         (
-            new parallelBoundaryCondition<Type,MeshType>(field,*this)
+            new parallelBoundaryCondition<Type,MeshType>(*this, level)
         );
     }
 
@@ -110,11 +110,11 @@ public:
     // Non-eliminated boundary condition
     virtual bool eliminated() const { return false; }
 
-    // Prepare the evaluation of the boundary condition for given level
-    virtual void prepare(const label);
+    // Prepare the evaluation of the boundary condition
+    virtual void prepare();
 
-    // Evaluate the boundary condition for given level
-    virtual void evaluate(const label);
+    // Evaluate the boundary condition
+    virtual void evaluate();
 };
 
 }

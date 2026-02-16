@@ -15,15 +15,7 @@ namespace fv
 template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::allocate()
 {
-    // Allocate a block of its level shape with mesh type padding and ghost cell
-    // layers on both sides
-
-    blockType::reAllocate
-    (
-        fvMsh_[l_].N()
-      + MeshType::padding[d_]
-      + 2*ghosts*unitXYZ
-    );
+    blockType::reAllocate(dataShape(true));
 }
 
 template<class Type, class MeshType>
@@ -32,14 +24,14 @@ void meshDirection<Type,MeshType>::transfer
     meshDirection<Type,MeshType>& D
 )
 {
-    mshLevelPtr_ = D.mshLevelPtr_;
+    levelPtr_ = D.levelPtr_;
 
     l_ = D.l_;
     d_ = D.d_;
 
     blockType::transfer(D);
 
-    D.mshLevelPtr_ = nullptr;
+    D.levelPtr_ = nullptr;
 }
 
 // Main constructor
@@ -47,16 +39,16 @@ void meshDirection<Type,MeshType>::transfer
 template<class Type, class MeshType>
 meshDirection<Type,MeshType>::meshDirection
 (
-    meshLevel<Type,MeshType>& mshLevel,
+    meshLevel<Type,MeshType>& level,
     const label d
 )
 :
     block<Type>(),
-    fvMsh_(mshLevel.fvMsh()),
-    l_(mshLevel.levelNum()),
+    fvMsh_(level.fvMsh()),
+    l_(level.levelNum()),
     d_(d),
     I_(fvMsh_.I<MeshType>(l_,d)),
-    mshLevelPtr_(&mshLevel)
+    levelPtr_(&level)
 {
     allocate();
 }
@@ -74,7 +66,7 @@ meshDirection<Type,MeshType>::meshDirection
     l_(D.l_),
     d_(D.d_),
     I_(D.I_),
-    mshLevelPtr_(nullptr)
+    levelPtr_(nullptr)
 {}
 
 template<class Type, class MeshType>
@@ -89,7 +81,7 @@ meshDirection<Type,MeshType>::meshDirection
     l_(D.l_),
     d_(D.d_),
     I_(D.I_),
-    mshLevelPtr_(nullptr)
+    levelPtr_(nullptr)
 {}
 
 template<class Type, class MeshType>
@@ -104,7 +96,7 @@ meshDirection<Type,MeshType>::meshDirection
     l_(D.l_),
     d_(D.d_),
     I_(D.I_),
-    mshLevelPtr_(nullptr)
+    levelPtr_(nullptr)
 {}
 
 template<class Type, class MeshType>
@@ -119,7 +111,7 @@ meshDirection<Type,MeshType>::meshDirection
     l_(D.l_),
     d_(D.d_),
     I_(D.I_),
-    mshLevelPtr_(nullptr)
+    levelPtr_(nullptr)
 {}
 
 template<class Type, class MeshType>
@@ -137,7 +129,7 @@ meshDirection<Type,MeshType>::meshDirection
     l_(tD->l_),
     d_(tD->d_),
     I_(tD->I_),
-    mshLevelPtr_(nullptr)
+    levelPtr_(nullptr)
 {
     if (tD.isTmp())
         tD.clear();
@@ -160,7 +152,7 @@ meshDirection<Type,MeshType>::meshDirection
     l_(tD->l_),
     d_(tD->d_),
     I_(tD->I_),
-    mshLevelPtr_(nullptr)
+    levelPtr_(nullptr)
 {
     if (tD.isTmp())
         tD.clear();
@@ -183,7 +175,7 @@ meshDirection<Type,MeshType>::meshDirection
     l_(tD->l_),
     d_(tD->d_),
     I_(tD->I_),
-    mshLevelPtr_(nullptr)
+    levelPtr_(nullptr)
 {
     if (tD.isTmp())
         tD.clear();
@@ -206,7 +198,7 @@ meshDirection<Type,MeshType>::meshDirection
     l_(tD->l_),
     d_(tD->d_),
     I_(tD->I_),
-    mshLevelPtr_(nullptr)
+    levelPtr_(nullptr)
 {
     if (tD.isTmp())
         tD.clear();
@@ -227,7 +219,7 @@ meshDirection<Type,MeshType>::meshDirection
     l_(l),
     d_(d),
     I_(fvMsh.I<MeshType>(l,d)),
-    mshLevelPtr_(nullptr)
+    levelPtr_(nullptr)
 {
     allocate();
 }
@@ -246,7 +238,7 @@ meshDirection<Type,MeshType>::meshDirection
     l_(l),
     d_(d),
     I_(fvMsh.I<MeshType>(l,d)),
-    mshLevelPtr_(nullptr)
+    levelPtr_(nullptr)
 {
     allocate();
     *this = Zero;
@@ -266,7 +258,7 @@ meshDirection<Type,MeshType>::meshDirection
     l_(l),
     d_(d),
     I_(fvMsh.I<MeshType>(l,d)),
-    mshLevelPtr_(nullptr)
+    levelPtr_(nullptr)
 {
     allocate();
     *this = v;
@@ -286,7 +278,7 @@ meshDirection<Type,MeshType>::meshDirection
     l_(l),
     d_(d),
     I_(fvMsh.I<MeshType>(l,d)),
-    mshLevelPtr_(nullptr)
+    levelPtr_(nullptr)
 {
     allocate();
     *this = v[d];
@@ -302,6 +294,10 @@ void meshDirection<Type,MeshType>::operator=
     const meshDirection<Type,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() = D.B();
 }
 
@@ -371,6 +367,10 @@ void meshDirection<Type,MeshType>::operator=
     const tmp<meshDirection<Type,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     if (tD.isTmp())
     {
         meshDirection<Type,MeshType>& D =
@@ -405,6 +405,10 @@ void meshDirection<Type,MeshType>::operator+=
     const meshDirection<Type,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() += D.B();
 }
 
@@ -414,6 +418,10 @@ void meshDirection<Type,MeshType>::operator+=
     const tmp<meshDirection<Type,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this += tD();
     if (tD.isTmp())
         tD.clear();
@@ -425,6 +433,10 @@ void meshDirection<Type,MeshType>::operator-=
     const meshDirection<Type,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() -= D.B();
 }
 
@@ -434,6 +446,10 @@ void meshDirection<Type,MeshType>::operator-=
     const tmp<meshDirection<Type,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this -= tD();
     if (tD.isTmp())
         tD.clear();
@@ -445,6 +461,10 @@ void meshDirection<Type,MeshType>::operator*=
     const meshDirection<scalar,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() *= D.B();
 }
 
@@ -454,6 +474,10 @@ void meshDirection<Type,MeshType>::operator*=
     const tmp<meshDirection<scalar,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this *= tD();
     if (tD.isTmp())
         tD.clear();
@@ -465,6 +489,10 @@ void meshDirection<Type,MeshType>::operator/=
     const meshDirection<scalar,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() /= D.B();
 }
 
@@ -474,6 +502,10 @@ void meshDirection<Type,MeshType>::operator/=
     const tmp<meshDirection<scalar,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this /= tD();
     if (tD.isTmp())
         tD.clear();
@@ -510,6 +542,10 @@ void meshDirection<Type,MeshType>::operator=
     const meshDirection<Type2,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() = D.B();
 }
 
@@ -520,6 +556,10 @@ void meshDirection<Type,MeshType>::operator=
     const tmp<meshDirection<Type2,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this = tD();
     if (tD.isTmp())
         tD.clear();
@@ -532,6 +572,10 @@ void meshDirection<Type,MeshType>::operator+=
     const meshDirection<Type2,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() += D.B();
 }
 
@@ -542,6 +586,10 @@ void meshDirection<Type,MeshType>::operator+=
     const tmp<meshDirection<Type2,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this += tD();
     if (tD.isTmp())
         tD.clear();
@@ -554,6 +602,10 @@ void meshDirection<Type,MeshType>::operator-=
     const meshDirection<Type2,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() -= D.B();
 }
 
@@ -564,6 +616,10 @@ void meshDirection<Type,MeshType>::operator-=
     const tmp<meshDirection<Type2,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this -= tD();
     if (tD.isTmp())
         tD.clear();
@@ -576,6 +632,10 @@ void meshDirection<Type,MeshType>::operator*=
     const meshDirection<Type2,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() *= D.B();
 }
 
@@ -586,6 +646,10 @@ void meshDirection<Type,MeshType>::operator*=
     const tmp<meshDirection<Type2,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this *= tD();
     if (tD.isTmp())
         tD.clear();
@@ -598,6 +662,10 @@ void meshDirection<Type,MeshType>::operator/=
     const meshDirection<Type2,MeshType>& D
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
     this->B() /= D.B();
 }
 
@@ -608,6 +676,10 @@ void meshDirection<Type,MeshType>::operator/=
     const tmp<meshDirection<Type2,MeshType>>& tD
 )
 {
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
     *this /= tD();
     if (tD.isTmp())
         tD.clear();

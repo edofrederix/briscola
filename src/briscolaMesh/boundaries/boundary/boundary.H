@@ -13,11 +13,14 @@ namespace Foam
 namespace briscola
 {
 
-class mesh;
+class level;
 
 class boundary
 {
 protected:
+
+    // Reference to the level
+    const level& lvl_;
 
     // Copy of the dictionary
     dictionary dict_;
@@ -49,25 +52,31 @@ public:
         boundary,
         dictionary,
         (
-            const mesh& msh,
+            const level& lvl,
             const dictionary& dict
         ),
-        (msh, dict)
+        (lvl, dict)
     );
 
     // Construct from components
-    boundary(const mesh& msh, const dictionary& dict);
+    boundary(const level& lvl, const dictionary& dict);
 
     // Copy constructor
     boundary(const boundary&);
 
-    // Clone part boundary
+    // Copy constructor with alternative level reference
+    boundary(const boundary&, const level&);
+
+    // Clone boundary
     virtual autoPtr<boundary> clone() const = 0;
+
+    // Clone boundary with alternative level reference
+    virtual autoPtr<boundary> clone(const level&) const = 0;
 
     // Selector
     static autoPtr<boundary> New
     (
-        const mesh& msh,
+        const level& lvl,
         const dictionary& dict
     );
 
@@ -105,6 +114,9 @@ public:
     {
         return const_cast<boundary*>(this)->cast<BoundaryType>();
     }
+
+    // Access to the level
+    inline const level& lvl() const { return lvl_; }
 
     // Access to the dictionary
     inline dictionary& dict() { return dict_; }

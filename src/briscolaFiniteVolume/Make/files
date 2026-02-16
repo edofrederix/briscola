@@ -80,7 +80,7 @@ linearSystems/staggeredVectorDiagSystem.C
 linearSystems/staggeredVectorSystem.C
 
 parallel/linearSystemAggregation/linearSystemAggregation.C
-parallel/linearSystemAggregation/PstreamGlobalsLsa.C
+parallel/linearSystemAggregation/PstreamSplit.C
 
 parallel/pointInterpolators/pointInterpolator/pointInterpolator.C
 parallel/pointInterpolators/linearPointInterpolator/linearPointInterpolator.C
@@ -121,13 +121,11 @@ solvers/Krylov/KrylovSolvers.C
 solvers/MG/MGSolvers.C
 solvers/MG/MGEnums.C
 
+solvers/externalSolvers/APLU/APLUs.C
 solvers/externalSolvers/Eigen/Eigens.C
 solvers/externalSolvers/PETSc/PETScs.C
 
-solvers/externalSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolverBase.C
 solvers/externalSolvers/Eigen/EigenSolvers/EigenSolver/EigenSolvers.C
-
-solvers/externalSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolverBase.C
 solvers/externalSolvers/PETSc/PETScSolvers/PETScSolver/PETScSolvers.C
 
 solvers/PoissonSolvers/PoissonSolver/PoissonSolvers.C

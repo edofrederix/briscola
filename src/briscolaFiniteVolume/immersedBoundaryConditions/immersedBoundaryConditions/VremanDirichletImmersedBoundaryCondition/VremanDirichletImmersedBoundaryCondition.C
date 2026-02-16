@@ -9,18 +9,18 @@ namespace briscola
 namespace fv
 {
 
-// Constructor
+// Constructors
 
 template<class Type, class MeshType>
 VremanDirichletImmersedBoundaryCondition<Type,MeshType>::
 VremanDirichletImmersedBoundaryCondition
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshField<Type,MeshType>& field,
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField, ib, &ib.ghostMask()),
-    exchanges_(mshField.fvMsh().msh().size()),
+    immersedBoundaryCondition<Type,MeshType>(field, ib, &ib.ghostMask()),
+    exchanges_(field.msh().size()),
     boundaryValues_(this->read("value"))
 {
     // Check shape overlap
@@ -95,6 +95,43 @@ VremanDirichletImmersedBoundaryCondition
     }
 }
 
+template<class Type, class MeshType>
+VremanDirichletImmersedBoundaryCondition<Type,MeshType>::
+VremanDirichletImmersedBoundaryCondition
+(
+    const VremanDirichletImmersedBoundaryCondition<Type,MeshType>& ibc
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc),
+    exchanges_(ibc.exchanges_.size()),
+    boundaryValues_(ibc.boundaryValues_)
+{
+    forAll(exchanges_, i)
+    {
+        PtrList<cellDataExchange<MeshType>> copy(ibc.exchanges_[i]);
+        exchanges_[i].transfer(copy);
+    }
+}
+
+template<class Type, class MeshType>
+VremanDirichletImmersedBoundaryCondition<Type,MeshType>::
+VremanDirichletImmersedBoundaryCondition
+(
+    const VremanDirichletImmersedBoundaryCondition<Type,MeshType>& ibc,
+    const meshField<Type,MeshType>& field
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc, field),
+    exchanges_(ibc.exchanges_.size()),
+    boundaryValues_(ibc.boundaryValues_)
+{
+    forAll(exchanges_, i)
+    {
+        PtrList<cellDataExchange<MeshType>> copy(ibc.exchanges_[i]);
+        exchanges_[i].transfer(copy);
+    }
+}
+
 // Destructor
 
 template<class Type, class MeshType>
@@ -111,12 +148,12 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
 {
     const scalar omega = this->omega_;
 
-    meshDirection<Type,MeshType>& x = this->mshField_[l][d];
+    meshDirection<Type,MeshType>& x = this->field_[l][d];
     const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
     const meshDirection<faceScalar,MeshType>& y =
         this->ib_.wallDistGhost()[l][d];
 
-    List<Type> data(move(exchanges_[l][d](this->mshField_)));
+    List<Type> data(move(exchanges_[l][d](this->field_)));
 
     label c = 0;
 

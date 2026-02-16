@@ -12,11 +12,11 @@ namespace fv
 template<class Type, class MeshType>
 emptyBoundaryConditionBase<Type,MeshType>::emptyBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b)
+    boundaryCondition<Type,MeshType>(level, b)
 {}
 
 template<class Type, class MeshType>
@@ -31,11 +31,11 @@ emptyBoundaryConditionBase<Type,MeshType>::emptyBoundaryConditionBase
 template<class Type, class MeshType>
 emptyBoundaryConditionBase<Type,MeshType>::emptyBoundaryConditionBase
 (
-    const meshField<Type,MeshType>& field,
-    const emptyBoundaryConditionBase<Type,MeshType>& bc
+    const emptyBoundaryConditionBase<Type,MeshType>& bc,
+    const meshLevel<Type,MeshType>& level
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc)
+    boundaryCondition<Type,MeshType>(bc, level)
 {}
 
 }

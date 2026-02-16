@@ -13,8 +13,8 @@ class uniformMesh
 :
     public rectilinearMesh
 {
-    // Uniform cell size
-    vector cellSize_;
+    // Uniform cell sizes
+    vectorList cellSizes_;
 
     // Set uniform metrics
     void setMetrics();
@@ -43,9 +43,9 @@ public:
     ~uniformMesh();
 
     // Return the cell size vector
-    inline vector cellSize() const
+    inline vector cellSize(const label l = 0) const
     {
-        return cellSize_;
+        return cellSizes_[l];
     }
 
     // Find cells efficiently using algebraic relation

@@ -567,11 +567,7 @@ List<Type> sumCmptMag(const tmp<meshLevel<Type,MeshType>>& tf)
 #define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                       \
                                                                                \
 template<class Type, class MeshType>                                           \
-List<ReturnType> gFunc                                                         \
-(                                                                              \
-    const meshLevel<Type,MeshType>& f,                                         \
-    const label comm                                                           \
-)                                                                              \
+List<ReturnType> gFunc(const meshLevel<Type,MeshType>& f)                      \
 {                                                                              \
     List<ReturnType> res(Func(f));                                             \
                                                                                \
@@ -579,16 +575,13 @@ List<ReturnType> gFunc                                                         \
     /* defined for lists */                                                    \
                                                                                \
     forAll(res, i)                                                             \
-        reduce(res[i], rFunc##Op<ReturnType>(), Pstream::msgType(), comm);     \
+        reduce(res[i], rFunc##Op<ReturnType>(), Pstream::msgType());           \
+                                                                               \
     return res;                                                                \
 }                                                                              \
                                                                                \
 template<class Type, class MeshType>                                           \
-List<ReturnType> gFunc                                                         \
-(                                                                              \
-    const tmp<meshLevel<Type,MeshType>>& tf,                                   \
-    const label comm                                                           \
-)                                                                              \
+List<ReturnType> gFunc(const tmp<meshLevel<Type,MeshType>>& tf)                \
 {                                                                              \
     List<ReturnType> ret(gFunc(tf()));                                         \
     if (tf.isTmp()) tf.clear();                                                \
@@ -606,11 +599,7 @@ G_UNARY_FUNCTION(Type, gSumCmptMag, sumCmptMag, sum)
 #undef G_UNARY_FUNCTION
 
 template<class Type, class MeshType>
-List<Type> gAverage
-(
-    const meshLevel<Type,MeshType>& f,
-    const label comm
-)
+List<Type> gAverage(const meshLevel<Type,MeshType>& f)
 {
     List<Type> Sum(sum(f));
 
@@ -624,7 +613,7 @@ List<Type> gAverage
     {
         label n(cmptProduct(f[d].N()));
 
-        sumReduce(Sum[d], n, Pstream::msgType(), comm);
+        sumReduce(Sum[d], n, Pstream::msgType(), f.lvl().comms());
 
         if (n > 0)
         {
@@ -636,11 +625,7 @@ List<Type> gAverage
 }
 
 template<class Type, class MeshType>
-List<Type> gAverage
-(
-    const tmp<meshLevel<Type,MeshType>>& tf,
-    const label comm
-)
+List<Type> gAverage(const tmp<meshLevel<Type,MeshType>>& tf)
 {
     List<Type> ret(gAverage(tf()));
     if (tf.isTmp())

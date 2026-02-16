@@ -257,6 +257,9 @@ tmp<faceField<Type,colocated>> coloFaceInterp
 
     faceField<Type,colocated>& interp = tInterp.ref();
 
+    if (sigFpeEnabled())
+        interp = Zero;
+
     forAllFaces(interp, fd, i, j, k)
         interp[fd](i,j,k) = field(fd,i,j,k);
 

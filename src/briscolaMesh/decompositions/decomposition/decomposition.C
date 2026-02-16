@@ -1,5 +1,7 @@
 #include "decomposition.H"
+#include "level.H"
 #include "mesh.H"
+#include "PstreamGlobals.H"
 
 namespace Foam
 {
@@ -10,348 +12,58 @@ namespace briscola
 defineTypeNameAndDebug(decomposition, 0);
 defineRunTimeSelectionTable(decomposition, dictionary);
 
-void decomposition::updateGlobalData(const mesh& msh)
+decomposition::decomposition(const level& lvl)
+:
+    lvl_(lvl),
+    dict_(lvl.msh().dict().subDict("decomposition"))
+{}
+
+decomposition::decomposition(const decomposition& d)
+:
+    lvl_(d.lvl_),
+    dict_(d.dict_),
+    procBrickNums_(d.procBrickNums_),
+    procBrickDecomps_(d.procBrickDecomps_),
+    procBrickParts_(d.procBrickParts_),
+    brickDecomps_(d.brickDecomps_),
+    brickProcMaps_(d.brickProcMaps_),
+    aggProcMap_(d.aggProcMap_),
+    myAggPart_(d.myAggPart_),
+    myAggProcNo_(d.myAggProcNo_),
+    members_(d.members_),
+    mapPtr_()
 {
-    brickNumPerProc_.setSize(Pstream::nProcs());
-    brickPartPerProc_.setSize(Pstream::nProcs());
-
-    brickNumPerProc_[Pstream::myProcNo()] = myBrickNum();
-    brickPartPerProc_[Pstream::myProcNo()] = myBrickPart();
-
-    Pstream::gatherList(brickNumPerProc_);
-    Pstream::gatherList(brickPartPerProc_);
-
-    Pstream::scatterList(brickNumPerProc_);
-    Pstream::scatterList(brickPartPerProc_);
-
-    procMapPerBrick_.setSize(msh.bricks().size());
-    partSizePerBrick_.setSize(msh.bricks().size());
-
-    forAll(msh.bricks(), bricki)
-    {
-        procMapPerBrick_.set
-        (
-            bricki,
-            new labelBlock(decompPerBrick()[bricki], -1)
-        );
-
-        partSizePerBrick_[bricki] =
-            cmptDivide(msh.bricks()[bricki].N(), decompPerBrick()[bricki]);
-    }
-
-    forAll(brickPartPerProc_, proci)
-    {
-        const label brickNum = brickNumPerProc_[proci];
-        const labelVector brickPart = brickPartPerProc_[proci];
-
-        procMapPerBrick_[brickNum](brickPart) = proci;
-    }
-
-    forAll(procMapPerBrick_, bricki)
-    forAllBlock(procMapPerBrick_[bricki], i, j, k)
-    {
-        if (procMapPerBrick_[bricki](i,j,k) == -1)
-        {
-            FatalErrorInFunction
-                << "Part index (" << i << "," << j << "," << k << ") is not "
-                << "assigned to a processor" << endl
-                << abort(FatalError);
-        }
-    }
-
-    // Set the part size per processor list
-
-    partSizePerProc_.setSize(Pstream::nProcs());
-    partSizePerProc_[Pstream::myProcNo()] = myPartN();
-
-    Pstream::gatherList(partSizePerProc_);
-    Pstream::scatterList(partSizePerProc_);
-
-    // Set the global processor map if the brick topology is structured
-
-    if (msh.topology().structured())
-    {
-        const labelBlock& brickMap = msh.topology().map();
-
-        // Get the number of processors per brick in each direction. For
-        // structured brick topologies, the bricks are aligned with the local
-        // coordinate system of the first brick. Also the brick map is aligned
-        // with this coordinate system.
-
-        labelList Nx(brickMap.l(), 0);
-        labelList Ny(brickMap.m(), 0);
-        labelList Nz(brickMap.n(), 0);
-
-        forAllBlock(brickMap, i, j, k)
-        {
-            if (Nx[i] == 0 && brickMap(i,j,k) > -1)
-            {
-                Nx[i] = procMapPerBrick_[brickMap(i,j,k)].l();
-            }
-
-            if (Ny[j] == 0 && brickMap(i,j,k) > -1)
-            {
-                Ny[j] = procMapPerBrick_[brickMap(i,j,k)].m();
-            }
-
-            if (Nz[k] == 0 && brickMap(i,j,k) > -1)
-            {
-                Nz[k] = procMapPerBrick_[brickMap(i,j,k)].n();
-            }
-        }
-
-        // Compute processor map, in a local coordinate system aligned with the
-        // bricks and brick map.
-
-        labelBlock map(sum(Nx), sum(Ny), sum(Nz), -1);
-
-        labelVector cursor(zeroXYZ);
-
-        for (int i = 0; i < brickMap.l(); i++)
-        {
-            cursor.y() = 0;
-
-            for (int j = 0; j < brickMap.m(); j++)
-            {
-                cursor.z() = 0;
-
-                for (int k = 0; k < brickMap.n(); k++)
-                {
-                    for (int ii = 0; ii < Nx[i]; ii++)
-                    for (int jj = 0; jj < Ny[j]; jj++)
-                    for (int kk = 0; kk < Nz[k]; kk++)
-                    {
-                        labelVector ijk(ii,jj,kk);
-
-                        map(cursor+ijk) =
-                            procMapPerBrick_[brickMap(i,j,k)](ijk);
-                    }
-
-                    cursor.z() += Nz[k];
-                }
-
-                cursor.y() += Ny[j];
-            }
-
-            cursor.x() += Nx[i];
-        }
-
-        // Store
-
-        map_.setData(map);
-
-        // Set global processor part starts
-
-        globalStartPerProc_.setSize(Pstream::nProcs());
-
-        labelVector myBrickStart(0,0,0);
-
-        label nBricks = msh.bricks().size();
-
-        List<labelVector> brickSizes(nBricks);
-
-        for (int b = 0; b < nBricks; b++)
-        {
-            brickSizes[b] = msh.bricks()[b].N();
-        }
-
-        labelVector myBrickIndex = msh.topology().map().legend()[myBrickNum()];
-
-        for (int x = 0; x < myBrickIndex.x(); x++)
-        {
-            myBrickStart.x() += brickSizes[brickMap(x,0,0)].x();
-        }
-
-        for (int y = 0; y < myBrickIndex.y(); y++)
-        {
-            myBrickStart.y() += brickSizes[brickMap(0,y,0)].y();
-        }
-
-        for (int z = 0; z < myBrickIndex.z(); z++)
-        {
-            myBrickStart.z() += brickSizes[brickMap(0,0,z)].z();
-        }
-
-        globalStartPerProc_[Pstream::myProcNo()] =
-            myBrickStart + myBrickPartStart();
-
-        Pstream::gatherList(globalStartPerProc_);
-        Pstream::scatterList(globalStartPerProc_);
-    }
-
-    // Set the neighbor processor numbers and transformation tensors, if any
-
-    faceNeighborsPerProc_.setSize(Pstream::nProcs(), -faceLabel::one);
-    edgeNeighborsPerProc_.setSize(Pstream::nProcs(), -edgeLabel::one);
-    vertexNeighborsPerProc_.setSize(Pstream::nProcs(), -vertexLabel::one);
-
-    faceTsPerProc_.setSize(Pstream::nProcs(), faceLabelTensor::zero);
-    edgeTsPerProc_.setSize(Pstream::nProcs(), edgeLabelTensor::zero);
-    vertexTsPerProc_.setSize(Pstream::nProcs(), vertexLabelTensor::zero);
-
-    const brickTopology& topo = msh.topology();
-
-    for (int proc = 0; proc < Pstream::nProcs(); proc++)
-    {
-        const label bricki = brickNumPerProc_[proc];
-        const labelVector ijk = brickPartPerProc_[proc];
-        const labelBlock& procMap = procMapPerBrick_[bricki];
-
-        for (int oi = -1; oi <= 1; oi++)
-        for (int oj = -1; oj <= 1; oj++)
-        for (int ok = -1; ok <= 1; ok++)
-        if (oi != 0 || oj != 0 || ok != 0)
-        {
-            const labelVector offset(oi,oj,ok);
-            const label offsetDegree = cmptSum(cmptMag(offset));
-
-            const label offsetNum =
-                offsetDegree == 1 ? faceNumber(offset)
-              : offsetDegree == 2 ? edgeNumber(offset)
-              :                     vertexNumber(offset);
-
-            labelVector neighbor = ijk + offset;
-
-            labelVector brickOffset;
-
-            for (int i = 0; i < 3; i++)
-                brickOffset[i] =
-                    neighbor[i] >= procMap.shape()[i] ? 1
-                  : neighbor[i] < 0 ? -1
-                  : 0;
-
-            const label brickOffsetDegree = cmptSum(cmptMag(brickOffset));
-
-            const label brickOffsetNum =
-                brickOffsetDegree == 0 ? -1
-              : brickOffsetDegree == 1 ? faceNumber(brickOffset)
-              : brickOffsetDegree == 2 ? edgeNumber(brickOffset)
-              :                          vertexNumber(brickOffset);
-
-            if (brickOffsetDegree == 0)
-            {
-                // Neighbor is in the same brick
-
-                if (offsetDegree == 1)
-                {
-                    faceNeighborsPerProc_[proc][offsetNum] =
-                        procMap(neighbor);
-
-                    faceTsPerProc_[proc][offsetNum] = eye;
-                }
-                else if (offsetDegree == 2)
-                {
-                    edgeNeighborsPerProc_[proc][offsetNum] =
-                        procMap(neighbor);
-
-                    edgeTsPerProc_[proc][offsetNum] = eye;
-                }
-                else
-                {
-                    vertexNeighborsPerProc_[proc][offsetNum] =
-                        procMap(neighbor);
-
-                    vertexTsPerProc_[proc][offsetNum] = eye;
-                }
-            }
-            else if
-            (
-                (
-                    brickOffsetDegree == 1
-                 && topo.links()[bricki].faceLinks().set(brickOffsetNum)
-                )
-             || (
-                    brickOffsetDegree == 2
-                 && topo.links()[bricki].edgeLinks().set(brickOffsetNum)
-                )
-             || (
-                    brickOffsetDegree == 3
-                 && topo.links()[bricki].vertexLinks().set(brickOffsetNum)
-                )
-            )
-            {
-                // Neighbor is across a brick boundary
-
-                const brickLink link
-                (
-                    brickOffsetDegree == 1
-                  ? topo.links()[bricki].faceLinks()[brickOffsetNum].link()
-                  : brickOffsetDegree == 2
-                  ? topo.links()[bricki].edgeLinks()[brickOffsetNum].link()
-                  : topo.links()[bricki].vertexLinks()[brickOffsetNum].link()
-                );
-
-                const labelTensor T = link.T();
-                const label brickj = link.b1().num();
-
-                labelBlock neighProcMap(procMapPerBrick_[brickj]);
-                neighProcMap.transform(T);
-
-                for (int i = 0; i < 3; i++)
-                    if (brickOffset[i] != 0)
-                        neighbor[i] =
-                            neighbor[i] < 0 ? neighProcMap.shape()[i]-1 : 0;
-
-                if (offsetDegree == 1)
-                {
-                    faceNeighborsPerProc_[proc][offsetNum] =
-                        neighProcMap(neighbor);
-
-                    faceTsPerProc_[proc][offsetNum] = T;
-                }
-                else if (offsetDegree == 2)
-                {
-                    edgeNeighborsPerProc_[proc][offsetNum] =
-                        neighProcMap(neighbor);
-
-                    edgeTsPerProc_[proc][offsetNum] = T;
-                }
-                else
-                {
-                    vertexNeighborsPerProc_[proc][offsetNum] =
-                        neighProcMap(neighbor);
-
-                    vertexTsPerProc_[proc][offsetNum] = T;
-                }
-            }
-        }
-    }
+    if (d.mapPtr_.valid())
+        mapPtr_.reset(new decompositionMap(d.map()));
 }
 
-decomposition::decomposition(mesh& msh)
+decomposition::decomposition(const decomposition& d, const level& lvl)
 :
-    dict_(msh.dict().subDict("decomposition")),
-    brickNumPerProc_(),
-    brickPartPerProc_(),
-    partSizePerProc_(),
-    procMapPerBrick_(),
-    map_(),
-    globalStartPerProc_()
-{}
-
-decomposition::decomposition
-(
-    const decomposition& d
-)
-:
+    lvl_(lvl),
     dict_(d.dict_),
-    brickNumPerProc_(d.brickNumPerProc_),
-    brickPartPerProc_(d.brickPartPerProc_),
-    partSizePerProc_(d.partSizePerProc_),
-    procMapPerBrick_(d.procMapPerBrick_),
-    partSizePerBrick_(d.partSizePerBrick_),
-    map_(d.map_),
-    globalStartPerProc_(d.globalStartPerProc_)
-{}
+    procBrickNums_(d.procBrickNums_),
+    procBrickDecomps_(d.procBrickDecomps_),
+    procBrickParts_(d.procBrickParts_),
+    brickDecomps_(d.brickDecomps_),
+    brickProcMaps_(d.brickProcMaps_),
+    aggProcMap_(d.aggProcMap_),
+    myAggPart_(d.myAggPart_),
+    myAggProcNo_(d.myAggProcNo_),
+    members_(d.members_),
+    mapPtr_()
+{
+    if (d.mapPtr_.valid())
+        mapPtr_.reset(new decompositionMap(d.map()));
+}
 
 decomposition::~decomposition()
 {}
 
-autoPtr<decomposition> decomposition::New(mesh& msh)
+autoPtr<decomposition> decomposition::New(const level& lvl)
 {
     const word decompType
     (
-        msh.dict().subDict("decomposition").lookup("type")
+        lvl.msh().dict().subDict("decomposition").lookup("type")
     );
 
     dictionaryConstructorTable::iterator cstrIter =
@@ -366,7 +78,155 @@ autoPtr<decomposition> decomposition::New(mesh& msh)
             << exit(FatalError);
     }
 
-    return autoPtr<decomposition>(cstrIter()(msh));
+    autoPtr<decomposition> ptr(cstrIter()(lvl));
+
+    ptr->init();
+
+    return ptr;
+}
+
+void decomposition::init()
+{
+    // Collect processor values
+
+    procBrickNums_.setSize(Pstream::nProcs());
+    procBrickDecomps_.setSize(Pstream::nProcs());
+    procBrickParts_.setSize(Pstream::nProcs());
+
+    procBrickNums_[Pstream::myProcNo()] = myBrickNum();
+    procBrickDecomps_[Pstream::myProcNo()] = myBrickDecomp();
+    procBrickParts_[Pstream::myProcNo()] = myBrickPart();
+
+    Pstream::gatherList(procBrickNums_);
+    Pstream::gatherList(procBrickDecomps_);
+    Pstream::gatherList(procBrickParts_);
+
+    Pstream::scatterList(procBrickNums_);
+    Pstream::scatterList(procBrickDecomps_);
+    Pstream::scatterList(procBrickParts_);
+
+    // Store brick decompositions
+
+    brickDecomps_.setSize(lvl_.msh().bricks().size());
+
+    forAll(procBrickNums_, proc)
+        brickDecomps_[procBrickNums_[proc]] =
+            procBrickDecomps_[proc];
+
+    // Make brick processor map
+
+    brickProcMaps_.setSize(lvl_.msh().bricks().size());
+
+    forAll(brickDecomps_, b)
+        brickProcMaps_.set(b, new labelBlock(brickDecomps_[b], -1));
+
+    forAll(procBrickNums_, proc)
+        if (procBrickParts_[proc] != -unitXYZ)
+            brickProcMaps_[procBrickNums_[proc]](procBrickParts_[proc]) = proc;
+
+    forAll(brickProcMaps_, b)
+        forAllBlock(brickProcMaps_[b], i, j, k)
+            if (brickProcMaps_[b](i,j,k) < 0)
+                FatalErrorInFunction
+                    << "Part " << labelVector(i,j,k) << " is not assigned "
+                    << "to a processor" << endl << abort(FatalError);
+
+    // Setup agglomerate data if needed, which is the case if the parent's brick
+    // decomposition is not equal to the current brick decomposition
+
+    if
+    (
+        lvl_.hasParent()
+     && lvl_.parent().decomp().member()
+     && lvl_.parent().decomp().myBrickDecomp() != myBrickDecomp()
+    )
+    {
+        const decomposition& parent = lvl_.parent().decomp();
+
+        const labelVector R =
+            cmptDivide(parent.myBrickDecomp(), myBrickDecomp());
+
+        labelVector start(parent.myBrickPart());
+
+        for (int d = 0; d < 3; d++)
+            start[d] = start[d] - (start[d] % R[d]);
+
+        aggProcMap_.setSize(R);
+
+        const labelBlock& parentMap =
+            parent.brickProcMaps()[parent.myBrickNum()];
+
+        // Slice the parent map over the agglomerate and store
+
+        label proc = 0;
+        for (label i = start.x(); i < start.x() + R.x(); i++)
+        for (label j = start.y(); j < start.y() + R.y(); j++)
+        for (label k = start.z(); k < start.z() + R.z(); k++)
+        {
+            labelVector ijk(i,j,k);
+
+            aggProcMap_(ijk-start) = parentMap(ijk);
+
+            if (parentMap(ijk) == Pstream::myProcNo())
+            {
+                myAggPart_ = ijk-start;
+                myAggProcNo_ = proc;
+            }
+
+            proc++;
+        }
+    }
+
+    // Set the decomposition members
+
+    members_.resize(Pstream::nProcs());
+
+    label proc = 0;
+    forAll(brickProcMaps_, b)
+        forAllBlock(brickProcMaps_[b], i, j, k)
+            if (brickProcMaps_[b](i,j,k) > -1)
+                members_[proc++] = brickProcMaps_[b](i,j,k);
+
+    members_.resize(proc);
+
+    // Set the global processor map if the brick topology is structured
+
+    if (lvl_.msh().topology().structured())
+        mapPtr_.reset(new decompositionMap(*this));
+}
+
+bool decomposition::coarsenable() const
+{
+    labelVector R = myBrickDecomp();
+
+    if (R == unitXYZ)
+    {
+        return false;
+    }
+    else
+    {
+        for (int d = 0; d < 3; d++)
+            R[d] /= Foam::max(R[d]/2, 1);
+
+        const labelVector N(cmptMultiply(lvl_.N(), R));
+
+        return coarsen(N) != N;
+    }
+}
+
+bool decomposition::agglomerated() const
+{
+    return
+        R() != unitXYZ
+     && lvl_.hasParent()
+     && lvl_.parent().decomp().member();
+}
+
+bool decomposition::aggParent() const
+{
+    return
+        lvl_.hasChild()
+     && lvl_.child().decomp().agglomerated();
 }
 
 }

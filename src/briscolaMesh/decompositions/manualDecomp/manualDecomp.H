@@ -12,31 +12,37 @@ namespace briscola
 namespace decompositions
 {
 
+/**
+
+@brief Manual decomposition
+
+This derived decomposition class requires a manual brick decomposition to be
+provided by the user. For each brick the decomposition is to be specified in the
+mesh dictionary. The processor distribution across bricks is then automatically
+chosen by traversing the brick parts.
+
+*/
+
 class manualDecomp
 :
     public decomposition
 {
-    // Decomposition per brick
-    List<labelVector> decompPerBrick_;
-
-    // The number of the brick of which this processor contains (part of) the
-    // mesh
+    // This processor's brick number
     label myBrickNum_;
 
-    // The index which points to the part of this processor's brick which is
-    // contained by this processor
-    labelVector myBrickPart_;
+    // This processor's brick decomposition
+    labelVector myBrickDecomp_;
 
-    // Disallow default bitwise assignment
-    void operator=(const manualDecomp&);
+    // This processor's brick part
+    labelVector myBrickPart_;
 
 public:
 
     // Runtime type information
     TypeName("manual");
 
-    // Construct from mesh
-    manualDecomp(mesh&);
+    // Construct from level and optionally coarsen parent
+    manualDecomp(const level&, const bool = false);
 
     // Copy constructor
     manualDecomp(const manualDecomp&);
@@ -47,19 +53,19 @@ public:
         return autoPtr<decomposition>(new manualDecomp(*this));
     }
 
-    // Number of parts per brick
-    virtual const List<labelVector>& decompPerBrick() const
-    {
-        return decompPerBrick_;
-    }
-
     // This processor's brick number
     virtual label myBrickNum() const
     {
         return myBrickNum_;
     }
 
-    // This processor's part index of its brick
+    // This processor's brick decomposition
+    virtual labelVector myBrickDecomp() const
+    {
+        return myBrickDecomp_;
+    }
+
+    // This processor's brick part index of its brick
     virtual labelVector myBrickPart() const
     {
         return myBrickPart_;

@@ -1,5 +1,5 @@
 #include "PETSc.H"
-#include "PstreamGlobalsLsa.H"
+#include "PstreamSplit.H"
 
 namespace Foam
 {
@@ -85,7 +85,7 @@ void PETSc<SType,Type,MeshType>::prepare
 
     const MPI_Comm& comm =
         Pstream::parRun()
-      ? PstreamGlobals::lsaGetComm(APtr_->masterCommNum())
+      ? PstreamGlobals::getSplitComm(APtr_->masterCommNum())
       : PETSC_COMM_SELF;
 
     if (!sys.diagonal())
@@ -119,7 +119,7 @@ void PETSc<SType,Type,MeshType>::solve
 
     const MPI_Comm& comm =
         Pstream::parRun()
-      ? PstreamGlobals::lsaGetComm(P.masterCommNum())
+      ? PstreamGlobals::getSplitComm(P.masterCommNum())
       : PETSC_COMM_SELF;
 
     const label n = list(pTraits<Type>::one).size();

@@ -54,8 +54,8 @@ void testDataExchange(const fvMesh& fvMsh)
 
         if (bc.baseType() == PARALLELBC)
         {
-            const labelVector S(bc.S(0,0));
-            const labelVector E(bc.E(0,0));
+            const labelVector S(bc.S(0));
+            const labelVector E(bc.E(0));
 
             const labelVector bo = bc.offset();
 

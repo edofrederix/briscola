@@ -146,6 +146,7 @@ void IO::writeData(const word timeName, const label l)
             1,
             fvMsh_.time().writeFormat() == IOstream::ASCII,
             l*MeshType::numberOfDirections + d,
+            ccl.lvl().comms(),
             false
         );
 
@@ -452,8 +453,8 @@ void IO::readData(const word timeName, const label l)
 
         labelList sizes(Pstream::nProcs());
         sizes[Pstream::myProcNo()] = nStructured(E-S);
-        Pstream::gatherList(sizes);
-        Pstream::scatterList(sizes);
+        Pstream::gatherList(sizes, Pstream::msgType(), fvMsh_[l].comms());
+        Pstream::scatterList(sizes, Pstream::msgType(), fvMsh_[l].comms());
 
         const label size =
             partitioned_ ? sizes[Pstream::myProcNo()] : sum(sizes);

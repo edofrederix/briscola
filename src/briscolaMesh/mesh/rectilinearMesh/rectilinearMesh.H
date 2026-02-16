@@ -21,36 +21,39 @@ class rectilinearMesh
     // Cell sizes and points with ghosts
 
         // Local rectilinear cell sizes
-        FastPtrList<scalarList> localCellSizesData_;
+        FastPtrList<FastPtrList<scalarList>> localCellSizesData_;
 
         // Local rectilinear points
-        FastPtrList<scalarList> localPointsData_;
+        FastPtrList<FastPtrList<scalarList>> localPointsData_;
 
         // Global rectilinear cell sizes
-        FastPtrList<scalarList> globalCellSizesData_;
+        FastPtrList<FastPtrList<scalarList>> globalCellSizesData_;
 
         // Global rectilinear points
-        FastPtrList<scalarList> globalPointsData_;
+        FastPtrList<FastPtrList<scalarList>> globalPointsData_;
 
     // Cell sizes and points without ghosts as partial lists
 
         // Local rectilinear cell sizes
-        FastPtrList<PartialList<scalar>> localCellSizes_;
+        FastPtrList<FastPtrList<PartialList<scalar>>> localCellSizes_;
 
         // Local rectilinear points
-        FastPtrList<PartialList<scalar>> localPoints_;
+        FastPtrList<FastPtrList<PartialList<scalar>>> localPoints_;
 
         // Global rectilinear cell sizes
-        FastPtrList<PartialList<scalar>> globalCellSizes_;
+        FastPtrList<FastPtrList<PartialList<scalar>>> globalCellSizes_;
 
         // Global rectilinear points
-        FastPtrList<PartialList<scalar>> globalPoints_;
+        FastPtrList<FastPtrList<PartialList<scalar>>> globalPoints_;
 
     // Global cell starts for each processor part
-    List<labelVector> globalStarts_;
+    List<List<labelVector>> globalStarts_;
 
     // Check if global mesh directions are uniform
     labelVector globalUniform_;
+
+    // Set rectilinear metrics for the given level
+    void setMetrics(const label l);
 
     // Set rectilinear metrics
     void setMetrics();
@@ -85,33 +88,37 @@ public:
     // indexing (at -1 or N) is allowed.
 
     // Local cell sizes
-    inline const FastPtrList<PartialList<scalar>>& localCellSizes() const
+    inline const FastPtrList<PartialList<scalar>>&
+    localCellSizes(const label l = 0) const
     {
-        return localCellSizes_;
+        return localCellSizes_[l];
     }
 
     // Local points
-    inline const FastPtrList<PartialList<scalar>>& localPoints() const
+    inline const FastPtrList<PartialList<scalar>>&
+    localPoints(const label l = 0) const
     {
-        return localPoints_;
+        return localPoints_[l];
     }
 
     // Global cell sizes
-    inline const FastPtrList<PartialList<scalar>>& globalCellSizes() const
+    inline const FastPtrList<PartialList<scalar>>&
+    globalCellSizes(const label l = 0) const
     {
-        return globalCellSizes_;
+        return globalCellSizes_[l];
     }
 
     // Global points
-    inline const FastPtrList<PartialList<scalar>>& globalPoints() const
+    inline const FastPtrList<PartialList<scalar>>&
+    globalPoints(const label l = 0) const
     {
-        return globalPoints_;
+        return globalPoints_[l];
     }
 
     // Return the list of global cell starts for each processor part
-    inline const List<labelVector>& globalStarts() const
+    inline const List<labelVector>& globalStarts(const label l = 0) const
     {
-        return globalStarts_;
+        return globalStarts_[l];
     }
 
     // Return if global mesh is uniform per direction

@@ -22,8 +22,11 @@ void volumeWeightedRestrictionScheme<Type,MeshType>::restrict
 {
     this->errorNoScaling(scale);
 
-    const labelVector R(coarse.mshPart().R());
+    const labelVector R(coarse.lvl().R());
+    const label d = coarse.directionNum();
     const vector shift(MeshType::shift[coarse.directionNum()]);
+
+    const_cast<meshLevel<Type,MeshType>&>(fine.level()).correctAggData(d);
 
     const labelVector R2
     (

@@ -32,10 +32,7 @@ void twoPhaseMultiVof<ViscosityModel>::initAlphas()
                 db.lookupObjectRef<colocatedScalarField>(name);
 
             // Create tmp copy of alpha field
-            tmp<colocatedScalarField> tAlpha
-            (
-                new colocatedScalarField(alpha, false, true)
-            );
+            tmp<colocatedScalarField> tAlpha(new colocatedScalarField(alpha));
 
             // Release and delete old alpha field
             alpha.regIOobject::release();
@@ -45,6 +42,10 @@ void twoPhaseMultiVof<ViscosityModel>::initAlphas()
             alphas_.append(new vofField(this->fvMsh(), name));
 
             alphas_[index] = tAlpha();
+
+            alphas_[index].transferBoundaryConditions(this->alpha_);
+            alphas_[index].transferImmersedBoundaryConditions(this->alpha_);
+
             alphas_[index].init(this->dict());
 
             name =
@@ -77,6 +78,10 @@ void twoPhaseMultiVof<ViscosityModel>::addAlphaField()
     );
 
     alphas_.last() = Zero;
+
+    alphas_.last().transferBoundaryConditions(this->alpha_);
+    alphas_.last().transferImmersedBoundaryConditions(this->alpha_);
+
     alphas_.last().init(this->dict());
 
     if (twoPhaseMultiVof::debug)
@@ -353,6 +358,12 @@ twoPhaseMultiVof<ViscosityModel>::twoPhaseMultiVof
     connectivityMatrix_()
 {
     tags_ = Zero;
+
+    // Add boundary conditions to alpha so that additional alpha fields may
+    // reuse them
+
+    this->alpha_.addBoundaryConditions();
+    this->alpha_.addImmersedBoundaryConditions();
 }
 
 template<class ViscosityModel>
@@ -371,6 +382,10 @@ twoPhaseMultiVof<ViscosityModel>::twoPhaseMultiVof
 {
     forAll(alphas_, a)
     {
+        // Copy boundary conditions from alpha
+        alphas_[a].transferBoundaryConditions(this->alpha_);
+        alphas_[a].transferImmersedBoundaryConditions(this->alpha_);
+
         alphas_[a].normal().correct();
         alphas_[a].surfaceTension().correct();
     }

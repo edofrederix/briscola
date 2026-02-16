@@ -42,22 +42,28 @@ Briscola depends on the following third-party packages:
 * OpenFOAM (foundation version 12)
 * OpenMPI (version 3 or later)
 * FFTW
-* Eigen
-* PETSc
-* SuperLU (optional)
+* Eigen (optional)
+* PETSc (optional)
 
 From OpenFOAM, only the OpenFOAM library (libOpenFOAM.so) is linked. In turn,
 this library links against Pstream (libPstream.so). So only the OpenFOAM and
-Pstream libraries need to be compiled and discoverable from your environment
+Pstream libraries need to be compiled and discoverable from your environment.
 
-OpenMPI, FFTW, Eigen and PETSc are required. OpenMPI should already be available
-through your OpenFOAM installation and is automatically used from that. The
-FFTW, Eigen and PETSc package locations can be specified by the `FFTW_HOME`,
-`EIGEN_HOME` and `PETSC_HOME` environment variables. If those variables are not
-set, an attempt is done to find the respective packages in system locations
-using the pkg-config tool. If that fails too, the compilation process will
-complain that a package was not found. If these packages are not already on your
-system, FFTW and Eigen can be installed with:
+OpenMPI and FFTW are required while Eigen and PETSc are optional. OpenMPI should
+already be available through your OpenFOAM installation and is automatically
+used from that. The FFTW, Eigen and PETSc package locations can be specified by
+the `FFTW_HOME`, `EIGEN_HOME` and `PETSC_HOME` environment variables. If those
+variables are not set, an attempt is done to find the respective packages in
+system locations using the pkg-config tool. If that fails too, the compilation
+process will complain for required packages that a they were not found. When
+PETSc and/or Eigen are found, the linear system solvers offered by these
+packages are compiled into Briscola. In turn, these can then be used as 1)
+coarse grid solver in the multigrid solver or 2) as main solver using the Krylov
+solver. Briscola's Krylov solver class is a wrapper to the solvers offered by
+the PETSc framework.
+
+If the FFTW or Eigen packages are not already on your system, they can be
+installed with:
 
 ```
 cd dependecies
@@ -68,16 +74,8 @@ cd dependecies
 By default, these make scripts configure, compile and install their respective
 packages to `$HOME/opt`. You can edit the make scripts if you want to specify
 another location. Both scripts will instruct you on which environment variables
-to set. The PETSc package must be installed by yourself.
-
-The sparse direct solvers of SuperLU and SuperLU_DIST are used if these packages
-are available, but they are not required nor important. The compiler checks for
-the existence of the `SUPERLU_HOME` and `SUPERLU_DIST_HOME` environment
-variables. If they exist, Briscola's SuperLU and SuperLU_DIST-based solvers are
-compiled. It is interfaced via the Eigen and PETSc support functions. The
-SuperLU and SuperLU_DIST packages can optionally be built from the
-`dependencies` directory too with the `makeSuperLU` and `makeSuperLU_DIST`
-scripts.
+to set. If you would like to use linear solvers from PETSc, the PETSc package
+must be installed by yourself.
 
 ## Building Briscola
 

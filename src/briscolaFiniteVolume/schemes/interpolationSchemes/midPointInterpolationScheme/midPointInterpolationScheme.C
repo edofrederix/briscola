@@ -35,6 +35,9 @@ midPointInterpolationScheme<Type,MeshType>::interp
 
     faceField<Type,MeshType>& interp = tInterp.ref();
 
+    if (sigFpeEnabled())
+        interp = Zero;
+
     forAllFaces(interp, fd, d, i, j, k)
     {
         const labelVector ijk(i,j,k);

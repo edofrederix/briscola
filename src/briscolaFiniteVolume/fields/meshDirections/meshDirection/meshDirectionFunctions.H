@@ -212,18 +212,10 @@ Type sumCmptMag(const tmp<meshDirection<Type,MeshType>>&);
 #define G_UNARY_FUNCTION(ReturnType, gFunc)                                    \
                                                                                \
 template<class Type, class MeshType>                                           \
-ReturnType gFunc                                                               \
-(                                                                              \
-    const meshDirection<Type,MeshType>&,                                       \
-    const label comm = UPstream::worldComm                                     \
-);                                                                             \
+ReturnType gFunc(const meshDirection<Type,MeshType>&);                         \
                                                                                \
 template<class Type, class MeshType>                                           \
-ReturnType gFunc                                                               \
-(                                                                              \
-    const tmp<meshDirection<Type,MeshType>>&,                                  \
-    const label comm = UPstream::worldComm                                     \
-);
+ReturnType gFunc(const tmp<meshDirection<Type,MeshType>>&);
 
 G_UNARY_FUNCTION(Type, gMax)
 G_UNARY_FUNCTION(Type, gMin)

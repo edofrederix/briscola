@@ -21,7 +21,8 @@ void SHF::setCommunication()
     faceLabel pBoundary;
     for (int i = 0; i < 6; i++)
         pBoundary[i] =
-            fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
+            fvMsh_.msh().boundaries().find(faceOffsets[i])
+           .castable<parallelBoundary>();
 
     const faceLabel I = fvMsh_.template I<colocated>();
 
@@ -104,7 +105,8 @@ void SHF::correct()
     faceLabel pBoundary;
     for (int i = 0; i < 6; i++)
         pBoundary[i] =
-            fvMsh_.msh().b(faceOffsets[i]).castable<parallelBoundary>();
+            fvMsh_.msh().boundaries().find(faceOffsets[i])
+           .castable<parallelBoundary>();
 
     const labelVector N = fvMsh_.template N<colocated>();
     const faceLabel I = fvMsh_.template I<colocated>();
@@ -247,6 +249,9 @@ void SHF::correct()
                 if (ii + a > I[f.right()] && !pBoundary[f.right()])
                     break;
 
+                if (globalStart[p] + ii + a >= gSizes.size())
+                    break;
+
                 for (int b = -1; b <= 1; b++)
                     for (int c = -1; c <= 1; c++)
                         sumNew +=
@@ -280,6 +285,9 @@ void SHF::correct()
                 // Do not go beyond domain boundary ghost cells
 
                 if (ii - a < (I[f.left()] - 1) && !pBoundary[f.left()])
+                    break;
+
+                if (globalStart[p] + ii - a < 0)
                     break;
 
                 for (int b = -1; b <= 1; b++)

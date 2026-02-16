@@ -36,8 +36,7 @@ decompositions/decomposition/decomposition.C
 decompositions/decomposition/decompositionMap.C
 decompositions/manualDecomp/manualDecomp.C
 
-decompositions/brickDecompositionInterface/brickDecompositionInterface.C
-decompositions/brickDecompositionInterface/brickDecompositionSlice.C
+decompositions/decompositionInterface/decompositionInterface.C
 
 boundaries/boundary/boundary.C
 boundaries/parallelBoundary/parallelBoundary.C
@@ -46,8 +45,10 @@ boundaries/mappedBoundary/mappedBoundary.C
 boundaries/patchBoundary/patchBoundary.C
 boundaries/emptyBoundary/emptyBoundary.C
 
-partPoints/partPoints.C
-part/part.C
+level/level.C
+level/levelBoundaries.C
+level/levelComms.C
+level/levelPoints.C
 
 mesh/unstructuredMesh/unstructuredMesh.C
 mesh/structuredMesh/structuredMesh.C

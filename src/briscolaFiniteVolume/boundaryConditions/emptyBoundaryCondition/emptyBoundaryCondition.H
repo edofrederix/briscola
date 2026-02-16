@@ -43,28 +43,27 @@ public:
         );
     }
 
-    // Construct and return a clone setting field reference
+    // Construct and return a clone for alternative level
     virtual tmp<boundaryCondition<Type,colocated>> clone
     (
-        const meshField<Type,colocated>& field
+        const meshLevel<Type,colocated>& level
     ) const
     {
         return tmp<boundaryCondition<Type,colocated>>
         (
-            new emptyBoundaryCondition<Type,colocated>(field,*this)
+            new emptyBoundaryCondition<Type,colocated>(*this, level)
         );
     }
 
-    // Eliminate ghosts from the linear system at given level and direction
+    // Eliminate ghosts from the linear system at given direction
     virtual void eliminateGhosts
     (
         linearSystem<stencil,Type,colocated>&,
-        const label,
         const label
     );
 
-    // Evaluate the boundary condition for given level and direction
-    virtual void evaluate(const label, const label);
+    // Evaluate the boundary condition for given direction
+    virtual void evaluate(const label);
 };
 
 
@@ -93,28 +92,27 @@ public:
         );
     }
 
-    // Construct and return a clone setting field reference
+    // Construct and return a clone for alternative level
     virtual tmp<boundaryCondition<Type,staggered>> clone
     (
-        const meshField<Type,staggered>& field
+        const meshLevel<Type,staggered>& level
     ) const
     {
         return tmp<boundaryCondition<Type,staggered>>
         (
-            new emptyBoundaryCondition<Type,staggered>(field,*this)
+            new emptyBoundaryCondition<Type,staggered>(*this, level)
         );
     }
 
-    // Eliminate ghosts from the linear system at given level and direction
+    // Eliminate ghosts from the linear system at given direction
     virtual void eliminateGhosts
     (
         linearSystem<stencil,Type,staggered>&,
-        const label,
         const label
     );
 
-    // Evaluate the boundary condition for given level and direction
-    virtual void evaluate(const label, const label);
+    // Evaluate the boundary condition for given direction
+    virtual void evaluate(const label);
 };
 
 }

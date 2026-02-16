@@ -47,7 +47,7 @@ word directionText(labelVector v)
     }
 }
 
-void generalInfo(const fvMesh& fvMsh)
+void generalInfo(const fvMesh& fvMsh, const bool verbose)
 {
     label nCells(cmptProduct(fvMsh[0].N()));
     reduce(nCells, sumOp<label>());
@@ -70,32 +70,35 @@ void generalInfo(const fvMesh& fvMsh)
         << (fvMsh.structured() ? "structured" : "unstructured")
         << endl;
 
-    if (fvMsh.structured())
+    if (verbose)
     {
-        Info<< "Global mesh is rectilinear in "
-            << directionText(fvMsh.rectilinear()) << endl;
-    }
+        if (fvMsh.structured())
+        {
+            Info<< "Global mesh is rectilinear in "
+                << directionText(fvMsh.rectilinear()) << endl;
+        }
 
-    if (fvMsh.rectilinear() == unitXYZ)
-    {
-        const rectilinearMesh& rMesh = fvMsh.msh().cast<rectilinearMesh>();
+        if (fvMsh.rectilinear() == unitXYZ)
+        {
+            const rectilinearMesh& rMesh = fvMsh.msh().cast<rectilinearMesh>();
 
-        Info<< "    First base vector  = " << rMesh.base().x() << nl
-            << "    Second base vector = " << rMesh.base().y() << nl
-            << "    Third base vector  = " << rMesh.base().z() << endl;
-    }
+            Info<< "    First base vector  = " << rMesh.base().x() << nl
+                << "    Second base vector = " << rMesh.base().y() << nl
+                << "    Third base vector  = " << rMesh.base().z() << endl;
+        }
 
-    if (fvMsh.structured())
-    {
-       Info<< "Global mesh is uniform in "
-            << directionText(fvMsh.uniform()) << endl;
-    }
+        if (fvMsh.structured())
+        {
+        Info<< "Global mesh is uniform in "
+                << directionText(fvMsh.uniform()) << endl;
+        }
 
-    if (fvMsh.uniform() == unitXYZ)
-    {
-        const uniformMesh& uMesh = fvMsh.msh().cast<uniformMesh>();
+        if (fvMsh.uniform() == unitXYZ)
+        {
+            const uniformMesh& uMesh = fvMsh.msh().cast<uniformMesh>();
 
-        Info<< "    Uniform cell size = " << uMesh.cellSize() << endl;
+            Info<< "    Uniform cell size = " << uMesh.cellSize() << endl;
+        }
     }
 
     Info<< "Brick topology is "
@@ -114,7 +117,7 @@ void generalInfo(const fvMesh& fvMsh)
     }
 }
 
-void brickInfo(const fvMesh& fvMsh)
+void brickInfo(const fvMesh& fvMsh, const bool verbose)
 {
     Info<< endl;
     Info<< "Number of bricks = " << fvMsh.msh().bricks().size() << ":" << endl;
@@ -124,26 +127,28 @@ void brickInfo(const fvMesh& fvMsh)
         const brick& br = fvMsh.msh().bricks()[bricki];
 
         Info<< "    Brick " << br.num() << " has " << br.N() << " = "
-            << cmptProduct(br.N())  << " cells" << endl
-            << "        Vertex coordinates: " << endl
-            << "            v0 = " << br.v0().v() << endl
-            << "            v1 = " << br.v1().v() << endl
-            << "            v2 = " << br.v2().v() << endl
-            << "            v3 = " << br.v3().v() << endl
-            << "            v4 = " << br.v4().v() << endl
-            << "            v5 = " << br.v5().v() << endl
-            << "            v6 = " << br.v6().v() << endl
-            << "            v7 = " << br.v7().v() << endl;
+            << cmptProduct(br.N())  << " cells" << endl;
+
+        if (verbose)
+            Info<< "        Vertex coordinates: " << endl
+                << "            v0 = " << br.v0().v() << endl
+                << "            v1 = " << br.v1().v() << endl
+                << "            v2 = " << br.v2().v() << endl
+                << "            v3 = " << br.v3().v() << endl
+                << "            v4 = " << br.v4().v() << endl
+                << "            v5 = " << br.v5().v() << endl
+                << "            v6 = " << br.v6().v() << endl
+                << "            v7 = " << br.v7().v() << endl;
 
         if (Pstream::parRun())
         {
             Info<< "        Decomposition vector = "
-                << fvMsh.msh().decomp().decompPerBrick()[bricki] << endl;
+                << fvMsh.msh().decomp().brickDecomps()[bricki] << endl;
         }
     }
 }
 
-void patchInfo(const fvMesh& fvMsh)
+void patchInfo(const fvMesh& fvMsh, const bool)
 {
     Info<< endl;
     Info<< "Number of patches = "
@@ -168,30 +173,53 @@ void patchInfo(const fvMesh& fvMsh)
     }
 }
 
-void levelInfo(const fvMesh& fvMsh)
+void levelInfo(const fvMesh& fvMsh, const bool verbose)
 {
     Info<< endl;
     Info<< "Number of mesh levels = " << fvMsh.size() << ":" << endl;
 
     forAll(fvMsh, l)
     {
-        labelVector N(fvMsh[l].N());
+        const level& lvl = fvMsh[l];
+        const decomposition& decomp = lvl.decomp();
 
-        List<labelVector> Ns(Pstream::nProcs(),N);
+        List<labelVector> N(Pstream::nProcs(), lvl.N());
+        List<bool> empty(Pstream::nProcs(), lvl.empty());
+        List<bool> leaf(Pstream::nProcs(), lvl.leaf());
+        List<bool> agglomerated(Pstream::nProcs(), decomp.agglomerated());
+        List<bool> aggMaster(Pstream::nProcs(), decomp.aggMaster());
 
-        Pstream::gatherList(Ns);
+        Pstream::gatherList(N, Pstream::msgType(), lvl.comms());
+        Pstream::gatherList(empty, Pstream::msgType(), lvl.comms());
+        Pstream::gatherList(leaf, Pstream::msgType(), lvl.comms());
+        Pstream::gatherList(agglomerated, Pstream::msgType(), lvl.comms());
+        Pstream::gatherList(aggMaster, Pstream::msgType(), lvl.comms());
 
-        Info<< "    Level " << l << ":" << endl;
+        Info<< "    Level " << l << ", R = " << lvl.R() << ":" << endl;
 
         for (label proc = 0; proc < Pstream::nProcs(); proc++)
         {
-            Info<< "        Processor " << proc << " has " << Ns[proc]
-                << " = " << cmptProduct(Ns[proc]) << " cells" << endl;
+            if (!empty[proc])
+            {
+                Info<< "        Processor " << proc << " has " << N[proc]
+                    << " = " << cmptProduct(N[proc]) << " cells";
+
+                if (verbose)
+                    Info<< ", leaf = " << leaf[proc]
+                        << ", agglomerated = " << agglomerated[proc]
+                        << ", aggMaster = " << aggMaster[proc]
+                        << ", myBrickNum = " << decomp.procBrickNums()[proc]
+                        << ", myBrickDecomp = "
+                        << decomp.procBrickDecomps()[proc]
+                        << ", myBrickPart = " << decomp.procBrickParts()[proc];
+
+                Info<< endl;
+            }
         }
     }
 }
 
-void parallelInfo(const fvMesh& fvMsh)
+void parallelInfo(const fvMesh& fvMsh, const bool verbose)
 {
     Info<< endl;
     Info<< "Number of processors = " << Pstream::nProcs() << ":" << endl;
@@ -200,15 +228,14 @@ void parallelInfo(const fvMesh& fvMsh)
     List<List<dictionary>> bDicts(Pstream::nProcs(), List<dictionary>(0));
     List<labelList> masterPatch(Pstream::nProcs(), labelList(0));
 
-    const part& p = fvMsh[0];
+    const level& lvl = fvMsh[0];
 
-    pDicts[Pstream::myProcNo()].add("rectilinear", p.rectilinear());
-    pDicts[Pstream::myProcNo()].add("uniform", p.uniform());
+    pDicts[Pstream::myProcNo()].add("rectilinear", lvl.rectilinear());
+    pDicts[Pstream::myProcNo()].add("uniform", lvl.uniform());
 
-
-    forAll(fvMsh.boundaries(), bi)
+    forAll(lvl.boundaries(), bi)
     {
-        const boundary& b = fvMsh.boundaries()[bi];
+        const boundary& b = lvl.boundaries()[bi];
 
         bDicts[Pstream::myProcNo()].append(b.dict());
         masterPatch[Pstream::myProcNo()].append
@@ -219,23 +246,23 @@ void parallelInfo(const fvMesh& fvMsh)
         );
     }
 
-    Pstream::gatherList(pDicts);
-    Pstream::gatherList(bDicts);
-    Pstream::gatherList(masterPatch);
+    Pstream::gatherList(pDicts, Pstream::msgType(), fvMsh.msh().comms());
+    Pstream::gatherList(bDicts, Pstream::msgType(), fvMsh.msh().comms());
+    Pstream::gatherList(masterPatch, Pstream::msgType(), fvMsh.msh().comms());
 
     if (Pstream::master())
     for (label proc = 0; proc < Pstream::nProcs(); proc++)
     {
-        const label brickNum(fvMsh.msh().decomp().brickNumPerProc()[proc]);
+        const label brickNum(lvl.decomp().procBrickNums()[proc]);
 
         const labelVector brickPart
         (
-            fvMsh.msh().decomp().brickPartPerProc()[proc]
+            lvl.decomp().procBrickParts()[proc]
         );
 
         const labelVector brickDecomp
         (
-            fvMsh.msh().decomp().decompPerBrick()[brickNum]
+            lvl.decomp().brickDecomps()[brickNum]
         );
 
         const dictionary& pDict = pDicts[proc];
@@ -256,45 +283,48 @@ void parallelInfo(const fvMesh& fvMsh)
             << directionText(labelVector(pDict.lookup("uniform")))
             << endl;
 
-        Info<< "        Number of part boundaries = "
-            << bDicts[proc].size();
-
-        if (bDicts[proc].size() > 0)
+        if (verbose)
         {
-            Info<< ":" << endl;
+            Info<< "        Number of part boundaries = "
+                << bDicts[proc].size();
 
-            forAll(bDicts[proc], bi)
+            if (bDicts[proc].size() > 0)
             {
-                const dictionary& dict = bDicts[proc][bi];
+                Info<< ":" << endl;
 
-                const word name(dict.lookup("name"));
-                const word type(dict.lookup("type"));
-                const labelVector bo(dict.lookup("offset"));
-                const labelTensor T(dict.lookup("T"));
+                forAll(bDicts[proc], bi)
+                {
+                    const dictionary& dict = bDicts[proc][bi];
 
-                Info<< "                Boundary " << name << nl
-                    << "                type   = " << type << nl
-                    << "                bo     = " << bo << nl
-                    << "                T      = " << T << nl
-                    << "                master = " << masterPatch[proc][bi] << endl;
+                    const word name(dict.lookup("name"));
+                    const word type(dict.lookup("type"));
+                    const labelVector bo(dict.lookup("offset"));
+                    const labelTensor T(dict.lookup("T"));
+
+                    Info<< "                Boundary " << name << nl
+                        << "                type   = " << type << nl
+                        << "                bo     = " << bo << nl
+                        << "                T      = " << T << nl
+                        << "                master = " << masterPatch[proc][bi] << endl;
+                }
             }
-        }
-        else
-        {
-            Info<< endl;
+            else
+            {
+                Info<< endl;
+            }
         }
     }
 }
 
-void parallelConnectivityInfo(const fvMesh& fvMsh)
+void parallelConnectivityInfo(const fvMesh& fvMsh, const bool verbose)
 {
     Info<< endl;
 
     List<List<dictionary>> bDicts(Pstream::nProcs());
 
-    forAll(fvMsh.boundaries(), bi)
+    forAll(fvMsh.msh().boundaries(), bi)
     {
-        const boundary& b = fvMsh.boundaries()[bi];
+        const boundary& b = fvMsh.msh().boundaries()[bi];
 
         if (b.castable<parallelBoundary>())
         {
@@ -310,7 +340,7 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
         }
     }
 
-    Pstream::gatherList(bDicts);
+    Pstream::gatherList(bDicts, fvMsh.msh().comms());
 
     label count = 0;
 
@@ -385,17 +415,20 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
                         << " is connected with boundary " << name1
                         << " of processor " << procj << endl;
 
-                    Info<< "        at processor " << proci << nl
-                        << "            bo     = " << offset0 << nl
-                        << "            T      = " << T0 << nl
-                        << "            tag    = " << tag0 << nl
-                        << "            master = " << master0 << endl;
+                    if (verbose)
+                    {
+                        Info<< "        at processor " << proci << nl
+                            << "            bo     = " << offset0 << nl
+                            << "            T      = " << T0 << nl
+                            << "            tag    = " << tag0 << nl
+                            << "            master = " << master0 << endl;
 
-                    Info<< "        at processor " << procj << nl
-                        << "            bo     = " << offset1 << nl
-                        << "            T      = " << T1 << nl
-                        << "            tag    = " << tag1 << nl
-                        << "            master = " << master1 << endl;
+                        Info<< "        at processor " << procj << nl
+                            << "            bo     = " << offset1 << nl
+                            << "            T      = " << T1 << nl
+                            << "            tag    = " << tag1 << nl
+                            << "            master = " << master1 << endl;
+                    }
 
                     if (master0 == master1)
                     {
@@ -434,6 +467,60 @@ void parallelConnectivityInfo(const fvMesh& fvMsh)
     else
     {
         Info<< endl;
+    }
+}
+
+void aggInfo(const fvMesh& fvMsh, const bool verbose)
+{
+    label nAgg = 0;
+    forAll(fvMsh, l)
+        if (fvMsh[l].decomp().members().size() != Pstream::nProcs())
+            nAgg++;
+
+    Info<< endl;
+    Info<< "Number of agglomerated mesh levels = " << nAgg
+        << (nAgg ? ":" : "") << endl;
+
+    forAll(fvMsh, l)
+    {
+        const decomposition& decomp = fvMsh[l].decomp();
+
+        List<labelVector> shapes(Pstream::nProcs(), zeroXYZ);
+        List<labelList> members(Pstream::nProcs(), labelList(0));
+
+        if (decomp.aggMaster())
+        {
+            shapes[Pstream::myProcNo()] = decomp.aggProcMap().shape();
+            members[Pstream::myProcNo()] = decomp.aggProcMap().flatten();
+        }
+
+        Pstream::gatherList(shapes);
+        Pstream::gatherList(members);
+
+        if (Pstream::master())
+        {
+            forAll(shapes, proc)
+            {
+                if (shapes[proc] != zeroXYZ)
+                {
+                    Info<< "    Level " << l << " agglomerate "
+                        << "with master proc " << proc
+                        << " and processor map shape "
+                        << shapes[proc] << endl;
+
+                    if (verbose)
+                    {
+                        Info<< "        Agg. members = ";
+
+                        forAll(members[proc], i)
+                            Info<< members[proc][i]
+                                << (i == members.size()-1 ? "" : ", ");
+
+                        Info<< endl;
+                    }
+                }
+            }
+        }
     }
 }
 

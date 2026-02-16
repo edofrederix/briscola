@@ -28,8 +28,12 @@ p
 
     coarseSolver
     {
-        type        PETSc;
-        PETScSolver PCLU;
+        type    APLU;
+
+        // If installed, one could use PETSc or Eigen:
+
+        // type        PETSc;
+        // PETScSolver PCLU;
         // PETScSolver KSPBCGS;
 
         // type        Eigen;

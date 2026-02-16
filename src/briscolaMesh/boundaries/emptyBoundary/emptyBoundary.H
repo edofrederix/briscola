@@ -22,15 +22,24 @@ public:
     TypeName("empty");
 
     // Construct from components
-    emptyBoundary(const mesh& msh, const dictionary& dict);
+    emptyBoundary(const level& lvl, const dictionary& dict);
 
     // Copy constructor
     emptyBoundary(const emptyBoundary&);
+
+    // Copy constructor with alternative level reference
+    emptyBoundary(const emptyBoundary&, const level&);
 
     // Clone boundary
     virtual autoPtr<boundary> clone() const
     {
         return autoPtr<boundary>(new emptyBoundary(*this));
+    }
+
+    // Clone boundary with alternative level reference
+    virtual autoPtr<boundary> clone(const level& lvl) const
+    {
+        return autoPtr<boundary>(new emptyBoundary(*this, lvl));
     }
 };
 

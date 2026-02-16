@@ -1,6 +1,6 @@
 #include "patchBoundary.H"
 #include "addToRunTimeSelectionTable.H"
-#include "mesh.H"
+#include "level.H"
 
 namespace Foam
 {
@@ -11,14 +11,19 @@ namespace briscola
 defineTypeNameAndDebug(patchBoundary, 0);
 addToRunTimeSelectionTable(boundary, patchBoundary, dictionary);
 
-patchBoundary::patchBoundary(const mesh& msh, const dictionary& dict)
+patchBoundary::patchBoundary(const level& lvl, const dictionary& dict)
 :
-    boundary(msh, dict)
+    boundary(lvl, dict)
 {}
 
 patchBoundary::patchBoundary(const patchBoundary& pp)
 :
     boundary(pp)
+{}
+
+patchBoundary::patchBoundary(const patchBoundary& pp, const level& lvl)
+:
+    boundary(pp, lvl)
 {}
 
 }

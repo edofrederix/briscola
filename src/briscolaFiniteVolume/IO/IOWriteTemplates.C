@@ -21,6 +21,7 @@ void IO::writeList
     const label nComponents,
     const bool ascii,
     const label tag,
+    const label comm,
     const bool header
 ) const
 {
@@ -64,7 +65,7 @@ void IO::writeList
                         reinterpret_cast<char*>(buffer.begin()),
                         buffer.byteSize(),
                         tag,
-                        UPstream::worldComm
+                        comm
                     );
                 }
 
@@ -105,11 +106,9 @@ void IO::writeList
             reinterpret_cast<char*>(data.begin()),
             data.byteSize(),
             tag,
-            UPstream::worldComm
+            comm
         );
     }
-
-    Pstream::waitRequests();
 }
 
 template<class Type, class MeshType>
@@ -140,10 +139,11 @@ void IO::writeScalarField
     (
         filePtrs,
         data,
-        D.mshLevel().mshField().name(),
+        D.level().field().name(),
         1,
         fvMsh_.time().writeFormat() == IOstream::ASCII,
-        tag
+        tag,
+        D.lvl().comms()
     );
 }
 
@@ -178,10 +178,11 @@ void IO::writeVectorSpaceField
     (
         filePtrs,
         data,
-        D.mshLevel().mshField().name(),
+        D.level().field().name(),
         n,
         fvMsh_.time().writeFormat() == IOstream::ASCII,
-        tag
+        tag,
+        D.lvl().comms()
     );
 }
 
@@ -218,10 +219,11 @@ void IO::writeCellSpaceField
     (
         filePtrs,
         data,
-        D.mshLevel().mshField().name(),
+        D.level().field().name(),
         m*n,
         fvMsh_.time().writeFormat() == IOstream::ASCII,
-        tag
+        tag,
+        D.lvl().comms()
     );
 }
 

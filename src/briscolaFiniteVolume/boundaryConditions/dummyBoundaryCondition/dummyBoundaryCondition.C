@@ -17,11 +17,11 @@ namespace fv
 template<class Type, class MeshType>
 dummyBoundaryCondition<Type,MeshType>::dummyBoundaryCondition
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b)
+    boundaryCondition<Type,MeshType>(level, b)
 {}
 
 template<class Type, class MeshType>
@@ -36,26 +36,22 @@ dummyBoundaryCondition<Type,MeshType>::dummyBoundaryCondition
 template<class Type, class MeshType>
 dummyBoundaryCondition<Type,MeshType>::dummyBoundaryCondition
 (
-    const meshField<Type,MeshType>& field,
-    const dummyBoundaryCondition<Type,MeshType>& bc
+    const dummyBoundaryCondition<Type,MeshType>& bc,
+    const meshLevel<Type,MeshType>& level
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc)
+    boundaryCondition<Type,MeshType>(bc, level)
 {}
 
 template<class Type, class MeshType>
-void dummyBoundaryCondition<Type,MeshType>::evaluate
-(
-    const label l,
-    const label d
-)
+void dummyBoundaryCondition<Type,MeshType>::evaluate(const label d)
 {
     const labelVector bo(this->offset());
 
-    meshDirection<Type,MeshType>& field = this->mshField_[l][d];
+    meshDirection<Type,MeshType>& field = this->level_[d];
 
-    const labelVector S(this->S(l,d));
-    const labelVector E(this->E(l,d));
+    const labelVector S(this->S(d));
+    const labelVector E(this->E(d));
 
     labelVector ijk;
 

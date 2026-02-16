@@ -201,7 +201,9 @@ void splitAdvection::solve(const colocatedScalarFaceField& phi)
 
         // Skip empty directions
 
-        if (!fvMsh_.msh().b(units[fd]).castable<emptyBoundary>())
+        const boundary& b = fvMsh_.msh().boundaries().find(units[fd]);
+
+        if (!b.castable<emptyBoundary>())
         {
             this->updateFlux(phi,fd);
 

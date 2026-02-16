@@ -17,11 +17,11 @@ namespace fv
 template<class Type, class MeshType>
 periodicBoundaryCondition<Type,MeshType>::periodicBoundaryCondition
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b
 )
 :
-    parallelBoundaryCondition<Type,MeshType>(mshField, b)
+    parallelBoundaryCondition<Type,MeshType>(level, b)
 {}
 
 template<class Type, class MeshType>
@@ -36,26 +36,26 @@ periodicBoundaryCondition<Type,MeshType>::periodicBoundaryCondition
 template<class Type, class MeshType>
 periodicBoundaryCondition<Type,MeshType>::periodicBoundaryCondition
 (
-    const meshField<Type,MeshType>& field,
-    const periodicBoundaryCondition<Type,MeshType>& bc
+    const periodicBoundaryCondition<Type,MeshType>& bc,
+    const meshLevel<Type,MeshType>& level
 )
 :
-    parallelBoundaryCondition<Type,MeshType>(field, bc)
+    parallelBoundaryCondition<Type,MeshType>(bc, level)
 {}
 
 template<class Type, class MeshType>
-void periodicBoundaryCondition<Type,MeshType>::prepare(const label l)
+void periodicBoundaryCondition<Type,MeshType>::prepare()
 {
     if (this->neighborProcNum_ != Pstream::myProcNo())
-        parallelBoundaryCondition<Type,MeshType>::prepare(l);
+        parallelBoundaryCondition<Type,MeshType>::prepare();
 }
 
 template<class Type, class MeshType>
-void periodicBoundaryCondition<Type,MeshType>::evaluate(const label l)
+void periodicBoundaryCondition<Type,MeshType>::evaluate()
 {
     if (this->neighborProcNum_ != Pstream::myProcNo())
     {
-        parallelBoundaryCondition<Type,MeshType>::evaluate(l);
+        parallelBoundaryCondition<Type,MeshType>::evaluate();
     }
     else
     {
@@ -63,16 +63,17 @@ void periodicBoundaryCondition<Type,MeshType>::evaluate(const label l)
         // opposing face/edge/vertex. Copy data directly to neighbor. Neighbor
         // will do the same to us.
 
-        meshLevel<Type,MeshType>& field = this->mshField()[l];
-
         const labelVector bo(this->offset());
+        const label l(this->l_);
 
-        forAll(field, d)
+        meshLevel<Type,MeshType>& level = this->level_;
+
+        forAll(level, d)
         {
             // Source start and end point
 
-            const labelVector Ss(this->S(l,d));
-            const labelVector Es(this->E(l,d));
+            const labelVector Ss(this->S(d));
+            const labelVector Es(this->E(d));
 
             // Target start point
 
@@ -84,7 +85,7 @@ void periodicBoundaryCondition<Type,MeshType>::evaluate(const label l)
             for (ijk.y() = Ss.y(); ijk.y() < Es.y(); ijk.y()++)
             for (ijk.z() = Ss.z(); ijk.z() < Es.z(); ijk.z()++)
             {
-                field(d,ijk-Ss+St-bo) = field(d,ijk);
+                level(d,ijk-Ss+St-bo) = level(d,ijk);
             }
         }
     }

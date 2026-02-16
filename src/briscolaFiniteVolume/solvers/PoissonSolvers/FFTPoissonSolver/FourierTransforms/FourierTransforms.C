@@ -72,7 +72,7 @@ void FourierTransforms<SType>::FFTBoundaryConditions()
     BC_ = labelVector(-1,-1,-1);
 
     boundaryConditionBaseType bcX0
-        = globalBoundaryConditionBaseType(x_, faceOffsets[0]);
+        = globalBoundaryConditionBaseType(x_[0], faceOffsets[0]);
 
     if (bcX0 == boundaryConditionBaseType::EMPTYBC)
     {
@@ -85,7 +85,7 @@ void FourierTransforms<SType>::FFTBoundaryConditions()
     else if (bcX0 == boundaryConditionBaseType::DIRICHLETBC)
     {
         boundaryConditionBaseType bcX1
-            = globalBoundaryConditionBaseType(x_, faceOffsets[1]);
+            = globalBoundaryConditionBaseType(x_[0], faceOffsets[1]);
 
         if (bcX1 == boundaryConditionBaseType::DIRICHLETBC)
         {
@@ -99,7 +99,7 @@ void FourierTransforms<SType>::FFTBoundaryConditions()
     else if (bcX0 == boundaryConditionBaseType::NEUMANNBC)
     {
         boundaryConditionBaseType bcX1
-            = globalBoundaryConditionBaseType(x_, faceOffsets[1]);
+            = globalBoundaryConditionBaseType(x_[0], faceOffsets[1]);
 
         if (bcX1 == boundaryConditionBaseType::DIRICHLETBC)
         {
@@ -119,7 +119,7 @@ void FourierTransforms<SType>::FFTBoundaryConditions()
 
 
     boundaryConditionBaseType bcY0
-        = globalBoundaryConditionBaseType(x_, faceOffsets[2]);
+        = globalBoundaryConditionBaseType(x_[0], faceOffsets[2]);
 
     if (bcY0 == boundaryConditionBaseType::EMPTYBC)
     {
@@ -132,7 +132,7 @@ void FourierTransforms<SType>::FFTBoundaryConditions()
     else if (bcY0 == boundaryConditionBaseType::DIRICHLETBC)
     {
         boundaryConditionBaseType bcY1
-            = globalBoundaryConditionBaseType(x_, faceOffsets[3]);
+            = globalBoundaryConditionBaseType(x_[0], faceOffsets[3]);
 
         if (bcY1 == boundaryConditionBaseType::DIRICHLETBC)
         {
@@ -146,7 +146,7 @@ void FourierTransforms<SType>::FFTBoundaryConditions()
     else if (bcY0 == boundaryConditionBaseType::NEUMANNBC)
     {
         boundaryConditionBaseType bcY1
-            = globalBoundaryConditionBaseType(x_, faceOffsets[3]);
+            = globalBoundaryConditionBaseType(x_[0], faceOffsets[3]);
 
         if (bcY1 == boundaryConditionBaseType::DIRICHLETBC)
         {
@@ -166,7 +166,7 @@ void FourierTransforms<SType>::FFTBoundaryConditions()
 
 
     boundaryConditionBaseType bcZ0
-        = globalBoundaryConditionBaseType(x_, faceOffsets[4]);
+        = globalBoundaryConditionBaseType(x_[0], faceOffsets[4]);
 
     if (bcZ0 == boundaryConditionBaseType::EMPTYBC)
     {
@@ -179,7 +179,7 @@ void FourierTransforms<SType>::FFTBoundaryConditions()
     else if (bcZ0 == boundaryConditionBaseType::DIRICHLETBC)
     {
         boundaryConditionBaseType bcZ1
-            = globalBoundaryConditionBaseType(x_, faceOffsets[5]);
+            = globalBoundaryConditionBaseType(x_[0], faceOffsets[5]);
 
         if (bcZ1 == boundaryConditionBaseType::DIRICHLETBC)
         {
@@ -193,7 +193,7 @@ void FourierTransforms<SType>::FFTBoundaryConditions()
     else if (bcZ0 == boundaryConditionBaseType::NEUMANNBC)
     {
         boundaryConditionBaseType bcZ1
-            = globalBoundaryConditionBaseType(x_, faceOffsets[5]);
+            = globalBoundaryConditionBaseType(x_[0], faceOffsets[5]);
 
         if (bcZ1 == boundaryConditionBaseType::DIRICHLETBC)
         {

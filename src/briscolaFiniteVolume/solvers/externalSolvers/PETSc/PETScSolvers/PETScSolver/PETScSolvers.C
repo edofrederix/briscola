@@ -1,3 +1,7 @@
+#ifdef PETSC
+
+#include "PETScSolverBase.C"
+
 #include "PETScExternalSolver.H"
 #include "PETScKSPSolver.H"
 
@@ -9,10 +13,4 @@
 
 #include "PCLUPETScSolver.H"
 
-#ifdef SUPERLU
-#include "SuperLUPETScSolver.H"
-#endif
-
-#ifdef SUPERLU_DIST
-#include "SuperLUDistPETScSolver.H"
 #endif

@@ -9,16 +9,37 @@ namespace briscola
 namespace fv
 {
 
-// Constructor
+// Constructors
 
 template<class Type, class MeshType>
 emptyImmersedBoundaryCondition<Type,MeshType>::emptyImmersedBoundaryCondition
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshField<Type,MeshType>& field,
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField, ib, nullptr)
+    immersedBoundaryCondition<Type,MeshType>(field, ib, nullptr)
+{}
+
+template<class Type, class MeshType>
+emptyImmersedBoundaryCondition<Type,MeshType>::
+emptyImmersedBoundaryCondition
+(
+    const emptyImmersedBoundaryCondition<Type,MeshType>& ibc
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc)
+{}
+
+template<class Type, class MeshType>
+emptyImmersedBoundaryCondition<Type,MeshType>::
+emptyImmersedBoundaryCondition
+(
+    const emptyImmersedBoundaryCondition<Type,MeshType>& ibc,
+    const meshField<Type,MeshType>& field
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc, field)
 {}
 
 // Destructor

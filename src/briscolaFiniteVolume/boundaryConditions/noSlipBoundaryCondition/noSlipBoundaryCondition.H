@@ -29,13 +29,13 @@ public:
     // Construct from components setting zero value
     noSlipBoundaryCondition
     (
-        const meshField<Type,MeshType>& mshField,
+        const meshLevel<Type,MeshType>& level,
         const boundary& b
     )
     :
         DirichletBoundaryCondition<Type,MeshType>
         (
-            mshField,
+            level,
             b,
             Zero
         )
@@ -50,15 +50,15 @@ public:
         );
     }
 
-    // Construct and return a clone setting field reference
+    // Construct and return a clone for alternative level
     virtual tmp<boundaryCondition<Type,MeshType>> clone
     (
-        const meshField<Type,MeshType>& field
+        const meshLevel<Type,MeshType>& level
     ) const
     {
         return tmp<boundaryCondition<Type,MeshType>>
         (
-            new noSlipBoundaryCondition<Type,MeshType>(field,*this)
+            new noSlipBoundaryCondition<Type,MeshType>(*this, level)
         );
     }
 };

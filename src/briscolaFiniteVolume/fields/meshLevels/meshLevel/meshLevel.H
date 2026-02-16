@@ -8,6 +8,7 @@
 #include "block.H"
 #include "Vector.H"
 
+#include "boundaryCondition.H"
 #include "meshDirection.H"
 
 #define BOUNDARYEXCHANGE 1
@@ -22,6 +23,9 @@ namespace fv
 {
 
 class fvMesh;
+
+template<class Type, class MeshType>
+class boundaryExchange;
 
 template<class Type, class MeshType>
 class meshLevel
@@ -43,7 +47,17 @@ private:
     label l_;
 
     // Pointer to the mesh field, if any
-    meshField<Type,MeshType>* mshFieldPtr_;
+    meshField<Type,MeshType>* fieldPtr_;
+
+    // Boundary conditions
+    FastPtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
+
+    // Boundary exchange (defined on field level to enable collective operations
+    // on all levels)
+    autoPtr<boundaryExchange<Type,MeshType>> bExchangePtr_;
+
+    // Singular boundary condition bool (set when adding boundary conditions)
+    bool singular_;
 
     // Allocate data
     void allocate();
@@ -53,6 +67,15 @@ private:
 
     // Transfer data from other mesh level
     void transfer(meshLevel<Type,MeshType>&);
+
+    // Check if the given mesh level matches our level
+    template<class Type2>
+    void checkLevel(const meshLevel<Type2,MeshType>& L) const
+    {
+        if (L.levelNum() != l_)
+            FatalErrorInFunction
+                << "Invalid level" << endl << abort(FatalError);
+    }
 
 public:
 
@@ -72,67 +95,30 @@ public:
     typedef FastPtrList<meshDirection<Type,MeshType>> listType;
 
     // Main constructor: construct from owner field, mesh and level number
+    meshLevel(meshField<Type,MeshType>& field, const label l);
 
-    meshLevel
-    (
-        meshField<Type,MeshType>& mshField,
-        const label l
-    );
-
-    // Copy constructors: construct from mesh level, tmp or mesh
-
+    // Copy constructors from level
     meshLevel(const meshLevel<Type,MeshType>& L);
-    meshLevel(const meshLevel<Type,MeshType>& L, const zero&);
-    meshLevel(const meshLevel<Type,MeshType>& L, const Type&);
-    meshLevel(const meshLevel<Type,MeshType>& L, const List<Type>&);
+    meshLevel(const tmp<meshLevel<Type,MeshType>>&);
 
-    meshLevel(const tmp<meshLevel<Type,MeshType>>& tL);
-    meshLevel(const tmp<meshLevel<Type,MeshType>>& tL, const zero&);
-    meshLevel(const tmp<meshLevel<Type,MeshType>>& tL, const Type&);
-    meshLevel(const tmp<meshLevel<Type,MeshType>>& tL, const List<Type>&);
-
-    // Standalone constructors: construct without parent field with optional
-    // ghost layers
-
-    meshLevel
-    (
-        const fvMesh& fvMsh,
-        const label l
-    );
-
-    meshLevel
-    (
-        const fvMesh& fvMsh,
-        const label l,
-        const zero&
-    );
-
-    meshLevel
-    (
-        const fvMesh& fvMsh,
-        const label l,
-        const Type& v
-    );
-
-    meshLevel
-    (
-        const fvMesh& fvMsh,
-        const label l,
-        const List<Type>& v
-    );
+    // Standalone constructors: construct without parent field
+    meshLevel(const fvMesh& fvMsh, const label l);
+    meshLevel(const fvMesh& fvMsh, const label l, const zero&);
+    meshLevel(const fvMesh& fvMsh, const label l, const Type& v);
+    meshLevel(const fvMesh& fvMsh, const label l, const List<Type>& v);
 
     // Temporary level constructors
 
     static tmp<meshLevel<Type,MeshType>> New
     (
-        meshField<Type,MeshType>& mshField,
+        meshField<Type,MeshType>& field,
         const label l
     )
     {
         return
             tmp<meshLevel<Type,MeshType>>
             (
-                new meshLevel<Type,MeshType>(mshField,l)
+                new meshLevel<Type,MeshType>(field,l)
             );
     }
 
@@ -150,36 +136,11 @@ public:
     }
 
     // Clone
-
     inline autoPtr<meshLevel<Type,MeshType>> clone() const
     {
         return autoPtr<meshLevel<Type,MeshType>>
         (
             new meshLevel<Type,MeshType>(*this)
-        );
-    }
-
-    inline autoPtr<meshLevel<Type,MeshType>> clone(const zero&) const
-    {
-        return autoPtr<meshLevel<Type,MeshType>>
-        (
-            new meshLevel<Type,MeshType>(*this, Zero)
-        );
-    }
-
-    inline autoPtr<meshLevel<Type,MeshType>> clone(const Type& v) const
-    {
-        return autoPtr<meshLevel<Type,MeshType>>
-        (
-            new meshLevel<Type,MeshType>(*this, v)
-        );
-    }
-
-    inline autoPtr<meshLevel<Type,MeshType>> clone(const List<Type>& v) const
-    {
-        return autoPtr<meshLevel<Type,MeshType>>
-        (
-            new meshLevel<Type,MeshType>(*this, v)
         );
     }
 
@@ -228,54 +189,92 @@ public:
     // Alias to size
     inline label numberOfDirections() const { return size(); }
 
-    // Return the mesh
+    // Return the finite volume mesh
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
+    // Return the mesh
+    inline const mesh& msh() const { return fvMsh_.msh(); }
+
     // Pointer to the mesh field
-    inline const meshField<Type,MeshType>* mshFieldPtr() const
+    inline const meshField<Type,MeshType>* fieldPtr() const
     {
-        return mshFieldPtr_;
+        return fieldPtr_;
     }
 
     // Const reference to the mesh field (unchecked!)
-    inline const meshField<Type,MeshType>& mshField() const
+    inline const meshField<Type,MeshType>& field() const
     {
-        return *mshFieldPtr_;
+        return *fieldPtr_;
     }
 
     // Access to the mesh field (unchecked!)
-    inline meshField<Type,MeshType>& mshField()
+    inline meshField<Type,MeshType>& field()
     {
-        return *mshFieldPtr_;
+        return *fieldPtr_;
     }
 
     // Level number
     inline label levelNum() const { return l_; }
 
-    // Mesh part
-    inline const part& mshPart() const { return fvMsh_[l_]; }
+    // Return the mesh level
+    inline const level& lvl() const { return fvMsh_[l_]; }
+
+    // Access to the boundary conditions
+    inline FastPtrList<boundaryCondition<Type,MeshType>>& boundaryConditions()
+    {
+        return boundaryConditions_;
+    }
+
+    // Const access to the boundary conditions
+    inline const FastPtrList<boundaryCondition<Type,MeshType>>&
+    boundaryConditions() const
+    {
+        return boundaryConditions_;
+    }
+
+    // Get boundary condition from offset vector
+    inline boundaryCondition<Type,MeshType>& boundary
+    (
+        const labelVector& bo
+    )
+    {
+        forAll(boundaryConditions_, i)
+            if (boundaryConditions_[i].offset() == bo)
+                return boundaryConditions_[i];
+
+        FatalErrorInFunction
+            << "Invalid boundary condition offset" << endl << abort(FatalError);
+
+        return boundaryConditions_[0];
+    }
+
+    // Get const reference to boundary condition from offset vector
+    inline const boundaryCondition<Type,MeshType>& boundary
+    (
+        const labelVector& bo
+    ) const
+    {
+        return const_cast<meshField<Type,MeshType>*>(this)->boundary(bo);
+    }
 
     // Add boundary conditions only of not yet added
-    inline void addBoundaryConditions()
-    {
-        if (mshFieldPtr_ && mshFieldPtr_->boundaryConditions().size() == 0)
-        {
-            mshFieldPtr_->addBoundaryConditions();
-        }
-    }
+    void addBoundaryConditions();
 
     // Add immersed boundary conditions only of not yet added
     inline void addImmersedBoundaryConditions()
     {
         if
         (
-            mshFieldPtr_
-         && mshFieldPtr_->immersedBoundaryConditions().size() == 0
+            fieldPtr_
+         && fieldPtr_->immersedBoundaryConditions().size() == 0
         )
         {
-            mshFieldPtr_->addImmersedBoundaryConditions();
+            fieldPtr_->addImmersedBoundaryConditions();
         }
     }
+
+    // Transfer boundary conditions from another level
+    void transferBoundaryConditions(const meshLevel<Type,MeshType>&);
 
     // Correct boundary conditions
     void correctBoundaryConditions();
@@ -313,6 +312,17 @@ public:
 
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();
+
+    // Correct agglomeration data, optionally for a specific direction
+    void correctAggData(const label = -1);
+
+    // Check if the boundary conditions make this level singular
+    bool singular() const
+    {
+        const_cast<meshLevel<Type,MeshType>*>(this)->addBoundaryConditions();
+
+        return singular_;
+    }
 
     // Return a component
     tmp<meshLevel<cmptType,MeshType>> component(const label) const;
@@ -399,6 +409,10 @@ public:
 
     // Allow the parent field to make changes to private data
     friend class meshField<Type,MeshType>;
+
+    // Befriend parallel exchange
+    template<class, class>
+    friend class boundaryExchange;
 
     #include "meshLevelFirstDirectionFunctions.H"
     #include "meshLevelDirectionFunctions.H"

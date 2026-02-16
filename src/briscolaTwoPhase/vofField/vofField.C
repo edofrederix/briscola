@@ -18,9 +18,7 @@ vofField::vofField(const fvMesh& fvMsh, const word name)
     (
         name == word::null ? "alpha" : name,
         fvMsh,
-        name == word::null ?
-          IOobject::MUST_READ
-        : IOobject::READ_IF_PRESENT,
+        name == word::null ? IOobject::MUST_READ : IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE,
         true,
         true
@@ -34,7 +32,7 @@ vofField::vofField(const fvMesh& fvMsh, const word name)
 
 vofField::vofField(const vofField& s)
 :
-    colocatedScalarField(s, s.registered(), true),
+    colocatedScalarField(s),
     fvMsh_(s.fvMsh_),
     normalSchemePtr_(s.normalSchemePtr_),
     surfaceTensionSchemePtr_(s.surfaceTensionSchemePtr_),

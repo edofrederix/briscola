@@ -17,11 +17,11 @@ namespace fv
 template<class Type, class MeshType>
 parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshLevel<Type,MeshType>& level,
     const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(mshField, b),
+    boundaryCondition<Type,MeshType>(level, b),
     neighborProcNum_
     (
         b.cast<parallelBoundary>().neighborProcNum()
@@ -30,26 +30,22 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
     (
         b.cast<parallelBoundary>().tag()
     ),
-    sendBuffers_(),
-    recvBuffers_(),
+    sendBuffers_(MeshType::numberOfDirections),
+    recvBuffers_(MeshType::numberOfDirections),
     outstandingSendRequest_(-1),
     outstandingRecvRequest_(-1)
 {
-    // Set send/recv buffers for all mesh levels (even though the mesh field may
-    // be shallow at this point)
+    // Set send/recv buffers
 
     const labelTensor T(this->T());
 
-    forAll(this->fvMsh_, l)
+    for (int d = 0; d < MeshType::numberOfDirections; d++)
     {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector NSend = this->N(l,d);
-            const labelVector NRecv = cmptMag(T.T() & NSend);
+        const labelVector NSend = this->N(d);
+        const labelVector NRecv = cmptMag(T.T() & NSend);
 
-            sendBuffers_.append(new block<Type>(NSend));
-            recvBuffers_.append(new block<Type>(NRecv));
-        }
+        sendBuffers_.set(d, new block<Type>(NSend));
+        recvBuffers_.set(d, new block<Type>(NRecv));
     }
 }
 
@@ -71,11 +67,11 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
 template<class Type, class MeshType>
 parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
 (
-    const meshField<Type,MeshType>& field,
-    const parallelBoundaryCondition<Type,MeshType>& bc
+    const parallelBoundaryCondition<Type,MeshType>& bc,
+    const meshLevel<Type,MeshType>& level
 )
 :
-    boundaryCondition<Type,MeshType>(field, bc),
+    boundaryCondition<Type,MeshType>(bc, level),
     neighborProcNum_(bc.neighborProcNum_),
     tag_(bc.tag_),
     sendBuffers_(bc.sendBuffers_),
@@ -85,25 +81,19 @@ parallelBoundaryCondition<Type,MeshType>::parallelBoundaryCondition
 {}
 
 template<class Type, class MeshType>
-void parallelBoundaryCondition<Type,MeshType>::prepare
-(
-    const label l
-)
+void parallelBoundaryCondition<Type,MeshType>::prepare()
 {
-    const meshLevel<Type,MeshType>& field = this->mshField()[l];
-
     const labelVector bo(this->offset());
 
-    forAll(field, d)
+    const meshLevel<Type,MeshType>& level = this->level_;
+
+    forAll(level, d)
     {
-        const labelVector S(this->S(l,d));
-        const labelVector E(this->E(l,d));
+        const labelVector S(this->S(d));
+        const labelVector E(this->E(d));
 
-        block<Type>& sendBuffer =
-            sendBuffers_[l*field.size()+d];
-
-        block<Type>& recvBuffer =
-            recvBuffers_[l*field.size()+d];
+        block<Type>& sendBuffer = sendBuffers_[d];
+        block<Type>& recvBuffer = recvBuffers_[d];
 
         labelVector ijk;
 
@@ -111,7 +101,7 @@ void parallelBoundaryCondition<Type,MeshType>::prepare
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            sendBuffer(ijk-S) = field(d,ijk);
+            sendBuffer(ijk-S) = level(d,ijk);
         }
 
         outstandingRecvRequest_ = UPstream::nRequests();
@@ -123,7 +113,7 @@ void parallelBoundaryCondition<Type,MeshType>::prepare
             reinterpret_cast<char*>(recvBuffer.begin()),
             recvBuffer.byteSize(),
             tag_,
-            UPstream::worldComm
+            level.lvl().comms()
         );
 
         outstandingSendRequest_ = UPstream::nRequests();
@@ -135,14 +125,13 @@ void parallelBoundaryCondition<Type,MeshType>::prepare
             reinterpret_cast<char*>(sendBuffer.begin()),
             sendBuffer.byteSize(),
             tag_,
-            UPstream::worldComm
+            level.lvl().comms()
         );
     }
-
 }
 
 template<class Type, class MeshType>
-void parallelBoundaryCondition<Type,MeshType>::evaluate(const label l)
+void parallelBoundaryCondition<Type,MeshType>::evaluate()
 {
     if
     (
@@ -156,17 +145,17 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate(const label l)
     outstandingSendRequest_ = -1;
     outstandingRecvRequest_ = -1;
 
-    meshLevel<Type,MeshType>& field = this->mshField()[l];
-
     const labelTensor T(this->T());
     const labelVector bo(this->offset());
 
-    forAll(field, d)
-    {
-        const labelVector S(this->S(l,d));
-        const labelVector E(this->E(l,d));
+    meshLevel<Type,MeshType>& level = this->level_;
 
-        block<Type>& recvBuffer = recvBuffers_[l*field.size()+d];
+    forAll(level, d)
+    {
+        const labelVector S(this->S(d));
+        const labelVector E(this->E(d));
+
+        block<Type>& recvBuffer = recvBuffers_[d];
 
         // Transform the receive buffer back to the orientation of the boundary
 
@@ -179,7 +168,7 @@ void parallelBoundaryCondition<Type,MeshType>::evaluate(const label l)
         for (ijk.y() = S.y(); ijk.y() < E.y(); ijk.y()++)
         for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
         {
-            field(d,ijk+bo) = data(ijk-S);
+            level(d,ijk+bo) = data(ijk-S);
         }
     }
 }

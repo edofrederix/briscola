@@ -1,3 +1,5 @@
+#ifdef PETSC
+
 #include "solvers.H"
 #include "Krylov.H"
 
@@ -25,3 +27,5 @@ makeSolverType(Krylov,stencil,vector,staggered);
 }
 
 }
+
+#endif

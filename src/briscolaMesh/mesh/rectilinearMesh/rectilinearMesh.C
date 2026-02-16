@@ -11,45 +11,60 @@ namespace briscola
 defineTypeNameAndDebug(rectilinearMesh, 0);
 addToRunTimeSelectionTable(mesh, rectilinearMesh, dictionary);
 
-void rectilinearMesh::setMetrics()
+void rectilinearMesh::setMetrics(const label l)
 {
-    const decompositionMap& map = decomp().map();
-    const part& p = this->operator[](0);
-    const partPoints& points = p.points();
+    const level& lvl = this->operator[](l);
+    const levelPoints& points = lvl.points();
 
     // Base vectors
 
-    vectorList base(3);
-
-    for (int d = 0; d < 3; d++)
+    if (l == 0)
     {
-        base[d] = points(units[d]) - points(zeroXYZ);
-        base[d] /= Foam::mag(base[d]);
-    }
+        vectorList base(3);
 
-    base_ = tensor(base[0], base[1], base[2]);
+        for (int d = 0; d < 3; d++)
+        {
+            base[d] = points(units[d]) - points(zeroXYZ);
+            base[d] /= Foam::mag(base[d]);
+        }
 
-    if (base_.x() != base[0] || base_.y() != base[1] || base_.z() != base[2])
-    {
-        FatalErrorInFunction
-            << "Base tensor does not match base vectors" << endl
-            << abort(FatalError);
+        base_ = tensor(base[0], base[1], base[2]);
+
+        if
+        (
+            base_.x() != base[0]
+         || base_.y() != base[1]
+         || base_.z() != base[2]
+        )
+        {
+            FatalErrorInFunction
+                << "Base tensor does not match base vectors" << endl
+                << abort(FatalError);
+        }
     }
 
     // Local cell sizes and points
 
-    localCellSizesData_.clear();
-    localPointsData_.clear();
-    localCellSizesData_.setSize(3);
-    localPointsData_.setSize(3);
+    localCellSizesData_[l].clear();
+    localPointsData_[l].clear();
+    localCellSizesData_[l].setSize(3);
+    localPointsData_[l].setSize(3);
 
     for (int d = 0; d < 3; d++)
     {
-        localCellSizesData_.set(d, new scalarList(p.N()[d]+2));
-        localPointsData_.set(d, new scalarList(p.N()[d]+3));
+        if (lvl.empty())
+        {
+            localCellSizesData_[l].set(d, new scalarList(0));
+            localPointsData_[l].set(d, new scalarList(0));
+        }
+        else
+        {
+            localCellSizesData_[l].set(d, new scalarList(lvl.N()[d]+2));
+            localPointsData_[l].set(d, new scalarList(lvl.N()[d]+3));
+        }
 
-        scalarList& localCellSizesData = localCellSizesData_[d];
-        scalarList& localPointsData = localPointsData_[d];
+        scalarList& localCellSizesData = localCellSizesData_[l][d];
+        scalarList& localPointsData = localPointsData_[l][d];
 
         const labelVector dir = units[d];
 
@@ -82,52 +97,79 @@ void rectilinearMesh::setMetrics()
 
     // Create local lists without ghosts as sub-lists
 
-    localCellSizes_.clear();
-    localPoints_.clear();
-    localCellSizes_.setSize(3);
-    localPoints_.setSize(3);
+    localCellSizes_[l].clear();
+    localPoints_[l].clear();
+    localCellSizes_[l].setSize(3);
+    localPoints_[l].setSize(3);
 
     for (int d = 0; d < 3; d++)
     {
-        localCellSizes_.set
-        (
-            d,
-            new PartialList<scalar>
+        if (lvl.empty())
+        {
+            localCellSizes_[l].set
             (
-                localCellSizesData_[d],
-                localCellSizesData_[d].size()-2,
-                1
-            )
-        );
+                d,
+                new PartialList<scalar>(localCellSizesData_[l][d], 0)
+            );
 
-        localPoints_.set
-        (
-            d,
-            new PartialList<scalar>
+            localPoints_[l].set
             (
-                localPointsData_[d],
-                localPointsData_[d].size()-2,
-                1
-            )
-        );
+                d,
+                new PartialList<scalar>(localPointsData_[l][d], 0)
+            );
+        }
+        else
+        {
+            localCellSizes_[l].set
+            (
+                d,
+                new PartialList<scalar>
+                (
+                    localCellSizesData_[l][d],
+                    localCellSizesData_[l][d].size()-2,
+                    1
+                )
+            );
+
+            localPoints_[l].set
+            (
+                d,
+                new PartialList<scalar>
+                (
+                    localPointsData_[l][d],
+                    localPointsData_[l][d].size()-2,
+                    1
+                )
+            );
+        }
     }
 
     // Global cell sizes
 
-    globalCellSizesData_.clear();
-    globalPointsData_.clear();
-    globalCellSizesData_.setSize(3);
-    globalPointsData_.setSize(3);
+    const decompositionMap& map = lvl.decomp().map();
+
+    globalCellSizesData_[l].clear();
+    globalPointsData_[l].clear();
+    globalCellSizesData_[l].setSize(3);
+    globalPointsData_[l].setSize(3);
 
     PtrList<labelList> starts(3);
 
     for (int d = 0; d < 3; d++)
     {
-        globalCellSizesData_.set(d, new scalarList(this->N()[d]+2));
-        globalPointsData_.set(d, new scalarList(this->N()[d]+3));
+        if (lvl.empty())
+        {
+            globalCellSizesData_[l].set(d, new scalarList(0));
+            globalPointsData_[l].set(d, new scalarList(0));
+        }
+        else
+        {
+            globalCellSizesData_[l].set(d, new scalarList(this->N()[d]+2));
+            globalPointsData_[l].set(d, new scalarList(this->N()[d]+3));
+        }
 
-        scalarList& globalCellSizes = globalCellSizesData_[d];
-        scalarList& globalPoints = globalPointsData_[d];
+        scalarList& globalCellSizes = globalCellSizesData_[l][d];
+        scalarList& globalPoints = globalPointsData_[l][d];
 
         const labelVector base2 = units[d];
 
@@ -142,10 +184,10 @@ void rectilinearMesh::setMetrics()
             if (proc == Pstream::myProcNo())
             {
                 const scalarList& localCellSizesData =
-                    localCellSizesData_[d];
+                    localCellSizesData_[l][d];
 
                 const scalarList& localPointsData =
-                    localPointsData_[d];
+                    localPointsData_[l][d];
 
                 if (proc == Pstream::masterNo())
                 {
@@ -171,7 +213,10 @@ void rectilinearMesh::setMetrics()
                     OPstream send
                     (
                         Pstream::commsTypes::blocking,
-                        Pstream::masterNo()
+                        Pstream::masterNo(),
+                        0,
+                        UPstream::msgType(),
+                        lvl.comms()
                     );
 
                     send << localCellSizesData;
@@ -188,7 +233,10 @@ void rectilinearMesh::setMetrics()
                 IPstream recv
                 (
                     Pstream::commsTypes::blocking,
-                    proc
+                    proc,
+                    0,
+                    UPstream::msgType(),
+                    lvl.comms()
                 );
 
                 recv >> localCellSizesData;
@@ -211,8 +259,8 @@ void rectilinearMesh::setMetrics()
 
         // Send back to slaves
 
-        Pstream::scatter(globalCellSizes);
-        Pstream::scatter(globalPoints);
+        Pstream::scatter(globalCellSizes, Pstream::msgType(), lvl.comms());
+        Pstream::scatter(globalPoints, Pstream::msgType(), lvl.comms());
 
         if (Pstream::master())
         {
@@ -222,7 +270,10 @@ void rectilinearMesh::setMetrics()
                 OPstream send
                 (
                     Pstream::commsTypes::blocking,
-                    proc
+                    proc,
+                    0,
+                    UPstream::msgType(),
+                    lvl.comms()
                 );
 
                 send << starts[d];
@@ -233,7 +284,10 @@ void rectilinearMesh::setMetrics()
             IPstream recv
             (
                 Pstream::commsTypes::blocking,
-                Pstream::masterNo()
+                Pstream::masterNo(),
+                0,
+                UPstream::msgType(),
+                lvl.comms()
             );
 
             recv >> starts[d];
@@ -242,66 +296,117 @@ void rectilinearMesh::setMetrics()
 
     // Create global lists without ghosts as sub-lists
 
-    globalCellSizes_.clear();
-    globalPoints_.clear();
-    globalCellSizes_.setSize(3);
-    globalPoints_.setSize(3);
+    globalCellSizes_[l].clear();
+    globalPoints_[l].clear();
+    globalCellSizes_[l].setSize(3);
+    globalPoints_[l].setSize(3);
 
     for (int d = 0; d < 3; d++)
     {
-        globalCellSizes_.set
-        (
-            d,
-            new PartialList<scalar>
+        if (lvl.empty())
+        {
+            globalCellSizes_[l].set
             (
-                globalCellSizesData_[d],
-                globalCellSizesData_[d].size()-2,
-                1
-            )
-        );
+                d,
+                new PartialList<scalar>(globalCellSizesData_[l][d], 0)
+            );
 
-        globalPoints_.set
-        (
-            d,
-            new PartialList<scalar>
+            globalPoints_[l].set
             (
-                globalPointsData_[d],
-                globalPointsData_[d].size()-2,
-                1
-            )
-        );
+                d,
+                new PartialList<scalar>(globalPointsData_[l][d], 0)
+            );
+        }
+        else
+        {
+            globalCellSizes_[l].set
+            (
+                d,
+                new PartialList<scalar>
+                (
+                    globalCellSizesData_[l][d],
+                    globalCellSizesData_[l][d].size()-2,
+                    1
+                )
+            );
+
+            globalPoints_[l].set
+            (
+                d,
+                new PartialList<scalar>
+                (
+                    globalPointsData_[l][d],
+                    globalPointsData_[l][d].size()-2,
+                    1
+                )
+            );
+        }
     }
 
     // Set global starts
 
-    globalStarts_.setSize(Pstream::nProcs());
+    globalStarts_[l].setSize(Pstream::nProcs());
 
     forAllBlock(map, i, j, k)
     {
         const labelVector ijk(i,j,k);
         const label proc = map(ijk);
 
-        globalStarts_[proc] = Zero;
+        globalStarts_[l][proc] = Zero;
 
         for (int d = 0; d < 3; d++)
-            globalStarts_[proc][d] = starts[d][ijk[d]];
+            globalStarts_[l][proc][d] = starts[d][ijk[d]];
     }
 
-    // Check if global mesh directions are uniform
+    // Check if global mesh directions are uniform, only on the first level
 
-    globalUniform_ = labelVector(1,1,1);
-
-    const scalar tol = 1e-7;
-
-    forAll(globalCellSizes_, d)
+    if (l == 0)
     {
-        scalar maxCellSize = max(globalCellSizes_[d]);
-        scalar minCellSize = min(globalCellSizes_[d]);
+        globalUniform_ = labelVector(1,1,1);
 
-        if (maxCellSize - minCellSize > tol)
+        const scalar tol = 1e-7;
+
+        forAll(globalCellSizes_[l], d)
         {
-            globalUniform_[d] = 0;
+            scalar maxCellSize = max(globalCellSizes_[l][d]);
+            scalar minCellSize = min(globalCellSizes_[l][d]);
+
+            if (maxCellSize - minCellSize > tol)
+            {
+                globalUniform_[d] = 0;
+            }
         }
+    }
+}
+
+void rectilinearMesh::setMetrics()
+{
+    const label nLevels = this->size();
+
+    localCellSizesData_.setSize(nLevels);
+    localPointsData_.setSize(nLevels);
+    globalCellSizesData_.setSize(nLevels);
+    globalPointsData_.setSize(nLevels);
+    localCellSizes_.setSize(nLevels);
+    localPoints_.setSize(nLevels);
+    globalCellSizes_.setSize(nLevels);
+    globalPoints_.setSize(nLevels);
+
+    globalStarts_.setSize(nLevels);
+
+    forAll(*this, l)
+    {
+        localCellSizesData_.set(l, new FastPtrList<scalarList>());
+        localPointsData_.set(l, new FastPtrList<scalarList>());
+        globalCellSizesData_.set(l, new FastPtrList<scalarList>());
+        globalPointsData_.set(l, new FastPtrList<scalarList>());
+
+        localCellSizes_.set(l, new FastPtrList<PartialList<scalar>>());
+        localPoints_.set(l, new FastPtrList<PartialList<scalar>>());
+        globalCellSizes_.set(l, new FastPtrList<PartialList<scalar>>());
+        globalPoints_.set(l, new FastPtrList<PartialList<scalar>>());
+
+        setMetrics(l);
     }
 }
 
@@ -322,13 +427,10 @@ rectilinearMesh::rectilinearMesh(autoPtr<mesh>& mshPtr)
 rectilinearMesh::rectilinearMesh(const rectilinearMesh& msh)
 :
     structuredMesh(msh),
-    base_(msh.base_),
-    localCellSizes_(msh.localCellSizes_),
-    localPoints_(msh.localPoints_),
-    globalCellSizes_(msh.globalCellSizes_),
-    globalPoints_(msh.globalPoints_),
-    globalUniform_(msh.globalUniform_)
-{}
+    base_(msh.base_)
+{
+    setMetrics();
+}
 
 rectilinearMesh::~rectilinearMesh()
 {}
@@ -348,7 +450,14 @@ labelVector rectilinearMesh::findCell(const vector& p, const label l) const
         )
     );
 
-    const PtrList<PartialList<scalar>>& x = localPoints_;
+    const FastPtrList<PartialList<scalar>>& x = localPoints_[l];
+
+    const level& lvl = this->operator[](l);
+
+    // On empty levels there's nothing to search
+
+    if (lvl.empty())
+        return -unitXYZ;
 
     // Check if the point is outside the domain boundaries
 
@@ -362,23 +471,17 @@ labelVector rectilinearMesh::findCell(const vector& p, const label l) const
 
     for (label d = 0; d < 3; d++)
         if (q[d] >= x[d].last() && q[d] <= x[d].last() + 1e-12)
-            if (b(units[d]).castable<parallelBoundary>())
+            if (lvl.boundaries().find(units[d]).castable<parallelBoundary>())
                 return -unitXYZ;
 
     for (label d = 0; d < 3; d++)
         if (q[d] < x[d].first() && q[d] >= x[d].first() - 1e-12)
-            if (b(-units[d]).castable<parallelBoundary>())
+            if (lvl.boundaries().find(-units[d]).castable<parallelBoundary>())
                 return -unitXYZ;
 
     // Binary search. Use <= operator so that at faces points belong to the
     // upper cell. Assign points that are on the upper boundary to the nearest
     // internal cell.
-
-    const labelVector N(this->operator[](0).N());
-    const labelVector R
-    (
-        cmptDivide(N, this->operator[](l).N())
-    );
 
     labelVector ijk;
 
@@ -391,10 +494,10 @@ labelVector rectilinearMesh::findCell(const vector& p, const label l) const
                     findLower(x[d], q[d], 0, lessEqOp<scalar>()),
                     0
                 ),
-                N[d]-1
+                lvl.N()[d]-1
             );
 
-    return cmptDivide(ijk, R);
+    return ijk;
 }
 
 }

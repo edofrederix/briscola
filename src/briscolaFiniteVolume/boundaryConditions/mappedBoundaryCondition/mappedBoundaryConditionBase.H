@@ -44,7 +44,7 @@ public:
     // Construct from components
     mappedBoundaryConditionBase
     (
-        const meshField<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const boundary&
     );
 };

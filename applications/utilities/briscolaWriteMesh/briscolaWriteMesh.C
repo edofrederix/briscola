@@ -5,6 +5,8 @@
 #include "fvMesh.H"
 #include "IO.H"
 
+#include "meshFields.H"
+
 using namespace Foam;
 using namespace briscola;
 using namespace fv;
@@ -26,6 +28,29 @@ int main(int argc, char *argv[])
 
     if (args.optionFound("partitioned"))
         io.enablePartitioned();
+
+    colocatedLabelField coloProcNums
+    (
+        "procNums",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE,
+        true,
+        true
+    );
+
+    staggeredLabelField stagProcNums
+    (
+        "procNums",
+        fvMsh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE,
+        true,
+        true
+    );
+
+    coloProcNums = Pstream::myProcNo();
+    stagProcNums = Pstream::myProcNo();
 
     forAll(fvMsh.msh(), l)
     {

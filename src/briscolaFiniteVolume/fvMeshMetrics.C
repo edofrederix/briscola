@@ -27,17 +27,17 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
 
     forAll(fvMsh_, l)
     {
-        const partPoints& points = fvMsh_[l].points();
+        const levelPoints& points = fvMsh_[l].points();
 
         for (int d = 0; d < MeshType::numberOfDirections; d++)
         {
             const labelVector N = fvMsh_.N<MeshType>(l,d);
             const vector shift = MeshType::shift[d];
 
-            // Create vertices from a partPoints object, which consistently
+            // Create vertices from a levelPoints object, which consistently
             // generates ghost points
 
-            partPoints p(fvMsh_.msh());
+            levelPoints p(fvMsh_[l]);
 
             p.clear();
             p.setSizeFromCells(N);
@@ -47,6 +47,11 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
 
             p.calcGhostPoints();
             p.clean();
+
+            // Nothing to do on empty levels
+
+            if (fvMsh_[l].empty())
+                continue;
 
             // For each cell, copy points into vertex vectors
 
@@ -95,6 +100,8 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
             }
         }
     }
+
+    vc.correctAggData();
 }
 
 template<class MeshType>
@@ -126,6 +133,9 @@ void fvMeshMetrics<MeshType>::calculateFaceCenters()
             }
         }
     }
+
+    for (int fd = 0; fd < 3; fd++)
+        fc[fd].correctAggData();
 }
 
 template<class MeshType>
@@ -165,6 +175,13 @@ void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
             }
         }
     }
+
+    for (int fd = 0; fd < 3; fd++)
+    {
+        fn[fd].correctAggData();
+        fa[fd].correctAggData();
+        fan[fd].correctAggData();
+    }
 }
 
 template<class MeshType>
@@ -192,6 +209,8 @@ void fvMeshMetrics<MeshType>::calculateCellCenters()
             }
         }
     }
+
+    cc.correctAggData();
 }
 
 template<class MeshType>
@@ -224,6 +243,7 @@ void fvMeshMetrics<MeshType>::calculateCellVolumes()
 
     // Small number to avoid division by zero in unset/invalid ghost cells
     cv = max(cv, 1e-16);
+    cv.correctAggData();
 
     // Compute at store the inverse cell volumes
     inverseCellVolumes_ = 1.0/cv;
@@ -258,6 +278,9 @@ void fvMeshMetrics<MeshType>::calculateFaceDeltas()
             }
         }
     }
+
+    for (int fd = 0; fd < 3; fd++)
+        delta[fd].correctAggData();
 }
 
 template<class MeshType>
@@ -295,6 +318,12 @@ void fvMeshMetrics<MeshType>::calculateFaceWeights()
             }
         }
     }
+
+    for (int fd = 0; fd < 3; fd++)
+    {
+        fwc[fd].correctAggData();
+        fwn[fd].correctAggData();
+    }
 }
 
 template<class MeshType>
@@ -317,8 +346,8 @@ void fvMeshMetrics<MeshType>::setGlobalCellNumbers()
             sizes[Pstream::myProcNo()] =
                 cmptProduct(fvMsh_.N<MeshType>(l,d));
 
-            Pstream::gatherList(sizes);
-            Pstream::scatterList(sizes);
+            Pstream::gatherList(sizes, Pstream::msgType(), fvMsh_[l].comms());
+            Pstream::scatterList(sizes, Pstream::msgType(), fvMsh_[l].comms());
 
             label start = 0;
 
@@ -549,6 +578,8 @@ fvMeshMetrics<MeshType>::AoS::faceCenters() const
         }
     }
 
+    fc.correctAggData();
+
     return tFc;
 }
 
@@ -582,6 +613,8 @@ fvMeshMetrics<MeshType>::AoS::edgeCenters() const
             }
         }
     }
+
+    ec.correctAggData();
 
     return tEc;
 }
@@ -620,6 +653,8 @@ fvMeshMetrics<MeshType>::AoS::faceNormals() const
         }
     }
 
+    fn.correctAggData();
+
     return tFn;
 }
 
@@ -657,6 +692,8 @@ fvMeshMetrics<MeshType>::AoS::faceAreas() const
         }
     }
 
+    fa.correctAggData();
+
     return tFa;
 }
 
@@ -692,6 +729,8 @@ fvMeshMetrics<MeshType>::AoS::faceAreaNormals() const
             }
         }
     }
+
+    fan.correctAggData();
 
     return tFan;
 }
@@ -740,6 +779,7 @@ fvMeshMetrics<MeshType>::AoS::faceDeltas() const
     // Also set remaining ghost cell face values at processor interfaces
 
     delta.correctCommsBoundaryConditions();
+    delta.correctAggData();
 
     return tDelta;
 }
@@ -824,6 +864,7 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsCenter() const
     // Also set remaining ghost cell face values at processor interfaces
 
     fwc.correctCommsBoundaryConditions();
+    fwc.correctAggData();
 
     return tFwc;
 }
@@ -908,6 +949,7 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsNeighbor() const
     // Also set remaining ghost cell face values at processor interfaces
 
     fwn.correctCommsBoundaryConditions();
+    fwn.correctAggData();
 
     return tFwn;
 }

@@ -1,5 +1,5 @@
 #include "PETScLinearSystem.H"
-#include "PstreamGlobalsLsa.H"
+#include "PstreamSplit.H"
 
 namespace Foam
 {
@@ -47,7 +47,7 @@ void PETScLinearSystem<SType,Type,MeshType>::prepare(const label d)
 
     const MPI_Comm& comm =
         Pstream::parRun()
-      ? PstreamGlobals::lsaGetComm(lsa.masterCommNum())
+      ? PstreamGlobals::getSplitComm(lsa.masterCommNum())
       : PETSC_COMM_SELF;
 
     List<List<SType>> coeffs;
@@ -106,19 +106,6 @@ void PETScLinearSystem<SType,Type,MeshType>::prepare(const label d)
 
         MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY);
         MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY);
-
-        // View matrix for debugging:
-
-        // MatView
-        // (
-        //     mat,
-        //     PETSC_VIEWER_STDOUT_
-        //     (
-        //         Pstream::parRun()
-        //       ? PstreamGlobals::lsaGetComm(lsa.masterCommNum())
-        //       : PETSC_COMM_SELF
-        //     )
-        // );
     }
 }
 

@@ -35,6 +35,9 @@ linearInterpolationScheme<Type,MeshType>::interp
 
     faceField<Type,MeshType>& interp = tInterp.ref();
 
+    if (sigFpeEnabled())
+        interp = Zero;
+
     const faceField<scalar,MeshType>& fwc =
         field.fvMsh().template metrics<MeshType>().faceWeightsCenter();
 

@@ -23,6 +23,8 @@ class fvMesh;
 
 template<class Type, class MeshType>
 class immersedBoundaryCondition
+:
+    public refCount
 {
 protected:
 
@@ -30,7 +32,7 @@ protected:
     const fvMesh& fvMsh_;
 
     // Reference to the mesh field
-    meshField<Type,MeshType>& mshField_;
+    meshField<Type,MeshType>& field_;
 
     // Reference to immersed boundary
     const immersedBoundary<MeshType>& ib_;
@@ -68,29 +70,51 @@ public:
         immersedBoundaryCondition,
         dictionary,
         (
-            const meshField<Type,MeshType>& mshField,
+            const meshField<Type,MeshType>& field,
             const immersedBoundary<MeshType>& ib
         ),
-        (mshField, ib)
+        (field, ib)
     );
 
     // Construct from field, immersed boundary and mask pointer
     immersedBoundaryCondition
     (
-        const meshField<Type,MeshType>& mshField,
+        const meshField<Type,MeshType>& field,
         const immersedBoundary<MeshType>& ib,
         const meshField<label,MeshType>* maskPtr
+    );
+
+    // Copy constructor
+    immersedBoundaryCondition
+    (
+        const immersedBoundaryCondition&
+    );
+
+    // Copy constructor with alternative field
+    immersedBoundaryCondition
+    (
+        const immersedBoundaryCondition&,
+        const meshField<Type,MeshType>& field
     );
 
     // Selector from dictionary
     static autoPtr<immersedBoundaryCondition<Type,MeshType>> New
     (
-        const meshField<Type,MeshType>& mshField,
+        const meshField<Type,MeshType>& field,
         const immersedBoundary<MeshType>& ib
     );
 
     // Destructor
     virtual ~immersedBoundaryCondition();
+
+    // Construct and return a clone
+    virtual tmp<immersedBoundaryCondition<Type,MeshType>> clone() const = 0;
+
+    // Construct and return a clone for alternative field
+    virtual tmp<immersedBoundaryCondition<Type,MeshType>> clone
+    (
+        const meshField<Type,MeshType>&
+    ) const = 0;
 
     // Evaluate the immersed boundary condition for given level and direction
     virtual void evaluate(const label);
@@ -100,9 +124,9 @@ public:
     inline const fvMesh& fvMsh() const { return fvMsh_; }
 
     // Access to the mesh field
-    inline const meshField<Type,MeshType>& mshField() const
+    inline const meshField<Type,MeshType>& field() const
     {
-        return mshField_;
+        return field_;
     }
 
     // Access to the immersed boundary

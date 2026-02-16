@@ -22,7 +22,7 @@ void testDataExchange(const fvMesh& fvMsh)
         fvMsh.metrics<MeshType>().cellCenters();
 
     const labelVector N(12,12,12);
-    const labelVector start(fvMsh.msh().decomp().myBrickPartStart());
+    const labelVector start(fvMsh.msh().decomp().map().myBrickPartStart());
 
     for (int dir = 0; dir < 2; dir++)
     {

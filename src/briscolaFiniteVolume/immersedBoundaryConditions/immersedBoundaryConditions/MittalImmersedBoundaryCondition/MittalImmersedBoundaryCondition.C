@@ -14,12 +14,12 @@ namespace fv
 template<class Type, class MeshType>
 MittalImmersedBoundaryCondition<Type,MeshType>::MittalImmersedBoundaryCondition
 (
-    const meshField<Type,MeshType>& mshField,
+    const meshField<Type,MeshType>& field,
     const immersedBoundary<MeshType>& ib
 )
 :
-    immersedBoundaryCondition<Type,MeshType>(mshField, ib, &ib.ghostMask()),
-    exchanges_(mshField.fvMsh().msh().size())
+    immersedBoundaryCondition<Type,MeshType>(field, ib, &ib.ghostMask()),
+    exchanges_(field.msh().size())
 {
     // Check shape overlap
 
@@ -82,6 +82,39 @@ MittalImmersedBoundaryCondition<Type,MeshType>::MittalImmersedBoundaryCondition
                 )
             );
         }
+    }
+}
+
+template<class Type, class MeshType>
+MittalImmersedBoundaryCondition<Type,MeshType>::MittalImmersedBoundaryCondition
+(
+    const MittalImmersedBoundaryCondition<Type,MeshType>& ibc
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc),
+    exchanges_(this->field_.msh().size())
+{
+    forAll(exchanges_, i)
+    {
+        PtrList<pointDataExchange<MeshType>> copy(ibc.exchanges_[i]);
+        exchanges_[i].transfer(copy);
+    }
+}
+
+template<class Type, class MeshType>
+MittalImmersedBoundaryCondition<Type,MeshType>::MittalImmersedBoundaryCondition
+(
+    const MittalImmersedBoundaryCondition<Type,MeshType>& ibc,
+    const meshField<Type,MeshType>& field
+)
+:
+    immersedBoundaryCondition<Type,MeshType>(ibc, field),
+    exchanges_(this->field_.msh().size())
+{
+    forAll(exchanges_, i)
+    {
+        PtrList<pointDataExchange<MeshType>> copy(ibc.exchanges_[i]);
+        exchanges_[i].transfer(copy);
     }
 }
 

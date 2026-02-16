@@ -26,6 +26,9 @@ void areaWeightedFaceRestrictionScheme<Type,colocated>::restrict
 {
     const labelVector R(field.fvMsh()[l+1].R());
 
+    for (int fd = 0; fd < 3; fd++)
+        field[fd][l].correctAggData(0);
+
     const colocatedScalarFaceField& faf =
         this->fvMsh().template metrics<colocated>().faceAreas();
 

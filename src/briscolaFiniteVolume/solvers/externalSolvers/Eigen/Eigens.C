@@ -1,3 +1,5 @@
+#ifdef EIGEN
+
 #include "solvers.H"
 #include "Eigen.H"
 
@@ -20,3 +22,5 @@ makeExternalSolverType(Eigen,stencil,vector,staggered);
 }
 
 }
+
+#endif

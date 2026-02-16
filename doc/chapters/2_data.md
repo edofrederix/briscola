@@ -170,6 +170,14 @@ For each figure, a fine grid is shown with a coarser child mesh. Briscola
 contains many schemes that handle data transfer, using interpolation, from fine
 to coarse (restriction) and coarse to fine (prolongation).
 
+When a mesh is parallelized, the parallel decomposition can also be coarsened.
+This amounts to processor agglomeration. In this way, we may coarsen the mesh
+beyond what would be possible within a single processor. This is useful in a
+multigrid context, to create a coarse level that has only a few cells and can
+thus be solved efficiently using a direct solver. However, the agglomeration
+requires additional communication, for example for restriction or prolongation
+schemes to work well. This is embedded in Briscola.
+
 ## Mesh fields
 
 Mesh levels and directions are built into fields. A field can be made 'shallow'
