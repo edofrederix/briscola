@@ -107,8 +107,8 @@ void testInterpolations(const fvMesh& fvMsh)
             pointInterpolator<MeshType>& nInterp = nInterpPtr();
             pointInterpolator<MeshType>& lInterp = lInterpPtr();
 
-            List<Type> nValues(move(nInterp(field)));
-            List<Type> lValues(move(lInterp(field)));
+            List<Type> nValues(nInterp(field));
+            List<Type> lValues(lInterp(field));
 
             c = 0;
             forAllCells(ccld, i, j, k)

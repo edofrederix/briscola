@@ -23,7 +23,7 @@ void sample::appendScalarData
     pointInterpolator<colocated>& interp = interpPtr_();
 
     headers.append(field.name());
-    data.append(new scalarList(move(interp(field))));
+    data.append(new scalarList(interp(field)));
 }
 
 template<class Type>
@@ -36,7 +36,7 @@ void sample::appendArrayData
 {
     pointInterpolator<colocated>& interp = interpPtr_();
 
-    List<Type> interpData(move(interp(field)));
+    List<Type> interpData(interp(field));
 
     const label n(Type::nComponents);
 
@@ -65,7 +65,7 @@ void sample::appendArrayArrayData
 {
     pointInterpolator<colocated>& interp = interpPtr_();
 
-    List<Type> interpData(move(interp(field)));
+    List<Type> interpData(interp(field));
 
     const label n(Type::nCsComponents);
     const label m(Type::nComponents);

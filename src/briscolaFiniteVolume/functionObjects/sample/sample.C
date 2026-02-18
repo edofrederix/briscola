@@ -27,7 +27,7 @@ void sample::init()
         ).ptr()
     );
 
-    const vectorList missing(move(interpPtr_->missingPoints()));
+    const vectorList missing(interpPtr_->missingPoints());
 
     if (missing.size())
         WarningInFunction

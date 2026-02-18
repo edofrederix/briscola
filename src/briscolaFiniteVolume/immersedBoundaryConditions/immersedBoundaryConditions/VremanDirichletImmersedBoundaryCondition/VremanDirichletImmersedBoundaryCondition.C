@@ -153,7 +153,7 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
     const meshDirection<faceScalar,MeshType>& y =
         this->ib_.wallDistGhost()[l][d];
 
-    List<Type> data(move(exchanges_[l][d](this->field_)));
+    List<Type> data(exchanges_[l][d](this->field_));
 
     label c = 0;
 

@@ -71,7 +71,7 @@ void testDataExchange(const fvMesh& fvMsh)
 
             cellDataExchange<MeshType> exchange(cells, fvMsh, 0, d);
 
-            List<Type> data(move(exchange(f)));
+            List<Type> data(exchange(f));
 
             // Check the coordinate
 

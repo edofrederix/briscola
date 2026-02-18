@@ -65,7 +65,7 @@ void MittalDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
     meshDirection<Type,MeshType>& x = this->field_[l][d];
     const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
 
-    List<Type> data(move(this->exchanges_[l][d](this->field_)));
+    List<Type> data(this->exchanges_[l][d](this->field_));
 
     label c = 0;
 

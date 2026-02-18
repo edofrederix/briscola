@@ -35,13 +35,13 @@ protected:
     bool prepared_;
 
     // Prepare matrix and solver
-    virtual void prepare
+    virtual void Prepare
     (
         linearSystem<SType,Type,MeshType>& sys
     );
 
     // Solve system and provide parameters
-    virtual void solve
+    virtual void Solve
     (
         linearSystem<SType,Type,MeshType>& sys,
         const scalar relTol,

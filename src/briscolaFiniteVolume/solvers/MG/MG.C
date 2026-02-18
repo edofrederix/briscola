@@ -136,7 +136,7 @@ void MG<SType,Type,MeshType>::cycle
 }
 
 template<class SType, class Type, class MeshType>
-void MG<SType,Type,MeshType>::solve
+void MG<SType,Type,MeshType>::Solve
 (
     linearSystem<SType,Type,MeshType>& sys,
     const scalar relTol,
@@ -470,7 +470,7 @@ void MG<SType,Type,MeshType>::solve
             this->coarseSolverPtr_->prepare(sys);
         }
 
-        this->solve
+        this->Solve
         (
             sys,
             this->relTol_,

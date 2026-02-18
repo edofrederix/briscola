@@ -68,7 +68,7 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>::evaluate
     const meshDirection<vector,MeshType>& cc =
         this->fvMsh_.template metrics<MeshType>().cellCenters()[l][d];
 
-    List<Type> data(move(this->exchanges_[l][d](this->field_)));
+    List<Type> data(this->exchanges_[l][d](this->field_));
 
     const vectorList& mps = this->exchanges_[l][d].interp().points();
 

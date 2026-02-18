@@ -57,7 +57,7 @@ void pointDataExchange<MeshType>::init(const List<vector>& points)
         ).ptr()
     );
 
-    const vectorList missing(move(interpPtr_->missingPoints()));
+    const vectorList missing(interpPtr_->missingPoints());
 
     if (missing.size())
         FatalErrorInFunction

@@ -13,7 +13,7 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-void Krylov<SType,Type,MeshType>::prepare
+void Krylov<SType,Type,MeshType>::Prepare
 (
     linearSystem<SType,Type,MeshType>& sys
 )
@@ -128,7 +128,7 @@ void Krylov<SType,Type,MeshType>::prepare
 }
 
 template<class SType, class Type, class MeshType>
-void Krylov<SType,Type,MeshType>::solve
+void Krylov<SType,Type,MeshType>::Solve
 (
     linearSystem<SType,Type,MeshType>& sys,
     const scalar relTol,
@@ -379,9 +379,9 @@ void Krylov<SType,Type,MeshType>::solve
     else
     {
         if (!constMatrix || !this->prepared_)
-            this->prepare(sys);
+            this->Prepare(sys);
 
-        this->solve
+        this->Solve
         (
             sys,
             this->relTol_,

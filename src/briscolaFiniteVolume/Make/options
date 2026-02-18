@@ -7,8 +7,8 @@ EXE_INC = \
     -I$(LIB_SRC)/Pstream/mpi/lnInclude \
     -isystem $(LIB_SRC)/OpenFOAM/lnInclude \
     $(if $(FFTW_HOME),-isystem $(FFTW_HOME)/include,$(shell pkg-config --cflags fftw3)) \
-    $(if $(PETSC_HOME),-DPETSC -isystem $(PETSC_HOME)/include,$(if $(shell pkg-config --exists petsc && echo 1),-DPETSC $(shell pkg-config --cflags petsc),)) \
-    $(if $(EIGEN_HOME),-DEIGEN -isystem $(EIGEN_HOME)/include/eigen3,$(if $(shell pkg-config --exists eigen3 && echo 1),-DEIGEN $(shell pkg-config --cflags eigen3),)) \
+    $(if $(PETSC_HOME),-DPETSC -isystem $(PETSC_HOME)/include,$(if $(shell pkg-config --exists petsc && echo 1),-DPETSC $(shell pkg-config --cflags petsc | sed 's/-I/-isystem /g'),)) \
+    $(if $(EIGEN_HOME),-DEIGEN -isystem $(EIGEN_HOME)/include/eigen3,$(if $(shell pkg-config --exists eigen3 && echo 1),-DEIGEN $(shell pkg-config --cflags eigen3 | sed 's/-I/-isystem /g'),)) \
     -Wshadow
 
 LIB_LIBS = \

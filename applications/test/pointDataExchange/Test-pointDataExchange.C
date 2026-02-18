@@ -94,7 +94,7 @@ void testDataExchange(const fvMesh& fvMsh)
 
             pointDataExchange<MeshType> exchange(points, fvMsh, l, d);
 
-            List<Type> data(move(exchange(f)));
+            List<Type> data(exchange(f));
 
             // Check the coordinate
 

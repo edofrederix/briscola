@@ -31,9 +31,11 @@ twoPhaseModel::twoPhaseModel
     fvMsh_(fvMsh),
     dict_(dict),
     alpha_(fvMsh),
-    g_(dict.lookup("g")),
-    tension_(dict.subDict("surfaceTensionScheme").lookup("type") != "none")
-{}
+    g_(dict.lookup("g"))
+{
+    tension_ =
+        word(dict.subDict("surfaceTensionScheme").lookup("type")) != "none";
+}
 
 twoPhaseModel::twoPhaseModel(const twoPhaseModel& tpm)
 :

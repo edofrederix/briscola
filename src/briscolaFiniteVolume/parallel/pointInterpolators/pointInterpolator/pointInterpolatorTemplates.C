@@ -34,7 +34,7 @@ List<Type> pointInterpolator<MeshType>::combine(List<Type>& values) const
 
     if (global_)
     {
-        return List<Type>(move(values));
+        return List<Type>(values);
     }
     else
     {

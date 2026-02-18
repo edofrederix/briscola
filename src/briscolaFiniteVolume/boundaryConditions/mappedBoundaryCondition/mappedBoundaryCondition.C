@@ -79,7 +79,7 @@ void mappedBoundaryCondition<Type,colocated>::prepare()
 
     pointDataExchange<colocated>& exchange = this->exchanges_[0];
 
-    Field<Type> data(move(exchange(field)));
+    Field<Type> data(exchange(field));
 
     const labelVector S(this->S(0));
     const labelVector E(this->E(0));
@@ -210,7 +210,7 @@ void mappedBoundaryCondition<Type,staggered>::prepare()
     {
         pointDataExchange<staggered>& exchange = this->exchanges_[d];
 
-        Field<Type> data(move(exchange(field)));
+        Field<Type> data(exchange(field));
 
         const labelVector S(this->S(d));
         const labelVector E(this->E(d));

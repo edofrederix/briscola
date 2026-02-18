@@ -21,10 +21,7 @@ void testConstructors(const fvMesh& fvMsh)
     meshLevel<Type,MeshType> m4(fvMsh,0,list);
 
     meshLevel<Type,MeshType> m5(m3);
-    meshLevel<Type,MeshType> m6(m3, true);
-
     meshLevel<Type,MeshType> m7(m3*2.0);
-    meshLevel<Type,MeshType> m8(m3*2.0, true);
 }
 
 template<class Type, class MeshType>

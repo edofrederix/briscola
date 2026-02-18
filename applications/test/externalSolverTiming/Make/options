@@ -2,8 +2,8 @@ EXE_INC = \
     -I../../../src/briscolaCore/lnInclude \
     -I../../../src/briscolaMesh/lnInclude \
     -I../../../src/briscolaFiniteVolume/lnInclude \
-    $(if $(PETSC_HOME),-DPETSC,$(if $(shell pkg-config --exists petsc && echo 1),-DPETSC,)) \
-    $(if $(EIGEN_HOME),-DEIGEN,$(if $(shell pkg-config --exists eigen3 && echo 1),-DEIGEN,)) \
+    $(if $(PETSC_HOME),-DPETSC,$(if $(shell pkg-config --exists petsc && echo 1 | sed 's/-I/-isystem /g'),-DPETSC,)) \
+    $(if $(EIGEN_HOME),-DEIGEN,$(if $(shell pkg-config --exists eigen3 && echo 1 | sed 's/-I/-isystem /g'),-DEIGEN,)) \
     -I$(LIB_SRC)/OpenFOAM/lnInclude
 
 EXE_LIBS = \

@@ -154,7 +154,7 @@ void SHF::correct()
 
     if (exchangePtr_.valid())
     {
-        scalarList data(move(exchangePtr_()(alpha_)));
+        scalarList data(exchangePtr_()(alpha_));
 
         for (int i = 0; i < data.size(); i++)
             alpha(exchangePtr_->indices()[i] + off) = data[i];

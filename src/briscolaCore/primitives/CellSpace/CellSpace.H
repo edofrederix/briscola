@@ -162,7 +162,16 @@ public:
     );
 
     // Conversion to Form
-    inline operator Form() { return Form(*this); }
+    inline operator Form()
+    {
+        return static_cast<Form&>(*this);
+    }
+
+    // Conversion to const Form
+    inline operator const Form&() const
+    {
+        return static_cast<const Form&>(*this);
+    }
 };
 
 // Return a string representation of a CellSpace

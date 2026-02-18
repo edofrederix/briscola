@@ -77,7 +77,7 @@ protected:
     );
 
     // Solve system and provide parameters
-    void solve
+    void Solve
     (
         linearSystem<SType,Type,MeshType>& sys,
         const scalar relTol,
