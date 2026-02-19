@@ -340,7 +340,7 @@ void parallelConnectivityInfo(const fvMesh& fvMsh, const bool verbose)
         }
     }
 
-    Pstream::gatherList(bDicts, fvMsh.msh().comms());
+    Pstream::gatherList(bDicts, Pstream::msgType(), fvMsh.msh().comms());
 
     label count = 0;
 
@@ -378,7 +378,7 @@ void parallelConnectivityInfo(const fvMesh& fvMsh, const bool verbose)
             const word name0(dict0.lookup("name"));
             const labelTensor T0(dict0.lookup("T"));
             const label tag0(readLabel(dict0.lookup("tag")));
-            const label master0(readLabel(dict0.lookup("master")));
+            const label master0(Switch(dict0.lookup("master")));
 
             // Find the opposite of this parallel boundary
 
@@ -401,7 +401,7 @@ void parallelConnectivityInfo(const fvMesh& fvMsh, const bool verbose)
                 const word name1(dict1.lookup("name"));
                 const labelTensor T1(dict1.lookup("T"));
                 const label tag1(readLabel(dict1.lookup("tag")));
-                const label master1(readLabel(dict1.lookup("master")));
+                const label master1(Switch(dict1.lookup("master")));
 
                 if
                 (
