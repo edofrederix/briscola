@@ -57,11 +57,13 @@ rowProduct
 
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
+    // Tmp cannot be reused otherwise aliasing may occur
+
     tmp<meshField<productType,MeshType>> tRes =
-        reuseFieldTmp<productType,Type1,MeshType>::New
+        meshField<productType,MeshType>::New
         (
-            tf1,
-            "rowProduct(" + tf1->name() + "," + f2.name() + ")"
+            "rowProduct(" + tf1->name() + "," + f2.name() + ")",
+            tf1->fvMsh()
         );
 
     rowProduct(tRes.ref(),tf1(),f2);
@@ -85,11 +87,13 @@ rowProduct
 
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
+    // Tmp cannot be reused otherwise aliasing may occur
+
     tmp<meshField<productType,MeshType>> tRes =
-        reuseFieldTmp<productType,Type2,MeshType>::New
+        meshField<productType,MeshType>::New
         (
-            tf2,
-            "rowProduct(" + f1.name() + "," + tf2->name() + ")"
+            "rowProduct(" + f1.name() + "," + tf2->name() + ")",
+            tf2->fvMsh()
         );
 
     rowProduct(tRes.ref(),f1,tf2());
@@ -116,12 +120,13 @@ rowProduct
 
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
+    // Tmp cannot be reused otherwise aliasing may occur
+
     tmp<meshField<productType,MeshType>> tRes =
-        reuseFieldTmpTmp<productType,Type1,Type1,Type2,MeshType>::New
+        meshField<productType,MeshType>::New
         (
-            tf1,
-            tf2,
-            "rowProduct(" + tf1->name() + "," + tf2->name() + ")"
+            "rowProduct(" + tf1->name() + "," + tf2->name() + ")",
+            tf1->fvMsh()
         );
 
     rowProduct(tRes.ref(),tf1(),tf2());
@@ -173,11 +178,13 @@ rowProduct(const tmp<meshField<Type,MeshType>>& tf1, const Form& s)
 
     typedef typename stencilProduct<Type,Form>::type productType;
 
+    // Tmp cannot be reused otherwise aliasing may occur
+
     tmp<meshField<productType,MeshType>> tRes =
-        reuseFieldTmp<productType,Type,MeshType>::New
+        meshField<productType,MeshType>::New
         (
-            tf1,
-            "rowProduct(" + tf1->name() + "," + Foam::name(s) + ")"
+            "rowProduct(" + tf1->name() + "," + Foam::name(s) + ")",
+            tf1->fvMsh()
         );
 
     rowProduct(tRes.ref(),tf1(),s);

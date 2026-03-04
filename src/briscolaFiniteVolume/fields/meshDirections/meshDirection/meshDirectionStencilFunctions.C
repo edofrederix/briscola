@@ -57,8 +57,15 @@ rowProduct
 {
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
+    // Tmp cannot be reused otherwise aliasing may occur
+
     tmp<meshDirection<productType,MeshType>> tRes =
-        reuseDirectionTmp<productType,Type1,MeshType>::New(tf1);
+        meshDirection<productType,MeshType>::New
+        (
+            f2.fvMsh(),
+            f2.levelNum(),
+            f2.directionNum()
+        );
 
     rowProduct(tRes.ref(),tf1(),f2);
 
@@ -78,8 +85,15 @@ rowProduct
 {
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
+    // Tmp cannot be reused otherwise aliasing may occur
+
     tmp<meshDirection<productType,MeshType>> tRes =
-        reuseDirectionTmp<productType,Type2,MeshType>::New(tf2);
+        meshDirection<productType,MeshType>::New
+        (
+            f1.fvMsh(),
+            f1.levelNum(),
+            f1.directionNum()
+        );
 
     rowProduct(tRes.ref(),f1,tf2());
 
@@ -99,8 +113,15 @@ rowProduct
 {
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
+    // Tmp cannot be reused otherwise aliasing may occur
+
     tmp<meshDirection<productType,MeshType>> tRes =
-        reuseDirectionTmpTmp<productType,Type1,Type1,Type2,MeshType>::New(tf1,tf2);
+        meshDirection<productType,MeshType>::New
+        (
+            tf1->fvMsh(),
+            tf1->levelNum(),
+            tf1->directionNum()
+        );
 
     rowProduct(tRes.ref(),tf1(),tf2());
 
@@ -149,8 +170,15 @@ rowProduct(const tmp<meshDirection<Type,MeshType>>& tf1, const Form& s)
 {
     typedef typename stencilProduct<Type,Form>::type productType;
 
+    // Tmp cannot be reused otherwise aliasing may occur
+
     tmp<meshDirection<productType,MeshType>> tRes =
-        reuseDirectionTmp<productType,Type,MeshType>::New(tf1);
+        meshDirection<productType,MeshType>::New
+        (
+            tf1->fvMsh(),
+            tf1->levelNum(),
+            tf1->directionNum()
+        );
 
     rowProduct(tRes.ref(),tf1(),s);
 
