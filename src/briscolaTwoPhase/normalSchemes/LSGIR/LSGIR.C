@@ -116,7 +116,11 @@ void LSGIR::correct()
                     ATA(ii,ii) = SMALL;
 
             n(ijk) = ATA.inv() & ATb;
-            n(ijk) /= Foam::mag(n(ijk));
+
+            const scalar magn = Foam::mag(n(ijk));
+
+            if (magn > 0.0)
+                n(ijk) /= magn;
         }
         else
         {
