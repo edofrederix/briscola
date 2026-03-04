@@ -46,8 +46,10 @@ class block
     // Size (product of l, m and n)
     int size_;
 
-    // Row pointers
-    Type* __restrict__ v_;
+    // Row pointers (no __restrict__ modifier because on some compilers this
+    // gives problems when handling multiple tmp's of the same block, for
+    // example in product operators with tensors)
+    Type* v_;
 
     // Transformation of the block w.r.t. its construction
     labelTensor T_;
