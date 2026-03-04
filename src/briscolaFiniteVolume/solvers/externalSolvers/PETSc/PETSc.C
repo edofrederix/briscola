@@ -39,7 +39,12 @@ PETSc<SType,Type,MeshType>::PETSc
     PetscInitialized(&initialized);
 
     if (!initialized)
+    {
         PetscInitialize(NULL, NULL, NULL, NULL);
+
+        // Disable PETSc's signal handler (handled by OpenFOAM)
+        PetscPopSignalHandler();
+    }
 
     // Setup solvers
 

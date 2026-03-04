@@ -157,6 +157,9 @@ void Krylov<SType,Type,MeshType>::Solve
 
     meshLevel<Type, MeshType> buffer(sys.fvMsh(), 0);
 
+    if (sigFpeEnabled())
+        buffer = Zero;
+
     // Initial residual
 
     sys.residual(buffer);
@@ -336,7 +339,12 @@ Krylov<SType,Type,MeshType>::Krylov
     PetscInitialized(&initialized);
 
     if (!initialized)
+    {
         PetscInitialize(NULL, NULL, NULL, NULL);
+
+        // Disable PETSc's signal handler (handled by OpenFOAM)
+        PetscPopSignalHandler();
+    }
 }
 
 template<class SType, class Type, class MeshType>

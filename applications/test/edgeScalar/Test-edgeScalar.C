@@ -105,15 +105,9 @@ int main(int argc, char *argv[])
     sin(h3);
     cos(h3);
     tan(h3);
-    asin(h3);
-    acos(h3);
-    atan(h3);
     sinh(h3);
     cosh(h3);
     tanh(h3);
-    asinh(h3);
-    acosh(h3);
-    atanh(h3);
     erf(h3);
     erfc(h3);
     lgamma(h3);
@@ -121,4 +115,14 @@ int main(int argc, char *argv[])
     j1(h3);
     y0(h3);
     y1(h3);
+
+    if (!sigFpeEnabled())
+    {
+        asin(h3);
+        acos(h3);
+        atan(h3);
+        asinh(h3);
+        acosh(h3);
+        atanh(h3);
+    }
 }

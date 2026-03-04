@@ -97,8 +97,15 @@ void testMemberOperators(const fvMesh& fvMsh)
     meshField<Type,MeshType> g("g", fvMsh);
     meshField<scalar,MeshType> s("s", fvMsh);
 
+    f = pTraits<Type>::one;
+    g = pTraits<Type>::one;
+    s = 2.0;
+
     linearSystem<SType,Type,MeshType> sys1("sys1(f)", f);
     linearSystem<SType,Type,MeshType> sys2("sys2(f)", f);
+
+    sys1 = Zero;
+    sys2 = Zero;
 
     sys1 = sys2;
     sys1 =

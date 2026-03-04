@@ -73,6 +73,8 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
         deep
     );
 
+    m1 = Zero;
+
     SetType m1o
     (
         "m1o",
@@ -82,6 +84,8 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
         false,
         !deep
     );
+
+    m1o = Zero;
 
     SetType m2
     (
@@ -93,6 +97,8 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
         deep
     );
 
+    m2 = Zero;
+
     SetType m2o
     (
         "m2o",
@@ -102,6 +108,8 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
         false,
         !deep
     );
+
+    m2o = Zero;
 
     typedef typename SetType::dataType Type;
     typedef typename SetType::meshType MeshType;
@@ -117,6 +125,8 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
         deep
     );
 
+    s1 = 2.0;
+
     meshFieldSet<scalar,MeshType,N> s1o
     (
         "s1o",
@@ -126,6 +136,8 @@ void testMemberOperators(const fvMesh& fvMsh, const bool deep)
         false,
         !deep
     );
+
+    s1o = 2.0;
 
     m2*2.0;
 

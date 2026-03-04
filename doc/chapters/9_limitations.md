@@ -29,6 +29,14 @@ encouraged and can be proposed via GitHub.
   normal and inverted) can be used to define immersed boundaries. Additional
   analytical shape definitions are yet to be implemented. Defining immersed
   boundaries based on CAD files is also currently not supported.
+* When the `FOAM_SIGFPE` environment variable is set, sigFpe trapping is enabled
+  and this may lead to problems in Briscola. The reason is that ghost cell
+  values are sometimes not initialized, but they are treated in some operations
+  anyway. As a result invalid values may be accessed. Usually this is harmless,
+  but with `FOAM_SIGFPE` set the code will crash anyway. Consider disabling
+  `FOAM_SIGFPE` (i.e., `unset FOAM_SIGFPE`), or handle special situations using
+  the `sigFpeEnabled()` function, as is for example done in a some schemes and
+  test applications.
 
 Feel free to report any additional issues via GitHub or by contacting the
 authors directly.

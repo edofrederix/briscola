@@ -9,8 +9,14 @@
 #include "scalarList.H"
 #include "sigFpe.H"
 
-#ifdef LINUX_GNUC
-#include <fenv.h>
+#include <cfenv>
+
+#if defined(__GNUC__) || defined(__clang__)
+    #define HAS_FEGETEXCEPT 1
+#elif defined(_MSC_VER)
+    #define HAS_MSVC_FPE 1
+#else
+    #define HAS_FEGETEXCEPT 0
 #endif
 
 namespace Foam
@@ -1164,10 +1170,12 @@ inline labelVector coarsen(const labelVector N)
         );
 }
 
-#ifdef LINUX_GNUC
+// Function to check if sigFpe is enabled
 
 inline bool sigFpeEnabled()
 {
+#if HAS_FEGETEXCEPT
+
     int enabled = fegetexcept();
 
     return
@@ -1175,16 +1183,23 @@ inline bool sigFpeEnabled()
      || (enabled & FE_INVALID)
      || (enabled & FE_OVERFLOW);
 
-}
+#elif HAS_MSVC_FPE
+
+    // MSVC version
+    unsigned int control = 0;
+    _controlfp_s(&control, 0, 0);
+
+    return
+        !(control & _EM_ZERODIVIDE)
+     || !(control & _EM_INVALID)
+     || !(control & _EM_OVERFLOW);
 
 #else
 
-inline bool sigFpeEnabled()
-{
     return false;
-}
 
 #endif
+}
 
 }
 

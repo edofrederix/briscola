@@ -1404,15 +1404,9 @@ void testScalarFunctions()
     sin(b1);
     cos(b1);
     tan(b1);
-    asin(b1);
-    acos(b1);
-    atan(b1);
     sinh(b1);
     cosh(b1);
     tanh(b1);
-    asinh(b1);
-    acosh(b1);
-    atanh(b1);
     erf(b1);
     erfc(b1);
     lgamma(b1);
@@ -1420,6 +1414,16 @@ void testScalarFunctions()
     j1(b1);
     y0(b1);
     y1(b1);
+
+    if (!sigFpeEnabled())
+    {
+        asin(b1);
+        acos(b1);
+        atan(b1);
+        asinh(b1);
+        acosh(b1);
+        atanh(b1);
+    }
 }
 
 void testVectorFunctions()
