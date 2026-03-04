@@ -5,8 +5,7 @@ EXE_INC = \
     -I$(LIB_SRC)/OpenFOAM/lnInclude \
     $(if $(EIGEN_HOME),-I$(EIGEN_HOME)/include/eigen3,$(shell pkg-config --cflags eigen3)) \
     -Wno-old-style-cast \
-    -Wno-unknown-pragmas \
-    -DFULLDEBUG -g -O0
+    -Wno-unknown-pragmas
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \

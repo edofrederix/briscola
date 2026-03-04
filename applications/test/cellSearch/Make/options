@@ -2,8 +2,7 @@ EXE_INC = \
     -I../../../src/briscolaCore/lnInclude \
     -I../../../src/briscolaMesh/lnInclude \
     -I../../../src/briscolaFiniteVolume/lnInclude \
-    -I$(LIB_SRC)/OpenFOAM/lnInclude \
-    -DFULLDEBUG -g -O0
+    -I$(LIB_SRC)/OpenFOAM/lnInclude
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
