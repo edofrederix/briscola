@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 
     // Test point 5 is defined by its cell indices
     // and is inside the IB
-    labelVector testPoint6(64,64,64);
+    labelVector testPoint6(16,16,16);
 
     // Cell centers
     // cc[0][0] returns the colocated cell center
