@@ -6,6 +6,8 @@ FoamFile
     object      briscolaMeshDict;
 }
 
+dataAlignment false;
+
 vertices
 (
     (0         -1 0)

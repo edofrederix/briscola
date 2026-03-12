@@ -30,6 +30,8 @@ void processorOverlap::computeOverlap()
         labelVector ijk(i,j,k);
         label sendProcNum = decomp_.procNumFromIndex(ijk,I_);
 
+        // End cell indices of sending pocessor
+
         labelVector ei = Si_[sendProcNum] + Ni_[sendProcNum];
 
         // Loop over receiving processors
@@ -41,7 +43,7 @@ void processorOverlap::computeOverlap()
             labelVector lmn(l,m,n);
             label recvProcNum = decomp_.procNumFromIndex(lmn,T_);
 
-            // Start and end cell indices of receiving pocessor
+            // End cell indices of receiving pocessor
 
             labelVector et = St_[recvProcNum] + Nt_[recvProcNum];
 

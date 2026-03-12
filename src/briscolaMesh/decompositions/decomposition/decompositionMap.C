@@ -92,15 +92,28 @@ decompositionMap::decompositionMap(const decomposition& decomp)
 
                 const labelVector brickDecompShape(N[0][i], N[1][j], N[2][k]);
 
-                // Start
+                // Start index of current brick
 
                 labelVector start;
 
                 for (int dir = 0; dir < 3; dir++)
                     start[dir] =
                         ijk[dir] > 0
-                      ? starts_(ijk-units[dir])[dir]
-                      + shapes_(ijk-units[dir])[dir]
+                      ? starts_
+                        (
+                            decomp_.brickProcMaps()[brickMap(ijk-units[dir])]
+                            (
+                                zeroXYZ
+                            )
+                        )[dir]
+                      + decomp_.brickDecomps()[brickMap(ijk-units[dir])][dir]
+                      * shapes_
+                        (
+                            decomp_.brickProcMaps()[brickMap(ijk-units[dir])]
+                            (
+                                zeroXYZ
+                            )
+                        )[dir]
                       : 0;
 
                 // Set shapes and starts
