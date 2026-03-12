@@ -51,16 +51,12 @@ decompositionMap::decompositionMap(const decomposition& decomp)
 
     const labelVector S(sum(N[0]), sum(N[1]), sum(N[2]));
 
-    // Set map, shapes and starts
+    // Set map
 
     labelBlock& map = *this;
 
     map.setSize(S);
     map = -1;
-
-    shapes_.setSize(S);
-    starts_.setSize(S);
-    starts_ = zeroXYZ;
 
     labelVector cursor(zeroXYZ);
 
@@ -84,6 +80,50 @@ decompositionMap::decompositionMap(const decomposition& decomp)
                         map(cursor + labelVector(a,b,c)) =
                             decomp_.brickProcMaps()[brick](a,b,c);
 
+                cursor.z() += N[2][k];
+            }
+
+            cursor.y() += N[1][j];
+        }
+
+        cursor.x() += N[0][i];
+    }
+
+    // Set legend
+
+    legend_.clear();
+
+    forAllBlock(map, i, j, k)
+    if (map(i,j,k) != -1)
+    {
+        label v = map(i,j,k);
+
+        if (v >= legend_.size())
+            legend_.setSize(v+1);
+
+        legend_[v] = labelVector(i,j,k);
+    }
+
+    // Set shapes and starts
+
+    shapes_.setSize(S);
+    starts_.setSize(S);
+    starts_ = zeroXYZ;
+
+    cursor = zeroXYZ;
+
+    for (int i = 0; i < brickMap.l(); i++)
+    {
+        cursor.y() = 0;
+
+        for (int j = 0; j < brickMap.m(); j++)
+        {
+            cursor.z() = 0;
+
+            for (int k = 0; k < brickMap.n(); k++)
+            {
+                const labelVector ijk(i,j,k);
+
                 // Part shape in this brick
 
                 const labelVector shape(M[0][i], M[1][j], M[2][k]);
@@ -101,17 +141,23 @@ decompositionMap::decompositionMap(const decomposition& decomp)
                         ijk[dir] > 0
                       ? starts_
                         (
-                            decomp_.brickProcMaps()[brickMap(ijk-units[dir])]
+                            legend_
                             (
-                                zeroXYZ
+                                decomp_.brickProcMaps()
+                                [
+                                    brickMap(ijk-units[dir])
+                                ](zeroXYZ)
                             )
                         )[dir]
                       + decomp_.brickDecomps()[brickMap(ijk-units[dir])][dir]
                       * shapes_
                         (
-                            decomp_.brickProcMaps()[brickMap(ijk-units[dir])]
+                            legend_
                             (
-                                zeroXYZ
+                                decomp_.brickProcMaps()
+                                [
+                                    brickMap(ijk-units[dir])
+                                ](zeroXYZ)
                             )
                         )[dir]
                       : 0;
@@ -135,21 +181,6 @@ decompositionMap::decompositionMap(const decomposition& decomp)
         }
 
         cursor.x() += N[0][i];
-    }
-
-    // Legend
-
-    legend_.clear();
-
-    forAllBlock(map, i, j, k)
-    if (map(i,j,k) != -1)
-    {
-        label v = map(i,j,k);
-
-        if (v >= legend_.size())
-            legend_.setSize(v+1);
-
-        legend_[v] = labelVector(i,j,k);
     }
 }
 
