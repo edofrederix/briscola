@@ -46,8 +46,8 @@ private:
     // Create new alpha field
     void addAlphaField();
 
-    // Compute global tagAlgorithm field
-    void computeGlobaltagAlgorithm();
+    // Compute global tags field
+    void computeGlobalTags();
 
     // Compute global total number of particles
     void computeGlobalN();

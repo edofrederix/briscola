@@ -18,6 +18,9 @@ class twoPass
 {
 private:
 
+    // Alias for HashTable needed for forAllConstIter macro
+    typedef HashTable<label,label> labelTable;
+
     // Tag union lookup table
     HashTable<label,label> unionTable_;
 

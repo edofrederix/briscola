@@ -124,36 +124,40 @@ void twoPass::parallelReduce()
     {
         forAll(gatheredTables, procI)
         {
+            if (gatheredTables[procI].empty()) continue;
+
             IStringStream is(gatheredTables[procI]);
             HashTable<label,label> localTable(is);
 
-            forAll(localTable.toc(), e)
+            forAllConstIter(labelTable, localTable, iter)
             {
                 uniteTags
                 (
                     mergedTable,
-                    localTable.toc()[e],
-                    localTable[localTable.toc()[e]]
+                    iter.key(),
+                    *iter
                 );
             }
         }
 
-        HashTable<label,label> compactTable;
+        HashTable<label,label> compactTable(mergedTable.size());
         label nextLabel = 1;
 
-        forAll(mergedTable.toc(), e)
+        forAllConstIter(labelTable, mergedTable, iter)
         {
-            label root = find(mergedTable.toc()[e], mergedTable);
+            const label key = iter.key();
 
-            if (compactTable.found(root))
-            {
-                compactTable.insert(mergedTable.toc()[e], compactTable[root]);
-            }
+            label root = find(*iter, mergedTable);
 
             if (!compactTable.found(root))
             {
-                compactTable.insert(mergedTable.toc()[e], nextLabel);
-                compactTable.insert(root, nextLabel++);
+                compactTable.insert(root, nextLabel);
+                compactTable.insert(key, nextLabel);
+                nextLabel++;
+            }
+            else
+            {
+                compactTable.insert(key, compactTable[root]);
             }
         }
 

@@ -89,7 +89,7 @@ void twoPhaseMultiVof<ViscosityModel>::addAlphaField()
 }
 
 template<class ViscosityModel>
-void twoPhaseMultiVof<ViscosityModel>::computeGlobaltagAlgorithm()
+void twoPhaseMultiVof<ViscosityModel>::computeGlobalTags()
 {
     tags_ = Zero;
 
@@ -206,18 +206,38 @@ void twoPhaseMultiVof<ViscosityModel>::setConnectivityMatrix()
         }
     }
 
-    // Reduce connectivity matrix by using a temporary list to enable collective
-    // parallel operation
+    // Reduce connectivity matrix by gathering and scattering list of indices
+    // where entry is true.
 
-    List<Switch> data(connectivityMatrix_.size());
+    DynamicList<label> localActiveIndices;
+    for (int i = 0; i < connectivityMatrix_.size(); i++)
+    {
+        if (connectivityMatrix_.v()[i])
+        {
+            localActiveIndices.append(i);
+        }
+    }
 
-    forAll(data, i)
-        data[i] = connectivityMatrix_.v()[i];
+    List<labelList> gatheredIndices(Pstream::nProcs());
+    gatheredIndices[Pstream::myProcNo()] = localActiveIndices;
+    Pstream::gatherList<labelList>(gatheredIndices);
 
-    reduce(data, ListOp<orOp<Switch>>());
+    if (Pstream::master())
+    {
+        DynamicList<label> allIndices;
+        forAll(gatheredIndices, proci)
+        {
+            allIndices.append(gatheredIndices[proci]);
+        }
+        localActiveIndices.transfer(allIndices);
+    }
 
-    forAll(data, i)
-        connectivityMatrix_.v()[i] = data[i];
+    Pstream::scatter<DynamicList<label>>(localActiveIndices);
+
+    forAll(localActiveIndices, i)
+    {
+        connectivityMatrix_.v()[localActiveIndices[i]] = true;
+    }
 }
 
 template<class ViscosityModel>
@@ -435,7 +455,7 @@ void twoPhaseMultiVof<ViscosityModel>::correct()
     computeGlobalN();
     setPhi();
     overwriteTagsWithIDs();
-    computeGlobaltagAlgorithm();
+    computeGlobalTags();
     setConnectivityMatrix();
     moveFields();
 
