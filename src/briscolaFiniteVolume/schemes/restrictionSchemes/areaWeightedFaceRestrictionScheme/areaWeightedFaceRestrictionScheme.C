@@ -20,14 +20,13 @@ template<class Type>
 void areaWeightedFaceRestrictionScheme<Type,colocated>::restrict
 (
     faceField<Type,colocated>& field,
-    const label l,
-    const label
+    const label l
 )
 {
     const labelVector R(field.fvMsh()[l+1].R());
 
     for (int fd = 0; fd < 3; fd++)
-        field[fd][l].correctAggData(0);
+        field[fd][l].correctAggData();
 
     const colocatedScalarFaceField& faf =
         this->fvMsh().template metrics<colocated>().faceAreas();
@@ -63,8 +62,7 @@ template<class Type>
 void areaWeightedFaceRestrictionScheme<Type,staggered>::restrict
 (
     faceField<Type,staggered>& field,
-    const label l,
-    const label d
+    const label l
 )
 {
     NotImplemented;

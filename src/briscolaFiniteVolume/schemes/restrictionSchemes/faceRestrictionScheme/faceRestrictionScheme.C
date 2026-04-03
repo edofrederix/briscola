@@ -68,17 +68,6 @@ faceRestrictionScheme<Type,MeshType>::New
 template<class Type, class MeshType>
 void faceRestrictionScheme<Type,MeshType>::restrict
 (
-    faceField<Type,MeshType>& res,
-    const label l
-)
-{
-    for (label d = 0; d < MeshType::numberOfDirections; d++)
-        restrict(res, l, d);
-}
-
-template<class Type, class MeshType>
-void faceRestrictionScheme<Type,MeshType>::restrict
-(
     faceField<Type,MeshType>& res
 )
 {

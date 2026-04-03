@@ -71,28 +71,12 @@ public:
     // level, with option to scale by cell volume
     virtual void restrict
     (
-        meshDirection<Type,MeshType>&,
-        const meshDirection<Type,MeshType>&,
+        meshLevel<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const bool = false
     ) = 0;
 
     // Restrict from tmp and clear tmp
-    virtual void restrict
-    (
-        meshDirection<Type,MeshType>& res,
-        const tmp<meshDirection<Type,MeshType>>& tf,
-        const bool scale = false
-    );
-
-    // Restrict level
-    virtual void restrict
-    (
-        meshLevel<Type,MeshType>& res,
-        const meshLevel<Type,MeshType>& f,
-        const bool scale = false
-    );
-
-    // Restrict tmp level and clear tmp
     virtual void restrict
     (
         meshLevel<Type,MeshType>& res,

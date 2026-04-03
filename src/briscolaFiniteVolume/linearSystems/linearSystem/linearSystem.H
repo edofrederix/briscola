@@ -47,15 +47,24 @@ private:
     // Right-hand side source which is shallow by default
     meshField<Type,MeshType> b_;
 
-    // Symmetry and diagonal bools
+    // Symmetry, diagonal and eliminated bools
     bool symmetric_;
     bool diagonal_;
+    bool eliminated_;
 
     // IBM forcing mask
     autoPtr<meshField<label,MeshType>> forcingMask_;
 
     // Transfer data from other system
     void transfer(linearSystem<SType,Type,MeshType>&);
+
+    // Compute residual for a direction
+    template<bool CorrBCs = true, bool Mask = true>
+    void residual(meshDirection<Type,MeshType>&) const;
+
+    // Compute evaluation for a direction
+    template<bool CorrBCs = true, bool Mask = true>
+    void evaluate(meshDirection<Type,MeshType>&) const;
 
 public:
 
@@ -160,13 +169,15 @@ public:
         return forcingMask_();
     }
 
-    // Return symmetry and diagonal bools
+    // Return symmetry, diagonal and eliminated bools
     bool symmetric() const { return symmetric_; }
     bool diagonal() const { return diagonal_; }
+    bool eliminated() const { return eliminated_; }
 
-    // Access to the symmetry and diagonal bools
+    // Access to the symmetry, diagonal eliminated bools
     bool& symmetric() { return symmetric_; }
     bool& diagonal() { return diagonal_; }
+    bool& eliminated() { return eliminated_; }
 
     // A linear system is said to be singular if the matrix is symmetric,
     // non-diagonal and if the boundary conditions of the unknown are singular
@@ -175,57 +186,49 @@ public:
         return symmetric_ && !diagonal_ && xPtr_->operator[](0).singular();
     }
 
-    // Compute the residual b-Ax and store in given object. Optionally apply no
-    // forcing mask. This is determined via a template parameter instead of an
-    // argument, to avoid ambiguity with other arguments.
+    // Compute the residual b-Ax and store in given object. Optionally don't
+    // correct boundary conditions or apply no forcing mask. This is determined
+    // via a template parameter instead of an argument, to avoid ambiguity with
+    // other arguments.
 
-    template<bool NoMask = false>
+    template<bool CorrBCs = true, bool Mask = true>
     void residual(meshField<Type,MeshType>&) const;
 
-    template<bool NoMask = false>
+    template<bool CorrBCs = true, bool Mask = true>
     void residual(meshLevel<Type,MeshType>&) const;
 
-    template<bool NoMask = false>
-    void residual(meshDirection<Type,MeshType>&) const;
+    // Compute and return the residual b-Ax.Optionally don't correct boundary
+    // conditions or apply no forcing mask. This is determined via a template
+    // parameter instead of an argument, to avoid ambiguity with other
+    // arguments.
 
-    // Compute and return the residual b-Ax. Optionally apply no forcing mask.
-    // This is determined via a template parameter instead of an argument, to
-    // avoid ambiguity with other arguments.
-
-    template<bool NoMask = false>
+    template<bool CorrBCs = true, bool Mask = true>
     tmp<meshField<Type,MeshType>> residual() const;
 
-    template<bool NoMask = false>
+    template<bool CorrBCs = true, bool Mask = true>
     tmp<meshLevel<Type,MeshType>> residual(const label) const;
 
-    template<bool NoMask = false>
-    tmp<meshDirection<Type,MeshType>> residual(const label, const label) const;
-
     // Compute the evaluation (Ax-b)/V and store in given object. Optionally
-    // apply no forcing mask. This is determined via a template parameter
-    // instead of an argument, to avoid ambiguity with other arguments.
-
-    template<bool NoMask = false>
-    void evaluate(meshField<Type,MeshType>&) const;
-
-    template<bool NoMask = false>
-    void evaluate(meshLevel<Type,MeshType>&) const;
-
-    template<bool NoMask = false>
-    void evaluate(meshDirection<Type,MeshType>&) const;
-
-    // Compute the evaluation (Ax-b)/V. Optionally apply no forcing mask. This
-    // is determined via a template parameter instead of an argument, to avoid
+    // don't correct boundary conditions or apply no forcing mask. This is
+    // determined via a template parameter instead of an argument, to avoid
     // ambiguity with other arguments.
 
-    template<bool NoMask = false>
+    template<bool CorrBCs = true, bool Mask = true>
+    void evaluate(meshField<Type,MeshType>&) const;
+
+    template<bool CorrBCs = true, bool Mask = true>
+    void evaluate(meshLevel<Type,MeshType>&) const;
+
+    // Compute the evaluation (Ax-b)/V. Optionally don't correct boundary
+    // conditions or apply no forcing mask. This is determined via a template
+    // parameter instead of an argument, to avoid ambiguity with other
+    // arguments.
+
+    template<bool CorrBCs = true, bool Mask = true>
     tmp<meshField<Type,MeshType>> evaluate() const;
 
-    template<bool NoMask = false>
+    template<bool CorrBCs = true, bool Mask = true>
     tmp<meshLevel<Type,MeshType>> evaluate(const label) const;
-
-    template<bool NoMask = false>
-    tmp<meshDirection<Type,MeshType>> evaluate(const label, const label) const;
 
     // Eliminate ghosts from the linear system where possible
     void eliminateGhosts();

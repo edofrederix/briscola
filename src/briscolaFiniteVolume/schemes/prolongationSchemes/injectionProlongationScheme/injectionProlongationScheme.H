@@ -23,8 +23,8 @@ protected:
     template<template<class> class OpType>
     void prolong
     (
-        meshDirection<Type,MeshType>&,
-        const meshDirection<Type,MeshType>&,
+        meshLevel<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const OpType<Type>&
     );
 
@@ -40,8 +40,8 @@ public:
     // level, using the = operation
     virtual void prolong
     (
-        meshDirection<Type,MeshType>&,
-        const meshDirection<Type,MeshType>&,
+        meshLevel<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const eqOp<Type>&
     );
 
@@ -49,8 +49,8 @@ public:
     // level, using the += operation
     virtual void prolong
     (
-        meshDirection<Type,MeshType>&,
-        const meshDirection<Type,MeshType>&,
+        meshLevel<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const plusEqOp<Type>&
     );
 
@@ -58,8 +58,8 @@ public:
     // level, using the -= operation
     virtual void prolong
     (
-        meshDirection<Type,MeshType>&,
-        const meshDirection<Type,MeshType>&,
+        meshLevel<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const minusEqOp<Type>&
     );
 };

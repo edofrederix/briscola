@@ -102,7 +102,7 @@ bool immersedBoundaryForce<MeshType>::execute()
             "NS(" + UName_ + ")"
         );
 
-    fieldType r(- sys.template residual<true>());
+    fieldType r(- sys.template residual<false,false>());
 
     forAll(sys.x().immersedBoundaryConditions(), i)
     {

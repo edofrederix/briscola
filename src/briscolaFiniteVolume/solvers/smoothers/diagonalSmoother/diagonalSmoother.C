@@ -85,18 +85,18 @@ void diagonalSmoother<SType,Type,MeshType>::diagonalSmoother::Smooth
 
     for (label sweep = 0; sweep < sweeps; sweep++)
     {
-        forAll(x, d)
-            if (!converged[d])
-                Sweep(sys, l, d);
-
         if (l == 0)
             x.correctImmersedBoundaryConditions();
 
         x.correctNonEliminatedBoundaryConditions();
-    }
 
-    x.correctEliminatedBoundaryConditions();
-    x.correctUnsetBoundaryConditions();
+        if (!sys.eliminated())
+            x.correctEliminatedBoundaryConditions();
+
+        forAll(x, d)
+            if (!converged[d])
+                Sweep(sys, l, d);
+    }
 }
 
 template<class SType, class Type, class MeshType>

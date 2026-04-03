@@ -134,6 +134,14 @@ void lexgsSmoother<SType,Type,MeshType>::lexgsSmoother::Smooth
 
     for (label sweep = 0; sweep < sweeps; sweep++)
     {
+        if (l == 0)
+            x.correctImmersedBoundaryConditions();
+
+        x.correctNonEliminatedBoundaryConditions();
+
+        if (!sys.eliminated())
+            x.correctEliminatedBoundaryConditions();
+
         forAll(x, d)
         if (!converged[d])
         {
@@ -146,15 +154,7 @@ void lexgsSmoother<SType,Type,MeshType>::lexgsSmoother::Smooth
                 Sweep(sys, l, d);
             }
         }
-
-        if (l == 0)
-            x.correctImmersedBoundaryConditions();
-
-        x.correctNonEliminatedBoundaryConditions();
     }
-
-    x.correctEliminatedBoundaryConditions();
-    x.correctUnsetBoundaryConditions();
 }
 
 template<class SType, class Type, class MeshType>

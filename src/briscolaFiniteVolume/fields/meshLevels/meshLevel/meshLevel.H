@@ -313,8 +313,8 @@ public:
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();
 
-    // Correct agglomeration data, optionally for a specific direction
-    void correctAggData(const label = -1);
+    // Correct agglomeration data
+    void correctAggData();
 
     // Check if the boundary conditions make this level singular
     bool singular() const

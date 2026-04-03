@@ -11,6 +11,8 @@ namespace briscola
 namespace fv
 {
 
+// Private functions
+
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::transfer
 (
@@ -22,7 +24,252 @@ void linearSystem<SType,Type,MeshType>::transfer
 
     symmetric_ = sys.symmetric_;
     diagonal_ = sys.diagonal_;
+    eliminated_ = sys.eliminated_;
 }
+
+template<class SType, class Type, class MeshType>
+template<bool CorrBCs, bool Mask>
+void linearSystem<SType,Type,MeshType>::residual
+(
+    meshDirection<Type,MeshType>& res
+) const
+{
+    setForcingMask();
+
+    const label l = res.levelNum();
+    const label d = res.directionNum();
+
+    block<Type>& B = res.B();
+    const labelVector shape = B.shape();
+
+    // Restricted array pointers
+
+    Type* const __restrict__ res_arr = B.begin();
+
+    const Type* const __restrict__ x_arr = this->x()[l][d].B().begin();
+    const Type* const __restrict__ b_arr = this->b()[l][d].B().begin();
+    const label* const __restrict__ f_arr =
+        this->forcingMask()[l][d].B().begin();
+
+    // Reinterpret the matrix as a contiguous array of scalars
+
+    const scalar* const __restrict__ A_arr =
+        reinterpret_cast<const scalar*>(this->A()[l][d].B().begin());
+
+    const faceLabel I = res.I();
+
+    // Data in B is padded by ghosts
+
+    const labelVector S = I.lower() + G*unitXYZ;
+    const labelVector E = I.upper() + G*unitXYZ;
+    const labelVector M = E - S;
+
+    // Strides in i and j (data is contiguous in k)
+
+    const label S_i = lin(S+unitX, shape) - lin(S, shape);
+    const label S_j = lin(S+unitY, shape) - lin(S, shape);
+    const label S_k = 1;
+
+    // Jump after each line in k and plane in (j,k)
+
+    const label J_k = lin(S+unitY, shape) - lin(S+unitZ*M.z(), shape);
+    const label J_j = lin(S+unitX, shape) - lin(S+unitY*M.y(), shape);
+
+    // Row product function
+
+    linearSystemFun::rowProduct<SType,Type> P;
+
+    // Compute residuals
+
+    int c = lin(S, shape);
+
+    if (!Mask || !this->x().immersedBoundaryConditions().size())
+    {
+        // Compute residual for each cell
+
+        for (int i = 0; i < M.x(); i++)
+        {
+            for (int j = 0; j < M.y(); j++)
+            {
+                for (int k = 0; k < M.z(); k++)
+                {
+                    res_arr[c] =
+                        b_arr[c]
+                      - P(A_arr, x_arr, c, S_i, S_j, S_k);
+
+                    // Jump to next cell
+                    c++;
+                }
+
+                // Jump to next line
+                c += J_k;
+            }
+
+            // Jump to next plane
+            c += J_j;
+        }
+    }
+    else
+    {
+        // Compute residual for each unmasked cell
+
+        for (int i = 0; i < M.x(); i++)
+        {
+            for (int j = 0; j < M.y(); j++)
+            {
+                for (int k = 0; k < M.z(); k++)
+                {
+                    if (f_arr[c])
+                    {
+                        res_arr[c] = Zero;
+                    }
+                    else
+                    {
+                        res_arr[c] =
+                            b_arr[c]
+                          - P(A_arr, x_arr, c, S_i, S_j, S_k);
+                    }
+
+                    // Jump to next cell
+                    c++;
+                }
+
+                // Jump to next line
+                c += J_k;
+            }
+
+            // Jump to next plane
+            c += J_j;
+        }
+    }
+}
+
+template<class SType, class Type, class MeshType>
+template<bool CorrBCs, bool Mask>
+void linearSystem<SType,Type,MeshType>::evaluate
+(
+    meshDirection<Type,MeshType>& eval
+) const
+{
+    setForcingMask();
+
+    const label l = eval.levelNum();
+    const label d = eval.directionNum();
+
+    block<Type>& B = eval.B();
+    const labelVector shape = B.shape();
+
+    // Restricted array pointers
+
+    Type* const __restrict__ eval_arr = B.begin();
+
+    const Type* const __restrict__ x_arr = this->x()[l][d].B().begin();
+    const Type* const __restrict__ b_arr = this->b()[l][d].B().begin();
+    const label* const __restrict__ f_arr =
+        this->forcingMask()[l][d].B().begin();
+
+    const scalar* const __restrict__ icv_arr =
+        this->fvMsh_.template
+        metrics<MeshType>().inverseCellVolumes()[l][d].B().begin();
+
+    // Reinterpret the matrix as a contiguous array of scalars
+
+    const scalar* const __restrict__ A_arr =
+        reinterpret_cast<const scalar*>(this->A()[l][d].B().begin());
+
+    const faceLabel I = eval.I();
+
+    // Data in B is padded by ghosts
+
+    const labelVector S = I.lower() + G*unitXYZ;
+    const labelVector E = I.upper() + G*unitXYZ;
+    const labelVector M = E - S;
+
+    // Strides in i and j (data is contiguous in k)
+
+    const label S_i = lin(S+unitX, shape) - lin(S, shape);
+    const label S_j = lin(S+unitY, shape) - lin(S, shape);
+    const label S_k = 1;
+
+    // Jump after each line in k and plane in (j,k)
+
+    const label J_k = lin(S+unitY, shape) - lin(S+unitZ*M.z(), shape);
+    const label J_j = lin(S+unitX, shape) - lin(S+unitY*M.y(), shape);
+
+    // Row product function
+
+    linearSystemFun::rowProduct<SType,Type> P;
+
+    // Compute evaluations
+
+    int c = lin(S, shape);
+
+    if (!Mask || !this->x().immersedBoundaryConditions().size())
+    {
+        // Compute evaluation for each cell
+
+        for (int i = 0; i < M.x(); i++)
+        {
+            for (int j = 0; j < M.y(); j++)
+            {
+                for (int k = 0; k < M.z(); k++)
+                {
+                    eval_arr[c] =
+                        P(A_arr, x_arr, c, S_i, S_j, S_k)
+                      - b_arr[c];
+
+                    eval_arr[c] *= icv_arr[c];
+
+                    // Jump to next cell
+                    c++;
+                }
+
+                // Jump to next line
+                c += J_k;
+            }
+
+            // Jump to next plane
+            c += J_j;
+        }
+    }
+    else
+    {
+        // Compute evaluation for each unmasked cell
+
+        for (int i = 0; i < M.x(); i++)
+        {
+            for (int j = 0; j < M.y(); j++)
+            {
+                for (int k = 0; k < M.z(); k++)
+                {
+                    if (f_arr[c])
+                    {
+                        eval_arr[c] = Zero;
+                    }
+                    else
+                    {
+                        eval_arr[c] =
+                            P(A_arr, x_arr, c, S_i, S_j, S_k)
+                          - b_arr[c];
+
+                        eval_arr[c] *= icv_arr[c];
+                    }
+
+                    // Jump to next cell
+                    c++;
+                }
+
+                // Jump to next line
+                c += J_k;
+            }
+
+            // Jump to next plane
+            c += J_j;
+        }
+    }
+}
+
+// Constructors
 
 template<class SType, class Type, class MeshType>
 linearSystem<SType,Type,MeshType>::linearSystem
@@ -64,7 +311,8 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject::NO_WRITE
     ),
     symmetric_(true),
-    diagonal_(true)
+    diagonal_(true),
+    eliminated_(false)
 {}
 
 template<class SType, class Type, class MeshType>
@@ -95,7 +343,8 @@ linearSystem<SType,Type,MeshType>::linearSystem
         IOobject::NO_WRITE
     ),
     symmetric_(true),
-    diagonal_(true)
+    diagonal_(true),
+    eliminated_(false)
 {}
 
 template<class SType, class Type, class MeshType>
@@ -297,146 +546,47 @@ linearSystem<SType,Type,MeshType>::~linearSystem()
 {}
 
 template<class SType, class Type, class MeshType>
-template<bool NoMask>
+template<bool CorrBCs, bool Mask>
 void linearSystem<SType,Type,MeshType>::residual
 (
     meshField<Type, MeshType>& res
 ) const
 {
     forAll(res, l)
-        this->residual<NoMask>(res[l]);
+        this->residual<CorrBCs,Mask>(res[l]);
 }
 
 template<class SType, class Type, class MeshType>
-template<bool NoMask>
+template<bool CorrBCs, bool Mask>
 void linearSystem<SType,Type,MeshType>::residual
 (
     meshLevel<Type,MeshType>& res
 ) const
 {
+    if (CorrBCs)
+    {
+        meshField<Type,MeshType>& x =
+            const_cast<meshField<Type,MeshType>&>(this->x());
+
+        // If boundary coefficients are eliminated, we only need to correct the
+        // non-eliminated boundaries. Otherwise, correct all boundaries.
+
+        if (eliminated_)
+        {
+            x[res.levelNum()].correctNonEliminatedBoundaryConditions();
+        }
+        else
+        {
+            x[res.levelNum()].correctBoundaryConditions();
+        }
+    }
+
     forAll(res, d)
-        this->residual<NoMask>(res[d]);
+        this->residual<CorrBCs,Mask>(res[d]);
 }
 
 template<class SType, class Type, class MeshType>
-template<bool NoMask>
-void linearSystem<SType,Type,MeshType>::residual
-(
-    meshDirection<Type,MeshType>& res
-) const
-{
-    setForcingMask();
-
-    const label l = res.levelNum();
-    const label d = res.directionNum();
-
-    block<Type>& B = res.B();
-    const labelVector shape = B.shape();
-
-    // Restricted array pointers
-
-    Type* const __restrict__ res_arr = B.begin();
-
-    const Type* const __restrict__ x_arr = this->x()[l][d].B().begin();
-    const Type* const __restrict__ b_arr = this->b()[l][d].B().begin();
-    const label* const __restrict__ f_arr =
-        this->forcingMask()[l][d].B().begin();
-
-    // Reinterpret the matrix as a contiguous array of scalars
-
-    const scalar* const __restrict__ A_arr =
-        reinterpret_cast<const scalar*>(this->A()[l][d].B().begin());
-
-    const faceLabel I = res.I();
-
-    // Data in B is padded by ghosts
-
-    const labelVector S = I.lower() + G*unitXYZ;
-    const labelVector E = I.upper() + G*unitXYZ;
-    const labelVector M = E - S;
-
-    // Strides in i and j (data is contiguous in k)
-
-    const label S_i = lin(S+unitX, shape) - lin(S, shape);
-    const label S_j = lin(S+unitY, shape) - lin(S, shape);
-    const label S_k = 1;
-
-    // Jump after each line in k and plane in (j,k)
-
-    const label J_k = lin(S+unitY, shape) - lin(S+unitZ*M.z(), shape);
-    const label J_j = lin(S+unitX, shape) - lin(S+unitY*M.y(), shape);
-
-    // Row product function
-
-    linearSystemFun::rowProduct<SType,Type> P;
-
-    // Compute residuals
-
-    int c = lin(S, shape);
-
-    if (NoMask || !this->x().immersedBoundaryConditions().size())
-    {
-        // Compute residual for each cell
-
-        for (int i = 0; i < M.x(); i++)
-        {
-            for (int j = 0; j < M.y(); j++)
-            {
-                for (int k = 0; k < M.z(); k++)
-                {
-                    res_arr[c] =
-                        b_arr[c]
-                      - P(A_arr, x_arr, c, S_i, S_j, S_k);
-
-                    // Jump to next cell
-                    c++;
-                }
-
-                // Jump to next line
-                c += J_k;
-            }
-
-            // Jump to next plane
-            c += J_j;
-        }
-    }
-    else
-    {
-        // Compute residual for each unmasked cell
-
-        for (int i = 0; i < M.x(); i++)
-        {
-            for (int j = 0; j < M.y(); j++)
-            {
-                for (int k = 0; k < M.z(); k++)
-                {
-                    if (f_arr[c])
-                    {
-                        res_arr[c] = Zero;
-                    }
-                    else
-                    {
-                        res_arr[c] =
-                            b_arr[c]
-                          - P(A_arr, x_arr, c, S_i, S_j, S_k);
-                    }
-
-                    // Jump to next cell
-                    c++;
-                }
-
-                // Jump to next line
-                c += J_k;
-            }
-
-            // Jump to next plane
-            c += J_j;
-        }
-    }
-}
-
-template<class SType, class Type, class MeshType>
-template<bool NoMask>
+template<bool CorrBCs, bool Mask>
 tmp<meshField<Type, MeshType>>
 linearSystem<SType,Type,MeshType>::residual() const
 {
@@ -447,192 +597,66 @@ linearSystem<SType,Type,MeshType>::residual() const
             fvMsh_
         );
 
-    this->residual<NoMask>(tRes.ref());
+    this->residual<CorrBCs,Mask>(tRes.ref());
 
     return tRes;
 }
 
 template<class SType, class Type, class MeshType>
-template<bool NoMask>
+template<bool CorrBCs, bool Mask>
 tmp<meshLevel<Type,MeshType>>
 linearSystem<SType,Type,MeshType>::residual(const label l) const
 {
     tmp<meshLevel<Type,MeshType>> tRes =
         meshLevel<Type,MeshType>::New(fvMsh_,l);
 
-    this->residual<NoMask>(tRes.ref());
+    this->residual<CorrBCs,Mask>(tRes.ref());
 
     return tRes;
 }
 
 template<class SType, class Type, class MeshType>
-template<bool NoMask>
-tmp<meshDirection<Type,MeshType>>
-linearSystem<SType,Type,MeshType>::residual
-(
-    const label l,
-    const label d
-) const
-{
-    tmp<meshDirection<Type,MeshType>> tRes =
-        meshDirection<Type,MeshType>::New(fvMsh_,l,d);
-
-    this->residual<NoMask>(tRes.ref());
-
-    return tRes;
-}
-
-template<class SType, class Type, class MeshType>
-template<bool NoMask>
+template<bool CorrBCs, bool Mask>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
     meshField<Type, MeshType>& eval
 ) const
 {
     forAll(eval, l)
-        this->evaluate<NoMask>(eval[l]);
+        this->evaluate<CorrBCs,Mask>(eval[l]);
 }
 
 template<class SType, class Type, class MeshType>
-template<bool NoMask>
+template<bool CorrBCs, bool Mask>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
     meshLevel<Type,MeshType>& eval
 ) const
 {
+    if (CorrBCs)
+    {
+        meshField<Type,MeshType>& x =
+            const_cast<meshField<Type,MeshType>&>(this->x());
+
+        // If boundary coefficients are eliminated, we only need to correct the
+        // non-eliminated boundaries. Otherwise, correct all boundaries.
+
+        if (eliminated_)
+        {
+            x[eval.levelNum()].correctNonEliminatedBoundaryConditions();
+        }
+        else
+        {
+            x[eval.levelNum()].correctBoundaryConditions();
+        }
+    }
+
     forAll(eval, d)
-        this->evaluate<NoMask>(eval[d]);
+        this->evaluate<CorrBCs,Mask>(eval[d]);
 }
 
 template<class SType, class Type, class MeshType>
-template<bool NoMask>
-void linearSystem<SType,Type,MeshType>::evaluate
-(
-    meshDirection<Type,MeshType>& eval
-) const
-{
-    setForcingMask();
-
-    const label l = eval.levelNum();
-    const label d = eval.directionNum();
-
-    block<Type>& B = eval.B();
-    const labelVector shape = B.shape();
-
-    // Restricted array pointers
-
-    Type* const __restrict__ eval_arr = B.begin();
-
-    const Type* const __restrict__ x_arr = this->x()[l][d].B().begin();
-    const Type* const __restrict__ b_arr = this->b()[l][d].B().begin();
-    const label* const __restrict__ f_arr =
-        this->forcingMask()[l][d].B().begin();
-
-    const scalar* const __restrict__ icv_arr =
-        this->fvMsh_.template
-        metrics<MeshType>().inverseCellVolumes()[l][d].B().begin();
-
-    // Reinterpret the matrix as a contiguous array of scalars
-
-    const scalar* const __restrict__ A_arr =
-        reinterpret_cast<const scalar*>(this->A()[l][d].B().begin());
-
-    const faceLabel I = eval.I();
-
-    // Data in B is padded by ghosts
-
-    const labelVector S = I.lower() + G*unitXYZ;
-    const labelVector E = I.upper() + G*unitXYZ;
-    const labelVector M = E - S;
-
-    // Strides in i and j (data is contiguous in k)
-
-    const label S_i = lin(S+unitX, shape) - lin(S, shape);
-    const label S_j = lin(S+unitY, shape) - lin(S, shape);
-    const label S_k = 1;
-
-    // Jump after each line in k and plane in (j,k)
-
-    const label J_k = lin(S+unitY, shape) - lin(S+unitZ*M.z(), shape);
-    const label J_j = lin(S+unitX, shape) - lin(S+unitY*M.y(), shape);
-
-    // Row product function
-
-    linearSystemFun::rowProduct<SType,Type> P;
-
-    // Compute evaluations
-
-    int c = lin(S, shape);
-
-    if (NoMask || !this->x().immersedBoundaryConditions().size())
-    {
-        // Compute evaluation for each cell
-
-        for (int i = 0; i < M.x(); i++)
-        {
-            for (int j = 0; j < M.y(); j++)
-            {
-                for (int k = 0; k < M.z(); k++)
-                {
-                    eval_arr[c] =
-                        (
-                            P(A_arr, x_arr, c, S_i, S_j, S_k)
-                          - b_arr[c]
-                        )
-                      * icv_arr[c];
-
-                    // Jump to next cell
-                    c++;
-                }
-
-                // Jump to next line
-                c += J_k;
-            }
-
-            // Jump to next plane
-            c += J_j;
-        }
-    }
-    else
-    {
-        // Compute evaluation for each unmasked cell
-
-        for (int i = 0; i < M.x(); i++)
-        {
-            for (int j = 0; j < M.y(); j++)
-            {
-                for (int k = 0; k < M.z(); k++)
-                {
-                    if (f_arr[c])
-                    {
-                        eval_arr[c] = Zero;
-                    }
-                    else
-                    {
-                        eval_arr[c] =
-                            (
-                                P(A_arr, x_arr, c, S_i, S_j, S_k)
-                              - b_arr[c]
-                            )
-                          * icv_arr[c];
-                    }
-
-                    // Jump to next cell
-                    c++;
-                }
-
-                // Jump to next line
-                c += J_k;
-            }
-
-            // Jump to next plane
-            c += J_j;
-        }
-    }
-}
-
-template<class SType, class Type, class MeshType>
-template<bool NoMask>
+template<bool CorrBCs, bool Mask>
 tmp<meshField<Type, MeshType>>
 linearSystem<SType,Type,MeshType>::evaluate() const
 {
@@ -643,39 +667,22 @@ linearSystem<SType,Type,MeshType>::evaluate() const
             fvMsh_
         );
 
-    this->evaluate<NoMask>(tEval.ref());
+    this->evaluate<CorrBCs,Mask>(tEval.ref());
 
     return tEval;
 }
 
 template<class SType, class Type, class MeshType>
-template<bool NoMask>
+template<bool CorrBCs, bool Mask>
 tmp<meshLevel<Type,MeshType>>
 linearSystem<SType,Type,MeshType>::evaluate(const label l) const
 {
     tmp<meshLevel<Type,MeshType>> tEval =
         meshLevel<Type,MeshType>::New(fvMsh_,l);
 
-    this->evaluate<NoMask>(tEval.ref());
+    this->evaluate<CorrBCs,Mask>(tEval.ref());
 
     return tEval;
-}
-
-template<class SType, class Type, class MeshType>
-template<bool NoMask>
-tmp<meshDirection<Type,MeshType>>
-linearSystem<SType,Type,MeshType>::evaluate
-(
-    const label l,
-    const label d
-) const
-{
-    tmp<meshDirection<Type,MeshType>> tRes =
-        meshDirection<Type,MeshType>::New(fvMsh_,l,d);
-
-    this->evaluate<NoMask>(tRes.ref());
-
-    return tRes;
 }
 
 template<class SType, class Type, class MeshType>
@@ -691,6 +698,8 @@ void linearSystem<SType,Type,MeshType>::eliminateGhosts()
     forAll(x, l)
         forAll(x[l].boundaryConditions(), i)
             x[l].boundaryConditions()[i].eliminateGhosts(*this);
+
+    eliminated_ = true;
 }
 
 template<class SType, class Type, class MeshType>
@@ -736,6 +745,7 @@ void linearSystem<SType,Type,MeshType>::operator=
 
     this->symmetric_ = sys.symmetric();
     this->diagonal_ = sys.diagonal();
+    this->eliminated_ = sys.eliminated();
 }
 
 template<class SType, class Type, class MeshType>
@@ -770,6 +780,7 @@ void linearSystem<SType,Type,MeshType>::operator+=
 
     symmetric_ = symmetric_ && sys.symmetric();
     diagonal_ = diagonal_ && sys.diagonal();
+    eliminated_ = eliminated_ && sys.eliminated();
 }
 
 template<class SType, class Type, class MeshType>
@@ -795,6 +806,7 @@ void linearSystem<SType,Type,MeshType>::operator-=
 
     symmetric_ = symmetric_ && sys.symmetric();
     diagonal_ = diagonal_ && sys.diagonal();
+    eliminated_ = eliminated_ && sys.eliminated();
 }
 
 template<class SType, class Type, class MeshType>
@@ -820,6 +832,7 @@ void linearSystem<SType,Type,MeshType>::operator=
 
     symmetric_ = true;
     diagonal_ = true;
+    eliminated_ = false;
 }
 
 template<class SType, class Type, class MeshType>
@@ -836,6 +849,7 @@ void linearSystem<SType,Type,MeshType>::operator=
 
     symmetric_ = true;
     diagonal_ = true;
+    eliminated_ = false;
 }
 
 template<class SType, class Type, class MeshType>
@@ -852,6 +866,7 @@ void linearSystem<SType,Type,MeshType>::operator=
 
     symmetric_ = true;
     diagonal_ = true;
+    eliminated_ = false;
 }
 
 template<class SType, class Type, class MeshType>
@@ -994,6 +1009,7 @@ void linearSystem<SType,Type,MeshType>::operator=
 
     symmetric_ = sys.symmetric();
     diagonal_ = sys.diagonal();
+    eliminated_ = sys.eliminated();
 }
 
 template<class SType, class Type, class MeshType>
@@ -1021,6 +1037,7 @@ void linearSystem<SType,Type,MeshType>::operator+=
 
     symmetric_ = symmetric_ && sys.symmetric();
     diagonal_ = diagonal_ && sys.diagonal();
+    eliminated_ = eliminated_ && sys.eliminated();
 }
 
 template<class SType, class Type, class MeshType>
@@ -1048,6 +1065,7 @@ void linearSystem<SType,Type,MeshType>::operator-=
 
     symmetric_ = symmetric_ && sys.symmetric();
     diagonal_ = diagonal_ && sys.diagonal();
+    eliminated_ = eliminated_ && sys.eliminated();
 }
 
 template<class SType, class Type, class MeshType>

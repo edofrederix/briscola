@@ -103,34 +103,31 @@ linearRestrictionScheme<Type,MeshType>::linearRestrictionScheme
 template<class Type, class MeshType>
 void linearRestrictionScheme<Type,MeshType>::restrict
 (
-    meshDirection<Type,MeshType>& coarse,
-    const meshDirection<Type,MeshType>& fine,
+    meshLevel<Type,MeshType>& coarse,
+    const meshLevel<Type,MeshType>& fine,
     const bool scale
 )
 {
     const labelVector R(coarse.lvl().R());
-    const label d = coarse.directionNum();
 
-    meshDirection<vertexScalar,MeshType>& weights =
-        weights_[coarse.levelNum()][d];
+    meshLevel<vertexScalar,MeshType>& weights =
+        weights_[coarse.levelNum()];
 
-    const_cast<meshLevel<Type,MeshType>&>(fine.level()).correctAggData(d);
+    const_cast<meshLevel<Type,MeshType>&>(fine).correctAggData();
 
     if (scale)
     {
-        const meshDirection<scalar,MeshType>& cvc =
+        const meshLevel<scalar,MeshType>& cvc =
             this->fvMsh().template
-            metrics<MeshType>().cellVolumes()
-            [coarse.levelNum()][d];
+            metrics<MeshType>().cellVolumes()[coarse.levelNum()];
 
-        const meshDirection<scalar,MeshType>& icvf =
+        const meshLevel<scalar,MeshType>& icvf =
             this->fvMsh().template
-            metrics<MeshType>().inverseCellVolumes()
-            [fine.levelNum()][fine.directionNum()];
+            metrics<MeshType>().inverseCellVolumes()[fine.levelNum()];
 
-        forAllCells(coarse, i, j, k)
+        forAllCells(coarse, d, i, j, k)
         {
-            coarse(i,j,k) = Zero;
+            coarse(d,i,j,k) = Zero;
 
             const label ox = R.x() > 1;
             const label oy = R.y() > 1;
@@ -140,30 +137,32 @@ void linearRestrictionScheme<Type,MeshType>::restrict
             for (int c = 0; c < 2; c++)
                 for (int b = 0; b < 2; b++)
                     for (int a = 0; a < 2; a++)
-                        if (weights(i,j,k)[q++] != 0.0)
-                            coarse(i,j,k) +=
-                                weights(i,j,k)[q-1]
+                        if (weights(d,i,j,k)[q++] != 0.0)
+                            coarse(d,i,j,k) +=
+                                weights(d,i,j,k)[q-1]
                               * fine
                                 (
+                                    d,
                                     i*R.x() + a*ox,
                                     j*R.y() + b*oy,
                                     k*R.z() + c*oz
                                 )
                               * icvf
                                 (
+                                    d,
                                     i*R.x() + a*ox,
                                     j*R.y() + b*oy,
                                     k*R.z() + c*oz
                                 );
 
-            coarse(i,j,k) *= cvc(i,j,k);
+            coarse(d,i,j,k) *= cvc(d,i,j,k);
         }
     }
     else
     {
-        forAllCells(coarse, i, j, k)
+        forAllCells(coarse, d, i, j, k)
         {
-            coarse(i,j,k) = Zero;
+            coarse(d,i,j,k) = Zero;
 
             const label ox = R.x() > 1;
             const label oy = R.y() > 1;
@@ -173,11 +172,12 @@ void linearRestrictionScheme<Type,MeshType>::restrict
             for (int c = 0; c < 2; c++)
                 for (int b = 0; b < 2; b++)
                     for (int a = 0; a < 2; a++)
-                        if (weights(i,j,k)[q++] != 0.0)
-                            coarse(i,j,k) +=
-                                weights(i,j,k)[q-1]
+                        if (weights(d,i,j,k)[q++] != 0.0)
+                            coarse(d,i,j,k) +=
+                                weights(d,i,j,k)[q-1]
                               * fine
                                 (
+                                    d,
                                     i*R.x() + a*ox,
                                     j*R.y() + b*oy,
                                     k*R.z() + c*oz

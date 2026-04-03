@@ -33,20 +33,15 @@ void diagonal<SType,Type,MeshType>::solve
     sys.setForcingMask();
 
     if (SType::nCsComponents > 1)
-    {
         if (!sys.diagonal())
             FatalErrorInFunction
                 << "System is not diagonal" << endl
                 << abort(FatalError);
-    }
 
-    diagonalSmoother<SType,Type,MeshType>::Smooth
-    (
-        sys,
-        0,
-        1,
-        labelList(MeshType::numberOfDirections, 0)
-    );
+    for (int d = 0; d < MeshType::numberOfDirections; d++)
+        diagonalSmoother<SType,Type,MeshType>::Sweep(sys, 0, d);
+
+    sys.x()[0].correctBoundaryConditions();
 
     this->printSolverStats
     (

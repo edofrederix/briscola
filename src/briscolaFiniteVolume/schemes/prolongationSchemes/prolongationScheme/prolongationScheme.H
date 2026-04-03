@@ -65,8 +65,8 @@ public:
     // level, using the = operation
     virtual void prolong
     (
-        meshDirection<Type,MeshType>&,
-        const meshDirection<Type,MeshType>&,
+        meshLevel<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const eqOp<Type>&
     ) = 0;
 
@@ -74,8 +74,8 @@ public:
     // level, using the += operation
     virtual void prolong
     (
-        meshDirection<Type,MeshType>&,
-        const meshDirection<Type,MeshType>&,
+        meshLevel<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const plusEqOp<Type>&
     ) = 0;
 
@@ -83,8 +83,8 @@ public:
     // level, using the -= operation
     virtual void prolong
     (
-        meshDirection<Type,MeshType>&,
-        const meshDirection<Type,MeshType>&,
+        meshLevel<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const minusEqOp<Type>&
     ) = 0;
 };

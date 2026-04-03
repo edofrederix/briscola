@@ -26,11 +26,7 @@ void prolong(meshField<Type,MeshType>& field, const word scheme)
 
     for (int l = field.fvMsh().size()-1; l >= 1; l--)
     {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            schemePtr->prolong(field[l-1][d], field[l][d], eqOp<Type>());
-        }
-
+        schemePtr->prolong(field[l-1], field[l], eqOp<Type>());
         field[l-1].correctBoundaryConditions();
     }
 }

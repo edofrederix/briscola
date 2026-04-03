@@ -43,9 +43,9 @@ void iterative<SType,Type,MeshType>::solve
     if (sigFpeEnabled())
         r = Zero;
 
-    // Initial residual
+    // Initial residual without boundary correction
 
-    sys.residual(r[0]);
+    sys.template residual<false>(r[0]);
 
     // Residual normalization factors
 
@@ -91,9 +91,7 @@ void iterative<SType,Type,MeshType>::solve
 
         // Recompute the residual
 
-        forAll(x[0], d)
-            if (!converged[d])
-                sys.residual(r[0][d]);
+        sys.residual(r[0]);
 
         currentResiduals =
             cmptDivide
@@ -151,13 +149,10 @@ void iterative<SType,Type,MeshType>::solve
 
     if (sys.diagonal())
     {
-        diagonalSmoother<SType,Type,MeshType>::Smooth
-        (
-            sys,
-            0,
-            1,
-            labelList(MeshType::numberOfDirections, 0)
-        );
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+            diagonalSmoother<SType,Type,MeshType>::Sweep(sys, 0, d);
+
+        sys.x()[0].correctBoundaryConditions();
 
         this->printSolverStats
         (
@@ -181,6 +176,10 @@ void iterative<SType,Type,MeshType>::solve
             this->maxIter_,
             this->nSweeps_
         );
+
+        // Correct eliminated ghosts
+
+        sys.x()[0].correctEliminatedBoundaryConditions();
     }
 }
 

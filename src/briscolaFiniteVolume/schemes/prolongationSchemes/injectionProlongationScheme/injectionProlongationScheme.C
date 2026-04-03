@@ -13,23 +13,22 @@ template<class Type, class MeshType>
 template<template<class> class OpType>
 void injectionProlongationScheme<Type,MeshType>::prolong
 (
-    meshDirection<Type,MeshType>& fine,
-    const meshDirection<Type,MeshType>& coarse,
+    meshLevel<Type,MeshType>& fine,
+    const meshLevel<Type,MeshType>& coarse,
     const OpType<Type>& bop
 )
 {
     const labelVector R(coarse.lvl().R());
     const labelVector offset(coarse.lvl().aggParentOffset());
-    const label d = fine.directionNum();
 
-    const_cast<meshLevel<Type,MeshType>&>(coarse.level()).correctAggData(d);
+    const_cast<meshLevel<Type,MeshType>&>(coarse).correctAggData();
 
-    forAllCells(fine, i, j, k)
+    forAllCells(fine, d, i, j, k)
     {
         bop
         (
-            fine(i,j,k),
-            coarse(briscola::cmptDivide(labelVector(i,j,k),R) + offset)
+            fine(d,i,j,k),
+            coarse(d, briscola::cmptDivide(labelVector(i,j,k),R) + offset)
         );
     }
 }
@@ -47,8 +46,8 @@ injectionProlongationScheme<Type,MeshType>::injectionProlongationScheme
 template<class Type, class MeshType>
 void injectionProlongationScheme<Type,MeshType>::prolong
 (
-    meshDirection<Type,MeshType>& fine,
-    const meshDirection<Type,MeshType>& coarse,
+    meshLevel<Type,MeshType>& fine,
+    const meshLevel<Type,MeshType>& coarse,
     const eqOp<Type>& bop
 )
 {
@@ -58,8 +57,8 @@ void injectionProlongationScheme<Type,MeshType>::prolong
 template<class Type, class MeshType>
 void injectionProlongationScheme<Type,MeshType>::prolong
 (
-    meshDirection<Type,MeshType>& fine,
-    const meshDirection<Type,MeshType>& coarse,
+    meshLevel<Type,MeshType>& fine,
+    const meshLevel<Type,MeshType>& coarse,
     const plusEqOp<Type>& bop
 )
 {
@@ -69,8 +68,8 @@ void injectionProlongationScheme<Type,MeshType>::prolong
 template<class Type, class MeshType>
 void injectionProlongationScheme<Type,MeshType>::prolong
 (
-    meshDirection<Type,MeshType>& fine,
-    const meshDirection<Type,MeshType>& coarse,
+    meshLevel<Type,MeshType>& fine,
+    const meshLevel<Type,MeshType>& coarse,
     const minusEqOp<Type>& bop
 )
 {

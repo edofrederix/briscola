@@ -160,9 +160,9 @@ void Krylov<SType,Type,MeshType>::Solve
     if (sigFpeEnabled())
         buffer = Zero;
 
-    // Initial residual
+    // Initial residual without boundary update
 
-    sys.residual(buffer);
+    sys.template residual<false>(buffer);
 
     // Residual normalization factors
 
@@ -367,13 +367,10 @@ void Krylov<SType,Type,MeshType>::solve
 
     if (sys.diagonal())
     {
-        diagonalSmoother<SType,Type,MeshType>::Smooth
-        (
-            sys,
-            0,
-            1,
-            labelList(MeshType::numberOfDirections, 0)
-        );
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+            diagonalSmoother<SType,Type,MeshType>::Sweep(sys, 0, d);
+
+        sys.x()[0].correctBoundaryConditions();
 
         this->printSolverStats
         (

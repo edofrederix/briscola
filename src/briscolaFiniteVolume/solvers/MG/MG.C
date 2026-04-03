@@ -66,18 +66,15 @@ void MG<SType,Type,MeshType>::cycle
         for (label rep = 0; rep < levelReps(l,visits); rep++)
         {
             // Don't compute the residual for the finest level during the first
-            // repetition
+            // repetition. If the residual is computed, do a solution boundary
+            // update.
 
             if (rep > 0 || l > 0)
-                forAll(xl, d)
-                    if (!converged[d])
-                        sys.residual(rl[d]);
+                sys.residual(rl);
 
             // Restrict the current level residual to coarse level
 
-            forAll(xl, d)
-                if (!converged[d])
-                    reScheme_->restrict(blCoarse[d], rl[d], true);
+            reScheme_->restrict(blCoarse, rl, true);
 
             // Solve the coarse level defect equation
 
@@ -96,11 +93,7 @@ void MG<SType,Type,MeshType>::cycle
             // Prolong the coarse level defect solution and add the correction
             // directly to the current level
 
-            forAll(xl, d)
-                if (!converged[d])
-                    proScheme_->prolong(xl[d], xlCoarse[d], plusEqOp<Type>());
-
-            xl.correctBoundaryConditions();
+            proScheme_->prolong(xl, xlCoarse, plusEqOp<Type>());
 
             // Post-smooth
 
@@ -165,9 +158,10 @@ void MG<SType,Type,MeshType>::Solve
     if (sigFpeEnabled())
         r = Zero;
 
-    // Initial residual
+    // Initial residual without boundary correction
 
-    sys.residual(r[0]);
+    x.correctBoundaryConditions();
+    sys.template residual<false>(r[0]);
 
     // Residual normalization factors
 
@@ -227,9 +221,7 @@ void MG<SType,Type,MeshType>::Solve
 
         // Recompute the residual
 
-        forAll(x[0], d)
-            if (!converged[d])
-                sys.residual(r[0][d]);
+        sys.residual(r[0]);
 
         currentResiduals =
             cmptDivide
@@ -421,13 +413,10 @@ void MG<SType,Type,MeshType>::solve
 
         sys.setForcingMask();
 
-        diagonalSmoother<SType,Type,MeshType>::Smooth
-        (
-            sys,
-            0,
-            1,
-            labelList(MeshType::numberOfDirections, 0)
-        );
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+            diagonalSmoother<SType,Type,MeshType>::Sweep(sys, 0, d);
+
+        sys.x()[0].correctBoundaryConditions();
 
         this->printSolverStats
         (
@@ -481,6 +470,10 @@ void MG<SType,Type,MeshType>::solve
             this->nSweepsPost_,
             coarseLevel
         );
+
+        // Correct eliminated ghosts
+
+        sys.x()[0].correctEliminatedBoundaryConditions();
 
         if (shallowUnknown)
             sys.x().makeShallow();

@@ -34,10 +34,10 @@ void testConstantProlongation(const fvMesh& fvMsh, const word scheme)
     {
         f[l] = pTraits<Type>::one*2.0;
 
+        P->prolong(f[l-1], f[l], eqOp<Type>());
+
         forAll(f[l], d)
         {
-            P->prolong(f[l-1][d], f[l][d], eqOp<Type>());
-
             forAllCells(f[l-1][d], i, j, k)
                 if (mag(f[l-1][d](i,j,k) - pTraits<Type>::one*2.0) > 1e-14)
                     FatalErrorInFunction
@@ -79,10 +79,10 @@ void testOneLinearProlongation(const fvMesh& fvMsh, const word scheme)
                 f(l,d,i,j,k) = cc(l,d,i,j,k)[dir]*pTraits<Type>::one;
             }
 
+            P->prolong(f[l-1], f[l], eqOp<Type>());
+
             forAll(f[l], d)
             {
-                P->prolong(f[l-1][d], f[l][d], eqOp<Type>());
-
                 forAllCells(f[l-1][d], i, j, k)
                 {
                     if
@@ -139,10 +139,10 @@ void testTwoLinearProlongation(const fvMesh& fvMsh, const word scheme)\
                   * pTraits<Type>::one;
             }
 
+            P->prolong(f[l-1], f[l], eqOp<Type>());
+
             forAll(f[l], d)
             {
-                P->prolong(f[l-1][d], f[l][d], eqOp<Type>());
-
                 forAllCells(f[l-1][d], i, j, k)
                 {
                     if
@@ -202,10 +202,10 @@ void testThreeLinearProlongation(const fvMesh& fvMsh, const word scheme)
               * pTraits<Type>::one;
         }
 
+        P->prolong(f[l-1], f[l], eqOp<Type>());
+
         forAll(f[l], d)
         {
-            P->prolong(f[l-1][d], f[l][d], eqOp<Type>());
-
             forAllCells(f[l-1][d], i, j, k)
             {
                 if

@@ -60,17 +60,8 @@ public:
     virtual void restrict
     (
         faceField<Type,MeshType>&,
-        const label l,
-        const label d
-    ) = 0;
-
-    // In-place restriction from a fine face level l to an adjacent coarse face
-    // level l+1
-    virtual void restrict
-    (
-        faceField<Type,MeshType>&,
         const label l
-    );
+    ) = 0;
 
     // Restrict field from itself from fine to coarse
     virtual void restrict

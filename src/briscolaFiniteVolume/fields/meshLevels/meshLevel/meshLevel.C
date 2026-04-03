@@ -561,7 +561,7 @@ void meshLevel<Type,MeshType>::correctImmersedBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctAggData(const label D)
+void meshLevel<Type,MeshType>::correctAggData()
 {
     const decomposition& decomp = lvl().decomp();
 
@@ -581,9 +581,7 @@ void meshLevel<Type,MeshType>::correctAggData(const label D)
         forAll(N, d)
         {
             N[d] = listType::operator[](d).dataShape(!decomp.aggMaster());
-
-            if (D < 0 || D == d)
-                size += cmptProduct(N[d]);
+            size += cmptProduct(N[d]);
         }
 
         buffer.resize(size);
@@ -596,7 +594,6 @@ void meshLevel<Type,MeshType>::correctAggData(const label D)
 
             label cursor = 0;
             forAll(*this, d)
-                if (D < 0 || D == d)
                 for (int i = 0; i < N[d].x(); i++)
                 for (int j = 0; j < N[d].y(); j++)
                 for (int k = 0; k < N[d].z(); k++)
@@ -635,7 +632,6 @@ void meshLevel<Type,MeshType>::correctAggData(const label D)
 
             label cursor = 0;
             forAll(*this, d)
-                if (D < 0 || D == d)
                 for (int i = 0; i < N[d].x(); i++)
                 for (int j = 0; j < N[d].y(); j++)
                 for (int k = 0; k < N[d].z(); k++)
@@ -657,9 +653,7 @@ void meshLevel<Type,MeshType>::correctAggData(const label D)
         forAll(N, d)
         {
             N[d] = listType::operator[](d).dataShape();
-
-            if (D < 0 || D == d)
-                size += cmptProduct(N[d]);
+            size += cmptProduct(N[d]);
         }
 
         buffer.resize(size);
@@ -672,7 +666,6 @@ void meshLevel<Type,MeshType>::correctAggData(const label D)
 
             label cursor = 0;
             forAll(*this, d)
-                if (D < 0 || D == d)
                 for (int i = 0; i < N[d].x(); i++)
                 for (int j = 0; j < N[d].y(); j++)
                 for (int k = 0; k < N[d].z(); k++)
@@ -716,7 +709,6 @@ void meshLevel<Type,MeshType>::correctAggData(const label D)
 
                     label cursor = 0;
                     forAll(*this, d)
-                    if (D < 0 || D == d)
                     {
                         meshDirection<Type,MeshType>& dir =
                             listType::operator[](d);

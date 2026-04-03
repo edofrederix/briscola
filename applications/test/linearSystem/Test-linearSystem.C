@@ -81,12 +81,6 @@ void testResiduals(const fvMesh& fvMsh)
     {
         sys.residual(res[l]);
         res[l] = sys.residual(l);
-
-        forAll(f[l], d)
-        {
-            sys.residual(res[l][d]);
-            res[l][d] = sys.residual(l,d);
-        }
     }
 }
 

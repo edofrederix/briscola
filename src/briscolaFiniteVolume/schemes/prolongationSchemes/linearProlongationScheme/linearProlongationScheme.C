@@ -113,33 +113,36 @@ template<class Type, class MeshType>
 template<template<class> class OpType>
 void linearProlongationScheme<Type,MeshType>::prolong
 (
-    meshDirection<Type,MeshType>& fine,
-    const meshDirection<Type,MeshType>& coarse,
+    meshLevel<Type,MeshType>& fine,
+    const meshLevel<Type,MeshType>& coarse,
     const OpType<Type>& bop
 )
 {
-    const label d = fine.directionNum();
+    const label l = fine.levelNum();
 
-    const List<FixedList<scalar,8>>& weights =
-        weights_[fine.levelNum()][fine.directionNum()];
+    const List<List<FixedList<scalar,8>>>& weights = weights_[l];
+    const List<List<FixedList<labelVector,8>>>& indices = indices_[l];
 
-    const List<FixedList<labelVector,8>>& indices =
-        indices_[fine.levelNum()][fine.directionNum()];
+    // Linear prolongation uses ghost cells, so boundaries need to be corrected
 
-    const_cast<meshLevel<Type,MeshType>&>(coarse.level()).correctAggData(d);
+    const_cast<meshLevel<Type,MeshType>&>(coarse).correctBoundaryConditions();
+    const_cast<meshLevel<Type,MeshType>&>(coarse).correctAggData();
 
-    label c = 0;
-    forAllCells(fine, i, j, k)
+    forAll(fine, d)
     {
-        Type value = Zero;
+        label c = 0;
+        forAllCells(fine[d], i, j, k)
+        {
+            Type value = Zero;
 
-        for (label v = 0; v < 8; v++)
-            if (weights[c][v] != 0.0)
-                value += weights[c][v]*coarse(indices[c][v]);
+            for (label v = 0; v < 8; v++)
+                if (weights[d][c][v] != 0.0)
+                    value += weights[d][c][v]*coarse(d,indices[d][c][v]);
 
-        bop(fine(i,j,k), value);
+            bop(fine(d,i,j,k), value);
 
-        c++;
+            c++;
+        }
     }
 }
 
@@ -158,8 +161,8 @@ linearProlongationScheme<Type,MeshType>::linearProlongationScheme
 template<class Type, class MeshType>
 void linearProlongationScheme<Type,MeshType>::prolong
 (
-    meshDirection<Type,MeshType>& fine,
-    const meshDirection<Type,MeshType>& coarse,
+    meshLevel<Type,MeshType>& fine,
+    const meshLevel<Type,MeshType>& coarse,
     const eqOp<Type>& bop
 )
 {
@@ -169,8 +172,8 @@ void linearProlongationScheme<Type,MeshType>::prolong
 template<class Type, class MeshType>
 void linearProlongationScheme<Type,MeshType>::prolong
 (
-    meshDirection<Type,MeshType>& fine,
-    const meshDirection<Type,MeshType>& coarse,
+    meshLevel<Type,MeshType>& fine,
+    const meshLevel<Type,MeshType>& coarse,
     const plusEqOp<Type>& bop
 )
 {
@@ -180,8 +183,8 @@ void linearProlongationScheme<Type,MeshType>::prolong
 template<class Type, class MeshType>
 void linearProlongationScheme<Type,MeshType>::prolong
 (
-    meshDirection<Type,MeshType>& fine,
-    const meshDirection<Type,MeshType>& coarse,
+    meshLevel<Type,MeshType>& fine,
+    const meshLevel<Type,MeshType>& coarse,
     const minusEqOp<Type>& bop
 )
 {

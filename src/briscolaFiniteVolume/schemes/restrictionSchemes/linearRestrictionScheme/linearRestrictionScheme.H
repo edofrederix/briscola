@@ -36,8 +36,8 @@ public:
     // level, with option to scale by cell volume
     virtual void restrict
     (
-        meshDirection<Type,MeshType>&,
-        const meshDirection<Type,MeshType>&,
+        meshLevel<Type,MeshType>&,
+        const meshLevel<Type,MeshType>&,
         const bool = false
     );
 };

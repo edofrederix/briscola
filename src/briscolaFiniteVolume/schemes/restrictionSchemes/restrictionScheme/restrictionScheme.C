@@ -68,40 +68,11 @@ restrictionScheme<Type,MeshType>::New
 template<class Type, class MeshType>
 void restrictionScheme<Type,MeshType>::restrict
 (
-    meshDirection<Type,MeshType>& res,
-    const tmp<meshDirection<Type,MeshType>>& tf,
-    const bool scale
-)
-{
-    restrict(res,tf(),scale);
-
-    if (tf.isTmp())
-        tf.clear();
-}
-
-template<class Type, class MeshType>
-void restrictionScheme<Type,MeshType>::restrict
-(
-    meshLevel<Type,MeshType>& res,
-    const meshLevel<Type,MeshType>& f,
-    const bool scale
-)
-{
-    forAll(res, d)
-        restrict(res[d],f[d],scale);
-}
-
-template<class Type, class MeshType>
-void restrictionScheme<Type,MeshType>::restrict
-(
     meshLevel<Type,MeshType>& res,
     const tmp<meshLevel<Type,MeshType>>& tf,
     const bool scale
 )
 {
-    if (tf.isTmp())
-        tf->correctBoundaryConditions();
-
     restrict(res,tf(),scale);
 
     if (tf.isTmp())

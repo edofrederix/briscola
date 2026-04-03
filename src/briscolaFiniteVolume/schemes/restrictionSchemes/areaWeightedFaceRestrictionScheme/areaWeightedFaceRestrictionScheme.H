@@ -38,8 +38,7 @@ public:
     virtual void restrict
     (
         faceField<Type,colocated>&,
-        const label l,
-        const label d
+        const label l
     );
 };
 
@@ -64,8 +63,7 @@ public:
     virtual void restrict
     (
         faceField<Type,staggered>&,
-        const label l,
-        const label d
+        const label l
     );
 };
 
