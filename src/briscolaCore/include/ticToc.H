@@ -7,10 +7,10 @@
 
 #define initTicToc(count) scalarList ticTocs(count,Zero);
 
-#define tic(num)                                                               \
+#define Tic(num)                                                               \
     auto ticToc##num = ::std::chrono::high_resolution_clock::now();
 
-#define toc(num)                                                               \
+#define Toc(num)                                                               \
     ticTocs[num] +=                                                            \
         scalar                                                                 \
         (                                                                      \
@@ -23,9 +23,15 @@
 
 #define printTicToc                                                            \
 {                                                                              \
-    Info<< "Tic-tocs [ms] = " << endl;                                         \
+    Info<< "Tic-toc parallel averages = " << endl;                             \
     forAll(ticTocs, i)                                                         \
-        Info<< Foam::name(i) << "=" << ticTocs[i]/1000.0 << " ("               \
-            << ticTocs[i]/sum(ticTocs)*100 << "%)" << endl;                    \
-    Info<< "sum = " << sum(ticTocs)/1000.0 << endl;                            \
+        Info<< Foam::name(i) << "="                                            \
+            << returnReduce(ticTocs[i],sumOp<scalar>())                        \
+             / Pstream::nProcs()/1000.0 << " ms ("                             \
+            << returnReduce(ticTocs[i],sumOp<scalar>())                        \
+             / sum(returnReduce(ticTocs, ListOp<sumOp<scalar>>()))*100         \
+            << "%)" << endl;                                                   \
+    Info<< "Mean sum = "                                                       \
+        << sum(returnReduce(ticTocs, ListOp<sumOp<scalar>>()))                 \
+         / Pstream::nProcs()/1000.0 << " ms" << endl;                          \
 }
