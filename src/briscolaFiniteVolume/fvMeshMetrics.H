@@ -37,21 +37,25 @@ class fvMeshMetrics
     // Reference to the fvMesh object
     const fvMesh& fvMsh_;
 
-    // Metrics
-    faceField<vector,MeshType> faceCenters_;
-    meshField<vertexVector,MeshType> vertexCenters_;
-    faceField<vector,MeshType> faceNormals_;
-    faceField<scalar,MeshType> faceAreas_;
-    faceField<vector,MeshType> faceAreaNormals_;
-    meshField<vector,MeshType> cellCenters_;
-    meshField<scalar,MeshType> cellVolumes_;
-    meshField<scalar,MeshType> inverseCellVolumes_;
-    faceField<scalar,MeshType> faceDeltas_;
-    faceField<scalar,MeshType> faceWeightsCenter_;
-    faceField<scalar,MeshType> faceWeightsNeighbor_;
+    // Cell metric field pointers
+    meshField<vector,MeshType>* cellCentersPtr_;
+    meshField<scalar,MeshType>* cellVolumesPtr_;
+    meshField<scalar,MeshType>* inverseCellVolumesPtr_;
 
-    // Global cell numbers
-    meshField<label,MeshType> globalCellNumbers_;
+    // Face metric field pointers
+    faceField<vector,MeshType>* faceCentersPtr_;
+    faceField<vector,MeshType>* faceNormalsPtr_;
+    faceField<scalar,MeshType>* faceAreasPtr_;
+    faceField<vector,MeshType>* faceAreaNormalsPtr_;
+    faceField<scalar,MeshType>* faceDeltasPtr_;
+    faceField<scalar,MeshType>* faceWeightsCenterPtr_;
+    faceField<scalar,MeshType>* faceWeightsNeighborPtr_;
+
+    // Vertex metric field pointers
+    meshField<vertexVector,MeshType>* vertexCentersPtr_;
+
+    // Global cell number field pointer
+    meshField<label,MeshType>* globalCellNumbersPtr_;
 
     // Global cell counts per level
     List<labelList> globalCellCounts_;
@@ -59,8 +63,8 @@ class fvMeshMetrics
     // List of immersed boundaries (if any)
     FastPtrList<immersedBoundary<MeshType>> immersedBoundaries_;
 
-    // Global immersed boundary mask
-    meshField<scalar,MeshType> mask_;
+    // Global immersed boundary mask pointer
+    meshField<scalar,MeshType>* maskPtr_;
 
 public:
 
@@ -80,13 +84,13 @@ public:
 
         // AoS metrics
         tmp<meshField<faceVector,MeshType>> faceCenters() const;
-        tmp<meshField<edgeVector,MeshType>> edgeCenters() const;
         tmp<meshField<faceVector,MeshType>> faceNormals() const;
         tmp<meshField<faceScalar,MeshType>> faceAreas() const;
         tmp<meshField<faceVector,MeshType>> faceAreaNormals() const;
         tmp<meshField<faceScalar,MeshType>> faceDeltas() const;
         tmp<meshField<faceScalar,MeshType>> faceWeightsCenter() const;
         tmp<meshField<faceScalar,MeshType>> faceWeightsNeighbor() const;
+        tmp<meshField<edgeVector,MeshType>> edgeCenters() const;
     };
 
 private:
@@ -94,15 +98,25 @@ private:
     // On-demand Array of Structure (AoS) metrics
     autoPtr<AoS> aosPtr_;
 
-    // Calculate metrics
-    void calculateVertexCenters();
-    void calculateFaceCenters();
-    void calculateFaceAreasAndNormals();
-    void calculateCellCenters();
-    void calculateCellVolumes();
-    void calculateFaceDeltas();
-    void calculateFaceWeights();
+    // Functions to set cell metrics
+    void setCellCenters();
+    void setCellVolumes();
+
+    // Functions to set face metrics
+    void setFaceCenters();
+    void setFaceNormals();
+    void setFaceAreas();
+    void setFaceAreaNormals();
+    void setFaceDeltas();
+    void setFaceWeights();
+
+    // Function to set vertex metrics
+    void setVertexCenters();
+
+    // Function to set global cell numbers
     void setGlobalCellNumbers();
+
+    // Function to set immersed boundaries
     void setImmersedBoundaries();
     void setImmersedBoundaryMask();
 
@@ -110,6 +124,9 @@ public:
 
     // Construct from fvMesh
     fvMeshMetrics(const fvMesh&);
+
+    // Destructor
+    ~fvMeshMetrics();
 
     // Const access
 
@@ -123,84 +140,122 @@ public:
         return fvMsh_;
     }
 
-    inline const faceField<vector,MeshType>& faceCenters() const
-    {
-        return faceCenters_;
-    }
-
-    inline const meshField<vertexVector,MeshType>& vertexCenters() const
-    {
-        return vertexCenters_;
-    }
-
-    inline const faceField<vector,MeshType>& faceNormals() const
-    {
-        return faceNormals_;
-    }
-
-    inline const faceField<scalar,MeshType>& faceAreas() const
-    {
-        return faceAreas_;
-    }
-
-    inline const faceField<vector,MeshType>& faceAreaNormals() const
-    {
-        return faceAreaNormals_;
-    }
-
     inline const meshField<vector,MeshType>& cellCenters() const
     {
-        return cellCenters_;
+        if (!cellCentersPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setCellCenters();
+
+        return *cellCentersPtr_;
     }
 
     inline const meshField<scalar,MeshType>& cellVolumes() const
     {
-        return cellVolumes_;
+        if (!cellVolumesPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setCellVolumes();
+
+        return *cellVolumesPtr_;
     }
 
     inline const meshField<scalar,MeshType>& inverseCellVolumes() const
     {
-        return inverseCellVolumes_;
+        if (!inverseCellVolumesPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setCellVolumes();
+
+        return *inverseCellVolumesPtr_;
+    }
+
+    inline const faceField<vector,MeshType>& faceCenters() const
+    {
+        if (!faceCentersPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setFaceCenters();
+
+        return *faceCentersPtr_;
+    }
+
+    inline const faceField<vector,MeshType>& faceNormals() const
+    {
+        if (!faceNormalsPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setFaceNormals();
+
+        return *faceNormalsPtr_;
+    }
+
+    inline const faceField<scalar,MeshType>& faceAreas() const
+    {
+        if (!faceAreasPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setFaceAreas();
+
+        return *faceAreasPtr_;
+    }
+
+    inline const faceField<vector,MeshType>& faceAreaNormals() const
+    {
+        if (!faceAreaNormalsPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setFaceAreaNormals();
+
+        return *faceAreaNormalsPtr_;
     }
 
     inline const faceField<scalar,MeshType>& faceDeltas() const
     {
-        return faceDeltas_;
+        if (!faceDeltasPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setFaceDeltas();
+
+        return *faceDeltasPtr_;
     }
 
     inline const faceField<scalar,MeshType>& faceWeightsCenter() const
     {
-        return faceWeightsCenter_;
+        if (!faceWeightsCenterPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setFaceWeights();
+
+        return *faceWeightsCenterPtr_;
     }
 
     inline const faceField<scalar,MeshType>& faceWeightsNeighbor() const
     {
-        return faceWeightsNeighbor_;
+        if (!faceWeightsNeighborPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setFaceWeights();
+
+        return *faceWeightsNeighborPtr_;
+    }
+
+    inline const meshField<vertexVector,MeshType>& vertexCenters() const
+    {
+        if (!vertexCentersPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setVertexCenters();
+
+        return *vertexCentersPtr_;
     }
 
     inline const meshField<label,MeshType>& globalCellNumbers() const
     {
-        return globalCellNumbers_;
+        if (!globalCellNumbersPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setGlobalCellNumbers();
+
+        return *globalCellNumbersPtr_;
     }
 
     inline const List<labelList>& globalCellCounts() const
     {
+        if (!globalCellNumbersPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)->setGlobalCellNumbers();
+
         return globalCellCounts_;
     }
 
     inline const meshField<scalar,MeshType>& mask() const
     {
-        return mask_;
+        if (!maskPtr_)
+            const_cast<fvMeshMetrics<MeshType>*>(this)
+          ->setImmersedBoundaryMask();
+
+        return *maskPtr_;
     }
 
     inline tmp<meshField<scalar,MeshType>> fluidMask() const
     {
-        return 1.0 - mask_;
-    }
-
-    inline tmp<meshField<scalar,MeshType>> solidMask() const
-    {
-        return mask_;
+        return 1.0 - mask();
     }
 
     inline const AoS& aos() const

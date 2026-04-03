@@ -19,9 +19,411 @@ namespace fv
 {
 
 template<class MeshType>
-void fvMeshMetrics<MeshType>::calculateVertexCenters()
+void fvMeshMetrics<MeshType>::setCellCenters()
 {
-    meshField<vertexVector,MeshType>& vc = vertexCenters_;
+    const meshField<vertexVector,MeshType>& vc = vertexCenters();
+
+    cellCentersPtr_ =
+        new meshField<vector,MeshType>
+        (
+            word(MeshType::typeName) + "CellCenters",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    meshField<vector,MeshType>& cc = *cellCentersPtr_;
+
+    cc = Zero;
+
+    forAll(fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                for (int vi = 0; vi < 8; vi++)
+                    cc(l,d,ijk) = hexa(vc(l,d,ijk)).center();
+            }
+        }
+    }
+
+    cc.correctAggData();
+}
+
+template<class MeshType>
+void fvMeshMetrics<MeshType>::setCellVolumes()
+{
+    const meshField<vertexVector,MeshType>& vc = vertexCenters();
+
+    cellVolumesPtr_ =
+        new meshField<scalar,MeshType>
+        (
+            word(MeshType::typeName) + "CellVolumes",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    meshField<scalar,MeshType>& cv = *cellVolumesPtr_;
+
+    cv = Zero;
+
+    forAll(fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
+
+            // Cell volume computed from tet decomposition, needed for
+            // consistency with geometric VoF calculations.
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                cv(l,d,ijk) = hexa(vc(l,d,ijk)).volume();
+            }
+        }
+    }
+
+    // Small number to avoid division by zero in unset/invalid ghost cells
+    cv = max(cv, 1e-16);
+    cv.correctAggData();
+
+    // Compute at store the inverse cell volumes
+
+    inverseCellVolumesPtr_ =
+        new meshField<scalar,MeshType>
+        (
+            word(MeshType::typeName) + "InverseCellVolumes",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    meshField<scalar,MeshType>& icv = *inverseCellVolumesPtr_;
+
+    icv = 1.0/cv;
+}
+
+template<class MeshType>
+void fvMeshMetrics<MeshType>::setFaceCenters()
+{
+    const meshField<faceVector,MeshType> fcAoS(aos().faceCenters());
+
+    faceCentersPtr_ =
+        new faceField<vector,MeshType>
+        (
+            word(MeshType::typeName) + "FaceCenters",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    faceField<vector,MeshType>& fc = *faceCentersPtr_;
+
+    fc = Zero;
+
+    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
+    // correction on SoA storage because face directions may not be aligned
+    // across processor boundaries.
+
+    for (int fd = 0; fd < 3; fd++)
+    forAll(fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                fc[fd](l,d,ijk) = fcAoS(l,d,ijk)[fd*2];
+            }
+        }
+    }
+
+    for (int fd = 0; fd < 3; fd++)
+        fc[fd].correctAggData();
+}
+
+template<class MeshType>
+void fvMeshMetrics<MeshType>::setFaceNormals()
+{
+    const meshField<faceVector,MeshType> fnAoS(aos().faceNormals());
+
+    faceNormalsPtr_ =
+        new faceField<vector,MeshType>
+        (
+            word(MeshType::typeName) + "FaceNormals",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    faceField<vector,MeshType>& fn = *faceNormalsPtr_;
+
+    fn = Zero;
+
+    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
+    // correction on SoA storage because face directions may not be aligned
+    // across processor boundaries.
+
+    for (int fd = 0; fd < 3; fd++)
+    forAll(fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                fn[fd](l,d,ijk) = fnAoS(l,d,ijk)[fd*2];
+            }
+        }
+    }
+
+    for (int fd = 0; fd < 3; fd++)
+        fn[fd].correctAggData();
+}
+
+template<class MeshType>
+void fvMeshMetrics<MeshType>::setFaceAreas()
+{
+    const meshField<faceScalar,MeshType> faAoS(aos().faceAreas());
+
+    faceAreasPtr_ =
+        new faceField<scalar,MeshType>
+        (
+            word(MeshType::typeName) + "FaceAreas",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    faceField<scalar,MeshType>& fa = *faceAreasPtr_;
+
+    fa = Zero;
+
+    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
+    // correction on SoA storage because face directions may not be aligned
+    // across processor boundaries.
+
+    for (int fd = 0; fd < 3; fd++)
+    forAll(fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                fa[fd](l,d,ijk) = faAoS(l,d,ijk)[fd*2];
+            }
+        }
+    }
+
+    for (int fd = 0; fd < 3; fd++)
+        fa[fd].correctAggData();
+}
+
+template<class MeshType>
+void fvMeshMetrics<MeshType>::setFaceAreaNormals()
+{
+    const meshField<faceVector,MeshType> fanAoS(aos().faceAreaNormals());
+
+    faceAreaNormalsPtr_ =
+        new faceField<vector,MeshType>
+        (
+            word(MeshType::typeName) + "FaceAreaNormals",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    faceField<vector,MeshType>& fan = *faceAreaNormalsPtr_;
+
+    fan = Zero;
+
+    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
+    // correction on SoA storage because face directions may not be aligned
+    // across processor boundaries.
+
+    for (int fd = 0; fd < 3; fd++)
+    forAll(fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                fan[fd](l,d,ijk) = fanAoS(l,d,ijk)[fd*2];
+            }
+        }
+    }
+
+    for (int fd = 0; fd < 3; fd++)
+        fan[fd].correctAggData();
+}
+
+template<class MeshType>
+void fvMeshMetrics<MeshType>::setFaceDeltas()
+{
+    const meshField<faceScalar,MeshType> deltaAoS(aos().faceDeltas());
+
+    faceDeltasPtr_ =
+        new faceField<scalar,MeshType>
+        (
+            word(MeshType::typeName) + "FaceDeltas",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    faceField<scalar,MeshType>& delta = *faceDeltasPtr_;
+
+    delta = Zero;
+
+    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
+    // correction on SoA storage because face directions may not be aligned
+    // across processor boundaries.
+
+    for (int fd = 0; fd < 3; fd++)
+    forAll(fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                delta[fd](l,d,ijk) = deltaAoS(l,d,ijk)[fd*2];
+            }
+        }
+    }
+
+    for (int fd = 0; fd < 3; fd++)
+        delta[fd].correctAggData();
+}
+
+template<class MeshType>
+void fvMeshMetrics<MeshType>::setFaceWeights()
+{
+    const meshField<faceScalar,MeshType> fwcAoS(aos().faceWeightsCenter());
+    const meshField<faceScalar,MeshType> fwnAoS(aos().faceWeightsNeighbor());
+
+    faceWeightsCenterPtr_ =
+        new faceField<scalar,MeshType>
+        (
+            word(MeshType::typeName) + "FaceWeightsCenter",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    faceWeightsNeighborPtr_ =
+        new faceField<scalar,MeshType>
+        (
+            word(MeshType::typeName) + "FaceWeightsNeighbor",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    faceField<scalar,MeshType>& fwc = *faceWeightsCenterPtr_;
+    faceField<scalar,MeshType>& fwn = *faceWeightsNeighborPtr_;
+
+    // Initialize weights as 50/50
+
+    fwc = 0.5;
+    fwn = 0.5;
+
+    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
+    // correction on SoA storage because face directions may not be aligned
+    // across processor boundaries.
+
+    for (int fd = 0; fd < 3; fd++)
+    forAll(fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                fwc[fd](l,d,ijk) = fwcAoS(l,d,ijk)[fd*2];
+                fwn[fd](l,d,ijk) = fwnAoS(l,d,ijk)[fd*2];
+            }
+        }
+    }
+
+    for (int fd = 0; fd < 3; fd++)
+    {
+        fwc[fd].correctAggData();
+        fwn[fd].correctAggData();
+    }
+}
+
+template<class MeshType>
+void fvMeshMetrics<MeshType>::setVertexCenters()
+{
+    vertexCentersPtr_ =
+        new meshField<vertexVector,MeshType>
+        (
+            word(MeshType::typeName) + "VertexCenters",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    meshField<vertexVector,MeshType>& vc = *vertexCentersPtr_;
 
     vc = Zero;
 
@@ -105,241 +507,32 @@ void fvMeshMetrics<MeshType>::calculateVertexCenters()
 }
 
 template<class MeshType>
-void fvMeshMetrics<MeshType>::calculateFaceCenters()
-{
-    const meshField<faceVector,MeshType> fcAoS(aos().faceCenters());
-
-    faceField<vector,MeshType>& fc = faceCenters_;
-
-    fc = Zero;
-
-    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
-    // correction on SoA storage because face directions may not be aligned
-    // across processor boundaries.
-
-    for (int fd = 0; fd < 3; fd++)
-    forAll(fvMsh_, l)
-    {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
-            {
-                fc[fd](l,d,ijk) = fcAoS(l,d,ijk)[fd*2];
-            }
-        }
-    }
-
-    for (int fd = 0; fd < 3; fd++)
-        fc[fd].correctAggData();
-}
-
-template<class MeshType>
-void fvMeshMetrics<MeshType>::calculateFaceAreasAndNormals()
-{
-    const meshField<faceVector,MeshType> fnAoS(aos().faceNormals());
-    const meshField<faceScalar,MeshType> faAoS(aos().faceAreas());
-    const meshField<faceVector,MeshType> fanAoS(aos().faceAreaNormals());
-
-    faceField<vector,MeshType>& fn = faceNormals_;
-    faceField<scalar,MeshType>& fa = faceAreas_;
-    faceField<vector,MeshType>& fan = faceAreaNormals_;
-
-    fn = Zero;
-    fa = Zero;
-    fan = Zero;
-
-    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
-    // correction on SoA storage because face directions may not be aligned
-    // across processor boundaries.
-
-    for (int fd = 0; fd < 3; fd++)
-    forAll(fvMsh_, l)
-    {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
-            {
-                fn[fd](l,d,ijk) = fnAoS(l,d,ijk)[fd*2];
-                fa[fd](l,d,ijk) = faAoS(l,d,ijk)[fd*2];
-                fan[fd](l,d,ijk) = fanAoS(l,d,ijk)[fd*2];
-            }
-        }
-    }
-
-    for (int fd = 0; fd < 3; fd++)
-    {
-        fn[fd].correctAggData();
-        fa[fd].correctAggData();
-        fan[fd].correctAggData();
-    }
-}
-
-template<class MeshType>
-void fvMeshMetrics<MeshType>::calculateCellCenters()
-{
-    const meshField<vertexVector,MeshType>& vc = vertexCenters_;
-
-    meshField<vector,MeshType>& cc = cellCenters_;
-
-    cc = Zero;
-
-    forAll(fvMsh_, l)
-    {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
-            {
-                for (int vi = 0; vi < 8; vi++)
-                    cc(l,d,ijk) = hexa(vc(l,d,ijk)).center();
-            }
-        }
-    }
-
-    cc.correctAggData();
-}
-
-template<class MeshType>
-void fvMeshMetrics<MeshType>::calculateCellVolumes()
-{
-    const meshField<vertexVector,MeshType>& vc = vertexCenters_;
-
-    meshField<scalar,MeshType>& cv = cellVolumes_;
-
-    cv = Zero;
-
-    forAll(fvMsh_, l)
-    {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = fvMsh_.N<MeshType>(l,d);
-
-            // Cell volume computed from tet decomposition, needed for
-            // consistency with geometric VoF calculations.
-
-            labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
-            {
-                cv(l,d,ijk) = hexa(vc(l,d,ijk)).volume();
-            }
-        }
-    }
-
-    // Small number to avoid division by zero in unset/invalid ghost cells
-    cv = max(cv, 1e-16);
-    cv.correctAggData();
-
-    // Compute at store the inverse cell volumes
-    inverseCellVolumes_ = 1.0/cv;
-}
-
-template<class MeshType>
-void fvMeshMetrics<MeshType>::calculateFaceDeltas()
-{
-    const meshField<faceScalar,MeshType> deltaAoS(aos().faceDeltas());
-
-    faceField<scalar,MeshType>& delta = faceDeltas_;
-
-    delta = Zero;
-
-    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
-    // correction on SoA storage because face directions may not be aligned
-    // across processor boundaries.
-
-    for (int fd = 0; fd < 3; fd++)
-    forAll(fvMsh_, l)
-    {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
-            {
-                delta[fd](l,d,ijk) = deltaAoS(l,d,ijk)[fd*2];
-            }
-        }
-    }
-
-    for (int fd = 0; fd < 3; fd++)
-        delta[fd].correctAggData();
-}
-
-template<class MeshType>
-void fvMeshMetrics<MeshType>::calculateFaceWeights()
-{
-    const meshField<faceScalar,MeshType> fwcAoS(aos().faceWeightsCenter());
-    const meshField<faceScalar,MeshType> fwnAoS(aos().faceWeightsNeighbor());
-
-    faceField<scalar,MeshType>& fwc = faceWeightsCenter_;
-    faceField<scalar,MeshType>& fwn = faceWeightsNeighbor_;
-
-    // Initialize weights as 50/50
-
-    fwc = 0.5;
-    fwn = 0.5;
-
-    // Use a cell loop that also traverses ghost cells. We cannot use a boundary
-    // correction on SoA storage because face directions may not be aligned
-    // across processor boundaries.
-
-    for (int fd = 0; fd < 3; fd++)
-    forAll(fvMsh_, l)
-    {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
-            {
-                fwc[fd](l,d,ijk) = fwcAoS(l,d,ijk)[fd*2];
-                fwn[fd](l,d,ijk) = fwnAoS(l,d,ijk)[fd*2];
-            }
-        }
-    }
-
-    for (int fd = 0; fd < 3; fd++)
-    {
-        fwc[fd].correctAggData();
-        fwn[fd].correctAggData();
-    }
-}
-
-template<class MeshType>
 void fvMeshMetrics<MeshType>::setGlobalCellNumbers()
 {
-    globalCellNumbers_ = -1;
-    globalCellCounts_.resize(globalCellNumbers_.size());
+    globalCellNumbersPtr_ =
+        new meshField<label,MeshType>
+        (
+            word(MeshType::typeName) + "GlobalCellNumbers",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    meshField<label,MeshType>& gcn = *globalCellNumbersPtr_;
+    gcn = -1;
+
+    globalCellCounts_.resize(gcn.size());
 
     // Cells are numbered lexicographically on each processor and with
     // increasing processor rank
 
-    forAll(globalCellNumbers_, l)
+    forAll(gcn, l)
     {
         globalCellCounts_[l].resize(MeshType::numberOfDirections);
 
-        forAll(globalCellNumbers_[l], d)
+        forAll(gcn[l], d)
         {
             labelList sizes(Pstream::nProcs());
 
@@ -355,16 +548,14 @@ void fvMeshMetrics<MeshType>::setGlobalCellNumbers()
                 start += sizes[i];
 
             int c = 0;
-            forAllCells(globalCellNumbers_[l][d], i, j, k)
-            {
-                globalCellNumbers_[l][d](i,j,k) = start + c++;
-            }
+            forAllCells(gcn[l][d], i, j, k)
+                gcn[l][d](i,j,k) = start + c++;
 
             globalCellCounts_[l][d] = sum(sizes);
         }
     }
 
-    globalCellNumbers_.correctCommsBoundaryConditions();
+    gcn.correctCommsBoundaryConditions();
 }
 
 template<class MeshType>
@@ -396,14 +587,26 @@ void fvMeshMetrics<MeshType>::setImmersedBoundaries()
 template<class MeshType>
 void fvMeshMetrics<MeshType>::setImmersedBoundaryMask()
 {
-    mask_ = Zero;
+    maskPtr_ =
+        new meshField<scalar,MeshType>
+        (
+            word(MeshType::typeName) + "Mask",
+            fvMsh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE,
+            true,
+            true
+        );
+
+    meshField<scalar,MeshType>& mask = *maskPtr_;
+    mask = Zero;
 
     if (immersedBoundaries_.size())
     {
         forAll(immersedBoundaries_, i)
-            mask_ += immersedBoundaries_[i].mask();
+            mask += immersedBoundaries_[i].mask();
 
-        mask_ = min(mask_, 1.0);
+        mask = min(mask, 1.0);
     }
 }
 
@@ -411,136 +614,77 @@ template<class MeshType>
 fvMeshMetrics<MeshType>::fvMeshMetrics(const fvMesh& fvMsh)
 :
     fvMsh_(fvMsh),
-    faceCenters_
-    (
-        word(MeshType::typeName) + "FaceCenters",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    vertexCenters_
-    (
-        word(MeshType::typeName) + "VertexCenters",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    faceNormals_
-    (
-        word(MeshType::typeName) + "FaceNormals",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    faceAreas_
-    (
-        word(MeshType::typeName) + "FaceAreas",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    faceAreaNormals_
-    (
-        word(MeshType::typeName) + "FaceAreaNormals",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    cellCenters_
-    (
-        word(MeshType::typeName) + "CellCenters",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    cellVolumes_
-    (
-        word(MeshType::typeName) + "CellVolumes",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    inverseCellVolumes_
-    (
-        word(MeshType::typeName) + "InverseCellVolumes",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    faceDeltas_
-    (
-        word(MeshType::typeName) + "FaceDeltas",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    faceWeightsCenter_
-    (
-        word(MeshType::typeName) + "FaceWeightsCenter",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    faceWeightsNeighbor_
-    (
-        word(MeshType::typeName) + "FaceWeightsNeighbor",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    globalCellNumbers_
-    (
-        word(MeshType::typeName) + "GlobalCellNumbers",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
-    immersedBoundaries_(),
-    mask_
-    (
-        word(MeshType::typeName) + "Mask",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        true,
-        true
-    ),
+    cellCentersPtr_(nullptr),
+    cellVolumesPtr_(nullptr),
+    inverseCellVolumesPtr_(nullptr),
+    faceCentersPtr_(nullptr),
+    faceNormalsPtr_(nullptr),
+    faceAreasPtr_(nullptr),
+    faceAreaNormalsPtr_(nullptr),
+    faceDeltasPtr_(nullptr),
+    faceWeightsCenterPtr_(nullptr),
+    faceWeightsNeighborPtr_(nullptr),
+    vertexCentersPtr_(nullptr),
+    globalCellNumbersPtr_(nullptr),
+    maskPtr_(nullptr),
     aosPtr_(new AoS(*this))
 {
-    calculateVertexCenters();
-    calculateFaceCenters();
-    calculateFaceAreasAndNormals();
-    calculateCellCenters();
-    calculateCellVolumes();
-    calculateFaceDeltas();
-    calculateFaceWeights();
+    // These need to be set a priori
     setGlobalCellNumbers();
     setImmersedBoundaries();
-    setImmersedBoundaryMask();
+}
+
+template<class MeshType>
+fvMeshMetrics<MeshType>::~fvMeshMetrics()
+{
+    // Cells
+
+    if (cellCentersPtr_)
+        delete cellCentersPtr_;
+
+    if (cellVolumesPtr_)
+        delete cellVolumesPtr_;
+
+    if (inverseCellVolumesPtr_)
+        delete inverseCellVolumesPtr_;
+
+    // Faces
+
+    if (faceCentersPtr_)
+        delete faceCentersPtr_;
+
+    if (faceNormalsPtr_)
+        delete faceNormalsPtr_;
+
+    if (faceAreasPtr_)
+        delete faceAreasPtr_;
+
+    if (faceAreaNormalsPtr_)
+        delete faceAreaNormalsPtr_;
+
+    if (faceDeltasPtr_)
+        delete faceDeltasPtr_;
+
+    if (faceWeightsCenterPtr_)
+        delete faceWeightsCenterPtr_;
+
+    if (faceWeightsNeighborPtr_)
+        delete faceWeightsNeighborPtr_;
+
+    // Vertices
+
+    if (vertexCentersPtr_)
+        delete vertexCentersPtr_;
+
+    // Cell numbers
+
+    if (globalCellNumbersPtr_)
+        delete globalCellNumbersPtr_;
+
+    // Mask
+
+    if (maskPtr_)
+        delete maskPtr_;
 }
 
 // On-demand Array of Structures (AoS) metrics class
@@ -549,7 +693,7 @@ template<class MeshType>
 tmp<meshField<faceVector,MeshType>>
 fvMeshMetrics<MeshType>::AoS::faceCenters() const
 {
-    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters_;
+    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters();
 
     tmp<meshField<faceVector,MeshType>> tFc =
         meshField<faceVector,MeshType>::New("faceCenters", metrics_.fvMsh_);
@@ -584,46 +728,10 @@ fvMeshMetrics<MeshType>::AoS::faceCenters() const
 }
 
 template<class MeshType>
-tmp<meshField<edgeVector,MeshType>>
-fvMeshMetrics<MeshType>::AoS::edgeCenters() const
-{
-    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters_;
-
-    tmp<meshField<edgeVector,MeshType>> tEc =
-        meshField<edgeVector,MeshType>::New("edgeCenters", metrics_.fvMsh_);
-
-    meshField<edgeVector,MeshType>& ec = tEc.ref();
-    ec.makeDeep();
-
-    ec = Zero;
-
-    forAll(metrics_.fvMsh_, l)
-    {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = metrics_.fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
-            {
-                for (int ei = 0; ei < 12; ei++)
-                    ec(l,d,ijk)[ei] = hexa(vc(l,d,ijk)).edgeCenter(ei);
-            }
-        }
-    }
-
-    ec.correctAggData();
-
-    return tEc;
-}
-
-template<class MeshType>
 tmp<meshField<faceVector,MeshType>>
 fvMeshMetrics<MeshType>::AoS::faceNormals() const
 {
-    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters_;
+    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters();
 
     tmp<meshField<faceVector,MeshType>> tFn =
         meshField<faceVector,MeshType>::New("faceNormals", metrics_.fvMsh_);
@@ -662,7 +770,7 @@ template<class MeshType>
 tmp<meshField<faceScalar,MeshType>>
 fvMeshMetrics<MeshType>::AoS::faceAreas() const
 {
-    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters_;
+    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters();
 
     tmp<meshField<faceScalar,MeshType>> tFa =
         meshField<faceScalar,MeshType>::New("faceAreas", metrics_.fvMsh_);
@@ -701,7 +809,7 @@ template<class MeshType>
 tmp<meshField<faceVector,MeshType>>
 fvMeshMetrics<MeshType>::AoS::faceAreaNormals() const
 {
-    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters_;
+    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters();
 
     tmp<meshField<faceVector,MeshType>> tFan =
         meshField<faceVector,MeshType>::New("faceAreaNormals", metrics_.fvMsh_);
@@ -739,7 +847,7 @@ template<class MeshType>
 tmp<meshField<faceScalar,MeshType>>
 fvMeshMetrics<MeshType>::AoS::faceDeltas() const
 {
-    const meshField<vector,MeshType>& cc = metrics_.cellCenters_;
+    const meshField<vector,MeshType>& cc = metrics_.cellCenters();
 
     tmp<meshField<faceScalar,MeshType>> tDelta =
         meshField<faceScalar,MeshType>::New("faceDeltas", metrics_.fvMsh_);
@@ -788,7 +896,7 @@ template<class MeshType>
 tmp<meshField<faceScalar,MeshType>>
 fvMeshMetrics<MeshType>::AoS::faceWeightsCenter() const
 {
-    const meshField<vector,MeshType>& cc = metrics_.cellCenters_;
+    const meshField<vector,MeshType>& cc = metrics_.cellCenters();
 
     const meshField<faceScalar,MeshType> delta(faceDeltas());
     const meshField<faceVector,MeshType> fc(faceCenters());
@@ -873,7 +981,7 @@ template<class MeshType>
 tmp<meshField<faceScalar,MeshType>>
 fvMeshMetrics<MeshType>::AoS::faceWeightsNeighbor() const
 {
-    const meshField<vector,MeshType>& cc = metrics_.cellCenters_;
+    const meshField<vector,MeshType>& cc = metrics_.cellCenters();
 
     const meshField<faceScalar,MeshType> delta(faceDeltas());
     const meshField<faceVector,MeshType> fc(faceCenters());
@@ -952,6 +1060,42 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsNeighbor() const
     fwn.correctAggData();
 
     return tFwn;
+}
+
+template<class MeshType>
+tmp<meshField<edgeVector,MeshType>>
+fvMeshMetrics<MeshType>::AoS::edgeCenters() const
+{
+    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters();
+
+    tmp<meshField<edgeVector,MeshType>> tEc =
+        meshField<edgeVector,MeshType>::New("edgeCenters", metrics_.fvMsh_);
+
+    meshField<edgeVector,MeshType>& ec = tEc.ref();
+    ec.makeDeep();
+
+    ec = Zero;
+
+    forAll(metrics_.fvMsh_, l)
+    {
+        for (int d = 0; d < MeshType::numberOfDirections; d++)
+        {
+            const labelVector N = metrics_.fvMsh_.N<MeshType>(l,d);
+
+            labelVector ijk;
+            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
+            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
+            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
+            {
+                for (int ei = 0; ei < 12; ei++)
+                    ec(l,d,ijk)[ei] = hexa(vc(l,d,ijk)).edgeCenter(ei);
+            }
+        }
+    }
+
+    ec.correctAggData();
+
+    return tEc;
 }
 
 // Instantiate
