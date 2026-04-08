@@ -17,9 +17,6 @@ class periodicBoundaryCondition
 :
     public parallelBoundaryCondition<Type,MeshType>
 {
-    // Disallow default bitwise assignment
-    void operator=(const periodicBoundaryCondition<Type,MeshType>&);
-
 public:
 
     // Runtime type information

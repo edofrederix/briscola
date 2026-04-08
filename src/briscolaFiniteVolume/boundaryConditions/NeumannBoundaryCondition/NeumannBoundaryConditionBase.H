@@ -1,7 +1,7 @@
 #ifndef NeumannBoundaryConditionBase_H
 #define NeumannBoundaryConditionBase_H
 
-#include "boundaryCondition.H"
+#include "patchBoundaryCondition.H"
 #include "FastPtrList.H"
 
 namespace Foam
@@ -16,7 +16,7 @@ namespace fv
 template<class Type, class MeshType>
 class NeumannBoundaryConditionBase
 :
-    public boundaryCondition<Type,MeshType>
+    public patchBoundaryCondition<Type,MeshType>
 {
 public:
 

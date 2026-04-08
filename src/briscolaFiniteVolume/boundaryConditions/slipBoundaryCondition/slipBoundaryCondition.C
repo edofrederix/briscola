@@ -16,6 +16,14 @@ namespace fv
 // Colocated
 
 template<class Type>
+void slipBoundaryCondition<Type,colocated>::eliminateGhosts
+(
+    linearSystem<stencil,Type,colocated>&,
+    const label
+)
+{}
+
+template<class Type>
 void slipBoundaryCondition<Type,colocated>::evaluate(const label d)
 {
     const labelVector bo(this->offset());

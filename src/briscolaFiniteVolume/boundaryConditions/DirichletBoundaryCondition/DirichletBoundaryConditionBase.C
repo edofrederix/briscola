@@ -44,7 +44,7 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
     const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(level, b)
+    patchBoundaryCondition<Type,MeshType>(level, b)
 {
     init(this->dict().template lookup<physicalType>("value"));
 }
@@ -57,7 +57,7 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
     const zero&
 )
 :
-    boundaryCondition<Type,MeshType>(level, b)
+    patchBoundaryCondition<Type,MeshType>(level, b)
 {
     init(pTraits<physicalType>::zero);
 }
@@ -70,7 +70,7 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
     const physicalType& value
 )
 :
-    boundaryCondition<Type,MeshType>(level, b)
+    patchBoundaryCondition<Type,MeshType>(level, b)
 {
     init(value);
 }
@@ -83,7 +83,7 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
     const FastPtrList<block<Type>>& boundaryValues
 )
 :
-    boundaryCondition<Type,MeshType>(level, b),
+    patchBoundaryCondition<Type,MeshType>(level, b),
     boundaryValues_(boundaryValues)
 {}
 
@@ -93,7 +93,7 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
     const DirichletBoundaryConditionBase<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc),
+    patchBoundaryCondition<Type,MeshType>(bc),
     boundaryValues_(bc.boundaryValues_)
 {}
 
@@ -104,7 +104,7 @@ DirichletBoundaryConditionBase<Type,MeshType>::DirichletBoundaryConditionBase
     const meshLevel<Type,MeshType>& level
 )
 :
-    boundaryCondition<Type,MeshType>(bc, level),
+    patchBoundaryCondition<Type,MeshType>(bc, level),
     boundaryValues_(bc.boundaryValues_)
 {}
 

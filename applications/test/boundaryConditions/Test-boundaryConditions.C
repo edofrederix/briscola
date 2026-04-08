@@ -81,21 +81,6 @@ void testDirichlet(const fvMesh& fvMsh)
             }
         }
     }
-
-    // Test global boundary condition base types
-
-    for (int i = 0; i < 6; i++)
-    {
-        const labelVector bo = faceOffsets[i];
-
-        if(globalBoundaryConditionBaseType(field[0], bo) != DIRICHLETBC)
-        {
-            FatalErrorInFunction
-                << "Test 1b failed" << endl
-                << bo << endl
-                << abort(FatalError);
-        }
-    }
 }
 
 template<class Type, class MeshType>
@@ -168,19 +153,6 @@ void testNeumann(const fvMesh& fvMsh)
                             << "Test 2b failed" << endl << abort(FatalError);
                 }
             }
-        }
-    }
-
-    // Test global boundary condition base types
-
-    for (int i = 0; i < 6; i++)
-    {
-        const labelVector bo = faceOffsets[i];
-
-        if(globalBoundaryConditionBaseType(field[0], bo) != NEUMANNBC)
-        {
-            FatalErrorInFunction
-                << "Test 2c failed" << endl << abort(FatalError);
         }
     }
 }

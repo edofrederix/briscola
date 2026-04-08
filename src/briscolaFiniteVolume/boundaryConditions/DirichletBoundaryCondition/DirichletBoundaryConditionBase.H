@@ -1,7 +1,7 @@
 #ifndef DirichletBoundaryConditionBase_H
 #define DirichletBoundaryConditionBase_H
 
-#include "boundaryCondition.H"
+#include "patchBoundaryCondition.H"
 #include "FastPtrList.H"
 
 namespace Foam
@@ -16,7 +16,7 @@ namespace fv
 template<class Type, class MeshType>
 class DirichletBoundaryConditionBase
 :
-    public boundaryCondition<Type,MeshType>
+    public patchBoundaryCondition<Type,MeshType>
 {
 public:
 

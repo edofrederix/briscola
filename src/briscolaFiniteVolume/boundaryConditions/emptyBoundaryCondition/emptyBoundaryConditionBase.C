@@ -16,7 +16,7 @@ emptyBoundaryConditionBase<Type,MeshType>::emptyBoundaryConditionBase
     const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(level, b)
+    patchBoundaryCondition<Type,MeshType>(level, b)
 {}
 
 template<class Type, class MeshType>
@@ -25,7 +25,7 @@ emptyBoundaryConditionBase<Type,MeshType>::emptyBoundaryConditionBase
     const emptyBoundaryConditionBase<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc)
+    patchBoundaryCondition<Type,MeshType>(bc)
 {}
 
 template<class Type, class MeshType>
@@ -35,7 +35,7 @@ emptyBoundaryConditionBase<Type,MeshType>::emptyBoundaryConditionBase
     const meshLevel<Type,MeshType>& level
 )
 :
-    boundaryCondition<Type,MeshType>(bc, level)
+    patchBoundaryCondition<Type,MeshType>(bc, level)
 {}
 
 }

@@ -138,15 +138,6 @@ public:
           ->cast<BoundaryType>();
     }
 
-    // Determine a level's boundary condition base type for a global boundary
-    // offset. Works only on rectilinear meshes. Gives error for inconsistent
-    // boundaries.
-    static boundaryConditionBaseType globalBaseType
-    (
-        const meshLevel<Type,MeshType>&,
-        const labelVector
-    );
-
     // Destructor
     virtual ~boundaryCondition();
 
@@ -256,19 +247,21 @@ public:
     // given direction
     virtual void evaluate();
     virtual void evaluate(const label);
+
+    // Correct the boundary condition: prepare and then evaluate
+    virtual void correct()
+    {
+        prepare();
+        evaluate();
+    }
+
+    // Correct specific level
+    virtual void correct(const label l)
+    {
+        prepare(l);
+        evaluate(l);
+    }
 };
-
-// Helper function for global boundary condition type
-
-template<class Type, class MeshType>
-boundaryConditionBaseType globalBoundaryConditionBaseType
-(
-    const meshLevel<Type,MeshType>& level,
-    const labelVector bo
-)
-{
-    return boundaryCondition<Type,MeshType>::globalBaseType(level,bo);
-}
 
 }
 

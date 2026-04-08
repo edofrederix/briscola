@@ -69,147 +69,175 @@ FourierTransforms<SType>::~FourierTransforms()
 template<class SType>
 void FourierTransforms<SType>::FFTBoundaryConditions()
 {
+    x_.addBoundaryConditions();
+
+    const decompositionMap& map = solver_.fvMsh()[0].decomp().map();
+
+    // Left/bottom/aft processor and right/top/fore processor determine lower
+    // and upper boundary condition types
+
+    labelVector lower(Zero);
+    labelVector upper(Zero);
+
+    for (int sign = -1; sign <= 1; sign += 2)
+    {
+        if (sign == -1 && Pstream::myProcNo() != map(0,0,0))
+            continue;
+
+        if (sign == 1 && Pstream::myProcNo() != map(map.size()-1))
+            continue;
+
+        labelVector& result = sign == -1 ? lower : upper;
+
+        const FastPtrList<boundaryCondition<scalar,colocated>>& bcs =
+            x_[0].boundaryConditions();
+
+        for (int fd = 0; fd < 3; fd++)
+        {
+            bool found = false;
+
+            forAll(bcs, i)
+            {
+                if (bcs[i].offset() == sign*units[fd])
+                {
+                    const boundaryCondition<scalar,colocated>& bc = bcs[i];
+
+                    label type =
+                        bc.baseType() == DIRICHLETBC ? 1
+                      : bc.baseType() == NEUMANNBC   ? 2
+                      : bc.baseType() == EMPTYBC     ? 3
+                      : bc.baseType() == PERIODICBC  ? 4
+                      : -1;
+
+                    if (type == -1)
+                        FatalErrorInFunction
+                            << "Incompatible boundary condition found at "
+                            << sign*units[fd] << endl
+                            << abort(FatalError);
+
+                    result[fd] = type;
+
+                    found = true;
+                }
+            }
+
+            if (!found)
+                FatalErrorInFunction
+                    << "Could not find boundary condition at offset "
+                    << sign*units[fd] << endl
+                    << abort(FatalError);
+        }
+    }
+
+    // Distribute
+
+    reduce(lower, sumOp<labelVector>());
+    reduce(upper, sumOp<labelVector>());
+
+    // Check lower/upper pairs
+
     BC_ = labelVector(-1,-1,-1);
 
-    boundaryConditionBaseType bcX0
-        = globalBoundaryConditionBaseType(x_[0], faceOffsets[0]);
-
-    if (bcX0 == boundaryConditionBaseType::EMPTYBC)
+    if (lower.x() == 3)
     {
         BC_.x() = 0; // Empty
     }
-    else if (bcX0 == boundaryConditionBaseType::PERIODICBC)
+    else if (lower.x() == 4)
     {
         BC_.x() = 5; // C-C
     }
-    else if (bcX0 == boundaryConditionBaseType::DIRICHLETBC)
+    else if (lower.x() == 1)
     {
-        boundaryConditionBaseType bcX1
-            = globalBoundaryConditionBaseType(x_[0], faceOffsets[1]);
-
-        if (bcX1 == boundaryConditionBaseType::DIRICHLETBC)
+        if (upper.x() == 1)
         {
             BC_.x() = 1; // D-D
         }
-        else if (bcX1 == boundaryConditionBaseType::NEUMANNBC)
+        else if (upper.x() == 2)
         {
             BC_.x() = 3; // D-N
         }
     }
-    else if (bcX0 == boundaryConditionBaseType::NEUMANNBC)
+    else if (lower.x() == 2)
     {
-        boundaryConditionBaseType bcX1
-            = globalBoundaryConditionBaseType(x_[0], faceOffsets[1]);
-
-        if (bcX1 == boundaryConditionBaseType::DIRICHLETBC)
+        if (upper.x() == 1)
         {
             BC_.x() = 4; // N-D
         }
-        else if (bcX1 == boundaryConditionBaseType::NEUMANNBC)
+        else if (upper.x() == 2)
         {
             BC_.x() = 2; // N-N
         }
     }
-    else
-    {
-        FatalError
-            << "Incorrect boundary condition." << endl
-            << abort(FatalError);
-    }
 
-
-    boundaryConditionBaseType bcY0
-        = globalBoundaryConditionBaseType(x_[0], faceOffsets[2]);
-
-    if (bcY0 == boundaryConditionBaseType::EMPTYBC)
+    if (lower.y() == 3)
     {
         BC_.y() = 0; // Empty
     }
-    else if (bcY0 == boundaryConditionBaseType::PERIODICBC)
+    else if (lower.y() == 4)
     {
         BC_.y() = 5; // C-C
     }
-    else if (bcY0 == boundaryConditionBaseType::DIRICHLETBC)
+    else if (lower.y() == 1)
     {
-        boundaryConditionBaseType bcY1
-            = globalBoundaryConditionBaseType(x_[0], faceOffsets[3]);
-
-        if (bcY1 == boundaryConditionBaseType::DIRICHLETBC)
+        if (upper.y() == 1)
         {
             BC_.y() = 1; // D-D
         }
-        else if (bcY1 == boundaryConditionBaseType::NEUMANNBC)
+        else if (upper.y() == 2)
         {
             BC_.y() = 3; // D-N
         }
     }
-    else if (bcY0 == boundaryConditionBaseType::NEUMANNBC)
+    else if (lower.y() == 2)
     {
-        boundaryConditionBaseType bcY1
-            = globalBoundaryConditionBaseType(x_[0], faceOffsets[3]);
-
-        if (bcY1 == boundaryConditionBaseType::DIRICHLETBC)
+        if (upper.y() == 1)
         {
             BC_.y() = 4; // N-D
         }
-        else if (bcY1 == boundaryConditionBaseType::NEUMANNBC)
+        else if (upper.y() == 2)
         {
             BC_.y() = 2; // N-N
         }
     }
-    else
-    {
-        FatalError
-            << "Incorrect boundary condition." << endl
-            << abort(FatalError);
-    }
 
-
-    boundaryConditionBaseType bcZ0
-        = globalBoundaryConditionBaseType(x_[0], faceOffsets[4]);
-
-    if (bcZ0 == boundaryConditionBaseType::EMPTYBC)
+    if (lower.z() == 3)
     {
         BC_.z() = 0; // Empty
     }
-    else if (bcZ0 == boundaryConditionBaseType::PERIODICBC)
+    else if (lower.z() == 4)
     {
         BC_.z() = 5; // C-C
     }
-    else if (bcZ0 == boundaryConditionBaseType::DIRICHLETBC)
+    else if (lower.z() == 1)
     {
-        boundaryConditionBaseType bcZ1
-            = globalBoundaryConditionBaseType(x_[0], faceOffsets[5]);
-
-        if (bcZ1 == boundaryConditionBaseType::DIRICHLETBC)
+        if (upper.z() == 1)
         {
             BC_.z() = 1; // D-D
         }
-        else if (bcZ1 == boundaryConditionBaseType::NEUMANNBC)
+        else if (upper.z() == 2)
         {
             BC_.z() = 3; // D-N
         }
     }
-    else if (bcZ0 == boundaryConditionBaseType::NEUMANNBC)
+    else if (lower.z() == 2)
     {
-        boundaryConditionBaseType bcZ1
-            = globalBoundaryConditionBaseType(x_[0], faceOffsets[5]);
-
-        if (bcZ1 == boundaryConditionBaseType::DIRICHLETBC)
+        if (upper.z() == 1)
         {
             BC_.z() = 4; // N-D
         }
-        else if (bcZ1 == boundaryConditionBaseType::NEUMANNBC)
+        else if (upper.z() == 2)
         {
             BC_.z() = 2; // N-N
         }
     }
-    else
-    {
-        FatalError
-            << "Incorrect boundary condition." << endl
-            << abort(FatalError);
-    }
+
+    // Final check to see if boundary condition pairs are set
+
+    for (int fd = 0; fd < 3; fd++)
+        if (BC_[fd] == -1)
+            FatalError
+                << "Incorrect boundary condition pair" << endl
+                << abort(FatalError);
 }
 
 template<class SType>

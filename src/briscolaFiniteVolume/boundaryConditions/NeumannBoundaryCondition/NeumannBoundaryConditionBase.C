@@ -44,7 +44,7 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
     const boundary& b
 )
 :
-    boundaryCondition<Type,MeshType>(level, b)
+    patchBoundaryCondition<Type,MeshType>(level, b)
 {
     init(this->dict().template lookup<physicalType>("gradient"));
 }
@@ -57,7 +57,7 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
     const zero&
 )
 :
-    boundaryCondition<Type,MeshType>(level, b)
+    patchBoundaryCondition<Type,MeshType>(level, b)
 {
     init(pTraits<physicalType>::zero);
 }
@@ -70,7 +70,7 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
     const physicalType& gradient
 )
 :
-    boundaryCondition<Type,MeshType>(level, b)
+    patchBoundaryCondition<Type,MeshType>(level, b)
 {
     init(gradient);
 }
@@ -83,7 +83,7 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
     const FastPtrList<block<Type>>& boundaryGradients
 )
 :
-    boundaryCondition<Type,MeshType>(level, b),
+    patchBoundaryCondition<Type,MeshType>(level, b),
     boundaryGradients_(boundaryGradients)
 {}
 
@@ -93,7 +93,7 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
     const NeumannBoundaryConditionBase<Type,MeshType>& bc
 )
 :
-    boundaryCondition<Type,MeshType>(bc),
+    patchBoundaryCondition<Type,MeshType>(bc),
     boundaryGradients_(bc.boundaryGradients_)
 {}
 
@@ -104,7 +104,7 @@ NeumannBoundaryConditionBase<Type,MeshType>::NeumannBoundaryConditionBase
     const meshLevel<Type,MeshType>& level
 )
 :
-    boundaryCondition<Type,MeshType>(bc, level),
+    patchBoundaryCondition<Type,MeshType>(bc, level),
     boundaryGradients_(bc.boundaryGradients_)
 {}
 

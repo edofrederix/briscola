@@ -23,7 +23,7 @@ class slipBoundaryCondition;
 template<class Type>
 class slipBoundaryCondition<Type,colocated>
 :
-    public boundaryCondition<Type,colocated>
+    public NeumannBoundaryCondition<Type,colocated>
 {
 public:
 
@@ -31,7 +31,22 @@ public:
     TypeName("slip");
 
     // Use constructors from base
-    using boundaryCondition<Type,colocated>::boundaryCondition;
+    using NeumannBoundaryCondition<Type,colocated>::NeumannBoundaryCondition;
+
+    // Construct from components setting zero gradient
+    slipBoundaryCondition
+    (
+        const meshLevel<Type,colocated>& level,
+        const boundary& b
+    )
+    :
+        NeumannBoundaryCondition<Type,colocated>
+        (
+            level,
+            b,
+            Zero
+        )
+    {}
 
     // Construct and return a clone
     virtual tmp<boundaryCondition<Type,colocated>> clone() const
@@ -54,14 +69,15 @@ public:
         );
     }
 
-    // Boundary condition base type
-    virtual boundaryConditionBaseType baseType() const
-    {
-        return NEUMANNBC;
-    }
-
     // Eliminated boundary condition
     virtual bool eliminated() const { return false; }
+
+    // Do not eliminate
+    virtual void eliminateGhosts
+    (
+        linearSystem<stencil,Type,colocated>&,
+        const label
+    );
 
     // Evaluate the boundary condition for given direction
     virtual void evaluate(const label);

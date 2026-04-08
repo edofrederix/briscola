@@ -1,7 +1,7 @@
 #ifndef emptyBoundaryConditionBase_H
 #define emptyBoundaryConditionBase_H
 
-#include "boundaryCondition.H"
+#include "patchBoundaryCondition.H"
 #include "FastPtrList.H"
 
 namespace Foam
@@ -16,7 +16,7 @@ namespace fv
 template<class Type, class MeshType>
 class emptyBoundaryConditionBase
 :
-    public boundaryCondition<Type,MeshType>
+    public patchBoundaryCondition<Type,MeshType>
 {
 public:
 

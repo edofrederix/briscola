@@ -41,11 +41,6 @@ protected:
     // Outstanding receive requests
     label outstandingRecvRequest_;
 
-private:
-
-    // Disallow default bitwise assignment
-    void operator=(const parallelBoundaryCondition<Type,MeshType>&);
-
 public:
 
     // Runtime type information
