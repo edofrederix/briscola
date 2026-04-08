@@ -39,7 +39,8 @@ grad
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,MeshType>>&>(tField)
+            ->correctBoundaryConditions();
 
     typedef typename outerProduct<vector,Type>::type GradType;
 

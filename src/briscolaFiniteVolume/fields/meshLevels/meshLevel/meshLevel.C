@@ -3,6 +3,7 @@
 #include "fvMesh.H"
 
 #include "boundaryCondition.H"
+#include "boundaryConditionSelector.H"
 #include "immersedBoundaryCondition.H"
 
 #include "patchBoundary.H"
@@ -250,7 +251,7 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions()
 {
     if (fieldPtr_)
     {
-        this->addBoundaryConditions();
+        addBoundaryConditions();
 
         // Immersed boundary conditions must be corrected first, so that cell
         // values near the boundaries can be copied to neighbors. By default,
@@ -262,10 +263,54 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions()
         if (l_ == 0)
             fieldPtr_->correctImmersedBoundaryConditions();
 
-        this->correctUnsetBoundaryConditions();
-        this->correctPatchBoundaryConditions();
-        this->correctCommsBoundaryConditions();
-        this->correctEmptyBoundaryConditions();
+        correctUnsetBoundaryConditions();
+
+        correct<bcsOfType<patchBoundary>>();
+        correct<bcsOfType<parallelBoundary>>();
+        correct<bcsOfType<emptyBoundary>>();
+    }
+}
+
+template<class Type, class MeshType>
+template<class Selector>
+void meshLevel<Type,MeshType>::prepare()
+{
+    if (fieldPtr_)
+    {
+        addBoundaryConditions();
+
+        forAll(boundaryConditions_, i)
+            if (Selector::match(boundaryConditions_[i]))
+                boundaryConditions_[i].prepare();
+    }
+}
+
+template<class Type, class MeshType>
+template<class Selector>
+void meshLevel<Type,MeshType>::evaluate()
+{
+    if (fieldPtr_)
+        forAll(boundaryConditions_, i)
+            if (Selector::match(boundaryConditions_[i]))
+                boundaryConditions_[i].evaluate();
+}
+
+template<class Type, class MeshType>
+template<class Selector>
+void meshLevel<Type,MeshType>::correct()
+{
+    if (fieldPtr_)
+    {
+        addBoundaryConditions();
+
+        const label nReq = Pstream::nRequests();
+
+        prepare<Selector>();
+
+        if (Pstream::parRun())
+            UPstream::waitRequests(nReq);
+
+        evaluate<Selector>();
     }
 }
 
@@ -294,250 +339,6 @@ void meshLevel<Type,MeshType>::correctUnsetBoundaryConditions()
             for (ijk.z() = S.z(); ijk.z() < E.z(); ijk.z()++)
             {
                 field(ijk+bo) = field(ijk);
-            }
-        }
-    }
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctPatchBoundaryConditions()
-{
-    if (fieldPtr_)
-    {
-        this->addBoundaryConditions();
-
-        forAll(boundaryConditions_, i)
-        {
-            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
-
-            if (bc.b().template castable<patchBoundary>())
-            {
-                bc.prepare();
-                bc.evaluate();
-            }
-        }
-    }
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctEmptyBoundaryConditions()
-{
-    if (fieldPtr_)
-    {
-        this->addBoundaryConditions();
-
-        forAll(boundaryConditions_, i)
-        {
-            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
-
-            if (bc.b().template castable<emptyBoundary>())
-            {
-                bc.prepare();
-                bc.evaluate();
-            }
-        }
-    }
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctCommsBoundaryConditions()
-{
-    if (fieldPtr_)
-    {
-        this->addBoundaryConditions();
-
-        #ifdef BOUNDARYEXCHANGE
-
-        this->bExchangePtr_->correct();
-
-        #else
-
-        const label nReq = Pstream::nRequests();
-
-        forAll(boundaryConditions_, i)
-        {
-            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
-
-            if (bc.b().template castable<parallelBoundary>())
-            {
-                bc.prepare();
-            }
-        }
-
-        if (Pstream::parRun())
-        {
-            Pstream::waitRequests(nReq);
-        }
-
-        forAll(boundaryConditions_, i)
-        {
-            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
-
-            if (bc.b().template castable<parallelBoundary>())
-            {
-                bc.evaluate();
-            }
-        }
-
-        #endif
-    }
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctParallelBoundaryConditions()
-{
-    if (fieldPtr_ && Pstream::parRun())
-    {
-        this->addBoundaryConditions();
-
-        #ifdef BOUNDARYEXCHANGE
-
-        this->bExchangePtr_->correctParallel();
-
-        #else
-
-        const label nReq = Pstream::nRequests();
-
-        forAll(boundaryConditions_, i)
-        {
-            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
-
-            if
-            (
-                bc.b().template castable<parallelBoundary>()
-            && !bc.b().template castable<periodicBoundary>()
-            )
-            {
-                bc.prepare();
-            }
-        }
-
-        if (Pstream::parRun())
-        {
-            Pstream::waitRequests(nReq);
-        }
-
-        forAll(boundaryConditions_, i)
-        {
-            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
-
-            if
-            (
-                bc.b().template castable<parallelBoundary>()
-            && !bc.b().template castable<periodicBoundary>()
-            )
-            {
-                bc.evaluate();
-            }
-        }
-
-        #endif
-    }
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctPeriodicBoundaryConditions()
-{
-    if (fieldPtr_)
-    {
-        this->addBoundaryConditions();
-
-        #ifdef BOUNDARYEXCHANGE
-
-        this->bExchangePtr_->correctPeriodic();
-
-        #else
-
-        const label nReq = Pstream::nRequests();
-
-        forAll(boundaryConditions_, i)
-        {
-            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
-
-            if (bc.b().template castable<periodicBoundary>())
-            {
-                bc.prepare();
-            }
-        }
-
-        if (Pstream::parRun())
-        {
-            Pstream::waitRequests(nReq);
-        }
-
-        forAll(boundaryConditions_, i)
-        {
-            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
-
-            if (bc.b().template castable<periodicBoundary>())
-            {
-                bc.evaluate();
-            }
-        }
-
-        #endif
-    }
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctNonEliminatedBoundaryConditions()
-{
-    if (fieldPtr_)
-    {
-        this->addBoundaryConditions();
-
-        // First non-eliminated patch boundaries
-
-        forAll(boundaryConditions_, i)
-        {
-            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
-
-            if (!bc.eliminated() && bc.b().template castable<patchBoundary>())
-            {
-                bc.prepare();
-                bc.evaluate();
-            }
-        }
-
-        // Next the parallel/periodic boundaries which are non-eliminated
-
-        this->correctCommsBoundaryConditions();
-
-        // Finally the other non-eliminated boundaries
-
-        forAll(boundaryConditions_, i)
-        {
-            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
-
-            if
-            (
-                !bc.eliminated()
-             && !bc.b().template castable<patchBoundary>()
-             && !bc.b().template castable<parallelBoundary>()
-            )
-            {
-                bc.prepare();
-                bc.evaluate();
-            }
-        }
-    }
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::correctEliminatedBoundaryConditions()
-{
-    if (fieldPtr_)
-    {
-        this->addBoundaryConditions();
-
-        forAll(boundaryConditions_, i)
-        {
-            boundaryCondition<Type,MeshType>& bc = boundaryConditions_[i];
-
-            if (bc.eliminated())
-            {
-                bc.prepare();
-                bc.evaluate();
             }
         }
     }

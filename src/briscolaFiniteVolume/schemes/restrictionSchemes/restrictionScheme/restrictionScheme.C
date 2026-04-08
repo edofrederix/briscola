@@ -100,7 +100,8 @@ void restrictionScheme<Type,MeshType>::restrict
 )
 {
     if (tf.isTmp())
-        tf->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,MeshType>>&>(tf)
+            ->correctBoundaryConditions();
 
     restrict(res,tf(),scale);
 

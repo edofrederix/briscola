@@ -19,7 +19,7 @@ namespace fv
 
 inline tmp<staggeredVectorField> stagT(const staggeredVectorField& f)
 {
-    f.correctBoundaryConditions();
+    const_cast<staggeredVectorField&>(f).correctBoundaryConditions();
 
     tmp<staggeredVectorField> tT =
         staggeredVectorField::New
@@ -49,7 +49,8 @@ inline tmp<staggeredVectorField> stagT(const staggeredVectorField& f)
 inline tmp<staggeredVectorField> stagT(const tmp<staggeredVectorField>& tf)
 {
     if (tf.isTmp())
-        tf->correctBoundaryConditions();
+        const_cast<tmp<staggeredVectorField>&>(tf)
+            ->correctBoundaryConditions();
 
     tmp<staggeredVectorField> tT(stagT(tf()));
 

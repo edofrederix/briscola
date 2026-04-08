@@ -64,7 +64,8 @@ reconstruct
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,staggered>>&>(tField)
+            ->correctBoundaryConditions();
 
     typedef typename outerProduct<vector,Type>::type ReconType;
 

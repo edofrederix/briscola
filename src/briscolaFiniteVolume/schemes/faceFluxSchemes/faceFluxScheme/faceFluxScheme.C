@@ -91,7 +91,8 @@ tmp<colocatedScalarFaceField> coloFaceFlux
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<staggeredScalarField>&>(tField)
+            ->correctBoundaryConditions();
 
     tmp<colocatedScalarFaceField> tColoFaceFlux
     (

@@ -37,7 +37,8 @@ inline tmp<faceField<Type,MeshType>> faceDotGrad
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,MeshType>>&>(tField)
+            ->correctBoundaryConditions();
 
     tmp<faceField<Type,MeshType>> tFaceDotGrad =
         faceDotGrad(tField());

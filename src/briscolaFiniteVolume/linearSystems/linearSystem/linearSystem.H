@@ -59,11 +59,11 @@ private:
     void transfer(linearSystem<SType,Type,MeshType>&);
 
     // Compute residual for a direction
-    template<bool CorrBCs = true, bool Mask = true>
+    template<bool CorrBcs = true, bool Mask = true>
     void residual(meshDirection<Type,MeshType>&) const;
 
     // Compute evaluation for a direction
-    template<bool CorrBCs = true, bool Mask = true>
+    template<bool CorrBcs = true, bool Mask = true>
     void evaluate(meshDirection<Type,MeshType>&) const;
 
 public:
@@ -191,10 +191,10 @@ public:
     // via a template parameter instead of an argument, to avoid ambiguity with
     // other arguments.
 
-    template<bool CorrBCs = true, bool Mask = true>
+    template<bool CorrBcs = true, bool Mask = true>
     void residual(meshField<Type,MeshType>&) const;
 
-    template<bool CorrBCs = true, bool Mask = true>
+    template<bool CorrBcs = true, bool Mask = true>
     void residual(meshLevel<Type,MeshType>&) const;
 
     // Compute and return the residual b-Ax.Optionally don't correct boundary
@@ -202,10 +202,10 @@ public:
     // parameter instead of an argument, to avoid ambiguity with other
     // arguments.
 
-    template<bool CorrBCs = true, bool Mask = true>
+    template<bool CorrBcs = true, bool Mask = true>
     tmp<meshField<Type,MeshType>> residual() const;
 
-    template<bool CorrBCs = true, bool Mask = true>
+    template<bool CorrBcs = true, bool Mask = true>
     tmp<meshLevel<Type,MeshType>> residual(const label) const;
 
     // Compute the evaluation (Ax-b)/V and store in given object. Optionally
@@ -213,10 +213,10 @@ public:
     // determined via a template parameter instead of an argument, to avoid
     // ambiguity with other arguments.
 
-    template<bool CorrBCs = true, bool Mask = true>
+    template<bool CorrBcs = true, bool Mask = true>
     void evaluate(meshField<Type,MeshType>&) const;
 
-    template<bool CorrBCs = true, bool Mask = true>
+    template<bool CorrBcs = true, bool Mask = true>
     void evaluate(meshLevel<Type,MeshType>&) const;
 
     // Compute the evaluation (Ax-b)/V. Optionally don't correct boundary
@@ -224,10 +224,10 @@ public:
     // parameter instead of an argument, to avoid ambiguity with other
     // arguments.
 
-    template<bool CorrBCs = true, bool Mask = true>
+    template<bool CorrBcs = true, bool Mask = true>
     tmp<meshField<Type,MeshType>> evaluate() const;
 
-    template<bool CorrBCs = true, bool Mask = true>
+    template<bool CorrBcs = true, bool Mask = true>
     tmp<meshLevel<Type,MeshType>> evaluate(const label) const;
 
     // Eliminate ghosts from the linear system where possible

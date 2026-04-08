@@ -555,7 +555,7 @@ void fvMeshMetrics<MeshType>::setGlobalCellNumbers()
         }
     }
 
-    gcn.correctCommsBoundaryConditions();
+    gcn.template correct<bcsOfType<parallelBoundary>>();
 }
 
 template<class MeshType>
@@ -886,7 +886,7 @@ fvMeshMetrics<MeshType>::AoS::faceDeltas() const
 
     // Also set remaining ghost cell face values at processor interfaces
 
-    delta.correctCommsBoundaryConditions();
+    delta.template correct<bcsOfType<parallelBoundary>>();
     delta.correctAggData();
 
     return tDelta;
@@ -971,7 +971,7 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsCenter() const
 
     // Also set remaining ghost cell face values at processor interfaces
 
-    fwc.correctCommsBoundaryConditions();
+    fwc.template correct<bcsOfType<parallelBoundary>>();
     fwc.correctAggData();
 
     return tFwc;
@@ -1056,7 +1056,7 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsNeighbor() const
 
     // Also set remaining ghost cell face values at processor interfaces
 
-    fwn.correctCommsBoundaryConditions();
+    fwn.template correct<bcsOfType<parallelBoundary>>();
     fwn.correctAggData();
 
     return tFwn;

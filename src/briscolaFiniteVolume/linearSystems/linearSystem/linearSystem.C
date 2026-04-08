@@ -2,6 +2,8 @@
 #include "linearSystemAggregation.H"
 #include "linearSystemFunctions.H"
 
+#include "boundaryConditionSelector.H"
+
 namespace Foam
 {
 
@@ -28,7 +30,7 @@ void linearSystem<SType,Type,MeshType>::transfer
 }
 
 template<class SType, class Type, class MeshType>
-template<bool CorrBCs, bool Mask>
+template<bool CorrBcs, bool Mask>
 void linearSystem<SType,Type,MeshType>::residual
 (
     meshDirection<Type,MeshType>& res
@@ -145,7 +147,7 @@ void linearSystem<SType,Type,MeshType>::residual
 }
 
 template<class SType, class Type, class MeshType>
-template<bool CorrBCs, bool Mask>
+template<bool CorrBcs, bool Mask>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
     meshDirection<Type,MeshType>& eval
@@ -546,24 +548,24 @@ linearSystem<SType,Type,MeshType>::~linearSystem()
 {}
 
 template<class SType, class Type, class MeshType>
-template<bool CorrBCs, bool Mask>
+template<bool CorrBcs, bool Mask>
 void linearSystem<SType,Type,MeshType>::residual
 (
     meshField<Type, MeshType>& res
 ) const
 {
     forAll(res, l)
-        this->residual<CorrBCs,Mask>(res[l]);
+        this->residual<CorrBcs,Mask>(res[l]);
 }
 
 template<class SType, class Type, class MeshType>
-template<bool CorrBCs, bool Mask>
+template<bool CorrBcs, bool Mask>
 void linearSystem<SType,Type,MeshType>::residual
 (
     meshLevel<Type,MeshType>& res
 ) const
 {
-    if (CorrBCs)
+    if (CorrBcs)
     {
         meshField<Type,MeshType>& x =
             const_cast<meshField<Type,MeshType>&>(this->x());
@@ -573,7 +575,7 @@ void linearSystem<SType,Type,MeshType>::residual
 
         if (eliminated_)
         {
-            x[res.levelNum()].correctNonEliminatedBoundaryConditions();
+            x[res.levelNum()].template correct<nonEliminatedBcs>();
         }
         else
         {
@@ -582,11 +584,11 @@ void linearSystem<SType,Type,MeshType>::residual
     }
 
     forAll(res, d)
-        this->residual<CorrBCs,Mask>(res[d]);
+        this->residual<CorrBcs,Mask>(res[d]);
 }
 
 template<class SType, class Type, class MeshType>
-template<bool CorrBCs, bool Mask>
+template<bool CorrBcs, bool Mask>
 tmp<meshField<Type, MeshType>>
 linearSystem<SType,Type,MeshType>::residual() const
 {
@@ -597,43 +599,43 @@ linearSystem<SType,Type,MeshType>::residual() const
             fvMsh_
         );
 
-    this->residual<CorrBCs,Mask>(tRes.ref());
+    this->residual<CorrBcs,Mask>(tRes.ref());
 
     return tRes;
 }
 
 template<class SType, class Type, class MeshType>
-template<bool CorrBCs, bool Mask>
+template<bool CorrBcs, bool Mask>
 tmp<meshLevel<Type,MeshType>>
 linearSystem<SType,Type,MeshType>::residual(const label l) const
 {
     tmp<meshLevel<Type,MeshType>> tRes =
         meshLevel<Type,MeshType>::New(fvMsh_,l);
 
-    this->residual<CorrBCs,Mask>(tRes.ref());
+    this->residual<CorrBcs,Mask>(tRes.ref());
 
     return tRes;
 }
 
 template<class SType, class Type, class MeshType>
-template<bool CorrBCs, bool Mask>
+template<bool CorrBcs, bool Mask>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
     meshField<Type, MeshType>& eval
 ) const
 {
     forAll(eval, l)
-        this->evaluate<CorrBCs,Mask>(eval[l]);
+        this->evaluate<CorrBcs,Mask>(eval[l]);
 }
 
 template<class SType, class Type, class MeshType>
-template<bool CorrBCs, bool Mask>
+template<bool CorrBcs, bool Mask>
 void linearSystem<SType,Type,MeshType>::evaluate
 (
     meshLevel<Type,MeshType>& eval
 ) const
 {
-    if (CorrBCs)
+    if (CorrBcs)
     {
         meshField<Type,MeshType>& x =
             const_cast<meshField<Type,MeshType>&>(this->x());
@@ -643,7 +645,7 @@ void linearSystem<SType,Type,MeshType>::evaluate
 
         if (eliminated_)
         {
-            x[eval.levelNum()].correctNonEliminatedBoundaryConditions();
+            x[eval.levelNum()].template correct<nonEliminatedBcs>();
         }
         else
         {
@@ -652,11 +654,11 @@ void linearSystem<SType,Type,MeshType>::evaluate
     }
 
     forAll(eval, d)
-        this->evaluate<CorrBCs,Mask>(eval[d]);
+        this->evaluate<CorrBcs,Mask>(eval[d]);
 }
 
 template<class SType, class Type, class MeshType>
-template<bool CorrBCs, bool Mask>
+template<bool CorrBcs, bool Mask>
 tmp<meshField<Type, MeshType>>
 linearSystem<SType,Type,MeshType>::evaluate() const
 {
@@ -667,20 +669,20 @@ linearSystem<SType,Type,MeshType>::evaluate() const
             fvMsh_
         );
 
-    this->evaluate<CorrBCs,Mask>(tEval.ref());
+    this->evaluate<CorrBcs,Mask>(tEval.ref());
 
     return tEval;
 }
 
 template<class SType, class Type, class MeshType>
-template<bool CorrBCs, bool Mask>
+template<bool CorrBcs, bool Mask>
 tmp<meshLevel<Type,MeshType>>
 linearSystem<SType,Type,MeshType>::evaluate(const label l) const
 {
     tmp<meshLevel<Type,MeshType>> tEval =
         meshLevel<Type,MeshType>::New(fvMsh_,l);
 
-    this->evaluate<CorrBCs,Mask>(tEval.ref());
+    this->evaluate<CorrBcs,Mask>(tEval.ref());
 
     return tEval;
 }

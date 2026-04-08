@@ -314,66 +314,33 @@ void meshField<Type,MeshType>::correctBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctPatchBoundaryConditions()
+template<class Selector>
+void meshField<Type,MeshType>::prepare()
 {
     addBoundaryConditions();
 
     forAll(*this, l)
-        listType::operator[](l).correctPatchBoundaryConditions();
+        listType::operator[](l).template prepare<Selector>();
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctEmptyBoundaryConditions()
+template<class Selector>
+void meshField<Type,MeshType>::evaluate()
 {
     addBoundaryConditions();
 
     forAll(*this, l)
-        listType::operator[](l).correctEmptyBoundaryConditions();
+        listType::operator[](l).template evaluate<Selector>();
 }
 
 template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctCommsBoundaryConditions()
+template<class Selector>
+void meshField<Type,MeshType>::correct()
 {
     addBoundaryConditions();
 
     forAll(*this, l)
-        listType::operator[](l).correctCommsBoundaryConditions();
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctParallelBoundaryConditions()
-{
-    addBoundaryConditions();
-
-    forAll(*this, l)
-        listType::operator[](l).correctParallelBoundaryConditions();
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctPeriodicBoundaryConditions()
-{
-    addBoundaryConditions();
-
-    forAll(*this, l)
-        listType::operator[](l).correctPeriodicBoundaryConditions();
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctNonEliminatedBoundaryConditions()
-{
-    addBoundaryConditions();
-
-    forAll(*this, l)
-        listType::operator[](l).correctNonEliminatedBoundaryConditions();
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::correctEliminatedBoundaryConditions()
-{
-    addBoundaryConditions();
-
-    forAll(*this, l)
-        listType::operator[](l).correctEliminatedBoundaryConditions();
+        listType::operator[](l).template correct<Selector>();
 }
 
 template<class Type, class MeshType>

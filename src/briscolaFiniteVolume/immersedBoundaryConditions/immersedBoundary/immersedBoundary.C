@@ -81,9 +81,9 @@ void immersedBoundary<MeshType>::setMasks()
         }
     }
 
-    mask_.correctCommsBoundaryConditions();
-    ghostMask_.correctCommsBoundaryConditions();
-    wallAdjMask_.correctCommsBoundaryConditions();
+    mask_.template correct<bcsOfType<parallelBoundary>>();
+    ghostMask_.template correct<bcsOfType<parallelBoundary>>();
+    wallAdjMask_.template correct<bcsOfType<parallelBoundary>>();
 }
 
 template<class MeshType>
@@ -165,9 +165,9 @@ void immersedBoundary<MeshType>::calculateWallDistances()
         }
     }
 
-    wallDistAdj_.correctCommsBoundaryConditions();
-    wallDistGhost_.correctCommsBoundaryConditions();
-    neighborDist_.correctCommsBoundaryConditions();
+    wallDistAdj_.template correct<bcsOfType<parallelBoundary>>();
+    wallDistGhost_.template correct<bcsOfType<parallelBoundary>>();
+    neighborDist_.template correct<bcsOfType<parallelBoundary>>();
 }
 
 template<class MeshType>
@@ -230,7 +230,7 @@ void immersedBoundary<MeshType>::setMirrorPoints()
         }
     }
 
-    mirrorPoints_.correctCommsBoundaryConditions();
+    mirrorPoints_.template correct<bcsOfType<parallelBoundary>>();
 }
 
 // Constructor

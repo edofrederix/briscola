@@ -320,33 +320,10 @@ public:
     // Correct boundary conditions
     void correctBoundaryConditions();
 
-    // Allow boundary conditions to be corrected on a const field
-    void correctBoundaryConditions() const
-    {
-        const_cast<meshField<Type,MeshType>*>(this)
-            ->correctBoundaryConditions();
-    }
-
-    // Correct patch boundary conditions
-    void correctPatchBoundaryConditions();
-
-    // Correct empty boundary conditions
-    void correctEmptyBoundaryConditions();
-
-    // Correct communicating boundary conditions
-    void correctCommsBoundaryConditions();
-
-    // Correct parallel boundary conditions
-    void correctParallelBoundaryConditions();
-
-    // Correct periodic boundary conditions
-    void correctPeriodicBoundaryConditions();
-
-    // Correct non-eliminated boundary conditions
-    void correctNonEliminatedBoundaryConditions();
-
-    // Correct eliminated boundary conditions
-    void correctEliminatedBoundaryConditions();
+    // Prepare/evaluate/correct selected boundary conditions
+    template<class Selector> void prepare();
+    template<class Selector> void evaluate();
+    template<class Selector> void correct();
 
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();

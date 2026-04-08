@@ -62,7 +62,7 @@ void twoPass::parallelReduce()
 {
     colocatedLabelField& m = *this;
 
-    m.correctCommsBoundaryConditions();
+    m.correct<bcsOfType<parallelBoundary>>();
 
     List<label> neighbors(0, Zero);
 

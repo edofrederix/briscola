@@ -179,7 +179,7 @@ void iterative<SType,Type,MeshType>::solve
 
         // Correct eliminated ghosts
 
-        sys.x()[0].correctEliminatedBoundaryConditions();
+        sys.x()[0].template correct<eliminatedBcs>();
     }
 }
 

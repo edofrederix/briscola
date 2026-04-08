@@ -88,10 +88,10 @@ void diagonalSmoother<SType,Type,MeshType>::diagonalSmoother::Smooth
         if (l == 0)
             x.correctImmersedBoundaryConditions();
 
-        x.correctNonEliminatedBoundaryConditions();
+        x.template correct<nonEliminatedBcs>();
 
         if (!sys.eliminated())
-            x.correctEliminatedBoundaryConditions();
+            x.template correct<eliminatedBcs>();
 
         forAll(x, d)
             if (!converged[d])

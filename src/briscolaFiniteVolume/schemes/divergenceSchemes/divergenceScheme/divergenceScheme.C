@@ -158,7 +158,8 @@ tmp<meshField<Type,colocated>> coloDiv
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,staggered>>&>(tField)
+            ->correctBoundaryConditions();
 
     tmp<meshField<Type,colocated>> tColoDiv = coloDiv(tField());
 

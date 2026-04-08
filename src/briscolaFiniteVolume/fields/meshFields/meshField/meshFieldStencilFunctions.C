@@ -53,7 +53,8 @@ rowProduct
 )
 {
     if (tf1.isTmp())
-        tf1->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type1,MeshType>>&>(tf1)
+            ->correctBoundaryConditions();
 
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
@@ -83,7 +84,8 @@ rowProduct
 )
 {
     if (tf2.isTmp())
-        tf2->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type2,MeshType>>&>(tf2)
+            ->correctBoundaryConditions();
 
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
@@ -113,10 +115,12 @@ rowProduct
 )
 {
     if (tf1.isTmp())
-        tf1->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type1,MeshType>>&>(tf1)
+            ->correctBoundaryConditions();
 
     if (tf2.isTmp())
-        tf2->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type2,MeshType>>&>(tf2)
+            ->correctBoundaryConditions();
 
     typedef typename stencilProduct<Type1,Type2>::type productType;
 
@@ -174,7 +178,8 @@ tmp<meshField<typename stencilProduct<Type,Form>::type,MeshType>>
 rowProduct(const tmp<meshField<Type,MeshType>>& tf1, const Form& s)
 {
     if (tf1.isTmp())
-        tf1->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,MeshType>>&>(tf1)
+            ->correctBoundaryConditions();
 
     typedef typename stencilProduct<Type,Form>::type productType;
 
@@ -254,7 +259,8 @@ tmp<meshField<scalar,MeshType>>
 rowSum(const tmp<meshField<Type,MeshType>>& tf)
 {
     if (tf.isTmp())
-        tf->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,MeshType>>&>(tf)
+            ->correctBoundaryConditions();
 
     tmp<meshField<scalar,MeshType>> tRes =
         meshField<scalar,MeshType>::New

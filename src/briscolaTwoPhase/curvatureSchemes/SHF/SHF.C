@@ -448,8 +448,8 @@ void SHF::correct()
         }
     }
 
-    marker.correctCommsBoundaryConditions();
-    kappa.correctCommsBoundaryConditions();
+    marker.correct<bcsOfType<parallelBoundary>>();
+    kappa.correct<bcsOfType<parallelBoundary>>();
 
     // Set kappa in unmarked interfacial cells to be the average of its marked
     // neighbors

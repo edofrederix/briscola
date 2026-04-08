@@ -92,7 +92,8 @@ tmp<meshField<Type,staggered>> stagInterp
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,colocated>>&>(tField)
+            ->correctBoundaryConditions();
 
     tmp<meshField<Type,staggered>> tInterp = stagInterp(tField());
 
@@ -192,7 +193,8 @@ tmp<faceField<Type,staggered>> stagFaceInterp
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,colocated>>&>(tField)
+            ->correctBoundaryConditions();
 
     tmp<faceField<Type,staggered>> tInterp =
         stagFaceInterp(tField());
@@ -232,7 +234,8 @@ tmp<meshField<Type,colocated>> coloInterp
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,staggered>>&>(tField)
+            ->correctBoundaryConditions();
 
     tmp<meshField<Type,colocated>> tInterp = stagInterp(tField());
 
@@ -273,7 +276,8 @@ tmp<faceField<Type,colocated>> coloFaceInterp
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,staggered>>&>(tField)
+            ->correctBoundaryConditions();
 
     tmp<faceField<Type,colocated>> tInterp =
         coloFaceInterp(tField());
@@ -318,7 +322,8 @@ tmp<faceField<Type,colocated>> coloFaceInterp
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,staggered>>&>(tField)
+            ->correctBoundaryConditions();
 
     tmp<faceField<Type,colocated>> tInterp =
         coloFaceInterp(tField());

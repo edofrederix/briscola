@@ -159,7 +159,8 @@ stagGrad
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<meshField<Type,colocated>>&>(tField)
+            ->correctBoundaryConditions();
 
     tmp<meshField<Type,staggered>> tStagGrad = stagGrad(tField());
 

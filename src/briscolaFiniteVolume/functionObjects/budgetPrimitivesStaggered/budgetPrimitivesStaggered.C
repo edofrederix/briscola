@@ -193,7 +193,7 @@ bool budgetPrimitivesStaggered::execute()
         U2_(l,d,i,j,k) = Foam::sqr(U(l,d,i,j,k));
     }
 
-    U2_.correctCommsBoundaryConditions();
+    U2_.correct<bcsOfType<parallelBoundary>>();
     Rii_ = ex::reconstruct(U2_);
 
     forAllCells(U3_,l,d,i,j,k)
@@ -201,7 +201,7 @@ bool budgetPrimitivesStaggered::execute()
         U3_(l,d,i,j,k) = Foam::pow3(U(l,d,i,j,k));
     }
 
-    U3_.correctCommsBoundaryConditions();
+    U3_.correct<bcsOfType<parallelBoundary>>();
     uiuiui_ = ex::reconstruct(U3_);
 
     forAllCells(p2_,l,d,i,j,k)
@@ -244,7 +244,7 @@ bool budgetPrimitivesStaggered::execute()
     }
 
     stagdjui_ = ex::grad(U);
-    stagdjui_.correctCommsBoundaryConditions();
+    stagdjui_.correct<bcsOfType<parallelBoundary>>();
     djui_ = ex::reconstruct(stagdjui_);
 
     forAllCells(pdjui_,l,d,i,j,k)
@@ -257,7 +257,7 @@ bool budgetPrimitivesStaggered::execute()
         stagdjui2_(l,d,i,j,k) = Foam::sqr(stagdjui_(l,d,i,j,k)[d]);
     }
 
-    stagdjui2_.correctCommsBoundaryConditions();
+    stagdjui2_.correct<bcsOfType<parallelBoundary>>();
     djui2_ = ex::reconstruct(stagdjui2_);
 
     forAllCells(Sij_,l,d,i,j,k)

@@ -39,7 +39,8 @@ inline tmp<faceField<scalar,colocated>> faceFlux
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<colocatedVectorField>&>(tField)
+            ->correctBoundaryConditions();
 
     tmp<faceField<scalar,colocated>> tFaceFlux = faceFlux(tField());
 
@@ -69,7 +70,8 @@ inline tmp<faceField<vector,colocated>> faceFlux
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<colocatedTensorField>&>(tField)
+            ->correctBoundaryConditions();
 
     tmp<faceField<vector,colocated>> tFaceFlux = faceFlux(tField());
 
@@ -99,7 +101,8 @@ inline tmp<faceField<scalar,staggered>> faceFlux
 )
 {
     if (tField.isTmp())
-        tField->correctBoundaryConditions();
+        const_cast<tmp<staggeredScalarField>&>(tField)
+            ->correctBoundaryConditions();
 
     tmp<faceField<scalar,staggered>> tFaceFlux = faceFlux(tField());
 
