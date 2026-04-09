@@ -38,7 +38,7 @@ else
 fi
 
 cp -r $BRISCOLA/cases/singlePhase/Poiseuille/code .
-wmake -a -s code 2>&1 > log.wmake
+wclean code && wmake code 2>&1 > log.wmake
 
 IBMBC=${MODE}Dirichlet
 

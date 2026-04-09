@@ -26,7 +26,7 @@ GS=4.0
 ##
 
 cp -r $BRISCOLA/cases/singlePhase/flowOverCylinder/code .
-wmake -a -s code 2>&1 > log.wmake
+wclean code && wmake code 2>&1 > log.wmake
 
 ##
 

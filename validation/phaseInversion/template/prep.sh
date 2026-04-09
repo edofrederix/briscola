@@ -27,5 +27,4 @@ m4 $VARS system/briscolaSolverDict.m4 > system/briscolaSolverDict
 m4 $VARS system/briscolaSchemeDict.m4 > system/briscolaSchemeDict
 
 cp -r $BRISCOLA/cases/twoPhase/phaseInversion/code .
-
-wmake -silent code > log.wmake 2>&1
+wclean code && wmake code > log.wmake 2>&1
