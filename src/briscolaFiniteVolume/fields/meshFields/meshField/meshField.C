@@ -314,33 +314,33 @@ void meshField<Type,MeshType>::correctBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-template<class Selector>
+template<class Selector, int Degree>
 void meshField<Type,MeshType>::prepare()
 {
     addBoundaryConditions();
 
     forAll(*this, l)
-        listType::operator[](l).template prepare<Selector>();
+        listType::operator[](l).template prepare<Selector,Degree>();
 }
 
 template<class Type, class MeshType>
-template<class Selector>
+template<class Selector, int Degree>
 void meshField<Type,MeshType>::evaluate()
 {
     addBoundaryConditions();
 
     forAll(*this, l)
-        listType::operator[](l).template evaluate<Selector>();
+        listType::operator[](l).template evaluate<Selector,Degree>();
 }
 
 template<class Type, class MeshType>
-template<class Selector>
+template<class Selector, int Degree>
 void meshField<Type,MeshType>::correct()
 {
     addBoundaryConditions();
 
     forAll(*this, l)
-        listType::operator[](l).template correct<Selector>();
+        listType::operator[](l).template correct<Selector,Degree>();
 }
 
 template<class Type, class MeshType>

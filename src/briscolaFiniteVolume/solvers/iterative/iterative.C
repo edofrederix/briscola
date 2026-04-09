@@ -2,9 +2,6 @@
 #include "diagonal.H"
 
 #include "diagonalSmoother.H"
-#include "rbgsSmoother.H"
-#include "lexgsSmoother.H"
-#include "jacSmoother.H"
 
 namespace Foam
 {
@@ -16,7 +13,7 @@ namespace fv
 {
 
 template<class SType, class Type, class MeshType>
-void iterative<SType,Type,MeshType>::solve
+void iterative<SType,Type,MeshType>::Solve
 (
     linearSystem<SType,Type,MeshType>& sys,
     const scalar relTol,
@@ -167,7 +164,7 @@ void iterative<SType,Type,MeshType>::solve
     {
         this->setSingularityConstraint(sys, 0);
 
-        this->solve
+        this->Solve
         (
             sys,
             this->relTol_,

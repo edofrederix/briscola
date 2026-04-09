@@ -55,16 +55,50 @@ private:
     // IBM forcing mask
     autoPtr<meshField<label,MeshType>> forcingMask_;
 
+    // List of eliminated boundary masks, for all levels
+    List<faceLabel> eliminatedBoundaryMasks_;
+
     // Transfer data from other system
     void transfer(linearSystem<SType,Type,MeshType>&);
 
     // Compute residual for a direction
-    template<bool CorrBcs = true, bool Mask = true>
-    void residual(meshDirection<Type,MeshType>&) const;
+    template<bool Mask = true>
+    void Residual
+    (
+        meshDirection<Type,MeshType>&,
+        const faceLabel& paddingMask,
+        const label padding = 0
+    ) const;
 
     // Compute evaluation for a direction
-    template<bool CorrBcs = true, bool Mask = true>
-    void evaluate(meshDirection<Type,MeshType>&) const;
+    template<bool Mask = true>
+    void Evaluate
+    (
+        meshDirection<Type,MeshType>&,
+        const faceLabel& paddingMask,
+        const label padding = 0
+    ) const;
+
+    // Compute residual for a direction on boundary cells
+    template<bool Mask = true>
+    void ResidualBoundary
+    (
+        meshDirection<Type,MeshType>&,
+        const faceLabel& paddingMask,
+        const label padding = 1
+    ) const;
+
+    // Compute evaluation for a direction on boundary cells
+    template<bool Mask = true>
+    void EvaluateBoundary
+    (
+        meshDirection<Type,MeshType>&,
+        const faceLabel& paddingMask,
+        const label padding = 1
+    ) const;
+
+    // Correct the eliminated boundary masks
+    void correctEliminatedBoundaryMasks();
 
 public:
 
@@ -178,6 +212,15 @@ public:
     bool& symmetric() { return symmetric_; }
     bool& diagonal() { return diagonal_; }
     bool& eliminated() { return eliminated_; }
+
+    // Access to the eliminated boundary masks
+    const List<faceLabel>& eliminatedBoundaryMasks()
+    {
+        if (!eliminatedBoundaryMasks_.size())
+            correctEliminatedBoundaryMasks();
+
+        return eliminatedBoundaryMasks_;
+    }
 
     // A linear system is said to be singular if the matrix is symmetric,
     // non-diagonal and if the boundary conditions of the unknown are singular
@@ -320,6 +363,8 @@ public:
 
 #ifdef NoRepository
     #include "linearSystem.C"
+    #include "linearSystemResidual.C"
+    #include "linearSystemEvaluate.C"
 #endif
 
 #endif

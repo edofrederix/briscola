@@ -320,10 +320,11 @@ public:
     // Correct boundary conditions
     void correctBoundaryConditions();
 
-    // Prepare/evaluate/correct selected boundary conditions
-    template<class Selector> void prepare();
-    template<class Selector> void evaluate();
-    template<class Selector> void correct();
+    // Prepare/evaluate/correct selected boundary conditions limited to a
+    // boundary offset degree (defaults to 3)
+    template<class Selector, int Degree = 3> void prepare();
+    template<class Selector, int Degree = 3> void evaluate();
+    template<class Selector, int Degree = 3> void correct();
 
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();

@@ -11,8 +11,6 @@
 #include "boundaryCondition.H"
 #include "meshDirection.H"
 
-#define BOUNDARYEXCHANGE 1
-
 namespace Foam
 {
 
@@ -23,9 +21,6 @@ namespace fv
 {
 
 class fvMesh;
-
-template<class Type, class MeshType>
-class boundaryExchange;
 
 template<class Type, class MeshType>
 class meshLevel
@@ -51,10 +46,6 @@ private:
 
     // Boundary conditions
     FastPtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
-
-    // Boundary exchange (defined on field level to enable collective operations
-    // on all levels)
-    autoPtr<boundaryExchange<Type,MeshType>> bExchangePtr_;
 
     // Singular boundary condition bool (set when adding boundary conditions)
     bool singular_;
@@ -279,10 +270,11 @@ public:
     // Correct boundary conditions
     void correctBoundaryConditions();
 
-    // Prepare/evaluate/correct selected boundary conditions
-    template<class Selector> void prepare();
-    template<class Selector> void evaluate();
-    template<class Selector> void correct();
+    // Prepare/evaluate/correct selected boundary conditions limited to a
+    // boundary offset degree (defaults to 3)
+    template<class Selector, int Degree = 3> void prepare();
+    template<class Selector, int Degree = 3> void evaluate();
+    template<class Selector, int Degree = 3> void correct();
 
     // Correct unset boundary conditions as homogeneous Neumann
     void correctUnsetBoundaryConditions();

@@ -22,16 +22,29 @@ public:
     using solver<SType,Type,MeshType>::smoother::G;
     using solver<SType,Type,MeshType>::smoother::N;
 
-    // Static sweep function on a direction
+    // Relaxation factor
+    static const scalar omega_;
+
+    // Static sweep function on a direction with optional padding
     static void Sweep
     (
         linearSystem<SType,Type,MeshType>& sys,
         const label l,
-        const label d
+        const label d,
+        const faceLabel& paddingMask,
+        const label padding = 0
     );
 
-    // Relaxation factor
-    static const scalar omega_;
+    // Static boundary sweep function on a direction given an active boundary
+    // mask and optional padding (defaults to one)
+    static void SweepBoundary
+    (
+        linearSystem<SType,Type,MeshType>& sys,
+        const label l,
+        const label d,
+        const faceLabel& paddingMask,
+        const label padding = 1
+    );
 
     // Static smooth function
     static void Smooth

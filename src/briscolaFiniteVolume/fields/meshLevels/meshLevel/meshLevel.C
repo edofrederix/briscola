@@ -11,8 +11,6 @@
 #include "periodicBoundary.H"
 #include "emptyBoundary.H"
 
-#include "boundaryExchange.H"
-
 namespace Foam
 {
 
@@ -217,13 +215,6 @@ void meshLevel<Type,MeshType>::addBoundaryConditions()
 
         reduce(singular_, andOp<bool>(), Pstream::msgType(), lvl().comms());
     }
-
-    #ifdef BOUNDARYEXCHANGE
-
-    if (bExchangePtr_.empty())
-        bExchangePtr_.reset(new boundaryExchange<Type,MeshType>(*this));
-
-    #endif
 }
 
 template<class Type, class MeshType>
@@ -272,7 +263,7 @@ void meshLevel<Type,MeshType>::correctBoundaryConditions()
 }
 
 template<class Type, class MeshType>
-template<class Selector>
+template<class Selector, int Degree>
 void meshLevel<Type,MeshType>::prepare()
 {
     if (fieldPtr_)
@@ -280,23 +271,25 @@ void meshLevel<Type,MeshType>::prepare()
         addBoundaryConditions();
 
         forAll(boundaryConditions_, i)
-            if (Selector::match(boundaryConditions_[i]))
-                boundaryConditions_[i].prepare();
+            if (boundaryConditions_[i].offsetDegree() <= Degree)
+                if (Selector::match(boundaryConditions_[i]))
+                    boundaryConditions_[i].prepare();
     }
 }
 
 template<class Type, class MeshType>
-template<class Selector>
+template<class Selector, int Degree>
 void meshLevel<Type,MeshType>::evaluate()
 {
     if (fieldPtr_)
         forAll(boundaryConditions_, i)
-            if (Selector::match(boundaryConditions_[i]))
-                boundaryConditions_[i].evaluate();
+            if (boundaryConditions_[i].offsetDegree() <= Degree)
+                if (Selector::match(boundaryConditions_[i]))
+                    boundaryConditions_[i].evaluate();
 }
 
 template<class Type, class MeshType>
-template<class Selector>
+template<class Selector, int Degree>
 void meshLevel<Type,MeshType>::correct()
 {
     if (fieldPtr_)
@@ -305,12 +298,12 @@ void meshLevel<Type,MeshType>::correct()
 
         const label nReq = Pstream::nRequests();
 
-        prepare<Selector>();
+        prepare<Selector,Degree>();
 
         if (Pstream::parRun())
             UPstream::waitRequests(nReq);
 
-        evaluate<Selector>();
+        evaluate<Selector,Degree>();
     }
 }
 
