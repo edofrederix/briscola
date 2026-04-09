@@ -160,7 +160,6 @@ void MG<SType,Type,MeshType>::Solve
 
     // Initial residual without boundary correction
 
-    x.correctBoundaryConditions();
     sys.template residual<false>(r[0]);
 
     // Residual normalization factors
