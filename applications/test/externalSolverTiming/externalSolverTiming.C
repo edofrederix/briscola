@@ -123,17 +123,17 @@ int main(int argc, char *argv[])
                             ).ptr()
                         );
 
-                    tic(0)
+                    Tic(0)
                     solverPtr->prepare(sys);
-                    toc(0)
+                    Toc(0)
 
-                    tic(1)
+                    Tic(1)
                     solverPtr->solve(sys);
-                    toc(1)
+                    Toc(1)
 
-                    tic(2)
+                    Tic(2)
                     solverPtr->solve(sys);
-                    toc(2)
+                    Toc(2)
 
                     printTicToc
                 }

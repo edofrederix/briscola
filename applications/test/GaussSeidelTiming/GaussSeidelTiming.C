@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
                 // Outer loop
 
-                tic(0)
+                Tic(0)
 
                 for (int color = 0; color < 2; color++)
                 {
@@ -102,11 +102,11 @@ int main(int argc, char *argv[])
                             xs(i,j,k) /= A[0](i,j,k);
                 }
 
-                toc(0)
+                Toc(0)
 
                 // Inner loop
 
-                tic(1)
+                Tic(1)
 
                 for (int color = 0; color < 2; color++)
                 {
@@ -126,13 +126,13 @@ int main(int argc, char *argv[])
                             xs(i,j,k) /= A[0](i,j,k);
                 }
 
-                toc(1)
+                Toc(1)
 
             // AoS storage
 
                 // Outer loop
 
-                tic(2)
+                Tic(2)
 
                 for (int color = 0; color < 2; color++)
                 {
@@ -153,11 +153,11 @@ int main(int argc, char *argv[])
                             xs(i,j,k) /= S(i,j,k)[0];
                 }
 
-                toc(2)
+                Toc(2)
 
                 // Inner loop
 
-                tic(3)
+                Tic(3)
 
                 for (int color = 0; color < 2; color++)
                 {
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
                             xs(i,j,k) /= S(i,j,k)[0];
                 }
 
-                toc(3)
+                Toc(3)
 
 
 
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 
                 // Outer loop
 
-                tic(4)
+                Tic(4)
 
                 for (int color = 0; color < 2; color++)
                 {
@@ -207,11 +207,11 @@ int main(int argc, char *argv[])
                             xv(i,j,k) /= A[0](i,j,k);
                 }
 
-                toc(4)
+                Toc(4)
 
                 // Inner loop
 
-                tic(5)
+                Tic(5)
 
                 for (int color = 0; color < 2; color++)
                 {
@@ -231,13 +231,13 @@ int main(int argc, char *argv[])
                             xv(i,j,k) /= A[0](i,j,k);
                 }
 
-                toc(5)
+                Toc(5)
 
             // AoS storage
 
                 // Outer loop
 
-                tic(6)
+                Tic(6)
 
                 for (int color = 0; color < 2; color++)
                 {
@@ -257,11 +257,11 @@ int main(int argc, char *argv[])
                             xv(i,j,k) /= S(i,j,k)[0];
                 }
 
-                toc(6)
+                Toc(6)
 
                 // Inner loop
 
-                tic(7)
+                Tic(7)
 
                 for (int color = 0; color < 2; color++)
                 {
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
                             xv(i,j,k) /= S(i,j,k)[0];
                 }
 
-                toc(7)
+                Toc(7)
 
         // LEXGS (can only be done with an inner coefficient loop)
 
@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
 
                 // Inner loop
 
-                tic(8)
+                Tic(8)
 
                 forAllCells(xs, i, j, k)
                 {
@@ -305,13 +305,13 @@ int main(int argc, char *argv[])
                     xs(i,j,k) /= A[0](i,j,k);
                 }
 
-                toc(8)
+                Toc(8)
 
             // AoS storage
 
                 // Inner loop
 
-                tic(9)
+                Tic(9)
 
                 forAllCells(xs, i, j, k)
                 {
@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
                     xs(i,j,k) /= S(i,j,k)[0];
                 }
 
-                toc(9)
+                Toc(9)
 
 
 
@@ -335,7 +335,7 @@ int main(int argc, char *argv[])
 
                 // Inner loop
 
-                tic(10)
+                Tic(10)
 
                 forAllCells(xs, i, j, k)
                 {
@@ -349,13 +349,13 @@ int main(int argc, char *argv[])
                     xv(i,j,k) /= A[0](i,j,k);
                 }
 
-                toc(10)
+                Toc(10)
 
             // AoS storage
 
                 // Inner loop
 
-                tic(11)
+                Tic(11)
 
                 forAllCells(xv, i, j, k)
                 {
@@ -369,7 +369,7 @@ int main(int argc, char *argv[])
                     xv(i,j,k) /= S(i,j,k)[0];
                 }
 
-                toc(11)
+                Toc(11)
 
         // JAC
 
@@ -382,7 +382,7 @@ int main(int argc, char *argv[])
 
                 // Outer loop
 
-                tic(12)
+                Tic(12)
 
                 forAllCells(xs, i, j, k)
                     ys(i,j,k) = bs(i,j,k);
@@ -396,11 +396,11 @@ int main(int argc, char *argv[])
                 forAllCells(xs, i, j, k)
                     ys(i,j,k) /= A[0](i,j,k);
 
-                toc(12)
+                Toc(12)
 
                 // Inner loop
 
-                tic(13)
+                Tic(13)
 
                 forAllCells(xs, i, j, k)
                     ys(i,j,k) = bs(i,j,k);
@@ -414,13 +414,13 @@ int main(int argc, char *argv[])
                 forAllCells(xs, i, j, k)
                     ys(i,j,k) /= A[0](i,j,k);
 
-                toc(13)
+                Toc(13)
 
             // AoS storage
 
                 // Outer loop
 
-                tic(14)
+                Tic(14)
 
                 forAllCells(xs, i, j, k)
                     ys(i,j,k) = bs(i,j,k);
@@ -434,11 +434,11 @@ int main(int argc, char *argv[])
                 forAllCells(xs, i, j, k)
                     ys(i,j,k) /= S(i,j,k)[0];
 
-                toc(14)
+                Toc(14)
 
                 // Inner loop
 
-                tic(15)
+                Tic(15)
 
                 forAllCells(xs, i, j, k)
                     ys(i,j,k) = bs(i,j,k);
@@ -452,7 +452,7 @@ int main(int argc, char *argv[])
                 forAllCells(xs, i, j, k)
                     ys(i,j,k) /= S(i,j,k)[0];
 
-                toc(15)
+                Toc(15)
 
 
 
@@ -462,7 +462,7 @@ int main(int argc, char *argv[])
 
                 // Outer loop
 
-                tic(16)
+                Tic(16)
 
                 forAllCells(xv, i, j, k)
                     yv(i,j,k) = bv(i,j,k);
@@ -476,11 +476,11 @@ int main(int argc, char *argv[])
                 forAllCells(xv, i, j, k)
                     yv(i,j,k) /= A[0](i,j,k);
 
-                toc(16)
+                Toc(16)
 
                 // Inner loop
 
-                tic(17)
+                Tic(17)
 
                 forAllCells(xv, i, j, k)
                     yv(i,j,k) = bv(i,j,k);
@@ -494,13 +494,13 @@ int main(int argc, char *argv[])
                 forAllCells(xv, i, j, k)
                     yv(i,j,k) /= A[0](i,j,k);
 
-                toc(17)
+                Toc(17)
 
             // AoS storage
 
                 // Outer loop
 
-                tic(18)
+                Tic(18)
 
                 forAllCells(xv, i, j, k)
                     yv(i,j,k) = bv(i,j,k);
@@ -514,11 +514,11 @@ int main(int argc, char *argv[])
                 forAllCells(xv, i, j, k)
                     yv(i,j,k) /= S(i,j,k)[0];
 
-                toc(18)
+                Toc(18)
 
                 // Inner loop
 
-                tic(19)
+                Tic(19)
 
                 forAllCells(xv, i, j, k)
                     yv(i,j,k) = bv(i,j,k);
@@ -532,7 +532,7 @@ int main(int argc, char *argv[])
                 forAllCells(xv, i, j, k)
                     yv(i,j,k) /= S(i,j,k)[0];
 
-                toc(19)
+                Toc(19)
 
 
         // Residual computation
@@ -546,7 +546,7 @@ int main(int argc, char *argv[])
 
                 // Outer loop
 
-                tic(20)
+                Tic(20)
 
                 forAllCells(xs, i, j, k)
                     rs(i,j,k) = bs(i,j,k);
@@ -557,11 +557,11 @@ int main(int argc, char *argv[])
                             A[c](i,j,k)
                           * xs(labelVector(i,j,k) + offsets[c]);
 
-                toc(20)
+                Toc(20)
 
                 // Inner loop
 
-                tic(21)
+                Tic(21)
 
                 forAllCells(xs, i, j, k)
                     rs(i,j,k) = bs(i,j,k);
@@ -572,13 +572,13 @@ int main(int argc, char *argv[])
                             A[c](i,j,k)
                           * xs(labelVector(i,j,k) + offsets[c]);
 
-                toc(21)
+                Toc(21)
 
             // AoS storage
 
                 // Outer loop
 
-                tic(22)
+                Tic(22)
 
                 forAllCells(xs, i, j, k)
                     rs(i,j,k) = bs(i,j,k);
@@ -589,11 +589,11 @@ int main(int argc, char *argv[])
                             S(i,j,k)[c]
                           * xs(labelVector(i,j,k) + offsets[c]);
 
-                toc(22)
+                Toc(22)
 
                 // Inner loop
 
-                tic(23)
+                Tic(23)
 
                 forAllCells(xs, i, j, k)
                     rs(i,j,k) = bs(i,j,k);
@@ -604,7 +604,7 @@ int main(int argc, char *argv[])
                             S(i,j,k)[c]
                           * xs(labelVector(i,j,k) + offsets[c]);
 
-                toc(23)
+                Toc(23)
 
 
 
@@ -614,7 +614,7 @@ int main(int argc, char *argv[])
 
                 // Outer loop
 
-                tic(24)
+                Tic(24)
 
                 forAllCells(xv, i, j, k)
                     rv(i,j,k) = bv(i,j,k);
@@ -625,11 +625,11 @@ int main(int argc, char *argv[])
                             A[c](i,j,k)
                           * xv(labelVector(i,j,k) + offsets[c]);
 
-                toc(24)
+                Toc(24)
 
                 // Inner loop
 
-                tic(25)
+                Tic(25)
 
                 forAllCells(xv, i, j, k)
                     rv(i,j,k) = bv(i,j,k);
@@ -640,13 +640,13 @@ int main(int argc, char *argv[])
                             A[c](i,j,k)
                           * xv(labelVector(i,j,k) + offsets[c]);
 
-                toc(25)
+                Toc(25)
 
             // AoS storage
 
                 // Outer loop
 
-                tic(26)
+                Tic(26)
 
                 forAllCells(xv, i, j, k)
                     rv(i,j,k) = bv(i,j,k);
@@ -657,11 +657,11 @@ int main(int argc, char *argv[])
                             S(i,j,k)[c]
                           * xv(labelVector(i,j,k) + offsets[c]);
 
-                toc(26)
+                Toc(26)
 
                 // Inner loop
 
-                tic(27)
+                Tic(27)
 
                 forAllCells(xv, i, j, k)
                     rv(i,j,k) = bv(i,j,k);
@@ -672,47 +672,47 @@ int main(int argc, char *argv[])
                             S(i,j,k)[c]
                           * xv(labelVector(i,j,k) + offsets[c]);
 
-                toc(27)
+                Toc(27)
 
         // Transfer from SoA to AoS
 
             // Outer loop
 
-            tic(28)
+            Tic(28)
             colocatedStencilField S2("S2", fvMsh);
             forAll(A, c)
                 forAllCells(A[c], i, j, k)
                     S2(i,j,k)[c] = A[c](i,j,k);
-            toc(28)
+            Toc(28)
 
             // Inner loop
 
-            tic(29)
+            Tic(29)
             colocatedStencilField S3("S3", fvMsh);
             forAllCells(S2, i, j, k)
                 forAll(A, c)
                     S3(i,j,k)[c] = A[c](i,j,k);
-            toc(29)
+            Toc(29)
 
         // Transfer from AoS to SoA
 
             // Outer loop
 
-            tic(30)
+            Tic(30)
             colocatedScalarStencilField A2("A2", fvMsh);
             forAll(A, c)
                 forAllCells(A[c], i, j, k)
                     A2[c](i,j,k) = S(i,j,k)[c];
-            toc(30)
+            Toc(30)
 
             // Inner loop
 
-            tic(31)
+            Tic(31)
             colocatedScalarStencilField A3("A3", fvMsh);
             forAllCells(S2, i, j, k)
                 forAll(A, c)
                     A3[c](i,j,k) = S(i,j,k)[c];
-            toc(31)
+            Toc(31)
     }
 
     Info<< "RBGS" << endl;
