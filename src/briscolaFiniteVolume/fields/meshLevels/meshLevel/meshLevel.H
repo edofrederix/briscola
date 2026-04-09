@@ -47,8 +47,9 @@ private:
     // Boundary conditions
     FastPtrList<boundaryCondition<Type,MeshType>> boundaryConditions_;
 
-    // Singular boundary condition bool (set when adding boundary conditions)
-    bool singular_;
+    // Singular boundary condition state (0 = unset, 1 = singular, 2 = not
+    // singular)
+    mutable label singular_ = 0;
 
     // Allocate data
     void allocate();
@@ -286,12 +287,7 @@ public:
     void correctAggData();
 
     // Check if the boundary conditions make this level singular
-    bool singular() const
-    {
-        const_cast<meshLevel<Type,MeshType>*>(this)->addBoundaryConditions();
-
-        return singular_;
-    }
+    bool singular() const;
 
     // Return a component
     tmp<meshLevel<cmptType,MeshType>> component(const label) const;

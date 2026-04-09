@@ -192,8 +192,6 @@ void meshLevel<Type,MeshType>::addBoundaryConditions()
     {
         boundaryConditions_.setSize(lvl().boundaries().size());
 
-        singular_ = true;
-
         forAll(lvl().boundaries(), i)
         {
             boundaryConditions_.set
@@ -205,15 +203,7 @@ void meshLevel<Type,MeshType>::addBoundaryConditions()
                     lvl().boundaries()[i]
                 )
             );
-
-            const boundaryConditionBaseType bcType =
-                boundaryConditions_[i].baseType();
-
-            if (bcType == DIRICHLETBC || bcType == ROBINBC)
-                singular_ = false;
         }
-
-        reduce(singular_, andOp<bool>(), Pstream::msgType(), lvl().comms());
     }
 }
 
@@ -559,6 +549,37 @@ void meshLevel<Type,MeshType>::correctAggData()
             }
         }
     }
+}
+
+template<class Type, class MeshType>
+bool meshLevel<Type,MeshType>::singular() const
+{
+    const_cast<meshLevel<Type,MeshType>*>(this)->addBoundaryConditions();
+
+    if (!singular_)
+    {
+        const FastPtrList<boundaryCondition<Type,MeshType>>& b =
+            boundaryConditions_;
+
+        bool singular = true;
+
+        forAll(b, i)
+            if (b[i].baseType() == DIRICHLETBC || b[i].baseType() == ROBINBC)
+                singular = false;
+
+        reduce(singular, andOp<bool>(), Pstream::msgType(), lvl().comms());
+
+        if (singular)
+        {
+            singular_ = 1;
+        }
+        else
+        {
+            singular_ = 2;
+        }
+    }
+
+    return singular_ == 1;
 }
 
 template<class Type, class MeshType>

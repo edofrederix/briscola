@@ -52,6 +52,9 @@ private:
     // Restriction scheme name
     word restrictionScheme_;
 
+    // Deep field cache
+    FastPtrList<meshLevel<Type,MeshType>> cache_;
+
 protected:
 
     // Allocate data and specify depth

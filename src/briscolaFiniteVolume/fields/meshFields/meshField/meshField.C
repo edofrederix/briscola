@@ -389,13 +389,27 @@ void meshField<Type,MeshType>::makeDeep()
     {
         listType::setSize(fvMsh_.size());
 
-        for (int l = 1; l < fvMsh_.size(); l++)
+        if (cache_.size())
         {
-            listType::set
-            (
-                l,
-                new meshLevel<Type,MeshType>(*this, l)
-            );
+            // Reuse cache
+
+            forAll(cache_, i)
+                listType::set(i+1, cache_.set(i, nullptr));
+
+            cache_.clear();
+        }
+        else
+        {
+            // Create new levels
+
+            for (int l = 1; l < fvMsh_.size(); l++)
+            {
+                listType::set
+                (
+                    l,
+                    new meshLevel<Type,MeshType>(*this, l)
+                );
+            }
         }
     }
 }
@@ -404,7 +418,18 @@ template<class Type, class MeshType>
 void meshField<Type,MeshType>::makeShallow()
 {
     if (this->deep())
+    {
+        // Store levels in cache
+
+        cache_.resize(size()-1);
+
+        forAll(cache_, i)
+            cache_.set(i, listType::set(i+1, nullptr));
+
+        // Resize
+
         listType::setSize(1);
+    }
 }
 
 template<class Type, class MeshType>
@@ -492,7 +517,10 @@ void meshField<Type,MeshType>::operator=
     const tmp<meshField<Type,MeshType>>& tF
 )
 {
-    if (tF.isTmp() && tF->unique())
+    bool hasBcs =
+        listType::operator[](0).boundaryConditions().size();
+
+    if (tF.isTmp() && tF->unique() && !hasBcs)
     {
         meshField<Type,MeshType>& F =
             const_cast<meshField<Type,MeshType>&>(tF());
