@@ -70,7 +70,7 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>::evaluate
 
     List<Type> data(this->exchanges_[l][d](this->field_));
 
-    const vectorList& mps = this->exchanges_[l][d].interp().points();
+    const vectorList mps(this->exchanges_[l][d].interp().points());
 
     label c = 0;
 

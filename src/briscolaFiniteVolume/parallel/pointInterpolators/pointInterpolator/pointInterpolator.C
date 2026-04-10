@@ -28,72 +28,118 @@ pointInterpolator<MeshType>::pointInterpolator
 :
     fvMsh_(fvMsh),
     global_(global),
-    start_(0),
     size_(points.size()),
     l_(l),
-    d_(d)
+    d_(d),
+    points_(points)
 {
     const meshDirection<vertexVector,MeshType>& v =
         fvMsh.template metrics<MeshType>().vertexCenters()[l][d];
 
-    if (!global)
-    {
-        List<vectorList> globalPoints(Pstream::nProcs());
-        globalPoints[Pstream::myProcNo()] = points;
+    // Find local points
 
-        Pstream::gatherList
-        (
-            globalPoints,
-            Pstream::msgType(),
-            fvMsh[l].comms()
-        );
+    indices_.setSize(size_);
+    cellCoordinates_.setSize(size_);
+    requesters_.setSize(size_);
+    providers_.setSize(size_);
 
-        Pstream::scatterList
-        (
-            globalPoints,
-            Pstream::msgType(),
-            fvMsh[l].comms()
-        );
-
-        int nPoints = 0;
-        forAll(globalPoints, i)
-            nPoints += globalPoints[i].size();
-
-        points_.setSize(nPoints);
-
-        int start = 0;
-        forAll(globalPoints, i)
-        {
-            SubList<vector> sub(points_, globalPoints[i].size(), start);
-            sub = globalPoints[i];
-
-            if (i == Pstream::myProcNo())
-                start_ = start;
-
-            start += globalPoints[i].size();
-        }
-    }
-    else
-    {
-        points_ = points;
-    }
-
-    indices_.setSize(points_.size());
-    cellCoordinates_.setSize(points_.size());
+    cellCoordinates_ = -vector::one;
+    requesters_ = Pstream::myProcNo();
+    providers_ = -1;
 
     forAll(points_, i)
     {
-        indices_[i] = fvMsh.findCell<MeshType>(trimPrecision(points_[i]), l, d);
+        indices_[i] =
+            fvMsh.findCell<MeshType>(trimPrecision(points_[i]), l, d);
 
         if (indices_[i] != -unitXYZ)
         {
             cellCoordinates_[i] =
                 interpolationWeights(points_[i], v(indices_[i]));
+
+            providers_[i] = Pstream::myProcNo();
         }
-        else
+    }
+
+    if (global)
+    {
+        // If global then all processors have all points. Combine the providers
+        // list to determine which processor provides which point.
+
+        Pstream::listCombineGather(providers_, maxEqOp<label>());
+        Pstream::listCombineScatter(providers_);
+    }
+    else
+    {
+        // For non-local points we need to find the corresponding processors
+
+        DynamicList<vector> others;
+
+        forAll(points_, i)
+            if (providers_[i] == -1)
+                others.append(points_[i]);
+
+        List<vectorList> all(Pstream::nProcs());
+        all[Pstream::myProcNo()] = others;
+
+        // Distribute
+
+        Pstream::gatherList(all);
+        Pstream::scatterList(all);
+
+        // Check others' points and when found set ourself as provider
+
+        List<labelList> providers(Pstream::nProcs());
+        forAll(providers, proc)
+            providers[proc].resize(all[proc].size());
+
+        forAll(all, proc)
         {
-            cellCoordinates_[i] = -vector::one;
+            providers[proc] = -1;
+
+            forAll(all[proc], i)
+            {
+                const vector point = all[proc][i];
+
+                const labelVector index =
+                    fvMsh.findCell<MeshType>(trimPrecision(point), l, d);
+
+                if (index != -unitXYZ)
+                {
+                    // If the point is ours, append it to the list of points to
+                    // be interpolated
+
+                    providers[proc][i] = Pstream::myProcNo();
+
+                    points_.append(point);
+
+                    requesters_.append(proc);
+                    providers_.append(Pstream::myProcNo());
+
+                    indices_.append(index);
+
+                    cellCoordinates_.append
+                    (
+                        interpolationWeights(point, v(index))
+                    );
+                }
+            }
         }
+
+        // Distribute providers so that everyone is aware of who's doing what
+
+        forAll(providers, proc)
+        {
+            Pstream::listCombineGather(providers[proc], maxEqOp<label>());
+            Pstream::listCombineScatter(providers[proc]);
+        }
+
+        // Set providers
+
+        label c = 0;
+        forAll(providers_, i)
+            if (providers_[i] == -1)
+                providers_[i] = providers[Pstream::myProcNo()][c++];
     }
 }
 
@@ -105,9 +151,12 @@ pointInterpolator<MeshType>::pointInterpolator
 :
     fvMsh_(interp.fvMsh_),
     global_(interp.global_),
+    size_(interp.size_),
     l_(interp.l_),
     d_(interp.d_),
     points_(interp.points_),
+    requesters_(interp.requesters_),
+    providers_(interp.providers_),
     indices_(interp.indices_),
     cellCoordinates_(interp.cellCoordinates_)
 {}
@@ -148,55 +197,11 @@ autoPtr<pointInterpolator<MeshType>> pointInterpolator<MeshType>::New
 template<class MeshType>
 vectorList pointInterpolator<MeshType>::missingPoints() const
 {
-    List<label> found(indices_.size());
-
-    forAll(indices_, i)
-        found[i] = (indices_[i] != -unitXYZ);
-
-    Pstream::listCombineGather
-    (
-        found,
-        plusEqOp<label>(),
-        Pstream::msgType(),
-        fvMsh_[l_].comms()
-    );
-
     DynamicList<vector> missing;
 
-    if (Pstream::master())
-    {
-        forAll(found, i)
-            if (!found[i])
-                missing.append(points_[i]);
-
-        for (int proc = 0; proc < Pstream::nProcs(); proc++)
-        if (proc != Pstream::masterNo())
-        {
-            OPstream send
-            (
-                Pstream::commsTypes::blocking,
-                proc,
-                0,
-                UPstream::msgType(),
-                fvMsh_[l_].comms()
-            );
-
-            send << missing;
-        }
-    }
-    else
-    {
-        IPstream recv
-        (
-            Pstream::commsTypes::blocking,
-            Pstream::masterNo(),
-            0,
-            UPstream::msgType(),
-            fvMsh_[l_].comms()
-        );
-
-        recv >> missing;
-    }
+    for (int i = 0; i < size_; i++)
+        if (providers_[i] == -1)
+            missing.append(points_[i]);
 
     return missing;
 }

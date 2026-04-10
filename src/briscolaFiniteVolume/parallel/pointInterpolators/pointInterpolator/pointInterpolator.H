@@ -27,9 +27,8 @@ protected:
     // its own set of points.
     const Switch global_;
 
-    // Start and size of this processor's part, only relevant when the provided
-    // list of points is local
-    label start_;
+    // Size of this processor's part, only relevant when the provided list of
+    // points is local
     label size_;
 
     // Mesh level
@@ -38,14 +37,21 @@ protected:
     // Mesh direction
     label d_;
 
-    // List of points to interpolate to
-    vectorList points_;
+    // List of points to interpolate to. The first size_ points are ours.
+    // Additional points in the list are others'.
+    DynamicList<vector> points_;
+
+    // Requester processor of each point
+    DynamicList<label> requesters_;
+
+    // Provider processor of each point
+    DynamicList<label> providers_;
 
     // Cell indices belonging to the points
-    List<labelVector> indices_;
+    DynamicList<labelVector> indices_;
 
     // Cell coordinates of the points
-    vectorList cellCoordinates_;
+    DynamicList<vector> cellCoordinates_;
 
     // Gather and scatter data
     template<class Type>
@@ -116,16 +122,13 @@ public:
     // Return the mesh direction
     inline label d() const { return d_; }
 
-    // Access to the points list
-    inline const vectorList& points() const { return points_; }
+    // Number of points
+    inline label size() const { return size_; }
 
-    // Access to the cell indices
-    inline const List<labelVector>& indices() const { return indices_; }
-
-    // Access to the cell coordinates
-    inline const vectorList& cellCoordinates() const
+    // Return points as sub-list
+    inline SubList<vector> points() const
     {
-        return cellCoordinates_;
+        return SubList<vector>(points_, size_);
     }
 
     // Return list of missing points

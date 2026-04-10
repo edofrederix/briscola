@@ -97,8 +97,10 @@ List<Type> nearestPointInterpolator<MeshType>::interp
 {
     List<Type> values(this->points_.size(), Zero);
 
+    const label me = Pstream::myProcNo();
+
     forAll(this->points_, i)
-        if (this->indices_[i] != -unitXYZ)
+        if (this->providers_[i] == me)
             values[i] = field(this->l_, this->d_, this->indices_[i]);
 
     return this->combine(values);

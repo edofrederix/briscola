@@ -149,9 +149,11 @@ List<Type> linearPointInterpolator<MeshType>::interp
 {
     List<Type> values(this->points_.size(), Zero);
 
+    const label me = Pstream::myProcNo();
+
     forAll(this->points_, i)
     {
-        if (this->indices_[i] != -unitXYZ)
+        if (this->providers_[i] == me)
         {
             const label ii = this->indices_[i].x();
             const label jj = this->indices_[i].y();

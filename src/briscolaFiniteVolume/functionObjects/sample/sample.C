@@ -244,7 +244,7 @@ bool sample::write()
 
             // Write data
 
-            const vectorList& points = interpPtr_->points();
+            const vectorList points(interpPtr_->points());
 
             forAll(points, i)
             {
@@ -288,7 +288,7 @@ bool sample::write()
 
             // Write data
 
-            const vectorList& points = interpPtr_->points();
+            const vectorList points(interpPtr_->points());
 
             forAll(points, i)
             {
