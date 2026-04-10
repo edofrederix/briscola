@@ -78,15 +78,6 @@ autoPtr<vof> vof::New
     return autoPtr<vof>(cstrIter()(fvMsh, dict, normal, alpha));
 }
 
-void vof::correct()
-{
-    // Restrict alpha so that derived properties can be computed on all levels
-    restrict(alpha_);
-
-    // Correct boundary conditions and set value bounds
-    alpha_.correctAlpha();
-}
-
 }
 
 }

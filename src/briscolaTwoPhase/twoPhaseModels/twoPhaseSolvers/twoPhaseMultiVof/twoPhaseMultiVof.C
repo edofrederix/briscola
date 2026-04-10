@@ -486,7 +486,7 @@ void twoPhaseMultiVof<ViscosityModel>::correct()
     }
 
     // Set bounds for summed alpha field
-    this->alpha_.correctAlpha();
+    this->alpha_.correct();
 
     // Correct the mesh-specific face volume fraction
     ViscosityModel::correctFaceAlpha();

@@ -83,7 +83,7 @@ public:
     void init(const dictionary&);
 
     // Correct boundary conditions and set bounds on alpha field
-    void correctAlpha();
+    void correct();
 };
 
 }

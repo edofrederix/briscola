@@ -121,10 +121,6 @@ public:
 
     // Solve the Vof advection equation given a flux field
     virtual void solve(const colocatedScalarFaceField&) = 0;
-
-    // Correct the alpha field: clip values outside the range [0,1] and remove
-    // round-off errors. Also corrects the boundary conditions.
-    void correct();
 };
 
 }

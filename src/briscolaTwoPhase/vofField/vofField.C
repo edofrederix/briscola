@@ -43,7 +43,7 @@ vofField::vofField(const vofField& s)
 vofField::~vofField()
 {}
 
-void vofField::correctAlpha()
+void vofField::correct()
 {
     colocatedScalarField::correctBoundaryConditions();
 

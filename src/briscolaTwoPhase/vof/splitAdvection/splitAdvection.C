@@ -166,6 +166,10 @@ void splitAdvection::solve(const colocatedScalarFaceField& phi)
 {
     alpha_.setOldTime();
 
+    // Make alpha shallow to avoid coarse level boundary updates
+
+    alpha_.makeShallow();
+
     const colocatedScalarField& icv =
         fvMsh_.template metrics<colocated>().inverseCellVolumes();
 
@@ -188,49 +192,61 @@ void splitAdvection::solve(const colocatedScalarFaceField& phi)
     forAllCells(alpha_, i, j, k)
         alphac(i,j,k) = alpha_(i,j,k) > 0.5;
 
-    // Solve the advection equation in a split way. Rotate directions.
-
     this->resetFlux();
 
     const scalar dt = fvMsh_.time().deltaT().value();
     const label ti = fvMsh_.time().timeIndex();
 
+    // List of rotated directions
+
+    labelList directions;
+
     for (int d = 0; d < 3; d++)
     {
         const label fd = (ti + d) % 3;
 
-        // Skip empty directions
-
         const boundary& b = fvMsh_.msh().boundaries().find(units[fd]);
 
+        // Skip empty directions
+
         if (!b.castable<emptyBoundary>())
+            directions.append(fd);
+    }
+
+    // Walk through directions
+
+    forAll(directions, d)
+    {
+        const label fd = directions[d];
+
+        this->updateFlux(phi,fd);
+
+        forAllSpecificFaces(phi, fd, i, j, k)
         {
-            this->updateFlux(phi,fd);
+            const labelVector ijk(i,j,k);
+            const labelVector nei(lowerNeighbor(i,j,k,fd));
 
-            forAllSpecificFaces(phi, fd, i, j, k)
-            {
-                const labelVector ijk(i,j,k);
-                const labelVector nei(lowerNeighbor(i,j,k,fd));
+            alpha_(ijk) +=
+                dt*icv(ijk)
+              * (scalar(alphac(ijk))*phi[fd](ijk) - flux_[fd](ijk));
 
-                alpha_(ijk) +=
-                    dt*icv(ijk)
-                  * (scalar(alphac(ijk))*phi[fd](ijk) - flux_[fd](ijk));
-
-                alpha_(nei) -=
-                    dt*icv(nei)
-                  * (scalar(alphac(nei))*phi[fd](ijk) - flux_[fd](ijk));
-            }
-
-            // Correct the alpha field
-
-            this->correct();
-
-            // Update the normal after the alpha update, so that it is
-            // consistent with alpha and can be reused by other parts of the
-            // code
-
-            normal_.correct();
+            alpha_(nei) -=
+                dt*icv(nei)
+              * (scalar(alphac(nei))*phi[fd](ijk) - flux_[fd](ijk));
         }
+
+        // Correct the alpha field. On the last iteration, restrict alpha so
+        // that it becomes deep again.
+
+        if (d == directions.size()-1)
+            restrict(alpha_);
+
+        alpha_.correct();
+
+        // Update the normal after the alpha update, so that it is consistent
+        // with alpha and can be reused by other parts of the code
+
+        normal_.correct();
     }
 }
 
