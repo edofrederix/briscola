@@ -9,6 +9,12 @@
 #include "restrictionScheme.H"
 
 #include "immersedBoundaryCondition.H"
+#include "boundaryConditionSelector.H"
+
+#include "patchBoundary.H"
+#include "parallelBoundary.H"
+#include "periodicBoundary.H"
+#include "emptyBoundary.H"
 
 namespace Foam
 {
@@ -309,8 +315,41 @@ void meshField<Type,MeshType>::correctBoundaryConditions()
 {
     addBoundaryConditions();
 
+    // Correct immersed boundaries only on the first level
+
+    listType::operator[](0).correctImmersedBoundaryConditions();
+
+    // Correct unset and patch boundaries
+
     forAll(*this, l)
-        listType::operator[](l).correctBoundaryConditions();
+    {
+        listType::operator[](l).correctUnsetBoundaryConditions();
+        listType::operator[](l).template correct<bcsOfType<patchBoundary>>();
+    }
+
+    // Post all parallel boundary transfers at once
+
+    const label nReq = Pstream::nRequests();
+
+    forAll(*this, l)
+        listType::operator[](l).template
+            prepare<bcsOfType<parallelBoundary>>();
+
+    // Wait
+
+    if (Pstream::parRun())
+        UPstream::waitRequests(nReq);
+
+    // Evaluate parallel boundaries
+
+    forAll(*this, l)
+        listType::operator[](l).template
+            evaluate<bcsOfType<parallelBoundary>>();
+
+    // Correct empty boundaries
+
+    forAll(*this, l)
+        listType::operator[](l).template correct<bcsOfType<emptyBoundary>>();
 }
 
 template<class Type, class MeshType>
