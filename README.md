@@ -105,6 +105,26 @@ doc/Doxygen/html/index.html.
 There is also a short high-level documentation available that can be viewed
 [HERE](doc/chapters/0_start.md).
 
+## Development
+
+Briscola is currently developed on Github. A simplified Gitflow model is used,
+with the following rules:
+
+* All developments are collected in the master branch.
+* Changes must be made via a separate branch, named feature/\<description\>,
+  bugfix/\<description\>, where \<description\> describes what was changed,
+  e.g., feature/someNewScheme or bugfix/someSolver, etc.
+* Once completed, a pull request must be created from this branch, and at least
+  one reviewer must agree with the proposed changes before it can be merged.
+* Users are encouraged to create forks and to propose changes via a pull request
+* When adding new features, it is required to add test applications that verify
+  the new feature implementation, and to add the feature to one of the cases or
+  to create a new case that uses the feature.
+* Once in a while a new release tag is created on the master branch. Briscola
+  releases are in the format v\<major\>.\<minor\>.\<patch\>. Currently,
+  development is mostly demand-driven, so versioning and releasing is ad hoc
+  with little planning.
+
 ## Contact & Support
 
 For bug reports or support, feel free to contact [Edo
