@@ -199,7 +199,7 @@ void Krylov<SType,Type,MeshType>::Solve
 
         // Add boundary sources
 
-        forAllCells(A, i, j, k)
+        forAllCells(A[d], i, j, k)
         {
             const labelVector ijk(i,j,k);
 
@@ -224,7 +224,7 @@ void Krylov<SType,Type,MeshType>::Solve
             // Copy buffer to PETSc right-hand side type
 
             label row = numbers(d,0,0,0);
-            forAllCells(b, i, j, k)
+            forAllCells(b[d], i, j, k)
             {
                 VecSetValue
                 (
