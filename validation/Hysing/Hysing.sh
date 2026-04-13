@@ -17,10 +17,11 @@ PYTHON="python3"
 SOLVERS=(briscolaColocatedTwoPhase briscolaStaggeredTwoPhase)
 MESHES=(32 64)
 NPROCSPERBRICKSIDE=(2 4)
-PSOLVERS=(MG split)
+PSOLVERS=(Krylov MG split)
 NORMALSCHEMES=(MYC LSGIR)
 CURVATURESCHEMES=(SHF CV)
 RKSCHEMES=(Ascher222 CNABM)
+USOLVERS=(MG Krylov)
 
 ##
 
@@ -51,6 +52,7 @@ echo \
     "normal scheme," \
     "curvature scheme," \
     "Runge-Kutta scheme," \
+    "velocity solver," \
     "error 1 [%]," \
     "error 2 [%]," \
     "test 1," \
@@ -69,6 +71,7 @@ for L in "${!PSOLVERS[@]}"; do
 for M in "${!NORMALSCHEMES[@]}"; do
 for N in "${!CURVATURESCHEMES[@]}"; do
 for O in "${!RKSCHEMES[@]}"; do
+for P in "${!USOLVERS[@]}"; do
 
     sleep 1
 
@@ -79,6 +82,7 @@ for O in "${!RKSCHEMES[@]}"; do
     NORMALSCHEME=${NORMALSCHEMES[$M]}
     CURVATURESCHEME=${CURVATURESCHEMES[$N]}
     RKSCHEME=${RKSCHEMES[$O]}
+    USOLVER=${USOLVERS[$P]}
 
     NPROCX=$NPROCPERBRICKSIDE
     NPROCY=$NPROCPERBRICKSIDE
@@ -88,7 +92,7 @@ for O in "${!RKSCHEMES[@]}"; do
     MESHX=$MESH
     MESHY=$(echo "print(int(2*$MESH))" | python)
 
-    CASE="$SOLVER-$MESH-$NPROC-$PSOLVER-$NORMALSCHEME-$CURVATURESCHEME-$RKSCHEME"
+    CASE="$SOLVER-$MESH-$NPROC-$PSOLVER-$NORMALSCHEME-$CURVATURESCHEME-$RKSCHEME-$USOLVER"
 
     wait_for_procs $NPROC $NTASKS
 
@@ -108,7 +112,8 @@ for O in "${!RKSCHEMES[@]}"; do
             $PSOLVER \
             $NORMALSCHEME \
             $CURVATURESCHEME \
-            $RKSCHEME
+            $RKSCHEME \
+            $USOLVER
 
         if [ "$NPROC" == "1" ]; then
             srun --exclusive -n $NPROC $SOLVER > log.$SOLVER
@@ -148,6 +153,7 @@ for O in "${!RKSCHEMES[@]}"; do
             "$NORMALSCHEME," \
             "$CURVATURESCHEME," \
             "$RKSCHEME," \
+            "$USOLVER," \
             "$E1," \
             "$E2," \
             "$P1," \
@@ -165,6 +171,7 @@ for O in "${!RKSCHEMES[@]}"; do
 
     store_procs $NPROC $!
 
+done
 done
 done
 done

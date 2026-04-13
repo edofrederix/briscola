@@ -17,7 +17,7 @@ PYTHON="python3"
 SOLVERS=(briscolaColocatedTwoPhase briscolaStaggeredTwoPhase)
 MESHES=(64 128)
 NPROCSPERBRICKSIDE=(2 4)
-PSOLVERS=(MG split)
+PSOLVERS=(MG split Krylov)
 NORMALSCHEMES=(Youngs MYC LSGIR)
 CURVATURESCHEMES=(SHF CV)
 

@@ -16,6 +16,7 @@ PSOLVER=$6
 NORMALSCHEME=$7
 CURVATURESCHEME=$8
 RKSCHEME=$9
+USOLVER=${10}
 
 VARS="\
     -DVARMESHX=$MESHX \
@@ -25,7 +26,8 @@ VARS="\
     -DVARPSOLVER=$PSOLVER \
     -DVARNORMALSCHEME=$NORMALSCHEME \
     -DVARCURVATURESCHEME=$CURVATURESCHEME \
-    -DVARRKSCHEME=$RKSCHEME"
+    -DVARRKSCHEME=$RKSCHEME \
+    -DVARUSOLVER=$USOLVER"
 
 m4 $VARS system/briscolaMeshDict.m4 > system/briscolaMeshDict
 m4 $VARS system/briscolaTwoPhaseDict.m4 > system/briscolaTwoPhaseDict
@@ -33,4 +35,5 @@ m4 $VARS system/briscolaSolverDict.m4 > system/briscolaSolverDict
 m4 $VARS system/briscolaSchemeDict.m4 > system/briscolaSchemeDict
 
 cp -r $BRISCOLA/cases/twoPhase/Hysing/code .
-wclean code && wmake code > log.wmake 2>&1
+wclean code > log.wmake 2>&1
+wmake code >> log.wmake 2>&1

@@ -18,7 +18,7 @@ MODES=(mapped penalization Vreman Fadlun Mittal)
 NPROCSPERBRICKSIDE=(1 2 4)
 RKSCHEMES=(RK3 Ascher222 CNAB)
 SOLVERS=(briscolaColocated briscolaStaggered)
-PSOLVERS=(MG FFT)
+PSOLVERS=(MG FFT Krylov)
 
 ##
 
