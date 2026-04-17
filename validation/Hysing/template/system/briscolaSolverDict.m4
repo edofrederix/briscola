@@ -8,7 +8,7 @@ FoamFile
 
 U
 {
-    type        MG;
+    type        VARUSOLVER;
     relTol      1e-5;
     tolerance   1e-8;
     maxIter     100;
