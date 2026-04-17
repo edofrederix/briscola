@@ -7,6 +7,9 @@
 #include "meshLevels.H"
 #include "meshDirections.H"
 
+#include "midPointGaussGradientScheme.H"
+#include "restrictionScheme.H"
+
 namespace Foam
 {
 
@@ -22,6 +25,18 @@ class limiterScheme
     public scheme
 {
 private:
+
+    // Gradients cache
+    autoPtr<meshField<vector,MeshType>> sGradPtr_;
+    autoPtr<meshField<tensor,MeshType>> vGradPtr_;
+
+    // Gradient scheme cache
+    autoPtr<midPointGaussGradientScheme<scalar,MeshType>> sGradSchemePtr_;
+    autoPtr<midPointGaussGradientScheme<vector,MeshType>> vGradSchemePtr_;
+
+    // Restriction scheme cache
+    autoPtr<restrictionScheme<vector,MeshType>> sRestrictionSchemePtr_;
+    autoPtr<restrictionScheme<tensor,MeshType>> vRestrictionSchemePtr_;
 
     // Scalar helper function for the ratio of successive gradients
     tmp<faceField<scalar,MeshType>> rType

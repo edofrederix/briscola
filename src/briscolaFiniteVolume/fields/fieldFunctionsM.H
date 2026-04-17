@@ -150,3 +150,117 @@
     for (int k=(SET)[fd][l][d].I()[4]; k<(SET)[fd][l][d].I()[5]+(fd==2); k++)
 
 #endif
+
+// For all internal faces (takes only a meshFieldSet as argument)
+
+#define forAllInternalFacesInDirection(SET,fd,i,j,k)                           \
+    forAll((SET), fd)                                                          \
+    for (int i=(SET)[fd][0][0].I()[0]+(fd==0); i<(SET)[fd][0][0].I()[1]; i++)  \
+    for (int j=(SET)[fd][0][0].I()[2]+(fd==1); j<(SET)[fd][0][0].I()[3]; j++)  \
+    for (int k=(SET)[fd][0][0].I()[4]+(fd==2); k<(SET)[fd][0][0].I()[5]; k++)
+
+#define forAllInternalFacesInLevel(SET,fd,d,i,j,k)                             \
+    forAll((SET), fd)                                                          \
+    forAll((SET)[fd][0], d)                                                    \
+    for (int i=(SET)[fd][0][d].I()[0]+(fd==0); i<(SET)[fd][0][d].I()[1]; i++)  \
+    for (int j=(SET)[fd][0][d].I()[2]+(fd==1); j<(SET)[fd][0][d].I()[3]; j++)  \
+    for (int k=(SET)[fd][0][d].I()[4]+(fd==2); k<(SET)[fd][0][d].I()[5]; k++)
+
+#define forAllInternalFacesInField(SET,fd,l,d,i,j,k)                           \
+    forAll((SET), fd)                                                          \
+    forAll((SET)[fd], l)                                                       \
+    forAll((SET)[fd][l], d)                                                    \
+    for (int i=(SET)[fd][l][d].I()[0]+(fd==0); i<(SET)[fd][l][d].I()[1]; i++)  \
+    for (int j=(SET)[fd][l][d].I()[2]+(fd==1); j<(SET)[fd][l][d].I()[3]; j++)  \
+    for (int k=(SET)[fd][l][d].I()[4]+(fd==2); k<(SET)[fd][l][d].I()[5]; k++)
+
+#define GET_INTERNAL_FACE_ITERATOR(_1,_2,_3,_4,_5,_6,_7,NAME,...) NAME
+#define forAllInternalFaces(...)                                               \
+    GET_INTERNAL_FACE_ITERATOR                                                 \
+    (                                                                          \
+        __VA_ARGS__,                                                           \
+        forAllInternalFacesInField,                                            \
+        forAllInternalFacesInLevel,                                            \
+        forAllInternalFacesInDirection                                         \
+    )(__VA_ARGS__)
+
+// For all external faces (takes only a meshFieldSet as argument)
+
+#define forAllBoundaryFacesInDirection(SET,fd,lu,i,j,k)                        \
+    forAll((SET), fd)                                                          \
+    for (int lu = 0; lu < 2; lu++)                                             \
+    for                                                                        \
+    (                                                                          \
+        int i=(SET)[fd][0][0].I()[((fd*2+lu)==1)?1:0];                         \
+            i<(SET)[fd][0][0].I()[((fd*2+lu)==0)?0:1]+(fd==0);                 \
+            i++                                                                \
+    )                                                                          \
+    for                                                                        \
+    (                                                                          \
+        int j=(SET)[fd][0][0].I()[((fd*2+lu)==3)?3:2];                         \
+            j<(SET)[fd][0][0].I()[((fd*2+lu)==2)?2:3]+(fd==1);                 \
+            j++                                                                \
+    )                                                                          \
+    for                                                                        \
+    (                                                                          \
+        int k=(SET)[fd][0][0].I()[((fd*2+lu)==5)?5:4];                         \
+            k<(SET)[fd][0][0].I()[((fd*2+lu)==4)?4:5]+(fd==2);                 \
+            k++                                                                \
+    )
+
+#define forAllBoundaryFacesInLevel(SET,fd,lu,d,i,j,k)                          \
+    forAll((SET), fd)                                                          \
+    forAll((SET)[fd][0], d)                                                    \
+    for (int lu = 0; lu < 2; lu++)                                             \
+    for                                                                        \
+    (                                                                          \
+        int i=(SET)[fd][0][d].I()[((fd*2+lu)==1)?1:0];                         \
+            i<(SET)[fd][0][d].I()[((fd*2+lu)==0)?0:1]+(fd==0);                 \
+            i++                                                                \
+    )                                                                          \
+    for                                                                        \
+    (                                                                          \
+        int j=(SET)[fd][0][d].I()[((fd*2+lu)==3)?3:2];                         \
+            j<(SET)[fd][0][d].I()[((fd*2+lu)==2)?2:3]+(fd==1);                 \
+            j++                                                                \
+    )                                                                          \
+    for                                                                        \
+    (                                                                          \
+        int k=(SET)[fd][0][d].I()[((fd*2+lu)==5)?5:4];                         \
+            k<(SET)[fd][0][d].I()[((fd*2+lu)==4)?4:5]+(fd==2);                 \
+            k++                                                                \
+    )
+
+#define forAllBoundaryFacesInField(SET,fd,lu,l,d,i,j,k)                        \
+    forAll((SET), fd)                                                          \
+    forAll((SET)[fd], l)                                                       \
+    forAll((SET)[fd][l], d)                                                    \
+    for (int lu = 0; lu < 2; lu++)                                             \
+    for                                                                        \
+    (                                                                          \
+        int i=(SET)[fd][l][d].I()[((fd*2+lu)==1)?1:0];                         \
+            i<(SET)[fd][l][d].I()[((fd*2+lu)==0)?0:1]+(fd==0);                 \
+            i++                                                                \
+    )                                                                          \
+    for                                                                        \
+    (                                                                          \
+        int j=(SET)[fd][l][d].I()[((fd*2+lu)==3)?3:2];                         \
+            j<(SET)[fd][l][d].I()[((fd*2+lu)==2)?2:3]+(fd==1);                 \
+            j++                                                                \
+    )                                                                          \
+    for                                                                        \
+    (                                                                          \
+        int k=(SET)[fd][l][d].I()[((fd*2+lu)==5)?5:4];                         \
+            k<(SET)[fd][l][d].I()[((fd*2+lu)==4)?4:5]+(fd==2);                 \
+            k++                                                                \
+    )
+
+#define GET_BOUNDARY_FACE_ITERATOR(_1,_2,_3,_4,_5,_6,_7,_8,NAME,...) NAME
+#define forAllBoundaryFaces(...)                                               \
+    GET_BOUNDARY_FACE_ITERATOR                                                 \
+    (                                                                          \
+        __VA_ARGS__,                                                           \
+        forAllBoundaryFacesInField,                                            \
+        forAllBoundaryFacesInLevel,                                            \
+        forAllBoundaryFacesInDirection                                         \
+    )(__VA_ARGS__)

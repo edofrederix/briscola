@@ -383,6 +383,15 @@ void meshField<Type,MeshType>::correct()
 }
 
 template<class Type, class MeshType>
+void meshField<Type,MeshType>::correctUnsetBoundaryConditions()
+{
+    addBoundaryConditions();
+
+    forAll(*this, l)
+        listType::operator[](l).correctUnsetBoundaryConditions();
+}
+
+template<class Type, class MeshType>
 void meshField<Type,MeshType>::correctImmersedBoundaryConditions()
 {
     addImmersedBoundaryConditions();
