@@ -34,21 +34,26 @@
         },
 
         {
-            "name": "base-vinci",
+            "name": "base-openfoam",
             "hidden": true,
             "environment": {
                 "WM_PROJECT": "OpenFOAM",
                 "WM_PROJECT_VERSION": "12",
-                "WM_PROJECT_DIR": "/software/OpenFOAM/OpenFOAM-12",
                 "WM_COMPILER": "Gcc",
                 "WM_ARCH": "linux64",
                 "WM_ARCH_OPTION": "64",
                 "WM_LABEL_SIZE": "32",
                 "WM_LABEL_OPTION": "Int32",
-                "WM_PRECISION_OPTION": "DP",
+                "WM_PRECISION_OPTION": "DP"
+            }
+        },
 
-                "CMAKE_BUILD_PARALLEL_LEVEL": "64",
-
+        {
+            "name": "base-vinci",
+            "inherits": "base-openfoam",
+            "hidden": true,
+            "environment": {
+                "WM_PROJECT_DIR": "/software/OpenFOAM/OpenFOAM-12",
                 "FFTW_HOME": "/software/fftw/3.3.10",
                 "PETSC_HOME": "/software/petsc/3.22.2",
                 "EIGEN_HOME": "/software/eigen/3.4.0"
@@ -72,6 +77,37 @@
         {
             "name": "profile-vinci",
             "inherits": ["profile-default", "base-vinci"],
+            "environment": {
+                "WM_COMPILE_OPTION": "Prof"
+            }
+        },
+
+        {
+            "name": "base-local-openfoam",
+            "inherits": "base-openfoam",
+            "hidden": true,
+            "environment": {
+                "WM_PROJECT_DIR": "$env{HOME}/OpenFOAM/OpenFOAM-12"
+            }
+        },
+
+        {
+            "name": "release-local-openfoam",
+            "inherits": ["release-default", "base-local-openfoam"],
+            "environment": {
+                "WM_COMPILE_OPTION": "Opt"
+            }
+        },
+        {
+            "name": "debug-local-openfoam",
+            "inherits": ["debug-default", "base-local-openfoam"],
+            "environment": {
+                "WM_COMPILE_OPTION": "Debug"
+            }
+        },
+        {
+            "name": "profile-local-openfoam",
+            "inherits": ["profile-default", "base-local-openfoam"],
             "environment": {
                 "WM_COMPILE_OPTION": "Prof"
             }
