@@ -1,0 +1,80 @@
+{
+    "version": 3,
+
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+
+        {
+            "name": "debug-default",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "release-default",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "profile-default",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Profile"
+            }
+        },
+
+        {
+            "name": "base-vinci",
+            "hidden": true,
+            "environment": {
+                "WM_PROJECT": "OpenFOAM",
+                "WM_PROJECT_VERSION": "12",
+                "WM_PROJECT_DIR": "/software/OpenFOAM/OpenFOAM-12",
+                "WM_COMPILER": "Gcc",
+                "WM_ARCH": "linux64",
+                "WM_ARCH_OPTION": "64",
+                "WM_LABEL_SIZE": "32",
+                "WM_LABEL_OPTION": "Int32",
+                "WM_PRECISION_OPTION": "DP",
+
+                "CMAKE_BUILD_PARALLEL_LEVEL": "64",
+
+                "FFTW_HOME": "/software/fftw/3.3.10",
+                "PETSC_HOME": "/software/petsc/3.22.2",
+                "EIGEN_HOME": "/software/eigen/3.4.0"
+            }
+        },
+
+        {
+            "name": "release-vinci",
+            "inherits": ["release-default", "base-vinci"],
+            "environment": {
+                "WM_COMPILE_OPTION": "Opt"
+            }
+        },
+        {
+            "name": "debug-vinci",
+            "inherits": ["debug-default", "base-vinci"],
+            "environment": {
+                "WM_COMPILE_OPTION": "Debug"
+            }
+        },
+        {
+            "name": "profile-vinci",
+            "inherits": ["profile-default", "base-vinci"],
+            "environment": {
+                "WM_COMPILE_OPTION": "Prof"
+            }
+        }
+    ]
+}

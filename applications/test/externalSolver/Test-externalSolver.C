@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 
     // Eigen
 
-    #ifdef EIGEN
+    #ifdef EIGEN3
 
     solverTypes.append("Eigen");
     subTypes.append(wordList());

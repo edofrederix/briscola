@@ -2,6 +2,7 @@
     "recommendations": [
         "stkb.rewrap",
         "yo1dog.cursor-align",
-        "ms-vscode.cpptools"
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
     ]
 }

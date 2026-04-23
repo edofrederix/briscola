@@ -21,5 +21,7 @@
     "C_Cpp.default.browse.path": [
         ""
     ],
-    "C_Cpp.errorSquiggles": "disabled"
+    "C_Cpp.errorSquiggles": "disabled",
+    "cmake.useCMakePresets": "always",
+    "cmake.configureOnOpen": true
 }

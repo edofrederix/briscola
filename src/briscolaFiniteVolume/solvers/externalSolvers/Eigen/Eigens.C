@@ -1,4 +1,4 @@
-#ifdef EIGEN
+#ifdef EIGEN3
 
 #include "solvers.H"
 #include "Eigen.H"
