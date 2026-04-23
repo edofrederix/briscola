@@ -52,6 +52,28 @@ set(FOAM_USER_APPBIN
 # Core required OF libs
 find_library(OPENFOAM_LIB OpenFOAM HINTS ${FOAM_LIBBIN})
 
+# Check
+if(NOT OPENFOAM_LIB)
+    message(FATAL_ERROR
+        "Could not find libOpenFOAM.so\n"
+        "FOAM_LIBBIN is derived to: ${FOAM_LIBBIN}.\n"
+        "It is derived from your provided WM_* environment variables, "
+        "which are: "
+        "WM_PROJECT=$ENV{WM_PROJECT}, "
+        "WM_PROJECT_DIR=$ENV{WM_PROJECT_DIR}, "
+        "WM_PROJECT_VERSION=$ENV{WM_PROJECT_VERSION}, "
+        "WM_COMPILER=$ENV{WM_COMPILER}, "
+        "WM_COMPILE_OPTION=$ENV{WM_COMPILE_OPTION}, "
+        "WM_ARCH=$ENV{WM_ARCH}, "
+        "WM_ARCH_OPTION=$ENV{WM_ARCH_OPTION}, "
+        "WM_LABEL_SIZE=$ENV{WM_LABEL_SIZE}, "
+        "WM_LABEL_OPTION=$ENV{WM_LABEL_OPTION} and "
+        "WM_PRECISION_OPTION=$ENV{WM_PRECISION_OPTION}\n"
+        "Check these values and make sure that libOpenFOAM.so is "
+        "in the FOAM_LIBBIN path."
+    )
+endif()
+
 # Compile definitions
 set(OPENFOAM_COMPILE_DEFINITIONS
     WM_ARCH_OPTION=$ENV{WM_ARCH_OPTION}
