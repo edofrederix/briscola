@@ -1,7 +1,5 @@
-# Source files
-
 # Define library
-add_library(briscolaFiniteVolume SHARED ${LIB_SOURCES})
+add_library(briscolaFiniteVolume SHARED)
 
 # Define sources
 target_sources(briscolaFiniteVolume PRIVATE
@@ -173,4 +171,4 @@ target_include_directories(briscolaFiniteVolume PUBLIC
 openfoam_configure_target(briscolaFiniteVolume)
 
 # Install
-install(TARGETS briscolaFiniteVolume LIBRARY DESTINATION ${FOAM_USER_LIBBIN})
+install(TARGETS briscolaFiniteVolume LIBRARY DESTINATION $ENV{FOAM_USER_LIBBIN})

@@ -1,10 +1,5 @@
-# Source files
-
 # Define executable
-add_executable(briscolaChannelPost ${LIB_SOURCES})
-
-# Define sources
-target_sources(briscolaChannelPost PRIVATE briscolaChannelPost.C)
+add_executable(briscolaChannelPost briscolaChannelPost.C)
 
 # Dependencies
 target_link_libraries(briscolaChannelPost PRIVATE briscolaFiniteVolume)
@@ -13,4 +8,4 @@ target_link_libraries(briscolaChannelPost PRIVATE briscolaFiniteVolume)
 openfoam_configure_target(briscolaChannelPost)
 
 # Install
-install(TARGETS briscolaChannelPost RUNTIME DESTINATION ${FOAM_USER_APPBIN})
+install(TARGETS briscolaChannelPost RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})

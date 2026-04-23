@@ -1,10 +1,5 @@
-# Source files
-
 # Define executable
-add_executable(briscolaStaggered ${LIB_SOURCES})
-
-# Define sources
-target_sources(briscolaStaggered PRIVATE briscolaStaggered.C)
+add_executable(briscolaStaggered briscolaStaggered.C)
 
 # Dependencies
 target_link_libraries(briscolaStaggered PRIVATE briscolaFiniteVolume)
@@ -13,4 +8,4 @@ target_link_libraries(briscolaStaggered PRIVATE briscolaFiniteVolume)
 openfoam_configure_target(briscolaStaggered)
 
 # Install
-install(TARGETS briscolaStaggered RUNTIME DESTINATION ${FOAM_USER_APPBIN})
+install(TARGETS briscolaStaggered RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})

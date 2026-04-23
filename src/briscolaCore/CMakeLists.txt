@@ -1,5 +1,5 @@
 # Define library
-add_library(briscolaCore SHARED ${LIB_SOURCES})
+add_library(briscolaCore SHARED)
 
 # Define sources
 target_sources(briscolaCore PRIVATE
@@ -67,4 +67,4 @@ target_include_directories(briscolaCore PUBLIC
 )
 
 # Install
-install(TARGETS briscolaCore LIBRARY DESTINATION ${FOAM_USER_LIBBIN})
+install(TARGETS briscolaCore LIBRARY DESTINATION $ENV{FOAM_USER_LIBBIN})

@@ -1,10 +1,5 @@
-# Source files
-
 # Define executable
-add_executable(writeProlongation ${LIB_SOURCES})
-
-# Define sources
-target_sources(writeProlongation PRIVATE writeProlongation.C)
+add_executable(writeProlongation writeProlongation.C)
 
 # Dependencies
 target_link_libraries(writeProlongation PRIVATE briscolaFiniteVolume)
@@ -13,4 +8,4 @@ target_link_libraries(writeProlongation PRIVATE briscolaFiniteVolume)
 openfoam_configure_target(writeProlongation)
 
 # Install
-install(TARGETS writeProlongation RUNTIME DESTINATION ${FOAM_USER_APPBIN})
+install(TARGETS writeProlongation RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})

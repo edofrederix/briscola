@@ -1,10 +1,5 @@
-# Source files
-
 # Define executable
-add_executable(briscolaLaplacian ${LIB_SOURCES})
-
-# Define sources
-target_sources(briscolaLaplacian PRIVATE briscolaLaplacian.C)
+add_executable(briscolaLaplacian briscolaLaplacian.C)
 
 # Dependencies
 target_link_libraries(briscolaLaplacian PRIVATE briscolaFiniteVolume)
@@ -13,4 +8,4 @@ target_link_libraries(briscolaLaplacian PRIVATE briscolaFiniteVolume)
 openfoam_configure_target(briscolaLaplacian)
 
 # Install
-install(TARGETS briscolaLaplacian RUNTIME DESTINATION ${FOAM_USER_APPBIN})
+install(TARGETS briscolaLaplacian RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})

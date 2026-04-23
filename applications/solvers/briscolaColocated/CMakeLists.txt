@@ -1,10 +1,5 @@
-# Source files
-
 # Define executable
-add_executable(briscolaColocated ${LIB_SOURCES})
-
-# Define sources
-target_sources(briscolaColocated PRIVATE briscolaColocated.C)
+add_executable(briscolaColocated briscolaColocated.C)
 
 # Dependencies
 target_link_libraries(briscolaColocated PRIVATE briscolaFiniteVolume)
@@ -13,4 +8,4 @@ target_link_libraries(briscolaColocated PRIVATE briscolaFiniteVolume)
 openfoam_configure_target(briscolaColocated)
 
 # Install
-install(TARGETS briscolaColocated RUNTIME DESTINATION ${FOAM_USER_APPBIN})
+install(TARGETS briscolaColocated RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})

@@ -1,10 +1,5 @@
-# Source files
-
 # Define executable
-add_executable(writeRestriction ${LIB_SOURCES})
-
-# Define sources
-target_sources(writeRestriction PRIVATE writeRestriction.C)
+add_executable(writeRestriction writeRestriction.C)
 
 # Dependencies
 target_link_libraries(writeRestriction PRIVATE briscolaFiniteVolume)
@@ -13,4 +8,4 @@ target_link_libraries(writeRestriction PRIVATE briscolaFiniteVolume)
 openfoam_configure_target(writeRestriction)
 
 # Install
-install(TARGETS writeRestriction RUNTIME DESTINATION ${FOAM_USER_APPBIN})
+install(TARGETS writeRestriction RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})

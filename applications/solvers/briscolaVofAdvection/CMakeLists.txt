@@ -1,10 +1,5 @@
-# Source files
-
 # Define executable
-add_executable(briscolaVofAdvection ${LIB_SOURCES})
-
-# Define sources
-target_sources(briscolaVofAdvection PRIVATE briscolaVofAdvection.C)
+add_executable(briscolaVofAdvection briscolaVofAdvection.C)
 
 # Dependencies
 target_link_libraries(briscolaVofAdvection PRIVATE briscolaTwoPhase)
@@ -13,4 +8,4 @@ target_link_libraries(briscolaVofAdvection PRIVATE briscolaTwoPhase)
 openfoam_configure_target(briscolaVofAdvection)
 
 # Install
-install(TARGETS briscolaVofAdvection RUNTIME DESTINATION ${FOAM_USER_APPBIN})
+install(TARGETS briscolaVofAdvection RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})

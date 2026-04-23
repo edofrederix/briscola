@@ -1,10 +1,5 @@
-# Source files
-
 # Define executable
-add_executable(briscolaStaggeredTwoPhase ${LIB_SOURCES})
-
-# Define sources
-target_sources(briscolaStaggeredTwoPhase PRIVATE briscolaStaggeredTwoPhase.C)
+add_executable(briscolaStaggeredTwoPhase briscolaStaggeredTwoPhase.C)
 
 # Dependencies
 target_link_libraries(briscolaStaggeredTwoPhase PRIVATE briscolaTwoPhase)
@@ -13,4 +8,4 @@ target_link_libraries(briscolaStaggeredTwoPhase PRIVATE briscolaTwoPhase)
 openfoam_configure_target(briscolaStaggeredTwoPhase)
 
 # Install
-install(TARGETS briscolaStaggeredTwoPhase RUNTIME DESTINATION ${FOAM_USER_APPBIN})
+install(TARGETS briscolaStaggeredTwoPhase RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})

@@ -1,7 +1,5 @@
-# Source files
-
 # Define library
-add_library(briscolaTwoPhase SHARED ${LIB_SOURCES})
+add_library(briscolaTwoPhase SHARED)
 
 # Define sources
 target_sources(briscolaTwoPhase PRIVATE
@@ -51,4 +49,4 @@ target_include_directories(briscolaTwoPhase PUBLIC
 openfoam_configure_target(briscolaTwoPhase)
 
 # Install
-install(TARGETS briscolaTwoPhase LIBRARY DESTINATION ${FOAM_USER_LIBBIN})
+install(TARGETS briscolaTwoPhase LIBRARY DESTINATION $ENV{FOAM_USER_LIBBIN})

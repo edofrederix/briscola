@@ -12,15 +12,15 @@ set(PSTREAM_INCLUDE_DIRS
 
 # Core required OF libs
 find_library(PSTREAM_LIB Pstream HINTS
-    "${FOAM_LIBBIN}/openmpi-system"
-    "${FOAM_LIBBIN}/mpi-system"
-    "${FOAM_LIBBIN}/mpich-gm"
-    "${FOAM_LIBBIN}/mvapich2"
-    "${FOAM_LIBBIN}/hpmpi"
-    "${FOAM_LIBBIN}/mpi"
-    "${FOAM_LIBBIN}/fjmpi"
-    "${FOAM_LIBBIN}/qsmpi"
-    "${FOAM_LIBBIN}/dummy"
+    "$ENV{FOAM_LIBBIN}/openmpi-system"
+    "$ENV{FOAM_LIBBIN}/mpi-system"
+    "$ENV{FOAM_LIBBIN}/mpich-gm"
+    "$ENV{FOAM_LIBBIN}/mvapich2"
+    "$ENV{FOAM_LIBBIN}/hpmpi"
+    "$ENV{FOAM_LIBBIN}/mpi"
+    "$ENV{FOAM_LIBBIN}/fjmpi"
+    "$ENV{FOAM_LIBBIN}/qsmpi"
+    "$ENV{FOAM_LIBBIN}/dummy"
 )
 
 include(FindPackageHandleStandardArgs)

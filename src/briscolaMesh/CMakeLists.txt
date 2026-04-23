@@ -1,7 +1,5 @@
-# Source files
-
 # Define library
-add_library(briscolaMesh SHARED ${LIB_SOURCES})
+add_library(briscolaMesh SHARED)
 
 # Define sources
 target_sources(briscolaMesh PRIVATE
@@ -76,4 +74,4 @@ target_include_directories(briscolaMesh PUBLIC
 openfoam_configure_target(briscolaMesh)
 
 # Install
-install(TARGETS briscolaMesh LIBRARY DESTINATION ${FOAM_USER_LIBBIN})
+install(TARGETS briscolaMesh LIBRARY DESTINATION $ENV{FOAM_USER_LIBBIN})

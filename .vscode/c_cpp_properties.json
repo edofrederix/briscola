@@ -3,9 +3,9 @@
         {
             "name": "Briscola",
             "includePath": [
-                "/software/OpenFOAM/OpenFOAM-9/src/OpenFOAM/**",
-                "/software/OpenFOAM/OpenFOAM-9/src/Pstream/mpi/**",
-                "/software/OpenFOAM/OpenFOAM-9/src/OSspecific/POSIX/**",
+                "/software/OpenFOAM/OpenFOAM-12/src/OpenFOAM/**",
+                "/software/OpenFOAM/OpenFOAM-12/src/Pstream/mpi/**",
+                "/software/OpenFOAM/OpenFOAM-12/src/OSspecific/POSIX/**",
                 "${FOAM_SRC}/OpenFOAM/**",
                 "${FOAM_SRC}/Pstream/mpi/**",
                 "${FOAM_SRC}/OSspecific/POSIX/**",
@@ -33,9 +33,9 @@
                 "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db",
                 "limitSymbolsToIncludedHeaders": true,
                 "path":[
-                    "/software/OpenFOAM/OpenFOAM-9/src/OpenFOAM/**",
-                    "/software/OpenFOAM/OpenFOAM-9/src/Pstream/mpi/**",
-                    "/software/OpenFOAM/OpenFOAM-9/src/OSspecific/POSIX/**",
+                    "/software/OpenFOAM/OpenFOAM-12/src/OpenFOAM/**",
+                    "/software/OpenFOAM/OpenFOAM-12/src/Pstream/mpi/**",
+                    "/software/OpenFOAM/OpenFOAM-12/src/OSspecific/POSIX/**",
                     "${FOAM_SRC}/OpenFOAM/**",
                     "${FOAM_SRC}/Pstream/mpi/**",
                     "${FOAM_SRC}/OSspecific/POSIX/**",
