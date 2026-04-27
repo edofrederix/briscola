@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.22)
 project(Briscola CXX)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -27,7 +27,27 @@ find_package(FFTW3 REQUIRED)
 find_package(PETSc)
 find_package(Eigen3)
 
+# Find Python3 and check for numpy availability
+
+find_package(Python3 COMPONENTS Interpreter)
+
+if(Python3_FOUND)
+    execute_process(
+        COMMAND ${Python3_EXECUTABLE} -c "import numpy"
+        RESULT_VARIABLE NUMPY_RESULT
+        OUTPUT_QUIET
+        ERROR_QUIET
+    )
+endif()
+
 # Add sub-directories
 
 add_subdirectory(src)
 add_subdirectory(applications)
+
+# Add testing
+
+enable_testing()
+add_custom_target(tests)
+add_custom_target(clean-tests)
+add_subdirectory(applications/test EXCLUDE_FROM_ALL)

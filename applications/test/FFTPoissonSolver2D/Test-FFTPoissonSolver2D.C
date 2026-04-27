@@ -83,6 +83,13 @@ int main(int argc, char *argv[])
     using std::rand;
     using std::srand;
 
+    labelVector stretches[3] =
+    {
+        labelVector(1,1,1),
+        labelVector(2,1,1),
+        labelVector(1,2,1)
+    };
+
     IOdictionary meshDict
     (
         IOobject
@@ -95,58 +102,75 @@ int main(int argc, char *argv[])
         )
     );
 
-    fvMesh fvMsh(meshDict, runTime);
-
-    colocatedScalarField f
-    (
-        "f",
-        fvMsh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE,
-        true
-    );
-
-    colocatedScalarField p
-    (
-        "p",
-        fvMsh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE,
-        true
-    );
-
-    f = Zero;
-    p = Zero;
-
-    labelVector N(fvMsh.msh().cast<rectilinearMesh>().N());
-
-    Info << "Mesh size: " << N << endl;
-
-    int seed = 123 * Pstream::myProcNo();
-    srand(seed);
-
-    scalar average = 0;
-
-    forAllCells(f, i, j, k)
+    for (int ii = 0; ii < 3; ii++)
     {
-        f(i,j,k) = 100.0 * static_cast<double>(rand()) / RAND_MAX - 0.5;
-        average += f(i,j,k) / (cmptProduct(f.N()));
-    }
+        const labelVector stretch = stretches[ii];
 
-    forAllCells(f, i, j, k)
-    {
-        f(i,j,k) -= average;
-    }
+        // Set stretch
 
-    FFTPoissonSolver<stencil> solver(fvMsh);
+        brickTable bricks(meshDict.lookup("bricks"));
 
-    p.correctBoundaryConditions();
-    solver.solve(p,f);
+        OStringStream os;
+        os<< "geometric " << stretch;
 
-    if(check(p, f, fvMsh))
-    {
-        Info << "-------------------------------------------" << nl;
-        Info << "Pressure equation solution check successful" << nl;
-        Info << "-------------------------------------------" << endl;
+        IStringStream is(os.str());
+
+        bricks[0].set("grading", is.str().c_str());
+        meshDict.set("bricks", bricks);
+
+        fvMesh fvMsh(meshDict, runTime);
+
+        colocatedScalarField f
+        (
+            "f",
+            fvMsh,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE,
+            true
+        );
+
+        colocatedScalarField p
+        (
+            "p",
+            fvMsh,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE,
+            true
+        );
+
+        f = Zero;
+        p = Zero;
+
+        labelVector N(fvMsh.msh().cast<rectilinearMesh>().N());
+
+        Info << "Mesh size: " << N << endl;
+
+        int seed = 123 * Pstream::myProcNo();
+        srand(seed);
+
+        scalar average = 0;
+
+        forAllCells(f, i, j, k)
+        {
+            f(i,j,k) = 100.0 * static_cast<double>(rand()) / RAND_MAX - 0.5;
+            average += f(i,j,k) / (cmptProduct(f.N()));
+        }
+
+        forAllCells(f, i, j, k)
+        {
+            f(i,j,k) -= average;
+        }
+
+        FFTPoissonSolver<stencil> solver(fvMsh);
+
+        p.correctBoundaryConditions();
+        solver.solve(p,f);
+
+        if(check(p, f, fvMsh))
+        {
+            Info << "-------------------------------------------" << nl;
+            Info << "Pressure equation solution check successful" << nl;
+            Info << "-------------------------------------------" << endl;
+        }
     }
 }

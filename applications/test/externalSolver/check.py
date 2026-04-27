@@ -70,10 +70,11 @@ for meshType in meshTypes:
                         if np.isnan(solution).any():
                             print('External solver test failed (nan) for',
                                   system)
-                            break
+                            sys.exit(1)
 
                         if len(solution.shape) == 1:
                             solution = solution[:, np.newaxis]
 
                         if np.sqrt(np.mean(np.square(solution-x))) > 1e-3:
                             print('External solver test failed for', system)
+                            sys.exit(1)

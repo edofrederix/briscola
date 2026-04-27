@@ -72,16 +72,17 @@ void test(const fvMesh& fvMsh, const word solverType, const word subType)
             dict.add("printStats", false);
             // dict.add("nAggregationParts", nParts);
 
-            autoPtr<typename solver<SType,Type,MeshType>::externalSolver> solverPtr
-            (
-                solver<SType,Type,MeshType>::externalSolver::New
+            autoPtr<typename solver<SType,Type,MeshType>::externalSolver>
+                solverPtr
                 (
-                    solverType,
-                    dict,
-                    fvMsh,
-                    l
-                ).ptr()
-            );
+                    solver<SType,Type,MeshType>::externalSolver::New
+                    (
+                        solverType,
+                        dict,
+                        fvMsh,
+                        l
+                    ).ptr()
+                );
 
             solverPtr->prepare(sys);
             solverPtr->solve(sys);

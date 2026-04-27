@@ -116,9 +116,36 @@ void testField(const meshField<Type,MeshType>& f, bool ghosts)
 
 int main(int argc, char *argv[])
 {
+    arguments::validArgs.append("mesh dictionary");
+    arguments::validArgs.append("write format");
+
     #include "createParallelBriscolaCase.H"
-    #include "createBriscolaTime.H"
-    #include "createBriscolaMesh.H"
+
+    const word meshDictName(args.argRead<word>(1));
+    const word format(args.argRead<word>(2));
+
+    Time runTime
+    (
+        Time::controlDictName + "." + format,
+        args.rootPath(),
+        args.caseName(),
+        true
+    );
+
+    IOdictionary meshDict
+    (
+        IOobject
+        (
+            runTime.path()/"../meshDicts"/meshDictName,
+            runTime,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE,
+            false
+        )
+    );
+
+    fvMesh fvMsh(meshDict, runTime);
+
     #include "createBriscolaIO.H"
 
     // Macros

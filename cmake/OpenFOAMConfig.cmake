@@ -24,7 +24,8 @@ function(openfoam_configure_target TARGET_NAME)
     if(NOT TARGET_TYPE STREQUAL "EXECUTABLE")
 
         add_custom_target(${TARGET_NAME}_lnInclude ALL
-            COMMAND $ENV{WM_PROJECT_DIR}/wmake/wmakeLnInclude -u -s ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMAND $ENV{WM_PROJECT_DIR}/wmake/wmakeLnInclude -u -s
+                ${CMAKE_CURRENT_SOURCE_DIR}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             COMMENT "Running wmakeLnInclude for ${TARGET_NAME}"
         )

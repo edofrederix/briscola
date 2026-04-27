@@ -21,11 +21,6 @@ void testCellCenters(const fvMesh& fvMsh)
     const meshField<vector,MeshType>& c =
         fvMsh.metrics<MeshType>().cellCenters();
 
-    const vector Lp
-    (
-        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
-    );
-
     forAll(c, l)
     if (!fvMsh.msh()[l].empty())
     forAll(c[l], d)

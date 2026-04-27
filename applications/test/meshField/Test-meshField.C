@@ -2259,14 +2259,18 @@ void testTensorFunctions(const fvMesh& fvMsh, const bool deep)
 
 int main(int argc, char *argv[])
 {
+    arguments::validArgs.append("mesh dictionary");
+
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
+
+    const word meshDictName(args.argRead<word>(1));
 
     IOdictionary meshDict
     (
         IOobject
         (
-            runTime.system()/"briscolaMeshDict",
+            runTime.path()/"../meshDicts"/meshDictName,
             runTime,
             IOobject::MUST_READ,
             IOobject::NO_WRITE,
