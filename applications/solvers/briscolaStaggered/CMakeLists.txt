@@ -8,4 +8,4 @@ target_link_libraries(briscolaStaggered PRIVATE briscolaFiniteVolume)
 openfoam_configure_target(briscolaStaggered)
 
 # Install
-install(TARGETS briscolaStaggered RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})
+install(TARGETS briscolaStaggered RUNTIME DESTINATION bin)

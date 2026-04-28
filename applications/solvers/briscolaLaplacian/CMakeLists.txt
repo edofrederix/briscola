@@ -8,4 +8,4 @@ target_link_libraries(briscolaLaplacian PRIVATE briscolaFiniteVolume)
 openfoam_configure_target(briscolaLaplacian)
 
 # Install
-install(TARGETS briscolaLaplacian RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})
+install(TARGETS briscolaLaplacian RUNTIME DESTINATION bin)

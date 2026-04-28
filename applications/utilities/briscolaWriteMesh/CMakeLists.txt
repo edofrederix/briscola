@@ -8,4 +8,4 @@ target_link_libraries(briscolaWriteMesh PRIVATE briscolaFiniteVolume)
 openfoam_configure_target(briscolaWriteMesh)
 
 # Install
-install(TARGETS briscolaWriteMesh RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})
+install(TARGETS briscolaWriteMesh RUNTIME DESTINATION bin)

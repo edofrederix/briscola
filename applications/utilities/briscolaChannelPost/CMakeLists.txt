@@ -8,4 +8,4 @@ target_link_libraries(briscolaChannelPost PRIVATE briscolaFiniteVolume)
 openfoam_configure_target(briscolaChannelPost)
 
 # Install
-install(TARGETS briscolaChannelPost RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})
+install(TARGETS briscolaChannelPost RUNTIME DESTINATION bin)

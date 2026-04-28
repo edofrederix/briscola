@@ -8,4 +8,4 @@ target_link_libraries(briscolaStaggeredTwoPhase PRIVATE briscolaTwoPhase)
 openfoam_configure_target(briscolaStaggeredTwoPhase)
 
 # Install
-install(TARGETS briscolaStaggeredTwoPhase RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})
+install(TARGETS briscolaStaggeredTwoPhase RUNTIME DESTINATION bin)

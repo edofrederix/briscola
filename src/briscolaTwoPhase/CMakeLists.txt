@@ -49,4 +49,4 @@ target_include_directories(briscolaTwoPhase PUBLIC
 openfoam_configure_target(briscolaTwoPhase)
 
 # Install
-install(TARGETS briscolaTwoPhase LIBRARY DESTINATION $ENV{FOAM_USER_LIBBIN})
+install(TARGETS briscolaTwoPhase LIBRARY DESTINATION lib)

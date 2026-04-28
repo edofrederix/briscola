@@ -67,4 +67,4 @@ target_include_directories(briscolaCore PUBLIC
 )
 
 # Install
-install(TARGETS briscolaCore LIBRARY DESTINATION $ENV{FOAM_USER_LIBBIN})
+install(TARGETS briscolaCore LIBRARY DESTINATION lib)

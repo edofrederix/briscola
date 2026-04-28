@@ -40,6 +40,14 @@ if(Python3_FOUND)
     )
 endif()
 
+# Default prefix points to OpenFOAM's user install location
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    cmake_path(SET install_path NORMALIZE "$ENV{FOAM_USER_LIBBIN}/../")
+    set(CMAKE_INSTALL_PREFIX ${install_path} CACHE PATH "Install prefix" FORCE)
+    message(STATUS "Using OpenFOAM's user install location: ${install_path}")
+endif()
+
 # Add sub-directories
 
 add_subdirectory(src)

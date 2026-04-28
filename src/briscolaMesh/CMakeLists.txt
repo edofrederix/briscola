@@ -74,4 +74,4 @@ target_include_directories(briscolaMesh PUBLIC
 openfoam_configure_target(briscolaMesh)
 
 # Install
-install(TARGETS briscolaMesh LIBRARY DESTINATION $ENV{FOAM_USER_LIBBIN})
+install(TARGETS briscolaMesh LIBRARY DESTINATION lib)

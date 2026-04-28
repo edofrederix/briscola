@@ -171,4 +171,4 @@ target_include_directories(briscolaFiniteVolume PUBLIC
 openfoam_configure_target(briscolaFiniteVolume)
 
 # Install
-install(TARGETS briscolaFiniteVolume LIBRARY DESTINATION $ENV{FOAM_USER_LIBBIN})
+install(TARGETS briscolaFiniteVolume LIBRARY DESTINATION lib)

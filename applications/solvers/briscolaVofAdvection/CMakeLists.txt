@@ -8,4 +8,4 @@ target_link_libraries(briscolaVofAdvection PRIVATE briscolaTwoPhase)
 openfoam_configure_target(briscolaVofAdvection)
 
 # Install
-install(TARGETS briscolaVofAdvection RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})
+install(TARGETS briscolaVofAdvection RUNTIME DESTINATION bin)

@@ -8,4 +8,4 @@ target_link_libraries(briscolaCheckMesh PRIVATE briscolaFiniteVolume)
 openfoam_configure_target(briscolaCheckMesh)
 
 # Install
-install(TARGETS briscolaCheckMesh RUNTIME DESTINATION $ENV{FOAM_USER_APPBIN})
+install(TARGETS briscolaCheckMesh RUNTIME DESTINATION bin)
