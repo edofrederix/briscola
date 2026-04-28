@@ -1,0 +1,107 @@
+{
+    "version": 6,
+
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "environment": {
+                "FOAM_SIGFPE": "1",
+                "FOAM_ABORT": "1"
+            },
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "debug",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "release",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "profile",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Profile"
+            }
+        }
+    ],
+
+    "buildPresets": [
+        {
+            "name": "debug",
+            "configurePreset": "debug",
+            "jobs": 0
+        },
+        {
+            "name": "release",
+            "configurePreset": "release",
+            "jobs": 0
+        },
+        {
+            "name": "profile",
+            "configurePreset": "profile",
+            "jobs": 0
+        },
+
+        {
+            "name": "tests-debug",
+            "configurePreset": "debug",
+            "jobs": 0,
+            "targets": ["tests"]
+        },
+        {
+            "name": "tests-release",
+            "configurePreset": "release",
+            "jobs": 0,
+            "targets": ["tests"]
+        }
+    ],
+
+    "testPresets": [
+        {
+            "name": "debug",
+            "configurePreset": "debug",
+            "execution": {
+                "jobs": 0
+            }
+        },
+        {
+            "name": "release",
+            "configurePreset": "release",
+            "execution": {
+                "jobs": 0
+            }
+        }
+    ],
+
+    "workflowPresets": [
+        {
+            "name": "tests-debug",
+            "steps": [
+                { "type": "configure", "name": "debug" },
+                { "type": "build", "name": "tests-debug" },
+                { "type": "test", "name": "debug" }
+            ]
+        },
+        {
+            "name": "tests-release",
+            "steps": [
+                { "type": "configure", "name": "release" },
+                { "type": "build", "name": "tests-release" },
+                { "type": "test", "name": "release" }
+            ]
+        }
+    ]
+}

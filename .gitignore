@@ -17,7 +17,7 @@ lnInclude
 # Other
 *.html
 
-#OSX
+# OSX
 .DS_Store
 
 # CMake stuff
@@ -26,3 +26,6 @@ CMakeFiles
 cmake_install.cmake
 Makefile
 CMakeUserPresets.json
+
+# Clangd
+.cache

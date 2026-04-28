@@ -1,8 +1,8 @@
 {
     "recommendations": [
         "stkb.rewrap",
-        "yo1dog.cursor-align",
-        "ms-vscode.cpptools",
+        "chouzz.vscode-better-align",
         "ms-vscode.cmake-tools",
+        "llvm-vs-code-extensions.vscode-clangd"
     ]
 }

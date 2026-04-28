@@ -67,9 +67,6 @@ public:
             typename pTraits<Cmpt>::cmptType
         >::type cmptType;
 
-    // Dimensionality of space
-    static const direction dim = Cmpt::dim;
-
     // Number of components in the underlying vector space
     static const direction nComponents = pTraits<Cmpt>::nComponents;
 
