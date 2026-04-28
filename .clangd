@@ -1,0 +1,12 @@
+# Avoid infinite include loops
+
+CompileFlags:
+  Remove: [-DNoRepository]
+
+# Disable all diagnostics (lots of errors otherwise...)
+
+Diagnostics:
+  UnusedIncludes: None
+  Suppress: ["*"]
+  ClangTidy:
+    Remove: ["*"]
