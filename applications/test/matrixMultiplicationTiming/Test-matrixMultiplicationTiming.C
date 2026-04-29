@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
 
         auto F = new double[Nt][3];
         auto G = new double[Nt][3];
-        auto A = new double[Nt][6];
+        auto A = new double[Nt][7];
 
         auto c = new double[Nt];
         auto l = new double[Nt];
@@ -279,12 +279,12 @@ int main(int argc, char *argv[])
             f[ijk] = 1;
 
             A[ijk][0] = c[ijk];
-            A[ijk][0] = l[ijk];
-            A[ijk][0] = r[ijk];
-            A[ijk][0] = b[ijk];
-            A[ijk][0] = t[ijk];
-            A[ijk][0] = a[ijk];
-            A[ijk][0] = f[ijk];
+            A[ijk][1] = l[ijk];
+            A[ijk][2] = r[ijk];
+            A[ijk][3] = b[ijk];
+            A[ijk][4] = t[ijk];
+            A[ijk][5] = a[ijk];
+            A[ijk][6] = f[ijk];
         }
 
         auto t1 = high_resolution_clock::now();
