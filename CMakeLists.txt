@@ -11,6 +11,11 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
   "Debug" "Release" "Profile"
 )
 
+# Store built libraries and applications in lib and bin in the build directory
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # Helper modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -45,7 +50,8 @@ endif()
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     cmake_path(SET install_path NORMALIZE "$ENV{FOAM_USER_LIBBIN}/../")
     set(CMAKE_INSTALL_PREFIX ${install_path} CACHE PATH "Install prefix" FORCE)
-    message(STATUS "Using OpenFOAM's user install location: ${install_path}")
+    message(STATUS "Using OpenFOAM's user install location as prefix:
+        ${install_path}")
 endif()
 
 # Add sub-directories

@@ -40,68 +40,54 @@
 
     "buildPresets": [
         {
+            "name": "debug-build-only",
+            "configurePreset": "debug",
+            "jobs": 0,
+            "targets": ["all"]
+        },
+        {
+            "name": "release-build-only",
+            "configurePreset": "release",
+            "jobs": 0,
+            "targets": ["all"]
+        },
+        {
+            "name": "profile-build-only",
+            "configurePreset": "profile",
+            "jobs": 0,
+            "targets": ["all"]
+        },
+
+        {
             "name": "debug",
             "configurePreset": "debug",
-            "jobs": 0
+            "jobs": 0,
+            "targets": ["all", "install"]
         },
         {
             "name": "release",
             "configurePreset": "release",
-            "jobs": 0
+            "jobs": 0,
+            "targets": ["all", "install"]
         },
         {
             "name": "profile",
             "configurePreset": "profile",
-            "jobs": 0
+            "jobs": 0,
+            "targets": ["all", "install"]
         },
 
         {
             "name": "tests-debug",
             "configurePreset": "debug",
             "jobs": 0,
-            "targets": ["tests"]
+            "targets": ["all", "install", "tests"]
         },
         {
             "name": "tests-release",
             "configurePreset": "release",
             "jobs": 0,
-            "targets": ["tests"]
-        }
-    ],
-
-    "testPresets": [
-        {
-            "name": "debug",
-            "configurePreset": "debug",
-            "execution": {
-                "jobs": 0
-            }
-        },
-        {
-            "name": "release",
-            "configurePreset": "release",
-            "execution": {
-                "jobs": 0
-            }
-        }
-    ],
-
-    "workflowPresets": [
-        {
-            "name": "tests-debug",
-            "steps": [
-                { "type": "configure", "name": "debug" },
-                { "type": "build", "name": "tests-debug" },
-                { "type": "test", "name": "debug" }
-            ]
-        },
-        {
-            "name": "tests-release",
-            "steps": [
-                { "type": "configure", "name": "release" },
-                { "type": "build", "name": "tests-release" },
-                { "type": "test", "name": "release" }
-            ]
+            "targets": ["all", "install", "tests"]
         }
     ]
 }
