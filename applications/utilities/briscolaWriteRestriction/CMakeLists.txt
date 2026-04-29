@@ -9,3 +9,6 @@ openfoam_configure_target(briscolaWriteRestriction)
 
 # Install
 install(TARGETS briscolaWriteRestriction RUNTIME DESTINATION bin)
+
+# Add to utilities target
+add_dependencies(utilities briscolaWriteRestriction)

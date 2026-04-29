@@ -9,3 +9,6 @@ openfoam_configure_target(briscolaWriteProlongation)
 
 # Install
 install(TARGETS briscolaWriteProlongation RUNTIME DESTINATION bin)
+
+# Add to utilities target
+add_dependencies(utilities briscolaWriteProlongation)

@@ -9,3 +9,6 @@ openfoam_configure_target(briscolaWriteMesh)
 
 # Install
 install(TARGETS briscolaWriteMesh RUNTIME DESTINATION bin)
+
+# Add to utilities target
+add_dependencies(utilities briscolaWriteMesh)

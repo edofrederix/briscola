@@ -9,3 +9,6 @@ openfoam_configure_target(briscolaChannelPost)
 
 # Install
 install(TARGETS briscolaChannelPost RUNTIME DESTINATION bin)
+
+# Add to utilities target
+add_dependencies(utilities briscolaChannelPost)

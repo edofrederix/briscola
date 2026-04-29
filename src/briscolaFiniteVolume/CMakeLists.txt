@@ -172,3 +172,6 @@ openfoam_configure_target(briscolaFiniteVolume)
 
 # Install
 install(TARGETS briscolaFiniteVolume LIBRARY DESTINATION lib)
+
+# Add to libraries target
+add_dependencies(libraries briscolaFiniteVolume)

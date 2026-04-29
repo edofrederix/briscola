@@ -50,3 +50,6 @@ openfoam_configure_target(briscolaTwoPhase)
 
 # Install
 install(TARGETS briscolaTwoPhase LIBRARY DESTINATION lib)
+
+# Add to libraries target
+add_dependencies(libraries briscolaTwoPhase)

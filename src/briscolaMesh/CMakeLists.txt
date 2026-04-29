@@ -75,3 +75,6 @@ openfoam_configure_target(briscolaMesh)
 
 # Install
 install(TARGETS briscolaMesh LIBRARY DESTINATION lib)
+
+# Add to libraries target
+add_dependencies(libraries briscolaMesh)

@@ -9,3 +9,6 @@ openfoam_configure_target(briscolaColocated)
 
 # Install
 install(TARGETS briscolaColocated RUNTIME DESTINATION bin)
+
+# Add to solvers target
+add_dependencies(solvers briscolaColocated)

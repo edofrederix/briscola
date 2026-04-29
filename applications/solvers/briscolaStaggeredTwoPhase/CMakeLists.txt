@@ -9,3 +9,6 @@ openfoam_configure_target(briscolaStaggeredTwoPhase)
 
 # Install
 install(TARGETS briscolaStaggeredTwoPhase RUNTIME DESTINATION bin)
+
+# Add to solvers target
+add_dependencies(solvers briscolaStaggeredTwoPhase)

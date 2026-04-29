@@ -16,17 +16,17 @@
             }
         },
         {
+            "name": "default",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
             "name": "debug",
             "inherits": "base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "release",
-            "inherits": "base",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
             }
         },
         {
@@ -40,54 +40,52 @@
 
     "buildPresets": [
         {
-            "name": "debug-build-only",
-            "configurePreset": "debug",
+            "name": "default",
+            "configurePreset": "default",
             "jobs": 0,
-            "targets": ["all"]
+            "targets": ["install"]
         },
-        {
-            "name": "release-build-only",
-            "configurePreset": "release",
-            "jobs": 0,
-            "targets": ["all"]
-        },
-        {
-            "name": "profile-build-only",
-            "configurePreset": "profile",
-            "jobs": 0,
-            "targets": ["all"]
-        },
-
         {
             "name": "debug",
             "configurePreset": "debug",
             "jobs": 0,
-            "targets": ["all", "install"]
-        },
-        {
-            "name": "release",
-            "configurePreset": "release",
-            "jobs": 0,
-            "targets": ["all", "install"]
+            "targets": ["install"]
         },
         {
             "name": "profile",
             "configurePreset": "profile",
             "jobs": 0,
-            "targets": ["all", "install"]
+            "targets": ["install"]
         },
 
+        {
+            "name": "tests",
+            "configurePreset": "default",
+            "jobs": 0,
+            "targets": ["tests"]
+        },
         {
             "name": "tests-debug",
             "configurePreset": "debug",
             "jobs": 0,
-            "targets": ["all", "install", "tests"]
+            "targets": ["tests"]
+        }
+    ],
+
+    "testPresets": [
+        {
+            "name": "default",
+            "configurePreset": "default",
+            "execution": {
+                "jobs": 0
+            }
         },
         {
-            "name": "tests-release",
-            "configurePreset": "release",
-            "jobs": 0,
-            "targets": ["all", "install", "tests"]
+            "name": "debug",
+            "configurePreset": "debug",
+            "execution": {
+                "jobs": 0
+            }
         }
     ]
 }

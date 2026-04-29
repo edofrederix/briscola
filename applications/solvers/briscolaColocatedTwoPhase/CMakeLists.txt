@@ -9,3 +9,6 @@ openfoam_configure_target(briscolaColocatedTwoPhase)
 
 # Install
 install(TARGETS briscolaColocatedTwoPhase RUNTIME DESTINATION bin)
+
+# Add to solvers target
+add_dependencies(solvers briscolaColocatedTwoPhase)

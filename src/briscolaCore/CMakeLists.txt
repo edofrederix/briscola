@@ -68,3 +68,6 @@ target_include_directories(briscolaCore PUBLIC
 
 # Install
 install(TARGETS briscolaCore LIBRARY DESTINATION lib)
+
+# Add to libraries target
+add_dependencies(libraries briscolaCore)

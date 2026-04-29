@@ -9,3 +9,6 @@ openfoam_configure_target(briscolaCheckMesh)
 
 # Install
 install(TARGETS briscolaCheckMesh RUNTIME DESTINATION bin)
+
+# Add to utilities target
+add_dependencies(utilities briscolaCheckMesh)

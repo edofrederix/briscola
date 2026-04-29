@@ -58,10 +58,3 @@ endif()
 
 add_subdirectory(src)
 add_subdirectory(applications)
-
-# Add testing
-
-enable_testing()
-add_custom_target(tests)
-add_custom_target(clean-tests)
-add_subdirectory(applications/test EXCLUDE_FROM_ALL)

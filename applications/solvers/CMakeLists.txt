@@ -1,3 +1,5 @@
+add_custom_target(solvers)
+
 # Add all sub-directories with a CMakeLists.txt file
 
 file(GLOB dirs LIST_DIRECTORIES true "./*/")
