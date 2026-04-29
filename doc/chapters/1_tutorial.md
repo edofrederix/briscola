@@ -54,12 +54,12 @@ that was changed. Assuming that 1) you have downloaded Briscola, 2) changed
 directory on the command line to Briscola's root and 3) loaded OpenFOAM,
 compiling Briscola can be done by
 ```
-./Allwmake
+cmake --preset default
+cmake --build --preset default
 ```
-
-The script will compile all individual libraries and applications, and may take
-a while depending on your system. Once done, we can change the directory to Hysing's
-bubble case:
+This will build and install all individual libraries and applications, and may
+take a while depending on your system. Once done, we can change the directory to
+Hysing's bubble case:
 ```
 cd cases/briscolaStaggeredTwoPhase/Hysing
 ```
