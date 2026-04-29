@@ -62,12 +62,16 @@ target_sources(briscolaMesh PRIVATE
     mesh/mesh.C
 )
 
+# At this point we need to link against MPI. Do this manually, to avoid carrying
+# over conflicting linker flags.
+
 # Dependencies
-target_link_libraries(briscolaMesh PUBLIC briscolaCore MPI::MPI_CXX)
+target_link_libraries(briscolaMesh PUBLIC briscolaCore ${MPI_CXX_LIBRARIES})
 
 # Add local includes
 target_include_directories(briscolaMesh PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/lnInclude
+    ${MPI_CXX_INCLUDE_DIRS}
 )
 
 # OpenFOAM configuration
