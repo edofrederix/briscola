@@ -10,3 +10,6 @@ Diagnostics:
   Suppress: ["*"]
   ClangTidy:
     Remove: ["*"]
+
+InlayHints:
+  Enabled: No
