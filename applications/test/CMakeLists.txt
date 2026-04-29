@@ -1,8 +1,6 @@
 add_custom_target(tests)
 add_custom_target(clean-tests)
 
-enable_testing()
-
 # Add all sub-directories with a CMakeLists.txt file. Exclude tests from all.
 
 file(GLOB dirs LIST_DIRECTORIES true "./*/")

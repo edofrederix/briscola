@@ -54,6 +54,10 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         ${install_path}")
 endif()
 
+# Enable testing
+
+enable_testing()
+
 # Add sub-directories
 
 add_subdirectory(src)
