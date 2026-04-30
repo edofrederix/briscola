@@ -5,6 +5,7 @@ function(openfoam_configure_target TARGET_NAME)
     # Default definitions
     target_compile_definitions(${TARGET_NAME} PRIVATE
         ${OPENFOAM_COMPILE_DEFINITIONS}
+        OMPI_SKIP_MPICXX
     )
 
     # Default include directories
@@ -45,6 +46,7 @@ function(openfoam_configure_target TARGET_NAME)
         -Wno-unused-parameter
         -Wno-invalid-offsetof
         -Wno-attributes
+        -ftemplate-depth-100
 
         # Custom warning flags
         -Wshadow
