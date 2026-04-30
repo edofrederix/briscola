@@ -1,5 +1,5 @@
 {
-    "version": 6,
+    "version": 4,
 
     "configurePresets": [
         {
@@ -9,7 +9,6 @@
                 "FOAM_SIGFPE": "1",
                 "FOAM_ABORT": "1"
             },
-            "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
