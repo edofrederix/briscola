@@ -4,11 +4,9 @@
 #include "label.H"
 #include "scalar.H"
 #include "faceScalar.H"
-#include "edgeScalar.H"
 #include "vertexScalar.H"
 #include "vector.H"
 #include "faceVector.H"
-#include "edgeVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
 #include "symmTensor.H"
@@ -28,11 +26,9 @@ template<class Type> class block;
 typedef block<label> labelBlock;
 typedef block<scalar> scalarBlock;
 typedef block<faceScalar> faceScalarBlock;
-typedef block<edgeScalar> edgeScalarBlock;
 typedef block<vertexScalar> vertexScalarBlock;
 typedef block<vector> vectorBlock;
 typedef block<faceVector> faceVectorBlock;
-typedef block<edgeVector> edgeVectorBlock;
 typedef block<vertexVector> vertexVectorBlock;
 typedef block<tensor> tensorBlock;
 typedef block<symmTensor> symmTensorBlock;

@@ -556,11 +556,9 @@ int main(int argc, char *argv[])
     testConstructors<diagTensor,colocated>(fvMsh);
 
     testConstructors<faceScalar,colocated>(fvMsh);
-    testConstructors<edgeScalar,colocated>(fvMsh);
     testConstructors<vertexScalar,colocated>(fvMsh);
 
     testConstructors<faceVector,colocated>(fvMsh);
-    testConstructors<edgeVector,colocated>(fvMsh);
     testConstructors<vertexVector,colocated>(fvMsh);
 
     testConstructors<stencil,colocated>(fvMsh);
@@ -577,11 +575,9 @@ int main(int argc, char *argv[])
     testIndexing<diagTensor,colocated>(fvMsh);
 
     testIndexing<faceScalar,colocated>(fvMsh);
-    testIndexing<edgeScalar,colocated>(fvMsh);
     testIndexing<vertexScalar,colocated>(fvMsh);
 
     testIndexing<faceVector,colocated>(fvMsh);
-    testIndexing<edgeVector,colocated>(fvMsh);
     testIndexing<vertexVector,colocated>(fvMsh);
 
     testIndexing<stencil,colocated>(fvMsh);
@@ -598,11 +594,9 @@ int main(int argc, char *argv[])
     testMemberOperators<diagTensor,colocated>(fvMsh);
 
     testMemberOperators<faceScalar,colocated>(fvMsh);
-    testMemberOperators<edgeScalar,colocated>(fvMsh);
     testMemberOperators<vertexScalar,colocated>(fvMsh);
 
     testMemberOperators<faceVector,colocated>(fvMsh);
-    testMemberOperators<edgeVector,colocated>(fvMsh);
     testMemberOperators<vertexVector,colocated>(fvMsh);
 
     testMemberOperators<stencil,colocated>(fvMsh);
@@ -645,11 +639,9 @@ int main(int argc, char *argv[])
         testConstructors<diagTensor,staggered>(fvMsh);
 
         testConstructors<faceScalar,staggered>(fvMsh);
-        testConstructors<edgeScalar,staggered>(fvMsh);
         testConstructors<vertexScalar,staggered>(fvMsh);
 
         testConstructors<faceVector,staggered>(fvMsh);
-        testConstructors<edgeVector,staggered>(fvMsh);
         testConstructors<vertexVector,staggered>(fvMsh);
 
         testConstructors<stencil,staggered>(fvMsh);
@@ -666,11 +658,9 @@ int main(int argc, char *argv[])
         testIndexing<diagTensor,staggered>(fvMsh);
 
         testIndexing<faceScalar,staggered>(fvMsh);
-        testIndexing<edgeScalar,staggered>(fvMsh);
         testIndexing<vertexScalar,staggered>(fvMsh);
 
         testIndexing<faceVector,staggered>(fvMsh);
-        testIndexing<edgeVector,staggered>(fvMsh);
         testIndexing<vertexVector,staggered>(fvMsh);
 
         testIndexing<stencil,staggered>(fvMsh);
@@ -687,11 +677,9 @@ int main(int argc, char *argv[])
         testMemberOperators<diagTensor,staggered>(fvMsh);
 
         testMemberOperators<faceScalar,staggered>(fvMsh);
-        testMemberOperators<edgeScalar,staggered>(fvMsh);
         testMemberOperators<vertexScalar,staggered>(fvMsh);
 
         testMemberOperators<faceVector,staggered>(fvMsh);
-        testMemberOperators<edgeVector,staggered>(fvMsh);
         testMemberOperators<vertexVector,staggered>(fvMsh);
 
         testMemberOperators<stencil,staggered>(fvMsh);

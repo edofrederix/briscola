@@ -1704,11 +1704,9 @@ int main(int argc, char *argv[])
     testConstructors<diagTensor>();
 
     testConstructors<faceScalar>();
-    testConstructors<edgeScalar>();
     testConstructors<vertexScalar>();
 
     testConstructors<faceVector>();
-    testConstructors<edgeVector>();
     testConstructors<vertexVector>();
 
     testConstructors<stencil>();
@@ -1725,11 +1723,9 @@ int main(int argc, char *argv[])
     testIndexing<diagTensor>();
 
     testIndexing<faceScalar>();
-    testIndexing<edgeScalar>();
     testIndexing<vertexScalar>();
 
     testIndexing<faceVector>();
-    testIndexing<edgeVector>();
     testIndexing<vertexVector>();
 
     testIndexing<stencil>();
@@ -1746,11 +1742,9 @@ int main(int argc, char *argv[])
     testTransformations<diagTensor>();
 
     testTransformations<faceScalar>();
-    testTransformations<edgeScalar>();
     testTransformations<vertexScalar>();
 
     testTransformations<faceVector>();
-    testTransformations<edgeVector>();
     testTransformations<vertexVector>();
 
     testTransformations<stencil>();
@@ -1767,11 +1761,9 @@ int main(int argc, char *argv[])
     testMemberOperators<diagTensor>();
 
     testMemberOperators<faceScalar>();
-    testMemberOperators<edgeScalar>();
     testMemberOperators<vertexScalar>();
 
     testMemberOperators<faceVector>();
-    testMemberOperators<edgeVector>();
     testMemberOperators<vertexVector>();
 
     testMemberOperators<stencil>();
@@ -1787,11 +1779,9 @@ int main(int argc, char *argv[])
     testPrimitiveFunctions<diagTensor>();
 
     testPrimitiveFunctions<faceScalar>();
-    testPrimitiveFunctions<edgeScalar>();
     testPrimitiveFunctions<vertexScalar>();
 
     testPrimitiveFunctions<faceVector>();
-    testPrimitiveFunctions<edgeVector>();
     testPrimitiveFunctions<vertexVector>();
 
 

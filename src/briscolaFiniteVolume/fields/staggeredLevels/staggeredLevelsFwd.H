@@ -7,11 +7,9 @@
 #include "label.H"
 #include "scalar.H"
 #include "faceScalar.H"
-#include "edgeScalar.H"
 #include "vertexScalar.H"
 #include "vector.H"
 #include "faceVector.H"
-#include "edgeVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
 #include "sphericalTensor.H"
@@ -34,11 +32,9 @@ class staggered;
 typedef meshLevel<label,staggered> staggeredLabelLevel;
 typedef meshLevel<scalar,staggered> staggeredScalarLevel;
 typedef meshLevel<faceScalar,staggered> staggeredFaceScalarLevel;
-typedef meshLevel<edgeScalar,staggered> staggeredEdgeScalarLevel;
 typedef meshLevel<vertexScalar,staggered> staggeredVertexScalarLevel;
 typedef meshLevel<vector,staggered> staggeredVectorLevel;
 typedef meshLevel<faceVector,staggered> staggeredFaceVectorLevel;
-typedef meshLevel<edgeVector,staggered> staggeredEdgeVectorLevel;
 typedef meshLevel<vertexVector,staggered> staggeredVertexVectorLevel;
 typedef meshLevel<tensor,staggered> staggeredTensorLevel;
 typedef meshLevel<sphericalTensor,staggered> staggeredSphericalTensorLevel;

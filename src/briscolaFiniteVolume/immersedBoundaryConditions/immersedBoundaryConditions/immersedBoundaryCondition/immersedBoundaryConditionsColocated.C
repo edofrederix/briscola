@@ -20,11 +20,9 @@ namespace fv
 makeImmersedBoundaryConditionBase(label,colocated);
 makeImmersedBoundaryConditionBase(scalar,colocated);
 makeImmersedBoundaryConditionBase(faceScalar,colocated);
-makeImmersedBoundaryConditionBase(edgeScalar,colocated);
 makeImmersedBoundaryConditionBase(vertexScalar,colocated);
 makeImmersedBoundaryConditionBase(vector,colocated);
 makeImmersedBoundaryConditionBase(faceVector,colocated);
-makeImmersedBoundaryConditionBase(edgeVector,colocated);
 makeImmersedBoundaryConditionBase(vertexVector,colocated);
 makeImmersedBoundaryConditionBase(tensor,colocated);
 makeImmersedBoundaryConditionBase(sphericalTensor,colocated)

@@ -102,11 +102,9 @@ public:
     makeboundaryExchange(label,MESHTYPE)                                       \
     makeboundaryExchange(scalar,MESHTYPE)                                      \
     makeboundaryExchange(faceScalar,MESHTYPE)                                  \
-    makeboundaryExchange(edgeScalar,MESHTYPE)                                  \
     makeboundaryExchange(vertexScalar,MESHTYPE)                                \
     makeboundaryExchange(vector,MESHTYPE)                                      \
     makeboundaryExchange(faceVector,MESHTYPE)                                  \
-    makeboundaryExchange(edgeVector,MESHTYPE)                                  \
     makeboundaryExchange(vertexVector,MESHTYPE)                                \
     makeboundaryExchange(tensor,MESHTYPE)                                      \
     makeboundaryExchange(sphericalTensor,MESHTYPE)                             \

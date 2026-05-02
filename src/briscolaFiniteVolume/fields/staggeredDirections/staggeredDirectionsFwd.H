@@ -6,11 +6,9 @@
 #include "label.H"
 #include "scalar.H"
 #include "faceScalar.H"
-#include "edgeScalar.H"
 #include "vertexScalar.H"
 #include "vector.H"
 #include "faceVector.H"
-#include "edgeVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
 #include "sphericalTensor.H"
@@ -33,11 +31,9 @@ class staggered;
 typedef meshDirection<label,staggered> staggeredLabelDirection;
 typedef meshDirection<scalar,staggered> staggeredScalarDirection;
 typedef meshDirection<faceScalar,staggered> staggeredFaceScalarDirection;
-typedef meshDirection<edgeScalar,staggered> staggeredEdgeScalarDirection;
 typedef meshDirection<vertexScalar,staggered> staggeredVertexScalarDirection;
 typedef meshDirection<vector,staggered> staggeredVectorDirection;
 typedef meshDirection<faceVector,staggered> staggeredFaceVectorDirection;
-typedef meshDirection<edgeVector,staggered> staggeredEdgeVectorDirection;
 typedef meshDirection<vertexVector,staggered> staggeredVertexVectorDirection;
 typedef meshDirection<tensor,staggered> staggeredTensorDirection;
 typedef meshDirection<sphericalTensor,staggered> staggeredSphericalTensorDirection;

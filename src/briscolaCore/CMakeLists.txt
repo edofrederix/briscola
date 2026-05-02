@@ -43,9 +43,6 @@ target_sources(briscolaCore PRIVATE
     blocks/faceScalarBlock/faceScalarBlock.C
     blocks/faceVectorBlock/faceVectorBlock.C
 
-    blocks/edgeScalarBlock/edgeScalarBlock.C
-    blocks/edgeVectorBlock/edgeVectorBlock.C
-
     blocks/vertexScalarBlock/vertexScalarBlock.C
     blocks/vertexVectorBlock/vertexVectorBlock.C
 

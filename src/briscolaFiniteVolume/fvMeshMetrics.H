@@ -90,7 +90,6 @@ public:
         tmp<meshField<faceScalar,MeshType>> faceDeltas() const;
         tmp<meshField<faceScalar,MeshType>> faceWeightsCenter() const;
         tmp<meshField<faceScalar,MeshType>> faceWeightsNeighbor() const;
-        tmp<meshField<edgeVector,MeshType>> edgeCenters() const;
     };
 
 private:

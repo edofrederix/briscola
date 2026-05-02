@@ -2294,11 +2294,9 @@ int main(int argc, char *argv[])
         testConstructors<diagTensor,colocated>(fvMsh, deep);
 
         testConstructors<faceScalar,colocated>(fvMsh, deep);
-        testConstructors<edgeScalar,colocated>(fvMsh, deep);
         testConstructors<vertexScalar,colocated>(fvMsh, deep);
 
         testConstructors<faceVector,colocated>(fvMsh, deep);
-        testConstructors<edgeVector,colocated>(fvMsh, deep);
         testConstructors<vertexVector,colocated>(fvMsh, deep);
 
         testConstructors<stencil,colocated>(fvMsh, deep);
@@ -2315,11 +2313,9 @@ int main(int argc, char *argv[])
         testIndexing<diagTensor,colocated>(fvMsh, deep);
 
         testIndexing<faceScalar,colocated>(fvMsh, deep);
-        testIndexing<edgeScalar,colocated>(fvMsh, deep);
         testIndexing<vertexScalar,colocated>(fvMsh, deep);
 
         testIndexing<faceVector,colocated>(fvMsh, deep);
-        testIndexing<edgeVector,colocated>(fvMsh, deep);
         testIndexing<vertexVector,colocated>(fvMsh, deep);
 
         testIndexing<stencil,colocated>(fvMsh, deep);
@@ -2336,11 +2332,9 @@ int main(int argc, char *argv[])
         testMemberOperators<diagTensor,colocated>(fvMsh, deep);
 
         testMemberOperators<faceScalar,colocated>(fvMsh, deep);
-        testMemberOperators<edgeScalar,colocated>(fvMsh, deep);
         testMemberOperators<vertexScalar,colocated>(fvMsh, deep);
 
         testMemberOperators<faceVector,colocated>(fvMsh, deep);
-        testMemberOperators<edgeVector,colocated>(fvMsh, deep);
         testMemberOperators<vertexVector,colocated>(fvMsh, deep);
 
         testMemberOperators<stencil,colocated>(fvMsh, deep);
@@ -2357,11 +2351,9 @@ int main(int argc, char *argv[])
         testPrimitiveFunctions<diagTensor,colocated>(fvMsh, deep);
 
         testCellSpacePrimitiveFunctions<faceScalar,colocated>(fvMsh, deep);
-        testCellSpacePrimitiveFunctions<edgeScalar,colocated>(fvMsh, deep);
         testCellSpacePrimitiveFunctions<vertexScalar,colocated>(fvMsh, deep);
 
         testCellSpacePrimitiveFunctions<faceVector,colocated>(fvMsh, deep);
-        testCellSpacePrimitiveFunctions<edgeVector,colocated>(fvMsh, deep);
         testCellSpacePrimitiveFunctions<vertexVector,colocated>(fvMsh, deep);
 
         testFaceSpaceFunctions<scalar,colocated>(fvMsh);
@@ -2397,11 +2389,9 @@ int main(int argc, char *argv[])
             testConstructors<diagTensor,staggered>(fvMsh, deep);
 
             testConstructors<faceScalar,staggered>(fvMsh, deep);
-            testConstructors<edgeScalar,staggered>(fvMsh, deep);
             testConstructors<vertexScalar,staggered>(fvMsh, deep);
 
             testConstructors<faceVector,staggered>(fvMsh, deep);
-            testConstructors<edgeVector,staggered>(fvMsh, deep);
             testConstructors<vertexVector,staggered>(fvMsh, deep);
 
             testConstructors<stencil,staggered>(fvMsh, deep);
@@ -2418,11 +2408,9 @@ int main(int argc, char *argv[])
             testIndexing<diagTensor,staggered>(fvMsh, deep);
 
             testIndexing<faceScalar,staggered>(fvMsh, deep);
-            testIndexing<edgeScalar,staggered>(fvMsh, deep);
             testIndexing<vertexScalar,staggered>(fvMsh, deep);
 
             testIndexing<faceVector,staggered>(fvMsh, deep);
-            testIndexing<edgeVector,staggered>(fvMsh, deep);
             testIndexing<vertexVector,staggered>(fvMsh, deep);
 
             testIndexing<stencil,staggered>(fvMsh, deep);
@@ -2439,11 +2427,9 @@ int main(int argc, char *argv[])
             testMemberOperators<diagTensor,staggered>(fvMsh, deep);
 
             testMemberOperators<faceScalar,staggered>(fvMsh, deep);
-            testMemberOperators<edgeScalar,staggered>(fvMsh, deep);
             testMemberOperators<vertexScalar,staggered>(fvMsh, deep);
 
             testMemberOperators<faceVector,staggered>(fvMsh, deep);
-            testMemberOperators<edgeVector,staggered>(fvMsh, deep);
             testMemberOperators<vertexVector,staggered>(fvMsh, deep);
 
             testMemberOperators<stencil,staggered>(fvMsh, deep);
@@ -2461,11 +2447,9 @@ int main(int argc, char *argv[])
 
 
             testCellSpacePrimitiveFunctions<faceScalar,staggered>(fvMsh, deep);
-            testCellSpacePrimitiveFunctions<edgeScalar,staggered>(fvMsh, deep);
             testCellSpacePrimitiveFunctions<vertexScalar,staggered>(fvMsh, deep);
 
             testCellSpacePrimitiveFunctions<faceVector,staggered>(fvMsh, deep);
-            testCellSpacePrimitiveFunctions<edgeVector,staggered>(fvMsh, deep);
             testCellSpacePrimitiveFunctions<vertexVector,staggered>(fvMsh, deep);
 
             testFaceSpaceFunctions<scalar,staggered>(fvMsh);

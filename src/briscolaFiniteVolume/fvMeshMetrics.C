@@ -1062,42 +1062,6 @@ fvMeshMetrics<MeshType>::AoS::faceWeightsNeighbor() const
     return tFwn;
 }
 
-template<class MeshType>
-tmp<meshField<edgeVector,MeshType>>
-fvMeshMetrics<MeshType>::AoS::edgeCenters() const
-{
-    const meshField<vertexVector,MeshType>& vc = metrics_.vertexCenters();
-
-    tmp<meshField<edgeVector,MeshType>> tEc =
-        meshField<edgeVector,MeshType>::New("edgeCenters", metrics_.fvMsh_);
-
-    meshField<edgeVector,MeshType>& ec = tEc.ref();
-    ec.makeDeep();
-
-    ec = Zero;
-
-    forAll(metrics_.fvMsh_, l)
-    {
-        for (int d = 0; d < MeshType::numberOfDirections; d++)
-        {
-            const labelVector N = metrics_.fvMsh_.N<MeshType>(l,d);
-
-            labelVector ijk;
-            for (ijk.x() = -1; ijk.x() < N.x() + 1; ijk.x()++)
-            for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
-            for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
-            {
-                for (int ei = 0; ei < 12; ei++)
-                    ec(l,d,ijk)[ei] = hexa(vc(l,d,ijk)).edgeCenter(ei);
-            }
-        }
-    }
-
-    ec.correctAggData();
-
-    return tEc;
-}
-
 // Instantiate
 
 template class fvMeshMetrics<colocated>;

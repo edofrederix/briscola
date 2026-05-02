@@ -118,44 +118,6 @@ void testFaceCenters(const fvMesh& fvMsh)
 }
 
 template<class MeshType>
-void testEdgeCenters(const fvMesh& fvMsh)
-{
-    const meshField<edgeVector,MeshType> ec
-    (
-        fvMsh.metrics<MeshType>().aos().edgeCenters()
-    );
-
-    forAllCells(ec, l, d, i, j, k)
-    for (label o = 0; o < 12; o++)
-    {
-        const vector Lp
-        (
-            cmptDivide(LL, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
-        );
-
-        const vector cc
-        (
-            cmptMultiply
-            (
-                cmptDivide
-                (
-                    vector(i+0.5, j+0.5, k+0.5)
-                  + MeshType::shift[d]
-                  + vector(edgeOffsets[o])*0.5,
-                    vector(fvMsh[l].N())
-                )
-              + vector(fvMsh.msh().decomp().myBrickPart()),
-                Lp
-            )
-        );
-
-        if (mag(ec(l,d,i,j,k)[o] - cc)/mag(LL) > 1e-12)
-            FatalErrorInFunction
-                << "test 3b failed" << abort(FatalError);
-    }
-}
-
-template<class MeshType>
 void testVertexCenters(const fvMesh& fvMsh)
 {
     const meshField<vertexVector,MeshType>& c =
@@ -362,11 +324,6 @@ int main(int argc, char *argv[])
 
     testFaceCenters<colocated>(fvMsh);
     testFaceCenters<staggered>(fvMsh);
-
-    // Test edge centers
-
-    testEdgeCenters<colocated>(fvMsh);
-    testEdgeCenters<staggered>(fvMsh);
 
     // Test vertex centers
 

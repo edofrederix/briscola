@@ -17,11 +17,9 @@ namespace fv
 makeImmersedBoundaryConditionType(empty,label,colocated);
 makeImmersedBoundaryConditionType(empty,scalar,colocated);
 makeImmersedBoundaryConditionType(empty,faceScalar,colocated);
-makeImmersedBoundaryConditionType(empty,edgeScalar,colocated);
 makeImmersedBoundaryConditionType(empty,vertexScalar,colocated);
 makeImmersedBoundaryConditionType(empty,vector,colocated);
 makeImmersedBoundaryConditionType(empty,faceVector,colocated);
-makeImmersedBoundaryConditionType(empty,edgeVector,colocated);
 makeImmersedBoundaryConditionType(empty,vertexVector,colocated);
 makeImmersedBoundaryConditionType(empty,tensor,colocated);
 makeImmersedBoundaryConditionType(empty,sphericalTensor,colocated)

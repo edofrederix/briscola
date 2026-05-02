@@ -7,11 +7,9 @@
 #include "label.H"
 #include "scalar.H"
 #include "faceScalar.H"
-#include "edgeScalar.H"
 #include "vertexScalar.H"
 #include "vector.H"
 #include "faceVector.H"
-#include "edgeVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
 #include "sphericalTensor.H"
@@ -34,11 +32,9 @@ class colocated;
 typedef meshLevel<label,colocated> colocatedLabelLevel;
 typedef meshLevel<scalar,colocated> colocatedScalarLevel;
 typedef meshLevel<faceScalar,colocated> colocatedFaceScalarLevel;
-typedef meshLevel<edgeScalar,colocated> colocatedEdgeScalarLevel;
 typedef meshLevel<vertexScalar,colocated> colocatedVertexScalarLevel;
 typedef meshLevel<vector,colocated> colocatedVectorLevel;
 typedef meshLevel<faceVector,colocated> colocatedFaceVectorLevel;
-typedef meshLevel<edgeVector,colocated> colocatedEdgeVectorLevel;
 typedef meshLevel<vertexVector,colocated> colocatedVertexVectorLevel;
 typedef meshLevel<tensor,colocated> colocatedTensorLevel;
 typedef meshLevel<sphericalTensor,colocated> colocatedSphericalTensorLevel;

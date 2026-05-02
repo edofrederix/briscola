@@ -87,11 +87,6 @@ public:
 template<> class pMPI<faceScalar> : public csMPI<faceScalar::csType> {};
 template<> class pMPI<faceVector> : public csMPI<faceVector::csType> {};
 
-// Edge space
-
-template<> class pMPI<edgeScalar> : public csMPI<edgeScalar::csType> {};
-template<> class pMPI<edgeVector> : public csMPI<edgeVector::csType> {};
-
 // Vertex space
 
 template<> class pMPI<vertexScalar> : public csMPI<vertexScalar::csType> {};

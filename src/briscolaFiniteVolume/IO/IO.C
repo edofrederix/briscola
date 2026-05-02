@@ -276,11 +276,9 @@ void IO::writeData(const word timeName, const label l)
         writeFields<symmTensor,MeshType>(filePtrs, l, d);
 
         writeFields<faceScalar,MeshType>(filePtrs, l, d);
-        writeFields<edgeScalar,MeshType>(filePtrs, l, d);
         writeFields<vertexScalar,MeshType>(filePtrs, l, d);
 
         writeFields<faceVector,MeshType>(filePtrs, l, d);
-        writeFields<edgeVector,MeshType>(filePtrs, l, d);
         writeFields<vertexVector,MeshType>(filePtrs, l, d);
     }
 }
@@ -479,11 +477,9 @@ void IO::readData(const word timeName, const label l)
         readFields<symmTensor,MeshType>(filePtr, ascii, l, d, fieldNames2);
 
         readFields<faceScalar,MeshType>(filePtr, ascii, l, d, fieldNames2);
-        readFields<edgeScalar,MeshType>(filePtr, ascii, l, d, fieldNames2);
         readFields<vertexScalar,MeshType>(filePtr, ascii, l, d, fieldNames2);
 
         readFields<faceVector,MeshType>(filePtr, ascii, l, d, fieldNames2);
-        readFields<edgeVector,MeshType>(filePtr, ascii, l, d, fieldNames2);
         readFields<vertexVector,MeshType>(filePtr, ascii, l, d, fieldNames2);
 
         if (d == 0)
@@ -708,10 +704,8 @@ void IO::correctBoundaryConditions(const wordList& fieldNames, const label l)
         correctBoundaryConditions<sphericalTensor,MeshType>(fieldName, l);
         correctBoundaryConditions<symmTensor,MeshType>(fieldName, l);
         correctBoundaryConditions<faceScalar,MeshType>(fieldName, l);
-        correctBoundaryConditions<edgeScalar,MeshType>(fieldName, l);
         correctBoundaryConditions<vertexScalar,MeshType>(fieldName, l);
         correctBoundaryConditions<faceVector,MeshType>(fieldName, l);
-        correctBoundaryConditions<edgeVector,MeshType>(fieldName, l);
         correctBoundaryConditions<vertexVector,MeshType>(fieldName, l);
     }
 }
