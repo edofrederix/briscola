@@ -10,21 +10,21 @@ namespace Foam
 
 template<class Type>
 class pTransform
-:
-    public Type
 {
+    Type t_;
+
 public:
 
     // Construct from transformation tensor and primitive
     inline pTransform(const labelTensor&, const Type& p)
     :
-        Type(p)
+        t_(p)
     {}
 
     // Return transformed primitive
-    inline operator const Type& () const
+    inline operator Type()
     {
-        return *this;
+        return t_;
     }
 };
 
