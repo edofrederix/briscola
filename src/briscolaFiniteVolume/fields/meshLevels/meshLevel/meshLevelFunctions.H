@@ -540,8 +540,6 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 #include "vectorMeshLevel.H"
 #include "tensorMeshLevel.H"
 #include "symmTensorMeshLevel.H"
-#include "sphericalTensorMeshLevel.H"
-#include "diagTensorMeshLevel.H"
 #include "faceScalarMeshLevel.H"
 #include "vertexScalarMeshLevel.H"
 #include "faceVectorMeshLevel.H"

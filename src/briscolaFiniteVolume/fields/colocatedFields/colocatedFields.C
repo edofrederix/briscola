@@ -17,9 +17,7 @@ defineTemplateTypeNameAndDebug(colocatedVectorField, 0);
 defineTemplateTypeNameAndDebug(colocatedFaceVectorField, 0);
 defineTemplateTypeNameAndDebug(colocatedVertexVectorField, 0);
 defineTemplateTypeNameAndDebug(colocatedTensorField, 0);
-defineTemplateTypeNameAndDebug(colocatedSphericalTensorField, 0);
 defineTemplateTypeNameAndDebug(colocatedSymmTensorField, 0);
-defineTemplateTypeNameAndDebug(colocatedDiagTensorField, 0);
 defineTemplateTypeNameAndDebug(colocatedDiagStencilField, 0);
 defineTemplateTypeNameAndDebug(colocatedStencilField, 0);
 

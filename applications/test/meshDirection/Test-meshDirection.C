@@ -368,14 +368,10 @@ void testTensorFunctions(const fvMesh& fvMsh)
 {
     meshDirection<tensor,MeshType> m1(fvMsh,0,0);
     meshDirection<symmTensor,MeshType> m2(fvMsh,0,0);
-    meshDirection<sphericalTensor,MeshType> m3(fvMsh,0,0);
-    meshDirection<diagTensor,MeshType> m4(fvMsh,0,0);
     meshDirection<vector,MeshType> v1(fvMsh,0,0);
 
     m1 = pTraits<tensor>::one;
     m2 = pTraits<symmTensor>::one;
-    m3 = pTraits<sphericalTensor>::one;
-    m4 = pTraits<diagTensor>::one;
     v1 = vector(1,2,3);
 
     // Commented combinations could exist, but are not defined as primitives in
@@ -391,16 +387,6 @@ void testTensorFunctions(const fvMesh& fvMsh)
     m1 & (m2*2.0);
     (m1*2.0) & (m2*2.0);
 
-    m1 & m3;
-    (m1*2.0) & m3;
-    m1 & (m3*2.0);
-    (m1*2.0) & (m3*2.0);
-
-    m1 & m4;
-    (m1*2.0) & m4;
-    m1 & (m4*2.0);
-    (m1*2.0) & (m4*2.0);
-
     m1 & v1;
     (m1*2.0) & v1;
     m1 & (v1*2.0);
@@ -410,16 +396,6 @@ void testTensorFunctions(const fvMesh& fvMsh)
     (m2*2.0) & m1;
     m2 & (m1*2.0);
     (m2*2.0) & (m1*2.0);
-
-    m3 & m1;
-    (m3*2.0) & m1;
-    m3 & (m1*2.0);
-    (m3*2.0) & (m1*2.0);
-
-    m4 & m1;
-    (m4*2.0) & m1;
-    m4 & (m1*2.0);
-    (m4*2.0) & (m1*2.0);
 
     v1 & m1;
     (v1*2.0) & m1;
@@ -436,43 +412,12 @@ void testTensorFunctions(const fvMesh& fvMsh)
     m1 && (m2*2.0);
     (m1*2.0) && (m2*2.0);
 
-    m1 && m3;
-    (m1*2.0) && m3;
-    m1 && (m3*2.0);
-    (m1*2.0) && (m3*2.0);
-
-    // m1 && m4;
-    // (m1*2.0) && m4;
-    // m1 && (m4*2.0);
-    // (m1*2.0) && (m4*2.0);
-
-    // m1 && v1;
-    // (m1*2.0) && v1;
-    // m1 && (v1*2.0);
-    // (m1*2.0) && (v1*2.0);
-
     m2 && m1;
     (m2*2.0) && m1;
     m2 && (m1*2.0);
     (m2*2.0) && (m1*2.0);
 
-    m3 && m1;
-    (m3*2.0) && m1;
-    m3 && (m1*2.0);
-    (m3*2.0) && (m1*2.0);
-
-    // m4 && m1;
-    // (m4*2.0) && m1;
-    // m4 && (m1*2.0);
-    // (m4*2.0) && (m1*2.0);
-
-    // v1 && m1;
-    // (v1*2.0) && m1;
-    // v1 && (m1*2.0);
-    // (v1*2.0) && (m1*2.0);
-
     tr(m1);
-    sph(m1);
     T(m1);
     symm(m1);
     twoSymm(m1);
@@ -485,7 +430,6 @@ void testTensorFunctions(const fvMesh& fvMsh)
     eigenVectors(m1);
 
     tr(m2);
-    sph(m2);
     symm(m2);
     twoSymm(m2);
     // skew(m2);
@@ -495,30 +439,6 @@ void testTensorFunctions(const fvMesh& fvMsh)
     cof(m2);
     eigenValues(m2);
     eigenVectors(m2);
-
-    tr(m3);
-    sph(m3);
-    // symm(m3);
-    // twoSymm(m3);
-    // skew(m3);
-    // dev(m3);
-    // dev2(m3);
-    det(m3);
-    // cof(m3);
-    // eigenValues(m3);
-    // eigenVectors(m3);
-
-    tr(m4);
-    sph(m4);
-    // symm(m4);
-    // twoSymm(m4);
-    // skew(m4);
-    // dev(m4);
-    // dev2(m4);
-    det(m4);
-    // cof(m4);
-    // eigenValues(m4);
-    // eigenVectors(m4);
 }
 
 int main(int argc, char *argv[])
@@ -552,8 +472,6 @@ int main(int argc, char *argv[])
     testConstructors<vector,colocated>(fvMsh);
     testConstructors<tensor,colocated>(fvMsh);
     testConstructors<symmTensor,colocated>(fvMsh);
-    testConstructors<sphericalTensor,colocated>(fvMsh);
-    testConstructors<diagTensor,colocated>(fvMsh);
 
     testConstructors<faceScalar,colocated>(fvMsh);
     testConstructors<vertexScalar,colocated>(fvMsh);
@@ -571,8 +489,6 @@ int main(int argc, char *argv[])
     testIndexing<vector,colocated>(fvMsh);
     testIndexing<tensor,colocated>(fvMsh);
     testIndexing<symmTensor,colocated>(fvMsh);
-    testIndexing<sphericalTensor,colocated>(fvMsh);
-    testIndexing<diagTensor,colocated>(fvMsh);
 
     testIndexing<faceScalar,colocated>(fvMsh);
     testIndexing<vertexScalar,colocated>(fvMsh);
@@ -590,8 +506,6 @@ int main(int argc, char *argv[])
     testMemberOperators<vector,colocated>(fvMsh);
     testMemberOperators<tensor,colocated>(fvMsh);
     testMemberOperators<symmTensor,colocated>(fvMsh);
-    testMemberOperators<sphericalTensor,colocated>(fvMsh);
-    testMemberOperators<diagTensor,colocated>(fvMsh);
 
     testMemberOperators<faceScalar,colocated>(fvMsh);
     testMemberOperators<vertexScalar,colocated>(fvMsh);
@@ -609,14 +523,10 @@ int main(int argc, char *argv[])
     testPrimitiveFunctions<vector,colocated>(fvMsh);
     testPrimitiveFunctions<tensor,colocated>(fvMsh);
     testPrimitiveFunctions<symmTensor,colocated>(fvMsh);
-    testPrimitiveFunctions<sphericalTensor,colocated>(fvMsh);
-    testPrimitiveFunctions<diagTensor,colocated>(fvMsh);
 
     testVectorSpaceFunctions<vector,colocated>(fvMsh);
     testVectorSpaceFunctions<tensor,colocated>(fvMsh);
     testVectorSpaceFunctions<symmTensor,colocated>(fvMsh);
-    testVectorSpaceFunctions<sphericalTensor,colocated>(fvMsh);
-    testVectorSpaceFunctions<diagTensor,colocated>(fvMsh);
 
     testStencilFunctions<stencil,colocated>(fvMsh);
     testStencilFunctions<diagStencil,colocated>(fvMsh);
@@ -635,8 +545,6 @@ int main(int argc, char *argv[])
 
         testConstructors<tensor,staggered>(fvMsh);
         testConstructors<symmTensor,staggered>(fvMsh);
-        testConstructors<sphericalTensor,staggered>(fvMsh);
-        testConstructors<diagTensor,staggered>(fvMsh);
 
         testConstructors<faceScalar,staggered>(fvMsh);
         testConstructors<vertexScalar,staggered>(fvMsh);
@@ -654,8 +562,6 @@ int main(int argc, char *argv[])
         testIndexing<vector,staggered>(fvMsh);
         testIndexing<tensor,staggered>(fvMsh);
         testIndexing<symmTensor,staggered>(fvMsh);
-        testIndexing<sphericalTensor,staggered>(fvMsh);
-        testIndexing<diagTensor,staggered>(fvMsh);
 
         testIndexing<faceScalar,staggered>(fvMsh);
         testIndexing<vertexScalar,staggered>(fvMsh);
@@ -673,8 +579,6 @@ int main(int argc, char *argv[])
         testMemberOperators<vector,staggered>(fvMsh);
         testMemberOperators<tensor,staggered>(fvMsh);
         testMemberOperators<symmTensor,staggered>(fvMsh);
-        testMemberOperators<sphericalTensor,staggered>(fvMsh);
-        testMemberOperators<diagTensor,staggered>(fvMsh);
 
         testMemberOperators<faceScalar,staggered>(fvMsh);
         testMemberOperators<vertexScalar,staggered>(fvMsh);
@@ -692,15 +596,11 @@ int main(int argc, char *argv[])
         testPrimitiveFunctions<vector,staggered>(fvMsh);
         testPrimitiveFunctions<tensor,staggered>(fvMsh);
         testPrimitiveFunctions<symmTensor,staggered>(fvMsh);
-        testPrimitiveFunctions<sphericalTensor,staggered>(fvMsh);
-        testPrimitiveFunctions<diagTensor,staggered>(fvMsh);
 
 
         testVectorSpaceFunctions<vector,staggered>(fvMsh);
         testVectorSpaceFunctions<tensor,staggered>(fvMsh);
         testVectorSpaceFunctions<symmTensor,staggered>(fvMsh);
-        testVectorSpaceFunctions<sphericalTensor,staggered>(fvMsh);
-        testVectorSpaceFunctions<diagTensor,staggered>(fvMsh);
 
 
         testStencilFunctions<stencil,staggered>(fvMsh);

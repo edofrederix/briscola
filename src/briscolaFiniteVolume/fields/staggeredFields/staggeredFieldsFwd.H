@@ -12,9 +12,7 @@
 #include "faceVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
-#include "sphericalTensor.H"
 #include "symmTensor.H"
-#include "diagTensor.H"
 #include "diagStencil.H"
 #include "stencil.H"
 
@@ -37,9 +35,7 @@ typedef meshField<vector,staggered> staggeredVectorField;
 typedef meshField<faceVector,staggered> staggeredFaceVectorField;
 typedef meshField<vertexVector,staggered> staggeredVertexVectorField;
 typedef meshField<tensor,staggered> staggeredTensorField;
-typedef meshField<sphericalTensor,staggered> staggeredSphericalTensorField;
 typedef meshField<symmTensor,staggered> staggeredSymmTensorField;
-typedef meshField<diagTensor,staggered> staggeredDiagTensorField;
 typedef meshField<diagStencil,staggered> staggeredDiagStencilField;
 typedef meshField<stencil,staggered> staggeredStencilField;
 

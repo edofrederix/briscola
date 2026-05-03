@@ -12,9 +12,7 @@
 #include "faceVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
-#include "sphericalTensor.H"
 #include "symmTensor.H"
-#include "diagTensor.H"
 #include "diagStencil.H"
 #include "stencil.H"
 
@@ -37,9 +35,7 @@ typedef meshField<vector,colocated> colocatedVectorField;
 typedef meshField<faceVector,colocated> colocatedFaceVectorField;
 typedef meshField<vertexVector,colocated> colocatedVertexVectorField;
 typedef meshField<tensor,colocated> colocatedTensorField;
-typedef meshField<sphericalTensor,colocated> colocatedSphericalTensorField;
 typedef meshField<symmTensor,colocated> colocatedSymmTensorField;
-typedef meshField<diagTensor,colocated> colocatedDiagTensorField;
 typedef meshField<diagStencil,colocated> colocatedDiagStencilField;
 typedef meshField<stencil,colocated> colocatedStencilField;
 

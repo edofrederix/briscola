@@ -13,7 +13,6 @@ UNARY_FUNCTION(symmTensor, vector, sqr)
 UNARY_FUNCTION(symmTensor, symmTensor, innerSqr)
 
 UNARY_FUNCTION(scalar, symmTensor, tr)
-UNARY_FUNCTION(sphericalTensor, symmTensor, sph)
 UNARY_FUNCTION(symmTensor, symmTensor, symm)
 UNARY_FUNCTION(symmTensor, symmTensor, twoSymm)
 UNARY_FUNCTION(symmTensor, symmTensor, dev)

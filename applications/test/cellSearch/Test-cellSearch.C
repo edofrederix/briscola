@@ -160,17 +160,13 @@ int main(int argc, char *argv[])
     testInterpolations<scalar,colocated>(fvMsh);
     testInterpolations<vector,colocated>(fvMsh);
     testInterpolations<tensor,colocated>(fvMsh);
-    testInterpolations<sphericalTensor,colocated>(fvMsh);
     testInterpolations<symmTensor,colocated>(fvMsh);
-    testInterpolations<diagTensor,colocated>(fvMsh);
 
     if (fvMsh.structured())
     {
         testInterpolations<scalar,staggered>(fvMsh);
         testInterpolations<vector,staggered>(fvMsh);
         testInterpolations<tensor,staggered>(fvMsh);
-        testInterpolations<sphericalTensor,staggered>(fvMsh);
         testInterpolations<symmTensor,staggered>(fvMsh);
-        testInterpolations<diagTensor,staggered>(fvMsh);
     }
 }

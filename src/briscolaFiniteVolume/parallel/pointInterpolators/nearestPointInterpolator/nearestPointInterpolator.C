@@ -80,9 +80,7 @@ List<TYPE> nearestPointInterpolator<MeshType>::operator()                   \
 INTERPFUNC(scalar);
 INTERPFUNC(vector);
 INTERPFUNC(tensor);
-INTERPFUNC(sphericalTensor);
 INTERPFUNC(symmTensor);
-INTERPFUNC(diagTensor);
 INTERPFUNC(faceScalar);
 INTERPFUNC(faceVector);
 

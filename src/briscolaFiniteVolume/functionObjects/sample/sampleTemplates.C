@@ -116,9 +116,7 @@ template void sample::FUNC                                                  \
 APPENDDATA(appendScalarData,scalar)
 APPENDDATA(appendArrayData,vector)
 APPENDDATA(appendArrayData,tensor)
-APPENDDATA(appendArrayData,sphericalTensor)
 APPENDDATA(appendArrayData,symmTensor)
-APPENDDATA(appendArrayData,diagTensor)
 APPENDDATA(appendArrayData,faceScalar)
 APPENDDATA(appendArrayArrayData,faceVector)
 

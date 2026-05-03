@@ -10,7 +10,6 @@ namespace briscola
 {
 
 UNARY_FUNCTION(scalar, tensor, tr)
-UNARY_FUNCTION(sphericalTensor, tensor, sph)
 UNARY_FUNCTION(symmTensor, tensor, symm)
 UNARY_FUNCTION(symmTensor, tensor, twoSymm)
 UNARY_FUNCTION(tensor, tensor, T)

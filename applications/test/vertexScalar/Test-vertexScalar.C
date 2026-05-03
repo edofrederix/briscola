@@ -11,9 +11,7 @@
 #include "scalar.H"
 #include "vector.H"
 #include "tensor.H"
-#include "sphericalTensor.H"
 #include "symmTensor.H"
-#include "diagTensor.H"
 
 using namespace Foam;
 using namespace briscola;

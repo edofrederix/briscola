@@ -450,8 +450,6 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 #include "vectorBlock.H"
 #include "tensorBlock.H"
 #include "symmTensorBlock.H"
-#include "sphericalTensorBlock.H"
-#include "diagTensorBlock.H"
 #include "faceScalarBlock.H"
 #include "vertexScalarBlock.H"
 #include "faceVectorBlock.H"

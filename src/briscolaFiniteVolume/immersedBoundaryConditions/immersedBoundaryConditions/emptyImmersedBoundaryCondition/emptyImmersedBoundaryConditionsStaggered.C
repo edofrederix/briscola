@@ -22,9 +22,7 @@ makeImmersedBoundaryConditionType(empty,vector,staggered);
 makeImmersedBoundaryConditionType(empty,faceVector,staggered);
 makeImmersedBoundaryConditionType(empty,vertexVector,staggered);
 makeImmersedBoundaryConditionType(empty,tensor,staggered);
-makeImmersedBoundaryConditionType(empty,sphericalTensor,staggered)
 makeImmersedBoundaryConditionType(empty,symmTensor,staggered);
-makeImmersedBoundaryConditionType(empty,diagTensor,staggered);
 makeImmersedBoundaryConditionType(empty,stencil,staggered);
 makeImmersedBoundaryConditionType(empty,diagStencil,staggered);
 

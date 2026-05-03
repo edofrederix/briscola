@@ -416,18 +416,14 @@ template List<TYPE> cellDataExchange<MESHTYPE>::dataFunc                       \
 INSTANTIATE(scalar,colocated)
 INSTANTIATE(vector,colocated)
 INSTANTIATE(tensor,colocated)
-INSTANTIATE(sphericalTensor,colocated)
 INSTANTIATE(symmTensor,colocated)
-INSTANTIATE(diagTensor,colocated)
 INSTANTIATE(faceScalar,colocated)
 INSTANTIATE(faceVector,colocated)
 
 INSTANTIATE(scalar,staggered)
 INSTANTIATE(vector,staggered)
 INSTANTIATE(tensor,staggered)
-INSTANTIATE(sphericalTensor,staggered)
 INSTANTIATE(symmTensor,staggered)
-INSTANTIATE(diagTensor,staggered)
 INSTANTIATE(faceScalar,staggered)
 INSTANTIATE(faceVector,staggered)
 

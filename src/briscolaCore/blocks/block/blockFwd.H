@@ -10,8 +10,6 @@
 #include "vertexVector.H"
 #include "tensor.H"
 #include "symmTensor.H"
-#include "sphericalTensor.H"
-#include "diagTensor.H"
 #include "diagStencil.H"
 #include "stencil.H"
 
@@ -32,8 +30,6 @@ typedef block<faceVector> faceVectorBlock;
 typedef block<vertexVector> vertexVectorBlock;
 typedef block<tensor> tensorBlock;
 typedef block<symmTensor> symmTensorBlock;
-typedef block<sphericalTensor> sphericalTensorBlock;
-typedef block<diagTensor> diagTensorBlock;
 typedef block<diagStencil> diagStencilBlock;
 typedef block<stencil> stencilBlock;
 

@@ -11,9 +11,7 @@
 #include "faceVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
-#include "sphericalTensor.H"
 #include "symmTensor.H"
-#include "diagTensor.H"
 #include "diagStencil.H"
 #include "stencil.H"
 
@@ -36,9 +34,7 @@ typedef meshDirection<vector,colocated> colocatedVectorDirection;
 typedef meshDirection<faceVector,colocated> colocatedFaceVectorDirection;
 typedef meshDirection<vertexVector,colocated> colocatedVertexVectorDirection;
 typedef meshDirection<tensor,colocated> colocatedTensorDirection;
-typedef meshDirection<sphericalTensor,colocated> colocatedSphericalTensorDirection;
 typedef meshDirection<symmTensor,colocated> colocatedSymmTensorDirection;
-typedef meshDirection<diagTensor,colocated> colocatedDiagTensorDirection;
 typedef meshDirection<diagStencil,colocated> colocatedDiagStencilDirection;
 typedef meshDirection<stencil,colocated> colocatedStencilDirection;
 

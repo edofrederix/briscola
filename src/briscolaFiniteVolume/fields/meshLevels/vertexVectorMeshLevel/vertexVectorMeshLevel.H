@@ -6,7 +6,6 @@
 #include "scalarMeshLevel.H"
 #include "vectorMeshLevel.H"
 #include "tensorMeshLevel.H"
-#include "sphericalTensorMeshLevel.H"
 #include "symmTensorMeshLevel.H"
 
 #define TEMPLATE template<class MeshType>

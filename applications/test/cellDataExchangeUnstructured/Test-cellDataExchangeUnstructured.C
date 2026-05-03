@@ -107,7 +107,5 @@ int main(int argc, char *argv[])
     testDataExchange<scalar>(fvMsh);
     testDataExchange<vector>(fvMsh);
     testDataExchange<tensor>(fvMsh);
-    testDataExchange<sphericalTensor>(fvMsh);
     testDataExchange<symmTensor>(fvMsh);
-    testDataExchange<diagTensor>(fvMsh);
 }

@@ -1538,8 +1538,6 @@ void testTensorFunctions()
 
     block<tensor> b1(shape);
     block<symmTensor> b2(shape);
-    block<sphericalTensor> b3(shape);
-    block<diagTensor> b4(shape);
     block<vector> v1(shape);
 
     label l = 0;
@@ -1548,8 +1546,6 @@ void testTensorFunctions()
     {
         b1(i,j,k) = pTraits<tensor>::one*l++;
         b2(i,j,k) = pTraits<symmTensor>::one*l++;
-        b3(i,j,k) = pTraits<sphericalTensor>::one*l++;
-        b4(i,j,k) = pTraits<diagTensor>::one*l++;
         v1(i,j,k) = vector(l,l+1,l+2); l++;
     }
 
@@ -1596,51 +1592,22 @@ void testTensorFunctions()
 
     TEST(tensor, b1, b1, &, "1")
     TEST(tensor, b1, b2, &, "2")
-    TEST(tensor, b1, b3, &, "3")
-    TEST(tensor, b1, b4, &, "4")
     TEST(tensor, b2, b1, &, "5")
-    TEST(tensor, b3, b1, &, "6")
-    TEST(tensor, b4, b1, &, "7")
     TEST(tensor, b2, b2, &, "8")
-    TEST(symmTensor, b2, b3, &, "9")
-    //TEST(tensor, b2, b4, &, "10")
-    TEST(symmTensor, b3, b2, &, "11")
-    // TEST(tensor, b4, b2, &, "12")
-    TEST(sphericalTensor, b3, b3, &, "13")
-    // TEST(tensor, b3, b4, &, "14")
-    // TEST(tensor, b4, b3, &, "15")
-    // TEST(tensor, b4, b4, &, "16")
 
     TEST(scalar, b1, b1, &&, "17")
     TEST(scalar, b1, b2, &&, "18")
-    TEST(scalar, b1, b3, &&, "19")
-    // TEST(scalar, b1, b4, &&, "20")
     TEST(scalar, b2, b1, &&, "21")
-    TEST(scalar, b3, b1, &&, "22")
-    // TEST(scalar, b4, b1, &&, "23")
     TEST(scalar, b2, b2, &&, "24")
-    TEST(scalar, b2, b3, &&, "25")
-    // TEST(scalar, b2, b4, &&, "26")
-    TEST(scalar, b3, b2, &&, "27")
-    // TEST(scalar, b4, b2, &&, "28")
-    TEST(scalar, b3, b3, &&, "29")
-    // TEST(scalar, b3, b4, &&, "30")
-    // TEST(scalar, b4, b3, &&, "31")
-    TEST(scalar, b4, b4, &&, "32")
 
     TEST(vector, b1, v1, &, "33")
     TEST(vector, b2, v1, &, "34")
-    TEST(vector, b3, v1, &, "35")
-    TEST(vector, b4, v1, &, "36")
     TEST(vector, v1, b1, &, "37")
     TEST(vector, v1, b2, &, "38")
-    TEST(vector, v1, b3, &, "39")
-    TEST(vector, v1, b4, &, "40")
 
     #undef TEST
 
     tr(b1);
-    sph(b1);
     T(b1);
     symm(b1);
     twoSymm(b1);
@@ -1653,7 +1620,6 @@ void testTensorFunctions()
     eigenVectors(b1);
 
     tr(b2);
-    sph(b2);
     symm(b2);
     twoSymm(b2);
     // skew(b2);
@@ -1663,30 +1629,6 @@ void testTensorFunctions()
     cof(b2);
     eigenValues(b2);
     eigenVectors(b2);
-
-    tr(b3);
-    sph(b3);
-    // symm(b3);
-    // twoSymm(b3);
-    // skew(b3);
-    // dev(b3);
-    // dev2(b3);
-    det(b3);
-    // cof(b3);
-    // eigenValues(b3);
-    // eigenVectors(b3);
-
-    tr(b4);
-    sph(b4);
-    // symm(b4);
-    // twoSymm(b4);
-    // skew(b4);
-    // dev(b4);
-    // dev2(b4);
-    det(b4);
-    // cof(b4);
-    // eigenValues(b4);
-    // eigenVectors(b4);
 }
 
 int main(int argc, char *argv[])
@@ -1700,8 +1642,6 @@ int main(int argc, char *argv[])
     testConstructors<vector>();
     testConstructors<tensor>();
     testConstructors<symmTensor>();
-    testConstructors<sphericalTensor>();
-    testConstructors<diagTensor>();
 
     testConstructors<faceScalar>();
     testConstructors<vertexScalar>();
@@ -1719,8 +1659,6 @@ int main(int argc, char *argv[])
     testIndexing<vector>();
     testIndexing<tensor>();
     testIndexing<symmTensor>();
-    testIndexing<sphericalTensor>();
-    testIndexing<diagTensor>();
 
     testIndexing<faceScalar>();
     testIndexing<vertexScalar>();
@@ -1738,8 +1676,6 @@ int main(int argc, char *argv[])
     testTransformations<vector>();
     testTransformations<tensor>();
     testTransformations<symmTensor>();
-    testTransformations<sphericalTensor>();
-    testTransformations<diagTensor>();
 
     testTransformations<faceScalar>();
     testTransformations<vertexScalar>();
@@ -1757,8 +1693,6 @@ int main(int argc, char *argv[])
     testMemberOperators<vector>();
     testMemberOperators<tensor>();
     testMemberOperators<symmTensor>();
-    testMemberOperators<sphericalTensor>();
-    testMemberOperators<diagTensor>();
 
     testMemberOperators<faceScalar>();
     testMemberOperators<vertexScalar>();
@@ -1775,8 +1709,6 @@ int main(int argc, char *argv[])
     testPrimitiveFunctions<vector>();
     testPrimitiveFunctions<tensor>();
     testPrimitiveFunctions<symmTensor>();
-    testPrimitiveFunctions<sphericalTensor>();
-    testPrimitiveFunctions<diagTensor>();
 
     testPrimitiveFunctions<faceScalar>();
     testPrimitiveFunctions<vertexScalar>();
@@ -1788,8 +1720,6 @@ int main(int argc, char *argv[])
     testVectorSpaceFunctions<vector>();
     testVectorSpaceFunctions<tensor>();
     testVectorSpaceFunctions<symmTensor>();
-    testVectorSpaceFunctions<sphericalTensor>();
-    testVectorSpaceFunctions<diagTensor>();
 
 
     testStencilFunctions<stencil>();

@@ -11,9 +11,7 @@
 #include "scalar.H"
 #include "vector.H"
 #include "tensor.H"
-#include "sphericalTensor.H"
 #include "symmTensor.H"
-#include "diagTensor.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -214,8 +212,6 @@ int main(int argc, char *argv[])
     if (h7.fore()    != v6) FatalErrorInFunction << "test 12f failed" << abort(FatalError);
 
     vector vv1(1,2,3);
-    sphericalTensor t1(2);
-    diagTensor t2(1,2,3);
     symmTensor t3(1,2,3,4,5,6);
     tensor t4(1,2,3,4,5,6,7,8,9);
 
@@ -227,25 +223,6 @@ int main(int argc, char *argv[])
     if (fv7.top()     != v4*vv1) FatalErrorInFunction << "test 13d failed" << abort(FatalError);
     if (fv7.aft()     != v5*vv1) FatalErrorInFunction << "test 13e failed" << abort(FatalError);
     if (fv7.fore()    != v6*vv1) FatalErrorInFunction << "test 13f failed" << abort(FatalError);
-
-    FaceSpace<sphericalTensor> fst7 = t1 * h7;
-
-    if (fst7.left()    != v1*t1) FatalErrorInFunction << "test 14a failed" << abort(FatalError);
-    if (fst7.right()   != v2*t1) FatalErrorInFunction << "test 14b failed" << abort(FatalError);
-    if (fst7.bottom()  != v3*t1) FatalErrorInFunction << "test 14c failed" << abort(FatalError);
-    if (fst7.top()     != v4*t1) FatalErrorInFunction << "test 14d failed" << abort(FatalError);
-    if (fst7.aft()     != v5*t1) FatalErrorInFunction << "test 14e failed" << abort(FatalError);
-    if (fst7.fore()    != v6*t1) FatalErrorInFunction << "test 14f failed" << abort(FatalError);
-
-    // Bug in OpenFOAM:
-    // FaceSpace<diagTensor> fdt7 = t2 * h7;
-
-    // if (fdt7.left()    != v1*t2) FatalErrorInFunction << "test 15a failed" << abort(FatalError);
-    // if (fdt7.right()   != v2*t2) FatalErrorInFunction << "test 15b failed" << abort(FatalError);
-    // if (fdt7.bottom()  != v3*t2) FatalErrorInFunction << "test 15c failed" << abort(FatalError);
-    // if (fdt7.top()     != v4*t2) FatalErrorInFunction << "test 15d failed" << abort(FatalError);
-    // if (fdt7.aft()     != v5*t2) FatalErrorInFunction << "test 15e failed" << abort(FatalError);
-    // if (fdt7.fore()    != v6*t2) FatalErrorInFunction << "test 15f failed" << abort(FatalError);
 
     FaceSpace<symmTensor> fsmt7 = t3 * h7;
 
@@ -274,24 +251,6 @@ int main(int argc, char *argv[])
     if (fv7i.aft()     != vv1/v5) FatalErrorInFunction << "test 18e failed" << abort(FatalError);
     if (fv7i.fore()    != vv1/v6) FatalErrorInFunction << "test 18f failed" << abort(FatalError);
 
-    FaceSpace<sphericalTensor> fst7i = t1 / h7;
-
-    if (fst7i.left()    != t1/v1) FatalErrorInFunction << "test 19a failed" << abort(FatalError);
-    if (fst7i.right()   != t1/v2) FatalErrorInFunction << "test 19b failed" << abort(FatalError);
-    if (fst7i.bottom()  != t1/v3) FatalErrorInFunction << "test 19c failed" << abort(FatalError);
-    if (fst7i.top()     != t1/v4) FatalErrorInFunction << "test 19d failed" << abort(FatalError);
-    if (fst7i.aft()     != t1/v5) FatalErrorInFunction << "test 19e failed" << abort(FatalError);
-    if (fst7i.fore()    != t1/v6) FatalErrorInFunction << "test 19f failed" << abort(FatalError);
-
-    FaceSpace<diagTensor> fdt7i = t2 / h7;
-
-    if (fdt7i.left()    != t2/v1) FatalErrorInFunction << "test 20a failed" << abort(FatalError);
-    if (fdt7i.right()   != t2/v2) FatalErrorInFunction << "test 20b failed" << abort(FatalError);
-    if (fdt7i.bottom()  != t2/v3) FatalErrorInFunction << "test 20c failed" << abort(FatalError);
-    if (fdt7i.top()     != t2/v4) FatalErrorInFunction << "test 20d failed" << abort(FatalError);
-    if (fdt7i.aft()     != t2/v5) FatalErrorInFunction << "test 20e failed" << abort(FatalError);
-    if (fdt7i.fore()    != t2/v6) FatalErrorInFunction << "test 20f failed" << abort(FatalError);
-
     FaceSpace<symmTensor> fsmt7i = t3 / h7;
 
     if (fsmt7i.left()    != t3/v1) FatalErrorInFunction << "test 21a failed" << abort(FatalError);
@@ -318,25 +277,6 @@ int main(int argc, char *argv[])
     if (fv7.top()     != v4*vv1) FatalErrorInFunction << "test 23d failed" << abort(FatalError);
     if (fv7.aft()     != v5*vv1) FatalErrorInFunction << "test 23e failed" << abort(FatalError);
     if (fv7.fore()    != v6*vv1) FatalErrorInFunction << "test 23f failed" << abort(FatalError);
-
-    fst7 = h7 * t1;
-
-    if (fst7.left()    != v1*t1) FatalErrorInFunction << "test 24a failed" << abort(FatalError);
-    if (fst7.right()   != v2*t1) FatalErrorInFunction << "test 24b failed" << abort(FatalError);
-    if (fst7.bottom()  != v3*t1) FatalErrorInFunction << "test 24c failed" << abort(FatalError);
-    if (fst7.top()     != v4*t1) FatalErrorInFunction << "test 24d failed" << abort(FatalError);
-    if (fst7.aft()     != v5*t1) FatalErrorInFunction << "test 24e failed" << abort(FatalError);
-    if (fst7.fore()    != v6*t1) FatalErrorInFunction << "test 24f failed" << abort(FatalError);
-
-    // Bug in OpenFOAM:
-    // fdt7 = h7 * t2;
-
-    // if (fdt7.left()    != v1*t2) FatalErrorInFunction << "test 25a failed" << abort(FatalError);
-    // if (fdt7.right()   != v2*t2) FatalErrorInFunction << "test 25b failed" << abort(FatalError);
-    // if (fdt7.bottom()  != v3*t2) FatalErrorInFunction << "test 25c failed" << abort(FatalError);
-    // if (fdt7.top()     != v4*t2) FatalErrorInFunction << "test 25d failed" << abort(FatalError);
-    // if (fdt7.aft()     != v5*t2) FatalErrorInFunction << "test 25e failed" << abort(FatalError);
-    // if (fdt7.fore()    != v6*t2) FatalErrorInFunction << "test 25f failed" << abort(FatalError);
 
     fsmt7 = h7 * t3;
 

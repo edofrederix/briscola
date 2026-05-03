@@ -185,9 +185,7 @@ int main(int argc, char *argv[])
         CREATEFIELD(scalar,Scalar,MESHTYPE,DEEP)                        \
         CREATEFIELD(vector,Vector,MESHTYPE,DEEP)                        \
         CREATEFIELD(tensor,Tensor,MESHTYPE,DEEP)                        \
-        CREATEFIELD(diagTensor,DiagTensor,MESHTYPE,DEEP)                \
         CREATEFIELD(symmTensor,SymmTensor,MESHTYPE,DEEP)                \
-        CREATEFIELD(sphericalTensor,SphericalTensor,MESHTYPE,DEEP)      \
         CREATEFIELD(faceScalar,FaceScalar,MESHTYPE,DEEP)                \
         CREATEFIELD(vertexScalar,VertexScalar,MESHTYPE,DEEP)            \
         CREATEFIELD(faceVector,FaceVector,MESHTYPE,DEEP)                \
@@ -202,9 +200,7 @@ int main(int argc, char *argv[])
         RESETFIELD(Scalar,MESHTYPE)                                     \
         RESETFIELD(Vector,MESHTYPE)                                     \
         RESETFIELD(Tensor,MESHTYPE)                                     \
-        RESETFIELD(DiagTensor,MESHTYPE)                                 \
         RESETFIELD(SymmTensor,MESHTYPE)                                 \
-        RESETFIELD(SphericalTensor,MESHTYPE)                            \
         RESETFIELD(FaceScalar,MESHTYPE)                                 \
         RESETFIELD(VertexScalar,MESHTYPE)                               \
         RESETFIELD(FaceVector,MESHTYPE)                                 \
@@ -219,9 +215,7 @@ int main(int argc, char *argv[])
         TESTFIELD(scalar,Scalar,MESHTYPE,GHOSTS)                        \
         TESTFIELD(vector,Vector,MESHTYPE,GHOSTS)                        \
         TESTFIELD(tensor,Tensor,MESHTYPE,GHOSTS)                        \
-        TESTFIELD(diagTensor,DiagTensor,MESHTYPE,GHOSTS)                \
         TESTFIELD(symmTensor,SymmTensor,MESHTYPE,GHOSTS)                \
-        TESTFIELD(sphericalTensor,SphericalTensor,MESHTYPE,GHOSTS)      \
         TESTFIELD(faceScalar,FaceScalar,MESHTYPE,GHOSTS)                \
         TESTFIELD(vertexScalar,VertexScalar,MESHTYPE,GHOSTS)            \
         TESTFIELD(faceVector,FaceVector,MESHTYPE,GHOSTS)                \

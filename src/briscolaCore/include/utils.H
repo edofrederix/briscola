@@ -4,7 +4,6 @@
 #include "labelTensor.H"
 #include "labelVector.H"
 #include "tensor.H"
-#include "diagTensor.H"
 #include "vector.H"
 #include "scalarList.H"
 #include "sigFpe.H"

@@ -6,7 +6,6 @@
 #include "vertexScalarMeshField.H"
 #include "vectorMeshField.H"
 #include "tensorMeshField.H"
-#include "sphericalTensorMeshField.H"
 #include "symmTensorMeshField.H"
 
 #define TEMPLATE template<class MeshType>

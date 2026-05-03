@@ -9,9 +9,7 @@
 #include "faceVectorMeshLevel.H"
 #include "vertexVectorMeshLevel.H"
 #include "tensorMeshLevel.H"
-#include "sphericalTensorMeshLevel.H"
 #include "symmTensorMeshLevel.H"
-#include "diagTensorMeshLevel.H"
 #include "diagStencilMeshLevel.H"
 #include "stencilMeshLevel.H"
 

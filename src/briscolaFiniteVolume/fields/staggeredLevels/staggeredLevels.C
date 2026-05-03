@@ -17,9 +17,7 @@ defineTemplateTypeNameAndDebug(staggeredVectorLevel, 0);
 defineTemplateTypeNameAndDebug(staggeredFaceVectorLevel, 0);
 defineTemplateTypeNameAndDebug(staggeredVertexVectorLevel, 0);
 defineTemplateTypeNameAndDebug(staggeredTensorLevel, 0);
-defineTemplateTypeNameAndDebug(staggeredSphericalTensorLevel, 0);
 defineTemplateTypeNameAndDebug(staggeredSymmTensorLevel, 0);
-defineTemplateTypeNameAndDebug(staggeredDiagTensorLevel, 0);
 defineTemplateTypeNameAndDebug(staggeredDiagStencilLevel, 0);
 defineTemplateTypeNameAndDebug(staggeredStencilLevel, 0);
 

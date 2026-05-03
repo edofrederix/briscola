@@ -65,9 +65,7 @@ public:
     DATAFUNC(scalar);
     DATAFUNC(vector);
     DATAFUNC(tensor);
-    DATAFUNC(sphericalTensor);
     DATAFUNC(symmTensor);
-    DATAFUNC(diagTensor);
     DATAFUNC(faceScalar);
     DATAFUNC(faceVector);
 

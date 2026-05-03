@@ -22,9 +22,7 @@ makeImmersedBoundaryConditionType(empty,vector,colocated);
 makeImmersedBoundaryConditionType(empty,faceVector,colocated);
 makeImmersedBoundaryConditionType(empty,vertexVector,colocated);
 makeImmersedBoundaryConditionType(empty,tensor,colocated);
-makeImmersedBoundaryConditionType(empty,sphericalTensor,colocated)
 makeImmersedBoundaryConditionType(empty,symmTensor,colocated);
-makeImmersedBoundaryConditionType(empty,diagTensor,colocated);
 makeImmersedBoundaryConditionType(empty,stencil,colocated);
 makeImmersedBoundaryConditionType(empty,diagStencil,colocated);
 

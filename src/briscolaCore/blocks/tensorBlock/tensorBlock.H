@@ -3,7 +3,6 @@
 
 #include "scalarBlock.H"
 #include "vectorBlock.H"
-#include "sphericalTensorBlock.H"
 #include "symmTensorBlock.H"
 #include "tensor.H"
 
@@ -19,7 +18,6 @@ namespace briscola
 typedef block<tensor> tensorBlock;
 
 UNARY_FUNCTION(scalar, tensor, tr)
-UNARY_FUNCTION(sphericalTensor, tensor, sph)
 UNARY_FUNCTION(symmTensor, tensor, symm)
 UNARY_FUNCTION(symmTensor, tensor, twoSymm)
 UNARY_FUNCTION(tensor, tensor, T)

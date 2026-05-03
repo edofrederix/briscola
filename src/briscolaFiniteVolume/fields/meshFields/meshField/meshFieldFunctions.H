@@ -618,8 +618,6 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 #include "vectorMeshField.H"
 #include "tensorMeshField.H"
 #include "symmTensorMeshField.H"
-#include "sphericalTensorMeshField.H"
-#include "diagTensorMeshField.H"
 #include "faceScalarMeshField.H"
 #include "vertexScalarMeshField.H"
 #include "faceVectorMeshField.H"

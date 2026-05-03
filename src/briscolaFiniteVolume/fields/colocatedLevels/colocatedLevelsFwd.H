@@ -12,9 +12,7 @@
 #include "faceVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
-#include "sphericalTensor.H"
 #include "symmTensor.H"
-#include "diagTensor.H"
 #include "diagStencil.H"
 #include "stencil.H"
 
@@ -37,9 +35,7 @@ typedef meshLevel<vector,colocated> colocatedVectorLevel;
 typedef meshLevel<faceVector,colocated> colocatedFaceVectorLevel;
 typedef meshLevel<vertexVector,colocated> colocatedVertexVectorLevel;
 typedef meshLevel<tensor,colocated> colocatedTensorLevel;
-typedef meshLevel<sphericalTensor,colocated> colocatedSphericalTensorLevel;
 typedef meshLevel<symmTensor,colocated> colocatedSymmTensorLevel;
-typedef meshLevel<diagTensor,colocated> colocatedDiagTensorLevel;
 typedef meshLevel<diagStencil,colocated> colocatedDiagStencilLevel;
 typedef meshLevel<stencil,colocated> colocatedStencilLevel;
 

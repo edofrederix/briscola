@@ -110,29 +110,11 @@ void sample::appendData
             headers
         );
     }
-    else if (db.foundObject<colocatedSphericalTensorField>(fieldName))
-    {
-        this->appendData
-        (
-            db.lookupObject<colocatedSphericalTensorField>(fieldName),
-            data,
-            headers
-        );
-    }
     else if (db.foundObject<colocatedSymmTensorField>(fieldName))
     {
         this->appendData
         (
             db.lookupObject<colocatedSymmTensorField>(fieldName),
-            data,
-            headers
-        );
-    }
-    else if (db.foundObject<colocatedDiagTensorField>(fieldName))
-    {
-        this->appendData
-        (
-            db.lookupObject<colocatedDiagTensorField>(fieldName),
             data,
             headers
         );

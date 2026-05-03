@@ -107,9 +107,7 @@ public:
     makeboundaryExchange(faceVector,MESHTYPE)                                  \
     makeboundaryExchange(vertexVector,MESHTYPE)                                \
     makeboundaryExchange(tensor,MESHTYPE)                                      \
-    makeboundaryExchange(sphericalTensor,MESHTYPE)                             \
     makeboundaryExchange(symmTensor,MESHTYPE)                                  \
-    makeboundaryExchange(diagTensor,MESHTYPE)                                  \
     makeboundaryExchange(stencil,MESHTYPE)                                     \
     makeboundaryExchange(diagStencil,MESHTYPE)
 

@@ -11,9 +11,7 @@
 #include "faceVector.H"
 #include "vertexVector.H"
 #include "tensor.H"
-#include "sphericalTensor.H"
 #include "symmTensor.H"
-#include "diagTensor.H"
 #include "diagStencil.H"
 #include "stencil.H"
 
@@ -36,9 +34,7 @@ typedef meshDirection<vector,staggered> staggeredVectorDirection;
 typedef meshDirection<faceVector,staggered> staggeredFaceVectorDirection;
 typedef meshDirection<vertexVector,staggered> staggeredVertexVectorDirection;
 typedef meshDirection<tensor,staggered> staggeredTensorDirection;
-typedef meshDirection<sphericalTensor,staggered> staggeredSphericalTensorDirection;
 typedef meshDirection<symmTensor,staggered> staggeredSymmTensorDirection;
-typedef meshDirection<diagTensor,staggered> staggeredDiagTensorDirection;
 typedef meshDirection<diagStencil,staggered> staggeredDiagStencilDirection;
 typedef meshDirection<stencil,staggered> staggeredStencilDirection;
 

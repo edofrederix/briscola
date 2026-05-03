@@ -499,8 +499,6 @@ PRODUCT_OPERATOR(scalarProduct, &&, dotdot)
 #include "vectorMeshDirection.H"
 #include "tensorMeshDirection.H"
 #include "symmTensorMeshDirection.H"
-#include "sphericalTensorMeshDirection.H"
-#include "diagTensorMeshDirection.H"
 #include "faceScalarMeshDirection.H"
 #include "vertexScalarMeshDirection.H"
 #include "faceVectorMeshDirection.H"

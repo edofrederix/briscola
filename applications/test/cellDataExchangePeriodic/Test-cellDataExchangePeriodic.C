@@ -128,14 +128,10 @@ int main(int argc, char *argv[])
     testDataExchange<scalar,colocated>(fvMsh);
     testDataExchange<vector,colocated>(fvMsh);
     testDataExchange<tensor,colocated>(fvMsh);
-    testDataExchange<sphericalTensor,colocated>(fvMsh);
     testDataExchange<symmTensor,colocated>(fvMsh);
-    testDataExchange<diagTensor,colocated>(fvMsh);
 
     testDataExchange<scalar,staggered>(fvMsh);
     testDataExchange<vector,staggered>(fvMsh);
     testDataExchange<tensor,staggered>(fvMsh);
-    testDataExchange<sphericalTensor,staggered>(fvMsh);
     testDataExchange<symmTensor,staggered>(fvMsh);
-    testDataExchange<diagTensor,staggered>(fvMsh);
 }

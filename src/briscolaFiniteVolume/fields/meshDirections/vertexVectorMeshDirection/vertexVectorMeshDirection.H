@@ -6,7 +6,6 @@
 #include "scalarMeshDirection.H"
 #include "vectorMeshDirection.H"
 #include "tensorMeshDirection.H"
-#include "sphericalTensorMeshDirection.H"
 #include "symmTensorMeshDirection.H"
 
 #define TEMPLATE template<class MeshType>

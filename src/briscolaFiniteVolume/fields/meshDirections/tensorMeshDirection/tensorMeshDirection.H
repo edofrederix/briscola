@@ -5,7 +5,6 @@
 #include "meshDirection.H"
 #include "scalarMeshDirection.H"
 #include "vectorMeshDirection.H"
-#include "sphericalTensorMeshDirection.H"
 #include "symmTensorMeshDirection.H"
 
 #define TEMPLATE template<class MeshType>
@@ -21,7 +20,6 @@ namespace fv
 {
 
 UNARY_FUNCTION(scalar, tensor, tr)
-UNARY_FUNCTION(sphericalTensor, tensor, sph)
 UNARY_FUNCTION(symmTensor, tensor, symm)
 UNARY_FUNCTION(symmTensor, tensor, twoSymm)
 UNARY_FUNCTION(tensor, tensor, T)

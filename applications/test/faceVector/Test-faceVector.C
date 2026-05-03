@@ -11,9 +11,7 @@
 #include "scalar.H"
 #include "vector.H"
 #include "tensor.H"
-#include "sphericalTensor.H"
 #include "symmTensor.H"
-#include "diagTensor.H"
 
 using namespace Foam;
 using namespace briscola;
@@ -140,24 +138,18 @@ int main(int argc, char *argv[])
     h3 && h4;
     h3 ^ h4;
 
-    sphericalTensor t1(2);
-    diagTensor t2(1,2,3);
     symmTensor t3(1,2,3,4,5,6);
     tensor t4(1,2,3,4,5,6,7,8,9);
 
     v1 * h3;
 
     v1 & h3;
-    t1 & h3;
-    t2 & h3;
     t3 & h3;
     t4 & h3;
 
     v1 && h3;
 
     h3 & v1;
-    h3 & t1;
-    h3 & t2;
     h3 & t3;
     h3 & t4;
 

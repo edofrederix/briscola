@@ -36,9 +36,7 @@ target_sources(briscolaCore PRIVATE
     blocks/vectorBlock/vectorBlock.C
     blocks/labelVectorBlock/labelVectorBlock.C
     blocks/tensorBlock/tensorBlock.C
-    blocks/sphericalTensorBlock/sphericalTensorBlock.C
     blocks/symmTensorBlock/symmTensorBlock.C
-    blocks/diagTensorBlock/diagTensorBlock.C
 
     blocks/faceScalarBlock/faceScalarBlock.C
     blocks/faceVectorBlock/faceVectorBlock.C

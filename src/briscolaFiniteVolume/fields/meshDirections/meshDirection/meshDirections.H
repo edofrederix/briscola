@@ -9,9 +9,7 @@
 #include "faceVectorMeshDirection.H"
 #include "vertexVectorMeshDirection.H"
 #include "tensorMeshDirection.H"
-#include "sphericalTensorMeshDirection.H"
 #include "symmTensorMeshDirection.H"
-#include "diagTensorMeshDirection.H"
 #include "diagStencilMeshDirection.H"
 #include "stencilMeshDirection.H"
 

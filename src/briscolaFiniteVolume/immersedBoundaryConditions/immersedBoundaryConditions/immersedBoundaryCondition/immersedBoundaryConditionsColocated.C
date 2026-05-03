@@ -25,9 +25,7 @@ makeImmersedBoundaryConditionBase(vector,colocated);
 makeImmersedBoundaryConditionBase(faceVector,colocated);
 makeImmersedBoundaryConditionBase(vertexVector,colocated);
 makeImmersedBoundaryConditionBase(tensor,colocated);
-makeImmersedBoundaryConditionBase(sphericalTensor,colocated)
 makeImmersedBoundaryConditionBase(symmTensor,colocated);
-makeImmersedBoundaryConditionBase(diagTensor,colocated);
 makeImmersedBoundaryConditionBase(stencil,colocated);
 makeImmersedBoundaryConditionBase(diagStencil,colocated);
 
