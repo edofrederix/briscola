@@ -9,6 +9,7 @@ for FILE in $(find . -mindepth 2 -maxdepth 5 -name clean.sh); do
     cd $DIR
 
     ./clean.sh > /dev/null 2>&1
+    rm -fr code/build
 ) &
 done
 
