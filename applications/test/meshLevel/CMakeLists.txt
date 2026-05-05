@@ -4,9 +4,6 @@ add_executable(meshLevel Test-meshLevel.C)
 # Dependencies
 target_link_libraries(meshLevel PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(meshLevel)
-
 # Add to tests target
 add_dependencies(tests meshLevel)
 

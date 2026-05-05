@@ -4,9 +4,6 @@ add_executable(prolongation Test-prolongation.C)
 # Dependencies
 target_link_libraries(prolongation PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(prolongation)
-
 # Add to tests target
 add_dependencies(tests prolongation)
 

@@ -149,6 +149,9 @@ target_sources(briscolaFiniteVolume PRIVATE
     fvMeshMetrics.C
 )
 
+# Generate the lnInclude directory to provide wmake-like behavior
+add_lnInclude_target(briscolaFiniteVolume)
+
 # Dependencies
 target_link_libraries(briscolaFiniteVolume PUBLIC briscolaMesh PRIVATE FFTW3)
 
@@ -166,9 +169,6 @@ endif()
 target_include_directories(briscolaFiniteVolume PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/lnInclude
 )
-
-# OpenFOAM configuration
-openfoam_configure_target(briscolaFiniteVolume)
 
 # Install
 install(TARGETS briscolaFiniteVolume LIBRARY DESTINATION lib)

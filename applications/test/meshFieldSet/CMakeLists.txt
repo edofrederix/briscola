@@ -4,9 +4,6 @@ add_executable(meshFieldSet Test-meshFieldSet.C)
 # Dependencies
 target_link_libraries(meshFieldSet PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(meshFieldSet)
-
 # Add to tests target
 add_dependencies(tests meshFieldSet)
 

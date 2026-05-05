@@ -4,9 +4,6 @@ add_executable(externalSolver Test-externalSolver.C)
 # Dependencies
 target_link_libraries(externalSolver PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(externalSolver)
-
 # Add to tests target
 add_dependencies(tests externalSolver)
 

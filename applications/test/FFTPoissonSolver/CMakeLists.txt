@@ -4,9 +4,6 @@ add_executable(FFTPoissonSolver Test-FFTPoissonSolver.C)
 # Dependencies
 target_link_libraries(FFTPoissonSolver PRIVATE briscolaFiniteVolume FFTW3)
 
-# OpenFOAM configuration
-openfoam_configure_target(FFTPoissonSolver)
-
 # Add to tests target
 add_dependencies(tests FFTPoissonSolver)
 

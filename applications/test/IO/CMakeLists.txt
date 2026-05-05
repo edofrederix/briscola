@@ -4,9 +4,6 @@ add_executable(IO Test-IO.C)
 # Dependencies
 target_link_libraries(IO PRIVATE briscolaTwoPhase)
 
-# OpenFOAM configuration
-openfoam_configure_target(IO)
-
 # Add to tests target
 add_dependencies(tests IO)
 

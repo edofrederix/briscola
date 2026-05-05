@@ -4,9 +4,6 @@ add_executable(boundaryConditions Test-boundaryConditions.C)
 # Dependencies
 target_link_libraries(boundaryConditions PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(boundaryConditions)
-
 # Add to tests target
 add_dependencies(tests boundaryConditions)
 

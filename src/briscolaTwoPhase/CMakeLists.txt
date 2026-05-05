@@ -37,6 +37,9 @@ target_sources(briscolaTwoPhase PRIVATE
     limiterSchemes/twoPhaseLimiterScheme/twoPhaseLimiterSchemes.C
 )
 
+# Generate the lnInclude directory to provide wmake-like behavior
+add_lnInclude_target(briscolaTwoPhase)
+
 # Dependencies
 target_link_libraries(briscolaTwoPhase PUBLIC briscolaFiniteVolume)
 
@@ -44,9 +47,6 @@ target_link_libraries(briscolaTwoPhase PUBLIC briscolaFiniteVolume)
 target_include_directories(briscolaTwoPhase PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/lnInclude
 )
-
-# OpenFOAM configuration
-openfoam_configure_target(briscolaTwoPhase)
 
 # Install
 install(TARGETS briscolaTwoPhase LIBRARY DESTINATION lib)

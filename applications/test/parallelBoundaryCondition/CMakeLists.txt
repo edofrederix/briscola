@@ -4,9 +4,6 @@ add_executable(parallelBoundaryCondition Test-parallelBoundaryCondition.C)
 # Dependencies
 target_link_libraries(parallelBoundaryCondition PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(parallelBoundaryCondition)
-
 # Add to tests target
 add_dependencies(tests parallelBoundaryCondition)
 

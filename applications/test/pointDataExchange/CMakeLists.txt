@@ -4,9 +4,6 @@ add_executable(pointDataExchange Test-pointDataExchange.C)
 # Dependencies
 target_link_libraries(pointDataExchange PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(pointDataExchange)
-
 # Add to tests target
 add_dependencies(tests pointDataExchange)
 

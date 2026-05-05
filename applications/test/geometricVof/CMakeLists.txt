@@ -4,9 +4,6 @@ add_executable(geometricVof Test-geometricVof.C)
 # Dependencies
 target_link_libraries(geometricVof PRIVATE briscolaTwoPhase)
 
-# OpenFOAM configuration
-openfoam_configure_target(geometricVof)
-
 # Add to tests target
 add_dependencies(tests geometricVof)
 
