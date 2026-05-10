@@ -4,9 +4,6 @@ add_executable(meshDirection Test-meshDirection.C)
 # Dependencies
 target_link_libraries(meshDirection PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(meshDirection)
-
 # Add to tests target
 add_dependencies(tests meshDirection)
 

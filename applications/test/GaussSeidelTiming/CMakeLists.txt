@@ -4,9 +4,6 @@ add_executable(GaussSeidelTiming Test-GaussSeidelTiming.C)
 # Dependencies
 target_link_libraries(GaussSeidelTiming PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(GaussSeidelTiming)
-
 # Add to tests target
 add_dependencies(tests GaussSeidelTiming)
 

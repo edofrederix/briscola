@@ -22,13 +22,6 @@ PSOLVERS=(MG FFT Krylov)
 
 ##
 
-if [ -z "$BRISCOLA" ]; then
-
-    echo "BRISCOLA environment variable not set"
-    exit
-
-fi
-
 CURR=$(pwd)
 
 if [ -d "$RUNDIR" ]; then

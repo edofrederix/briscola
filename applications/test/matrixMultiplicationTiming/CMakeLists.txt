@@ -4,9 +4,6 @@ add_executable(matrixMultiplicationTiming Test-matrixMultiplicationTiming.C)
 # Dependencies
 target_link_libraries(matrixMultiplicationTiming PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(matrixMultiplicationTiming)
-
 # Add to tests target
 add_dependencies(tests matrixMultiplicationTiming)
 

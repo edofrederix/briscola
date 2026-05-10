@@ -4,9 +4,6 @@ add_executable(writeSystem Test-writeSystem.C)
 # Dependencies
 target_link_libraries(writeSystem PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(writeSystem)
-
 # Add to tests target
 add_dependencies(tests writeSystem)
 

@@ -4,9 +4,6 @@ add_executable(cellSearch Test-cellSearch.C)
 # Dependencies
 target_link_libraries(cellSearch PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(cellSearch)
-
 set(MESHES box bigbox 2x 2y 2z)
 set(NUMPROCS 4 16 4 4 4)
 

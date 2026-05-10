@@ -4,9 +4,6 @@ add_executable(cellDataExchangePeriodic Test-cellDataExchangePeriodic.C)
 # Dependencies
 target_link_libraries(cellDataExchangePeriodic PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(cellDataExchangePeriodic)
-
 # Add to tests target
 add_dependencies(tests cellDataExchangePeriodic)
 

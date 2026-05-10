@@ -4,9 +4,6 @@ add_executable(agglomerate Test-agglomerate.C)
 # Dependencies
 target_link_libraries(agglomerate PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(agglomerate)
-
 # Add to tests target
 add_dependencies(tests agglomerate)
 

@@ -1,12 +1,5 @@
 #!/bin/bash
 
-if [ -z "$BRISCOLA" ]; then
-
-    echo "BRISCOLA environment variable not set"
-    exit
-
-fi
-
 SOLVER=$1
 MESHX=$2
 NPROCX=$3
@@ -27,5 +20,5 @@ m4 $VARS system/briscolaSolverDict.m4 > system/briscolaSolverDict
 m4 $VARS system/briscolaSchemeDict.m4 > system/briscolaSchemeDict
 
 cp -r $BRISCOLA/cases/twoPhase/phaseInversion/code .
-wclean code 2>&1 > log.wmake
-wmake code 2>&1 >> log.wmake
+rm -fr code/build
+(cmake -S code -B code/build && cmake --build code/build) > log.cmake 2>&1

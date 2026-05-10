@@ -4,9 +4,6 @@ add_executable(allToAll Test-allToAll.C)
 # Dependencies
 target_link_libraries(allToAll PRIVATE briscolaCore)
 
-# OpenFOAM configuration
-openfoam_configure_target(allToAll)
-
 # Add to tests target
 add_dependencies(tests allToAll)
 

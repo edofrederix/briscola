@@ -50,8 +50,8 @@ target_sources(briscolaCore PRIVATE
     functionObjects/briscolaFunctionObject/briscolaFunctionObject.C
 )
 
-# OpenFOAM configuration
-openfoam_configure_target(briscolaCore)
+# Generate the lnInclude directory to provide wmake-like behavior
+add_lnInclude_target(briscolaCore)
 
 # Dependencies
 target_link_libraries(briscolaCore PUBLIC OpenFOAM Pstream)

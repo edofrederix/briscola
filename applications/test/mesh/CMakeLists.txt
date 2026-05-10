@@ -4,9 +4,6 @@ add_executable(mesh Test-mesh.C)
 # Dependencies
 target_link_libraries(mesh PRIVATE briscolaMesh)
 
-# OpenFOAM configuration
-openfoam_configure_target(mesh)
-
 # Add to tests target
 add_dependencies(tests mesh)
 

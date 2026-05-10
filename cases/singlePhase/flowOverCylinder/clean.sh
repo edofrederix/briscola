@@ -4,4 +4,5 @@ source $FOAM_SRC/../bin/tools/CleanFunctions
 
 cleanCase
 
-rm -f briscola*.vtk.series system/briscolaMeshDict *.txt *.pdf
+rm -fr briscola*.vtk.series system/briscolaMeshDict \
+    *.txt *.pdf code/build

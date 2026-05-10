@@ -1,12 +1,5 @@
 #!/bin/bash
 
-if [ -z "$BRISCOLA" ]; then
-
-    echo "BRISCOLA environment variable not set"
-    exit
-
-fi
-
 MODE=${1:-normal}
 
 case "$MODE" in
@@ -36,4 +29,4 @@ case "$MODE" in
 
 esac
 
-wmake -silent code
+cmake -S code -B code/build && cmake --build code/build

@@ -4,9 +4,6 @@ add_executable(stencilProducts Test-stencilProducts.C)
 # Dependencies
 target_link_libraries(stencilProducts PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(stencilProducts)
-
 # Add to tests target
 add_dependencies(tests stencilProducts)
 

@@ -4,9 +4,6 @@ add_executable(metrics Test-metrics.C)
 # Dependencies
 target_link_libraries(metrics PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(metrics)
-
 # Add to tests target
 add_dependencies(tests metrics)
 

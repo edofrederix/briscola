@@ -1,12 +1,5 @@
 #!/bin/bash
 
-if [ -z "$BRISCOLA" ]; then
-
-    echo "BRISCOLA environment variable not set"
-    exit
-
-fi
-
 CASE=${1:-1}
 
 case "$CASE" in
@@ -40,4 +33,4 @@ esac
 
 echo $CASE > case.txt
 
-wmake -silent code
+cmake -S code -B code/build && cmake --build code/build

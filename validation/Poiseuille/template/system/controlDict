@@ -52,7 +52,7 @@ functions
 
 libs
 (
-    "code/libcode.so"
+    "code/build/lib/libcode.so"
 );
 
 functions

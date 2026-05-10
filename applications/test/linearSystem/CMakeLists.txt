@@ -4,9 +4,6 @@ add_executable(linearSystem Test-linearSystem.C)
 # Dependencies
 target_link_libraries(linearSystem PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(linearSystem)
-
 # Add to tests target
 add_dependencies(tests linearSystem)
 

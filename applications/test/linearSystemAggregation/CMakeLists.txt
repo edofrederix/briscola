@@ -8,9 +8,6 @@ if(EIGEN3_FOUND)
     target_link_libraries(linearSystemAggregation PRIVATE Eigen3)
 endif()
 
-# OpenFOAM configuration
-openfoam_configure_target(linearSystemAggregation)
-
 # Add to tests target
 add_dependencies(tests linearSystemAggregation)
 

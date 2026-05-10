@@ -4,9 +4,6 @@ add_executable(boundaryTiming Test-boundaryTiming.C)
 # Dependencies
 target_link_libraries(boundaryTiming PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(boundaryTiming)
-
 # Add to tests target
 add_dependencies(tests boundaryTiming)
 

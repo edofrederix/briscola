@@ -62,6 +62,9 @@ target_sources(briscolaMesh PRIVATE
     mesh/mesh.C
 )
 
+# Generate the lnInclude directory to provide wmake-like behavior
+add_lnInclude_target(briscolaMesh)
+
 # At this point we need to link against MPI. Do this manually, to avoid carrying
 # over conflicting linker flags.
 
@@ -73,9 +76,6 @@ target_include_directories(briscolaMesh PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/lnInclude
     ${MPI_CXX_INCLUDE_DIRS}
 )
-
-# OpenFOAM configuration
-openfoam_configure_target(briscolaMesh)
 
 # Install
 install(TARGETS briscolaMesh LIBRARY DESTINATION lib)

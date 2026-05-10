@@ -4,9 +4,6 @@ add_executable(cellDataExchange Test-cellDataExchange.C)
 # Dependencies
 target_link_libraries(cellDataExchange PRIVATE briscolaFiniteVolume)
 
-# OpenFOAM configuration
-openfoam_configure_target(cellDataExchange)
-
 # Add to tests target
 add_dependencies(tests cellDataExchange)
 
