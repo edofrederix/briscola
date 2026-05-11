@@ -5,8 +5,7 @@ CompileFlags:
 # includes. Suppress these errors.
 
 Diagnostics:
-  UnusedIncludes: None
-  Suppress: ["pp_including_mainfile_in_preamble"]
+  Suppress: '*'
 
 InlayHints:
   Enabled: False
