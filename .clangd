@@ -1,12 +1,5 @@
-CompileFlags:
-  Add: ["-ferror-limit=100"]
-
-# Because of the NoRepository include construction, we may get recursive
-# includes. Suppress these errors.
-
 Diagnostics:
-  UnusedIncludes: None
-  Suppress: ["pp_including_mainfile_in_preamble"]
+  Suppress: '*'
 
 InlayHints:
   Enabled: False
