@@ -1,9 +1,3 @@
-CompileFlags:
-  Add: ["-ferror-limit=100"]
-
-# Because of the NoRepository include construction, we may get recursive
-# includes. Suppress these errors.
-
 Diagnostics:
   Suppress: '*'
 
