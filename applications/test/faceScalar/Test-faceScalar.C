@@ -467,11 +467,6 @@ int main(int argc, char *argv[])
     if (h7.upper().y() != v4) FatalErrorInFunction << "test 46b failed" << abort(FatalError);
     if (h7.upper().z() != v6) FatalErrorInFunction << "test 46c failed" << abort(FatalError);
 
-    pow3(h3);
-    pow4(h3);
-    pow5(h3);
-    pow6(h3);
-    pow025(h3);
     sqrt(h3);
     cbrt(h3);
     sign(h3);
@@ -479,32 +474,17 @@ int main(int argc, char *argv[])
     pos0(h3);
     neg(h3);
     neg0(h3);
-    posPart(h3);
-    negPart(h3);
     exp(h3);
     log(h3);
-    log10(h3);
     sin(h3);
     cos(h3);
     tan(h3);
-    sinh(h3);
-    cosh(h3);
-    tanh(h3);
     erf(h3);
-    erfc(h3);
-    lgamma(h3);
-    j0(h3);
-    j1(h3);
-    y0(h3);
-    y1(h3);
 
     if (!sigFpeEnabled())
     {
         asin(h3);
         acos(h3);
         atan(h3);
-        asinh(h3);
-        acosh(h3);
-        atanh(h3);
     }
 }

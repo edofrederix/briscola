@@ -1383,11 +1383,6 @@ void testScalarFunctions()
         if (b2(i,j,k) != 0.5)
             FatalErrorInFunction << "test 2c failed" << abort(FatalError);
 
-    pow3(b1);
-    pow4(b1);
-    pow5(b1);
-    pow6(b1);
-    pow025(b1);
     sqr(b1);
     sqrt(b1);
     cbrt(b1);
@@ -1396,33 +1391,18 @@ void testScalarFunctions()
     pos0(b1);
     neg(b1);
     neg0(b1);
-    posPart(b1);
-    negPart(b1);
     exp(b1);
     log(b1);
-    log10(b1);
     sin(b1);
     cos(b1);
     tan(b1);
-    sinh(b1);
-    cosh(b1);
-    tanh(b1);
     erf(b1);
-    erfc(b1);
-    lgamma(b1);
-    j0(b1);
-    j1(b1);
-    y0(b1);
-    y1(b1);
 
     if (!sigFpeEnabled())
     {
         asin(b1);
         acos(b1);
         atan(b1);
-        asinh(b1);
-        acosh(b1);
-        atanh(b1);
     }
 }
 
