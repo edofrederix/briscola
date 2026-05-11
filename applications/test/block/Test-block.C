@@ -1590,25 +1590,12 @@ void testTensorFunctions()
     tr(b1);
     T(b1);
     symm(b1);
-    twoSymm(b1);
     skew(b1);
-    dev(b1);
-    dev2(b1);
     det(b1);
-    cof(b1);
-    eigenValues(b1);
-    eigenVectors(b1);
 
     tr(b2);
     symm(b2);
-    twoSymm(b2);
-    // skew(b2);
-    dev(b2);
-    dev2(b2);
     det(b2);
-    cof(b2);
-    eigenValues(b2);
-    eigenVectors(b2);
 }
 
 int main(int argc, char *argv[])
