@@ -558,13 +558,6 @@ void testPrimitiveFunctions()
     if (gAverage(b1*2) != avb1*2)
         FatalErrorInFunction << "test 4d failed" << abort(FatalError);
 
-
-    sumProd(b1, b1);
-    sumProd(b1*2.0, b1);
-    sumProd(b1, b1*2.0);
-    sumProd(b1*2.0, b1*2.0);
-
-
     block<Type> b3 = max(b1,b2);
 
     forAllBlock(b1, i, j, k)
@@ -912,55 +905,6 @@ void testVectorSpaceFunctions()
         if (b2(i,j,k) != 2*b1(i,j,k))
             FatalErrorInFunction << "test 5b failed" << abort(FatalError);
 
-
-    maxMagSqr(b1);
-    maxMagSqr(2.0*b1);
-    gMaxMagSqr(b1);
-    gMaxMagSqr(2.0*b1);
-    minMagSqr(b1);
-    minMagSqr(2.0*b1);
-    gMinMagSqr(b1);
-    gMinMagSqr(2.0*b1);
-
-    if (Foam::mag(sumMag(b1) - b1sm) > 1e-12)
-        FatalErrorInFunction << "test 8a failed" << abort(FatalError);
-
-    if (Foam::mag(sumMag(1.0*b1) - b1sm) > 1e-12)
-        FatalErrorInFunction << "test 8b failed" << abort(FatalError);
-
-    if (Foam::mag(gSumMag(b1) - b1sm) > 1e-12)
-        FatalErrorInFunction << "test 8c failed" << abort(FatalError);
-
-    if (Foam::mag(gSumMag(1.0*b1) - b1sm) > 1e-12)
-        FatalErrorInFunction << "test 8d failed" << abort(FatalError);
-
-
-    if (sumCmptProd(b1, b1) != b1b1scp)
-        FatalErrorInFunction << "test 9a failed" << abort(FatalError);
-
-    if (sumCmptProd(2.0*b1, b1) != 2.0*b1b1scp)
-        FatalErrorInFunction << "test 9b failed" << abort(FatalError);
-
-    if (sumCmptProd(b1, b1*2.0) != 2.0*b1b1scp)
-        FatalErrorInFunction << "test 9c failed" << abort(FatalError);
-
-    if (sumCmptProd(2.0*b1, 2.0*b1) != 4.0*b1b1scp)
-        FatalErrorInFunction << "test 9d failed" << abort(FatalError);
-
-
-    if (sumCmptMag(b1) != b1scm)
-        FatalErrorInFunction << "test 10a failed" << abort(FatalError);
-
-    if (sumCmptMag(2.0*b1) != 2.0*b1scm)
-        FatalErrorInFunction << "test 10b failed" << abort(FatalError);
-
-    if (gSumCmptMag(b1) != b1scm)
-        FatalErrorInFunction << "test 10c failed" << abort(FatalError);
-
-    if (gSumCmptMag(2.0*b1) != 2.0*b1scm)
-        FatalErrorInFunction << "test 10d failed" << abort(FatalError);
-
-
     b2 = cmptMultiply(b1,b1);
 
     forAllBlock(b2, i, j, k)
@@ -1065,9 +1009,6 @@ void testVectorSpaceFunctions()
 
     cmptSqr(b1);
     cmptSqr(1.0*b1);
-
-    cmptSqrt(b1);
-    cmptSqrt(1.0*b1);
 }
 
 template<class Type>
@@ -1350,20 +1291,8 @@ void testScalarFunctions()
 
     label l = 0;
 
-    scalar sumsqr = 0;
-
     forAllBlock(b1, i, j, k)
-    {
         b1(i,j,k) = scalar(l+++1);
-
-        sumsqr += Foam::sqr(b1(i,j,k));
-    }
-
-    if (sumSqr(b1) != sumsqr)
-        FatalErrorInFunction << "test 1a failed" << abort(FatalError);
-
-    if (gSumSqr(b1) != sumsqr)
-        FatalErrorInFunction << "test 1b failed" << abort(FatalError);
 
     scalarBlock b2 = b1/b1;
 
@@ -1424,18 +1353,6 @@ void testVectorFunctions()
 
         b1ss += Foam::sqr(b1(i,j,k));
     }
-
-    if (sumSqr(b1) != b1ss)
-        FatalErrorInFunction << "test 1a failed" << abort(FatalError);
-
-    if (sumSqr(b1*2.0) != 4.0*b1ss)
-        FatalErrorInFunction << "test 1b failed" << abort(FatalError);
-
-    if (gSumSqr(b1) != b1ss)
-        FatalErrorInFunction << "test 1c failed" << abort(FatalError);
-
-    if (gSumSqr(b1*2.0) != 4.0*b1ss)
-        FatalErrorInFunction << "test 1d failed" << abort(FatalError);
 
     block<tensor> t1 = b1*b2;
 

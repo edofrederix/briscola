@@ -72,15 +72,6 @@ template<class Type>
 tmp<block<Type>> cmptSqr(const tmp<block<Type>>&);
 
 template<class Type>
-void cmptSqrt(block<Type>&, const block<Type>&);
-
-template<class Type>
-tmp<block<Type>> cmptSqrt(const block<Type>&);
-
-template<class Type>
-tmp<block<Type>> cmptSqrt(const tmp<block<Type>>&);
-
-template<class Type>
 Type max(const block<Type>&);
 
 template<class Type>
@@ -104,62 +95,6 @@ Type average(const block<Type>&);
 template<class Type>
 Type average(const tmp<block<Type>>&);
 
-
-template<class Type>
-Type maxMagSqr(const block<Type>& f);
-
-template<class Type>
-Type maxMagSqr(const tmp<block<Type>>& f);
-
-template<class Type>
-Type minMagSqr(const block<Type>& f);
-
-template<class Type>
-Type minMagSqr(const tmp<block<Type>>& f);
-
-template<class Type>
-SCALARPRODTYPE sumProd(const block<Type>&, const block<Type>&);
-
-template<class Type>
-SCALARPRODTYPE sumProd(const tmp<block<Type>>&, const block<Type>&);
-
-template<class Type>
-SCALARPRODTYPE sumProd(const block<Type>&, const tmp<block<Type>>&);
-
-template<class Type>
-SCALARPRODTYPE sumProd(const tmp<block<Type>>&, const tmp<block<Type>>&);
-
-
-template<class Type>
-Type sumCmptProd(const block<Type>&, const block<Type>&);
-
-template<class Type>
-Type sumCmptProd(const tmp<block<Type>>&, const block<Type>&);
-
-template<class Type>
-Type sumCmptProd(const block<Type>&, const tmp<block<Type>>&);
-
-template<class Type>
-Type sumCmptProd(const tmp<block<Type>>&, const tmp<block<Type>>&);
-
-template<class Type>
-typename powProduct<Type,2>::type sumSqr(const block<Type>&);
-
-template<class Type>
-typename powProduct<Type,2>::type sumSqr(const tmp<block<Type>>&);
-
-template<class Type>
-SCALARPRODTYPE sumMag(const block<Type>&);
-
-template<class Type>
-SCALARPRODTYPE sumMag(const tmp<block<Type>>&);
-
-template<class Type>
-Type sumCmptMag(const block<Type>&);
-
-template<class Type>
-Type sumCmptMag(const tmp<block<Type>>&);
-
 #define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                       \
                                                                                \
 template<class Type>                                                           \
@@ -180,26 +115,8 @@ G_UNARY_FUNCTION(Type, gMax, max, max)
 G_UNARY_FUNCTION(Type, gMin, min, min)
 G_UNARY_FUNCTION(Type, gSum, sum, sum)
 G_UNARY_FUNCTION(Type, gAverage, average, average)
-G_UNARY_FUNCTION(Type, gMaxMagSqr, maxMagSqr, maxMagSqr)
-G_UNARY_FUNCTION(Type, gMinMagSqr, minMagSqr, minMagSqr)
-G_UNARY_FUNCTION(SCALARPRODTYPE, gSumMag, sumMag, sum)
-G_UNARY_FUNCTION(Type, gSumCmptMag, sumCmptMag, sum)
 
 #undef G_UNARY_FUNCTION
-
-template<class Type>
-typename powProduct<Type,2>::type gSumSqr
-(
-    const block<Type>&,
-    const label comm = UPstream::worldComm
-);
-
-template<class Type>
-typename powProduct<Type,2>::type gSumSqr
-(
-    const tmp<block<Type>>&,
-    const label comm = UPstream::worldComm
-);
 
 // template<Type>
 //

@@ -94,18 +94,6 @@ tmp<meshDirection<Type,MeshType>>
 cmptSqr(const tmp<meshDirection<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-void
-cmptSqrt(meshDirection<Type,MeshType>&, const meshDirection<Type,MeshType>&);
-
-template<class Type, class MeshType>
-tmp<meshDirection<Type,MeshType>>
-cmptSqrt(const meshDirection<Type,MeshType>&);
-
-template<class Type, class MeshType>
-tmp<meshDirection<Type,MeshType>>
-cmptSqrt(const tmp<meshDirection<Type,MeshType>>&);
-
-template<class Type, class MeshType>
 Type max(const meshDirection<Type,MeshType>&);
 
 template<class Type, class MeshType>
@@ -129,86 +117,6 @@ Type average(const meshDirection<Type,MeshType>&);
 template<class Type, class MeshType>
 Type average(const tmp<meshDirection<Type,MeshType>>&);
 
-template<class Type, class MeshType>
-SCALARPRODTYPE maxMagSqr(const meshDirection<Type,MeshType>&);
-
-template<class Type, class MeshType>
-SCALARPRODTYPE maxMagSqr(const tmp<meshDirection<Type,MeshType>>&);
-
-template<class Type, class MeshType>
-SCALARPRODTYPE minMagSqr(const meshDirection<Type,MeshType>&);
-
-template<class Type, class MeshType>
-SCALARPRODTYPE minMagSqr(const tmp<meshDirection<Type,MeshType>>&);
-
-template<class Type, class MeshType>
-SCALARPRODTYPE sumProd
-(
-    const meshDirection<Type,MeshType>&,
-    const meshDirection<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-SCALARPRODTYPE sumProd
-(
-    const tmp<meshDirection<Type,MeshType>>&,
-    const meshDirection<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-SCALARPRODTYPE sumProd
-(
-    const meshDirection<Type,MeshType>&,
-    const tmp<meshDirection<Type,MeshType>>&
-);
-
-template<class Type, class MeshType>
-SCALARPRODTYPE sumProd
-(
-    const tmp<meshDirection<Type,MeshType>>&,
-    const tmp<meshDirection<Type,MeshType>>&
-);
-
-template<class Type, class MeshType>
-Type sumCmptProd
-(
-    const meshDirection<Type,MeshType>&,
-    const meshDirection<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-Type sumCmptProd
-(
-    const tmp<meshDirection<Type,MeshType>>&,
-    const meshDirection<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-Type sumCmptProd
-(
-    const meshDirection<Type,MeshType>&,
-    const tmp<meshDirection<Type,MeshType>>&
-);
-
-template<class Type, class MeshType>
-Type sumCmptProd
-(
-    const tmp<meshDirection<Type,MeshType>>&,
-    const tmp<meshDirection<Type,MeshType>>&
-);
-
-template<class Type, class MeshType>
-SCALARPRODTYPE sumMag(const meshDirection<Type,MeshType>&);
-
-template<class Type, class MeshType>
-SCALARPRODTYPE sumMag(const tmp<meshDirection<Type,MeshType>>&);
-
-template<class Type, class MeshType>
-Type sumCmptMag(const meshDirection<Type,MeshType>&);
-
-template<class Type, class MeshType>
-Type sumCmptMag(const tmp<meshDirection<Type,MeshType>>&);
-
 #define G_UNARY_FUNCTION(ReturnType, gFunc)                                    \
                                                                                \
 template<class Type, class MeshType>                                           \
@@ -221,10 +129,6 @@ G_UNARY_FUNCTION(Type, gMax)
 G_UNARY_FUNCTION(Type, gMin)
 G_UNARY_FUNCTION(Type, gSum)
 G_UNARY_FUNCTION(Type, gAverage)
-G_UNARY_FUNCTION(SCALARPRODTYPE, gMaxMagSqr)
-G_UNARY_FUNCTION(SCALARPRODTYPE, gMinMagSqr)
-G_UNARY_FUNCTION(SCALARPRODTYPE, gSumMag)
-G_UNARY_FUNCTION(Type, gSumCmptMag)
 
 #undef G_UNARY_FUNCTION
 

@@ -87,15 +87,6 @@ template<class Type, class MeshType>
 tmp<meshLevel<Type,MeshType>> cmptSqr(const tmp<meshLevel<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-void cmptSqrt(meshLevel<Type,MeshType>&, const meshLevel<Type,MeshType>&);
-
-template<class Type, class MeshType>
-tmp<meshLevel<Type,MeshType>> cmptSqrt(const meshLevel<Type,MeshType>&);
-
-template<class Type, class MeshType>
-tmp<meshLevel<Type,MeshType>> cmptSqrt(const tmp<meshLevel<Type,MeshType>>&);
-
-template<class Type, class MeshType>
 List<Type> max(const meshLevel<Type,MeshType>&);
 
 template<class Type, class MeshType>
@@ -119,86 +110,6 @@ List<Type> average(const meshLevel<Type,MeshType>&);
 template<class Type, class MeshType>
 List<Type> average(const tmp<meshLevel<Type,MeshType>>&);
 
-template<class Type, class MeshType>
-List<SCALARPRODTYPE> maxMagSqr(const meshLevel<Type,MeshType>&);
-
-template<class Type, class MeshType>
-List<SCALARPRODTYPE> maxMagSqr(const tmp<meshLevel<Type,MeshType>>&);
-
-template<class Type, class MeshType>
-List<SCALARPRODTYPE> minMagSqr(const meshLevel<Type,MeshType>&);
-
-template<class Type, class MeshType>
-List<SCALARPRODTYPE> minMagSqr(const tmp<meshLevel<Type,MeshType>>&);
-
-template<class Type, class MeshType>
-List<SCALARPRODTYPE> sumProd
-(
-    const meshLevel<Type,MeshType>&,
-    const meshLevel<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-List<SCALARPRODTYPE> sumProd
-(
-    const tmp<meshLevel<Type,MeshType>>&,
-    const meshLevel<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-List<SCALARPRODTYPE> sumProd
-(
-    const meshLevel<Type,MeshType>&,
-    const tmp<meshLevel<Type,MeshType>>&
-);
-
-template<class Type, class MeshType>
-List<SCALARPRODTYPE> sumProd
-(
-    const tmp<meshLevel<Type,MeshType>>&,
-    const tmp<meshLevel<Type,MeshType>>&
-);
-
-template<class Type, class MeshType>
-List<Type> sumCmptProd
-(
-    const meshLevel<Type,MeshType>&,
-    const meshLevel<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-List<Type> sumCmptProd
-(
-    const tmp<meshLevel<Type,MeshType>>&,
-    const meshLevel<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-List<Type> sumCmptProd
-(
-    const meshLevel<Type,MeshType>&,
-    const tmp<meshLevel<Type,MeshType>>&
-);
-
-template<class Type, class MeshType>
-List<Type> sumCmptProd
-(
-    const tmp<meshLevel<Type,MeshType>>&,
-    const tmp<meshLevel<Type,MeshType>>&
-);
-
-template<class Type, class MeshType>
-List<SCALARPRODTYPE> sumMag(const meshLevel<Type,MeshType>&);
-
-template<class Type, class MeshType>
-List<SCALARPRODTYPE> sumMag(const tmp<meshLevel<Type,MeshType>>&);
-
-template<class Type, class MeshType>
-List<Type> sumCmptMag(const meshLevel<Type,MeshType>&);
-
-template<class Type, class MeshType>
-List<Type> sumCmptMag(const tmp<meshLevel<Type,MeshType>>&);
-
 #define G_UNARY_FUNCTION(ReturnType, gFunc)                                    \
                                                                                \
 template<class Type, class MeshType>                                           \
@@ -211,10 +122,6 @@ G_UNARY_FUNCTION(Type, gMax)
 G_UNARY_FUNCTION(Type, gMin)
 G_UNARY_FUNCTION(Type, gSum)
 G_UNARY_FUNCTION(Type, gAverage)
-G_UNARY_FUNCTION(SCALARPRODTYPE, gMaxMagSqr)
-G_UNARY_FUNCTION(SCALARPRODTYPE, gMinMagSqr)
-G_UNARY_FUNCTION(SCALARPRODTYPE, gSumMag)
-G_UNARY_FUNCTION(Type, gSumCmptMag)
 
 #undef G_UNARY_FUNCTION
 

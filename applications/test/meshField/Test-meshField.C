@@ -703,16 +703,6 @@ void testPrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
             << "Test 13d failed" << abort(FatalError);
 
 
-    sumProd(m1, m1);
-    sumProd(m1*2, m1);
-    sumProd(m1, m1*2);
-    sumProd(m1*2, m1*2);
-
-    sumProd(m1, m1o);
-    sumProd(m1*2, m1o);
-    sumProd(m1, m1o*2);
-    sumProd(m1*2, m1o*2);
-
     meshField<Type,MeshType> m3(max(m1,m2));
 
     forAllCells(m3, l, d, i, j, k)
@@ -1148,16 +1138,6 @@ void testCellSpacePrimitiveFunctions(const fvMesh& fvMsh, const bool deep)
     average(2*m1);
     gAverage(m1);
     gAverage(2*m1);
-
-    sumProd(m1, m1);
-    sumProd(m1*2, m1);
-    sumProd(m1, m1*2);
-    sumProd(m1*2, m1*2);
-
-    sumProd(m1, m1o);
-    sumProd(m1*2, m1o);
-    sumProd(m1, m1o*2);
-    sumProd(m1*2, m1o*2);
 
     max(m1,m2);
     max(m1*2,m2);
@@ -1614,104 +1594,9 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
                 << "test 25b failed" << abort(FatalError);
 
 
-    forAll(m1.level(), d)
-        if (maxMagSqr(m1)[d] != Foam::magSqr(m1(d,m1.N(d)-unitXYZ)))
-            FatalErrorInFunction << "test 26a failed" << abort(FatalError);
-
-    forAll(m1.level(), d)
-        if (maxMagSqr(2*m1)[d] != Foam::magSqr(2*m1(d,m1.N(d)-unitXYZ)))
-            FatalErrorInFunction << "test 26b failed" << abort(FatalError);
-
-
     // For this and subsequent global operators, only perform for colocated
     // meshes which is easier to verify. If it works on colocated meshes, it
     // should also work on other meshes...
-
-    if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
-        if (gMaxMagSqr(m1)[d] != Foam::magSqr(m1(d,m1.N(d)-unitXYZ)))
-            FatalErrorInFunction << "test 27a failed" << abort(FatalError);
-
-    if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
-        if (gMaxMagSqr(2*m1)[d] != Foam::magSqr(2*m1(d,m1.N(d)-unitXYZ)))
-            FatalErrorInFunction << "test 27b failed" << abort(FatalError);
-
-
-    forAll(m1.level(), d)
-        if (minMagSqr(m1)[d] != Foam::magSqr(m1(d,0,0,0)))
-            FatalErrorInFunction << "test 28a failed" << abort(FatalError);
-
-    forAll(m1.level(), d)
-        if (minMagSqr(2*m1)[d] != Foam::magSqr(2*m1(d,0,0,0)))
-            FatalErrorInFunction << "test 28b failed" << abort(FatalError);
-
-
-    if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
-        if (gMinMagSqr(m1)[d] != Foam::magSqr(m1(d,0,0,0)))
-            FatalErrorInFunction << "test 29a failed" << abort(FatalError);
-
-    if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
-        if (gMinMagSqr(2*m1)[d] != Foam::magSqr(2*m1(d,0,0,0)))
-            FatalErrorInFunction << "test 29b failed" << abort(FatalError);
-
-    forAll(m1.level(), d)
-        if (Foam::mag(sumMag(m1)[d] - m1sm[d])/m1sm[d] > 1e-12)
-            FatalErrorInFunction << "test 30a failed" << abort(FatalError);
-
-    forAll(m1.level(), d)
-        if (Foam::mag(sumMag(2*m1)[d] - 2*m1sm[d])/m1sm[d] > 1e-12)
-            FatalErrorInFunction << "test 30b failed" << abort(FatalError);
-
-
-    if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
-        if (Foam::mag(gSumMag(m1)[d] - Pstream::nProcs()*m1sm[d])/m1sm[d] > 1e-12)
-            FatalErrorInFunction << "test 31a failed" << abort(FatalError);
-
-    if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
-        if (Foam::mag(gSumMag(2*m1)[d] - Pstream::nProcs()*2*m1sm[d])/m1sm[d] > 1e-12)
-            FatalErrorInFunction << "test 31b failed" << abort(FatalError);
-
-
-    forAll(m1.level(), d)
-        if (sumCmptProd(m1, m1)[d] != m1m1scp[d])
-            FatalErrorInFunction << "test 32a failed" << abort(FatalError);
-
-    forAll(m1.level(), d)
-        if (sumCmptProd(2*m1, m1)[d] != 2*m1m1scp[d])
-            FatalErrorInFunction << "test 32b failed" << abort(FatalError);
-
-    forAll(m1.level(), d)
-        if (sumCmptProd(m1, 2*m1)[d] != 2*m1m1scp[d])
-            FatalErrorInFunction << "test 32c failed" << abort(FatalError);
-
-    forAll(m1.level(), d)
-        if (sumCmptProd(2*m1, 2*m1)[d] != 4*m1m1scp[d])
-            FatalErrorInFunction << "test 32d failed" << abort(FatalError);
-
-
-    forAll(m1.level(), d)
-        if (sumCmptMag(m1)[d] != m1scm[d])
-            FatalErrorInFunction << "test 33a failed" << abort(FatalError);
-
-    forAll(m1.level(), d)
-        if (sumCmptMag(2*m1)[d] != 2*m1scm[d])
-            FatalErrorInFunction << "test 33b failed" << abort(FatalError);
-
-    if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
-        if (gSumCmptMag(m1)[d] != Pstream::nProcs()*m1scm[d])
-            FatalErrorInFunction << "test 33c failed" << abort(FatalError);
-
-    if (MeshType::numberOfDirections == 1)
-    forAll(m1.level(), d)
-        if (gSumCmptMag(2*m1)[d] != Pstream::nProcs()*2*m1scm[d])
-            FatalErrorInFunction << "test 33d failed" << abort(FatalError);
-
 
     m3 = cmptMultiply(m1,m2);
 
@@ -1829,9 +1714,6 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
 
     cmptSqr(m1);
     cmptSqr(m1*2.0);
-
-    cmptSqrt(m1);
-    cmptSqrt(m1*2.0);
 }
 
 template<class Type, class MeshType>

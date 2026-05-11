@@ -125,11 +125,6 @@ void testPrimitiveFunctions(const fvMesh& fvMsh)
     gAverage(m1);
     gAverage(m1*2.0);
 
-    sumProd(m1, m1);
-    sumProd(m1*2.0, m1);
-    sumProd(m1, m1*2.0);
-    sumProd(m1*2.0, m1*2.0);
-
     max(m1,m2);
     max(m1*2.0,m2);
     max(m1,m2*2.0);
@@ -186,31 +181,6 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh)
     cmptMag(m1);
     cmptMag(m1*2.0);
 
-    maxMagSqr(m1);
-    maxMagSqr(m1*2.0);
-    gMaxMagSqr(m1);
-    gMaxMagSqr(m1*2.0);
-
-    minMagSqr(m1);
-    minMagSqr(m1*2.0);
-    gMinMagSqr(m1);
-    gMinMagSqr(m1*2.0);
-
-    sumMag(m1);
-    sumMag(m1*2.0);
-    gSumMag(m1);
-    gSumMag(m1*2.0);
-
-    sumCmptProd(m1, m1);
-    sumCmptProd(m1*2.0, m1);
-    sumCmptProd(m1, m1*2.0);
-    sumCmptProd(m1*2.0, m1*2.0);
-
-    sumCmptMag(m1);
-    sumCmptMag(m1*2.0);
-    gSumCmptMag(m1);
-    gSumCmptMag(m1*2.0);
-
     cmptMultiply(m1,m2);
     cmptMultiply(m1*2.0,m2);
     cmptMultiply(m1,m2*2.0);
@@ -233,9 +203,6 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh)
 
     cmptSqr(m1);
     cmptSqr(m1*2.0);
-
-    cmptSqrt(m1);
-    cmptSqrt(m1*2.0);
 }
 
 template<class Type, class MeshType>
