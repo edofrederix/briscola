@@ -1,0 +1,5 @@
+Diagnostics:
+  Suppress: '*'
+
+InlayHints:
+  Enabled: False

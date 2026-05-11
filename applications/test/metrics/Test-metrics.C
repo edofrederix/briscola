@@ -13,18 +13,13 @@ using namespace Foam;
 using namespace briscola;
 using namespace fv;
 
-const vector L(1, 1.5, 4);
+const vector LL(1, 1.5, 4);
 
 template<class MeshType>
 void testCellCenters(const fvMesh& fvMsh)
 {
     const meshField<vector,MeshType>& c =
         fvMsh.metrics<MeshType>().cellCenters();
-
-    const vector Lp
-    (
-        cmptDivide(L, vector(fvMsh.msh().decomp().myBrickDecomp()))
-    );
 
     forAll(c, l)
     if (!fvMsh.msh()[l].empty())
@@ -35,7 +30,7 @@ void testCellCenters(const fvMesh& fvMsh)
     {
         const vector Lp
         (
-            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+            cmptDivide(LL, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
         );
 
         const vector cc
@@ -53,7 +48,7 @@ void testCellCenters(const fvMesh& fvMsh)
             )
         );
 
-        if (mag(c(l,d,i,j,k) - cc)/mag(L) > 1e-12)
+        if (mag(c(l,d,i,j,k) - cc)/mag(LL) > 1e-12)
             FatalErrorInFunction
                 << "test 1 failed" << abort(FatalError);
     }
@@ -69,7 +64,7 @@ void testCellVolumes(const fvMesh& fvMsh)
     {
         const vector Lp
         (
-            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+            cmptDivide(LL, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
         );
 
         const scalar V
@@ -97,7 +92,7 @@ void testFaceCenters(const fvMesh& fvMsh)
     {
         const vector Lp
         (
-            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+            cmptDivide(LL, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
         );
 
         const vector cc
@@ -116,7 +111,7 @@ void testFaceCenters(const fvMesh& fvMsh)
             )
         );
 
-        if (mag(fc[fd](l,d,i,j,k) - cc)/mag(L) > 1e-12)
+        if (mag(fc[fd](l,d,i,j,k) - cc)/mag(LL) > 1e-12)
             FatalErrorInFunction
                 << "test 3a failed" << abort(FatalError);
     }
@@ -135,7 +130,7 @@ void testEdgeCenters(const fvMesh& fvMsh)
     {
         const vector Lp
         (
-            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+            cmptDivide(LL, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
         );
 
         const vector cc
@@ -154,7 +149,7 @@ void testEdgeCenters(const fvMesh& fvMsh)
             )
         );
 
-        if (mag(ec(l,d,i,j,k)[o] - cc)/mag(L) > 1e-12)
+        if (mag(ec(l,d,i,j,k)[o] - cc)/mag(LL) > 1e-12)
             FatalErrorInFunction
                 << "test 3b failed" << abort(FatalError);
     }
@@ -171,7 +166,7 @@ void testVertexCenters(const fvMesh& fvMsh)
     {
         const vector Lp
         (
-            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+            cmptDivide(LL, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
         );
 
         const vector cc
@@ -190,7 +185,7 @@ void testVertexCenters(const fvMesh& fvMsh)
             )
         );
 
-        if (mag(c(l,d,i,j,k)[o] - cc)/mag(L) > 1e-12)
+        if (mag(c(l,d,i,j,k)[o] - cc)/mag(LL) > 1e-12)
             FatalErrorInFunction
                 << "test 3c failed" << abort(FatalError);
     }
@@ -206,7 +201,7 @@ void testFaceAreas(const fvMesh& fvMsh)
     {
         const vector Lp
         (
-            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+            cmptDivide(LL, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
         );
 
         const vector A
@@ -264,7 +259,7 @@ void testFaceAreaNormals(const fvMesh& fvMsh)
     {
         const vector Lp
         (
-            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+            cmptDivide(LL, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
         );
 
         const vector A
@@ -316,7 +311,7 @@ void testFaceDeltas(const fvMesh& fvMsh)
 
         const vector Lp
         (
-            cmptDivide(L, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
+            cmptDivide(LL, vector(fvMsh.msh()[l].decomp().myBrickDecomp()))
         );
 
         const vector D

@@ -1,0 +1,90 @@
+{
+    "version": 4,
+
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "environment": {
+                "FOAM_SIGFPE": "1",
+                "FOAM_ABORT": "1"
+            },
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "default",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "debug",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "profile",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Profile"
+            }
+        }
+    ],
+
+    "buildPresets": [
+        {
+            "name": "default",
+            "configurePreset": "default",
+            "jobs": 0,
+            "targets": ["install"]
+        },
+        {
+            "name": "debug",
+            "configurePreset": "debug",
+            "jobs": 0,
+            "targets": ["install"]
+        },
+        {
+            "name": "profile",
+            "configurePreset": "profile",
+            "jobs": 0,
+            "targets": ["install"]
+        },
+
+        {
+            "name": "tests",
+            "configurePreset": "default",
+            "jobs": 0,
+            "targets": ["tests"]
+        },
+        {
+            "name": "tests-debug",
+            "configurePreset": "debug",
+            "jobs": 0,
+            "targets": ["tests"]
+        }
+    ],
+
+    "testPresets": [
+        {
+            "name": "default",
+            "configurePreset": "default",
+            "execution": {
+                "jobs": 0
+            }
+        },
+        {
+            "name": "debug",
+            "configurePreset": "debug",
+            "execution": {
+                "jobs": 0
+            }
+        }
+    ]
+}

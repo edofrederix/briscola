@@ -91,14 +91,18 @@ void checkBrick(const brick& b)
 
 int main(int argc, char *argv[])
 {
+    arguments::validArgs.append("mesh dictionary");
+
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
+
+    const word meshDictName(args.argRead<word>(1));
 
     IOdictionary meshDict
     (
         IOobject
         (
-            runTime.system()/"briscolaMeshDict",
+            runTime.path()/"../meshDicts"/meshDictName,
             runTime,
             IOobject::MUST_READ,
             IOobject::NO_WRITE,
@@ -204,54 +208,54 @@ int main(int argc, char *argv[])
 
         for (int j = 0; j < 12; j++)
         {
-            brick b(b0);
-            b.transform(rotations[j/4][j%4]);
-            checkBrick(b);
+            brick bb(b0);
+            bb.transform(rotations[j/4][j%4]);
+            checkBrick(bb);
 
             // Check reflections of rotations
 
-            for (int j = 0; j < 3; j++)
+            for (int k = 0; k < 3; k++)
             {
                 brick b2(b);
-                b2.transform(reflections[j]);
+                b2.transform(reflections[k]);
                 checkBrick(b2);
             }
 
             // Check permutations of rotations
 
-            for (int j = 0; j < 3; j++)
+            for (int k = 0; k < 3; k++)
             {
-                brick b2(b);
-                b2.transform(permutations[j]);
+                brick b2(bb);
+                b2.transform(permutations[k]);
                 checkBrick(b2);
             }
 
             // Check permutations of reflections of rotations
 
-            for (int j = 0; j < 3; j++)
+            for (int k = 0; k < 3; k++)
             {
-                brick b2(b);
-                b2.transform(reflections[j]);
+                brick b2(bb);
+                b2.transform(reflections[k]);
                 checkBrick(b2);
 
-                for (int k = 0; k < 3; k++)
+                for (int l = 0; l < 3; l++)
                 {
-                    b2.transform(permutations[k]);
+                    b2.transform(permutations[l]);
                     checkBrick(b2);
                 }
             }
 
             // Check reflections of permutations of rotations
 
-            for (int j = 0; j < 3; j++)
+            for (int k = 0; k < 3; k++)
             {
-                brick b2(b);
-                b2.transform(permutations[j]);
+                brick b2(bb);
+                b2.transform(permutations[k]);
                 checkBrick(b2);
 
-                for (int k = 0; k < 3; k++)
+                for (int l = 0; l < 3; l++)
                 {
-                    b2.transform(reflections[k]);
+                    b2.transform(reflections[l]);
                     checkBrick(b2);
                 }
             }
@@ -489,11 +493,11 @@ int main(int argc, char *argv[])
                 scalarList yl(8);
                 scalarList zl(8);
 
-                forAll(xl, i)
+                forAll(xl, ii)
                 {
-                    xl[i] = x[i];
-                    yl[i] = y[i];
-                    zl[i] = z[i];
+                    xl[ii] = x[ii];
+                    yl[ii] = y[ii];
+                    zl[ii] = z[ii];
                 }
 
                 const scalar xMin(min(xl));

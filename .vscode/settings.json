@@ -14,12 +14,6 @@
         "**/*.dep": true,
     },
     "explorer.excludeGitIgnore": true,
-    "C_Cpp.autoAddFileAssociations": false,
-    "C_Cpp.default.includePath": [
-        ""
-    ],
-    "C_Cpp.default.browse.path": [
-        ""
-    ],
-    "C_Cpp.errorSquiggles": "disabled"
+    "cmake.useCMakePresets": "always",
+    "cmake.ctest.allowParallelJobs": true
 }

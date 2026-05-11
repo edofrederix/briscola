@@ -1,5 +1,0 @@
-#!/bin/bash
-
-wclean -s all src
-wclean -s all applications/utilities
-wclean -s all applications/solvers

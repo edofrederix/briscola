@@ -1,12 +1,5 @@
 #!/bin/bash
 
-if [ -z "$BRISCOLA" ]; then
-
-    echo "BRISCOLA environment variable not set"
-    exit
-
-fi
-
 MESH=$1
 DSCHEME=$2
 GRADSCHEME=$3
@@ -26,8 +19,8 @@ GS=4.0
 ##
 
 cp -r $BRISCOLA/cases/singlePhase/flowOverCylinder/code .
-wclean code 2>&1 > log.wmake
-wmake code 2>&1 >> log.wmake
+rm -fr code/build
+(cmake -S code -B code/build && cmake --build code/build) > log.cmake 2>&1
 
 ##
 

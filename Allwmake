@@ -1,9 +1,0 @@
-#!/bin/bash
-
-WM_NCOMPPROCS=${WM_NCOMPPROCS:-4}
-
-wmakeLnIncludeAll -u -j$WM_NCOMPPROCS src
-
-wmake -a -s src
-wmake -a -s applications/utilities
-wmake -a -s applications/solvers

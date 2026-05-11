@@ -132,19 +132,19 @@ void test(const vertexVector v)
             const scalar C1 = - (d & n1);
             const scalar C2 = - (d & n2);
 
-            const tessellation T1(h1.truncate(n1,C1));
-            const tessellation T2(h1.truncate(n2,C2));
+            const tessellation t1(h1.truncate(n1,C1));
+            const tessellation t2(h1.truncate(n2,C2));
 
-            tessellation T(T1);
-            T.append(T2);
+            tessellation t(t1);
+            t.append(t2);
 
             // Two opposite truncations should sum into the same original volume
 
-            if (Foam::mag(T1.volume() + T2.volume() - h1.volume()) > 1e-12)
+            if (Foam::mag(t1.volume() + t2.volume() - h1.volume()) > 1e-12)
                 FatalErrorInFunction
                     << "Invalid truncations" << nl << abort(FatalError);
 
-            if (Foam::mag(T.volume() - h1.volume()) > 1e-12)
+            if (Foam::mag(t.volume() - h1.volume()) > 1e-12)
                 FatalErrorInFunction
                     << "Invalid truncations" << nl << abort(FatalError);
         }

@@ -31,7 +31,7 @@ bricks
     {
         vertices    (0 6 4 10 1 7 5 11);
         N           (16 64 32);
-        grading     geometric VARSTRETCH;
+        grading     geometric (1 1 1);
     }
 );
 
@@ -107,6 +107,6 @@ decomposition
 
     brickDecompositions
     (
-        VARDECOMP
+        (2 2 2)
     );
 }

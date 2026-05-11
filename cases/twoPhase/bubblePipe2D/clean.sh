@@ -4,6 +4,4 @@ source $FOAM_SRC/../bin/tools/CleanFunctions
 
 cleanCase
 
-rm -f briscola*.pvd timeData
-rm -f *.vtk.series
-rm -f slurm*
+rm -fr briscola*.vtk.series code/build

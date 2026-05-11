@@ -112,62 +112,116 @@ int main(int argc, char *argv[])
         )
     );
 
-    fvMesh fvMsh(meshDict, runTime);
-
-    colocatedScalarField f
-    (
-        "f",
-        fvMsh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE,
-        true
-    );
-
-    colocatedScalarField p
-    (
-        "p",
-        fvMsh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE,
-        true
-    );
-
-    f = Zero;
-    p = Zero;
-
-    labelVector N(fvMsh.msh().cast<rectilinearMesh>().N());
-
-    Info << "Mesh size: " << N << endl;
-
-    int seed = 123 * Pstream::myProcNo();
-    srand(seed);
-
-    scalar average = 0;
-
-    forAllCells(f, i, j, k)
+    labelVector stretches[4] =
     {
-        f(i,j,k) = 100.0 * static_cast<double>(rand()) / RAND_MAX - 0.5;
-        average += f(i,j,k) / (cmptProduct(f.N()));
-    }
+        labelVector(1,1,1),
+        labelVector(2,1,1),
+        labelVector(1,2,1),
+        labelVector(1,1,2)
+    };
 
-    forAllCells(f, i, j, k)
+    labelVector decomps[7] =
     {
-        f(i,j,k) -= average;
-    }
+        labelVector(2,2,2),
+        labelVector(1,2,4),
+        labelVector(2,1,4),
+        labelVector(4,2,1),
+        labelVector(1,1,8),
+        labelVector(1,8,1),
+        labelVector(8,1,1),
+    };
 
-    FFTPoissonSolver<stencil> solver(fvMsh);
-
-    for (int r = 0; r < 1; r++)
+    for (int ii = 0; ii < 4; ii++)
+    for (int jj = 0; jj < 7; jj++)
     {
-        p.correctBoundaryConditions();
-        solver.solve(p,f);
-        Info << "Run number " << r+1 << " completed." << endl;
-    }
+        const labelVector stretch = stretches[ii];
+        const labelVector decomp = decomps[jj];
 
-    if(check(p, f, fvMsh))
-    {
-        Info << "-------------------------------------------" << nl;
-        Info << "Pressure equation solution check successful" << nl;
-        Info << "-------------------------------------------" << endl;
+        // Set stretch
+
+        brickTable bricks(meshDict.lookup("bricks"));
+
+        OStringStream os;
+        os<< "geometric " << stretch;
+
+        IStringStream is(os.str());
+
+        bricks[0].set("grading", is.str().c_str());
+        meshDict.set("bricks", bricks);
+
+        // Set decomposition
+
+        dictionary& decompDict = meshDict.subDict("decomposition");
+
+        List<labelVector> decompList
+        (
+            decompDict.lookup("brickDecompositions")
+        );
+
+        decompList[0] = decomp;
+        decompDict.set("brickDecompositions", decompList);
+
+        // Read mesh
+
+        fvMesh fvMsh(meshDict, runTime);
+
+        colocatedScalarField f
+        (
+            "f",
+            fvMsh,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE,
+            true
+        );
+
+        colocatedScalarField p
+        (
+            "p",
+            fvMsh,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE,
+            true
+        );
+
+        f = Zero;
+        p = Zero;
+
+        labelVector N(fvMsh.msh().cast<rectilinearMesh>().N());
+
+        Info<< "Mesh size: " << N << endl;
+        Info<< "Decomposition size "
+            << fvMsh.msh().decomp().map().shape() << endl;
+
+        int seed = 123 * Pstream::myProcNo();
+        srand(seed);
+
+        scalar average = 0;
+
+        forAllCells(f, i, j, k)
+        {
+            f(i,j,k) = 100.0 * static_cast<double>(rand()) / RAND_MAX - 0.5;
+            average += f(i,j,k) / (cmptProduct(f.N()));
+        }
+
+        forAllCells(f, i, j, k)
+        {
+            f(i,j,k) -= average;
+        }
+
+        FFTPoissonSolver<stencil> solver(fvMsh);
+
+        for (int r = 0; r < 1; r++)
+        {
+            p.correctBoundaryConditions();
+            solver.solve(p,f);
+            Info << "Run number " << r+1 << " completed." << endl;
+        }
+
+        if(check(p, f, fvMsh))
+        {
+            Info << "-------------------------------------------" << nl;
+            Info << "Pressure equation solution check successful" << nl;
+            Info << "-------------------------------------------" << endl;
+        }
     }
 }

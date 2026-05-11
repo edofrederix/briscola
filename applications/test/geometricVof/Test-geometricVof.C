@@ -38,9 +38,9 @@ void testVolumeHex(const vertexVector& v, const vector n)
 
         for (int j = 0; j <= NC; j++)
         {
-            const scalar C = CMin + (CMax-CMin)*j/scalar(NC);
+            const scalar c = CMin + (CMax-CMin)*j/scalar(NC);
 
-            const scalar VNew = hexa(v).truncationVolume(n,C);
+            const scalar VNew = hexa(v).truncationVolume(n,c);
 
             if (VNew - Vi < -1e-12)
                 FatalErrorInFunction
@@ -75,9 +75,9 @@ void testVolumePiped(const vertexVector& v, const vector n)
 
         for (int j = 0; j <= NC; j++)
         {
-            const scalar C = CMin + (CMax-CMin)*j/scalar(NC);
+            const scalar c = CMin + (CMax-CMin)*j/scalar(NC);
 
-            const scalar VNew = piped(v).truncationVolume(n,C);
+            const scalar VNew = piped(v).truncationVolume(n,c);
 
             if (VNew - Vi < -1e-12)
                 FatalErrorInFunction
@@ -385,9 +385,27 @@ void testRotatedLVE
 
 int main(int argc, char *argv[])
 {
+    arguments::validArgs.append("mesh dictionary");
+
     #include "createParallelBriscolaCase.H"
     #include "createBriscolaTime.H"
-    #include "createBriscolaMesh.H"
+
+    const word meshDictName(args.argRead<word>(1));
+
+    IOdictionary meshDict
+    (
+        IOobject
+        (
+            runTime.path()/"../meshDicts"/meshDictName,
+            runTime,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE,
+            false
+        )
+    );
+
+    fvMesh fvMsh(meshDict, runTime);
+
     #include "createBriscolaVof.H"
 
     // Vof object must be castable to geometricVof
@@ -492,11 +510,11 @@ int main(int argc, char *argv[])
         const colocatedScalarField& cv =
             fvMsh.template metrics<colocated>().cellVolumes();
 
-        for (int i = 0; i <= NC; i++)
+        for (int ii = 0; ii <= NC; ii++)
         {
             colocatedScalarField& a = gvf.alpha();
 
-            a = scalar(i)/NC;
+            a = scalar(ii)/NC;
 
             forAllCells(a, i, j, k)
             {

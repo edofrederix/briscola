@@ -1,9 +1,0 @@
-EXE_INC = \
-    -I../briscolaCore/lnInclude \
-    -I../briscolaMesh/lnInclude \
-    -I../briscolaFiniteVolume/lnInclude \
-    -isystem $(LIB_SRC)/OpenFOAM/lnInclude \
-    -Wshadow
-
-LIB_LIBS = \
-    -lOpenFOAM

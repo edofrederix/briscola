@@ -1,12 +1,5 @@
 #!/bin/bash
 
-if [ -z "$BRISCOLA" ]; then
-
-    echo "BRISCOLA environment variable not set"
-    exit
-
-fi
-
 MESH="${1:-8}"
 
 D=1.0
@@ -21,7 +14,7 @@ GS=4.0
 
 ##
 
-wmake -a -s code
+cmake -S code -B code/build && cmake --build code/build
 
 R=$(echo "print($D/2.0)" | python)
 D2=$(echo "print($D*$F)" | python)
