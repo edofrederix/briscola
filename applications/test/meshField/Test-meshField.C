@@ -1534,51 +1534,6 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh, const bool deep)
         }
     }
 
-    s1 = cmptMax(m1);
-
-    forAllCells(m3, l, d, i, j, k)
-        if (s1(l,d,i,j,k) != cmptMax(m1(l,d,i,j,k)))
-            FatalErrorInFunction
-                << "test 22a failed" << abort(FatalError);
-
-    s1 = cmptMax(m1*2);
-
-    forAllCells(m3, l, d, i, j, k)
-        if (s1(l,d,i,j,k) != cmptMax(2*m1(l,d,i,j,k)))
-            FatalErrorInFunction
-                << "test 22a failed" << abort(FatalError);
-
-
-    s1 = cmptMin(m1);
-
-    forAllCells(m3, l, d, i, j, k)
-        if (s1(l,d,i,j,k) != cmptMin(m1(l,d,i,j,k)))
-            FatalErrorInFunction
-                << "test 23a failed" << abort(FatalError);
-
-    s1 = cmptMin(m1*2);
-
-    forAllCells(m3, l, d, i, j, k)
-        if (s1(l,d,i,j,k) != cmptMin(2*m1(l,d,i,j,k)))
-            FatalErrorInFunction
-                << "test 23b failed" << abort(FatalError);
-
-
-    s1 = cmptAv(m1);
-
-    forAllCells(m3, l, d, i, j, k)
-        if (s1(l,d,i,j,k) != cmptAv(m1(l,d,i,j,k)))
-            FatalErrorInFunction
-                << "test 24a failed" << abort(FatalError);
-
-    s1 = cmptAv(m1*2);
-
-    forAllCells(m3, l, d, i, j, k)
-        if (s1(l,d,i,j,k) != cmptAv(2*m1(l,d,i,j,k)))
-            FatalErrorInFunction
-                << "test 24b failed" << abort(FatalError);
-
-
     m3 = cmptMag(m1);
 
     forAllCells(m3, l, d, i, j, k)

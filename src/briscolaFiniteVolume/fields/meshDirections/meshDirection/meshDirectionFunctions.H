@@ -25,51 +25,6 @@ tmp<meshDirection<SCALARPRODTYPE,MeshType>>
 mag(const tmp<meshDirection<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-void cmptMax
-(
-    meshDirection<typename meshDirection<Type,MeshType>::cmptType,MeshType>&,
-    const meshDirection<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-tmp<meshDirection<typename meshDirection<Type,MeshType>::cmptType,MeshType>>
-cmptMax(const meshDirection<Type,MeshType>&);
-
-template<class Type, class MeshType>
-tmp<meshDirection<typename meshDirection<Type,MeshType>::cmptType,MeshType>>
-cmptMax(const tmp<meshDirection<Type,MeshType>>&);
-
-template<class Type, class MeshType>
-void cmptMin
-(
-    meshDirection<typename meshDirection<Type,MeshType>::cmptType,MeshType>&,
-    const meshDirection<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-tmp<meshDirection<typename meshDirection<Type,MeshType>::cmptType,MeshType>>
-cmptMin(const meshDirection<Type,MeshType>&);
-
-template<class Type, class MeshType>
-tmp<meshDirection<typename meshDirection<Type,MeshType>::cmptType,MeshType>>
-cmptMin(const tmp<meshDirection<Type,MeshType>>&);
-
-template<class Type, class MeshType>
-void cmptAv
-(
-    meshDirection<typename meshDirection<Type,MeshType>::cmptType,MeshType>&,
-    const meshDirection<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-tmp<meshDirection<typename meshDirection<Type,MeshType>::cmptType,MeshType>>
-cmptAv(const meshDirection<Type,MeshType>&);
-
-template<class Type, class MeshType>
-tmp<meshDirection<typename meshDirection<Type,MeshType>::cmptType,MeshType>>
-cmptAv(const tmp<meshDirection<Type,MeshType>>&);
-
-template<class Type, class MeshType>
 void
 cmptMag(meshDirection<Type,MeshType>&, const meshDirection<Type,MeshType>&);
 

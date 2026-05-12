@@ -837,46 +837,7 @@ void testVectorSpaceFunctions()
     }
 
 
-    scalarBlock r1 = cmptMax(b1);
-
-    forAllBlock(r1, i, j, k)
-        if (r1(i,j,k) != i*j*k+(nComp-1))
-            FatalErrorInFunction << "test 1a failed" << abort(FatalError);
-
-    r1 = cmptMax(b1*2.0);
-
-    forAllBlock(r1, i, j, k)
-        if (r1(i,j,k) != 2*(i*j*k+(nComp-1)))
-            FatalErrorInFunction << "test 1b failed" << abort(FatalError);
-
-
-    r1 = cmptMin(b1);
-
-    forAllBlock(r1, i, j, k)
-        if (r1(i,j,k) != i*j*k)
-            FatalErrorInFunction << "test 2a failed" << abort(FatalError);
-
-    r1 = cmptMin(b1*2.0);
-
-    forAllBlock(r1, i, j, k)
-        if (r1(i,j,k) != 2*i*j*k)
-            FatalErrorInFunction << "test 2b failed" << abort(FatalError);
-
-
-    r1 = cmptAv(b1);
-
-    forAllBlock(r1, i, j, k)
-        if (r1(i,j,k) != i*j*k + (nComp-1.0)/2.0)
-            FatalErrorInFunction << "test 3a failed" << abort(FatalError);
-
-    r1 = cmptAv(b1*2.0);
-
-    forAllBlock(r1, i, j, k)
-        if (r1(i,j,k) != 2.0*(i*j*k + (nComp-1.0)/2.0))
-            FatalErrorInFunction << "test 3b failed" << abort(FatalError);
-
-
-    r1 = mag(b1);
+    scalarBlock r1 = mag(b1);
 
     forAllBlock(r1, i, j, k)
     {

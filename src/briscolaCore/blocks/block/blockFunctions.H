@@ -12,6 +12,32 @@ namespace briscola
 {
 
 template<class Type>
+void component
+(
+    block<typename block<Type>::cmptType>&,
+    const block<Type>&,
+    const direction
+);
+
+template<class Type>
+void T(block<Type>&, const block<Type>&);
+
+template<class Type>
+void sqr
+(
+    block<typename outerProduct<Type, Type>::type>&,
+    const block<Type>&
+);
+
+template<class Type>
+tmp<block<typename outerProduct<Type, Type>::type>>
+sqr(const block<Type>&);
+
+template<class Type>
+tmp<block<typename outerProduct<Type, Type>::type>>
+sqr(const tmp<block<Type>>&);
+
+template<class Type>
 void mag(block<SCALARPRODTYPE>&, const block<Type>&);
 
 template<class Type>
@@ -19,39 +45,6 @@ tmp<block<SCALARPRODTYPE>> mag(const block<Type>&);
 
 template<class Type>
 tmp<block<SCALARPRODTYPE>> mag(const tmp<block<Type>>&);
-
-template<class Type>
-void cmptMax(block<typename block<Type>::cmptType>&, const block<Type>&);
-
-template<class Type>
-tmp<block<typename block<Type>::cmptType>>
-cmptMax(const block<Type>&);
-
-template<class Type>
-tmp<block<typename block<Type>::cmptType>>
-cmptMax(const tmp<block<Type>>&);
-
-template<class Type>
-void cmptMin(block<typename block<Type>::cmptType>&, const block<Type>&);
-
-template<class Type>
-tmp<block<typename block<Type>::cmptType>>
-cmptMin(const block<Type>&);
-
-template<class Type>
-tmp<block<typename block<Type>::cmptType>>
-cmptMin(const tmp<block<Type>>&);
-
-template<class Type>
-void cmptAv(block<typename block<Type>::cmptType>&, const block<Type>&);
-
-template<class Type>
-tmp<block<typename block<Type>::cmptType>>
-cmptAv(const block<Type>&);
-
-template<class Type>
-tmp<block<typename block<Type>::cmptType>>
-cmptAv(const tmp<block<Type>>&);
 
 template<class Type>
 void cmptMag(block<Type>&, const block<Type>&);

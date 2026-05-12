@@ -24,51 +24,6 @@ template<class Type, class MeshType>
 tmp<meshLevel<SCALARPRODTYPE,MeshType>> mag(const tmp<meshLevel<Type,MeshType>>&);
 
 template<class Type, class MeshType>
-void cmptMax
-(
-    meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>&,
-    const meshLevel<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
-cmptMax(const meshLevel<Type,MeshType>&);
-
-template<class Type, class MeshType>
-tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
-cmptMax(const tmp<meshLevel<Type,MeshType>>&);
-
-template<class Type, class MeshType>
-void cmptMin
-(
-    meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>&,
-    const meshLevel<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
-cmptMin(const meshLevel<Type,MeshType>&);
-
-template<class Type, class MeshType>
-tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
-cmptMin(const tmp<meshLevel<Type,MeshType>>&);
-
-template<class Type, class MeshType>
-void cmptAv
-(
-    meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>&,
-    const meshLevel<Type,MeshType>&
-);
-
-template<class Type, class MeshType>
-tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
-cmptAv(const meshLevel<Type,MeshType>&);
-
-template<class Type, class MeshType>
-tmp<meshLevel<typename meshLevel<Type,MeshType>::cmptType,MeshType>>
-cmptAv(const tmp<meshLevel<Type,MeshType>>&);
-
-template<class Type, class MeshType>
 void cmptMag(meshLevel<Type,MeshType>&, const meshLevel<Type,MeshType>&);
 
 template<class Type, class MeshType>

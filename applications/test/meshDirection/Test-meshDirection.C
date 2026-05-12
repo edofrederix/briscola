@@ -169,15 +169,6 @@ void testVectorSpaceFunctions(const fvMesh& fvMsh)
     m1 = pTraits<Type>::one;
     m2 = pTraits<Type>::one;
 
-    cmptMax(m1);
-    cmptMax(m1*2.0);
-
-    cmptMin(m1);
-    cmptMin(m1*2.0);
-
-    cmptAv(m1);
-    cmptAv(m1*2.0);
-
     cmptMag(m1);
     cmptMag(m1*2.0);
 

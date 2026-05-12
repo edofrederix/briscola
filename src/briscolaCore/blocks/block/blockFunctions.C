@@ -21,68 +21,16 @@ void component
     const direction d
 )
 {
-    typedef typename block<Type>::cmptType cmptType;
-    BFOR_ALL_F_OP_F_FUNC_S
-    (
-        cmptType, res, =, Type, f, .component, const direction, d
-    )
+    forAllBlockLinear(res, i)
+        res(i) = f(i).component(d);
 }
-
 
 template<class Type>
 void T(block<Type>& res, const block<Type>& f)
 {
-    BFOR_ALL_F_OP_F_FUNC(Type, res, =, Type, f, T)
+    forAllBlockLinear(res, i)
+        res(i) = Foam::T(f(i));
 }
-
-
-template<class Type, direction r>
-void pow
-(
-    block<typename powProduct<Type, r>::type>& res,
-    const block<Type>& vf
-)
-{
-    typedef typename powProduct<Type, r>::type powProductType;
-    BFOR_ALL_F_OP_FUNC_F_S
-    (
-        powProductType, res, =, pow, Type, vf, powProductType,
-        pTraits<powProductType>::zero
-    )
-}
-
-template<class Type, direction r>
-tmp<block<typename powProduct<Type, r>::type>>
-pow
-(
-    const block<Type>& f,
-    typename powProduct<Type, r>::type
-)
-{
-    typedef typename powProduct<Type, r>::type powProductType;
-    tmp<block<powProductType>> tRes
-    (
-        new block<powProductType>(f.size())
-    );
-    pow<Type, r>(tRes.ref(), f);
-    return tRes;
-}
-
-template<class Type, direction r>
-tmp<block<typename powProduct<Type, r>::type>>
-pow
-(
-    const tmp<block<Type>>& tf,
-    typename powProduct<Type, r>::type
-)
-{
-    typedef typename powProduct<Type, r>::type powProductType;
-    tmp<block<powProductType>> tRes = reuseTmp<powProductType, Type>::New(tf);
-    pow<Type, r>(tRes.ref(), tf());
-    tf.clear();
-    return tRes;
-}
-
 
 template<class Type>
 void sqr
@@ -91,8 +39,8 @@ void sqr
     const block<Type>& vf
 )
 {
-    typedef typename outerProduct<Type, Type>::type outerProductType;
-    BFOR_ALL_F_OP_FUNC_F(outerProductType, res, =, sqr, Type, vf)
+    forAllBlockLinear(res, i)
+        res(i) = Foam::sqr(vf(i));
 }
 
 template<class Type>
@@ -120,35 +68,11 @@ sqr(const tmp<block<Type>>& tf)
     return tRes;
 }
 
-
-template<class Type>
-void magSqr(block<scalar>& res, const block<Type>& f)
-{
-    BFOR_ALL_F_OP_FUNC_F(scalar, res, =, magSqr, Type, f)
-}
-
-template<class Type>
-tmp<block<scalar>> magSqr(const block<Type>& f)
-{
-    tmp<block<scalar>> tRes(new block<scalar>(f.size()));
-    magSqr(tRes.ref(), f);
-    return tRes;
-}
-
-template<class Type>
-tmp<block<scalar>> magSqr(const tmp<block<Type>>& tf)
-{
-    tmp<block<scalar>> tRes = reuseTmp<scalar, Type>::New(tf);
-    magSqr(tRes.ref(), tf());
-    tf.clear();
-    return tRes;
-}
-
 template<class Type>
 void mag(block<SCALARPRODTYPE>& res, const block<Type>& f)
 {
-    typedef SCALARPRODTYPE ScalarType;
-    BFOR_ALL_F_OP_FUNC_F(ScalarType, res, =, ::Foam::mag, Type, f)
+    forAllBlockLinear(res, i)
+        res(i) = Foam::mag(f(i));
 }
 
 template<class Type>
@@ -170,91 +94,10 @@ tmp<block<SCALARPRODTYPE>> mag(const tmp<block<Type>>& tf)
 }
 
 template<class Type>
-void cmptMax(block<typename block<Type>::cmptType>& res, const block<Type>& f)
-{
-    typedef typename block<Type>::cmptType cmptType;
-    BFOR_ALL_F_OP_FUNC_F(cmptType, res, =, cmptMax, Type, f)
-}
-
-template<class Type>
-tmp<block<typename block<Type>::cmptType>> cmptMax(const block<Type>& f)
-{
-    typedef typename block<Type>::cmptType cmptType;
-    tmp<block<cmptType>> tRes(new block<cmptType>(f.shape()));
-    cmptMax(tRes.ref(), f);
-    return tRes;
-}
-
-template<class Type>
-tmp<block<typename block<Type>::cmptType>> cmptMax(const tmp<block<Type>>& tf)
-{
-    typedef typename block<Type>::cmptType cmptType;
-    tmp<block<cmptType>> tRes = reuseTmp<cmptType, Type>::New(tf);
-    cmptMax(tRes.ref(), tf());
-    if (tf.isTmp())
-        tf.clear();
-    return tRes;
-}
-
-
-template<class Type>
-void cmptMin(block<typename block<Type>::cmptType>& res, const block<Type>& f)
-{
-    typedef typename block<Type>::cmptType cmptType;
-    BFOR_ALL_F_OP_FUNC_F(cmptType, res, =, cmptMin, Type, f)
-}
-
-template<class Type>
-tmp<block<typename block<Type>::cmptType>> cmptMin(const block<Type>& f)
-{
-    typedef typename block<Type>::cmptType cmptType;
-    tmp<block<cmptType>> tRes(new block<cmptType>(f.shape()));
-    cmptMin(tRes.ref(), f);
-    return tRes;
-}
-
-template<class Type>
-tmp<block<typename block<Type>::cmptType>> cmptMin(const tmp<block<Type>>& tf)
-{
-    typedef typename block<Type>::cmptType cmptType;
-    tmp<block<cmptType>> tRes = reuseTmp<cmptType, Type>::New(tf);
-    cmptMin(tRes.ref(), tf());
-    if (tf.isTmp())
-        tf.clear();
-    return tRes;
-}
-
-template<class Type>
-void cmptAv(block<typename block<Type>::cmptType>& res, const block<Type>& f)
-{
-    typedef typename block<Type>::cmptType cmptType;
-    BFOR_ALL_F_OP_FUNC_F(cmptType, res, =, cmptAv, Type, f)
-}
-
-template<class Type>
-tmp<block<typename block<Type>::cmptType>> cmptAv(const block<Type>& f)
-{
-    typedef typename block<Type>::cmptType cmptType;
-    tmp<block<cmptType>> tRes(new block<cmptType>(f.shape()));
-    cmptAv(tRes.ref(), f);
-    return tRes;
-}
-
-template<class Type>
-tmp<block<typename block<Type>::cmptType>> cmptAv(const tmp<block<Type>>& tf)
-{
-    typedef typename block<Type>::cmptType cmptType;
-    tmp<block<cmptType>> tRes = reuseTmp<cmptType, Type>::New(tf);
-    cmptAv(tRes.ref(), tf());
-    if (tf.isTmp())
-        tf.clear();
-    return tRes;
-}
-
-template<class Type>
 void cmptMag(block<Type>& res, const block<Type>& f)
 {
-    BFOR_ALL_F_OP_FUNC_F(Type, res, =, cmptMag, Type, f)
+    forAllBlockLinear(res, i)
+        res(i) = Foam::cmptMag(f(i));
 }
 
 template<class Type>
@@ -278,7 +121,8 @@ tmp<block<Type>> cmptMag(const tmp<block<Type>>& tf)
 template<class Type>
 void cmptSqr(block<Type>& res, const block<Type>& f)
 {
-    BFOR_ALL_F_OP_FUNC_F(Type, res, =, ::Foam::cmptSqr, Type, f)
+    forAllBlockLinear(res, i)
+        res(i) = Foam::cmptSqr(f(i));
 }
 
 template<class Type>
@@ -315,7 +159,11 @@ Type max(const block<Type>& f)
     if (f.size())
     {
         Type Max(f(0));
-        BFOR_ALL_S_OP_FUNC_F_S(Type, Max, =, ::Foam::max, Type, f, Type, Max)
+
+        forAllBlockLinear(f, i)
+            if (f(i) > Max)
+                Max = f(i);
+
         return Max;
     }
     else
@@ -332,7 +180,11 @@ Type min(const block<Type>& f)
     if (f.size())
     {
         Type Min(f(0));
-        BFOR_ALL_S_OP_FUNC_F_S(Type, Min, =, ::Foam::min, Type, f, Type, Min)
+
+        forAllBlockLinear(f, i)
+            if (f(i) < Min)
+                Min = f(i);
+
         return Min;
     }
     else
@@ -349,7 +201,10 @@ Type sum(const block<Type>& f)
     if (f.size())
     {
         Type Sum = Zero;
-        BFOR_ALL_S_OP_F(Type, Sum, +=, Type, f)
+
+        forAllBlockLinear(f, i)
+            Sum += f(i);
+
         return Sum;
     }
     else

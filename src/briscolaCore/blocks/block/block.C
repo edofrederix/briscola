@@ -85,13 +85,7 @@ block<Type>::block(const labelVector& d, const zero)
 {
     allocate();
 
-    if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) = Zero;
-        List_END_FOR_ALL
-    }
+    *this = Zero;
 }
 
 template<class Type>
@@ -139,13 +133,8 @@ block<Type>::block
         allocate();
 
         if (v_)
-        {
-            List_ACCESS(Type, (*this), vp);
-            List_CONST_ACCESS(Type, (v), va);
-            List_FOR_ALL((*this), i)
-                List_ELEM((*this), vp, i) = List_ELEM((v), va, i);
-            List_END_FOR_ALL
-        }
+            forAllBlockLinear(*this, i)
+                v_[i] = v[i];
     }
 }
 
@@ -169,12 +158,8 @@ block<Type>::block
     allocate();
 
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) = v[i];
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] = v[i];
 }
 
 template<class Type>
@@ -200,13 +185,8 @@ block<Type>::block(const labelVector& d, const List<Type>& v)
         allocate();
 
         if (v_)
-        {
-            List_ACCESS(Type, (*this), vp);
-            List_CONST_ACCESS(Type, (v), va);
-            List_FOR_ALL((*this), i)
-                List_ELEM((*this), vp, i) = List_ELEM(v, va, i);
-            List_END_FOR_ALL
-        }
+            forAllBlockLinear(*this, i)
+                v_[i] = v[i];
     }
 }
 
@@ -224,12 +204,8 @@ block<Type>::block(const labelVector& d, const Type* v)
     allocate();
 
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) = v[i];
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] = v[i];
 }
 
 template<class Type>
@@ -247,11 +223,8 @@ block<Type>::block(const block<Type>& M)
     {
         allocate();
 
-        List_ACCESS(Type, (*this), vp);
-        List_CONST_ACCESS(Type, (M), va);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) = List_ELEM(M, va, i);
-        List_END_FOR_ALL
+        forAllBlockLinear(*this, i)
+            v_[i] = M.v()[i];
     }
 }
 
@@ -270,10 +243,8 @@ block<Type>::block(const block<Type>& M, const zero&)
     {
         allocate();
 
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) = Zero;
-        List_END_FOR_ALL
+        forAllBlockLinear(*this, i)
+            v_[i] = Zero;
     }
 }
 
@@ -292,10 +263,8 @@ block<Type>::block(const block<Type>& M, const Type& v)
     {
         allocate();
 
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) = v;
-        List_END_FOR_ALL
+        forAllBlockLinear(*this, i)
+            v_[i] = v;
     }
 }
 
@@ -968,12 +937,8 @@ block<Type>::component(const label dir) const
 
     block<cmptType>& D = tD.ref();
 
-    List_ACCESS(cmptType, D, vp);
-    List_CONST_ACCESS(Type, (*this), va);
-    List_FOR_ALL((*this), i)
-        List_ELEM(D, vp, i) =
-            ::Foam::component(List_ELEM((*this), va, i), dir);
-    List_END_FOR_ALL
+    forAllBlockLinear(*this, i)
+        D(i) = ::Foam::component(v_[i], dir);
 
     return tD;
 }
@@ -989,10 +954,8 @@ void block<Type>::replace
     // types too. The default setComponent method will not work for such types
     // because it relies on a reference.
 
-    List_ACCESS(Type, (*this), vp);
-    List_FOR_ALL((*this), i)
-        ::Foam::replace(List_ELEM((*this), vp, i), dir, v);
-    List_END_FOR_ALL
+    forAllBlockLinear(*this, i)
+        ::Foam::replace(v_[i], dir, v);
 }
 
 template<class Type>
@@ -1006,11 +969,8 @@ void block<Type>::replace
     // types too. The default setComponent method will not work for such types
     // because it relies on a reference.
 
-    List_ACCESS(Type, (*this), vp);
-    List_CONST_ACCESS(cmptType, D, va);
-    List_FOR_ALL((*this), i)
-        ::Foam::replace(List_ELEM((*this), vp, i), dir, List_ELEM(D, va, i));
-    List_END_FOR_ALL
+    forAllBlockLinear(*this, i)
+        ::Foam::replace(v_[i], dir, D(i));
 }
 
 template<class Type>
@@ -1029,23 +989,15 @@ void block<Type>::replace
 template<class Type>
 void block<Type>::max(const Type& v)
 {
-    List_ACCESS(Type, (*this), vp);
-    List_CONST_ACCESS(Type, (*this), va);
-    List_FOR_ALL((*this), i)
-        List_ELEM((*this), vp, i) =
-            ::Foam::max(List_ELEM((*this), va, i), v);
-    List_END_FOR_ALL
+    forAllBlockLinear(*this, i)
+        v_[i] = ::Foam::max(v_[i], v);
 }
 
 template<class Type>
 void block<Type>::min(const Type& v)
 {
-    List_ACCESS(Type, (*this), vp);
-    List_CONST_ACCESS(Type, (*this), va);
-    List_FOR_ALL((*this), i)
-        List_ELEM((*this), vp, i) =
-            ::Foam::min(List_ELEM((*this), va, i), v);
-    List_END_FOR_ALL
+    forAllBlockLinear(*this, i)
+        v_[i] = ::Foam::min(v_[i], v);
 }
 
 template<class Type>

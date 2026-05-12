@@ -98,13 +98,8 @@ inline void block<Type>::operator=(const block<Type>& M)
     reAllocate(M.shape());
 
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_CONST_ACCESS(Type, M, va);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) = List_ELEM(M, va, i);
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(M, i)
+            v_[i] = M.v()[i];
 }
 
 template<class Type>
@@ -128,24 +123,16 @@ template<class Type>
 inline void block<Type>::operator=(const Type& v)
 {
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) = v;
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] = v;
 }
 
 template<class Type>
 inline void block<Type>::operator=(const zero)
 {
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) = Zero;
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] = Zero;
 }
 
 template<class Type>
@@ -167,13 +154,8 @@ inline void block<Type>::operator+=(const block<Type>& M)
     }
 
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_CONST_ACCESS(Type, M, va);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) += List_ELEM(M, va, i);
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] += M.v()[i];
 }
 
 template<class Type>
@@ -187,13 +169,8 @@ inline void block<Type>::operator-=(const block<Type>& M)
     }
 
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_CONST_ACCESS(Type, M, va);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) -= List_ELEM(M, va, i);
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] -= M.v()[i];
 }
 
 template<class Type>
@@ -215,13 +192,8 @@ inline void block<Type>::operator*=(const block<scalar>& M)
     }
 
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_CONST_ACCESS(scalar, M, va);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) *= List_ELEM(M, va, i);
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] *= M.v()[i];
 }
 
 template<class Type>
@@ -243,13 +215,8 @@ inline void block<Type>::operator/=(const block<scalar>& M)
     }
 
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_CONST_ACCESS(scalar, M, va);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) /= List_ELEM(M, va, i);
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] /= M.v()[i];
 }
 
 template<class Type>
@@ -264,48 +231,32 @@ template<class Type>
 inline void block<Type>::operator+=(const Type& v)
 {
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) += v;
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] += v;
 }
 
 template<class Type>
 inline void block<Type>::operator-=(const Type& v)
 {
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) -= v;
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] -= v;
 }
 
 template<class Type>
 inline void block<Type>::operator*=(const scalar& v)
 {
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) *= v;
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] *= v;
 }
 
 template<class Type>
 inline void block<Type>::operator/=(const scalar& v)
 {
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) /= v;
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] /= v;
 }
 
 template<class Type>
@@ -315,13 +266,8 @@ inline void block<Type>::operator=(const block<Type2>& M)
     reAllocate(M.shape());
 
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_CONST_ACCESS(Type2, M, va);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) = List_ELEM(M, va, i);
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(M, i)
+            v_[i] = M.v()[i];
 }
 
 template<class Type>
@@ -345,13 +291,8 @@ inline void block<Type>::operator+=(const block<Type2>& M)
     }
 
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_CONST_ACCESS(Type2, M, va);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) += List_ELEM(M, va, i);
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] += M.v()[i];
 }
 
 template<class Type>
@@ -375,13 +316,8 @@ inline void block<Type>::operator-=(const block<Type2>& M)
     }
 
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_CONST_ACCESS(Type2, M, va);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) -= List_ELEM(M, va, i);
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] -= M.v()[i];
 }
 
 template<class Type>
@@ -398,12 +334,8 @@ template<class Type2>
 inline void block<Type>::operator=(const Type2& v)
 {
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) = v;
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] = v;
 }
 
 template<class Type>
@@ -411,12 +343,8 @@ template<class Type2>
 inline void block<Type>::operator+=(const Type2& v)
 {
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) += v;
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] += v;
 }
 
 template<class Type>
@@ -424,14 +352,9 @@ template<class Type2>
 inline void block<Type>::operator-=(const Type2& v)
 {
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) -= v;
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] -= v;
 }
-
 
 template<class Type>
 template<class Type2>
@@ -445,13 +368,8 @@ inline void block<Type>::operator*=(const block<Type2>& M)
     }
 
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_CONST_ACCESS(Type2, M, va);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) *= List_ELEM(M, va, i);
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(M, i)
+            v_[i] *= M.v()[i];
 }
 
 template<class Type>
@@ -475,13 +393,8 @@ inline void block<Type>::operator/=(const block<Type2>& M)
     }
 
     if (v_)
-    {
-        List_ACCESS(Type, (*this), vp);
-        List_CONST_ACCESS(Type2, M, va);
-        List_FOR_ALL((*this), i)
-            List_ELEM((*this), vp, i) /= List_ELEM(M, va, i);
-        List_END_FOR_ALL
-    }
+        forAllBlockLinear(*this, i)
+            v_[i] /= M.v()[i];
 }
 
 template<class Type>
