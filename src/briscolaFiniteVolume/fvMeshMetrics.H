@@ -64,7 +64,7 @@ class fvMeshMetrics
     FastPtrList<immersedBoundary<MeshType>> immersedBoundaries_;
 
     // Global immersed boundary mask pointer
-    meshField<scalar,MeshType>* maskPtr_;
+    meshField<label,MeshType>* maskPtr_;
 
 public:
 
@@ -243,7 +243,7 @@ public:
         return globalCellCounts_;
     }
 
-    inline const meshField<scalar,MeshType>& mask() const
+    inline const meshField<label,MeshType>& mask() const
     {
         if (!maskPtr_)
             const_cast<fvMeshMetrics<MeshType>*>(this)
@@ -252,7 +252,7 @@ public:
         return *maskPtr_;
     }
 
-    inline tmp<meshField<scalar,MeshType>> fluidMask() const
+    inline tmp<meshField<label,MeshType>> fluidMask() const
     {
         return 1.0 - mask();
     }

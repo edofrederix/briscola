@@ -372,92 +372,7 @@ void linearSystem<SType,Type,MeshType>::setForcingMask()
     }
 }
 
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator=
-(
-    const linearSystem<SType,Type,MeshType>& sys
-)
-{
-    this->A() = sys.A();
-    this->b() = sys.b();
-
-    this->symmetric_ = sys.symmetric();
-    this->diagonal_ = sys.diagonal();
-    this->eliminated_ = sys.eliminated();
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator=
-(
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys
-)
-{
-    if (tSys.isTmp() && tSys->unique())
-    {
-        linearSystem<SType,Type,MeshType>& sys =
-            const_cast<linearSystem<SType,Type,MeshType>&>(tSys());
-
-        transfer(sys);
-
-        tSys.clear();
-    }
-    else
-    {
-        *this = tSys();
-    }
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator+=
-(
-    const linearSystem<SType,Type,MeshType>& sys
-)
-{
-    this->A() += sys.A();
-    this->b() += sys.b();
-
-    symmetric_ = symmetric_ && sys.symmetric();
-    diagonal_ = diagonal_ && sys.diagonal();
-    eliminated_ = eliminated_ && sys.eliminated();
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator+=
-(
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys
-)
-{
-    *this += tSys();
-
-    if (tSys.isTmp())
-        tSys.clear();
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator-=
-(
-    const linearSystem<SType,Type,MeshType>& sys
-)
-{
-    this->A() -= sys.A();
-    this->b() -= sys.b();
-
-    symmetric_ = symmetric_ && sys.symmetric();
-    diagonal_ = diagonal_ && sys.diagonal();
-    eliminated_ = eliminated_ && sys.eliminated();
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator-=
-(
-    const tmp<linearSystem<SType,Type,MeshType>>& tSys
-)
-{
-    *this -= tSys();
-
-    if (tSys.isTmp())
-        tSys.clear();
-}
+// Operators
 
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator=
@@ -510,6 +425,20 @@ void linearSystem<SType,Type,MeshType>::operator=
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator=
 (
+    const linearSystem<SType,Type,MeshType>& sys
+)
+{
+    this->A() = sys.A();
+    this->b() = sys.b();
+
+    this->symmetric_ = sys.symmetric();
+    this->diagonal_ = sys.diagonal();
+    this->eliminated_ = sys.eliminated();
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator=
+(
     const tmp<meshField<Type,MeshType>>& tField
 )
 {
@@ -517,6 +446,27 @@ void linearSystem<SType,Type,MeshType>::operator=
 
     if (tField.isTmp())
         tField.clear();
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator=
+(
+    const tmp<linearSystem<SType,Type,MeshType>>& tSys
+)
+{
+    if (tSys.isTmp() && tSys->unique())
+    {
+        linearSystem<SType,Type,MeshType>& sys =
+            const_cast<linearSystem<SType,Type,MeshType>&>(tSys());
+
+        transfer(sys);
+
+        tSys.clear();
+    }
+    else
+    {
+        *this = tSys();
+    }
 }
 
 template<class SType, class Type, class MeshType>
@@ -558,6 +508,20 @@ void linearSystem<SType,Type,MeshType>::operator+=
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator+=
 (
+    const linearSystem<SType,Type,MeshType>& sys
+)
+{
+    this->A() += sys.A();
+    this->b() += sys.b();
+
+    symmetric_ = symmetric_ && sys.symmetric();
+    diagonal_ = diagonal_ && sys.diagonal();
+    eliminated_ = eliminated_ && sys.eliminated();
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator+=
+(
     const tmp<meshField<Type,MeshType>>& tField
 )
 {
@@ -568,13 +532,15 @@ void linearSystem<SType,Type,MeshType>::operator+=
 }
 
 template<class SType, class Type, class MeshType>
-template<class Type2>
 void linearSystem<SType,Type,MeshType>::operator+=
 (
-    const Type2& v
+    const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
 {
-    this->b() -= v;
+    *this += tSys();
+
+    if (tSys.isTmp())
+        tSys.clear();
 }
 
 template<class SType, class Type, class MeshType>
@@ -616,6 +582,20 @@ void linearSystem<SType,Type,MeshType>::operator-=
 template<class SType, class Type, class MeshType>
 void linearSystem<SType,Type,MeshType>::operator-=
 (
+    const linearSystem<SType,Type,MeshType>& sys
+)
+{
+    this->A() -= sys.A();
+    this->b() -= sys.b();
+
+    symmetric_ = symmetric_ && sys.symmetric();
+    diagonal_ = diagonal_ && sys.diagonal();
+    eliminated_ = eliminated_ && sys.eliminated();
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator-=
+(
     const tmp<meshField<Type,MeshType>>& tField
 )
 {
@@ -626,14 +606,142 @@ void linearSystem<SType,Type,MeshType>::operator-=
 }
 
 template<class SType, class Type, class MeshType>
-template<class Type2>
 void linearSystem<SType,Type,MeshType>::operator-=
 (
-    const Type2& v
+    const tmp<linearSystem<SType,Type,MeshType>>& tSys
 )
+{
+    *this -= tSys();
+
+    if (tSys.isTmp())
+        tSys.clear();
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator*=(const label s)
+{
+    this->A() *= s;
+    this->b() *= s;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator*=(const scalar s)
+{
+    this->A() *= s;
+    this->b() *= s;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator*=
+(
+    const scalarList& s
+)
+{
+    this->A() *= s;
+    this->b() *= s;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator*=
+(
+    const meshField<scalar,MeshType>& field
+)
+{
+    const bool shallow = field.shallow();
+
+    if (shallow)
+        restrict(field);
+
+    this->A() *= field;
+    this->b() *= field;
+
+    if (shallow)
+        collapse(field);
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator*=
+(
+    const tmp<meshField<scalar,MeshType>>& tField
+)
+{
+    *this *= tField();
+
+    if (tField.isTmp())
+        tField.clear();
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator/=(const label s)
+{
+    this->A() /= s;
+    this->b() /= s;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator/=(const scalar s)
+{
+    this->A() /= s;
+    this->b() /= s;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator/=
+(
+    const scalarList& s
+)
+{
+    this->A() /= s;
+    this->b() /= s;
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator/=
+(
+    const meshField<scalar,MeshType>& field
+)
+{
+    const bool shallow = field.shallow();
+
+    if (shallow)
+        restrict(field);
+
+    this->A() /= field;
+    this->b() /= field;
+
+    if (shallow)
+        collapse(field);
+}
+
+template<class SType, class Type, class MeshType>
+void linearSystem<SType,Type,MeshType>::operator/=
+(
+    const tmp<meshField<scalar,MeshType>>& tField
+)
+{
+    *this /= tField();
+
+    if (tField.isTmp())
+        tField.clear();
+}
+
+// Operators with different types
+
+template<class SType, class Type, class MeshType>
+template<class Type2>
+void linearSystem<SType,Type,MeshType>::operator+=(const Type2& v)
+{
+    this->b() -= v;
+}
+
+template<class SType, class Type, class MeshType>
+template<class Type2>
+void linearSystem<SType,Type,MeshType>::operator-=(const Type2& v)
 {
     this->b() += v;
 }
+
+// Operators with different stencil types
 
 template<class SType, class Type, class MeshType>
 template<class SType2>
@@ -717,106 +825,6 @@ void linearSystem<SType,Type,MeshType>::operator-=
 
     if (tSys.isTmp())
         tSys.clear();
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator*=
-(
-    const scalar s
-)
-{
-    this->A() *= s;
-    this->b() *= s;
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator*=
-(
-    const scalarList& s
-)
-{
-    this->A() *= s;
-    this->b() *= s;
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator*=
-(
-    const meshField<scalar,MeshType>& field
-)
-{
-    const bool shallow = field.shallow();
-
-    if (shallow)
-        restrict(field);
-
-    this->A() *= field;
-    this->b() *= field;
-
-    if (shallow)
-        collapse(field);
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator*=
-(
-    const tmp<meshField<scalar,MeshType>>& tField
-)
-{
-    *this *= tField();
-
-    if (tField.isTmp())
-        tField.clear();
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator/=
-(
-    const scalar s
-)
-{
-    this->A() /= s;
-    this->b() /= s;
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator/=
-(
-    const scalarList& s
-)
-{
-    this->A() /= s;
-    this->b() /= s;
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator/=
-(
-    const meshField<scalar,MeshType>& field
-)
-{
-    const bool shallow = field.shallow();
-
-    if (shallow)
-        restrict(field);
-
-    this->A() /= field;
-    this->b() /= field;
-
-    if (shallow)
-        collapse(field);
-}
-
-template<class SType, class Type, class MeshType>
-void linearSystem<SType,Type,MeshType>::operator/=
-(
-    const tmp<meshField<scalar,MeshType>>& tField
-)
-{
-    *this /= tField();
-
-    if (tField.isTmp())
-        tField.clear();
 }
 
 template<class SType, class Type, class MeshType>

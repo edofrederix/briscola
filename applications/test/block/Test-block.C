@@ -1046,8 +1046,6 @@ void testFaceSpaceFunctions()
         fs1(i,j,k) = pTraits<Type>::one*l++;
         ls1(i,j,k) = pTraits<Type>::one*(l+++1);
         s1(i,j,k) = (l+++1);
-        sfs1(i,j,k) = (l+++1);
-        sls1(i,j,k) = (l+++1);
     }
 
     ls1 += fs1;
@@ -1145,91 +1143,44 @@ void testFaceSpaceFunctions()
     FaceSpace<Type>::one - (1.0*ls1);
 
     fs1 *= (1.0*s1);
-    fs1 *= (1.0*sfs1);
 
     fs1*s1;
-    fs1*sfs1;
 
     (1.0*fs1)*s1;
-    (1.0*fs1)*sfs1;
 
     fs1*(1.0*s1);
-    fs1*(1.0*sfs1);
 
     1.0/s1;
-    1.0/sfs1;
 
     1.0/(1.0*s1);
-    1.0/(1.0*sfs1);
 
     fs1 /= (1.0*s1);
-    fs1 /= (1.0*sfs1);
 
     fs1/s1;
-    fs1/sfs1;
 
     (1.0*fs1)/s1;
-    (1.0*fs1)/sfs1;
 
     fs1/(1.0*s1);
-    fs1/(1.0*sfs1);
-
 
     ls1 *= (1.0*s1);
-    ls1 *= (1.0*sls1);
 
     ls1*s1;
-    ls1*sls1;
 
     (1.0*ls1)*s1;
-    (1.0*ls1)*sls1;
 
     ls1*(1.0*s1);
-    ls1*(1.0*sls1);
 
     1.0/s1;
-    1.0/sls1;
 
     1.0/(1.0*s1);
-    1.0/(1.0*sls1);
 
     ls1 /= (1.0*s1);
-    ls1 /= (1.0*sls1);
 
     ls1/s1;
-    ls1/sls1;
 
     (1.0*ls1)/s1;
-    (1.0*ls1)/sls1;
 
     ls1/(1.0*s1);
-    ls1/(1.0*sls1);
-
-
-    ls1*sfs1;
-    fs1*sls1;
-
-    (1.0*ls1)*sfs1;
-    (1.0*fs1)*sls1;
-
-    ls1*(sfs1*1.0);
-    fs1*(sls1*1.0);
-
-    (1.0*ls1)*(sfs1*1.0);
-    (1.0*fs1)*(sls1*1.0);
-
-
-    ls1/sfs1;
-    fs1/sls1;
-
-    (1.0*ls1)/sfs1;
-    (1.0*fs1)/sls1;
-
-    ls1/(sfs1*1.0);
-    fs1/(sls1*1.0);
-
-    (1.0*ls1)/(sfs1*1.0);
-    (1.0*fs1)/(sls1*1.0);
 
     max(ls1, FaceSpace<Type>::one);
     max(FaceSpace<Type>::one, ls1);

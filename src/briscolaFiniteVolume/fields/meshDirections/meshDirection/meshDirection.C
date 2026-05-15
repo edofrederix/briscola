@@ -289,19 +289,6 @@ meshDirection<Type,MeshType>::~meshDirection()
 {}
 
 template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::operator=
-(
-    const meshDirection<Type,MeshType>& D
-)
-{
-    #ifdef FULLDEBUG
-    checkDirection(D);
-    #endif
-
-    this->B() = D.B();
-}
-
-template<class Type, class MeshType>
 tmp<meshDirection<typename meshDirection<Type,MeshType>::cmptType,MeshType>>
 meshDirection<Type,MeshType>::component
 (
@@ -361,6 +348,33 @@ void meshDirection<Type,MeshType>::min(const Type& v)
     this->B().min(v);
 }
 
+// Operators
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::operator=(const zero)
+{
+    this->B() = Zero;
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::operator=(const Type& v)
+{
+    this->B() = v;
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::operator=
+(
+    const meshDirection<Type,MeshType>& D
+)
+{
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
+    this->B() = D.B();
+}
+
 template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::operator=
 (
@@ -388,15 +402,9 @@ void meshDirection<Type,MeshType>::operator=
 }
 
 template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::operator=(const Type& v)
+void meshDirection<Type,MeshType>::operator+=(const Type& v)
 {
-    this->B() = v;
-}
-
-template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::operator=(const zero)
-{
-    this->B() = Zero;
+    this->B() += v;
 }
 
 template<class Type, class MeshType>
@@ -428,6 +436,12 @@ void meshDirection<Type,MeshType>::operator+=
 }
 
 template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::operator-=(const Type& v)
+{
+    this->B() -= v;
+}
+
+template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::operator-=
 (
     const meshDirection<Type,MeshType>& D
@@ -456,6 +470,31 @@ void meshDirection<Type,MeshType>::operator-=
 }
 
 template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::operator*=(const label& v)
+{
+    this->B() *= v;
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::operator*=(const scalar& v)
+{
+    this->B() *= v;
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::operator*=
+(
+    const meshDirection<label,MeshType>& D
+)
+{
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
+    this->B() *= D.B();
+}
+
+template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::operator*=
 (
     const meshDirection<scalar,MeshType>& D
@@ -466,6 +505,21 @@ void meshDirection<Type,MeshType>::operator*=
     #endif
 
     this->B() *= D.B();
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::operator*=
+(
+    const tmp<meshDirection<label,MeshType>>& tD
+)
+{
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
+    *this *= tD();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -484,6 +538,31 @@ void meshDirection<Type,MeshType>::operator*=
 }
 
 template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::operator/=(const label& v)
+{
+    this->B() /= v;
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::operator/=(const scalar& v)
+{
+    this->B() /= v;
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::operator/=
+(
+    const meshDirection<label,MeshType>& D
+)
+{
+    #ifdef FULLDEBUG
+    checkDirection(D);
+    #endif
+
+    this->B() /= D.B();
+}
+
+template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::operator/=
 (
     const meshDirection<scalar,MeshType>& D
@@ -494,6 +573,21 @@ void meshDirection<Type,MeshType>::operator/=
     #endif
 
     this->B() /= D.B();
+}
+
+template<class Type, class MeshType>
+void meshDirection<Type,MeshType>::operator/=
+(
+    const tmp<meshDirection<label,MeshType>>& tD
+)
+{
+    #ifdef FULLDEBUG
+    checkDirection(tD());
+    #endif
+
+    *this /= tD();
+    if (tD.isTmp())
+        tD.clear();
 }
 
 template<class Type, class MeshType>
@@ -511,28 +605,13 @@ void meshDirection<Type,MeshType>::operator/=
         tD.clear();
 }
 
-template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::operator+=(const Type& v)
-{
-    this->B() += v;
-}
+// Operators with different types
 
 template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::operator-=(const Type& v)
+template<class Type2>
+void meshDirection<Type,MeshType>::operator=(const Type2& v)
 {
-    this->B() -= v;
-}
-
-template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::operator*=(const scalar& v)
-{
-    this->B() *= v;
-}
-
-template<class Type, class MeshType>
-void meshDirection<Type,MeshType>::operator/=(const scalar& v)
-{
-    this->B() /= v;
+    this->B() = v;
 }
 
 template<class Type, class MeshType>
@@ -567,6 +646,13 @@ void meshDirection<Type,MeshType>::operator=
 
 template<class Type, class MeshType>
 template<class Type2>
+void meshDirection<Type,MeshType>::operator+=(const Type2& v)
+{
+    this->B() += v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
 void meshDirection<Type,MeshType>::operator+=
 (
     const meshDirection<Type2,MeshType>& D
@@ -597,6 +683,13 @@ void meshDirection<Type,MeshType>::operator+=
 
 template<class Type, class MeshType>
 template<class Type2>
+void meshDirection<Type,MeshType>::operator-=(const Type2& v)
+{
+    this->B() -= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
 void meshDirection<Type,MeshType>::operator-=
 (
     const meshDirection<Type2,MeshType>& D
@@ -623,101 +716,6 @@ void meshDirection<Type,MeshType>::operator-=
     *this -= tD();
     if (tD.isTmp())
         tD.clear();
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshDirection<Type,MeshType>::operator*=
-(
-    const meshDirection<Type2,MeshType>& D
-)
-{
-    #ifdef FULLDEBUG
-    checkDirection(D);
-    #endif
-
-    this->B() *= D.B();
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshDirection<Type,MeshType>::operator*=
-(
-    const tmp<meshDirection<Type2,MeshType>>& tD
-)
-{
-    #ifdef FULLDEBUG
-    checkDirection(tD());
-    #endif
-
-    *this *= tD();
-    if (tD.isTmp())
-        tD.clear();
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshDirection<Type,MeshType>::operator/=
-(
-    const meshDirection<Type2,MeshType>& D
-)
-{
-    #ifdef FULLDEBUG
-    checkDirection(D);
-    #endif
-
-    this->B() /= D.B();
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshDirection<Type,MeshType>::operator/=
-(
-    const tmp<meshDirection<Type2,MeshType>>& tD
-)
-{
-    #ifdef FULLDEBUG
-    checkDirection(tD());
-    #endif
-
-    *this /= tD();
-    if (tD.isTmp())
-        tD.clear();
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshDirection<Type,MeshType>::operator=(const Type2& v)
-{
-    this->B() = v;
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshDirection<Type,MeshType>::operator+=(const Type2& v)
-{
-    this->B() += v;
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshDirection<Type,MeshType>::operator-=(const Type2& v)
-{
-    this->B() -= v;
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshDirection<Type,MeshType>::operator*=(const Type2& v)
-{
-    this->B() *= v;
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshDirection<Type,MeshType>::operator/=(const Type2& v)
-{
-    this->B() /= v;
 }
 
 }

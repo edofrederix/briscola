@@ -295,30 +295,42 @@ public:
 
     // Member Operators
 
-    void operator=(const linearSystem<SType,Type,MeshType>&);
-    void operator=(const tmp<linearSystem<SType,Type,MeshType>>&);
-
-    void operator+=(const linearSystem<SType,Type,MeshType>&);
-    void operator+=(const tmp<linearSystem<SType,Type,MeshType>>&);
-
-    void operator-=(const linearSystem<SType,Type,MeshType>&);
-    void operator-=(const tmp<linearSystem<SType,Type,MeshType>>&);
-
-    void operator=(const Type&);
     void operator=(const zero);
+    void operator=(const Type&);
     void operator=(const meshField<Type,MeshType>&);
+    void operator=(const linearSystem<SType,Type,MeshType>&);
     void operator=(const tmp<meshField<Type,MeshType>>&);
+    void operator=(const tmp<linearSystem<SType,Type,MeshType>>&);
 
     void operator+=(const Type&);
     void operator+=(const List<Type>&);
     void operator+=(const meshField<Type,MeshType>&);
     void operator+=(const tmp<meshField<Type,MeshType>>&);
-    template<class Type2> void operator+=(const Type2&);
+    void operator+=(const linearSystem<SType,Type,MeshType>&);
+    void operator+=(const tmp<linearSystem<SType,Type,MeshType>>&);
 
     void operator-=(const Type&);
     void operator-=(const List<Type>&);
     void operator-=(const meshField<Type,MeshType>&);
     void operator-=(const tmp<meshField<Type,MeshType>>&);
+    void operator-=(const linearSystem<SType,Type,MeshType>&);
+    void operator-=(const tmp<linearSystem<SType,Type,MeshType>>&);
+
+    void operator*=(const label);
+    void operator*=(const scalar);
+    void operator*=(const scalarList&);
+    void operator*=(const meshField<scalar,MeshType>&);
+    void operator*=(const tmp<meshField<scalar,MeshType>>&);
+
+    void operator/=(const label);
+    void operator/=(const scalar);
+    void operator/=(const scalarList&);
+    void operator/=(const meshField<scalar,MeshType>&);
+    void operator/=(const tmp<meshField<scalar,MeshType>>&);
+
+    // Mixed type operations
+
+    template<class Type2> void operator+=(const Type2&);
     template<class Type2> void operator-=(const Type2&);
 
     // Mixed stencil type operations
@@ -337,16 +349,6 @@ public:
     void operator-=(const linearSystem<SType2,Type,MeshType>&);
     template<class SType2>
     void operator-=(const tmp<linearSystem<SType2,Type,MeshType>>&);
-
-    void operator*=(const scalar);
-    void operator*=(const scalarList&);
-    void operator*=(const meshField<scalar,MeshType>&);
-    void operator*=(const tmp<meshField<scalar,MeshType>>&);
-
-    void operator/=(const scalar);
-    void operator/=(const scalarList&);
-    void operator/=(const meshField<scalar,MeshType>&);
-    void operator/=(const tmp<meshField<scalar,MeshType>>&);
 
     // Befriend solver
     template<class, class, class>

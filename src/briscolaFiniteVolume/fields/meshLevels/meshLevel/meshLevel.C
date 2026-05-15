@@ -647,6 +647,29 @@ void meshLevel<Type,MeshType>::min(const Type& v)
         listType::operator[](d).min(v);
 }
 
+// Operators
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator=(const zero)
+{
+    forAll(*this, d)
+        listType::operator[](d) = Zero;
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator=(const Type& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) = v;
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator=(const List<Type>& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) = v[d];
+}
+
 template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::operator=(const meshLevel<Type,MeshType>& L)
 {
@@ -685,24 +708,17 @@ void meshLevel<Type,MeshType>::operator=
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator=(const Type& v)
+void meshLevel<Type,MeshType>::operator+=(const Type& v)
 {
     forAll(*this, d)
-        listType::operator[](d) = v;
+        listType::operator[](d) += v;
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator=(const List<Type>& v)
+void meshLevel<Type,MeshType>::operator+=(const List<Type>& v)
 {
     forAll(*this, d)
-        listType::operator[](d) = v[d];
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator=(const zero)
-{
-    forAll(*this, d)
-        listType::operator[](d) = Zero;
+        listType::operator[](d) += v[d];
 }
 
 template<class Type, class MeshType>
@@ -732,6 +748,20 @@ void meshLevel<Type,MeshType>::operator+=
 }
 
 template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator-=(const Type& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) -= v;
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator-=(const List<Type>& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) -= v[d];
+}
+
+template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::operator-=(const meshLevel<Type,MeshType>& L)
 {
     #ifdef FULLDEBUG
@@ -758,6 +788,38 @@ void meshLevel<Type,MeshType>::operator-=
 }
 
 template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator*=(const label& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) *= v;
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator*=(const scalar& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) *= v;
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator*=(const List<scalar>& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) *= v[d];
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator*=(const meshLevel<label,MeshType>& L)
+{
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
+    forAll(*this, d)
+        listType::operator[](d) *= L[d];
+}
+
+template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::operator*=(const meshLevel<scalar,MeshType>& L)
 {
     #ifdef FULLDEBUG
@@ -766,6 +828,21 @@ void meshLevel<Type,MeshType>::operator*=(const meshLevel<scalar,MeshType>& L)
 
     forAll(*this, d)
         listType::operator[](d) *= L[d];
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator*=
+(
+    const tmp<meshLevel<label,MeshType>>& tL
+)
+{
+    #ifdef FULLDEBUG
+    checkLevel(tL());
+    #endif
+
+    *this *= tL();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -784,6 +861,38 @@ void meshLevel<Type,MeshType>::operator*=
 }
 
 template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator/=(const label& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) /= v;
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator/=(const scalar& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) /= v;
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator/=(const List<scalar>& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) /= v[d];
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator/=(const meshLevel<label,MeshType>& L)
+{
+    #ifdef FULLDEBUG
+    checkLevel(L);
+    #endif
+
+    forAll(*this, d)
+        listType::operator[](d) /= L[d];
+}
+
+template<class Type, class MeshType>
 void meshLevel<Type,MeshType>::operator/=(const meshLevel<scalar,MeshType>& L)
 {
     #ifdef FULLDEBUG
@@ -792,6 +901,21 @@ void meshLevel<Type,MeshType>::operator/=(const meshLevel<scalar,MeshType>& L)
 
     forAll(*this, d)
         listType::operator[](d) /= L[d];
+}
+
+template<class Type, class MeshType>
+void meshLevel<Type,MeshType>::operator/=
+(
+    const tmp<meshLevel<label,MeshType>>& tL
+)
+{
+    #ifdef FULLDEBUG
+    checkLevel(tL());
+    #endif
+
+    *this /= tL();
+    if (tL.isTmp())
+        tL.clear();
 }
 
 template<class Type, class MeshType>
@@ -809,60 +933,22 @@ void meshLevel<Type,MeshType>::operator/=
         tL.clear();
 }
 
+// Operators with different types
+
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator+=(const Type& v)
+template<class Type2>
+void meshLevel<Type,MeshType>::operator=(const Type2& v)
 {
     forAll(*this, d)
-        listType::operator[](d) += v;
+        listType::operator[](d) = v;
 }
 
 template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator+=(const List<Type>& v)
+template<class Type2>
+void meshLevel<Type,MeshType>::operator=(const List<Type2>& v)
 {
     forAll(*this, d)
-        listType::operator[](d) += v[d];
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator-=(const Type& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) -= v;
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator-=(const List<Type>& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) -= v[d];
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator*=(const scalar& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) *= v;
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator*=(const List<scalar>& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) *= v[d];
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator/=(const scalar& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) /= v;
-}
-
-template<class Type, class MeshType>
-void meshLevel<Type,MeshType>::operator/=(const List<scalar>& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) /= v[d];
+        listType::operator[](d) = v[d];
 }
 
 template<class Type, class MeshType>
@@ -898,6 +984,22 @@ void meshLevel<Type,MeshType>::operator=
 
 template<class Type, class MeshType>
 template<class Type2>
+void meshLevel<Type,MeshType>::operator+=(const Type2& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) += v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator+=(const List<Type2>& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) += v[d];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
 void meshLevel<Type,MeshType>::operator+=
 (
     const meshLevel<Type2,MeshType>& L
@@ -929,6 +1031,22 @@ void meshLevel<Type,MeshType>::operator+=
 
 template<class Type, class MeshType>
 template<class Type2>
+void meshLevel<Type,MeshType>::operator-=(const Type2& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) -= v;
+}
+
+template<class Type, class MeshType>
+template<class Type2>
+void meshLevel<Type,MeshType>::operator-=(const List<Type2>& v)
+{
+    forAll(*this, d)
+        listType::operator[](d) -= v[d];
+}
+
+template<class Type, class MeshType>
+template<class Type2>
 void meshLevel<Type,MeshType>::operator-=
 (
     const meshLevel<Type2,MeshType>& L
@@ -956,148 +1074,6 @@ void meshLevel<Type,MeshType>::operator-=
     *this -= tL();
     if (tL.isTmp())
         tL.clear();
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator*=
-(
-    const meshLevel<Type2,MeshType>& L
-)
-{
-    #ifdef FULLDEBUG
-    checkLevel(L);
-    #endif
-
-    forAll(*this, d)
-        listType::operator[](d) *= L[d];
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator*=
-(
-    const tmp<meshLevel<Type2,MeshType>>& tL
-)
-{
-    #ifdef FULLDEBUG
-    checkLevel(tL());
-    #endif
-
-    *this *= tL();
-    if (tL.isTmp())
-        tL.clear();
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator/=
-(
-    const meshLevel<Type2,MeshType>& L
-)
-{
-    #ifdef FULLDEBUG
-    checkLevel(L);
-    #endif
-
-    forAll(*this, d)
-        listType::operator[](d) /= L[d];
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator/=
-(
-    const tmp<meshLevel<Type2,MeshType>>& tL
-)
-{
-    #ifdef FULLDEBUG
-    checkLevel(tL());
-    #endif
-
-    *this /= tL();
-    if (tL.isTmp())
-        tL.clear();
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator=(const Type2& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) = v;
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator=(const List<Type2>& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) = v[d];
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator+=(const Type2& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) += v;
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator+=(const List<Type2>& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) += v[d];
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator-=(const Type2& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) -= v;
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator-=(const List<Type2>& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) -= v[d];
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator*=(const Type2& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) *= v;
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator*=(const List<Type2>& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) *= v[d];
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator/=(const Type2& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) /= v;
-}
-
-template<class Type, class MeshType>
-template<class Type2>
-void meshLevel<Type,MeshType>::operator/=(const List<Type2>& v)
-{
-    forAll(*this, d)
-        listType::operator[](d) /= v[d];
 }
 
 }

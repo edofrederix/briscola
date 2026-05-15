@@ -588,7 +588,7 @@ template<class MeshType>
 void fvMeshMetrics<MeshType>::setImmersedBoundaryMask()
 {
     maskPtr_ =
-        new meshField<scalar,MeshType>
+        new meshField<label,MeshType>
         (
             word(MeshType::typeName) + "Mask",
             fvMsh_,
@@ -598,7 +598,7 @@ void fvMeshMetrics<MeshType>::setImmersedBoundaryMask()
             true
         );
 
-    meshField<scalar,MeshType>& mask = *maskPtr_;
+    meshField<label,MeshType>& mask = *maskPtr_;
     mask = Zero;
 
     if (immersedBoundaries_.size())
@@ -606,7 +606,7 @@ void fvMeshMetrics<MeshType>::setImmersedBoundaryMask()
         forAll(immersedBoundaries_, i)
             mask += immersedBoundaries_[i].mask();
 
-        mask = min(mask, 1.0);
+        mask = min(mask, 1);
     }
 }
 

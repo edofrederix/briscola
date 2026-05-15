@@ -1231,46 +1231,11 @@ void testFaceSpaceFunctions(const fvMesh& fvMsh)
         false
     );
 
-    meshField<FaceSpace<scalar>,MeshType> sfs1
-    (
-        "sfs1",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false,
-        false
-    );
-
-    meshField<FaceSpace<scalar>,MeshType> sls1
-    (
-        "sls1",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false,
-        false
-    );
-
-    meshField<scalar,MeshType> s1
-    (
-        "s1",
-        fvMsh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE,
-        false,
-        false
-    );
-
     forAllCells(fs1, l, d, i, j, k)
         fs1(l,d,i,j,k) = pTraits<FaceSpace<Type>>::one*(l+d+i+j+k);
 
     forAllCells(ls1, l, d, i, j, k)
         ls1(l,d,i,j,k) = pTraits<FaceSpace<Type>>::one*(l+d+i+j+k);
-
-    sfs1 = pTraits<FaceSpace<scalar>>::one;
-    sls1 = pTraits<FaceSpace<scalar>>::one;
-
-    s1 = scalar(1);
 
     ls1 += fs1;
     ls1 += (1.0*fs1);
@@ -1365,99 +1330,6 @@ void testFaceSpaceFunctions(const fvMesh& fvMsh)
     FaceSpace<Type>::one - (1.0*fs1);
     FaceSpace<Type>::one - (1.0*ls1);
     FaceSpace<Type>::one - (1.0*ls1);
-
-    fs1 *= (1.0*s1);
-    fs1 *= (1.0*sfs1);
-
-    fs1*s1;
-    fs1*sfs1;
-
-    (1.0*fs1)*s1;
-    (1.0*fs1)*sfs1;
-
-    fs1*(1.0*s1);
-    fs1*(1.0*sfs1);
-
-    s1/1.0;
-    sfs1/1.0;
-
-    (1.0*s1)/1.0;
-    (1.0*sfs1)/1.0;
-
-    1.0/s1;
-    1.0/sfs1;
-
-    1.0/(1.0*s1);
-    1.0/(1.0*sfs1);
-
-    fs1 /= (1.0*s1);
-    fs1 /= (1.0*sfs1);
-
-    fs1/s1;
-    fs1/sfs1;
-
-    (1.0*fs1)/s1;
-    (1.0*fs1)/sfs1;
-
-    fs1/(1.0*s1);
-    fs1/(1.0*sfs1);
-
-
-    ls1 *= (1.0*s1);
-    ls1 *= (1.0*sls1);
-
-    ls1*s1;
-    ls1*sls1;
-
-    (1.0*ls1)*s1;
-    (1.0*ls1)*sls1;
-
-    ls1*(1.0*s1);
-    ls1*(1.0*sls1);
-
-    1.0/s1;
-    1.0/sls1;
-
-    1.0/(1.0*s1);
-    1.0/(1.0*sls1);
-
-    ls1 /= (1.0*s1);
-    ls1 /= (1.0*sls1);
-
-    ls1/s1;
-    ls1/sls1;
-
-    (1.0*ls1)/s1;
-    (1.0*ls1)/sls1;
-
-    ls1/(1.0*s1);
-    ls1/(1.0*sls1);
-
-
-    ls1*sfs1;
-    fs1*sls1;
-
-    (1.0*ls1)*sfs1;
-    (1.0*fs1)*sls1;
-
-    ls1*(sfs1*1.0);
-    fs1*(sls1*1.0);
-
-    (1.0*ls1)*(sfs1*1.0);
-    (1.0*fs1)*(sls1*1.0);
-
-
-    ls1/sfs1;
-    fs1/sls1;
-
-    (1.0*ls1)/sfs1;
-    (1.0*fs1)/sls1;
-
-    ls1/(sfs1*1.0);
-    fs1/(sls1*1.0);
-
-    (1.0*ls1)/(sfs1*1.0);
-    (1.0*fs1)/(sls1*1.0);
 
     max(ls1, pTraits<FaceSpace<Type>>::one);
     max(pTraits<FaceSpace<Type>>::one, ls1);
