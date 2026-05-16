@@ -251,7 +251,7 @@ template                                                                       \
     direction nCmpt                                                            \
 >                                                                              \
 tmp<block<typename product<Form, Type>::type>>                                 \
-operator Op(const VectorSpace<Form,Cmpt,nCmpt>&,const tmp<block<Type>>&);      \
+operator Op(const VectorSpace<Form,Cmpt,nCmpt>&, const tmp<block<Type>>&);     \
                                                                                \
 /* CellSpace */                                                                \
                                                                                \
@@ -321,7 +321,7 @@ template                                                                       \
     direction nCmpt                                                            \
 >                                                                              \
 tmp<block<typename product<Form, Type>::type>>                                 \
-operator Op(const CellSpace<Form,Cmpt,nCmpt>&,const tmp<block<Type>>&);
+operator Op(const CellSpace<Form,Cmpt,nCmpt>&, const tmp<block<Type>>&);
 
 // template<Type1, Type2>, VS = VectorSpace, CS = CellSpace
 //

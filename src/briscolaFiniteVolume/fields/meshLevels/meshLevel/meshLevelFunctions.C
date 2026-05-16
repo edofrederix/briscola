@@ -289,9 +289,464 @@ BINARY_TYPE_OPERATOR_SF(Type, scalar, Type, *, multiply)
 BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)
 BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, /, divide)
 
+
+#define PRODUCT_OPERATOR(product, Op, OpFunc)                                  \
+                                                                               \
+template<class Type1, class Type2, class MeshType>                             \
+void OpFunc                                                                    \
+(                                                                              \
+    meshLevel<typename product<Type1, Type2>::type,MeshType>& res,             \
+    const meshLevel<Type1,MeshType>& f1,                                       \
+    const meshLevel<Type2,MeshType>& f2                                        \
+)                                                                              \
+{                                                                              \
+    forAll(res, d)                                                             \
+        OpFunc(res[d], f1[d], f2[d]);                                          \
+}                                                                              \
+                                                                               \
+template<class Type1, class Type2, class MeshType>                             \
+tmp<meshLevel<typename product<Type1, Type2>::type,MeshType>>                  \
+operator Op                                                                    \
+(                                                                              \
+    const meshLevel<Type1,MeshType>& f1,                                       \
+    const meshLevel<Type2,MeshType>& f2                                        \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Type1, Type2>::type productType;                  \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        meshLevel<productType,MeshType>::New                                   \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        );                                                                     \
+    OpFunc(tRes.ref(), f1, f2);                                                \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template<class Type1, class Type2, class MeshType>                             \
+tmp<meshLevel<typename product<Type1, Type2>::type,MeshType>>                  \
+operator Op                                                                    \
+(                                                                              \
+    const meshLevel<Type1,MeshType>& f1,                                       \
+    const tmp<meshLevel<Type2,MeshType>>& tf2                                  \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Type1, Type2>::type productType;                  \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        reuseLevelTmp<productType,Type2,MeshType>::New(tf2);                   \
+    OpFunc(tRes.ref(), f1, tf2());                                             \
+    if (tf2.isTmp()) tf2.clear();                                              \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template<class Type1, class Type2, class MeshType>                             \
+tmp<meshLevel<typename product<Type1, Type2>::type,MeshType>>                  \
+operator Op                                                                    \
+(                                                                              \
+    const tmp<meshLevel<Type1,MeshType>>& tf1,                                 \
+    const meshLevel<Type2,MeshType>& f2                                        \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Type1, Type2>::type productType;                  \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        reuseLevelTmp<productType,Type1,MeshType>::New(tf1);                   \
+    OpFunc(tRes.ref(), tf1(), f2);                                             \
+    if (tf1.isTmp()) tf1.clear();                                              \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template<class Type1, class Type2, class MeshType>                             \
+tmp<meshLevel<typename product<Type1, Type2>::type,MeshType>>                  \
+operator Op                                                                    \
+(                                                                              \
+    const tmp<meshLevel<Type1,MeshType>>& tf1,                                 \
+    const tmp<meshLevel<Type2,MeshType>>& tf2                                  \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Type1, Type2>::type productType;                  \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        reuseLevelTmpTmp<productType,Type1,Type1,Type2,MeshType>::             \
+        New(tf1, tf2);                                                         \
+    OpFunc(tRes.ref(), tf1(), tf2());                                          \
+    if (tf1.isTmp()) tf1.clear();                                              \
+    if (tf2.isTmp()) tf2.clear();                                              \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+/* VectorSpace */                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt,                                                           \
+    class MeshType                                                             \
+>                                                                              \
+void OpFunc                                                                    \
+(                                                                              \
+    meshLevel<typename product<Type, Form>::type,MeshType>& res,               \
+    const meshLevel<Type,MeshType>& f1,                                        \
+    const VectorSpace<Form,Cmpt,nCmpt>& vs                                     \
+)                                                                              \
+{                                                                              \
+    forAll(res, d)                                                             \
+        OpFunc(res[d], f1[d], vs);                                             \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt,                                                           \
+    class MeshType                                                             \
+>                                                                              \
+tmp<meshLevel<typename product<Type, Form>::type,MeshType>>                    \
+operator Op                                                                    \
+(                                                                              \
+    const meshLevel<Type,MeshType>& f1,                                        \
+    const VectorSpace<Form,Cmpt,nCmpt>& vs                                     \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Type, Form>::type productType;                    \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        meshLevel<productType,MeshType>::New                                   \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        );                                                                     \
+    OpFunc(tRes.ref(), f1, static_cast<const Form&>(vs));                      \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt,                                                           \
+    class MeshType                                                             \
+>                                                                              \
+tmp<meshLevel<typename product<Type, Form>::type,MeshType>>                    \
+operator Op                                                                    \
+(                                                                              \
+    const tmp<meshLevel<Type,MeshType>>& tf1,                                  \
+    const VectorSpace<Form,Cmpt,nCmpt>& vs                                     \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Type, Form>::type productType;                    \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        reuseLevelTmp<productType,Type,MeshType>::New(tf1);                    \
+    OpFunc(tRes.ref(), tf1(), static_cast<const Form&>(vs));                   \
+    if (tf1.isTmp()) tf1.clear();                                              \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt,                                                           \
+    class MeshType                                                             \
+>                                                                              \
+void OpFunc                                                                    \
+(                                                                              \
+    meshLevel<typename product<Form, Type>::type,MeshType>& res,               \
+    const VectorSpace<Form,Cmpt,nCmpt>& vs,                                    \
+    const meshLevel<Type,MeshType>& f1                                         \
+)                                                                              \
+{                                                                              \
+    forAll(res, d)                                                             \
+        OpFunc(res[d], vs, f1[d]);                                             \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt,                                                           \
+    class MeshType                                                             \
+>                                                                              \
+tmp<meshLevel<typename product<Form, Type>::type,MeshType>>                    \
+operator Op                                                                    \
+(                                                                              \
+    const VectorSpace<Form,Cmpt,nCmpt>& vs,                                    \
+    const meshLevel<Type,MeshType>& f1                                         \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Form, Type>::type productType;                    \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        meshLevel<productType,MeshType>::New                                   \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        );                                                                     \
+    OpFunc(tRes.ref(), static_cast<const Form&>(vs), f1);                      \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt,                                                           \
+    class MeshType                                                             \
+>                                                                              \
+tmp<meshLevel<typename product<Form, Type>::type,MeshType>>                    \
+operator Op                                                                    \
+(                                                                              \
+    const VectorSpace<Form,Cmpt,nCmpt>& vs,                                    \
+    const tmp<meshLevel<Type,MeshType>>& tf1                                   \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Form, Type>::type productType;                    \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        reuseLevelTmp<productType,Type,MeshType>::New(tf1);                    \
+    OpFunc(tRes.ref(), static_cast<const Form&>(vs), tf1());                   \
+    if (tf1.isTmp()) tf1.clear();                                              \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+/* CellSpace */                                                                \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt,                                                           \
+    class MeshType                                                             \
+>                                                                              \
+void OpFunc                                                                    \
+(                                                                              \
+    meshLevel<typename product<Type, Form>::type,MeshType>& res,               \
+    const meshLevel<Type,MeshType>& f1,                                        \
+    const CellSpace<Form,Cmpt,nCmpt>& vs                                       \
+)                                                                              \
+{                                                                              \
+    forAll(res, d)                                                             \
+        OpFunc(res[d], f1[d], vs);                                             \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt,                                                           \
+    class MeshType                                                             \
+>                                                                              \
+tmp<meshLevel<typename product<Type, Form>::type,MeshType>>                    \
+operator Op                                                                    \
+(                                                                              \
+    const meshLevel<Type,MeshType>& f1,                                        \
+    const CellSpace<Form,Cmpt,nCmpt>& vs                                       \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Type, Form>::type productType;                    \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        meshLevel<productType,MeshType>::New                                   \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        );                                                                     \
+    OpFunc(tRes.ref(), f1, static_cast<const Form&>(vs));                      \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt,                                                           \
+    class MeshType                                                             \
+>                                                                              \
+tmp<meshLevel<typename product<Type, Form>::type,MeshType>>                    \
+operator Op                                                                    \
+(                                                                              \
+    const tmp<meshLevel<Type,MeshType>>& tf1,                                  \
+    const CellSpace<Form,Cmpt,nCmpt>& vs                                       \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Type, Form>::type productType;                    \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        reuseLevelTmp<productType,Type,MeshType>::New(tf1);                    \
+    OpFunc(tRes.ref(), tf1(), static_cast<const Form&>(vs));                   \
+    if (tf1.isTmp()) tf1.clear();                                              \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt,                                                           \
+    class MeshType                                                             \
+>                                                                              \
+void OpFunc                                                                    \
+(                                                                              \
+    meshLevel<typename product<Form, Type>::type,MeshType>& res,               \
+    const CellSpace<Form,Cmpt,nCmpt>& vs,                                      \
+    const meshLevel<Type,MeshType>& f1                                         \
+)                                                                              \
+{                                                                              \
+    forAll(res, d)                                                             \
+        OpFunc(res[d], vs, f1[d]);                                             \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt,                                                           \
+    class MeshType                                                             \
+>                                                                              \
+tmp<meshLevel<typename product<Form, Type>::type,MeshType>>                    \
+operator Op                                                                    \
+(                                                                              \
+    const CellSpace<Form,Cmpt,nCmpt>& vs,                                      \
+    const meshLevel<Type,MeshType>& f1                                         \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Form, Type>::type productType;                    \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        meshLevel<productType,MeshType>::New                                   \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        );                                                                     \
+    OpFunc(tRes.ref(), static_cast<const Form&>(vs), f1);                      \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template                                                                       \
+<                                                                              \
+    class Type,                                                                \
+    class Form,                                                                \
+    class Cmpt,                                                                \
+    direction nCmpt,                                                           \
+    class MeshType                                                             \
+>                                                                              \
+tmp<meshLevel<typename product<Form, Type>::type,MeshType>>                    \
+operator Op                                                                    \
+(                                                                              \
+    const CellSpace<Form,Cmpt,nCmpt>& vs,                                      \
+    const tmp<meshLevel<Type,MeshType>>& tf1                                   \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Form, Type>::type productType;                    \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        reuseLevelTmp<productType,Type,MeshType>::New(tf1);                    \
+    OpFunc(tRes.ref(), static_cast<const Form&>(vs), tf1());                   \
+    if (tf1.isTmp()) tf1.clear();                                              \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+/* Lists */                                                                    \
+                                                                               \
+template<class Type, class Form, class MeshType>                               \
+void OpFunc                                                                    \
+(                                                                              \
+    meshLevel<typename product<Type, Form>::type,MeshType>& res,               \
+    const meshLevel<Type,MeshType>& f1,                                        \
+    const List<Form>& vs                                                       \
+)                                                                              \
+{                                                                              \
+    forAll(res, d)                                                             \
+        OpFunc(res[d], f1[d], vs[d]);                                          \
+}                                                                              \
+                                                                               \
+template<class Type, class Form, class MeshType>                               \
+tmp<meshLevel<typename product<Type, Form>::type,MeshType>>                    \
+operator Op                                                                    \
+(                                                                              \
+    const meshLevel<Type,MeshType>& f1,                                        \
+    const List<Form>& vs                                                       \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Type, Form>::type productType;                    \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        meshLevel<productType,MeshType>::New                                   \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        );                                                                     \
+    OpFunc(tRes.ref(), f1, vs);                                                \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template<class Type, class Form, class MeshType>                               \
+tmp<meshLevel<typename product<Type, Form>::type,MeshType>>                    \
+operator Op                                                                    \
+(                                                                              \
+    const tmp<meshLevel<Type,MeshType>>& tf1,                                  \
+    const List<Form>& vs                                                       \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Type, Form>::type productType;                    \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        reuseLevelTmp<productType,Type,MeshType>::New(tf1);                    \
+    OpFunc(tRes.ref(), tf1(), vs);                                             \
+    if (tf1.isTmp()) tf1.clear();                                              \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template<class Form, class Type, class MeshType>                               \
+void OpFunc                                                                    \
+(                                                                              \
+    meshLevel<typename product<Form, Type>::type,MeshType>& res,               \
+    const List<Form>& vs,                                                      \
+    const meshLevel<Type,MeshType>& f1                                         \
+)                                                                              \
+{                                                                              \
+    forAll(res, d)                                                             \
+        OpFunc(res[d], vs[d], f1[d]);                                          \
+}                                                                              \
+                                                                               \
+template<class Form, class Type, class MeshType>                               \
+tmp<meshLevel<typename product<Form, Type>::type,MeshType>>                    \
+operator Op                                                                    \
+(                                                                              \
+    const List<Form>& vs,                                                      \
+    const meshLevel<Type,MeshType>& f1                                         \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Form, Type>::type productType;                    \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        meshLevel<productType,MeshType>::New                                   \
+        (                                                                      \
+            f1.fvMsh(),                                                        \
+            f1.levelNum()                                                      \
+        );                                                                     \
+    OpFunc(tRes.ref(), vs, f1);                                                \
+    return tRes;                                                               \
+}                                                                              \
+                                                                               \
+template<class Form, class Type, class MeshType>                               \
+tmp<meshLevel<typename product<Form, Type>::type,MeshType>>                    \
+operator Op                                                                    \
+(                                                                              \
+    const List<Form>& vs,                                                      \
+    const tmp<meshLevel<Type,MeshType>>& tf1                                   \
+)                                                                              \
+{                                                                              \
+    typedef typename product<Form, Type>::type productType;                    \
+    tmp<meshLevel<productType,MeshType>> tRes =                                \
+        reuseLevelTmp<productType,Type,MeshType>::New(tf1);                    \
+    OpFunc(tRes.ref(), vs, tf1());                                             \
+    if (tf1.isTmp()) tf1.clear();                                              \
+    return tRes;                                                               \
+}
+
 PRODUCT_OPERATOR(typeOfSum, +, add)
 PRODUCT_OPERATOR(typeOfSum, -, subtract)
-
 PRODUCT_OPERATOR(outerProduct, *, outer)
 PRODUCT_OPERATOR(crossProduct, ^, cross)
 PRODUCT_OPERATOR(innerProduct, &, dot)
