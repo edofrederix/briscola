@@ -19,13 +19,14 @@ namespace Foam
 namespace briscola
 {
 
-template<class Type> class block;
+template<class Type, int P = 0> class block;
 
 typedef block<label> labelBlock;
 typedef block<scalar> scalarBlock;
 typedef block<faceScalar> faceScalarBlock;
 typedef block<vertexScalar> vertexScalarBlock;
 typedef block<vector> vectorBlock;
+typedef block<labelVector> labelVectorBlock;
 typedef block<faceVector> faceVectorBlock;
 typedef block<vertexVector> vertexVectorBlock;
 typedef block<tensor> tensorBlock;

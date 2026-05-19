@@ -30,23 +30,6 @@ target_sources(briscolaCore PRIVATE
     primitives/geometricObjects/tetra.C
     primitives/geometricObjects/hexa.C
 
-    blocks/labelBlock/labelBlock.C
-    blocks/scalarBlock/scalarBlock.C
-
-    blocks/vectorBlock/vectorBlock.C
-    blocks/labelVectorBlock/labelVectorBlock.C
-    blocks/tensorBlock/tensorBlock.C
-    blocks/symmTensorBlock/symmTensorBlock.C
-
-    blocks/faceScalarBlock/faceScalarBlock.C
-    blocks/faceVectorBlock/faceVectorBlock.C
-
-    blocks/vertexScalarBlock/vertexScalarBlock.C
-    blocks/vertexVectorBlock/vertexVectorBlock.C
-
-    blocks/stencilBlock/stencilBlock.C
-    blocks/diagStencilBlock/diagStencilBlock.C
-
     functionObjects/briscolaFunctionObject/briscolaFunctionObject.C
 )
 

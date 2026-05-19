@@ -4,7 +4,7 @@
 #include "block.H"
 #include "scalar.H"
 
-#define TEMPLATE
+#define TEMPLATE template<int P>
 #include "blockFunctionsM.H"
 
 namespace Foam
@@ -12,8 +12,6 @@ namespace Foam
 
 namespace briscola
 {
-
-typedef block<scalar> scalarBlock;
 
 BINARY_TYPE_OPERATOR(scalar, scalar, scalar, +, add)
 BINARY_TYPE_OPERATOR(scalar, scalar, scalar, -, subtract)
@@ -49,5 +47,9 @@ UNARY_FUNCTION(scalar, scalar, erf)
 }
 
 #include "undefBlockFunctionsM.H"
+
+#ifdef NoRepository
+    #include "scalarBlock.C"
+#endif
 
 #endif

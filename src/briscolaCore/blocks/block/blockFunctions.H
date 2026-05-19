@@ -1,4 +1,4 @@
-#define TEMPLATE template<class Type>
+#define TEMPLATE template<class Type, int P>
 #include "blockFunctionsM.H"
 #include "UPstream.H"
 
@@ -11,96 +11,96 @@ namespace Foam
 namespace briscola
 {
 
-template<class Type>
+template<class Type, int P>
 void component
 (
-    block<typename block<Type>::cmptType>&,
-    const block<Type>&,
+    block<typename block<Type,P>::cmptType, P>&,
+    const block<Type,P>&,
     const direction
 );
 
-template<class Type>
-void T(block<Type>&, const block<Type>&);
+template<class Type, int P>
+void T(block<Type,P>&, const block<Type,P>&);
 
-template<class Type>
+template<class Type, int P>
 void sqr
 (
-    block<typename outerProduct<Type, Type>::type>&,
-    const block<Type>&
+    block<typename outerProduct<Type, Type>::type, P>&,
+    const block<Type,P>&
 );
 
-template<class Type>
-tmp<block<typename outerProduct<Type, Type>::type>>
-sqr(const block<Type>&);
+template<class Type, int P>
+tmp<block<typename outerProduct<Type, Type>::type, P>>
+sqr(const block<Type,P>&);
 
-template<class Type>
-tmp<block<typename outerProduct<Type, Type>::type>>
-sqr(const tmp<block<Type>>&);
+template<class Type, int P>
+tmp<block<typename outerProduct<Type, Type>::type, P>>
+sqr(const tmp<block<Type,P>>&);
 
-template<class Type>
-void mag(block<SCALARPRODTYPE>&, const block<Type>&);
+template<class Type, int P>
+void mag(block<SCALARPRODTYPE,P>&, const block<Type,P>&);
 
-template<class Type>
-tmp<block<SCALARPRODTYPE>> mag(const block<Type>&);
+template<class Type, int P>
+tmp<block<SCALARPRODTYPE,P>> mag(const block<Type,P>&);
 
-template<class Type>
-tmp<block<SCALARPRODTYPE>> mag(const tmp<block<Type>>&);
+template<class Type, int P>
+tmp<block<SCALARPRODTYPE,P>> mag(const tmp<block<Type,P>>&);
 
-template<class Type>
-void cmptMag(block<Type>&, const block<Type>&);
+template<class Type, int P>
+void cmptMag(block<Type,P>&, const block<Type,P>&);
 
-template<class Type>
-tmp<block<Type>> cmptMag(const block<Type>&);
+template<class Type, int P>
+tmp<block<Type,P>> cmptMag(const block<Type,P>&);
 
-template<class Type>
-tmp<block<Type>> cmptMag(const tmp<block<Type>>&);
+template<class Type, int P>
+tmp<block<Type,P>> cmptMag(const tmp<block<Type,P>>&);
 
-template<class Type>
-void cmptSqr(block<Type>&, const block<Type>&);
+template<class Type, int P>
+void cmptSqr(block<Type,P>&, const block<Type,P>&);
 
-template<class Type>
-tmp<block<Type>> cmptSqr(const block<Type>&);
+template<class Type, int P>
+tmp<block<Type,P>> cmptSqr(const block<Type,P>&);
 
-template<class Type>
-tmp<block<Type>> cmptSqr(const tmp<block<Type>>&);
+template<class Type, int P>
+tmp<block<Type,P>> cmptSqr(const tmp<block<Type,P>>&);
 
-template<class Type>
-Type max(const block<Type>&);
+template<class Type, int P>
+Type max(const block<Type,P>&);
 
-template<class Type>
-Type max(const tmp<block<Type>>&);
+template<class Type, int P>
+Type max(const tmp<block<Type,P>>&);
 
-template<class Type>
-Type min(const block<Type>&);
+template<class Type, int P>
+Type min(const block<Type,P>&);
 
-template<class Type>
-Type min(const tmp<block<Type>>&);
+template<class Type, int P>
+Type min(const tmp<block<Type,P>>&);
 
-template<class Type>
-Type sum(const block<Type>&);
+template<class Type, int P>
+Type sum(const block<Type,P>&);
 
-template<class Type>
-Type sum(const tmp<block<Type>>&);
+template<class Type, int P>
+Type sum(const tmp<block<Type,P>>&);
 
-template<class Type>
-Type average(const block<Type>&);
+template<class Type, int P>
+Type average(const block<Type,P>&);
 
-template<class Type>
-Type average(const tmp<block<Type>>&);
+template<class Type, int P>
+Type average(const tmp<block<Type,P>>&);
 
 #define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                       \
                                                                                \
-template<class Type>                                                           \
+template<class Type, int P>                                                    \
 ReturnType gFunc                                                               \
 (                                                                              \
-    const block<Type>&,                                                        \
+    const block<Type,P>&,                                                      \
     const label comm = UPstream::worldComm                                     \
 );                                                                             \
                                                                                \
-template<class Type>                                                           \
+template<class Type, int P>                                                    \
 ReturnType gFunc                                                               \
 (                                                                              \
-    const tmp<block<Type>>&,                                                   \
+    const tmp<block<Type,P>>&,                                                 \
     const label comm = UPstream::worldComm                                     \
 );
 
@@ -159,29 +159,29 @@ BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, /, divide)
 
 #define PRODUCT_OPERATOR(product, Op, OpFunc)                                  \
                                                                                \
-template<class Type1, class Type2>                                             \
+template<class Type1, class Type2, int P>                                      \
 void OpFunc                                                                    \
 (                                                                              \
-    block<typename product<Type1, Type2>::type>&,                              \
-    const block<Type1>&,                                                       \
-    const block<Type2>&                                                        \
+    block<typename product<Type1, Type2>::type, P>&,                           \
+    const block<Type1,P>&,                                                     \
+    const block<Type2,P>&                                                      \
 );                                                                             \
                                                                                \
-template<class Type1, class Type2>                                             \
-tmp<block<typename product<Type1, Type2>::type>>                               \
-operator Op(const block<Type1>&, const block<Type2>&);                         \
+template<class Type1, class Type2, int P>                                      \
+tmp<block<typename product<Type1, Type2>::type, P>>                            \
+operator Op(const block<Type1,P>&, const block<Type2,P>&);                     \
                                                                                \
-template<class Type1, class Type2>                                             \
-tmp<block<typename product<Type1, Type2>::type>>                               \
-operator Op(const block<Type1>&, const tmp<block<Type2>>&);                    \
+template<class Type1, class Type2, int P>                                      \
+tmp<block<typename product<Type1, Type2>::type, P>>                            \
+operator Op(const block<Type1,P>&, const tmp<block<Type2,P>>&);                \
                                                                                \
-template<class Type1, class Type2>                                             \
-tmp<block<typename product<Type1, Type2>::type>>                               \
-operator Op(const tmp<block<Type1>>&, const block<Type2>&);                    \
+template<class Type1, class Type2, int P>                                      \
+tmp<block<typename product<Type1, Type2>::type, P>>                            \
+operator Op(const tmp<block<Type1,P>>&, const block<Type2,P>&);                \
                                                                                \
-template<class Type1, class Type2>                                             \
-tmp<block<typename product<Type1, Type2>::type>>                               \
-operator Op(const tmp<block<Type1>>&, const tmp<block<Type2>>&);               \
+template<class Type1, class Type2, int P>                                      \
+tmp<block<typename product<Type1, Type2>::type, P>>                            \
+operator Op(const tmp<block<Type1,P>>&, const tmp<block<Type2,P>>&);           \
                                                                                \
 /* VectorSpace */                                                              \
                                                                                \
@@ -190,12 +190,13 @@ template                                                                       \
     class Type,                                                                \
     class Form,                                                                \
     class Cmpt,                                                                \
-    direction nCmpt                                                            \
+    direction nCmpt,                                                           \
+    int P                                                                      \
 >                                                                              \
 void OpFunc                                                                    \
 (                                                                              \
-    block<typename product<Type, Form>::type>&,                                \
-    const block<Type>&,                                                        \
+    block<typename product<Type, Form>::type, P>&,                             \
+    const block<Type,P>&,                                                      \
     const VectorSpace<Form,Cmpt,nCmpt>&                                        \
 );                                                                             \
                                                                                \
@@ -204,33 +205,36 @@ template                                                                       \
     class Type,                                                                \
     class Form,                                                                \
     class Cmpt,                                                                \
-    direction nCmpt                                                            \
+    direction nCmpt,                                                           \
+    int P                                                                      \
 >                                                                              \
-tmp<block<typename product<Type, Form>::type>>                                 \
-operator Op(const block<Type>&, const VectorSpace<Form,Cmpt,nCmpt>&);          \
+tmp<block<typename product<Type, Form>::type, P>>                              \
+operator Op(const block<Type,P>&, const VectorSpace<Form,Cmpt,nCmpt>&);        \
                                                                                \
 template                                                                       \
 <                                                                              \
     class Type,                                                                \
     class Form,                                                                \
     class Cmpt,                                                                \
-    direction nCmpt                                                            \
+    direction nCmpt,                                                           \
+    int P                                                                      \
 >                                                                              \
-tmp<block<typename product<Type, Form>::type>>                                 \
-operator Op(const tmp<block<Type>>&, const VectorSpace<Form,Cmpt,nCmpt>&);     \
+tmp<block<typename product<Type, Form>::type, P>>                              \
+operator Op(const tmp<block<Type,P>>&, const VectorSpace<Form,Cmpt,nCmpt>&);   \
                                                                                \
 template                                                                       \
 <                                                                              \
     class Type,                                                                \
     class Form,                                                                \
     class Cmpt,                                                                \
-    direction nCmpt                                                            \
+    direction nCmpt,                                                           \
+    int P                                                                      \
 >                                                                              \
 void OpFunc                                                                    \
 (                                                                              \
-    block<typename product<Form, Type>::type>&,                                \
+    block<typename product<Form, Type>::type, P>&,                             \
     const VectorSpace<Form,Cmpt,nCmpt>&,                                       \
-    const block<Type>&                                                         \
+    const block<Type,P>&                                                       \
 );                                                                             \
                                                                                \
 template                                                                       \
@@ -238,20 +242,22 @@ template                                                                       \
     class Type,                                                                \
     class Form,                                                                \
     class Cmpt,                                                                \
-    direction nCmpt                                                            \
+    direction nCmpt,                                                           \
+    int P                                                                      \
 >                                                                              \
-tmp<block<typename product<Form, Type>::type>>                                 \
-operator Op(const VectorSpace<Form,Cmpt,nCmpt>&, const block<Type>&);          \
+tmp<block<typename product<Form, Type>::type, P>>                              \
+operator Op(const VectorSpace<Form,Cmpt,nCmpt>&, const block<Type,P>&);        \
                                                                                \
 template                                                                       \
 <                                                                              \
     class Type,                                                                \
     class Form,                                                                \
     class Cmpt,                                                                \
-    direction nCmpt                                                            \
+    direction nCmpt,                                                           \
+    int P                                                                      \
 >                                                                              \
-tmp<block<typename product<Form, Type>::type>>                                 \
-operator Op(const VectorSpace<Form,Cmpt,nCmpt>&, const tmp<block<Type>>&);     \
+tmp<block<typename product<Form, Type>::type, P>>                              \
+operator Op(const VectorSpace<Form,Cmpt,nCmpt>&, const tmp<block<Type,P>>&);   \
                                                                                \
 /* CellSpace */                                                                \
                                                                                \
@@ -260,12 +266,13 @@ template                                                                       \
     class Type,                                                                \
     class Form,                                                                \
     class Cmpt,                                                                \
-    direction nCmpt                                                            \
+    direction nCmpt,                                                           \
+    int P                                                                      \
 >                                                                              \
 void OpFunc                                                                    \
 (                                                                              \
-    block<typename product<Type, Form>::type>&,                                \
-    const block<Type>&,                                                        \
+    block<typename product<Type, Form>::type, P>&,                             \
+    const block<Type,P>&,                                                      \
     const CellSpace<Form,Cmpt,nCmpt>&                                          \
 );                                                                             \
                                                                                \
@@ -274,33 +281,36 @@ template                                                                       \
     class Type,                                                                \
     class Form,                                                                \
     class Cmpt,                                                                \
-    direction nCmpt                                                            \
+    direction nCmpt,                                                           \
+    int P                                                                      \
 >                                                                              \
-tmp<block<typename product<Type, Form>::type>>                                 \
-operator Op(const block<Type>&, const CellSpace<Form,Cmpt,nCmpt>&);            \
+tmp<block<typename product<Type, Form>::type, P>>                              \
+operator Op(const block<Type,P>&, const CellSpace<Form,Cmpt,nCmpt>&);          \
                                                                                \
 template                                                                       \
 <                                                                              \
     class Type,                                                                \
     class Form,                                                                \
     class Cmpt,                                                                \
-    direction nCmpt                                                            \
+    direction nCmpt,                                                           \
+    int P                                                                      \
 >                                                                              \
-tmp<block<typename product<Type, Form>::type>>                                 \
-operator Op(const tmp<block<Type>>&, const CellSpace<Form,Cmpt,nCmpt>&);       \
+tmp<block<typename product<Type, Form>::type, P>>                              \
+operator Op(const tmp<block<Type,P>>&, const CellSpace<Form,Cmpt,nCmpt>&);     \
                                                                                \
 template                                                                       \
 <                                                                              \
     class Type,                                                                \
     class Form,                                                                \
     class Cmpt,                                                                \
-    direction nCmpt                                                            \
+    direction nCmpt,                                                           \
+    int P                                                                      \
 >                                                                              \
 void OpFunc                                                                    \
 (                                                                              \
-    block<typename product<Form, Type>::type>&,                                \
+    block<typename product<Form, Type>::type, P>&,                             \
     const CellSpace<Form,Cmpt,nCmpt>&,                                         \
-    const block<Type>&                                                         \
+    const block<Type,P>&                                                       \
 );                                                                             \
                                                                                \
 template                                                                       \
@@ -308,33 +318,35 @@ template                                                                       \
     class Type,                                                                \
     class Form,                                                                \
     class Cmpt,                                                                \
-    direction nCmpt                                                            \
+    direction nCmpt,                                                           \
+    int P                                                                      \
 >                                                                              \
-tmp<block<typename product<Form, Type>::type>>                                 \
-operator Op(const CellSpace<Form,Cmpt,nCmpt>&, const block<Type>&);            \
+tmp<block<typename product<Form, Type>::type, P>>                              \
+operator Op(const CellSpace<Form,Cmpt,nCmpt>&, const block<Type,P>&);          \
                                                                                \
 template                                                                       \
 <                                                                              \
     class Type,                                                                \
     class Form,                                                                \
     class Cmpt,                                                                \
-    direction nCmpt                                                            \
+    direction nCmpt,                                                           \
+    int P                                                                      \
 >                                                                              \
-tmp<block<typename product<Form, Type>::type>>                                 \
-operator Op(const CellSpace<Form,Cmpt,nCmpt>&, const tmp<block<Type>>&);
+tmp<block<typename product<Form, Type>::type, P>>                              \
+operator Op(const CellSpace<Form,Cmpt,nCmpt>&, const tmp<block<Type,P>>&);
 
 // template<Type1, Type2>, VS = VectorSpace, CS = CellSpace
 //
-//     block<arg1<Type1,Type2>> = block<Type1> arg2 block<Type2>
-//     block<arg1<Type1,Type2>> = VS<Type1> arg2 block<Type2>
-//     block<arg1<Type1,Type2>> = block<Type1> arg2 VS<Type2>
-//     block<arg1<Type1,Type2>> = CS<Type1> arg2 block<Type2>
-//     block<arg1<Type1,Type2>> = block<Type1> arg2 CS<Type2>
+//     block<arg1<Type1,Type2>> = block<Type1,P> arg2 block<Type2,P>
+//     block<arg1<Type1,Type2>> = VS<Type1> arg2 block<Type2,P>
+//     block<arg1<Type1,Type2>> = block<Type1,P> arg2 VS<Type2>
+//     block<arg1<Type1,Type2>> = CS<Type1> arg2 block<Type2,P>
+//     block<arg1<Type1,Type2>> = block<Type1,P> arg2 CS<Type2>
 //
 // Note: this does not define
 //
-//     block<arg1<Type1,Type2>> = Type1 arg2 block<Type2>
-//     block<arg1<Type1,Type2>> = block<Type1> arg2 Type2
+//     block<arg1<Type1,Type2>> = Type1 arg2 block<Type2,P>
+//     block<arg1<Type1,Type2>> = block<Type1,P> arg2 Type2
 //
 // because this generates unresolvable overloads.
 

@@ -25,18 +25,16 @@ namespace Foam
 namespace briscola
 {
 
-template<class Type> class block;
+template<class Type, int P>
+Istream& operator>>(Istream&, block<Type,P>&);
 
-template<class Type>
-Istream& operator>>(Istream&, block<Type>&);
+template<class Type, int P>
+Ostream& operator<<(Ostream&, const block<Type,P>&);
 
-template<class Type>
-Ostream& operator<<(Ostream&, const block<Type>&);
-
-template<class Type>
+template<class Type, int P>
 class block
 :
-    public tmp<block<Type>>::refCount
+    public tmp<block<Type,P>>::refCount
 {
     // Dimensions of the block
     int l_;
@@ -102,28 +100,28 @@ public:
     block(const labelVector&, const Type*);
 
     // Copy constructors (preserves rotation)
-    block(const block<Type>&);
-    block(const block<Type>&, const zero&);
-    block(const block<Type>&, const Type&);
+    block(const block<Type,P>&);
+    block(const block<Type,P>&, const zero&);
+    block(const block<Type,P>&, const Type&);
 
     // Copy constructor from tmp and delete argument (preserves rotation)
-    block(const tmp<block<Type>>&);
-    block(const tmp<block<Type>>&, const zero&);
-    block(const tmp<block<Type>>&, const Type&);
+    block(const tmp<block<Type,P>>&);
+    block(const tmp<block<Type,P>>&, const zero&);
+    block(const tmp<block<Type,P>>&, const Type&);
 
     // Construct as copy or re-use as specified (preserves rotation). Re-use
     // bool is as first argument to avoid ambiguity with zero.
-    block(const label reuse, block<Type>&);
-    block(const label reuse, block<Type>&, const zero&);
-    block(const label reuse, block<Type>&, const Type&);
+    block(const label reuse, block<Type,P>&);
+    block(const label reuse, block<Type,P>&, const zero&);
+    block(const label reuse, block<Type,P>&, const Type&);
 
     // Construct from Istream
     block(Istream& is);
 
     // Clone
-    inline autoPtr<block<Type>> clone() const
+    inline autoPtr<block<Type,P>> clone() const
     {
-        return autoPtr<block<Type>>(new block<Type>(*this));
+        return autoPtr<block<Type,P>>(new block<Type,P>(*this));
     }
 
     // Destructor
@@ -143,7 +141,7 @@ public:
 
     // Transfer the data of the argument block into this block and annul the
     // argument block. Rotation is left as-is
-    inline void transfer(block<Type>&);
+    inline void transfer(block<Type,P>&);
 
     // Return the first dimension
     inline int l() const { return l_; }
@@ -281,19 +279,19 @@ public:
 
     // Slice block perpendicular to the x-axis at given index. Optionally
     // squeeze the block. Negative index allowed
-    tmp<block<Type>> slicex(const label, const bool = false) const;
+    tmp<block<Type,P>> slicex(const label, const bool = false) const;
 
     // Slice block perpendicular to the y-axis at given index. Optionally
     // squeeze the block. Negative index allowed
-    tmp<block<Type>> slicey(const label, const bool = false) const;
+    tmp<block<Type,P>> slicey(const label, const bool = false) const;
 
     // Slice block perpendicular to the z-axis at given index. Optionally
     // squeeze the block. Negative index allowed
-    tmp<block<Type>> slicez(const label, const bool = false) const;
+    tmp<block<Type,P>> slicez(const label, const bool = false) const;
 
     // Slice block at given index and perpendicular to given direction.
     // Optionally squeeze the block. Negative index allowed
-    tmp<block<Type>> slice
+    tmp<block<Type,P>> slice
     (
         const label,
         const label,
@@ -301,10 +299,10 @@ public:
     ) const;
 
     // Slice block at given edge number. Optionally squeeze the block
-    tmp<block<Type>> sliceEdge(const label, const bool = false) const;
+    tmp<block<Type,P>> sliceEdge(const label, const bool = false) const;
 
     // Slice block at given vertex number
-    tmp<block<Type>> sliceVertex(const label) const;
+    tmp<block<Type,P>> sliceVertex(const label) const;
 
     // Flatten block by returning a list
     List<Type> flatten() const;
@@ -408,14 +406,14 @@ public:
     Type interp(const vector ijk) const;
 
     // Return a component
-    tmp<block<cmptType>> component(const label) const;
+    tmp<block<cmptType,P>> component(const label) const;
 
     // Set a component from a value
     void replace(const label, const cmptType&);
 
     // Set a component from a component block
-    void replace(const label, const block<cmptType>&);
-    void replace(const label, const tmp<block<cmptType>>&);
+    void replace(const label, const block<cmptType,P>&);
+    void replace(const label, const tmp<block<cmptType,P>>&);
 
     // Set maximum/minimum of block and given value
     void max(const Type&);
@@ -423,50 +421,50 @@ public:
 
     // Member operators
 
-    inline void operator=(const block<Type>&);
-    inline void operator=(const tmp<block<Type>>&);
+    inline void operator=(const block<Type,P>&);
+    inline void operator=(const tmp<block<Type,P>>&);
     inline void operator=(const Type&);
     inline void operator=(const zero);
 
     inline void operator+=(const Type&);
-    inline void operator+=(const block<Type>&);
-    inline void operator+=(const tmp<block<Type>>&);
+    inline void operator+=(const block<Type,P>&);
+    inline void operator+=(const tmp<block<Type,P>>&);
 
     inline void operator-=(const Type&);
-    inline void operator-=(const block<Type>&);
-    inline void operator-=(const tmp<block<Type>>&);
+    inline void operator-=(const block<Type,P>&);
+    inline void operator-=(const tmp<block<Type,P>>&);
 
     inline void operator*=(const label&);
     inline void operator*=(const scalar&);
-    inline void operator*=(const block<label>&);
-    inline void operator*=(const block<scalar>&);
-    inline void operator*=(const tmp<block<label>>&);
-    inline void operator*=(const tmp<block<scalar>>&);
+    inline void operator*=(const block<label,P>&);
+    inline void operator*=(const block<scalar,P>&);
+    inline void operator*=(const tmp<block<label,P>>&);
+    inline void operator*=(const tmp<block<scalar,P>>&);
 
     inline void operator/=(const label&);
     inline void operator/=(const scalar&);
-    inline void operator/=(const block<label>&);
-    inline void operator/=(const block<scalar>&);
-    inline void operator/=(const tmp<block<label>>&);
-    inline void operator/=(const tmp<block<scalar>>&);
+    inline void operator/=(const block<label,P>&);
+    inline void operator/=(const block<scalar,P>&);
+    inline void operator/=(const tmp<block<label,P>>&);
+    inline void operator/=(const tmp<block<scalar,P>>&);
 
     // Templated functions are needed for types which can be cast to another
     // type
 
     template<class Type2> inline void operator=(const Type2&);
-    template<class Type2> inline void operator=(const block<Type2>&);
-    template<class Type2> inline void operator=(const tmp<block<Type2>>&);
+    template<class Type2> inline void operator=(const block<Type2,P>&);
+    template<class Type2> inline void operator=(const tmp<block<Type2,P>>&);
 
     template<class Type2> inline void operator+=(const Type2&);
-    template<class Type2> inline void operator+=(const block<Type2>&);
-    template<class Type2> inline void operator+=(const tmp<block<Type2>>&);
+    template<class Type2> inline void operator+=(const block<Type2,P>&);
+    template<class Type2> inline void operator+=(const tmp<block<Type2,P>>&);
 
     template<class Type2> inline void operator-=(const Type2&);
-    template<class Type2> inline void operator-=(const block<Type2>&);
-    template<class Type2> inline void operator-=(const tmp<block<Type2>>&);
+    template<class Type2> inline void operator-=(const block<Type2,P>&);
+    template<class Type2> inline void operator-=(const tmp<block<Type2,P>>&);
 
-    friend Istream& operator>><Type>(Istream&, block<Type>&);
-    friend Ostream& operator<<<Type>(Ostream&, const block<Type>&);
+    friend Istream& operator>><Type,P>(Istream&, block<Type,P>&);
+    friend Ostream& operator<<<Type,P>(Ostream&, const block<Type,P>&);
 };
 
 }

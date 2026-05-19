@@ -9,57 +9,57 @@
 #define UNARY_FUNCTION(ReturnType, Type1, Func)                                \
                                                                                \
 TEMPLATE                                                                       \
-void Func(block<ReturnType>&, const block<Type1>&);                            \
+void Func(block<ReturnType,P>&, const block<Type1,P>&);                        \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> Func(const block<Type1>&);                              \
+tmp<block<ReturnType,P>> Func(const block<Type1,P>&);                          \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> Func(const tmp<block<Type1>>&);
+tmp<block<ReturnType,P>> Func(const tmp<block<Type1,P>>&);
 
 #define UNARY_OPERATOR(ReturnType, Type1, Op, OpFunc)                          \
                                                                                \
 TEMPLATE                                                                       \
-void OpFunc(block<ReturnType>&, const block<Type1>&);                          \
+void OpFunc(block<ReturnType,P>&, const block<Type1,P>&);                      \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> operator Op(const block<Type1>&);                       \
+tmp<block<ReturnType,P>> operator Op(const block<Type1,P>&);                   \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> operator Op(const tmp<block<Type1>>&);
+tmp<block<ReturnType,P>> operator Op(const tmp<block<Type1,P>>&);
 
 #define BINARY_FUNCTION(ReturnType, Type1, Type2, Func)                        \
                                                                                \
 TEMPLATE                                                                       \
 void Func                                                                      \
 (                                                                              \
-    block<ReturnType>&,                                                        \
-    const block<Type1>&,                                                       \
-    const block<Type2>&                                                        \
+    block<ReturnType,P>&,                                                      \
+    const block<Type1,P>&,                                                     \
+    const block<Type2,P>&                                                      \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> Func                                                    \
+tmp<block<ReturnType,P>> Func                                                  \
 (                                                                              \
-    const block<Type1>&,                                                       \
-    const block<Type2>&                                                        \
+    const block<Type1,P>&,                                                     \
+    const block<Type2,P>&                                                      \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> Func                                                    \
+tmp<block<ReturnType,P>> Func                                                  \
 (                                                                              \
-    const block<Type1>&,                                                       \
-    const tmp<block<Type2>>&                                                   \
+    const block<Type1,P>&,                                                     \
+    const tmp<block<Type2,P>>&                                                 \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> Func                                                    \
+tmp<block<ReturnType,P>> Func                                                  \
 (                                                                              \
-    const tmp<block<Type1>>&,                                                  \
-    const block<Type2>&                                                        \
+    const tmp<block<Type1,P>>&,                                                \
+    const block<Type2,P>&                                                      \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> Func                                                    \
+tmp<block<ReturnType,P>> Func                                                  \
 (                                                                              \
-    const tmp<block<Type1>>&,                                                  \
-    const tmp<block<Type2>>&                                                   \
+    const tmp<block<Type1,P>>&,                                                \
+    const tmp<block<Type2,P>>&                                                 \
 );
 
 #define BINARY_TYPE_FUNCTION_SF(ReturnType, Type1, Type2, Func)                \
@@ -67,23 +67,23 @@ tmp<block<ReturnType>> Func                                                    \
 TEMPLATE                                                                       \
 void Func                                                                      \
 (                                                                              \
-    block<ReturnType>&,                                                        \
+    block<ReturnType,P>&,                                                      \
     const Type1&,                                                              \
-    const block<Type2>&                                                        \
+    const block<Type2,P>&                                                      \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> Func                                                    \
+tmp<block<ReturnType,P>> Func                                                  \
 (                                                                              \
     const Type1&,                                                              \
-    const block<Type2>&                                                        \
+    const block<Type2,P>&                                                      \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> Func                                                    \
+tmp<block<ReturnType,P>> Func                                                  \
 (                                                                              \
     const Type1&,                                                              \
-    const tmp<block<Type2>>&                                                   \
+    const tmp<block<Type2,P>>&                                                 \
 );
 
 #define BINARY_TYPE_FUNCTION_FS(ReturnType, Type1, Type2, Func)                \
@@ -91,22 +91,22 @@ tmp<block<ReturnType>> Func                                                    \
 TEMPLATE                                                                       \
 void Func                                                                      \
 (                                                                              \
-    block<ReturnType>&,                                                        \
-    const block<Type1>&,                                                       \
+    block<ReturnType,P>&,                                                      \
+    const block<Type1,P>&,                                                     \
     const Type2&                                                               \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> Func                                                    \
+tmp<block<ReturnType,P>> Func                                                  \
 (                                                                              \
-    const block<Type1>&,                                                       \
+    const block<Type1,P>&,                                                     \
     const Type2&                                                               \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> Func                                                    \
+tmp<block<ReturnType,P>> Func                                                  \
 (                                                                              \
-    const tmp<block<Type1>>&,                                                  \
+    const tmp<block<Type1,P>>&,                                                \
     const Type2&                                                               \
 );
 
@@ -119,37 +119,37 @@ tmp<block<ReturnType>> Func                                                    \
 TEMPLATE                                                                       \
 void OpFunc                                                                    \
 (                                                                              \
-    block<ReturnType>&,                                                        \
-    const block<Type1>&,                                                       \
-    const block<Type2>&                                                        \
+    block<ReturnType,P>&,                                                      \
+    const block<Type1,P>&,                                                     \
+    const block<Type2,P>&                                                      \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> operator Op                                             \
+tmp<block<ReturnType,P>> operator Op                                           \
 (                                                                              \
-    const block<Type1>&,                                                       \
-    const block<Type2>&                                                        \
+    const block<Type1,P>&,                                                     \
+    const block<Type2,P>&                                                      \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> operator Op                                             \
+tmp<block<ReturnType,P>> operator Op                                           \
 (                                                                              \
-    const block<Type1>&,                                                       \
-    const tmp<block<Type2>>&                                                   \
+    const block<Type1,P>&,                                                     \
+    const tmp<block<Type2,P>>&                                                 \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> operator Op                                             \
+tmp<block<ReturnType,P>> operator Op                                           \
 (                                                                              \
-    const tmp<block<Type1>>&,                                                  \
-    const block<Type2>&                                                        \
+    const tmp<block<Type1,P>>&,                                                \
+    const block<Type2,P>&                                                      \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> operator Op                                             \
+tmp<block<ReturnType,P>> operator Op                                           \
 (                                                                              \
-    const tmp<block<Type1>>&,                                                  \
-    const tmp<block<Type2>>&                                                   \
+    const tmp<block<Type1,P>>&,                                                \
+    const tmp<block<Type2,P>>&                                                 \
 );
 
 #define BINARY_TYPE_OPERATOR_SF(ReturnType, Type1, Type2, Op, OpFunc)          \
@@ -157,23 +157,23 @@ tmp<block<ReturnType>> operator Op                                             \
 TEMPLATE                                                                       \
 void OpFunc                                                                    \
 (                                                                              \
-    block<ReturnType>&,                                                        \
+    block<ReturnType,P>&,                                                      \
     const Type1&,                                                              \
-    const block<Type2>&                                                        \
+    const block<Type2,P>&                                                      \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> operator Op                                             \
+tmp<block<ReturnType,P>> operator Op                                           \
 (                                                                              \
     const Type1&,                                                              \
-    const block<Type2>&                                                        \
+    const block<Type2,P>&                                                      \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> operator Op                                             \
+tmp<block<ReturnType,P>> operator Op                                           \
 (                                                                              \
     const Type1&,                                                              \
-    const tmp<block<Type2>>&                                                   \
+    const tmp<block<Type2,P>>&                                                 \
 );
 
 #define BINARY_TYPE_OPERATOR_FS(ReturnType, Type1, Type2, Op, OpFunc)          \
@@ -181,22 +181,22 @@ tmp<block<ReturnType>> operator Op                                             \
 TEMPLATE                                                                       \
 void OpFunc                                                                    \
 (                                                                              \
-    block<ReturnType>&,                                                        \
-    const block<Type1>&,                                                       \
+    block<ReturnType,P>&,                                                      \
+    const block<Type1,P>&,                                                     \
     const Type2&                                                               \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> operator Op                                             \
+tmp<block<ReturnType,P>> operator Op                                           \
 (                                                                              \
-    const block<Type1>&,                                                       \
+    const block<Type1,P>&,                                                     \
     const Type2&                                                               \
 );                                                                             \
                                                                                \
 TEMPLATE                                                                       \
-tmp<block<ReturnType>> operator Op                                             \
+tmp<block<ReturnType,P>> operator Op                                           \
 (                                                                              \
-    const tmp<block<Type1>>&,                                                  \
+    const tmp<block<Type1,P>>&,                                                \
     const Type2&                                                               \
 );
 

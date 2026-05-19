@@ -7,10 +7,10 @@ namespace Foam
 namespace briscola
 {
 
-template<class TypeR>
-tmp<block<TypeR>> New
+template<class TypeR, int P>
+tmp<block<TypeR,P>> New
 (
-    const tmp<block<TypeR>>& tf1,
+    const tmp<block<TypeR,P>>& tf1,
     const bool initRet = false
 )
 {
@@ -20,7 +20,7 @@ tmp<block<TypeR>> New
     }
     else
     {
-        tmp<block<TypeR>> rtf(new block<TypeR>(tf1().shape()));
+        tmp<block<TypeR,P>> rtf(new block<TypeR,P>(tf1().shape()));
 
         if (initRet)
         {
@@ -31,23 +31,23 @@ tmp<block<TypeR>> New
     }
 }
 
-template<class TypeR, class Type1>
+template<class TypeR, class Type1, int P>
 class reuseTmp
 {
 public:
 
-    static tmp<block<TypeR>> New(const tmp<block<Type1>>& tf1)
+    static tmp<block<TypeR,P>> New(const tmp<block<Type1,P>>& tf1)
     {
-        return tmp<block<TypeR>>(new block<TypeR>(tf1().shape()));
+        return tmp<block<TypeR,P>>(new block<TypeR,P>(tf1().shape()));
     }
 };
 
-template<class TypeR>
-class reuseTmp<TypeR, TypeR>
+template<class TypeR, int P>
+class reuseTmp<TypeR, TypeR, P>
 {
 public:
 
-    static tmp<block<TypeR>> New(const tmp<block<TypeR>>& tf1)
+    static tmp<block<TypeR,P>> New(const tmp<block<TypeR,P>>& tf1)
     {
         if (tf1.isTmp())
         {
@@ -55,35 +55,35 @@ public:
         }
         else
         {
-            return tmp<block<TypeR>>(new block<TypeR>(tf1().shape()));
+            return tmp<block<TypeR,P>>(new block<TypeR,P>(tf1().shape()));
         }
     }
 };
 
-template<class TypeR, class Type1, class Type12, class Type2>
+template<class TypeR, class Type1, class Type12, class Type2, int P>
 class reuseTmpTmp
 {
 public:
 
-    static tmp<block<TypeR>> New
+    static tmp<block<TypeR,P>> New
     (
-        const tmp<block<Type1>>& tf1,
-        const tmp<block<Type2>>& tf2
+        const tmp<block<Type1,P>>& tf1,
+        const tmp<block<Type2,P>>& tf2
     )
     {
-        return tmp<block<TypeR>>(new block<TypeR>(tf1().shape()));
+        return tmp<block<TypeR,P>>(new block<TypeR,P>(tf1().shape()));
     }
 };
 
-template<class TypeR, class Type1, class Type12>
-class reuseTmpTmp<TypeR, Type1, Type12, TypeR>
+template<class TypeR, class Type1, class Type12, int P>
+class reuseTmpTmp<TypeR, Type1, Type12, TypeR, P>
 {
 public:
 
-    static tmp<block<TypeR>> New
+    static tmp<block<TypeR,P>> New
     (
-        const tmp<block<Type1>>& tf1,
-        const tmp<block<TypeR>>& tf2
+        const tmp<block<Type1,P>>& tf1,
+        const tmp<block<TypeR,P>>& tf2
     )
     {
         if (tf2.isTmp())
@@ -92,20 +92,20 @@ public:
         }
         else
         {
-            return tmp<block<TypeR>>(new block<TypeR>(tf1().shape()));
+            return tmp<block<TypeR,P>>(new block<TypeR,P>(tf1().shape()));
         }
     }
 };
 
-template<class TypeR, class Type2>
-class reuseTmpTmp<TypeR, TypeR, TypeR, Type2>
+template<class TypeR, class Type2, int P>
+class reuseTmpTmp<TypeR, TypeR, TypeR, Type2, P>
 {
 public:
 
-    static tmp<block<TypeR>> New
+    static tmp<block<TypeR,P>> New
     (
-        const tmp<block<TypeR>>& tf1,
-        const tmp<block<Type2>>& tf2
+        const tmp<block<TypeR,P>>& tf1,
+        const tmp<block<Type2,P>>& tf2
     )
     {
         if (tf1.isTmp())
@@ -114,20 +114,20 @@ public:
         }
         else
         {
-            return tmp<block<TypeR>>(new block<TypeR>(tf1().shape()));
+            return tmp<block<TypeR,P>>(new block<TypeR,P>(tf1().shape()));
         }
     }
 };
 
-template<class TypeR>
-class reuseTmpTmp<TypeR, TypeR, TypeR, TypeR>
+template<class TypeR, int P>
+class reuseTmpTmp<TypeR, TypeR, TypeR, TypeR, P>
 {
 public:
 
-    static tmp<block<TypeR>> New
+    static tmp<block<TypeR,P>> New
     (
-        const tmp<block<TypeR>>& tf1,
-        const tmp<block<TypeR>>& tf2
+        const tmp<block<TypeR,P>>& tf1,
+        const tmp<block<TypeR,P>>& tf2
     )
     {
         if (tf1.isTmp())
@@ -140,7 +140,7 @@ public:
         }
         else
         {
-            return tmp<block<TypeR>>(new block<TypeR>(tf1().shape()));
+            return tmp<block<TypeR,P>>(new block<TypeR,P>(tf1().shape()));
         }
     }
 };

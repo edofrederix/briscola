@@ -1,12 +1,11 @@
 #ifndef tensorBlock_H
 #define tensorBlock_H
 
-#include "scalarBlock.H"
-#include "vectorBlock.H"
-#include "symmTensorBlock.H"
+#include "block.H"
 #include "tensor.H"
+#include "symmTensor.H"
 
-#define TEMPLATE
+#define TEMPLATE template<int P>
 #include "blockFunctionsM.H"
 
 namespace Foam
@@ -14,8 +13,6 @@ namespace Foam
 
 namespace briscola
 {
-
-typedef block<tensor> tensorBlock;
 
 UNARY_FUNCTION(scalar, tensor, tr)
 UNARY_FUNCTION(symmTensor, tensor, symm)
@@ -31,5 +28,9 @@ BINARY_TYPE_OPERATOR(vector, vector, tensor, /, divide)
 }
 
 #include "undefBlockFunctionsM.H"
+
+#ifdef NoRepository
+    #include "tensorBlock.C"
+#endif
 
 #endif

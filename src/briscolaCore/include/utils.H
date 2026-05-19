@@ -553,77 +553,146 @@ const label edgeNumsInTetFace[4][3]
     {3,4,5}
 };
 
-// Calculate the linear index from indices and block size
+// Calculate the linear index from indices, block size and padding
 
-inline label lin
+template<int p>
+inline label Lin
 (
-    const label& i,
-    const label& j,
-    const label& k,
-    const label& l,
-    const label& m,
-    const label& n
+    const label i,
+    const label j,
+    const label k,
+    const label l,
+    const label m,
+    const label n
+)
+{
+    const label N = n+2*p;
+    const label MN = (m+2*p)*N;
+
+    return (i+p)*MN + (j+p)*N + (k+p);
+}
+
+template<>
+inline label Lin<0>
+(
+    const label i,
+    const label j,
+    const label k,
+    const label l,
+    const label m,
+    const label n
 )
 {
     return i*m*n + j*n + k;
 }
 
+template<int p = 0>
 inline label lin
 (
-    const label& i,
-    const label& j,
-    const label& k,
+    const label i,
+    const label j,
+    const label k,
+    const label l,
+    const label m,
+    const label n
+)
+{
+    return Lin<p>(i,j,k,l,m,n);
+}
+
+template<int p = 0>
+inline label lin
+(
+    const label i,
+    const label j,
+    const label k,
     const labelVector& N
 )
 {
-    return lin(i,j,k,N.x(),N.y(),N.z());
+    return lin<p>(i,j,k,N.x(),N.y(),N.z());
 }
 
+template<int p = 0>
 inline label lin
 (
     const labelVector& ijk,
-    const label& l,
-    const label& m,
-    const label& n
+    const label l,
+    const label m,
+    const label n
 )
 {
-    return lin(ijk.x(),ijk.y(),ijk.z(),l,m,n);
+    return lin<p>(ijk.x(),ijk.y(),ijk.z(),l,m,n);
 }
 
+template<int p = 0>
 inline label lin
 (
     const labelVector& ijk,
     const labelVector& N
 )
 {
-    return lin(ijk.x(), ijk.y(), ijk.z(), N.x(), N.y(), N.z());
+    return lin<p>(ijk.x(),ijk.y(),ijk.z(),N.x(),N.y(),N.z());
 }
 
-// Calculate the indices from a linear index and block size
+// Calculate the indices from a linear index, block size and padding
 
-inline labelVector ind
+template<int p>
+inline labelVector Ind
 (
-    const label& l,
-    const label&,
-    const label& m,
-    const label& n
+    const label i,
+    const label l,
+    const label m,
+    const label n
+)
+{
+    const label N = n+2*p;
+    const label M = m+2*p;
+
+    return labelVector
+    (
+        (i)/(M*N) - p,
+        (i/N)%M - p,
+        (i%N) - p
+    );
+}
+
+template<>
+inline labelVector Ind<0>
+(
+    const label i,
+    const label l,
+    const label m,
+    const label n
 )
 {
     return labelVector
     (
-        (l)/(m*n),
-        (l/n)%m,
-        (l%n)
+        (i)/(m*n),
+        (i/n)%m,
+        (i%n)
     );
 }
 
+template<int p = 0>
 inline labelVector ind
 (
-    const label& l,
+    const label i,
+    const label l,
+    const label m,
+    const label n
+)
+{
+    return Ind<p>(i,l,m,n);
+}
+
+template<int p = 0>
+inline labelVector ind
+(
+    const label i,
     const labelVector& N
 )
 {
-    return ind(l, N.x(), N.y(), N.z());
+    return ind<p>(i, N.x(), N.y(), N.z());
 }
 
 // Flip the components of a vector

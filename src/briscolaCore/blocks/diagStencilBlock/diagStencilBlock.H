@@ -1,11 +1,10 @@
 #ifndef diagStencilBlock_H
 #define diagStencilBlock_H
 
-#include "scalarBlock.H"
+#include "block.H"
 #include "diagStencil.H"
-#include "scalar.H"
 
-#define TEMPLATE
+#define TEMPLATE template<int P>
 #include "blockFunctionsM.H"
 
 namespace Foam
@@ -14,12 +13,14 @@ namespace Foam
 namespace briscola
 {
 
-typedef block<diagStencil> diagStencilBlock;
-
 }
 
 }
 
 #include "undefBlockFunctionsM.H"
+
+#ifdef NoRepository
+    #include "diagStencilBlock.C"
+#endif
 
 #endif

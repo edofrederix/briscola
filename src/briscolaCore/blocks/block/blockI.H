@@ -4,8 +4,8 @@ namespace Foam
 namespace briscola
 {
 
-template<class Type>
-inline void block<Type>::allocate()
+template<class Type, int P>
+inline void block<Type,P>::allocate()
 {
     if (size_)
     {
@@ -17,8 +17,8 @@ inline void block<Type>::allocate()
     }
 }
 
-template<class Type>
-inline void block<Type>::clear()
+template<class Type, int P>
+inline void block<Type,P>::clear()
 {
     if (v_)
     {
@@ -32,8 +32,8 @@ inline void block<Type>::clear()
     size_ = 0;
 }
 
-template<class Type>
-inline void block<Type>::reAllocate(int l, int m, int n)
+template<class Type, int P>
+inline void block<Type,P>::reAllocate(int l, int m, int n)
 {
     if (size_ != l*m*n)
     {
@@ -56,14 +56,14 @@ inline void block<Type>::reAllocate(int l, int m, int n)
     }
 }
 
-template<class Type>
-inline void block<Type>::reAllocate(const labelVector& lmn)
+template<class Type, int P>
+inline void block<Type,P>::reAllocate(const labelVector& lmn)
 {
     reAllocate(lmn.x(), lmn.y(), lmn.z());
 }
 
-template<class Type>
-inline void block<Type>::transfer(block<Type>& M)
+template<class Type, int P>
+inline void block<Type,P>::transfer(block<Type,P>& M)
 {
     l_ = M.l_;
     m_ = M.m_;
@@ -85,8 +85,8 @@ inline void block<Type>::transfer(block<Type>& M)
     M.v_ = nullptr;
 }
 
-template<class Type>
-inline void block<Type>::operator=(const block<Type>& M)
+template<class Type, int P>
+inline void block<Type,P>::operator=(const block<Type,P>& M)
 {
     if (this == &M)
     {
@@ -102,12 +102,12 @@ inline void block<Type>::operator=(const block<Type>& M)
             v_[i] = M.v()[i];
 }
 
-template<class Type>
-inline void block<Type>::operator=(const tmp<block<Type>>& tM)
+template<class Type, int P>
+inline void block<Type,P>::operator=(const tmp<block<Type,P>>& tM)
 {
     if (tM.isTmp())
     {
-        block<Type>& M = const_cast<block<Type>&>(tM());
+        block<Type,P>& M = const_cast<block<Type,P>&>(tM());
         transfer(M);
     }
     else
@@ -119,32 +119,32 @@ inline void block<Type>::operator=(const tmp<block<Type>>& tM)
         tM.clear();
 }
 
-template<class Type>
-inline void block<Type>::operator=(const Type& v)
+template<class Type, int P>
+inline void block<Type,P>::operator=(const Type& v)
 {
     if (v_)
         forAllBlockLinear(*this, i)
             v_[i] = v;
 }
 
-template<class Type>
-inline void block<Type>::operator=(const zero)
+template<class Type, int P>
+inline void block<Type,P>::operator=(const zero)
 {
     if (v_)
         forAllBlockLinear(*this, i)
             v_[i] = Zero;
 }
 
-template<class Type>
-inline void block<Type>::operator+=(const Type& v)
+template<class Type, int P>
+inline void block<Type,P>::operator+=(const Type& v)
 {
     if (v_)
         forAllBlockLinear(*this, i)
             v_[i] += v;
 }
 
-template<class Type>
-inline void block<Type>::operator+=(const block<Type>& M)
+template<class Type, int P>
+inline void block<Type,P>::operator+=(const block<Type,P>& M)
 {
     if (size_ != M.size())
     {
@@ -158,24 +158,24 @@ inline void block<Type>::operator+=(const block<Type>& M)
             v_[i] += M.v()[i];
 }
 
-template<class Type>
-inline void block<Type>::operator+=(const tmp<block<Type>>& tM)
+template<class Type, int P>
+inline void block<Type,P>::operator+=(const tmp<block<Type,P>>& tM)
 {
     *this += tM();
     if (tM.isTmp())
         tM.clear();
 }
 
-template<class Type>
-inline void block<Type>::operator-=(const Type& v)
+template<class Type, int P>
+inline void block<Type,P>::operator-=(const Type& v)
 {
     if (v_)
         forAllBlockLinear(*this, i)
             v_[i] -= v;
 }
 
-template<class Type>
-inline void block<Type>::operator-=(const block<Type>& M)
+template<class Type, int P>
+inline void block<Type,P>::operator-=(const block<Type,P>& M)
 {
     if (size_ != M.size())
     {
@@ -189,32 +189,32 @@ inline void block<Type>::operator-=(const block<Type>& M)
             v_[i] -= M.v()[i];
 }
 
-template<class Type>
-inline void block<Type>::operator-=(const tmp<block<Type>>& tM)
+template<class Type, int P>
+inline void block<Type,P>::operator-=(const tmp<block<Type,P>>& tM)
 {
     *this -= tM();
     if (tM.isTmp())
         tM.clear();
 }
 
-template<class Type>
-inline void block<Type>::operator*=(const label& v)
+template<class Type, int P>
+inline void block<Type,P>::operator*=(const label& v)
 {
     if (v_)
         forAllBlockLinear(*this, i)
             v_[i] *= v;
 }
 
-template<class Type>
-inline void block<Type>::operator*=(const scalar& v)
+template<class Type, int P>
+inline void block<Type,P>::operator*=(const scalar& v)
 {
     if (v_)
         forAllBlockLinear(*this, i)
             v_[i] *= v;
 }
 
-template<class Type>
-inline void block<Type>::operator*=(const block<label>& M)
+template<class Type, int P>
+inline void block<Type,P>::operator*=(const block<label,P>& M)
 {
     if (size_ != M.size())
     {
@@ -228,16 +228,16 @@ inline void block<Type>::operator*=(const block<label>& M)
             v_[i] *= M.v()[i];
 }
 
-template<class Type>
-inline void block<Type>::operator*=(const tmp<block<label>>& tM)
+template<class Type, int P>
+inline void block<Type,P>::operator*=(const tmp<block<label,P>>& tM)
 {
     *this *= tM();
     if (tM.isTmp())
         tM.clear();
 }
 
-template<class Type>
-inline void block<Type>::operator*=(const block<scalar>& M)
+template<class Type, int P>
+inline void block<Type,P>::operator*=(const block<scalar,P>& M)
 {
     if (size_ != M.size())
     {
@@ -251,32 +251,32 @@ inline void block<Type>::operator*=(const block<scalar>& M)
             v_[i] *= M.v()[i];
 }
 
-template<class Type>
-inline void block<Type>::operator*=(const tmp<block<scalar>>& tM)
+template<class Type, int P>
+inline void block<Type,P>::operator*=(const tmp<block<scalar,P>>& tM)
 {
     *this *= tM();
     if (tM.isTmp())
         tM.clear();
 }
 
-template<class Type>
-inline void block<Type>::operator/=(const label& v)
+template<class Type, int P>
+inline void block<Type,P>::operator/=(const label& v)
 {
     if (v_)
         forAllBlockLinear(*this, i)
             v_[i] /= v;
 }
 
-template<class Type>
-inline void block<Type>::operator/=(const scalar& v)
+template<class Type, int P>
+inline void block<Type,P>::operator/=(const scalar& v)
 {
     if (v_)
         forAllBlockLinear(*this, i)
             v_[i] /= v;
 }
 
-template<class Type>
-inline void block<Type>::operator/=(const block<label>& M)
+template<class Type, int P>
+inline void block<Type,P>::operator/=(const block<label,P>& M)
 {
     if (size_ != M.size())
     {
@@ -290,16 +290,16 @@ inline void block<Type>::operator/=(const block<label>& M)
             v_[i] /= M.v()[i];
 }
 
-template<class Type>
-inline void block<Type>::operator/=(const tmp<block<label>>& tM)
+template<class Type, int P>
+inline void block<Type,P>::operator/=(const tmp<block<label,P>>& tM)
 {
     *this /= tM();
     if (tM.isTmp())
         tM.clear();
 }
 
-template<class Type>
-inline void block<Type>::operator/=(const block<scalar>& M)
+template<class Type, int P>
+inline void block<Type,P>::operator/=(const block<scalar,P>& M)
 {
     if (size_ != M.size())
     {
@@ -313,26 +313,26 @@ inline void block<Type>::operator/=(const block<scalar>& M)
             v_[i] /= M.v()[i];
 }
 
-template<class Type>
-inline void block<Type>::operator/=(const tmp<block<scalar>>& tM)
+template<class Type, int P>
+inline void block<Type,P>::operator/=(const tmp<block<scalar,P>>& tM)
 {
     *this /= tM();
     if (tM.isTmp())
         tM.clear();
 }
 
-template<class Type>
+template<class Type, int P>
 template<class Type2>
-inline void block<Type>::operator=(const Type2& v)
+inline void block<Type,P>::operator=(const Type2& v)
 {
     if (v_)
         forAllBlockLinear(*this, i)
             v_[i] = v;
 }
 
-template<class Type>
+template<class Type, int P>
 template<class Type2>
-inline void block<Type>::operator=(const block<Type2>& M)
+inline void block<Type,P>::operator=(const block<Type2,P>& M)
 {
     reAllocate(M.shape());
 
@@ -341,27 +341,27 @@ inline void block<Type>::operator=(const block<Type2>& M)
             v_[i] = M.v()[i];
 }
 
-template<class Type>
+template<class Type, int P>
 template<class Type2>
-inline void block<Type>::operator=(const tmp<block<Type2>>& tM)
+inline void block<Type,P>::operator=(const tmp<block<Type2,P>>& tM)
 {
     *this = tM();
     if (tM.isTmp())
         tM.clear();
 }
 
-template<class Type>
+template<class Type, int P>
 template<class Type2>
-inline void block<Type>::operator+=(const Type2& v)
+inline void block<Type,P>::operator+=(const Type2& v)
 {
     if (v_)
         forAllBlockLinear(*this, i)
             v_[i] += v;
 }
 
-template<class Type>
+template<class Type, int P>
 template<class Type2>
-inline void block<Type>::operator+=(const block<Type2>& M)
+inline void block<Type,P>::operator+=(const block<Type2,P>& M)
 {
     if (size_ != M.size())
     {
@@ -375,27 +375,27 @@ inline void block<Type>::operator+=(const block<Type2>& M)
             v_[i] += M.v()[i];
 }
 
-template<class Type>
+template<class Type, int P>
 template<class Type2>
-inline void block<Type>::operator+=(const tmp<block<Type2>>& tM)
+inline void block<Type,P>::operator+=(const tmp<block<Type2,P>>& tM)
 {
     *this += tM();
     if (tM.isTmp())
         tM.clear();
 }
 
-template<class Type>
+template<class Type, int P>
 template<class Type2>
-inline void block<Type>::operator-=(const Type2& v)
+inline void block<Type,P>::operator-=(const Type2& v)
 {
     if (v_)
         forAllBlockLinear(*this, i)
             v_[i] -= v;
 }
 
-template<class Type>
+template<class Type, int P>
 template<class Type2>
-inline void block<Type>::operator-=(const block<Type2>& M)
+inline void block<Type,P>::operator-=(const block<Type2,P>& M)
 {
     if (size_ != M.size())
     {
@@ -409,9 +409,9 @@ inline void block<Type>::operator-=(const block<Type2>& M)
             v_[i] -= M.v()[i];
 }
 
-template<class Type>
+template<class Type, int P>
 template<class Type2>
-inline void block<Type>::operator-=(const tmp<block<Type2>>& tM)
+inline void block<Type,P>::operator-=(const tmp<block<Type2,P>>& tM)
 {
     *this -= tM();
     if (tM.isTmp())

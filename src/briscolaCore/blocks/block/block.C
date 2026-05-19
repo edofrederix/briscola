@@ -12,8 +12,8 @@ namespace briscola
 
 // Constructors
 
-template<class Type>
-block<Type>::block(const int l, const int m, const int n)
+template<class Type, int P>
+block<Type,P>::block(const int l, const int m, const int n)
 :
     refCount(),
     l_(l),
@@ -26,8 +26,8 @@ block<Type>::block(const int l, const int m, const int n)
     allocate();
 }
 
-template<class Type>
-block<Type>::block(const int l, const int m, const int n, const zero)
+template<class Type, int P>
+block<Type,P>::block(const int l, const int m, const int n, const zero)
 :
     refCount(),
     l_(l),
@@ -42,8 +42,8 @@ block<Type>::block(const int l, const int m, const int n, const zero)
     *this = Zero;
 }
 
-template<class Type>
-block<Type>::block(const int l, const int m, const int n, const Type& s)
+template<class Type, int P>
+block<Type,P>::block(const int l, const int m, const int n, const Type& s)
 :
     refCount(),
     l_(l),
@@ -58,8 +58,8 @@ block<Type>::block(const int l, const int m, const int n, const Type& s)
     *this = s;
 }
 
-template<class Type>
-block<Type>::block(const labelVector& d)
+template<class Type, int P>
+block<Type,P>::block(const labelVector& d)
 :
     refCount(),
     l_(d[0]),
@@ -72,8 +72,8 @@ block<Type>::block(const labelVector& d)
     allocate();
 }
 
-template<class Type>
-block<Type>::block(const labelVector& d, const zero)
+template<class Type, int P>
+block<Type,P>::block(const labelVector& d, const zero)
 :
     refCount(),
     l_(d[0]),
@@ -88,8 +88,8 @@ block<Type>::block(const labelVector& d, const zero)
     *this = Zero;
 }
 
-template<class Type>
-block<Type>::block(const labelVector& d, const Type& s)
+template<class Type, int P>
+block<Type,P>::block(const labelVector& d, const Type& s)
 :
     refCount(),
     l_(d[0]),
@@ -104,8 +104,8 @@ block<Type>::block(const labelVector& d, const Type& s)
     *this = s;
 }
 
-template<class Type>
-block<Type>::block
+template<class Type, int P>
+block<Type,P>::block
 (
     const label l,
     const label m,
@@ -138,8 +138,8 @@ block<Type>::block
     }
 }
 
-template<class Type>
-block<Type>::block
+template<class Type, int P>
+block<Type,P>::block
 (
     const label l,
     const label m,
@@ -162,8 +162,8 @@ block<Type>::block
             v_[i] = v[i];
 }
 
-template<class Type>
-block<Type>::block(const labelVector& d, const List<Type>& v)
+template<class Type, int P>
+block<Type,P>::block(const labelVector& d, const List<Type>& v)
 :
     refCount(),
     l_(d[0]),
@@ -190,8 +190,8 @@ block<Type>::block(const labelVector& d, const List<Type>& v)
     }
 }
 
-template<class Type>
-block<Type>::block(const labelVector& d, const Type* v)
+template<class Type, int P>
+block<Type,P>::block(const labelVector& d, const Type* v)
 :
     refCount(),
     l_(d[0]),
@@ -208,8 +208,8 @@ block<Type>::block(const labelVector& d, const Type* v)
             v_[i] = v[i];
 }
 
-template<class Type>
-block<Type>::block(const block<Type>& M)
+template<class Type, int P>
+block<Type,P>::block(const block<Type,P>& M)
 :
     refCount(),
     l_(M.l()),
@@ -228,8 +228,8 @@ block<Type>::block(const block<Type>& M)
     }
 }
 
-template<class Type>
-block<Type>::block(const block<Type>& M, const zero&)
+template<class Type, int P>
+block<Type,P>::block(const block<Type,P>& M, const zero&)
 :
     refCount(),
     l_(M.l()),
@@ -248,8 +248,8 @@ block<Type>::block(const block<Type>& M, const zero&)
     }
 }
 
-template<class Type>
-block<Type>::block(const block<Type>& M, const Type& v)
+template<class Type, int P>
+block<Type,P>::block(const block<Type,P>& M, const Type& v)
 :
     refCount(),
     l_(M.l()),
@@ -268,8 +268,8 @@ block<Type>::block(const block<Type>& M, const Type& v)
     }
 }
 
-template<class Type>
-block<Type>::block(const tmp<block<Type>>& tM)
+template<class Type, int P>
+block<Type,P>::block(const tmp<block<Type,P>>& tM)
 :
     refCount(),
     l_(tM->l()),
@@ -281,7 +281,7 @@ block<Type>::block(const tmp<block<Type>>& tM)
 {
     if (tM.isTmp())
     {
-        block<Type>& M = const_cast<block<Type>&>(tM());
+        block<Type,P>& M = const_cast<block<Type,P>&>(tM());
         transfer(M);
     }
     else
@@ -294,8 +294,8 @@ block<Type>::block(const tmp<block<Type>>& tM)
         tM.clear();
 }
 
-template<class Type>
-block<Type>::block(const tmp<block<Type>>& tM, const zero&)
+template<class Type, int P>
+block<Type,P>::block(const tmp<block<Type,P>>& tM, const zero&)
 :
     refCount(),
     l_(tM->l()),
@@ -307,7 +307,7 @@ block<Type>::block(const tmp<block<Type>>& tM, const zero&)
 {
     if (tM.isTmp())
     {
-        block<Type>& M = const_cast<block<Type>&>(tM());
+        block<Type,P>& M = const_cast<block<Type,P>&>(tM());
         transfer(M);
     }
     else
@@ -321,8 +321,8 @@ block<Type>::block(const tmp<block<Type>>& tM, const zero&)
         tM.clear();
 }
 
-template<class Type>
-block<Type>::block(const tmp<block<Type>>& tM, const Type& v)
+template<class Type, int P>
+block<Type,P>::block(const tmp<block<Type,P>>& tM, const Type& v)
 :
     refCount(),
     l_(tM->l()),
@@ -334,7 +334,7 @@ block<Type>::block(const tmp<block<Type>>& tM, const Type& v)
 {
     if (tM.isTmp())
     {
-        block<Type>& M = const_cast<block<Type>&>(tM());
+        block<Type,P>& M = const_cast<block<Type,P>&>(tM());
         transfer(M);
     }
     else
@@ -348,8 +348,8 @@ block<Type>::block(const tmp<block<Type>>& tM, const Type& v)
         tM.clear();
 }
 
-template<class Type>
-block<Type>::block(const label reuse, block<Type>& M)
+template<class Type, int P>
+block<Type,P>::block(const label reuse, block<Type,P>& M)
 :
     refCount(),
     l_(M.l()),
@@ -370,8 +370,8 @@ block<Type>::block(const label reuse, block<Type>& M)
     }
 }
 
-template<class Type>
-block<Type>::block(const label reuse, block<Type>& M, const zero&)
+template<class Type, int P>
+block<Type,P>::block(const label reuse, block<Type,P>& M, const zero&)
 :
     refCount(),
     l_(M.l()),
@@ -393,8 +393,8 @@ block<Type>::block(const label reuse, block<Type>& M, const zero&)
     *this = Zero;
 }
 
-template<class Type>
-block<Type>::block(const label reuse, block<Type>& M, const Type& v)
+template<class Type, int P>
+block<Type,P>::block(const label reuse, block<Type,P>& M, const Type& v)
 :
     refCount(),
     l_(M.l()),
@@ -416,8 +416,8 @@ block<Type>::block(const label reuse, block<Type>& M, const Type& v)
     *this = v;
 }
 
-template<class Type>
-block<Type>::block(Istream& is)
+template<class Type, int P>
+block<Type,P>::block(Istream& is)
 :
     refCount(),
     l_(0),
@@ -432,8 +432,8 @@ block<Type>::block(Istream& is)
 
 // Destructor
 
-template<class Type>
-block<Type>::~block()
+template<class Type, int P>
+block<Type,P>::~block()
 {
     if (v_)
     {
@@ -443,8 +443,8 @@ block<Type>::~block()
 
 // Public
 
-template<class Type>
-void block<Type>::setSize
+template<class Type, int P>
+void block<Type,P>::setSize
 (
     const labelVector shape
 )
@@ -452,15 +452,15 @@ void block<Type>::setSize
     setSize(shape[0], shape[1], shape[2]);
 }
 
-template<class Type>
-void block<Type>::setSize
+template<class Type, int P>
+void block<Type,P>::setSize
 (
     const int l,
     const int m,
     const int n
 )
 {
-    block<Type> M(l, m, n, Zero);
+    block<Type,P> M(l, m, n, Zero);
 
     int minL = Foam::min(l, l_);
     int minM = Foam::min(m, m_);
@@ -480,8 +480,8 @@ void block<Type>::setSize
     transfer(M);
 }
 
-template<class Type>
-void block<Type>::prepend
+template<class Type, int P>
+void block<Type,P>::prepend
 (
     const int d,
     const int s,
@@ -504,7 +504,7 @@ void block<Type>::prepend
 
     const labelVector S(this->shape() + units[d]*s);
 
-    block<Type> M(S,v);
+    block<Type,P> M(S,v);
 
     forAllBlock(*this, i, j, k)
     {
@@ -514,8 +514,8 @@ void block<Type>::prepend
     transfer(M);
 }
 
-template<class Type>
-void block<Type>::append
+template<class Type, int P>
+void block<Type,P>::append
 (
     const int d,
     const int s,
@@ -538,7 +538,7 @@ void block<Type>::append
 
     const labelVector S(this->shape() + units[d]*s);
 
-    block<Type> M(S,v);
+    block<Type,P> M(S,v);
 
     forAllBlock(*this, i, j, k)
     {
@@ -548,8 +548,8 @@ void block<Type>::append
     transfer(M);
 }
 
-template<class Type>
-void block<Type>::transform(const labelTensor T)
+template<class Type, int P>
+void block<Type,P>::transform(const labelTensor T)
 {
     if (T == eye)
     {
@@ -569,7 +569,7 @@ void block<Type>::transform(const labelTensor T)
     const labelVector y(T & unitY);
     const labelVector z(T & unitZ);
 
-    block<Type> M(cmptMag(T & this->shape()));
+    block<Type,P> M(cmptMag(T & this->shape()));
 
     // If the principle directions are negative, iteration should run from high
     // to low, requiring an offset
@@ -598,8 +598,8 @@ void block<Type>::transform(const labelTensor T)
     T_ = (T & T_);
 }
 
-template<class Type>
-labelTensor block<Type>::reflect(const label a)
+template<class Type, int P>
+labelTensor block<Type,P>::reflect(const label a)
 {
     if (a < 0 || a > 2)
     {
@@ -620,8 +620,8 @@ labelTensor block<Type>::reflect(const label a)
     return T;
 }
 
-template<class Type>
-labelTensor block<Type>::permute(const label a1, const label a2)
+template<class Type, int P>
+labelTensor block<Type,P>::permute(const label a1, const label a2)
 {
     if (a1 < 0 || a2 < 0 || a1 > 2 || a2 > 2)
     {
@@ -651,8 +651,8 @@ labelTensor block<Type>::permute(const label a1, const label a2)
     }
 }
 
-template<class Type>
-labelTensor block<Type>::rotate(const label st, const label a)
+template<class Type, int P>
+labelTensor block<Type,P>::rotate(const label st, const label a)
 {
     if (a < 0 || a > 2)
     {
@@ -682,8 +682,8 @@ labelTensor block<Type>::rotate(const label st, const label a)
     }
 }
 
-template<class Type>
-void block<Type>::squeeze()
+template<class Type, int P>
+void block<Type,P>::squeeze()
 {
     if (l_ == 1 && m_ == 1 && n_ > 1)
     {
@@ -712,14 +712,14 @@ void block<Type>::squeeze()
     }
 }
 
-template<class Type>
-tmp<block<Type>> block<Type>::slicex(const label i, const bool sq) const
+template<class Type, int P>
+tmp<block<Type,P>> block<Type,P>::slicex(const label i, const bool sq) const
 {
     const label ii = i < 0 ? l_+i : i;
 
-    tmp<block<Type>> tM(new block<Type>(1,m_,n_));
+    tmp<block<Type,P>> tM(new block<Type,P>(1,m_,n_));
 
-    block<Type>& M = tM.ref();
+    block<Type,P>& M = tM.ref();
 
     for (int j = 0; j < m_; j++)
     {
@@ -737,14 +737,14 @@ tmp<block<Type>> block<Type>::slicex(const label i, const bool sq) const
     return tM;
 }
 
-template<class Type>
-tmp<block<Type>> block<Type>::slicey(const label j, const bool sq) const
+template<class Type, int P>
+tmp<block<Type,P>> block<Type,P>::slicey(const label j, const bool sq) const
 {
     const label jj = j < 0 ? m_+j : j;
 
-    tmp<block<Type>> tM(new block<Type>(l_,1,n_));
+    tmp<block<Type,P>> tM(new block<Type,P>(l_,1,n_));
 
-    block<Type>& M = tM.ref();
+    block<Type,P>& M = tM.ref();
 
     for (int i = 0; i < l_; i++)
     {
@@ -762,14 +762,14 @@ tmp<block<Type>> block<Type>::slicey(const label j, const bool sq) const
     return tM;
 }
 
-template<class Type>
-tmp<block<Type>> block<Type>::slicez(const label k, const bool sq) const
+template<class Type, int P>
+tmp<block<Type,P>> block<Type,P>::slicez(const label k, const bool sq) const
 {
     const label kk = k < 0 ? n_+k : k;
 
-    tmp<block<Type>> tM(new block<Type>(l_,m_,1));
+    tmp<block<Type,P>> tM(new block<Type,P>(l_,m_,1));
 
-    block<Type>& M = tM.ref();
+    block<Type,P>& M = tM.ref();
 
     for (int i = 0; i < l_; i++)
     {
@@ -787,8 +787,8 @@ tmp<block<Type>> block<Type>::slicez(const label k, const bool sq) const
     return tM;
 }
 
-template<class Type>
-tmp<block<Type>> block<Type>::slice
+template<class Type, int P>
+tmp<block<Type,P>> block<Type,P>::slice
 (
     const label i,
     const label a,
@@ -816,15 +816,15 @@ tmp<block<Type>> block<Type>::slice
     }
 }
 
-template<class Type>
-tmp<block<Type>> block<Type>::sliceEdge(const label e, const bool sq) const
+template<class Type, int P>
+tmp<block<Type,P>> block<Type,P>::sliceEdge(const label e, const bool sq) const
 {
     const label side = (12+e%12)%12;
     const label dir = side/4;
 
-    tmp<block<Type>> tM(new block<Type>(*this));
+    tmp<block<Type,P>> tM(new block<Type,P>(*this));
 
-    block<Type>& M = tM.ref();
+    block<Type,P>& M = tM.ref();
 
     if (dir == 0)
     {
@@ -850,22 +850,22 @@ tmp<block<Type>> block<Type>::sliceEdge(const label e, const bool sq) const
     return tM;
 }
 
-template<class Type>
-tmp<block<Type>> block<Type>::sliceVertex(const label v) const
+template<class Type, int P>
+tmp<block<Type,P>> block<Type,P>::sliceVertex(const label v) const
 {
     const label side = (8+v%8)%8;
 
-    tmp<block<Type>> tM(new block<Type>(1,1,1));
+    tmp<block<Type,P>> tM(new block<Type,P>(1,1,1));
 
-    block<Type>& M = tM.ref();
+    block<Type,P>& M = tM.ref();
 
     M(0,0,0) = (*this)(side%2,(side%4)/2,side/4);
 
     return tM;
 }
 
-template<class Type>
-List<Type> block<Type>::flatten() const
+template<class Type, int P>
+List<Type> block<Type,P>::flatten() const
 {
     List<Type> L(size());
 
@@ -875,8 +875,8 @@ List<Type> block<Type>::flatten() const
     return L;
 }
 
-template<class Type>
-labelVector block<Type>::find(const Type& v) const
+template<class Type, int P>
+labelVector block<Type,P>::find(const Type& v) const
 {
     forAllBlock(*this, i, j, k)
     {
@@ -889,8 +889,8 @@ labelVector block<Type>::find(const Type& v) const
     return -unitXYZ;
 }
 
-template<class Type>
-Type block<Type>::interp(const scalar i, const scalar j, const scalar k) const
+template<class Type, int P>
+Type block<Type,P>::interp(const scalar i, const scalar j, const scalar k) const
 {
     // Floor
 
@@ -920,22 +920,22 @@ Type block<Type>::interp(const scalar i, const scalar j, const scalar k) const
       + (    di) * (    dj) * (    dk) * this->operator()(iip, jjp, kkp);
 }
 
-template<class Type>
-Type block<Type>::interp(const vector ijk) const
+template<class Type, int P>
+Type block<Type,P>::interp(const vector ijk) const
 {
     return this->interp(ijk.x(), ijk.y(), ijk.z());
 }
 
-template<class Type>
-tmp<block<typename block<Type>::cmptType>>
-block<Type>::component(const label dir) const
+template<class Type, int P>
+tmp<block<typename block<Type,P>::cmptType, P>>
+block<Type,P>::component(const label dir) const
 {
-    tmp<block<cmptType>> tD
+    tmp<block<cmptType,P>> tD
     (
-        new block<cmptType>(l_,m_,n_)
+        new block<cmptType,P>(l_,m_,n_)
     );
 
-    block<cmptType>& D = tD.ref();
+    block<cmptType,P>& D = tD.ref();
 
     forAllBlockLinear(*this, i)
         D(i) = ::Foam::component(v_[i], dir);
@@ -943,8 +943,8 @@ block<Type>::component(const label dir) const
     return tD;
 }
 
-template<class Type>
-void block<Type>::replace
+template<class Type, int P>
+void block<Type,P>::replace
 (
     const label dir,
     const cmptType& v
@@ -958,11 +958,11 @@ void block<Type>::replace
         ::Foam::replace(v_[i], dir, v);
 }
 
-template<class Type>
-void block<Type>::replace
+template<class Type, int P>
+void block<Type,P>::replace
 (
     const label dir,
-    const block<cmptType>& D
+    const block<cmptType,P>& D
 )
 {
     // We need to use a custom replace function here that handles CellSpace
@@ -973,11 +973,11 @@ void block<Type>::replace
         ::Foam::replace(v_[i], dir, D(i));
 }
 
-template<class Type>
-void block<Type>::replace
+template<class Type, int P>
+void block<Type,P>::replace
 (
     const label dir,
-    const tmp<block<cmptType>>& tD
+    const tmp<block<cmptType,P>>& tD
 )
 {
     this->replace(dir,tD());
@@ -986,22 +986,22 @@ void block<Type>::replace
         tD.clear();
 }
 
-template<class Type>
-void block<Type>::max(const Type& v)
+template<class Type, int P>
+void block<Type,P>::max(const Type& v)
 {
     forAllBlockLinear(*this, i)
         v_[i] = ::Foam::max(v_[i], v);
 }
 
-template<class Type>
-void block<Type>::min(const Type& v)
+template<class Type, int P>
+void block<Type,P>::min(const Type& v)
 {
     forAllBlockLinear(*this, i)
         v_[i] = ::Foam::min(v_[i], v);
 }
 
-template<class Type>
-Istream& operator>>(Istream& is, block<Type>& M)
+template<class Type, int P>
+Istream& operator>>(Istream& is, block<Type,P>& M)
 {
     List<List<List<Type>>> L;
 
@@ -1064,8 +1064,8 @@ Istream& operator>>(Istream& is, block<Type>& M)
     return is;
 }
 
-template<class Type>
-Ostream& operator<<(Ostream& os, const block<Type>& M)
+template<class Type, int P>
+Ostream& operator<<(Ostream& os, const block<Type,P>& M)
 {
     List<List<List<Type>>> L(M.l_);
 

@@ -5,7 +5,7 @@
 #include "vertexVector.H"
 #include "vector.H"
 
-#define TEMPLATE
+#define TEMPLATE template<int P>
 #include "blockFunctionsM.H"
 
 namespace Foam
@@ -13,8 +13,6 @@ namespace Foam
 
 namespace briscola
 {
-
-typedef block<vertexVector> vertexVectorBlock;
 
 BINARY_TYPE_OPERATOR(vertexVector, vector, vertexVector, +, add)
 BINARY_TYPE_OPERATOR(vertexVector, vector, vertexVector, -, subtract)
@@ -24,5 +22,9 @@ BINARY_TYPE_OPERATOR(vertexVector, vector, vertexVector, -, subtract)
 }
 
 #include "undefBlockFunctionsM.H"
+
+#ifdef NoRepository
+    #include "vertexVectorBlock.C"
+#endif
 
 #endif

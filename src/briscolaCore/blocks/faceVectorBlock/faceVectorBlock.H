@@ -5,7 +5,7 @@
 #include "faceVector.H"
 #include "vector.H"
 
-#define TEMPLATE
+#define TEMPLATE template<int P>
 #include "blockFunctionsM.H"
 
 namespace Foam
@@ -13,8 +13,6 @@ namespace Foam
 
 namespace briscola
 {
-
-typedef block<faceVector> faceVectorBlock;
 
 BINARY_OPERATOR(faceVector, faceVector, faceScalar, /, divide)
 
@@ -29,5 +27,9 @@ BINARY_TYPE_FUNCTION(faceVector, vector, faceVector, min)
 }
 
 #include "undefBlockFunctionsM.H"
+
+#ifdef NoRepository
+    #include "faceVectorBlock.C"
+#endif
 
 #endif
