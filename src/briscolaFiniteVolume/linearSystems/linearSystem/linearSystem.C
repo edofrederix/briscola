@@ -728,15 +728,15 @@ void linearSystem<SType,Type,MeshType>::operator/=
 // Operators with different types
 
 template<class SType, class Type, class MeshType>
-template<class Type2>
-void linearSystem<SType,Type,MeshType>::operator+=(const Type2& v)
+template<class T2>
+void linearSystem<SType,Type,MeshType>::operator+=(const T2& v)
 {
     this->b() -= v;
 }
 
 template<class SType, class Type, class MeshType>
-template<class Type2>
-void linearSystem<SType,Type,MeshType>::operator-=(const Type2& v)
+template<class T2>
+void linearSystem<SType,Type,MeshType>::operator-=(const T2& v)
 {
     this->b() += v;
 }
@@ -744,10 +744,10 @@ void linearSystem<SType,Type,MeshType>::operator-=(const Type2& v)
 // Operators with different stencil types
 
 template<class SType, class Type, class MeshType>
-template<class SType2>
+template<class ST2>
 void linearSystem<SType,Type,MeshType>::operator=
 (
-    const linearSystem<SType2,Type,MeshType>& sys
+    const linearSystem<ST2,Type,MeshType>& sys
 )
 {
     this->A() = sys.A();
@@ -759,10 +759,10 @@ void linearSystem<SType,Type,MeshType>::operator=
 }
 
 template<class SType, class Type, class MeshType>
-template<class SType2>
+template<class ST2>
 void linearSystem<SType,Type,MeshType>::operator=
 (
-    const tmp<linearSystem<SType2,Type,MeshType>>& tSys
+    const tmp<linearSystem<ST2,Type,MeshType>>& tSys
 )
 {
     *this = tSys();
@@ -772,10 +772,10 @@ void linearSystem<SType,Type,MeshType>::operator=
 }
 
 template<class SType, class Type, class MeshType>
-template<class SType2>
+template<class ST2>
 void linearSystem<SType,Type,MeshType>::operator+=
 (
-    const linearSystem<SType2,Type,MeshType>& sys
+    const linearSystem<ST2,Type,MeshType>& sys
 )
 {
     this->A() += sys.A();
@@ -787,10 +787,10 @@ void linearSystem<SType,Type,MeshType>::operator+=
 }
 
 template<class SType, class Type, class MeshType>
-template<class SType2>
+template<class ST2>
 void linearSystem<SType,Type,MeshType>::operator+=
 (
-    const tmp<linearSystem<SType2,Type,MeshType>>& tSys
+    const tmp<linearSystem<ST2,Type,MeshType>>& tSys
 )
 {
     *this += tSys();
@@ -800,10 +800,10 @@ void linearSystem<SType,Type,MeshType>::operator+=
 }
 
 template<class SType, class Type, class MeshType>
-template<class SType2>
+template<class ST2>
 void linearSystem<SType,Type,MeshType>::operator-=
 (
-    const linearSystem<SType2,Type,MeshType>& sys
+    const linearSystem<ST2,Type,MeshType>& sys
 )
 {
     this->A() -= sys.A();
@@ -815,10 +815,10 @@ void linearSystem<SType,Type,MeshType>::operator-=
 }
 
 template<class SType, class Type, class MeshType>
-template<class SType2>
+template<class ST2>
 void linearSystem<SType,Type,MeshType>::operator-=
 (
-    const tmp<linearSystem<SType2,Type,MeshType>>& tSys
+    const tmp<linearSystem<ST2,Type,MeshType>>& tSys
 )
 {
     *this -= tSys();

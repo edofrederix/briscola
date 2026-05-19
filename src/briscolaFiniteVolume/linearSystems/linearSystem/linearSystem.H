@@ -330,25 +330,25 @@ public:
 
     // Mixed type operations
 
-    template<class Type2> void operator+=(const Type2&);
-    template<class Type2> void operator-=(const Type2&);
+    template<class T2> void operator+=(const T2&);
+    template<class T2> void operator-=(const T2&);
 
     // Mixed stencil type operations
 
-    template<class SType2>
-    void operator=(const linearSystem<SType2,Type,MeshType>&);
-    template<class SType2>
-    void operator=(const tmp<linearSystem<SType2,Type,MeshType>>&);
+    template<class ST2>
+    void operator=(const linearSystem<ST2,Type,MeshType>&);
+    template<class ST2>
+    void operator=(const tmp<linearSystem<ST2,Type,MeshType>>&);
 
-    template<class SType2>
-    void operator+=(const linearSystem<SType2,Type,MeshType>&);
-    template<class SType2>
-    void operator+=(const tmp<linearSystem<SType2,Type,MeshType>>&);
+    template<class ST2>
+    void operator+=(const linearSystem<ST2,Type,MeshType>&);
+    template<class ST2>
+    void operator+=(const tmp<linearSystem<ST2,Type,MeshType>>&);
 
-    template<class SType2>
-    void operator-=(const linearSystem<SType2,Type,MeshType>&);
-    template<class SType2>
-    void operator-=(const tmp<linearSystem<SType2,Type,MeshType>>&);
+    template<class ST2>
+    void operator-=(const linearSystem<ST2,Type,MeshType>&);
+    template<class ST2>
+    void operator-=(const tmp<linearSystem<ST2,Type,MeshType>>&);
 
     // Befriend solver
     template<class, class, class>

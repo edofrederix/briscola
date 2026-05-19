@@ -428,51 +428,34 @@ public:
     void operator-=(const meshField<Type,MeshType>&);
     void operator-=(const tmp<meshField<Type,MeshType>>&);
 
-    void operator*=(const label&);
-    void operator*=(const scalar&);
-    void operator*=(const scalarList&);
-    void operator*=(const meshField<label,MeshType>&);
-    void operator*=(const meshField<scalar,MeshType>&);
-    void operator*=(const tmp<meshField<label,MeshType>>&);
-    void operator*=(const tmp<meshField<scalar,MeshType>>&);
-
-    void operator/=(const label&);
-    void operator/=(const scalar&);
-    void operator/=(const scalarList&);
-    void operator/=(const meshField<label,MeshType>&);
-    void operator/=(const meshField<scalar,MeshType>&);
-    void operator/=(const tmp<meshField<label,MeshType>>&);
-    void operator/=(const tmp<meshField<scalar,MeshType>>&);
-
     // Templated functions are needed for types which can be cast to another
     // type
 
-    template<class Type2>
-    void operator=(const Type2&);
-    template<class Type2>
-    void operator=(const List<Type2>&);
-    template<class Type2>
-    void operator=(const meshField<Type2,MeshType>&);
-    template<class Type2>
-    void operator=(const tmp<meshField<Type2,MeshType>>&);
+    template<class T2>
+    void operator=(const T2&);
+    template<class T2> void operator=(const List<T2>&);
+    template<class T2> void operator=(const meshField<T2,MeshType>&);
+    template<class T2> void operator=(const tmp<meshField<T2,MeshType>>&);
 
-    template<class Type2>
-    void operator+=(const Type2&);
-    template<class Type2>
-    void operator+=(const List<Type2>&);
-    template<class Type2>
-    void operator+=(const meshField<Type2,MeshType>&);
-    template<class Type2>
-    void operator+=(const tmp<meshField<Type2,MeshType>>&);
+    template<class T2> void operator+=(const T2&);
+    template<class T2> void operator+=(const List<T2>&);
+    template<class T2> void operator+=(const meshField<T2,MeshType>&);
+    template<class T2> void operator+=(const tmp<meshField<T2,MeshType>>&);
 
-    template<class Type2>
-    void operator-=(const Type2&);
-    template<class Type2>
-    void operator-=(const List<Type2>&);
-    template<class Type2>
-    void operator-=(const meshField<Type2,MeshType>&);
-    template<class Type2>
-    void operator-=(const tmp<meshField<Type2,MeshType>>&);
+    template<class T2> void operator-=(const T2&);
+    template<class T2> void operator-=(const List<T2>&);
+    template<class T2> void operator-=(const meshField<T2,MeshType>&);
+    template<class T2> void operator-=(const tmp<meshField<T2,MeshType>>&);
+
+    template<class T2> void operator*=(const T2&);
+    template<class T2> void operator*=(const List<T2>&);
+    template<class T2> void operator*=(const meshField<T2,MeshType>&);
+    template<class T2> void operator*=(const tmp<meshField<T2,MeshType>>&);
+
+    template<class T2> void operator/=(const T2&);
+    template<class T2> void operator/=(const List<T2>&);
+    template<class T2> void operator/=(const meshField<T2,MeshType>&);
+    template<class T2> void operator/=(const tmp<meshField<T2,MeshType>>&);
 
     // Befriend linear system
     template<class SType, class, class>

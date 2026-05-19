@@ -675,167 +675,29 @@ void meshField<Type,MeshType>::operator-=
         tF.clear();
 }
 
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator*=(const label& v)
-{
-    forAll(*this, l)
-        listType::operator[](l) *= v;
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator*=(const scalar& v)
-{
-    forAll(*this, l)
-        listType::operator[](l) *= v;
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator*=(const scalarList& v)
-{
-    forAll(*this, l)
-        listType::operator[](l) *= v;
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator*=(const meshField<label,MeshType>& F)
-{
-    if (F.shallow())
-        makeShallow();
-
-    forAll(*this, l)
-        listType::operator[](l) *= F[l];
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator*=(const meshField<scalar,MeshType>& F)
-{
-    if (F.shallow())
-        makeShallow();
-
-    forAll(*this, l)
-        listType::operator[](l) *= F[l];
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator*=
-(
-    const tmp<meshField<label,MeshType>>& tF
-)
-{
-    if (tF->shallow())
-        makeShallow();
-
-    *this *= tF();
-    if (tF.isTmp())
-        tF.clear();
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator*=
-(
-    const tmp<meshField<scalar,MeshType>>& tF
-)
-{
-    if (tF->shallow())
-        makeShallow();
-
-    *this *= tF();
-    if (tF.isTmp())
-        tF.clear();
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator/=(const label& v)
-{
-    forAll(*this, l)
-        listType::operator[](l) /= v;
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator/=(const scalar& v)
-{
-    forAll(*this, l)
-        listType::operator[](l) /= v;
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator/=(const scalarList& v)
-{
-    forAll(*this, l)
-        listType::operator[](l) /= v;
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator/=(const meshField<label,MeshType>& F)
-{
-    if (F.shallow())
-        makeShallow();
-
-    forAll(*this, l)
-        listType::operator[](l) /= F[l];
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator/=(const meshField<scalar,MeshType>& F)
-{
-    if (F.shallow())
-        makeShallow();
-
-    forAll(*this, l)
-        listType::operator[](l) /= F[l];
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator/=
-(
-    const tmp<meshField<label,MeshType>>& tF
-)
-{
-    if (tF->shallow())
-        makeShallow();
-
-    *this /= tF();
-    if (tF.isTmp())
-        tF.clear();
-}
-
-template<class Type, class MeshType>
-void meshField<Type,MeshType>::operator/=
-(
-    const tmp<meshField<scalar,MeshType>>& tF
-)
-{
-    if (tF->shallow())
-        makeShallow();
-
-    *this /= tF();
-    if (tF.isTmp())
-        tF.clear();
-}
-
 // Operators with different types
 
 template<class Type, class MeshType>
-template<class Type2>
-void meshField<Type,MeshType>::operator=(const Type2& v)
+template<class T2>
+void meshField<Type,MeshType>::operator=(const T2& v)
 {
     forAll(*this, l)
         listType::operator[](l) = v;
 }
 
 template<class Type, class MeshType>
-template<class Type2>
-void meshField<Type,MeshType>::operator=(const List<Type2>& v)
+template<class T2>
+void meshField<Type,MeshType>::operator=(const List<T2>& v)
 {
     forAll(*this, l)
         listType::operator[](l) = v;
 }
 
 template<class Type, class MeshType>
-template<class Type2>
+template<class T2>
 void meshField<Type,MeshType>::operator=
 (
-    const meshField<Type2,MeshType>& F
+    const meshField<T2,MeshType>& F
 )
 {
     this->make(F.deep());
@@ -844,10 +706,10 @@ void meshField<Type,MeshType>::operator=
 }
 
 template<class Type, class MeshType>
-template<class Type2>
+template<class T2>
 void meshField<Type,MeshType>::operator=
 (
-    const tmp<meshField<Type2,MeshType>>& tF
+    const tmp<meshField<T2,MeshType>>& tF
 )
 {
     this->make(tF->deep());
@@ -857,26 +719,26 @@ void meshField<Type,MeshType>::operator=
 }
 
 template<class Type, class MeshType>
-template<class Type2>
-void meshField<Type,MeshType>::operator+=(const Type2& v)
+template<class T2>
+void meshField<Type,MeshType>::operator+=(const T2& v)
 {
     forAll(*this, l)
         listType::operator[](l) += v;
 }
 
 template<class Type, class MeshType>
-template<class Type2>
-void meshField<Type,MeshType>::operator+=(const List<Type2>& v)
+template<class T2>
+void meshField<Type,MeshType>::operator+=(const List<T2>& v)
 {
     forAll(*this, l)
         listType::operator[](l) += v;
 }
 
 template<class Type, class MeshType>
-template<class Type2>
+template<class T2>
 void meshField<Type,MeshType>::operator+=
 (
-    const meshField<Type2,MeshType>& F
+    const meshField<T2,MeshType>& F
 )
 {
     if (F.shallow())
@@ -887,10 +749,10 @@ void meshField<Type,MeshType>::operator+=
 }
 
 template<class Type, class MeshType>
-template<class Type2>
+template<class T2>
 void meshField<Type,MeshType>::operator+=
 (
-    const tmp<meshField<Type2,MeshType>>& tF
+    const tmp<meshField<T2,MeshType>>& tF
 )
 {
     if (tF->shallow())
@@ -902,26 +764,26 @@ void meshField<Type,MeshType>::operator+=
 }
 
 template<class Type, class MeshType>
-template<class Type2>
-void meshField<Type,MeshType>::operator-=(const Type2& v)
+template<class T2>
+void meshField<Type,MeshType>::operator-=(const T2& v)
 {
     forAll(*this, l)
         listType::operator[](l) -= v;
 }
 
 template<class Type, class MeshType>
-template<class Type2>
-void meshField<Type,MeshType>::operator-=(const List<Type2>& v)
+template<class T2>
+void meshField<Type,MeshType>::operator-=(const List<T2>& v)
 {
     forAll(*this, l)
         listType::operator[](l) -= v;
 }
 
 template<class Type, class MeshType>
-template<class Type2>
+template<class T2>
 void meshField<Type,MeshType>::operator-=
 (
-    const meshField<Type2,MeshType>& F
+    const meshField<T2,MeshType>& F
 )
 {
     if (F.shallow())
@@ -932,16 +794,107 @@ void meshField<Type,MeshType>::operator-=
 }
 
 template<class Type, class MeshType>
-template<class Type2>
+template<class T2>
 void meshField<Type,MeshType>::operator-=
 (
-    const tmp<meshField<Type2,MeshType>>& tF
+    const tmp<meshField<T2,MeshType>>& tF
 )
 {
     if (tF->shallow())
         makeShallow();
 
     *this -= tF();
+    if (tF.isTmp())
+        tF.clear();
+}
+
+template<class Type, class MeshType>
+template<class T2>
+void meshField<Type,MeshType>::operator*=(const T2& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) *= v;
+}
+
+template<class Type, class MeshType>
+template<class T2>
+void meshField<Type,MeshType>::operator*=(const List<T2>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) *= v;
+}
+
+
+template<class Type, class MeshType>
+template<class T2>
+void meshField<Type,MeshType>::operator*=
+(
+    const meshField<T2,MeshType>& F
+)
+{
+    if (F.shallow())
+        makeShallow();
+
+    forAll(*this, l)
+        listType::operator[](l) *= F[l];
+}
+
+template<class Type, class MeshType>
+template<class T2>
+void meshField<Type,MeshType>::operator*=
+(
+    const tmp<meshField<T2,MeshType>>& tF
+)
+{
+    if (tF->shallow())
+        makeShallow();
+
+    *this *= tF();
+    if (tF.isTmp())
+        tF.clear();
+}
+
+template<class Type, class MeshType>
+template<class T2>
+void meshField<Type,MeshType>::operator/=(const T2& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) /= v;
+}
+
+template<class Type, class MeshType>
+template<class T2>
+void meshField<Type,MeshType>::operator/=(const List<T2>& v)
+{
+    forAll(*this, l)
+        listType::operator[](l) /= v;
+}
+
+template<class Type, class MeshType>
+template<class T2>
+void meshField<Type,MeshType>::operator/=
+(
+    const meshField<T2,MeshType>& F
+)
+{
+    if (F.shallow())
+        makeShallow();
+
+    forAll(*this, l)
+        listType::operator[](l) /= F[l];
+}
+
+template<class Type, class MeshType>
+template<class T2>
+void meshField<Type,MeshType>::operator/=
+(
+    const tmp<meshField<T2,MeshType>>& tF
+)
+{
+    if (tF->shallow())
+        makeShallow();
+
+    *this /= tF();
     if (tF.isTmp())
         tF.clear();
 }

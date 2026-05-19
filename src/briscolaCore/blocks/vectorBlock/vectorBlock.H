@@ -1,8 +1,11 @@
 #ifndef vectorBlock_H
 #define vectorBlock_H
 
-#include "scalarBlock.H"
+#include "block.H"
 #include "vector.H"
+
+#define TEMPLATE
+#include "blockFunctionsM.H"
 
 namespace Foam
 {
@@ -10,10 +13,10 @@ namespace Foam
 namespace briscola
 {
 
-typedef block<vector> vectorBlock;
-
 }
 
 }
+
+#include "undefBlockFunctionsM.H"
 
 #endif

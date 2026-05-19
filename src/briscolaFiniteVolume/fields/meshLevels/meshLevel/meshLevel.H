@@ -61,8 +61,8 @@ private:
     void transfer(meshLevel<Type,MeshType>&);
 
     // Check if the given mesh level matches our level
-    template<class Type2>
-    void checkLevel(const meshLevel<Type2,MeshType>& L) const
+    template<class T2>
+    void checkLevel(const meshLevel<T2,MeshType>& L) const
     {
         if (L.levelNum() != l_)
             FatalErrorInFunction
@@ -321,51 +321,33 @@ public:
     void operator-=(const meshLevel<Type,MeshType>&);
     void operator-=(const tmp<meshLevel<Type,MeshType>>&);
 
-    void operator*=(const label&);
-    void operator*=(const scalar&);
-    void operator*=(const List<scalar>&);
-    void operator*=(const meshLevel<label,MeshType>&);
-    void operator*=(const meshLevel<scalar,MeshType>&);
-    void operator*=(const tmp<meshLevel<label,MeshType>>&);
-    void operator*=(const tmp<meshLevel<scalar,MeshType>>&);
-
-    void operator/=(const label&);
-    void operator/=(const scalar&);
-    void operator/=(const List<scalar>&);
-    void operator/=(const meshLevel<label,MeshType>&);
-    void operator/=(const meshLevel<scalar,MeshType>&);
-    void operator/=(const tmp<meshLevel<label,MeshType>>&);
-    void operator/=(const tmp<meshLevel<scalar,MeshType>>&);
-
     // Templated functions are needed for types which can be cast to another
     // type
 
-    template<class Type2>
-    void operator=(const Type2&);
-    template<class Type2>
-    void operator=(const List<Type2>&);
-    template<class Type2>
-    void operator=(const meshLevel<Type2,MeshType>&);
-    template<class Type2>
-    void operator=(const tmp<meshLevel<Type2,MeshType>>&);
+    template<class T2> void operator=(const T2&);
+    template<class T2> void operator=(const List<T2>&);
+    template<class T2> void operator=(const meshLevel<T2,MeshType>&);
+    template<class T2> void operator=(const tmp<meshLevel<T2,MeshType>>&);
 
-    template<class Type2>
-    void operator+=(const Type2&);
-    template<class Type2>
-    void operator+=(const List<Type2>&);
-    template<class Type2>
-    void operator+=(const meshLevel<Type2,MeshType>&);
-    template<class Type2>
-    void operator+=(const tmp<meshLevel<Type2,MeshType>>&);
+    template<class T2> void operator+=(const T2&);
+    template<class T2> void operator+=(const List<T2>&);
+    template<class T2> void operator+=(const meshLevel<T2,MeshType>&);
+    template<class T2> void operator+=(const tmp<meshLevel<T2,MeshType>>&);
 
-    template<class Type2>
-    void operator-=(const Type2&);
-    template<class Type2>
-    void operator-=(const List<Type2>&);
-    template<class Type2>
-    void operator-=(const meshLevel<Type2,MeshType>&);
-    template<class Type2>
-    void operator-=(const tmp<meshLevel<Type2,MeshType>>&);
+    template<class T2> void operator-=(const T2&);
+    template<class T2> void operator-=(const List<T2>&);
+    template<class T2> void operator-=(const meshLevel<T2,MeshType>&);
+    template<class T2> void operator-=(const tmp<meshLevel<T2,MeshType>>&);
+
+    template<class T2> void operator*=(const T2&);
+    template<class T2> void operator*=(const List<T2>&);
+    template<class T2> void operator*=(const meshLevel<T2,MeshType>&);
+    template<class T2> void operator*=(const tmp<meshLevel<T2,MeshType>>&);
+
+    template<class T2> void operator/=(const T2&);
+    template<class T2> void operator/=(const List<T2>&);
+    template<class T2> void operator/=(const meshLevel<T2,MeshType>&);
+    template<class T2> void operator/=(const tmp<meshLevel<T2,MeshType>>&);
 
     // Allow the parent field to make changes to private data
     friend class meshField<Type,MeshType>;
