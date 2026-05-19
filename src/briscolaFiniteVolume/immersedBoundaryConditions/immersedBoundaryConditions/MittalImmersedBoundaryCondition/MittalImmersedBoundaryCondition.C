@@ -29,7 +29,7 @@ MittalImmersedBoundaryCondition<Type,MeshType>::MittalImmersedBoundaryCondition
     // Set mirror points
 
     const meshField<vector,MeshType>& mps = this->ib_.mirrorPoints();
-    const meshField<label,MeshType>& mask = this->forcingMask();
+    const meshField<scalar,MeshType>& mask = this->forcingMask();
 
     forAll(mask, l)
     {

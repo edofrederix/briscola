@@ -38,7 +38,7 @@ protected:
     const immersedBoundary<MeshType>& ib_;
 
     // Pointer to the forcing mask
-    const meshField<label,MeshType>* forcingMaskPtr_;
+    const meshField<scalar,MeshType>* forcingMaskPtr_;
 
     // Copy of the dictionary
     dictionary dict_;
@@ -81,7 +81,7 @@ public:
     (
         const meshField<Type,MeshType>& field,
         const immersedBoundary<MeshType>& ib,
-        const meshField<label,MeshType>* maskPtr
+        const meshField<scalar,MeshType>* maskPtr
     );
 
     // Copy constructor
@@ -136,13 +136,13 @@ public:
     }
 
     // Const access to the forcing mask pointer
-    inline const meshField<label,MeshType>* forcingMaskPtr() const
+    inline const meshField<scalar,MeshType>* forcingMaskPtr() const
     {
         return forcingMaskPtr_;
     }
 
     // Const access to the forcing mask (unchecked!)
-    inline const meshField<label,MeshType>& forcingMask() const
+    inline const meshField<scalar,MeshType>& forcingMask() const
     {
         return *forcingMaskPtr_;
     }

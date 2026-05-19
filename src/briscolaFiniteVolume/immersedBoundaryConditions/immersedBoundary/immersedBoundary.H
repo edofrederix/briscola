@@ -41,15 +41,15 @@ protected:
 
     // The IB mask is equal to 0 in cell centers outside the IB, and equal to 1
     // in cell centers inside the IB.
-    meshField<label,MeshType> mask_;
+    meshField<scalar,MeshType> mask_;
 
     // The ghost cell mask is equal to 1 in IB cells with at least one
     // neighboring fluid cell and 0 in other cells
-    meshField<label,MeshType> ghostMask_;
+    meshField<scalar,MeshType> ghostMask_;
 
     // The wall adjacent mask is equal to 1 in fluid cells with at least one
     // neighboring cell in the IB, and 0 in other cells
-    meshField<label,MeshType> wallAdjMask_;
+    meshField<scalar,MeshType> wallAdjMask_;
 
     // This wall distance field stores the wall distances from IB-adjacent cells
     // to the IB as faceScalars
@@ -115,17 +115,17 @@ public:
 
     // Access to the immersed boundary fields
 
-    inline const meshField<label,MeshType>& mask() const
+    inline const meshField<scalar,MeshType>& mask() const
     {
         return mask_;
     }
 
-    inline const meshField<label,MeshType>& ghostMask() const
+    inline const meshField<scalar,MeshType>& ghostMask() const
     {
         return ghostMask_;
     }
 
-    inline const meshField<label,MeshType>& wallAdjMask() const
+    inline const meshField<scalar,MeshType>& wallAdjMask() const
     {
         return wallAdjMask_;
     }

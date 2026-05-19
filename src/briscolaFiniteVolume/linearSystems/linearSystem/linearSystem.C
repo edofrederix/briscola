@@ -347,7 +347,7 @@ void linearSystem<SType,Type,MeshType>::setForcingMask()
     {
         forcingMask_.set
         (
-            meshField<label,MeshType>::New
+            meshField<scalar,MeshType>::New
             (
                 IOobject::groupName(xPtr_->name(), "forcingMask"),
                 fvMsh_
@@ -356,7 +356,7 @@ void linearSystem<SType,Type,MeshType>::setForcingMask()
 
         forcingMask_->makeDeep();
 
-        meshField<label,MeshType>& f = forcingMask_();
+        meshField<scalar,MeshType>& f = forcingMask_();
 
         f = Zero;
 
@@ -366,7 +366,7 @@ void linearSystem<SType,Type,MeshType>::setForcingMask()
                 if (xPtr_->immersedBoundaryConditions()[i].forcingMaskPtr())
                     f += xPtr_->immersedBoundaryConditions()[i].forcingMask();
 
-            f = min(f,1);
+            f = min(f,1.0);
             f.correctBoundaryConditions();
         }
     }

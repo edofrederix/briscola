@@ -30,7 +30,7 @@ FadlunDirichletImmersedBoundaryCondition
 
     // Check for closely packed shapes
 
-    const meshField<label,MeshType>& mask = this->forcingMask();
+    const meshField<scalar,MeshType>& mask = this->forcingMask();
 
     forAllCells(mask,l,d,i,j,k)
     if (mask(l,d,i,j,k))
@@ -100,7 +100,7 @@ void FadlunDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
 
     meshDirection<Type,MeshType>& x = this->field_[l][d];
 
-    const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
+    const meshDirection<scalar,MeshType>& mask = this->forcingMask()[l][d];
     const meshDirection<faceScalar,MeshType>& y = this->ib_.wallDistAdj()[l][d];
 
     forAllCells(x,i,j,k)
