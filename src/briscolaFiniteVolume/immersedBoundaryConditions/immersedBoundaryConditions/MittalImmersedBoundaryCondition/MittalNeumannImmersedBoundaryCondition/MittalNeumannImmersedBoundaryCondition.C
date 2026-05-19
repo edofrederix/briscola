@@ -64,7 +64,7 @@ void MittalNeumannImmersedBoundaryCondition<Type,MeshType>::evaluate
 
     meshDirection<Type,MeshType>& x = this->field_[l][d];
 
-    const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
+    const meshDirection<scalar,MeshType>& mask = this->forcingMask()[l][d];
     const meshDirection<vector,MeshType>& cc =
         this->fvMsh_.template metrics<MeshType>().cellCenters()[l][d];
 

@@ -53,7 +53,7 @@ private:
     bool eliminated_;
 
     // IBM forcing mask
-    autoPtr<meshField<label,MeshType>> forcingMask_;
+    autoPtr<meshField<scalar,MeshType>> forcingMask_;
 
     // List of eliminated boundary masks, for all levels
     List<faceLabel> eliminatedBoundaryMasks_;
@@ -192,13 +192,13 @@ public:
     inline const meshField<Type,MeshType>& b() const { return b_; }
 
     // Return the IBM forcing mask
-    inline meshField<label,MeshType>& forcingMask()
+    inline meshField<scalar,MeshType>& forcingMask()
     {
         return forcingMask_();
     }
 
     // Return const access to the IBM forcing mask
-    inline const meshField<label,MeshType>& forcingMask() const
+    inline const meshField<scalar,MeshType>& forcingMask() const
     {
         return forcingMask_();
     }
@@ -330,25 +330,25 @@ public:
 
     // Mixed type operations
 
-    template<class Type2> void operator+=(const Type2&);
-    template<class Type2> void operator-=(const Type2&);
+    template<class T2> void operator+=(const T2&);
+    template<class T2> void operator-=(const T2&);
 
     // Mixed stencil type operations
 
-    template<class SType2>
-    void operator=(const linearSystem<SType2,Type,MeshType>&);
-    template<class SType2>
-    void operator=(const tmp<linearSystem<SType2,Type,MeshType>>&);
+    template<class ST2>
+    void operator=(const linearSystem<ST2,Type,MeshType>&);
+    template<class ST2>
+    void operator=(const tmp<linearSystem<ST2,Type,MeshType>>&);
 
-    template<class SType2>
-    void operator+=(const linearSystem<SType2,Type,MeshType>&);
-    template<class SType2>
-    void operator+=(const tmp<linearSystem<SType2,Type,MeshType>>&);
+    template<class ST2>
+    void operator+=(const linearSystem<ST2,Type,MeshType>&);
+    template<class ST2>
+    void operator+=(const tmp<linearSystem<ST2,Type,MeshType>>&);
 
-    template<class SType2>
-    void operator-=(const linearSystem<SType2,Type,MeshType>&);
-    template<class SType2>
-    void operator-=(const tmp<linearSystem<SType2,Type,MeshType>>&);
+    template<class ST2>
+    void operator-=(const linearSystem<ST2,Type,MeshType>&);
+    template<class ST2>
+    void operator-=(const tmp<linearSystem<ST2,Type,MeshType>>&);
 
     // Befriend solver
     template<class, class, class>

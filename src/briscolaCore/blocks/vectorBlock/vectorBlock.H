@@ -19,8 +19,4 @@ namespace briscola
 
 #include "undefBlockFunctionsM.H"
 
-#ifdef NoRepository
-    #include "vectorBlock.C"
-#endif
-
 #endif

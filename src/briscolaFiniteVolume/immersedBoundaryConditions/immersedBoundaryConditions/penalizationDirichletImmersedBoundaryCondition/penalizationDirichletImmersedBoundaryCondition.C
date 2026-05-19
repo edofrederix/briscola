@@ -64,7 +64,7 @@ void penalizationDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
     const scalar omega = this->omega_;
 
     meshDirection<Type,MeshType>& x = this->field_[l][d];
-    const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
+    const meshDirection<scalar,MeshType>& mask = this->forcingMask()[l][d];
 
     forAllCells(x,i,j,k)
         if (mask(i,j,k))

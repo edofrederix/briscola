@@ -35,7 +35,7 @@ void immersedBoundary<MeshType>::setMasks()
                 const labelVector fo = faceOffsets[f];
 
                 if (!this->isInside(cc[l][d](ijk+fo)))
-                    ghostMask_(l,d,ijk) = 1;
+                    ghostMask_(l,d,ijk) = 1.0;
             }
         }
         else
@@ -45,7 +45,7 @@ void immersedBoundary<MeshType>::setMasks()
                 const labelVector fo = faceOffsets[f];
 
                 if (this->isInside(cc[l][d](ijk+fo)))
-                    wallAdjMask_(l,d,i,j,k) = 1;
+                    wallAdjMask_(l,d,i,j,k) = 1.0;
             }
         }
     }
@@ -74,7 +74,7 @@ void immersedBoundary<MeshType>::setMasks()
                 {
                     if (this->isInside(cc(l,d,ijk+bo)))
                     {
-                        mask_(l,d,ijk+bo) = 1;
+                        mask_(l,d,ijk+bo) = 1.0;
                     }
                 }
             }

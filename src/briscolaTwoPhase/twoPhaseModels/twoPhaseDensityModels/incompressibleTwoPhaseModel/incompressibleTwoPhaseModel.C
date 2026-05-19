@@ -27,10 +27,10 @@ void incompressibleTwoPhaseModel<colocated>::correctMeanRho()
     const colocatedScalarDirection& cv =
         this->fvMsh_.template metrics<colocated>().cellVolumes()[0][0];
 
-    const tmp<colocatedLabelField> tMask =
+    const tmp<colocatedScalarField> tMask =
         this->fvMsh_.template metrics<colocated>().fluidMask();
 
-    const colocatedLabelDirection& mask = tMask()[0][0];
+    const colocatedScalarDirection& mask = tMask()[0][0];
 
     const colocatedScalarDirection& rho = this->rho_[0][0];
 
@@ -58,10 +58,10 @@ void incompressibleTwoPhaseModel<staggered>::correctMeanRho()
     const colocatedScalarDirection& cv =
         this->fvMsh_.template metrics<colocated>().cellVolumes()[0][0];
 
-    const tmp<colocatedLabelField> tMask =
+    const tmp<colocatedScalarField> tMask =
         this->fvMsh_.template metrics<colocated>().fluidMask();
 
-    const colocatedLabelDirection& mask = tMask()[0][0];
+    const colocatedScalarDirection& mask = tMask()[0][0];
 
     this->rhoMean_ = gSum(mask*tRho()*cv)/gSum(mask*cv);
 }

@@ -42,7 +42,7 @@ tmp<colocatedScalarField> ibmCorr
 
     if (massSource)
     {
-        meshField<label,staggered> ghostMask
+        meshField<scalar,staggered> ghostMask
         (
             "massSourceGhostMask",
             fvMsh
@@ -59,7 +59,7 @@ tmp<colocatedScalarField> ibmCorr
             {
                 if (b.ghostMask()(l,d,i,j,k))
                 {
-                    ghostMask(l,d,i,j,k) = 1;
+                    ghostMask(l,d,i,j,k) = 1.0;
                 }
             }
         }

@@ -3,7 +3,9 @@
 
 #include "vector.H"
 #include "meshDirection.H"
-#include "scalarMeshDirection.H"
+
+#define TEMPLATE template<class MeshType>
+#include "meshDirectionFunctionsM.H"
 
 namespace Foam
 {
@@ -19,6 +21,8 @@ namespace fv
 }
 
 }
+
+#include "undefBlockFunctionsM.H"
 
 #ifdef NoRepository
     #include "vectorMeshDirection.C"

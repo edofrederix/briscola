@@ -434,34 +434,28 @@ public:
     inline void operator-=(const block<Type,P>&);
     inline void operator-=(const tmp<block<Type,P>>&);
 
-    inline void operator*=(const label&);
-    inline void operator*=(const scalar&);
-    inline void operator*=(const block<label,P>&);
-    inline void operator*=(const block<scalar,P>&);
-    inline void operator*=(const tmp<block<label,P>>&);
-    inline void operator*=(const tmp<block<scalar,P>>&);
-
-    inline void operator/=(const label&);
-    inline void operator/=(const scalar&);
-    inline void operator/=(const block<label,P>&);
-    inline void operator/=(const block<scalar,P>&);
-    inline void operator/=(const tmp<block<label,P>>&);
-    inline void operator/=(const tmp<block<scalar,P>>&);
-
     // Templated functions are needed for types which can be cast to another
     // type
 
-    template<class Type2> inline void operator=(const Type2&);
-    template<class Type2> inline void operator=(const block<Type2,P>&);
-    template<class Type2> inline void operator=(const tmp<block<Type2,P>>&);
+    template<class T2> inline void operator=(const T2&);
+    template<class T2> inline void operator=(const block<T2,P>&);
+    template<class T2> inline void operator=(const tmp<block<T2,P>>&);
 
-    template<class Type2> inline void operator+=(const Type2&);
-    template<class Type2> inline void operator+=(const block<Type2,P>&);
-    template<class Type2> inline void operator+=(const tmp<block<Type2,P>>&);
+    template<class T2> inline void operator+=(const T2&);
+    template<class T2> inline void operator+=(const block<T2,P>&);
+    template<class T2> inline void operator+=(const tmp<block<T2,P>>&);
 
-    template<class Type2> inline void operator-=(const Type2&);
-    template<class Type2> inline void operator-=(const block<Type2,P>&);
-    template<class Type2> inline void operator-=(const tmp<block<Type2,P>>&);
+    template<class T2> inline void operator-=(const T2&);
+    template<class T2> inline void operator-=(const block<T2,P>&);
+    template<class T2> inline void operator-=(const tmp<block<T2,P>>&);
+
+    template<class T2> inline void operator*=(const T2&);
+    template<class T2> inline void operator*=(const block<T2,P>&);
+    template<class T2> inline void operator*=(const tmp<block<T2,P>>&);
+
+    template<class T2> inline void operator/=(const T2&);
+    template<class T2> inline void operator/=(const block<T2,P>&);
+    template<class T2> inline void operator/=(const tmp<block<T2,P>>&);
 
     friend Istream& operator>><Type,P>(Istream&, block<Type,P>&);
     friend Ostream& operator<<<Type,P>(Ostream&, const block<Type,P>&);

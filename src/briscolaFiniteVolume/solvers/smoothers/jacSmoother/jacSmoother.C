@@ -35,7 +35,7 @@ inline void jacSmoother<SType,Type,MeshType>::jacSmoother::Sweep
     Type* const __restrict__ x_arr = B.begin();
 
     const Type* const __restrict__ b_arr = sys.b()[l][d].B().begin();
-    const label* const __restrict__ f_arr = sys.forcingMask()[l][d].B().begin();
+    const scalar* const __restrict__ f_arr = sys.forcingMask()[l][d].B().begin();
 
     // Reinterpret the matrix as a contiguous array of scalars
 
@@ -147,7 +147,7 @@ inline void jacSmoother<SType,Type,MeshType>::jacSmoother::SweepBoundary
     Type* const __restrict__ x_arr = B.begin();
 
     const Type* const __restrict__ b_arr = sys.b()[l][d].B().begin();
-    const label* const __restrict__ f_arr = sys.forcingMask()[l][d].B().begin();
+    const scalar* const __restrict__ f_arr = sys.forcingMask()[l][d].B().begin();
 
     // Reinterpret the matrix as a contiguous array of scalars
 

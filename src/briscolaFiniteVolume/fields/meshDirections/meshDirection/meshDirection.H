@@ -58,8 +58,8 @@ private:
     void transfer(meshDirection<Type,MeshType>& D);
 
     // Check if the given mesh direction matches our direction and level
-    template<class Type2>
-    void checkDirection(const meshDirection<Type2,MeshType>& D) const
+    template<class T2>
+    void checkDirection(const meshDirection<T2,MeshType>& D) const
     {
         if (D.levelNum() != l_ || D.directionNum() != d_)
             FatalErrorInFunction
@@ -386,43 +386,28 @@ public:
     void operator-=(const meshDirection<Type,MeshType>&);
     void operator-=(const tmp<meshDirection<Type,MeshType>>&);
 
-    void operator*=(const label&);
-    void operator*=(const scalar&);
-    void operator*=(const meshDirection<label,MeshType>&);
-    void operator*=(const meshDirection<scalar,MeshType>&);
-    void operator*=(const tmp<meshDirection<label,MeshType>>&);
-    void operator*=(const tmp<meshDirection<scalar,MeshType>>&);
-
-    void operator/=(const label&);
-    void operator/=(const scalar&);
-    void operator/=(const meshDirection<label,MeshType>&);
-    void operator/=(const meshDirection<scalar,MeshType>&);
-    void operator/=(const tmp<meshDirection<label,MeshType>>&);
-    void operator/=(const tmp<meshDirection<scalar,MeshType>>&);
-
     // Templated functions are needed for types which can be cast to another
     // type
 
-    template<class Type2>
-    void operator=(const Type2&);
-    template<class Type2>
-    void operator=(const meshDirection<Type2,MeshType>&);
-    template<class Type2>
-    void operator=(const tmp<meshDirection<Type2,MeshType>>&);
+    template<class T2> void operator=(const T2&);
+    template<class T2> void operator=(const meshDirection<T2,MeshType>&);
+    template<class T2> void operator=(const tmp<meshDirection<T2,MeshType>>&);
 
-    template<class Type2>
-    void operator+=(const Type2&);
-    template<class Type2>
-    void operator+=(const meshDirection<Type2,MeshType>&);
-    template<class Type2>
-    void operator+=(const tmp<meshDirection<Type2,MeshType>>&);
+    template<class T2> void operator+=(const T2&);
+    template<class T2> void operator+=(const meshDirection<T2,MeshType>&);
+    template<class T2> void operator+=(const tmp<meshDirection<T2,MeshType>>&);
 
-    template<class Type2>
-    void operator-=(const Type2&);
-    template<class Type2>
-    void operator-=(const meshDirection<Type2,MeshType>&);
-    template<class Type2>
-    void operator-=(const tmp<meshDirection<Type2,MeshType>>&);
+    template<class T2> void operator-=(const T2&);
+    template<class T2> void operator-=(const meshDirection<T2,MeshType>&);
+    template<class T2> void operator-=(const tmp<meshDirection<T2,MeshType>>&);
+
+    template<class T2> void operator*=(const T2&);
+    template<class T2> void operator*=(const meshDirection<T2,MeshType>&);
+    template<class T2> void operator*=(const tmp<meshDirection<T2,MeshType>>&);
+
+    template<class T2> void operator/=(const T2&);
+    template<class T2> void operator/=(const meshDirection<T2,MeshType>&);
+    template<class T2> void operator/=(const tmp<meshDirection<T2,MeshType>>&);
 
     // Allow the parent level to make changes to private data
     friend class meshLevel<Type,MeshType>;

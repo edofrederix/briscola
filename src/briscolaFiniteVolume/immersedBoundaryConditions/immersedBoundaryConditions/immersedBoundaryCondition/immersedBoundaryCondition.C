@@ -44,7 +44,7 @@ immersedBoundaryCondition<Type,MeshType>::immersedBoundaryCondition
 (
     const meshField<Type,MeshType>& field,
     const immersedBoundary<MeshType>& ib,
-    const meshField<label,MeshType>* maskPtr
+    const meshField<scalar,MeshType>* maskPtr
 )
 :
     refCount(),

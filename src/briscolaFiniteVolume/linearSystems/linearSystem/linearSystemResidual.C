@@ -33,7 +33,7 @@ void linearSystem<SType,Type,MeshType>::Residual
 
     const Type* const __restrict__ x_arr = this->x()[l][d].B().begin();
     const Type* const __restrict__ b_arr = this->b()[l][d].B().begin();
-    const label* const __restrict__ f_arr =
+    const scalar* const __restrict__ f_arr =
         this->forcingMask()[l][d].B().begin();
 
     // Reinterpret the matrix as a contiguous array of scalars
@@ -152,7 +152,7 @@ void linearSystem<SType,Type,MeshType>::ResidualBoundary
 
     const Type* const __restrict__ x_arr = this->x()[l][d].B().begin();
     const Type* const __restrict__ b_arr = this->b()[l][d].B().begin();
-    const label* const __restrict__ f_arr =
+    const scalar* const __restrict__ f_arr =
         this->forcingMask()[l][d].B().begin();
 
     // Reinterpret the matrix as a contiguous array of scalars

@@ -1,5 +1,8 @@
 #include "vectorMeshDirection.H"
 
+#define TEMPLATE template<class MeshType>
+#include "meshDirectionFunctionsM.C"
+
 namespace Foam
 {
 
@@ -14,3 +17,5 @@ namespace fv
 }
 
 }
+
+#include "undefBlockFunctionsM.H"

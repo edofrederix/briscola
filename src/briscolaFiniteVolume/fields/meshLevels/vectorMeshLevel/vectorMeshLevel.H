@@ -3,7 +3,9 @@
 
 #include "vector.H"
 #include "meshLevel.H"
-#include "scalarMeshLevel.H"
+
+#define TEMPLATE template<class MeshType>
+#include "meshLevelFunctionsM.H"
 
 namespace Foam
 {
@@ -19,6 +21,8 @@ namespace fv
 }
 
 }
+
+#include "undefBlockFunctionsM.H"
 
 #ifdef NoRepository
     #include "vectorMeshLevel.C"

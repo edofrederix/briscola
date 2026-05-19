@@ -30,7 +30,7 @@ VremanDirichletImmersedBoundaryCondition
 
     // Set mirror points
 
-    const meshField<label,MeshType>& mask = this->forcingMask();
+    const meshField<scalar,MeshType>& mask = this->forcingMask();
 
     forAll(mask, l)
     {
@@ -149,7 +149,7 @@ void VremanDirichletImmersedBoundaryCondition<Type,MeshType>::evaluate
     const scalar omega = this->omega_;
 
     meshDirection<Type,MeshType>& x = this->field_[l][d];
-    const meshDirection<label,MeshType>& mask = this->forcingMask()[l][d];
+    const meshDirection<scalar,MeshType>& mask = this->forcingMask()[l][d];
     const meshDirection<faceScalar,MeshType>& y =
         this->ib_.wallDistGhost()[l][d];
 
