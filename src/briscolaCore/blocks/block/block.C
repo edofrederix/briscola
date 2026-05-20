@@ -20,6 +20,7 @@ block<Type,P>::block(const int l, const int m, const int n)
     m_(m),
     n_(n),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(eye)
 {
@@ -34,6 +35,7 @@ block<Type,P>::block(const int l, const int m, const int n, const zero)
     m_(m),
     n_(n),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(eye)
 {
@@ -50,6 +52,7 @@ block<Type,P>::block(const int l, const int m, const int n, const Type& s)
     m_(m),
     n_(n),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(eye)
 {
@@ -66,6 +69,7 @@ block<Type,P>::block(const labelVector& d)
     m_(d[1]),
     n_(d[2]),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(eye)
 {
@@ -80,6 +84,7 @@ block<Type,P>::block(const labelVector& d, const zero)
     m_(d[1]),
     n_(d[2]),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(eye)
 {
@@ -96,6 +101,7 @@ block<Type,P>::block(const labelVector& d, const Type& s)
     m_(d[1]),
     n_(d[2]),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(eye)
 {
@@ -118,6 +124,7 @@ block<Type,P>::block
     m_(m),
     n_(n),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(eye)
 {
@@ -132,9 +139,15 @@ block<Type,P>::block
     {
         allocate();
 
+        // Initialize padding to zero if necessary
+
+        if (P > 0)
+            *this = Zero;
+
+        int c = 0;
         if (v_)
-            forAllBlockLinear(*this, i)
-                v_[i] = v[i];
+            forAllBlock(*this, i, j, k)
+                this->operator()(i,j,k) = v[c++];
     }
 }
 
@@ -152,14 +165,21 @@ block<Type,P>::block
     m_(m),
     n_(n),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(eye)
 {
     allocate();
 
+    // Initialize padding to zero if necessary
+
+    if (P > 0)
+        *this = Zero;
+
+    int c = 0;
     if (v_)
-        forAllBlockLinear(*this, i)
-            v_[i] = v[i];
+        forAllBlock(*this, i, j, k)
+            this->operator()(i,j,k) = v[c++];
 }
 
 template<class Type, int P>
@@ -170,6 +190,7 @@ block<Type,P>::block(const labelVector& d, const List<Type>& v)
     m_(d[1]),
     n_(d[2]),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(eye)
 {
@@ -184,9 +205,15 @@ block<Type,P>::block(const labelVector& d, const List<Type>& v)
     {
         allocate();
 
+        // Initialize padding to zero if necessary
+
+        if (P > 0)
+            *this = Zero;
+
+        int c = 0;
         if (v_)
-            forAllBlockLinear(*this, i)
-                v_[i] = v[i];
+            forAllBlock(*this, i, j, k)
+                this->operator()(i,j,k) = v[c++];
     }
 }
 
@@ -198,14 +225,21 @@ block<Type,P>::block(const labelVector& d, const Type* v)
     m_(d[1]),
     n_(d[2]),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(eye)
 {
     allocate();
 
+    // Initialize padding to zero if necessary
+
+    if (P > 0)
+        *this = Zero;
+
+    int c = 0;
     if (v_)
-        forAllBlockLinear(*this, i)
-            v_[i] = v[i];
+        forAllBlock(*this, i, j, k)
+            this->operator()(i,j,k) = v[c++];
 }
 
 template<class Type, int P>
@@ -216,6 +250,7 @@ block<Type,P>::block(const block<Type,P>& M)
     m_(M.m()),
     n_(M.n()),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(M.T())
 {
@@ -236,6 +271,7 @@ block<Type,P>::block(const block<Type,P>& M, const zero&)
     m_(M.m()),
     n_(M.n()),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(M.T())
 {
@@ -256,6 +292,7 @@ block<Type,P>::block(const block<Type,P>& M, const Type& v)
     m_(M.m()),
     n_(M.n()),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(M.T())
 {
@@ -276,6 +313,7 @@ block<Type,P>::block(const tmp<block<Type,P>>& tM)
     m_(tM->m()),
     n_(tM->n()),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(tM->T())
 {
@@ -302,6 +340,7 @@ block<Type,P>::block(const tmp<block<Type,P>>& tM, const zero&)
     m_(tM->m()),
     n_(tM->n()),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(tM->T())
 {
@@ -329,6 +368,7 @@ block<Type,P>::block(const tmp<block<Type,P>>& tM, const Type& v)
     m_(tM->m()),
     n_(tM->n()),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(tM->T())
 {
@@ -356,6 +396,7 @@ block<Type,P>::block(const label reuse, block<Type,P>& M)
     m_(M.m()),
     n_(M.n()),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(M.T())
 {
@@ -378,6 +419,7 @@ block<Type,P>::block(const label reuse, block<Type,P>& M, const zero&)
     m_(M.m()),
     n_(M.n()),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(M.T())
 {
@@ -401,6 +443,7 @@ block<Type,P>::block(const label reuse, block<Type,P>& M, const Type& v)
     m_(M.m()),
     n_(M.n()),
     size_(l_*m_*n_),
+    dataSize_((l_+2*P)*(m_+2*P)*(n_+2*P)),
     v_(nullptr),
     T_(M.T())
 {
@@ -424,6 +467,7 @@ block<Type,P>::block(Istream& is)
     m_(0),
     n_(0),
     size_(0),
+    dataSize_(0),
     v_(nullptr),
     T_(eye)
 {
@@ -466,16 +510,10 @@ void block<Type,P>::setSize
     int minM = Foam::min(m, m_);
     int minN = Foam::min(n, n_);
 
-    for (int i = 0; i < minL; i++)
-    {
-        for (int j = 0; j < minM; j++)
-        {
-            for (int k = 0; k < minN; k++)
-            {
+    for (int i = -P; i < minL+P; i++)
+        for (int j = -P; j < minM+P; j++)
+            for (int k = -P; k < minN+P; k++)
                 M(i,j,k) = (*this)(i,j,k);
-            }
-        }
-    }
 
     transfer(M);
 }
@@ -504,14 +542,27 @@ void block<Type,P>::prepend
 
     const labelVector S(this->shape() + units[d]*s);
 
-    block<Type,P> M(S,v);
+    // Block without padding
+    block<Type,0> M(S,v);
 
     forAllBlock(*this, i, j, k)
-    {
         M(labelVector(i,j,k)+units[d]*s) = this->operator()(i,j,k);
-    }
 
-    transfer(M);
+    if (P == 0)
+    {
+        transfer(M);
+    }
+    else
+    {
+        // Block with zero padding
+        block<Type,P> Mp(S, Zero);
+
+        // Transfer internal values
+        forAllBlock(M, i, j, k)
+            Mp(i,j,k) = M(i,j,k);
+
+        transfer(Mp);
+    }
 }
 
 template<class Type, int P>
@@ -538,14 +589,29 @@ void block<Type,P>::append
 
     const labelVector S(this->shape() + units[d]*s);
 
-    block<Type,P> M(S,v);
+    // Block without padding
+    block<Type,0> M(S,v);
 
     forAllBlock(*this, i, j, k)
     {
         M(i,j,k) = this->operator()(i,j,k);
     }
 
-    transfer(M);
+    if (P == 0)
+    {
+        transfer(M);
+    }
+    else
+    {
+        // Block with zero padding
+        block<Type,P> Mp(S, Zero);
+
+        // Transfer internal values
+        forAllBlock(M, i, j, k)
+            Mp(i,j,k) = M(i,j,k);
+
+        transfer(Mp);
+    }
 }
 
 template<class Type, int P>
@@ -586,7 +652,7 @@ void block<Type,P>::transform(const labelTensor T)
     // negative principle directions. Some primitive types must be transformed
     // too. By default, pTransform does nothing.
 
-    forAllBlock(*this, i, j, k)
+    forAllPaddedBlock(*this, i, j, k)
     {
         const labelVector ijk(x*i + y*j + z*k + offset);
 
@@ -721,13 +787,10 @@ tmp<block<Type,P>> block<Type,P>::slicex(const label i, const bool sq) const
 
     block<Type,P>& M = tM.ref();
 
-    for (int j = 0; j < m_; j++)
-    {
-        for (int k = 0; k < n_; k++)
-        {
-            M(0,j,k) = this->operator()(ii,j,k);
-        }
-    }
+    for (int I = -P; I <= P; I++)
+        for (int j = -P; j < m_+P; j++)
+            for (int k = -P; k < n_+P; k++)
+                M(I,j,k) = this->operator()(ii+I,j,k);
 
     if (sq)
     {
@@ -746,13 +809,10 @@ tmp<block<Type,P>> block<Type,P>::slicey(const label j, const bool sq) const
 
     block<Type,P>& M = tM.ref();
 
-    for (int i = 0; i < l_; i++)
-    {
-        for (int k = 0; k < n_; k++)
-        {
-            M(i,0,k) = this->operator()(i,jj,k);
-        }
-    }
+    for (int i = -P; i < l_+P; i++)
+        for (int J = -P; J <= P; J++)
+            for (int k = -P; k < n_+P; k++)
+                M(i,J,k) = this->operator()(i,jj+J,k);
 
     if (sq)
     {
@@ -771,13 +831,10 @@ tmp<block<Type,P>> block<Type,P>::slicez(const label k, const bool sq) const
 
     block<Type,P>& M = tM.ref();
 
-    for (int i = 0; i < l_; i++)
-    {
-        for (int j = 0; j < m_; j++)
-        {
-            M(i,j,0) = this->operator()(i,j,kk);
-        }
-    }
+    for (int i = -P; i < l_+P; i++)
+        for (int j = -P; j < m_+P; j++)
+            for (int K = -P; K <= P; K++)
+                M(i,j,K) = this->operator()(i,j,kk+K);
 
     if (sq)
     {
@@ -869,8 +926,9 @@ List<Type> block<Type,P>::flatten() const
 {
     List<Type> L(size());
 
-    forAllBlockLinear(*this, i)
-        L[i] = (*this)(i);
+    int c = 0;
+    forAllBlock(*this, i, j, k)
+        L[c++] = (*this)(i,j,k);
 
     return L;
 }
@@ -1043,6 +1101,7 @@ Istream& operator>>(Istream& is, block<Type,P>& M)
     M.m_ = m;
     M.n_ = n;
     M.size_ = l*m*n;
+    M.dataSize_ = (l+2*P)*(m+2*P)*(n+2*P);
 
     M.allocate();
 

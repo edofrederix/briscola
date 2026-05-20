@@ -566,10 +566,7 @@ inline label Lin
     const label n
 )
 {
-    const label N = n+2*p;
-    const label MN = (m+2*p)*N;
-
-    return (i+p)*MN + (j+p)*N + (k+p);
+    return (i+p)*(m+2*p)*(n+2*p) + (j+p)*(n+2*p) + (k+p);
 }
 
 template<>

@@ -7,9 +7,9 @@ namespace briscola
 template<class Type, int P>
 inline void block<Type,P>::allocate()
 {
-    if (size_)
+    if (dataSize_)
     {
-        v_ = new Type[size_];
+        v_ = new Type[dataSize_];
 
         #ifdef ZERO_INIT
         *this = Zero;
@@ -30,6 +30,7 @@ inline void block<Type,P>::clear()
     m_ = 0;
     n_ = 0;
     size_ = 0;
+    dataSize_ = 0;
 }
 
 template<class Type, int P>
@@ -43,6 +44,7 @@ inline void block<Type,P>::reAllocate(int l, int m, int n)
         m_ = m;
         n_ = n;
         size_ = l*m*n;
+        dataSize_ = (l+2*P)*(m+2*P)*(n+2*P);
 
         allocate();
     }
@@ -69,11 +71,13 @@ inline void block<Type,P>::transfer(block<Type,P>& M)
     m_ = M.m_;
     n_ = M.n_;
     size_ = l_*m_*n_;
+    dataSize_ = (l_+2*P)*(m_+2*P)*(n_+2*P);
 
     M.l_ = 0;
     M.m_ = 0;
     M.n_ = 0;
     M.size_ = 0;
+    M.dataSize_ = 0;
 
     if (v_)
     {

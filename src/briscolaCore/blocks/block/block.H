@@ -44,6 +44,9 @@ class block
     // Size (product of l, m and n)
     int size_;
 
+    // Data size (including padding)
+    int dataSize_;
+
     // Row pointers (no __restrict__ modifier because on some compilers this
     // gives problems when handling multiple tmp's of the same block, for
     // example in product operators with tensors)
@@ -56,6 +59,9 @@ public:
 
     // Component type
     typedef typename pTraits<Type>::cmptType cmptType;
+
+    // Padding
+    static int p() { return P;}
 
     // Null constructor
     inline block()
@@ -181,11 +187,11 @@ public:
     // Check if given linear i index is within bounds
     inline void checkLineari(const int i) const
     {
-        if (i < 0 || i >= size_)
+        if (i < 0 || i >= dataSize_)
         {
             FatalErrorInFunction
                 << "Linear index i = " << i << " out of range 0 ... "
-                << size_-1
+                << dataSize_-1
                 << abort(FatalError);
         }
     }
@@ -193,10 +199,11 @@ public:
     // Check if given i index is within bounds
     inline void checki(const int i) const
     {
-        if (i < 0 || i >= l_)
+        if (i < -P || i >= l_+P)
         {
             FatalErrorInFunction
-                << "Index i = " << i << " out of range 0 ... " << l_-1
+                << "Index i = " << i << " out of range "
+                << (P != 0 ? -P : 0) << " ... " << l_-1+P
                 << abort(FatalError);
         }
     }
@@ -204,10 +211,11 @@ public:
     // Check if given j index is within bounds
     inline void checkj(const int j) const
     {
-        if (j < 0 || j >= m_)
+        if (j < -P || j >= m_+P)
         {
             FatalErrorInFunction
-                << "Index j = " << j << " out of range 0 ... " << m_-1
+                << "Index j = " << j << " out of range "
+                << (P != 0 ? -P : 0) << " ... " << m_-1+P
                 << abort(FatalError);
         }
     }
@@ -215,10 +223,11 @@ public:
     // Check if given k index is within bounds
     inline void checkk(const int k) const
     {
-        if (k < 0 || k >= n_)
+        if (k < -P || k >= n_+P)
         {
             FatalErrorInFunction
-                << "Index k = " << k << " out of range 0 ... " << n_-1
+                << "Index k = " << k << " out of range "
+                << (P != 0 ? -P : 0) << " ... " << n_-1+P
                 << abort(FatalError);
         }
     }
@@ -228,10 +237,19 @@ public:
     // Return the number of elements in the block
     inline int size() const { return size_; }
 
+    // Return the number of elements in the block including padding
+    inline int dataSize() const { return dataSize_; }
+
     // Return the shape of the block
     inline labelVector shape() const
     {
         return labelVector(l_,m_,n_);
+    }
+
+    // Return the shape of the block including padding
+    inline labelVector dataShape() const
+    {
+        return labelVector(l_+2*P,m_+2*P,n_+2*P);
     }
 
     // Return the shape of the block
@@ -349,9 +367,11 @@ public:
         checkj(j);
         checkk(k);
 
+        checkLineari(lin<P>(i,j,k,l_,m_,n_));
+
         #endif
 
-        return v_[lin(i,j,k,l_,m_,n_)];
+        return v_[lin<P>(i,j,k,l_,m_,n_)];
     }
 
     // (i,j,k) const element access operator
@@ -368,9 +388,11 @@ public:
         checkj(j);
         checkk(k);
 
+        checkLineari(lin<P>(i,j,k,l_,m_,n_));
+
         #endif
 
-        return v_[lin(i,j,k,l_,m_,n_)];
+        return v_[lin<P>(i,j,k,l_,m_,n_)];
     }
 
     // (i,j,k) element access operator
@@ -382,9 +404,11 @@ public:
         checkj(ijk.y());
         checkk(ijk.z());
 
+        checkLineari(lin<P>(ijk,l_,m_,n_));
+
         #endif
 
-        return v_[lin(ijk,l_,m_,n_)];
+        return v_[lin<P>(ijk,l_,m_,n_)];
     }
 
     // (i,j,k) const element access operator
@@ -396,9 +420,11 @@ public:
         checkj(ijk.y());
         checkk(ijk.z());
 
+        checkLineari(lin<P>(ijk,l_,m_,n_));
+
         #endif
 
-        return v_[lin(ijk,l_,m_,n_)];
+        return v_[lin<P>(ijk,l_,m_,n_)];
     }
 
     // Interpolate data to a scalar index

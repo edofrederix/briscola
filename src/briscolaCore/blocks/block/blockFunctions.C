@@ -159,11 +159,11 @@ Type max(const block<Type,P>& f)
 {
     if (f.size())
     {
-        Type Max(f(0));
+        Type Max(f(0,0,0));
 
-        forAllBlockLinear(f, i)
-            if (f(i) > Max)
-                Max = f(i);
+        forAllBlock(f, i, j, k)
+            if (f(i,j,k) > Max)
+                Max = f(i,j,k);
 
         return Max;
     }
@@ -180,11 +180,11 @@ Type min(const block<Type,P>& f)
 {
     if (f.size())
     {
-        Type Min(f(0));
+        Type Min(f(0,0,0));
 
-        forAllBlockLinear(f, i)
-            if (f(i) < Min)
-                Min = f(i);
+        forAllBlock(f, i, j, k)
+            if (f(i,j,k) < Min)
+                Min = f(i,j,k);
 
         return Min;
     }
@@ -203,8 +203,8 @@ Type sum(const block<Type,P>& f)
     {
         Type Sum = Zero;
 
-        forAllBlockLinear(f, i)
-            Sum += f(i);
+        forAllBlock(f, i, j, k)
+            Sum += f(i,j,k);
 
         return Sum;
     }

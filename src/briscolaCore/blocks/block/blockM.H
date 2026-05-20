@@ -41,11 +41,11 @@ void checkBlocks
     if (f1.size() != f2.size() || f1.size() != f3.size())
         FatalErrorInFunction
             << " block<"<<pTraits<Type1>::typeName
-            < <"," << Foam::name(P) << "> f1("<<f1.size()<<')'
+            << "," << Foam::name(P) << "> f1("<<f1.size()<<')'
             << ", block<"<<pTraits<Type2>::typeName
-            < <"," << Foam::name(P) << "> f2("<<f2.size()<<')'
+            << "," << Foam::name(P) << "> f2("<<f2.size()<<')'
             << " and block<"<<pTraits<Type3>::typeName
-            < <"," << Foam::name(P) << "> f3("<<f3.size()<<')'
+            << "," << Foam::name(P) << "> f3("<<f3.size()<<')'
             << endl << "    for operation " << op
             << abort(FatalError);
 }

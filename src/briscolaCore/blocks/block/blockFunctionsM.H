@@ -1,10 +1,21 @@
+// Structured iteration over all internal elements
+
 #define forAllBlock(BLOCK, I, J, K)                                            \
     for (int I = 0; I < (BLOCK).l(); I++)                                      \
     for (int J = 0; J < (BLOCK).m(); J++)                                      \
     for (int K = 0; K < (BLOCK).n(); K++)
 
+// Structured iteration over all elements including padding
+
+#define forAllPaddedBlock(BLOCK, I, J, K)                                      \
+    for (int I = -(BLOCK).p(); I < (BLOCK).l()+(BLOCK).p(); I++)               \
+    for (int J = -(BLOCK).p(); J < (BLOCK).m()+(BLOCK).p(); J++)               \
+    for (int K = -(BLOCK).p(); K < (BLOCK).n()+(BLOCK).p(); K++)
+
+// Linear iteration over all elements including padding
+
 #define forAllBlockLinear(BLOCK, L)                                            \
-    for (int L = 0; L < (BLOCK).size(); L++)
+    for (int L = 0; L < (BLOCK).dataSize(); L++)
 
 #define UNARY_FUNCTION(ReturnType, Type1, Func)                                \
                                                                                \

@@ -11,21 +11,21 @@
 using namespace Foam;
 using namespace briscola;
 
-template<class Type>
+template<class Type, int P>
 void testConstructors()
 {
-    block<Type> b1(2,3,4);
-    block<Type> b2(2,3,4,Zero);
-    block<Type> b3(2,3,4,pTraits<Type>::one);
+    block<Type,P> b1(2,3,4);
+    block<Type,P> b2(2,3,4,Zero);
+    block<Type,P> b3(2,3,4,pTraits<Type>::one);
 
-    block<Type> b4(labelVector(2,3,4));
-    block<Type> b5(labelVector(2,3,4),Zero);
-    block<Type> b6(labelVector(2,3,4),pTraits<Type>::one);
+    block<Type,P> b4(labelVector(2,3,4));
+    block<Type,P> b5(labelVector(2,3,4),Zero);
+    block<Type,P> b6(labelVector(2,3,4),pTraits<Type>::one);
 
     List<Type> list(24, pTraits<Type>::one*2);
 
-    block<Type> b7(2,3,4,list);
-    block<Type> b8(labelVector(2,3,4),list);
+    block<Type,P> b7(2,3,4,list);
+    block<Type,P> b8(labelVector(2,3,4),list);
 
     Type arr[24];
 
@@ -34,24 +34,24 @@ void testConstructors()
         arr[i] = pTraits<Type>::one*i;
     }
 
-    block<Type> b9(2,3,4, arr);
-    block<Type> b10(labelVector(2,3,4), arr);
+    block<Type,P> b9(2,3,4, arr);
+    block<Type,P> b10(labelVector(2,3,4), arr);
 
-    block<Type> b11a(b10);
-    block<Type> b11b(b10, Zero);
-    block<Type> b11c(b10, pTraits<Type>::one*2);
+    block<Type,P> b11a(b10);
+    block<Type,P> b11b(b10, Zero);
+    block<Type,P> b11c(b10, pTraits<Type>::one*2);
 
-    block<Type> b12a(b10*2.0);
-    block<Type> b12b(b10*2.0, Zero);
-    block<Type> b12c(b10*2.0, pTraits<Type>::one*2);
+    block<Type,P> b12a(b10*2.0);
+    block<Type,P> b12b(b10*2.0, Zero);
+    block<Type,P> b12c(b10*2.0, pTraits<Type>::one*2);
 
-    block<Type> b13a(false, b10);
-    block<Type> b13b(false, b10, Zero);
-    block<Type> b13c(false, b10, pTraits<Type>::one*2);
+    block<Type,P> b13a(false, b10);
+    block<Type,P> b13b(false, b10, Zero);
+    block<Type,P> b13c(false, b10, pTraits<Type>::one*2);
 
-    block<Type> b14a(true, b13a);
-    block<Type> b14b(true, b13b, Zero);
-    block<Type> b14c(true, b13c, pTraits<Type>::one*2);
+    block<Type,P> b14a(true, b13a);
+    block<Type,P> b14b(true, b13b, Zero);
+    block<Type,P> b14c(true, b13c, pTraits<Type>::one*2);
 
     const word fileName =
         "dummy-"
@@ -67,19 +67,19 @@ void testConstructors()
 
     rm(fileName);
 
-    block<Type> b14(is);
+    block<Type,P> b14(is);
 
-    block<Type> b15;
+    block<Type,P> b15;
 
     b14.transfer(b15);
 }
 
-template<class Type>
+template<class Type, int P>
 void testIndexing()
 {
     const labelVector shape(2,3,4);
 
-    block<Type> b1(shape);
+    block<Type,P> b1(shape);
 
     label l = 0;
 
@@ -88,9 +88,12 @@ void testIndexing()
         b1(i,j,k) = pTraits<Type>::one*l++;
     }
 
-    if (b1.l() != shape.x()) FatalErrorInFunction << "test 1 failed" << abort(FatalError);
-    if (b1.m() != shape.y()) FatalErrorInFunction << "test 2 failed" << abort(FatalError);
-    if (b1.n() != shape.z()) FatalErrorInFunction << "test 3 failed" << abort(FatalError);
+    if (b1.l() != shape.x())
+        FatalErrorInFunction << "test 1 failed" << abort(FatalError);
+    if (b1.m() != shape.y())
+        FatalErrorInFunction << "test 2 failed" << abort(FatalError);
+    if (b1.n() != shape.z())
+        FatalErrorInFunction << "test 3 failed" << abort(FatalError);
 
     if (b1.cbegin() != &b1(0))
         FatalErrorInFunction << "test 4 failed" << abort(FatalError);
@@ -101,21 +104,25 @@ void testIndexing()
     if (b1.shape() != shape)
         FatalErrorInFunction << "test 6 failed" << abort(FatalError);
 
+    if (b1.dataShape() != shape + 2*P*unitXYZ)
+        FatalErrorInFunction << "test 7 failed" << abort(FatalError);
+
     l = 0;
 
     forAllBlockLinear(b1, i)
-    {
-        if (b1(i) != pTraits<Type>::one*l++)
-            FatalErrorInFunction << "test 8 failed" << abort(FatalError);
-    }
+        if
+        (
+            cmptMin(ind<P>(i, shape)) >= 0
+         && cmptMax(ind<P>(i, shape)-shape) < 0
+        )
+            if (b1(i) != pTraits<Type>::one*l++)
+                FatalErrorInFunction << "test 8a failed" << abort(FatalError);
 
     l = 0;
 
     forAllBlock(b1, i, j, k)
-    {
         if (b1(i,j,k) != pTraits<Type>::one*l++)
-            FatalErrorInFunction << "test 8 failed" << abort(FatalError);
-    }
+            FatalErrorInFunction << "test 8b failed" << abort(FatalError);
 
     // Interpolation to a scalar index
 
@@ -150,14 +157,14 @@ void testIndexing()
 
     typedef typename pTraits<Type>::cmptType cmptType;
 
-    block<cmptType> s1(b1.component(0));
+    block<cmptType,P> s1(b1.component(0));
 
     b1.replace(0, pTraits<cmptType>::one);
     b1.replace(0, s1);
     b1.replace(0, s1*1.0);
 }
 
-template<class Type>
+template<class Type, int P>
 void testTransformations()
 {
     const label l = 2;
@@ -166,7 +173,7 @@ void testTransformations()
 
     const labelVector shape(l,m,n);
 
-    block<Type> b1(shape);
+    block<Type,P> b1(shape, Zero);
 
     label c = 0;
 
@@ -175,7 +182,7 @@ void testTransformations()
         b1(i,j,k) = pTraits<Type>::one*c++;
     }
 
-    const block<Type> b0(b1);
+    const block<Type,P> b0(b1);
 
     // Reflections shouldn't change shape
 
@@ -341,7 +348,7 @@ void testTransformations()
 
     for (label dir = 0; dir < 3; dir++)
     {
-        block<Type> s(b1.slice(dir+1,dir));
+        block<Type,P> s(b1.slice(dir+1,dir));
         labelVector shape2(shape);
         shape2[dir] = 1;
 
@@ -358,13 +365,13 @@ void testTransformations()
     }
 }
 
-template<class Type>
+template<class Type, int P>
 void testMemberOperators()
 {
     const labelVector shape(2,3,4);
 
-    block<Type> b1(shape);
-    block<scalar> s1(shape);
+    block<Type,P> b1(shape);
+    block<scalar,P> s1(shape, 1.0);
 
     label l = 0;
 
@@ -374,7 +381,7 @@ void testMemberOperators()
         b1(i,j,k) = pTraits<Type>::one*l++;
     }
 
-    const block<Type> b0(b1);
+    const block<Type,P> b0(b1);
 
     b1 = Zero;
 
@@ -480,14 +487,14 @@ void testMemberOperators()
             FatalErrorInFunction << "test 5b failed" << abort(FatalError);
 }
 
-template<class Type>
+template<class Type, int P>
 void testPrimitiveFunctions()
 {
     const labelVector shape(2,3,4);
 
-    block<Type> b1(shape);
-    block<Type> b2(shape);
-    block<scalar> s1(shape);
+    block<Type,P> b1(shape, Zero);
+    block<Type,P> b2(shape, Zero);
+    block<scalar,P> s1(shape, 1.0);
 
     label l = 3;
 
@@ -558,7 +565,7 @@ void testPrimitiveFunctions()
     if (gAverage(b1*2) != avb1*2)
         FatalErrorInFunction << "test 4d failed" << abort(FatalError);
 
-    block<Type> b3 = max(b1,b2);
+    block<Type,P> b3 = max(b1,b2);
 
     forAllBlock(b1, i, j, k)
         if (b3(i,j,k) != b2(i,j,k))
@@ -805,13 +812,13 @@ void testPrimitiveFunctions()
             FatalErrorInFunction << "test 14 failed" << abort(FatalError);
 }
 
-template<class Type>
+template<class Type, int P>
 void testVectorSpaceFunctions()
 {
     const labelVector shape(2,3,4);
 
-    block<Type> b1(shape);
-    block<Type> b2(shape);
+    block<Type,P> b1(shape, Zero);
+    block<Type,P> b2(shape, Zero);
 
     const label nComp = pTraits<Type>::nComponents;
 
@@ -837,7 +844,7 @@ void testVectorSpaceFunctions()
     }
 
 
-    scalarBlock r1 = mag(b1);
+    block<scalar,P> r1 = mag(b1);
 
     forAllBlock(r1, i, j, k)
     {
@@ -972,14 +979,14 @@ void testVectorSpaceFunctions()
     cmptSqr(1.0*b1);
 }
 
-template<class Type>
+template<class Type, int P>
 void testStencilFunctions()
 {
     const labelVector shape(2,3,4);
 
-    block<Type> b1(shape);
-    block<Type> b2(shape);
-    block<scalar> s1(shape);
+    block<Type,P> b1(shape);
+    block<Type,P> b2(shape);
+    block<scalar,P> s1(shape, 1.0);
 
     label l = 0;
 
@@ -1026,18 +1033,18 @@ void testStencilFunctions()
     (2.0*b1)/(2.0*s1);
 }
 
-template<class Type>
+template<class Type, int P>
 void testFaceSpaceFunctions()
 {
     const labelVector shape(2,3,4);
 
-    block<FaceSpace<Type>> fs1(shape);
-    block<FaceSpace<Type>> ls1(shape);
+    block<FaceSpace<Type>,P> fs1(shape);
+    block<FaceSpace<Type>,P> ls1(shape);
 
-    block<FaceSpace<scalar>> sfs1(shape);
-    block<FaceSpace<scalar>> sls1(shape);
+    block<FaceSpace<scalar>,P> sfs1(shape);
+    block<FaceSpace<scalar>,P> sls1(shape);
 
-    block<scalar> s1(shape);
+    block<scalar,P> s1(shape, 1.0);
 
     label l = 0;
 
@@ -1195,18 +1202,19 @@ void testFaceSpaceFunctions()
     min(pTraits<Type>::one, ls1);
 }
 
+template<int P>
 void testScalarFunctions()
 {
     const labelVector shape(2,3,4);
 
-    block<scalar> b1(shape);
+    block<scalar,P> b1(shape, 1.0);
 
     label l = 0;
 
     forAllBlock(b1, i, j, k)
         b1(i,j,k) = scalar(l+++1);
 
-    scalarBlock b2 = b1/b1;
+    block<scalar,P> b2 = b1/b1;
 
     forAllBlock(b2, i, j, k)
         if (b2(i,j,k) != 1)
@@ -1247,12 +1255,13 @@ void testScalarFunctions()
     }
 }
 
+template<int P>
 void testVectorFunctions()
 {
     const labelVector shape(2,3,4);
 
-    block<vector> b1(shape);
-    block<vector> b2(shape);
+    block<vector,P> b1(shape);
+    block<vector,P> b2(shape);
 
     label l = 0;
 
@@ -1266,7 +1275,7 @@ void testVectorFunctions()
         b1ss += Foam::sqr(b1(i,j,k));
     }
 
-    block<tensor> t1 = b1*b2;
+    block<tensor,P> t1 = b1*b2;
 
     forAllBlock(t1, i, j, k)
         if (t1(i,j,k) != b1(i,j,k)*b2(i,j,k))
@@ -1291,7 +1300,7 @@ void testVectorFunctions()
             FatalErrorInFunction << "test 2d failed" << abort(FatalError);
 
 
-    scalarBlock s1 = b1 & b2;
+    block<scalar,P> s1 = b1 & b2;
 
     forAllBlock(s1, i, j, k)
         if (s1(i,j,k) != (b1(i,j,k) & b2(i,j,k)))
@@ -1316,7 +1325,7 @@ void testVectorFunctions()
             FatalErrorInFunction << "test 3d failed" << abort(FatalError);
 
 
-    vectorBlock v1 = b1 ^ b2;
+    block<vector,P> v1 = b1 ^ b2;
 
     forAllBlock(s1, i, j, k)
         if (v1(i,j,k) != (b1(i,j,k) ^ b2(i,j,k)))
@@ -1341,13 +1350,14 @@ void testVectorFunctions()
             FatalErrorInFunction << "test 4d failed" << abort(FatalError);
 }
 
+template<int P>
 void testTensorFunctions()
 {
     const labelVector shape(2,3,4);
 
-    block<tensor> b1(shape);
-    block<symmTensor> b2(shape);
-    block<vector> v1(shape);
+    block<tensor,P> b1(shape);
+    block<symmTensor,P> b2(shape);
+    block<vector,P> v1(shape);
 
     label l = 0;
 
@@ -1363,7 +1373,7 @@ void testTensorFunctions()
 
     #define TEST(RET, B1, B2, OP, NAME)                                        \
     {                                                                          \
-        block<RET> r = B1 OP B2;                                               \
+        block<RET,P> r = B1 OP B2;                                             \
                                                                                \
         forAllBlock(r, i, j, k)                                                \
             if (r(i,j,k) != (B1(i,j,k) OP B2(i,j,k)))                          \
@@ -1432,100 +1442,162 @@ int main(int argc, char *argv[])
     arguments::addBoolOption("parallel", "run in parallel");
     arguments args(argc, argv);
 
-    testConstructors<label>();
-    testConstructors<scalar>();
+    // Constructors
 
-    testConstructors<vector>();
-    testConstructors<tensor>();
-    testConstructors<symmTensor>();
+    testConstructors<label,0>();
+    testConstructors<scalar,0>();
+    testConstructors<vector,0>();
+    testConstructors<tensor,0>();
+    testConstructors<symmTensor,0>();
+    testConstructors<faceScalar,0>();
+    testConstructors<vertexScalar,0>();
+    testConstructors<faceVector,0>();
+    testConstructors<vertexVector,0>();
+    testConstructors<stencil,0>();
+    testConstructors<diagStencil,0>();
 
-    testConstructors<faceScalar>();
-    testConstructors<vertexScalar>();
+    testConstructors<label,1>();
+    testConstructors<scalar,1>();
+    testConstructors<vector,1>();
+    testConstructors<tensor,1>();
+    testConstructors<symmTensor,1>();
+    testConstructors<faceScalar,1>();
+    testConstructors<vertexScalar,1>();
+    testConstructors<faceVector,1>();
+    testConstructors<vertexVector,1>();
+    testConstructors<stencil,1>();
+    testConstructors<diagStencil,1>();
 
-    testConstructors<faceVector>();
-    testConstructors<vertexVector>();
+    // Indexing
 
-    testConstructors<stencil>();
-    testConstructors<diagStencil>();
+    testIndexing<label,0>();
+    testIndexing<scalar,0>();
+    testIndexing<vector,0>();
+    testIndexing<tensor,0>();
+    testIndexing<symmTensor,0>();
+    testIndexing<faceScalar,0>();
+    testIndexing<vertexScalar,0>();
+    testIndexing<faceVector,0>();
+    testIndexing<vertexVector,0>();
+    testIndexing<stencil,0>();
+    testIndexing<diagStencil,0>();
+    testIndexing<label,0>();
+    testIndexing<scalar,0>();
 
+    testIndexing<vector,1>();
+    testIndexing<tensor,1>();
+    testIndexing<symmTensor,1>();
+    testIndexing<faceScalar,1>();
+    testIndexing<vertexScalar,1>();
+    testIndexing<faceVector,1>();
+    testIndexing<vertexVector,1>();
+    testIndexing<stencil,1>();
+    testIndexing<diagStencil,1>();
 
-    testIndexing<label>();
-    testIndexing<scalar>();
+    // Transformations
 
-    testIndexing<vector>();
-    testIndexing<tensor>();
-    testIndexing<symmTensor>();
+    testTransformations<label,0>();
+    testTransformations<scalar,0>();
+    testTransformations<vector,0>();
+    testTransformations<tensor,0>();
+    testTransformations<symmTensor,0>();
+    testTransformations<faceScalar,0>();
+    testTransformations<vertexScalar,0>();
+    testTransformations<faceVector,0>();
+    testTransformations<vertexVector,0>();
+    testTransformations<stencil,0>();
+    testTransformations<diagStencil,0>();
 
-    testIndexing<faceScalar>();
-    testIndexing<vertexScalar>();
+    testTransformations<label,1>();
+    testTransformations<scalar,1>();
+    testTransformations<vector,1>();
+    testTransformations<tensor,1>();
+    testTransformations<symmTensor,1>();
+    testTransformations<faceScalar,1>();
+    testTransformations<vertexScalar,1>();
+    testTransformations<faceVector,1>();
+    testTransformations<vertexVector,1>();
+    testTransformations<stencil,1>();
+    testTransformations<diagStencil,1>();
 
-    testIndexing<faceVector>();
-    testIndexing<vertexVector>();
+    // Member operators
 
-    testIndexing<stencil>();
-    testIndexing<diagStencil>();
+    testMemberOperators<label,0>();
+    testMemberOperators<scalar,0>();
+    testMemberOperators<vector,0>();
+    testMemberOperators<tensor,0>();
+    testMemberOperators<symmTensor,0>();
+    testMemberOperators<faceScalar,0>();
+    testMemberOperators<vertexScalar,0>();
+    testMemberOperators<faceVector,0>();
+    testMemberOperators<vertexVector,0>();
+    testMemberOperators<stencil,0>();
+    testMemberOperators<diagStencil,0>();
 
+    testMemberOperators<label,1>();
+    testMemberOperators<scalar,1>();
+    testMemberOperators<vector,1>();
+    testMemberOperators<tensor,1>();
+    testMemberOperators<symmTensor,1>();
+    testMemberOperators<faceScalar,1>();
+    testMemberOperators<vertexScalar,1>();
+    testMemberOperators<faceVector,1>();
+    testMemberOperators<vertexVector,1>();
+    testMemberOperators<stencil,1>();
+    testMemberOperators<diagStencil,1>();
 
-    testTransformations<label>();
-    testTransformations<scalar>();
+    // Primitive functions
 
-    testTransformations<vector>();
-    testTransformations<tensor>();
-    testTransformations<symmTensor>();
+    testPrimitiveFunctions<scalar,0>();
+    testPrimitiveFunctions<vector,0>();
+    testPrimitiveFunctions<tensor,0>();
+    testPrimitiveFunctions<symmTensor,0>();
+    testPrimitiveFunctions<faceScalar,0>();
+    testPrimitiveFunctions<vertexScalar,0>();
+    testPrimitiveFunctions<faceVector,0>();
+    testPrimitiveFunctions<vertexVector,0>();
 
-    testTransformations<faceScalar>();
-    testTransformations<vertexScalar>();
+    testPrimitiveFunctions<scalar,1>();
+    testPrimitiveFunctions<vector,1>();
+    testPrimitiveFunctions<tensor,1>();
+    testPrimitiveFunctions<symmTensor,1>();
+    testPrimitiveFunctions<faceScalar,1>();
+    testPrimitiveFunctions<vertexScalar,1>();
+    testPrimitiveFunctions<faceVector,1>();
+    testPrimitiveFunctions<vertexVector,1>();
 
-    testTransformations<faceVector>();
-    testTransformations<vertexVector>();
+    // Vector space functions
 
-    testTransformations<stencil>();
-    testTransformations<diagStencil>();
+    testVectorSpaceFunctions<vector,0>();
+    testVectorSpaceFunctions<tensor,0>();
+    testVectorSpaceFunctions<symmTensor,0>();
+    testVectorSpaceFunctions<vector,1>();
+    testVectorSpaceFunctions<tensor,1>();
+    testVectorSpaceFunctions<symmTensor,1>();
 
+    // Stencil functions
 
-    testMemberOperators<label>();
-    testMemberOperators<scalar>();
+    testStencilFunctions<stencil,0>();
+    testStencilFunctions<diagStencil,0>();
 
-    testMemberOperators<vector>();
-    testMemberOperators<tensor>();
-    testMemberOperators<symmTensor>();
+    testStencilFunctions<stencil,1>();
+    testStencilFunctions<diagStencil,1>();
 
-    testMemberOperators<faceScalar>();
-    testMemberOperators<vertexScalar>();
+    // Face space functions
 
-    testMemberOperators<faceVector>();
-    testMemberOperators<vertexVector>();
+    testFaceSpaceFunctions<scalar,0>();
+    testFaceSpaceFunctions<vector,0>();
 
-    testMemberOperators<stencil>();
-    testMemberOperators<diagStencil>();
+    testFaceSpaceFunctions<scalar,1>();
+    testFaceSpaceFunctions<vector,1>();
 
+    // Specific type functions
 
-    testPrimitiveFunctions<scalar>();
+    testScalarFunctions<0>();
+    testVectorFunctions<0>();
+    testTensorFunctions<0>();
 
-    testPrimitiveFunctions<vector>();
-    testPrimitiveFunctions<tensor>();
-    testPrimitiveFunctions<symmTensor>();
-
-    testPrimitiveFunctions<faceScalar>();
-    testPrimitiveFunctions<vertexScalar>();
-
-    testPrimitiveFunctions<faceVector>();
-    testPrimitiveFunctions<vertexVector>();
-
-
-    testVectorSpaceFunctions<vector>();
-    testVectorSpaceFunctions<tensor>();
-    testVectorSpaceFunctions<symmTensor>();
-
-
-    testStencilFunctions<stencil>();
-    testStencilFunctions<diagStencil>();
-
-
-    testFaceSpaceFunctions<scalar>();
-    testFaceSpaceFunctions<vector>();
-
-    testScalarFunctions();
-    testVectorFunctions();
-    testTensorFunctions();
+    testScalarFunctions<1>();
+    testVectorFunctions<1>();
+    testTensorFunctions<1>();
 }
