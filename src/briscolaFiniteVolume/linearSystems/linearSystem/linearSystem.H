@@ -28,7 +28,7 @@ class linearSystem
 public:
 
     // Number of ghost cells
-    static const label G = meshDirection<Type,MeshType>::ghosts;
+    static int constexpr G = meshDirection<Type,MeshType>::ghosts();
 
     // Number of stencil components
     static const direction N = SType::nCsComponents;

@@ -30,11 +30,6 @@ class meshField
     public IOdictionary,
     public cachedRefCount
 {
-public:
-
-    // Number of ghost cell layers
-    static const label ghosts = meshDirection<Type,MeshType>::ghosts;
-
 private:
 
     // Reference to the mesh
@@ -236,6 +231,9 @@ public:
     {
         return listType::operator[](l)[d];
     }
+
+    // Number of ghost cell layers
+    static int constexpr ghosts() { return meshLevel<Type,MeshType>::ghosts(); }
 
     // Number of levels
     inline label size() const { return listType::size(); }

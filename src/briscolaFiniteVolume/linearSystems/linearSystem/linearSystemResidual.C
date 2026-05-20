@@ -24,8 +24,8 @@ void linearSystem<SType,Type,MeshType>::Residual
     const label l = res.levelNum();
     const label d = res.directionNum();
 
-    block<Type>& B = res.B();
-    const labelVector shape = B.shape();
+    auto& B = res.B();
+    const labelVector shape = B.dataShape();
 
     // Restricted array pointers
 
@@ -143,8 +143,8 @@ void linearSystem<SType,Type,MeshType>::ResidualBoundary
     const label l = res.levelNum();
     const label d = res.directionNum();
 
-    block<Type>& B = res.B();
-    const labelVector shape = B.shape();
+    auto& B = res.B();
+    const labelVector shape = B.dataShape();
 
     // Restricted array pointers
 

@@ -28,11 +28,6 @@ class meshLevel
     public FastPtrList<meshDirection<Type,MeshType>>,
     public refCount
 {
-public:
-
-    // Number of ghost cell layers
-    static const label ghosts = meshDirection<Type,MeshType>::ghosts;
-
 private:
 
     // Reference to the mesh
@@ -173,6 +168,12 @@ public:
     inline const meshDirection<Type,MeshType>& direction() const
     {
         return listType::operator[](0);
+    }
+
+    // Number of ghost cell layers
+    static constexpr  int ghosts()
+    {
+        return meshDirection<Type,MeshType>::ghosts();
     }
 
     // Number of directions

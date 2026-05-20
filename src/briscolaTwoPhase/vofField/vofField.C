@@ -49,7 +49,7 @@ void vofField::correct()
 
     forAll(*this, l)
     {
-        scalarBlock& alpha = (*this)[l].B();
+        auto& alpha = (*this)[l].B();
 
         forAllBlockLinear(alpha, i)
             alpha(i) =

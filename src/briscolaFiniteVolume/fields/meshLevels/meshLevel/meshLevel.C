@@ -370,6 +370,8 @@ void meshLevel<Type,MeshType>::correctAggData()
 
         buffer.resize(size);
 
+        const scalar p = ghosts();
+
         // Communicate
 
         if (decomp.aggMaster())
@@ -382,7 +384,7 @@ void meshLevel<Type,MeshType>::correctAggData()
                 for (int j = 0; j < N[d].y(); j++)
                 for (int k = 0; k < N[d].z(); k++)
                     buffer[cursor++] =
-                        listType::operator[](d).B()(i,j,k);
+                        listType::operator[](d).B()(i-p,j-p,k-p);
 
             // Send to slaves
 
@@ -419,7 +421,7 @@ void meshLevel<Type,MeshType>::correctAggData()
                 for (int i = 0; i < N[d].x(); i++)
                 for (int j = 0; j < N[d].y(); j++)
                 for (int k = 0; k < N[d].z(); k++)
-                    listType::operator[](d).B()(i,j,k) =
+                    listType::operator[](d).B()(i-p,j-p,k-p) =
                         buffer[cursor++];
         }
     }
@@ -442,6 +444,8 @@ void meshLevel<Type,MeshType>::correctAggData()
 
         buffer.resize(size);
 
+        const scalar p = ghosts();
+
         // Communicate
 
         if (childDecomp.aggSlave())
@@ -454,7 +458,7 @@ void meshLevel<Type,MeshType>::correctAggData()
                 for (int j = 0; j < N[d].y(); j++)
                 for (int k = 0; k < N[d].z(); k++)
                     buffer[cursor++] =
-                        listType::operator[](d).B()(i,j,k);
+                        listType::operator[](d).B()(i-p,j-p,k-p);
 
             // Send to master
 

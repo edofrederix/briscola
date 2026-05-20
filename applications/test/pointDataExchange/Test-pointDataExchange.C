@@ -71,7 +71,7 @@ void testDataExchange(const fvMesh& fvMsh)
 
         forAll(f, l)
             forAll(f[l], d)
-                forAllBlock(f[l][d].B(), i, j, k)
+                forAllPaddedBlock(f[l][d].B(), i, j, k)
                     f[l][d].B()(i,j,k) =
                         cc[l][d].B()(i,j,k)[dir]*pTraits<Type>::one;
 

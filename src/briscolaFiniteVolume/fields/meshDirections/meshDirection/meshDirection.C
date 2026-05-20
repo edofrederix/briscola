@@ -15,7 +15,7 @@ namespace fv
 template<class Type, class MeshType>
 void meshDirection<Type,MeshType>::allocate()
 {
-    blockType::reAllocate(dataShape(true));
+    blockType::reAllocate(dataShape(true) - 2*ghosts()*unitXYZ);
 }
 
 template<class Type, class MeshType>
@@ -43,7 +43,7 @@ meshDirection<Type,MeshType>::meshDirection
     const label d
 )
 :
-    block<Type>(),
+    blockType(),
     fvMsh_(level.fvMsh()),
     l_(level.levelNum()),
     d_(d),
@@ -61,7 +61,7 @@ meshDirection<Type,MeshType>::meshDirection
     const meshDirection<Type,MeshType>& D
 )
 :
-    block<Type>(D),
+    blockType(D),
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
@@ -76,7 +76,7 @@ meshDirection<Type,MeshType>::meshDirection
     const zero&
 )
 :
-    block<Type>(D,Zero),
+    blockType(D,Zero),
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
@@ -91,7 +91,7 @@ meshDirection<Type,MeshType>::meshDirection
     const Type& v
 )
 :
-    block<Type>(D,v),
+    blockType(D,v),
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
@@ -106,7 +106,7 @@ meshDirection<Type,MeshType>::meshDirection
     const List<Type>& v
 )
 :
-    block<Type>(D, v[D.d_]),
+    blockType(D, v[D.d_]),
     fvMsh_(D.fvMsh_),
     l_(D.l_),
     d_(D.d_),
@@ -120,7 +120,7 @@ meshDirection<Type,MeshType>::meshDirection
     const tmp<meshDirection<Type,MeshType>>& tD
 )
 :
-    block<Type>
+    blockType
     (
         tD.isTmp(),
         const_cast<meshDirection<Type,MeshType>&>(tD())
@@ -142,7 +142,7 @@ meshDirection<Type,MeshType>::meshDirection
     const zero&
 )
 :
-    block<Type>
+    blockType
     (
         tD.isTmp(),
         const_cast<meshDirection<Type,MeshType>&>(tD()),
@@ -165,7 +165,7 @@ meshDirection<Type,MeshType>::meshDirection
     const Type& v
 )
 :
-    block<Type>
+    blockType
     (
         tD.isTmp(),
         const_cast<meshDirection<Type,MeshType>&>(tD()),
@@ -188,7 +188,7 @@ meshDirection<Type,MeshType>::meshDirection
     const List<Type>& v
 )
 :
-    block<Type>
+    blockType
     (
         tD.isTmp(),
         const_cast<meshDirection<Type,MeshType>&>(tD()),
@@ -214,7 +214,7 @@ meshDirection<Type,MeshType>::meshDirection
     const label d
 )
 :
-    block<Type>(),
+    blockType(),
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
@@ -233,7 +233,7 @@ meshDirection<Type,MeshType>::meshDirection
     const zero&
 )
 :
-    block<Type>(),
+    blockType(),
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
@@ -253,7 +253,7 @@ meshDirection<Type,MeshType>::meshDirection
     const Type& v
 )
 :
-    block<Type>(),
+    blockType(),
     fvMsh_(fvMsh),
     l_(l),
     d_(d),
@@ -273,7 +273,7 @@ meshDirection<Type,MeshType>::meshDirection
     const List<Type>& v
 )
 :
-    block<Type>(),
+    blockType(),
     fvMsh_(fvMsh),
     l_(l),
     d_(d),

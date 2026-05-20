@@ -61,7 +61,7 @@ public:
     typedef typename pTraits<Type>::cmptType cmptType;
 
     // Padding
-    static int p() { return P;}
+    static constexpr int p() { return P; }
 
     // Null constructor
     inline block()
@@ -70,6 +70,7 @@ public:
         m_(0),
         n_(0),
         size_(0),
+        dataSize_(0),
         v_(nullptr),
         T_(eye)
     {}

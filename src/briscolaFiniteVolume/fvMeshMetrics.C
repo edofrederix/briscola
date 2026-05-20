@@ -49,8 +49,7 @@ void fvMeshMetrics<MeshType>::setCellCenters()
             for (ijk.y() = -1; ijk.y() < N.y() + 1; ijk.y()++)
             for (ijk.z() = -1; ijk.z() < N.z() + 1; ijk.z()++)
             {
-                for (int vi = 0; vi < 8; vi++)
-                    cc(l,d,ijk) = hexa(vc(l,d,ijk)).center();
+                cc(l,d,ijk) = hexa(vc(l,d,ijk)).center();
             }
         }
     }

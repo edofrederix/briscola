@@ -20,15 +20,16 @@ inline void diagonalSmoother<SType,Type,MeshType>::diagonalSmoother::Sweep
     if (sys.fvMsh()[l].empty())
         return;
 
-    block<Type>& B = sys.x()[l][d].B();
-    const labelVector shape = B.shape();
+    auto& B = sys.x()[l][d].B();
+    const labelVector shape = B.dataShape();
 
     // Restricted array pointers
 
     Type* const __restrict__ x_arr = B.begin();
 
     const Type* const __restrict__ b_arr = sys.b()[l][d].B().begin();
-    const scalar* const __restrict__ f_arr = sys.forcingMask()[l][d].B().begin();
+    const scalar* const __restrict__ f_arr =
+        sys.forcingMask()[l][d].B().begin();
 
     // Reinterpret the matrix as a contiguous array of scalars
 

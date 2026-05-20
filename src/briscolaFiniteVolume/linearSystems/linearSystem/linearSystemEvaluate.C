@@ -24,8 +24,8 @@ void linearSystem<SType,Type,MeshType>::Evaluate
     const label l = eval.levelNum();
     const label d = eval.directionNum();
 
-    block<Type>& B = eval.B();
-    const labelVector shape = B.shape();
+    auto& B = eval.B();
+    const labelVector shape = B.dataShape();
 
     // Restricted array pointers
 
@@ -151,8 +151,8 @@ void linearSystem<SType,Type,MeshType>::EvaluateBoundary
     const label l = eval.levelNum();
     const label d = eval.directionNum();
 
-    block<Type>& B = eval.B();
-    const labelVector shape = B.shape();
+    auto& B = eval.B();
+    const labelVector shape = B.dataShape();
 
     // Restricted array pointers
 

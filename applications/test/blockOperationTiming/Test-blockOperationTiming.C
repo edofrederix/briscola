@@ -237,14 +237,14 @@ int main(int argc, char *argv[])
 
     // Full block indexed loop
 
-    const vectorBlock& bf1 = f1.B();
-    const vectorBlock& bf2 = f2.B();
-    tensorBlock& bf3 = f3.B();
+    const auto& bf1 = f1.B();
+    const auto& bf2 = f2.B();
+    auto& bf3 = f3.B();
 
     t1 = high_resolution_clock::now();
 
     for (label iter = 0; iter < Niter; iter++)
-        forAllBlock(bf1, i, j, k)
+        forAllPaddedBlock(bf1, i, j, k)
             bf3(i,j,k) = bf1(i,j,k) * bf2(i,j,k);
 
     t2 = high_resolution_clock::now();

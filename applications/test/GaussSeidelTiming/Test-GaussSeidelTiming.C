@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     colocatedScalarField xs("xs", fvMsh);
     colocatedScalarField bs("bs", fvMsh);
 
-    forAllBlock(xs.B(), i, j, k)
+    forAllPaddedBlock(xs.B(), i, j, k)
     {
         xs.B()(i,j,k) = i-j+k;
         bs.B()(i,j,k) = -2*i-j+k;
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     colocatedVectorField xv("xv", fvMsh);
     colocatedVectorField bv("bv", fvMsh);
 
-    forAllBlock(xv.B(), i, j, k)
+    forAllPaddedBlock(xv.B(), i, j, k)
     {
         xv.B()(i,j,k) = vector::one*(i+j-k);
         bv.B()(i,j,k) = vector::one*(-2*i+j-k);

@@ -37,13 +37,13 @@ inline const Type& operator()
 }
 
 // Access to the base block
-inline block<Type>& B()
+inline typename meshDirection<Type,MeshType>::blockType& B()
 {
     return direction().B();
 }
 
 // Const access to the base block
-inline const block<Type>& B() const
+inline const typename meshDirection<Type,MeshType>::blockType& B() const
 {
     return direction().B();
 }

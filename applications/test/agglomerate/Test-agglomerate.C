@@ -32,15 +32,13 @@ void testAggMetrics(const fvMesh& fvMsh)
         {
             forAll(cc[l], d)
             {
-                const vectorBlock& B = cc[l][d].B();
+                const auto& B = cc[l][d].B();
 
-                const scalarBlock& Dx = delta[0][l][d].B();
-                const scalarBlock& Dy = delta[1][l][d].B();
-                const scalarBlock& Dz = delta[2][l][d].B();
+                const auto& Dx = delta[0][l][d].B();
+                const auto& Dy = delta[1][l][d].B();
+                const auto& Dz = delta[2][l][d].B();
 
-                for (int i = 1; i < B.l()-1; i++)
-                for (int j = 1; j < B.m()-1; j++)
-                for (int k = 1; k < B.n()-1; k++)
+                forAllBlock(B, i, j, k)
                 {
                     // Cell centers must be increasing along the base directions
 

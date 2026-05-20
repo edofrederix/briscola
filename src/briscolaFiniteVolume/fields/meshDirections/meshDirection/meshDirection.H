@@ -23,17 +23,12 @@ namespace fv
 template<class Type, class MeshType>
 class meshDirection
 :
-    // Keep the block private, to avoid unwarranted modification or inconsistent
-    // indexing. Direct access to the base block remains possible with the B()
-    // member function.
+    // Keep the block private. Direct access to the base block remains possible
+    // with the B() member function. A padding of 1 is added to account for
+    // ghost cells.
 
-    private block<Type>
+    public block<Type,1>
 {
-public:
-
-    // Number of ghost cell layers
-    static const label ghosts = 1;
-
 private:
 
     // Reference to the mesh
@@ -81,13 +76,19 @@ public:
     typedef typename pTraits<Type>::cmptType cmptType;
 
     // Block type
-    typedef block<Type> blockType;
+    typedef block<Type,1> blockType;
+
+    // Number of ghost layers
+    static constexpr int ghosts() { return blockType::p(); }
 
     // Provide public access to the block's refCount member functions
     using blockType::refCount::count;
     using blockType::refCount::unique;
     using blockType::refCount::operator--;
     using blockType::refCount::operator++;
+
+    // Provide public access to the block's operator() for element access
+    using blockType::operator();
 
     // Main constructor: construct from owner level, mesh, level number and
     // direction number
@@ -283,10 +284,10 @@ public:
     inline const ::Foam::briscola::level& lvl() const { return fvMsh_[l_]; }
 
     // Access to base block
-    inline block<Type>& B() { return *this; }
+    inline blockType& B() { return *this; }
 
     // Const access to the base
-    inline const block<Type>& B() const { return *this; }
+    inline const blockType& B() const { return *this; }
 
     // Internal cell start and end indices
     inline const faceLabel& I() const { return I_; }
@@ -306,55 +307,7 @@ public:
               ? lvl().Na()
               : lvl().N()
             )
-          + MeshType::padding[d_] + 2*ghosts*unitXYZ;
-    }
-
-    // Linear element access operator will not work efficiently due to
-    // ghost cells, so let's prevent its use
-    inline Type& operator()(const int i)
-    {
-        NotImplemented;
-        return this->B()(i);
-    }
-
-    inline const Type& operator()(const int i) const
-    {
-        NotImplemented;
-        return this->B()(i);
-    }
-
-    // (i,j,k) element access operator. Account for ghost cell layers.
-    inline Type& operator()
-    (
-        const int i,
-        const int j,
-        const int k
-    )
-    {
-        return blockType::operator()(i+ghosts, j+ghosts, k+ghosts);
-    }
-
-    // (i,j,k) const element access operator. Account for ghost cell layers.
-    inline const Type& operator()
-    (
-        const int i,
-        const int j,
-        const int k
-    ) const
-    {
-        return blockType::operator()(i+ghosts, j+ghosts, k+ghosts);
-    }
-
-    // (i,j,k) element access operator. Account for ghost cell layers.
-    inline Type& operator() (const labelVector& ijk)
-    {
-        return blockType::operator()(ijk + ghosts*unitXYZ);
-    }
-
-    // (i,j,k) const element access operator. Account for ghost cell layers.
-    inline const Type& operator() (const labelVector& ijk) const
-    {
-        return blockType::operator()(ijk + ghosts*unitXYZ);
+          + MeshType::padding[d_] + 2*ghosts()*unitXYZ;
     }
 
     // Return a component

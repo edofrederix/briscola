@@ -36,7 +36,7 @@ inline void block<Type,P>::clear()
 template<class Type, int P>
 inline void block<Type,P>::reAllocate(int l, int m, int n)
 {
-    if (size_ != l*m*n)
+    if (dataSize_ != (l+2*P)*(m+2*P)*(n+2*P))
     {
         clear();
 
