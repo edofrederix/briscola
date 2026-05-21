@@ -24,9 +24,9 @@ addToRunTimeSelectionTable
 
 bool TaylorBubbleJSI::read(const dictionary& dict)
 {
-    const scalar bubbleHeight = 0.04;
+    const scalar bubbleHeight = 0.03;
     const scalar bubbleCenter = 0.124;
-    const scalar bubbleRadius = 0.01;
+    const scalar bubbleRadius = 0.005;
 
     if (runTime_.time().value() == 0.0)
     {
