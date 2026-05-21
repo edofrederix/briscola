@@ -1,0 +1,33 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      alpha;
+}
+
+boundaryConditions
+{
+    inlet
+    {
+        type        Neumann;
+        gradient    0;
+    }
+
+    outlet
+    {
+        type        Neumann;
+        gradient    0;
+    }
+
+    sides
+    {
+        type        Neumann;
+        gradient    0;
+    }
+
+    wall
+    {
+        type        empty;
+    }
+}
