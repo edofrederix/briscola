@@ -370,7 +370,7 @@ void testMemberOperators()
 {
     const labelVector shape(2,3,4);
 
-    block<Type,P> b1(shape);
+    block<Type,P> b1(shape, Zero);
     block<scalar,P> s1(shape, 1.0);
 
     label l = 0;
@@ -1442,162 +1442,75 @@ int main(int argc, char *argv[])
     arguments::addBoolOption("parallel", "run in parallel");
     arguments args(argc, argv);
 
-    // Constructors
+    #define TEST(FUNC,P,LABEL)                                                 \
+        if (LABEL) FUNC<label,P>();                                            \
+        FUNC<scalar,P>();                                                      \
+        FUNC<vector,P>();                                                      \
+        FUNC<tensor,P>();                                                      \
+        FUNC<symmTensor,P>();                                                  \
+        FUNC<faceScalar,P>();                                                  \
+        FUNC<vertexScalar,P>();                                                \
+        FUNC<faceVector,P>();                                                  \
+        FUNC<vertexVector,P>();                                                \
+        FUNC<stencil,P>();                                                     \
+        FUNC<diagStencil,P>();
 
-    testConstructors<label,0>();
-    testConstructors<scalar,0>();
-    testConstructors<vector,0>();
-    testConstructors<tensor,0>();
-    testConstructors<symmTensor,0>();
-    testConstructors<faceScalar,0>();
-    testConstructors<vertexScalar,0>();
-    testConstructors<faceVector,0>();
-    testConstructors<vertexVector,0>();
-    testConstructors<stencil,0>();
-    testConstructors<diagStencil,0>();
+    #define TESTP(FUNC,LABEL)                                                  \
+        TEST(FUNC,0,LABEL)                                                     \
+        TEST(FUNC,1,LABEL)                                                     \
+        TEST(FUNC,2,LABEL)
 
-    testConstructors<label,1>();
-    testConstructors<scalar,1>();
-    testConstructors<vector,1>();
-    testConstructors<tensor,1>();
-    testConstructors<symmTensor,1>();
-    testConstructors<faceScalar,1>();
-    testConstructors<vertexScalar,1>();
-    testConstructors<faceVector,1>();
-    testConstructors<vertexVector,1>();
-    testConstructors<stencil,1>();
-    testConstructors<diagStencil,1>();
+    // General functionality
 
-    // Indexing
+    TESTP(testConstructors,true)
+    TESTP(testIndexing,true)
+    TESTP(testTransformations,true)
+    TESTP(testMemberOperators,true)
 
-    testIndexing<label,0>();
-    testIndexing<scalar,0>();
-    testIndexing<vector,0>();
-    testIndexing<tensor,0>();
-    testIndexing<symmTensor,0>();
-    testIndexing<faceScalar,0>();
-    testIndexing<vertexScalar,0>();
-    testIndexing<faceVector,0>();
-    testIndexing<vertexVector,0>();
-    testIndexing<stencil,0>();
-    testIndexing<diagStencil,0>();
-    testIndexing<label,0>();
-    testIndexing<scalar,0>();
+    // Don't test label primitive functions -- some functions fail due to cast
+    // to label
 
-    testIndexing<vector,1>();
-    testIndexing<tensor,1>();
-    testIndexing<symmTensor,1>();
-    testIndexing<faceScalar,1>();
-    testIndexing<vertexScalar,1>();
-    testIndexing<faceVector,1>();
-    testIndexing<vertexVector,1>();
-    testIndexing<stencil,1>();
-    testIndexing<diagStencil,1>();
-
-    // Transformations
-
-    testTransformations<label,0>();
-    testTransformations<scalar,0>();
-    testTransformations<vector,0>();
-    testTransformations<tensor,0>();
-    testTransformations<symmTensor,0>();
-    testTransformations<faceScalar,0>();
-    testTransformations<vertexScalar,0>();
-    testTransformations<faceVector,0>();
-    testTransformations<vertexVector,0>();
-    testTransformations<stencil,0>();
-    testTransformations<diagStencil,0>();
-
-    testTransformations<label,1>();
-    testTransformations<scalar,1>();
-    testTransformations<vector,1>();
-    testTransformations<tensor,1>();
-    testTransformations<symmTensor,1>();
-    testTransformations<faceScalar,1>();
-    testTransformations<vertexScalar,1>();
-    testTransformations<faceVector,1>();
-    testTransformations<vertexVector,1>();
-    testTransformations<stencil,1>();
-    testTransformations<diagStencil,1>();
-
-    // Member operators
-
-    testMemberOperators<label,0>();
-    testMemberOperators<scalar,0>();
-    testMemberOperators<vector,0>();
-    testMemberOperators<tensor,0>();
-    testMemberOperators<symmTensor,0>();
-    testMemberOperators<faceScalar,0>();
-    testMemberOperators<vertexScalar,0>();
-    testMemberOperators<faceVector,0>();
-    testMemberOperators<vertexVector,0>();
-    testMemberOperators<stencil,0>();
-    testMemberOperators<diagStencil,0>();
-
-    testMemberOperators<label,1>();
-    testMemberOperators<scalar,1>();
-    testMemberOperators<vector,1>();
-    testMemberOperators<tensor,1>();
-    testMemberOperators<symmTensor,1>();
-    testMemberOperators<faceScalar,1>();
-    testMemberOperators<vertexScalar,1>();
-    testMemberOperators<faceVector,1>();
-    testMemberOperators<vertexVector,1>();
-    testMemberOperators<stencil,1>();
-    testMemberOperators<diagStencil,1>();
-
-    // Primitive functions
-
-    testPrimitiveFunctions<scalar,0>();
-    testPrimitiveFunctions<vector,0>();
-    testPrimitiveFunctions<tensor,0>();
-    testPrimitiveFunctions<symmTensor,0>();
-    testPrimitiveFunctions<faceScalar,0>();
-    testPrimitiveFunctions<vertexScalar,0>();
-    testPrimitiveFunctions<faceVector,0>();
-    testPrimitiveFunctions<vertexVector,0>();
-
-    testPrimitiveFunctions<scalar,1>();
-    testPrimitiveFunctions<vector,1>();
-    testPrimitiveFunctions<tensor,1>();
-    testPrimitiveFunctions<symmTensor,1>();
-    testPrimitiveFunctions<faceScalar,1>();
-    testPrimitiveFunctions<vertexScalar,1>();
-    testPrimitiveFunctions<faceVector,1>();
-    testPrimitiveFunctions<vertexVector,1>();
+    TESTP(testPrimitiveFunctions,false)
 
     // Vector space functions
 
-    testVectorSpaceFunctions<vector,0>();
-    testVectorSpaceFunctions<tensor,0>();
-    testVectorSpaceFunctions<symmTensor,0>();
-    testVectorSpaceFunctions<vector,1>();
-    testVectorSpaceFunctions<tensor,1>();
-    testVectorSpaceFunctions<symmTensor,1>();
+    #define TEST_VS(P)                                                         \
+    testVectorSpaceFunctions<vector,P>();                                      \
+    testVectorSpaceFunctions<tensor,P>();                                      \
+    testVectorSpaceFunctions<symmTensor,P>();
+
+    TEST_VS(0)
+    TEST_VS(1)
+    TEST_VS(2)
 
     // Stencil functions
 
-    testStencilFunctions<stencil,0>();
-    testStencilFunctions<diagStencil,0>();
+    #define TEST_SF(P)                                                         \
+    testStencilFunctions<stencil,P>();                                         \
+    testStencilFunctions<diagStencil,P>();
 
-    testStencilFunctions<stencil,1>();
-    testStencilFunctions<diagStencil,1>();
+    TEST_SF(0)
+    TEST_SF(1)
+    TEST_SF(2)
 
     // Face space functions
 
-    testFaceSpaceFunctions<scalar,0>();
-    testFaceSpaceFunctions<vector,0>();
+    #define TEST_FS(P)                                                         \
+    testFaceSpaceFunctions<scalar,P>();                                        \
+    testFaceSpaceFunctions<vector,P>();
 
-    testFaceSpaceFunctions<scalar,1>();
-    testFaceSpaceFunctions<vector,1>();
+    TEST_FS(0)
+    TEST_FS(1)
+    TEST_FS(2)
 
     // Specific type functions
 
-    testScalarFunctions<0>();
-    testVectorFunctions<0>();
-    testTensorFunctions<0>();
+    #define TEST_ST(P)                                                         \
+    testScalarFunctions<P>();                                                  \
+    testVectorFunctions<P>();                                                  \
+    testTensorFunctions<P>();
 
-    testScalarFunctions<1>();
-    testVectorFunctions<1>();
-    testTensorFunctions<1>();
+    TEST_ST(0)
+    TEST_ST(1)
+    TEST_ST(2)
 }
