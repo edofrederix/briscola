@@ -329,6 +329,9 @@ public:
     template<class Selector, int Degree = 3> void evaluate();
     template<class Selector, int Degree = 3> void correct();
 
+    // Correct unset boundary conditions as homogeneous Neumann
+    void correctUnsetBoundaryConditions();
+
     // Correct immersed boundary conditions
     void correctImmersedBoundaryConditions();
 

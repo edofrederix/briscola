@@ -1,7 +1,6 @@
 #include "limiterScheme.H"
 #include "colocated.H"
 #include "staggered.H"
-#include "midPointGaussGradientScheme.H"
 
 namespace Foam
 {
@@ -110,20 +109,61 @@ tmp<faceField<scalar,MeshType>> limiterScheme<Type,MeshType>::rType
 
     R.make(deep);
 
-    tmp<meshField<vector,MeshType>> tGrad =
-        midPointGaussGradientScheme<scalar,MeshType>(field.fvMsh()).grad(field);
+    // Field
 
-    meshField<vector,MeshType>& grad = tGrad.ref();
+    if (sGradPtr_.empty())
+        sGradPtr_.set
+        (
+            meshField<vector,MeshType>::New
+            (
+                "grad(" + field.name() + ")",
+                field.fvMsh()
+            ).ptr()
+        );
+
+    meshField<vector,MeshType>& grad = sGradPtr_();
+
+    // Gradient
+
+    if (sGradSchemePtr_.empty())
+        sGradSchemePtr_.set
+        (
+            new midPointGaussGradientScheme<scalar,MeshType>
+            (
+                field.fvMsh()
+            )
+        );
+
+    midPointGaussGradientScheme<scalar,MeshType>& gradScheme =
+        sGradSchemePtr_();
+
+    grad = gradScheme.grad(field);
+
+    // Restriction
 
     if (deep)
-        restrict(grad);
+    {
+        if (sRestrictionSchemePtr_.empty())
+            sRestrictionSchemePtr_.set
+            (
+                restrictionScheme<vector,MeshType>::New
+                (
+                    field.fvMsh(),
+                    "average"
+                ).ptr()
+            );
 
-    grad.correctBoundaryConditions();
+        sRestrictionSchemePtr_->restrict(grad);
+    }
 
     const meshField<vector,MeshType>& cc =
         field.fvMsh().template metrics<MeshType>().cellCenters();
 
-    forAllFaces(R, fd, l, d, i, j, k)
+    // Lambda function definition
+
+    auto calc =
+        [&](label fd, label l, label d, label i, label j, label k)
+        -> scalar
     {
         // OpenFOAM's way (see NVDTVD.H)
 
@@ -146,13 +186,31 @@ tmp<faceField<scalar,MeshType>> limiterScheme<Type,MeshType>::rType
 
         if (mag(gradc) >= 1000*mag(gradf))
         {
-            R[fd](l,d,ijk) = 2*1000*sign(gradc)*sign(gradf) - 1;
+            return 2*1000*sign(gradc)*sign(gradf) - 1;
         }
         else
         {
-            R[fd](l,d,ijk) = 2*gradc/gradf - 1;
+            return 2*gradc/gradf - 1;
         }
-    }
+    };
+
+    // Communicate/compute
+
+    const label nReq = Pstream::nRequests();
+
+    grad.template prepare<bcsOfType<parallelBoundary>>();
+    grad.correctUnsetBoundaryConditions();
+
+    forAllInternalFaces(R, fd, l, d, i, j, k)
+        R[fd](l,d,i,j,k) = calc(fd,l,d,i,j,k);
+
+    if (Pstream::parRun())
+        UPstream::waitRequests(nReq);
+
+    grad.template evaluate<bcsOfType<parallelBoundary>>();
+
+    forAllBoundaryFaces(R, fd, lu, l, d, i, j, k)
+        R[fd](l,d,i,j,k) = calc(fd,l,d,i,j,k);
 
     return tR;
 }
@@ -172,20 +230,58 @@ tmp<faceField<scalar,MeshType>> limiterScheme<Type,MeshType>::rType
 
     R.make(deep);
 
-    tmp<meshField<tensor,MeshType>> tGrad =
-        midPointGaussGradientScheme<vector,MeshType>(field.fvMsh()).grad(field);
+    // Field
 
-    meshField<tensor,MeshType>& grad = tGrad.ref();
+    if (vGradPtr_.empty())
+        vGradPtr_.set
+        (
+            meshField<tensor,MeshType>::New
+            (
+                "grad(" + field.name() + ")",
+                field.fvMsh()
+            ).ptr()
+        );
+
+    meshField<tensor,MeshType>& grad = vGradPtr_();
+
+    // Gradient
+
+    if (vGradSchemePtr_.empty())
+        vGradSchemePtr_.set
+        (
+            new midPointGaussGradientScheme<vector,MeshType>
+            (
+                field.fvMsh()
+            )
+        );
+
+    grad = vGradSchemePtr_->grad(field);
+
+    // Restriction
 
     if (deep)
-        restrict(grad);
+    {
+        if (vRestrictionSchemePtr_.empty())
+            vRestrictionSchemePtr_.set
+            (
+                restrictionScheme<tensor,MeshType>::New
+                (
+                    field.fvMsh(),
+                    "average"
+                ).ptr()
+            );
 
-    grad.correctBoundaryConditions();
+        vRestrictionSchemePtr_->restrict(grad);
+    }
 
     const meshField<vector,MeshType>& cc =
         field.fvMsh().template metrics<MeshType>().cellCenters();
 
-    forAllFaces(R, fd, l, d, i, j, k)
+    // Lambda function definition
+
+    auto calc =
+        [&](label fd, label l, label d, label i, label j, label k)
+        -> scalar
     {
         // OpenFOAM's way (see NVDTVDV.H)
 
@@ -210,13 +306,31 @@ tmp<faceField<scalar,MeshType>> limiterScheme<Type,MeshType>::rType
 
         if (mag(gradc) >= 1000*mag(gradf))
         {
-            R[fd](l,d,ijk) = 2*1000*sign(gradc)*sign(gradf) - 1;
+           return 2*1000*sign(gradc)*sign(gradf) - 1;
         }
         else
         {
-            R[fd](l,d,ijk) = 2*gradc/gradf - 1;
+            return 2*gradc/gradf - 1;
         }
-    }
+    };
+
+    // Communicate/compute
+
+    const label nReq = Pstream::nRequests();
+
+    grad.template prepare<bcsOfType<parallelBoundary>>();
+    grad.correctUnsetBoundaryConditions();
+
+    forAllInternalFaces(R, fd, l, d, i, j, k)
+        R[fd](l,d,i,j,k) = calc(fd,l,d,i,j,k);
+
+    if (Pstream::parRun())
+        UPstream::waitRequests(nReq);
+
+    grad.template evaluate<bcsOfType<parallelBoundary>>();
+
+    forAllBoundaryFaces(R, fd, lu, l, d, i, j, k)
+        R[fd](l,d,i,j,k) = calc(fd,l,d,i,j,k);
 
     return tR;
 }
