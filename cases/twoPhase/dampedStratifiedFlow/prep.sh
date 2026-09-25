@@ -7,6 +7,12 @@ MODE=${1:-colocated}
 # height)
 NY=${2:-16}
 
+# Grading factor
+G=${3:-4}
+
+# Height of a brick (hardcoded)
+L=0.025
+
 ##
 
 if [[ ! $NY =~ ^[0-9]+$ ]]; then
@@ -14,7 +20,11 @@ if [[ ! $NY =~ ^[0-9]+$ ]]; then
     exit
 fi
 
-DY=$(echo "print(0.025/$NY/2.0)" | python)
+GI=$(echo "print(1.0/$G)" | python)
+
+R=$(echo "print($G**(1.0/($NY-1.0)))" | python)
+
+DY=$(echo "print($L*($R-1.0)/($G*$R - 1.0))" | python)
 DY2=$(echo "print($DY*2.0)" | python)
 
 NX=$(echo "print($NY*4)" | python)
@@ -28,6 +38,7 @@ case "$MODE" in
         # thickness of two cells
 
         m4 -DVARTHICKNESS=$DY2 -DVARNX=$NX -DVARNY=$NY -DVARNZ=$NZ \
+            -DVARG=$G -DVARGI=$GI \
             system/briscolaMeshDict.m4 > system/briscolaMeshDict
 
         ;;
@@ -38,6 +49,7 @@ case "$MODE" in
         # cell
 
         m4 -DVARTHICKNESS=$DY -DVARNX=$NX -DVARNY=$NY -DVARNZ=$NZ \
+            -DVARG=$G -DVARGI=$GI \
             system/briscolaMeshDict.m4 > system/briscolaMeshDict
 
         ;;

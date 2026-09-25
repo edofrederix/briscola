@@ -37,25 +37,25 @@ bricks
     {
         vertices    (0 10 2 12 1 11 3 13);
         N           (VARNX VARNY VARNZ);
-        grading     geometric (1 4 1);
+        grading     geometric (1 VARG 1);
     }
     1
     {
         vertices    (2 12 4 14 3 13 5 15);
         N           (VARNX VARNY VARNZ);
-        grading     geometric (1 0.25 1);
+        grading     geometric (1 VARGI 1);
     }
     2
     {
         vertices    (4 14 6 16 5 15 7 17);
         N           (VARNX VARNY VARNZ);
-        grading     geometric (1 4 1);
+        grading     geometric (1 VARG 1);
     }
     3
     {
         vertices    (6 16 8 18 7 17 9 19);
         N           (VARNX VARNY VARNZ);
-        grading     geometric (1 0.25 1);
+        grading     geometric (1 VARGI 1);
     }
 );
 
