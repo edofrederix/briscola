@@ -64,15 +64,8 @@ scalar immersedBoundarySphere::wallDistance(vector c, vector nb) const
 {
     // Return -1 if the center point is not a fluid point
     // or if the neighboring point is not inside the sphere
-    if (this->isInside(c))
-    {
+    if (this->isInside(c) || !this->isInside(nb))
         return -1;
-    }
-
-    if (!this->isInside(nb))
-    {
-        return -1;
-    }
 
     // Normalized direction vector of the line
     vector D = (nb-c)/mag(nb-c);

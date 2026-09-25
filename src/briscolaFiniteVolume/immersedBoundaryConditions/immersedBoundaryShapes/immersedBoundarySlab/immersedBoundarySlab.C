@@ -42,7 +42,7 @@ immersedBoundarySlab::~immersedBoundarySlab()
 
 bool immersedBoundarySlab::isInside(vector point) const
 {
-    // Distance to the closest face
+    // Distance to the closest face (negative if inside slab)
     const scalar dist = Foam::mag((point - center_) & normal_) - 0.5*thickness_;
 
     // Points exactly on the slab's surface are treated as ib

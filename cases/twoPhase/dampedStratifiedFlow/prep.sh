@@ -14,7 +14,7 @@ if [[ ! $NY =~ ^[0-9]+$ ]]; then
     exit
 fi
 
-DY=$(echo "print(0.025/$NY)" | python)
+DY=$(echo "print(0.025/$NY/2.0)" | python)
 DY2=$(echo "print($DY*2.0)" | python)
 
 NX=$(echo "print($NY*4)" | python)
