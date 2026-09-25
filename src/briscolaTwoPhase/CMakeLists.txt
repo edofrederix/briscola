@@ -6,6 +6,7 @@ target_sources(briscolaTwoPhase PRIVATE
     vof/vof/vof.C
     vof/geometricVof/geometricVof.C
     vof/splitAdvection/splitAdvection.C
+    vof/frozenVof/frozenVof.C
 
     tagAlgorithms/tagAlgorithm/tagAlgorithm.C
     tagAlgorithms/twoPass/twoPass.C
@@ -15,6 +16,7 @@ target_sources(briscolaTwoPhase PRIVATE
     LVE/LVE.C
 
     normalSchemes/normalScheme/normalScheme.C
+    normalSchemes/noNormalScheme/noNormalScheme.C
     normalSchemes/Youngs/Youngs.C
     normalSchemes/LSGIR/LSGIR.C
     normalSchemes/LSFIR/LSFIR.C

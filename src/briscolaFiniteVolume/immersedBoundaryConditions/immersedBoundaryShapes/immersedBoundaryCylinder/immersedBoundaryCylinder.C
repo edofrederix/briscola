@@ -77,15 +77,8 @@ scalar immersedBoundaryCylinder::wallDistance(vector c, vector nb) const
 {
     // Return -1 if the center point is not a fluid point
     // or if the neighboring point is not inside the cylinder
-    if (this->isInside(c))
-    {
+    if (this->isInside(c) || !this->isInside(nb))
         return -1;
-    }
-
-    if (!this->isInside(nb))
-    {
-        return -1;
-    }
 
     // Cylinder axis
     vector axis = end_ - start_;
