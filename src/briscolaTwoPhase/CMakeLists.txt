@@ -37,6 +37,9 @@ target_sources(briscolaTwoPhase PRIVATE
     curvatureSchemes/parabolicFit/parabolicFit.C
 
     limiterSchemes/twoPhaseLimiterScheme/twoPhaseLimiterSchemes.C
+
+    functionObjects/budgetPrimitivesStaggeredTwoPhase/phaseBudgetPrimitives/phaseBudgetPrimitives.C
+    functionObjects/budgetPrimitivesStaggeredTwoPhase/budgetPrimitivesStaggeredTwoPhase.C
 )
 
 # Generate the lnInclude directory to provide wmake-like behavior

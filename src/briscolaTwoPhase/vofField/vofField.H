@@ -73,6 +73,12 @@ public:
         return surfaceTensionSchemePtr_();
     }
 
+    // Return const access to the surface tension sheme
+    inline const surfaceTensionScheme& surfaceTension() const
+    {
+        return surfaceTensionSchemePtr_();
+    }
+
     // Return access to the Vof model
     inline vof& vf() { return vfPtr_(); }
 

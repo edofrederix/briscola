@@ -124,6 +124,12 @@ public:
     // Return const access to the volume fraction
     inline const colocatedScalarField& alpha() const { return alpha_; }
 
+    // Return access to the volume fraction
+    inline vofField& alphavf() { return alpha_; }
+
+    // Return const access to the volume fraction
+    inline const vofField& alphavf() const { return alpha_; }
+
     // Gravitational acceleration
     const vector& g() const { return g_; }
 

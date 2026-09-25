@@ -46,4 +46,17 @@ functions
     {
         type    stratifiedFlow;
     }
+
+    budgetPrimitives
+    {
+        type    budgetPrimitivesStaggeredTwoPhase;
+        samplingSteps   10; // Update every 10 time steps to reduce computational cost
+    }
+
+    timeAverage
+    {
+        type    timeAverage;
+        fields  (p Uc U fui1 fui2);
+        startTime 0.1;
+    }
 }
