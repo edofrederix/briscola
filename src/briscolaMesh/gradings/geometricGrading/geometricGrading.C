@@ -65,9 +65,7 @@ tmp<scalarField> geometricGrading::operator()
         }
         else
         {
-            const scalar d = (g-1)/(g*(Foam::pow(g,n-1)-1));
-
-            return d*g*(Foam::pow(g,f*(n-1))-1)/(g-1);
+            return (Foam::pow(g, f*n) - 1.0)/(Foam::pow(g, n) - 1.0);
         }
     }
 }
