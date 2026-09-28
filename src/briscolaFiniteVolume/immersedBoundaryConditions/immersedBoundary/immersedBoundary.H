@@ -51,6 +51,10 @@ protected:
     // neighboring cell in the IB, and 0 in other cells
     meshField<scalar,MeshType> wallAdjMask_;
 
+    // For wall-adjacent cells provide the wall-normal vectors pointing into the
+    // fluid region
+    meshField<vector,MeshType> wallNormalAdj_;
+
     // This wall distance field stores the wall distances from IB-adjacent cells
     // to the IB as faceScalars
     meshField<faceScalar,MeshType> wallDistAdj_;
@@ -90,20 +94,18 @@ public:
     // Destructor
     virtual ~immersedBoundary();
 
-    // Returns true if the position vector (x,y,z) is inside the immersed
-    // boundary
+    // Returns true if the provided point is inside the immersed boundary
     bool isInside(vector) const;
 
-    // Returns dimensionless wall distance given two points The first point is a
-    // fluid cell and the second point is an IB cell
+    // Returns dimensionless wall distance given two points. The first point
+    // must be in the fluid and the second point in the IB.
     scalar wallDistance(vector, vector) const;
 
-    // Returns the distance from a ghost cell to the immersed boundary in the
-    // wall-normal direction
+    // Returns the signed distance from a point to the immersed boundary surface
+    // in the wall-normal direction. Negative means the point is in the fluid.
     scalar wallNormalDistance(vector) const;
 
     // Returns the coordinates of the mirror point in the wall-normal direction
-    // of a point located inside of the immersed boundary
     vector mirrorPoint(vector) const;
 
     // Check if any of the IB shapes overlap within the mesh
@@ -128,6 +130,11 @@ public:
     inline const meshField<scalar,MeshType>& wallAdjMask() const
     {
         return wallAdjMask_;
+    }
+
+    inline const meshField<vector,MeshType>& wallNormalAdj() const
+    {
+        return wallNormalAdj_;
     }
 
     inline const meshField<faceScalar,MeshType>& wallDistAdj() const

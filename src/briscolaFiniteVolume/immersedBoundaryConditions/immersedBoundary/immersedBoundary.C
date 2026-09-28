@@ -95,6 +95,7 @@ void immersedBoundary<MeshType>::calculateWallDistances()
         fvMshMetrics_.cellCenters();
 
     wallDistAdj_ = Zero;
+    wallNormalAdj_ = Zero;
     wallDistGhost_ = Zero;
     neighborDist_ = Zero;
 
@@ -102,6 +103,17 @@ void immersedBoundary<MeshType>::calculateWallDistances()
     {
         const labelVector ijk(i,j,k);
         const faceLabel I = this->fvMsh_.template I<MeshType>(l,d);
+
+        if (wallAdjMask_(l,d,ijk))
+        {
+            const vector c(cc[l][d](ijk));
+            const vector mp(this->mirrorPoint(c));
+
+            const vector normal = c - mp;
+
+            wallNormalAdj_(l,d,ijk) =
+                normal/(Foam::mag(normal) + 1e-12);
+        }
 
         if (!this->isInside(cc(l,d,ijk)))
         {
@@ -165,6 +177,7 @@ void immersedBoundary<MeshType>::calculateWallDistances()
         }
     }
 
+    wallNormalAdj_.template correct<bcsOfType<parallelBoundary>>();
     wallDistAdj_.template correct<bcsOfType<parallelBoundary>>();
     wallDistGhost_.template correct<bcsOfType<parallelBoundary>>();
     neighborDist_.template correct<bcsOfType<parallelBoundary>>();
@@ -266,7 +279,16 @@ immersedBoundary<MeshType>::immersedBoundary
     ),
     wallAdjMask_
     (
-        "ghostMask",
+        "wallAdjMask",
+        fvMsh_,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE,
+        true,
+        true
+    ),
+    wallNormalAdj_
+    (
+        "wallNormalAdj",
         fvMsh_,
         IOobject::NO_READ,
         IOobject::NO_WRITE,
@@ -412,98 +434,42 @@ scalar immersedBoundary<MeshType>::wallDistance(vector c, vector nb) const
 }
 
 template<class MeshType>
-scalar immersedBoundary<MeshType>::wallNormalDistance
-(
-    vector gc
-) const
+scalar immersedBoundary<MeshType>::wallNormalDistance(vector p) const
 {
-    if (!this->isInside(gc))
+    scalar dist;
+
+    if (isInside(p))
     {
-        FatalError
-            << "Ghost cell should be inside the immersed boundary."
-            << endl;
-        FatalError.exit();
+        dist = GREAT;
+
+        forAll(shapes_, s)
+            if (shapes_[s].isInside(p))
+                dist = Foam::min(dist, shapes_[s].wallNormalDistance(p));
     }
-
-    scalar dist = -1;
-
-    for (int s = 0; s < shapes_.size(); s++)
+    else
     {
-        if (Foam::mag(dist + 1.0) < 0.01)
-        {
-            dist = shapes_[s].wallNormalDistance(gc);
-        }
+        dist = -GREAT;
 
-        if
-        (
-               (shapes_[s].wallNormalDistance(gc) >= 0)
-            && (shapes_[s].wallNormalDistance(gc) <= dist)
-        )
-        {
-            dist = shapes_[s].wallNormalDistance(gc);
-        }
-    }
-
-    if (dist < 0)
-    {
-        FatalError
-            << "No immersed boundary intersection found."
-            << " Distance = " << dist << ", for ghost cell = "
-            << gc
-            << endl;
-        FatalError.exit();
+        forAll(shapes_, s)
+            dist = Foam::max(dist, shapes_[s].wallNormalDistance(p));
     }
 
     return dist;
 }
 
 template<class MeshType>
-vector immersedBoundary<MeshType>::mirrorPoint
-(
-    vector gc
-) const
+vector immersedBoundary<MeshType>::mirrorPoint(vector p) const
 {
-    if (!this->isInside(gc))
-    {
-        FatalError
-            << "Ghost cell should be inside the immersed boundary."
-            << endl;
-        FatalError.exit();
-    }
+    const scalar dist = wallNormalDistance(p);
 
-    vector mirror = gc;
-    scalar dist = -1;
+    forAll(shapes_, s)
+        if (shapes_[s].wallNormalDistance(p) == dist)
+            return shapes_[s].mirrorPoint(p);
 
-    for (int s = 0; s < shapes_.size(); s++)
-    {
-        if (Foam::mag(dist+1) < 0.01)
-        {
-            dist = shapes_[s].wallNormalDistance(gc);
-            mirror = shapes_[s].mirrorPoint(gc);
-        }
+    FatalErrorInFunction
+        << "Could not find mirror point" << abort(FatalError);
 
-        if
-        (
-               (shapes_[s].wallNormalDistance(gc) >= 0)
-            && (shapes_[s].wallNormalDistance(gc) <= dist)
-        )
-        {
-            dist = shapes_[s].wallNormalDistance(gc);
-            mirror = shapes_[s].mirrorPoint(gc);
-        }
-    }
-
-    if (dist < 0)
-    {
-        FatalError
-            << "No immersed boundary intersection found."
-            << " Distance = " << dist << ", for ghost cell = "
-            << gc
-            << endl;
-        FatalError.exit();
-    }
-
-    return mirror;
+    return vector::zero;
 }
 
 template<class MeshType>

@@ -49,16 +49,15 @@ public:
     // Check if point is inside shape
     virtual bool isInside(vector) const = 0;
 
-    // Returns dimensionless wall distance given two points The first point is a
-    // fluid cell and the second point is an IB cell
+    // Return dimensionless wall distance given two points. The first point must
+    // be in the fluid and the second point in the IB.
     virtual scalar wallDistance(vector, vector) const = 0;
 
-    // Returns the distance from a ghost cell to the immersed boundary in the
-    // wall-normal direction
+    // Return the signed distance from a point to the immersed boundary surface
+    // in the wall-normal direction. Negative means the point is in the fluid.
     virtual scalar wallNormalDistance(vector) const = 0;
 
-    // Returns the coordinates of the mirror point of a ghost cell in the
-    // wall-normal direction of a shape
+    // Returns the coordinates of the mirror point in the wall-normal direction
     virtual vector mirrorPoint(vector) const = 0;
 
     // Inverted shape

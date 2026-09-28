@@ -37,27 +37,7 @@ immersedBoundarySphere::~immersedBoundarySphere()
 
 bool immersedBoundarySphere::isInside(vector point) const
 {
-    // Check if distance from point to sphere center
-    // is smaller than the sphere's radius
-    if(mag(center_ - point) <= radius_)
-    {
-        if(!this->inverted_)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    else if(!this->inverted_)
-    {
-        return false;
-    }
-    else
-    {
-        return true;
-    }
+    return (mag(center_ - point) <= radius_) != this->inverted_;
 }
 
 scalar immersedBoundarySphere::wallDistance(vector c, vector nb) const
@@ -94,25 +74,14 @@ scalar immersedBoundarySphere::wallDistance(vector c, vector nb) const
 
 scalar immersedBoundarySphere::wallNormalDistance(vector gc) const
 {
-    // Return -1 if the point is outside of the sphere
-    if (!this->isInside(gc))
-    {
-        return -1;
-    }
-
     // Return radius minus distance from center to ghost cell
     return (inverted_ ? mag(gc-center_) - radius_ : radius_ - mag(gc-center_));
 }
 
 vector immersedBoundarySphere::mirrorPoint(vector gc) const
 {
+    // Wall-normal distance
     scalar dist = this->wallNormalDistance(gc);
-
-    if (dist <= 0 || gc == center_)
-    {
-        // This could be a problem if gc is exactly on the IB
-        return gc;
-    }
 
     // Wall-normal unit vector
     vector n = inverted_ ?

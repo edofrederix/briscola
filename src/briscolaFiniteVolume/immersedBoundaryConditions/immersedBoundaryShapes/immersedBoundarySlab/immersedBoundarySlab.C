@@ -42,11 +42,9 @@ immersedBoundarySlab::~immersedBoundarySlab()
 
 bool immersedBoundarySlab::isInside(vector point) const
 {
-    // Distance to the closest face (negative if inside slab)
-    const scalar dist = Foam::mag((point - center_) & normal_) - 0.5*thickness_;
-
-    // Points exactly on the slab's surface are treated as ib
-    return inverted_ ? dist > 0 : dist < 0;
+    return
+        (mag((point - center_) & normal_) <= 0.5*thickness_)
+     != this->inverted_;
 }
 
 scalar immersedBoundarySlab::wallDistance(vector c, vector nb) const
@@ -67,10 +65,6 @@ scalar immersedBoundarySlab::wallDistance(vector c, vector nb) const
 
 scalar immersedBoundarySlab::wallNormalDistance(vector gc) const
 {
-    // Return -1 if the point is not inside the shape
-    if (!this->isInside(gc))
-        return -1;
-
     const scalar sg = ((gc - center_) & normal_);
 
     return inverted_
@@ -80,9 +74,6 @@ scalar immersedBoundarySlab::wallNormalDistance(vector gc) const
 
 vector immersedBoundarySlab::mirrorPoint(vector gc) const
 {
-    if (this->wallNormalDistance(gc) <= 0)
-        return gc;
-
     const scalar sg = ((gc - center_) & normal_);
 
     // Reflect in the face on the same side of the mid-plane as gc

@@ -46,31 +46,11 @@ immersedBoundaryCylinder::~immersedBoundaryCylinder()
 
 bool immersedBoundaryCylinder::isInside(vector point) const
 {
-    // Check if the distance to the cylinder
-    // axis is smaller than the radius
-    if
-    (
-        (mag((point - start_) ^ (end_ - start_))
-        / mag(end_ - start_)) <= radius_
-    )
-    {
-        if(!this->inverted_)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    else if(!this->inverted_)
-    {
-        return false;
-    }
-    else
-    {
-        return true;
-    }
+    const vector axis = end_ - start_;
+
+    return
+        (mag((point - start_) ^ axis)/mag(axis) <= radius_)
+     != this->inverted_;
 }
 
 scalar immersedBoundaryCylinder::wallDistance(vector c, vector nb) const
@@ -134,12 +114,6 @@ scalar immersedBoundaryCylinder::wallDistance(vector c, vector nb) const
 
 scalar immersedBoundaryCylinder::wallNormalDistance(vector gc) const
 {
-    // Return -1 if the point is outside of the cylinder
-    if (!this->isInside(gc))
-    {
-        return -1;
-    }
-
     // Normalized cylinder axis vector
     vector axis = (end_-start_)/mag(end_-start_);
 
@@ -152,13 +126,8 @@ scalar immersedBoundaryCylinder::wallNormalDistance(vector gc) const
 
 vector immersedBoundaryCylinder::mirrorPoint(vector gc) const
 {
+    // Wall-normal distance
     scalar dist = this->wallNormalDistance(gc);
-
-    if (dist <= 0 || dist == radius_)
-    {
-        // This could be a problem if gc is exactly on the IB
-        return gc;
-    }
 
     // Normalized cylinder axis vector
     vector axis = (end_-start_)/mag(end_-start_);
@@ -170,9 +139,10 @@ vector immersedBoundaryCylinder::mirrorPoint(vector gc) const
     vector p = start_ + axis * (axis & g);
 
     // Wall-normal unit vector
-    vector n = inverted_ ?
-        (p-gc)/max(mag(p-gc),1e-10) :
-        (gc-p)/max(mag(gc-p),1e-10);
+    vector n =
+        inverted_
+      ? (p-gc)/max(mag(p-gc),1e-10)
+      : (gc-p)/max(mag(gc-p),1e-10);
 
     // Return gc plus twice the normal vector
     return (gc + 2.0*n*dist);

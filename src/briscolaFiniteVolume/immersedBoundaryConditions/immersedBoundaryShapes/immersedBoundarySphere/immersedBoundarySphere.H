@@ -34,14 +34,16 @@ public:
     // Return true of the vector is inside the shape
     bool isInside(vector) const;
 
-    // Give the wall distance to the shape
-    scalar wallDistance(vector, vector) const;
+    // Return dimensionless wall distance given two points. The first point must
+    // be in the fluid and the second point in the IB.
+    virtual scalar wallDistance(vector, vector) const;
 
-    // Give the distance normal to the shape
-    scalar wallNormalDistance(vector) const;
+    // Return the signed distance from a point to the immersed boundary surface
+    // in the wall-normal direction. Negative means the point is in the fluid.
+    virtual scalar wallNormalDistance(vector) const;
 
-    // Mirror the given point in the shape surface
-    vector mirrorPoint(vector) const;
+    // Returns the coordinates of the mirror point in the wall-normal direction
+    virtual vector mirrorPoint(vector) const;
 };
 
 }
