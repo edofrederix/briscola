@@ -24,12 +24,31 @@ normalScheme::normalScheme
     colocatedVectorField
     (
         "normal",
-        fvMsh
+        fvMsh,
+        alpha.name() == "alpha"
+      ? IOobject::READ_IF_PRESENT
+      : IOobject::NO_READ,
+        IOobject::AUTO_WRITE,
+        true,
+        true
     ),
     fvMsh_(fvMsh),
     dict_(dict),
     alpha_(alpha)
 {
+    if (alpha.name() == "alpha")
+    {
+        this->addBoundaryConditions();
+    }
+    else
+    {
+        if (fvMsh.db().foundObject<colocatedVectorField>("normal"))
+            this->transferBoundaryConditions
+            (
+                fvMsh.db().lookupObject<colocatedVectorField>("normal")
+            );
+    }
+
     // Initialize the normal as zero
 
     static_cast<colocatedVectorField&>(*this) = Zero;
