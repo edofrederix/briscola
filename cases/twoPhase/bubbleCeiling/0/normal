@@ -1,0 +1,25 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      alpha;
+}
+
+boundaryConditions
+{
+    bottomAndTop
+    {
+        type    lubrication;
+    }
+
+    sides
+    {
+        type    dummy;
+    }
+
+    ceiling
+    {
+        type    lubrication;
+    }
+}
