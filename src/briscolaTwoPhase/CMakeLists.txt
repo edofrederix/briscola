@@ -22,8 +22,6 @@ target_sources(briscolaTwoPhase PRIVATE
     normalSchemes/LSFIR/LSFIR.C
     normalSchemes/MYC/MYC.C
 
-    normalSchemes/normalImmersedBoundaryConditions/lubricationImmersedBoundaryCondition/lubricationImmersedBoundaryCondition.C
-
     twoPhaseModels/twoPhaseModel/TwoPhaseModel.C
     twoPhaseModels/twoPhaseModel/twoPhaseModel.C
     twoPhaseModels/twoPhaseModel/twoPhaseModels.C
