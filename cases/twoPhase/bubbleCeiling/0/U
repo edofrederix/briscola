@@ -20,7 +20,7 @@ boundaryConditions
 
     ceiling
     {
-        type        MittalDirichlet;
+        type        penalizationDirichlet;
         value       (0 0 0);
     }
 }

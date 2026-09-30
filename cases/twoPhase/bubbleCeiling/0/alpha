@@ -10,8 +10,8 @@ boundaryConditions
 {
     bottomAndTop
     {
-        type        Neumann;
-        gradient    0;
+        type        Dirichlet;
+        value       0;
     }
 
     sides
@@ -22,6 +22,7 @@ boundaryConditions
 
     ceiling
     {
-        type        empty;
+        type        penalizationDirichlet;
+        value       0;
     }
 }
