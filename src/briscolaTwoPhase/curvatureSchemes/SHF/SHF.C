@@ -3,6 +3,7 @@
 #include "vof.H"
 #include "exSchemes.H"
 #include "rectilinearMesh.H"
+#include "periodicBoundary.H"
 
 namespace Foam
 {
@@ -107,6 +108,12 @@ void SHF::correct()
         pBoundary[i] =
             fvMsh_.msh().boundaries().find(faceOffsets[i])
            .castable<parallelBoundary>();
+
+    faceLabel periodic;
+    for (int i = 0; i < 6; i++)
+        periodic[i] =
+            fvMsh_.msh().boundaries().find(faceOffsets[i])
+           .castable<periodicBoundary>();
 
     const labelVector N = fvMsh_.template N<colocated>();
     const faceLabel I = fvMsh_.template I<colocated>();
@@ -238,6 +245,15 @@ void SHF::correct()
             const label jj = ijk[d.y()];
             const label kk = ijk[d.z()];
 
+            // Global cell size at primary offset a, wrapped across periodic
+            // boundaries
+
+            auto gSize = [&](const label a) -> scalar
+            {
+                const label nG = gSizes.size();
+                return gSizes[((globalStart[p] + ii + a) % nG + nG) % nG];
+            };
+
             // Look in positive primary direction
 
             for (int a = 1; a <= 3; a++)
@@ -249,7 +265,11 @@ void SHF::correct()
                 if (ii + a > I[f.right()] && !pBoundary[f.right()])
                     break;
 
-                if (globalStart[p] + ii + a >= gSizes.size())
+                if
+                (
+                    globalStart[p] + ii + a >= gSizes.size()
+                 && !periodic[f.right()]
+                )
                     break;
 
                 for (int b = -1; b <= 1; b++)
@@ -266,7 +286,7 @@ void SHF::correct()
                 {
                     upper++;
                     sumPrev = sumNew;
-                    maxH += gSizes[globalStart[p] + ii + a];
+                    maxH += gSize(a);
                 }
                 else
                 {
@@ -287,7 +307,7 @@ void SHF::correct()
                 if (ii - a < (I[f.left()] - 1) && !pBoundary[f.left()])
                     break;
 
-                if (globalStart[p] + ii - a < 0)
+                if (globalStart[p] + ii - a < 0 && !periodic[f.left()])
                     break;
 
                 for (int b = -1; b <= 1; b++)
@@ -304,7 +324,7 @@ void SHF::correct()
                 {
                     lower++;
                     sumPrev = sumNew;
-                    minH += gSizes[globalStart[p] + ii - a];
+                    minH += gSize(-a);
                 }
                 else
                 {
@@ -315,7 +335,7 @@ void SHF::correct()
             if (s > 0)
                 minH = maxH;
 
-            maxH  = minH + gSizes[globalStart[p] + ii];
+            maxH  = minH + gSize(0);
 
             for (int b = -1; b <= 1; b++)
             {
@@ -324,7 +344,7 @@ void SHF::correct()
                     scalar value = 0;
                     scalar valuePrev = alpha(ijk + b*D.y() + c*D.z() + off);
 
-                    H[b+1][c+1] = gSizes[globalStart[p] + ii]*valuePrev;
+                    H[b+1][c+1] = gSize(0)*valuePrev;
 
                     // Upper
 
@@ -334,9 +354,9 @@ void SHF::correct()
 
                         H[b+1][c+1] +=
                             s*(value - valuePrev) > 0.0
-                          ? gSizes[globalStart[p] + ii + a]*value
+                          ? gSize(a)*value
                           : s > 0.0
-                          ? gSizes[globalStart[p] + ii + a]
+                          ? gSize(a)
                           : 0.0;
 
                         valuePrev = value;
@@ -352,9 +372,9 @@ void SHF::correct()
 
                         H[b+1][c+1] +=
                             s*(value - valuePrev) < 0.0
-                          ? gSizes[globalStart[p] + ii - a]*value
+                          ? gSize(-a)*value
                           : s < 0.0
-                          ? gSizes[globalStart[p] + ii - a]
+                          ? gSize(-a)
                           : 0.0;
 
                         valuePrev = value;
