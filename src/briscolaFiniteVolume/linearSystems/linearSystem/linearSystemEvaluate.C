@@ -350,7 +350,7 @@ void linearSystem<SType,Type,MeshType>::evaluate
     else
     {
         forAll(x, d)
-            this->template Evaluate<Mask>(eval[d], paddingMask);
+            this->template Evaluate<Mask>(eval[d], paddingMask, 0);
     }
 }
 

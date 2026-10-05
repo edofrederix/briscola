@@ -334,7 +334,7 @@ void linearSystem<SType,Type,MeshType>::residual
     else
     {
         forAll(x, d)
-            this->template Residual<Mask>(res[d], paddingMask);
+            this->template Residual<Mask>(res[d], paddingMask, 0);
     }
 }
 

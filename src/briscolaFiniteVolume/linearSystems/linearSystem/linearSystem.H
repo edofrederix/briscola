@@ -67,7 +67,7 @@ private:
     (
         meshDirection<Type,MeshType>&,
         const faceLabel& paddingMask,
-        const label padding = 0
+        const label padding
     ) const;
 
     // Compute evaluation for a direction
@@ -76,7 +76,7 @@ private:
     (
         meshDirection<Type,MeshType>&,
         const faceLabel& paddingMask,
-        const label padding = 0
+        const label padding
     ) const;
 
     // Compute residual for a direction on boundary cells
@@ -85,7 +85,7 @@ private:
     (
         meshDirection<Type,MeshType>&,
         const faceLabel& paddingMask,
-        const label padding = 1
+        const label padding
     ) const;
 
     // Compute evaluation for a direction on boundary cells
@@ -94,7 +94,7 @@ private:
     (
         meshDirection<Type,MeshType>&,
         const faceLabel& paddingMask,
-        const label padding = 1
+        const label padding
     ) const;
 
     // Correct the eliminated boundary masks
