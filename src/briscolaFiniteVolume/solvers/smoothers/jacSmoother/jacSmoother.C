@@ -49,7 +49,7 @@ inline void jacSmoother<SType,Type,MeshType>::jacSmoother::Sweep
 
     const labelVector S = I.lower() + G*unitXYZ + padding*paddingMask.lower();
     const labelVector E = I.upper() + G*unitXYZ - padding*paddingMask.upper();
-    const labelVector M = E - S;
+    const labelVector M = cmptMax(E - S, zeroXYZ);
 
     // Array to temporarily store solution
 
@@ -162,29 +162,35 @@ inline void jacSmoother<SType,Type,MeshType>::jacSmoother::SweepBoundary
 
     linearSystemFun::offDiagRowProduct<SType,Type> P;
 
+    // Box of cells not yet covered. Keep track of covered cells to avoid
+    // redundant work.
+
+    labelVector S0 = I.lower() + G*unitXYZ;
+    labelVector E0 = I.upper() + G*unitXYZ;
 
     for (int f = 0; f < 6; f++)
     if (paddingMask[f])
     {
         const label fd = f/2;
 
-        // Data in B is padded by ghosts
+        labelVector S = S0;
+        labelVector E = E0;
 
-        labelVector S = I.lower() + G*unitXYZ;
-        labelVector E = I.upper() + G*unitXYZ;
-
-        // Adjust upper or lower limits
+        // Peel a slab of thickness padding off face f and shrink the remaining
+        // box accordingly
 
         if (f%2 == 0)
         {
-            E[fd] = S[fd] + padding;
+            E[fd] = Foam::min(S[fd] + padding, E[fd]);
+            S0[fd] = E[fd];
         }
         else
         {
-            S[fd] = E[fd] - padding;
+            S[fd] = Foam::max(E[fd] - padding, S[fd]);
+            E0[fd] = S[fd];
         }
 
-        const labelVector M = E - S;
+        const labelVector M = cmptMax(E - S, zeroXYZ);
 
         // Array to temporarily store solution
 

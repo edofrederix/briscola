@@ -46,7 +46,7 @@ inline void rbgsSmoother<SType,Type,MeshType>::rbgsSmoother::Sweep
 
     const labelVector S = I.lower() + G*unitXYZ + padding*paddingMask.lower();
     const labelVector E = I.upper() + G*unitXYZ - padding*paddingMask.upper();
-    const labelVector M = E - S;
+    const labelVector M = cmptMax(E - S, zeroXYZ);
 
     // Strides in i and j (data is contiguous in k)
 
@@ -63,7 +63,7 @@ inline void rbgsSmoother<SType,Type,MeshType>::rbgsSmoother::Sweep
 
     linearSystemFun::offDiagRowProduct<SType,Type> P;
 
-    // Forward even sweep
+    // Even sweep
 
     int c = lin(S, shape);
 
@@ -93,7 +93,7 @@ inline void rbgsSmoother<SType,Type,MeshType>::rbgsSmoother::Sweep
         c += J_j;
     }
 
-    // Forward odd sweep
+    // Odd sweep
 
     c = lin(S, shape);
 
@@ -121,66 +121,6 @@ inline void rbgsSmoother<SType,Type,MeshType>::rbgsSmoother::Sweep
 
         // Jump to next plane
         c += J_j;
-    }
-
-    // Backward even sweep
-
-    c = lin(E-unitXYZ, shape);
-
-    for (int i = 0; i < M.x(); i++)
-    {
-        for (int j = 0; j < M.y(); j++)
-        {
-            for (int k = 0; k < M.z(); k++)
-            {
-                if (!f_arr[c] && even(i,j,k))
-                    x_arr[c] =
-                        (
-                            b_arr[c]
-                          - P(A_arr, x_arr, c, S_i, S_j, S_k)
-                        )
-                      / A_arr[c*N];
-
-                // Jump to next cell
-                c--;
-            }
-
-            // Jump to next line
-            c -= J_k;
-        }
-
-        // Jump to next plane
-        c -= J_j;
-    }
-
-    // Backward odd sweep
-
-    c = lin(E-unitXYZ, shape);
-
-    for (int i = 0; i < M.x(); i++)
-    {
-        for (int j = 0; j < M.y(); j++)
-        {
-            for (int k = 0; k < M.z(); k++)
-            {
-                if (!f_arr[c] && odd(i,j,k))
-                    x_arr[c] =
-                        (
-                            b_arr[c]
-                          - P(A_arr, x_arr, c, S_i, S_j, S_k)
-                        )
-                      / A_arr[c*N];
-
-                // Jump to next cell
-                c--;
-            }
-
-            // Jump to next line
-            c -= J_k;
-        }
-
-        // Jump to next plane
-        c -= J_j;
     }
 }
 
@@ -219,28 +159,35 @@ inline void rbgsSmoother<SType,Type,MeshType>::rbgsSmoother::SweepBoundary
 
     linearSystemFun::offDiagRowProduct<SType,Type> P;
 
+    // Box of cells not yet covered. Keep track of covered cells to avoid
+    // redundant work.
+
+    labelVector S0 = I.lower() + G*unitXYZ;
+    labelVector E0 = I.upper() + G*unitXYZ;
+
     for (int f = 0; f < 6; f++)
     if (paddingMask[f])
     {
         const label fd = f/2;
 
-        // Data in B is padded by ghosts
+        labelVector S = S0;
+        labelVector E = E0;
 
-        labelVector S = I.lower() + G*unitXYZ;
-        labelVector E = I.upper() + G*unitXYZ;
-
-        // Adjust upper or lower limits
+        // Peel a slab of thickness padding off face f and shrink the remaining
+        // box accordingly
 
         if (f%2 == 0)
         {
-            E[fd] = S[fd] + padding;
+            E[fd] = Foam::min(S[fd] + padding, E[fd]);
+            S0[fd] = E[fd];
         }
         else
         {
-            S[fd] = E[fd] - padding;
+            S[fd] = Foam::max(E[fd] - padding, S[fd]);
+            E0[fd] = S[fd];
         }
 
-        const labelVector M = E - S;
+        const labelVector M = cmptMax(E - S, zeroXYZ);
 
         // Strides in i and j (data is contiguous in k)
 
@@ -311,66 +258,6 @@ inline void rbgsSmoother<SType,Type,MeshType>::rbgsSmoother::SweepBoundary
 
             // Jump to next plane
             c += J_j;
-        }
-
-        // Backward even sweep
-
-        c = lin(E-unitXYZ, shape);
-
-        for (int i = 0; i < M.x(); i++)
-        {
-            for (int j = 0; j < M.y(); j++)
-            {
-                for (int k = 0; k < M.z(); k++)
-                {
-                    if (!f_arr[c] && even(i,j,k))
-                        x_arr[c] =
-                            (
-                                b_arr[c]
-                              - P(A_arr, x_arr, c, S_i, S_j, S_k)
-                            )
-                          / A_arr[c*N];
-
-                    // Jump to next cell
-                    c--;
-                }
-
-                // Jump to next line
-                c -= J_k;
-            }
-
-            // Jump to next plane
-            c -= J_j;
-        }
-
-        // Backward odd sweep
-
-        c = lin(E-unitXYZ, shape);
-
-        for (int i = 0; i < M.x(); i++)
-        {
-            for (int j = 0; j < M.y(); j++)
-            {
-                for (int k = 0; k < M.z(); k++)
-                {
-                    if (!f_arr[c] && odd(i,j,k))
-                        x_arr[c] =
-                            (
-                                b_arr[c]
-                              - P(A_arr, x_arr, c, S_i, S_j, S_k)
-                            )
-                          / A_arr[c*N];
-
-                    // Jump to next cell
-                    c--;
-                }
-
-                // Jump to next line
-                c -= J_k;
-            }
-
-            // Jump to next plane
-            c -= J_j;
         }
     }
 }
