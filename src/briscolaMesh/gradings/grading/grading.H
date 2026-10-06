@@ -49,8 +49,14 @@ public:
     // Copy constructor
     grading(const grading&);
 
+    // Copy constructor with reference to new brick
+    grading(const grading&, const brick&);
+
     // Clone grading
     virtual autoPtr<grading> clone() const = 0;
+
+    // Clone grading with reference to new brick
+    virtual autoPtr<grading> clone(const brick&) const = 0;
 
     // Selector
     static autoPtr<grading> New(const brick&);

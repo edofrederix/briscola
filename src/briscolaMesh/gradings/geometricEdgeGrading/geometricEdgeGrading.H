@@ -35,10 +35,19 @@ public:
     // Copy constructor
     geometricEdgeGrading(const geometricEdgeGrading&);
 
+    // Copy constructor with reference to new brick
+    geometricEdgeGrading(const geometricEdgeGrading&, const brick&);
+
     // Clone grading
     virtual autoPtr<grading> clone() const
     {
         return autoPtr<grading>(new geometricEdgeGrading(*this));
+    }
+
+    // Clone grading with reference to new brick
+    virtual autoPtr<grading> clone(const brick& b) const
+    {
+        return autoPtr<grading>(new geometricEdgeGrading(*this, b));
     }
 
     // Linear normalized mapping function

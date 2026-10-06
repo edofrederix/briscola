@@ -20,6 +20,11 @@ grading::grading(const grading& g)
     b_(g.b_)
 {}
 
+grading::grading(const grading&, const brick& b)
+:
+    b_(b)
+{}
+
 grading::~grading()
 {}
 
