@@ -104,7 +104,7 @@ brick::brick(const brick& b)
     dict_(b.dict_),
     v_(b.v_),
     N_(b.N_),
-    grading_(b.grading_, false),
+    grading_(b.grading_->clone(*this)),
     faces_(b.faces_, *this)
 {}
 
@@ -114,7 +114,7 @@ brick::brick(const brick& b, const geometry& geo)
     dict_(b.dict_),
     v_(b.v_),
     N_(b.N_),
-    grading_(b.grading_, false),
+    grading_(b.grading_->clone(*this)),
     faces_(b.faces_, *this)
 {}
 

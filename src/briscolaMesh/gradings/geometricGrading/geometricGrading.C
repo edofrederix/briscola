@@ -39,6 +39,16 @@ geometricGrading::geometricGrading(const geometricGrading& g)
     f_(g.f_)
 {}
 
+geometricGrading::geometricGrading
+(
+    const geometricGrading& g,
+    const brick& b
+)
+:
+    grading(g, b),
+    f_(g.f_)
+{}
+
 tmp<scalarField> geometricGrading::operator()
 (
     const scalarField& f,

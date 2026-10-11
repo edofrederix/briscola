@@ -47,7 +47,7 @@ void linearSystem<SType,Type,MeshType>::Residual
 
     const labelVector S = I.lower() + G*unitXYZ + padding*paddingMask.lower();
     const labelVector E = I.upper() + G*unitXYZ - padding*paddingMask.upper();
-    const labelVector M = E - S;
+    const labelVector M = cmptMax(E - S, zeroXYZ);
 
     // Strides in i and j (data is contiguous in k)
 
@@ -166,28 +166,35 @@ void linearSystem<SType,Type,MeshType>::ResidualBoundary
 
     linearSystemFun::rowProduct<SType,Type> P;
 
+    // Box of cells not yet covered. Keep track of covered cells to avoid
+    // redundant work.
+
+    labelVector S0 = I.lower() + G*unitXYZ;
+    labelVector E0 = I.upper() + G*unitXYZ;
+
     for (int f = 0; f < 6; f++)
     if (paddingMask[f])
     {
         const label fd = f/2;
 
-        // Data in B is padded by ghosts
+        labelVector S = S0;
+        labelVector E = E0;
 
-        labelVector S = I.lower() + G*unitXYZ;
-        labelVector E = I.upper() + G*unitXYZ;
-
-        // Adjust upper or lower limits
+        // Peel a slab of thickness padding off face f and shrink the remaining
+        // box accordingly
 
         if (f%2 == 0)
         {
-            E[fd] = S[fd] + padding;
+            E[fd] = Foam::min(S[fd] + padding, E[fd]);
+            S0[fd] = E[fd];
         }
         else
         {
-            S[fd] = E[fd] - padding;
+            S[fd] = Foam::max(E[fd] - padding, S[fd]);
+            E0[fd] = S[fd];
         }
 
-        const labelVector M = E - S;
+        const labelVector M = cmptMax(E - S, zeroXYZ);
 
         // Strides in i and j (data is contiguous in k)
 
@@ -307,7 +314,7 @@ void linearSystem<SType,Type,MeshType>::residual
         // Compute residual for internal cells
 
         forAll(x, d)
-            Residual(res[d], paddingMask, 1);
+            this->template Residual<Mask>(res[d], paddingMask, 1);
 
         // Evaluate boundary conditions
 
@@ -322,12 +329,12 @@ void linearSystem<SType,Type,MeshType>::residual
         // Compute residual for boundary cells
 
         forAll(x, d)
-            ResidualBoundary(res[d], paddingMask, 1);
+            this->template ResidualBoundary<Mask>(res[d], paddingMask, 1);
     }
     else
     {
         forAll(x, d)
-            Residual(res[d], paddingMask);
+            this->template Residual<Mask>(res[d], paddingMask, 0);
     }
 }
 

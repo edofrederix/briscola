@@ -30,10 +30,19 @@ public:
     // Copy constructor
     noGrading(const noGrading&);
 
+    // Copy constructor with reference to new brick
+    noGrading(const noGrading&, const brick&);
+
     // Clone grading
     virtual autoPtr<grading> clone() const
     {
         return autoPtr<grading>(new noGrading(*this));
+    }
+
+    // Clone grading with reference to new brick
+    virtual autoPtr<grading> clone(const brick& b) const
+    {
+        return autoPtr<grading>(new noGrading(*this, b));
     }
 
     // Linear normalized mapping function

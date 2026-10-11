@@ -42,7 +42,7 @@ inline void diagonalSmoother<SType,Type,MeshType>::diagonalSmoother::Sweep
 
     const labelVector S = I.lower() + G*unitXYZ;
     const labelVector E = I.upper() + G*unitXYZ;
-    const labelVector M = E - S;
+    const labelVector M = cmptMax(E - S, zeroXYZ);
 
     // Jump after each line in k and plane in (j,k)
 
