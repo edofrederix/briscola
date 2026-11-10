@@ -1,0 +1,126 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         10;
+
+deltaT          1e-6;
+
+writeControl    adjustableRunTime;
+
+writeInterval   1;
+
+writeFormat     binary;
+
+writePrecision  6;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable true;
+
+adjustTimeStep  true;
+
+maxCo           0.2;
+
+libs
+(
+    "code/build/lib/libcode.so"
+);
+
+functions
+{
+    PILULE
+    {
+        type        PILULE;
+
+        // PI controller
+        Kp          2.0;
+        Ki          1.0;
+        Jliq        0.147;
+    }
+
+    parallel_30
+    {
+        type        lineSample;
+        fields      (Uc alpha U1 U2 Usqr1 Usqr2);
+        interpolator linear;
+        start       (1e-6 -0.02 0.6599999);
+        end         (1e-6 0.02 0.6599999);
+        N           256;
+        timeAverage true;
+        startTime   5.0;
+    }
+
+    orthogonal_30
+    {
+        type        lineSample;
+        fields      (Uc alpha U1 U2 Usqr1 Usqr2);
+        interpolator linear;
+        start       (-0.02 1e-6 0.6599999);
+        end         (0.02 1e-6 0.6599999);
+        N           256;
+        timeAverage true;
+        startTime   5.0;
+    }
+
+    parallel_40
+    {
+        type        lineSample;
+        fields      (Uc alpha U1 U2 Usqr1 Usqr2);
+        interpolator linear;
+        start       (1e-6 -0.02 0.6699999);
+        end         (1e-6 0.02 0.6699999);
+        N           256;
+        timeAverage true;
+        startTime   5.0;
+    }
+
+    orthogonal_40
+    {
+        type        lineSample;
+        fields      (Uc alpha U1 U2 Usqr1 Usqr2);
+        interpolator linear;
+        start       (-0.02 1e-6 0.6699999);
+        end         (0.02 1e-6 0.6699999);
+        N           256;
+        timeAverage true;
+        startTime   5.0;
+    }
+
+    parallel_50
+    {
+        type        lineSample;
+        fields      (Uc alpha U1 U2 Usqr1 Usqr2);
+        interpolator linear;
+        start       (1e-6 -0.02 0.6799999);
+        end         (1e-6 0.02 0.6799999);
+        N           256;
+        timeAverage true;
+        startTime   5.0;
+    }
+
+    orthogonal_50
+    {
+        type        lineSample;
+        fields      (Uc alpha U1 U2 Usqr1 Usqr2);
+        interpolator linear;
+        start       (-0.02 1e-6 0.6799999);
+        end         (0.02 1e-6 0.6799999);
+        N           256;
+        timeAverage true;
+        startTime   5.0;
+    }
+}
