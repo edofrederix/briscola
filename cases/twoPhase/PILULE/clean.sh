@@ -1,0 +1,7 @@
+#!/bin/bash
+
+source $FOAM_SRC/../bin/tools/CleanFunctions
+
+cleanCase
+
+rm -fr briscola*.vtk.series *.pdf code/build data.txt
