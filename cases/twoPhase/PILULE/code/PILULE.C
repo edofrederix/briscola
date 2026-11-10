@@ -139,20 +139,39 @@ bool PILULE::read(const dictionary& dict)
     {
         // Initialize velocity
 
-        staggeredScalarField& U =
-            runTime_.lookupObjectRef<staggeredScalarField>("U");
-
-        const tensor base =
-                U.fvMsh().msh().cast<rectilinearMesh>().base();
-
         const vector U0(0,0,0.05);
 
-        forAllCells(U,d,i,j,k)
+        if (runTime_.foundObject<staggeredScalarField>("U"))
         {
-            U(d,i,j,k) = (base & U0)[d];
-        }
+            // Staggered
 
-        U.correctBoundaryConditions();
+            staggeredScalarField& U =
+                runTime_.lookupObjectRef<staggeredScalarField>("U");
+
+            const tensor base =
+                U.fvMsh().msh().cast<rectilinearMesh>().base();
+
+            forAllCells(U,d,i,j,k)
+            {
+                U(d,i,j,k) = (base & U0)[d];
+            }
+
+            U.correctBoundaryConditions();
+        }
+        else
+        {
+            // Colocated
+
+            colocatedVectorField& U =
+                runTime_.lookupObjectRef<colocatedVectorField>("U");
+
+            forAllCells(U,i,j,k)
+            {
+                U(i,j,k) = U0;
+            }
+
+            U.correctBoundaryConditions();
+        }
 
         // Initialize bubbles
 
@@ -175,11 +194,7 @@ bool PILULE::read(const dictionary& dict)
 
         const label nBubbles(600);
 
-        // Case 1: alpha_H = 0.166
-        // alpha_H = nBubbles * 4/3 pi * bubbleRadius^3
-        //     / (pi * pipeRadius^2 * pipeLength)
-
-        // std::srand(std::time({}));
+        // Random bubble location seed
         std::srand(12345);
 
         label iter = 0;
@@ -192,7 +207,7 @@ bool PILULE::read(const dictionary& dict)
             {
                 scalar x = (2.0 * std::rand() / RAND_MAX - 1.0) * pipeRadius;
                 scalar y = (2.0 * std::rand() / RAND_MAX - 1.0) * pipeRadius;
-                scalar z = 0.58 + bubbleRadius
+                scalar z = bubbleRadius
                     + std::rand() / (double)RAND_MAX
                     * (pipeLength - 2.0 * bubbleRadius);
 
@@ -209,7 +224,7 @@ bool PILULE::read(const dictionary& dict)
 
                     // Check whether there is overlap with cylinder
                     vector cylinderAxis(0,1,0);
-                    vector AP = newBubble - vector(0,0,0.63);
+                    vector AP = newBubble - vector(0,0,0.05);
                     vector proj =
                         ((AP & cylinderAxis) / magSqr(cylinderAxis))
                       * cylinderAxis;
@@ -238,8 +253,8 @@ bool PILULE::read(const dictionary& dict)
                     // prevents break-up at startup.
                     if
                     (
-                           newBubble.z() < 0.63
-                        && newBubble.z() > 0.61
+                           newBubble.z() < 0.05
+                        && newBubble.z() > 0.02
                         && Foam::mag(newBubble.x()) < 0.006
                     )
                     {
@@ -282,8 +297,14 @@ bool PILULE::read(const dictionary& dict)
 
 bool PILULE::execute()
 {
+    const bool staggeredSolver =
+        runTime_.foundObject<staggeredScalarField>("U");
+
     const colocatedVectorDirection& Uc =
-        runTime_.lookupObjectRef<colocatedVectorField>("Uc")[0][0];
+        runTime_.lookupObject<colocatedVectorField>
+        (
+            staggeredSolver ? "Uc" : "U"
+        )[0][0];
 
     colocatedScalarDirection& alpha =
         runTime_.lookupObjectRef<colocatedScalarField>("alpha")[0][0];
@@ -293,9 +314,6 @@ bool PILULE::execute()
 
     const colocatedScalarDirection& ibmMask =
         fvMsh_.metrics<colocated>().mask()[0][0];
-
-    // const staggeredScalarField& ibmMaskStaggered =
-    //     fvMsh_.metrics<staggered>().mask();
 
     // Clear alpha stuck in IBM
 
@@ -338,8 +356,15 @@ bool PILULE::execute()
     U2_ = Uc * (1.0 - alpha);
     Usqr2_ = cmptSqr(Uc) * (1.0 - alpha);
 
-    const scalar UyInt1(gSum(Uc.component(vector::Z)*cv*alpha));
-    const scalar UyInt2(gSum(Uc.component(vector::Z)*cv*(1.0-alpha)));
+    const scalar UyInt1
+    (
+        gSum(Uc.component(vector::Z)*cv*alpha*(1.0-ibmMask))
+    );
+
+    const scalar UyInt2
+    (
+        gSum(Uc.component(vector::Z)*cv*(1.0-alpha)*(1.0-ibmMask))
+    );
 
     const scalar J1 = UyInt1/fluidVol_;
     const scalar J2 = UyInt2/fluidVol_;
@@ -360,19 +385,28 @@ bool PILULE::execute()
 
         oldError_ = error;
 
-        const tensor base =
-                fvMsh_.msh().cast<rectilinearMesh>().base();
-
-        // const vector av(0,0,adjustment);
         const vector fv(0,0,forcing_);
 
-        // Update the global forcing property
-        // This assumes you have a reference to the forcing field/vector
+        // Update the global forcing in fluid cells
 
-        staggeredScalarField& exSource
-            = runTime_.lookupObjectRef<staggeredScalarField>("source");
+        if (staggeredSolver)
+        {
+            const tensor base =
+                fvMsh_.msh().cast<rectilinearMesh>().base();
 
-        exSource = fvMsh_.metrics<staggered>().fluidMask() * list(base & fv);
+            staggeredScalarField& exSource =
+                runTime_.lookupObjectRef<staggeredScalarField>("source");
+
+            exSource =
+                fvMsh_.metrics<staggered>().fluidMask() * list(base & fv);
+        }
+        else
+        {
+            colocatedVectorField& exSource =
+                runTime_.lookupObjectRef<colocatedVectorField>("source");
+
+            exSource = fvMsh_.metrics<colocated>().fluidMask() * fv;
+        }
     }
 
     if (Pstream::master())

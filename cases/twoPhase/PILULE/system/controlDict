@@ -57,8 +57,8 @@ functions
         type        lineSample;
         fields      (Uc alpha U1 U2 Usqr1 Usqr2);
         interpolator linear;
-        start       (1e-6 -0.02 0.6599999);
-        end         (1e-6 0.02 0.6599999);
+        start       (1e-6 -0.02 0.0799999);
+        end         (1e-6 0.02 0.0799999);
         N           256;
         timeAverage true;
         startTime   5.0;
@@ -69,8 +69,8 @@ functions
         type        lineSample;
         fields      (Uc alpha U1 U2 Usqr1 Usqr2);
         interpolator linear;
-        start       (-0.02 1e-6 0.6599999);
-        end         (0.02 1e-6 0.6599999);
+        start       (-0.02 1e-6 0.0799999);
+        end         (0.02 1e-6 0.0799999);
         N           256;
         timeAverage true;
         startTime   5.0;
@@ -81,8 +81,8 @@ functions
         type        lineSample;
         fields      (Uc alpha U1 U2 Usqr1 Usqr2);
         interpolator linear;
-        start       (1e-6 -0.02 0.6699999);
-        end         (1e-6 0.02 0.6699999);
+        start       (1e-6 -0.02 0.0899999);
+        end         (1e-6 0.02 0.0899999);
         N           256;
         timeAverage true;
         startTime   5.0;
@@ -93,8 +93,8 @@ functions
         type        lineSample;
         fields      (Uc alpha U1 U2 Usqr1 Usqr2);
         interpolator linear;
-        start       (-0.02 1e-6 0.6699999);
-        end         (0.02 1e-6 0.6699999);
+        start       (-0.02 1e-6 0.0899999);
+        end         (0.02 1e-6 0.0899999);
         N           256;
         timeAverage true;
         startTime   5.0;
@@ -105,8 +105,8 @@ functions
         type        lineSample;
         fields      (Uc alpha U1 U2 Usqr1 Usqr2);
         interpolator linear;
-        start       (1e-6 -0.02 0.6799999);
-        end         (1e-6 0.02 0.6799999);
+        start       (1e-6 -0.02 0.0999999);
+        end         (1e-6 0.02 0.0999999);
         N           256;
         timeAverage true;
         startTime   5.0;
@@ -117,8 +117,8 @@ functions
         type        lineSample;
         fields      (Uc alpha U1 U2 Usqr1 Usqr2);
         interpolator linear;
-        start       (-0.02 1e-6 0.6799999);
-        end         (0.02 1e-6 0.6799999);
+        start       (-0.02 1e-6 0.0999999);
+        end         (0.02 1e-6 0.0999999);
         N           256;
         timeAverage true;
         startTime   5.0;
