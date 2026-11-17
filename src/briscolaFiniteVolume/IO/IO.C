@@ -6,6 +6,8 @@
 #include "staggeredFields.H"
 #include "floatVector.H"
 
+#include <numeric>
+
 namespace Foam
 {
 
@@ -126,11 +128,19 @@ void IO::writeData(const word timeName, const label l)
         {
             if (Pstream::master())
             {
-                label nPoints = 0;
+                int64_t nPoints = 0;
 
                 forAll(shapes, p)
                     if (!partitioned_ || p == proc)
                         nPoints += cmptProduct(shapes[p]+unitXYZ);
+
+                if (nPoints > labelMax)
+                    FatalErrorInFunction
+                        << "Cannot write " << nPoints << " points to "
+                        << vtkFileName<MeshType>(l,d,proc) << " because "
+                        << "point indices exceed the label range. "
+                        << "Set writePartitioned in controlDict."
+                        << exit(FatalError);
 
                 std::ofstream& file = filePtrs[proc]();
 
@@ -156,7 +166,7 @@ void IO::writeData(const word timeName, const label l)
         {
             if (Pstream::master())
             {
-                label nCells = 0;
+                int64_t nCells = 0;
 
                 forAll(shapes, p)
                 {
@@ -233,30 +243,34 @@ void IO::writeData(const word timeName, const label l)
 
                 file<< "CELL_TYPES " << nCells << std::endl;
 
-                if (ascii)
+                forAll(shapes, p)
+                if (!partitioned_ || p == proc)
                 {
-                    for (int i = 0; i < nCells; i++)
+                    labelList buffer(nStructured(shapes[p]), 12);
+
+                    if (ascii)
                     {
-                        file<< "12 ";
+                        forAll(buffer, i)
+                        {
+                            file<< buffer[i] << " ";
+                        }
                     }
-                }
-                else
-                {
-                    labelList buffer(nCells, 12);
+                    else
+                    {
+                        #ifdef LITTLEENDIAN
+                        swapWords
+                        (
+                            buffer.size(),
+                            reinterpret_cast<label*>(buffer.begin())
+                        );
+                        #endif
 
-                    #ifdef LITTLEENDIAN
-                    swapWords
-                    (
-                        buffer.size(),
-                        reinterpret_cast<label*>(buffer.begin())
-                    );
-                    #endif
-
-                    file.write
-                    (
-                        reinterpret_cast<char*>(buffer.begin()),
-                        buffer.byteSize()
-                    );
+                        file.write
+                        (
+                            reinterpret_cast<char*>(buffer.begin()),
+                            buffer.byteSize()
+                        );
+                    }
                 }
 
                 file<< std::endl;
@@ -393,12 +407,12 @@ void IO::readData(const word timeName, const label l)
         }
         else
         {
-            label nPoints;
+            int64_t nPoints;
 
             file>> dummy >> nPoints;
 
             nextLine(file);
-            file.ignore(nPoints*3*sizeof(floatScalar));
+            file.seekg(nPoints*3*sizeof(floatScalar), std::ios::cur);
             nextLine(file);
         }
 
@@ -411,12 +425,12 @@ void IO::readData(const word timeName, const label l)
         }
         else
         {
-            label n;
+            int64_t n;
 
             file>> dummy >> dummy >> n;
 
             nextLine(file);
-            file.ignore(n*sizeof(label));
+            file.seekg(n*sizeof(label), std::ios::cur);
             nextLine(file);
         }
 
@@ -429,18 +443,18 @@ void IO::readData(const word timeName, const label l)
         }
         else
         {
-            label nCells;
+            int64_t nCells;
 
             file>> dummy >> nCells;
 
             nextLine(file);
-            file.ignore(nCells*sizeof(label));
+            file.seekg(nCells*sizeof(label), std::ios::cur);
             nextLine(file);
         }
 
         // Read number of cells
 
-        label nCells;
+        int64_t nCells;
 
         file>> dummy >> nCells;
 
@@ -452,8 +466,10 @@ void IO::readData(const word timeName, const label l)
         Pstream::gatherList(sizes, Pstream::msgType(), fvMsh_[l].comms());
         Pstream::scatterList(sizes, Pstream::msgType(), fvMsh_[l].comms());
 
-        const label size =
-            partitioned_ ? sizes[Pstream::myProcNo()] : sum(sizes);
+        const int64_t size =
+            partitioned_
+          ? sizes[Pstream::myProcNo()]
+          : std::accumulate(sizes.begin(), sizes.end(), int64_t(0));
 
         if (size != nCells && Pstream::master())
             FatalErrorInFunction
@@ -581,7 +597,7 @@ void IO::readFields
         for (int i = 0; i < nf; i++)
         {
             label nComponents;
-            label nCells;
+            int64_t nCells;
 
             file>> name >> nComponents >> nCells;
             nextLine(file);
@@ -611,7 +627,11 @@ void IO::readFields
                     }
                     else
                     {
-                        file.ignore(nCells*nComponents*sizeof(floatScalar));
+                        file.seekg
+                        (
+                            nCells*nComponents*sizeof(floatScalar),
+                            std::ios::cur
+                        );
                     }
                 }
             }
@@ -643,7 +663,11 @@ void IO::readFields
                     }
                     else
                     {
-                        file.ignore(nCells*nComponents*sizeof(floatScalar));
+                        file.seekg
+                        (
+                            nCells*nComponents*sizeof(floatScalar),
+                            std::ios::cur
+                        );
                     }
                 }
             }
@@ -857,6 +881,11 @@ void IO::writeNow(const label l)
     // Write series
 
     writeSeries<MeshType>(l);
+
+    // Wait until the master has written all files
+
+    if (Pstream::parRun())
+        returnReduce(1.0,sumOp<scalar>());
 }
 
 template<class MeshType>

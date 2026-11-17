@@ -2,6 +2,8 @@
 #include "colocatedFields.H"
 #include "staggeredFields.H"
 
+#include <numeric>
+
 namespace Foam
 {
 
@@ -56,12 +58,14 @@ void IO::readList
     }
     else
     {
-        label offset = 0;
+        // Seek past the data of the other processors
+
+        int64_t offset = 0;
 
         for(int i = 0; i < (partitioned_ ? 0 : Pstream::myProcNo()); i++)
             offset += sizes[i];
 
-        file.ignore(offset*sizeof(floatScalar));
+        file.seekg(offset*sizeof(floatScalar), std::ios::cur);
 
         file.read
         (
@@ -70,7 +74,16 @@ void IO::readList
         );
 
         if (!partitioned_)
-            file.ignore((sum(sizes)-offset-data.size())*sizeof(floatScalar));
+        {
+            const int64_t size =
+                std::accumulate(sizes.begin(), sizes.end(), int64_t(0));
+
+            file.seekg
+            (
+                (size-offset-data.size())*sizeof(floatScalar),
+                std::ios::cur
+            );
+        }
 
         nextLine(file);
 
