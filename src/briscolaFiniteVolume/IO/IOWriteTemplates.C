@@ -2,6 +2,8 @@
 #include "colocatedFields.H"
 #include "staggeredFields.H"
 
+#include <numeric>
+
 namespace Foam
 {
 
@@ -35,7 +37,10 @@ void IO::writeList
         {
             std::ofstream& file = filePtrs[proc]();
 
-            const label size = (partitioned_ ? sizes[proc] : sum(sizes));
+            const int64_t size =
+                partitioned_
+              ? sizes[proc]
+              : std::accumulate(sizes.begin(), sizes.end(), int64_t(0));
 
             if (header)
             {
@@ -60,7 +65,7 @@ void IO::writeList
 
                     UIPstream::read
                     (
-                        Pstream::commsTypes::blocking,
+                        Pstream::commsTypes::scheduled,
                         p,
                         reinterpret_cast<char*>(buffer.begin()),
                         buffer.byteSize(),
@@ -101,7 +106,7 @@ void IO::writeList
     {
         UOPstream::write
         (
-            Pstream::commsTypes::blocking,
+            Pstream::commsTypes::scheduled,
             Pstream::masterNo(),
             reinterpret_cast<char*>(data.begin()),
             data.byteSize(),
